@@ -1,0 +1,13 @@
+{
+  "destination": "mymod:glimmer",
+  "display_name": "Glimmer portal",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "textures": {
+    "portal": "mymod:block/glimmer_portal"
+  },
+  "travel": {
+    "scale": 8
+  },
+  "type": "portal"
+}

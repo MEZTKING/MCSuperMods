@@ -1,0 +1,18 @@
+{
+  "components": {
+    "msm:on_break": {
+      "event": "mymod:x"
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "portal": "mymod:glimmer_portal",
+          "type": "light_portal"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

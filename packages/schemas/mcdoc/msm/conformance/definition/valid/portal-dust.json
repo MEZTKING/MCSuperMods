@@ -1,0 +1,10 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "particles": {
+    "color": 11141290,
+    "count": 16
+  },
+  "type": "portal"
+}

@@ -1,0 +1,10 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "travel": {
+    "arrival": "surface",
+    "scale": 0.00001
+  },
+  "type": "portal"
+}

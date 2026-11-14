@@ -1,0 +1,15 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "particles": {
+    "color": 16777215,
+    "count": 0
+  },
+  "travel": {
+    "cooldown_ticks": 0,
+    "delay_ticks": 32767,
+    "scale": 30000000
+  },
+  "type": "portal"
+}

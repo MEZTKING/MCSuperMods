@@ -3511,3 +3511,18 @@ Decisions
 
 Next
 - B335 reads `target.blocks?.portal` for the defaults and `portal-sound-unknown`. The status lines in `packages/plugin-api/CLAUDE.md` and `packages/targets/CLAUDE.md` still say 1.12.0 (outside this brief's owner files; for B344).
+## 2026-11-14 — executor — B331 portal format
+
+What
+- MSM mcdoc for ADR 0077 D1, D3 and D8: `BlockType` gains `portal`; `dispatch msm:block_type[portal] to struct PortalFields` (`frame` as a block id or `#tag` union, `frame_block`, `igniter` as an item id, `#tag` or `false`, `destination`, `return_to`, `travel` (`PortalTravel`: `scale` 0.00001..30000000, `arrival` `PortalArrival` `portal`/`surface`, `delay_ticks` and `cooldown_ticks` 0..32767, `players_only`, `overlay`), `sounds` (`PortalSounds`: `ambient`, `travel`, each a sound event or `false`), `particles` (`PortalParticles`: `type`, `color` 0..16777215, `count` 0..16), `on_travel`); closed structs. Element: `PortalTextures` (`portal`) through `dispatch msm:block_type_element[portal] to struct PortalElementFields { textures? }`. Action: `ActionType.LightPortal = "light_portal"`, `dispatch msm:action[light_portal] to struct LightPortal { portal }`. `symbols.json` regenerated (238 to 246 types).
+- Corpus: 13 valid and 37 invalid `portal-*` definition files (portal blocks, plus blocks, items, entities and effects using `light_portal`), 2 valid and 4 invalid `portal-*` element files; `expected-errors.json` of both groups.
+- `msm-conformance.test.ts`: prefixes `portal`, `portal-item`, `portal-entity`, `portal-effect`; `portal` is the 18th block type; `light_portal` in the action list and the action-case check; counts for `portal-`.
+- Checks: `pnpm --filter @msm/schemas test` (996), `pnpm test`, `pnpm lint`, `pnpm typecheck`, `build-msm-mcdoc --check` green. Runtime `ConformanceCorpusTest`: 50 failures without a PENDING entry (unknown prefix), green with `PENDING = List.of("portal-")` (tried locally, not committed).
+
+Decisions
+- Every new definition corpus file uses the prefix `portal-` (not the plan's `action-light-portal-`), so one PENDING entry covers the batch; action cases for items, entities and effects are `portal-item-`, `portal-entity-` and `portal-effect-`.
+- Element corpus files were added (not named in the brief): the existing block type test requires a valid and an invalid element case of every type.
+
+Next
+- Orchestrator: add `"portal-"` to `ConformanceCorpusTest.PENDING`.
+- B334: remove it and add `portal-` (block), `portal-item-`, `portal-entity-`, `portal-effect-` to the test's `KINDS`.

@@ -1,0 +1,9 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "travel": {
+    "speed": 2
+  },
+  "type": "portal"
+}

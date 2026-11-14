@@ -1,0 +1,6 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:obsidian",
+  "type": "block"
+}

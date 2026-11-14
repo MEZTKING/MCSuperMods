@@ -1,0 +1,9 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "particles": {
+    "type": 1
+  },
+  "type": "portal"
+}

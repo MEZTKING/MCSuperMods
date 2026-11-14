@@ -1,0 +1,14 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "igniter": false,
+  "particles": {
+    "count": 0
+  },
+  "sounds": {
+    "ambient": false,
+    "travel": false
+  },
+  "type": "portal"
+}

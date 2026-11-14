@@ -155,6 +155,11 @@
           "desc": "Heals the player or the other entity of the event (ADR 0055 D4).",
           "identifier": "Heal",
           "value": "heal"
+        },
+        {
+          "desc": "Lights a project portal's empty frame at the event block or next to it (ADR 0077 D3).",
+          "identifier": "LightPortal",
+          "value": "light_portal"
         }
       ]
     },
@@ -425,6 +430,31 @@
           "value": "up"
         }
       ]
+    },
+    "::msm::action::LightPortal": {
+      "fields": [
+        {
+          "desc": "The portal block, a project block of type `portal`.",
+          "key": "portal",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::action::PlayAnimation": {
       "fields": [
@@ -2572,6 +2602,11 @@
           "desc": "Leaves that decay away from logs (ADR 0068 D6).",
           "identifier": "Leaves",
           "value": "leaves"
+        },
+        {
+          "desc": "A portal block that fills a lit frame and takes entities to another dimension and back,\nas the Nether portal does (ADR 0077 D1). Runtimes older than the release that ships ADR\n0077 reject the value.",
+          "identifier": "Portal",
+          "value": "portal"
         }
       ]
     },
@@ -5916,6 +5951,440 @@
               "kind": 0,
               "min": 0
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::PortalArrival": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "At the nearest linked exit portal of the same block, building one when none is near.",
+          "identifier": "Portal",
+          "value": "portal"
+        },
+        {
+          "desc": "On the first standing spot at the target column, building nothing; with no standing\nspot (a void) as `portal`.",
+          "identifier": "Surface",
+          "value": "surface"
+        }
+      ]
+    },
+    "::msm::definition::PortalFields": {
+      "fields": [
+        {
+          "desc": "The frame: a block id, or a block tag such as `#mymod:portal_frames` (read when the\nframe is used, so `/reload` updates it).",
+          "key": "frame",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "block"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "tree",
+                      "values": {
+                        "registry": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "block"
+                          }
+                        },
+                        "tags": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "required"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "The block exit portals are built of; defaults to `frame`, and is required when `frame` is\na tag.",
+          "key": "frame_block",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The item that lights the frame: an item id or an item tag; defaults to\n`minecraft:flint_and_steel`. A damageable igniter loses one durability, any other is used\nup one at a time, nothing in creative. `false`: only the `light_portal` action lights it.",
+          "key": "igniter",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "tree",
+                      "values": {
+                        "registry": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "item"
+                          }
+                        },
+                        "tags": {
+                          "kind": "literal",
+                          "value": {
+                            "kind": "string",
+                            "value": "required"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "desc": "The dimension the portal leads to, a project or vanilla dimension.",
+          "key": "destination",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dimension"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The dimension the portal leads back to from `destination`; defaults to\n`minecraft:overworld`. Must differ from `destination`.",
+          "key": "return_to",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dimension"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How entities travel.",
+          "key": "travel",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::PortalTravel"
+          }
+        },
+        {
+          "desc": "The portal's sounds.",
+          "key": "sounds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::PortalSounds"
+          }
+        },
+        {
+          "desc": "The portal's particles.",
+          "key": "particles",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::PortalParticles"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, run after arrival at the exit position with the\ntraveller as `self` and `other`.",
+          "key": "on_travel",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::PortalParticles": {
+      "fields": [
+        {
+          "desc": "A particle type without options; defaults to the target's portal particle. A type that\ntakes options is a load error that keeps the default.",
+          "key": "type",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "particle_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An RGB colour, 0 to 16777215: the portal then spawns dust particles of this colour (the\nportal particle's own colours cannot change; limit P3 of ADR 0077). Only without `type`\nor with `minecraft:dust`.",
+          "key": "color",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16777215,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Particles per animation tick, 0 to 16; defaults to 4; 0 spawns none.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::PortalSounds": {
+      "fields": [
+        {
+          "desc": "Played now and then near the portal; defaults to the target's portal ambient sound.",
+          "key": "ambient",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "sound_event"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Played to the traveller on arrival; defaults to the target's portal travel sound.",
+          "key": "travel",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "sound_event"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::PortalTravel": {
+      "fields": [
+        {
+          "desc": "Coordinate scale of `destination` against `return_to`, 0.00001 to 30000000; 8 travels as\nthe Nether does (one block there is eight here). Defaults to the scale of the two\ndimension types.",
+          "key": "scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 30000000,
+              "min": 0.00001
+            }
+          }
+        },
+        {
+          "desc": "Where travellers arrive; defaults to `portal`.",
+          "key": "arrival",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::PortalArrival"
+          }
+        },
+        {
+          "desc": "Ticks a survival player stands in the portal before travelling, 0 to 32767; defaults to\nthe gamerule `players_nether_portal_default_delay` (vanilla 80). Creative players keep\nthe gamerule `players_nether_portal_creative_delay`; other entities travel at once.",
+          "key": "delay_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 32767,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Ticks after arrival before the entity can use a portal again, 0 to 32767; defaults to\nvanilla's.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 32767,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether only players travel; defaults to false (items, mobs and vehicles travel too).",
+          "key": "players_only",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether standing in the portal shows vanilla's portal wobble and overlay and plays its\nentry sound; defaults to true. These are the Nether portal's (limit P2 of ADR 0077).",
+          "key": "overlay",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -9568,6 +10037,47 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::PortalElementFields": {
+      "fields": [
+        {
+          "desc": "Texture of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::PortalTextures"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::PortalTextures": {
+      "fields": [
+        {
+          "desc": "The portal surface and its breaking particles; defaults to vanilla's\n`minecraft:block/nether_portal`. An animation sidecar (`.png.mcmeta`) beside a project\ntexture is exported with it.",
+          "key": "portal",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Potion": {
       "fields": [
         {
@@ -11039,6 +11549,10 @@
         "kind": "reference",
         "path": "::msm::action::Launch"
       },
+      "light_portal": {
+        "kind": "reference",
+        "path": "::msm::action::LightPortal"
+      },
       "play_animation": {
         "kind": "reference",
         "path": "::msm::action::PlayAnimation"
@@ -11159,6 +11673,10 @@
         "kind": "reference",
         "path": "::msm::definition::NoTypeFields"
       },
+      "portal": {
+        "kind": "reference",
+        "path": "::msm::definition::PortalFields"
+      },
       "pressure_plate": {
         "kind": "reference",
         "path": "::msm::definition::PressurePlateFields"
@@ -11233,6 +11751,10 @@
         "kind": "reference",
         "path": "::msm::element::PillarElementFields"
       },
+      "portal": {
+        "kind": "reference",
+        "path": "::msm::element::PortalElementFields"
+      },
       "pressure_plate": {
         "kind": "reference",
         "path": "::msm::element::SingleTextureElementFields"
@@ -11281,5 +11803,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:f20c5e3cb98f360cbc7d45199e9c3780d9a8a4d51c65c2fc2637c6dce2c10d90"
+  "ref": "msm-mcdoc:sha256:80c5a85d48a9999e1e2c631baf39845f8c38dc5e15defa25f3cff69c408eaa05"
 }

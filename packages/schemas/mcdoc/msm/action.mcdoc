@@ -28,6 +28,8 @@ enum(string) ActionType {
 	Damage = "damage",
 	/// Heals the player or the other entity of the event (ADR 0055 D4).
 	Heal = "heal",
+	/// Lights a project portal's empty frame at the event block or next to it (ADR 0077 D3).
+	LightPortal = "light_portal",
 }
 
 /// Who an `apply_effect`, `launch`, `damage` or `heal` action affects.
@@ -182,4 +184,13 @@ dispatch msm:action[heal] to struct Heal {
 	amount: float @ 0..,
 	/// Defaults to `self`.
 	target?: EffectTarget,
+}
+
+/// Lights an empty valid frame of a portal block (ADR 0077 D3) at the event's block position
+/// (the base position without a block) or at one of its six neighbours, as the portal's igniter
+/// does; nothing happens when no empty frame is there. Runtimes older than the release that
+/// ships ADR 0077 reject it as an unknown type.
+dispatch msm:action[light_portal] to struct LightPortal {
+	/// The portal block, a project block of type `portal`.
+	portal: #[id="block"] string,
 }

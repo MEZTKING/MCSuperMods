@@ -20,7 +20,9 @@ import {
  * `trigger-block-`, `trigger-item-` and `trigger-entity-` files are blocks, items and entities
  * using ADR 0061's trigger components. `container-` and `machine-` files are blocks with ADR
  * 0074's `msm:container` and ADR 0075's `msm:machine`; `conformance/machine-recipe/` holds ADR
- * 0075's machine recipe files. The longest matching file name prefix selects the schema;
+ * 0075's machine recipe files. `portal-` files are ADR 0077's portal blocks and blocks with the
+ * `light_portal` action; `portal-item-`, `portal-entity-` and `portal-effect-` files are items,
+ * entities and effects with that action. The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
  */
@@ -31,9 +33,9 @@ type Group = 'definition' | 'element' | 'geometry' | 'animation' | 'machine-reci
 /** The machine recipe file of ADR 0075 D2, checked by its type path (no schema reference yet). */
 const MACHINE_RECIPE = '::msm::recipe::MachineRecipe';
 
-/** File name prefixes of block files besides `block-` (ADRs 0061, 0074, 0075). */
+/** File name prefixes of block files besides `block-` (ADRs 0061, 0074, 0075, 0077). */
 const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
-  block: ['trigger-block', 'container', 'machine'],
+  block: ['trigger-block', 'container', 'machine', 'portal'],
 };
 
 /** Schema references of ADR 0060's additions. */
@@ -84,6 +86,10 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     'trigger-entity': MSM_SCHEMA_REFS.entityDefinition,
     container: MSM_SCHEMA_REFS.blockDefinition,
     machine: MSM_SCHEMA_REFS.blockDefinition,
+    portal: MSM_SCHEMA_REFS.blockDefinition,
+    'portal-item': MSM_SCHEMA_REFS.itemDefinition,
+    'portal-entity': MSM_SCHEMA_REFS.entityDefinition,
+    'portal-effect': MSM_SCHEMA_REFS.effectDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -99,6 +105,7 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     'trigger-entity': MSM_SCHEMA_REFS.entity,
     container: MSM_SCHEMA_REFS.block,
     machine: MSM_SCHEMA_REFS.block,
+    portal: MSM_SCHEMA_REFS.block,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -159,6 +166,7 @@ describe('MSM mcdoc symbols', () => {
       'give_item',
       'heal',
       'launch',
+      'light_portal',
       'play_animation',
       'play_sound',
       'run_function',
@@ -269,8 +277,8 @@ describe('MSM conformance corpus coverage', () => {
 
   /**
    * Keys and action types of the valid files of a schema: those whose longest prefix is
-   * `prefix`, plus the `trigger-<prefix>-` files of the same schema (and, for blocks, the
-   * `container-` and `machine-` files).
+   * `prefix`, plus the `trigger-<prefix>-` and `portal-<prefix>-` files of the same schema (and,
+   * for blocks, the `container-`, `machine-` and `portal-` files).
    */
   const covered = (group: Group, prefix: string) => {
     const keys = new Set<string>();
@@ -282,6 +290,7 @@ describe('MSM conformance corpus coverage', () => {
       return (
         own === prefix ||
         own === `trigger-${prefix}` ||
+        own === `portal-${prefix}` ||
         (BLOCK_PREFIXES[prefix] ?? []).includes(own)
       );
     };
@@ -323,8 +332,10 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'container-', 2, 1],
     ['element', 'machine-', 1, 8],
     ['machine-recipe', 'machine-recipe-', 3, 10],
+    ['definition', 'portal-', 8, 30],
+    ['element', 'portal-', 2, 4],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -333,7 +344,7 @@ describe('MSM conformance corpus coverage', () => {
     },
   );
 
-  it.each(['damage', 'heal'])('has valid and invalid %s action cases', (type) => {
+  it.each(['damage', 'heal', 'light_portal'])('has valid and invalid %s action cases', (type) => {
     const uses = (kind: 'valid' | 'invalid') =>
       files('definition', kind).filter((name) =>
         JSON.stringify(read('definition', kind, name)).includes(`"type":"${type}"`),
@@ -388,8 +399,8 @@ describe('MSM conformance corpus coverage', () => {
     expect(missing).toEqual([]);
   });
 
-  describe('ADR 0067 and ADR 0068 block types', () => {
-    /** The 17 block types of ADR 0067 D1 and ADR 0068 D1. */
+  describe('ADR 0067, ADR 0068 and ADR 0077 block types', () => {
+    /** The 17 block types of ADR 0067 D1 and ADR 0068 D1, and ADR 0077's `portal`. */
     const TYPES = [
       'block',
       'button',
@@ -402,6 +413,7 @@ describe('MSM conformance corpus coverage', () => {
       'leaves',
       'pane',
       'pillar',
+      'portal',
       'pressure_plate',
       'sapling',
       'slab',
@@ -410,10 +422,10 @@ describe('MSM conformance corpus coverage', () => {
       'wall',
     ];
 
-    /** `block-type-` files of a group whose `type` is `type`. */
+    /** `block-type-` and `portal-` files of a group whose `type` is `type`. */
     const ofType = (group: Group, kind: 'valid' | 'invalid', type: string): Json[] =>
       files(group, kind)
-        .filter((name) => name.startsWith('block-type-'))
+        .filter((name) => name.startsWith('block-type-') || prefixOf(group, name) === 'portal')
         .map((name) => read(group, kind, name))
         .filter(
           (value) =>

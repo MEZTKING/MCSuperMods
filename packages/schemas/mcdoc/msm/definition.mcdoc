@@ -421,6 +421,10 @@ enum(string) BlockType {
 	Sapling = "sapling",
 	/// Leaves that decay away from logs (ADR 0068 D6).
 	Leaves = "leaves",
+	/// A portal block that fills a lit frame and takes entities to another dimension and back,
+	/// as the Nether portal does (ADR 0077 D1). Runtimes older than the release that ships ADR
+	/// 0077 reject the value.
+	Portal = "portal",
 }
 
 /// A vanilla block set type (ADR 0067 D2): sounds, whether hands open the block (not `iron`),
@@ -546,6 +550,94 @@ dispatch msm:block_type[leaves] to struct LeavesFields {
 	particle_chance?: float @ 0..1,
 	/// The falling leaf particle of untinted leaves; only without `tint`; absent means none.
 	falling_particle?: #[id="particle_type"] string,
+}
+
+/// Where a portal puts its travellers (ADR 0077 D6).
+enum(string) PortalArrival {
+	/// At the nearest linked exit portal of the same block, building one when none is near.
+	Portal = "portal",
+	/// On the first standing spot at the target column, building nothing; with no standing
+	/// spot (a void) as `portal`.
+	Surface = "surface",
+}
+
+/// How a portal moves entities (ADR 0077 D4, D6). Absent fields keep vanilla's behaviour.
+struct PortalTravel {
+	/// Coordinate scale of `destination` against `return_to`, 0.00001 to 30000000; 8 travels as
+	/// the Nether does (one block there is eight here). Defaults to the scale of the two
+	/// dimension types.
+	scale?: double @ 0.00001..30000000,
+	/// Where travellers arrive; defaults to `portal`.
+	arrival?: PortalArrival,
+	/// Ticks a survival player stands in the portal before travelling, 0 to 32767; defaults to
+	/// the gamerule `players_nether_portal_default_delay` (vanilla 80). Creative players keep
+	/// the gamerule `players_nether_portal_creative_delay`; other entities travel at once.
+	delay_ticks?: int @ 0..32767,
+	/// Ticks after arrival before the entity can use a portal again, 0 to 32767; defaults to
+	/// vanilla's.
+	cooldown_ticks?: int @ 0..32767,
+	/// Whether only players travel; defaults to false (items, mobs and vehicles travel too).
+	players_only?: boolean,
+	/// Whether standing in the portal shows vanilla's portal wobble and overlay and plays its
+	/// entry sound; defaults to true. These are the Nether portal's (limit P2 of ADR 0077).
+	overlay?: boolean,
+}
+
+/// Sounds of a portal (ADR 0077 D1); `false` plays none.
+struct PortalSounds {
+	/// Played now and then near the portal; defaults to the target's portal ambient sound.
+	ambient?: (#[id="sound_event"] string | false),
+	/// Played to the traveller on arrival; defaults to the target's portal travel sound.
+	travel?: (#[id="sound_event"] string | false),
+}
+
+/// Particles of a portal (ADR 0077 D4).
+struct PortalParticles {
+	/// A particle type without options; defaults to the target's portal particle. A type that
+	/// takes options is a load error that keeps the default.
+	type?: #[id="particle_type"] string,
+	/// An RGB colour, 0 to 16777215: the portal then spawns dust particles of this colour (the
+	/// portal particle's own colours cannot change; limit P3 of ADR 0077). Only without `type`
+	/// or with `minecraft:dust`.
+	color?: int @ 0..16777215,
+	/// Particles per animation tick, 0 to 16; defaults to 4; 0 spawns none.
+	count?: int @ 0..16,
+}
+
+/// A portal (ADR 0077 D1): a vertical frame of `frame` blocks (an inside of 2 to 21 wide and 3
+/// to 21 high, corners not needed) is lit with `igniter` or the `light_portal` action and fills
+/// with this block, which takes entities to `destination` and back to `return_to`. Unlike other
+/// types, a portal has no block item unless `item` is given, no loot unless `loot_table` is
+/// given, is unbreakable unless `msm:breakable` is given, gives light 11 unless
+/// `msm:light_emitter` is given and sounds as glass unless `sound_type` is given. Only the
+/// components `msm:breakable`, `msm:light_emitter`, `msm:on_break`, `msm:on_place`,
+/// `msm:on_random_tick` and `msm:on_entity_inside` are allowed; the runtime drops any other with
+/// an error. Runtimes older than the release that ships ADR 0077 reject the type.
+dispatch msm:block_type[portal] to struct PortalFields {
+	/// The frame: a block id, or a block tag such as `#mymod:portal_frames` (read when the
+	/// frame is used, so `/reload` updates it).
+	frame: (#[id="block"] string | #[id(registry="block", tags="required")] string),
+	/// The block exit portals are built of; defaults to `frame`, and is required when `frame` is
+	/// a tag.
+	frame_block?: #[id="block"] string,
+	/// The item that lights the frame: an item id or an item tag; defaults to
+	/// `minecraft:flint_and_steel`. A damageable igniter loses one durability, any other is used
+	/// up one at a time, nothing in creative. `false`: only the `light_portal` action lights it.
+	igniter?: (#[id="item"] string | #[id(registry="item", tags="required")] string | false),
+	/// The dimension the portal leads to, a project or vanilla dimension.
+	destination: #[id="dimension"] string,
+	/// The dimension the portal leads back to from `destination`; defaults to
+	/// `minecraft:overworld`. Must differ from `destination`.
+	return_to?: #[id="dimension"] string,
+	/// How entities travel.
+	travel?: PortalTravel,
+	/// The portal's sounds.
+	sounds?: PortalSounds,
+	/// The portal's particles.
+	particles?: PortalParticles,
+	/// An event id declared in `events`, run after arrival at the exit position with the
+	/// traveller as `self` and `other`.
+	on_travel?: string,
 }
 
 /// Runtime block components.

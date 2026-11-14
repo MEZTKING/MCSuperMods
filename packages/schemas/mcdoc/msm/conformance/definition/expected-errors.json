@@ -999,6 +999,154 @@
     "code": "schema.unknown-field",
     "path": "/components/msm:machine/slots"
   },
+  "portal-action-no-portal.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/portal"
+  },
+  "portal-action-portal-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:x/actions/0/portal"
+  },
+  "portal-action-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/events/mymod:x/actions/0/radius"
+  },
+  "portal-ambient-true.json": {
+    "code": "schema.no-union-match",
+    "path": "/sounds/ambient"
+  },
+  "portal-arrival-sky.json": {
+    "code": "schema.invalid-enum",
+    "path": "/travel/arrival"
+  },
+  "portal-color-16777216.json": {
+    "code": "schema.out-of-range",
+    "path": "/particles/color"
+  },
+  "portal-cooldown-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/travel/cooldown_ticks"
+  },
+  "portal-count-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/particles/count"
+  },
+  "portal-count-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/particles/count"
+  },
+  "portal-delay-40000.json": {
+    "code": "schema.out-of-range",
+    "path": "/travel/delay_ticks"
+  },
+  "portal-delay-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/travel/delay_ticks"
+  },
+  "portal-destination-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/destination"
+  },
+  "portal-effect-action-no-portal.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/portal"
+  },
+  "portal-entity-action-no-portal.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/portal"
+  },
+  "portal-fields-on-block.json": {
+    "code": "schema.unknown-field",
+    "path": "/frame"
+  },
+  "portal-fields-on-leaves.json": {
+    "code": "schema.unknown-field",
+    "path": "/on_travel"
+  },
+  "portal-fields-without-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/destination"
+  },
+  "portal-frame-block-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/frame_block"
+  },
+  "portal-frame-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/frame"
+  },
+  "portal-igniter-true.json": {
+    "code": "schema.no-union-match",
+    "path": "/igniter"
+  },
+  "portal-item-action-no-portal.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:x/actions/0/portal"
+  },
+  "portal-max-age.json": {
+    "code": "schema.unknown-field",
+    "path": "/max_age"
+  },
+  "portal-no-destination.json": {
+    "code": "schema.missing-field",
+    "path": "/destination"
+  },
+  "portal-no-frame.json": {
+    "code": "schema.missing-field",
+    "path": "/frame"
+  },
+  "portal-on-travel-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/on_travel"
+  },
+  "portal-overlay-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/travel/overlay"
+  },
+  "portal-particle-type-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/particles/type"
+  },
+  "portal-particles-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/particles/speed"
+  },
+  "portal-players-only-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/travel/players_only"
+  },
+  "portal-return-to-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/return_to"
+  },
+  "portal-scale-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/travel/scale"
+  },
+  "portal-scale-too-big.json": {
+    "code": "schema.out-of-range",
+    "path": "/travel/scale"
+  },
+  "portal-sounds-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/sounds/trigger"
+  },
+  "portal-textures-in-definition.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures"
+  },
+  "portal-travel-sound-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/sounds/travel"
+  },
+  "portal-travel-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/travel/speed"
+  },
+  "portal-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/exit_block"
+  },
   "potion-amplifier-256.json": {
     "code": "schema.out-of-range",
     "path": "/effects/0/amplifier"

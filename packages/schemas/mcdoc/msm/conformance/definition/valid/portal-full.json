@@ -1,0 +1,61 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": -1,
+      "resistance": 3600000
+    },
+    "msm:light_emitter": {
+      "level": 15
+    },
+    "msm:on_entity_inside": {
+      "event": "mymod:hum"
+    }
+  },
+  "destination": "mymod:glimmer",
+  "events": {
+    "mymod:arrived": {
+      "actions": [
+        {
+          "sound": "minecraft:block.amethyst_block.chime",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:hum": {
+      "actions": [
+        {
+          "count": 2,
+          "particle": "minecraft:enchant",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "frame_block": "minecraft:crying_obsidian",
+  "igniter": "minecraft:fire_charge",
+  "item": {
+    "creative_tab": "minecraft:functional_blocks"
+  },
+  "on_travel": "mymod:arrived",
+  "particles": {
+    "count": 8,
+    "type": "minecraft:reverse_portal"
+  },
+  "return_to": "minecraft:the_nether",
+  "sound_type": "amethyst",
+  "sounds": {
+    "ambient": "minecraft:block.beacon.ambient",
+    "travel": "minecraft:block.end_portal.spawn"
+  },
+  "travel": {
+    "arrival": "portal",
+    "cooldown_ticks": 100,
+    "delay_ticks": 40,
+    "overlay": false,
+    "players_only": true,
+    "scale": 8
+  },
+  "type": "portal"
+}

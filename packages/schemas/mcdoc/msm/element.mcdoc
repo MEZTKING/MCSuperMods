@@ -217,6 +217,14 @@ struct LeavesTextures {
 	all?: #[id="texture"] string,
 }
 
+/// Textures of a `portal` (ADR 0077 D8).
+struct PortalTextures {
+	/// The portal surface and its breaking particles; defaults to vanilla's
+	/// `minecraft:block/nether_portal`. An animation sidecar (`.png.mcmeta`) beside a project
+	/// texture is exported with it.
+	portal?: #[id="texture"] string,
+}
+
 /// A count range, `min` to `max` inclusive.
 struct CountRange {
 	min: int @ 0..64,
@@ -359,6 +367,13 @@ dispatch msm:block_type_element[leaves] to struct LeavesElementFields {
 	models?: BlockModels,
 	/// Drops of the `leaves` loot preset.
 	leaves_drops?: LeavesDrops,
+}
+
+/// Element fields of a `portal` (ADR 0077 D8): lowering writes the blockstate and two models
+/// from vanilla's Nether portal models with this texture.
+dispatch msm:block_type_element[portal] to struct PortalElementFields {
+	/// Texture of the generated models.
+	textures?: PortalTextures,
 }
 
 /// `msm:block` element data.

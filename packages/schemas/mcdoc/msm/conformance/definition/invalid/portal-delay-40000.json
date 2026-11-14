@@ -1,0 +1,9 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "travel": {
+    "delay_ticks": 40000
+  },
+  "type": "portal"
+}

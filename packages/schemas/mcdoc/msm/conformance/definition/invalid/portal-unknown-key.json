@@ -1,0 +1,7 @@
+{
+  "destination": "mymod:glimmer",
+  "exit_block": "minecraft:obsidian",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "type": "portal"
+}

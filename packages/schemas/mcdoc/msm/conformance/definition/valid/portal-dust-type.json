@@ -1,0 +1,10 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "particles": {
+    "color": 0,
+    "type": "minecraft:dust"
+  },
+  "type": "portal"
+}

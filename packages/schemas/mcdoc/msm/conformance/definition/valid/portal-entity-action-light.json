@@ -1,0 +1,28 @@
+{
+  "category": "monster",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/warden_of_glimmer",
+      "texture": "mymod:entity/warden_of_glimmer"
+    },
+    "msm:attack": {
+      "damage": 2,
+      "on_attack": "mymod:x"
+    }
+  },
+  "events": {
+    "mymod:x": {
+      "actions": [
+        {
+          "portal": "mymod:glimmer_portal",
+          "type": "light_portal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.8,
+    "width": 0.6
+  }
+}

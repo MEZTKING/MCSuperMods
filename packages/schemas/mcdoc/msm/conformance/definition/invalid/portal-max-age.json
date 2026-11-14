@@ -1,0 +1,7 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "minecraft:crying_obsidian",
+  "max_age": 3,
+  "type": "portal"
+}

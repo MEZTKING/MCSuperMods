@@ -315,6 +315,22 @@
     "code": "schema.missing-field",
     "path": "/version"
   },
+  "portal-models.json": {
+    "code": "schema.unknown-field",
+    "path": "/models"
+  },
+  "portal-no-destination.json": {
+    "code": "schema.missing-field",
+    "path": "/destination"
+  },
+  "portal-texture-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "portal-texture-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/textures/portal"
+  },
   "potion-brewing-no-reagent.json": {
     "code": "schema.missing-field",
     "path": "/brewing/reagent"

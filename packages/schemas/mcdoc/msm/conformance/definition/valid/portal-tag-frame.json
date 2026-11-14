@@ -1,0 +1,8 @@
+{
+  "destination": "mymod:glimmer",
+  "format": 1,
+  "frame": "#mymod:portal_frames",
+  "frame_block": "mymod:glimmer_stone",
+  "igniter": "#mymod:portal_igniters",
+  "type": "portal"
+}
