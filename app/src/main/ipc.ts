@@ -196,6 +196,8 @@ export function createIpcHandlers(
       }),
     [InvokeChannels.aiNewConversation]: (req) => ai.newConversation(req.conversationId),
     [InvokeChannels.aiDropConversation]: (req) => ai.dropConversation(req.conversationId),
+    [InvokeChannels.tryItListWorlds]: () => platform.tryItWorlds.listWorlds(),
+    [InvokeChannels.tryItReadArea]: (req) => platform.tryItWorlds.readArea(req),
     [InvokeChannels.playStatus]: (req) => platform.play.status(req.targetId),
     [InvokeChannels.playPlay]: (req) => platform.play.play(playInput(req)),
     [InvokeChannels.playReload]: (req) =>

@@ -712,6 +712,77 @@ export const playStatusSchema = z
   })
   .strict();
 
+// ---- Try it's worlds (ADR 0087), read-only. ----
+
+/** The most worlds `tryit:listWorlds` returns (mirrors the service's cap). */
+export const TRYIT_WORLDS_MAX = 2000;
+/** The largest world icon returned, in bytes (mirrors the service's cap). */
+export const TRYIT_ICON_MAX_BYTES = 256 * 1024;
+/** The Try it area's cell count: 48 x 32 x 48. */
+export const TRYIT_AREA_CELLS = 48 * 32 * 48;
+/** Block X and Z a typed centre may name (the world border's reach). */
+export const TRYIT_COORDINATE_MAX = 30_000_000;
+
+/** A Try it world id: `<game folder id>/<world folder>` (the service checks it again). */
+const tryItWorldId = z
+  .string()
+  .min(3)
+  .max(600)
+  .regex(/^[A-Za-z0-9_.:-]+\/[^/\\\0:]+$/)
+  .refine((value) => !value.endsWith('/.') && !value.endsWith('/..'), {
+    message: 'Not a world id',
+  });
+const tryItCoordinate = z.number().int().min(-TRYIT_COORDINATE_MAX).max(TRYIT_COORDINATE_MAX);
+const tryItWorldInfo = z
+  .object({
+    id: tryItWorldId,
+    name: z.string().max(1024),
+    folder: worldDir,
+    gameFolder: z
+      .object({ id: z.string().min(1).max(300), name: z.string().max(1024), selected: z.boolean() })
+      .strict(),
+    lastPlayed: z.string().max(64).nullable(),
+    versionName: z.string().max(256).nullable(),
+    dataVersion: z.number().int().nullable(),
+    readable: z.boolean(),
+    icon: bytes.refine((value) => value.length <= TRYIT_ICON_MAX_BYTES).nullable(),
+  })
+  .strict();
+const tryItAreaRequest = z
+  .object({
+    worldId: tryItWorldId,
+    centre: z.union([
+      z.literal('spawn'),
+      z.object({ x: tryItCoordinate, z: tryItCoordinate }).strict(),
+    ]),
+  })
+  .strict();
+const uint16Array = z.custom<Uint16Array>((value) => value instanceof Uint16Array, {
+  message: 'Expected a Uint16Array',
+});
+const tryItWorldArea = z
+  .object({
+    format: z.literal(1),
+    world: z.string().max(1024),
+    dataVersion: z.number().int(),
+    origin: z.object({ x: z.number().int(), y: z.number().int(), z: z.number().int() }).strict(),
+    size: z.object({ x: z.literal(48), y: z.literal(32), z: z.literal(48) }).strict(),
+    palette: z.array(z.string().min(1).max(4096)).min(1).max(65_536),
+    blocks: uint16Array.refine((value) => value.length === TRYIT_AREA_CELLS, {
+      message: 'Wrong cell count',
+    }),
+    skipped: z
+      .object({
+        blockEntities: z.number().int().min(0),
+        entities: z.number().int().min(0),
+        missingChunks: z.number().int().min(0),
+      })
+      .strict(),
+    warnings: z.array(z.string().max(4096)).max(1000),
+  })
+  .strict()
+  .refine((area) => area.palette[0] === 'minecraft:air', { message: 'palette[0] must be air' });
+
 export const ipcContract = {
   [InvokeChannels.projectPickDirectory]: {
     request: z
@@ -1144,6 +1215,11 @@ export const ipcContract = {
       playFailure,
     ]),
   },
+  [InvokeChannels.tryItListWorlds]: {
+    request: noRequest,
+    response: z.array(tryItWorldInfo).max(TRYIT_WORLDS_MAX),
+  },
+  [InvokeChannels.tryItReadArea]: { request: tryItAreaRequest, response: tryItWorldArea },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

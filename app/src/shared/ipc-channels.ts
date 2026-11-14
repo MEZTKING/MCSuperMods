@@ -90,6 +90,9 @@ export const InvokeChannels = {
   playReload: 'msm:v1:play:reload',
   playRestart: 'msm:v1:play:restart',
   playNewWorld: 'msm:v1:play:newWorld',
+  // ADR 0087: Try it's worlds, read-only.
+  tryItListWorlds: 'msm:v1:tryit:listWorlds',
+  tryItReadArea: 'msm:v1:tryit:readArea',
 } as const;
 
 /**

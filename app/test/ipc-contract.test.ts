@@ -77,6 +77,29 @@ const testStatus = {
   canCreateInstance: true,
 };
 
+const tryItWorld = {
+  id: 'official:default/New World',
+  name: 'Castle Build',
+  folder: 'New World',
+  gameFolder: { id: 'official:default', name: 'Official launcher', selected: true },
+  lastPlayed: '2026-11-14T10:00:00.000Z',
+  versionName: '26.3',
+  dataVersion: 4440,
+  readable: true,
+  icon: bytes,
+};
+const tryItArea = {
+  format: 1,
+  world: 'Castle Build',
+  dataVersion: 4440,
+  origin: { x: -24, y: 52, z: -24 },
+  size: { x: 48, y: 32, z: 48 },
+  palette: ['minecraft:air', 'minecraft:stone'],
+  blocks: new Uint16Array(48 * 32 * 48),
+  skipped: { blockEntities: 0, entities: 0, missingChunks: 0 },
+  warnings: [],
+};
+
 const pluginManifest = {
   manifestVersion: 1,
   id: 'sample.greetings',
@@ -729,6 +752,20 @@ const samples: Record<
       { ok: true, renamedTo: '../x' },
     ],
   },
+  [InvokeChannels.tryItListWorlds]: {
+    request: [undefined, { all: true }],
+    response: [
+      [tryItWorld, { ...tryItWorld, id: 'prism:My_Pack/w', icon: null }],
+      [{ ...tryItWorld, folder: '..' }],
+    ],
+  },
+  [InvokeChannels.tryItReadArea]: {
+    request: [
+      { worldId: 'prism:My_Pack/New World', centre: { x: -120, z: 64 } },
+      { worldId: 'prism:My_Pack/..', centre: 'spawn' },
+    ],
+    response: [tryItArea, { ...tryItArea, blocks: new Uint16Array(10) }],
+  },
 };
 
 describe('IPC contract', () => {
@@ -766,6 +803,22 @@ describe('IPC contract', () => {
     expect(withIds({ function: ids(25_000), 'tag/item': ids(25_000) }).success).toBe(true);
     expect(withIds({ function: ids(25_000), 'tag/item': ids(25_001) }).success).toBe(false);
     expect(withIds({ 'Bad Category': [] }).success).toBe(false);
+  });
+
+  it('bounds Try it world ids, centres and areas', () => {
+    const { request, response } = ipcContract[InvokeChannels.tryItReadArea];
+    const ok = (worldId: string, centre: unknown = 'spawn') =>
+      request.safeParse({ worldId, centre }).success;
+    expect(ok('official:default/New World')).toBe(true);
+    expect(ok('prism:My_Pack-2/w', { x: 30_000_000, z: -30_000_000 })).toBe(true);
+    for (const worldId of ['/abs', 'a/b/c', 'a/.', 'a/..', 'a\\b/c', 'a/b\\c', 'a/']) {
+      expect(ok(worldId)).toBe(false);
+    }
+    expect(ok('a/w', { x: 1.5, z: 0 })).toBe(false);
+    expect(ok('a/w', { x: 30_000_001, z: 0 })).toBe(false);
+    expect(ok('a/w', 'origin')).toBe(false);
+    expect(response.safeParse({ ...tryItArea, palette: ['minecraft:stone'] }).success).toBe(false);
+    expect(response.safeParse({ ...tryItArea, size: { x: 16, y: 32, z: 48 } }).success).toBe(false);
   });
 
   it('rejects unsafe world folders and pack names', () => {

@@ -228,6 +228,14 @@ const bridge: MsmBridge = {
       };
     },
   },
+  tryItWorlds: {
+    listWorlds: () => ipcRenderer.invoke(InvokeChannels.tryItListWorlds),
+    readArea: (request) =>
+      ipcRenderer.invoke(InvokeChannels.tryItReadArea, {
+        worldId: request.worldId,
+        centre: request.centre === 'spawn' ? 'spawn' : { x: request.centre.x, z: request.centre.z },
+      }),
+  },
   updates: {
     check: () => ipcRenderer.invoke(InvokeChannels.updatesCheck),
     install: () => ipcRenderer.invoke(InvokeChannels.updatesInstall),

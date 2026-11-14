@@ -227,6 +227,68 @@ export interface WorldInfo {
   lastModified: string;
 }
 
+/**
+ * A world Try it can copy an area from (ADR 0087): a save in the `saves/` folder of a game
+ * folder the app knows.
+ */
+export interface TryItWorldInfo {
+  /** Opaque id for {@link TryItWorldsPlatform.readArea}: `<game folder id>/<world folder>`. */
+  id: string;
+  /** `Data.LevelName`, or the folder name. */
+  name: string;
+  /** The world's folder name under `saves/`. */
+  folder: string;
+  /** The game folder or launcher instance it is in; `selected` for the install target. */
+  gameFolder: { id: string; name: string; selected: boolean };
+  /** ISO 8601: `Data.LastPlayed`, else the modification time of `level.dat`. */
+  lastPlayed: string | null;
+  /** `Data.Version.Name`: the game version that last saved the world. */
+  versionName: string | null;
+  dataVersion: number | null;
+  /** `false` when the world was saved before the 1.18 chunk layout (or `level.dat` is unreadable). */
+  readable: boolean;
+  /** The world's `icon.png` (at most 256 KiB), or `null`. */
+  icon: Uint8Array | null;
+}
+
+/** Where a Try it area is centred: the world spawn, or a typed block X and Z. */
+export type TryItAreaCentre = 'spawn' | { x: number; z: number };
+
+/** What {@link TryItWorldsPlatform.readArea} takes. */
+export interface TryItAreaRequest {
+  worldId: string;
+  centre: TryItAreaCentre;
+}
+
+/**
+ * Mirrors `WorldArea` in `@msm/interop` (ADR 0087 D5): a 48 x 32 x 48 area of a save's
+ * Overworld. `palette[0]` is `minecraft:air`; `blocks` is indexed
+ * `(y * size.z + z) * size.x + x`.
+ */
+export interface TryItWorldArea {
+  format: 1;
+  world: string;
+  dataVersion: number;
+  origin: { x: number; y: number; z: number };
+  size: { x: 48; y: 32; z: 48 };
+  palette: string[];
+  blocks: Uint16Array;
+  skipped: { blockEntities: number; entities: number; missingChunks: number };
+  warnings: string[];
+}
+
+/** Try it's worlds (ADR 0087), read-only and served by main. */
+export interface TryItWorldsPlatform {
+  /** Worlds in every known game folder's `saves/`, most recently played first. */
+  listWorlds(): Promise<TryItWorldInfo[]>;
+  /**
+   * Reads the area of a listed world. Rejects with a message containing
+   * `tryit.<code>: <sentence>`; codes `unknown-world`, `no-level-dat`, `unreadable-level-dat`,
+   * `old-format`, `read-failed`, `too-many-states`.
+   */
+  readArea(request: TryItAreaRequest): Promise<TryItWorldArea>;
+}
+
 /** Ids the project declares per Spyglass symbol category, for the mcfunction checker. */
 export type McfunctionProjectIds = Record<string, string[]>;
 
@@ -966,6 +1028,11 @@ export interface PlatformAdapter {
    * test doubles written before it may omit it.
    */
   play?: PlayPlatform;
+  /**
+   * Try it's worlds (ADR 0087). The preload always provides it; optional so that test doubles
+   * written before it may omit it.
+   */
+  tryItWorlds?: TryItWorldsPlatform;
 }
 
 /** What the preload exposes as `window.msm`: the adapter plus window-level events. */

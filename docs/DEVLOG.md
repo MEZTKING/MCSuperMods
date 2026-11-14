@@ -4704,3 +4704,19 @@ Decisions
 Next
 - Re-enabling a copied book's rules defines its handlers twice (`scripting.duplicate-handler` warns) and its events run twice; a note on the Rule book, or "Copy" removing the rules instead of turning them off, is for the orchestrator to decide.
 - The copied script keeps the `// rule:<key>` markers and `const BOOK`; the sim's `readScripts` may still name those rules from the markers (harmless; B398 may want to ignore scripts that are not under `rules/`).
+
+## 2026-11-14 — executor — B404 Try it worlds: read an area of the user's own save
+
+What
+- `@msm/interop` `world/` (ADR 0087): `region.ts` (`locateChunk`, `decompressChunk` for gzip, zlib and uncompressed, external `.mcc` chunks, LZ4 and custom reported as unsupported; `fflateInflate`), `chunk.ts` (`parseChunk` for the 1.18+ layout, `blockStateString` with sorted properties, `bitsForPalette` = max(4, ceil(log2 n)), `sectionIndexAt` over `[hi, lo]` long pairs, `parseEntityChunk`), `level.ts` (`readLevelSummary`: name, data version, version name, last played, spawn from `Data.spawn` or `SpawnX/Z`), `area.ts` (`readWorldArea(readFile, worldDir, { centre, inflate })` returning `WorldArea`, `WorldReadError` codes `no-level-dat`, `unreadable-level-dat`, `old-format`, `read-failed`, `too-many-states`).
+- App main `platform/try-it-worlds.ts` (`createTryItWorldsService`; Node zlib; real-path containment of the world, `saves/`, game and instance folders and every file read), channels `msm:v1:tryit:listWorlds` and `msm:v1:tryit:readArea` with zod schemas, preload `window.msm.tryItWorlds`, `PlatformAdapter.tryItWorlds?` and the mirrored types `TryItWorldInfo`, `TryItAreaRequest`, `TryItAreaCentre`, `TryItWorldArea`.
+- Tests: `packages/interop/test/world/` (a small Anvil encoder builds region files, chunk NBT and `level.dat` at test time; palette sizes 1, 2, 17 and 300, an area over four regions, missing and partly generated chunks, gzip, uncompressed, external and LZ4 chunks, old data version and old chunks, height clamp at both ends, spawn and typed centres, counted block entities and entities, read failures); `app/test/main/try-it-worlds.test.ts` (listing, spawn centre, symlinked worlds and region files refused, unknown ids, the managed instance, both handlers); contract samples. Reading a 48 by 48 area over four regions takes about 17 to 20 ms in the test.
+
+Decisions
+- ADR 0087 (0086 was left for "Surprise me"): three grounds (Grid default, Flat world, From my world), read-only in main, Overworld only, data version 2844 as the first readable layout, `cave_air` and `void_air` read as air, chunks not fully generated read as air, errors as `tryit.<code>: <sentence>`.
+- The managed Play instance is added from Play's last reported game folder; discovery usually lists it already, and duplicates are removed by real path.
+
+Next
+- B405: the Try it picker (grounds, world list with icons, spawn or X/Z), the flat preset and loading a `WorldArea` into the sim world.
+- The spawn compound's field names (`Data.spawn.pos`, `dimension`) to be checked against a real 26.x save (verify at implementation).
+- Later: the Nether, the End and custom dimensions; LZ4 chunks.

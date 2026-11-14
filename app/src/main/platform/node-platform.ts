@@ -37,6 +37,7 @@ import { createSettingsStore, type SettingsStore } from './settings';
 import { createTargetsService } from './targets';
 import { createTestInMinecraftService } from './test-in-minecraft';
 import { createThumbnailService } from './thumbnails';
+import { createTryItWorldsService, type TryItWorldsService } from './try-it-worlds';
 
 /**
  * Writes `data` to `path` through a temporary file in the same folder, then renames it into
@@ -177,6 +178,8 @@ export interface MainPlatform
   modpacks: ModpackService;
   /** One-click Play and Reload (ADR 0084); the IPC layer serves `play:*` from it. */
   play: PlayService;
+  /** Try it's worlds (ADR 0087), read-only; the IPC layer serves `tryit:*` from it. */
+  tryItWorlds: TryItWorldsService;
 }
 
 /**
@@ -288,6 +291,11 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   let playGameDir: string | null = null;
   play.onStatus((status) => {
     if (status.gameDir !== null) playGameDir = status.gameDir;
+  });
+  // ADR 0087: Try it reads areas of saves in the known game folders and the Play instance.
+  const tryItWorlds = createTryItWorldsService({
+    locations,
+    managedGameDir: () => playGameDir,
   });
   const modpacks = createModpackService({
     settings,
@@ -483,6 +491,7 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     scripting,
     testInMinecraft,
     play,
+    tryItWorlds,
     modpacks,
     thumbnails: createThumbnailService({ projectFs: active, resizePng: deps.resizePng }),
     project: {

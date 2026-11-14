@@ -7,7 +7,8 @@
  * (Phase 3) `nbt/` (`readLevelName` for `level.dat`) and (Phase 4) `fabric/` (Test in Minecraft:
  * mods-folder installs, the managed Prism instance, Fabric API download cache, launch
  * arguments; ADR 0026 D5) and (Phase 5) `blockbench/` (`.bbmodel` to GeckoLib geometry and
- * animations, the `blockbench` importer; ADR 0029 D3). This entry point
+ * animations, the `blockbench` importer; ADR 0029 D3) and `world/` (a read-only area of a save's
+ * Overworld for Try it; ADR 0087). This entry point
  * stays free of Node built-ins; the Node adapter lives under `@msm/interop/node`.
  */
 
@@ -18,3 +19,4 @@ export * from './minecraft-install/index';
 export * from './modrinth/index';
 export * from './nbt/index';
 export { PngFormatError, type PngHeader, readPngHeader } from './png';
+export * from './world/index';
