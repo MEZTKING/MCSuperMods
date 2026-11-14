@@ -30,7 +30,11 @@
       "dev.mcsupermods.runtime.gametest.MsmMobBreedingGameTest",
       "dev.mcsupermods.runtime.gametest.MsmMobRidingGameTest",
       "dev.mcsupermods.runtime.gametest.MsmMobVariantGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmMobBossBarGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmMobBossBarGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmContainerGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMachineGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMachineRecipeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmContainerScriptGameTest"
     ]
   },
   "depends": {

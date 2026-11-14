@@ -3228,3 +3228,10 @@ What: the e2e `creator-path` failed twice in CI (run 43584499771) when a toolbar
 Decisions: fix the product, not only the test: a tooltip covering other UI after a click is a real annoyance.
 
 Next: `SchemaForm.tsx` has its own `Tooltip.Provider`; check whether its buttons that open dialogs need the same hold.
+## 2026-11-14 — executor — B309 stubs
+
+What: Registered the containers-and-machines batch's test classes ahead of time (PLAN-containers-machines, "stubs first"). Four empty GameTest classes (`MsmContainerGameTest`, `MsmMachineGameTest`, `MsmMachineRecipeGameTest`, `MsmContainerScriptGameTest`) and the empty `SampleMachinesParityTest`, each with an entry point in the matching `fabric.mod.json`; the parity description's filter list gains `sample_machines_*`. GameTests stay at 309 per variant (26.3, 26.4, without GeckoLib); both parity builds are green.
+
+Decisions: The classes have no methods and no imports, so they cannot affect any variant. Javadoc names the ADR and the brief that fills each (B314, B316, B317, B325).
+
+Next: B310–B313 (wave 1) fill nothing here; B314, B316, B317 and B325 add test bodies without touching either `fabric.mod.json`.
