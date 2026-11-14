@@ -1,8 +1,9 @@
 /**
  * Output path helpers for blocks and items lowering. Vanilla folder names always come from the
  * target (`target.folders.resource`, `target.folders.data`), never from this plugin; the
- * runtime folders (`msm/<ns>/block/`, `msm/<ns>/item/`, `msm/<ns>/effect/`) are fixed by
- * ADR 0025 D1 and ADR 0055 D2. A copy of the other plugins' helpers, because
+ * runtime folders (`msm/<ns>/block/`, `msm/<ns>/item/`, `msm/<ns>/effect/`,
+ * `msm/<ns>/biome_addition/`, `msm/<ns>/loot_addition/`) are fixed by ADR 0025 D1, ADR 0055 D2
+ * and ADR 0060 D2, D3. A copy of the other plugins' helpers, because
  * `@msm/plugin-api` holds interfaces only.
  */
 import type {
@@ -80,12 +81,15 @@ export function dataPath(
   return `data/${namespace}/${target.folders.data[key]}/${path}.json`;
 }
 
-/** A runtime definition folder under `msm/<namespace>/` (ADR 0025 D1, ADR 0055 D2). */
-export type DefinitionFolder = 'block' | 'item' | 'effect';
+/**
+ * A runtime definition folder under `msm/<namespace>/` (ADR 0025 D1, ADR 0055 D2, ADR 0060 D2,
+ * D3).
+ */
+export type DefinitionFolder = 'block' | 'item' | 'effect' | 'biome_addition' | 'loot_addition';
 
 /**
- * The runtime definition path `msm/<namespace>/<block|item|effect>/<path>.json` (ADR 0025 D1,
- * ADR 0055 D2).
+ * The runtime definition path `msm/<namespace>/<folder>/<path>.json` (ADR 0025 D1, ADR 0055 D2,
+ * ADR 0060 D2, D3).
  */
 export function definitionPath(kind: DefinitionFolder, namespace: string, path: string): string {
   return `msm/${namespace}/${kind}/${path}.json`;

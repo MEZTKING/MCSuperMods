@@ -1,0 +1,114 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.5,
+          "resistance": 0.5
+        },
+        "msm:on_break": {
+          "event": "demo:sample_broken"
+        },
+        "msm:on_entity_inside": {
+          "cooldown_ticks": 20,
+          "event": "demo:sample_bounce"
+        },
+        "msm:shape": {
+          "boxes": [
+            [
+              0,
+              0,
+              0,
+              16,
+              1,
+              16
+            ]
+          ]
+        }
+      },
+      "events": {
+        "demo:sample_bounce": {
+          "actions": [
+            {
+              "direction": "up",
+              "strength": 0,
+              "type": "launch",
+              "up": 1.2
+            },
+            {
+              "sound": "minecraft:block.slime_block.fall",
+              "type": "play_sound"
+            }
+          ]
+        },
+        "demo:sample_broken": {
+          "actions": [
+            {
+              "sound": "minecraft:block.slime_block.break",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:redstone_blocks"
+      },
+      "sound_type": "slime_block"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/slime_block"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/slime_block",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

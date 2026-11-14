@@ -6,8 +6,11 @@
  *   missing-model cube and gets no block state or item model definition.
  * - `blocks-items.unknown-event` (error): an `event` field of a trigger component
  *   (`msm:on_interact`, `msm:on_step`, `msm:on_use`, the `on_powered` and `on_unpowered` of
- *   `msm:redstone`, the `on_hit_entity` and `on_hit_block` of `msm:throwable` (ADR 0056), and
- *   an effect's `msm:on_start`, `msm:on_tick` and `msm:on_end` (ADR 0055 D12)) or a
+ *   `msm:redstone`, the `on_hit_entity` and `on_hit_block` of `msm:throwable` (ADR 0056), an
+ *   effect's `msm:on_start`, `msm:on_tick` and `msm:on_end` (ADR 0055 D12), the block triggers
+ *   `msm:on_break`, `msm:on_place`, `msm:on_random_tick`, `msm:on_entity_inside` and the item
+ *   triggers `msm:on_hit`, `msm:on_use_on_block`, `msm:while_held`, `msm:while_worn` (ADR 0061
+ *   D1, D2; the entity triggers are `entities.unknown-event`'s)) or a
  *   `trigger_event` action naming an event the element does not declare.
  *   A `run_script` action (ADR 0032 D4) names a script handler, not an event, so it is never
  *   an event reference; `scripting.unknown-handler` of `@msm/plugin-scripting` checks it.
@@ -57,6 +60,33 @@
  * - `blocks-items.transparent-texture-on-solid-block` (warning, ADR 0059 D4): reported by the
  *   app, which knows texture pixels; this package only owns the code and the problem's wording
  *   ({@link transparentTextureProblem}) and {@link isSeeThroughBlock}.
+ * - `blocks-items.while-worn-without-armor` (error, ADR 0061 D1): an item with `msm:while_worn`
+ *   but no `msm:armor`, so it is never worn in an armour slot and the trigger never fires.
+ * - `blocks-items.entity-inside-solid-block` (warning, ADR 0061 D2): a block with
+ *   `msm:on_entity_inside` whose shape is the full solid cube (no `msm:shape`, or one whose
+ *   boxes are the single full cube and whose `collision` is not `false`): no entity can be
+ *   inside it, so the trigger never fires.
+ * - `blocks-items.fast-tick-trigger` (info, ADR 0061 D4): a repeating trigger (`msm:while_held`,
+ *   `msm:while_worn`, `msm:on_entity_inside`, an entity's `msm:on_tick`) with an interval under
+ *   20 ticks whose event, or an event it triggers, runs `run_function` or `run_script`.
+ * - `blocks-items.spawn-group-size` (error, ADR 0060 D2): a biome addition spawn whose
+ *   `max_group` is below its `min_group`; the game rejects the spawn entry.
+ * - `blocks-items.duplicate-biome-feature` (warning, ADR 0060 D2): a placed feature that a
+ *   project biome lists and that a biome addition naming that biome by id adds again, so it
+ *   generates twice.
+ * - `blocks-items.bad-loot-pool` (error, ADR 0060 D3): a loot addition pool that is not an
+ *   object with `rolls` (a number or a number provider object) and a non-empty `entries` list
+ *   of objects with a string `type`; the runtime skips such a pool with a logged error. The
+ *   format types pools as `any` (an mcdoc limit), so this is the plugin's structural check;
+ *   the full check against the target's vanilla pool schema needs the host's schema index,
+ *   which validators do not receive.
+ * - `blocks-items.unknown-loot-item` (warning, ADR 0060 D3): a loot addition pool entry of
+ *   type `minecraft:item` whose `name` is neither a vanilla nor a project item. The schema
+ *   checks the `tables` ids and a biome addition's `biomes`, `feature` and `entity` ids
+ *   (`schema.unknown-id`), so no validator repeats them.
+ * - `blocks-items.component-conflict` also covers the element-only `fuel` and `compost` of an
+ *   item or a block item (ADR 0060 D4) against `msm:components` entries for
+ *   `cooking_fuel` and `compostable`.
  */
 import type {
   Element,
@@ -66,10 +96,17 @@ import type {
   ProjectValidator,
   ValidationRegistry,
 } from '@msm/plugin-api';
-import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, MOD_KIND } from './kinds';
+import {
+  BIOME_ADDITION_KIND,
+  BLOCK_KIND,
+  EFFECT_KIND,
+  ITEM_KIND,
+  LOOT_ADDITION_KIND,
+  MOD_KIND,
+} from './kinds';
 import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
-import { SHAPE_COMPONENT } from './lowering/shape';
+import { FULL_CUBE, lowerShapeInPlace, SHAPE_COMPONENT, shapeOf } from './lowering/shape';
 import { rangedPullModels } from './lowering/shared';
 import { incorrectForTierTag, toolTierName } from './lowering/tools';
 
@@ -107,6 +144,13 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.passthrough-needs-data-pack',
   'blocks-items.model-not-cube',
   'blocks-items.transparent-texture-on-solid-block',
+  'blocks-items.while-worn-without-armor',
+  'blocks-items.entity-inside-solid-block',
+  'blocks-items.fast-tick-trigger',
+  'blocks-items.spawn-group-size',
+  'blocks-items.duplicate-biome-feature',
+  'blocks-items.bad-loot-pool',
+  'blocks-items.unknown-loot-item',
 ] as const);
 
 /** The code of the app-side texture warning (ADR 0059 D4). */
@@ -169,7 +213,8 @@ export const THROWABLE_CONFLICTS: readonly string[] = Object.freeze([
 /**
  * The vanilla data components (unprefixed ids) each MSM item component sets, so an
  * `msm:components` entry for one of them clashes (ADR 0044 D1). Keys are component ids under
- * `components`, or the top-level fields `max_stack_size` and `rarity`. Every id is checked
+ * `components`, or the top-level fields `max_stack_size`, `rarity` and the element-only `fuel`
+ * and `compost` (ADR 0060 D4; also on a block's `item`). Every id is checked
  * against each built-in target's `data_component_type` registry in the tests.
  */
 export const MSM_VANILLA_COMPONENTS: Readonly<Record<string, readonly string[]>> = Object.freeze({
@@ -182,6 +227,8 @@ export const MSM_VANILLA_COMPONENTS: Readonly<Record<string, readonly string[]>>
   'msm:durability': ['max_damage'],
   'msm:shield': ['blocks_attacks'],
   'msm:death_protection': ['death_protection'],
+  fuel: ['cooking_fuel'],
+  compost: ['compostable'],
 });
 
 /** Extra vanilla components an `msm:tool` of type spear sets (vanilla's spear attack). */
@@ -221,11 +268,19 @@ const EVENT_FIELDS: Readonly<Record<string, readonly (readonly string[])[]>> = {
     ['msm:on_step', 'event'],
     ['msm:redstone', 'on_powered'],
     ['msm:redstone', 'on_unpowered'],
+    ['msm:on_break', 'event'],
+    ['msm:on_place', 'event'],
+    ['msm:on_random_tick', 'event'],
+    ['msm:on_entity_inside', 'event'],
   ],
   [ITEM_KIND]: [
     ['msm:on_use', 'event'],
     ['msm:throwable', 'on_hit_entity', 'event'],
     ['msm:throwable', 'on_hit_block', 'event'],
+    ['msm:on_hit', 'event'],
+    ['msm:on_use_on_block', 'event'],
+    ['msm:while_held', 'event'],
+    ['msm:while_worn', 'event'],
   ],
   [EFFECT_KIND]: [
     ['msm:on_start', 'event'],
@@ -536,9 +591,38 @@ function throwableConflicts(element: Element, components: JsonObject): Problem[]
   return problems;
 }
 
+/** The top-level fields of a block item that set vanilla components (ADR 0060 D4). */
+const BLOCK_ITEM_SETTERS: readonly string[] = ['max_stack_size', 'rarity', 'fuel', 'compost'];
+
+/** A block item's `msm:components` entries that its own fields already set. */
+function blockItemConflicts(element: Element): Problem[] {
+  const item = record(dataOf(element).item);
+  const passthrough = record(record(item?.components)?.['msm:components']);
+  if (item === undefined || passthrough === undefined) return [];
+  const setters = new Map<string, string>();
+  for (const setter of BLOCK_ITEM_SETTERS) {
+    if (item[setter] === undefined) continue;
+    for (const id of MSM_VANILLA_COMPONENTS[setter] ?? []) setters.set(id, setter);
+  }
+  const problems: Problem[] = [];
+  for (const key of Object.keys(passthrough).sort()) {
+    const setter = setters.get(vanillaComponentId(key));
+    if (setter === undefined) continue;
+    problems.push({
+      severity: 'error',
+      code: 'blocks-items.component-conflict',
+      elementId: element.id,
+      path: pointer('item', 'components', 'msm:components', key),
+      message: `The block item's "${setter}" field and the "msm:components" entry "${key}" both set the vanilla "${vanillaComponentId(key)}" component; the "${setter}" field wins. Remove "${key}" from "msm:components" or remove the "${setter}" field.`,
+    });
+  }
+  return problems;
+}
+
 function componentConflicts(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
   for (const element of elements) {
+    if (element.kind === BLOCK_KIND) problems.push(...blockItemConflicts(element));
     if (element.kind !== ITEM_KIND) continue;
     const data = dataOf(element);
     const components = record(data.components) ?? {};
@@ -732,6 +816,277 @@ function modelsNotCube(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Triggers (ADR 0061)
+
+/** Kind id of mobs, contributed by `@msm/plugin-entities`: its `msm:on_tick` repeats too. */
+const ENTITY_KIND = 'msm:entity';
+
+function whileWornWithoutArmor(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== ITEM_KIND) continue;
+    const components = record(dataOf(element).components);
+    if (components?.['msm:while_worn'] === undefined || components['msm:armor'] !== undefined) {
+      continue;
+    }
+    problems.push({
+      severity: 'error',
+      code: 'blocks-items.while-worn-without-armor',
+      elementId: element.id,
+      path: pointer('components', 'msm:while_worn'),
+      message:
+        '"msm:while_worn" fires while the item is worn in its armour slot, but this item has no "msm:armor", so it can never be worn. Add "msm:armor" or use "msm:while_held" instead.',
+    });
+  }
+  return problems;
+}
+
+const isFullCubeBox = (box: Json | undefined): boolean =>
+  Array.isArray(box) && box.length === 6 && box.every((value, i) => value === FULL_CUBE[i]);
+
+/**
+ * Whether an entity can be inside a block once lowered (ADR 0061 D2): its shape is not the
+ * single full cube, or it is walk-through (`collision: false`).
+ */
+export function canContainEntities(data: Json | undefined): boolean {
+  const shape = shapeOf(data);
+  if (shape === undefined) return false;
+  const lowered = structuredClone(shape);
+  lowerShapeInPlace(lowered);
+  if (lowered.collision === false) return true;
+  const boxes = lowered.boxes;
+  if (!Array.isArray(boxes) || boxes.length === 0) return false;
+  return !(boxes.length === 1 && isFullCubeBox(boxes[0]));
+}
+
+function entityInsideSolidBlocks(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== BLOCK_KIND) continue;
+    const data = dataOf(element);
+    if (record(data.components)?.['msm:on_entity_inside'] === undefined) continue;
+    if (canContainEntities(data)) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'blocks-items.entity-inside-solid-block',
+      elementId: element.id,
+      path: pointer('components', 'msm:on_entity_inside'),
+      message:
+        'This block is a full solid cube, so no entity can be inside it and "msm:on_entity_inside" never fires. Give the block a smaller shape (for example the "carpet" or "slab_bottom" preset) or make it walk-through.',
+    });
+  }
+  return problems;
+}
+
+/** The repeating triggers with an interval, per kind: `[component, interval field]`. */
+const TICK_TRIGGERS: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+  [ITEM_KIND]: [
+    ['msm:while_held', 'interval_ticks'],
+    ['msm:while_worn', 'interval_ticks'],
+  ],
+  [BLOCK_KIND]: [['msm:on_entity_inside', 'cooldown_ticks']],
+  [ENTITY_KIND]: [['msm:on_tick', 'interval_ticks']],
+};
+
+/** The interval a repeating trigger defaults to (ADR 0061 D4). */
+const DEFAULT_TICK_INTERVAL = 20;
+/** Actions whose cost makes a fast trigger worth an info (ADR 0061 D4). */
+const COSTLY_ACTIONS: ReadonlySet<string> = new Set(['run_function', 'run_script']);
+
+/**
+ * The first costly action type that `event` runs, following `trigger_event` actions within
+ * the element, or `undefined`.
+ */
+function costlyAction(events: JsonObject, event: string): string | undefined {
+  const seen = new Set<string>();
+  const queue = [event];
+  while (queue.length > 0) {
+    const name = queue.shift() as string;
+    if (seen.has(name)) continue;
+    seen.add(name);
+    const actions = record(events[name])?.actions;
+    if (!Array.isArray(actions)) continue;
+    for (const action of actions) {
+      const type = record(action)?.type;
+      if (typeof type !== 'string') continue;
+      const bare = type.startsWith('msm:') ? type.slice('msm:'.length) : type;
+      if (COSTLY_ACTIONS.has(bare)) return bare;
+      const next = record(action)?.event;
+      if (bare === 'trigger_event' && typeof next === 'string') queue.push(next);
+    }
+  }
+  return undefined;
+}
+
+function fastTickTriggers(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    const triggers = TICK_TRIGGERS[element.kind];
+    if (triggers === undefined) continue;
+    const data = dataOf(element);
+    const components = record(data.components);
+    const events = record(data.events) ?? {};
+    for (const [component, field] of triggers) {
+      const trigger = record(components?.[component]);
+      const interval = trigger?.[field];
+      const event = trigger?.event;
+      if (typeof interval !== 'number' || interval >= DEFAULT_TICK_INTERVAL) continue;
+      if (typeof event !== 'string') continue;
+      const action = costlyAction(events, event);
+      if (action === undefined) continue;
+      problems.push({
+        severity: 'info',
+        code: 'blocks-items.fast-tick-trigger',
+        elementId: element.id,
+        path: pointer('components', component, field),
+        message: `"${component}" fires every ${interval} ticks and its event runs "${action}", which costs more than other actions. With many of these in the world the game can slow down; consider ${DEFAULT_TICK_INTERVAL} ticks or more.`,
+      });
+    }
+  }
+  return problems;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Additions to vanilla content (ADR 0060)
+
+/** Kind id of biomes, contributed by `@msm/plugin-worldgen`. */
+const BIOME_KIND = 'minecraft:worldgen/biome';
+
+function spawnGroupSizes(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== BIOME_ADDITION_KIND) continue;
+    const spawns = dataOf(element).spawns;
+    if (!Array.isArray(spawns)) continue;
+    spawns.forEach((spawn, index) => {
+      const min = record(spawn)?.min_group;
+      const max = record(spawn)?.max_group;
+      if (typeof min !== 'number' || typeof max !== 'number' || max >= min) return;
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.spawn-group-size',
+        elementId: element.id,
+        path: pointer('spawns', index, 'max_group'),
+        message: `The largest group (${max}) is smaller than the smallest group (${min}), so the game rejects this spawn. Make "max_group" at least ${min}.`,
+      });
+    });
+  }
+  return problems;
+}
+
+/** Every placed feature id a project biome lists, in any step (tags and inline ones skipped). */
+function biomeFeatureIds(biome: Element): Set<string> {
+  const ids = new Set<string>();
+  const steps = dataOf(biome).features;
+  if (!Array.isArray(steps)) return ids;
+  for (const step of steps) {
+    if (!Array.isArray(step)) continue;
+    for (const entry of step) {
+      if (typeof entry === 'string' && !entry.startsWith('#')) ids.add(namespacedId(entry));
+    }
+  }
+  return ids;
+}
+
+function duplicateBiomeFeatures(elements: readonly Element[]): Problem[] {
+  const biomes = new Map<string, Set<string>>(
+    elements
+      .filter((element) => element.kind === BIOME_KIND)
+      .map((element) => [element.id, biomeFeatureIds(element)]),
+  );
+  if (biomes.size === 0) return [];
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== BIOME_ADDITION_KIND) continue;
+    const data = dataOf(element);
+    const named = Array.isArray(data.biomes)
+      ? data.biomes.filter(
+          (biome): biome is string => typeof biome === 'string' && !biome.startsWith('#'),
+        )
+      : [];
+    const features = Array.isArray(data.features) ? data.features : [];
+    features.forEach((entry, index) => {
+      const feature = record(entry)?.feature;
+      if (typeof feature !== 'string') return;
+      const id = namespacedId(feature);
+      for (const biome of named) {
+        if (biomes.get(namespacedId(biome))?.has(id) !== true) continue;
+        problems.push({
+          severity: 'warning',
+          code: 'blocks-items.duplicate-biome-feature',
+          elementId: element.id,
+          path: pointer('features', index, 'feature'),
+          message: `Biome "${namespacedId(biome)}" of this project already lists "${id}", and this addition adds it to that biome again, so it generates twice. Remove it from the biome or from this addition.`,
+        });
+      }
+    });
+  }
+  return problems;
+}
+
+/** Why a loot pool cannot be decoded, or `undefined` when its outline is sound. */
+function badPoolReason(pool: Json): { path: (string | number)[]; reason: string } | undefined {
+  const fields = record(pool);
+  if (fields === undefined) return { path: [], reason: 'a pool must be an object' };
+  const rolls = fields.rolls;
+  if (rolls === undefined) return { path: [], reason: 'the pool has no "rolls"' };
+  if (typeof rolls !== 'number' && record(rolls) === undefined) {
+    return { path: ['rolls'], reason: '"rolls" must be a number or a number provider' };
+  }
+  const entries = fields.entries;
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return { path: ['entries'], reason: '"entries" must be a list with at least one entry' };
+  }
+  for (const [index, entry] of entries.entries()) {
+    if (typeof record(entry)?.type !== 'string') {
+      return { path: ['entries', index], reason: 'every entry needs a "type"' };
+    }
+  }
+  return undefined;
+}
+
+const ITEM_ENTRY_TYPES: ReadonlySet<string> = new Set(['item', 'minecraft:item']);
+
+function lootAdditionPools(elements: readonly Element[], registry: ValidationRegistry): Problem[] {
+  const checkItems = registry.ids('item').length > 0;
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== LOOT_ADDITION_KIND) continue;
+    const pools = dataOf(element).pools;
+    if (!Array.isArray(pools)) continue;
+    pools.forEach((pool, index) => {
+      const bad = badPoolReason(pool);
+      if (bad !== undefined) {
+        problems.push({
+          severity: 'error',
+          code: 'blocks-items.bad-loot-pool',
+          elementId: element.id,
+          path: pointer('pools', index, ...bad.path),
+          message: `This pool cannot be added: ${bad.reason}. The game skips it and logs an error.`,
+        });
+        return;
+      }
+      if (!checkItems) return;
+      const entries = record(pool)?.entries as Json[];
+      entries.forEach((entry, entryIndex) => {
+        const fields = record(entry);
+        const name = fields?.name;
+        if (!ITEM_ENTRY_TYPES.has(fields?.type as string) || typeof name !== 'string') return;
+        if (registry.has('item', namespacedId(name))) return;
+        problems.push({
+          severity: 'warning',
+          code: 'blocks-items.unknown-loot-item',
+          elementId: element.id,
+          path: pointer('pools', index, 'entries', entryIndex, 'name'),
+          message: `Item "${name}" is neither a vanilla item nor an item of this project, so this entry drops nothing. Pick an existing item.`,
+        });
+      });
+    });
+  }
+  return problems;
+}
+
 const DEFINITION_KINDS = [BLOCK_KIND, ITEM_KIND] as const;
 const EVENT_KINDS = [BLOCK_KIND, ITEM_KIND, EFFECT_KIND] as const;
 
@@ -798,7 +1153,37 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
   },
   {
     id: 'msm.blocks-items.component-conflict',
-    kinds: [ITEM_KIND],
+    kinds: DEFINITION_KINDS,
     validate: ({ elements }) => componentConflicts(elements),
+  },
+  {
+    id: 'msm.blocks-items.while-worn',
+    kinds: [ITEM_KIND],
+    validate: ({ elements }) => whileWornWithoutArmor(elements),
+  },
+  {
+    id: 'msm.blocks-items.entity-inside',
+    kinds: [BLOCK_KIND],
+    validate: ({ elements }) => entityInsideSolidBlocks(elements),
+  },
+  {
+    id: 'msm.blocks-items.fast-tick-trigger',
+    kinds: [BLOCK_KIND, ITEM_KIND, ENTITY_KIND],
+    validate: ({ elements }) => fastTickTriggers(elements),
+  },
+  {
+    id: 'msm.blocks-items.spawn-group-size',
+    kinds: [BIOME_ADDITION_KIND],
+    validate: ({ elements }) => spawnGroupSizes(elements),
+  },
+  {
+    id: 'msm.blocks-items.duplicate-biome-feature',
+    kinds: [BIOME_ADDITION_KIND, BIOME_KIND],
+    validate: ({ elements }) => duplicateBiomeFeatures(elements),
+  },
+  {
+    id: 'msm.blocks-items.loot-pool',
+    kinds: [LOOT_ADDITION_KIND],
+    validate: ({ elements, registry }) => lootAdditionPools(elements, registry),
   },
 ] satisfies ProjectValidator[]);

@@ -2,8 +2,9 @@
  * Lowering of `msm:block` (ADR 0025 D1, D5): the runtime definition plus the reloadable
  * vanilla files the editor-only fields stand for.
  */
-import type { Element, Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
+import type { Element, Json, JsonObject, OutputFile, Target, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
+import { lowerFuelAndCompostInPlace } from './fuel';
 import {
   assetPath,
   BlocksItemsLoweringError,
@@ -68,13 +69,19 @@ function readEditorFields(data: JsonObject): BlockEditorFields {
  * `tool` and `min_tier` of `msm:breakable` and the `preset` of `msm:shape`, whose boxes it
  * writes instead (ADR 0059 D2). A tool or tier sets `requires_tool: true`
  * unless the element sets `requires_tool` itself; a `loot` id becomes `loot_table` unless one
- * is set; `format` is always the format this plugin writes.
+ * is set; `format` is always the format this plugin writes. The block item's element-only
+ * `fuel` and `compost` (ADR 0060 D4) become vanilla components in its `msm:components`.
  *
  * @param element - An `msm:block` element.
+ * @param target - The target supplying the compost providers.
  * @returns The definition, a fresh object.
- * @throws {@link BlocksItemsLoweringError} If the data is not an object.
+ * @throws {@link BlocksItemsLoweringError} If the data is not an object, or the item's
+ *   `compost` has no provider on `target`.
  */
-export function blockDefinition(element: Element): JsonObject {
+export function blockDefinition(
+  element: Element,
+  target?: Pick<TargetFacts, 'id' | 'items'>,
+): JsonObject {
   const data = blockData(element);
   const fields = readEditorFields(data);
   const definition = structuredClone(data);
@@ -91,6 +98,7 @@ export function blockDefinition(element: Element): JsonObject {
     const shape = components[SHAPE_COMPONENT];
     if (isRecord(shape)) lowerShapeInPlace(shape);
   }
+  if (isRecord(definition.item)) lowerFuelAndCompostInPlace(definition.item, target, element.id);
   if (fields.loot !== undefined && fields.loot !== 'self' && definition.loot_table === undefined) {
     definition.loot_table = fields.loot;
   }
@@ -151,7 +159,7 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
   const files: OutputFile[] = [
     {
       path: definitionPath('block', namespace, path),
-      contents: blockDefinition(element),
+      contents: blockDefinition(element, target),
       layer: 'msm',
       schema: MSM_SCHEMA_REFS.blockDefinition,
     },

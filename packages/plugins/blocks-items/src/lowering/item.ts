@@ -1,9 +1,10 @@
 /**
  * Lowering of `msm:item` (ADR 0025 D1, D5).
  */
-import type { Element, JsonObject, OutputFile, Target } from '@msm/plugin-api';
+import type { Element, JsonObject, OutputFile, Target, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { DEFINITION_FORMAT } from './block';
+import { lowerFuelAndCompostInPlace } from './fuel';
 import {
   BlocksItemsLoweringError,
   definitionPath,
@@ -36,13 +37,19 @@ function itemData(element: Element): JsonObject {
  * including `msm:armor` and a custom `msm:tool` material with its attack overrides (ADR 0042),
  * and `msm:consumable`, `msm:ranged_weapon`, `msm:shield`, `msm:death_protection` and the
  * vanilla passthrough `msm:components` (ADR 0044): the runtime derives the vanilla components
- * from them.
+ * from them. The element-only `fuel` and `compost` (ADR 0060 D4) become `minecraft:cooking_fuel`
+ * and `minecraft:compostable` inside `msm:components`, the compost provider taken from `target`.
  *
- * @throws {@link BlocksItemsLoweringError} If the data is not an object.
+ * @throws {@link BlocksItemsLoweringError} If the data is not an object, or `compost` has no
+ *   provider on `target`.
  */
-export function itemDefinition(element: Element): JsonObject {
+export function itemDefinition(
+  element: Element,
+  target?: Pick<TargetFacts, 'id' | 'items'>,
+): JsonObject {
   const definition = structuredClone(itemData(element));
   for (const field of ITEM_EDITOR_FIELDS) delete definition[field];
+  lowerFuelAndCompostInPlace(definition, target, element.id);
   definition.format = DEFINITION_FORMAT;
   return definition;
 }
@@ -89,7 +96,7 @@ export function lowerItem(element: Element, target: Target): OutputFile[] {
   const files: OutputFile[] = [
     {
       path: definitionPath('item', namespace, path),
-      contents: itemDefinition(element),
+      contents: itemDefinition(element, target),
       layer: 'msm',
       schema: MSM_SCHEMA_REFS.itemDefinition,
     },

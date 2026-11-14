@@ -26,13 +26,39 @@ const CORPUS = new URL('../mcdoc/msm/conformance/', import.meta.url);
 
 type Group = 'definition' | 'element' | 'geometry' | 'animation';
 
-/** Type paths of ADR 0060's additions (no schema reference names them yet). */
+/** Schema references of ADR 0060's additions. */
 const ADDITIONS = {
-  biomeAdditionDefinition: '::msm::definition::BiomeAddition',
-  lootAdditionDefinition: '::msm::definition::LootAddition',
-  biomeAddition: '::msm::element::BiomeAddition',
-  lootAddition: '::msm::element::LootAddition',
+  biomeAdditionDefinition: MSM_SCHEMA_REFS.biomeAdditionDefinition,
+  lootAdditionDefinition: MSM_SCHEMA_REFS.lootAdditionDefinition,
+  biomeAddition: MSM_SCHEMA_REFS.biomeAddition,
+  lootAddition: MSM_SCHEMA_REFS.lootAddition,
 } as const;
+
+/** References whose root is a union of two structs (at least one of `features` and `spawns`). */
+const UNION_REFS: ReadonlySet<string> = new Set([
+  MSM_SCHEMA_REFS.biomeAddition,
+  MSM_SCHEMA_REFS.biomeAdditionDefinition,
+  MSM_TYPE_PATHS.biomeAddition,
+  MSM_TYPE_PATHS.biomeAdditionDefinition,
+]);
+
+/** A struct, or (for {@link UNION_REFS}) a union of exactly two structs. */
+const expectRootKind = (ref: string): void => {
+  let node = index.resolveSchemaRef(ref);
+  // An element alias (`type BiomeAddition = DefinitionBiomeAddition`) is a reference.
+  while (node.kind === 'reference') node = node.resolve();
+  if (!UNION_REFS.has(ref)) {
+    expect(node.kind, ref).toBe('struct');
+    return;
+  }
+  expect(node.kind, ref).toBe('union');
+  if (node.kind === 'union') {
+    expect(node.members.map((m) => (m.kind === 'reference' ? m.resolve() : m).kind)).toEqual([
+      'struct',
+      'struct',
+    ]);
+  }
+};
 
 const SCHEMAS: Record<Group, Record<string, string>> = {
   definition: {
@@ -102,23 +128,12 @@ describe('MSM mcdoc symbols', () => {
   it('load and resolve through every schema reference and type path', () => {
     const symbols = msmMcdocSymbols();
     expect(symbols.ref).toMatch(/^msm-mcdoc:sha256:[0-9a-f]{64}$/);
-    for (const ref of Object.values(MSM_SCHEMA_REFS)) {
-      expect(index.resolveSchemaRef(ref).kind).toBe('struct');
-    }
+    // Every reference and type path resolves to a struct, except the biome additions: at least
+    // one of `features` and `spawns` (ADR 0060 D2) makes them a union of two structs.
+    for (const ref of Object.values(MSM_SCHEMA_REFS)) expectRootKind(ref);
     for (const path of Object.values(MSM_TYPE_PATHS)) {
       expect(index.has(path)).toBe(true);
-      expect(index.resolveSchemaRef(path).kind).toBe('struct');
-    }
-    for (const path of Object.values(ADDITIONS)) expect(index.has(path)).toBe(true);
-    expect(index.resolveSchemaRef(ADDITIONS.lootAdditionDefinition).kind).toBe('struct');
-    // At least one of `features` and `spawns` (ADR 0060 D2): a union of two structs.
-    const biome = index.resolveSchemaRef(ADDITIONS.biomeAdditionDefinition);
-    expect(biome.kind).toBe('union');
-    if (biome.kind === 'union') {
-      expect(biome.members.map((m) => (m.kind === 'reference' ? m.resolve() : m).kind)).toEqual([
-        'struct',
-        'struct',
-      ]);
+      expectRootKind(path);
     }
     expect(index.resolveSchemaRef(MSM_SCHEMA_REFS.block)).toBe(index.resolve(MSM_TYPE_PATHS.block));
     expect(index.dispatcherKeys('msm:action')).toEqual([

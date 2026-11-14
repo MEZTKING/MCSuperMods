@@ -1,0 +1,55 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:armor": {
+          "material": "iron",
+          "slot": "boots"
+        },
+        "msm:on_hit": {
+          "event": "example:spark"
+        },
+        "msm:on_use_on_block": {
+          "cooldown_ticks": 10,
+          "event": "example:spark"
+        },
+        "msm:while_held": {
+          "event": "example:spark",
+          "hand": "either",
+          "interval_ticks": 20
+        },
+        "msm:while_worn": {
+          "event": "example:spark",
+          "interval_ticks": 100
+        }
+      },
+      "events": {
+        "example:spark": {
+          "actions": [
+            {
+              "count": 4,
+              "particle": "minecraft:electric_spark",
+              "type": "spawn_particle"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/trigger_boots.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/iron_boots",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/trigger_boots.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

@@ -9,6 +9,8 @@ import plugin, {
   blocksItemsKinds,
   blocksItemsTemplates,
   blocksItemsValidators,
+  burnTicks,
+  compostProvider,
   definitionPath,
   descriptionKey,
   effectDefinition,
@@ -17,6 +19,7 @@ import plugin, {
   incorrectForTierTag,
   isSeeThroughBlock,
   itemDefinition,
+  lootAdditionKind,
   lowerBlock,
   lowerEffect,
   lowerItem,
@@ -34,7 +37,14 @@ import plugin, {
 } from '../src/index';
 import { blockingProblems, element, indexesFor } from './support';
 
-const KIND_IDS = ['msm:block', 'msm:item', 'msm:effect', 'msm:mod'];
+const KIND_IDS = [
+  'msm:block',
+  'msm:item',
+  'msm:effect',
+  'msm:mod',
+  'msm:biome_addition',
+  'msm:loot_addition',
+];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
 
@@ -62,7 +72,7 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the four kinds with their schemas, folders and registries', () => {
+  it('contributes the six kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
@@ -70,10 +80,12 @@ describe('@msm/plugin-blocks-items', () => {
       [MSM_SCHEMA_REFS.item, 'item', 'item'],
       [MSM_SCHEMA_REFS.effect, 'effect', 'mob_effect'],
       [MSM_SCHEMA_REFS.mod, 'mod', undefined],
+      [MSM_SCHEMA_REFS.biomeAddition, 'biome_addition', undefined],
+      [MSM_SCHEMA_REFS.lootAddition, 'loot_addition', undefined],
     ]);
   });
 
-  it('contributes its templates and the twelve validators', () => {
+  it('contributes its templates and the eighteen validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -90,8 +102,14 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.armor-material',
       'msm.blocks-items.equipment-asset',
       'msm.blocks-items.component-conflict',
+      'msm.blocks-items.while-worn',
+      'msm.blocks-items.entity-inside',
+      'msm.blocks-items.fast-tick-trigger',
+      'msm.blocks-items.spawn-group-size',
+      'msm.blocks-items.duplicate-biome-feature',
+      'msm.blocks-items.loot-pool',
     ]);
-    expect(blocksItemsValidators).toHaveLength(12);
+    expect(blocksItemsValidators).toHaveLength(18);
   });
 
   it('rejects unsafe ids and non-object data', () => {
@@ -197,6 +215,82 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
     expect(needsTierTag('mithril')).toBeUndefined();
     expect(incorrectForTierTag('wood')).toBe('minecraft:incorrect_for_wooden_tool');
+  });
+});
+
+describe('fuel and compost lowering (ADR 0060 D4)', () => {
+  it('turns burn seconds into whole ticks, at least one', () => {
+    expect(burnTicks(80)).toBe(1600);
+    expect(burnTicks(0.05)).toBe(1);
+    expect(burnTicks(0.01)).toBe(1);
+    expect(burnTicks(12.34)).toBe(247);
+  });
+
+  it('writes the components into msm:components, the friendly field winning', () => {
+    const definition = itemDefinition(
+      element('msm:item', 'demo:x', {
+        format: 1,
+        fuel: { burn_seconds: 10 },
+        compost: '50%',
+        components: {
+          'msm:components': { cooking_fuel: { burn_time: 1, speed_multiplier: 2 }, glider: {} },
+        },
+      }),
+      firstTarget,
+    );
+    expect(definition).toEqual({
+      format: 1,
+      components: {
+        'msm:components': {
+          glider: {},
+          'minecraft:cooking_fuel': { burn_time: 200, speed_multiplier: 1 },
+          'minecraft:compostable': { layers: compostProvider(firstTarget, '50%') },
+        },
+      },
+    });
+  });
+
+  it('leaves definitions without the fields untouched (byte-identical lowering)', () => {
+    const data = { format: 1, item: { max_stack_size: 16 } };
+    expect(blockDefinition(element('msm:block', 'demo:x', data), firstTarget)).toEqual(data);
+    expect(blockDefinition(element('msm:block', 'demo:y', { format: 1, item: false }))).toEqual({
+      format: 1,
+      item: false,
+    });
+    expect(itemDefinition(element('msm:item', 'demo:x', { format: 1 }), firstTarget)).toEqual({
+      format: 1,
+    });
+  });
+
+  it('strips the fields from a block item and refuses a chance the target cannot give', () => {
+    const block = (compost: string) =>
+      element('msm:block', 'demo:x', { format: 1, item: { compost } });
+    expect(blockDefinition(block('30%'), firstTarget)).toEqual({
+      format: 1,
+      item: {
+        components: {
+          'msm:components': {
+            'minecraft:compostable': { layers: compostProvider(firstTarget, '30%') },
+          },
+        },
+      },
+    });
+    expect(() => blockDefinition(block('42%'), firstTarget)).toThrow(BlocksItemsLoweringError);
+    expect(() => blockDefinition(block('30%'))).toThrow(BlocksItemsLoweringError);
+  });
+
+  it('lowers additions to the msm layer only', async () => {
+    const files = await lootAdditionKind.lower(
+      element('msm:loot_addition', 'demo:extra/zombie', lootAdditionKind.defaultData as Json),
+      firstTarget,
+    );
+    expect(files.map((file) => [file.path, file.layer, file.schema])).toEqual([
+      [
+        definitionPath('loot_addition', 'demo', 'extra/zombie'),
+        'msm',
+        MSM_SCHEMA_REFS.lootAdditionDefinition,
+      ],
+    ]);
   });
 });
 
@@ -384,6 +478,38 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           item({ speed: 9, after_throw: 'boomerang' }),
         ),
       ).not.toEqual([]);
+    });
+
+    it('has a compost provider for every chance the format offers', () => {
+      for (const chance of ['30%', '50%', '65%', '85%', '100%']) {
+        expect(compostProvider(bundle.target, chance), chance).toMatch(/^minecraft:compostable\//);
+      }
+    });
+
+    it('has loot addition pools in the default and the template that the vanilla pool schema accepts', async () => {
+      const indexes = await indexesFor(bundle);
+      const template = blocksItemsTemplates.find((t) => t.kind === 'msm:loot_addition');
+      if (template === undefined) throw new Error('no loot addition template');
+      const created = (await template.data({
+        id: 'demo:sample',
+        namespace: 'demo',
+        path: 'sample',
+        projectNamespace: 'demo',
+        namespaces: ['demo'],
+        kindDefault: undefined,
+        target: bundle.target,
+      })) as { pools: Json[] };
+      const pools = [
+        ...(lootAdditionKind.defaultData as { pools: Json[] }).pools,
+        ...created.pools,
+      ];
+      expect(pools.length).toBe(2);
+      for (const pool of pools) {
+        expect(blockingProblems(indexes, '::java::data::loot::LootPool', pool)).toEqual([]);
+      }
+      expect(
+        blockingProblems(indexes, '::java::data::loot::LootPool', { rolls: 1 }).length,
+      ).toBeGreaterThan(0);
     });
 
     it.each(KIND_IDS.map((id) => [id] as const))('%s default data validates', async (kindId) => {

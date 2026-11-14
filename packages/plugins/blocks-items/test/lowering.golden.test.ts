@@ -10,7 +10,15 @@ import { fileURLToPath } from 'node:url';
 import type { ElementKind, Json, OutputFile, ResourceLocation } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { blockKind, blocksItemsKinds, effectKind, itemKind, modKind } from '../src/index';
+import {
+  biomeAdditionKind,
+  blockKind,
+  blocksItemsKinds,
+  effectKind,
+  itemKind,
+  lootAdditionKind,
+  modKind,
+} from '../src/index';
 import { blockingProblems, element, indexesFor, sortedJson } from './support';
 
 const UPDATE = process.env.UPDATE_GOLDENS === '1';
@@ -407,6 +415,123 @@ const SAMPLES: Sample[] = [
     },
   },
   {
+    kind: blockKind,
+    name: 'ruby_log_fuel_compost',
+    id: 'example:ruby_log',
+    data: {
+      format: 1,
+      model: 'minecraft:block/oak_log',
+      sound_type: 'wood',
+      item: {
+        creative_tab: 'minecraft:building_blocks',
+        fuel: { burn_seconds: 15 },
+        compost: '65%',
+        components: { 'msm:components': { 'minecraft:enchantment_glint_override': true } },
+      },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'ruby_coal_fuel_compost',
+    id: 'example:ruby_coal',
+    data: {
+      format: 1,
+      model: 'minecraft:item/coal',
+      display_name: 'Ruby Coal',
+      fuel: { burn_seconds: 120.5 },
+      compost: '100%',
+      components: { 'msm:components': { 'minecraft:glider': {} } },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'fuel_only',
+    id: 'example:kindling',
+    data: { format: 1, model: 'minecraft:item/stick', fuel: { burn_seconds: 5 } },
+  },
+  {
+    kind: blockKind,
+    name: 'trigger_block',
+    id: 'example:trigger_block',
+    data: {
+      format: 1,
+      model: 'minecraft:block/moss_carpet',
+      components: {
+        'msm:shape': { preset: 'carpet' },
+        'msm:on_break': { event: 'example:noise' },
+        'msm:on_place': { event: 'example:noise' },
+        'msm:on_random_tick': { event: 'example:noise', chance: 0.25 },
+        'msm:on_entity_inside': { event: 'example:noise', cooldown_ticks: 40 },
+      },
+      events: {
+        'example:noise': {
+          actions: [{ type: 'play_sound', sound: 'minecraft:block.moss.step' }],
+        },
+      },
+    },
+  },
+  {
+    kind: itemKind,
+    name: 'trigger_item',
+    id: 'example:trigger_boots',
+    data: {
+      format: 1,
+      model: 'minecraft:item/iron_boots',
+      max_stack_size: 1,
+      components: {
+        'msm:armor': { slot: 'boots', material: 'iron' },
+        'msm:on_hit': { event: 'example:spark' },
+        'msm:on_use_on_block': { event: 'example:spark', cooldown_ticks: 10 },
+        'msm:while_held': { event: 'example:spark', interval_ticks: 20, hand: 'either' },
+        'msm:while_worn': { event: 'example:spark', interval_ticks: 100 },
+      },
+      events: {
+        'example:spark': {
+          actions: [{ type: 'spawn_particle', particle: 'minecraft:electric_spark', count: 4 }],
+        },
+      },
+    },
+  },
+  {
+    kind: biomeAdditionKind,
+    name: 'ruby_ore_overworld',
+    id: 'example:ruby_ore_overworld',
+    data: {
+      format: 1,
+      biomes: ['#minecraft:is_overworld', 'minecraft:plains'],
+      features: [{ feature: 'example:ruby_ore_placed', step: 'underground_ores' }],
+      spawns: [
+        {
+          entity: 'minecraft:fox',
+          category: 'creature',
+          weight: 4,
+          min_group: 1,
+          max_group: 3,
+        },
+      ],
+    },
+  },
+  {
+    kind: lootAdditionKind,
+    name: 'zombie_ruby',
+    id: 'example:zombie_ruby',
+    data: {
+      format: 1,
+      tables: ['minecraft:entities/zombie', 'minecraft:entities/husk'],
+      pools: [
+        {
+          rolls: 1,
+          bonus_rolls: 0,
+          entries: [
+            { type: 'minecraft:item', name: 'example:ruby', weight: 3 },
+            { type: 'minecraft:item', name: 'minecraft:emerald' },
+          ],
+          condition: { type: 'minecraft:killed_by_player' },
+        },
+      ],
+    },
+  },
+  {
     kind: effectKind,
     name: 'withering_no_name',
     id: 'example:curses/withering',
@@ -459,6 +584,12 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const indexes = await indexesFor(bundle);
         const problems = (schema: string, value: Json) => blockingProblems(indexes, schema, value);
         expect(problems(sample.kind.schema, sample.data)).toEqual([]);
+        // Loot addition pools are `any` in the format: check them against vanilla's pool.
+        if (sample.kind === lootAdditionKind) {
+          for (const pool of (sample.data as { pools: Json[] }).pools) {
+            expect(problems('::java::data::loot::LootPool', pool)).toEqual([]);
+          }
+        }
         for (const file of files) {
           if (file.schema === undefined) continue;
           expect(problems(file.schema, file.contents as Json), file.path).toEqual([]);

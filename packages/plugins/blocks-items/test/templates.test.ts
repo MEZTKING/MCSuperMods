@@ -35,6 +35,7 @@ const IDS = [
   'msm_block_half',
   'msm_block_plant',
   'msm_block_glass_like',
+  'msm_block_bounce_pad',
   'msm_item_food',
   'msm_item_tool',
   'msm_item_tool_custom_material',
@@ -46,12 +47,16 @@ const IDS = [
   'msm_item_totem',
   'msm_item_wand',
   'msm_item_throwable',
+  'msm_item_fuel',
+  'msm_item_life_steal_sword',
   'msm_effect_status',
   'msm_effect_damage_over_time',
   'msm_effect_stat_boost',
   'msm_mod',
+  'msm_biome_addition_overworld_ore',
+  'msm_loot_addition_mob_drop',
 ];
-const CATEGORIES = new Set(['Blocks', 'Items', 'Effects', 'Mod']);
+const CATEGORIES = new Set(['Blocks', 'Items', 'Effects', 'Mod', 'Additions']);
 
 const kindOf = (template: ElementTemplate) => {
   const kind = blocksItemsKinds.find((entry) => entry.id === template.kind);

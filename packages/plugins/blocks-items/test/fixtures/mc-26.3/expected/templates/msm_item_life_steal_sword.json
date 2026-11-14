@@ -1,0 +1,63 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:on_hit": {
+          "event": "demo:sample_hit"
+        },
+        "msm:tool": {
+          "tier": "iron",
+          "type": "sword"
+        },
+        "msm:while_held": {
+          "event": "demo:sample_held",
+          "hand": "main",
+          "interval_ticks": 40
+        }
+      },
+      "creative_tab": "minecraft:combat",
+      "events": {
+        "demo:sample_held": {
+          "actions": [
+            {
+              "count": 1,
+              "particle": "minecraft:heart",
+              "spread": 0.3,
+              "type": "spawn_particle"
+            }
+          ]
+        },
+        "demo:sample_hit": {
+          "actions": [
+            {
+              "amount": 2,
+              "type": "heal"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/iron_sword",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

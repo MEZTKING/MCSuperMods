@@ -42,7 +42,7 @@ const THROWABLE = { 'msm:throwable': { damage: 1 } };
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(14);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(21);
     expect(BLOCKS_ITEMS_PROBLEM_CODES).toContain(TRANSPARENT_TEXTURE_CODE);
   });
 
@@ -677,5 +677,258 @@ describe('blocks-items validators', () => {
       ]);
       expect(problems).toEqual([]);
     });
+  });
+});
+
+describe('trigger and addition validators (ADRs 0060, 0061)', () => {
+  const NOISE = {
+    'demo:e': { actions: [{ type: 'play_sound', sound: 'minecraft:block.stone.break' }] },
+  };
+  const biomeAddition = (id: `${string}:${string}`, data: Record<string, unknown>): Element =>
+    element('msm:biome_addition', id, {
+      format: 1,
+      biomes: ['minecraft:plains'],
+      ...data,
+    } as never);
+  const lootAddition = (id: `${string}:${string}`, pools: unknown[]): Element =>
+    element('msm:loot_addition', id, {
+      format: 1,
+      tables: ['minecraft:entities/zombie'],
+      pools,
+    } as never);
+  const summary = (problems: Problem[]) =>
+    problems.map((p) => [p.code, p.severity, p.elementId, p.path]);
+
+  it('reports unknown events of the eight block and item trigger components', async () => {
+    const problems = await validate([
+      block('demo:a', {
+        components: {
+          'msm:shape': { preset: 'carpet' },
+          'msm:on_break': { event: 'demo:x' },
+          'msm:on_place': { event: 'demo:e' },
+          'msm:on_random_tick': { event: 'demo:x' },
+          'msm:on_entity_inside': { event: 'demo:x' },
+        },
+        events: NOISE,
+      }),
+      item('demo:b', {
+        components: {
+          'msm:armor': { slot: 'boots', material: 'iron' },
+          'msm:on_hit': { event: 'demo:x' },
+          'msm:on_use_on_block': { event: 'demo:x' },
+          'msm:while_held': { event: 'demo:e' },
+          'msm:while_worn': { event: 'demo:x' },
+        },
+        events: NOISE,
+      }),
+    ]);
+    expect(problems.map((p) => [p.code, p.elementId, p.path])).toEqual([
+      ['blocks-items.unknown-event', 'demo:a', '/components/msm:on_break/event'],
+      ['blocks-items.unknown-event', 'demo:a', '/components/msm:on_random_tick/event'],
+      ['blocks-items.unknown-event', 'demo:a', '/components/msm:on_entity_inside/event'],
+      ['blocks-items.unknown-event', 'demo:b', '/components/msm:on_hit/event'],
+      ['blocks-items.unknown-event', 'demo:b', '/components/msm:on_use_on_block/event'],
+      ['blocks-items.unknown-event', 'demo:b', '/components/msm:while_worn/event'],
+    ]);
+  });
+
+  it('reports while_worn without msm:armor', async () => {
+    const problems = await validate([
+      item('demo:a', { components: { 'msm:while_worn': { event: 'demo:e' } }, events: NOISE }),
+      item('demo:b', {
+        components: {
+          'msm:armor': { slot: 'helmet', material: 'iron' },
+          'msm:while_worn': { event: 'demo:e' },
+        },
+        events: NOISE,
+      }),
+    ]);
+    expect(summary(problems)).toEqual([
+      ['blocks-items.while-worn-without-armor', 'error', 'demo:a', '/components/msm:while_worn'],
+    ]);
+  });
+
+  it('warns about on_entity_inside on a full solid block only', async () => {
+    const inside = (id: `${string}:${string}`, shape?: Record<string, unknown>) =>
+      block(id, {
+        components: {
+          ...(shape === undefined ? {} : { 'msm:shape': shape }),
+          'msm:on_entity_inside': { event: 'demo:e' },
+        },
+        events: NOISE,
+      });
+    const problems = await validate([
+      inside('demo:none'),
+      inside('demo:full', { preset: 'full', see_through: true }),
+      inside('demo:full_boxes', { boxes: [[0, 0, 0, 16, 16, 16]] }),
+      inside('demo:carpet', { preset: 'carpet' }),
+      inside('demo:cross', { preset: 'cross' }),
+      inside('demo:ghost', { preset: 'full', collision: false }),
+    ]);
+    expect(summary(problems)).toEqual(
+      ['demo:none', 'demo:full', 'demo:full_boxes'].map((id) => [
+        'blocks-items.entity-inside-solid-block',
+        'warning',
+        id,
+        '/components/msm:on_entity_inside',
+      ]),
+    );
+  });
+
+  it('reports fast tick triggers that run functions or scripts, through trigger_event', async () => {
+    const problems = await validate([
+      item('demo:fast', {
+        components: {
+          'msm:while_held': { event: 'demo:a', interval_ticks: 5 },
+          'msm:on_hit': { event: 'demo:a' },
+        },
+        events: {
+          'demo:a': { actions: [{ type: 'trigger_event', event: 'demo:b' }] },
+          'demo:b': { actions: [{ type: 'run_function', function: 'demo:tick' }] },
+        },
+      }),
+      item('demo:slow', {
+        components: { 'msm:while_held': { event: 'demo:s', interval_ticks: 20 } },
+        events: { 'demo:s': { actions: [{ type: 'run_script', handler: 'demo:s' }] } },
+      }),
+      item('demo:cheap', {
+        components: { 'msm:while_held': { event: 'demo:e', interval_ticks: 5 } },
+        events: NOISE,
+      }),
+      block('demo:pad', {
+        components: {
+          'msm:shape': { preset: 'carpet' },
+          'msm:on_entity_inside': { event: 'demo:s', cooldown_ticks: 10 },
+        },
+        events: { 'demo:s': { actions: [{ type: 'run_script', handler: 'demo:s' }] } },
+      }),
+      element('msm:entity', 'demo:mob', {
+        format: 1,
+        components: { 'msm:on_tick': { event: 'demo:s', interval_ticks: 5 } },
+        events: { 'demo:s': { actions: [{ type: 'run_script', handler: 'demo:s' }] } },
+      } as never),
+    ]);
+    expect(summary(problems)).toEqual([
+      [
+        'blocks-items.fast-tick-trigger',
+        'info',
+        'demo:fast',
+        '/components/msm:while_held/interval_ticks',
+      ],
+      [
+        'blocks-items.fast-tick-trigger',
+        'info',
+        'demo:pad',
+        '/components/msm:on_entity_inside/cooldown_ticks',
+      ],
+      [
+        'blocks-items.fast-tick-trigger',
+        'info',
+        'demo:mob',
+        '/components/msm:on_tick/interval_ticks',
+      ],
+    ]);
+  });
+
+  it('reports fuel and compost that clash with passthrough entries, on items and block items', async () => {
+    const problems = await validate([
+      item('demo:coal', {
+        fuel: { burn_seconds: 10 },
+        components: { 'msm:components': { 'minecraft:cooking_fuel': { burn_time: 1 } } },
+      }),
+      block('demo:log', {
+        item: {
+          compost: '30%',
+          components: { 'msm:components': { compostable: { layers: 1 }, glider: {} } },
+        },
+      }),
+      block('demo:clean', {
+        item: { fuel: { burn_seconds: 1 }, components: { 'msm:components': { glider: {} } } },
+      }),
+    ]);
+    expect(summary(problems)).toEqual([
+      [
+        'blocks-items.component-conflict',
+        'error',
+        'demo:coal',
+        '/components/msm:components/minecraft:cooking_fuel',
+      ],
+      [
+        'blocks-items.component-conflict',
+        'error',
+        'demo:log',
+        '/item/components/msm:components/compostable',
+      ],
+    ]);
+  });
+
+  it('reports a spawn group whose largest size is below its smallest', async () => {
+    const spawn = (min: number, max: number) => ({
+      entity: 'minecraft:fox',
+      category: 'creature',
+      weight: 1,
+      min_group: min,
+      max_group: max,
+    });
+    const problems = await validate([
+      biomeAddition('demo:a', { spawns: [spawn(1, 1), spawn(4, 2)] }),
+    ]);
+    expect(summary(problems)).toEqual([
+      ['blocks-items.spawn-group-size', 'error', 'demo:a', '/spawns/1/max_group'],
+    ]);
+  });
+
+  it('warns about a placed feature a project biome lists and an addition adds again', async () => {
+    const problems = await validate([
+      element('minecraft:worldgen/biome', 'demo:glade', {
+        features: [[], ['demo:ore_placed', '#minecraft:x']],
+      } as never),
+      biomeAddition('demo:a', {
+        biomes: ['demo:glade', '#minecraft:is_overworld'],
+        features: [
+          { feature: 'demo:other_placed', step: 'underground_ores' },
+          { feature: 'demo:ore_placed', step: 'underground_ores' },
+        ],
+      }),
+      biomeAddition('demo:b', {
+        biomes: ['minecraft:plains'],
+        features: [{ feature: 'demo:ore_placed', step: 'underground_ores' }],
+      }),
+    ]);
+    expect(summary(problems)).toEqual([
+      ['blocks-items.duplicate-biome-feature', 'warning', 'demo:a', '/features/1/feature'],
+    ]);
+  });
+
+  it('checks the outline of loot addition pools and their item ids', async () => {
+    const problems = await validate([
+      lootAddition('demo:a', [
+        { rolls: 1, entries: [{ type: 'minecraft:item', name: 'minecraft:emerald' }] },
+        {
+          rolls: { type: 'minecraft:uniform', min: 1, max: 2 },
+          entries: [{ type: 'minecraft:empty' }],
+        },
+        'pool',
+        { entries: [{ type: 'minecraft:empty' }] },
+        { rolls: 'one', entries: [{ type: 'minecraft:empty' }] },
+        { rolls: 1, entries: [] },
+        { rolls: 1, entries: [{ name: 'minecraft:emerald' }] },
+        {
+          rolls: 1,
+          entries: [
+            { type: 'item', name: 'demo:nothing' },
+            { type: 'minecraft:item', name: 'example:ruby' },
+          ],
+        },
+      ]),
+    ]);
+    expect(summary(problems)).toEqual([
+      ['blocks-items.bad-loot-pool', 'error', 'demo:a', '/pools/2'],
+      ['blocks-items.bad-loot-pool', 'error', 'demo:a', '/pools/3'],
+      ['blocks-items.bad-loot-pool', 'error', 'demo:a', '/pools/4/rolls'],
+      ['blocks-items.bad-loot-pool', 'error', 'demo:a', '/pools/5/entries'],
+      ['blocks-items.bad-loot-pool', 'error', 'demo:a', '/pools/6/entries/0'],
+      ['blocks-items.unknown-loot-item', 'warning', 'demo:a', '/pools/7/entries/0/name'],
+    ]);
   });
 });

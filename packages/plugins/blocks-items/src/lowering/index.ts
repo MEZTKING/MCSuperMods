@@ -3,8 +3,16 @@
  * `@msm/plugin-blocks-items`.
  */
 
+export { additionDefinition, lowerBiomeAddition, lowerLootAddition } from './additions';
 export { blockDefinition, DEFINITION_FORMAT, dropsItselfLootTable, lowerBlock } from './block';
 export { effectDefinition, lowerEffect } from './effect';
+export {
+  burnTicks,
+  COMPOSTABLE_COMPONENT,
+  COOKING_FUEL_COMPONENT,
+  compostProvider,
+  lowerFuelAndCompostInPlace,
+} from './fuel';
 export { itemDefinition, lowerItem } from './item';
 export {
   FABRIC_MOD_JSON,

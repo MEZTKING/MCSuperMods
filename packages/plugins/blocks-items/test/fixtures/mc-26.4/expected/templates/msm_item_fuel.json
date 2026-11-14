@@ -1,0 +1,40 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:components": {
+          "minecraft:compostable": {
+            "layers": "minecraft:compostable/low"
+          },
+          "minecraft:cooking_fuel": {
+            "burn_time": 800,
+            "speed_multiplier": 1
+          }
+        }
+      },
+      "creative_tab": "minecraft:ingredients",
+      "format": 1,
+      "max_stack_size": 64
+    },
+    "layer": "msm",
+    "path": "msm/demo/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:item/charcoal",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

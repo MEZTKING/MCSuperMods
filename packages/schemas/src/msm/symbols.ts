@@ -20,6 +20,12 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `effect` / `effectDefinition`: element data of the `msm:effect` kind (definition plus
  *   `display_name`) and the runtime definition written to `msm/<ns>/effect/<path>.json`
  *   (ADR 0055).
+ * - `biomeAddition` / `biomeAdditionDefinition`, `lootAddition` / `lootAdditionDefinition`:
+ *   element data of the `msm:biome_addition` and `msm:loot_addition` kinds and the runtime
+ *   definitions written to `msm/<ns>/biome_addition/<path>.json` and
+ *   `msm/<ns>/loot_addition/<path>.json` (ADR 0060 D2, D3). A biome addition is a union of two
+ *   structs (at least one of `features` and `spawns`), not a struct; a loot addition's `pools`
+ *   are `any`, checked against the target's loot table schema by the plugin's validators.
  */
 export const MSM_SCHEMA_REFS = {
   block: 'msm:block',
@@ -33,6 +39,10 @@ export const MSM_SCHEMA_REFS = {
   animation: 'msm:animation',
   effect: 'msm:effect',
   effectDefinition: 'msm:effect_definition',
+  biomeAddition: 'msm:biome_addition',
+  biomeAdditionDefinition: 'msm:biome_addition_definition',
+  lootAddition: 'msm:loot_addition',
+  lootAdditionDefinition: 'msm:loot_addition_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -48,6 +58,10 @@ export const MSM_TYPE_PATHS = {
   animation: '::msm::animation::Animations',
   effect: '::msm::element::Effect',
   effectDefinition: '::msm::definition::Effect',
+  biomeAddition: '::msm::element::BiomeAddition',
+  biomeAdditionDefinition: '::msm::definition::BiomeAddition',
+  lootAddition: '::msm::element::LootAddition',
+  lootAdditionDefinition: '::msm::definition::LootAddition',
   action: '::msm::action::Action',
 } as const;
 
@@ -64,6 +78,10 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.animation]: MSM_TYPE_PATHS.animation,
   [MSM_SCHEMA_REFS.effect]: MSM_TYPE_PATHS.effect,
   [MSM_SCHEMA_REFS.effectDefinition]: MSM_TYPE_PATHS.effectDefinition,
+  [MSM_SCHEMA_REFS.biomeAddition]: MSM_TYPE_PATHS.biomeAddition,
+  [MSM_SCHEMA_REFS.biomeAdditionDefinition]: MSM_TYPE_PATHS.biomeAdditionDefinition,
+  [MSM_SCHEMA_REFS.lootAddition]: MSM_TYPE_PATHS.lootAddition,
+  [MSM_SCHEMA_REFS.lootAdditionDefinition]: MSM_TYPE_PATHS.lootAdditionDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

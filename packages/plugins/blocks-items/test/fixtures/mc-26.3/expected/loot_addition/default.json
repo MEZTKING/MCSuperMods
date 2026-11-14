@@ -1,0 +1,24 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "minecraft:emerald",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "tables": [
+        "minecraft:entities/zombie"
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/loot_addition/sample.json",
+    "schema": "msm:loot_addition_definition"
+  }
+]

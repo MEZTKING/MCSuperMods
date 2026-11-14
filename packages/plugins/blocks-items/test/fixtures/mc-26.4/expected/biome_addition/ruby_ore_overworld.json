@@ -1,0 +1,29 @@
+[
+  {
+    "contents": {
+      "biomes": [
+        "#minecraft:is_overworld",
+        "minecraft:plains"
+      ],
+      "features": [
+        {
+          "feature": "example:ruby_ore_placed",
+          "step": "underground_ores"
+        }
+      ],
+      "format": 1,
+      "spawns": [
+        {
+          "category": "creature",
+          "entity": "minecraft:fox",
+          "max_group": 3,
+          "min_group": 1,
+          "weight": 4
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/example/biome_addition/ruby_ore_overworld.json",
+    "schema": "msm:biome_addition_definition"
+  }
+]

@@ -1,0 +1,49 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "item": {
+        "components": {
+          "msm:components": {
+            "minecraft:compostable": {
+              "layers": "minecraft:compostable/medium"
+            },
+            "minecraft:cooking_fuel": {
+              "burn_time": 300,
+              "speed_multiplier": 1
+            },
+            "minecraft:enchantment_glint_override": true
+          }
+        },
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "wood"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_log.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/oak_log"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_log.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/oak_log",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_log.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

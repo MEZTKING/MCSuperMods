@@ -260,4 +260,53 @@ export const itemTemplates: readonly ElementTemplate[] = [
       };
     },
   },
+  {
+    id: 'msm_item_fuel',
+    kind: ITEM_KIND,
+    category: CATEGORY,
+    title: 'Fuel item',
+    description:
+      'A lump that burns in a furnace for 40 seconds (half a piece of coal) and can be composted, shown with the charcoal model.',
+    data: (context) => ({
+      format: 1,
+      model: 'minecraft:item/charcoal',
+      display_name: displayName(context.path),
+      max_stack_size: 64,
+      creative_tab: 'minecraft:ingredients',
+      fuel: { burn_seconds: 40 },
+      compost: '30%',
+    }),
+  },
+  {
+    id: 'msm_item_life_steal_sword',
+    kind: ITEM_KIND,
+    category: CATEGORY,
+    title: 'Life-steal sword (item triggers)',
+    description:
+      'An iron sword that heals its holder by one heart on every hit and shows hearts while held. Shows the item triggers "on_hit" and "while_held".',
+    data: (context) => {
+      const hit = ownEvent(context, 'hit');
+      const held = ownEvent(context, 'held');
+      return {
+        format: 1,
+        model: 'minecraft:item/iron_sword',
+        display_name: displayName(context.path),
+        max_stack_size: 1,
+        creative_tab: 'minecraft:combat',
+        components: {
+          'msm:tool': { type: 'sword', tier: 'iron' },
+          'msm:on_hit': { event: hit },
+          'msm:while_held': { event: held, interval_ticks: 40, hand: 'main' },
+        },
+        events: {
+          [hit]: { actions: [{ type: 'heal', amount: 2 }] },
+          [held]: {
+            actions: [
+              { type: 'spawn_particle', particle: 'minecraft:heart', count: 1, spread: 0.3 },
+            ],
+          },
+        },
+      };
+    },
+  },
 ];

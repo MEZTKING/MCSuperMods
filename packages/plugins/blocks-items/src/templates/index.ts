@@ -1,8 +1,9 @@
 /**
- * "New element" templates of `@msm/plugin-blocks-items`: blocks, items, effects and the mod
- * metadata.
+ * "New element" templates of `@msm/plugin-blocks-items`: blocks, items, effects, the mod
+ * metadata and the additions to vanilla content.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
+import { additionTemplates } from './additions';
 import { blockTemplates } from './blocks';
 import { effectTemplates } from './effects';
 import { itemTemplates } from './items';
@@ -16,4 +17,5 @@ export const blocksItemsTemplates: readonly ElementTemplate[] = Object.freeze([
   ...itemTemplates,
   ...effectTemplates,
   ...modTemplates,
+  ...additionTemplates,
 ]);

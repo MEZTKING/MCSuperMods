@@ -50,6 +50,7 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
   loot_table: ['example:blocks/ruby_ore_rare'],
   function: ['example:ruby/shimmer'],
   equipment: ['example:ruby'],
+  'worldgen/placed_feature': ['demo:sample_placed', 'example:ruby_ore_placed'],
 };
 
 export interface TargetIndexes {

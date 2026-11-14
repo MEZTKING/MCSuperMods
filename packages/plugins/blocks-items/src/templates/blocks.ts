@@ -143,4 +143,41 @@ export const blockTemplates: readonly ElementTemplate[] = [
       },
     }),
   },
+  {
+    id: 'msm_block_bounce_pad',
+    kind: BLOCK_KIND,
+    category: CATEGORY,
+    title: 'Bounce pad (block triggers)',
+    description:
+      'A thin pad (shape preset "carpet") that launches anything standing in it upwards, at most once a second per entity, and plays a sound when broken. Shows the block triggers "on_entity_inside" and "on_break".',
+    data: (context) => {
+      const bounce = ownEvent(context, 'bounce');
+      const broken = ownEvent(context, 'broken');
+      return {
+        format: 1,
+        model: 'minecraft:block/slime_block',
+        display_name: displayName(context.path),
+        sound_type: 'slime_block',
+        loot: 'self',
+        item: { creative_tab: 'minecraft:redstone_blocks' },
+        components: {
+          'msm:breakable': { hardness: 0.5, resistance: 0.5 },
+          'msm:shape': { preset: 'carpet' },
+          'msm:on_entity_inside': { event: bounce, cooldown_ticks: 20 },
+          'msm:on_break': { event: broken },
+        },
+        events: {
+          [bounce]: {
+            actions: [
+              { type: 'launch', strength: 0, up: 1.2, direction: 'up' },
+              { type: 'play_sound', sound: 'minecraft:block.slime_block.fall' },
+            ],
+          },
+          [broken]: {
+            actions: [{ type: 'play_sound', sound: 'minecraft:block.slime_block.break' }],
+          },
+        },
+      };
+    },
+  },
 ];
