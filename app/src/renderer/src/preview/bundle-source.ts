@@ -4,7 +4,7 @@
  * the project, then the vanilla cache (the existing model lookup over {@link bundlePreviewProject});
  * textures from the bundle's bytes first, then the project's files ({@link bundleAssetReader}).
  * Also the small lookups the Creator's tabs need: an item's or block's texture, display names
- * from the bundle's language file, and `data:` URLs for generated PNGs.
+ * from the bundle's language files or the elements' own `display_name`, and `data:` URLs for generated PNGs.
  *
  * Pure, apart from `btoa`; no deepslate or gl-matrix, so it stays out of the lazy chunks.
  *
@@ -13,6 +13,7 @@
 
 import { createElement, type Json, type Project, type ResourceLocation } from '@msm/core';
 import type { ContentBundle, ContentBundleElement } from '@msm/plugin-api';
+import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import { normaliseId, type ResourceFolders } from './model-chain';
 
 type JsonObject = { [key: string]: Json };
@@ -21,6 +22,8 @@ const isObject = (value: unknown): value is JsonObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const MODEL_KIND = 'minecraft:model';
+const ITEM_KIND = 'msm:item';
+const BLOCK_KIND = 'msm:block';
 
 /**
  * `project` with the bundle's elements laid over it: a bundle element replaces a project
@@ -145,9 +148,21 @@ export function elementTextureBytes(
   return bundleAssetBytes(bundle, namespace, path);
 }
 
+/** The `display_name` of an element's data, when it is a non-empty string. */
+function ownDisplayName(data: Json): string | undefined {
+  if (!isObject(data)) return undefined;
+  const value = data.display_name;
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
 /**
- * The display name of a bundle item or block from the bundle's language files
- * (`item.<ns>.<path>` or `block.<ns>.<path>`), or `undefined`.
+ * The display name of a bundle item or block, read the way lowering writes the language keys
+ * (`item.<ns>.<path>` or `block.<ns>.<path>`): first the bundle's language files, then the
+ * elements' own `display_name`. An `msm:block` names `block.<id>`; an `msm:item` names
+ * `item.<id>`, and so does an `msm:block` whose block item has its own id (`item.id`, seeds
+ * planting a crop; `blockItemIdOf`). A block whose item shares its id writes only the block key,
+ * as lowering does. The language files come first; where both name a key differently, export
+ * reports a merge conflict anyway. `undefined` when nothing names it.
  */
 export function displayName(
   bundle: ContentBundle,
@@ -160,6 +175,18 @@ export function displayName(
     if (entry.kind !== 'minecraft:lang' || !isObject(entry.data)) continue;
     const value = entry.data[key];
     if (typeof value === 'string') return value;
+  }
+  for (const entry of bundle.elements) {
+    const names =
+      type === 'block'
+        ? entry.kind === BLOCK_KIND && entry.id === id
+        : (entry.kind === ITEM_KIND && entry.id === id) ||
+          (entry.kind === BLOCK_KIND &&
+            entry.id !== id &&
+            blockItemIdOf(entry.id, entry.data) === id);
+    if (!names) continue;
+    const own = ownDisplayName(entry.data);
+    if (own !== undefined) return own;
   }
   return undefined;
 }
