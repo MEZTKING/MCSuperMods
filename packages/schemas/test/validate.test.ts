@@ -676,3 +676,50 @@ describe('validateJson: output', () => {
     expect(performance.now() - start).toBeLessThan(10_000);
   });
 });
+
+describe('validateJson: NBT booleans embedded in JSON', () => {
+  // A data file field that embeds entity NBT (as a trial spawner's spawn data does).
+  const entities = dispatcher('minecraft:entity', ['id'], {
+    zombie: struct([opt('IsBaby', bool), opt('Tags', list(struct([opt('Glowing', bool)])))]),
+  });
+  const entity = struct([field('id', str())], [entities]);
+  const file = struct([field('entity', entity), opt('show_notification', bool)]);
+
+  it('accepts 0 and 1 for a boolean below an NBT dispatcher', () => {
+    ok({ entity: { id: 'minecraft:zombie', IsBaby: 1 } }, file);
+    ok({ entity: { id: 'minecraft:zombie', IsBaby: 0 } }, file);
+    ok({ entity: { id: 'zombie', IsBaby: true } }, file);
+    ok({ entity: { id: 'zombie', Tags: [{ Glowing: 1 }] } }, file);
+  });
+
+  it('still rejects other numbers and strings there', () => {
+    expect(codes(validateJson({ entity: { id: 'zombie', IsBaby: 2 } }, file))).toEqual([
+      ['/entity/IsBaby', 'schema.type-mismatch'],
+    ]);
+    expect(codes(validateJson({ entity: { id: 'zombie', IsBaby: '1b' } }, file))).toEqual([
+      ['/entity/IsBaby', 'schema.type-mismatch'],
+    ]);
+  });
+
+  it('rejects 1 for a plain JSON boolean outside NBT', () => {
+    expect(codes(validateJson({ entity: { id: 'zombie' }, show_notification: 1 }, file))).toEqual([
+      ['/show_notification', 'schema.type-mismatch'],
+    ]);
+    expect(codes(validateJson(1, bool))).toEqual([['', 'schema.type-mismatch']]);
+  });
+
+  it('applies only to the NBT dispatchers', () => {
+    const json = struct(
+      [field('type', str())],
+      [dispatcher('test:shape', ['type'], { flag: struct([opt('on', bool)]) })],
+    );
+    expect(codes(validateJson({ type: 'flag', on: 1 }, json))).toEqual([
+      ['/on', 'schema.type-mismatch'],
+    ]);
+    const blockEntity = struct(
+      [field('id', str())],
+      [dispatcher('minecraft:block_entity', ['id'], { sign: struct([opt('is_waxed', bool)]) })],
+    );
+    ok({ id: 'sign', is_waxed: 1 }, blockEntity);
+  });
+});

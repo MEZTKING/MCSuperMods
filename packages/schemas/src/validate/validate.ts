@@ -51,6 +51,22 @@ export interface ValidateOptions {
 }
 
 const DEFAULT_MAX_DEPTH = 64;
+
+/**
+ * Dispatchers whose members describe NBT, not JSON: entity data, block entity data, custom
+ * data, marker data and command storage. A data file that embeds one (a trial spawner's
+ * `spawn_potentials[].data.entity`, for example) is turned into NBT by the game before it is
+ * read, and NBT has no boolean type: an mcdoc `boolean` there is a byte, so the game reads the
+ * JSON numbers 1 and 0 as true and false (vanilla's own trial spawner files write
+ * `"IsBaby": 1`). Below one of these, `validateJson` accepts 0 and 1 for a `boolean`.
+ */
+const NBT_DISPATCHERS: ReadonlySet<string> = new Set([
+  'minecraft:entity',
+  'minecraft:block_entity',
+  'mcdoc:custom_data',
+  'mcdoc:marker_data',
+  'minecraft:storage',
+]);
 const MAX_LISTED_KEYS = 10;
 const MC_PREFIX = 'minecraft:';
 
@@ -130,6 +146,11 @@ interface State {
   acceptedKeys?: ReadonlySet<string>;
   /** The value is an object key checked against a `'*'` field's key type. */
   isKey?: boolean;
+  /**
+   * The value sits below a dispatcher of {@link NBT_DISPATCHERS}, so it is NBT embedded in
+   * JSON: a `boolean` also accepts the numbers 0 and 1. Inherited by every nested value.
+   */
+  nbt?: boolean;
 }
 
 /** One `#[id]` string found by `collectReferences`. */
@@ -472,7 +493,10 @@ function validate(
       return;
     }
     case 'boolean':
-      if (typeof value !== 'boolean') mismatch(value, node, state, out);
+      if (typeof value === 'boolean') return;
+      // NBT booleans are bytes: 0 and 1 are what the game reads as false and true.
+      if (state.nbt === true && (value === 0 || value === 1)) return;
+      mismatch(value, node, state, out);
       return;
     case 'enum': {
       const expected = describeSchemaNode(node);
@@ -543,6 +567,7 @@ function itemState(state: State, index: number): State {
     hops: 0,
     open: false,
   };
+  if (state.nbt === true) item.nbt = true;
   const outer = state.siblings ?? state.outer;
   if (outer !== undefined) item.outer = outer;
   return item;
@@ -613,6 +638,7 @@ function validateStruct(
       siblings,
       open: false,
     };
+    if (state.nbt === true) entryState.nbt = true;
     if (info.discriminators.has(key)) entryState.dispatchKey = true;
     const field = info.byKey.get(key);
     if (field !== undefined) {
@@ -751,6 +777,7 @@ function acceptedDiscriminators(
       open: false,
       dispatchKey: true,
     };
+    if (state.nbt === true) fieldState.nbt = true;
     // The field itself was already walked; do not collect its references twice.
     const refs = ctx.refs;
     delete ctx.refs;
@@ -931,6 +958,7 @@ function validateDispatcher(
     return;
   }
   const next = hop(state);
+  if (NBT_DISPATCHERS.has(node.registry)) next.nbt = true;
 
   if (node.discriminator.length === 0) {
     const member = node.dispatch('');

@@ -3184,3 +3184,16 @@ Next
 - User: the "Block types and plants" in-game checks, the leaf tint, Creator sets, villagers; the vetoable defaults of ADRs 0067–0069.
 - Follow-ups: dock preview for typed blocks, a general item id field, separate crop block and item names, the leaves item tint switch and `textures.item`, `create_texture` accent, `makeMockServerPlayerInLevel`, the stale vendored mcdoc.
 - Backlog: B7 mob expansion, then B8, B13, B14, B15.
+
+## 2026-11-14 — orchestrator — trial spawner restored, wolf sound variant waits upstream
+
+What
+- `@msm/schemas` accepts 0 and 1 for an mcdoc `boolean` inside NBT reached from JSON data (dispatchers `minecraft:entity`, `minecraft:block_entity`, `mcdoc:custom_data`, `mcdoc:marker_data`, `minecraft:storage`), as the game does; plain JSON booleans stay strict.
+- The `trial_spawner` data kind is back (dropped in ADR 0064 because vanilla's own files write `IsBaby: 1`), with a Trial spawner template: 94 kinds, 170 templates (datapack 66).
+- `wolf_sound_variant` stays out: vanilla-mcdoc `main` (eebb39b) still lacks `step_sound` in `WolfSounds` and `OptionalWolfSounds`; the upstream report text is in ADR 0064.
+
+Decisions
+- NBT leniency keyed on the dispatcher, not on attributes (vanilla-mcdoc has no NBT marker for JSON-embedded data).
+
+Next
+- Mob expansion (B7) is being planned (ADR 0070 onwards).

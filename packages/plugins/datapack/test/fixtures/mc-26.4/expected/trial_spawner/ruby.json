@@ -1,0 +1,36 @@
+{
+  "contents": {
+    "loot_tables_to_eject": [
+      {
+        "data": "example:blocks/ruby_ore",
+        "weight": 1
+      }
+    ],
+    "simultaneous_mobs": 2,
+    "spawn_potentials": [
+      {
+        "data": {
+          "entity": {
+            "IsBaby": 1,
+            "id": "minecraft:zombie"
+          }
+        },
+        "weight": 3
+      },
+      {
+        "data": {
+          "entity": {
+            "id": "minecraft:husk"
+          }
+        },
+        "weight": 1
+      }
+    ],
+    "spawn_range": 6,
+    "ticks_between_spawn": 40,
+    "total_mobs": 4
+  },
+  "layer": "datapack",
+  "path": "data/example/trial_spawner/ruby.json",
+  "schema": "resource:trial_spawner"
+}

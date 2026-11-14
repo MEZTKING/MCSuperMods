@@ -64,7 +64,7 @@ describe('@msm/plugin-datapack', () => {
     expect(actual).toEqual(expected);
     expect(dataPackKinds.map((kind) => kind.id)).toEqual(expected.map((kind) => kind.id));
     expect(tagKinds).toHaveLength(21);
-    expect(genericKinds).toHaveLength(27);
+    expect(genericKinds).toHaveLength(28);
     expect(new Set(kinds().map((kind) => kind.id)).size).toBe(kinds().length);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(kinds().length);
     for (const kind of kinds()) {
@@ -149,6 +149,54 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(unknown.map((problem) => problem.code)).toEqual(['schema.unknown-id']);
       },
     );
+
+    it('accepts NBT booleans as 0 and 1 in trial spawner entities, as vanilla writes them', async () => {
+      const indexes = await indexesFor(bundle);
+      // The shape of vanilla's trial_chamber/small_melee/baby_zombie/normal.json, by hand.
+      const babyZombie = {
+        simultaneous_mobs: 3.0,
+        simultaneous_mobs_added_per_player: 0.5,
+        spawn_potentials: [
+          {
+            data: {
+              entity: { id: 'minecraft:zombie', IsBaby: 1 },
+              equipment: {
+                loot_table: 'minecraft:equipment/trial_chamber_melee',
+                slot_drop_chances: 0.0,
+              },
+            },
+            weight: 1,
+          },
+        ],
+        ticks_between_spawn: 20,
+        total_mobs: 6.0,
+        total_mobs_added_per_player: 2.0,
+        loot_tables_to_eject: [
+          { data: 'minecraft:spawners/trial_chamber/consumables', weight: 1 },
+          { data: 'minecraft:spawners/trial_chamber/key', weight: 1 },
+        ],
+        items_to_drop_when_ominous: 'minecraft:spawners/trial_chamber/items_to_drop_when_ominous',
+      };
+      expect(blockingProblems(indexes, 'resource:trial_spawner', babyZombie)).toEqual([]);
+      const two = structuredClone(babyZombie);
+      (two.spawn_potentials[0] as { data: { entity: { IsBaby: number } } }).data.entity.IsBaby = 2;
+      expect(
+        blockingProblems(indexes, 'resource:trial_spawner', two).map((problem) => problem.path),
+      ).toEqual(['/spawn_potentials/0/data/entity/IsBaby']);
+      // Plain JSON booleans outside NBT still reject numbers.
+      const recipe = {
+        type: 'minecraft:crafting_shapeless',
+        ingredients: ['minecraft:stick'],
+        result: { id: 'minecraft:stick' },
+        show_notification: 1,
+      };
+      expect(
+        blockingProblems(indexes, recipeKind.schema, recipe).map((problem) => [
+          problem.path,
+          problem.code,
+        ]),
+      ).toEqual([['/show_notification', 'schema.type-mismatch']]);
+    });
 
     it('lowers every default to a valid file', async () => {
       const indexes = await indexesFor(bundle);

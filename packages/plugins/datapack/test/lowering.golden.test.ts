@@ -245,6 +245,17 @@ const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
     min_cost: 5,
     max_cost_span: 15,
   },
+  trial_spawner: {
+    spawn_range: 6,
+    total_mobs: 4,
+    simultaneous_mobs: 2,
+    ticks_between_spawn: 40,
+    spawn_potentials: [
+      { data: { entity: { id: 'minecraft:zombie', IsBaby: 1 } }, weight: 3 },
+      { data: { entity: { id: 'minecraft:husk' } }, weight: 1 },
+    ],
+    loot_tables_to_eject: [{ data: 'example:blocks/ruby_ore', weight: 1 }],
+  },
   timeline: {
     clock: 'minecraft:overworld',
     period_ticks: 48000,

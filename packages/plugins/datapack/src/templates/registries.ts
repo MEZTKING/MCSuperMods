@@ -265,4 +265,36 @@ export const otherDataTemplates: readonly ElementTemplate[] = [
       range: 256,
     },
   ),
+  entry(
+    'trial_spawner',
+    'trial_spawner',
+    MOBS,
+    'Trial spawner',
+    "A trial spawner wave of baby zombies, like the trial chambers' small melee spawner; place a trial spawner and point its block entity at this id.",
+    {
+      spawn_range: 4,
+      total_mobs: 6,
+      total_mobs_added_per_player: 2,
+      simultaneous_mobs: 3,
+      simultaneous_mobs_added_per_player: 0.5,
+      ticks_between_spawn: 20,
+      spawn_potentials: [
+        {
+          data: {
+            entity: { id: 'minecraft:zombie', IsBaby: 1 },
+            equipment: {
+              loot_table: 'minecraft:equipment/trial_chamber_melee',
+              slot_drop_chances: 0,
+            },
+          },
+          weight: 1,
+        },
+      ],
+      loot_tables_to_eject: [
+        { data: 'minecraft:spawners/trial_chamber/consumables', weight: 1 },
+        { data: 'minecraft:spawners/trial_chamber/key', weight: 1 },
+      ],
+      items_to_drop_when_ominous: 'minecraft:spawners/trial_chamber/items_to_drop_when_ominous',
+    },
+  ),
 ];

@@ -33,6 +33,7 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
   'chicken_sound_variant',
   'instrument',
   'enchantment_provider',
+  'trial_spawner',
   'timeline',
   'world_clock',
 ] as const satisfies readonly DataFolderKey[]);
@@ -209,6 +210,11 @@ const DEFAULTS: Readonly<Record<GenericDataRegistry, Json>> = {
     type: 'minecraft:single',
     enchantment: 'minecraft:silk_touch',
     level: 1,
+  },
+  // One zombie at a time, the vanilla consumables when beaten (ADR 0064 Findings, continued).
+  trial_spawner: {
+    spawn_potentials: [{ data: { entity: { id: 'minecraft:zombie' } }, weight: 1 }],
+    loot_tables_to_eject: [{ data: 'minecraft:spawners/trial_chamber/consumables', weight: 1 }],
   },
   timeline: {
     clock: 'minecraft:overworld',
