@@ -4928,3 +4928,15 @@ Decisions
 
 Next
 - B408 scaffold may merge; B410 reads the dumps (G is vanilla `key.quickActions`, so the `second` runtime key needs another default); the orchestrator records the findings in the plan's notes.
+## 2026-11-14 — executor — "Glow Stone" shows a vanilla model and no Make with AI
+
+What
+- Investigated the e2e report. Not a bug in the Simple block flow: it derives `<ns>:block/<id>` for the model and texture whatever the name (checked for Glow Stone, Stone, Glass, Oak Planks, Amber Tile). The e2e project is `fixtures/sample-mod`, which already holds `msm_sample_mod:glow_stone` with `"model": "minecraft:block/glowstone"` on purpose (README row 27). The Creator skips an id the project already has (`creator-sets.ts`, "is already in the project, so it is skipped"), so the row the test opened was the fixture's block.
+- "Make with AI" is by design only offered for project textures of the model (`ModelPicturesAi` reads `modelTextures`, which ignores vanilla models); a vanilla model has none, so no button.
+- Added a regression test in `packages/plugins/library/test/parameters.test.ts` for the five names.
+
+Decisions
+- No code change. An e2e that needs a fresh block should use a name the fixture lacks (Amber Tile).
+
+Next
+- Optional UI idea: say in the Block Studio that a vanilla model has no project pictures to make.

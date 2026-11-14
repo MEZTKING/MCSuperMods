@@ -612,6 +612,25 @@ describe('Creator flows', () => {
     expect(JSON.stringify(bundle)).not.toMatch(/ruby/i);
   });
 
+  it.each([
+    ['Glow Stone', 'glow_stone'],
+    ['Stone', 'stone'],
+    ['Glass', 'glass'],
+    ['Oak Planks', 'oak_planks'],
+    ['Amber Tile', 'amber_tile'],
+  ])('Simple block "%s": the model and texture stay in the project namespace', (name, id) => {
+    const bundle = build(starter('simple-block'), { block_name: name });
+    expect(data(bundle, `demo:${id}`).model).toBe(`demo:block/${id}`);
+    expect(data(bundle, `demo:block/${id}`)).toMatchObject({
+      parent: 'minecraft:block/cube_all',
+      textures: { all: `demo:block/${id}` },
+    });
+    expect(bundle.assets?.map((asset) => asset.path)).toContain(`textures/block/${id}.png`);
+    expect(JSON.stringify(bundle.elements.find((entry) => entry.id === `demo:${id}`))).not.toMatch(
+      /"model":"minecraft:/,
+    );
+  });
+
   it('Simple block: tool, tier, light, drops and recipe follow the values', () => {
     const bundle = build(starter('simple-block'), {
       block_name: 'Glow Stone Bricks',
