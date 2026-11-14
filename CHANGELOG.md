@@ -10,7 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Work in progress: **Try it**, a small test area inside MCSuperMods where you walk around, place your blocks and see your mobs and particles without starting Minecraft.
 
-## [1.5.0] - 2026-11-14
+## [1.5.1] - 2026-11-14
 
 ### Added
 
