@@ -1,0 +1,29 @@
+# ADR 0083: Very easy mode
+
+## Context
+
+[ADR 0047](0047-easy-and-advanced-mode.md) gives two view modes: **Easy** (content by Creator set and friendly groups, technical groups folded under More, the form only, "Create something…" and "Build with the AI helper…" in the empty editor) and **Advanced** (every group, kind ids, Raw JSON). A new install starts in Easy. Easy still shows the sidebar tree, the toolbar with export and install menus, the target switch, the Problems panel with codes and the full Studio forms. The user asked (2026-11-14) for "a very easy to use mode ... anyone can build anything ... make it easy to test". [ADR 0082](0082-rules-no-code-behaviour.md) adds Rules and [ADR 0084](0084-one-click-play-and-reload.md) one-click Play.
+
+Options: (a) make Easy itself much simpler, which breaks the guide pages and habits of Easy users and removes the middle step; (b) a third mode above Easy; (c) a separate "kids" app. (c) duplicates the shell; (a) loses what Easy is good at. We take (b).
+
+## Decision
+
+- **D1 A third mode.** `UiMode` becomes `'very-easy' | 'easy' | 'advanced'` (stored as today in the renderer's preferences, ADR 0047 D1). The mode switch (View menu, toolbar, palette) shows the three as one row "Very easy · Easy · Advanced". **A brand-new install starts in Very easy** (the Welcome's first step shows the three with a sentence each and the choice stays one click away); an install that already chose a mode keeps it; test runs stay in Advanced.
+- **D2 Home.** In Very easy the editor area opens on **Home** when no element is open, and a Home button sits first in the toolbar. Home has two parts:
+  - **"Make something"**: big picture tiles in this order: Make a block, Make an item, Make a tool or weapon, Make armour, Make food, Make a mob, Make a pet or animal, Make a plant or tree, Make a potion or effect, Make a portal, **Make things happen** (Rules), Paint a picture, Build with the AI helper. Each tile opens the matching Creator flow (by flow id from the library's `creator` groups; a tile with several flows opens a small chooser of their cards) or the Rule book or the texture painter. Tiles whose flows are not offered on the project's target are hidden.
+  - **"My things"**: a grid of cards, one per Creator set (ADR 0047 D2) or loose content element (blocks, items, mobs, effects, potions, portals, rule books), with its thumbnail and name; technical elements (models, item definitions, block states, lang, pack and mod settings, scripts that Rules generated) are never shown. A card opens the element in its Studio with the Very easy layout (D3); its menu has Edit in Creator (when it has `meta.creator`), Rename, Duplicate and Delete (undoable).
+- **D3 Studios in Very easy.** The Studios show only the sections a beginner needs (each Studio declares a `veryEasy` section list; the default for Studios that declare none is Easy's layout), the Rules section first for things that can have rules, and **no** Raw JSON, kind ids, ids typed by hand, offsets, ticks (seconds instead) or "run a command". The events editor is hidden in favour of Rules (the subject's hand-made events still run and still show in Easy and Advanced).
+- **D4 Toolbar and menus.** Very easy shows: Home, Undo, Redo, **Play**, **Reload** ([ADR 0084](0084-one-click-play-and-reload.md)), **Share my mod** (the Fabric mod jar export with its defaults and a "Where is it?" button), the AI helper, Help, and the mode switch. The sidebar, the Problems panel, the target switch, the install-target menu, "More exports", the Java eject and the plugin menus are hidden (all keep working in Easy and Advanced; the native menu keeps them for keyboard users).
+- **D5 Plain-language problems.** A strip "Things to fix" replaces the Problems panel: one line per problem in plain words from a table keyed by problem code (`app/src/renderer/src/session/plain-problems.ts`; at least the codes beginners can meet through the Creator, Rules and the Very easy Studios, about 60), naming the thing by its display name, never an id or a pointer, with "Show me" (opens the card or field) and "Fix it" where a one-step fix exists (for example "Use a placeholder picture" for a missing texture, "Remove this step" for a broken rule step). Codes without an entry show "Something in <thing> needs fixing" plus "Show details" (the original message). Warnings and info are folded under "Tips". The same text appears on Rule cards (ADR 0082 D6). Errors block Play and Share exactly as they block export today.
+- **D6 New projects.** In Very easy, "New" asks only for a name and creates the project in `<Documents>/MCSuperMods/<name>` (the last parent folder from settings when there is one), with a "Change folder" link; the namespace comes from the name as today; the target is the default target. Opening an existing project works as in other modes.
+- **D7 Names and labels.** UI text in Very easy uses words only: "picture" for texture, "thing" for element, "mob" for entity, "seconds" for ticks. Labels named in `docs/guide/very-easy.md` match the code (app rule).
+
+## Consequences
+
+- Three modes to test: Very easy has its own e2e path; Easy and Advanced tests are unchanged except where the mode switch row is asserted.
+- Nothing is removed from Easy or Advanced; switching modes is lossless.
+- The Welcome and the guide's first steps change for new installs; existing users see no change unless they pick Very easy.
+
+## Status
+
+Accepted (2026-11-14), with the defaults below; the user may still veto them. Vetoable defaults: a third mode rather than a simpler Easy; the label "Very easy"; new installs starting in Very easy; the tile list, its order and wording; hiding the sidebar, Problems panel, target switch and exports in Very easy; the "Things to fix" strip and its fallback; the default project folder `<Documents>/MCSuperMods/<name>`; "Share my mod" as the only export shown.
