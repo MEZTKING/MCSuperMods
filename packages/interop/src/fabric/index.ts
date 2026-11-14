@@ -115,8 +115,10 @@ export {
 } from './mods-install';
 export {
   DEFAULT_RESOURCE_PACKS,
+  ONBOARD_ACCESSIBILITY_KEY,
   RESOURCE_PACKS_KEY,
   readResourcePacks,
+  withDefaultOption,
   withResourcePack,
 } from './options-txt';
 export {

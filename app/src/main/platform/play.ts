@@ -60,6 +60,7 @@ import {
   managedInstanceName,
   nextPlayRequest,
   nextRequest,
+  ONBOARD_ACCESSIBILITY_KEY,
   oldWorldFolder,
   overlayAfterReload,
   overlayTarget,
@@ -80,6 +81,7 @@ import {
   stableJson,
   webCryptoSha256,
   webCryptoSha512,
+  withDefaultOption,
   withResourcePack,
 } from '@msm/interop';
 import type { DevFacts, PackFormat } from '@msm/plugin-api';
@@ -656,7 +658,11 @@ export function createPlayService(deps: PlayDeps): PlayService {
     );
     const optionsPath = join(gameDir, 'options.txt');
     const options = await readText(optionsPath);
-    const nextOptions = withResourcePack(options, DEV_RESOURCE_PACK_ID);
+    const nextOptions = withDefaultOption(
+      withResourcePack(options, DEV_RESOURCE_PACK_ID),
+      ONBOARD_ACCESSIBILITY_KEY,
+      'false',
+    );
     if (nextOptions !== options) {
       await writeInGame(location, checked, optionsPath, textEncoder.encode(nextOptions));
     }

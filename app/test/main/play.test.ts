@@ -333,7 +333,7 @@ describe('Play service', () => {
     expect(setup).toContain('# msm:refill');
     expect(setup).toContain('ruby:ruby_block');
     expect(await readFile(join(gameDir(), 'options.txt'), 'utf8')).toBe(
-      'resourcePacks:["vanilla","fabric","file/msm-dev"]\n',
+      'resourcePacks:["vanilla","fabric","file/msm-dev"]\nonboardAccessibility:false\n',
     );
     expect(await readJson(join(gameDir(), 'resourcepacks', 'msm-dev', 'pack.mcmeta'))).toEqual({
       pack: {

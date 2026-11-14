@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEV_RESOURCE_PACK_ID, readResourcePacks, withResourcePack } from '../../src/index';
+import {
+  DEV_RESOURCE_PACK_ID,
+  ONBOARD_ACCESSIBILITY_KEY,
+  readResourcePacks,
+  withDefaultOption,
+  withResourcePack,
+} from '../../src/index';
 
 const PACK = DEV_RESOURCE_PACK_ID;
 
@@ -65,5 +71,30 @@ describe('readResourcePacks', () => {
     expect(readResourcePacks(null)).toBeNull();
     expect(readResourcePacks('x:1\n')).toBeNull();
     expect(readResourcePacks('resourcePacks:["vanilla"]\r\n')).toEqual(['vanilla']);
+  });
+});
+
+describe('withDefaultOption', () => {
+  it('writes the key into a missing or empty file', () => {
+    expect(withDefaultOption(null, ONBOARD_ACCESSIBILITY_KEY, 'false')).toBe(
+      'onboardAccessibility:false\n',
+    );
+    expect(withDefaultOption('', ONBOARD_ACCESSIBILITY_KEY, 'false')).toBe(
+      'onboardAccessibility:false\n',
+    );
+  });
+
+  it('adds the key at the end, keeping the line endings', () => {
+    expect(withDefaultOption('fov:0.0\r\nresourcePacks:[]', 'onboardAccessibility', 'false')).toBe(
+      'fov:0.0\r\nresourcePacks:[]\r\nonboardAccessibility:false\r\n',
+    );
+    expect(withDefaultOption('fov:0.0\n', 'onboardAccessibility', 'false')).toBe(
+      'fov:0.0\nonboardAccessibility:false\n',
+    );
+  });
+
+  it('keeps a value the player chose', () => {
+    const text = 'onboardAccessibility:true\nfov:0.0\n';
+    expect(withDefaultOption(text, 'onboardAccessibility', 'false')).toBe(text);
   });
 });

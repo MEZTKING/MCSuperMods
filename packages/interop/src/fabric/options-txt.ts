@@ -56,6 +56,26 @@ export function withResourcePack(text: string | null, pack: string): string {
   return `${text}${needsBreak ? eol : ''}${prefix}${packList([...DEFAULT_RESOURCE_PACKS, pack])}${eol}`;
 }
 
+/**
+ * The vanilla first-start accessibility screen's key. Play writes `false` when the key is
+ * missing, so the very first start of the managed instance reaches the title screen (and the
+ * Play request) by itself; a value the player chose is kept.
+ */
+export const ONBOARD_ACCESSIBILITY_KEY = 'onboardAccessibility';
+
+/**
+ * `options.txt` text with `key:value` added when the file has no `key` line; text that already
+ * has the key (whatever its value) is returned unchanged. Line endings are kept.
+ */
+export function withDefaultOption(text: string | null, key: string, value: string): string {
+  if (text === null || text === '') return `${key}:${value}\n`;
+  const prefix = `${key}:`;
+  if (text.split(/\r\n|\n|\r/).some((line) => line.startsWith(prefix))) return text;
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const needsBreak = !/(?:\r\n|\n|\r)$/.test(text);
+  return `${text}${needsBreak ? eol : ''}${prefix}${value}${eol}`;
+}
+
 /** The packs listed in an `options.txt` text's `resourcePacks` line, or `null` without one. */
 export function readResourcePacks(text: string | null): string[] | null {
   if (text === null) return null;
