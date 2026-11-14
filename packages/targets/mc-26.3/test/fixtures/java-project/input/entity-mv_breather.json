@@ -1,0 +1,20 @@
+{
+  "category": "water_creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "breathes_air": true,
+      "mode": "swim",
+      "speed": 1.0
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

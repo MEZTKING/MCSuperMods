@@ -5,7 +5,9 @@
  * `block-shape_*` are the `MsmShapeGameTest` blocks; `biome_addition-*`, `loot_addition-*`,
  * `block-fuel_block` and `item-fuel_gem` are the `MsmAdditionGameTest` definitions; the trigger
  * items, blocks and `entity-ticker` are the `MsmTriggerGameTest` definitions;
- * `potion-*` are the `MsmPotionGameTest` definitions; `block-type_*` are the
+ * `potion-*` are the `MsmPotionGameTest` definitions; `entity-mx_*`, `entity-mv_*`,
+ * `entity-rg_*`, `entity-vb_*` and `item-rg_thrown_dart` are the mob GameTest definitions of
+ * ADRs 0070 and 0071 (`MsmMobBaseGameTest` and the wave 3 tests); `block-type_*` are the
  * `MsmBlockTypeGameTest` and `MsmRedstoneTypeGameTest` building and redstone type blocks and
  * the `MsmPlantGameTest` crops, saplings and leaves;
  * `block-stepping_stone` and `entity-frost_golem` are the `apply_effect` corpus cases of
@@ -19,6 +21,7 @@ import { fileURLToPath } from 'node:url';
 import type { DefinitionInput, GeneratedFile, JavaProjectInput, JsonObject } from '@msm/plugin-api';
 import { describe, expect, it } from 'vitest';
 import { target } from '../src/index';
+import { VANILLA_PROJECTILE_ITEMS } from '../src/java-project/entities';
 import {
   className,
   constantName,
@@ -1171,6 +1174,170 @@ describe('Java generator (mc-26.3)', () => {
     await golden('entity', files);
   });
 
+  /** `mx_animal` without `msm:rideable` (ejected by B301), optionally with `vb_coloured`'s variants. */
+  async function plainAnimal(variants: boolean): Promise<DefinitionInput> {
+    const animal = await definition('entity', 'mx_animal');
+    const components = animal.definition.components as JsonObject;
+    delete components['msm:rideable'];
+    if (variants) {
+      const coloured = await definition('entity', 'vb_coloured');
+      components['msm:variants'] = (coloured.definition.components as JsonObject)[
+        'msm:variants'
+      ] as JsonObject;
+    }
+    return {
+      ...animal,
+      id: 'msm_test:mx_plain_animal',
+      path: 'msm/msm_test/entity/mx_plain_animal.json',
+    };
+  }
+
+  it('generates mob bases, movement modes, spawn rules and the new goals (ADR 0070 D8)', async () => {
+    const entities = await Promise.all(
+      [
+        'mx_monster',
+        'mx_panicker',
+        'mx_swimmer',
+        'mx_tempter',
+        'mx_vanilla',
+        'mv_amphibian',
+        'mv_breather',
+        'mv_flyer',
+        'mv_swimmer',
+      ].map((path) => definition('entity', path)),
+    );
+    entities.push(await plainAnimal(false));
+    const { files } = generateJavaProject(input({ entities, geckolib: true }));
+    const text = (name: string): string =>
+      files.find((file) => file.path.endsWith(`/entity/${name}.java`))?.contents ?? '';
+    // Bases (ADR 0070 D1).
+    expect(text('MxMonsterEntity')).toContain('extends Monster implements GeoEntity');
+    expect(text('MxMonsterEntity')).toContain('new LeapAtTargetGoal(this, 0.5f)');
+    const animal = text('MxPlainAnimalEntity');
+    expect(animal).toContain('extends TamableAnimal implements GeoEntity');
+    expect(animal).toContain('public boolean isFood(ItemStack stack)');
+    expect(animal).toContain('.add(Attributes.STEP_HEIGHT, 1.0f);');
+    expect(animal).not.toContain('FLYING_SPEED');
+    // Movement (ADR 0070 D3).
+    const flyer = text('MvFlyerEntity');
+    expect(flyer).toContain('moveControl = new FlyingMoveControl<>(this, 20, true);');
+    expect(flyer).toContain('new WaterAvoidingRandomFlyingGoal(this, 1.0f)');
+    expect(flyer).toContain('.add(Attributes.FLYING_SPEED, 0.4f);');
+    expect(flyer).toContain('new FloatGoal(this)');
+    const swimmer = text('MvSwimmerEntity');
+    expect(swimmer).toContain('new SmoothSwimmingMoveControl<>(this, 85, 10, 0.02f, 0.1f, true)');
+    expect(swimmer).toContain('new RandomSwimmingGoal(this, 1.0f, 40)');
+    expect(swimmer).toContain('setAirSupply(20);');
+    expect(swimmer).not.toContain('FloatGoal');
+    expect(text('MvBreatherEntity')).toContain('new BreathAirGoal(this)');
+    expect(text('MvAmphibianEntity')).toContain('new AmphibiousPathNavigation(this, level)');
+    expect(text('MvAmphibianEntity')).toContain('new RandomStrollGoal(this, 1.0f)');
+    // Goals (ADR 0070 D5): tempt adds the tempt range; ranged_attack without the component adds nothing.
+    expect(text('MxTempterEntity')).toContain('.add(Attributes.TEMPT_RANGE, 10.0f);');
+    expect(text('MxTempterEntity')).toContain(
+      '// ranged_attack (goal 2) left out: without msm:ranged_attack the goal does nothing',
+    );
+    expect(text('MxPanickerEntity')).toContain('new PanicGoal(this, 1.5f)');
+    expect(files.some((file) => file.path.endsWith('MobRangedAttackGoal.java'))).toBe(false);
+    // Spawn rules (ADR 0070 D6).
+    const modEntities = files.find((file) => file.path.endsWith('/ModEntities.java'))?.contents;
+    expect(modEntities).toContain('BlockTags.ANIMALS_SPAWNABLE_ON');
+    expect(modEntities).toContain('level.getFluidState(pos.below()).is(FluidTags.WATER)');
+    await golden('mobs', files);
+  });
+
+  it('generates ranged attacks with the copied goal and the drop formula (ADR 0070 D4, D8)', async () => {
+    const entities = await Promise.all(
+      ['rg_archer', 'rg_dart_thrower', 'rg_lookout', 'rg_short', 'rg_snowman'].map((path) =>
+        definition('entity', path),
+      ),
+    );
+    const { files } = generateJavaProject(
+      input({ entities, items: [await definition('item', 'rg_thrown_dart')], geckolib: true }),
+    );
+    const text = (name: string): string =>
+      files.find((file) => file.path.endsWith(`/entity/${name}.java`))?.contents ?? '';
+    const archer = text('RgArcherEntity');
+    expect(archer).toContain('implements GeoEntity, RangedAttackMob');
+    expect(archer).toContain(
+      'ProjectileUtil.getMobArrow(this, stack, power, new ItemStack(Items.BOW))',
+    );
+    expect(archer).toContain('projectile.setBaseDamage(3.0f);');
+    expect(archer).toContain('new MobRangedAttackGoal<>(this, 1.0f, 10, 20, 12.0f, false)');
+    expect(archer).toContain('triggerAnim("msm_triggered", "shoot");');
+    expect(archer).toContain('triggered.triggerableAnim("shoot"');
+    expect(text('RgDartThrowerEntity')).toContain(
+      'ThrownItemEntity projectile = new ThrownItemEntity(level, this, stack.copy());',
+    );
+    expect(text('RgSnowmanEntity')).toContain('p -> item.shoot(p, dx, dy, dz, 1.6f, 6.0f)');
+    expect(text('RgLookoutEntity')).toContain('new HurtByTargetGoal(this)');
+    expect(text('RgLookoutEntity')).toContain(
+      'new MobRangedAttackGoal<>(this, 1.0f, 20, 40, 15.0f, true)',
+    );
+    const goal = files.find((file) => file.path.endsWith('/entity/MobRangedAttackGoal.java'));
+    expect(goal?.contents).toContain(
+      'public class MobRangedAttackGoal<T extends PathfinderMob & RangedAttackMob> extends Goal {',
+    );
+    await golden('mob-ranged', files);
+  });
+
+  it('copies MsmRangedAttackGoal unchanged but for the package and name', async () => {
+    const runtime = await readFile(
+      join(
+        here,
+        '../../../../engine-mod/src/main/java/dev/mcsupermods/runtime/goals/MsmRangedAttackGoal.java',
+      ),
+      'utf8',
+    );
+    const { files } = generateJavaProject(
+      input({ entities: [await definition('entity', 'rg_snowman')], geckolib: true }),
+    );
+    const copy = files.find((file) => file.path.endsWith('/MobRangedAttackGoal.java'))?.contents;
+    const code = (text: string): string[] =>
+      text
+        .split('\n')
+        .filter((line) => !/^\s*(\*|\/\*\*|\/\/|package )/.test(line))
+        .map((line) => line.replaceAll('MsmRangedAttackGoal', 'MobRangedAttackGoal'));
+    expect(code(copy ?? '')).toEqual(code(runtime));
+  });
+
+  it('generates variants and boss bars (ADR 0071 D9)', async () => {
+    const entities = await Promise.all(
+      ['vb_biome', 'vb_boss', 'vb_boss_range', 'vb_coloured'].map((path) =>
+        definition('entity', path),
+      ),
+    );
+    entities.push(await plainAnimal(true));
+    const { files } = generateJavaProject(input({ entities, geckolib: true }));
+    const text = (name: string): string =>
+      files.find((file) => file.path.endsWith(`/entity/${name}.java`))?.contents ?? '';
+    const coloured = text('VbColouredEntity');
+    expect(coloured).toContain('private static final String[] VARIANT_IDS = {"red", "blue"};');
+    expect(coloured).toContain('private static final int[] VARIANT_WEIGHTS = {1, 3};');
+    expect(coloured).toContain('output.putString("Variant", variantId());');
+    expect(coloured).toContain('setVariant(pickVariant(getRandom()));');
+    expect(text('VbBiomeEntity')).toContain(
+      'private static final String[][] VARIANT_BIOMES = {{"minecraft:desert"}, {"minecraft:plains", "#minecraft:is_jungle"}, {}};',
+    );
+    expect(text('VbBiomeEntity')).toContain('biomeMatcher(accessor.getBiome(blockPosition()))');
+    const boss = text('VbBossEntity');
+    expect(boss).toContain('BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10');
+    expect(boss).toContain('bossEvent.setDarkenScreen(true);');
+    expect(boss).toContain('public void startSeenByPlayer(ServerPlayer player)');
+    expect(boss).toContain('public boolean requiresCustomPersistence()');
+    const ranged = text('VbBossRangeEntity');
+    expect(ranged).toContain('double max = (double) 8.0f * 8.0f;');
+    expect(ranged).not.toContain('startSeenByPlayer');
+    expect(text('MxPlainAnimalEntity')).toContain('baby.setVariant(parent.variant());');
+    const modEntities = files.find((file) => file.path.endsWith('/ModEntities.java'))?.contents;
+    expect(modEntities?.match(/\.clientTrackingRange\(10\)/g)).toHaveLength(2);
+    await golden('mob-variants', files);
+  });
+
+  it('lists the target fact projectile items', () => {
+    expect(VANILLA_PROJECTILE_ITEMS).toEqual(target.entities?.projectileItems);
+  });
+
   it('generates status effects mirroring MsmMobEffect, registered first (ADR 0055 D10)', async () => {
     const effects = await Promise.all(
       ['frostbite', 'pulse', 'quickening'].map((path) => definition('effect', path)),
@@ -1820,6 +1987,65 @@ describe('Java generator (mc-26.3)', () => {
           ],
         }),
       ).toThrow(/trigger_event names event msm_test:b/);
+    });
+
+    it('rejects mob fields the runtime refuses, and the mob parts B301 ejects', async () => {
+      const entity = await definition('entity', 'rg_archer');
+      const withChange = (change: (definition: JsonObject) => void): DefinitionInput => {
+        const copy = structuredClone(entity);
+        change(copy.definition);
+        return copy;
+      };
+      const components = (definition: JsonObject): JsonObject =>
+        definition.components as JsonObject;
+      const ranged = (definition: JsonObject): JsonObject =>
+        components(definition)['msm:ranged_attack'] as JsonObject;
+      const run = (change: (definition: JsonObject) => void) =>
+        generate({ entities: [withChange(change)], geckolib: true });
+      // Stricter than the runtime: an unknown projectile fails here instead of shooting nothing.
+      expect(run((d) => (ranged(d).projectile = 'minecraft:stick'))).toThrow(
+        /projectile minecraft:stick is neither an arrow/,
+      );
+      expect(run((d) => (ranged(d).speed = 6))).toThrow(/speed 6 is out of range \(0\.1\.\.5\)/);
+      expect(run((d) => (ranged(d).interval_ticks = 4))).toThrow(
+        /interval_ticks 4 is out of range/,
+      );
+      expect(run((d) => (ranged(d).arc = 1))).toThrow(/unknown msm:ranged_attack field 'arc'/);
+      expect(run((d) => (ranged(d).on_shoot = 'msm_test:missing'))).toThrow(
+        /names event msm_test:missing, which is not declared/,
+      );
+      expect(run((d) => (d.base = 'boss'))).toThrow(
+        /base 'boss' is not one of mob, animal, monster/,
+      );
+      expect(run((d) => (components(d)['msm:movement'] = { mode: 'hop' }))).toThrow(
+        /mode 'hop' is not one of/,
+      );
+      expect(run((d) => (components(d)['msm:movement'] = { dry_out_ticks: 5 }))).toThrow(
+        /dry_out_ticks 5 is out of range/,
+      );
+      expect(run((d) => (components(d)['msm:boss_bar'] = { range: 4 }))).toThrow(
+        /range 4 is out of range \(8\.\.256\)/,
+      );
+      expect(run((d) => (components(d)['msm:boss_bar'] = { colour: 'black' }))).toThrow(
+        /colour 'black' is not one of/,
+      );
+      const variants = Array.from({ length: 33 }, (_, n) => ({
+        id: `v${n}`,
+        texture: 'msm_test:entity/golem',
+      }));
+      expect(run((d) => (components(d)['msm:variants'] = { variants }))).toThrow(
+        /variants must list 1 to 32 variants, not 33/,
+      );
+      expect(
+        run((d) => ((components(d)['msm:animated_model'] as JsonObject).renderer = 'blocky')),
+      ).toThrow(/renderer 'blocky' is not one of auto, geckolib, vanilla/);
+      // Taming, breeding, riding and the GeckoLib state animations come with B301.
+      expect(run((d) => (components(d)['msm:rideable'] = {}))).toThrow(
+        /unknown component 'msm:rideable'/,
+      );
+      expect(run((d) => ((components(d)['msm:animated_model'] as JsonObject).fly = 'fly'))).toThrow(
+        /unknown msm:animated_model field 'fly'/,
+      );
     });
 
     it('rejects entities without GeckoLib and unknown goals', async () => {

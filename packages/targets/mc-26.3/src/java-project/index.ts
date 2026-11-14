@@ -12,7 +12,8 @@
  * `ModBlocks.java`, `ModItems.java`, `ModEntities.java`, `Actions.java`, `VanillaComponents.java`
  * (when an item uses `msm:components`), `effect/` (with `MobEffectBase.java`, ADR 0055 D10),
  * `block/`, `item/` (with `ThrowableItem.java` when an item has `msm:throwable`), `entity/`
- * (with `FollowTypesGoal.java` when a follow goal exists and `ThrownItemEntity.java` with
+ * (with `FollowTypesGoal.java` when a follow goal exists, `MobRangedAttackGoal.java` when a
+ * ranged attack goal exists (ADR 0070 D8) and `ThrownItemEntity.java` with
  * throwables, ADR 0056 D7), and `client/` with `<ModClass>Client.java` when the project has
  * entities, throwables or tinted leaves (ADR 0068 D8), plus `client/entity/` GeckoLib models
  * with entities. Additions to
@@ -40,6 +41,7 @@ import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
 import { cooldownMapJava } from './templates/cooldown-map-java';
 import { followTypesGoalJava } from './templates/follow-types-goal-java';
+import { rangedAttackGoalJava } from './templates/ranged-attack-goal-java';
 import { throwableItemJava } from './templates/throwable-item-java';
 import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
 import { tickLimiterJava } from './templates/tick-limiter-java';
@@ -92,6 +94,7 @@ export function generateJavaProject(input: JavaProjectInput): {
   const classNames = new NameTable();
   classNames.reserve(
     'entity.FollowTypesGoal',
+    'entity.MobRangedAttackGoal',
     'client.entity.GeoModelBase',
     'effect.MobEffectBase',
   );
@@ -173,6 +176,12 @@ export function generateJavaProject(input: JavaProjectInput): {
     context.files.push({
       path: `${context.javaRoot}/entity/FollowTypesGoal.java`,
       contents: followTypesGoalJava(`${input.javaPackage}.entity`),
+    });
+  }
+  if (entities?.usesRangedGoal === true) {
+    context.files.push({
+      path: `${context.javaRoot}/entity/MobRangedAttackGoal.java`,
+      contents: rangedAttackGoalJava(`${input.javaPackage}.entity`),
     });
   }
   const files = [...context.files].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));

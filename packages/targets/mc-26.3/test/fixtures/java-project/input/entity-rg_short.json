@@ -1,0 +1,41 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "speed": 0,
+          "type": "ranged_attack"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:ranged_attack": {
+      "charge_ticks": 0,
+      "interval_ticks": 10,
+      "on_shoot": "msm_test:rg_shot",
+      "projectile": "minecraft:snowball",
+      "range": 4
+    }
+  },
+  "events": {
+    "msm_test:rg_shot": {
+      "actions": [
+        {
+          "count": 2,
+          "particle": "minecraft:crit",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

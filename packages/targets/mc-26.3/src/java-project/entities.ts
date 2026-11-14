@@ -46,6 +46,7 @@ export const MAIN_CONTROLLER = 'msm_main';
 
 const ENTITY_KEYS = [
   'format',
+  'base',
   'category',
   'size',
   'eye_height',
@@ -70,6 +71,9 @@ const ENTITY_COMPONENTS = [
   'msm:on_interact',
   'msm:on_tick',
   'msm:on_spawn',
+  'msm:ranged_attack',
+  'msm:variants',
+  'msm:boss_bar',
 ];
 export const CATEGORIES = [
   'monster',
@@ -88,8 +92,76 @@ const HEIGHTMAPS = [
   'world_surface',
   'ocean_floor',
 ] as const;
-const RULES = ['mob', 'monster', 'surface_monster', 'any_light_monster', 'always'] as const;
-const GOAL_TYPES = ['wander', 'look_at_player', 'look_around', 'melee_attack', 'flee', 'follow'];
+const RULES = [
+  'mob',
+  'monster',
+  'surface_monster',
+  'any_light_monster',
+  'always',
+  'animal',
+  'water_animal',
+] as const;
+const GOAL_TYPES = [
+  'wander',
+  'look_at_player',
+  'look_around',
+  'melee_attack',
+  'flee',
+  'follow',
+  'ranged_attack',
+  'tempt',
+  'panic',
+  'leap_at_target',
+];
+/** `base` (ADR 0070 D1): the vanilla class each generated entity extends. */
+const BASES = ['mob', 'animal', 'monster'] as const;
+type Base = (typeof BASES)[number];
+const BASE_CLASSES: Record<Base, string> = {
+  mob: 'net.minecraft.world.entity.PathfinderMob',
+  animal: 'net.minecraft.world.entity.TamableAnimal',
+  monster: 'net.minecraft.world.entity.monster.Monster',
+};
+const MOVEMENT_MODES = ['walk', 'fly', 'swim', 'amphibious'] as const;
+type MovementMode = (typeof MOVEMENT_MODES)[number];
+const RENDERERS = ['auto', 'geckolib', 'vanilla'] as const;
+const BOSS_BAR_COLOURS = ['pink', 'blue', 'red', 'green', 'yellow', 'purple', 'white'] as const;
+const BOSS_BAR_OVERLAYS = [
+  'progress',
+  'notched_6',
+  'notched_10',
+  'notched_12',
+  'notched_20',
+] as const;
+/**
+ * The vanilla items a mob may fire on 26.3 (`TargetFacts.entities.projectileItems`, kept equal by
+ * a test; this generator cannot import the target, which imports it).
+ */
+export const VANILLA_PROJECTILE_ITEMS: readonly string[] = [
+  'minecraft:arrow',
+  'minecraft:tipped_arrow',
+  'minecraft:spectral_arrow',
+  'minecraft:snowball',
+  'minecraft:egg',
+  'minecraft:blue_egg',
+  'minecraft:brown_egg',
+  'minecraft:experience_bottle',
+  'minecraft:fire_charge',
+  'minecraft:firework_rocket',
+  'minecraft:splash_potion',
+  'minecraft:lingering_potion',
+  'minecraft:trident',
+  'minecraft:wind_charge',
+];
+/** The `ArrowItem`s among them: shot through `ProjectileUtil.getMobArrow` with a bow. */
+const ARROW_ITEMS = ['minecraft:arrow', 'minecraft:tipped_arrow', 'minecraft:spectral_arrow'];
+/** A bee's flying move control turn (`MobMovement.FLY_MAX_TURN`). */
+const FLY_MAX_TURN = 20;
+/** The runtime's default `flying_speed` (`EntityComponents.DEFAULT_FLYING_SPEED`). */
+const DEFAULT_FLYING_SPEED = 0.4;
+/** `Animal.createAnimalAttributes`'s tempt range, which `TemptGoal` reads (`MsmEntityRegistrar.TEMPT_RANGE`). */
+const TEMPT_RANGE = 10;
+/** The wither's client tracking range in chunks, for boss bars (`MsmEntityRegistrar.BOSS_TRACKING_RANGE`). */
+const BOSS_TRACKING_RANGE = 10;
 
 interface Spawn {
   biomes: string[];
@@ -128,8 +200,10 @@ interface EntitySpec {
     idle: string | undefined;
     walk: string | undefined;
     attack: string | undefined;
+    shoot: string | undefined;
     transitionTicks: number;
   };
+  readonly base: Base;
   readonly maxHealth: number;
   readonly movement: {
     speed: number;
@@ -137,7 +211,16 @@ interface EntitySpec {
     knockbackResistance: number;
     swims: boolean;
     fireImmune: boolean;
+    mode: MovementMode;
+    flyingSpeed: number;
+    hovers: boolean;
+    breathesAir: boolean;
+    dryOutTicks: number;
+    stepHeight: number | undefined;
   };
+  readonly ranged: RangedAttack | undefined;
+  readonly variants: Variants | undefined;
+  readonly bossBar: BossBar | undefined;
   readonly attack: { damage: number; knockback: number; onAttack: string | undefined } | undefined;
   readonly goals: Reader[];
   readonly onHurt: string | undefined;
@@ -149,6 +232,183 @@ interface EntitySpec {
   readonly onSpawn: string | undefined;
   readonly events: Events;
   readonly sounds: Sounds | undefined;
+}
+
+/** `msm:ranged_attack` (ADR 0070 D4) with the runtime's defaults. */
+interface RangedAttack {
+  readonly projectile: string;
+  /** How `MobRanged.kind` shoots the projectile, known here from the project and the target. */
+  readonly kind: 'arrow' | 'throwable' | 'item';
+  readonly damage: number;
+  readonly speed: number;
+  readonly inaccuracy: number;
+  readonly intervalTicks: number;
+  readonly chargeTicks: number;
+  readonly range: number;
+  readonly sound: string;
+  readonly onShoot: string | undefined;
+}
+
+/** `msm:variants` (ADR 0071 D4). */
+interface Variants {
+  readonly biome: boolean;
+  readonly variants: readonly {
+    id: string;
+    /** The full texture path, `<ns>:textures/<path>.png`, as `msm:animated_model.texture`. */
+    texture: string;
+    weight: number;
+    biomes: readonly string[];
+  }[];
+}
+
+/** `msm:boss_bar` (ADR 0071 D5). */
+interface BossBar {
+  readonly colour: string;
+  readonly overlay: string;
+  readonly darkenSky: boolean;
+  readonly fog: boolean;
+  readonly music: boolean;
+  readonly range: number | undefined;
+}
+
+/** Fails unless `value` is within `min..max` (either may be absent), as the runtime's Codec ranges. */
+function inRange(reader: Reader, key: string, value: number, min?: number, max?: number): number {
+  if ((min !== undefined && value < min) || (max !== undefined && value > max)) {
+    const range =
+      max === undefined
+        ? `at least ${min}`
+        : min === undefined
+          ? `at most ${max}`
+          : `${min}..${max}`;
+    reader.fail(`${key} ${value} is out of range (${range})`);
+  }
+  return value;
+}
+
+/** An id with its namespace (`minecraft:` when absent), as `Identifier.parse` reads it. */
+function fullId(id: string): string {
+  const { namespace, path } = splitId(id);
+  return `${namespace}:${path}`;
+}
+
+/** An item or biome id, or a `#` tag of them, as the runtime's `MsmCodecs.ID_OR_TAG`. */
+const ID_OR_TAG = /^#?([a-z0-9_.-]+:)?[a-z0-9_./-]+$/;
+
+function idsOrTags(reader: Reader, key: string, required: boolean): string[] {
+  if (required && !reader.has(key)) reader.fail(`${key} is missing`);
+  const values = reader.strings(key, []);
+  for (const value of values) {
+    if (!ID_OR_TAG.test(value)) reader.fail(`${key} entry '${value}' is not an id or #tag`);
+  }
+  return values;
+}
+
+/** The ids of the project's items with `msm:throwable` (ADR 0056), which `ThrownItemEntity` throws. */
+function throwableItemIds(context: GenerationContext): Set<string> {
+  const ids = new Set<string>();
+  for (const item of context.input.items) {
+    const components = item.definition.components;
+    if (
+      typeof components === 'object' &&
+      components !== null &&
+      !Array.isArray(components) &&
+      Object.hasOwn(components, 'msm:throwable')
+    ) {
+      ids.add(fullId(item.id));
+    }
+  }
+  return ids;
+}
+
+function readRanged(
+  component: Reader | undefined,
+  events: Events,
+  throwables: ReadonlySet<string>,
+): RangedAttack | undefined {
+  if (component === undefined) return undefined;
+  component.onlyKeys(
+    [
+      'projectile',
+      'damage',
+      'speed',
+      'inaccuracy',
+      'interval_ticks',
+      'charge_ticks',
+      'range',
+      'sound',
+      'on_shoot',
+    ],
+    'msm:ranged_attack field',
+  );
+  const projectile = fullId(component.requiredString('projectile'));
+  let kind: RangedAttack['kind'];
+  if (throwables.has(projectile)) kind = 'throwable';
+  else if (ARROW_ITEMS.includes(projectile)) kind = 'arrow';
+  else if (VANILLA_PROJECTILE_ITEMS.includes(projectile)) kind = 'item';
+  else {
+    // Stricter than msm_runtime, which logs one error at the first shot and shoots nothing.
+    return component.fail(
+      `projectile ${projectile} is neither an arrow, a vanilla projectile item nor a project item with msm:throwable`,
+    );
+  }
+  const sound = component.optionalString('sound');
+  if (sound !== undefined && !SOUND_ID.test(sound)) {
+    component.fail(`sound '${sound}' is not a sound event id`);
+  }
+  const onShoot = component.optionalString('on_shoot');
+  return {
+    projectile,
+    kind,
+    damage: inRange(component, 'damage', component.number('damage', 2), 0),
+    speed: inRange(component, 'speed', component.number('speed', 1.6), 0.1, 5),
+    inaccuracy: inRange(component, 'inaccuracy', component.number('inaccuracy', 6), 0, 20),
+    intervalTicks: inRange(component, 'interval_ticks', component.integer('interval_ticks', 40), 5),
+    chargeTicks: inRange(component, 'charge_ticks', component.integer('charge_ticks', 20), 0, 200),
+    range: inRange(component, 'range', component.number('range', 15), 1, 64),
+    sound: fullId(sound ?? 'minecraft:entity.skeleton.shoot'),
+    onShoot: onShoot === undefined ? undefined : eventMethod(component, events, onShoot),
+  };
+}
+
+function readVariants(component: Reader | undefined): Variants | undefined {
+  if (component === undefined) return undefined;
+  component.onlyKeys(['choose', 'variants'], 'msm:variants field');
+  const choose = component.enumConstant('choose', ['random', 'biome'], 'random');
+  if (!component.has('variants')) component.fail('variants is missing');
+  const entries = component.objects('variants');
+  if (entries.length < 1 || entries.length > 32) {
+    component.fail(`variants must list 1 to 32 variants, not ${entries.length}`);
+  }
+  return {
+    biome: choose === 'BIOME',
+    variants: entries.map((entry) => {
+      entry.onlyKeys(['id', 'texture', 'weight', 'biomes'], 'msm:variants variant field');
+      const texture = splitId(entry.requiredString('texture'));
+      return {
+        id: entry.requiredString('id'),
+        texture: `${texture.namespace}:textures/${texture.path}.png`,
+        weight: inRange(entry, 'weight', entry.integer('weight', 1), 1),
+        biomes: idsOrTags(entry, 'biomes', false),
+      };
+    }),
+  };
+}
+
+function readBossBar(component: Reader | undefined): BossBar | undefined {
+  if (component === undefined) return undefined;
+  component.onlyKeys(
+    ['colour', 'overlay', 'darken_sky', 'fog', 'music', 'range'],
+    'msm:boss_bar field',
+  );
+  const range = component.optionalNumber('range');
+  return {
+    colour: component.enumConstant('colour', BOSS_BAR_COLOURS, 'purple'),
+    overlay: component.enumConstant('overlay', BOSS_BAR_OVERLAYS, 'progress'),
+    darkenSky: component.boolean('darken_sky', false),
+    fog: component.boolean('fog', false),
+    music: component.boolean('music', false),
+    range: range === undefined ? undefined : inRange(component, 'range', range, 8, 256),
+  };
 }
 
 function readSounds(reader: Reader): Sounds | undefined {
@@ -191,7 +451,7 @@ function eventOf(component: Reader | undefined, events: Events): string | undefi
   return eventMethod(component, events, component.requiredString('event'));
 }
 
-function readEntity(input: DefinitionInput): EntitySpec {
+function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): EntitySpec {
   const reader = readDefinition(input);
   reader.onlyKeys(ENTITY_KEYS, 'top-level key');
   checkFormat(reader);
@@ -232,9 +492,22 @@ function readEntity(input: DefinitionInput): EntitySpec {
 
   const model = components.requiredObject('msm:animated_model');
   model.onlyKeys(
-    ['model', 'animations', 'texture', 'scale', 'idle', 'walk', 'attack', 'transition_ticks'],
+    [
+      'model',
+      'animations',
+      'texture',
+      'scale',
+      'idle',
+      'walk',
+      'attack',
+      'shoot',
+      'transition_ticks',
+      'renderer',
+    ],
     'msm:animated_model field',
   );
+  // ADR 0072 D8, limit M15: the Java project draws every entity with GeckoLib, whatever the renderer.
+  model.enumConstant('renderer', RENDERERS, 'auto');
   const modelId = model.requiredString('model');
   const texture = splitId(model.requiredString('texture'));
 
@@ -242,9 +515,31 @@ function readEntity(input: DefinitionInput): EntitySpec {
   health?.onlyKeys(['max'], 'msm:health field');
   const movement = components.object('msm:movement');
   movement?.onlyKeys(
-    ['speed', 'follow_range', 'knockback_resistance', 'swims', 'fire_immune'],
+    [
+      'speed',
+      'follow_range',
+      'knockback_resistance',
+      'swims',
+      'fire_immune',
+      'mode',
+      'flying_speed',
+      'hovers',
+      'breathes_air',
+      'dry_out_ticks',
+      'step_height',
+    ],
     'msm:movement field',
   );
+  const mode = (movement?.enumConstant('mode', MOVEMENT_MODES, 'walk') ?? 'WALK').toLowerCase();
+  const flyingSpeed =
+    movement?.number('flying_speed', DEFAULT_FLYING_SPEED) ?? DEFAULT_FLYING_SPEED;
+  if (movement !== undefined) inRange(movement, 'flying_speed', flyingSpeed, 0);
+  const dryOutTicks = movement?.integer('dry_out_ticks', 300) ?? 300;
+  if (movement !== undefined) inRange(movement, 'dry_out_ticks', dryOutTicks, 20);
+  const stepHeight = movement?.optionalNumber('step_height');
+  if (movement !== undefined && stepHeight !== undefined) {
+    inRange(movement, 'step_height', stepHeight, 0, 10);
+  }
   const attack = components.object('msm:attack');
   attack?.onlyKeys(['damage', 'knockback', 'on_attack'], 'msm:attack field');
   const aiGoals = components.object('msm:ai_goals');
@@ -254,6 +549,10 @@ function readEntity(input: DefinitionInput): EntitySpec {
   for (const goal of goals) {
     const type = goal.requiredString('type');
     if (!GOAL_TYPES.includes(type)) goal.fail(`goal type '${type}' cannot be ejected`);
+  }
+  const base = reader.string('base', 'mob');
+  if (!(BASES as readonly string[]).includes(base)) {
+    reader.fail(`base '${base}' is not one of ${BASES.join(', ')}`);
   }
   const onAttack = attack?.optionalString('on_attack');
   const onTick = components.object('msm:on_tick');
@@ -279,8 +578,10 @@ function readEntity(input: DefinitionInput): EntitySpec {
       idle: model.optionalString('idle'),
       walk: model.optionalString('walk'),
       attack: model.optionalString('attack'),
+      shoot: model.optionalString('shoot'),
       transitionTicks: model.integer('transition_ticks', 0),
     },
+    base: base as Base,
     maxHealth: health?.requiredNumber('max') ?? 20,
     movement: {
       speed: movement?.number('speed', 0.25) ?? 0.25,
@@ -288,7 +589,16 @@ function readEntity(input: DefinitionInput): EntitySpec {
       knockbackResistance: movement?.number('knockback_resistance', 0) ?? 0,
       swims: movement?.boolean('swims', true) ?? true,
       fireImmune: movement?.boolean('fire_immune', false) ?? false,
+      mode: mode as MovementMode,
+      flyingSpeed,
+      hovers: movement?.boolean('hovers', true) ?? true,
+      breathesAir: movement?.boolean('breathes_air', false) ?? false,
+      dryOutTicks,
+      stepHeight,
     },
+    ranged: readRanged(components.object('msm:ranged_attack'), events, throwables),
+    variants: readVariants(components.object('msm:variants')),
+    bossBar: readBossBar(components.object('msm:boss_bar')),
     attack:
       attack === undefined
         ? undefined
@@ -331,7 +641,7 @@ export interface EntityNames {
 export function generateEntities(
   context: GenerationContext,
   classNames: NameTable,
-): { className: string; entities: EntityNames[] } | undefined {
+): { className: string; entities: EntityNames[]; usesRangedGoal: boolean } | undefined {
   const { entities } = context.input;
   if (entities.length === 0) return undefined;
   if (!context.input.geckolib) {
@@ -339,7 +649,8 @@ export function generateEntities(
       'Entities render through GeckoLib, but the project has no GeckoLib (JavaProjectInput.geckolib is false).',
     );
   }
-  const specs = entities.map(readEntity);
+  const throwables = throwableItemIds(context);
+  const specs = entities.map((entity) => readEntity(entity, throwables));
   const fields = new NameTable();
   const file = new JavaFile(
     context.input.javaPackage,
@@ -385,6 +696,10 @@ export function generateEntities(
     if (spec.eyeHeight !== undefined)
       builder.push(`        .eyeHeight(${javaFloat(spec.eyeHeight)})`);
     if (spec.movement.fireImmune) builder.push('        .fireImmune()');
+    if (spec.bossBar !== undefined) {
+      // ADR 0071 D5: the wither's tracking range, so far players get the bar.
+      builder.push(`        .clientTrackingRange(${javaInt(BOSS_TRACKING_RANGE)})`);
+    }
     builder.push(`        .build(${field}_KEY));`);
     body.push(
       '',
@@ -392,7 +707,10 @@ export function generateEntities(
       `public static final ${resourceKey}<${entityType}<?>> ${field}_KEY = ${resourceKey}.create(${registries}.ENTITY_TYPE, ${identifierExpression(file, spec.input.id)});`,
       `public static final ${entityType}<${type}> ${field} = ${registry}.register(${builtIn}.ENTITY_TYPE, ${field}_KEY,`,
       `        ${builder[0]}`,
-      ...builder.slice(1).map((line) => `        ${line}`),
+      ...builder
+        .slice(1)
+        .flatMap((line) => line.split('\n'))
+        .map((line) => `        ${line}`),
     );
     if (spec.spawnEgg !== undefined) {
       needsEggHelper = true;
@@ -460,7 +778,12 @@ export function generateEntities(
     '}',
   ];
   context.files.push({ path: classPath(context, '', 'ModEntities'), contents: file.render(lines) });
-  return { className: 'ModEntities', entities: names };
+  const usesRangedGoal = specs.some(
+    (spec) =>
+      spec.ranged !== undefined &&
+      spec.goals.some((goal) => goal.requiredString('type') === 'ranged_attack'),
+  );
+  return { className: 'ModEntities', entities: names, usesRangedGoal };
 }
 
 /** The vanilla spawn check of a rule, as the runtime's `MsmEntityRegistrar.rule`. */
@@ -478,6 +801,18 @@ function ruleExpression(file: JavaFile, rule: string): string {
     }
     case 'always':
       return '(type, level, reason, pos, random) -> true';
+    case 'animal': {
+      // Animal.checkAnimalSpawnRules needs an Animal type: its body, for any base (ADR 0070 D6).
+      const blockTags = file.use('net.minecraft.tags.BlockTags');
+      const reason = file.use('net.minecraft.world.entity.EntitySpawnReason');
+      return `(type, level, reason, pos, random) -> level.getBlockState(pos.below()).is(${blockTags}.ANIMALS_SPAWNABLE_ON)\n                        && (${reason}.ignoresLightRequirements(reason) || level.getRawBrightness(pos, 0) > 8)`;
+    }
+    case 'water_animal': {
+      // WaterAnimal.checkSurfaceWaterAnimalSpawnRules needs a WaterAnimal type: its body (ADR 0070 D6).
+      const fluidTags = file.use('net.minecraft.tags.FluidTags');
+      const blocks = file.use('net.minecraft.world.level.block.Blocks');
+      return `(type, level, reason, pos, random) -> pos.getY() >= level.getSeaLevel() - 13 && pos.getY() <= level.getSeaLevel()\n                        && level.getFluidState(pos.below()).is(${fluidTags}.WATER) && level.getBlockState(pos.above()).is(${blocks}.WATER)`;
+    }
     default:
       return `${file.use('net.minecraft.world.entity.Mob')}::checkMobSpawnRules`;
   }
@@ -534,7 +869,7 @@ function triggerable(spec: EntitySpec): Map<string, string[]> {
     if (!names.includes(name)) names.push(name);
     out.set(controller, names);
   };
-  for (const name of [spec.model.idle, spec.model.walk, spec.model.attack]) {
+  for (const name of [spec.model.idle, spec.model.walk, spec.model.attack, spec.model.shoot]) {
     if (name !== undefined) add(TRIGGERED_CONTROLLER, name);
   }
   for (const [controller, name] of playAnimations(spec.events)) add(controller, name);
@@ -543,7 +878,7 @@ function triggerable(spec: EntitySpec): Map<string, string[]> {
 
 function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: string): void {
   const file = new JavaFile(packageOf(context, 'entity'), spec.input.path);
-  const pathfinderMob = file.use('net.minecraft.world.entity.PathfinderMob');
+  const baseClass = file.use(BASE_CLASSES[spec.base]);
   const geoEntity = file.use('com.geckolib.animatable.GeoEntity');
   const entityType = file.use('net.minecraft.world.entity.EntityType');
   const level = file.use('net.minecraft.world.level.Level');
@@ -553,6 +888,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const attributes = file.use('net.minecraft.world.entity.ai.attributes.Attributes');
   const mob = file.use('net.minecraft.world.entity.Mob');
   const actions = noteActions(context, file, spec.events);
+  const { mode } = spec.movement;
 
   const members: string[] = [];
   if (spec.events.byId.size > 0)
@@ -562,16 +898,51 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const goalLines: string[] = [];
   const predicates: string[] = [];
   const predicateFields = new NameTable();
+  let usesOfTypes = false;
+  let usesOfItems = false;
+  let usesTempt = false;
   const ofTypes = (field: string, ids: string[]): string => {
     const predicate = file.use('java.util.function.Predicate');
     const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
     const name = predicateFields.take(field);
+    usesOfTypes = true;
     predicates.push(
       `private static final ${predicate}<${livingEntity}> ${name} = ofTypes(${ids.map(javaString).join(', ')});`,
     );
     return name;
   };
-  if (spec.movement.swims) {
+  const ofItems = (field: string, ids: string[]): string => {
+    const predicate = file.use('java.util.function.Predicate');
+    const itemStack = file.use('net.minecraft.world.item.ItemStack');
+    const name = predicateFields.take(field);
+    usesOfItems = true;
+    predicates.push(
+      `private static final ${predicate}<${itemStack}> ${name} = ofItems(${ids.map(javaString).join(', ')});`,
+    );
+    return name;
+  };
+  /** The target goals of `melee_attack` and `ranged_attack`: retaliate (1) and targets (2). */
+  const targetGoals = (goal: Reader, n: number, field: string): void => {
+    if (goal.boolean('retaliate', false)) {
+      goalLines.push(
+        `targetSelector.addGoal(1, new ${file.use('net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal')}(this));`,
+      );
+    }
+    const targets = goal.strings('targets', []);
+    if (targets.length > 0) {
+      const predicate = ofTypes(`${field}_${n + 1}`, targets);
+      const targetGoal = file.use(
+        'net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal',
+      );
+      const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
+      goalLines.push(
+        `targetSelector.addGoal(2, new ${targetGoal}<>(this, ${livingEntity}.class, ${goal.boolean('must_see', true)},`,
+        `        (target, level) -> ${predicate}.test(target)));`,
+      );
+    }
+  };
+  // ADR 0070 D3: swimmers and amphibious mobs never float (the runtime removes the goal again).
+  if (spec.movement.swims && (mode === 'walk' || mode === 'fly')) {
     goalLines.push(
       `goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.FloatGoal')}(this));`,
     );
@@ -583,10 +954,23 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       case 'wander': {
         goal.onlyKeys(['type', 'priority', 'speed', 'avoid_water'], 'wander field');
         const speed = javaFloat(goal.number('speed', 1));
-        const strollGoal = goal.boolean('avoid_water', true)
-          ? file.use('net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal')
-          : file.use('net.minecraft.world.entity.ai.goal.RandomStrollGoal');
-        goalLines.push(`goalSelector.addGoal(${priority}, new ${strollGoal}(this, ${speed}));`);
+        const avoidWater = goal.boolean('avoid_water', true);
+        // MobMovement.wanderGoal: the mode decides the goal.
+        let strollGoal: string;
+        let extra = '';
+        if (mode === 'fly') {
+          strollGoal = file.use('net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal');
+        } else if (mode === 'swim') {
+          strollGoal = file.use('net.minecraft.world.entity.ai.goal.RandomSwimmingGoal');
+          extra = ', 40';
+        } else if (mode === 'walk' && avoidWater) {
+          strollGoal = file.use('net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal');
+        } else {
+          strollGoal = file.use('net.minecraft.world.entity.ai.goal.RandomStrollGoal');
+        }
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${strollGoal}(this, ${speed}${extra}));`,
+        );
         break;
       }
       case 'look_at_player': {
@@ -619,23 +1003,52 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
         goalLines.push(
           `goalSelector.addGoal(${priority}, new ${meleeGoal}(this, ${javaFloat(goal.number('speed', 1))}, true));`,
         );
-        if (goal.boolean('retaliate', false)) {
+        targetGoals(goal, n, 'MELEE_TARGETS');
+        break;
+      }
+      case 'ranged_attack': {
+        goal.onlyKeys(
+          ['type', 'priority', 'speed', 'strafe', 'targets', 'must_see', 'retaliate'],
+          'ranged_attack field',
+        );
+        inRange(goal, 'speed', goal.number('speed', 1), 0);
+        if (spec.ranged === undefined) {
           goalLines.push(
-            `targetSelector.addGoal(1, new ${file.use('net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal')}(this));`,
+            `// ranged_attack (goal ${n + 1}) left out: without msm:ranged_attack the goal does nothing (as msm_runtime).`,
           );
+          break;
         }
-        const targets = goal.strings('targets', []);
-        if (targets.length > 0) {
-          const field = ofTypes(`MELEE_TARGETS_${n + 1}`, targets);
-          const targetGoal = file.use(
-            'net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal',
-          );
-          const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
-          goalLines.push(
-            `targetSelector.addGoal(2, new ${targetGoal}<>(this, ${livingEntity}.class, ${goal.boolean('must_see', true)},`,
-            `        (target, level) -> ${field}.test(target)));`,
-          );
-        }
+        const { chargeTicks, intervalTicks, range } = spec.ranged;
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new MobRangedAttackGoal<>(this, ${javaFloat(goal.number('speed', 1))}, ${javaInt(chargeTicks)}, ${javaInt(intervalTicks)}, ${javaFloat(range)}, ${goal.boolean('strafe', false)}));`,
+        );
+        targetGoals(goal, n, 'RANGED_TARGETS');
+        break;
+      }
+      case 'tempt': {
+        goal.onlyKeys(['type', 'priority', 'items', 'speed', 'scared'], 'tempt field');
+        const speed = inRange(goal, 'speed', goal.number('speed', 1), 0);
+        const field = ofItems(`TEMPT_ITEMS_${n + 1}`, idsOrTags(goal, 'items', true));
+        usesTempt = true;
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${file.use('net.minecraft.world.entity.ai.goal.TemptGoal')}(this, ${javaFloat(speed)}, ${field}, ${goal.boolean('scared', false)}));`,
+        );
+        break;
+      }
+      case 'panic': {
+        goal.onlyKeys(['type', 'priority', 'speed'], 'panic field');
+        const speed = inRange(goal, 'speed', goal.number('speed', 1.25), 0);
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${file.use('net.minecraft.world.entity.ai.goal.PanicGoal')}(this, ${javaFloat(speed)}));`,
+        );
+        break;
+      }
+      case 'leap_at_target': {
+        goal.onlyKeys(['type', 'priority', 'height'], 'leap_at_target field');
+        const height = inRange(goal, 'height', goal.number('height', 0.4), 0);
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new ${file.use('net.minecraft.world.entity.ai.goal.LeapAtTargetGoal')}(this, ${javaFloat(height)}));`,
+        );
         break;
       }
       case 'flee': {
@@ -671,12 +1084,21 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     }
   });
   if (predicates.length > 0) members.push('', ...predicates);
+  if (spec.variants !== undefined) members.push(...variantFields(file, spec.variants, name));
+  if (spec.bossBar !== undefined) {
+    members.push(
+      '',
+      '/** msm:boss_bar: built on the logical server on first use; never on the client. */',
+      `private ${file.use('net.minecraft.server.level.ServerBossEvent')} bossEvent;`,
+    );
+  }
   members.push(
     '',
     `private final ${instanceCache} cache = ${geckoLibUtil}.createInstanceCache(this);`,
     '',
-    `public ${name}(${entityType}<? extends ${pathfinderMob}> type, ${level} level) {`,
+    `public ${name}(${entityType}<? extends ${baseClass}> type, ${level} level) {`,
     '    super(type, level);',
+    ...indent(movementConstructor(file, spec)),
     '}',
     '',
     '/** The default attributes (msm:health, msm:movement, msm:attack). */',
@@ -687,10 +1109,25 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     `            .add(${attributes}.FOLLOW_RANGE, ${javaFloat(spec.movement.followRange)})`,
     `            .add(${attributes}.KNOCKBACK_RESISTANCE, ${javaFloat(spec.movement.knockbackResistance)})`,
     `            .add(${attributes}.ATTACK_DAMAGE, ${spec.attack === undefined ? '0.0' : javaFloat(spec.attack.damage)})`,
-    `            .add(${attributes}.ATTACK_KNOCKBACK, ${spec.attack === undefined ? '0.0' : javaFloat(spec.attack.knockback)});`,
-    '}',
+    `            .add(${attributes}.ATTACK_KNOCKBACK, ${spec.attack === undefined ? '0.0' : javaFloat(spec.attack.knockback)})${
+      usesTempt || mode === 'fly' || spec.movement.stepHeight !== undefined ? '' : ';'
+    }`,
   );
-  if (predicates.length > 0) {
+  const extraAttributes: string[] = [];
+  if (usesTempt) extraAttributes.push(`.add(${attributes}.TEMPT_RANGE, ${javaFloat(TEMPT_RANGE)})`);
+  if (mode === 'fly') {
+    extraAttributes.push(
+      `.add(${attributes}.FLYING_SPEED, ${javaFloat(spec.movement.flyingSpeed)})`,
+    );
+  }
+  if (spec.movement.stepHeight !== undefined) {
+    extraAttributes.push(`.add(${attributes}.STEP_HEIGHT, ${javaFloat(spec.movement.stepHeight)})`);
+  }
+  extraAttributes.forEach((line, index) => {
+    members.push(`            ${line}${index === extraAttributes.length - 1 ? ';' : ''}`);
+  });
+  members.push('}');
+  if (usesOfTypes) {
     const predicate = file.use('java.util.function.Predicate');
     const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
     const set = file.use('java.util.Set');
@@ -707,7 +1144,38 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
+  if (usesOfItems) {
+    const predicate = file.use('java.util.function.Predicate');
+    const itemStack = file.use('net.minecraft.world.item.ItemStack');
+    const item = file.use('net.minecraft.world.item.Item');
+    const set = file.use('java.util.Set');
+    const list = file.use('java.util.List');
+    const hashSet = file.use('java.util.HashSet');
+    const arrayList = file.use('java.util.ArrayList');
+    const tagKey = file.use('net.minecraft.tags.TagKey');
+    const registries = file.use('net.minecraft.core.registries.Registries');
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
+    members.push(
+      '',
+      "/** Matches stacks of the listed items; an entry starting with {@code #} is an item tag (as msm_runtime's MobGoals.ofItems). */",
+      `private static ${predicate}<${itemStack}> ofItems(String... items) {`,
+      `    ${set}<${identifier}> ids = new ${hashSet}<>();`,
+      `    ${list}<${tagKey}<${item}>> tags = new ${arrayList}<>();`,
+      '    for (String entry : items) {',
+      '        if (entry.startsWith("#")) {',
+      `            tags.add(${tagKey}.create(${registries}.ITEM, ${identifier}.parse(entry.substring(1))));`,
+      '        } else {',
+      `            ids.add(${identifier}.parse(entry));`,
+      '        }',
+      '    }',
+      `    return stack -> !stack.isEmpty() && (ids.contains(${builtIn}.ITEM.getKey(stack.getItem()))`,
+      '            || tags.stream().anyMatch(stack::is));',
+      '}',
+    );
+  }
   members.push('', '@Override', 'protected void registerGoals() {', ...indent(goalLines), '}');
+  members.push(...movementMembers(file, spec));
 
   const serverLevel = () => file.use('net.minecraft.server.level.ServerLevel');
   const player = () => file.use('net.minecraft.world.entity.player.Player');
@@ -717,6 +1185,9 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   const fireArgs = (playerExpression: string, otherExpression = playerExpression) =>
     `level, blockPosition(), position(), ${playerExpression}, this${spec.events.otherParameter ? `, ${otherExpression}` : ''}`;
 
+  if (spec.ranged !== undefined) {
+    members.push(...rangedMembers(file, spec, spec.ranged, fireArgs));
+  }
   if (spec.model.attack !== undefined || spec.attack?.onAttack !== undefined) {
     const entity = file.use('net.minecraft.world.entity.Entity');
     const inner: string[] = [];
@@ -763,17 +1234,35 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
-  if (spec.onDeath !== undefined) {
+  if (spec.onDeath !== undefined || spec.bossBar !== undefined) {
+    const lines =
+      spec.onDeath === undefined
+        ? ['super.die(source);']
+        : [
+            'boolean wasDead = dead;',
+            'super.die(source);',
+            `if (!wasDead && dead && level() instanceof ${serverLevel()} level) {`,
+            `    ${fireCall(spec.onDeath, fireArgs(`source.getEntity() instanceof ${player()} p ? p : null`))}`,
+            '}',
+          ];
+    if (spec.bossBar !== undefined) {
+      lines.push(
+        'if (bossEvent != null) {',
+        '    bossEvent.setProgress(0.0f);',
+        '    bossEvent.removeAllPlayers();',
+        '}',
+      );
+    }
     members.push(
       '',
-      '/** msm:on_death: once, on the logical server. */',
+      spec.onDeath === undefined
+        ? '/** The boss bar empties and goes. */'
+        : spec.bossBar === undefined
+          ? '/** msm:on_death: once, on the logical server. */'
+          : '/** msm:on_death: once, on the logical server; then the boss bar empties and goes. */',
       '@Override',
       `public void die(${damageSource()} source) {`,
-      '    boolean wasDead = dead;',
-      '    super.die(source);',
-      `    if (!wasDead && dead && level() instanceof ${serverLevel()} level) {`,
-      `        ${fireCall(spec.onDeath, fireArgs(`source.getEntity() instanceof ${player()} p ? p : null`))}`,
-      '    }',
+      ...indent(lines),
       '}',
     );
   }
@@ -784,7 +1273,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '',
       '/** msm:on_interact: a player right-clicks the entity. */',
       '@Override',
-      `protected ${interactionResult} mobInteract(${player()} player, ${interactionHand} hand) {`,
+      `${spec.base === 'animal' ? 'public' : 'protected'} ${interactionResult} mobInteract(${player()} player, ${interactionHand} hand) {`,
       `    if (level() instanceof ${serverLevel()} level) {`,
       `        ${fireCall(spec.onInteract, fireArgs('player'))}`,
       '    }',
@@ -792,38 +1281,81 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
-  if (spec.onTick !== undefined) {
-    context.usesTickLimiter = true;
-    const tickLimiter = file.use(`${context.input.javaPackage}.TickLimiter`);
+  if (spec.onTick !== undefined || spec.bossBar !== undefined) {
+    const lines = ['super.customServerAiStep(level);'];
+    let doc = '';
+    if (spec.onTick !== undefined) {
+      context.usesTickLimiter = true;
+      const tickLimiter = file.use(`${context.input.javaPackage}.TickLimiter`);
+      doc = `msm:on_tick: every ${spec.onTick.interval} ticks while the AI runs (never with NoAI), staggered by entity id, within the shared tick cap`;
+      lines.push(
+        `if (${tickLimiter}.due(level, this, ${javaInt(spec.onTick.interval)}) && ${tickLimiter}.tryFire(level)) {`,
+        `    ${fireCall(spec.onTick.method, fireArgs('null'))}`,
+        '}',
+      );
+    }
+    if (spec.bossBar !== undefined) {
+      doc =
+        doc === ''
+          ? 'The boss bar: name, progress and, with a range, its players (as the wither, in the AI step)'
+          : `${doc}; then the boss bar`;
+      lines.push('tickBossBar(level);');
+    }
     members.push(
       '',
-      `/** msm:on_tick: every ${spec.onTick.interval} ticks while the AI runs (never with NoAI), staggered by entity id, within the shared tick cap. */`,
+      `/** ${doc}. */`,
       '@Override',
       `protected void customServerAiStep(${serverLevel()} level) {`,
-      '    super.customServerAiStep(level);',
-      `    if (${tickLimiter}.due(level, this, ${javaInt(spec.onTick.interval)}) && ${tickLimiter}.tryFire(level)) {`,
-      `        ${fireCall(spec.onTick.method, fireArgs('null'))}`,
-      '    }',
+      ...indent(lines),
       '}',
     );
   }
-  if (spec.onSpawn !== undefined) {
+  if (spec.onSpawn !== undefined || spec.variants !== undefined) {
     const spawnGroupData = file.use('net.minecraft.world.entity.SpawnGroupData');
     const accessor = file.use('net.minecraft.world.level.ServerLevelAccessor');
     const difficulty = file.use('net.minecraft.world.DifficultyInstance');
     const reason = file.use('net.minecraft.world.entity.EntitySpawnReason');
+    const lines = [
+      `${spawnGroupData} out = super.finalizeSpawn(accessor, difficulty, reason, data);`,
+    ];
+    if (spec.variants !== undefined) {
+      const matcher = spec.variants.biome
+        ? 'biomeMatcher(accessor.getBiome(blockPosition())), '
+        : '';
+      lines.push(
+        'if (!variantChosen) {',
+        `    setVariant(pickVariant(${matcher}getRandom()));`,
+        '}',
+      );
+    }
+    if (spec.onSpawn !== undefined) {
+      lines.push(
+        `${serverLevel()} level = accessor.getLevel();`,
+        fireCall(spec.onSpawn, fireArgs('null')),
+      );
+    }
+    lines.push('return out;');
+    const onSpawnDoc =
+      'msm:on_spawn: once when the mob spawns (natural, egg, spawner, command), before it joins the level; not when it loads with its chunk';
+    const variantDoc = 'Picks the variant unless saved data or a parent gave one (ADR 0071 D4)';
+    const doc =
+      spec.variants === undefined
+        ? onSpawnDoc
+        : spec.onSpawn === undefined
+          ? variantDoc
+          : `${variantDoc}; then ${onSpawnDoc}`;
     members.push(
       '',
-      '/** msm:on_spawn: once when the mob spawns (natural, egg, spawner, command), before it joins the level; not when it loads with its chunk. */',
+      `/** ${doc}. */`,
       '@Override',
       `public ${spawnGroupData} finalizeSpawn(${accessor} accessor, ${difficulty} difficulty, ${reason} reason, ${spawnGroupData} data) {`,
-      `    ${spawnGroupData} out = super.finalizeSpawn(accessor, difficulty, reason, data);`,
-      `    ${serverLevel()} level = accessor.getLevel();`,
-      `    ${fireCall(spec.onSpawn, fireArgs('null'))}`,
-      '    return out;',
+      ...indent(lines),
       '}',
     );
   }
+  if (spec.variants !== undefined) members.push(...variantMembers(file, spec.variants));
+  if (spec.bossBar !== undefined) members.push(...bossBarMembers(file, spec.bossBar));
+  if (spec.base === 'animal') members.push(...animalMembers(file, spec, name));
   if (spec.sounds !== undefined) members.push(...soundMembers(file, spec.sounds));
   if (spec.lootTable !== undefined) {
     const resourceKey = file.use('net.minecraft.resources.ResourceKey');
@@ -897,13 +1429,610 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   );
   members.push(...eventMethods(file, spec.events, 'entity', actions));
 
+  const interfaces = [geoEntity];
+  if (spec.ranged !== undefined) {
+    interfaces.push(file.use('net.minecraft.world.entity.monster.RangedAttackMob'));
+  }
+  const kind = { mob: '', animal: ' (base animal)', monster: ' (base monster)' }[spec.base];
   const lines = [
-    `/** The entity {@code ${spec.input.id}}, animated with GeckoLib. */`,
-    `public class ${name} extends ${pathfinderMob} implements ${geoEntity} {`,
+    `/** The entity {@code ${spec.input.id}}${kind}, animated with GeckoLib. */`,
+    `public class ${name} extends ${baseClass} implements ${interfaces.join(', ')} {`,
     ...indent(trimBlank(members)),
     '}',
   ];
   context.files.push({ path: classPath(context, 'entity', name), contents: file.render(lines) });
+}
+
+/**
+ * The constructor tail of `MobMovement.afterConstruct` (ADR 0070 D3): the controls, gravity,
+ * path costs and the goals a mode adds besides `msm:ai_goals`.
+ */
+function movementConstructor(file: JavaFile, spec: EntitySpec): string[] {
+  const pathType = () => file.use('net.minecraft.world.level.pathfinder.PathType');
+  switch (spec.movement.mode) {
+    case 'walk':
+      return [];
+    case 'fly':
+      return [
+        "// msm:movement mode fly: a bee's flight (no gravity; a bee's and a parrot's path costs).",
+        `moveControl = new ${file.use('net.minecraft.world.entity.ai.control.FlyingMoveControl')}<>(this, ${javaInt(FLY_MAX_TURN)}, ${spec.movement.hovers});`,
+        'setNoGravity(true);',
+        `setPathfindingMalus(${pathType()}.FIRE, -1.0f);`,
+        `setPathfindingMalus(${pathType()}.FIRE_IN_NEIGHBOR, -1.0f);`,
+        `setPathfindingMalus(${pathType()}.WATER, -1.0f);`,
+        `setPathfindingMalus(${pathType()}.WATER_BORDER, 16.0f);`,
+      ];
+    case 'swim': {
+      const lines = [
+        "// msm:movement mode swim: a dolphin's controls.",
+        `moveControl = new ${file.use('net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl')}<>(this, 85, 10, 0.02f, 0.1f, true);`,
+        `lookControl = new ${file.use('net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl')}(this, 10);`,
+        `setPathfindingMalus(${pathType()}.WATER, 0.0f);`,
+      ];
+      if (spec.movement.breathesAir) {
+        lines.push(
+          '// breathes_air: surface for air and look for water when stranded, as a dolphin.',
+          `goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.BreathAirGoal')}(this));`,
+          `goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.TryFindLiquidGoal')}(this, ${file.use('net.minecraft.tags.FluidTags')}.WATER));`,
+        );
+      } else {
+        lines.push(`setAirSupply(${javaInt(spec.movement.dryOutTicks)});`);
+      }
+      return lines;
+    }
+    case 'amphibious':
+      return [
+        '// msm:movement mode amphibious: walks on land and paths through water.',
+        `setPathfindingMalus(${pathType()}.WATER, 0.0f);`,
+      ];
+  }
+}
+
+/** The movement overrides of `MobMovement` (ADR 0070 D3) for the definition's mode. */
+function movementMembers(file: JavaFile, spec: EntitySpec): string[] {
+  const { mode, breathesAir, dryOutTicks } = spec.movement;
+  if (mode === 'walk') return [];
+  const level = file.use('net.minecraft.world.level.Level');
+  const pathNavigation = file.use('net.minecraft.world.entity.ai.navigation.PathNavigation');
+  const members: string[] = [''];
+  if (mode === 'fly') {
+    const flying = file.use('net.minecraft.world.entity.ai.navigation.FlyingPathNavigation');
+    const damageSource = file.use('net.minecraft.world.damagesource.DamageSource');
+    members.push(
+      '/** Flies along paths through the air: no doors, floats. */',
+      '@Override',
+      `protected ${pathNavigation} createNavigation(${level} level) {`,
+      `    ${flying} navigation = new ${flying}(this, level);`,
+      '    navigation.setCanOpenDoors(false);',
+      '    navigation.setCanFloat(true);',
+      '    return navigation;',
+      '}',
+      '',
+      "/** Fliers take no fall damage (a bee's and a parrot's). */",
+      '@Override',
+      `public boolean causeFallDamage(double fallDistance, float multiplier, ${damageSource} source) {`,
+      '    return false;',
+      '}',
+    );
+    return members;
+  }
+  if (mode === 'amphibious') {
+    members.push(
+      '/** Paths over land and through water. */',
+      '@Override',
+      `protected ${pathNavigation} createNavigation(${level} level) {`,
+      `    return new ${file.use('net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation')}(this, level);`,
+      '}',
+      '',
+      '/** Breathes both air and water. */',
+      '@Override',
+      'public boolean canBreatheUnderwater() {',
+      '    return true;',
+      '}',
+    );
+    return members;
+  }
+  const vec3 = file.use('net.minecraft.world.phys.Vec3');
+  const moverType = file.use('net.minecraft.world.entity.MoverType');
+  const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+  const randomSource = file.use('net.minecraft.util.RandomSource');
+  const soundEvents = file.use('net.minecraft.sounds.SoundEvents');
+  members.push(
+    '/** Paths only through water. */',
+    '@Override',
+    `protected ${pathNavigation} createNavigation(${level} level) {`,
+    `    return new ${file.use('net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation')}(this, level);`,
+    '}',
+    '',
+    "/** In water, moves as a dolphin: the move control's speed, friction 0.9, a slow sink without a target. */",
+    '@Override',
+    `public void travel(${vec3} input) {`,
+    '    if (isInWater()) {',
+    '        moveRelative(getSpeed(), input);',
+    `        move(${moverType}.SELF, getDeltaMovement());`,
+    '        setDeltaMovement(getDeltaMovement().scale(0.9));',
+    '        if (getTarget() == null) {',
+    '            setDeltaMovement(getDeltaMovement().add(0.0, -0.005, 0.0));',
+    '        }',
+    '        return;',
+    '    }',
+    '    super.travel(input);',
+    '}',
+    '',
+    breathesAir
+      ? '/** breathes_air: runs out of air under water, as a dolphin. */'
+      : '/** Breathes water. */',
+    '@Override',
+    'public boolean canBreatheUnderwater() {',
+    `    return ${!breathesAir};`,
+    '}',
+    '',
+    '/** Not pushed by currents, as vanilla water animals. */',
+    '@Override',
+    'public boolean isPushedByFluid() {',
+    '    return false;',
+    '}',
+    '',
+    breathesAir
+      ? '/** Out of water it flops on the ground. */'
+      : `/** Out of water it flops on the ground and dries out: the first hurt (2 drowning damage) comes ${dryOutTicks} + 20 ticks after leaving the water, then every 20 ticks. */`,
+    '@Override',
+    'public void baseTick() {',
+    ...(breathesAir ? [] : ['    int air = getAirSupply();']),
+    '    super.baseTick();',
+    `    if (!(level() instanceof ${serverLevel} level) || !isAlive()) {`,
+    '        return;',
+    '    }',
+    '    boolean inWater = isInWater();',
+    '    if (!inWater && onGround() && verticalCollision) {',
+    `        ${randomSource} random = getRandom();`,
+    '        setDeltaMovement(getDeltaMovement().add((random.nextFloat() * 2.0f - 1.0f) * 0.05f, 0.4,',
+    '                (random.nextFloat() * 2.0f - 1.0f) * 0.05f));',
+    '        setOnGround(false);',
+    `        makeSound(${soundEvents}.${breathesAir ? 'DOLPHIN_JUMP' : 'COD_FLOP'});`,
+    '    }',
+  );
+  if (!breathesAir) {
+    members.push(
+      '    if (inWater) {',
+      `        setAirSupply(${javaInt(dryOutTicks)});`,
+      '    } else {',
+      '        air--;',
+      '        if (air <= -20) {',
+      '            air = 0;',
+      '            hurtServer(level, damageSources().drown(), 2.0f);',
+      '        }',
+      '        setAirSupply(air);',
+      '    }',
+    );
+  }
+  members.push('}');
+  return members;
+}
+
+/**
+ * `RangedAttackMob.performRangedAttack` as `MobRanged.performRangedAttack` (ADR 0070 D4): the
+ * projectile's kind is known when generating, so only its branch is written.
+ */
+function rangedMembers(
+  file: JavaFile,
+  spec: EntitySpec,
+  ranged: RangedAttack,
+  fireArgs: (player: string, other?: string) => string,
+): string[] {
+  const livingEntity = file.use('net.minecraft.world.entity.LivingEntity');
+  const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+  const itemStack = file.use('net.minecraft.world.item.ItemStack');
+  const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
+  const projectileClass = file.use('net.minecraft.world.entity.projectile.Projectile');
+  const speed = javaFloat(ranged.speed);
+  const inaccuracy = javaFloat(ranged.inaccuracy);
+  const body = [
+    `if (!(level() instanceof ${serverLevel} level)) {`,
+    '    return;',
+    '}',
+    `${itemStack} stack = new ${itemStack}(${builtIn}.ITEM.getValue(${identifierExpression(file, ranged.projectile)}));`,
+  ];
+  let what: string;
+  switch (ranged.kind) {
+    case 'arrow': {
+      const arrow = file.use('net.minecraft.world.entity.projectile.arrow.AbstractArrow');
+      what = 'an arrow, with a bow as the weapon and damage as the base damage';
+      body.push(
+        `${arrow} projectile = ${file.use('net.minecraft.world.entity.projectile.ProjectileUtil')}.getMobArrow(this, stack, power, new ${itemStack}(${file.use('net.minecraft.world.item.Items')}.BOW));`,
+        `projectile.setBaseDamage(${javaFloat(ranged.damage)});`,
+      );
+      break;
+    }
+    case 'throwable': {
+      const thrown = file.use(`${file.javaPackage}.ThrownItemEntity`);
+      what =
+        'the project throwable, with the mob as thrower (its damage, gravity and hit events apply; the copy never drops or returns)';
+      body.push(
+        `${thrown} projectile = new ${thrown}(level, this, stack.copy());`,
+        'projectile.setCarriesItem(false);',
+      );
+      break;
+    }
+    case 'item': {
+      const projectileItem = file.use('net.minecraft.world.item.ProjectileItem');
+      what = 'the vanilla projectile item, through its asProjectile and its own shoot';
+      body.push(
+        `${projectileItem} item = (${projectileItem}) stack.getItem();`,
+        `${projectileClass} projectile = item.asProjectile(level, new ${file.use('net.minecraft.world.phys.Vec3')}(getX(), getEyeY() - 0.1, getZ()), stack, getDirection());`,
+        'projectile.setOwner(this);',
+      );
+      break;
+    }
+  }
+  body.push(
+    'double dx = target.getX() - getX();',
+    'double dz = target.getZ() - getZ();',
+    `double dy = target.getY(1.0 / 3.0) - projectile.getY() + projectileDrop(Math.sqrt(dx * dx + dz * dz), ${speed}, projectile.getGravity());`,
+    ranged.kind === 'item'
+      ? `${projectileClass}.spawnProjectile(projectile, level, stack, p -> item.shoot(p, dx, dy, dz, ${speed}, ${inaccuracy}));`
+      : `${projectileClass}.spawnProjectileUsingShoot(projectile, level, stack, dx, dy, dz, ${speed}, ${inaccuracy});`,
+    `${builtIn}.SOUND_EVENT.getOptional(${identifierExpression(file, ranged.sound)}).ifPresent(sound ->`,
+    '        playSound(sound, 1.0f, 1.0f / (getRandom().nextFloat() * 0.4f + 0.8f)));',
+  );
+  if (spec.model.shoot !== undefined) {
+    body.push(`triggerAnim(${javaString(TRIGGERED_CONTROLLER)}, ${javaString(spec.model.shoot)});`);
+  }
+  if (ranged.onShoot !== undefined) {
+    body.push(
+      fireCall(
+        ranged.onShoot,
+        fireArgs(
+          `target instanceof ${file.use('net.minecraft.world.entity.player.Player')} p ? p : null`,
+          'target',
+        ),
+      ),
+    );
+  }
+  return [
+    '',
+    `/** msm:ranged_attack: one shot of ${what}, aimed at a third of the target's height and raised by the projectile's fall; then the sound${spec.model.shoot === undefined ? '' : ', the shoot animation'}${ranged.onShoot === undefined ? '' : ' and on_shoot (other = the target)'}. */`,
+    '@Override',
+    `public void performRangedAttack(${livingEntity} target, float power) {`,
+    ...indent(body),
+    '}',
+    '',
+    '/** How far a projectile falls over {@code horizontal} blocks at {@code speed} blocks per tick: g * t * (t + 1) / 2 (drag left out). */',
+    'private static double projectileDrop(double horizontal, double speed, double gravity) {',
+    '    double ticks = horizontal / speed;',
+    '    return gravity * ticks * (ticks + 1) / 2;',
+    '}',
+  ];
+}
+
+/** The static tables and synched data of `msm:variants` (ADR 0071 D4). */
+function variantFields(file: JavaFile, variants: Variants, name: string): string[] {
+  const accessor = file.use('net.minecraft.network.syncher.EntityDataAccessor');
+  const synched = file.use('net.minecraft.network.syncher.SynchedEntityData');
+  const serializers = file.use('net.minecraft.network.syncher.EntityDataSerializers');
+  const identifier = file.use('net.minecraft.resources.Identifier');
+  const lines = [
+    '',
+    '/** msm:variants, in definition order: ids (saved as Variant), textures and weights. */',
+    `private static final String[] VARIANT_IDS = {${variants.variants.map((v) => javaString(v.id)).join(', ')}};`,
+    `private static final ${identifier}[] VARIANT_TEXTURES = {`,
+    ...variants.variants.map(
+      (v, i) =>
+        `    ${identifierExpression(file, v.texture)}${i === variants.variants.length - 1 ? '' : ','}`,
+    ),
+    '};',
+    `private static final int[] VARIANT_WEIGHTS = {${variants.variants.map((v) => javaInt(v.weight)).join(', ')}};`,
+  ];
+  if (variants.biome) {
+    lines.push(
+      '/** Where each variant is picked: biome ids or #biome tags; none = the fallback pool. */',
+      `private static final String[][] VARIANT_BIOMES = {${variants.variants
+        .map((v) => `{${v.biomes.map(javaString).join(', ')}}`)
+        .join(', ')}};`,
+    );
+  }
+  lines.push(
+    `private static final ${accessor}<Integer> DATA_VARIANT = ${synched}.defineId(${name}.class, ${serializers}.INT);`,
+    '/** Set once a variant came from saved data, a parent or a pick, so a later finalizeSpawn keeps it. */',
+    'private boolean variantChosen;',
+  );
+  return lines;
+}
+
+/** The variant methods of `MobVariants` (ADR 0071 D4). */
+function variantMembers(file: JavaFile, variants: Variants): string[] {
+  const synched = file.use('net.minecraft.network.syncher.SynchedEntityData');
+  const identifier = file.use('net.minecraft.resources.Identifier');
+  const valueOutput = file.use('net.minecraft.world.level.storage.ValueOutput');
+  const valueInput = file.use('net.minecraft.world.level.storage.ValueInput');
+  const predicate = file.use('java.util.function.Predicate');
+  const randomSource = file.use('net.minecraft.util.RandomSource');
+  const list = file.use('java.util.List');
+  const arrayList = file.use('java.util.ArrayList');
+  const members = [
+    '',
+    '@Override',
+    `protected void defineSynchedData(${synched}.Builder builder) {`,
+    '    super.defineSynchedData(builder);',
+    '    builder.define(DATA_VARIANT, 0);',
+    '}',
+    '',
+    '/** The variant index (synched; out of range reads as the first). */',
+    'public int variant() {',
+    '    int index = getEntityData().get(DATA_VARIANT);',
+    '    return index < 0 || index >= VARIANT_IDS.length ? 0 : index;',
+    '}',
+    '',
+    '/** The current variant id. */',
+    'public String variantId() {',
+    '    return VARIANT_IDS[variant()];',
+    '}',
+    '',
+    '/** The texture drawn in place of msm:animated_model.texture. */',
+    `public ${identifier} variantTexture() {`,
+    '    return VARIANT_TEXTURES[variant()];',
+    '}',
+    '',
+    '/** Sets the variant by index (out of range: the first). */',
+    'public void setVariant(int index) {',
+    '    getEntityData().set(DATA_VARIANT, index < 0 || index >= VARIANT_IDS.length ? 0 : index);',
+    '    variantChosen = true;',
+    '}',
+    '',
+    '/** Sets the variant by id; an unknown id selects the first. */',
+    'public void setVariantById(String id) {',
+    '    int index = 0;',
+    '    for (int i = 0; i < VARIANT_IDS.length; i++) {',
+    '        if (VARIANT_IDS[i].equals(id)) {',
+    '            index = i;',
+    '            break;',
+    '        }',
+    '    }',
+    '    setVariant(index);',
+    '}',
+    '',
+    '@Override',
+    `protected void addAdditionalSaveData(${valueOutput} output) {`,
+    '    super.addAdditionalSaveData(output);',
+    '    output.putString("Variant", variantId());',
+    '}',
+    '',
+    '/** A saved Variant wins (unknown: the first); without the key the mob keeps its index. */',
+    '@Override',
+    `protected void readAdditionalSaveData(${valueInput} input) {`,
+    '    super.readAdditionalSaveData(input);',
+    '    input.getString("Variant").ifPresent(this::setVariantById);',
+    '}',
+    '',
+    variants.biome
+      ? '/** A weighted pick among the variants whose biomes match; none: those without biomes; none of those: every variant. */'
+      : '/** A weighted pick over every variant. */',
+    variants.biome
+      ? `private static int pickVariant(${predicate}<String> matches, ${randomSource} random) {`
+      : `private static int pickVariant(${randomSource} random) {`,
+    `    ${list}<Integer> pool = new ${arrayList}<>();`,
+  ];
+  if (variants.biome) {
+    members.push(
+      '    if (matches != null) {',
+      '        for (int i = 0; i < VARIANT_IDS.length; i++) {',
+      '            for (String entry : VARIANT_BIOMES[i]) {',
+      '                if (matches.test(entry)) {',
+      '                    pool.add(i);',
+      '                    break;',
+      '                }',
+      '            }',
+      '        }',
+      '        if (pool.isEmpty()) {',
+      '            for (int i = 0; i < VARIANT_IDS.length; i++) {',
+      '                if (VARIANT_BIOMES[i].length == 0) {',
+      '                    pool.add(i);',
+      '                }',
+      '            }',
+      '        }',
+      '    }',
+    );
+  }
+  members.push(
+    ...(variants.biome
+      ? [
+          '    if (pool.isEmpty()) {',
+          '        for (int i = 0; i < VARIANT_IDS.length; i++) {',
+          '            pool.add(i);',
+          '        }',
+          '    }',
+        ]
+      : ['    for (int i = 0; i < VARIANT_IDS.length; i++) {', '        pool.add(i);', '    }']),
+    '    int total = 0;',
+    '    for (int i : pool) {',
+    '        total += VARIANT_WEIGHTS[i];',
+    '    }',
+    '    int roll = random.nextInt(total);',
+    '    for (int i : pool) {',
+    '        roll -= VARIANT_WEIGHTS[i];',
+    '        if (roll < 0) {',
+    '            return i;',
+    '        }',
+    '    }',
+    '    return pool.getLast();',
+    '}',
+  );
+  if (variants.biome) {
+    const holder = file.use('net.minecraft.core.Holder');
+    const biome = file.use('net.minecraft.world.level.biome.Biome');
+    const tagKey = file.use('net.minecraft.tags.TagKey');
+    const registries = file.use('net.minecraft.core.registries.Registries');
+    members.push(
+      '',
+      '/** Matches a biomes entry (#biome tag or biome id) against one biome. */',
+      `private static ${predicate}<String> biomeMatcher(${holder}<${biome}> biome) {`,
+      '    return entry -> {',
+      `        ${identifier} id = ${identifier}.tryParse(entry.startsWith("#") ? entry.substring(1) : entry);`,
+      '        if (id == null) {',
+      '            return false;',
+      '        }',
+      `        return entry.startsWith("#") ? biome.is(${tagKey}.create(${registries}.BIOME, id)) : biome.is(id);`,
+      '    };',
+      '}',
+    );
+  }
+  return members;
+}
+
+/** The boss event of `MobBossBar` (ADR 0071 D5), the wither's rule. */
+function bossBarMembers(file: JavaFile, bar: BossBar): string[] {
+  const bossEvent = file.use('net.minecraft.server.level.ServerBossEvent');
+  const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+  const serverPlayer = file.use('net.minecraft.server.level.ServerPlayer');
+  const component = file.use('net.minecraft.network.chat.Component');
+  const mth = file.use('net.minecraft.util.Mth');
+  const bossEventBase = file.use('net.minecraft.world.BossEvent');
+  const members = [
+    '',
+    '/** The boss event, named by the display name, progress health / max health; null on the client. */',
+    `private ${bossEvent} bossEvent() {`,
+    `    if (bossEvent == null && level() instanceof ${serverLevel}) {`,
+    `        bossEvent = new ${bossEvent}(${mth}.createInsecureUUID(getRandom()), getDisplayName(),`,
+    `                ${bossEventBase}.BossBarColor.${bar.colour}, ${bossEventBase}.BossBarOverlay.${bar.overlay});`,
+    `        bossEvent.setDarkenScreen(${bar.darkenSky});`,
+    `        bossEvent.setPlayBossMusic(${bar.music});`,
+    `        bossEvent.setCreateWorldFog(${bar.fog});`,
+    '        bossEvent.setProgress(bossProgress());',
+    '    }',
+    '    return bossEvent;',
+    '}',
+    '',
+    'private float bossProgress() {',
+    '    return Math.clamp(getHealth() / getMaxHealth(), 0.0f, 1.0f);',
+    '}',
+    '',
+    '/** Whether the mob may show its bar: alive, not dying and not removed. */',
+    'private boolean showsBossBar() {',
+    '    return isAlive() && !isDeadOrDying() && !isRemoved();',
+    '}',
+    '',
+    `private void tickBossBar(${serverLevel} level) {`,
+    `    ${bossEvent} bar = bossEvent();`,
+    '    if (bar == null) {',
+    '        return;',
+    '    }',
+    `    ${component} name = getDisplayName();`,
+    '    if (!name.equals(bar.getName())) {',
+    '        bar.setName(name);',
+    '    }',
+    '    bar.setProgress(bossProgress());',
+  ];
+  if (bar.range !== undefined) {
+    const arrayList = file.use('java.util.ArrayList');
+    members.push(
+      '    if ((level.getGameTime() + getId()) % 10 == 0) {',
+      '        updateBossRange(level, bar);',
+      '    }',
+      '}',
+      '',
+      `/** range: the players of the level within ${bar.range} blocks, checked every 10 ticks. */`,
+      `private void updateBossRange(${serverLevel} level, ${bossEvent} bar) {`,
+      `    double max = (double) ${javaFloat(bar.range)} * ${javaFloat(bar.range)};`,
+      `    for (${serverPlayer} player : new ${arrayList}<>(bar.getPlayers())) {`,
+      '        if (player.isRemoved() || player.level() != level || player.distanceToSqr(this) > max) {',
+      '            bar.removePlayer(player);',
+      '        }',
+      '    }',
+      '    if (!showsBossBar()) {',
+      '        return;',
+      '    }',
+      `    for (${serverPlayer} player : level.players()) {`,
+      '        if (!player.isRemoved() && player.distanceToSqr(this) <= max) {',
+      '            bar.addPlayer(player);',
+      '        }',
+      '    }',
+      '}',
+    );
+  } else {
+    members.push(
+      '}',
+      '',
+      '/** Players tracking the boss see its bar. */',
+      '@Override',
+      `public void startSeenByPlayer(${serverPlayer} player) {`,
+      '    super.startSeenByPlayer(player);',
+      '    if (!showsBossBar()) {',
+      '        return;',
+      '    }',
+      `    ${bossEvent} bar = bossEvent();`,
+      '    if (bar != null) {',
+      '        bar.setProgress(bossProgress());',
+      '        bar.addPlayer(player);',
+      '    }',
+      '}',
+      '',
+      '@Override',
+      `public void stopSeenByPlayer(${serverPlayer} player) {`,
+      '    super.stopSeenByPlayer(player);',
+      '    if (bossEvent != null) {',
+      '        bossEvent.removePlayer(player);',
+      '    }',
+      '}',
+    );
+  }
+  const removalReason = file.use('net.minecraft.world.entity.Entity', 'RemovalReason');
+  members.push(
+    '',
+    '/** Killed, discarded, unloaded or changed dimension: nobody sees the bar any more. */',
+    '@Override',
+    `public void remove(${removalReason} reason) {`,
+    '    super.remove(reason);',
+    '    if (bossEvent != null) {',
+    '        bossEvent.removeAllPlayers();',
+    '    }',
+    '}',
+    '',
+    '/** A boss never despawns. */',
+    '@Override',
+    'public boolean requiresCustomPersistence() {',
+    '    return true;',
+    '}',
+  );
+  return members;
+}
+
+/**
+ * The animal callbacks of `MsmAnimal` without `msm:breedable` (ADR 0071 D2): no breeding food;
+ * a spawn egg used on an adult still makes a baby of the same type, which takes a parent's
+ * variant.
+ */
+function animalMembers(file: JavaFile, spec: EntitySpec, name: string): string[] {
+  const itemStack = file.use('net.minecraft.world.item.ItemStack');
+  const ageableMob = file.use('net.minecraft.world.entity.AgeableMob');
+  const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+  const reason = file.use('net.minecraft.world.entity.EntitySpawnReason');
+  const offspring = [
+    `${ageableMob} child = getType().create(level, ${reason}.BREEDING) instanceof ${ageableMob} made ? made : null;`,
+  ];
+  if (spec.variants !== undefined) {
+    offspring.push(
+      `if (child instanceof ${name} baby) {`,
+      "    // A random parent's variant (partner is this mob for a spawn egg used on an adult).",
+      `    ${name} parent = partner instanceof ${name} other && baby.getRandom().nextInt(2) == 1 ? other : this;`,
+      '    baby.setVariant(parent.variant());',
+      '}',
+    );
+  }
+  offspring.push('return child;');
+  return [
+    '',
+    '/** No breeding food without msm:breedable. */',
+    '@Override',
+    `public boolean isFood(${itemStack} stack) {`,
+    '    return false;',
+    '}',
+    '',
+    '/** A new mob of the same type (a spawn egg used on an adult makes a baby). */',
+    '@Override',
+    `public ${ageableMob} getBreedOffspring(${serverLevel} level, ${ageableMob} partner) {`,
+    ...indent(offspring),
+    '}',
+  ];
 }
 
 /**
