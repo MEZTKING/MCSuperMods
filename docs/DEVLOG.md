@@ -3269,3 +3269,15 @@ What: Prepared the runtime for containers and machines (PLAN-containers-machines
 Decisions: the thread-local set-up is now staged inside the protected constructor (`super(stage(setup, properties))`) so subclasses need no factory of their own; `create` still clears it in `finally`. The `open`/`lit` decisions live in `BlockEntityHooks` too, so B314 and B316 change only files under `registry/container/` (and their own) and never `MsmBlock`.
 
 Next: B314 fills `wantsBlockEntity`, `hasOpenProperty`, `afterBlockRegistered` and `newBlockEntity`; B316 the machine branches and `hasLitProperty`, counting through `countBlockEntityType` and `countMachineRecipeType`.
+## 2026-11-14 — executor — B313 machine recipes and vanilla packs
+
+What
+- New `packages/exporters/test/machine-vanilla-pack.test.ts` (both built-in targets, 10 tests): a machine recipe `data/demo/recipe/grinder/gravel.json` with `type: "demo:grinder"` (a mod-only block id) and only vanilla items is left out of the vanilla data pack with `export.mod-only-reference`, and so is one with a tag and list ingredient; a `minecraft:smelting` recipe of vanilla items stays; the keep-contents loot table (`copy_components` from the block entity of custom name, container and lock) naming the mod-only block item is left out; one warning per element; a project without mod-only ids is untouched.
+- F22 probed on vanilla servers of 26.3 and 26.4-snapshot-7 with `tools/run-fabric-server/vanilla-packs.ts` (hand-made packs in the scratchpad, not kept): a recipe whose `type` is unknown fails the whole data pack and the server does not start ("Unknown registry key in ResourceKey[minecraft:root / minecraft:recipe_serializer]: demo:grinder", then "Failed to load datapacks, can't proceed with server load"); the same pack without that file loads.
+- `pnpm --filter @msm/exporters test` (1071 passed, 65 skipped), `pnpm lint`, `pnpm typecheck` green.
+
+Decisions
+- `mod-only.ts` unchanged: the generic scan already checks `type` (it is not a skipped key), and the host's `block` ids hold every machine id, so no `recipe_serializer` registry is needed in `modOnlyIdsOf`.
+
+Next
+- B315's lowering writes these shapes; the library vanilla server check (B320) covers them in real starters and examples.
