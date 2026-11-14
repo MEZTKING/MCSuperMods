@@ -3802,3 +3802,17 @@ Decisions
 
 Next
 - B351 (vanilla pack safety: `particle_type` in `RUNTIME_REGISTRIES`, `dimension_type` and `timeline` fatal), B350/B352 (fill the runtime stubs), B356, B359.
+## 2026-11-14 — executor — B349 client particle and ParticleLook
+
+What
+- New `engine-mod/src/main/java/dev/mcsupermods/runtime/client/particle/` (ADR 0080 D4): `ParticleLook` (the `Spec` record of D1's knobs with defaults resolved by `Spec.resolve`, `Spec.DEFAULTS`, and the pure rules `lifetime`, `progress`, `frame`, `size`, `rgba`, `roll`, `translucent`, `step`; no Minecraft client types), `MsmParticle extends SingleQuadParticle` (exact spawn velocity, `gravity`, `friction`, `hasPhysics`, lifetime from the spec; frame, colour, alpha and roll after each `super.tick()`; size through `getQuadSize(partial)`; `Layer.OPAQUE` or `Layer.TRANSLUCENT`; `LightCoordsUtil.FULL_BRIGHT` when emissive; `created(Identifier)` counter for B356) and `MsmParticleProvider` (`pending(id, spec)` for Fabric's `ParticleProviderRegistry`; no frames or a failure gives `null` and one warning per type). Not registered yet (B350).
+- Golden `fixtures/particle-look/golden.json` (14 cases, 5 lifetime draws) with its README (rules, format, tolerance 1e-5); `ParticleLookGoldenTest` (rewrites with `UPDATE_GOLDENS=1`) and `ParticleLookTest` (14 hand-worked checks, including the provider with no sprites). `build.gradle.kts` declares the folder as a test input and passes `msm.particle.look`.
+- Verified (JDK 25): `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib`: 400 GameTests each, 625 JUnit tests each, all green; `./gradlew -p parity build -Pmc=26.3` green.
+
+Decisions
+- The frame is set from the type's sprite list with `ParticleLook.frame` in every mode (not `setSpriteFromAge` or `SpriteSet.get`), so the golden is the one rule for game and preview; `age` frames get an equal share of the life each.
+- `in_out` fades over the first and last quarter of the life; `size` is vanilla's quad size (the square is `2 × size` wide).
+- The test's empty sprite set is a proxy, because `SpriteSet` gains an abstract `size()` on 26.4-snapshot-7 that the runtime never implements.
+
+Next
+- B350 registers the types, builds each spec with `ParticleLook.Spec.resolve` and registers `MsmParticleProvider.pending(id, spec)`; B353 writes `particle-sim.ts` against the golden; B355 copies the three classes as templates.

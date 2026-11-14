@@ -1,0 +1,991 @@
+{
+  "cases": [
+    {
+      "definition": {
+        "format": 1,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "minimal",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "format": 1,
+        "lifetime": 20,
+        "textures": ["msm_test:spark_0", "msm_test:spark_1", "msm_test:spark_2", "msm_test:spark_3"]
+      },
+      "frames": 4,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 2,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 3,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "age frames",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "animation": "loop",
+        "format": 1,
+        "frame_ticks": 3,
+        "lifetime": 30,
+        "textures": ["msm_test:spark_0", "msm_test:spark_1", "msm_test:spark_2"]
+      },
+      "frames": 3,
+      "lifetime": 30,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 15,
+          "frame": 2,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 30,
+          "frame": 1,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "loop frames",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "animation": "random",
+        "format": 1,
+        "lifetime": 16,
+        "textures": ["msm_test:spark_0", "msm_test:spark_1", "msm_test:spark_2", "msm_test:spark_3", "msm_test:spark_4"]
+      },
+      "frames": 5,
+      "lifetime": 16,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 3,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 3,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 8,
+          "frame": 3,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 16,
+          "frame": 3,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "random frame",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 3,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "alpha": 0.8,
+        "fade": "out",
+        "format": 1,
+        "lifetime": 20,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.8],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.76],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.4],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "fade out",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": true,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "fade": "in_out",
+        "format": 1,
+        "lifetime": 40,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 40,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 40,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "fade in and out",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": true,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "color": 16744448,
+        "color_end": 16639,
+        "format": 1,
+        "lifetime": 10,
+        "textures": ["minecraft:glow"]
+      },
+      "frames": 1,
+      "lifetime": 10,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 0.501961, 0, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [0.9, 0.476863, 0.1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 5,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [0.5, 0.376471, 0.5, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [0, 0.25098, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "colour curve",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "format": 1,
+        "lifetime": 20,
+        "size": 0.5,
+        "size_end": 0,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.5
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.475
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.25
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0
+        },
+        {
+          "age": 5,
+          "frame": 0,
+          "partial": 0.5,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.3625
+        },
+        {
+          "age": 19,
+          "frame": 0,
+          "partial": 0.5,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.0125
+        }
+      ],
+      "name": "size curve",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "format": 1,
+        "lifetime": 12,
+        "spin": -45,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 12,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": -0.785398,
+          "size": 0.2
+        },
+        {
+          "age": 6,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": -4.712389,
+          "size": 0.2
+        },
+        {
+          "age": 12,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": -9.424778,
+          "size": 0.2
+        }
+      ],
+      "name": "spin",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    },
+    {
+      "definition": {
+        "collision": false,
+        "emissive": true,
+        "format": 1,
+        "friction": 0.96,
+        "gravity": -0.5,
+        "lifetime": {
+          "max": 40,
+          "min": 20
+        },
+        "textures": ["msm_test:spark_0", "msm_test:spark_1"]
+      },
+      "frames": 2,
+      "lifetime": 30,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 15,
+          "frame": 1,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 30,
+          "frame": 1,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "floats up",
+      "positions": [
+        {
+          "position": [0.02, 64.07, 0],
+          "steps": 1,
+          "velocity": [0.0192, 0.0672, 0]
+        },
+        {
+          "position": [0.092314, 64.515256, 0],
+          "steps": 5,
+          "velocity": [0.016307, 0.12939, 0]
+        },
+        {
+          "position": [0.278999, 68.001526, 0],
+          "steps": 20,
+          "velocity": [0.00884, 0.289939, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0.02, 0.05, 0]
+    },
+    {
+      "definition": {
+        "collision": false,
+        "format": 1,
+        "gravity": 1,
+        "lifetime": 20,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "falls",
+      "positions": [
+        {
+          "position": [0.1, 64.16, 0],
+          "steps": 1,
+          "velocity": [0.098, 0.1568, 0]
+        },
+        {
+          "position": [0.480396, 64.376554, 0],
+          "steps": 5,
+          "velocity": [0.090392, -0.007531, 0]
+        },
+        {
+          "position": [1.66196, 59.898339, 0],
+          "steps": 20,
+          "velocity": [0.066761, -0.517967, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0.1, 0.2, 0]
+    },
+    {
+      "definition": {
+        "collision": false,
+        "format": 1,
+        "friction": 1,
+        "lifetime": 20,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "no drag",
+      "positions": [
+        {
+          "position": [0.1, 64, -0.1],
+          "steps": 1,
+          "velocity": [0.1, 0, -0.1]
+        },
+        {
+          "position": [0.5, 64, -0.5],
+          "steps": 5,
+          "velocity": [0.1, 0, -0.1]
+        },
+        {
+          "position": [2, 64, -2],
+          "steps": 20,
+          "velocity": [0.1, 0, -0.1]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0.1, 0, -0.1]
+    },
+    {
+      "definition": {
+        "collision": false,
+        "format": 1,
+        "friction": 0.5,
+        "gravity": 0.25,
+        "lifetime": 20,
+        "textures": ["msm_test:spark"]
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 1],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "half drag",
+      "positions": [
+        {
+          "position": [0.4, 64.39, 0.4],
+          "steps": 1,
+          "velocity": [0.2, 0.195, 0.2]
+        },
+        {
+          "position": [0.775, 64.694375, 0.775],
+          "steps": 5,
+          "velocity": [0.0125, 0.002812, 0.0125]
+        },
+        {
+          "position": [0.799999, 64.419999, 0.799999],
+          "steps": 20,
+          "velocity": [0, -0.01, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0.4, 0.4, 0.4]
+    },
+    {
+      "definition": {
+        "alpha": 0.5,
+        "always_show": true,
+        "emissive": true,
+        "format": 1,
+        "lifetime": 20,
+        "textures": ["msm_test:spark"],
+        "translucent": false
+      },
+      "frames": 1,
+      "lifetime": 20,
+      "looks": [
+        {
+          "age": 0,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.5],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 1,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.5],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 10,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.5],
+          "roll": 0,
+          "size": 0.2
+        },
+        {
+          "age": 20,
+          "frame": 0,
+          "partial": 0,
+          "rgba": [1, 1, 1, 0.5],
+          "roll": 0,
+          "size": 0.2
+        }
+      ],
+      "name": "translucent forced off",
+      "positions": [
+        {
+          "position": [0, 64, 0],
+          "steps": 1,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 5,
+          "velocity": [0, 0, 0]
+        },
+        {
+          "position": [0, 64, 0],
+          "steps": 20,
+          "velocity": [0, 0, 0]
+        }
+      ],
+      "random_frame": 0,
+      "start": [0, 64, 0],
+      "translucent": false,
+      "velocity": [0, 0, 0]
+    }
+  ],
+  "format": 1,
+  "lifetimes": [
+    {
+      "lifetime": 20,
+      "max": 20,
+      "min": 20,
+      "r": 0.5
+    },
+    {
+      "lifetime": 10,
+      "max": 30,
+      "min": 10,
+      "r": 0
+    },
+    {
+      "lifetime": 20,
+      "max": 30,
+      "min": 10,
+      "r": 0.5
+    },
+    {
+      "lifetime": 30,
+      "max": 30,
+      "min": 10,
+      "r": 0.999999
+    },
+    {
+      "lifetime": 1501,
+      "max": 6000,
+      "min": 1,
+      "r": 0.25
+    }
+  ]
+}

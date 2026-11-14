@@ -75,6 +75,8 @@ dependencies {
 val conformanceCorpus = layout.projectDirectory.dir("../packages/schemas/mcdoc/msm/conformance/definition")
 // The script API v1 description (ADR 0032 D1) lives with the scripting plugin; the contract test reads it in place.
 val scriptApi = layout.projectDirectory.file("../packages/plugins/scripting/api/script-api-v1.json")
+// The particle look golden (ADR 0081 D6 (a)) is shared with the app's preview; the runtime reads it in place.
+val particleLook = layout.projectDirectory.dir("../fixtures/particle-look")
 
 tasks.test {
     useJUnitPlatform()
@@ -82,6 +84,8 @@ tasks.test {
     systemProperty("msm.conformance.definition", conformanceCorpus.asFile.absolutePath)
     inputs.file(scriptApi).withPropertyName("scriptApi")
     systemProperty("msm.script.api", scriptApi.asFile.absolutePath)
+    inputs.dir(particleLook).withPropertyName("particleLook")
+    systemProperty("msm.particle.look", particleLook.asFile.absolutePath)
     testLogging {
         events("failed")
         showStandardStreams = false
