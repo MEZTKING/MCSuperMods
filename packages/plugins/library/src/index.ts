@@ -30,6 +30,7 @@ import { definePlugin, type Plugin } from '@msm/plugin-api';
 import { libraryExamples } from './examples/index';
 import { libraryStarters } from './starters/index';
 
+export * as minecraftArt from './art/index';
 export {
   ARMOR_LAYER_SIZE,
   armorLayerPng,

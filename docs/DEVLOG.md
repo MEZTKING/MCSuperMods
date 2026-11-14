@@ -4834,3 +4834,19 @@ Decisions
 Next
 - In-game checks: the crypt's template entity spawning on jigsaw placement, the leaves random tick rule on a `leaves` block, sneak-use picking up the kart before mounting, ridden-mob speed attributes going to 0 for the biplane.
 - Root `CLAUDE.md` still says 132 examples (now 150); a `CHANGELOG.md` `[Unreleased]` line for the category.
+## 2026-11-14 — executor — Minecraft-style art prototype (A and B)
+
+What
+- For the user's "make the art much better ... the best method for the best minecraft art": a prototype of two approaches in `packages/plugins/library/src/art/` (exported from the library index as `minecraftArt`), not wired into any flow. ADR 0092 (Proposed) covers A, B, an optional AI provider (C), a commissioned library (D) and the rollout.
+- A, recolour from the user's own textures: `extractPalette` (colours darkest first by OKLab lightness), `materialMask` and `textureRamps` (material against base by palette membership, so an ore's stone or a tool's handle stays; two-cluster colour k-means without a base), `generateRamp` (same shade count, uneven lightness steps, hue leaning warm in highlights and cool in shadows without crossing the opposite hue), `recolourTexture` and `rampMap` (per-colour transfer, alpha kept, one map for every frame of an animated strip).
+- B, original generator: `generateArt` with 20 recipes (ore, deepslate ore, gem, ingot, block in gem or metal finish, the five tools, four armour pieces, fruit, pie, planks, log, log top, leaves); silhouettes in `art/sprites.ts` are original drawings; the renderer adds outlines and top-left lighting; clustered noise in `art/noise.ts`; `learnStyle` keeps two numbers only.
+- Tests: `test/art.test.ts`, 60 tests on synthetic textures made in code (no Mojang texture in the repository): palette, masks, ramps and hue direction, recolour (alpha, strips), noise proportions and clustering, every recipe deterministic per seed and following the outline rule.
+- Comparison pictures (scratchpad only, never committed) from the 26.3 client jar in the Loom cache: Ruby, Frost, and food and wood, rows Today / A / B.
+
+Decisions
+- Material versus base is decided by colour membership, not by position: vanilla's ore textures do not reuse the stone texture pixel for pixel, so a positional difference marked most of the stone as gem.
+- Measured over 23 vanilla textures, `learnStyle` gave a cluster blur of 1 (the default) and a smaller hue turn than the default 16 degrees; the default is kept for the pictures and flagged in ADR 0092 D3.
+- Nothing in `placeholderPng` changed; the art module only reuses `encodePng` and the `Rgb` type.
+
+Next
+- The user chooses from the pictures; then ADR 0092's rollout (more recipes, an `artPng` helper with the placeholder fallback, flows and examples, and A's IPC, marking and publish warning).
