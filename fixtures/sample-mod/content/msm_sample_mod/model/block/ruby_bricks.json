@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_sample_mod:block/ruby_bricks"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:block/ruby_bricks",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

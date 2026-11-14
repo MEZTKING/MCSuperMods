@@ -117,9 +117,13 @@ export function TexturesSection(props: TexturesSectionProps) {
         </p>
       ) : (
         <>
-          <p className="text-muted text-xs">
-            "Every face" fills each texture left empty. The models of the {type.replace('_', ' ')}{' '}
-            are made from these on vanilla's own templates.
+          <p className="text-muted text-xs" data-testid="block-textures-rule">
+            "Every face" fills each texture left empty.{' '}
+            {type === 'slab' || type === 'stairs'
+              ? 'Without it, an empty top or bottom takes the sides, and empty sides take the first texture given.'
+              : 'Without it, an empty texture takes the first texture given.'}{' '}
+            The models of the {type.replace('_', ' ')} are made from these on vanilla's own
+            templates.
           </p>
           <div className="flex flex-col gap-1">
             {slots.map((slot) => {

@@ -11,7 +11,9 @@
  * and block trigger), two `msm:effect` elements with their icons, since ADR 0063 an `msm:potion`
  * of one of them brewed from the project's ruby with long and strong versions, a `minecraft:equipment`
  * element with its three armour layer textures (ADR 0042), three functions and a loot table,
- * namespace `msm_sample_mod`.
+ * namespace `msm_sample_mod`; since ADRs 0067 to 0069 (B278) the block types and plants, as the
+ * Wood set (`maple`), Stone set (`ruby_bricks` with its stairs, slab and wall) and Crop
+ * (`ruby_berries` with its own seeds) Creator flows build them ({@link FLOW_SETS}).
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and
  *   {@link SAMPLE_ASSETS} now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
@@ -43,10 +45,18 @@ import {
   saveProject,
   utf8,
 } from '@msm/core';
-import type { Element, Json, Plugin, Problem, Project, Target } from '@msm/plugin-api';
-import blocksItemsPlugin, { blockItemIdOf } from '@msm/plugin-blocks-items';
+import type {
+  ContentBundle,
+  Element,
+  Json,
+  Plugin,
+  Problem,
+  Project,
+  Target,
+} from '@msm/plugin-api';
+import blocksItemsPlugin, { blockGeneratedModelIds, blockItemIdOf } from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
-import { encodePng, placeholderPng, type Rgb } from '@msm/plugin-library';
+import { encodePng, libraryStarters, placeholderPng, type Rgb } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import worldgenPlugin from '@msm/plugin-worldgen';
 import {
@@ -125,6 +135,73 @@ const ns = (path: string): string => `${NAMESPACE}:${path}`;
  * ({@link SAMPLE_ASSETS}). The equipment element is
  * `ruby_armor`, not `ruby`: element ids are unique per namespace and `ruby` is the item.
  */
+/**
+ * The block types and plants (ADRs 0067 to 0069, B278), built by the library's Creator flows with
+ * pinned answers, so the sample holds what a user gets from the Creator: the `maple` wood set
+ * (all 15 members, its tree `maple_tree` growing in forests, 11 recipes and 6 tags), the
+ * `ruby_bricks` stone set (the stone with its stairs, slab and wall; `ruby` is the item, so the
+ * stone is named after the bricks) and the `ruby_berries` crop (block `ruby_berries_crop` with
+ * the item `ruby_berries_seeds`, produce `ruby_berries`, four stage textures, villager farming).
+ * The flows' `msm:mod` and `pack.mcmeta` elements are left out (the sample has its own mod
+ * element and needs no pack); their placeholder textures join {@link SAMPLE_ASSETS}. A change to
+ * one of these flows changes the sample: regenerate it with `UPDATE_GOLDENS=1` and check the
+ * parity tests (`SampleModBlockTypesParityTest`).
+ */
+const FLOW_SETS: readonly (readonly [string, Readonly<Record<string, Json>>])[] = [
+  [
+    'wood-set',
+    {
+      wood_name: 'Maple',
+      set_type: 'wood',
+      wood_type: 'oak',
+      leaf_tint: 'none',
+      tree_shape: 'straight',
+      grows: true,
+    },
+  ],
+  [
+    'stone-set',
+    {
+      stone_name: 'Ruby Bricks',
+      tool_tier: 'stone',
+      ingredient: 'minecraft:stone',
+      members: ['block', 'stairs', 'slab', 'wall'],
+    },
+  ],
+  [
+    'crop',
+    {
+      crop_name: 'Ruby Berries',
+      stages: 'four',
+      produce: 'seeds',
+      harvest_max: 1,
+      villagers: true,
+      wild: false,
+    },
+  ],
+];
+
+/** The flows' bundles, with every parameter the flow declares at its default unless pinned. */
+const FLOW_BUNDLES: readonly ContentBundle[] = FLOW_SETS.map(([id, pinned]) => {
+  const starter = libraryStarters.find((entry) => entry.id === id);
+  if (starter === undefined) throw new Error(`no library flow ${id}`);
+  const values = {
+    ...Object.fromEntries((starter.parameters ?? []).map((p) => [p.id, p.default])),
+    ...pinned,
+  };
+  const built = starter.build({
+    namespace: NAMESPACE,
+    projectName: PROJECT_NAME,
+    target: defaultTarget().target,
+    values,
+  });
+  if (built instanceof Promise) throw new Error(`library flow ${id} builds asynchronously`);
+  return built;
+});
+
+/** Kinds of the flows' elements the sample leaves out. */
+const FLOW_SKIPPED_KINDS = new Set(['msm:mod', 'minecraft:pack_mcmeta']);
+
 /** The colours of the two effects (particles and the HUD bar), also their placeholder icons'. */
 const RUBY_RUSH_COLOUR = 0xe0115f;
 const RUBY_STING_COLOUR = 0x8b0000;
@@ -947,6 +1024,11 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       random_sequence: ns('blocks/ruby_ore_rich'),
     },
   },
+  ...FLOW_BUNDLES.flatMap((bundle) =>
+    bundle.elements
+      .filter((entry) => !FLOW_SKIPPED_KINDS.has(entry.kind))
+      .map((entry): SampleElement => ({ id: entry.id, kind: entry.kind, data: entry.data })),
+  ),
 ];
 
 interface SampleAsset {
@@ -984,8 +1066,9 @@ function armorLayerPlaceholder(colour: Rgb, height = 32): Uint8Array {
 const rgbOf = (colour: number): Rgb => [(colour >> 16) & 0xff, (colour >> 8) & 0xff, colour & 0xff];
 
 /**
- * The three armour layers of `ruby_armor` (`horse_body`, `humanoid`, `humanoid_leggings`) and
- * the two effect icons (the library's 18x18 `effect_icon` placeholder, ADR 0055 D6).
+ * The three armour layers of `ruby_armor` (`horse_body`, `humanoid`, `humanoid_leggings`),
+ * the two effect icons (the library's 18x18 `effect_icon` placeholder, ADR 0055 D6) and the
+ * block and item textures of the {@link FLOW_SETS}.
  */
 const SAMPLE_ASSETS: readonly SampleAsset[] = [
   {
@@ -1008,6 +1091,14 @@ const SAMPLE_ASSETS: readonly SampleAsset[] = [
     path: 'textures/entity/equipment/humanoid_leggings/ruby.png',
     bytes: armorLayerPlaceholder(RUBY),
   },
+  // The flows' placeholder textures (B278).
+  ...FLOW_BUNDLES.flatMap((bundle) =>
+    bundle.assets.map((asset): SampleAsset => {
+      if (asset.namespace !== NAMESPACE)
+        throw new Error(`asset outside ${NAMESPACE}: ${asset.path}`);
+      return { path: asset.path, bytes: asset.bytes };
+    }),
+  ),
 ];
 
 /** The potion registry entries of `ruby_draught` (ADR 0063 D3: the base and its two versions). */
@@ -1032,15 +1123,18 @@ async function buildSample(): Promise<MemoryFileSystem> {
     elements: [] as Element[],
     assets: [] as { path: string; mediaType: string }[],
   };
+  const others = new Map<string, Element[]>();
   for (const entry of SAMPLE_ELEMENTS) {
-    namespace.elements.push(
-      createElement({
-        id: entry.id as Element['id'],
-        kind: entry.kind,
-        data: structuredClone(entry.data),
-        now: () => NOW,
-      }),
-    );
+    const element = createElement({
+      id: entry.id as Element['id'],
+      kind: entry.kind,
+      data: structuredClone(entry.data),
+      now: () => NOW,
+    });
+    // Vanilla tags the wood set joins (`minecraft:logs` and so on) live in their own namespace.
+    const owner = entry.id.slice(0, entry.id.indexOf(':'));
+    if (owner === NAMESPACE) namespace.elements.push(element);
+    else others.set(owner, [...(others.get(owner) ?? []), element]);
   }
   const fs = createMemoryFileSystem();
   for (const asset of SAMPLE_ASSETS) {
@@ -1050,6 +1144,10 @@ async function buildSample(): Promise<MemoryFileSystem> {
     namespace.assets.push({ path: asset.path, mediaType: 'image/png' });
   }
   project.namespaces.push(namespace);
+  for (const [name, elements] of [...others].sort(([a], [b]) => (a < b ? -1 : 1))) {
+    project.namespaces.push({ name, elements, assets: [] });
+  }
+  project.namespaces.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
   await saveProject(fs, project, registry);
   return fs;
 }
@@ -1140,6 +1238,8 @@ function projectIds(project: Project): Record<string, string[]> {
       // The block item's own id (`item.id`, else the block's; ADR 0068 D2).
       const itemId = blockItemIdOf(element.id, element.data);
       if (itemId !== undefined) add('item', itemId);
+      // The models lowering generates for a typed block (ADR 0067 D7).
+      for (const id of blockGeneratedModelIds(element.id, element.data as Json)) add('model', id);
     }
     // A potion with `long` or `strong` also registers `long_<path>` and `strong_<path>`
     // (ADR 0063 D3), as the app's registry view declares them.
@@ -1278,6 +1378,8 @@ describe('sample mod project', () => {
       'msm:on_place',
       'msm:on_random_tick',
       'msm:on_entity_inside',
+      'msm:flammable',
+      'msm:strippable',
     ]) {
       expect(text.includes(`"${component}"`), component).toBe(true);
     }
@@ -1300,7 +1402,11 @@ describe('sample mod project', () => {
       'minecraft:equipment',
       'minecraft:function',
       'minecraft:loot_table',
+      'minecraft:model',
+      'minecraft:recipe',
       'minecraft:sounds',
+      'minecraft:tag/block',
+      'minecraft:tag/item',
       'minecraft:worldgen/feature',
       'minecraft:worldgen/placed_feature',
       'msm:biome_addition',
@@ -1310,6 +1416,29 @@ describe('sample mod project', () => {
       'msm:loot_addition',
       'msm:mod',
       'msm:potion',
+    ]);
+    // The block types of the three flows (ADR 0067 D1, ADR 0068 D1).
+    const types = new Set(
+      elementsOf(project).flatMap((element) => {
+        const type = (element.data as { type?: unknown }).type;
+        return element.kind === 'msm:block' && typeof type === 'string' ? [type] : [];
+      }),
+    );
+    // Planks and the stone are plain blocks with a cube model (no `type`).
+    expect([...types].sort()).toEqual([
+      'button',
+      'crop',
+      'door',
+      'fence',
+      'fence_gate',
+      'leaves',
+      'pillar',
+      'pressure_plate',
+      'sapling',
+      'slab',
+      'stairs',
+      'trapdoor',
+      'wall',
     ]);
   });
 });
@@ -1408,7 +1537,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
             (entry) => `msm/${NAMESPACE}/effect/${entry.id.split(':')[1]}.json`,
           ),
           ...POTIONS.map((path) => `msm/${NAMESPACE}/potion/${path}.json`),
-          `msm/${NAMESPACE}/biome_addition/ruby_ore_generation.json`,
+          ...SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:biome_addition').map(
+            (entry) => `msm/${NAMESPACE}/biome_addition/${entry.id.split(':')[1]}.json`,
+          ),
           `msm/${NAMESPACE}/loot_addition/zombie_drops_ruby.json`,
         ].sort(),
       );
@@ -1430,6 +1561,17 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         `assets/${NAMESPACE}/sounds.json`,
         `data/${NAMESPACE}/worldgen/feature/ore_ruby.json`,
         `data/${NAMESPACE}/worldgen/placed_feature/ore_ruby_placed.json`,
+        // The block types and plants (B278): generated blockstates and models, the tree, tags.
+        `assets/${NAMESPACE}/blockstates/maple_stairs.json`,
+        `assets/${NAMESPACE}/blockstates/maple_door.json`,
+        `assets/${NAMESPACE}/blockstates/ruby_bricks_wall.json`,
+        `assets/${NAMESPACE}/blockstates/ruby_berries_crop.json`,
+        `data/${NAMESPACE}/worldgen/feature/maple_tree.json`,
+        `data/${NAMESPACE}/${target.folders.data.loot_table}/blocks/ruby_berries_crop.json`,
+        `data/${NAMESPACE}/${target.folders.data.loot_table}/blocks/maple_leaves.json`,
+        `data/${NAMESPACE}/${target.folders.data.recipe}/maple_planks_from_logs.json`,
+        `data/minecraft/${target.folders.data.tags}/block/logs.json`,
+        `data/${NAMESPACE}/${target.folders.data.tags}/item/maple_logs.json`,
       ]) {
         expect(paths, path).toContain(path);
       }

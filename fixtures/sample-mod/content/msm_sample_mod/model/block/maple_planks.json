@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_sample_mod:block/maple_planks"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:block/maple_planks",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

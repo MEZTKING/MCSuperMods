@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "minecraft:stone"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_sample_mod:ruby_bricks"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_bricks_from_stone",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

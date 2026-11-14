@@ -114,6 +114,44 @@ describe('wizard model', () => {
     expect(validateParameter(name, 'Abcdefghi')).toBe('Use at most 8 characters.');
   });
 
+  it('accepts an empty string only when the pattern accepts it', () => {
+    const optional: StarterParameter = {
+      id: 'seeds_name',
+      label: 'Seeds name',
+      type: 'string',
+      default: '',
+      pattern: '^([A-Z][a-z]*)?$',
+    };
+    expect(validateParameter(optional, '')).toBeNull();
+    expect(validateParameter(optional, undefined)).toBeNull();
+    expect(validateParameter(optional, 'Amber')).toBeNull();
+    expect(validateParameter(optional, '  ')).toBe('This value does not have the expected form.');
+    expect(validateParameter(optional, 'amber')).toBe(
+      'This value does not have the expected form.',
+    );
+    expect(toValues([optional], { seeds_name: '' })).toEqual({ seeds_name: '' });
+    const required = PARAMETERS[0] as StarterParameter;
+    expect(validateParameter(required, '')).toBe('Enter a value.');
+    const unpatterned: StarterParameter = { id: 'x', label: 'X', type: 'string', default: 'a' };
+    expect(validateParameter(unpatterned, '')).toBe('Enter a value.');
+  });
+
+  it('keeps every library starter string answer required unless its pattern accepts empty', () => {
+    const optional: string[] = [];
+    for (const starter of libraryStarters) {
+      for (const parameter of starter.parameters ?? []) {
+        if (parameter.type !== 'string') continue;
+        expect(
+          validateParameter(parameter, defaultRawValues([parameter])[parameter.id]),
+        ).toBeNull();
+        const error = validateParameter(parameter, '');
+        if (error === null) optional.push(`${starter.id}.${parameter.id}`);
+        else expect(error).toBe('Enter a value.');
+      }
+    }
+    expect(optional).toEqual([expect.stringMatching(/crop.*\.seeds_name$/)]);
+  });
+
   it('validates numbers: a number, min, max and step', () => {
     const count = PARAMETERS[2] as StarterParameter;
     const speed = PARAMETERS[4] as StarterParameter;

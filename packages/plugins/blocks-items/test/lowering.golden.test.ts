@@ -989,6 +989,91 @@ describe('block types', () => {
     );
     expect(blockItemId({ id: 'example:a', data: { format: 1, item: false } })).toBeUndefined();
   });
+
+  describe('texture precedence: an empty slot takes `all` ("Every face") first', () => {
+    /** The `textures` of each generated model, keyed by model path. */
+    const modelTextures = async (
+      id: string,
+      data: Json,
+    ): Promise<Record<string, Record<string, string>>> => {
+      const files = await blockKind.lower(
+        element(blockKind.id, id as ResourceLocation, data),
+        target,
+      );
+      return Object.fromEntries(
+        files
+          .filter((file) => /\/models\/block\//.test(file.path))
+          .map((file) => [
+            file.path.replace(/^.*\/models\//, ''),
+            (file.contents as { textures: Record<string, string> }).textures,
+          ]),
+      );
+    };
+
+    it.each(['stairs', 'slab'])(
+      '%s: empty top and bottom take `all` before `side`',
+      async (type) => {
+        const models = await modelTextures(`example:p_${type}`, {
+          format: 1,
+          type,
+          textures: { all: 'example:block/all', side: 'example:block/side' },
+        });
+        expect(Object.keys(models).length).toBeGreaterThan(0);
+        for (const [path, textures] of Object.entries(models)) {
+          expect(textures, path).toMatchObject({
+            bottom: 'example:block/all',
+            side: 'example:block/side',
+            top: 'example:block/all',
+          });
+        }
+      },
+    );
+
+    it.each(['stairs', 'slab'])(
+      '%s: without `all`, empty top and bottom still take `side`',
+      async (type) => {
+        const models = await modelTextures(`example:q_${type}`, {
+          format: 1,
+          type,
+          textures: { side: 'example:block/side', top: 'example:block/top' },
+        });
+        for (const [path, textures] of Object.entries(models)) {
+          expect(textures, path).toMatchObject({
+            bottom: 'example:block/side',
+            side: 'example:block/side',
+            top: 'example:block/top',
+          });
+        }
+      },
+    );
+
+    it('every building type fills an empty slot from `all` before any other slot', async () => {
+      const cases: [string, Record<string, string>, string][] = [
+        ['pillar', { side: 'x:block/other' }, 'end'],
+        ['horizontal', { side: 'x:block/other', top: 'x:block/other' }, 'front'],
+        ['directional', { side: 'x:block/other', top: 'x:block/other' }, 'front'],
+        ['door', { top: 'x:block/other' }, 'bottom'],
+        ['pane', { pane: 'x:block/other' }, 'edge'],
+        ['wall', {}, 'wall'],
+        ['fence', {}, 'texture'],
+        ['fence_gate', {}, 'texture'],
+        ['trapdoor', {}, 'texture'],
+        ['button', {}, 'texture'],
+        ['pressure_plate', {}, 'texture'],
+      ];
+      for (const [type, others, variable] of cases) {
+        // `all` is listed last, so a lookup that fell back to "the first texture given" would
+        // pick another slot instead.
+        const textures = { ...others, all: 'x:block/all' };
+        const models = await modelTextures(`example:r_${type}`, { format: 1, type, textures });
+        const filled = Object.values(models)
+          .map((entry) => entry[variable])
+          .filter((value) => value !== undefined);
+        expect(filled.length, type).toBeGreaterThan(0);
+        for (const value of filled) expect(value, type).toBe('x:block/all');
+      }
+    });
+  });
 });
 
 describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(

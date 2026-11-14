@@ -1,7 +1,8 @@
 /**
  * `slab`: a half block that stacks into a double slab (ADR 0067 D2). Generated models are
  * vanilla's `slab` and `slab_top` and, for the double slab, `cube_bottom_top`, from `top`,
- * `bottom` and `side`. `"loot": "self"` drops two from a double slab, in vanilla's shape.
+ * `bottom` and `side` (an empty top or bottom takes `all`, else `side`; see `TextureLookup`).
+ * `"loot": "self"` drops two from a double slab, in vanilla's shape.
  *
  * Model slots: `bottom` (also the item), `top`, `double`.
  */

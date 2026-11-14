@@ -12,13 +12,15 @@
  *    stairs' blockstate and generated models, `msm/<ns>/block/*` with their types and the
  *    tags; the vanilla data pack is still written, with `export.mod-only-reference` warnings
  *    under "Last export". Undo (three steps: Update, the texture edit, Create) removes the set.
- * 2. Crop and New tree: the Crop flow (defaults, plus a seeds name: see the note in the test)
- *    makes the crop block (planted from its seeds, `item.id`) and the produce; the Block Studio's Crop section shows the seeds and the
- *    produce; the jar holds the seeds' item model and name. A sapling from the template
+ * 2. Crop and New tree: the Crop flow with its defaults (the seeds name left empty) makes the
+ *    crop block (planted from its seeds, `item.id`) and the produce; the Block Studio's Crop
+ *    section shows the seeds and the produce; the jar holds the seeds' item model and the name
+ *    "Tomato Seeds" the flow promises for an empty seeds name. A sapling from the template
  *    "msm_block_sapling" gets "New tree" (B272): the tree `<base>_tree` is added from the
  *    "Tree for a sapling" template, opens in the Tree Studio and the sapling points at it.
  *
- * The Creator's display names are asserted nowhere (they are being changed elsewhere); ids and
+ * The Creator's display names are asserted nowhere (they are being changed elsewhere) except
+ * the default seeds name, which the Crop flow's "Seeds name" field promises; otherwise ids and
  * test ids only.
  */
 
@@ -378,9 +380,8 @@ test('families: Crop flow makes the seeds and the produce; a sapling gets a New 
   // The Crop flow with its defaults: a tomato planted from tomato seeds.
   const dialog = await openFlow(window, 'crop');
   await expect(dialog.getByTestId('param-crop_name')).toHaveValue('Tomato');
-  // "Seeds name" is meant to be optional (empty: the crop name and "Seeds"), but the Creator's
-  // checks require every text answer, so it is filled in here (reported with B277).
-  await dialog.getByTestId('param-seeds_name').fill('Tomato Seeds');
+  // "Seeds name" is optional: left empty, the seeds are named after the crop and "Seeds".
+  await expect(dialog.getByTestId('param-seeds_name')).toHaveValue('');
   await expect(dialog.getByTestId(`creator-item-${id('tomato')}`)).toBeVisible();
   await dialog.getByTestId('creator-tab-blocks').click();
   await expect(dialog.getByTestId(`creator-block-${id('tomato_crop')}`)).toBeVisible();
@@ -423,7 +424,7 @@ test('families: Crop flow makes the seeds and the produce; a sapling gets a New 
     ]),
   );
   const lang = zipJson<Record<string, string>>(jar.files, `assets/${NAMESPACE}/lang/en_us.json`);
-  expect(lang[`item.${NAMESPACE}.tomato_seeds`]).toBeTruthy();
+  expect(lang[`item.${NAMESPACE}.tomato_seeds`]).toBe('Tomato Seeds');
   expect(lang[`item.${NAMESPACE}.tomato`]).toBeTruthy();
 
   // A sapling from the template, then "New tree" from the "Tree for a sapling" template.

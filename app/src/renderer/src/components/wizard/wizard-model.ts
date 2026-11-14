@@ -165,7 +165,11 @@ export function validateParameter(
       return typeof raw === 'boolean' ? null : 'Choose yes or no.';
     case 'string': {
       const value = typeof raw === 'string' ? raw : '';
-      if (value.trim() === '') return 'Enter a value.';
+      // An empty answer is valid only when the parameter's pattern accepts '' (an optional
+      // field such as the Crop flow's seeds name); without a pattern a value is required.
+      const optional = parameter.pattern !== undefined && matchesWhole(parameter.pattern, '');
+      if (value === '' && optional) return null;
+      if (value.trim() === '' && !optional) return 'Enter a value.';
       if (parameter.maxLength !== undefined && value.length > parameter.maxLength) {
         return `Use at most ${parameter.maxLength} characters.`;
       }

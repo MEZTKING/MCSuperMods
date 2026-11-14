@@ -1,8 +1,8 @@
 /**
  * `wall`: connects to walls and solid blocks (ADR 0067 D2). Generated models are vanilla's
  * `template_wall_post`, `template_wall_side`, `template_wall_side_tall` and `wall_inventory`,
- * whose one texture variable `wall` takes `texture`, else `all`, else `side` (the templates
- * have no separate top and bottom).
+ * whose one texture variable `wall` takes `texture`, else `all`, else `side` (the order of
+ * `TextureLookup`; the templates have no separate top and bottom).
  *
  * Model slots: `post`, `side`, `side_tall`, `inventory` (the item).
  */
@@ -24,7 +24,7 @@ export const wallType: TypeLowering = {
   itemSlot: 'inventory',
   generate: (texture) =>
     slotSpecs(Object.keys(PARENTS), (slot) => PARENTS[slot] ?? '', {
-      wall: texture('texture', 'all', 'side'),
+      wall: texture('texture', 'side'),
     }),
   blockstate: (models) => ({
     multipart: [

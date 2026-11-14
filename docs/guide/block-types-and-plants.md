@@ -62,7 +62,7 @@ Doors drop one door from either half; slabs drop two when double; a door's recip
 
 ### Textures and models
 
-Every typed block gets its models from the **Textures** section, in words: **Every face**; for a pillar **Sides (bark)** and **Ends (top and bottom)**; for the facing types **Front**, **Sides and back** and **Top and bottom**; for slabs and stairs **Top**, **Bottom** and **Sides**; **Wall**, **Fence**, **Gate**, **Trapdoor**, **Button**, **Plate**; for a door **Top half** and **Bottom half (also the item)**; for a pane **Face of the pane** and **Thin edge**. The Studio shows the generated models in the preview. Repaint a texture and every state of the block changes.
+Every typed block gets its models from the **Textures** section, in words: **Every face**; for a pillar **Sides (bark)** and **Ends (top and bottom)**; for the facing types **Front**, **Sides and back** and **Top and bottom**; for slabs and stairs **Top**, **Bottom** and **Sides**; **Wall**, **Fence**, **Gate**, **Trapdoor**, **Button**, **Plate**; for a door **Top half** and **Bottom half (also the item)**; for a pane **Face of the pane** and **Thin edge**. The Studio shows the generated models in the preview. Repaint a texture and every state of the block changes. **Every face** fills each texture left empty. Without it, an empty top or bottom of a slab or stairs takes the sides, and any other empty texture takes the first texture given.
 
 The list of **Models** under the textures names each model the type needs. **Own models (instead of the made ones)** lets you give your own model for each state ("Inner corner", "Double slab", "Lower half, hinge left, open", "In the inventory", "Block item", "Stage 3"). A slot left empty shows the first model.
 

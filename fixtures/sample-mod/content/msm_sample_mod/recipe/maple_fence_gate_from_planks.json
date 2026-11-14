@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "redstone",
+    "group": "wooden_fence_gate",
+    "key": {
+      "#": "minecraft:stick",
+      "W": "msm_sample_mod:maple_planks"
+    },
+    "pattern": [
+      "#W#",
+      "#W#"
+    ],
+    "result": {
+      "id": "msm_sample_mod:maple_fence_gate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_fence_gate_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

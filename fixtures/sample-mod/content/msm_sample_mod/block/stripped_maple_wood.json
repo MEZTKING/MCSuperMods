@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "requires_tool": false,
+        "resistance": 2,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 5
+      }
+    },
+    "display_name": "Stripped Maple Wood",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "end": "msm_sample_mod:block/stripped_maple_log",
+      "side": "msm_sample_mod:block/stripped_maple_log"
+    },
+    "type": "pillar"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:stripped_maple_wood",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

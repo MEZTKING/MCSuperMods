@@ -5,7 +5,8 @@
  * effects as `ModEffects` and `effect/*Effect`, the throwables over `ThrowableItem`, one
  * `ThrownItemEntity` and a client entrypoint for its renderer, without GeckoLib; since ADRs
  * 0060 and 0061 `ModWorldgen`, `ModLoot`, the fuel item's vanilla components and the trigger
- * items and blocks).
+ * items and blocks; since ADRs 0067 and 0068 the block types and plants of the `maple` wood set,
+ * the `ruby_bricks` stone set and the `ruby_berries` crop, B278).
  *
  * - The export succeeds without errors (warnings only for project ids the vanilla registries
  *   do not know); the project's files and contents hash to the value
@@ -135,6 +136,16 @@ describe.each(
       `${PKG}/block/RubyBeaconBlock.java`,
       `${PKG}/block/RubyBloomBlock.java`,
       `${PKG}/block/RubyMistBlock.java`,
+      // Block types and plants (ADRs 0067, 0068; B274, B276, B278): family classes where
+      // vanilla's constructor is protected, the stripping callback, the crop and the sapling.
+      `${PKG}/BlockStripping.java`,
+      `${PKG}/block/MapleStairsBlock.java`,
+      `${PKG}/block/MapleDoorBlock.java`,
+      `${PKG}/block/MapleSaplingBlock.java`,
+      `${PKG}/block/RubyBerriesCropBlock.java`,
+      `${PKG}/block/RubyBricksStairsBlock.java`,
+      'src/main/resources/data/msm_sample_mod/worldgen/feature/maple_tree.json',
+      'src/main/resources/data/minecraft/tags/block/logs.json',
       'src/main/resources/data/msm_sample_mod/worldgen/feature/ore_ruby.json',
       'src/main/resources/data/msm_sample_mod/worldgen/placed_feature/ore_ruby_placed.json',
     ]) {

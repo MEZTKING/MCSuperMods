@@ -1,0 +1,13 @@
+{
+  "data": {
+    "values": [
+      "msm_sample_mod:maple_slab"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:wooden_slabs",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

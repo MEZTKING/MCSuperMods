@@ -1,0 +1,15 @@
+{
+  "data": {
+    "ingredient": "msm_sample_mod:ruby_bricks",
+    "result": {
+      "id": "msm_sample_mod:ruby_bricks_stairs"
+    },
+    "type": "minecraft:stonecutting"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_bricks_stairs_from_ruby_bricks_stonecutting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

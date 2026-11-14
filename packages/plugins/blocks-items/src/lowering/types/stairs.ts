@@ -1,6 +1,7 @@
 /**
  * `stairs`: stairs that shape into corners next to other stairs (ADR 0067 D2). Generated models
- * are vanilla's `stairs`, `inner_stairs` and `outer_stairs` from `top`, `bottom` and `side`;
+ * are vanilla's `stairs`, `inner_stairs` and `outer_stairs` from `top`, `bottom` and `side`
+ * (an empty top or bottom takes `all`, else `side`; see `TextureLookup`);
  * the block state turns them as vanilla's stairs do (`uvlock` on every turned variant).
  *
  * Model slots: `straight` (also the item), `inner`, `outer`.

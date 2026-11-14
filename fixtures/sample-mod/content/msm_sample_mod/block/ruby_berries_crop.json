@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "crop_drops": {
+      "produce": "msm_sample_mod:ruby_berries"
+    },
+    "display_name": "Ruby Berries Seeds",
+    "format": 1,
+    "item": {
+      "compost": "30%",
+      "creative_tab": "minecraft:natural_blocks",
+      "id": "msm_sample_mod:ruby_berries_seeds"
+    },
+    "loot": "crop",
+    "max_age": 7,
+    "models": {
+      "item": "msm_sample_mod:item/ruby_berries_seeds"
+    },
+    "sound_type": "grass",
+    "textures": {
+      "stages": [
+        "msm_sample_mod:block/ruby_berries_crop_stage0",
+        "msm_sample_mod:block/ruby_berries_crop_stage1",
+        "msm_sample_mod:block/ruby_berries_crop_stage2",
+        "msm_sample_mod:block/ruby_berries_crop_stage3"
+      ]
+    },
+    "type": "crop"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_berries_crop",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

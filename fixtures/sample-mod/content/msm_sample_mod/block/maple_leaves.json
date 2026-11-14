@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      },
+      "msm:flammable": {
+        "burn_odds": 30,
+        "ignite_odds": 60
+      }
+    },
+    "display_name": "Maple Leaves",
+    "format": 1,
+    "item": {
+      "compost": "30%",
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "leaves_drops": {
+      "sapling": "msm_sample_mod:maple_sapling"
+    },
+    "loot": "leaves",
+    "sound_type": "grass",
+    "textures": {
+      "all": "msm_sample_mod:block/maple_leaves"
+    },
+    "type": "leaves"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_leaves",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

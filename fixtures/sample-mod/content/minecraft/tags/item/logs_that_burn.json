@@ -1,0 +1,13 @@
+{
+  "data": {
+    "values": [
+      "#msm_sample_mod:maple_logs"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:logs_that_burn",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

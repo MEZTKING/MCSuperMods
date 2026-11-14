@@ -1,0 +1,22 @@
+{
+  "data": {
+    "key": {
+      "#": "msm_sample_mod:ruby_bricks"
+    },
+    "pattern": [
+      "###",
+      "###"
+    ],
+    "result": {
+      "count": 6,
+      "id": "msm_sample_mod:ruby_bricks_wall"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_bricks_wall_from_ruby_bricks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

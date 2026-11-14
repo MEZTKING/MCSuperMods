@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "msm_sample_mod:maple_log",
+      "msm_sample_mod:maple_wood",
+      "msm_sample_mod:stripped_maple_log",
+      "msm_sample_mod:stripped_maple_wood"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_logs",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

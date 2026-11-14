@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_sample_mod:item/ruby_berries_seeds"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:item/ruby_berries_seeds",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

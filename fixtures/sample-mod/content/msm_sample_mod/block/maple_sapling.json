@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Maple Sapling",
+    "format": 1,
+    "item": {
+      "compost": "30%",
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "sapling": "msm_sample_mod:block/maple_sapling"
+    },
+    "tree": "msm_sample_mod:maple_tree",
+    "type": "sapling"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_sapling",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

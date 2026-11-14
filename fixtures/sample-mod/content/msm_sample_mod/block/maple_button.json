@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "requires_tool": false,
+        "resistance": 0.5,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Maple Button",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "wood",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "msm_sample_mod:block/maple_planks"
+    },
+    "type": "button"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_button",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

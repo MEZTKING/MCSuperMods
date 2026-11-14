@@ -11,6 +11,7 @@
       "dev.mcsupermods.parity.SampleModParityTest",
       "dev.mcsupermods.parity.SampleModAdditionsParityTest",
       "dev.mcsupermods.parity.SampleModPotionParityTest",
+      "dev.mcsupermods.parity.SampleModBlockTypesParityTest",
       "dev.mcsupermods.parity.SampleMobParityTest",
       "dev.mcsupermods.parity.SampleScriptParityTest"
     ]

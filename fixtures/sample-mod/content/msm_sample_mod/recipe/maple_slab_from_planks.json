@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "building",
+    "group": "wooden_slab",
+    "key": {
+      "#": "msm_sample_mod:maple_planks"
+    },
+    "pattern": [
+      "###"
+    ],
+    "result": {
+      "count": 6,
+      "id": "msm_sample_mod:maple_slab"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_slab_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "requires_tool": false,
+        "resistance": 0.5,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 0,
+        "ignite_odds": 0
+      }
+    },
+    "display_name": "Maple Pressure Plate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "wood",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "msm_sample_mod:block/maple_planks"
+    },
+    "type": "pressure_plate"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_pressure_plate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

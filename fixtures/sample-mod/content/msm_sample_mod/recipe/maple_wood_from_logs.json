@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "building",
+    "group": "bark",
+    "key": {
+      "#": "msm_sample_mod:maple_log"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_sample_mod:maple_wood"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_wood_from_logs",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

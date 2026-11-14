@@ -1,0 +1,39 @@
+{
+  "data": {
+    "below_trunk_provider": "minecraft:soil_beneath_tree",
+    "decorators": [],
+    "foliage_placer": {
+      "height": 3,
+      "offset": 0,
+      "radius": 2,
+      "type": "minecraft:blob_foliage_placer"
+    },
+    "foliage_provider": {
+      "id": "msm_sample_mod:maple_leaves",
+      "properties": {
+        "distance": "7",
+        "persistent": "false"
+      }
+    },
+    "ignore_vines": true,
+    "minimum_size": {
+      "type": "minecraft:two_layers_feature_size"
+    },
+    "trunk_placer": {
+      "base_height": 4,
+      "height_rand_a": 2,
+      "height_rand_b": 0,
+      "type": "minecraft:straight_trunk_placer"
+    },
+    "trunk_provider": {
+      "id": "msm_sample_mod:maple_log"
+    },
+    "type": "minecraft:tree"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:maple_tree",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

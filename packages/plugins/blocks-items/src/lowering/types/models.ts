@@ -22,8 +22,11 @@ export interface ModelSpec {
 }
 
 /**
- * Looks up a texture by the first key that is set, then `all`, then the first texture the
- * element gives. Only built over non-empty textures, so it always finds one.
+ * Looks up a texture: the slot's own key (the first one given) when set, else `all` ("Every
+ * face"), else the type's other fallback keys in order, else the first texture the element
+ * gives. So an empty slot always takes `all` before another slot (a stairs' empty top takes
+ * `all`, and `side` only without `all`). Only built over non-empty textures, so it always
+ * finds one.
  */
 export type TextureLookup = (...keys: string[]) => string;
 
@@ -46,11 +49,12 @@ export function textureLookup(
   const first = Object.values(textures)[0];
   if (first === undefined) return undefined;
   return (...keys) => {
-    for (const key of keys) {
-      const texture = textures[key];
+    const [own, ...fallbacks] = keys;
+    for (const key of [own, 'all', ...fallbacks]) {
+      const texture = key === undefined ? undefined : textures[key];
       if (texture !== undefined) return texture;
     }
-    return textures.all ?? first;
+    return first;
   };
 }
 

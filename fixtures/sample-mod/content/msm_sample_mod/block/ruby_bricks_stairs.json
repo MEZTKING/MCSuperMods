@@ -1,0 +1,30 @@
+{
+  "data": {
+    "base_block": "msm_sample_mod:ruby_bricks",
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Ruby Bricks Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "all": "msm_sample_mod:block/ruby_bricks"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_bricks_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}
