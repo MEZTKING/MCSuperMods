@@ -116,6 +116,7 @@ function SoundField(props: {
     <div className="flex flex-wrap items-end gap-2">
       {!none && (
         <IdField
+          className="w-72"
           label={props.label}
           value={textOf(props.value)}
           registry="sound_event"
@@ -165,6 +166,7 @@ export function PortalSection(props: PortalSectionProps) {
       <h4 className="font-medium text-xs">Frame</h4>
       <div className="flex flex-wrap items-end gap-2">
         <IdField
+          className="w-72"
           label="Frame block or #tag"
           value={frame}
           registry="block"
@@ -174,6 +176,7 @@ export function PortalSection(props: PortalSectionProps) {
         />
         {isTagId(frame) && (
           <IdField
+            className="w-72"
             label="Exit portals are built of"
             value={textOf(object.frame_block)}
             registry="block"
@@ -192,6 +195,7 @@ export function PortalSection(props: PortalSectionProps) {
       <div className="flex flex-wrap items-end gap-2">
         {!triggerOnly && (
           <IdField
+            className="w-72"
             label="Light it with (item or #tag)"
             value={textOf(object.igniter)}
             registry="item"
@@ -353,6 +357,7 @@ export function PortalSection(props: PortalSectionProps) {
       <h4 className="font-medium text-xs">Looks</h4>
       <div className="flex flex-wrap items-end gap-2">
         <IdField
+          className="w-72"
           label="Particle type"
           value={textOf(particles.type)}
           registry="particle_type"
