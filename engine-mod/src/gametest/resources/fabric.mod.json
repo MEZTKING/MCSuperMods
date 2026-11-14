@@ -39,10 +39,13 @@
       "dev.mcsupermods.runtime.gametest.MsmPortalBlockGameTest",
       "dev.mcsupermods.runtime.gametest.MsmPortalTravelGameTest",
       "dev.mcsupermods.runtime.gametest.MsmParticleGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmParticleSpawnGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmParticleSpawnGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmDevModeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi14GameTest"
     ],
     "fabric-client-gametest": [
-      "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest"
     ]
   },
   "depends": {

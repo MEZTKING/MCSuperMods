@@ -3874,3 +3874,11 @@ Decisions
 
 Next
 - B357: e2e `particles-path` with the test ids in the B353 report. B360: guide labels. B354: the Particle flow can reuse the Studio for reopening.
+
+## 2026-11-14 — executor — B362 Rules scaffold and stubs
+
+**What:** `packages/plugins/rules` (`@msm/plugin-rules`, id `msm.rules`, no kinds) made by `tools/new-plugin`, with `typescript` as a dev dependency; app dependency, import and registration after scripting in `built-in.ts`; lockfile and tsconfig reference; empty classes `MsmDevModeGameTest`, `MsmScriptApi14GameTest`, `MsmDevClientGameTest` (client entry point) and parity `SampleRulesParityTest` (filter `sample_rules_*`), registered in both `fabric.mod.json` files.
+
+**Decisions:** none; no behaviour. Lint, typecheck, check-deps, tests and the three engine-mod variants plus parity build are green. The first full `pnpm test` run had one app failure under load (CI-style timeout, not reproduced); the app suite alone passed 1543/1543.
+
+**Next:** B363 to B365 fill the plugin; later briefs fill the stubs.

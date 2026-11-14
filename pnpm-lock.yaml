@@ -355,6 +355,9 @@ importers:
       '@msm/plugin-resourcepack':
         specifier: workspace:*
         version: link:../packages/plugins/resourcepack
+      '@msm/plugin-rules':
+        specifier: workspace:*
+        version: link:../packages/plugins/rules
       '@msm/plugin-scripting':
         specifier: workspace:*
         version: link:../packages/plugins/scripting
@@ -737,6 +740,28 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))
+
+  packages/plugins/rules:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@msm/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
+    devDependencies:
+      '@msm/targets':
+        specifier: workspace:*
+        version: link:../../targets/all
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vitest:
         specifier: 'catalog:'
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))

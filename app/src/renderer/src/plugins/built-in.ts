@@ -16,6 +16,7 @@ import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin from '@msm/plugin-library';
 import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
+import rulesPlugin from '@msm/plugin-rules';
 import scriptingPlugin from '@msm/plugin-scripting';
 import structuresPlugin from '@msm/plugin-structures';
 import worldgenPlugin from '@msm/plugin-worldgen';
@@ -27,6 +28,7 @@ export {
   libraryPlugin,
   modelsAnimPlugin,
   resourcePackPlugin,
+  rulesPlugin,
   scriptingPlugin,
   structuresPlugin,
   worldgenPlugin,
@@ -42,5 +44,6 @@ export const builtInPlugins: readonly Plugin[] = Object.freeze([
   modelsAnimPlugin,
   entitiesPlugin,
   scriptingPlugin,
+  rulesPlugin,
   libraryPlugin,
 ]);
