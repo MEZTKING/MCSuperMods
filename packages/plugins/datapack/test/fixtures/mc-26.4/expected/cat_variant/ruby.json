@@ -1,0 +1,21 @@
+{
+  "contents": {
+    "asset_id": "example:entity/cat/ruby",
+    "baby_asset_id": "example:entity/cat/ruby_baby",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "minecraft:plains",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      },
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/cat_variant/ruby.json",
+  "schema": "resource:cat_variant"
+}

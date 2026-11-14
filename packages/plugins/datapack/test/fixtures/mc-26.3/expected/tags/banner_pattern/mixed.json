@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:creeper",
+      "#minecraft:no_item_required",
+      "#example:others",
+      {
+        "id": "minecraft:creeper",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/banner_pattern/mixed.json",
+  "schema": "tag:banner_pattern"
+}

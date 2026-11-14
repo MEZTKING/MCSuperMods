@@ -5,8 +5,10 @@ import type { Element, ElementKind, Json, ResourceLocation } from '@msm/plugin-a
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
+  atlasKind,
   blockDefinitionKind,
   equipmentKind,
+  fontKind,
   itemDefinitionKind,
   langKind,
   modelKind,
@@ -82,6 +84,34 @@ const SAMPLES: Sample[] = [
         humanoid: [{ texture: 'example:ruby' }],
         humanoid_leggings: [{ texture: 'example:ruby' }],
       },
+    },
+  },
+  {
+    kind: atlasKind,
+    name: 'blocks',
+    id: 'example:blocks',
+    data: {
+      sources: [
+        { type: 'minecraft:directory', source: 'block', prefix: 'block/' },
+        { type: 'minecraft:single', resource: 'example:block/ruby_ore' },
+      ],
+    },
+  },
+  {
+    kind: fontKind,
+    name: 'icons',
+    id: 'example:icons',
+    data: {
+      providers: [
+        {
+          type: 'bitmap',
+          file: 'example:font/icons.png',
+          ascent: 7,
+          height: 8,
+          chars: ['\uE000\uE001'],
+        },
+        { type: 'space', advances: { ' ': 4 } },
+      ],
     },
   },
 ];

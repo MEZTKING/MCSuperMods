@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "asset_id": "example:entity/chicken/ruby",
+    "baby_asset_id": "example:entity/chicken/ruby_baby",
+    "model": "cold",
+    "spawn_conditions": [
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/chicken_variant/ruby.json",
+  "schema": "resource:chicken_variant"
+}

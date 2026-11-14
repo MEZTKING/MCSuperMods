@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "asset_id": "example:entity/pig/ruby",
+    "baby_asset_id": "example:entity/pig/ruby_baby",
+    "model": "cold",
+    "spawn_conditions": [
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/pig_variant/ruby.json",
+  "schema": "resource:pig_variant"
+}

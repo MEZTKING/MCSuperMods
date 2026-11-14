@@ -1,0 +1,18 @@
+{
+  "contents": {
+    "sources": [
+      {
+        "prefix": "block/",
+        "source": "block",
+        "type": "minecraft:directory"
+      },
+      {
+        "resource": "example:block/ruby_ore",
+        "type": "minecraft:single"
+      }
+    ]
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/atlases/blocks.json",
+  "schema": "::java::assets::atlas::Atlas"
+}

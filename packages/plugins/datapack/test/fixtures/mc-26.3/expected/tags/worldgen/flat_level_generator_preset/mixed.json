@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:classic_flat",
+      "#minecraft:visible",
+      "#example:others",
+      {
+        "id": "minecraft:classic_flat",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/worldgen/flat_level_generator_preset/mixed.json",
+  "schema": "tag:worldgen/flat_level_generator_preset"
+}

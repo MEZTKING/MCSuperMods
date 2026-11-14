@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:water",
+      "#minecraft:douses_fire",
+      "#example:others",
+      {
+        "id": "minecraft:water",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/potion/mixed.json",
+  "schema": "tag:potion"
+}

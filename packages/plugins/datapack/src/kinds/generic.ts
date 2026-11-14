@@ -20,10 +20,32 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
   'dialog',
   'villager_trade',
   'trade_set',
+  'wolf_variant',
+  'cat_variant',
+  'pig_variant',
+  'cow_variant',
+  'chicken_variant',
+  'frog_variant',
+  'zombie_nautilus_variant',
+  'cat_sound_variant',
+  'pig_sound_variant',
+  'cow_sound_variant',
+  'chicken_sound_variant',
+  'instrument',
+  'enchantment_provider',
+  'timeline',
+  'world_clock',
 ] as const satisfies readonly DataFolderKey[]);
 
 /** A registry with a generic kind. */
 export type GenericDataRegistry = (typeof GENERIC_DATA_REGISTRIES)[number];
+
+/** A mob variant that applies everywhere: one spawn condition with the lowest priority. */
+const EVERYWHERE = [{ priority: 0 }];
+
+/** The vanilla animal sound ids (adult and baby) for one animal, named by suffix. */
+const sounds = (prefix: string, names: readonly string[]): Json =>
+  Object.fromEntries(names.map((name) => [`${name}_sound`, `minecraft:entity.${prefix}.${name}`]));
 
 /**
  * Minimal valid data per kind. Only `minecraft:` ids; asset ids name vanilla assets, so a new
@@ -102,6 +124,97 @@ const DEFAULTS: Readonly<Record<GenericDataRegistry, Json>> = {
     trades: '#minecraft:fletcher/level_1',
     amount: 2,
   },
+  wolf_variant: {
+    assets: {
+      wild: 'minecraft:entity/wolf/wolf',
+      tame: 'minecraft:entity/wolf/wolf_tame',
+      angry: 'minecraft:entity/wolf/wolf_angry',
+    },
+    baby_assets: {
+      wild: 'minecraft:entity/wolf/wolf_baby',
+      tame: 'minecraft:entity/wolf/wolf_tame_baby',
+      angry: 'minecraft:entity/wolf/wolf_angry_baby',
+    },
+    spawn_conditions: EVERYWHERE,
+  },
+  cat_variant: {
+    asset_id: 'minecraft:entity/cat/cat_tabby',
+    baby_asset_id: 'minecraft:entity/cat/cat_tabby_baby',
+    spawn_conditions: EVERYWHERE,
+  },
+  pig_variant: {
+    asset_id: 'minecraft:entity/pig/pig_temperate',
+    baby_asset_id: 'minecraft:entity/pig/pig_temperate_baby',
+    spawn_conditions: EVERYWHERE,
+  },
+  cow_variant: {
+    asset_id: 'minecraft:entity/cow/cow_temperate',
+    baby_asset_id: 'minecraft:entity/cow/cow_temperate_baby',
+    spawn_conditions: EVERYWHERE,
+  },
+  chicken_variant: {
+    asset_id: 'minecraft:entity/chicken/chicken_temperate',
+    baby_asset_id: 'minecraft:entity/chicken/chicken_temperate_baby',
+    spawn_conditions: EVERYWHERE,
+  },
+  frog_variant: {
+    asset_id: 'minecraft:entity/frog/frog_temperate',
+    spawn_conditions: EVERYWHERE,
+  },
+  zombie_nautilus_variant: {
+    asset_id: 'minecraft:entity/nautilus/zombie_nautilus',
+    spawn_conditions: EVERYWHERE,
+  },
+  // Sound events are named by id; the inline `{ sound_id }` form is not used in defaults.
+  cat_sound_variant: {
+    adult_sounds: sounds('cat', [
+      'ambient',
+      'beg_for_food',
+      'death',
+      'eat',
+      'hiss',
+      'hurt',
+      'purr',
+      'purreow',
+      'stray_ambient',
+    ]),
+    baby_sounds: sounds('baby_cat', [
+      'ambient',
+      'beg_for_food',
+      'death',
+      'eat',
+      'hiss',
+      'hurt',
+      'purr',
+      'purreow',
+      'stray_ambient',
+    ]),
+  },
+  pig_sound_variant: {
+    adult_sounds: sounds('pig', ['ambient', 'death', 'eat', 'hurt', 'step']),
+    baby_sounds: sounds('baby_pig', ['ambient', 'death', 'eat', 'hurt', 'step']),
+  },
+  cow_sound_variant: sounds('cow', ['ambient', 'death', 'hurt', 'step']),
+  chicken_sound_variant: {
+    adult_sounds: sounds('chicken', ['ambient', 'death', 'hurt', 'step']),
+    baby_sounds: sounds('baby_chicken', ['ambient', 'death', 'hurt', 'step']),
+  },
+  instrument: {
+    description: 'Custom horn',
+    sound_event: 'minecraft:item.goat_horn.sound.0',
+    use_duration: 7,
+    range: 256,
+  },
+  enchantment_provider: {
+    type: 'minecraft:single',
+    enchantment: 'minecraft:silk_touch',
+    level: 1,
+  },
+  timeline: {
+    clock: 'minecraft:overworld',
+    period_ticks: 24000,
+  },
+  world_clock: {},
 };
 
 /**

@@ -1,0 +1,14 @@
+{
+  "contents": {
+    "asset_id": "example:entity/nautilus/ruby",
+    "model": "warm",
+    "spawn_conditions": [
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/zombie_nautilus_variant/ruby.json",
+  "schema": "resource:zombie_nautilus_variant"
+}

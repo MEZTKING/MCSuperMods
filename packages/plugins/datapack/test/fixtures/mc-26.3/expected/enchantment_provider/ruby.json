@@ -1,0 +1,11 @@
+{
+  "contents": {
+    "enchantments": "#minecraft:in_enchanting_table",
+    "max_cost_span": 15,
+    "min_cost": 5,
+    "type": "minecraft:by_cost_with_difficulty"
+  },
+  "layer": "datapack",
+  "path": "data/example/enchantment_provider/ruby.json",
+  "schema": "resource:enchantment_provider"
+}

@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:day",
+      "#minecraft:universal",
+      "#example:others",
+      {
+        "id": "minecraft:day",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/timeline/mixed.json",
+  "schema": "tag:timeline"
+}

@@ -34,6 +34,7 @@ const TEMPLATE_IDS = [
   'item_definition_select',
   'lang',
   'sounds',
+  'font_icons',
   'pack',
 ];
 
@@ -90,7 +91,7 @@ function namespacesIn(value: Json, out = new Set<string>()): Set<string> {
 }
 
 describe('resource pack templates', () => {
-  it('contributes the fifteen templates in picker order', () => {
+  it('contributes the sixteen templates in picker order', () => {
     expect(resourcePackTemplates.map((template) => template.id)).toEqual(TEMPLATE_IDS);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(
       TEMPLATE_IDS,
@@ -105,8 +106,10 @@ describe('resource pack templates', () => {
       expect(template.description, template.id).not.toBe('');
       expect(template.category, template.id).not.toBe('');
     }
-    // Every kind has at least one template, so the host's fallbacks never apply to them.
-    expect(new Set(resourcePackTemplates.map((template) => template.kind))).toEqual(kindIds);
+    // Every kind has a template except the atlas (ADR 0064 D7 names one font template only).
+    const withoutTemplate = new Set(kindIds);
+    for (const template of resourcePackTemplates) withoutTemplate.delete(template.kind);
+    expect([...withoutTemplate]).toEqual(['minecraft:atlas']);
   });
 
   it('keeps the picker settings of the original templates', () => {

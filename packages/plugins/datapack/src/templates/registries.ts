@@ -25,6 +25,7 @@ function entry(
 
 const ENCHANTMENTS = 'Enchantments';
 const OTHER = 'Other data';
+const MOBS = 'Mobs';
 
 export const enchantmentTemplates: readonly ElementTemplate[] = [
   entry(
@@ -213,6 +214,55 @@ export const otherDataTemplates: readonly ElementTemplate[] = [
       body: { type: 'minecraft:plain_message', contents: 'Start the challenge now?' },
       yes: { label: 'Yes', action: { type: 'minecraft:run_command', command: 'say Ready!' } },
       no: { label: 'No' },
+    },
+  ),
+  entry(
+    'wolf_variant',
+    'wolf_variant',
+    MOBS,
+    'Wolf variant',
+    'A wolf skin that appears in taiga biomes; uses vanilla textures until you add your own.',
+    {
+      assets: {
+        wild: 'minecraft:entity/wolf/wolf',
+        tame: 'minecraft:entity/wolf/wolf_tame',
+        angry: 'minecraft:entity/wolf/wolf_angry',
+      },
+      baby_assets: {
+        wild: 'minecraft:entity/wolf/wolf_baby',
+        tame: 'minecraft:entity/wolf/wolf_tame_baby',
+        angry: 'minecraft:entity/wolf/wolf_angry_baby',
+      },
+      spawn_conditions: [
+        { priority: 1, condition: { type: 'minecraft:biome', biomes: '#minecraft:is_taiga' } },
+      ],
+    },
+  ),
+  entry(
+    'cat_variant',
+    'cat_variant',
+    MOBS,
+    'Cat variant',
+    'A cat skin that appears in swamps; uses vanilla textures until you add your own.',
+    {
+      asset_id: 'minecraft:entity/cat/cat_tabby',
+      baby_asset_id: 'minecraft:entity/cat/cat_tabby_baby',
+      spawn_conditions: [
+        { priority: 1, condition: { type: 'minecraft:biome', biomes: 'minecraft:swamp' } },
+      ],
+    },
+  ),
+  entry(
+    'instrument',
+    'instrument',
+    OTHER,
+    'Goat horn instrument',
+    'A goat horn call; uses a vanilla sound event, named by id. Give it to players with a goat horn recipe or loot.',
+    {
+      description: { text: 'My Horn' },
+      sound_event: 'minecraft:item.goat_horn.sound.0',
+      use_duration: 7,
+      range: 256,
     },
   ),
 ];

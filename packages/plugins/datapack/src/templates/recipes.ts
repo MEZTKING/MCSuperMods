@@ -118,4 +118,32 @@ export const recipeTemplates: readonly ElementTemplate[] = [
       pattern: 'minecraft:coast',
     },
   ),
+  recipe(
+    'recipe_brewing',
+    'Brewing recipe',
+    'A brewing stand recipe: a potion plus an ingredient gives another potion. Names vanilla potions only.',
+    {
+      type: 'minecraft:brewing',
+      input: { item: 'minecraft:potion', potion_contents: { potions: 'minecraft:awkward' } },
+      reagent: { item: 'minecraft:amethyst_shard' },
+      output: {
+        id: 'minecraft:potion',
+        components: { 'minecraft:potion_contents': { potion: 'minecraft:luck' } },
+      },
+    },
+  ),
+  recipe(
+    'recipe_brewing_splash',
+    'Brewing recipe: splash potion',
+    'Turns a potion into its splash version with gunpowder; copy it per potion and per bottle.',
+    {
+      type: 'minecraft:brewing',
+      input: { item: 'minecraft:potion', potion_contents: { potions: 'minecraft:luck' } },
+      reagent: { item: 'minecraft:gunpowder' },
+      output: {
+        id: 'minecraft:splash_potion',
+        components: { 'minecraft:potion_contents': { potion: 'minecraft:luck' } },
+      },
+    },
+  ),
 ];

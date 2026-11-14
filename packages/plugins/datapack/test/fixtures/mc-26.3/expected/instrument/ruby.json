@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "description": {
+      "color": "red",
+      "text": "Ruby Call"
+    },
+    "range": 128,
+    "sound_event": {
+      "range": 64,
+      "sound_id": "example:item.horn.ruby"
+    },
+    "use_duration": 5
+  },
+  "layer": "datapack",
+  "path": "data/example/instrument/ruby.json",
+  "schema": "resource:instrument"
+}

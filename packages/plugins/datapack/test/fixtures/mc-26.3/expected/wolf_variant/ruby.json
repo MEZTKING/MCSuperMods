@@ -1,0 +1,26 @@
+{
+  "contents": {
+    "assets": {
+      "angry": "example:entity/wolf/ruby_angry",
+      "tame": "example:entity/wolf/ruby_tame",
+      "wild": "example:entity/wolf/ruby"
+    },
+    "baby_assets": {
+      "angry": "example:entity/wolf/ruby_angry_baby",
+      "tame": "example:entity/wolf/ruby_tame_baby",
+      "wild": "example:entity/wolf/ruby_baby"
+    },
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": "#minecraft:is_taiga",
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/wolf_variant/ruby.json",
+  "schema": "resource:wolf_variant"
+}

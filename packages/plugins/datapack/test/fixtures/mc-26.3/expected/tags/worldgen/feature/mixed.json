@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:flower_default",
+      "#minecraft:can_spawn_from_bone_meal",
+      "#example:others",
+      {
+        "id": "minecraft:flower_default",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/worldgen/feature/mixed.json",
+  "schema": "tag:worldgen/feature"
+}

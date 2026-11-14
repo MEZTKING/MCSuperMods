@@ -63,8 +63,8 @@ describe('@msm/plugin-datapack', () => {
     const actual = kinds().map(({ id, schema, folder }) => ({ id, schema, folder }));
     expect(actual).toEqual(expected);
     expect(dataPackKinds.map((kind) => kind.id)).toEqual(expected.map((kind) => kind.id));
-    expect(tagKinds).toHaveLength(13);
-    expect(genericKinds).toHaveLength(12);
+    expect(tagKinds).toHaveLength(21);
+    expect(genericKinds).toHaveLength(27);
     expect(new Set(kinds().map((kind) => kind.id)).size).toBe(kinds().length);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(kinds().length);
     for (const kind of kinds()) {
@@ -129,6 +129,26 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(blockingProblems(indexes, kind.schema, kind.defaultData ?? {}), kind.id).toEqual([]);
       }
     });
+
+    it.each([
+      ['banner_pattern', 'minecraft:creeper'],
+      ['dialog', 'minecraft:server_links'],
+      ['instrument', 'minecraft:ponder_goat_horn'],
+      ['point_of_interest_type', 'minecraft:armorer'],
+      ['potion', 'minecraft:water'],
+      ['timeline', 'minecraft:day'],
+      ['worldgen/feature', 'minecraft:flower_default'],
+      ['worldgen/flat_level_generator_preset', 'minecraft:classic_flat'],
+    ])(
+      'tag:%s accepts a vanilla id and flags an unknown one (ADR 0064 D3)',
+      async (registry, id) => {
+        const indexes = await indexesFor(bundle);
+        const schema = `tag:${registry}`;
+        expect(blockingProblems(indexes, schema, { values: [id] })).toEqual([]);
+        const unknown = blockingProblems(indexes, schema, { values: ['minecraft:no_such_entry'] });
+        expect(unknown.map((problem) => problem.code)).toEqual(['schema.unknown-id']);
+      },
+    );
 
     it('lowers every default to a valid file', async () => {
       const indexes = await indexesFor(bundle);

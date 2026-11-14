@@ -6,6 +6,7 @@
 import type { ElementTemplate } from '@msm/plugin-api';
 import { blockstateTemplates } from './blockstates';
 import { equipmentTemplates } from './equipment';
+import { fontTemplates } from './font';
 import { itemDefinitionTemplates } from './item-definitions';
 import { modelTemplates } from './models';
 import { packTemplates } from './pack';
@@ -14,6 +15,7 @@ import { textTemplates } from './text';
 
 export { blockstateTemplates } from './blockstates';
 export { equipmentTemplates } from './equipment';
+export { fontTemplates } from './font';
 export { itemDefinitionTemplates } from './item-definitions';
 export { modelTemplates } from './models';
 export { packTemplates } from './pack';
@@ -28,5 +30,6 @@ export const resourcePackTemplates: readonly ElementTemplate[] = Object.freeze([
   ...itemDefinitionTemplates,
   ...textTemplates,
   ...soundsTemplates,
+  ...fontTemplates,
   ...packTemplates,
 ]);

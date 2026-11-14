@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "asset_id": "example:entity/cow/ruby",
+    "baby_asset_id": "example:entity/cow/ruby_baby",
+    "model": "warm",
+    "spawn_conditions": [
+      {
+        "priority": 0
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/cow_variant/ruby.json",
+  "schema": "resource:cow_variant"
+}

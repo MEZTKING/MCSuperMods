@@ -1,0 +1,24 @@
+{
+  "contents": {
+    "providers": [
+      {
+        "ascent": 7,
+        "chars": [
+          ""
+        ],
+        "file": "example:font/icons.png",
+        "height": 8,
+        "type": "bitmap"
+      },
+      {
+        "advances": {
+          " ": 4
+        },
+        "type": "space"
+      }
+    ]
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/font/icons.json",
+  "schema": "::java::assets::font::Font"
+}

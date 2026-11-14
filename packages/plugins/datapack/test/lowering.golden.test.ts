@@ -9,6 +9,7 @@ import {
   functionKind,
   GENERIC_DATA_REGISTRIES,
   type GenericDataRegistry,
+  genericKind,
   genericKinds,
   itemModifierKind,
   lootTableKind,
@@ -41,7 +42,15 @@ const TAG_ENTRIES: Record<(typeof TAG_REGISTRIES)[number], [string, string]> = {
   enchantment: ['minecraft:sharpness', '#minecraft:curse'],
   painting_variant: ['minecraft:sunset', '#minecraft:placeable'],
   villager_trade: ['minecraft:fletcher/1/emerald_arrow', '#minecraft:fletcher/level_1'],
+  banner_pattern: ['minecraft:creeper', '#minecraft:no_item_required'],
+  dialog: ['minecraft:server_links', '#minecraft:quick_actions'],
+  instrument: ['minecraft:ponder_goat_horn', '#minecraft:goat_horns'],
+  point_of_interest_type: ['minecraft:armorer', '#minecraft:village'],
+  potion: ['minecraft:water', '#minecraft:douses_fire'],
+  timeline: ['minecraft:day', '#minecraft:universal'],
   'worldgen/biome': ['minecraft:plains', '#minecraft:is_overworld'],
+  'worldgen/feature': ['minecraft:flower_default', '#minecraft:can_spawn_from_bone_meal'],
+  'worldgen/flat_level_generator_preset': ['minecraft:classic_flat', '#minecraft:visible'],
   'worldgen/structure': ['minecraft:village_plains', '#minecraft:village'],
   'worldgen/world_preset': ['minecraft:flat', '#minecraft:extended'],
 };
@@ -64,6 +73,9 @@ const tagSamples: Sample[] = tagKinds.map((kind, index) => {
  * One sample per generic kind, using optional fields where the schema has them and project
  * ids where a sample references its own assets (textures, sounds, tags, functions).
  */
+const defaultOf = (registry: GenericDataRegistry): Json =>
+  structuredClone(genericKind(registry).defaultData ?? {});
+
 const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
   enchantment: {
     description: { text: 'Ruby Edge', color: 'red' },
@@ -165,6 +177,89 @@ const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
     amount: { type: 'minecraft:uniform', min: 1, max: 3 },
     allow_duplicates: false,
   },
+  wolf_variant: {
+    assets: {
+      wild: 'example:entity/wolf/ruby',
+      tame: 'example:entity/wolf/ruby_tame',
+      angry: 'example:entity/wolf/ruby_angry',
+    },
+    baby_assets: {
+      wild: 'example:entity/wolf/ruby_baby',
+      tame: 'example:entity/wolf/ruby_tame_baby',
+      angry: 'example:entity/wolf/ruby_angry_baby',
+    },
+    spawn_conditions: [
+      { priority: 1, condition: { type: 'minecraft:biome', biomes: '#minecraft:is_taiga' } },
+    ],
+  },
+  cat_variant: {
+    asset_id: 'example:entity/cat/ruby',
+    baby_asset_id: 'example:entity/cat/ruby_baby',
+    spawn_conditions: [
+      { priority: 1, condition: { type: 'minecraft:biome', biomes: 'minecraft:plains' } },
+      { priority: 0 },
+    ],
+  },
+  pig_variant: {
+    asset_id: 'example:entity/pig/ruby',
+    baby_asset_id: 'example:entity/pig/ruby_baby',
+    model: 'cold',
+    spawn_conditions: [{ priority: 0 }],
+  },
+  cow_variant: {
+    asset_id: 'example:entity/cow/ruby',
+    baby_asset_id: 'example:entity/cow/ruby_baby',
+    model: 'warm',
+    spawn_conditions: [{ priority: 0 }],
+  },
+  chicken_variant: {
+    asset_id: 'example:entity/chicken/ruby',
+    baby_asset_id: 'example:entity/chicken/ruby_baby',
+    model: 'cold',
+    spawn_conditions: [{ priority: 0 }],
+  },
+  frog_variant: {
+    asset_id: 'example:entity/frog/ruby',
+    spawn_conditions: [
+      { priority: 1, condition: { type: 'minecraft:biome', biomes: ['minecraft:swamp'] } },
+    ],
+  },
+  zombie_nautilus_variant: {
+    asset_id: 'example:entity/nautilus/ruby',
+    model: 'warm',
+    spawn_conditions: [{ priority: 0 }],
+  },
+  cat_sound_variant: defaultOf('cat_sound_variant'),
+  pig_sound_variant: defaultOf('pig_sound_variant'),
+  cow_sound_variant: defaultOf('cow_sound_variant'),
+  chicken_sound_variant: defaultOf('chicken_sound_variant'),
+  instrument: {
+    description: { text: 'Ruby Call', color: 'red' },
+    sound_event: { sound_id: 'example:item.horn.ruby', range: 64 },
+    use_duration: 5,
+    range: 128,
+  },
+  enchantment_provider: {
+    type: 'minecraft:by_cost_with_difficulty',
+    enchantments: '#minecraft:in_enchanting_table',
+    min_cost: 5,
+    max_cost_span: 15,
+  },
+  timeline: {
+    clock: 'minecraft:overworld',
+    period_ticks: 48000,
+    time_markers: { 'example:noon_ish': { ticks: 5000, show_in_commands: true } },
+    tracks: {
+      'minecraft:gameplay/surface_slime_spawn_chance': {
+        ease: 'constant',
+        keyframes: [
+          { ticks: 0, value: 0.5 },
+          { ticks: 24000, value: 0.25 },
+        ],
+      },
+    },
+  },
+  world_clock: {},
 };
 
 const genericSamples: Sample[] = genericKinds.map((kind, index) => {

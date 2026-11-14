@@ -23,7 +23,7 @@ const {
   ...FIRST_TARGET
 } = (builtInTargets[0] as TargetBundle).target;
 
-/** The 60 template ids, in picker order (library plan section 2.1). */
+/** The 65 template ids, in picker order (library plan section 2.1). */
 const IDS = [
   'recipe_shaped',
   'recipe_shapeless',
@@ -34,6 +34,8 @@ const IDS = [
   'recipe_stonecutting',
   'recipe_smithing_transform',
   'recipe_smithing_trim',
+  'recipe_brewing',
+  'recipe_brewing_splash',
   'loot_table_block',
   'loot_table_chest',
   'loot_table_entity',
@@ -81,6 +83,9 @@ const IDS = [
   'trim_pattern',
   'dialog_notice',
   'dialog_confirmation',
+  'wolf_variant',
+  'cat_variant',
+  'instrument',
   'trade_emeralds_for_item',
   'trade_item_for_emeralds',
   'trade_set',
@@ -149,18 +154,48 @@ const byId = (id: string): ElementTemplate => {
 };
 
 describe('data pack templates', () => {
-  it('has the 60 ids in picker order, unique, and contributed by the plugin', () => {
+  it('has the 65 ids in picker order, unique, and contributed by the plugin', () => {
     expect(dataPackTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(new Set(IDS).size).toBe(60);
+    expect(new Set(IDS).size).toBe(65);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
     for (const id of KEPT) expect(IDS).toContain(id);
   });
 
-  it('creates only kinds this plugin registers, and covers every kind', () => {
+  it('creates only kinds this plugin registers, and leaves only the pinned kinds without one', () => {
     const kinds = new Set(dataPackKinds.map((kind) => kind.id));
     for (const template of dataPackTemplates)
       expect(kinds.has(template.kind), template.id).toBe(true);
-    expect(new Set(dataPackTemplates.map((template) => template.kind))).toEqual(kinds);
+    const covered = new Set(dataPackTemplates.map((template) => template.kind));
+    // ADR 0064 D7: no template for these (asar budget); the generic form is their editor.
+    const without = [...kinds].filter((id) => !covered.has(id)).sort();
+    expect(without).toEqual(
+      [
+        ...[
+          'pig_variant',
+          'cow_variant',
+          'chicken_variant',
+          'frog_variant',
+          'zombie_nautilus_variant',
+          'cat_sound_variant',
+          'pig_sound_variant',
+          'cow_sound_variant',
+          'chicken_sound_variant',
+          'enchantment_provider',
+          'timeline',
+          'world_clock',
+        ].map((name) => `minecraft:${name}`),
+        ...[
+          'banner_pattern',
+          'dialog',
+          'instrument',
+          'point_of_interest_type',
+          'potion',
+          'timeline',
+          'worldgen/feature',
+          'worldgen/flat_level_generator_preset',
+        ].map((name) => `minecraft:tag/${name}`),
+      ].sort(),
+    );
   });
 
   it('has a title, description and category for every template', () => {

@@ -1,0 +1,11 @@
+{
+  "contents": {
+    "ambient_sound": "minecraft:entity.cow.ambient",
+    "death_sound": "minecraft:entity.cow.death",
+    "hurt_sound": "minecraft:entity.cow.hurt",
+    "step_sound": "minecraft:entity.cow.step"
+  },
+  "layer": "datapack",
+  "path": "data/example/cow_sound_variant/ruby.json",
+  "schema": "resource:cow_sound_variant"
+}

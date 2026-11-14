@@ -1,0 +1,17 @@
+{
+  "contents": {
+    "replace": false,
+    "values": [
+      "minecraft:ponder_goat_horn",
+      "#minecraft:goat_horns",
+      "#example:others",
+      {
+        "id": "minecraft:ponder_goat_horn",
+        "required": false
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/tags/instrument/mixed.json",
+  "schema": "tag:instrument"
+}

@@ -1,0 +1,19 @@
+{
+  "contents": {
+    "asset_id": "example:entity/frog/ruby",
+    "spawn_conditions": [
+      {
+        "condition": {
+          "biomes": [
+            "minecraft:swamp"
+          ],
+          "type": "minecraft:biome"
+        },
+        "priority": 1
+      }
+    ]
+  },
+  "layer": "datapack",
+  "path": "data/example/frog_variant/ruby.json",
+  "schema": "resource:frog_variant"
+}
