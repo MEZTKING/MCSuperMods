@@ -363,6 +363,31 @@ const bridge: MsmBridge = {
   setDirty(dirty) {
     ipcRenderer.send(EventChannels.setDirty, dirty);
   },
+  onCloseRequest(handlers) {
+    const handler = (_event: IpcRendererEvent, payload: unknown): void => {
+      if (typeof payload !== 'object' || payload === null) return;
+      const { id, op } = payload as { id?: unknown; op?: unknown };
+      if (typeof id !== 'number') return;
+      const answer = (value: boolean): void => {
+        ipcRenderer.send(EventChannels.closeAnswer, { id, value });
+      };
+      if (op === 'report') {
+        let dirty = true;
+        try {
+          dirty = handlers.report();
+        } catch {
+          // Unknown state: let main's prompt ask rather than lose changes.
+        }
+        answer(dirty);
+      } else if (op === 'save') {
+        handlers.save().then(answer, () => answer(false));
+      }
+    };
+    ipcRenderer.on(EventChannels.closeRequest, handler);
+    return () => {
+      ipcRenderer.removeListener(EventChannels.closeRequest, handler);
+    };
+  },
   smokeReady() {
     ipcRenderer.send(EventChannels.smokeReady);
   },

@@ -24,6 +24,7 @@
     "src/renderer/src/session/plain-problems.ts",
     "src/renderer/src/session/texture-layers.ts",
     "src/renderer/src/session/pending-edits.ts",
+    "src/renderer/src/session/close-requests.ts",
     "src/renderer/src/plugins",
     "src/renderer/src/changeset",
     "src/renderer/src/modpacks",

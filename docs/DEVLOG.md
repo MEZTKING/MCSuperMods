@@ -4882,3 +4882,17 @@ Decisions
 
 Next
 - In-game: `SampleModAdditionsParityTest` ("its feature turns stone into ruby ore") should still pass with the tags; measure an exported world with `tools/ore_counts.py` on seed 9 before quoting a rate for a preset.
+## 2026-11-14 — executor — Flush held-back typing on every window close
+
+What
+- Every close of the main window (the X, File > Exit, Restart to update) is now a round trip: the guard (`app/src/main/close-guard.ts`) holds the close, sends `msm:v1:app:closeRequest` `{ id, op: 'report' }`, and the renderer (`session/close-requests.ts`, wired in `App.tsx` through the new optional `MsmBridge.onCloseRequest`, preload `src/preload/index.ts`) flushes the function, script and rule editors' held-back edits (`flushPendingEdits`) and answers on `msm:v1:app:closeAnswer` whether the project is unsaved. No answer within one second (`CLOSE_REPORT_TIMEOUT_MS`), or a renderer that is gone, falls back to the last `setDirty`. Before, typing within the editors' pause was not yet dirty in main, so the X skipped the prompt and lost it.
+- The prompt now offers **Save**, **Discard changes** and **Cancel** (Save is the default). Save asks the renderer to save (`op: 'save'`, up to 60 s) and closes once the project is saved, so Restart to update carries on to the installer; a failed save shows its error in the app and keeps the window open, like Cancel. The `beforeInstall` flush of Restart to update stays.
+- Docs: ADR 0018 (a "Flush on every close" item), `app/CLAUDE.md`, `docs/guide/getting-started.md`. `app/tsconfig.node.json` includes `session/close-requests.ts` (a main-side test imports it).
+- Tests: `main-close-guard.test.ts` (clean window closes after the report; held-back typing shows the prompt; Save saves then closes; a failed or rejected save keeps it open; Discard; Cancel; the timeout and a gone renderer fall back to the last state; no stacked prompts; `createCloseRequests` matches answers by id, times out and ignores late or malformed answers; Restart to update with a held-back edit: Save, the window closes and `finishInstall` starts the installer), `close-requests.test.ts` (report, save, a failing save, the X within the pause end to end), `App.test.tsx` (the app answers the report with held-back typing as unsaved). App tests 1989 green; e2e `smoke`, `golden-path` and `datapack-path` pass (each closes the app); `pnpm lint` and `pnpm typecheck` pass.
+
+Decisions
+- A clean window now waits for one round trip before closing (normally a few milliseconds); main cannot know about held-back typing without asking.
+- A save that leaves the project dirty (an edit landed while the files were written) counts as not saved, and the window stays open.
+
+Next
+- The Windows check: type in a function, close with the X at once, see the prompt and Save; Restart to update with the same.

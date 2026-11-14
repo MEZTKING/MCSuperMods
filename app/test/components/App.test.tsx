@@ -37,6 +37,7 @@ import type { MenuCommand, UpdateStatus } from '../../src/shared/ipc-channels';
 import type {
   AiPlatform,
   AppSettingsPatch,
+  CloseRequestHandlers,
   GameLocationView,
   LauncherSettings,
   LaunchNotice,
@@ -151,6 +152,8 @@ interface Harness {
   installs: string[];
   /** `setDirty` reports (`dirty:<value>`) and update installs (`install`), in order. */
   updateEvents: string[];
+  /** The handlers the app gave `onCloseRequest` (the window close round trip), while subscribed. */
+  closeHandlers: CloseRequestHandlers | null;
   picks: number;
   written: string[];
   /** What `exports.runtimeJar()` resolves to (default `null`: no runtime jar). */
@@ -230,6 +233,7 @@ async function renderApp(
     worlds: [{ dir: 'Survival', name: 'Survival', lastModified: '2026-01-01T00:00:00.000Z' }],
     installs: [],
     updateEvents: [],
+    closeHandlers: null,
     picks: 0,
     written: [],
     locations: [officialLocation, prismLocation, unstartedLocation],
@@ -460,6 +464,12 @@ async function renderApp(
     setDirty: (dirty) => {
       harness.updateEvents.push(`dirty:${dirty}`);
     },
+    onCloseRequest: (handlers) => {
+      harness.closeHandlers = handlers;
+      return () => {
+        harness.closeHandlers = null;
+      };
+    },
     smokeReady: () => {},
   };
   await session.newProject();
@@ -579,6 +589,19 @@ describe('App menu commands', () => {
       `dirty:${harness.session.snapshot.dirty}`,
       'install',
     ]);
+  });
+
+  it('answers main before a window close with held-back typing as unsaved', async () => {
+    const harness = await renderApp();
+    await waitFor(() => expect(harness.closeHandlers).not.toBeNull());
+    expect(harness.closeHandlers?.report()).toBe(harness.session.snapshot.dirty);
+    // Typing an editor still holds back makes the project unsaved once reported.
+    const unregister = registerPendingEdit(() => harness.session.addNamespace('typed'));
+    try {
+      expect(harness.closeHandlers?.report()).toBe(true);
+    } finally {
+      unregister();
+    }
   });
 
   it("opens What's new from the menu, the palette and the update banner", async () => {

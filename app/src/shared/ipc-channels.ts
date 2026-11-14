@@ -120,6 +120,13 @@ export const EventChannels = {
   smokeReady: 'msm:v1:app:smokeReady',
   /** Renderer to main: whether the open project has unsaved changes, payload `boolean`. */
   setDirty: 'msm:v1:app:setDirty',
+  /**
+   * Main to renderer: the window is closing; report held-back edits and whether anything is
+   * unsaved (`op: 'report'`), or save (`op: 'save'`). Payload `{ id: number, op }`.
+   */
+  closeRequest: 'msm:v1:app:closeRequest',
+  /** Renderer to main: the answer to a close request, payload `{ id: number, value: boolean }`. */
+  closeAnswer: 'msm:v1:app:closeAnswer',
   /** Main to renderer: the auto-updater's state changed, payload {@link UpdateStatus}. */
   updatesStatus: 'msm:v1:updates:status',
   /** Main to renderer: an event of an AI helper run, payload {@link AiEventPayload}. */

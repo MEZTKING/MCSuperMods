@@ -109,6 +109,7 @@ import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
+import { closeRequestHandlers } from './session/close-requests';
 import { namespaceFromFolderName } from './session/element-defaults';
 import { importerFileFilters, isBlockbenchImporter } from './session/importers';
 import {
@@ -1318,6 +1319,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     flushPendingEdits();
     bridge.setDirty(session.snapshot.dirty);
   }, [bridge, session]);
+  // Every window close asks first: held-back typing and the unsaved state, and the prompt's Save.
+  useEffect(
+    () =>
+      bridge.onCloseRequest?.(
+        closeRequestHandlers(session, {
+          failed: (error) => setMessage({ kind: 'error', text: messageOf(error) }),
+        }),
+      ),
+    [bridge, session, setMessage],
+  );
   // What's new (B145) ------------------------------------------------------------------------
 
   const openWhatsNew = useCallback((version: string, notes?: string): void => {

@@ -1035,6 +1035,14 @@ export interface PlatformAdapter {
   tryItWorlds?: TryItWorldsPlatform;
 }
 
+/** The renderer's side of the window close round trip ({@link MsmBridge.onCloseRequest}). */
+export interface CloseRequestHandlers {
+  /** Reports held-back edits; returns whether the project has unsaved changes. */
+  report(): boolean;
+  /** Saves the project; resolves `true` once it is saved, `false` when saving failed. */
+  save(): Promise<boolean>;
+}
+
 /** What the preload exposes as `window.msm`: the adapter plus window-level events. */
 export interface MsmBridge extends PlatformAdapter {
   /** Subscribes to application-menu commands; returns an unsubscribe function. */
@@ -1055,6 +1063,13 @@ export interface MsmBridge extends PlatformAdapter {
   onMinecraftProgress(listener: (progress: MinecraftProgress) => void): () => void;
   /** Tells the main process whether there are unsaved changes (for the close prompt). */
   setDirty(dirty: boolean): void;
+  /**
+   * Answers the window's close requests (the window's X, File > Exit, Restart to update):
+   * `report` reports held-back edits and returns whether the project has unsaved changes,
+   * `save` saves and resolves whether it was saved. Returns an unsubscribe function. Optional
+   * for older test doubles; without it main decides by the last {@link setDirty}.
+   */
+  onCloseRequest?(handlers: CloseRequestHandlers): () => void;
   /** Tells the main process the renderer has rendered (smoke mode). */
   smokeReady(): void;
   /**
