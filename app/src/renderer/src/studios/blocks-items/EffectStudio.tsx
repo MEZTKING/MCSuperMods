@@ -54,6 +54,7 @@ import {
 } from './effect-model';
 import { useBlocksItemsStudioHost } from './host';
 import { CheckField, EventSelect, ProblemsAt, TextField } from './parts';
+import { projectPortals } from './portal-model';
 import { newPotionFor, POTION_KIND } from './potion-model';
 
 type JsonObject = { [key: string]: Json };
@@ -500,6 +501,7 @@ export function EffectStudio(props: StudioProps) {
         suggest={suggest}
         onChange={onChange}
         handlers={projectHandlers(project)}
+        portals={projectPortals(project)}
         effects={projectEffects(project)}
       />
     </section>

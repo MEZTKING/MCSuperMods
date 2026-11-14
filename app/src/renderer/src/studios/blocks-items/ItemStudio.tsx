@@ -26,6 +26,7 @@ import {
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
+import { projectPortals } from './portal-model';
 import { FuelCompostFields, TriggersSection } from './triggers';
 
 /** New component values when a component is switched on (ADR 0025 D3 examples). */
@@ -436,6 +437,7 @@ export function ItemStudio(props: StudioProps) {
         suggest={suggest}
         onChange={onChange}
         handlers={projectHandlers(project)}
+        portals={projectPortals(project)}
         effects={projectEffects(project)}
         triggers={
           <TriggersSection

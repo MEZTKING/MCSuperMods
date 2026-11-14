@@ -44,6 +44,7 @@ import {
 } from '../blocks-items/blocks-items-model';
 import { EventsEditor } from '../blocks-items/EventsEditor';
 import { CheckField, EventSelect, ProblemsAt, TextField } from '../blocks-items/parts';
+import { projectPortals } from '../blocks-items/portal-model';
 import { TriggersSection } from '../blocks-items/triggers';
 import { projectHandlers } from '../scripting/script-model';
 import { useStructureStudioHost } from '../structures/host';
@@ -966,6 +967,7 @@ export function EntityStudio(props: StudioProps) {
         onChange={onChange}
         animations={names}
         handlers={projectHandlers(project)}
+        portals={projectPortals(project)}
         triggers={triggers}
       />
     </section>
