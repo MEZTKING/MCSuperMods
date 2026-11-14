@@ -1,0 +1,49 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "speed": 1.2,
+          "type": "melee_attack"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:attack": {
+      "damage": 4.0
+    },
+    "msm:movement": {
+      "speed": 0.3
+    },
+    "msm:tameable": {
+      "chance": 1.0,
+      "items": [
+        "minecraft:bone"
+      ],
+      "on_tame": "msm_test:tb_tamed",
+      "tamed_health": 30.0
+    }
+  },
+  "events": {
+    "msm_test:tb_tamed": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.85,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

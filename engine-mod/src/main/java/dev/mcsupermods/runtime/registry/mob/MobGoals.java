@@ -123,5 +123,7 @@ public final class MobGoals {
                 case Goal.LeapAtTarget l -> goalSelector.addGoal(priority, new LeapAtTargetGoal(self, l.height()));
             }
         }
+        mob.driver().taming().addGoals(goalSelector, targetSelector);
+        mob.driver().breeding().addGoals(goalSelector, targetSelector);
     }
 }

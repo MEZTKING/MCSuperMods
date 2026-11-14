@@ -325,6 +325,11 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
     }
 
     @Override
+    protected int getBabyStartAge() {
+        return driver().breeding().getBabyStartAge(super.getBabyStartAge());
+    }
+
+    @Override
     protected boolean canFlyToOwner() {
         return driver().taming().canFlyToOwner(super.canFlyToOwner());
     }
