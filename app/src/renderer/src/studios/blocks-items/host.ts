@@ -10,7 +10,7 @@
  * @packageDocumentation
  */
 
-import type { Json, ResourceLocation } from '@msm/core';
+import type { Json, Problem, ResourceLocation } from '@msm/core';
 import { createContext, useContext } from 'react';
 import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
@@ -62,6 +62,12 @@ export interface BlocksItemsStudioHost {
     readProjectAsset(namespace: string, path: string): Promise<Uint8Array | null>;
     vanilla: VanillaAssetReader | null;
   };
+  /**
+   * The project's live problems as the session reports them (every element), so the Rules
+   * section of a thing's Studio can show its rule books' schema and validator problems at the
+   * chips (ADR 0082 D6). Absent: compile problems only.
+   */
+  problems?: readonly Problem[];
 }
 
 /** Provided by `App`; `null` outside it (tests, previews). */

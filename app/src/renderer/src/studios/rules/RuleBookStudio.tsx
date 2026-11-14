@@ -1,21 +1,23 @@
 /**
  * The Rule book Studio (ADR 0082 D1, D7 (a)): an `msm:rules` element as a list of rule cards with
  * "Add a rule", the counters the rules use, the book's own problems in plain words, and, in
- * Advanced mode, "What this becomes". Loaded lazily (`studios.tsx`), so it is a chunk of its own.
+ * Advanced mode, "What this becomes" and "Copy as my own script" (D7 (d)). Loaded lazily (`studios.tsx`), so it is a chunk of its own.
  * Every edit is one undoable `onChange('', nextBook)`; typing coalesces.
  *
  * @packageDocumentation
  */
 
-import type { Json } from '@msm/core';
+import type { Element, Json } from '@msm/core';
 import { Plus, X } from 'lucide-react';
-import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ThingPictures } from '../../components/thing-picker/ThingPicker';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
+import { useStructureStudioHost } from '../structures/host';
 import type { StudioProps } from '../types';
+import { planCopyAsScript } from './copy-as-script';
 import { makeRulesEnv, type RulesEnv, RulesEnvContext } from './env';
 import { useRulesMode } from './mode';
 import { ProblemLines } from './parts';
@@ -164,8 +166,100 @@ export function RuleBookStudio(props: StudioProps) {
         </Button>
         <Counters book={book} onChange={change} />
         {mode.advanced && <WhatThisBecomes project={project} bookId={element.id} target={target} />}
+        {mode.advanced && <CopyAsScript {...props} />}
       </div>
     </RulesEnvContext.Provider>
+  );
+}
+
+/** What "Copy as my own script" last did. */
+type CopyStatus =
+  | {
+      readonly kind: 'done';
+      readonly text: string;
+      readonly scriptId: string | null;
+      readonly warnings: readonly string[];
+    }
+  | { readonly kind: 'error'; readonly text: string };
+
+/**
+ * "Copy as my own script" (ADR 0082 D7 (d), Advanced): one undo step that makes the book's
+ * generated script a script of the user's own, its events hand-made events on its things, and
+ * turns the book's rules off. Planned on click, not on every edit (it compiles the books).
+ */
+function CopyAsScript(props: StudioProps) {
+  const { project, element, target } = props;
+  const host = useBlocksItemsStudioHost();
+  const structureHost = useStructureStudioHost();
+  const [status, setStatus] = useState<CopyStatus | null>(null);
+  const apply = host?.applyChanges;
+  if (apply === undefined) return null;
+  const copy = (): void => {
+    const plan = planCopyAsScript(project, element.id, target);
+    if (!plan.ok) {
+      setStatus({ kind: 'error', text: plan.reason });
+      return;
+    }
+    apply(plan.items, plan.label, []).then(
+      () => {
+        const things = plan.subjects.length === 1 ? 'thing' : 'things';
+        const events =
+          plan.subjects.length === 0
+            ? ''
+            : ` Its events are now your own on ${plan.subjects.length} ${things}.`;
+        setStatus({
+          kind: 'done',
+          text:
+            plan.scriptId === null
+              ? `Copied: every rule here was plain, so no script was needed.${events} The rules here are turned off.`
+              : `Copied to the script ${plan.scriptId}.${events} The rules here are turned off.`,
+          scriptId: plan.scriptId,
+          warnings: plan.warnings,
+        });
+      },
+      (error: unknown) =>
+        setStatus({ kind: 'error', text: error instanceof Error ? error.message : String(error) }),
+    );
+  };
+  return (
+    <section
+      className="flex flex-col gap-1 rounded border border-border p-2"
+      data-testid="rules-copy-as-script"
+    >
+      <h3 className="font-semibold">Copy as my own script</h3>
+      <p className="text-xs text-muted">
+        Makes the script and events these rules become your own, to change by hand, and turns these
+        rules off so nothing runs twice. Undo puts everything back.
+      </p>
+      <Button className="self-start" data-testid="rules-copy-as-script-button" onClick={copy}>
+        Copy as my own script
+      </Button>
+      {status?.kind === 'error' && (
+        <p role="alert" className="text-error text-xs" data-testid="rules-copy-as-script-error">
+          {status.text}
+        </p>
+      )}
+      {status?.kind === 'done' && (
+        <div className="flex flex-col gap-1 text-xs" data-testid="rules-copy-as-script-done">
+          <p role="status">{status.text}</p>
+          {status.warnings.map((warning) => (
+            <p key={warning} className="text-warning">
+              {warning}
+            </p>
+          ))}
+          {status.scriptId !== null && structureHost !== null && (
+            <button
+              type="button"
+              className="self-start underline"
+              data-testid="rules-copy-as-script-open"
+              onClick={() => structureHost.openElement(status.scriptId as Element['id'])}
+            >
+              Open the script
+            </button>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 

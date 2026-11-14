@@ -1993,6 +1993,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const blocksItemsHost: BlocksItemsStudioHost = {
     thumbnail,
     revision: assetRevision,
+    problems: snapshot.problems,
     textureLayers: (model) => session.textureLayers(model),
     addElement: (input) => {
       try {

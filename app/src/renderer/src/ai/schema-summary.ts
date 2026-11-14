@@ -14,6 +14,10 @@ export interface SchemaSummaryOptions {
   maxDepth: number;
   /** The text is cut at this many characters, with a note. */
   maxChars: number;
+  /** Most enum values, dispatcher keys and union members listed inline (default 40). */
+  maxList?: number;
+  /** Most dispatcher cases rendered with their own structure (default 16). */
+  maxCases?: number;
 }
 
 /** The bounds the `kind_schema` tool uses. */
@@ -22,10 +26,27 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
   maxChars: 12_000,
 });
 
-/** Most enum values, dispatcher keys and union members listed inline. */
+/**
+ * Larger bounds for kinds whose schema the default bounds cut short. `msm:rules` (ADR 0082)
+ * has 43 triggers and 36 steps behind dispatchers below the rule's `when` and `do`: depth 8
+ * shows every trigger and step case with its fields (value objects and steps nested in logic
+ * steps stay `{...}`), and lists up to 64 show every id; the text is about 18,000 characters.
+ */
+export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
+  Record<string, Readonly<SchemaSummaryOptions>>
+> = Object.freeze({
+  'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 24_000, maxList: 64, maxCases: 64 }),
+});
+
+/** The bounds of the `kind_schema` tool for `kindId`: its allowance, else the defaults. */
+export function kindSchemaSummaryOptions(kindId: string): Readonly<SchemaSummaryOptions> {
+  return KIND_SCHEMA_SUMMARY_ALLOWANCES[kindId] ?? KIND_SCHEMA_SUMMARY_OPTIONS;
+}
+
+/** Most enum values, dispatcher keys and union members listed inline, by default. */
 const MAX_LIST = 40;
 
-/** Most dispatcher cases rendered with their own structure. */
+/** Most dispatcher cases rendered with their own structure, by default. */
 const MAX_CASES = 16;
 
 const TRUNCATED = '\n... (truncated; read a template with template_data for a full example)';
@@ -64,9 +85,9 @@ function deref(node: SchemaNode): SchemaNode | undefined {
   return current?.kind === 'reference' ? undefined : current;
 }
 
-function listText(values: readonly string[]): string {
-  const shown = values.slice(0, MAX_LIST).join(' | ');
-  return values.length > MAX_LIST ? `${shown} | ... (${values.length} in all)` : shown;
+function listText(values: readonly string[], max: number): string {
+  const shown = values.slice(0, max).join(' | ');
+  return values.length > max ? `${shown} | ... (${values.length} in all)` : shown;
 }
 
 function rangeText(range: { min?: number; max?: number } | undefined): string {
@@ -75,7 +96,7 @@ function rangeText(range: { min?: number; max?: number } | undefined): string {
 }
 
 /** A one-line type for scalar nodes; `undefined` for nodes that need their own lines. */
-function inlineType(node: SchemaNode): string | undefined {
+function inlineType(node: SchemaNode, max = MAX_LIST): string | undefined {
   switch (node.kind) {
     case 'string': {
       if (node.idRegistry !== undefined) {
@@ -90,21 +111,26 @@ function inlineType(node: SchemaNode): string | undefined {
     case 'literal':
       return JSON.stringify(node.value);
     case 'enum':
-      return `enum(${listText(node.values.map((value) => JSON.stringify(value.value)))})`;
+      return `enum(${listText(
+        node.values.map((value) => JSON.stringify(value.value)),
+        max,
+      )})`;
     case 'any':
       return 'any';
     case 'unsupported':
       return 'any (not modelled)';
     case 'list': {
       const item = deref(node.item);
-      const inner = item === undefined ? 'any' : inlineType(item);
+      const inner = item === undefined ? 'any' : inlineType(item, max);
       return inner === undefined ? undefined : `list<${inner}>${rangeText(node.lengthRange)}`;
     }
     case 'union': {
       const members = node.members.map(deref);
-      const texts = members.map((member) => (member === undefined ? 'any' : inlineType(member)));
+      const texts = members.map((member) =>
+        member === undefined ? 'any' : inlineType(member, max),
+      );
       if (texts.some((text) => text === undefined)) return undefined;
-      return listText(texts as string[]);
+      return listText(texts as string[], max);
     }
     default:
       return undefined;
@@ -134,7 +160,9 @@ function render(
   // Returns the inline head; nested lines are pushed to the budget.
   const resolved = deref(node);
   if (resolved === undefined) return 'any (unresolved reference)';
-  const inline = inlineType(resolved);
+  const maxList = options.maxList ?? MAX_LIST;
+  const maxCases = options.maxCases ?? MAX_CASES;
+  const inline = inlineType(resolved, maxList);
   if (inline !== undefined) return `${inline}${tagsText(resolved)}`;
   if (seen.has(resolved)) return '{...} (recursive)';
   if (depth >= options.maxDepth) return '{...}';
@@ -156,7 +184,7 @@ function render(
       return 'tuple';
     }
     case 'union': {
-      for (const member of resolved.members.slice(0, MAX_LIST)) {
+      for (const member of resolved.members.slice(0, maxList)) {
         child(`${indent}  | `, member, depth + 1, `${indent}    `, budget, options, nextSeen);
       }
       return 'one of:';
@@ -167,8 +195,8 @@ function render(
         resolved.discriminator.length === 0
           ? ''
           : ` by ${resolved.discriminator.map((step) => (step === '%key' ? 'the map key' : step === '%parent' ? 'the parent' : `"${step}"`)).join('.')}`;
-      const head = `depends on ${resolved.registry}${by}; cases: ${listText(keys)}`;
-      for (const key of keys.slice(0, MAX_CASES)) {
+      const head = `depends on ${resolved.registry}${by}; cases: ${listText(keys, maxList)}`;
+      for (const key of keys.slice(0, maxCases)) {
         if (budget.full) break;
         const member = resolved.dispatch(key);
         if (member === undefined) continue;
@@ -182,7 +210,7 @@ function render(
           nextSeen,
         );
       }
-      if (keys.length > MAX_CASES) budget.push(`${indent}  (other cases not shown)`);
+      if (keys.length > maxCases) budget.push(`${indent}  (other cases not shown)`);
       return head;
     }
     default:

@@ -8,7 +8,7 @@ The quickest start is the **Scripted ore** starter (**New from starter…**): th
 
 ## Rules first, then scripts
 
-Most small behaviours need no code: "when a player uses this block, with a 50 per cent chance give a Ruby, and count the uses" is a [rule](rules.md), with conditions, chances, counters, repeats and waits. Rules that need logic are compiled to a script for you, so rules and scripts are the same engine. Write a script yourself when the catalogue of rule steps cannot do what you want: reading and changing items in detail, entity data, raycasts, commands built from text, or anything outside the steps. A rule that compiled to a script can be read in Advanced mode under **What this becomes** (a button to copy it as a script of your own is planned).
+Most small behaviours need no code: "when a player uses this block, with a 50 per cent chance give a Ruby, and count the uses" is a [rule](rules.md), with conditions, chances, counters, repeats and waits. Rules that need logic are compiled to a script for you, so rules and scripts are the same engine. Write a script yourself when the catalogue of rule steps cannot do what you want: reading and changing items in detail, entity data, raycasts, commands built from text, or anything outside the steps. A rule that compiled to a script can be read in Advanced mode under **What this becomes** and **Copy as my own script** turns it into a script of your own to change (the rules are turned off in the same undo step; see [Rules](rules.md#copy-as-my-own-script)).
 
 ## What a script can do
 

@@ -23,6 +23,10 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { useEffect, useReducer } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
+import {
+  type BlocksItemsStudioHost,
+  BlocksItemsStudioHostContext,
+} from '../../src/renderer/src/studios/blocks-items/host';
 import { ElementForm } from '../../src/renderer/src/studios/ElementForm';
 import { rulesModeOf } from '../../src/renderer/src/studios/rules/mode';
 import { PlainProblemWordsContext } from '../../src/renderer/src/studios/rules/problem-words';
@@ -121,6 +125,7 @@ async function renderBook(
     problems?: Problem[];
     focusPointer?: string | null;
     words?: (problem: Problem) => string | undefined;
+    host?: BlocksItemsStudioHost;
   } = {},
 ) {
   const stack = new CommandStack(projectOf(book), { coalesceWindowMs: 60_000 });
@@ -133,13 +138,21 @@ async function renderBook(
       onFocused={onFocused}
     />
   );
-  render(
+  const worded =
     options.words === undefined ? (
       tree
     ) : (
       <PlainProblemWordsContext.Provider value={options.words}>
         {tree}
       </PlainProblemWordsContext.Provider>
+    );
+  render(
+    options.host === undefined ? (
+      worded
+    ) : (
+      <BlocksItemsStudioHostContext.Provider value={options.host}>
+        {worded}
+      </BlocksItemsStudioHostContext.Provider>
     ),
   );
   await screen.findByTestId('rule-book-studio');
@@ -456,5 +469,63 @@ describe('Rule book Studio', () => {
       ],
     });
     expect(screen.getByTestId('rules-script').textContent).toContain('// rule:hello');
+  });
+
+  it('offers "Copy as my own script" in Advanced, as one changeset', async () => {
+    usePreferences.setState({ mode: 'advanced' });
+    const applyChanges = vi.fn(async () => undefined);
+    const host: BlocksItemsStudioHost = {
+      thumbnail: async () => new Uint8Array(),
+      revision: 0,
+      paintTexture: () => undefined,
+      applyChanges,
+    };
+    await renderBook(
+      {
+        counters: [],
+        format: 1,
+        rules: [
+          {
+            do: [{ step: 'show_message', text: ['Hello!'] }],
+            key: 'hello',
+            when: { trigger: 'player_joined' },
+          },
+        ],
+      },
+      { host },
+    );
+    fireEvent.click(screen.getByTestId('rules-copy-as-script-button'));
+    await screen.findByTestId('rules-copy-as-script-done');
+    expect(applyChanges).toHaveBeenCalledTimes(1);
+    const [items, label] = applyChanges.mock.calls[0] as unknown as [
+      { op: string; elementId: string; kind: string }[],
+      string,
+    ];
+    expect(label).toBe('Copy demo:rules as my own script');
+    expect(items.map((item) => [item.op, item.elementId, item.kind])).toEqual([
+      ['create', 'demo:rules_script', 'msm:script'],
+      ['update', 'demo:rules', 'msm:rules'],
+    ]);
+    expect(screen.getByTestId('rules-copy-as-script-done').textContent).toContain(
+      'Copied to the script demo:rules_script.',
+    );
+  });
+
+  it('says why "Copy as my own script" cannot copy a book with no rules on', async () => {
+    usePreferences.setState({ mode: 'advanced' });
+    const applyChanges = vi.fn(async () => undefined);
+    await renderBook(EMPTY, {
+      host: {
+        thumbnail: async () => new Uint8Array(),
+        revision: 0,
+        paintTexture: () => undefined,
+        applyChanges,
+      },
+    });
+    fireEvent.click(screen.getByTestId('rules-copy-as-script-button'));
+    expect((await screen.findByTestId('rules-copy-as-script-error')).textContent).toContain(
+      'nothing to copy',
+    );
+    expect(applyChanges).not.toHaveBeenCalled();
   });
 });

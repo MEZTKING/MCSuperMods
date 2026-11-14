@@ -59,7 +59,7 @@ import type { ProjectSession } from '../session/project-session';
 import { templateContext, templatesFor } from '../studios/templates';
 import { addWish } from '../wishlist/wishlist';
 import { projectContextOf } from './project-context';
-import { KIND_SCHEMA_SUMMARY_OPTIONS, kindSchemaSummary } from './schema-summary';
+import { kindSchemaSummary, kindSchemaSummaryOptions } from './schema-summary';
 
 /** What the executor asks the user (the panel answers; ADR 0041 D4 user-decision tools). */
 export interface DecisionHost {
@@ -422,7 +422,7 @@ export function createToolExecutor(
         const context = await session.schemas();
         text = kindSchemaSummary(
           context.schemaIndex.resolveSchemaRef(registered?.schema ?? ''),
-          KIND_SCHEMA_SUMMARY_OPTIONS,
+          kindSchemaSummaryOptions(kind),
         );
       } catch (error) {
         throw new ToolError(

@@ -13,6 +13,12 @@ import { rulesValidators } from './validators';
 
 export * from './catalogue';
 export * from './compile';
+export {
+  type CopiedSubject,
+  copyRuleBookAsScript,
+  type RuleBookCopy,
+  type RuleBookCopyResult,
+} from './copy';
 export { expandRules, RULES_EXPANDER_ID, RULES_EXPANDER_KINDS, rulesExpander } from './expander';
 export * from './kinds';
 export * from './lowering';

@@ -12,6 +12,7 @@ import {
   commands,
   type Element,
   type Json,
+  type Problem,
   type Project,
   type ResourceLocation,
   stableStringify,
@@ -36,7 +37,11 @@ import {
   BlocksItemsStudioHostContext,
 } from '../../src/renderer/src/studios/blocks-items/host';
 import { ElementForm } from '../../src/renderer/src/studios/ElementForm';
-import { noRulesNote, TYPING_DELAY_MS } from '../../src/renderer/src/studios/rules/RulesSection';
+import {
+  bookProblems,
+  noRulesNote,
+  TYPING_DELAY_MS,
+} from '../../src/renderer/src/studios/rules/RulesSection';
 import { subjectRules } from '../../src/renderer/src/studios/rules/turn-into-rules';
 import { StructureStudioHostContext } from '../../src/renderer/src/studios/structures/host';
 import type { SchemaContextState } from '../../src/renderer/src/studios/use-schema-context';
@@ -160,7 +165,7 @@ function hostFor(stack: CommandStack): BlocksItemsStudioHost {
 async function renderThing(
   subject: Element,
   others: Element[] = [],
-  options: { host?: boolean } = {},
+  options: { host?: boolean; problems?: Problem[] } = {},
 ) {
   const stack = new CommandStack(projectOf(subject, RUBY, ...others));
   const openElement = vi.fn();
@@ -168,7 +173,16 @@ async function renderThing(
     <StructureStudioHostContext.Provider
       value={{ openElement, replaceFromFile: vi.fn(), exportStructures: vi.fn() }}
     >
-      <BlocksItemsStudioHostContext.Provider value={options.host === false ? null : hostFor(stack)}>
+      <BlocksItemsStudioHostContext.Provider
+        value={
+          options.host === false
+            ? null
+            : {
+                ...hostFor(stack),
+                ...(options.problems === undefined ? {} : { problems: options.problems }),
+              }
+        }
+      >
         {children}
       </BlocksItemsStudioHostContext.Provider>
     </StructureStudioHostContext.Provider>
@@ -257,6 +271,62 @@ describe('Rules section', () => {
     expect((rulesOfBook(find(BOOK))[1] as { name?: string }).name).toBe('Ruby gift');
     fireEvent.click(screen.getByTestId('rules-section-open-book'));
     expect(openElement).toHaveBeenCalledWith(BOOK);
+  });
+
+  it('shows the books’ schema and validator problems from the session at the chips', async () => {
+    const book = element(BOOK, RULES_KIND, { counters: [], format: 1, rules: [ELSEWHERE, GIFT] });
+    await renderThing(element(BLOCK, 'msm:block', blockData()), [book], {
+      problems: [
+        {
+          severity: 'error',
+          code: 'schema.unknown-id',
+          message: 'Unknown item demo:ruby.',
+          elementId: BOOK,
+          path: '/rules/1/do/0/item',
+        },
+        {
+          severity: 'error',
+          code: 'rules.duplicate-key',
+          message: 'Two rules have the key "gift".',
+          elementId: BOOK,
+          path: '/rules/1/key',
+        },
+        // Another element's problem is not shown here.
+        {
+          severity: 'error',
+          code: 'schema.required',
+          message: 'Missing model.',
+          elementId: BLOCK,
+          path: '/model',
+        },
+      ],
+    });
+    const card = screen.getByTestId('rule-card');
+    const chip = within(card).getByRole('button', { name: 'Item: Ruby' });
+    expect(chip.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(chip.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
+      'Unknown item demo:ruby.',
+    );
+    expect(within(card).getByTestId('rule-problems').textContent).toBe(
+      'Two rules have the key "gift".',
+    );
+    expect(card.textContent).not.toContain('Missing model.');
+  });
+
+  it('merges compile and session problems without repeats', () => {
+    const compile = {
+      severity: 'error' as const,
+      code: 'rules.unknown-subject',
+      message: 'x',
+      elementId: BOOK,
+      path: '/rules/0/when/subject',
+    };
+    const map = bookProblems([compile], [compile, { ...compile, code: 'schema.unknown-id' }]);
+    expect(map.get(BOOK)?.map((problem) => problem.code)).toEqual([
+      'rules.unknown-subject',
+      'schema.unknown-id',
+    ]);
+    expect(bookProblems([compile], undefined).get(BOOK)).toHaveLength(1);
   });
 
   it('shows the rules read-only without a host that can write', async () => {

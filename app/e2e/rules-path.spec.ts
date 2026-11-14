@@ -7,6 +7,8 @@
  * joins, repeat 2 times: show a chat message"). The Jump Pad's events editor turns its
  * "broken" event into a rule. The Fabric mod jar then holds the plain rule as an event on the
  * Chime Block and the logic rule as a script. Undo takes the "Turn into rules" back in one step.
+ * Last, "Copy as my own script" (Advanced, the fresh profile's mode) makes the book's script a
+ * script of the project's own and turns the rules off, as one undo step that Undo takes back.
  */
 
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
@@ -206,4 +208,19 @@ test('rules: a plain and a logic rule through the Studios, a chip problem, Turn 
   await window.getByTestId('toolbar-undo').click();
   await expect(window.getByTestId(`turn-into-rules-${PAD_EVENT}`)).toBeVisible();
   await expect(window.locator('footer')).toContainText(`Redo: Turn ${PAD_EVENT} into rules`);
+
+  // Copy as my own script: a script of the project's own, the rules off; Undo takes it back. --
+  const scriptId = `${NAMESPACE}:rules_script`;
+  await window.getByTestId(`element-row-${BOOK_ID}`).click();
+  await expect(studio).toBeVisible();
+  await studio.getByTestId('rules-copy-as-script-button').click();
+  await expect(studio.getByTestId('rules-copy-as-script-done')).toContainText(
+    `Copied to the script ${scriptId}.`,
+  );
+  await expect(window.locator('footer')).toContainText(`Undo: Copy ${BOOK_ID} as my own script`);
+  await expect(window.getByTestId(`element-row-${scriptId}`)).toBeVisible();
+  await expect(studio.getByTestId('rule-enabled').first()).not.toBeChecked();
+  await window.getByTestId('toolbar-undo').click();
+  await expect(window.getByTestId(`element-row-${scriptId}`)).toHaveCount(0);
+  await expect(window.locator('footer')).toContainText(`Redo: Copy ${BOOK_ID} as my own script`);
 });

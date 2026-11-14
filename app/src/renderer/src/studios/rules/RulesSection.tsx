@@ -6,6 +6,9 @@
  * step. "Add a rule" writes into the book that already holds the thing's rules, else into the
  * project's default book `<namespace>:rules`, created on demand (`turn-into-rules.ts`).
  *
+ * The cards show the books' compile problems and, when the host gives the session's problems,
+ * their schema and validator problems too ({@link bookProblems}).
+ *
  * Typing in a card (a rule name, a message) is held back for {@link TYPING_DELAY_MS} and sent as
  * one step; any other edit sends at once. The Studios load this section lazily.
  *
@@ -196,16 +199,11 @@ export function RulesSection(props: RulesSectionProps) {
   const requestFocus = useCallback((bookId: string, pointer: string) => {
     pendingFocus.current = { bookId, pointer };
   }, []);
-  const problemsByBook = useMemo(() => {
-    const map = new Map<string, Problem[]>();
-    for (const problem of rules.problems ?? []) {
-      if (problem.elementId === undefined) continue;
-      const list = map.get(problem.elementId) ?? [];
-      list.push(problem);
-      map.set(problem.elementId, list);
-    }
-    return map;
-  }, [rules]);
+  const sessionProblems = host?.problems;
+  const problemsByBook = useMemo(
+    () => bookProblems(rules.problems ?? [], sessionProblems),
+    [rules, sessionProblems],
+  );
   const registries = useMemo(
     () => props.context.registries(project, RULES_KIND),
     [props.context, project],
@@ -400,6 +398,29 @@ function BookGroup(props: {
       </div>
     </RulesEnvContext.Provider>
   );
+}
+
+/**
+ * The problems of each rule book: the compile problems of the section's own expansion (current
+ * at once), plus the session's problems on the books (schema and validator problems, the
+ * generated script's diagnostics), without the ones both report.
+ */
+export function bookProblems(
+  compiled: readonly Problem[],
+  session: readonly Problem[] | undefined,
+): Map<string, Problem[]> {
+  const map = new Map<string, Problem[]>();
+  const seen = new Set<string>();
+  for (const problem of [...compiled, ...(session ?? [])]) {
+    if (problem.elementId === undefined) continue;
+    const key = `${problem.elementId}|${problem.code}|${problem.path ?? ''}|${problem.message}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const list = map.get(problem.elementId) ?? [];
+    list.push(problem);
+    map.set(problem.elementId, list);
+  }
+  return map;
 }
 
 /** `text` for a double-quoted attribute selector. */

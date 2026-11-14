@@ -89,6 +89,16 @@ In Advanced mode the rule book shows **What this becomes**: the events and the g
 
 A hand-made event on the same moment runs before any rule.
 
+## Copy as my own script
+
+In Advanced mode the rule book also has **Copy as my own script**, for when you want to take over by hand what the rules do. As one undo step ("Copy <book> as my own script") it:
+
+- adds a normal script, named after the book with `_script` at the end (`my_mod:rules_script`), holding the code the rules made, so you can change it in the Script Studio;
+- gives each block, item, mob or effect the book's events as its own events, named `<thing>_script_<moment>` (they still call the script's handlers, and keep the cooldown or interval the rules had);
+- turns every rule in the book off, so nothing runs twice.
+
+The game does the same as before; the rules are kept, turned off, and **Edit > Undo** puts everything back. If every rule in the book was plain, no script is needed and only the events are copied. A book with problems must be fixed first. When another rule book with a name earlier in the alphabet also has rules on the same thing and moment, its rules ran first and now run after the copied ones; the Studio says so after the copy.
+
 ## Rules in the Events editor
 
 A block, item, mob or effect that has rules shows them in the Events editor under **From rules**: a read-only list of the events they make, with **Open the rule book**. Rule events cannot be edited there, because they are made from the rules.
@@ -99,7 +109,7 @@ A hand-made event whose actions can all be written as steps has **Turn into rule
 
 - **A new moment needs a restart.** The first rule that gives a block, say, "A player breaks the block" changes the block itself, so Minecraft must start again to read it. Editing rules on a moment the thing already has reloads in the running game. See [Playing and testing](playing-and-testing.md).
 - **Rules need the Fabric mod jar.** Vanilla packs carry no rules. Exporting a resource or data pack says: "Rules are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to play with your rules."
-- **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." A button that copies a rule as a script of your own is planned; for now read the generated script in Advanced mode, under **What this becomes**.
+- **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." To change that code by hand, use **Copy as my own script** in the rule book (Advanced mode, see above); the script still needs porting to Java by hand for the eject.
 - **Pictures and sounds.** Pictures of Minecraft's own things need your Minecraft files (Settings, Game locations). Minecraft's sounds cannot be played in the editor; you see their names. Sounds of your own project play.
 - **Time limits.** One script call may run for two seconds; a very long repeat or a long chain of waits is stopped.
 
