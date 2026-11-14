@@ -1,0 +1,19 @@
+{
+  "base": "monster",
+  "category": "monster",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:boss_bar": {
+      "range": 8.0
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

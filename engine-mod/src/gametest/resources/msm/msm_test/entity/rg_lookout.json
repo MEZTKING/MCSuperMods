@@ -1,0 +1,30 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "retaliate": true,
+          "strafe": true,
+          "targets": [
+            "minecraft:zombie"
+          ],
+          "type": "ranged_attack"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:ranged_attack": {
+      "projectile": "minecraft:arrow"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

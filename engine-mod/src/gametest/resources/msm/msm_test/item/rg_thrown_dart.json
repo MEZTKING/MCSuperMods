@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:throwable": {
+      "damage": 1,
+      "on_hit_entity": {
+        "event": "msm_test:rg_dart_hit"
+      }
+    }
+  },
+  "events": {
+    "msm_test:rg_dart_hit": {
+      "actions": [
+        {
+          "count": 2,
+          "particle": "minecraft:crit",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}
