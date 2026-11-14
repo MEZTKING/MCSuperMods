@@ -4005,3 +4005,21 @@ Decisions
 
 Next
 - B358 can pin a particles Java golden in exporters and an ejected build in CI (the scratch project above is the shape). B360: exporters `CLAUDE.md` and targets `CLAUDE.md` lines for the particle eject; plugin-api `CLAUDE.md` 1.14.0 adds `JavaProjectInput.particles?`.
+
+## 2026-11-14 — executor — B365 Rules catalogue and compiler
+
+What
+- `@msm/plugin-rules` gains the pure heart of Rules (ADR 0082 D3–D5), still unregistered (B368): `src/catalogue/` (43 triggers, 36 steps, 16 conditions, 9 values, 6 places, 5 "who", each with a label, a sentence with `{slot}` blanks, slot types and Very easy visibility; triggers carry subject kinds, where the event goes, option mappings, actors, actor words, action targets, "here", cancellable), `src/compile/` (`compileRuleBook(book, elements, target)` returning `{ patches, script, problems }`), `src/sentence.ts` (`ruleSentence` and the per-part sentences), `src/book.ts` (defensive readers). `src/index.ts` exports them; `contributes` stays empty.
+- Plain rules compile to format actions only; any condition, wait, reading or non-matching target makes the subject and trigger one `run_script` bridge; script-only triggers become `msm.events.on` handlers. Hand-made events run first through `trigger_event`; trigger options follow R16; patches are merged per component so no path is patched twice.
+- Tests (238): `catalogue.test.ts` (ids equal to `rules.mcdoc`'s enums), `compile.test.ts` (behaviour and every `rules.*` code), `sentence.test.ts`, `goldens.test.ts` (116 samples, one per catalogue entry, goldens under `test/fixtures/goldens/`, each book valid against `msm:rules` and each patched subject valid against its element schema on both targets), `typecheck.test.ts` (every generated script and one book using every entry type-check against `msm-runtime.d.ts` with the app's checker options and transpile to ES5 with no ES2015 syntax left).
+- Verified: rules plugin tests, `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- `ElementPatch` is declared locally (structurally the ADR 0082 D9 type) until B364's plugin API 1.15.0 is merged; B368 switches to the import.
+- Script API 1.4 members (`dayTime`, `isRaining`, `isThundering`, `setWeather`, `explode`, `dropItem`) are typed for the test through `test/fixtures/script-api-1-4.d.ts`, read only while the real typings lack `dayTime`.
+- `any_mob_hurt` uses `entity.hurt` (cancellable, ADR 0082 D5) rather than D4's `entity.damaged`; `any_` mob triggers skip players; `block.interact` and `entity.interact` fire on the main hand only.
+- Night is 13000 to 23000 day ticks; counters are saved under `rules.counter.<name>` in the player, mob or world data store; boss bars are named `rules_<bar>`; explosions are capped at power 10 (the Script API 1.4 range).
+- "Light a portal" exists only as the format action: in a rule that compiles to script it is `rules.needs-plain`. "Remove a block with drops" warns `rules.drops-not-supported` (no Script API for it). "Remove the mob" uses `kill()`, so it drops loot.
+
+Next
+- B368: registration, the expander (one `compileRuleBook` per book; two books on one subject and trigger collide on the event id), validators reusing `RULES_COMPILE_CODES`, lowering of `script` lines, the 50-step and key checks beside the schema's, deleting the local 1.4 declarations after B370.

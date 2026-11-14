@@ -1,0 +1,42 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:plain_block_rules_block_used": {
+          "actions": [
+            {
+              "pitch": 1.2,
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound",
+              "volume": 0.8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components"
+      ],
+      "value": {
+        "msm:on_interact": {
+          "event": "demo:plain_block_rules_block_used"
+        }
+      }
+    }
+  ],
+  "problems": []
+}

@@ -1,0 +1,39 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:guard",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:guard_rules_mob_used": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:guard",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components",
+        "msm:on_interact"
+      ],
+      "value": {
+        "event": "demo:guard_rules_mob_used"
+      }
+    }
+  ],
+  "problems": []
+}

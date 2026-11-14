@@ -1,0 +1,45 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:plain_block_rules_block_used": {
+          "actions": [
+            {
+              "offset": [
+                0,
+                1,
+                0
+              ],
+              "state": "minecraft:gold_block",
+              "type": "set_block_state"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components"
+      ],
+      "value": {
+        "msm:on_interact": {
+          "event": "demo:plain_block_rules_block_used"
+        }
+      }
+    }
+  ],
+  "problems": []
+}

@@ -1,0 +1,593 @@
+/**
+ * The triggers of format 1 (ADR 0082 D4). Definition triggers set a trigger component of a
+ * project block, item, mob or effect (ADR 0025, 0028, 0055, 0056, 0061, 0074, 0075, 0077);
+ * their actors and action targets follow the runtime's `EventContext` factories (ADR 0058 D1).
+ * Script-only triggers use a Script API event (ADR 0032, 0065).
+ */
+import type {
+  ActionTarget,
+  Actor,
+  SlotSpec,
+  TriggerComponent,
+  TriggerEntry,
+  TriggerGroup,
+  TriggerOptionMapping,
+} from './types';
+
+export const BLOCK_KIND = 'msm:block';
+export const ITEM_KIND = 'msm:item';
+export const ENTITY_KIND = 'msm:entity';
+export const EFFECT_KIND = 'msm:effect';
+
+const SUBJECT_BLOCK: SlotSpec = { name: 'subject', type: 'block' };
+const SUBJECT_ITEM: SlotSpec = { name: 'subject', type: 'item' };
+const SUBJECT_MOB: SlotSpec = { name: 'subject', type: 'mob' };
+const SUBJECT_EFFECT: SlotSpec = { name: 'subject', type: 'effect' };
+
+const COOLDOWN: SlotSpec = {
+  name: 'cooldown_seconds',
+  type: 'seconds',
+  optional: true,
+  min: 0,
+  max: 3600,
+};
+const CHANCE: SlotSpec = { name: 'chance', type: 'number', optional: true, min: 0, max: 1 };
+const INTERVAL: SlotSpec = {
+  name: 'interval_seconds',
+  type: 'seconds',
+  optional: true,
+  min: 0.25,
+  max: 3600,
+};
+const EFFECT_INTERVAL: SlotSpec = { ...INTERVAL, min: 0.05 };
+const HAND: SlotSpec = {
+  name: 'hand',
+  type: 'choice',
+  optional: true,
+  choices: [
+    { value: 'main', label: 'in the main hand' },
+    { value: 'off', label: 'in the off hand' },
+    { value: 'either', label: 'in either hand' },
+  ],
+};
+const MESSAGE: SlotSpec = {
+  name: 'message_contains',
+  type: 'text',
+  optional: true,
+  prefix: 'with a message containing',
+};
+
+const cooldown = (min = 0): TriggerOptionMapping => ({
+  option: 'cooldown_seconds',
+  field: 'cooldown_ticks',
+  convert: 'ticks',
+  min,
+});
+const interval = (min: number): TriggerOptionMapping => ({
+  option: 'interval_seconds',
+  field: 'interval_ticks',
+  convert: 'ticks',
+  min,
+});
+const chance: TriggerOptionMapping = { option: 'chance', field: 'chance', convert: 'copy' };
+const hand: TriggerOptionMapping = { option: 'hand', field: 'hand', convert: 'copy' };
+
+interface Spec {
+  id: string;
+  label: string;
+  sentence: string;
+  group: TriggerGroup;
+  slots: readonly SlotSpec[];
+  subject?: TriggerEntry['subject'];
+  subjectOptional?: boolean;
+  subjectKinds?: readonly string[];
+  definition?: TriggerComponent;
+  options?: readonly TriggerOptionMapping[];
+  scriptEvent?: string;
+  actors: readonly Actor[];
+  actorLabels?: Partial<Record<Actor, string>>;
+  actionTargets?: Partial<Record<Actor, ActionTarget>>;
+  hasPlace?: boolean;
+  hereIsBlock?: boolean;
+  cancellable?: boolean;
+  mobDead?: boolean;
+  playerGone?: boolean;
+}
+
+const trigger = (spec: Spec): TriggerEntry =>
+  Object.freeze({
+    id: spec.id,
+    label: spec.label,
+    sentence: spec.sentence,
+    slots: Object.freeze([...spec.slots]),
+    veryEasy: true,
+    group: spec.group,
+    subject: spec.subject ?? 'none',
+    subjectOptional: spec.subjectOptional ?? false,
+    subjectKinds: Object.freeze([...(spec.subjectKinds ?? [])]),
+    ...(spec.definition === undefined ? {} : { definition: Object.freeze({ ...spec.definition }) }),
+    options: Object.freeze([...(spec.options ?? [])]),
+    ...(spec.scriptEvent === undefined ? {} : { scriptEvent: spec.scriptEvent }),
+    actors: Object.freeze([...spec.actors]),
+    actorLabels: Object.freeze({ ...(spec.actorLabels ?? {}) }),
+    actionTargets: Object.freeze({ ...(spec.actionTargets ?? {}) }),
+    hasPlace: spec.hasPlace ?? true,
+    hereIsBlock: spec.hereIsBlock ?? false,
+    cancellable: spec.cancellable ?? false,
+    ...(spec.mobDead === true ? { mobDead: true } : {}),
+    ...(spec.playerGone === true ? { playerGone: true } : {}),
+  });
+
+/** A block definition trigger. */
+const block = (spec: Omit<Spec, 'subject' | 'subjectKinds' | 'hereIsBlock'>): TriggerEntry =>
+  trigger({ ...spec, subject: 'block', subjectKinds: [BLOCK_KIND], hereIsBlock: true });
+
+const item = (spec: Omit<Spec, 'subject' | 'subjectKinds'>): TriggerEntry =>
+  trigger({ ...spec, subject: 'item', subjectKinds: [ITEM_KIND] });
+
+const mob = (spec: Omit<Spec, 'subject' | 'subjectKinds' | 'group'>): TriggerEntry =>
+  trigger({ ...spec, group: 'mobs', subject: 'mob', subjectKinds: [ENTITY_KIND] });
+
+const effect = (spec: Omit<Spec, 'subject' | 'subjectKinds' | 'group' | 'actors'>): TriggerEntry =>
+  trigger({
+    ...spec,
+    group: 'effects',
+    subject: 'effect',
+    subjectKinds: [EFFECT_KIND],
+    // `forEffect`: the holder is self, other and the player when it is one (ADR 0055 D3).
+    actors: ['mob', 'player'],
+    actorLabels: { mob: 'the one with the effect', player: 'the player with the effect' },
+    actionTargets: { mob: 'self' },
+  });
+
+const player = (spec: Omit<Spec, 'group' | 'actors'>): TriggerEntry =>
+  trigger({ ...spec, group: 'players', actors: ['player'] });
+
+/** A stepper, placer, traveller or entity inside: the player when it is one, any entity as other. */
+const ACTOR_ENTITY = { other: 'other' } as const;
+
+export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
+  block({
+    id: 'block_used',
+    label: 'A player uses the block',
+    sentence: 'When a player uses {subject}',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:on_interact' },
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+  }),
+  block({
+    id: 'block_stepped_on',
+    label: 'Something steps on the block',
+    sentence: 'When something steps on {subject}',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK, COOLDOWN],
+    definition: { component: 'msm:on_step' },
+    options: [cooldown()],
+    actors: ['player', 'other'],
+    actorLabels: { other: 'whoever stepped on it', player: 'the player who stepped on it' },
+    actionTargets: ACTOR_ENTITY,
+  }),
+  block({
+    id: 'block_broken',
+    label: 'A player breaks the block',
+    sentence: 'When a player breaks {subject}',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:on_break' },
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+  }),
+  block({
+    id: 'block_placed',
+    label: 'The block is placed',
+    sentence: 'When {subject} is placed',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:on_place' },
+    actors: ['player', 'other'],
+    actorLabels: { other: 'whoever placed it', player: 'the player who placed it' },
+    actionTargets: ACTOR_ENTITY,
+  }),
+  block({
+    id: 'block_random_tick',
+    label: 'The block gets a random tick',
+    sentence: 'Now and then (on a random tick) at {subject}',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK, CHANCE],
+    definition: { component: 'msm:on_random_tick' },
+    options: [chance],
+    actors: [],
+  }),
+  block({
+    id: 'block_entity_inside',
+    label: 'Something is inside the block',
+    sentence: 'When something is inside {subject}',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK, COOLDOWN],
+    definition: { component: 'msm:on_entity_inside' },
+    options: [cooldown(5)],
+    actors: ['player', 'other'],
+    actorLabels: { other: 'whoever is inside it', player: 'the player inside it' },
+    actionTargets: ACTOR_ENTITY,
+  }),
+  block({
+    id: 'block_powered',
+    label: 'The block is powered by redstone',
+    sentence: 'When {subject} is powered by redstone',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:redstone', field: 'on_powered' },
+    actors: [],
+  }),
+  block({
+    id: 'block_unpowered',
+    label: 'The block stops being powered',
+    sentence: 'When {subject} stops being powered',
+    group: 'blocks',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:redstone', field: 'on_unpowered' },
+    actors: [],
+  }),
+  block({
+    id: 'container_opened',
+    label: 'A player opens the container',
+    sentence: 'When a player opens {subject}',
+    group: 'containers',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:container', field: 'on_open', required: true },
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+  }),
+  block({
+    id: 'container_closed',
+    label: 'A player closes the container',
+    sentence: 'When a player closes {subject}',
+    group: 'containers',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:container', field: 'on_close', required: true },
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+  }),
+  block({
+    id: 'machine_started',
+    label: 'The machine starts working',
+    sentence: 'When {subject} starts working',
+    group: 'machines',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:machine', field: 'on_start', required: true },
+    actors: [],
+  }),
+  block({
+    id: 'machine_finished',
+    label: 'The machine finishes',
+    sentence: 'When {subject} finishes working',
+    group: 'machines',
+    slots: [SUBJECT_BLOCK],
+    definition: { component: 'msm:machine', field: 'on_finish', required: true },
+    actors: [],
+  }),
+  trigger({
+    id: 'portal_travelled',
+    label: 'Something travels through the portal',
+    sentence: 'When something travels through {subject}',
+    group: 'portals',
+    slots: [SUBJECT_BLOCK],
+    subject: 'block',
+    subjectKinds: [BLOCK_KIND],
+    definition: { field: 'on_travel', blockType: 'portal' },
+    actors: ['player', 'other'],
+    actorLabels: { other: 'the traveller', player: 'the player who travelled' },
+    actionTargets: ACTOR_ENTITY,
+  }),
+  item({
+    id: 'item_used',
+    label: 'A player uses the item',
+    sentence: 'When a player uses {subject}',
+    group: 'items',
+    slots: [SUBJECT_ITEM, COOLDOWN],
+    definition: { component: 'msm:on_use' },
+    options: [cooldown()],
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+  }),
+  item({
+    id: 'item_used_on_block',
+    label: 'A player uses the item on a block',
+    sentence: 'When a player uses {subject} on a block',
+    group: 'items',
+    slots: [SUBJECT_ITEM, COOLDOWN],
+    definition: { component: 'msm:on_use_on_block' },
+    options: [cooldown()],
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+    hereIsBlock: true,
+  }),
+  item({
+    id: 'item_hit_mob',
+    label: 'The item hits a mob',
+    sentence: 'When {subject} hits a mob',
+    group: 'items',
+    slots: [SUBJECT_ITEM],
+    definition: { component: 'msm:on_hit' },
+    actors: ['player', 'other'],
+    actorLabels: { other: 'the mob hit', player: 'the player holding it' },
+    actionTargets: { other: 'other' },
+  }),
+  item({
+    id: 'item_held',
+    label: 'Every few seconds while the item is held',
+    sentence: 'Every {interval_seconds} while {subject} is held {hand}',
+    group: 'items',
+    slots: [INTERVAL, SUBJECT_ITEM, HAND],
+    definition: { component: 'msm:while_held' },
+    options: [interval(5), hand],
+    actors: ['player'],
+    actorLabels: { player: 'the player holding it' },
+  }),
+  item({
+    id: 'item_worn',
+    label: 'Every few seconds while the item is worn',
+    sentence: 'Every {interval_seconds} while {subject} is worn',
+    group: 'items',
+    slots: [INTERVAL, SUBJECT_ITEM],
+    definition: { component: 'msm:while_worn', needs: 'msm:armor' },
+    options: [interval(5)],
+    actors: ['player'],
+    actorLabels: { player: 'the player wearing it' },
+  }),
+  item({
+    id: 'thrown_hit_mob',
+    label: 'The thrown item hits a mob',
+    sentence: 'When thrown {subject} hits a mob',
+    group: 'thrown',
+    slots: [SUBJECT_ITEM],
+    definition: {
+      component: 'msm:throwable',
+      field: 'on_hit_entity',
+      fieldIsObject: true,
+      required: true,
+    },
+    actors: ['player', 'other'],
+    actorLabels: { other: 'the mob hit', player: 'the player who threw it' },
+    actionTargets: { other: 'other' },
+  }),
+  item({
+    id: 'thrown_hit_block',
+    label: 'The thrown item hits a block',
+    sentence: 'When thrown {subject} hits a block',
+    group: 'thrown',
+    slots: [SUBJECT_ITEM],
+    definition: {
+      component: 'msm:throwable',
+      field: 'on_hit_block',
+      fieldIsObject: true,
+      required: true,
+    },
+    actors: ['player'],
+    actorLabels: { player: 'the player who threw it' },
+    hereIsBlock: true,
+  }),
+  mob({
+    id: 'mob_hurt',
+    label: 'The mob is hurt',
+    sentence: 'When {subject} is hurt',
+    slots: [SUBJECT_MOB],
+    definition: { component: 'msm:on_hurt' },
+    actors: ['mob', 'player'],
+    actorLabels: { player: 'the player who hurt it' },
+    actionTargets: { player: 'other' },
+  }),
+  mob({
+    id: 'mob_died',
+    label: 'The mob dies',
+    sentence: 'When {subject} dies',
+    slots: [SUBJECT_MOB],
+    definition: { component: 'msm:on_death' },
+    actors: ['mob', 'player'],
+    actorLabels: { player: 'the player who killed it' },
+    actionTargets: { player: 'other' },
+    mobDead: true,
+  }),
+  mob({
+    id: 'mob_used',
+    label: 'A player uses the mob',
+    sentence: 'When a player uses {subject}',
+    slots: [SUBJECT_MOB],
+    definition: { component: 'msm:on_interact' },
+    actors: ['mob', 'player'],
+    actionTargets: { player: 'other' },
+  }),
+  mob({
+    id: 'mob_attacked',
+    label: 'The mob attacks',
+    sentence: 'When {subject} attacks',
+    slots: [SUBJECT_MOB],
+    definition: { component: 'msm:attack', field: 'on_attack', required: true },
+    actors: ['mob', 'other', 'player'],
+    actorLabels: { other: 'the one it hit', player: 'the player it hit' },
+    actionTargets: { other: 'other' },
+  }),
+  mob({
+    id: 'mob_every',
+    label: 'Every few seconds while the mob is alive',
+    sentence: 'Every {interval_seconds} while {subject} is alive',
+    slots: [INTERVAL, SUBJECT_MOB],
+    definition: { component: 'msm:on_tick' },
+    options: [interval(5)],
+    actors: ['mob'],
+    actionTargets: { mob: 'self' },
+  }),
+  mob({
+    id: 'mob_spawned',
+    label: 'The mob spawns',
+    sentence: 'When {subject} spawns',
+    slots: [SUBJECT_MOB],
+    definition: { component: 'msm:on_spawn' },
+    actors: ['mob'],
+    actionTargets: { mob: 'self' },
+  }),
+  effect({
+    id: 'effect_started',
+    label: 'The effect starts',
+    sentence: 'When {subject} starts',
+    slots: [SUBJECT_EFFECT],
+    definition: { component: 'msm:on_start' },
+  }),
+  effect({
+    id: 'effect_every',
+    label: 'Every few seconds while the effect lasts',
+    sentence: 'Every {interval_seconds} while {subject} lasts',
+    slots: [EFFECT_INTERVAL, SUBJECT_EFFECT],
+    definition: { component: 'msm:on_tick' },
+    options: [interval(1)],
+  }),
+  effect({
+    id: 'effect_ended',
+    label: 'The effect ends',
+    sentence: 'When {subject} ends',
+    slots: [SUBJECT_EFFECT],
+    definition: { component: 'msm:on_end' },
+  }),
+  player({
+    id: 'player_joined',
+    label: 'A player joins',
+    sentence: 'When a player joins',
+    slots: [],
+    scriptEvent: 'player.join',
+  }),
+  player({
+    id: 'player_left',
+    label: 'A player leaves',
+    sentence: 'When a player leaves',
+    slots: [],
+    scriptEvent: 'player.leave',
+    playerGone: true,
+  }),
+  player({
+    id: 'player_respawned',
+    label: 'A player respawns',
+    sentence: 'When a player respawns',
+    slots: [],
+    scriptEvent: 'player.respawn',
+  }),
+  player({
+    id: 'player_chatted',
+    label: 'A player chats',
+    sentence: 'When a player chats {message_contains}',
+    slots: [MESSAGE],
+    scriptEvent: 'player.chat',
+    cancellable: true,
+  }),
+  player({
+    id: 'player_changed_dimension',
+    label: 'A player changes dimension',
+    sentence: 'When a player changes dimension',
+    slots: [],
+    scriptEvent: 'player.changeDimension',
+  }),
+  player({
+    id: 'player_every',
+    label: 'Every few seconds for each player',
+    sentence: 'Every {interval_seconds} for each player',
+    slots: [INTERVAL],
+    scriptEvent: 'player.tick',
+  }),
+  trigger({
+    id: 'world_started',
+    label: 'The world starts',
+    sentence: 'When the world starts',
+    group: 'world',
+    slots: [],
+    scriptEvent: 'server.started',
+    actors: [],
+    hasPlace: false,
+  }),
+  trigger({
+    id: 'world_every',
+    label: 'Every few seconds',
+    sentence: 'Every {interval_seconds}',
+    group: 'world',
+    slots: [INTERVAL],
+    scriptEvent: 'server.tick',
+    actors: [],
+    hasPlace: false,
+  }),
+  trigger({
+    id: 'any_block_used',
+    label: 'A player uses any block',
+    sentence: 'When a player uses {subject}',
+    group: 'any',
+    slots: [{ ...SUBJECT_BLOCK, optional: true }],
+    subject: 'block',
+    subjectOptional: true,
+    scriptEvent: 'block.interact',
+    actors: ['player'],
+    hereIsBlock: true,
+    cancellable: true,
+  }),
+  trigger({
+    id: 'any_block_broken',
+    label: 'A player breaks any block',
+    sentence: 'When a player breaks {subject}',
+    group: 'any',
+    slots: [{ ...SUBJECT_BLOCK, optional: true }],
+    subject: 'block',
+    subjectOptional: true,
+    scriptEvent: 'block.break',
+    actors: ['player'],
+    hereIsBlock: true,
+    cancellable: true,
+  }),
+  trigger({
+    id: 'any_item_used',
+    label: 'A player uses any item',
+    sentence: 'When a player uses {subject}',
+    group: 'any',
+    slots: [{ ...SUBJECT_ITEM, optional: true }],
+    subject: 'item',
+    subjectOptional: true,
+    scriptEvent: 'item.use',
+    actors: ['player'],
+    cancellable: true,
+  }),
+  trigger({
+    id: 'any_mob_hurt',
+    label: 'Any mob is hurt',
+    sentence: 'When {subject} is hurt',
+    group: 'any',
+    slots: [{ ...SUBJECT_MOB, optional: true }],
+    subject: 'mob',
+    subjectOptional: true,
+    scriptEvent: 'entity.hurt',
+    actors: ['mob', 'other', 'player'],
+    actorLabels: { other: 'the attacker', player: 'the player who hurt it' },
+    cancellable: true,
+  }),
+  trigger({
+    id: 'any_mob_died',
+    label: 'Any mob dies',
+    sentence: 'When {subject} dies',
+    group: 'any',
+    slots: [{ ...SUBJECT_MOB, optional: true }],
+    subject: 'mob',
+    subjectOptional: true,
+    scriptEvent: 'entity.death',
+    actors: ['mob', 'other', 'player'],
+    actorLabels: { other: 'the killer', player: 'the player who killed it' },
+    mobDead: true,
+  }),
+  trigger({
+    id: 'any_mob_used',
+    label: 'A player uses any mob',
+    sentence: 'When a player uses {subject}',
+    group: 'any',
+    slots: [{ ...SUBJECT_MOB, optional: true }],
+    subject: 'mob',
+    subjectOptional: true,
+    scriptEvent: 'entity.interact',
+    actors: ['mob', 'player'],
+    cancellable: true,
+  }),
+]);

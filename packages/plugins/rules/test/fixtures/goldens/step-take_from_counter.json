@@ -1,0 +1,39 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:guard",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:guard_rules_mob_hurt": {
+          "actions": [
+            {
+              "handler": "demo:rules/rules/guard/mob_hurt",
+              "type": "run_script"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:guard",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components",
+        "msm:on_hurt"
+      ],
+      "value": {
+        "event": "demo:guard_rules_mob_hurt"
+      }
+    }
+  ],
+  "problems": []
+}

@@ -1,0 +1,40 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:helmet",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:helmet_rules_item_worn": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:helmet",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components",
+        "msm:while_worn"
+      ],
+      "value": {
+        "event": "demo:helmet_rules_item_worn",
+        "interval_ticks": 100
+      }
+    }
+  ],
+  "problems": []
+}

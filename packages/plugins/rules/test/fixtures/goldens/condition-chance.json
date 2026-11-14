@@ -1,0 +1,40 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:plain_block_rules_block_used": {
+          "actions": [
+            {
+              "handler": "demo:rules/rules/plain_block/block_used",
+              "type": "run_script"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components"
+      ],
+      "value": {
+        "msm:on_interact": {
+          "event": "demo:plain_block_rules_block_used"
+        }
+      }
+    }
+  ],
+  "problems": []
+}

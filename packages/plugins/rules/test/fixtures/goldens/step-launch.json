@@ -1,0 +1,44 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:plain_block_rules_block_stepped_on": {
+          "actions": [
+            {
+              "direction": "up",
+              "strength": 1,
+              "target": "other",
+              "type": "launch",
+              "up": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:plain_block",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "components"
+      ],
+      "value": {
+        "msm:on_step": {
+          "cooldown_ticks": 20,
+          "event": "demo:plain_block_rules_block_stepped_on"
+        }
+      }
+    }
+  ],
+  "problems": []
+}
