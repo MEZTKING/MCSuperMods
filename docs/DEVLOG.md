@@ -3452,3 +3452,18 @@ Decisions
 
 Next
 - B328 close: root `CLAUDE.md`, DESIGN, ROADMAP, HANDOFF; the sample machines parity count; align the runtime version of Script API 1.1 and 1.2 if both ship together.
+## 2026-11-14 — executor — B325 sample machines parity and CI
+
+What
+- `engine-mod/parity/.../SampleMachinesParityTest.java` filled (B309's stub): 19 black-box GameTests over `fixtures/sample-machines`, through vanilla types and calls only (`Container`, the vanilla menus, `BlockStateProperties.OPEN`/`LIT`, `ServerPlayerGameMode.useItemOn`, vanilla hoppers and comparators, `/item`, `/data`, `/function`, saved data, `ParityChat`): registration (block entity types and machine recipe types under the block ids, `open`/`lit`, `lit_light`), each layout's menu and row count, each machine's furnace menu, `/item replace block` and `/data get block ... Items`, the furnace field names in saved data, hoppers in and out, the comparator against a vanilla barrel (and none with `comparator: false`), contents dropped on break, the keeping crate's round trip and its refusal of another keeping crate, the holder's put-in and take-out with `on_open`'s line, the crate's `open` state with `on_open`/`on_close` lines, the loot crate filled on first open, the grinder (fuel, 40 ticks, `on_start`/`on_finish`), the fast furnace (smelting at speed 2: 100 ticks), the redstone grinder (waits for a redstone block, progress comparator, `on_finish`), the furnace hopper faces, the furnace menu's progress and flame, experience on taking the result.
+- `.github/workflows/ci.yml`: sample machines export with the real runtime, a headless server check pinning `registered 9 block(s) and 9 item(s) from 9 definition file(s); 0 error(s), 0 warning(s)` and `registered 9 block entity type(s) and 3 machine recipe type(s)`, the Java eject and its Gradle build (26.3), the ejected jar in the "Find the ejected jars" loop, parity runs on the content jar (every version) and the ejected jar (26.3), and the jars as artifacts. `tools/run-fabric-server` needed no change.
+- Local runs (`tools/run-fabric-server --gametest ... --gametest-filter 'msm_parity_tests:sample_machines_*'`): 26.3 content jar 19/19 twice, 26.3 ejected jar 19/19 twice, 26.4 content jar 19/19 twice. Negative runs: the `sample_creatures_*` filter against the machines jar exits 1 (every creatures test fails), `sample_machine_*` (no match) exits 255 with no report. The server check with both pinned lines passes on 26.3 and 26.4. `./gradlew -p parity build -Pmc=26.3` and `-Pmc=26.4` green; `pnpm lint` green.
+
+Decisions
+- Experience is checked on the grinder's flint recipe (experience 1), so the paid orbs are exact; the fast furnace's raw iron (0.7) would pay at random.
+- The redstone grinder test uses gravel to flint (the recipe's own 20 ticks) rather than cobblestone to gravel (the machine's `default_time`, 200 ticks).
+- `/function` reports no success to a command callback when the function has no `return`, so the loot crate test checks the placed block instead of the command result.
+- No `/reload` parity test: B316's manual-only reload GameTest stays as it is; a reload in a parity run would reload during other running tests.
+
+Next
+- B327/B328: status lines name sample machines parity (19 tests) and the CI job's new steps in `engine-mod/CLAUDE.md` and the root `CLAUDE.md`.

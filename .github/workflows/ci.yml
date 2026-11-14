@@ -61,8 +61,8 @@ jobs:
   # (tools/run-fabric-server; the sample script twice on one world), and the sample data pack on
   # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts), and the library's vanilla data
   # packs on one too (tools/run-fabric-server/vanilla-packs.ts). 26.3 also builds the ejected
-  # Java projects and runs the five parity runs; other versions run parity on the content jars
-  # only (the sample mob only with GeckoLib).
+  # Java projects and runs every parity run on both the content and the ejected jars; other
+  # versions run parity on the content jars only.
   # Action versions: setup-java and cache v6 (checked 2026-11-05).
   engine-mod:
     runs-on: ubuntu-latest
@@ -164,6 +164,13 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-creatures.golden.test.ts
           test -f "$RUNNER_TEMP/sample-creatures/msm_sample_creatures.jar"
           cat "$RUNNER_TEMP/sample-creatures/fabric-facts.json"
+      # Containers and machines (ADRs 0074-0076, B323): six containers and three machines.
+      - name: Export the sample machines with the real runtime
+        run: |
+          MSM_SAMPLE_MACHINES_OUT="$RUNNER_TEMP/sample-machines" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-machines.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-machines/msm_sample_machines.jar"
+          cat "$RUNNER_TEMP/sample-machines/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -192,6 +199,17 @@ jobs:
           --facts "$RUNNER_TEMP/sample-creatures/fabric-facts.json"
           --expect-line '[msm_runtime] registered 0 block(s) and 7 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)'
           --expect-line '[msm_runtime] registered 6 entity type(s) and 0 mob effect(s)'
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # Each container and machine registers a block entity type under its block id, and each
+      # machine its own recipe type (ADR 0075 D2).
+      - name: Headless Fabric server check (sample machines)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-machines/msm_sample_machines.jar"
+          --facts "$RUNNER_TEMP/sample-machines/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 9 block(s) and 9 item(s) from 9 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered 9 block entity type(s) and 3 machine recipe type(s)'
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
       # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
@@ -262,7 +280,7 @@ jobs:
           echo "MSM_PARITY_JAR=${jars[0]}" >> "$GITHUB_ENV"
       # The Java project eject and the ejected parity runs: 26.3 only until the other versions'
       # Java generators are confirmed (ADR 0038 D5).
-      - name: Export the sample mod, the sample mob and the sample creatures as Java projects
+      - name: Export the sample mod, the sample mob, the sample creatures and the sample machines as Java projects
         if: matrix.mc == '26.3'
         run: |
           MSM_SAMPLE_MOD_JAVA_OUT="$RUNNER_TEMP/java/sample-mod" \
@@ -271,9 +289,12 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-mob.java.golden.test.ts
           MSM_SAMPLE_CREATURES_JAVA_OUT="$RUNNER_TEMP/java/sample-creatures" \
             pnpm --filter @msm/exporters exec vitest run test/sample-creatures.java.golden.test.ts
+          MSM_SAMPLE_MACHINES_JAVA_OUT="$RUNNER_TEMP/java/sample-machines" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-machines.java.golden.test.ts
           test -x "$RUNNER_TEMP/java/sample-mod/gradlew"
           test -x "$RUNNER_TEMP/java/sample-mob/gradlew"
           test -x "$RUNNER_TEMP/java/sample-creatures/gradlew"
+          test -x "$RUNNER_TEMP/java/sample-machines/gradlew"
       # Each written project builds with its own wrapper; the Gradle cache above holds the 26.3
       # artefacts. Loom's "(kSxHvs99) is not valid semver" line for the nested GeckoLib is harmless.
       - name: Build the ejected sample mod
@@ -288,10 +309,14 @@ jobs:
         if: matrix.mc == '26.3'
         working-directory: ${{ runner.temp }}/java/sample-creatures
         run: ./gradlew build --no-daemon
+      - name: Build the ejected sample machines
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-machines
+        run: ./gradlew build --no-daemon
       - name: Find the ejected jars
         if: matrix.mc == '26.3'
         run: |
-          for sample in mod mob creatures; do
+          for sample in mod mob creatures machines; do
             mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-$sample"/build/libs/msm_sample_$sample-*.jar | grep -v -e '-sources\.jar$')
             if [ "${#jars[@]}" -ne 1 ]; then
               echo "::error::Expected one ejected sample-$sample jar, found ${#jars[@]}: ${jars[*]}"
@@ -364,6 +389,29 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-creatures-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Containers and machines (B325, SampleMachinesParityTest): menus, commands, hoppers,
+      # comparators, breaking, keeping the contents, the holder, loot tables, fuel, smelting and
+      # redstone machines, the furnace menu, experience and the event lines, black-box, on the
+      # content jar of every version and on the ejected jar.
+      - name: Parity GameTests (sample machines, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-machines/msm_sample_machines.jar"
+          --facts "$RUNNER_TEMP/sample-machines/fabric-facts.json"
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_machines_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-machines-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample machines, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_MACHINES_JAR"
+          --facts "$RUNNER_TEMP/sample-machines/fabric-facts.json" --no-runtime
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_machines_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-machines-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -398,6 +446,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-machines-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-machines/msm_sample_machines.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -409,6 +463,7 @@ jobs:
             ${{ runner.temp }}/java/sample-mod/build/libs/*.jar
             ${{ runner.temp }}/java/sample-mob/build/libs/*.jar
             ${{ runner.temp }}/java/sample-creatures/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-machines/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
