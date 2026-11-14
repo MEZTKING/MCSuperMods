@@ -22,7 +22,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
 import { checkerPng } from './png';
 
 /** The project folder name; a blank project's namespace (and mod id) is derived from it. */
@@ -97,7 +97,7 @@ function toast(window: Page): Locator {
 
 /** The Problems panel's rows (opens the panel); `severity` narrows them. */
 async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   return problems.locator(

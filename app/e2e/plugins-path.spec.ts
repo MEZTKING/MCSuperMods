@@ -24,6 +24,7 @@ import {
   installPlugin,
   type LaunchedApp,
   launchApp,
+  openDockTab,
   outputDir,
   samplePluginDist,
 } from './fixtures';
@@ -82,7 +83,7 @@ async function closeSettings(window: Page): Promise<void> {
 
 /** The Problems panel's rows of `severity` (opens the panel). */
 async function problemRows(window: Page, severity: 'error' | 'warning'): Promise<Locator> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   return problems.locator(`[data-testid="problem-row"][data-severity="${severity}"]`);

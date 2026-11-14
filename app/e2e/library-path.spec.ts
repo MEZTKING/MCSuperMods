@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
 
 /** The first project's folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'ruby_e2e';
@@ -111,7 +111,7 @@ async function exportBoth(
 
 /** The Problems panel's error rows (opens the panel). */
 async function errorRows(window: Page): Promise<Locator> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   return problems.locator('[data-testid="problem-row"][data-severity="error"]');

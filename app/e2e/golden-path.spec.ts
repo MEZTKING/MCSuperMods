@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
 import { checkerPng } from './png';
 
 /** The project folder name; a new project's namespace is derived from it. */
@@ -148,7 +148,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await expect(textureField).toHaveValue(TEXTURE_REF);
 
   // No error problems, so Export is enabled.
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
@@ -160,7 +160,7 @@ test('new project, block model, texture, export zip, reopen', async () => {
 
   // Preview screenshot (WebGL may be unavailable under xvfb; the panel itself is captured).
   // The live preview is beside the form (ADR 0047 D4); the dock's tab points there.
-  await window.getByTestId('dock-tab-preview').click();
+  await openDockTab(window, 'preview');
   await expect(window.getByTestId('dock-preview-in-centre')).toBeVisible();
   const previewPanel = window.getByTestId('editor-preview');
   await expect(previewPanel).toBeVisible();

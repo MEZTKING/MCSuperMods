@@ -31,7 +31,7 @@ import { join } from 'node:path';
 import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
 
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'critters';
@@ -110,7 +110,7 @@ async function openPalette(window: Page, query: string): Promise<Locator> {
 
 /** The Problems panel's rows (opens the panel); `severity` narrows them. */
 async function problemRows(window: Page, severity?: 'error'): Promise<Locator> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   return problems.locator(
@@ -501,7 +501,7 @@ test('mobs: Mount exports: optional saddle entry, jar with nested GeckoLib on 26
     runtime: [release.id, snapshot.id],
     geckolib: [release.id],
   });
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const info = window
     .getByTestId('export-problems')
     .locator('[data-testid="problem-row"][data-code="export.entity-vanilla-renderer"]');

@@ -47,7 +47,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
 import { oggVorbis } from './ogg';
 import { gradientPng } from './png';
 
@@ -120,7 +120,7 @@ async function openPalette(window: Page, query: string): Promise<Locator> {
 }
 
 async function expectNoErrors(window: Page): Promise<void> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
@@ -486,7 +486,7 @@ test('Creator: Dimension with a key (ADR 0051)', async () => {
     await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();
   }
   // The travel function names the project's own dimension without a problem.
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
@@ -632,7 +632,7 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   await expect(studio.getByTestId('world-addition-feature-0-step')).toHaveValue('underground_ores');
 
   // Zero problems, not only zero errors.
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
@@ -720,7 +720,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   await expect(studio.getByTestId('potion-chain-steps').locator('li')).toHaveCount(15);
 
   // Zero problems, not only zero errors.
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);
@@ -763,7 +763,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   await window.getByTestId('export-data-zip').click();
   const data = await newZip(folders.outDir, '.zip');
   expect(Object.keys(data.files).filter((name) => name.includes('/recipe/brewing/'))).toEqual([]);
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   await expect(
     window
       .getByTestId('export-problems')
@@ -819,7 +819,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   }
   await expect(window.getByRole('heading', { name: /^Horn sounds\b/ })).toBeVisible();
 
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   await expect(
     window.getByTestId('problems-panel').locator('[data-testid="problem-row"]'),
   ).toHaveCount(0);

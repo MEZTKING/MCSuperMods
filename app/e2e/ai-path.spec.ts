@@ -30,7 +30,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
 import { rgbaPng } from './png';
 
 /** The project folder name; a blank project's namespace is derived from it. */
@@ -111,7 +111,7 @@ async function openPalette(window: Page, query: string): Promise<Locator> {
 }
 
 async function errorRows(window: Page): Promise<Locator> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   return problems.locator('[data-testid="problem-row"][data-severity="error"]');
@@ -368,7 +368,7 @@ test('AI helper: explain a problem in the sample mod and apply the fix', async (
       x > 10 && x < 30 && y > 5 && y < 25 ? [200, 20, 40, 255] : [255, 255, 255, 255],
     ),
   ];
-  await window.getByTestId('dock-tab-assistant').click();
+  await openDockTab(window, 'assistant');
   await panel.getByTestId('ai-input').focus();
   await window.evaluate(`(() => {
     const transfer = new DataTransfer();

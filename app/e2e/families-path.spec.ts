@@ -29,7 +29,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, outputDir, toast } from './fixtures';
 
 /** The project folder name; a blank project's namespace is derived from it. */
 const NAMESPACE = 'grove';
@@ -115,7 +115,7 @@ async function openPalette(window: Page, query: string): Promise<Locator> {
 }
 
 async function expectNoErrors(window: Page): Promise<void> {
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   await expect(problems).toBeVisible();
   await expect(problems.locator('[data-testid="problem-row"][data-severity="error"]')).toHaveCount(
@@ -350,7 +350,7 @@ test('families: Wood set create, Block Studio edit, kept on Edit in Creator, exp
   const data = await newZip(folders.outDir, '.zip');
   expect(Object.keys(data.files)).toContain('pack.mcmeta');
   expect(Object.keys(data.files).some((name) => name.startsWith('msm/'))).toBe(false);
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   await expect(
     window
       .getByTestId('export-problems')

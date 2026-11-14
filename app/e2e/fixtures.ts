@@ -146,3 +146,13 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
     },
   };
 }
+
+/**
+ * Opens a dock tab (`dock-tab-<name>`). Moves the mouse away and presses Escape first so that no
+ * toolbar tooltip left open by an earlier click can sit over the tab and swallow the click.
+ */
+export async function openDockTab(window: Page, name: string): Promise<void> {
+  await window.mouse.move(0, 0);
+  await window.keyboard.press('Escape');
+  await window.getByTestId(`dock-tab-${name}`).click();
+}

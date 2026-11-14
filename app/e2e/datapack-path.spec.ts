@@ -24,7 +24,7 @@ import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
 
 /** The project folder name; a new project's namespace is derived from it. */
 const NAMESPACE = 'msm_e2e';
@@ -192,7 +192,7 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
 
   // A bad command: an error at line 2 in Problems, and data export disabled with a reason.
   await typeSource(window, BAD_LINES);
-  await window.getByTestId('dock-tab-problems').click();
+  await openDockTab(window, 'problems');
   const problems = window.getByTestId('problems-panel');
   const errors = problems.locator('[data-testid="problem-row"][data-severity="error"]');
   // Spyglass reports the unknown command and its trailing data: every error is on line 2.

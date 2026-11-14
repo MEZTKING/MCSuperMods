@@ -3220,3 +3220,11 @@ Next
 - Backlog: B8 containers and machines, then B13, B14, B15.
 
 Clean run of 3cc26ab (main session): lint, typecheck, 21/21 test tasks without the cache, build, app.asar 31.4 of 32 MB, 39/39 e2e; CI green on 6ab1558 (sample creatures and sample mob parity on every version).
+
+## 2026-11-14 — executor — Toolbar tooltip no longer covers the dock after a menu closes
+
+What: the e2e `creator-path` failed twice in CI (run 43584499771) when a toolbar tooltip ("Export the resource pack, the data pack, both, a ...") stayed open over `dock-tab-problems`. Cause: a menu or dialog opened from a toolbar button hands focus back to the button when it closes, and Radix opens the tooltip on that focus. `Tip` (`app/src/renderer/src/components/ui/Tip.tsx`) now holds its own open state: a pointer press closes the tooltip and keeps it shut until the pointer leaves; a key press lifts the hold, so keyboard focus still shows it. New `app/test/components/Tip.test.tsx`. The e2e suite opens dock tabs through a shared `openDockTab(window, name)` in `app/e2e/fixtures.ts` (mouse away, Escape, click), used by all 22 dock-tab clicks.
+
+Decisions: fix the product, not only the test: a tooltip covering other UI after a click is a real annoyance.
+
+Next: `SchemaForm.tsx` has its own `Tooltip.Provider`; check whether its buttons that open dialogs need the same hold.
