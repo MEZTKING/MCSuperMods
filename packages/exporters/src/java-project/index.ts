@@ -331,6 +331,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const items: DefinitionInput[] = [];
       const entities: DefinitionInput[] = [];
       const effects: DefinitionInput[] = [];
+      const potions: DefinitionInput[] = [];
       const biomeAdditions: DefinitionInput[] = [];
       const lootAdditions: DefinitionInput[] = [];
       const scripts: string[] = [];
@@ -369,6 +370,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           kind !== 'item' &&
           kind !== 'entity' &&
           kind !== 'effect' &&
+          kind !== 'potion' &&
           kind !== 'biome_addition' &&
           kind !== 'loot_addition'
         ) {
@@ -407,6 +409,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         if (match[2] === 'block') blocks.push(entry);
         else if (match[2] === 'item') items.push(entry);
         else if (kind === 'effect') effects.push(entry);
+        else if (kind === 'potion') potions.push(entry);
         else if (kind === 'biome_addition') biomeAdditions.push(entry);
         else if (kind === 'loot_addition') lootAdditions.push(entry);
         else entities.push(entry);
@@ -467,6 +470,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           entities,
           effects,
           soundEvents,
+          ...(potions.length > 0 ? { potions } : {}),
           ...(biomeAdditions.length > 0 ? { biomeAdditions } : {}),
           ...(lootAdditions.length > 0 ? { lootAdditions } : {}),
           geckolib: geckolib !== undefined,

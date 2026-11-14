@@ -336,6 +336,44 @@ describe.each(
     expect(unknownProblems[0]?.file).toBe('msm/ruby/mystery/thing.json');
   });
 
+  it('routes potion definitions into potions, never entities, and omits the field when absent', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const potion = raw('ruby:swift', {
+      path: 'msm/ruby/potion/swift.json',
+      layer: 'msm',
+      json: { format: 1, effects: [{ id: 'minecraft:speed', duration_ticks: 3600 }] },
+    });
+    const unknown = raw('ruby:mystery', {
+      path: 'msm/ruby/mystery/thing.json',
+      layer: 'msm',
+      json: { format: 1 },
+    });
+    const withPotion = await eject([potion, unknown, plainItem], { wrapper, target: spy });
+    expect(withPotion.report.ok).toBe(true);
+    expect(captured?.potions?.map((entry) => entry.id)).toEqual(['ruby:swift']);
+    expect(captured?.potions?.[0]?.path).toBe('msm/ruby/potion/swift.json');
+    expect(captured?.entities).toEqual([]);
+    expect(
+      withPotion.report.problems.filter(
+        (problem) => problem.code === ExportProblemCodes.javaGenerationFailed,
+      ),
+    ).toHaveLength(1);
+
+    captured = undefined;
+    await eject([plainItem], { wrapper, target: spy });
+    expect(captured).toBeDefined();
+    expect(Object.hasOwn(captured as unknown as JavaProjectInput, 'potions')).toBe(false);
+  });
+
   it('routes biome and loot additions into their inputs, never entities, and omits them when absent', async () => {
     let captured: JavaProjectInput | undefined;
     const spy: Target = {
