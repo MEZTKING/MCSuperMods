@@ -20,12 +20,17 @@
  *    `NoAI` zombie and `--villagers` (default 40) `NoAI` level 1 fletchers, which the zombie
  *    kills with `damage ... by`. On hard every kill turns the villager into a zombie villager
  *    that keeps its offers, which makes it draw them from `minecraft:fletcher/level_1` without a
- *    player. Then three `execute if entity` checks count the zombie villagers, those offering
- *    the sample's new trade (4 spectral arrows for emeralds) and those offering the vanilla
- *    arrow trade, and `stop`.
- * 4. Passes when the zip is listed as enabled, all three counts are above zero and the log has
- *    no `Failed to load`, `Couldn't load tag`, `Couldn't parse` or ERROR line. With one in two
- *    villagers drawing each trade, a false failure needs every one of 40 to miss it.
+ *    player. It also summons a `NoAI` wolf of the sample's wolf variant and a goat horn item
+ *    whose `minecraft:instrument` names the sample's instrument (B255, ADR 0064): an entity or
+ *    item naming an id that is not in its registry does not keep it, so finding them again by
+ *    that id proves both are registered. Then five `execute if entity` checks count the zombie
+ *    villagers, those offering the sample's new trade (4 spectral arrows for emeralds), those
+ *    offering the vanilla arrow trade, the wolves of the variant and the horns of the call, and
+ *    `stop`.
+ * 4. Passes when the zip is listed as enabled, all five counts are above zero and the log has
+ *    no `Failed to load`, `Couldn't load tag`, `Couldn't parse`, registry loading error or ERROR
+ *    line. With one in two villagers drawing each trade, a false failure needs every one of 40
+ *    to miss it.
  *
  * Downloads are untrusted data: written to disk and run only as the server they claim to be.
  */
@@ -192,17 +197,31 @@ export function setupCommands(villagers: number): string[] {
     'forceload add 0 0',
     'setblock 0 200 0 minecraft:barrier',
     'setblock 4 200 0 minecraft:barrier',
+    `summon minecraft:wolf 2 201 0 {NoAI:1b,PersistenceRequired:1b,Tags:["msm_wolf"],variant:"${WOLF_VARIANT}"}`,
+    `summon minecraft:item 0 201 4 {NoGravity:1b,PickupDelay:32767s,Age:-32768s,Item:{id:"minecraft:goat_horn",count:1,components:{"minecraft:instrument":"${INSTRUMENT}"}}}`,
     'summon minecraft:zombie 4 201 0 {NoAI:1b,Invulnerable:1b,PersistenceRequired:1b,Tags:["msm_killer"]}',
     ...Array.from({ length: villagers }, () => villager),
     'execute as @e[type=minecraft:villager] run damage @s 1000 minecraft:mob_attack by @e[tag=msm_killer,limit=1]',
   ];
 }
 
-/** The three checks, by name. */
+/** The sample's wolf variant and goat horn instrument (data kinds of ADR 0064). */
+export const WOLF_VARIANT = 'msm_sample_data:frost';
+export const INSTRUMENT = 'msm_sample_data:frost_call';
+
+/** The five checks, by name; each must count at least one entity. */
 export const CHECKS: readonly (readonly [string, string])[] = [
-  ['in all', 'execute if entity @e[type=minecraft:zombie_villager]'],
-  ['with the new trade', `execute if entity ${NEW_TRADE}`],
-  ['with the vanilla arrow trade', `execute if entity ${VANILLA_TRADE}`],
+  ['zombie villagers in all', 'execute if entity @e[type=minecraft:zombie_villager]'],
+  ['zombie villagers with the new trade', `execute if entity ${NEW_TRADE}`],
+  ['zombie villagers with the vanilla arrow trade', `execute if entity ${VANILLA_TRADE}`],
+  [
+    'wolves of the sample variant',
+    `execute if entity @e[type=minecraft:wolf,tag=msm_wolf,nbt={variant:"${WOLF_VARIANT}"}]`,
+  ],
+  [
+    'goat horns of the sample call',
+    `execute if entity @e[type=minecraft:item,nbt={Item:{components:{"minecraft:instrument":"${INSTRUMENT}"}}}]`,
+  ],
 ];
 
 /**
@@ -223,7 +242,8 @@ export interface DatapackOutcome {
   counts: Record<string, number | undefined>;
 }
 
-const LOG_FAILURE = /Failed to load|Couldn't load tag|Couldn't parse|\/ERROR\]/;
+const LOG_FAILURE =
+  /Failed to load|Couldn't load tag|Couldn't parse|Registry loading errors|\/ERROR\]/;
 
 /**
  * Checks the run: the pack listed as enabled, every count above zero, no load failure.
@@ -246,8 +266,8 @@ export function checkDatapackRun(
   }
   for (const [name] of CHECKS) {
     const count = counts[name];
-    if (count === undefined) failures.push(`no answer to the check of zombie villagers ${name}`);
-    else if (count <= 0) failures.push(`no zombie villager ${name} (count ${count})`);
+    if (count === undefined) failures.push(`no answer to the check of ${name}`);
+    else if (count <= 0) failures.push(`none found: ${name} (count ${count})`);
   }
   return { ok: failures.length === 0, failures, counts };
 }
@@ -384,7 +404,7 @@ export async function runDatapackCheck(options: DatapackOptions): Promise<Datapa
     for (const [name, command] of CHECKS) {
       const line = await run(command, TEST);
       counts[name] = line === undefined ? undefined : testCount(line);
-      log(`zombie villagers ${name}: ${String(counts[name])}`);
+      log(`${name}: ${String(counts[name])}`);
     }
   }
   server.send('stop');
@@ -412,7 +432,7 @@ async function main(): Promise<number> {
   const outcome = await runDatapackCheck(options);
   if (outcome.ok) {
     const counts = CHECKS.map(([name]) => `${String(outcome.counts[name])} ${name}`).join(', ');
-    log(`PASS: zombie villagers: ${counts}`);
+    log(`PASS: ${counts}`);
     return 0;
   }
   for (const failure of outcome.failures) log(`FAIL: ${failure}`);

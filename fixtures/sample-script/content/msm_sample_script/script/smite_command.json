@@ -1,0 +1,28 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!smite\": magic damage with the player as the attacker to the mob the player looks at,",
+      "// so the kill counts as the player's (drops that need a player kill, the kill counter).",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message !== \"!smite\") return;",
+      "  const hit = e.player.raycast(16);",
+      "  if (hit === undefined || hit.entity === undefined) {",
+      "    e.player.sendMessage(\"Nothing to smite.\");",
+      "    return;",
+      "  }",
+      "  const target = hit.entity;",
+      "  const type = target.type;",
+      "  target.damage(1000, { type: \"minecraft:magic\", attacker: e.player });",
+      "  e.player.sendMessage(\"Smitten: \" + type + (target.isAlive ? \" survived.\" : \" fell.\"));",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:smite_command",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

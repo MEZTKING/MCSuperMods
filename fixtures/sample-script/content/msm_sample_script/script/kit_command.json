@@ -1,0 +1,34 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!kit\": pays two diamonds for a named, worn diamond sword in slot 0, a golden helmet",
+      "// and a shield (Player.inventory, item components), then reads them back.",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message !== \"!kit\") return;",
+      "  const inv = e.player.inventory;",
+      "  if (inv.count(\"minecraft:diamond\") < 2) {",
+      "    e.player.sendMessage(\"A kit costs two diamonds.\");",
+      "    return;",
+      "  }",
+      "  const paid = inv.remove(\"minecraft:diamond\", 2);",
+      "  inv.set(0, { id: \"minecraft:diamond_sword\", components: { \"minecraft:custom_name\": \"Spark Blade\" } });",
+      "  inv.setComponent(0, \"minecraft:damage\", 7);",
+      "  inv.set(\"head\", \"minecraft:golden_helmet\");",
+      "  inv.set(\"offhand\", \"minecraft:shield\");",
+      "  const blade = inv.get(0);",
+      "  if (blade === undefined) return;",
+      "  e.player.sendMessage(\"Kit: \" + blade.name + \" (\" + (blade.maxDamage - blade.damage) + \"/\" + blade.maxDamage",
+      "    + \"), named \" + JSON.stringify(blade.getComponent(\"minecraft:custom_name\")) + \"; paid \" + paid",
+      "    + \" diamonds, \" + inv.count(\"minecraft:diamond\") + \" left, the first in slot \" + inv.find(\"minecraft:diamond\") + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:kit_command",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

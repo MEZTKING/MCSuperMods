@@ -1,0 +1,22 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:goat_horn",
+      "minecraft:snowball"
+    ],
+    "result": {
+      "components": {
+        "minecraft:instrument": "msm_sample_data:frost_call"
+      },
+      "id": "minecraft:goat_horn"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:frost_call_goat_horn",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

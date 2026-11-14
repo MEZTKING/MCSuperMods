@@ -8,7 +8,8 @@
  *
  * With `MSM_SAMPLE_DATAPACK_OUT`, the data pack zip of the selected target is also written to
  * that folder as `<pack file name>`, next to `server-facts.json` (`minecraft`, `zip`) for a
- * headless dedicated server check of the villager trade (see the fixture's README). Without it
+ * headless dedicated server check of the villager trade, the wolf variant and the goat horn
+ * instrument (see the fixture's README). Without it
  * that test is skipped.
  *
  * The expected hashes live in `test/fixtures/<target id>/sample-datapack-<pack>.sha256`
@@ -201,6 +202,7 @@ describe('sample data pack project', () => {
         name: 'minecraft',
         elements: [
           'minecraft:tag/function minecraft:load',
+          'minecraft:tag/instrument minecraft:regular_goat_horns',
           'minecraft:tag/villager_trade minecraft:fletcher/level_1',
         ],
         assets: [],
@@ -211,15 +213,19 @@ describe('sample data pack project', () => {
           `minecraft:advancement ${NAMESPACE}:root`,
           `minecraft:function ${NAMESPACE}:greet`,
           `minecraft:function ${NAMESPACE}:load`,
+          `minecraft:instrument ${NAMESPACE}:frost_call`,
           `minecraft:item_modifier ${NAMESPACE}:bonus_count`,
           `minecraft:loot_table ${NAMESPACE}:chests/ruby_vault`,
           `minecraft:pack_mcmeta ${NAMESPACE}:pack`,
           `minecraft:predicate ${NAMESPACE}:is_sneaking`,
+          `minecraft:recipe ${NAMESPACE}:brew_luck`,
+          `minecraft:recipe ${NAMESPACE}:frost_call_goat_horn`,
           `minecraft:recipe ${NAMESPACE}:glowstone_from_gems`,
           `minecraft:recipe ${NAMESPACE}:leather_from_rotten_flesh`,
           `minecraft:recipe ${NAMESPACE}:ruby_block`,
           `minecraft:tag/item ${NAMESPACE}:gems`,
           `minecraft:villager_trade ${NAMESPACE}:fletcher/1/emerald_spectral_arrow`,
+          `minecraft:wolf_variant ${NAMESPACE}:frost`,
         ],
         assets: [],
       },
@@ -319,15 +325,20 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           `${ns}/${data.advancement}/root.json`,
           `${ns}/${data.function}/greet.mcfunction`,
           `${ns}/${data.function}/load.mcfunction`,
+          `${ns}/${data.instrument}/frost_call.json`,
           `${ns}/${data.item_modifier}/bonus_count.json`,
           `${ns}/${data.loot_table}/chests/ruby_vault.json`,
           `${ns}/${data.predicate}/is_sneaking.json`,
+          `${ns}/${data.recipe}/brew_luck.json`,
+          `${ns}/${data.recipe}/frost_call_goat_horn.json`,
           `${ns}/${data.recipe}/glowstone_from_gems.json`,
           `${ns}/${data.recipe}/leather_from_rotten_flesh.json`,
           `${ns}/${data.recipe}/ruby_block.json`,
           `${ns}/${data.tags}/item/gems.json`,
           `${ns}/${data.villager_trade}/fletcher/1/emerald_spectral_arrow.json`,
+          `${ns}/${data.wolf_variant}/frost.json`,
           `data/minecraft/${data.tags}/function/load.json`,
+          `data/minecraft/${data.tags}/${data.instrument}/regular_goat_horns.json`,
           `data/minecraft/${data.tags}/${data.villager_trade}/fletcher/level_1.json`,
           'msm.export.json',
           'pack.mcmeta',
@@ -346,6 +357,20 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           decode(files[`data/minecraft/${data.tags}/${data.villager_trade}/fletcher/level_1.json`]),
         ),
       ).toEqual({ values: [`${NAMESPACE}:fletcher/1/emerald_spectral_arrow`] });
+      // The goat horn call joins vanilla's regular horns, so goats drop it too.
+      expect(
+        JSON.parse(
+          decode(files[`data/minecraft/${data.tags}/${data.instrument}/regular_goat_horns.json`]),
+        ),
+      ).toEqual({ values: [`${NAMESPACE}:frost_call`] });
+      // The brewing recipe names vanilla potions only, so a vanilla pack loads it (a recipe
+      // naming an unregistered potion would fail the whole data pack, ADR 0063 P8).
+      const brewing = decode(files[`${ns}/${data.recipe}/brew_luck.json`]);
+      expect(brewing).toContain('"minecraft:brewing"');
+      expect([...brewing.matchAll(/"(?:potion|potions)": "([^"]+)"/g)].map((m) => m[1])).toEqual([
+        'minecraft:awkward',
+        'minecraft:luck',
+      ]);
       const mcmeta = JSON.parse(decode(files['pack.mcmeta'])) as { pack: Record<string, unknown> };
       expect(mcmeta.pack.description).toBe('MCSuperMods sample: /function msm_sample_data:greet');
       expect(packFileName(PROJECT_NAME, target)).toBe(`msm-sample-data-pack-${target.id}.zip`);

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// player.changeDimension: tells the player where they came from and went to.",
+      "msm.events.on(\"player.changeDimension\", (e) => {",
+      "  e.player.sendMessage(\"You went from \" + e.from + \" to \" + e.to + \".\");",
+      "  msm.log.info(\"player.changeDimension: \" + e.player.name + \" \" + e.from + \" -> \" + e.to);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_player_change_dimension",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

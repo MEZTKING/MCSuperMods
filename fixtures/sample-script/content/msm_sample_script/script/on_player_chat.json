@@ -1,0 +1,25 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// player.chat: a message starting with \"!\" is a sample command. It is cancelled, so it is",
+      "// not broadcast; the command scripts answer the sender only. \"!help\" lists them.",
+      "const COMMANDS = [\"!help\", \"!kit\", \"!train\", \"!title\", \"!clear\", \"!bar\", \"!bar who\", \"!bar off\", \"!look\", \"!smite\", \"!nether\"];",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message.charAt(0) !== \"!\") return;",
+      "  e.cancel();",
+      "  msm.log.info(\"player.chat: \" + e.player.name + \" ran \" + e.message);",
+      "  if (e.message === \"!help\" || COMMANDS.indexOf(e.message) < 0) {",
+      "    e.player.sendMessage(\"Sample commands: \" + COMMANDS.join(\", \"));",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_player_chat",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

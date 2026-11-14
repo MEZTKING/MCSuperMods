@@ -8,7 +8,8 @@
  * `ruby_sprout` and `ruby_glass`; since ADRs 0060 and 0061 ruby ore generation through an
  * `msm:biome_addition` with its feature and placed feature, a zombie drop through an
  * `msm:loot_addition`, the fuel and compost item `ruby_tinder` and one item or block per item
- * and block trigger), two `msm:effect` elements with their icons, a `minecraft:equipment`
+ * and block trigger), two `msm:effect` elements with their icons, since ADR 0063 an `msm:potion`
+ * of one of them brewed from the project's ruby with long and strong versions, a `minecraft:equipment`
  * element with its three armour layer textures (ADR 0042), three functions and a loot table,
  * namespace `msm_sample_mod`.
  *
@@ -551,6 +552,21 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       },
     },
   },
+  // A potion of the Ruby Rush effect (ADR 0063): brewed from an awkward potion and a ruby,
+  // with longer (redstone) and stronger (glowstone dust) versions, splash and lingering
+  // bottles and tipped arrows.
+  {
+    id: ns('ruby_draught'),
+    kind: 'msm:potion',
+    data: {
+      format: 1,
+      display_name: 'Ruby Rush',
+      effects: [{ id: ns('ruby_rush'), duration_ticks: 3600 }],
+      brewing: { reagent: ns('ruby') },
+      long: { duration_ticks: 9600 },
+      strong: { amplifier: 1, duration_ticks: 1800 },
+    },
+  },
   {
     id: ns('ruby_elixir'),
     kind: 'msm:item',
@@ -994,6 +1010,9 @@ const SAMPLE_ASSETS: readonly SampleAsset[] = [
   },
 ];
 
+/** The potion registry entries of `ruby_draught` (ADR 0063 D3: the base and its two versions). */
+const POTIONS = ['ruby_draught', 'long_ruby_draught', 'strong_ruby_draught'] as const;
+
 /** Blocks registered by the runtime, and items (block items plus stand-alone items). */
 const EXPECTED_BLOCKS = SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:block');
 const EXPECTED_ITEM_COUNT =
@@ -1119,6 +1138,14 @@ function projectIds(project: Project): Record<string, string[]> {
     add(name, element.id);
     if (element.kind === 'msm:block' && (element.data as { item?: Json }).item !== false) {
       add('item', element.id);
+    }
+    // A potion with `long` or `strong` also registers `long_<path>` and `strong_<path>`
+    // (ADR 0063 D3), as the app's registry view declares them.
+    if (element.kind === 'msm:potion') {
+      const data = element.data as { long?: Json; strong?: Json };
+      const [namespace, path] = element.id.split(':') as [string, string];
+      if (data.long !== undefined) add('potion', `${namespace}:long_${path}`);
+      if (data.strong !== undefined) add('potion', `${namespace}:strong_${path}`);
     }
   }
   for (const namespace of project.namespaces) {
@@ -1280,6 +1307,7 @@ describe('sample mod project', () => {
       'msm:item',
       'msm:loot_addition',
       'msm:mod',
+      'msm:potion',
     ]);
   });
 });
@@ -1377,6 +1405,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ...SAMPLE_ELEMENTS.filter((entry) => entry.kind === 'msm:effect').map(
             (entry) => `msm/${NAMESPACE}/effect/${entry.id.split(':')[1]}.json`,
           ),
+          ...POTIONS.map((path) => `msm/${NAMESPACE}/potion/${path}.json`),
           `msm/${NAMESPACE}/biome_addition/ruby_ore_generation.json`,
           `msm/${NAMESPACE}/loot_addition/zombie_drops_ruby.json`,
         ].sort(),
@@ -1413,11 +1442,13 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ? MSM_SCHEMA_REFS.blockDefinition
           : path.includes('/effect/')
             ? MSM_SCHEMA_REFS.effectDefinition
-            : path.includes('/biome_addition/')
-              ? MSM_SCHEMA_REFS.biomeAdditionDefinition
-              : path.includes('/loot_addition/')
-                ? MSM_SCHEMA_REFS.lootAdditionDefinition
-                : MSM_SCHEMA_REFS.itemDefinition;
+            : path.includes('/potion/')
+              ? MSM_SCHEMA_REFS.potionDefinition
+              : path.includes('/biome_addition/')
+                ? MSM_SCHEMA_REFS.biomeAdditionDefinition
+                : path.includes('/loot_addition/')
+                  ? MSM_SCHEMA_REFS.lootAdditionDefinition
+                  : MSM_SCHEMA_REFS.itemDefinition;
         const value = JSON.parse(utf8.decode(files[path] as Uint8Array)) as Json;
         for (const problem of validateJson(value, context.schemaIndex.resolveSchemaRef(ref), {
           registries: context.registries,
@@ -1443,6 +1474,25 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ) as Record<string, string>;
       expect(lang[`effect.${NAMESPACE}.ruby_rush`]).toBe('Ruby Rush');
       expect(lang[`effect.${NAMESPACE}.ruby_sting`]).toBe('Ruby Sting');
+      for (const bottle of ['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']) {
+        expect(lang[`item.minecraft.${bottle}.effect.${NAMESPACE}.ruby_draught`], bottle).toMatch(
+          /Ruby Rush$/,
+        );
+      }
+      // The brewing chain is data: base, long and strong per bottle, gunpowder and dragon's
+      // breath per registry entry (ADR 0063 D3).
+      const brewing = paths.filter((path) =>
+        path.startsWith(`data/${NAMESPACE}/${target.folders.data.recipe}/brewing/`),
+      );
+      expect(brewing).toHaveLength(15);
+      const base = JSON.parse(
+        utf8.decode(
+          files[
+            `data/${NAMESPACE}/${target.folders.data.recipe}/brewing/potion_ruby_draught.json`
+          ] as Uint8Array,
+        ),
+      ) as { reagent: { item: string } };
+      expect(base.reagent.item).toBe(`${NAMESPACE}:ruby`);
     });
 
     describe('content jar', () => {

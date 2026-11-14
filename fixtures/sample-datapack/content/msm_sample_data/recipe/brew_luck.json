@@ -1,0 +1,28 @@
+{
+  "data": {
+    "input": {
+      "item": "minecraft:potion",
+      "potion_contents": {
+        "potions": "minecraft:awkward"
+      }
+    },
+    "output": {
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:luck"
+        }
+      },
+      "id": "minecraft:potion"
+    },
+    "reagent": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "type": "minecraft:brewing"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:brew_luck",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!look\": what the player looks at within 16 blocks (Entity.raycast from the eyes).",
+      "function round1(n: number): number {",
+      "  return Math.round(n * 10) / 10;",
+      "}",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message !== \"!look\") return;",
+      "  const hit = e.player.raycast(16);",
+      "  if (hit === undefined) {",
+      "    e.player.sendMessage(\"You look at nothing within 16 blocks.\");",
+      "  } else if (hit.entity !== undefined) {",
+      "    e.player.sendMessage(\"You look at \" + hit.entity.type + \", \" + round1(hit.distance) + \" blocks away.\");",
+      "  } else if (hit.block !== undefined) {",
+      "    e.player.sendMessage(\"You look at \" + hit.block.id + \" (\" + hit.face + \" face), \" + round1(hit.distance) + \" blocks away.\");",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:look_command",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

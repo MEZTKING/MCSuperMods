@@ -1,0 +1,24 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// entity.interact on a zombie: tells the player what it holds and puts a golden helmet on",
+      "// it when its head is bare (Entity.equipment and setEquipment).",
+      "msm.events.on(\"entity.interact\", (e) => {",
+      "  if (e.hand !== \"main\" || e.entity.type !== \"minecraft:zombie\") return;",
+      "  const held = e.entity.equipment(\"mainhand\");",
+      "  const head = e.entity.equipment(\"head\");",
+      "  if (head === undefined) e.entity.setEquipment(\"head\", \"minecraft:golden_helmet\");",
+      "  e.player.sendMessage(\"This zombie holds \" + (held === undefined ? \"nothing\" : held.id) + \" and wears \"",
+      "    + (head === undefined ? \"a new golden helmet\" : head.id) + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:crown_zombie",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "brewing": {
+      "reagent": "msm_sample_mod:ruby"
+    },
+    "display_name": "Ruby Rush",
+    "effects": [
+      {
+        "duration_ticks": 3600,
+        "id": "msm_sample_mod:ruby_rush"
+      }
+    ],
+    "format": 1,
+    "long": {
+      "duration_ticks": 9600
+    },
+    "strong": {
+      "amplifier": 1,
+      "duration_ticks": 1800
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mod:ruby_draught",
+  "kind": "msm:potion",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

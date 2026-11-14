@@ -10,6 +10,7 @@
     "fabric-gametest": [
       "dev.mcsupermods.parity.SampleModParityTest",
       "dev.mcsupermods.parity.SampleModAdditionsParityTest",
+      "dev.mcsupermods.parity.SampleModPotionParityTest",
       "dev.mcsupermods.parity.SampleMobParityTest",
       "dev.mcsupermods.parity.SampleScriptParityTest"
     ]

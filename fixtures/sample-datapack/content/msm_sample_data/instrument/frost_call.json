@@ -1,0 +1,16 @@
+{
+  "data": {
+    "description": {
+      "text": "Frost Call"
+    },
+    "range": 256,
+    "sound_event": "minecraft:item.goat_horn.sound.6",
+    "use_duration": 7
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_data:frost_call",
+  "kind": "minecraft:instrument",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

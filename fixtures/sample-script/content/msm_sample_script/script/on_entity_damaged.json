@@ -1,0 +1,26 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// entity.damaged: after armour and other reductions; tells the attacking player the",
+      "// damage actually taken.",
+      "function round2(n: number): number {",
+      "  return Math.round(n * 100) / 100;",
+      "}",
+      "msm.events.on(\"entity.damaged\", (e) => {",
+      "  const attacker = e.attacker?.asPlayer();",
+      "  if (attacker === undefined || e.entity.isPlayer) return;",
+      "  attacker.sendMessage(e.entity.type + \" took \" + round2(e.amount) + \" damage (\" + e.source + \"), \"",
+      "    + round2(e.entity.health) + \" health left.\");",
+      "  msm.log.info(\"entity.damaged: \" + e.entity.type + \" took \" + e.amount + \" from \" + attacker.name);",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_entity_damaged",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

@@ -2,17 +2,25 @@ import { describe, expect, it } from 'vitest';
 import {
   CHECKS,
   checkDatapackRun,
+  INSTRUMENT,
   parseDatapackArgs,
   serverDownload,
   setupCommands,
   testCount,
   VERSION_MANIFEST_URL,
   versionEntry,
+  WOLF_VARIANT,
 } from './vanilla-datapack.ts';
 
 const ZIP = 'msm-sample-data-pack-x.zip';
 const ENABLED = `[01:30:22] [Server thread/INFO]: System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/${ZIP} (world)]`;
-const ALL = { 'in all': 40, 'with the new trade': 24, 'with the vanilla arrow trade': 16 };
+const ALL = {
+  'zombie villagers in all': 40,
+  'zombie villagers with the new trade': 24,
+  'zombie villagers with the vanilla arrow trade': 16,
+  'wolves of the sample variant': 1,
+  'goat horns of the sample call': 1,
+};
 
 describe('parseDatapackArgs', () => {
   it('takes the version and the zip beside the facts file, flags over them', () => {
@@ -80,6 +88,11 @@ describe('the console script', () => {
     expect(commands.at(-1)).toMatch(/^execute as @e\[type=minecraft:villager\] run damage/);
     expect(CHECKS.map(([name]) => name)).toEqual(Object.keys(ALL));
     expect(CHECKS[1]?.[1]).toContain('minecraft:spectral_arrow');
+    // The wolf and the horn name the sample's registry entries, found again by those ids.
+    expect(commands.filter((command) => command.includes(`"${WOLF_VARIANT}"`))).toHaveLength(1);
+    expect(commands.filter((command) => command.includes(`"${INSTRUMENT}"`))).toHaveLength(1);
+    expect(CHECKS[3]?.[1]).toContain(`variant:"${WOLF_VARIANT}"`);
+    expect(CHECKS[4]?.[1]).toContain(`"minecraft:instrument":"${INSTRUMENT}"`);
   });
 
   it('reads the counts of both message forms', () => {
@@ -102,14 +115,19 @@ describe('checkDatapackRun', () => {
         "[x] [Server thread/ERROR]: Couldn't load tag minecraft:x",
       ],
       ZIP,
-      { 'in all': 40, 'with the new trade': 0 },
+      {
+        'zombie villagers in all': 40,
+        'zombie villagers with the new trade': 0,
+        'zombie villagers with the vanilla arrow trade': 3,
+        'wolves of the sample variant': 1,
+      },
     );
     expect(outcome.ok).toBe(false);
     expect(outcome.failures).toEqual([
       `the data pack file/${ZIP} is not listed as enabled`,
       "log: [x] [Server thread/ERROR]: Couldn't load tag minecraft:x",
-      'no zombie villager with the new trade (count 0)',
-      'no answer to the check of zombie villagers with the vanilla arrow trade',
+      'none found: zombie villagers with the new trade (count 0)',
+      'no answer to the check of goat horns of the sample call',
     ]);
   });
 });

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!nether\": builds a small obsidian room in the Nether at the matching coordinates and",
+      "// teleports the player there with every cow within 4 blocks. The wrappers stay usable",
+      "// after the move.",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message !== \"!nether\") return;",
+      "  const p = e.player;",
+      "  const nether = msm.getWorld(\"minecraft:the_nether\");",
+      "  if (nether === undefined || p.world.dimension === \"minecraft:the_nether\") return;",
+      "  const cows = e.world.entitiesNear(p.pos, 4).filter((n) => n.type === \"minecraft:cow\");",
+      "  const origin = p.pos.offset(-p.pos.x, -p.pos.y, -p.pos.z);",
+      "  const x = Math.floor(p.pos.x / 8);",
+      "  const z = Math.floor(p.pos.z / 8);",
+      "  for (let dx = -1; dx <= 1; dx++) {",
+      "    for (let dz = -1; dz <= 1; dz++) {",
+      "      nether.setBlock(origin.offset(x + dx, 63, z + dz), \"minecraft:obsidian\");",
+      "      for (let dy = 0; dy < 3; dy++) nether.setBlock(origin.offset(x + dx, 64 + dy, z + dz), \"minecraft:air\");",
+      "    }",
+      "  }",
+      "  p.teleport(origin.offset(x + 0.5, 64, z + 0.5), { dimension: \"minecraft:the_nether\" });",
+      "  for (const cow of cows) cow.teleport(origin.offset(x + 1.5, 64, z + 0.5), { dimension: \"minecraft:the_nether\" });",
+      "  p.sendMessage(\"Now in \" + p.world.dimension + (cows.length > 0 ? \" with \" + cows.length",
+      "    + \" cow(s), the first now in \" + cows[0].world.dimension : \"\") + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:nether_command",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

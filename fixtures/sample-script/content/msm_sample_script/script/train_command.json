@@ -1,0 +1,26 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!train\": three levels and five points of experience, food 10 with saturation 2, and",
+      "// adventure mode (the client is told each change; /gamemode survival switches back).",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message !== \"!train\") return;",
+      "  const p = e.player;",
+      "  p.addXpLevels(3);",
+      "  p.addXp(5);",
+      "  p.setFood(10, 2);",
+      "  const changed = p.setGameMode(\"adventure\");",
+      "  p.sendMessage(\"Trained: level \" + p.xpLevel + \", \" + p.xpPoints + \" points, food \" + p.food + \", saturation \"",
+      "    + p.saturation + \", \" + p.gameMode + (changed ? \"\" : \" (unchanged)\") + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:train_command",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

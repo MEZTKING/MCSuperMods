@@ -1,0 +1,23 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!title\": a title with a subtitle and the action bar; \"!clear\" clears the title.",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message === \"!title\") {",
+      "    e.player.showTitle(\"Spark!\", { subtitle: \"Sample script\", fadeIn: 5, stay: 40, fadeOut: 10 });",
+      "    e.player.showActionBar(\"Sparks: ready\");",
+      "  } else if (e.message === \"!clear\") {",
+      "    e.player.clearTitle();",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:title_command",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

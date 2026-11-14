@@ -1,0 +1,43 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// \"!bar\": shows the spark charge boss bar and fills it by a quarter; \"!bar who\" names the",
+      "// players who see it; \"!bar off\" hides it, and removes it when nobody sees it any more.",
+      "// The runtime moves a respawned player onto the bars of the old one and takes a player",
+      "// who leaves off every bar.",
+      "var charge = 0;",
+      "msm.events.on(\"player.chat\", (e) => {",
+      "  if (e.message === \"!bar\") {",
+      "    let bar = msm.bossBars.get(\"spark_charge\");",
+      "    if (bar === undefined) {",
+      "      bar = msm.bossBars.create(\"spark_charge\", { title: \"Spark charge\", color: \"yellow\", style: \"notched_10\", progress: 0 });",
+      "      charge = 0;",
+      "    }",
+      "    bar.addPlayer(e.player);",
+      "    charge = Math.min(1, charge + 0.25);",
+      "    bar.setProgress(charge);",
+      "  } else if (e.message === \"!bar who\") {",
+      "    const bar = msm.bossBars.get(\"spark_charge\");",
+      "    const names = bar === undefined ? [] : bar.players().map((p) => p.name).sort();",
+      "    e.player.sendMessage(\"Spark charge: \" + names.length + \" player(s)\" + (names.length > 0 ? \": \" + names.join(\", \") : \"\") + \".\");",
+      "  } else if (e.message === \"!bar off\") {",
+      "    const bar = msm.bossBars.get(\"spark_charge\");",
+      "    if (bar === undefined) return;",
+      "    bar.removePlayer(e.player);",
+      "    if (bar.players().length === 0) {",
+      "      bar.remove();",
+      "      e.player.sendMessage(\"Spark charge removed.\");",
+      "    }",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:spark_bar",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

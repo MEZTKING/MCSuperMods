@@ -1,0 +1,22 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// player.tick every 20 ticks: a player who wears a golden helmet gets Luck for 5 seconds",
+      "// (a full set bonus without a server.tick loop).",
+      "msm.events.on(\"player.tick\", (e) => {",
+      "  const head = e.player.inventory.get(\"head\");",
+      "  if (head === undefined || head.id !== \"minecraft:golden_helmet\" || e.player.hasEffect(\"minecraft:luck\")) return;",
+      "  e.player.addEffect(\"minecraft:luck\", 100);",
+      "  msm.log.info(\"player.tick: \" + e.player.name + \" wears a golden helmet: luck for 5 seconds\");",
+      "}, { interval: 20 });"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_player_tick",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}

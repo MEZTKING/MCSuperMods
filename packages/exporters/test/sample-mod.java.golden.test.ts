@@ -110,6 +110,8 @@ describe.each(
       `${PKG}/item/RubyBowItem.java`,
       `${PKG}/item/RubyCharmItem.java`,
       `${PKG}/ModEffects.java`,
+      // The potion and its long and strong versions (ADR 0063 D8), registered after the effects.
+      `${PKG}/ModPotions.java`,
       `${PKG}/effect/MobEffectBase.java`,
       `${PKG}/effect/RubyRushEffect.java`,
       `${PKG}/effect/RubyStingEffect.java`,

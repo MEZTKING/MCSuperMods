@@ -157,11 +157,13 @@ jobs:
       - name: Sample mob skipped (no GeckoLib for this version)
         if: steps.facts.outputs.geckolib != 'true'
         run: echo "::notice::No GeckoLib build for Minecraft ${{ matrix.mc }} (blank geckolib_modrinth_version_id in engine-mod/versions/${{ matrix.mc }}.properties); the sample mob export, server check and parity runs are skipped."
+      # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-mod/msm_sample_mod.jar"
           --facts "$RUNNER_TEMP/sample-mod/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 3 potion(s)'
           --work "$RUNNER_TEMP/fabric-server"
           --cache ~/.cache/msm-fabric-server
       - name: Headless Fabric server check (sample mob, GeckoLib nested)
@@ -194,13 +196,16 @@ jobs:
           --cache ~/.cache/msm-fabric-server
       # The sample data pack's villager trade (B231) on a vanilla dedicated server: no Fabric and
       # no runtime, since the trade is plain data. Zombie-converted fletchers must offer the new
-      # trade and still the vanilla arrow trade (both counts above zero).
+      # trade and still the vanilla arrow trade (both counts above zero). Since B255 it also
+      # loads the wolf variant, the goat horn instrument with its tag and recipe and a brewing
+      # recipe of vanilla potions with no load error, and finds a wolf of the variant and a horn
+      # of the call again by their ids (so both are in their registries).
       - name: Export the sample data pack
         run: |
           MSM_SAMPLE_DATAPACK_OUT="$RUNNER_TEMP/sample-datapack" \
             pnpm --filter @msm/exporters exec vitest run test/sample-datapack.golden.test.ts
           cat "$RUNNER_TEMP/sample-datapack/server-facts.json"
-      - name: Headless vanilla server check (sample data pack, villager trade)
+      - name: Headless vanilla server check (sample data pack, villager trade, wolf variant, goat horn)
         run: >-
           node tools/run-fabric-server/vanilla-datapack.ts
           --facts "$RUNNER_TEMP/sample-datapack/server-facts.json"
@@ -250,7 +255,9 @@ jobs:
             echo "MSM_EJECTED_${sample^^}_JAR=${jars[0]}" >> "$GITHUB_ENV"
           done
       # The parity runs share one run folder (the game server is downloaded once); each writes
-      # its own report. The filter picks the sample's tests from the one parity jar.
+      # its own report. The filter picks the sample's tests from the one parity jar. The sample
+      # mod runs include the potion tests (SampleModPotionParityTest, B255) on the content jar of
+      # every version and on the ejected jar.
       - name: Parity GameTests (sample mod, content jar)
         run: >-
           node tools/run-fabric-server/index.ts
@@ -291,7 +298,8 @@ jobs:
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
-      # are not part of the Java project eject (ADR 0033).
+      # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
+      # behaviour (ADR 0065) on every version.
       - name: Parity GameTests (sample script, content jar)
         run: >-
           node tools/run-fabric-server/index.ts

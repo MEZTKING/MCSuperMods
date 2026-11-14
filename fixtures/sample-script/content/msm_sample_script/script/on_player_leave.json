@@ -1,0 +1,21 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// player.leave: tells everyone else.",
+      "msm.events.on(\"player.leave\", (e) => {",
+      "  msm.log.info(\"player.leave: \" + e.player.name);",
+      "  for (const other of msm.players()) {",
+      "    if (other.uuid !== e.player.uuid) other.sendMessage(e.player.name + \" has left.\");",
+      "  }",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_script:on_player_leave",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-05T00:00:00.000Z"
+  }
+}
