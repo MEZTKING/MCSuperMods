@@ -4913,3 +4913,18 @@ Decisions
 
 Next
 - Orchestrator: renumber the ADR if needed; unify the quantiser with the art prototype's ramp generator; a live check with real keys (this sandbox only had mocked fetches; Retro Diffusion's `/v2/status` was reachable, the style selector needs a key, so the `mc_*` size limits are still "verify at implementation").
+
+## 2026-11-14 — executor — B406 spike: vehicles and input in the real client
+
+What
+- Throwaway client GameTest (a `VehicleEntity` subclass, a `msm_spike:key_v1` payload with an echo, two key mappings made from id and key name, a HUD rectangle through a per-version seam, a `ClientPreAttackCallback` probe) run headless (Mesa EGL) on 26.3 and 26.4-snapshot-7, in singleplayer and on `createServer()`/`connect()`. S1–S12 of `docs/PLAN-vehicles-and-client.md` answered with log lines, numbers and screenshot names in the report to the orchestrator; spike code deleted afterwards.
+- `docs/reference/vanilla-keys/`: the two key dumps (valid key names, vanilla default bindings) and a README, the source for B410's `TargetFacts.controls`.
+- `./gradlew build` green on 26.3 and 26.4 after the deletion (505 GameTests each).
+
+Decisions
+- Go for ADR 0090 D4: the driver's client moves a custom `VehicleEntity` that overrides `getControllingPassenger()`; the server accepts vanilla's move-vehicle packets and never ran our physics while driven; no "moved wrongly" and no snap-back from 0.5 to 5 blocks a tick on either version.
+- A malformed `key_v1` payload (short body or extra bytes) disconnects the sender in vanilla's decoder before any receiver runs; ADR 0088 D7 rule 1 can only count what decodes.
+- Keyboard codes are SDL/USB HID scancodes on both versions, not GLFW codes; mouse codes start at 1.
+
+Next
+- B408 scaffold may merge; B410 reads the dumps (G is vanilla `key.quickActions`, so the `second` runtime key needs another default); the orchestrator records the findings in the plan's notes.
