@@ -176,12 +176,12 @@ public class MsmScriptGameTest {
     @GameTest
     public void scriptsLoadWithTwoErrors(GameTestHelper helper) {
         ScriptHost host = host(helper);
-        helper.assertValueEqual(host.summary(), "[msm_runtime] loaded 21 script(s); 2 error(s)", "load summary");
+        helper.assertValueEqual(host.summary(), "[msm_runtime] loaded 22 script(s); 2 error(s)", "load summary");
         helper.assertValueEqual(host.loadErrors(), List.of(
                 "script msm_test:broken: syntax error (msm/msm_test/script/broken.js#5)",
                 "script msm_test:events: unknown event 'no.such.event' (msm/msm_test/script/events.js)"), "load errors");
         ScriptHost.Report report = host.report();
-        helper.assertValueEqual(report.scripts().size(), 21, "scripts found");
+        helper.assertValueEqual(report.scripts().size(), 22, "scripts found");
         helper.assertFalse(report.loaded().contains(id("broken")), "broken.js loaded");
         helper.assertTrue(report.loaded().contains(id("events")), "events.js with an unknown event name did not load");
         // events.js still registered its other handlers.

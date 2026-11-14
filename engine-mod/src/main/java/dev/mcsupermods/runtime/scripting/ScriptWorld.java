@@ -24,7 +24,8 @@ import net.minecraft.world.phys.Vec3;
 import org.mozilla.javascript.ScriptRuntime;
 
 /**
- * {@code World} (ADR 0032 D2) over a {@link ServerLevel}. Commands and functions run as the server with permission
+ * {@code World} (ADR 0032 D2) over a {@link ServerLevel}; {@code getContainer} (script API 1.2, ADR 0076 D5) gives a
+ * {@link ScriptContainer}. Commands and functions run as the server with permission
  * level 2 (as {@code run_function} actions do) and suppressed output, at the world spawn point with no {@code @s}, or
  * at the optional {@code at} position (ADR 0058 D2). {@code Entity.runCommand} and {@code Entity.runFunction} share
  * {@link #runCommand} and {@link #runFunction}.
@@ -86,7 +87,11 @@ final class ScriptWorld {
                 return api.array(found.stream().map(api::entity).toArray());
             })
             .method("raycast", 3, 4, ServerLevel.class, (api, l, args) -> ScriptRaycast.cast(api, l,
-                    ScriptPos.arg(args, 0, "from").vec(), ScriptPos.arg(args, 1, "direction").vec(), args, 2, null));
+                    ScriptPos.arg(args, 0, "from").vec(), ScriptPos.arg(args, 1, "direction").vec(), args, 2, null))
+            .method("getContainer", 1, 1, ServerLevel.class, (api, l, args) -> {
+                ScriptContainer container = ScriptContainer.at(l, ScriptPos.arg(args, 0, "pos").block());
+                return container == null ? null : api.container(container);
+            });
 
     /**
      * The server's source in {@code level} with permission level 2 and suppressed output: at the world spawn point

@@ -134,6 +134,53 @@ type BossBarColor = "pink" | "blue" | "red" | "green" | "yellow" | "purple" | "w
  */
 type BossBarStyle = "progress" | "notched_6" | "notched_10" | "notched_12" | "notched_20";
 
+/**
+ * The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add("minecraft:coal")`. Using it after the block is removed or replaced is a script error.
+ *
+ * Since runtime 1.6.0.
+ */
+interface Container {
+  /**
+   * Puts a stack in as a hopper would, filling matching stacks and then empty slots in slot order and skipping slots that do not take the item, whatever side hoppers may use; returns what did not fit, or `undefined` when everything fit. For example `const left = container.add({ id: "minecraft:coal", count: 64 })`.
+   *
+   * Since runtime 1.6.0.
+   *
+   * @param item - The stack to put in; its count may be more than one stack.
+   */
+  add(item: ItemSpec): ItemRef | undefined;
+  /**
+   * Returns how many of an item the container holds over all slots, for example `container.count("minecraft:coal")`.
+   *
+   * Since runtime 1.6.0.
+   *
+   * @param item - The item id, for example `minecraft:coal`.
+   */
+  count(item: string): number;
+  /**
+   * Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `container.get(0)`. A slot outside 0 to `size - 1` is a `RangeError`.
+   *
+   * Since runtime 1.6.0.
+   *
+   * @param slot - The slot, 0 to `size - 1`.
+   */
+  get(slot: number): ItemRef | undefined;
+  /**
+   * Replaces the stack in a slot and returns `true`, or returns `false` and changes nothing when the container does not take that item in that slot (a furnace's result slot, a container item in a crate that keeps its contents); for example `container.set(0, { id: "minecraft:torch", count: 16 })`.
+   *
+   * Since runtime 1.6.0.
+   *
+   * @param slot - The slot, 0 to `size - 1`.
+   * @param item - The new stack, at most the slot's stack size; `undefined` empties the slot.
+   */
+  set(slot: number, item?: ItemSpec): boolean;
+  /**
+   * The number of slots, numbered 0 to `size - 1`; for example 27 for a chest.
+   *
+   * Since runtime 1.6.0.
+   */
+  readonly size: number;
+}
+
 /** Saved data of one script namespace, on an entity or with the world: values are JSON values, copied in and out, and survive `/reload`, restarts, death and dimension changes. */
 interface DataStore {
   /**
@@ -1032,6 +1079,14 @@ interface World {
   /** Returns the block state at a position as `namespace:id[property=value,...]`. */
   getBlock(pos: Pos): string;
   /**
+   * Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.
+   *
+   * Since runtime 1.6.0.
+   *
+   * @param pos - The block position.
+   */
+  getContainer(pos: Pos): Container | undefined;
+  /**
    * Plays a sound event at a position for nearby players. The id can be a vanilla sound event or a project sound key (for example `mymod:block.chime`) once the project declares it in `sounds.json`.
    *
    * @param id - The sound event id, for example `minecraft:block.note_block.bell`.
@@ -1108,6 +1163,7 @@ declare module "msm:runtime" {
   export type BossBar = globalThis.BossBar;
   export type BossBarColor = globalThis.BossBarColor;
   export type BossBarStyle = globalThis.BossBarStyle;
+  export type Container = globalThis.Container;
   export type DataStore = globalThis.DataStore;
   export type Entity = globalThis.Entity;
   export type EntityDamagedEvent = globalThis.EntityDamagedEvent;

@@ -226,6 +226,18 @@
           ],
           "doc": "Casts a ray and returns the first block or entity it hits, or `undefined` when it hits nothing in range; for example `world.raycast(player.pos.offset(0, 1.6, 0), player.look, 20)`.\n\nSince runtime 1.5.0.",
           "returns": "RayHit | undefined"
+        },
+        "getContainer": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "The block position."
+            }
+          ],
+          "doc": "Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.\n\nSince runtime 1.6.0.",
+          "returns": "Container | undefined"
         }
       }
     },
@@ -1464,6 +1476,70 @@
         }
       },
       "extends": "GameEvent"
+    },
+    "Container": {
+      "doc": "The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add(\"minecraft:coal\")`. Using it after the block is removed or replaced is a script error.\n\nSince runtime 1.6.0.",
+      "members": {
+        "size": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The number of slots, numbered 0 to `size - 1`; for example 27 for a chest.\n\nSince runtime 1.6.0."
+        },
+        "get": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "number",
+              "doc": "The slot, 0 to `size - 1`."
+            }
+          ],
+          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `container.get(0)`. A slot outside 0 to `size - 1` is a `RangeError`.\n\nSince runtime 1.6.0.",
+          "returns": "ItemRef | undefined"
+        },
+        "set": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "number",
+              "doc": "The slot, 0 to `size - 1`."
+            },
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "optional": true,
+              "doc": "The new stack, at most the slot's stack size; `undefined` empties the slot."
+            }
+          ],
+          "doc": "Replaces the stack in a slot and returns `true`, or returns `false` and changes nothing when the container does not take that item in that slot (a furnace's result slot, a container item in a crate that keeps its contents); for example `container.set(0, { id: \"minecraft:torch\", count: 16 })`.\n\nSince runtime 1.6.0.",
+          "returns": "boolean"
+        },
+        "count": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "string",
+              "doc": "The item id, for example `minecraft:coal`."
+            }
+          ],
+          "doc": "Returns how many of an item the container holds over all slots, for example `container.count(\"minecraft:coal\")`.\n\nSince runtime 1.6.0.",
+          "returns": "number"
+        },
+        "add": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The stack to put in; its count may be more than one stack."
+            }
+          ],
+          "doc": "Puts a stack in as a hopper would, filling matching stacks and then empty slots in slot order and skipping slots that do not take the item, whatever side hoppers may use; returns what did not fit, or `undefined` when everything fit. For example `const left = container.add({ id: \"minecraft:coal\", count: 64 })`.\n\nSince runtime 1.6.0.",
+          "returns": "ItemRef | undefined"
+        }
+      }
     }
   },
   "globals": {

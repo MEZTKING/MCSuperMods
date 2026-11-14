@@ -16,7 +16,7 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 /**
- * The script API v1 (ADR 0032 D2, with the 1.1 additions of ADR 0065), built from Java: the {@code msm} tree each script receives and the object types
+ * The script API v1 (ADR 0032 D2, with the 1.1 additions of ADR 0065 and the 1.2 containers of ADR 0076 D5), built from Java: the {@code msm} tree each script receives and the object types
  * of the event objects. One instance per {@link ScriptHost} load (it holds the shared, sealed standard-object scope);
  * {@link #describe()} returns the installed member tree, which the JUnit {@code ScriptApiContractTest} compares with
  * {@code packages/plugins/scripting/api/script-api-v1.json}.
@@ -59,7 +59,8 @@ public final class ScriptApi {
             ScriptEvents.ITEM_USE, ScriptEvents.ENTITY_INTERACT, ScriptEvents.ENTITY_HURT, ScriptEvents.ENTITY_DEATH,
             ScriptEvents.PLAYER_JOIN, ScriptEvents.SERVER_STARTED, ScriptEvents.SERVER_TICK, ScriptEvents.ACTION,
             ScriptInventory.TYPE, ScriptBossBars.TYPE, ScriptRaycast.TYPE, ScriptEvents.PLAYER_TICK, ScriptEvents.PLAYER_RESPAWN,
-            ScriptEvents.PLAYER_LEAVE, ScriptEvents.PLAYER_CHANGE_DIMENSION, ScriptEvents.PLAYER_CHAT, ScriptEvents.ENTITY_DAMAGED);
+            ScriptEvents.PLAYER_LEAVE, ScriptEvents.PLAYER_CHANGE_DIMENSION, ScriptEvents.PLAYER_CHAT, ScriptEvents.ENTITY_DAMAGED,
+            ScriptContainer.TYPE);
 
     private final ScriptHost host;
     private final ScriptableObject scope;
@@ -103,6 +104,10 @@ public final class ScriptApi {
 
     Scriptable rayHit(ScriptRaycast.Hit hit) {
         return new HostObject(this, ScriptRaycast.TYPE, hit);
+    }
+
+    Scriptable container(ScriptContainer container) {
+        return new HostObject(this, ScriptContainer.TYPE, container);
     }
 
     Scriptable bossBar(ScriptBossBars.Bar bar) {

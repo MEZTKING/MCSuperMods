@@ -1,7 +1,10 @@
 /**
  * Script API 1.1 (ADR 0065): the description changes only by additions to the one of runtime
  * 1.4.0 (`test/fixtures/previous/script-api-v1-1.4.0.json`), pins the new members and events the
- * runtime's `ScriptApi` must install (B248), and type-checks scripts that use them.
+ * runtime's `ScriptApi` must install (B248), and type-checks scripts that use them. The exact list
+ * of 1.1 additions compares the 1.1 description as runtime 1.5.0 has it
+ * (`test/fixtures/previous/script-api-v1-1.5.0.json`), so later additions (1.2, ADR 0076 D5) are
+ * pinned in their own test file.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -19,6 +22,13 @@ import { typeCheck } from './support';
 const PREVIOUS: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.4.0.json', import.meta.url), 'utf8'),
+  ),
+);
+
+/** The 1.1 description as runtime 1.5.0 has it, before the 1.2 additions. */
+const API_1_1: ScriptApi = parseScriptApi(
+  JSON.parse(
+    readFileSync(new URL('./fixtures/previous/script-api-v1-1.5.0.json', import.meta.url), 'utf8'),
   ),
 );
 
@@ -109,7 +119,7 @@ describe('script API 1.1 is additive', () => {
 
 describe('script API 1.1 members (the list B248 installs)', () => {
   it('adds exactly these types, members and events', () => {
-    const newTypes = Object.keys(SCRIPT_API.types).filter((name) => !PREVIOUS.types[name]);
+    const newTypes = Object.keys(API_1_1.types).filter((name) => !PREVIOUS.types[name]);
     expect(newTypes.sort()).toEqual([
       'BossBar',
       'EntityDamagedEvent',
@@ -122,10 +132,10 @@ describe('script API 1.1 members (the list B248 installs)', () => {
       'RayHit',
     ]);
     const added = [
-      ...Object.entries(SCRIPT_API.types).flatMap(([name, type]) =>
+      ...Object.entries(API_1_1.types).flatMap(([name, type]) =>
         PREVIOUS.types[name] ? addedMembers(name, PREVIOUS.types[name]?.members, type.members) : [],
       ),
-      ...addedMembers('msm', PREVIOUS.globals.msm?.members, SCRIPT_API.globals.msm?.members ?? {}),
+      ...addedMembers('msm', PREVIOUS.globals.msm?.members, API_1_1.globals.msm?.members ?? {}),
     ];
     expect(added.sort()).toEqual([
       'Entity.equipment',
@@ -158,7 +168,7 @@ describe('script API 1.1 members (the list B248 installs)', () => {
       'msm.getWorld',
       'msm.players',
     ]);
-    expect(Object.keys(SCRIPT_API.events).filter((name) => !PREVIOUS.events[name])).toEqual([
+    expect(Object.keys(API_1_1.events).filter((name) => !PREVIOUS.events[name])).toEqual([
       'player.tick',
       'player.respawn',
       'player.leave',
@@ -166,7 +176,7 @@ describe('script API 1.1 members (the list B248 installs)', () => {
       'player.chat',
       'entity.damaged',
     ]);
-    expect(Object.keys(SCRIPT_API.aliases ?? {}).sort()).toEqual([
+    expect(Object.keys(API_1_1.aliases ?? {}).sort()).toEqual([
       'BossBarColor',
       'BossBarStyle',
       'EquipmentSlot',
@@ -236,7 +246,7 @@ describe('script API 1.1 members (the list B248 installs)', () => {
 
   it('documents every new type, member, event and alias with the Since line', () => {
     const docs: [string, string][] = [];
-    for (const [name, type] of Object.entries(SCRIPT_API.types)) {
+    for (const [name, type] of Object.entries(API_1_1.types)) {
       const old = PREVIOUS.types[name];
       if (old === undefined) docs.push([name, type.doc]);
       for (const added of addedMembers(name, old?.members, type.members)) {
@@ -244,19 +254,19 @@ describe('script API 1.1 members (the list B248 installs)', () => {
         if (old !== undefined && member !== undefined) docs.push([added, member.doc]);
       }
     }
-    for (const [name, member] of Object.entries(SCRIPT_API.globals.msm?.members ?? {})) {
+    for (const [name, member] of Object.entries(API_1_1.globals.msm?.members ?? {})) {
       if (PREVIOUS.globals.msm?.members[name] === undefined) docs.push([`msm.${name}`, member.doc]);
     }
-    for (const [name, event] of Object.entries(SCRIPT_API.events)) {
+    for (const [name, event] of Object.entries(API_1_1.events)) {
       if (PREVIOUS.events[name] === undefined) docs.push([name, event.doc]);
     }
-    for (const [name, alias] of Object.entries(SCRIPT_API.aliases ?? {})) {
+    for (const [name, alias] of Object.entries(API_1_1.aliases ?? {})) {
       docs.push([name, alias.doc]);
     }
     expect(docs.length).toBeGreaterThan(50);
     for (const [name, doc] of docs) expect(doc.endsWith(`\n\n${SINCE}`), name).toBe(true);
     // Methods with an example say "for example" with code.
-    expect(SCRIPT_API.types.Inventory?.members.count?.doc).toContain('for example `player.');
+    expect(API_1_1.types.Inventory?.members.count?.doc).toContain('for example `player.');
   });
 });
 
