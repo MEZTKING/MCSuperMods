@@ -3913,3 +3913,11 @@ Decisions
 
 Next
 - B360: the e2e count in `app/CLAUDE.md` (23 specs with `particles-path`).
+
+## 2026-11-14 — orchestrator — Try it: an in-app test area (ADR 0085 planned)
+
+What: the user asked for a way to test inside the app instead of launching Minecraft. A Fable design study wrote ADR 0085 and docs/PLAN-test-world.md (briefs B385–B403, four slices). Recommendation: "Try it", a small flat preview area built on the existing deepslate, geo and particle renderers with a pure simulation package `@msm/sim` that reads the files the game would get; labelled "Preview, not the real game." with Play in Minecraft (ADR 0084) beside it; a "What happened" panel explains which rules ran and what only the game can do. Rejected: a separate engine (second model pipeline), embedding the game (licence, native window, account). Deferred: mirroring a hidden real server (real logic but the visible half is still ours, mobs ignore fake players, Java 25 and server download, 25–35 briefs, high risk).
+
+Decisions: ADR 0085 accepted with its defaults (vetoable); slice 1 ("Look and place", B385–B392) starts with the B385 measurement gate (20 fps at 640x360 with 2,000 blocks under SwiftShader, single-chunk rebuild under 16 ms); B390 and later wait for the Rules and Play batch's shared app files.
+
+Next: B385; then slice 1 after the particles and Rules/Play app waves.
