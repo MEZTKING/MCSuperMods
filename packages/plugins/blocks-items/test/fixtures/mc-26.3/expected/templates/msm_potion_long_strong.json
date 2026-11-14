@@ -1,0 +1,416 @@
+[
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 3600,
+          "id": "minecraft:haste"
+        }
+      ],
+      "format": 1,
+      "name": "demo.sample"
+    },
+    "layer": "msm",
+    "path": "msm/demo/potion/sample.json"
+  },
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 9600,
+          "id": "minecraft:haste"
+        }
+      ],
+      "format": 1,
+      "name": "demo.sample"
+    },
+    "layer": "msm",
+    "path": "msm/demo/potion/long_sample.json"
+  },
+  {
+    "contents": {
+      "effects": [
+        {
+          "amplifier": 1,
+          "duration_ticks": 1800,
+          "id": "minecraft:haste"
+        }
+      ],
+      "format": 1,
+      "name": "demo.sample"
+    },
+    "layer": "msm",
+    "path": "msm/demo/potion/strong_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:honeycomb"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:honeycomb"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:honeycomb"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/lingering_potion_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:long_sample"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:redstone"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_long_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:long_sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:redstone"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_long_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:long_sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:redstone"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/lingering_potion_long_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:strong_sample"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:glowstone_dust"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_strong_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:strong_sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:glowstone_dust"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_strong_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:strong_sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:glowstone_dust"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/lingering_potion_strong_sample.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_sample_to_splash_potion.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_sample_to_lingering_potion.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "demo:long_sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:long_sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_long_sample_to_splash_potion.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "demo:long_sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:long_sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_long_sample_to_lingering_potion.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "demo:strong_sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:strong_sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_strong_sample_to_splash_potion.json"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "demo:strong_sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:strong_sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_strong_sample_to_lingering_potion.json"
+  },
+  {
+    "contents": {
+      "item.minecraft.lingering_potion.effect.demo.sample": "Lingering Potion of Sample",
+      "item.minecraft.potion.effect.demo.sample": "Potion of Sample",
+      "item.minecraft.splash_potion.effect.demo.sample": "Splash Potion of Sample",
+      "item.minecraft.tipped_arrow.effect.demo.sample": "Arrow of Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

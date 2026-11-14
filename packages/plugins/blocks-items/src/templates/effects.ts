@@ -1,10 +1,10 @@
 /**
- * `msm:effect` templates (ADR 0055 D11). They use vanilla attributes, sounds and particles
+ * `msm:effect` templates (ADR 0055 D11) and `msm:potion` templates (ADR 0063 D10). They use vanilla attributes, sounds and particles
  * only, and event ids derived from the element's own id. The icon is not part of the data:
  * the effect shows the missing icon until `assets/<ns>/textures/mob_effect/<path>.png` exists.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
-import { EFFECT_KIND } from '../kinds';
+import { EFFECT_KIND, POTION_KIND } from '../kinds';
 import { displayName, ownEvent } from './shared';
 
 const CATEGORY = 'Effects';
@@ -77,6 +77,36 @@ export const effectTemplates: readonly ElementTemplate[] = [
         },
         { attribute: 'minecraft:attack_damage', amount: 1, operation: 'add_value' },
       ],
+    }),
+  },
+  {
+    id: 'msm_potion_custom_effect',
+    kind: POTION_KIND,
+    category: CATEGORY,
+    title: 'Potion of a custom effect',
+    description:
+      'A potion of the status effect "<this id>_effect", brewed from an awkward potion and glow berries, with splash and lingering versions and tipped arrows. Make that status effect (or pick your own), and export the project as a Fabric mod.',
+    data: (context) => ({
+      format: 1,
+      display_name: displayName(context.path),
+      effects: [{ id: `${context.id}_effect`, duration_ticks: 3600 }],
+      brewing: { reagent: 'minecraft:glow_berries' },
+    }),
+  },
+  {
+    id: 'msm_potion_long_strong',
+    kind: POTION_KIND,
+    category: CATEGORY,
+    title: 'Potion with longer and stronger versions',
+    description:
+      'A Haste potion brewed from an awkward potion and a honeycomb. Redstone makes it last 8 minutes, glowstone dust makes it Haste II for 1:30, like vanilla potions. Splash and lingering versions and tipped arrows included. Needs the Fabric mod export.',
+    data: (context) => ({
+      format: 1,
+      display_name: displayName(context.path),
+      effects: [{ id: 'minecraft:haste', duration_ticks: 3600 }],
+      brewing: { reagent: 'minecraft:honeycomb' },
+      long: { duration_ticks: 9600 },
+      strong: { amplifier: 1, duration_ticks: 1800 },
     }),
   },
 ];

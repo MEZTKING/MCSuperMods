@@ -3,7 +3,8 @@
  * folder `block`), `msm:item` (`item`), `msm:effect` (`effect`, ADR 0055 D1), the singleton
  * `msm:mod` (`mod`, conventional id `<ns>:mod`), and the additions to vanilla content
  * `msm:biome_addition` (`biome_addition`) and `msm:loot_addition` (`loot_addition`, ADR 0060
- * D2, D3), which belong to no registry. Element ids are the registry ids: `msm:block`
+ * D2, D3), which belong to no registry, and `msm:potion` (`potion`, ADR 0063 D1, registry
+ * `potion`). Element ids are the registry ids: `msm:block`
  * elements belong to the `block` registry, `msm:item` elements to `item` and `msm:effect`
  * elements to `mob_effect`, so references such as a `give_item` action or an `apply_effect`
  * action resolve to project content.
@@ -15,6 +16,7 @@ import { lowerBlock } from '../lowering/block';
 import { lowerEffect } from '../lowering/effect';
 import { lowerItem } from '../lowering/item';
 import { lowerMod } from '../lowering/mod';
+import { lowerPotion } from '../lowering/potion';
 
 /** Kind id of custom blocks. */
 export const BLOCK_KIND = 'msm:block';
@@ -22,6 +24,8 @@ export const BLOCK_KIND = 'msm:block';
 export const ITEM_KIND = 'msm:item';
 /** Kind id of custom mob effects (ADR 0055 D1). */
 export const EFFECT_KIND = 'msm:effect';
+/** Kind id of potions (ADR 0063 D1). */
+export const POTION_KIND = 'msm:potion';
 /** Kind id of the mod metadata singleton. */
 export const MOD_KIND = 'msm:mod';
 /** Kind id of features and spawns added to biomes (ADR 0060 D2). */
@@ -70,6 +74,25 @@ export const effectKind: ElementKind = {
   defaultData: { format: 1, category: 'beneficial', color: 0x33ebff },
   hiddenPaths: HIDDEN,
   lower: lowerEffect,
+};
+
+/**
+ * Potions (ADR 0063): registry entries of `potion`, with optional longer and stronger versions
+ * (`long_<path>`, `strong_<path>`) and their brewing recipes. The default is a Haste potion
+ * brewed from an awkward potion and an amethyst shard (no vanilla recipe uses that pair).
+ */
+export const potionKind: ElementKind = {
+  id: POTION_KIND,
+  schema: MSM_SCHEMA_REFS.potion,
+  folder: 'potion',
+  registry: 'potion',
+  defaultData: {
+    format: 1,
+    effects: [{ id: 'minecraft:haste', duration_ticks: 3600 }],
+    brewing: { reagent: 'minecraft:amethyst_shard' },
+  },
+  hiddenPaths: HIDDEN,
+  lower: lowerPotion,
 };
 
 export const modKind: ElementKind = {
@@ -122,4 +145,5 @@ export const blocksItemsKinds: readonly ElementKind[] = Object.freeze([
   modKind,
   biomeAdditionKind,
   lootAdditionKind,
+  potionKind,
 ]);

@@ -1,0 +1,142 @@
+[
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 3600,
+          "id": "minecraft:haste"
+        }
+      ],
+      "format": 1,
+      "name": "demo.sample"
+    },
+    "layer": "msm",
+    "path": "msm/demo/potion/sample.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:amethyst_shard"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_sample.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:amethyst_shard"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_sample.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:amethyst_shard"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/lingering_potion_sample.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/potion_sample_to_splash_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "demo:sample"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "demo:sample"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/demo/recipe/brewing/splash_potion_sample_to_lingering_potion.json",
+    "schema": "resource:recipe"
+  }
+]

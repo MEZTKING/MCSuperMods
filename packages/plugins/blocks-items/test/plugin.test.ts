@@ -44,6 +44,7 @@ const KIND_IDS = [
   'msm:mod',
   'msm:biome_addition',
   'msm:loot_addition',
+  'msm:potion',
 ];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
@@ -72,7 +73,7 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the six kinds with their schemas, folders and registries', () => {
+  it('contributes the seven kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
@@ -82,10 +83,11 @@ describe('@msm/plugin-blocks-items', () => {
       [MSM_SCHEMA_REFS.mod, 'mod', undefined],
       [MSM_SCHEMA_REFS.biomeAddition, 'biome_addition', undefined],
       [MSM_SCHEMA_REFS.lootAddition, 'loot_addition', undefined],
+      [MSM_SCHEMA_REFS.potion, 'potion', 'potion'],
     ]);
   });
 
-  it('contributes its templates and the eighteen validators', () => {
+  it('contributes its templates and the twenty-one validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -108,8 +110,11 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.spawn-group-size',
       'msm.blocks-items.duplicate-biome-feature',
       'msm.blocks-items.loot-pool',
+      'msm.blocks-items.potion-effect',
+      'msm.blocks-items.potion-brewing',
+      'msm.blocks-items.potion-id',
     ]);
-    expect(blocksItemsValidators).toHaveLength(18);
+    expect(blocksItemsValidators).toHaveLength(21);
   });
 
   it('rejects unsafe ids and non-object data', () => {

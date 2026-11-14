@@ -52,6 +52,8 @@ const IDS = [
   'msm_effect_status',
   'msm_effect_damage_over_time',
   'msm_effect_stat_boost',
+  'msm_potion_custom_effect',
+  'msm_potion_long_strong',
   'msm_mod',
   'msm_biome_addition_overworld_ore',
   'msm_loot_addition_mob_drop',

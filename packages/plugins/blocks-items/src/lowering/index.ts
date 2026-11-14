@@ -28,6 +28,25 @@ export {
   splitResourceLocation,
 } from './paths';
 export {
+  type BrewingStep,
+  brewingRecipe,
+  DEFAULT_BREWING_BASE,
+  DEFAULT_LONG_REAGENT,
+  DEFAULT_STRONG_REAGENT,
+  LINGERING_REAGENT,
+  lowerPotion,
+  POTION_EDITOR_FIELDS,
+  POTION_VARIANT_PREFIXES,
+  type PotionBottle,
+  potionBrewingSteps,
+  potionDefinitions,
+  potionName,
+  potionNameKeys,
+  potionVariantIds,
+  RECIPE_SCHEMA,
+  SPLASH_REAGENT,
+} from './potion';
+export {
   FULL_CUBE,
   isSeeThroughBlock,
   lowerShapeInPlace,

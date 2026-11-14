@@ -1,0 +1,459 @@
+[
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 1800,
+          "id": "example:frost"
+        },
+        {
+          "ambient": true,
+          "amplifier": 1,
+          "duration_ticks": 900,
+          "id": "minecraft:slowness",
+          "show_icon": true,
+          "show_particles": false
+        }
+      ],
+      "format": 1,
+      "name": "example.frost_potion"
+    },
+    "layer": "msm",
+    "path": "msm/example/potion/frost_potion.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 4800,
+          "id": "example:frost"
+        },
+        {
+          "ambient": true,
+          "amplifier": 1,
+          "duration_ticks": 4800,
+          "id": "minecraft:slowness",
+          "show_icon": true,
+          "show_particles": false
+        }
+      ],
+      "format": 1,
+      "name": "example.frost_potion"
+    },
+    "layer": "msm",
+    "path": "msm/example/potion/long_frost_potion.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "effects": [
+        {
+          "amplifier": 2,
+          "duration_ticks": 900,
+          "id": "example:frost"
+        },
+        {
+          "ambient": true,
+          "amplifier": 2,
+          "duration_ticks": 900,
+          "id": "minecraft:slowness",
+          "show_icon": true,
+          "show_particles": false
+        }
+      ],
+      "format": 1,
+      "name": "example.frost_potion"
+    },
+    "layer": "msm",
+    "path": "msm/example/potion/strong_frost_potion.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "minecraft:thick"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:frost_potion"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "#minecraft:small_flowers"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "minecraft:thick"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:frost_potion"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "#minecraft:small_flowers"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/splash_potion_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "minecraft:thick"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:frost_potion"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "#minecraft:small_flowers"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/lingering_potion_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_frost_potion"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:snowball"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_long_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_frost_potion"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:snowball"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/splash_potion_long_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_frost_potion"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:snowball"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/lingering_potion_long_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:strong_frost_potion"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:glowstone_dust"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_strong_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:strong_frost_potion"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:glowstone_dust"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/splash_potion_strong_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:strong_frost_potion"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:glowstone_dust"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/lingering_potion_strong_frost_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:frost_potion"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_frost_potion_to_splash_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "example:frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:frost_potion"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/splash_potion_frost_potion_to_lingering_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:long_frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_frost_potion"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_long_frost_potion_to_splash_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "example:long_frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_frost_potion"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/splash_potion_long_frost_potion_to_lingering_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:strong_frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:strong_frost_potion"
+          }
+        },
+        "id": "minecraft:splash_potion"
+      },
+      "reagent": {
+        "item": "minecraft:gunpowder"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_strong_frost_potion_to_splash_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:splash_potion",
+        "potion_contents": {
+          "potions": "example:strong_frost_potion"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:strong_frost_potion"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/splash_potion_strong_frost_potion_to_lingering_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "item.minecraft.lingering_potion.effect.example.frost_potion": "Lingering Potion of Frost",
+      "item.minecraft.potion.effect.example.frost_potion": "Potion of Frost",
+      "item.minecraft.splash_potion.effect.example.frost_potion": "Splash Potion of Frost",
+      "item.minecraft.tipped_arrow.effect.example.frost_potion": "Arrow of Frost"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

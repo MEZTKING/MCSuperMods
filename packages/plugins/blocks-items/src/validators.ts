@@ -103,9 +103,11 @@ import {
   ITEM_KIND,
   LOOT_ADDITION_KIND,
   MOD_KIND,
+  POTION_KIND,
 } from './kinds';
 import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
+import { type BrewingStep, potionBrewingSteps, potionVariantIds } from './lowering/potion';
 import { FULL_CUBE, lowerShapeInPlace, SHAPE_COMPONENT, shapeOf } from './lowering/shape';
 import { rangedPullModels } from './lowering/shared';
 import { incorrectForTierTag, toolTierName } from './lowering/tools';
@@ -151,6 +153,10 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.duplicate-biome-feature',
   'blocks-items.bad-loot-pool',
   'blocks-items.unknown-loot-item',
+  'blocks-items.potion-effect-missing',
+  'blocks-items.potion-duplicate-brewing',
+  'blocks-items.potion-id-collision',
+  'blocks-items.potion-needs-jar',
 ] as const);
 
 /** The code of the app-side texture warning (ADR 0059 D4). */
@@ -170,6 +176,27 @@ export function transparentTextureProblem(elementId: Element['id'], texture: str
     elementId,
     path: '/model',
     message: `Texture "${texture}" has transparent pixels, but this block is solid, so you see through it into the world. Turn on "See-through" in the block's shape, or use a texture without transparent pixels.`,
+  };
+}
+
+/** The code of the vanilla pack export's potion warning (ADR 0063 D6). */
+export const POTION_NEEDS_JAR_CODE = 'blocks-items.potion-needs-jar';
+
+/**
+ * The warning the vanilla pack export reports, once per export, when the project has potions
+ * (ADR 0063 D6): a data pack cannot add a potion, so the brewing recipes name potions the game
+ * does not know. Like `blocks-items.passthrough-needs-data-pack` (ADR 0050), a warning: the
+ * packs still export.
+ *
+ * @param elementId - The first `msm:potion` element, if the caller wants to point at one.
+ */
+export function potionNeedsJarProblem(elementId?: Element['id']): Problem {
+  return {
+    severity: 'warning',
+    code: POTION_NEEDS_JAR_CODE,
+    ...(elementId === undefined ? {} : { elementId }),
+    message:
+      'Potions need the Fabric mod export: a vanilla data pack cannot add a potion to the game, so these packs leave the potions out and their brewing recipes do nothing. Export the project as a Fabric mod to brew them.',
   };
 }
 
@@ -1087,6 +1114,119 @@ function lootAdditionPools(elements: readonly Element[], registry: ValidationReg
   return problems;
 }
 
+const potions = (elements: readonly Element[]): Element[] =>
+  elements.filter((element) => element.kind === POTION_KIND && isRecord(element.data));
+
+/** Ids written without a namespace mean `minecraft:`. */
+const namespaced = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
+
+function potionEffectsMissing(
+  elements: readonly Element[],
+  registry: ValidationRegistry,
+): Problem[] {
+  if (registry.ids('mob_effect').length === 0) return [];
+  const projectEffects = new Set(
+    elements.filter((element) => element.kind === EFFECT_KIND).map((element) => element.id),
+  );
+  const problems: Problem[] = [];
+  for (const element of potions(elements)) {
+    const effects = dataOf(element).effects;
+    if (!Array.isArray(effects)) continue;
+    effects.forEach((effect, index) => {
+      const id = record(effect)?.id;
+      if (typeof id !== 'string' || id.length === 0) return;
+      const full = namespaced(id);
+      if (projectEffects.has(full as Element['id']) || registry.has('mob_effect', full)) return;
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.potion-effect-missing',
+        elementId: element.id,
+        path: pointer('effects', index, 'id'),
+        message: `The effect "${id}" is neither a vanilla effect nor one of this project's effects. The game skips the whole potion. Pick an existing effect or make "${id}" as a status effect.`,
+      });
+    });
+  }
+  return problems;
+}
+
+const STEP_PATHS: Readonly<Record<BrewingStep['source'], string>> = {
+  brewing: pointer('brewing', 'reagent'),
+  long: pointer('long'),
+  strong: pointer('strong'),
+  splash: pointer('splash'),
+  lingering: pointer('lingering'),
+};
+
+const BOTTLE_NAMES: Readonly<Record<BrewingStep['inputBottle'], string>> = {
+  potion: 'potion',
+  splash_potion: 'splash potion',
+  lingering_potion: 'lingering potion',
+};
+
+function potionDuplicateBrewing(elements: readonly Element[]): Problem[] {
+  const seen = new Map<string, { element: Element; step: BrewingStep }>();
+  const reported = new Set<string>();
+  const problems: Problem[] = [];
+  for (const element of potions(elements)) {
+    let steps: BrewingStep[];
+    try {
+      steps = potionBrewingSteps(element);
+    } catch {
+      continue;
+    }
+    for (const step of steps) {
+      // Conversions clash only when version ids do: `potion-id-collision` reports that.
+      if (step.source === 'splash' || step.source === 'lingering') continue;
+      const key = `${step.inputBottle}|${namespaced(step.input)}|${namespaced(step.reagent)}`;
+      const first = seen.get(key);
+      if (first === undefined) {
+        seen.set(key, { element, step });
+        continue;
+      }
+      const path = STEP_PATHS[step.source];
+      if (reported.has(`${element.id}|${path}`)) continue;
+      reported.add(`${element.id}|${path}`);
+      const other =
+        first.element.id === element.id
+          ? `its own ${first.step.source} step`
+          : `"${first.element.id}"`;
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.potion-duplicate-brewing',
+        elementId: element.id,
+        path,
+        message: `Adding "${step.reagent}" to a ${BOTTLE_NAMES[step.inputBottle]} of "${step.input}" already brews ${other}, so the brewing stand makes only one of them. Use a different ingredient or base potion.`,
+      });
+    }
+  }
+  return problems;
+}
+
+function potionIdCollisions(elements: readonly Element[]): Problem[] {
+  const ids = new Set<string>(potions(elements).map((element) => element.id));
+  const problems: Problem[] = [];
+  for (const element of potions(elements)) {
+    let variants: string[];
+    try {
+      variants = potionVariantIds(element).slice(1);
+    } catch {
+      continue;
+    }
+    for (const id of variants) {
+      if (!ids.has(id)) continue;
+      const field = id.slice(id.indexOf(':') + 1).startsWith('long_') ? 'long' : 'strong';
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.potion-id-collision',
+        elementId: element.id,
+        path: pointer(field),
+        message: `The ${field === 'long' ? 'longer' : 'stronger'} version of this potion gets the id "${id}", which another potion already has. Rename one of the two potions.`,
+      });
+    }
+  }
+  return problems;
+}
+
 const DEFINITION_KINDS = [BLOCK_KIND, ITEM_KIND] as const;
 const EVENT_KINDS = [BLOCK_KIND, ITEM_KIND, EFFECT_KIND] as const;
 
@@ -1185,5 +1325,20 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
     id: 'msm.blocks-items.loot-pool',
     kinds: [LOOT_ADDITION_KIND],
     validate: ({ elements, registry }) => lootAdditionPools(elements, registry),
+  },
+  {
+    id: 'msm.blocks-items.potion-effect',
+    kinds: [POTION_KIND, EFFECT_KIND],
+    validate: ({ elements, registry }) => potionEffectsMissing(elements, registry),
+  },
+  {
+    id: 'msm.blocks-items.potion-brewing',
+    kinds: [POTION_KIND],
+    validate: ({ elements }) => potionDuplicateBrewing(elements),
+  },
+  {
+    id: 'msm.blocks-items.potion-id',
+    kinds: [POTION_KIND],
+    validate: ({ elements }) => potionIdCollisions(elements),
   },
 ] satisfies ProjectValidator[]);

@@ -1,0 +1,182 @@
+[
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 3600,
+          "id": "minecraft:haste"
+        }
+      ],
+      "format": 1,
+      "name": "example.haste"
+    },
+    "layer": "msm",
+    "path": "msm/example/potion/brews/haste.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 9600,
+          "id": "minecraft:haste"
+        }
+      ],
+      "format": 1,
+      "name": "example.haste"
+    },
+    "layer": "msm",
+    "path": "msm/example/potion/long_brews/haste.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:brews/haste"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:honeycomb"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_brews/haste.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "minecraft:awkward"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:brews/haste"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:honeycomb"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/lingering_potion_brews/haste.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:brews/haste"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_brews/haste"
+          }
+        },
+        "id": "minecraft:potion"
+      },
+      "reagent": {
+        "item": "minecraft:redstone"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_long_brews/haste.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:lingering_potion",
+        "potion_contents": {
+          "potions": "example:brews/haste"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_brews/haste"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:redstone"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/lingering_potion_long_brews/haste.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:brews/haste"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:brews/haste"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_brews/haste_to_lingering_potion.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "input": {
+        "item": "minecraft:potion",
+        "potion_contents": {
+          "potions": "example:long_brews/haste"
+        }
+      },
+      "output": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "example:long_brews/haste"
+          }
+        },
+        "id": "minecraft:lingering_potion"
+      },
+      "reagent": {
+        "item": "minecraft:dragon_breath"
+      },
+      "type": "minecraft:brewing"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/brewing/potion_long_brews/haste_to_lingering_potion.json",
+    "schema": "resource:recipe"
+  }
+]

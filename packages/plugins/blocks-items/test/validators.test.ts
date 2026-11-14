@@ -42,7 +42,7 @@ const THROWABLE = { 'msm:throwable': { damage: 1 } };
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(21);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(25);
     expect(BLOCKS_ITEMS_PROBLEM_CODES).toContain(TRANSPARENT_TEXTURE_CODE);
   });
 

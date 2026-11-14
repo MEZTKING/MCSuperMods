@@ -1,8 +1,8 @@
 /**
  * `@msm/plugin-blocks-items`: built-in MSM plugin contributing custom blocks, custom items and
  * the mod metadata (ADR 0025 D8), custom mob effects (ADR 0055) and additions to vanilla
- * content (ADR 0060): the `msm:block`, `msm:item`, `msm:effect`, `msm:mod`,
- * `msm:biome_addition` and `msm:loot_addition` kinds, their
+ * content (ADR 0060) and potions (ADR 0063): the `msm:block`, `msm:item`, `msm:effect`,
+ * `msm:mod`, `msm:biome_addition`, `msm:loot_addition` and `msm:potion` kinds, their
  * lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
  * project validators and the "New element" templates.
  */
@@ -24,6 +24,8 @@ export {
   isCubeModel,
   MOD_ID_PATTERN,
   MSM_VANILLA_COMPONENTS,
+  POTION_NEEDS_JAR_CODE,
+  potionNeedsJarProblem,
   RESERVED_MOD_IDS,
   SPEAR_VANILLA_COMPONENTS,
   THROWABLE_CONFLICTS,

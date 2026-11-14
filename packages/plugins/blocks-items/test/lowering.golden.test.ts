@@ -18,6 +18,7 @@ import {
   itemKind,
   lootAdditionKind,
   modKind,
+  potionKind,
 } from '../src/index';
 import { blockingProblems, element, indexesFor, sortedJson } from './support';
 
@@ -536,6 +537,54 @@ const SAMPLES: Sample[] = [
     name: 'withering_no_name',
     id: 'example:curses/withering',
     data: { format: 1, category: 'neutral', color: 0 },
+  },
+  {
+    kind: potionKind,
+    name: 'frost_potion',
+    id: 'example:frost_potion',
+    data: {
+      format: 1,
+      display_name: 'Frost',
+      effects: [
+        { id: 'example:frost', duration_ticks: 1800 },
+        {
+          id: 'minecraft:slowness',
+          duration_ticks: 900,
+          amplifier: 1,
+          ambient: true,
+          show_particles: false,
+          show_icon: true,
+        },
+      ],
+      brewing: { base: 'minecraft:thick', reagent: '#minecraft:small_flowers' },
+      long: { duration_ticks: 4800, reagent: 'minecraft:snowball' },
+      strong: { amplifier: 2, duration_ticks: 900 },
+    },
+  },
+  {
+    kind: potionKind,
+    name: 'brews_haste_no_splash',
+    id: 'example:brews/haste',
+    data: {
+      format: 1,
+      name: 'example.haste',
+      effects: [{ id: 'minecraft:haste', duration_ticks: 3600 }],
+      brewing: { reagent: 'minecraft:honeycomb' },
+      long: { duration_ticks: 9600 },
+      splash: false,
+    },
+  },
+  {
+    kind: potionKind,
+    name: 'drinkable_only',
+    id: 'example:frost_potion',
+    data: {
+      format: 1,
+      display_name: 'Frost',
+      effects: [{ id: 'example:frost', duration_ticks: 1800 }],
+      splash: false,
+      lingering: false,
+    },
   },
   {
     kind: modKind,

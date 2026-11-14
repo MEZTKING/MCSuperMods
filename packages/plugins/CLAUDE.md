@@ -15,7 +15,7 @@ Built-in plugins contribute element kinds, lowering, commands and library conten
 | `library/` | `@msm/plugin-library` | 2 add-on |
 | `structures/` | `@msm/plugin-structures` | 3 |
 | `worldgen/` | `@msm/plugin-worldgen` | 3 |
-| `blocks-items/` | `@msm/plugin-blocks-items` (blocks, items, effects, mod, biome and loot additions; 6 kinds, 26 templates, 18 validators; ADRs 0060, 0061) | 4 |
+| `blocks-items/` | `@msm/plugin-blocks-items` (blocks, items, effects, potions, mod, biome and loot additions; 7 kinds, 28 templates, 21 validators; `msm:potion` lowers to `msm/<ns>/potion/` incl. `long_`/`strong_`, up to 15 brewing recipes and four name keys; `potionNeedsJarProblem` for the vanilla pack export; ADRs 0060, 0061, 0063) | 4 |
 | `entities/` | `@msm/plugin-entities` (mob `sounds` pass through; Monster template shows them) | 5 |
 | `models-anim/` | `@msm/plugin-models-anim` | 5 |
 | `scripting/` | `@msm/plugin-scripting` (scripts, script API with 1.1 additions and type aliases, typings; 6 templates; ADRs 0032, 0065) | 6 |

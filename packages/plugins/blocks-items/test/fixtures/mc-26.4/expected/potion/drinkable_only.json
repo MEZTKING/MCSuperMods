@@ -1,0 +1,29 @@
+[
+  {
+    "contents": {
+      "effects": [
+        {
+          "duration_ticks": 1800,
+          "id": "example:frost"
+        }
+      ],
+      "format": 1,
+      "name": "example.frost_potion"
+    },
+    "layer": "msm",
+    "path": "msm/example/potion/frost_potion.json",
+    "schema": "msm:potion_definition"
+  },
+  {
+    "contents": {
+      "item.minecraft.lingering_potion.effect.example.frost_potion": "Lingering Potion of Frost",
+      "item.minecraft.potion.effect.example.frost_potion": "Potion of Frost",
+      "item.minecraft.splash_potion.effect.example.frost_potion": "Splash Potion of Frost",
+      "item.minecraft.tipped_arrow.effect.example.frost_potion": "Arrow of Frost"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]
