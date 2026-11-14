@@ -72,6 +72,11 @@ export interface EntitySnapshot {
   readonly yaw: number;
   /** How far it looks up or down, in degrees (negative is up). */
   readonly pitch: number;
+  /**
+   * True when it moved in the last tick, so the view plays its `walk` (or `fly`) animation
+   * instead of `idle` (B393). Absent for the player.
+   */
+  readonly walking?: boolean;
 }
 
 /** A visible or audible effect the simulation asks the view to show. */
