@@ -266,6 +266,23 @@ const bridge: MsmBridge = {
     read: (id) => ipcRenderer.invoke(InvokeChannels.pluginsRead, { id }),
     openFolder: () => ipcRenderer.invoke(InvokeChannels.pluginsOpenFolder),
   },
+  aiPictures: {
+    status: () => ipcRenderer.invoke(InvokeChannels.aiPicturesStatus),
+    setService: (service) => ipcRenderer.invoke(InvokeChannels.aiPicturesSetService, { service }),
+    setKey: (service, key) => ipcRenderer.invoke(InvokeChannels.aiPicturesSetKey, { service, key }),
+    clearKey: (service) => ipcRenderer.invoke(InvokeChannels.aiPicturesClearKey, { service }),
+    testKey: (service) => ipcRenderer.invoke(InvokeChannels.aiPicturesTestKey, { service }),
+    generate: (request) =>
+      ipcRenderer.invoke(InvokeChannels.aiPicturesGenerate, {
+        requestId: request.requestId,
+        prompt: request.prompt,
+        style: request.style,
+        size: request.size,
+        count: request.count,
+        transparent: request.transparent,
+      }),
+    cancel: (requestId) => ipcRenderer.invoke(InvokeChannels.aiPicturesCancel, { requestId }),
+  },
   ai: {
     keyStatus: () => ipcRenderer.invoke(InvokeChannels.aiKeyStatus),
     setKey: (key) => ipcRenderer.invoke(InvokeChannels.aiSetKey, { key }),

@@ -6,7 +6,8 @@
  *
  * Test ids: `surprise-dialog`, `surprise-seed`, `surprise-mod-name`, `surprise-thing-<n>`,
  * `surprise-rule`, `surprise-make`, `surprise-roll`, `surprise-change-theme`,
- * `surprise-theme-<id>`, `surprise-status`, `surprise-error`.
+ * `surprise-theme-<id>`, `surprise-status`, `surprise-error`, `surprise-ai-pictures` ("Use AI
+ * pictures", ADR 0093 D7).
  *
  * @packageDocumentation
  */
@@ -14,12 +15,14 @@
 import { Dices, Palette, Sparkles, Workflow } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useEffect, useId, useRef, useState } from 'react';
+import type { ChangeItem } from '../../changeset/changeset';
 import {
   isSeed,
   newSeed as randomSeed,
   SURPRISE_THEMES,
   type SurpriseMod,
 } from '../../surprise/surprise';
+import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { Button } from '../ui/Button';
 import { pngDataUrl } from '../wizard/wizard-model';
 
@@ -27,8 +30,11 @@ import { pngDataUrl } from '../wizard/wizard-model';
 export interface SurpriseDialogProps {
   /** Rolls the mod of a seed and theme (`null`: the seed's own theme). */
   roll(seed: number, themeId: string | null): Promise<SurpriseMod>;
-  /** Makes the mod; rejects with the reason it could not. */
-  onMake(mod: SurpriseMod): Promise<void>;
+  /**
+   * Makes the mod; rejects with the reason it could not. With "Use AI pictures" on (ADR 0093
+   * D7), `prepare` makes the textures of the items the host is about to apply.
+   */
+  onMake(mod: SurpriseMod, prepare?: SurprisePrepare): Promise<void>;
   onClose(): void;
   /** Whether "Make it" starts a new mod (no mod is open) rather than adding to the open one. */
   newMod: boolean;
@@ -37,6 +43,11 @@ export interface SurpriseDialogProps {
   /** Test hook: the next seed for "Roll again". */
   newSeed?(): number;
 }
+
+/** Turns the change items into the ones to apply, with a note for the user (ADR 0093 D7). */
+export type SurprisePrepare = (
+  items: readonly ChangeItem[],
+) => Promise<{ items: ChangeItem[]; note: string | null }>;
 
 const MAX_MAKES = 5;
 
@@ -59,6 +70,7 @@ export function SurpriseDialog(props: SurpriseDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [choosingTheme, setChoosingTheme] = useState(false);
   const [making, setMaking] = useState(false);
+  const aiBatch = useAiBatch();
   const tokenRef = useRef(0);
   const seedId = useId();
   const roll = props.roll;
@@ -95,7 +107,10 @@ export function SurpriseDialog(props: SurpriseDialogProps) {
     if (mod === null || making) return;
     setMaking(true);
     setError(null);
-    props.onMake(mod).then(
+    const prepare: SurprisePrepare | undefined = aiBatch.on
+      ? (items) => aiBatch.run(items, mod.theme.word)
+      : undefined;
+    (prepare === undefined ? props.onMake(mod) : props.onMake(mod, prepare)).then(
       () => setMaking(false),
       (failure: unknown) => {
         setMaking(false);
@@ -259,6 +274,8 @@ export function SurpriseDialog(props: SurpriseDialogProps) {
               {error}
             </p>
           )}
+
+          <AiPicturesSwitch batch={aiBatch} testId="surprise-ai-pictures" disabled={making} />
 
           <div className="flex flex-wrap items-center gap-1.5">
             <Button

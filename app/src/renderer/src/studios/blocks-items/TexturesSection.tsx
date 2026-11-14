@@ -12,9 +12,10 @@
  * @packageDocumentation
  */
 
-import type { Element, Json } from '@msm/core';
+import type { Element, Json, Project } from '@msm/core';
 import { useEffect, useState } from 'react';
 import { pngDataUrl } from '../../components/AssetList';
+import { SlotPictureAi } from '../../components/ai-pictures/StudioAiPictures';
 import type { FormProblem } from '../../forms';
 import { IdField } from '../structures/pickers';
 import { Section } from '../worldgen/parts';
@@ -83,6 +84,8 @@ export interface TexturesSectionProps {
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   set(path: readonly (string | number)[], value: Json | undefined, coalesce?: string): void;
+  /** The project, for "Make with AI" on each slot (ADR 0093); without it no button. */
+  project?: Project;
 }
 
 export function TexturesSection(props: TexturesSectionProps) {
@@ -181,6 +184,15 @@ export function TexturesSection(props: TexturesSectionProps) {
                     testId={`block-texture-${slot.key}`}
                     onCommit={(text) => setTexture(slot.key, text)}
                   />
+                  {props.project !== undefined && (
+                    <SlotPictureAi
+                      project={props.project}
+                      element={element}
+                      slot={slot.key}
+                      label={slot.label}
+                      value={String(value)}
+                    />
+                  )}
                 </div>
               );
             })}

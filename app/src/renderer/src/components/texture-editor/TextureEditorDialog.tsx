@@ -9,7 +9,10 @@
 import { Eraser, PaintBucket, Pencil, Pipette, Redo2, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { MakeWithAiButton } from '../ai-pictures/MakeWithAiButton';
+import { defaultPrompt, styleForTexturePath } from '../ai-pictures/prompt';
 import { Button } from '../ui/Button';
+import { fitInside } from './image-convert';
 import {
   floodFill,
   fromHex,
@@ -180,6 +183,20 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   };
 
   const palette = image === null ? [] : paletteOf(image);
+  const aiStyle = styleForTexturePath(props.name.slice(props.name.indexOf(':') + 1));
+
+  /** Puts a picked AI picture (ADR 0093) on the canvas as one painter undo step. */
+  const takeAiPicture = async (bytes: Uint8Array): Promise<void> => {
+    if (image === null) return;
+    const decoded = await decodePng(bytes);
+    const next =
+      decoded.width === image.width && decoded.height === image.height
+        ? decoded
+        : fitInside(decoded, image.width, image.height, 'sharp');
+    history.current.push(image);
+    setImage(next);
+    setDirty(true);
+  };
 
   return (
     <Dialog.Root
@@ -258,6 +275,15 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
                 <span className="text-xs text-muted">
                   {image.width}×{image.height}
                 </span>
+                <MakeWithAiButton
+                  testId="texture-make-with-ai"
+                  className="ml-auto"
+                  target={props.name}
+                  defaultPrompt={defaultPrompt(props.name, aiStyle)}
+                  defaultStyle={aiStyle}
+                  size={image.width >= 32 ? 32 : 16}
+                  onPick={takeAiPicture}
+                />
               </div>
               <div className="flex flex-wrap items-center gap-1">
                 <label htmlFor={colourId} className="text-sm">

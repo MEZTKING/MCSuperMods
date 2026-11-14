@@ -84,6 +84,14 @@ export const InvokeChannels = {
   aiToolResult: 'msm:v1:ai:toolResult',
   aiNewConversation: 'msm:v1:ai:newConversation',
   aiDropConversation: 'msm:v1:ai:dropConversation',
+  // ADR 0093: AI pictures (keys stay in main).
+  aiPicturesStatus: 'msm:v1:aiPictures:status',
+  aiPicturesSetService: 'msm:v1:aiPictures:setService',
+  aiPicturesSetKey: 'msm:v1:aiPictures:setKey',
+  aiPicturesClearKey: 'msm:v1:aiPictures:clearKey',
+  aiPicturesTestKey: 'msm:v1:aiPictures:testKey',
+  aiPicturesGenerate: 'msm:v1:aiPictures:generate',
+  aiPicturesCancel: 'msm:v1:aiPictures:cancel',
   // ADR 0084: one-click Play and Reload.
   playStatus: 'msm:v1:play:status',
   playPlay: 'msm:v1:play:play',

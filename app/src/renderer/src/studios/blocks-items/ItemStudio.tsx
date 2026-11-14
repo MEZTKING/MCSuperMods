@@ -11,6 +11,7 @@
  */
 
 import { lazy, Suspense, useState } from 'react';
+import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { typingKey } from '../../forms/context';
 import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
@@ -85,6 +86,15 @@ export function ItemStudio(props: StudioProps) {
         onCommit={(value) => set(['model'], value)}
       />
       {at(['model'])}
+      {typeof data.model === 'string' && (
+        <ModelPicturesAi
+          project={project}
+          model={data.model}
+          name={typeof data.display_name === 'string' ? data.display_name : element.id}
+          kind="item"
+          testId="item-model-ai"
+        />
+      )}
       <TextField
         label="Display name"
         value={data.display_name}

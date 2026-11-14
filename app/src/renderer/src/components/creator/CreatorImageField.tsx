@@ -14,6 +14,8 @@
 
 import type { StarterParameter } from '@msm/plugin-api';
 import { useId, useState } from 'react';
+import { MakeWithAiButton } from '../ai-pictures/MakeWithAiButton';
+import { defaultPrompt, styleForName, wordsOf } from '../ai-pictures/prompt';
 import { Button } from '../ui/Button';
 import { checkPngBytes, imageSummary, pngDataUrl } from '../wizard/wizard-model';
 
@@ -34,6 +36,23 @@ export interface CreatorImageFieldProps {
   error: string | null;
   pickImage: PickImage;
   onChange(value: string): void;
+  /** The thing's name so far (the flow's name field), for the AI description (ADR 0093). */
+  nameHint?: string;
+}
+
+/** Whether "Make with AI" suits an image parameter: not a mob skin's 64 by 64 layout. */
+export function takesAiPicture(parameter: StarterParameter & { type: 'image' }): boolean {
+  return !/skin/i.test(`${parameter.id} ${parameter.label}`);
+}
+
+/** The AI style of an image parameter: a block texture or an item icon. */
+function aiStyleOf(parameter: StarterParameter & { type: 'image' }, name: string) {
+  const words = `${parameter.id} ${parameter.label}`.toLowerCase();
+  const block =
+    /block|planks|log|stone|bark|leaves|side|top|bottom|front|paint|crate|machine|texture/.test(
+      words,
+    );
+  return styleForName(name, block ? 'block' : 'item');
 }
 
 /** A picked PNG for an image parameter, through the host's file picker. */
@@ -43,6 +62,7 @@ export function CreatorImageField({
   error,
   pickImage,
   onChange,
+  nameHint,
 }: CreatorImageFieldProps) {
   const labelId = useId();
   const descriptionId = useId();
@@ -52,6 +72,7 @@ export function CreatorImageField({
   const [picking, setPicking] = useState(false);
   const shownError = pickError ?? error;
   const testId = `param-${parameter.id}`;
+  const aiName = nameHint === undefined || wordsOf(nameHint) === '' ? parameter.label : nameHint;
   const describedBy =
     [
       parameter.description === undefined ? null : descriptionId,
@@ -111,6 +132,22 @@ export function CreatorImageField({
             >
               <span id={chooseId}>{value === '' ? 'Choose picture…' : 'Replace…'}</span>
             </Button>
+            {takesAiPicture(parameter) && (
+              <MakeWithAiButton
+                testId={`${testId}-ai`}
+                target={parameter.label}
+                defaultPrompt={defaultPrompt(aiName, aiStyleOf(parameter, aiName))}
+                defaultStyle={aiStyleOf(parameter, aiName)}
+                size={
+                  parameter.maxSize !== undefined && parameter.maxSize < 16 ? parameter.maxSize : 16
+                }
+                {...(parameter.maxSize === undefined ? {} : { maxSize: parameter.maxSize })}
+                onPick={(bytes) => {
+                  setPickError(null);
+                  onChange(pngDataUrl(bytes));
+                }}
+              />
+            )}
             {value !== '' && (
               <Button
                 data-testid={`${testId}-clear`}

@@ -19,6 +19,7 @@ import {
 } from '../shared/ipc-contract';
 import type { PlayInput, PlayOutputFile } from '../shared/platform';
 import type { AiSender, AiService } from './ai/ai-service';
+import type { AiPicturesService } from './ai-pictures/ai-pictures-service';
 import type { MainPlatform } from './platform/node-platform';
 import type { PluginsService } from './platform/plugins';
 import type { Updater } from './updater';
@@ -43,6 +44,20 @@ export type IpcAi = Pick<
   | 'dropConversation'
 >;
 
+/** The AI pictures operations the IPC layer serves (ADR 0093). */
+export type IpcAiPictures = Omit<AiPicturesService, 'active'>;
+
+/** Without AI pictures (older tests): every call fails plainly. */
+const NO_AI_PICTURES: IpcAiPictures = {
+  status: () => Promise.reject(new Error('AI pictures are not available.')),
+  setService: () => Promise.reject(new Error('AI pictures are not available.')),
+  setKey: () => Promise.reject(new Error('AI pictures are not available.')),
+  clearKey: () => Promise.reject(new Error('AI pictures are not available.')),
+  testKey: () => Promise.reject(new Error('AI pictures are not available.')),
+  generate: () => Promise.reject(new Error('AI pictures are not available.')),
+  cancel: async () => {},
+};
+
 /** Per-call services a handler may use. */
 export interface HandlerContext {
   /** Sends extraction progress to the calling renderer. */
@@ -65,6 +80,7 @@ export function createIpcHandlers(
   updates: IpcUpdates,
   plugins: IpcPlugins,
   ai: IpcAi,
+  aiPictures: IpcAiPictures = NO_AI_PICTURES,
 ): MainHandlers {
   return {
     [InvokeChannels.projectPickDirectory]: (req) =>
@@ -196,6 +212,13 @@ export function createIpcHandlers(
       }),
     [InvokeChannels.aiNewConversation]: (req) => ai.newConversation(req.conversationId),
     [InvokeChannels.aiDropConversation]: (req) => ai.dropConversation(req.conversationId),
+    [InvokeChannels.aiPicturesStatus]: () => aiPictures.status(),
+    [InvokeChannels.aiPicturesSetService]: (req) => aiPictures.setService(req.service),
+    [InvokeChannels.aiPicturesSetKey]: (req) => aiPictures.setKey(req.service, req.key),
+    [InvokeChannels.aiPicturesClearKey]: (req) => aiPictures.clearKey(req.service),
+    [InvokeChannels.aiPicturesTestKey]: (req) => aiPictures.testKey(req.service),
+    [InvokeChannels.aiPicturesGenerate]: (req) => aiPictures.generate(req),
+    [InvokeChannels.aiPicturesCancel]: (req) => aiPictures.cancel(req.requestId),
     [InvokeChannels.tryItListWorlds]: () => platform.tryItWorlds.listWorlds(),
     [InvokeChannels.tryItReadArea]: (req) => platform.tryItWorlds.readArea(req),
     [InvokeChannels.playStatus]: (req) => platform.play.status(req.targetId),
@@ -274,8 +297,9 @@ export function registerIpc(
   updates: IpcUpdates,
   plugins: IpcPlugins,
   ai: IpcAi,
+  aiPictures?: IpcAiPictures,
 ): void {
-  const handlers = createIpcHandlers(platform, updates, plugins, ai);
+  const handlers = createIpcHandlers(platform, updates, plugins, ai, aiPictures);
   for (const channel of Object.values(InvokeChannels) as InvokeChannel[]) {
     const { request } = ipcContract[channel];
     const handler = handlers[channel] as (

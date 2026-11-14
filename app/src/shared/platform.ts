@@ -6,12 +6,13 @@
  * @packageDocumentation
  */
 
-// Type-only: the AI helper's protocol (ADR 0041); the SDK itself runs only in main.
 import type { AiEvent, AiKeyTestResult, AiSettings, AiStartRequest, AiToolResult } from '@msm/ai';
 import type { Modpack, ModpackMod, ProjectFileSystem } from '@msm/core';
 // Type-only: the service itself runs in main (ADR 0014); these are plain MSM shapes.
 import type { Json, Problem } from '@msm/plugin-api';
 import type { McfunctionCompletion, McfunctionProblem } from '@msm/schemas/mcfunction';
+// Type-only: the AI helper's protocol (ADR 0041); the SDK itself runs only in main.
+import type { AiPicturesPlatform } from './ai-pictures';
 
 /** The mcfunction IPC's payload types, for the renderer (which may not import Spyglass). */
 export type { McfunctionCompletion, McfunctionProblem };
@@ -1023,6 +1024,11 @@ export interface PlatformAdapter {
    * written before the helper may omit it.
    */
   ai?: AiPlatform;
+  /**
+   * AI pictures (ADR 0093). The preload always provides it; optional so that test doubles
+   * written before it may omit it.
+   */
+  aiPictures?: AiPicturesPlatform;
   /**
    * One-click Play and Reload (ADR 0084). The preload always provides it; optional so that
    * test doubles written before it may omit it.

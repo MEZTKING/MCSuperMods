@@ -4896,3 +4896,20 @@ Decisions
 
 Next
 - The Windows check: type in a function, close with the X at once, see the prompt and Save; Restart to update with the same.
+
+## 2026-11-14 — executor — AI pictures
+
+What
+- AI pictures (ADR 0093, Proposed), for the user's "Yes add the ai art for now": textures made from a description by an image service with the user's own key, then cleaned up into Minecraft style.
+- Main (`app/src/main/ai-pictures/`): adapters for Retro Diffusion (default; `rd_plus__mc_texture` and `rd_plus__mc_item`, V2 queue and polling) and OpenAI Images (`gpt-image-2.6-flare`, low quality, style words appended) behind one `PictureProvider` interface; the service keeps one encrypted key per service (the AI helper's key store with a new `fileName` option), the chosen service in `<msmHome>/ai-pictures.json`, a 180 s time-out, cancel by request id and ten plain error classes. `MSM_E2E_AI_PICTURES_FAKE=1` swaps in a fake service (no key, no network). Seven channels `msm:v1:aiPictures:*`; the status schema has no room for a key.
+- Renderer (`components/ai-pictures/`): `cleanup.ts` (background by alpha or edge flood, crop and fit keeping proportions, area or mode downscaling, quantising per hue cluster to six shades with a blue-to-yellow turn, ranks kept so shading never inverts, a dark outline for items and tools); **Make with AI** (Very easy: **Make it with AI**) on the Block Studio's model textures and texture slots, the Item Studio's model textures, the Particle Studio's frames, the Creator's image fields (not skins) and the texture painter; four pictures shown before and after the clean-up, one picked and written as one undoable step; **Set up AI pictures in Settings** without a key; Settings "AI pictures"; a **Use AI pictures** switch (off by default) in the Creator and Surprise me that makes each new block and item texture on Create or Make it, with progress and Stop, keeping the built-in picture on failure.
+- Tests: `test/main/ai-pictures-providers.test.ts`, `test/main/ai-pictures-service.test.ts`, `test/components/ai-pictures-cleanup.test.ts`, `test/components/ai-pictures-ui.test.tsx`, contract samples; e2e `ai-pictures-path` (a Creator block, Make with AI, pick, texture changed on disk, Undo). App 2005 tests, `pnpm lint`, `pnpm typecheck`, `pnpm build` pass; `app.asar` 27.7 of 32 MB, renderer 15.1 of 16 MB.
+- Docs: ADR 0093, `docs/guide/ai-pictures.md` with its sidebar and index entries, CHANGELOG `[Unreleased]`, `app/CLAUDE.md`.
+
+Decisions
+- Retro Diffusion over PixelLab and Replicate: Minecraft styles, a free credits call for Test key, a stable V2 API, $0.06 a picture on RD Plus.
+- No `generate_picture` tool for the AI helper (ADR 0093 D9): it would spend image credits from a model's plan and change the pinned catalogue.
+- ADR numbered 0093 because 0092 may go to the parallel "Minecraft-style art" work; the quantiser is self-contained so the two can be unified later.
+
+Next
+- Orchestrator: renumber the ADR if needed; unify the quantiser with the art prototype's ramp generator; a live check with real keys (this sandbox only had mocked fetches; Retro Diffusion's `/v2/status` was reachable, the style selector needs a key, so the `mc_*` size limits are still "verify at implementation").

@@ -16,6 +16,14 @@ import {
 import { isProjectRelativePath } from '@msm/plugin-api';
 import { z } from 'zod';
 import {
+  AI_PICTURE_SERVICES,
+  AI_PICTURE_STYLES,
+  AI_PICTURES_IMAGE_MAX_BYTES,
+  AI_PICTURES_KEY_MAX,
+  AI_PICTURES_MAX_COUNT,
+  AI_PICTURES_PROMPT_MAX,
+} from './ai-pictures';
+import {
   type InvokeChannel,
   InvokeChannels,
   PLUGIN_CAPABILITIES,
@@ -558,6 +566,58 @@ const aiKeyTestResult = z.discriminatedUnion('ok', [
       errorClass: z.string().max(200),
     })
     .strict(),
+]);
+
+// ---- AI pictures (ADR 0093). ----
+
+const aiPictureService = z.enum(AI_PICTURE_SERVICES);
+const aiPictureErrorClass = z.enum([
+  'no_key',
+  'bad_key',
+  'quota',
+  'rate_limit',
+  'refused',
+  'network',
+  'timeout',
+  'cancelled',
+  'server',
+  'bad_response',
+]);
+const aiPictureKeyState = z
+  .object({ set: z.boolean(), tail: z.string().max(4).nullable() })
+  .strict();
+/** The status the renderer sees: whether keys are set and their tails, never a key. */
+const aiPicturesStatus = z
+  .object({
+    service: aiPictureService,
+    keys: z.object({ 'retro-diffusion': aiPictureKeyState, openai: aiPictureKeyState }).strict(),
+    encryptionAvailable: z.boolean(),
+  })
+  .strict();
+const aiPictureFailure = z
+  .object({ ok: z.literal(false), error: z.string().max(2000), errorClass: aiPictureErrorClass })
+  .strict();
+const aiPictureKeyTest = z.union([z.object({ ok: z.literal(true) }).strict(), aiPictureFailure]);
+const aiPictureRequest = z
+  .object({
+    requestId: aiId,
+    prompt: z.string().trim().min(1).max(AI_PICTURES_PROMPT_MAX),
+    style: z.enum(AI_PICTURE_STYLES),
+    size: z.number().int().min(8).max(64),
+    count: z.number().int().min(1).max(AI_PICTURES_MAX_COUNT),
+    transparent: z.boolean(),
+  })
+  .strict();
+const aiPictureResult = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      images: z
+        .array(bytes.refine((value) => value.length <= AI_PICTURES_IMAGE_MAX_BYTES))
+        .max(AI_PICTURES_MAX_COUNT),
+    })
+    .strict(),
+  aiPictureFailure,
 ]);
 
 // ---- One-click Play and Reload (ADR 0084). ----
@@ -1199,6 +1259,36 @@ export const ipcContract = {
   },
   [InvokeChannels.aiDropConversation]: {
     request: z.object({ conversationId: aiId }).strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiPicturesStatus]: { request: noRequest, response: aiPicturesStatus },
+  [InvokeChannels.aiPicturesSetService]: {
+    request: z.object({ service: aiPictureService }).strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiPicturesSetKey]: {
+    request: z
+      .object({
+        service: aiPictureService,
+        key: z.string().trim().min(1).max(AI_PICTURES_KEY_MAX),
+      })
+      .strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiPicturesClearKey]: {
+    request: z.object({ service: aiPictureService }).strict(),
+    response: voidResponse,
+  },
+  [InvokeChannels.aiPicturesTestKey]: {
+    request: z.object({ service: aiPictureService }).strict(),
+    response: aiPictureKeyTest,
+  },
+  [InvokeChannels.aiPicturesGenerate]: {
+    request: aiPictureRequest,
+    response: aiPictureResult,
+  },
+  [InvokeChannels.aiPicturesCancel]: {
+    request: z.object({ requestId: aiId }).strict(),
     response: voidResponse,
   },
   [InvokeChannels.playStatus]: {

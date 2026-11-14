@@ -53,11 +53,16 @@ export interface AiKeyStoreDeps {
   log?: (message: string) => void;
   /** `process.platform` (for tests). */
   platform?: NodeJS.Platform;
+  /** The key file below `msmHome` (default {@link AI_KEY_FILE}; AI pictures keep their own). */
+  fileName?: string;
+  /** Names the feature in log lines (default "MSM AI helper"). */
+  logLabel?: string;
 }
 
 /** Creates the key store over `<msmHome>/ai-key.bin`. */
 export function createAiKeyStore(deps: AiKeyStoreDeps): AiKeyStore {
-  const file = join(deps.msmHome, AI_KEY_FILE);
+  const file = join(deps.msmHome, deps.fileName ?? AI_KEY_FILE);
+  const label = deps.logLabel ?? 'MSM AI helper';
   const log = deps.log ?? ((message: string) => console.warn(message));
 
   const encryptionAvailable = async (): Promise<boolean> => {
@@ -99,7 +104,7 @@ export function createAiKeyStore(deps: AiKeyStoreDeps): AiKeyStore {
       bytes = await readFile(file);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        log(`MSM AI helper: the key file could not be read (${(error as Error).message}).`);
+        log(`${label}: the key file could not be read (${(error as Error).message}).`);
       }
       return null;
     }
@@ -116,13 +121,13 @@ export function createAiKeyStore(deps: AiKeyStoreDeps): AiKeyStore {
         try {
           await write(key);
         } catch (error) {
-          log(`MSM AI helper: the key could not be encrypted again (${(error as Error).message}).`);
+          log(`${label}: the key could not be encrypted again (${(error as Error).message}).`);
         }
       }
       return key;
     }
     // A corrupt file, or one encrypted under another user or machine: treated as not set.
-    log(`MSM AI helper: the stored key in ${file} could not be decrypted; it reads as not set.`);
+    log(`${label}: the stored key in ${file} could not be decrypted; it reads as not set.`);
     return null;
   };
 

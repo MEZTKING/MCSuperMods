@@ -37,6 +37,7 @@ import {
 } from '../../changeset/creator-sets';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import { newSeed, pickForMe } from '../../surprise/surprise';
+import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { fieldClass } from '../NewElementDialog';
 import { Button } from '../ui/Button';
 import { ParameterField } from '../wizard/ParameterField';
@@ -95,6 +96,8 @@ export interface CreatorCreated extends CreatorApplyResult {
   changed: number;
   /** The element ids the plan created, in order. */
   created: ResourceLocation[];
+  /** What "Use AI pictures" did (ADR 0093 D7), or absent when it was off. */
+  aiNote?: string;
 }
 
 /** Props of {@link CreatorDialog}. */
@@ -252,6 +255,15 @@ export function CreatorDialog(props: CreatorDialogProps) {
   );
   const hasErrors = Object.keys(errors).length > 0;
   const debounce = props.debounceMs ?? CREATOR_DEBOUNCE_MS;
+  const aiBatch = useAiBatch();
+  // The flow's name field, for the AI pictures' description (ADR 0093 D5).
+  const nameParameter = (parameters ?? []).find(
+    (parameter) => parameter.type === 'string' && /(^|_)name$/.test(parameter.id),
+  );
+  const nameHint =
+    nameParameter !== undefined && typeof raw[nameParameter.id] === 'string'
+      ? String(raw[nameParameter.id])
+      : undefined;
 
   const newSetId = props.newSetId;
   const setIdFor = useCallback((): string => {
@@ -352,8 +364,11 @@ export function CreatorDialog(props: CreatorDialogProps) {
       // Plan again from the current values: a rebuild may still be waiting.
       tokenRef.current += 1;
       const { plan } = await compute(starter, raw);
-      const changes = creatorChanges(plan, overwrite);
+      const planned = creatorChanges(plan, overwrite);
       const label = creatorLabel(plan, starter.title);
+      // "Use AI pictures" (ADR 0093 D7): the block and item textures are made now.
+      const ai = await aiBatch.run(planned.items, nameHint);
+      const changes = { ...planned, items: ai.items };
       const result = await applyCreatorPlan(session, changes, label);
       const created = changes.items.flatMap((item) =>
         item.op === 'create' && item.elementId !== undefined ? [item.elementId] : [],
@@ -363,7 +378,13 @@ export function CreatorDialog(props: CreatorDialogProps) {
           ? true
           : entry.change !== undefined && entry.status !== 'unchanged',
       ).length;
-      props.onCreated({ ...result, label, created, changed });
+      props.onCreated({
+        ...result,
+        label,
+        created,
+        changed,
+        ...(ai.note === null ? {} : { aiNote: ai.note }),
+      });
     } catch (error) {
       setCreateError(messageOf(error));
       setCreating(false);
@@ -489,6 +510,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                           error={errors[parameter.id] ?? null}
                           pickImage={props.pickImage}
                           onChange={(value) => change(parameter.id, value)}
+                          {...(nameHint === undefined ? {} : { nameHint })}
                         />
                       ) : (
                         <ParameterField
@@ -550,6 +572,15 @@ export function CreatorDialog(props: CreatorDialogProps) {
             </p>
           )}
           <div className="flex items-center justify-end gap-1.5">
+            {starter !== null && (
+              <div className="mr-auto">
+                <AiPicturesSwitch
+                  batch={aiBatch}
+                  testId="creator-ai-pictures"
+                  disabled={creating}
+                />
+              </div>
+            )}
             {starter !== null && plan !== null && !willChange && (
               <span className="mr-auto text-xs text-muted">Nothing to change.</span>
             )}

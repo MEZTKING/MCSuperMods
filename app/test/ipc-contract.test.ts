@@ -692,6 +692,64 @@ const samples: Record<
       { ok: true },
     ],
   },
+  [InvokeChannels.aiPicturesStatus]: {
+    request: [undefined, { reveal: true }],
+    response: [
+      {
+        service: 'retro-diffusion',
+        keys: {
+          'retro-diffusion': { set: true, tail: 'abcd' },
+          openai: { set: false, tail: null },
+        },
+        encryptionAvailable: true,
+      },
+      // A whole key never fits: tails are four characters at most, and no `key` field exists.
+      {
+        service: 'openai',
+        keys: {
+          'retro-diffusion': { set: true, tail: 'rdpk-whole-key' },
+          openai: { set: false, tail: null },
+        },
+        encryptionAvailable: true,
+      },
+    ],
+  },
+  [InvokeChannels.aiPicturesSetService]: {
+    request: [{ service: 'openai' }, { service: 'midjourney' }],
+    response: [undefined, 'set'],
+  },
+  [InvokeChannels.aiPicturesSetKey]: {
+    request: [
+      { service: 'openai', key: 'sk-test-1234' },
+      { service: 'openai', key: '  ' },
+    ],
+    response: [undefined, true],
+  },
+  [InvokeChannels.aiPicturesClearKey]: {
+    request: [{ service: 'retro-diffusion' }, {}],
+    response: [undefined, 'cleared'],
+  },
+  [InvokeChannels.aiPicturesTestKey]: {
+    request: [{ service: 'retro-diffusion' }, { service: 'retro-diffusion', key: 'x' }],
+    response: [
+      { ok: false, error: 'bad key', errorClass: 'bad_key' },
+      { ok: true, key: 'rdpk-1234' },
+    ],
+  },
+  [InvokeChannels.aiPicturesGenerate]: {
+    request: [
+      { requestId: 'r1', prompt: 'a ruby', style: 'item', size: 16, count: 4, transparent: true },
+      { requestId: 'r1', prompt: 'a ruby', style: 'item', size: 16, count: 5, transparent: true },
+    ],
+    response: [
+      { ok: true, images: [bytes, bytes] },
+      { ok: true, images: ['iVBOR'] },
+    ],
+  },
+  [InvokeChannels.aiPicturesCancel]: {
+    request: [{ requestId: 'r1' }, { requestId: '' }],
+    response: [undefined, 'cancelled'],
+  },
   [InvokeChannels.aiStart]: {
     request: [aiStart, { ...aiStart, mode: 'agent' }],
     response: [undefined, 'started'],

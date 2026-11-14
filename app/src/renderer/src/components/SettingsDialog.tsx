@@ -1,6 +1,7 @@
 import { type AiModelId, type AiSettings, DEFAULT_AI_SETTINGS } from '@msm/ai';
 import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useState } from 'react';
+import type { AiPicturesPlatform } from '../../../shared/ai-pictures';
 import type { MinecraftProgress } from '../../../shared/ipc-channels';
 import type {
   AiPlatform,
@@ -10,6 +11,7 @@ import type {
 } from '../../../shared/platform';
 import type { ExternalPluginState } from '../plugins/external-plugins';
 import { AiSettingsSection } from './ai/AiSettingsSection';
+import { AiPicturesSettingsSection } from './ai-pictures/AiPicturesSettingsSection';
 import {
   type InstallTargetOption,
   installTargetName,
@@ -67,6 +69,10 @@ export interface SettingsDialogProps {
   onAiChanged?: (() => void) | undefined;
   /** The model the open AI conversation started with, or `null` without one. */
   aiConversationModel?: AiModelId | null;
+  /** Main's AI pictures services; the "AI pictures" section is shown only with them (ADR 0093). */
+  aiPictures?: AiPicturesPlatform | undefined;
+  /** Called after the image service or its key changed. */
+  onAiPicturesChanged?: (() => void) | undefined;
 }
 
 /** The label of a plugin state in Settings > Plugins. */
@@ -678,6 +684,13 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 save={saveAi}
                 onChanged={props.onAiChanged}
                 conversationModel={props.aiConversationModel ?? null}
+              />
+            )}
+
+            {props.aiPictures !== undefined && (
+              <AiPicturesSettingsSection
+                aiPictures={props.aiPictures}
+                onChanged={props.onAiPicturesChanged}
               />
             )}
 

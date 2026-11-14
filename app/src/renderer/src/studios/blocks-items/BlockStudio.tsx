@@ -35,6 +35,7 @@
 import type { Json } from '@msm/core';
 import { isSeeThroughBlock } from '@msm/plugin-blocks-items';
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { buttonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
 import { RulesSlot } from '../RulesSlot';
@@ -227,6 +228,15 @@ export function BlockStudio(props: StudioProps) {
         </>
       )}
       {at(['model'])}
+      {takesModel && typeof data.model === 'string' && (
+        <ModelPicturesAi
+          project={project}
+          model={data.model}
+          name={typeof data.display_name === 'string' ? data.display_name : element.id}
+          kind="block"
+          testId="block-model-ai"
+        />
+      )}
       <TextField
         label="Display name"
         value={data.display_name}
@@ -796,6 +806,7 @@ export function BlockStudio(props: StudioProps) {
       {appearance}
       <TexturesSection
         key={element.id}
+        project={project}
         element={element}
         problems={problems}
         suggest={suggest}

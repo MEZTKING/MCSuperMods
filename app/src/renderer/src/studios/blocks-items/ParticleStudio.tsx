@@ -21,6 +21,9 @@
 import type { Json } from '@msm/core';
 import { ArrowDown, ArrowUp, Paintbrush, X } from 'lucide-react';
 import { useState } from 'react';
+import { MakeWithAiButton } from '../../components/ai-pictures/MakeWithAiButton';
+import { defaultPrompt } from '../../components/ai-pictures/prompt';
+import { textureChange } from '../../components/ai-pictures/texture-write';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
 import { IdInput, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -184,6 +187,28 @@ export default function ParticleStudio(props: StudioProps) {
                   <Paintbrush size={12} aria-hidden />
                 </button>
               )}
+              {!isVanillaSprite(sprite) &&
+                host?.applyChanges !== undefined &&
+                spriteAsset(target, sprite) !== undefined && (
+                  <MakeWithAiButton
+                    testId={`particle-frame-${index}-ai`}
+                    target={sprite}
+                    defaultPrompt={defaultPrompt(`${sprite} particle`, 'item')}
+                    defaultStyle="item"
+                    size={NEW_PICTURE_SIZE.width}
+                    maxSize={NEW_PICTURE_SIZE.width}
+                    onPick={async (bytes) => {
+                      const asset = spriteAsset(target, sprite);
+                      if (asset === undefined || host.applyChanges === undefined) return;
+                      const change = textureChange(project, asset.namespace, asset.path, bytes);
+                      await host.applyChanges(
+                        change.items,
+                        `Make with AI ${sprite}`,
+                        change.writes,
+                      );
+                    }}
+                  />
+                )}
               {missing && (
                 <span
                   role="status"

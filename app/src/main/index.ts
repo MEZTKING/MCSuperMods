@@ -23,6 +23,8 @@ import {
 import { EventChannels } from '../shared/ipc-channels';
 import { createAiKeyStore } from './ai/ai-key-store';
 import { createAiService } from './ai/ai-service';
+import { aiPicturesKeyFile, createAiPicturesService } from './ai-pictures/ai-pictures-service';
+import { fakeProvider } from './ai-pictures/fake';
 import { registerAppSchemePrivileges } from './app-scheme';
 import {
   applyE2eHooks,
@@ -210,6 +212,20 @@ const aiService = createAiService({
   ...(e2eAiScript === null ? {} : { scriptedClient: new ScriptedModelClient(e2eAiScript) }),
 });
 
+// ADR 0093: AI pictures. One encrypted key per image service in
+// `<msmHome>/ai-pictures-<service>-key.bin`; requests go out from main only.
+const aiPictures = createAiPicturesService({
+  msmHome,
+  keyStore: (service) =>
+    createAiKeyStore({
+      msmHome,
+      safeStorage,
+      fileName: aiPicturesKeyFile(service),
+      logLabel: 'MSM AI pictures',
+    }),
+  ...(process.env.MSM_E2E_AI_PICTURES_FAKE === '1' ? { fake: fakeProvider } : {}),
+});
+
 // `<userData>/logs/updater.log`, created on the first logged error.
 let updateLog: { path: string; write: ReturnType<typeof createUpdateLog> } | null = null;
 const updateLogFile = () => {
@@ -307,7 +323,7 @@ function runSmoke(window: BrowserWindow): void {
 }
 
 void app.whenReady().then(() => {
-  registerIpc(platform, updater, plugins, aiService);
+  registerIpc(platform, updater, plugins, aiService, aiPictures);
   registerPlayEvents(platform.play, app);
   registerMenuIpc();
   installMenu();
