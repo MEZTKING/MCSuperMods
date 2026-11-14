@@ -122,11 +122,17 @@ test('new project, block model, texture, export zip, reopen', async () => {
   await window
     .getByTestId(`asset-row-${NAMESPACE}:textures/item/blank_gem.png`)
     .dragTo(window.getByTestId(`element-row-${ELEMENT_ID}`));
-  await expect(
-    window.getByText(new RegExp(`${ELEMENT_ID} now draws with ${NAMESPACE}:item/blank_gem`)),
-  ).toBeVisible();
+  // Read the toast by its test id: for about a second Radix Toast also copies the text into a
+  // visually hidden role="status" announcer for screen readers, so a page-wide text query
+  // can match twice.
+  await expect(window.getByTestId('status-toast-text')).toContainText(
+    `${ELEMENT_ID} now draws with ${NAMESPACE}:item/blank_gem`,
+  );
   await expect(window.locator('footer')).toContainText(`Undo: Edit ${ELEMENT_ID}`);
   await window.keyboard.press('ControlOrMeta+Z');
+  // The drop is exactly one undo step: one Undo takes it off and leaves the new texture's step.
+  await expect(window.locator('footer')).toContainText(`Redo: Edit ${ELEMENT_ID}`);
+  await expect(window.locator('footer')).not.toContainText(`Undo: Edit ${ELEMENT_ID}`);
 
   // Point textures.all at the imported texture, through the form.
   await window.getByTestId(`element-row-${ELEMENT_ID}`).click();
