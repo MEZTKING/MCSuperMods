@@ -133,6 +133,7 @@ import {
   mcfunctionProjectIds,
   mcfunctionTextValidator,
 } from './mcfunction-problems';
+import { flushPendingEdits } from './pending-edits';
 import {
   buildSessionReferenceIndex,
   referencesForRename,
@@ -1419,9 +1420,12 @@ export class ProjectSession {
    */
   async save(): Promise<void> {
     const stack = this.#requireStack();
+    // Typing an editor still holds back is part of what the user saves.
+    flushPendingEdits();
+    const state = stack.state;
     const result = await saveProject(
       this.#fs,
-      stack.state,
+      state,
       this.registry,
       this.#manifest === undefined ? {} : { manifest: this.#manifest },
     );
@@ -1431,7 +1435,8 @@ export class ProjectSession {
     this.#loadProblems = this.#loadProblems.filter(
       (problem) => problem.file === undefined || !written.has(problem.file),
     );
-    stack.markSaved();
+    // An edit made while the files were written is not on disk: the project stays unsaved.
+    if (stack.state === state) stack.markSaved();
     this.#publish();
   }
 
@@ -3115,6 +3120,7 @@ export class ProjectSession {
   // Internals ----------------------------------------------------------------------------
 
   async #confirmDiscard(): Promise<boolean> {
+    flushPendingEdits();
     if (!this.#snapshot.dirty) return true;
     return this.#platform.dialogs.confirmDiscard(
       'The current project has unsaved changes. Discard them?',

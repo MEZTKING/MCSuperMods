@@ -3955,3 +3955,19 @@ Decisions
 
 Next
 - B369, B373, B374: formats and wording keys in the B366 report.
+## 2026-11-14 — executor — portals-path save flake
+
+What
+- Root cause of the CI failure at `portals-path.spec.ts:533` (runs 43616173662, 43616201056; footer "Unsaved changes", undo "Edit gates:place_portal"): an app bug. The function and script editors hold typing back for 150 ms (`useDebouncedLines`) and Save did not report it, so a Save within 150 ms of the last keystroke wrote the old lines; if the held edit landed while the files were written, `markSaved` even marked the unwritten edit as saved (shown "Saved" with stale files on disk, reproduced locally), otherwise the footer flashed "Saved" and went back to "Unsaved changes".
+- Fix: `app/src/renderer/src/session/pending-edits.ts` (`registerPendingEdit`, `flushPendingEdits`); `useDebouncedLines` registers its flush while mounted; `ProjectSession.save` and the discard check report held edits first, and `save` marks the project saved only when the state did not change during the writes.
+- Second race found under load (`SyntaxError: Unexpected end of JSON input` in `savedBlock`, also reported by B357): `reopenKeepsEdits` in `portals-path` and `machines-path` saved a project that was already saved, so "Saved" was showing before the click and the test read an element file while the no-op Save rewrote it. Fixes: the scoped project file system (`main/platform/scoped-fs.ts`) now writes through a temporary file and a rename (a contained symlink keeps pointing at its replaced file), so nothing ever sees a half written project file, also after a crash; `reopenKeepsEdits` asserts the caller's save instead of saving again; the `save` helpers of those two specs wait for "Unsaved changes" before clicking. `portals-path` also checks the typed function lines reached the saved file.
+- Tests: `project-session.test.ts` (held edit saved; edit during the writes stays unsaved; both fail without the fix), `FunctionEditor.test.tsx` (flush on save), `scoped-fs.test.ts` (whole replace, no temp left, write through a contained link).
+- Verified: `portals-path` 10 of 10 (20 tests) twice under four busy-loop CPU hogs and with `machines-path` 10 of 10 unloaded; full e2e twice (load average about 30 from other agents): one unrelated dropped input each time (`launchers-path` install menu click, `plugins-path` Escape), each passing 6 and 3 times on rerun; `pnpm --filter @msm/app test`, `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- Fixed in the app rather than by raising timeouts; saving unchanged files is kept (rewrites are now harmless).
+- The other specs' `save` helpers (creator, families, mobs) have no save of an already saved project and are unchanged.
+
+Next
+- Exports and Test in Minecraft read the session state without `flushPendingEdits`: an export within 150 ms of typing uses the old lines (minor; could flush in the export paths too).
+- Two saves started back to back are not queued; with atomic writes the later one wins per file, but a session-level queue would be cleaner.

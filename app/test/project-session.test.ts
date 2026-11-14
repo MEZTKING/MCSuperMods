@@ -6,6 +6,7 @@ import {
   defaultElementData,
   namespaceFromFolderName,
 } from '../src/renderer/src/session/element-defaults';
+import { registerPendingEdit } from '../src/renderer/src/session/pending-edits';
 import {
   type ContentBundleBuilder,
   SessionProblemCodes,
@@ -111,6 +112,39 @@ describe('ProjectSession: projects', () => {
 
     const { session: reloaded } = await openSaved(fs);
     expect(reloaded.snapshot.project).toEqual(session.snapshot.project);
+  });
+
+  it('saves an edit an editor still holds back', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newSession(fs);
+    await session.newProject();
+    session.addElement({ id: 'demo:block/held', kind: 'minecraft:model' });
+    const unregister = registerPendingEdit(() =>
+      session.setElementValue('demo:block/held', '/ambientocclusion', false, {}),
+    );
+    try {
+      await session.save();
+    } finally {
+      unregister();
+    }
+    expect(session.snapshot.dirty).toBe(false);
+    const saved = JSON.parse(
+      utf8.decode(await fs.readFile('content/demo/model/block/held.json')),
+    ) as { data: Record<string, unknown> };
+    expect(saved.data.ambientocclusion).toBe(false);
+  });
+
+  it('stays unsaved when an edit lands while the files are written', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newSession(fs);
+    await session.newProject();
+    session.addElement({ id: 'demo:block/late', kind: 'minecraft:model' });
+    const saving = session.save();
+    session.setElementValue('demo:block/late', '/ambientocclusion', false, {});
+    await saving;
+    expect(session.snapshot.dirty).toBe(true);
+    await session.save();
+    expect(session.snapshot.dirty).toBe(false);
   });
 
   it('deletes a removed element file on the next save (manifest kept)', async () => {

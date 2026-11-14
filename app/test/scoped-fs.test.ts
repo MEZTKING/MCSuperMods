@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -38,6 +38,14 @@ describe('createScopedFileSystem', () => {
     await fs.remove('content/demo/recipe');
     expect(await fs.exists('content/demo/recipe')).toBe(false);
     await fs.remove('content/missing');
+  });
+
+  it('replaces a file whole through a temporary file and leaves none behind', async () => {
+    const fs = createScopedFileSystem(root);
+    await fs.writeFile('content/demo/a.json', encode('{"old":true}'));
+    await fs.writeFile('content/demo/a.json', encode('{"new":true}'));
+    expect(await readFile(join(root, 'content', 'demo', 'a.json'), 'utf8')).toBe('{"new":true}');
+    expect(await readdir(join(root, 'content', 'demo'))).toEqual(['a.json']);
   });
 
   it('rejects paths outside the project', async () => {
@@ -101,6 +109,13 @@ describe('createScopedFileSystem symlink containment', () => {
       { name: 'inside.txt', kind: 'file' },
     ]);
     expect(text(await fs.readFile('assets/inside-link.txt'))).toBe('inside');
+  });
+
+  it('writes through a contained link to its file and keeps the link', async () => {
+    const fs = createScopedFileSystem(project);
+    await fs.writeFile('assets/inside-link.txt', encode('changed'));
+    expect((await lstat(join(project, 'assets', 'inside-link.txt'))).isSymbolicLink()).toBe(true);
+    expect(await readFile(join(project, 'assets', 'inside.txt'), 'utf8')).toBe('changed');
   });
 
   it('removes only the link, never its target', async () => {

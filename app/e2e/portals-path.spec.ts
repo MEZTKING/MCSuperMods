@@ -151,9 +151,15 @@ async function applyCreator(
   ).toBeVisible();
 }
 
+/**
+ * Saves the project, which must have unsaved changes: with none, the footer would already read
+ * "Saved" while the Save still runs, and the test would read files as they are rewritten.
+ */
 async function save(window: Page): Promise<void> {
+  const footer = window.locator('footer');
+  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
-  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }
 
 type Data = Record<string, unknown> & {
@@ -273,6 +279,8 @@ async function typeSource(window: Page, lines: readonly string[]): Promise<void>
 /**
  * "Edit in Creator" on `block`: another colour enables the Update; the block is listed under
  * "Kept your edits" and not ticked to be overwritten, and the Update leaves its data as it was.
+ * The caller saves first: another Save of a saved project only rewrites the same files, and the
+ * footer already reads "Saved", so the read below could catch a file half rewritten.
  */
 async function reopenKeepsEdits(
   window: Page,
@@ -281,7 +289,7 @@ async function reopenKeepsEdits(
   title: string,
   colour: string,
 ): Promise<void> {
-  await save(window);
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
   const before = savedBlock(projectDir, block);
   await window.getByTestId(`element-row-${id(block)}`).click();
   await window.getByTestId('editor-edit-in-creator').click();
@@ -528,9 +536,21 @@ test('portals: Dimension flow portal, trigger-lit portal and Light a portal, exp
   await expect(create).toBeHidden();
   await window.getByTestId(`element-row-${id('place_portal')}`).click();
   await expect(window.getByTestId('function-editor')).toBeVisible();
-  await typeSource(window, [`setblock ~ ~1 ~ ${id('ruby_realm_portal')}`]);
+  const placing = [`setblock ~ ~1 ~ ${id('ruby_realm_portal')}`];
+  await typeSource(window, placing);
   await expectNoErrors(window);
+  // Saved right after typing: the editor's held-back edit is part of the save.
   await save(window);
+  const functionFile = join(
+    folders.projectDir,
+    'content',
+    NAMESPACE,
+    'function',
+    'place_portal.json',
+  );
+  expect((JSON.parse(readFileSync(functionFile, 'utf8')) as { data: Data }).data.lines).toEqual(
+    placing,
+  );
   console.log(`portals-path edits: ${((Date.now() - started) / 1000).toFixed(1)} s`);
 
   // The vanilla data pack: the dimension and both functions kept, the tag entry optional.

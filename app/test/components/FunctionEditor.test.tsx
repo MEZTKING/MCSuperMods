@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { flushPendingEdits } from '../../src/renderer/src/session/pending-edits';
 import {
   FUNCTION_EDIT_DEBOUNCE_MS,
   FUNCTION_SOURCE_COALESCE,
@@ -54,6 +55,21 @@ describe('FunctionEditor (textarea fallback)', () => {
     expect(onChange).toHaveBeenCalledWith('/lines', ['kill @e'], {
       coalesce: FUNCTION_SOURCE_COALESCE,
     });
+  });
+
+  it('reports a pending edit at once when the session saves', () => {
+    vi.useFakeTimers();
+    const onChange = vi.fn();
+    const view = render(<FunctionEditor lines={['']} onChange={onChange} />);
+    fireEvent.change(area(), { target: { value: 'say saved' } });
+    act(() => flushPendingEdits());
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('/lines', ['say saved'], {
+      coalesce: FUNCTION_SOURCE_COALESCE,
+    });
+    act(() => vi.advanceTimersByTime(FUNCTION_EDIT_DEBOUNCE_MS));
+    view.unmount();
+    act(() => flushPendingEdits());
+    expect(onChange).toHaveBeenCalledOnce();
   });
 
   it('keeps the draft when its own edit comes back and resets on outside changes', () => {

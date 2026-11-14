@@ -5,12 +5,14 @@
  * @packageDocumentation
  */
 
+import { randomBytes } from 'node:crypto';
 import {
   lstat,
   mkdir,
   readdir,
   readFile,
   realpath,
+  rename,
   rm,
   stat,
   unlink,
@@ -139,7 +141,19 @@ export function createScopedFileSystem(root: string): ScopedFileSystem {
     async writeFile(path, data) {
       const target = await contained(path);
       await mkdir(dirname(target), { recursive: true });
-      await writeFile(target, data);
+      // Through a temporary file and a rename, so a reader (or a crash) never sees a project
+      // file half written. A contained symlink keeps pointing at its file, which is replaced.
+      const file = (await lstat(target).catch(() => null))?.isSymbolicLink()
+        ? await realpath(target)
+        : target;
+      const temp = join(dirname(file), `.${basename(file)}.${randomBytes(6).toString('hex')}.tmp`);
+      try {
+        await writeFile(temp, data, { flag: 'wx' });
+        await rename(temp, file);
+      } catch (error) {
+        await rm(temp, { force: true });
+        throw error;
+      }
     },
     async readDir(path) {
       const dir = await contained(path);

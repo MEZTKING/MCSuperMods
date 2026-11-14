@@ -10,6 +10,7 @@
 import type { Json } from '@msm/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeOptions } from '../../forms';
+import { registerPendingEdit } from '../../session/pending-edits';
 import { joinLines, splitLines } from './source-text';
 
 /** What {@link useDebouncedLines} returns. */
@@ -54,8 +55,15 @@ export function useDebouncedLines(
     onChangeRef.current('/lines', splitLines(text), { coalesce });
   }, [coalesce]);
 
-  // Report a pending edit when the editor goes away (element switch, Studio closed).
-  useEffect(() => flush, [flush]);
+  // Save and discard checks report a pending edit first; so does the editor going away
+  // (element switch, Studio closed).
+  useEffect(() => {
+    const unregister = registerPendingEdit(flush);
+    return () => {
+      unregister();
+      flush();
+    };
+  }, [flush]);
 
   if (source !== shownSource) {
     setShownSource(source);

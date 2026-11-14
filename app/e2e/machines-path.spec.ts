@@ -147,9 +147,15 @@ async function applyCreator(
   ).toBeVisible();
 }
 
+/**
+ * Saves the project, which must have unsaved changes: with none, the footer would already read
+ * "Saved" while the Save still runs, and the test would read files as they are rewritten.
+ */
 async function save(window: Page): Promise<void> {
+  const footer = window.locator('footer');
+  await expect(footer.getByText('Unsaved changes', { exact: true })).toBeVisible();
   await window.getByTestId('toolbar-save').click();
-  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
+  await expect(footer.getByText('Saved', { exact: true })).toBeVisible();
 }
 
 type Data = Record<string, unknown> & {
@@ -217,6 +223,8 @@ async function addSoundEvent(studio: Locator, name: string, sound: string): Prom
 /**
  * "Edit in Creator" on `block`: another colour enables the Update; the block is listed under
  * "Kept your edits" and not ticked to be overwritten, and the Update leaves its data as it was.
+ * The caller saves first: another Save of a saved project only rewrites the same files, and the
+ * footer already reads "Saved", so the read below could catch a file half rewritten.
  */
 async function reopenKeepsEdits(
   window: Page,
@@ -225,7 +233,7 @@ async function reopenKeepsEdits(
   title: string,
   colour: string,
 ): Promise<void> {
-  await save(window);
+  await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
   const before = savedBlock(projectDir, block);
   await window.getByTestId(`element-row-${id(block)}`).click();
   await window.getByTestId('editor-edit-in-creator').click();
