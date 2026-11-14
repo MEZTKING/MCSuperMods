@@ -4,6 +4,7 @@ import dev.mcsupermods.runtime.loader.DefinitionScanner;
 import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import dev.mcsupermods.runtime.scripting.ScriptBridges;
+import dev.mcsupermods.runtime.scripting.ScriptDataAttachment;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.slf4j.Logger;
@@ -33,6 +34,8 @@ public final class MsmRuntime implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
         // Scripts (ADR 0031): loaded per server on SERVER_STARTING, after the registries are frozen.
         ScriptBridges.register();
+        // Saved script data (ADR 0062 D3): the persistent attachment msm_runtime:script_data.
+        ScriptDataAttachment.register();
     }
 
     /** What the last scan registered, plus warnings from the start-up checks; used by GameTests and diagnostics. */

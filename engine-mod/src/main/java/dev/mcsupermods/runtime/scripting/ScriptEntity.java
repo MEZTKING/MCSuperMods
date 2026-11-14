@@ -38,6 +38,7 @@ final class ScriptEntity {
             .live("name", Entity.class, (api, e) -> e.getName().getString())
             .live("velocity", Entity.class, (api, e) -> api.pos(ScriptPos.of(e.getDeltaMovement())))
             .live("look", Entity.class, (api, e) -> api.pos(ScriptPos.of(e.getLookAngle())))
+            .live("data", Entity.class, (api, e) -> api.entityData(e))
             .method("setVelocity", 3, 3, Entity.class, (api, e, args) -> {
                 Motion.set(e, ScriptValues.number(args, 0, "x"), ScriptValues.number(args, 1, "y"), ScriptValues.number(args, 2, "z"));
                 return null;

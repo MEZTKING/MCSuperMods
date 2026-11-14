@@ -73,6 +73,8 @@ public final class ScriptHost {
     private final Map<UUID, Long> cancelledMainHand = new HashMap<>();
     private int loads;
     private int depth;
+    /** The module whose code runs now (a handler, a scheduled function or a module's top level), or null. */
+    private Module running;
     private boolean reloadPending;
 
     /** One script file as a CommonJS module. */
@@ -194,6 +196,8 @@ public final class ScriptHost {
         m.state = State.LOADING;
         m.scope = moduleScope(cx, m);
         boolean top = enter();
+        Module previous = running;
+        running = m;
         try {
             cx.evaluateString(m.scope, m.source.source(), m.source.file(), 1, null);
             cx.processMicrotasks();
@@ -210,6 +214,7 @@ public final class ScriptHost {
         } finally {
             m.pendingHandlers.clear();
             m.pendingActions.clear();
+            running = previous;
             exit(top);
         }
     }
@@ -289,6 +294,14 @@ public final class ScriptHost {
 
     String version() {
         return version;
+    }
+
+    /** The namespace of the script whose code runs now: {@code Entity.data} belongs to it (ADR 0062 D2). */
+    String runningNamespace() {
+        if (running == null) {
+            throw ScriptRuntime.constructError("Error", "entity data can be used only while a script runs");
+        }
+        return running.id().getNamespace();
     }
 
     Object log(Module m, String level, Object[] args) {
@@ -380,7 +393,11 @@ public final class ScriptHost {
         host.action(owner, event, handler, ctx);
     }
 
-    private void action(Identifier owner, Identifier event, Identifier handler, EventContext ctx) {
+    /**
+     * Calls the {@code run_script} handler {@code handler} of this host as {@link #runAction} does for the server's
+     * host; GameTests use it on a {@link #detached} host.
+     */
+    public void action(Identifier owner, Identifier event, Identifier handler, EventContext ctx) {
         Handler h = actions.get(handler);
         if (h == null) {
             if (undefinedLogged.add(handler)) {
@@ -454,6 +471,8 @@ public final class ScriptHost {
 
     private void call(Context cx, Handler h, Scriptable ev) {
         boolean top = enter();
+        Module previous = running;
+        running = h.module;
         try {
             h.fn.call(cx, h.module.scope, h.module.scope, new Object[] {ev});
             cx.processMicrotasks();
@@ -464,18 +483,22 @@ public final class ScriptHost {
                 error(handlerErrors, "script " + h.module.id() + ": " + h.label + " handler: " + describe(e, h.module.source), e);
             }
         } finally {
+            running = previous;
             exit(top);
         }
     }
 
     private void callScheduled(Context cx, Scheduled s) {
         boolean top = enter();
+        Module previous = running;
+        running = s.module();
         try {
             s.fn().call(cx, s.module().scope, s.module().scope, new Object[0]);
             cx.processMicrotasks();
         } catch (ScriptTimeout | RuntimeException e) {
             error(handlerErrors, "script " + s.module().id() + ": scheduled function: " + describe(e, s.module().source), e);
         } finally {
+            running = previous;
             exit(top);
         }
     }

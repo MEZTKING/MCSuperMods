@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -37,11 +38,13 @@ public final class ScriptApi {
             .namespace("events", MSM_EVENTS)
             .namespace("actions", MSM_ACTIONS)
             .method("schedule", 2, 2, ScriptHost.Module.class, (api, m, args) ->
-                    api.host.schedule(m, ScriptValues.number(args, 0, "ticks"), ScriptValues.function(args, 1, "fn")));
+                    api.host.schedule(m, ScriptValues.number(args, 0, "ticks"), ScriptValues.function(args, 1, "fn")))
+            .constant("storage", ScriptHost.Module.class, (api, m) -> api.store(
+                    ScriptDataAttachment.world(api.host.server()), m.id().getNamespace(), ScriptData.WORLD_LIMIT_BYTES, "msm.storage"));
 
     /** The object types, in the order of {@code script-api-v1.json}. */
     static final List<ScriptType> TYPES = List.of(ScriptPos.TYPE, ScriptWorld.TYPE, ScriptEntity.TYPE, ScriptPlayer.TYPE,
-            BlockRef.TYPE, ItemRef.TYPE, ScriptEvents.GAME_EVENT, ScriptEvents.BLOCK_INTERACT, ScriptEvents.BLOCK_BREAK,
+            BlockRef.TYPE, ItemRef.TYPE, DataStore.TYPE, ScriptEvents.GAME_EVENT, ScriptEvents.BLOCK_INTERACT, ScriptEvents.BLOCK_BREAK,
             ScriptEvents.ITEM_USE, ScriptEvents.ENTITY_INTERACT, ScriptEvents.ENTITY_HURT, ScriptEvents.ENTITY_DEATH,
             ScriptEvents.PLAYER_JOIN, ScriptEvents.SERVER_STARTED, ScriptEvents.SERVER_TICK, ScriptEvents.ACTION);
 
@@ -86,6 +89,18 @@ public final class ScriptApi {
 
     Scriptable item(ItemRef item) {
         return new HostObject(this, ItemRef.TYPE, item);
+    }
+
+    /**
+     * {@code Entity.data} (ADR 0062 D2): the store of the namespace of the script that runs now, since one entity
+     * object is shared by the handlers of every script an event reaches.
+     */
+    Scriptable entityData(Entity entity) {
+        return store(entity, host.runningNamespace(), ScriptData.ENTITY_LIMIT_BYTES, "entity.data");
+    }
+
+    private Scriptable store(AttachmentTarget holder, String namespace, int limit, String label) {
+        return new HostObject(this, DataStore.TYPE, new DataStore.Target(holder, namespace, limit, label));
     }
 
     Scriptable event(ScriptType type, ScriptEvents.Data data) {

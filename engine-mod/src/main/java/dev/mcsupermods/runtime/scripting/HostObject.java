@@ -90,6 +90,9 @@ final class HostObject extends ScriptableObject {
     }
 
     private static Object value(Object v) {
+        if (v == ScriptValues.NULL) {
+            return null;
+        }
         return v == null ? Undefined.instance : v;
     }
 }

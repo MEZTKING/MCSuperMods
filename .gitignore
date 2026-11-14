@@ -16,3 +16,4 @@ run/
 # VitePress (docs/site)
 docs/site/.vitepress/cache/
 docs/site/.vitepress/dist/
+engine-mod/logs/

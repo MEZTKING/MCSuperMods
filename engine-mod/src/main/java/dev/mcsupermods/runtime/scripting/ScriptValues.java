@@ -14,6 +14,17 @@ import org.mozilla.javascript.Undefined;
 final class ScriptValues {
     private ScriptValues() {}
 
+    /**
+     * What a host getter or method returns for a script {@code null}; Java {@code null} means {@code undefined}
+     * ({@link HostObject}).
+     */
+    static final Object NULL = new Object() {
+        @Override
+        public String toString() {
+            return "null";
+        }
+    };
+
     static boolean present(Object[] args, int i) {
         return i < args.length && args[i] != null && !Undefined.isUndefined(args[i]);
     }

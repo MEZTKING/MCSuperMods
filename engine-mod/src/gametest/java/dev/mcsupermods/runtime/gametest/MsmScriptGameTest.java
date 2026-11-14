@@ -6,11 +6,14 @@ import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.events.EventListener;
 import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.registry.MsmEntity;
+import dev.mcsupermods.runtime.scripting.ScriptData;
+import dev.mcsupermods.runtime.scripting.ScriptDataAttachment;
 import dev.mcsupermods.runtime.scripting.ScriptHost;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +24,7 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -33,12 +37,14 @@ import net.minecraft.network.protocol.game.ClientboundCooldownPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -47,8 +53,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -57,7 +67,8 @@ import net.minecraft.world.phys.Vec3;
  * Runtime v1 scripting GameTests (ADR 0031, ADR 0032) on the hand-written ES5 CommonJS scripts in
  * {@code msm/msm_test/script/} of this test mod: one per game event, the World, Entity and Player API, schedules,
  * relative {@code require}, the {@code run_script} action of {@code msm/msm_test/block/scripted.json}, isolation and
- * the sandbox, errors and the time budget.
+ * the sandbox, errors and the time budget; saved script data (ADR 0062) through the {@code run_script} handlers of
+ * {@code data.js} in {@code msm_test} and {@code msm_test_b}.
  *
  * <p>Interactions go through {@code ServerPlayerGameMode.useItemOn}, {@code useItem} and {@code destroyBlock}, so the
  * Fabric API events fire ({@code GameTestHelper.useBlock} calls the block directly and bypasses
@@ -145,12 +156,12 @@ public class MsmScriptGameTest {
     @GameTest
     public void scriptsLoadWithTwoErrors(GameTestHelper helper) {
         ScriptHost host = host(helper);
-        helper.assertValueEqual(host.summary(), "[msm_runtime] loaded 17 script(s); 2 error(s)", "load summary");
+        helper.assertValueEqual(host.summary(), "[msm_runtime] loaded 19 script(s); 2 error(s)", "load summary");
         helper.assertValueEqual(host.loadErrors(), List.of(
                 "script msm_test:broken: syntax error (msm/msm_test/script/broken.js#5)",
                 "script msm_test:events: unknown event 'no.such.event' (msm/msm_test/script/events.js)"), "load errors");
         ScriptHost.Report report = host.report();
-        helper.assertValueEqual(report.scripts().size(), 17, "scripts found");
+        helper.assertValueEqual(report.scripts().size(), 19, "scripts found");
         helper.assertFalse(report.loaded().contains(id("broken")), "broken.js loaded");
         helper.assertTrue(report.loaded().contains(id("events")), "events.js with an unknown event name did not load");
         // events.js still registered its other handlers.
@@ -745,6 +756,159 @@ public class MsmScriptGameTest {
         helper.assertTrue(item instanceof InteractionResult.Fail, "item use not refused: " + item);
         helper.assertValueEqual(r.connection().resync(), List.of("inventory 0", "cooldown minecraft:snowball 0"),
                 "resync after the refused item use");
+        helper.succeed();
+    }
+
+    // ---- saved script data (ADR 0062) ------------------------------------------------------------------------
+
+    private static final String DATA = "msm_test:data: ";
+    private static final String MOB_JSON = "{\"count\":1,\"tags\":[\"a\",\"b\"],\"nested\":{\"ok\":true,\"none\":null},"
+            + "\"ratio\":0.5,\"text\":\"é<>\"}";
+
+    /** Calls a {@code run_script} handler of the running host as the action of {@code msm_test:data}. */
+    private static void act(ScriptHost host, String handler, EventContext ctx) {
+        host.action(id("data"), id("data"), Identifier.parse(handler), ctx);
+    }
+
+    private static ScriptData storage(GameTestHelper helper) {
+        return ScriptDataAttachment.get(ScriptDataAttachment.world(helper.getLevel().getServer()));
+    }
+
+    private static void assertNoDataErrors(GameTestHelper helper, ScriptHost host) {
+        helper.assertTrue(host.handlerErrors().stream().noneMatch(e -> e.contains(":data:") || e.contains("data_")),
+                "data.js errors: " + host.handlerErrors());
+    }
+
+    /** A mob, a player and {@code msm.storage}: set from a script, kept as JSON text per namespace, read back. */
+    @GameTest
+    public void dataOnMobPlayerAndStorage(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerPlayer player = survivalPlayer(helper);
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        EventContext ctx = EventContext.forEntity(helper.getLevel(), cow, player);
+        act(host, "msm_test:data_write", ctx);
+        assertLogged(helper, host, DATA + "write [[\"mob\"],[\"visits\"],true]");
+        helper.assertValueEqual(ScriptDataAttachment.get(cow).texts(), Map.of("msm_test", "{\"mob\":" + MOB_JSON + "}"), "cow data");
+        helper.assertValueEqual(ScriptDataAttachment.get(player).texts(), Map.of("msm_test", "{\"visits\":1}"), "player data");
+        helper.assertValueEqual(String.valueOf(storage(helper).get("msm_test", "written")), "{\"by\":\"data_write\"}", "msm.storage");
+        act(host, "msm_test:data_read", ctx);
+        assertLogged(helper, host, DATA + "read [" + MOB_JSON + ",1,{\"by\":\"data_write\"}]");
+        assertNoDataErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** Copies in and out, JSON values only, the key and size limits leave the old value (ADR 0062 D1, D4). */
+    @GameTest
+    public void dataValuesAreCopiedAndChecked(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        act(host, "msm_test:data_values", EventContext.forEntity(helper.getLevel(), cow, null));
+        String key64 = "k".repeat(64);
+        assertLogged(helper, host, DATA + "values {\"list\":[1,2,{\"x\":\"y\"}],\"n\":null,\"f\":1.5} true true true false true true "
+                + "fn:TypeError nan:TypeError inf:TypeError undef:TypeError nestedUndef:TypeError date:TypeError host:TypeError "
+                + "cycle:TypeError key64:ok key65:RangeError get65:RangeError false over:RangeError small true false "
+                + "[\"v\",\"nul\",\"" + key64 + "\"]");
+        helper.assertValueEqual(ScriptDataAttachment.get(cow).keys("msm_test"), List.of("v", "nul", key64), "stored keys");
+        assertNoDataErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** {@code msm.storage} over 1 MiB is a {@code RangeError} and keeps the old value. */
+    @GameTest
+    public void storageOverItsLimitKeepsTheOldValue(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        act(host, "msm_test:data_storage_limit", EventContext.forBlock(helper.getLevel(), helper.absolutePos(AT), null));
+        String prefix = DATA + "storage limit RangeError: msm.storage of namespace msm_test would hold ";
+        helper.assertTrue(host.recentLogs().stream().anyMatch(l -> l.startsWith(prefix)
+                && l.endsWith(" bytes, over its limit of 1048576; the old value stays | small")), "not logged: " + prefix + "; recent: " + tail(host));
+        helper.assertValueEqual(String.valueOf(storage(helper).get("msm_test", "huge")), "\"small\"", "stored value");
+        assertNoDataErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** Two namespaces writing the same keys on one mob and in {@code msm.storage} do not see each other (ADR 0062 D2). */
+    @GameTest
+    public void namespacesDoNotSeeEachOther(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        EventContext ctx = EventContext.forEntity(helper.getLevel(), cow, null);
+        act(host, "msm_test:data_ns", ctx);
+        act(host, "msm_test_b:data_ns", ctx);
+        act(host, "msm_test:data_ns", ctx);
+        helper.assertValueEqual(logged(host, DATA + "ns [\"test\",\"test\",[\"shared\"]]") >= 2, true, "msm_test sees its own data");
+        assertLogged(helper, host, "msm_test_b:data: ns [\"b\",\"b\",[\"shared\"]]");
+        helper.assertValueEqual(ScriptDataAttachment.get(cow).texts(),
+                Map.of("msm_test", "{\"shared\":\"test\"}", "msm_test_b", "{\"shared\":\"b\"}"), "cow data per namespace");
+        helper.assertValueEqual(String.valueOf(storage(helper).get("msm_test_b", "shared_ns")), "\"b\"", "msm_test_b storage");
+        assertNoDataErrors(helper, host);
+        helper.succeed();
+    }
+
+    /** A mob saved with {@code saveWithoutId} and loaded into a new entity keeps its data (chunk save and load). */
+    @GameTest
+    public void mobDataSurviveSaveAndLoad(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        act(host, "msm_test:data_write", EventContext.forEntity(level, cow, survivalPlayer(helper)));
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        cow.saveWithoutId(out);
+        CompoundTag tag = out.buildResult();
+        helper.assertTrue(tag.toString().contains("msm_runtime:script_data"), "saved tag has the attachment: " + tag);
+        Mob copy = EntityTypes.COW.create(level, EntitySpawnReason.LOAD);
+        helper.assertTrue(copy != null, "no cow");
+        helper.assertFalse(ScriptDataAttachment.get(copy).texts().containsKey("msm_test"), "a new cow has no data");
+        copy.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+        helper.assertValueEqual(ScriptDataAttachment.get(copy).texts(), Map.of("msm_test", "{\"mob\":" + MOB_JSON + "}"), "loaded data");
+        helper.succeed();
+    }
+
+    /** {@code copyOnDeath}: the player made by a respawn after death keeps the data (Fabric copies on AFTER_RESPAWN). */
+    @GameTest
+    public void playerDataSurviveRespawn(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = survivalPlayer(helper);
+        act(host, "msm_test:data_write", EventContext.forEntity(level, helper.spawnWithNoFreeWill(EntityTypes.COW, AT), player));
+        ServerPlayer respawned = level.getServer().getPlayerList().respawn(player, false, Entity.RemovalReason.KILLED);
+        helper.assertTrue(respawned != player, "respawn made a new player");
+        helper.assertValueEqual(ScriptDataAttachment.get(respawned).texts(), Map.of("msm_test", "{\"visits\":1}"), "respawned player data");
+        act(host, "msm_test:data_read", EventContext.forItem(level, respawned));
+        assertLogged(helper, host, DATA + "read [null,1,{\"by\":\"data_write\"}]");
+        helper.succeed();
+    }
+
+    /** A mob moved to another dimension is a new entity; Fabric copies its attachments (ADR 0062 D5). */
+    @GameTest
+    public void mobDataSurviveDimensionChange(GameTestHelper helper) {
+        ScriptHost host = host(helper);
+        ServerLevel level = helper.getLevel();
+        ServerLevel nether = level.getServer().getLevel(Level.NETHER);
+        helper.assertTrue(nether != null, "no nether");
+        Mob cow = helper.spawnWithNoFreeWill(EntityTypes.COW, AT);
+        act(host, "msm_test:data_write", EventContext.forEntity(level, cow, survivalPlayer(helper)));
+        Entity moved = cow.teleport(new TeleportTransition(nether, new Vec3(0.5, 80, 0.5), Vec3.ZERO, 0f, 0f, TeleportTransition.DO_NOTHING));
+        helper.assertTrue(moved != null && moved != cow && moved.level() == nether, "the cow moved to the nether: " + moved);
+        helper.assertValueEqual(ScriptDataAttachment.get(moved).texts(), Map.of("msm_test", "{\"mob\":" + MOB_JSON + "}"), "data in the nether");
+        moved.discard();
+        helper.succeed();
+    }
+
+    /** Data survive {@code END_DATA_PACK_RELOAD} (on a detached host) while its schedules are dropped (ADR 0062 D5). */
+    @GameTest
+    public void dataSurviveReloadWhileSchedulesDoNot(GameTestHelper helper) {
+        ScriptHost host = ScriptHost.detached(helper.getLevel().getServer());
+        EventContext ctx = EventContext.forBlock(helper.getLevel(), helper.absolutePos(AT), null);
+        int schedules = host.pendingSchedules();
+        host.action(id("data"), id("data"), id("data_reload"), ctx);
+        double count = storage(helper).get("msm_test", "reload_count").getAsDouble();
+        helper.assertValueEqual(host.pendingSchedules(), schedules + 1, "the handler's schedule is pending");
+        host.reload();
+        helper.assertValueEqual(host.pendingSchedules(), schedules, "schedules after reload");
+        helper.assertValueEqual(storage(helper).get("msm_test", "reload_count").getAsDouble(), count, "msm.storage after reload");
+        host.action(id("data"), id("data"), id("data_reload"), ctx);
+        helper.assertValueEqual(storage(helper).get("msm_test", "reload_count").getAsDouble(), count + 1, "counted on after reload");
+        helper.assertValueEqual(logged(host, DATA + "reload count " + (long) (count + 1)), 1L, "read back after reload");
         helper.succeed();
     }
 }
