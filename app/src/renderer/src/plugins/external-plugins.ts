@@ -181,6 +181,9 @@ export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
       worldgen: target.worldgen,
       ...(target.fabric === undefined ? {} : { fabric: target.fabric }),
       ...(target.geckolib === undefined ? {} : { geckolib: target.geckolib }),
+      ...(target.items === undefined ? {} : { items: target.items }),
+      ...(target.blocks === undefined ? {} : { blocks: target.blocks }),
+      ...(target.entities === undefined ? {} : { entities: target.entities }),
     });
   facts.set(target, out);
   return out;

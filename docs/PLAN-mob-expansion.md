@@ -259,3 +259,4 @@ These are the hard limits of this batch, in the style of the coverage audit's L 
 ## Notes from implementation
 
 Append-only. Each brief adds facts, names, seams and anything a later brief must change, with its brief number.
+- B283: `TargetFacts.entities` (`EntityFacts.projectileItems`, namespaced ids; `saddleTag` = `minecraft:can_equip_saddle`) on both targets; the 26.4 ice ball item id is `minecraft:ice_ball` (`IceBallItem implements ProjectileItem`); plain `minecraft:potion` is not a projectile item. `toTargetFacts` and the AI helper's `target_facts` now also copy `items` and `blocks`.

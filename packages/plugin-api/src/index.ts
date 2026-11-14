@@ -62,6 +62,7 @@ export type {
   BlockFacts,
   DataFolderKey,
   DefinitionInput,
+  EntityFacts,
   FabricFacts,
   GeckolibFacts,
   GeneratedFile,

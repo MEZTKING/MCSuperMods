@@ -323,6 +323,26 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ]);
     });
 
+    it('lists entity facts the vendored registries know (ADR 0070 D7, ADR 0071 D4)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const items = registries.item ?? [];
+      const entityTypeTags = registries['tag/entity_type'] ?? [];
+      const facts = target.entities;
+      expect(facts).toBeDefined();
+      expect(facts?.projectileItems.length).toBeGreaterThan(0);
+      expect(new Set(facts?.projectileItems).size).toBe(facts?.projectileItems.length);
+      for (const id of facts?.projectileItems ?? []) {
+        expect(id, id).toMatch(/^minecraft:[a-z0-9_]+$/);
+        expect(items, id).toContain(id.slice('minecraft:'.length));
+      }
+      expect(facts?.saddleTag).toBe('minecraft:can_equip_saddle');
+      expect(entityTypeTags).toContain('can_equip_saddle');
+    });
+
     it('loads its vanilla-mcdoc export through @msm/schemas', async () => {
       const raw = await readVendoredJson(bundle, 'vanillaMcdocSymbols', nodeReadFile);
       const symbols = parseVanillaMcdocSymbols(raw);

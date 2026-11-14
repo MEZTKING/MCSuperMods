@@ -592,6 +592,8 @@ export function createToolExecutor(
       if (target.fabric !== undefined) facts.fabric = target.fabric;
       if (target.geckolib !== undefined) facts.geckolib = target.geckolib;
       if (target.items !== undefined) facts.items = target.items;
+      if (target.blocks !== undefined) facts.blocks = target.blocks;
+      if (target.entities !== undefined) facts.entities = target.entities;
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
     },
 

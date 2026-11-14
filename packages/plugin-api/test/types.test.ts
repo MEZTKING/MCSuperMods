@@ -5,6 +5,7 @@ import type {
   DefinitionInput,
   Element,
   ElementKind,
+  EntityFacts,
   Exporter,
   ExporterInput,
   ExporterOption,
@@ -363,6 +364,19 @@ describe('0.8.0 additions', () => {
     expect(facts.setTypes).toContain('iron');
     // A 1.9.0-shaped target without block facts stays assignable.
     expect(testTarget.blocks).toBeUndefined();
+  });
+
+  it('carries optional entity facts on a target (1.11.0)', () => {
+    expectTypeOf<TargetFacts['entities']>().toEqualTypeOf<EntityFacts | undefined>();
+    expectTypeOf<EntityFacts['projectileItems']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<EntityFacts['saddleTag']>().toEqualTypeOf<string>();
+    const facts: EntityFacts = {
+      projectileItems: ['minecraft:arrow', 'minecraft:snowball'],
+      saddleTag: 'minecraft:can_equip_saddle',
+    };
+    expect(facts.projectileItems).toContain('minecraft:arrow');
+    // A 1.10.0-shaped target without entity facts stays assignable.
+    expect(testTarget.entities).toBeUndefined();
   });
 
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {

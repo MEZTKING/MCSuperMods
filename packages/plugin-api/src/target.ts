@@ -231,6 +231,27 @@ export interface BlockFacts {
 }
 
 /**
+ * Entity facts of a target: vanilla names the mob definition format checks against. Since 1.11.0
+ * (ADR 0070 D7, ADR 0071 D4).
+ */
+export interface EntityFacts {
+  /**
+   * The item ids a mob's `msm:ranged_attack` may fire as its `projectile`, namespaced (for
+   * example `minecraft:arrow` or `minecraft:snowball`): the vanilla items that can be shot as a
+   * projectile (the game's projectile items, such as arrows, eggs, snowballs, throwable potions,
+   * charges and tridents). The list differs between targets when the game adds a projectile
+   * item. Since 1.11.0.
+   */
+  projectileItems: readonly string[];
+  /**
+   * The namespaced entity type tag the vanilla saddle equips (for example
+   * `minecraft:can_equip_saddle`); lowering adds a saddled mount's entity id to it. Since
+   * 1.11.0.
+   */
+  saddleTag: string;
+}
+
+/**
  * Item facts of a target: names the definition format checks against the game's own
  * constants. Since 1.1.0 (ADR 0042 D4).
  */
@@ -564,6 +585,12 @@ export interface TargetFacts {
    * without them skips the checks that need them. Since 1.10.0 (ADR 0067 D9).
    */
   blocks?: BlockFacts;
+  /**
+   * Entity facts: the projectile item ids ranged mobs may fire and the saddle tag mounts join.
+   * Optional: a target without them skips the checks that need them. Since 1.11.0 (ADR 0070 D7,
+   * ADR 0071 D4).
+   */
+  entities?: EntityFacts;
 }
 
 /**

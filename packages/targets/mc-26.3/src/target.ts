@@ -427,6 +427,32 @@ export const target: Target = {
       'bamboo',
     ],
   },
+  // entities (ADR 0070 D7, ADR 0071 D4): the vanilla items a ranged mob may fire and the tag the
+  // vanilla saddle equips. Verified 2026-11-14 with javap over the Loom-cached 26.3 merged jar: each
+  // id is registered in `Items` with a `ProjectileItem` class (`ArrowItem`, `TippedArrowItem`,
+  // `SpectralArrowItem`, `SnowballItem`, `EggItem`, `ExperienceBottleItem`, `FireChargeItem`,
+  // `FireworkRocketItem`, `SplashPotionItem`, `LingeringPotionItem`, `TridentItem`,
+  // `WindChargeItem`); every id is in the vendored `registries.json` `item` list and
+  // `can_equip_saddle` in its `tag/entity_type` list (asserted by `all/test/targets.test.ts`).
+  entities: {
+    projectileItems: [
+      'minecraft:arrow',
+      'minecraft:tipped_arrow',
+      'minecraft:spectral_arrow',
+      'minecraft:snowball',
+      'minecraft:egg',
+      'minecraft:blue_egg',
+      'minecraft:brown_egg',
+      'minecraft:experience_bottle',
+      'minecraft:fire_charge',
+      'minecraft:firework_rocket',
+      'minecraft:splash_potion',
+      'minecraft:lingering_potion',
+      'minecraft:trident',
+      'minecraft:wind_charge',
+    ],
+    saddleTag: 'minecraft:can_equip_saddle',
+  },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
   fabric: {

@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.11.0 — 2026-11-14
+
+Mob bodies, ranged attacks and mounts (ADR 0070 D7, ADR 0071 D4). `API_VERSION` is `1.11.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `EntityFacts { projectileItems: readonly string[]; saddleTag: string }`: the namespaced vanilla item ids a ranged mob may fire as its projectile, and the namespaced entity type tag the vanilla saddle equips.
+- `TargetFacts.entities?: EntityFacts` (and so `Target.entities?`). Optional; a target without it skips the checks that need it.
+
+### Migration from 1.10.0
+
+None. A plugin that reads `entities` should declare `^1.11.0` and treat an absent value as "no names to check against"; plugins written earlier ignore it.
+
 ## 1.10.0 — 2026-11-14
 
 Block types and families (ADR 0067 D2, D9). `API_VERSION` is `1.10.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

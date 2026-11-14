@@ -165,6 +165,26 @@ describe('target mc-26.3', () => {
     }
   });
 
+  it('lists the projectile items and the saddle tag (ADR 0070 D7, ADR 0071 D4)', () => {
+    expect(target.entities?.projectileItems).toEqual([
+      'minecraft:arrow',
+      'minecraft:tipped_arrow',
+      'minecraft:spectral_arrow',
+      'minecraft:snowball',
+      'minecraft:egg',
+      'minecraft:blue_egg',
+      'minecraft:brown_egg',
+      'minecraft:experience_bottle',
+      'minecraft:fire_charge',
+      'minecraft:firework_rocket',
+      'minecraft:splash_potion',
+      'minecraft:lingering_potion',
+      'minecraft:trident',
+      'minecraft:wind_charge',
+    ]);
+    expect(target.entities?.saddleTag).toBe('minecraft:can_equip_saddle');
+  });
+
   it('maps the five compost chances to the vanilla providers (ADR 0060 D4)', () => {
     expect(target.items?.compostProviders).toEqual({
       '30%': 'minecraft:compostable/low',

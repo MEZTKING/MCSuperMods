@@ -59,6 +59,27 @@ describe('target mc-26.4', () => {
     expect('geckolib' in target).toBe(false);
   });
 
+  it('lists the projectile items and the saddle tag (26.4 adds the ice ball; ADR 0070 D7)', () => {
+    expect(target.entities?.projectileItems).toEqual([
+      'minecraft:arrow',
+      'minecraft:tipped_arrow',
+      'minecraft:spectral_arrow',
+      'minecraft:snowball',
+      'minecraft:egg',
+      'minecraft:blue_egg',
+      'minecraft:brown_egg',
+      'minecraft:experience_bottle',
+      'minecraft:fire_charge',
+      'minecraft:firework_rocket',
+      'minecraft:splash_potion',
+      'minecraft:lingering_potion',
+      'minecraft:trident',
+      'minecraft:wind_charge',
+      'minecraft:ice_ball',
+    ]);
+    expect(target.entities?.saddleTag).toBe('minecraft:can_equip_saddle');
+  });
+
   it('derives its id from the Minecraft version line', () => {
     // The runtime version key: mcVersion up to the first '-' (the plan's fixed names).
     expect(target.id).toBe(`mc-${runtimeVersion}`);
