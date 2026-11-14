@@ -512,6 +512,8 @@ Additions ([ADR 0055](adr/0055-custom-status-effects.md), [ADR 0056](adr/0056-th
 
 Project sounds and block shapes ([ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md), [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md)): the runtime registers one sound event per key of each `assets/<ns>/sounds.json` before effects, so project sounds resolve everywhere vanilla takes a sound id; entities gain `sounds` (ambient, hurt, death, step); blocks gain the component `msm:shape` (pixel boxes, collision, see-through). Render layers need no code in 26.x: the texture's pixels choose cut-out or translucent.
 
+Proposed addition ([ADR 0063](adr/0063-potions-and-brewing.md)): the runtime registers project potions after effects and before blocks and items, from `msm/<ns>/potion/` definitions.
+
 ## 11. Behaviour Model (Components and Events)
 
 We borrow Bedrock's proven idea: a block, item or entity definition is a bag of **components** plus **events** that chain **actions**. This gives beginners real behaviour without code.
@@ -563,6 +565,8 @@ A new component's MSM mcdoc and runtime implementation land in the same change. 
 Addition ([ADR 0061](adr/0061-more-triggers.md)): ten more triggers, items `msm:on_hit`, `msm:on_use_on_block`, `msm:while_held` and `msm:while_worn`, blocks `msm:on_break`, `msm:on_place`, `msm:on_random_tick` and `msm:on_entity_inside`, entities `msm:on_tick` and `msm:on_spawn`; tick triggers have a 5-tick minimum interval and a shared cap of 2,000 firings per server tick.
 
 Step events ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `msm:on_step` events carry the stepping entity (`self` and `other` are the stepper, so jump pads work on mobs and items), and the step cooldown is keyed per dimension.
+
+Proposed addition ([ADR 0063](adr/0063-potions-and-brewing.md), [ADR 0064](adr/0064-data-kinds-sweep.md)): the definition kind `potion` (`msm:potion`, with brewing recipes lowered as data), and sixteen more data kinds, two resource kinds and eight tag registries that need no runtime code.
 
 ## 12. Scripting and Escape Hatches
 
@@ -625,6 +629,8 @@ The API is described once, in `packages/plugins/scripting/api/script-api-v1.json
 Entity commands and cancel resync ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `World.runCommand` and `World.runFunction` take an optional position, `Entity.runCommand` and `Entity.runFunction` run as and at the entity (the one-argument `World` forms run at the world spawn point with no `@s`), and a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` resends the player's inventory (and the neighbouring blocks of a placement). Script API v1 grows additively.
 
 Addition ([ADR 0062](adr/0062-persistent-script-data.md)): `Entity.data` (so `Player.data`) and `msm.storage` are JSON key-value stores saved with the world, per script namespace; they survive `/reload`, restart, death and dimension change, while `msm.schedule` stays unsaved. This amends ADR 0032 and closes limitation L4.
+
+Proposed addition ([ADR 0065](adr/0065-script-api-1-1.md)): Script API 1.1 is additive over version 1: item and inventory access, player state, titles and boss bars, typed damage with an attacker, raycast, cross-dimension teleport, and the events `player.tick`, `player.respawn`, `player.leave`, `player.changeDimension`, `player.chat` and `entity.damaged`. `block.place` and `msm.commands.register` stay deferred.
 
 ## 13. Interop (Blockbench, NBT, Minecraft Installation)
 

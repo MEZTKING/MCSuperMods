@@ -561,6 +561,26 @@ Takes up backlog items B3, B4 and B6 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md)
 - Deferred and kept in the audit backlog: flammability, strip and oxidise pairs, values on vanilla items, removing vanilla features, new professions, custom compost chances, `on_crafted`, no-code conditions on stored data.
 - Follow-ups: implicit tag ids in the schema validator (then the ore targets use the replaceable tags instead of `block_match` on stone and deepslate); `on_attack` against a player runs `run_function` as the victim (decide whether the attacking mob should be the actor); effect and thrown-item events could use the holder or thrower as the actor; the real chunk-generation check (B243, reserve).
 
+### Add-on after 1.0 — Potions, data kinds and Script API 1.1 (planned)
+
+Takes up backlog items B10, B11 and B5 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md). Design: [ADR 0063](adr/0063-potions-and-brewing.md) (potions and brewing), [ADR 0064](adr/0064-data-kinds-sweep.md) (data kinds sweep) and [ADR 0065](adr/0065-script-api-1-1.md) (Script API 1.1), all proposed 2026-11-14. The three parts are largely independent and each can slip a release. Defaults that need the user's veto: the kind name `msm:potion`, the `long_` and `strong_` ids, default reagents, the flow names "Potion", "Mob skin" and "Goat horn", the 5-tick `player.tick` minimum, 32 boss bars per namespace and the 128-block raycast limit.
+
+- [ ] B244 Format: potion definition and element, corpus.
+- [ ] B245 Plugin API 1.9.0 and target facts (potion, data folders).
+- [ ] B246 Script API contract and plugin `scripting`.
+- [ ] B247 Runtime: potions.
+- [ ] B248 Runtime: Script API 1.1.
+- [ ] B249 Plugin `blocks-items`: potion kind.
+- [ ] B250 Plugins `datapack` and `resourcepack`: kinds sweep.
+- [ ] B251 Exporters: `java-project` potion routing, `potion-needs-jar`.
+- [ ] B252 Java eject (26.3 generator): `ModPotions`.
+- [ ] B253 App: Potion Studio and potion ids.
+- [ ] B254 Library: flows and examples.
+- [ ] B255 Samples, parity and CI.
+- [ ] B256 AI helper texts.
+- [ ] B257 e2e, guide and changelog.
+- [ ] The user checks in game: potion names, colours and creative tab entries; brewing in a real stand; splash, lingering and tipped arrow; the wolf skin in its biome and as a baby; the goat horn sound; titles, action bar and boss bar; XP, hunger and game mode changing without a relog.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.
