@@ -141,7 +141,7 @@ public record EntityComponents(
         public static final Codec<MovementMode> CODEC = MsmCodecs.named("movement mode", values(), MovementMode::serialName);
     }
 
-    /** The {@code flying_speed} default (ADR 0070 D3: a bee's; verify at implementation). */
+    /** The {@code flying_speed} default (ADR 0070 D3: a parrot's; a bee's is 0.6). */
     public static final float DEFAULT_FLYING_SPEED = 0.4f;
     /** The {@code dry_out_ticks} default (ADR 0070 D3: vanilla's water animals; verify at implementation). */
     public static final int DEFAULT_DRY_OUT_TICKS = 300;

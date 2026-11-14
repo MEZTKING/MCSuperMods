@@ -5083,7 +5083,7 @@
           }
         },
         {
-          "desc": "The `flying_speed` attribute, used by `fly`; defaults to 0.4, a bee's (verify at\nimplementation).",
+          "desc": "The `flying_speed` attribute, used by `fly`; defaults to 0.4, a parrot's (a bee's is\n0.6).",
           "key": "flying_speed",
           "kind": "pair",
           "optional": true,
@@ -10468,5 +10468,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:2a43b7855cd4a5b3c6f3453412ca6b651539c1905fcb92d8c9897289ca689920"
+  "ref": "msm-mcdoc:sha256:4f664729092cdff3228bb13d8d407d6891aa5959f5248b7c392f8a50858b2c75"
 }

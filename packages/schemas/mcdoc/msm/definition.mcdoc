@@ -905,8 +905,8 @@ struct Movement {
 	fire_immune?: boolean,
 	/// How the mob moves (ADR 0070 D3); defaults to `walk`.
 	mode?: MovementMode,
-	/// The `flying_speed` attribute, used by `fly`; defaults to 0.4, a bee's (verify at
-	/// implementation).
+	/// The `flying_speed` attribute, used by `fly`; defaults to 0.4, a parrot's (a bee's is
+	/// 0.6).
 	flying_speed?: float @ 0..,
 	/// `fly` only: whether the mob stays in place when idle, as a bee; defaults to true.
 	hovers?: boolean,

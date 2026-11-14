@@ -3197,3 +3197,26 @@ Decisions
 
 Next
 - Mob expansion (B7) is being planned (ADR 0070 onwards).
+
+## 2026-11-14 — orchestrator — mob expansion closed
+
+What
+- Closed the mob expansion batch B282–B308 (commits 3071c5e to 3cc26ab, plus the tame-before-breed fix 7d9cbbe): ADRs 0070, 0071, 0072 and 0073 are Accepted (2026-11-14), each with a "Findings" section from the plan's implementation notes. 0070: a bee's flying speed is 0.6 and 0.4 is the parrot's (D3 corrected; the mcdoc comment and `EntityComponents.DEFAULT_FLYING_SPEED`'s Javadoc now say so, `symbols.json` rebuilt), the dolphin's swim controls for every swimmer, dry-out at `dry_out_ticks` + 20, the vehicle check at 10 blocks a tick, ranged aim by the projectile's own drop, M8; it also keeps the plan's fact table (F1–F18) and limits (M1–M17). 0071: tame before breed (vanilla wolf and cat), the owner's babies, sit on sneak for rideable pets, saddles drop and shear as pigs', `on_mount` only on right-click, variants, boss music only in the End, the `NoAI` boss bar follow-up. 0072: GeckoLib never applies `getAgeScale` (fixed in the runtime), `GeoEntity` has no synched data, the renderer reads GeckoLib's paths, the vanilla `root` lookup workaround, model space rules, the vertex golden, drawing in game only. 0073: presets, flows, templates without variants, counts, the Fabric jar name per target, the eject's stricter cases.
+- DESIGN: §3 (layer table), §8 (Entity Studio Kind of mob and sections, mob flows, Test in Minecraft nesting rule), §9 (`entities` target fact, GeckoLib only where needed, `export.entity-vanilla-renderer`), §10 (mob bodies, `MobDriver`, the built-in renderer, signatures never overridden), §11 (1.x mob components row and rules), §12 (mobs in the eject, ejected sample creatures), §16 (GameTests, golden, CI on every version), §17 risk 6 (fallback built), §18 question 3 (resolved); 19 H2 headings kept.
+- ROADMAP: new add-on section "Mob expansion" with B282–B308 ticked, the in-game check, deferred items and follow-ups; the Phase 5 follow-up about a vanilla-model fallback reworded (mobs done, GeckoLib items and armour stay open); Milestone Log row.
+- COVERAGE-AUDIT: B7 closed with what stays out (brain mobs, special flight, held bow pose, head look in the built-in renderer, swim pets following, `/ride` `on_mount`, `NoAI` boss bars); Entities row now "Good"; L3, L7, L8, L9, L15 and L16 updated.
+- HANDOFF rewritten (state, in-game checks, vetoable defaults, follow-ups, next backlog, mob expansion lessons). `docs/PLAN-mob-expansion.md` deleted (its only link, in ADR 0070, now points to the Findings). Status lines in root and `docs/CLAUDE.md`; sample mob README's ADR reference corrected (0072).
+- Counts from the plugins' contributions: 94 kinds, 177 templates (resourcepack 16, datapack 66, structures 9, worldgen 22, blocks-items 45, models-anim 3, entities 10, scripting 6), 42 starters (30 Creator flows), 125 examples, 64 placeholder patterns; runtime 309 GameTests per variant and 488 JUnit; parity: sample mod 83, sample mob 10, sample script 15, sample creatures 12.
+
+Decisions
+- The plan's fact table and limits live on in ADR 0070's Findings, so the other mob ADRs cite it instead of the deleted plan.
+- Ridden `speed` has no upper bound in the format (the plan's cap of 5 was not added); a cap or warning is a follow-up rather than a change at close.
+- The full clean-worktree test run of this close is the main session's.
+
+Next
+- Main session: the clean-worktree run, push, green CI, fast-forward `main`; record the totals in the Milestone Log row.
+- User: the sample creatures checklist on 26.3 and 26.4, the sample mob on 26.4, a Creator mob of each flow; the vetoable defaults of ADRs 0070–0073.
+- Follow-ups: shared `MobStates`, head look, `NoAI` boss bars, `/ride` `on_mount`, mount fall damage, `canMate`, load-time projectile check, ridden speed cap, preview camera re-fit, Creator preview variant and baby, project items in flows, Fabric jar name per target, `MSM_E2E_*` stub hook, unused `hasGeckolib` and `steps.facts.outputs.geckolib`, asar budget (31.3 of 32 MB).
+- Backlog: B8 containers and machines, then B13, B14, B15.
+
+Clean run of 3cc26ab (main session): lint, typecheck, 21/21 test tasks without the cache, build, app.asar 31.4 of 32 MB, 39/39 e2e; CI green on 6ab1558 (sample creatures and sample mob parity on every version).

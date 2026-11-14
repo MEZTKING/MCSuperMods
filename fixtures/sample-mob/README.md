@@ -94,7 +94,7 @@ Things only the game client can confirm, and worth reporting if they look wrong:
 
 ## On 26.4 and the two renderers
 
-Mobs work on 26.4 as well as 26.3 (ADR 0073). The difference is only how the golem is drawn:
+Mobs work on 26.4 as well as 26.3 (ADR 0072). The difference is only how the golem is drawn:
 
 - On **26.3** the golem is drawn by GeckoLib (`renderer` `auto` means GeckoLib there). The jar nests `msm_runtime` and GeckoLib, and the check above is the one to follow.
 - On **26.4** there is no GeckoLib. Export the project with the target set to 26.4: the jar nests only `msm_runtime` and `fabric.mod.json` does not depend on `geckolib`. `auto` then means the built-in vanilla renderer, which reads the same geo model, animation and texture files. The export reports one information note that the golem uses the vanilla renderer; it is not a problem.
