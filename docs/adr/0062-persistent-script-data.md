@@ -27,3 +27,8 @@ Scripts have no storage: `ScriptHost` drops schedules and scopes on `/reload` an
 ## Status
 
 Proposed (2026-11-13). Defaults the user may veto: 16 KiB per entity and 1 MiB per world, per namespace. The finding on global attachment versus overworld storage is added here by the runtime brief. Accepted on close.
+
+Runtime findings (B144, 2026-11-14; 138 GameTests at the time; a real restart counted 1 then 2 on 26.3 and 26.4):
+
+- D3: the global attachment is used, with no overworld fallback. Both pinned Fabric API builds give `MinecraftServer` global attachments (`server.globalAttachments()`); the data are saved as vanilla saved data in `<world>/data/fabric/attachments.dat`. Entity data sit under `fabric:attachments` in the entity's NBT and follow `copyOnDeath`.
+- Over-limit writes and too-long keys throw `RangeError` (non-JSON values `TypeError`); values nested deeper than 128 levels are refused so every saved value stays readable. `Entity.data` uses the namespace of the script running at that moment. `get` returns a script `null` for a stored null.

@@ -28,3 +28,11 @@ The event model has a small set of triggers: item `on_use`, block `on_interact` 
 ## Status
 
 Proposed (2026-11-13). Defaults the user may veto: the 5-tick minimum interval and the 2,000 firings per server tick. Findings from the runtime brief (the main-hand double report, any seam) are added here before the mirrors are written. Accepted on close.
+
+Runtime findings (B235, 2026-11-14; 164 GameTests on all three builds; no version seam):
+
+- `msm:on_hit` hooks `Item.hurtEnemy`, not `postHurtEnemy` (departs from D1): in 26.3 `postHurtEnemy` is called only for a player's hit, while `hurtEnemy` runs for a player's hit, a mob's hit (`Mob.doHurtTarget`) and a spear stab. The Java eject mirrors this.
+- A player's main hand is reported to `inventoryTick` once per tick (the inventory passes the selected slot as `MAINHAND`; the equipment map's main-hand entry stays empty for players), so `while_held` fires exactly once per interval in either hand and never from backpack slots (GameTest).
+- `msm:on_spawn` fires in `finalizeSpawn`, before the mob is added to the level; a loaded copy does not fire it again. A `NoAI` mob never fires the entity `msm:on_tick`.
+- In an item event with no player, `run_function` runs as the mob using or holding the item (extends ADR 0058 D1).
+- `while_worn` without `msm:armor` is a load error and the component is dropped. Interval triggers fire when `(game time + entity id) % interval == 0`; the shared limiter caps firings at 2,000 per server tick and logs at most once a minute; `on_entity_inside` checks its per-entity cooldown before the limiter.
