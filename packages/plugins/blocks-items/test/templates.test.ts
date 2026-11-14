@@ -17,7 +17,6 @@ import plugin, {
   blockItemId,
   blocksItemsKinds,
   blocksItemsTemplates,
-  blocksItemsValidators,
   MOD_ID_PATTERN,
   machineOf,
   modIdFromNamespace,
@@ -74,6 +73,9 @@ const IDS = [
   'msm_block_grinder_machine',
   'msm_block_fast_furnace',
   'msm_block_redstone_machine',
+  'msm_block_portal_nether',
+  'msm_block_portal_end',
+  'msm_block_portal_trigger_lit',
   'msm_item_food',
   'msm_item_tool',
   'msm_item_tool_custom_material',
@@ -96,7 +98,7 @@ const IDS = [
   'msm_biome_addition_overworld_ore',
   'msm_loot_addition_mob_drop',
 ];
-const CATEGORIES = new Set(['Blocks', 'Items', 'Effects', 'Mod', 'Additions']);
+const CATEGORIES = new Set(['Blocks', 'Portals', 'Items', 'Effects', 'Mod', 'Additions']);
 
 const kindOf = (template: ElementTemplate) => {
   const kind = blocksItemsKinds.find((entry) => entry.id === template.kind);
@@ -218,7 +220,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const indexes = withOwnIds(await indexesFor(bundle), created, files);
         expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
         const problems = await Promise.all(
-          blocksItemsValidators.map((validator) =>
+          (plugin.contributes.validators ?? []).map((validator) =>
             validator.validate({
               elements: [created],
               target: bundle.target,

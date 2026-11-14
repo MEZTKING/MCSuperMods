@@ -43,7 +43,7 @@
  *   {@link THROWABLE_CONFLICTS} or an `msm:tool` of type `mace` (ADR 0056 D2: the runtime
  *   applies none of them). The message names the two components.
  * - `blocks-items.item-collision` (error): an `msm:item` with the id of an `msm:block` that
- *   registers its own block item (`item` is not `false`).
+ *   registers its own block item (`item` is not `false`; a portal only with `item`).
  * - `blocks-items.passthrough-needs-data-pack` (warning): an `msm:components` entry for a
  *   vanilla component whose value names a data pack registry entry (the target's
  *   `items.dataPackComponents`) that the runtime cannot apply late ({@link
@@ -105,6 +105,7 @@ import {
   MOD_KIND,
   POTION_KIND,
 } from './kinds';
+import { blockItemId } from './lowering/block-item';
 import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
 import { type BrewingStep, potionBrewingSteps, potionVariantIds } from './lowering/potion';
@@ -742,7 +743,7 @@ function missingModels(elements: readonly Element[]): Problem[] {
 function itemCollisions(elements: readonly Element[]): Problem[] {
   const blocksWithItems = new Set(
     elements
-      .filter((element) => element.kind === BLOCK_KIND && dataOf(element).item !== false)
+      .filter((element) => element.kind === BLOCK_KIND && blockItemId(element) !== undefined)
       .map((element) => element.id),
   );
   const problems: Problem[] = [];
@@ -902,7 +903,8 @@ function entityInsideSolidBlocks(elements: readonly Element[]): Problem[] {
     if (element.kind !== BLOCK_KIND) continue;
     const data = dataOf(element);
     if (record(data.components)?.['msm:on_entity_inside'] === undefined) continue;
-    if (canContainEntities(data)) continue;
+    // A portal has no collision (ADR 0077 D4): entities are always inside it.
+    if (data.type === 'portal' || canContainEntities(data)) continue;
     problems.push({
       severity: 'warning',
       code: 'blocks-items.entity-inside-solid-block',

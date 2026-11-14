@@ -43,6 +43,7 @@ export const TYPE_BLOCK_TAGS: readonly string[] = Object.freeze([
   'doors',
   'fence_gates',
   'fences',
+  'portals',
   'pressure_plates',
   'slabs',
   'stairs',

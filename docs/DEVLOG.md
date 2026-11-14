@@ -3533,3 +3533,19 @@ Next
 **Decisions:** Per the brief the dimension file is left out. B336 tests travel with `minecraft:the_nether` and `minecraft:the_end` only (limit P8); parity uses the fixture's own dimension on real servers.
 
 **Next:** B331 (format), B332 (plugin API) and B333 (runtime frame detector) in wave 1. Verified: `./gradlew build` on 26.3, 26.4 and `-PwithoutGeckolib` green with 361 GameTests each; `-p parity build` green on both versions.
+## 2026-11-14 — executor — B335 portal lowering, validators and templates
+
+What
+- `@msm/plugin-blocks-items` lowers the `portal` block type (ADR 0077 D8): `lowering/types/portal.ts` (the 18th entry of `BLOCK_TYPES`, model slots `ns` and `ew`) writes the runtime definition with the type fields kept, the models `<ns>:block/<id>_ns` and `_ew` parented on vanilla's `minecraft:block/nether_portal_ns` and `_ew` with `portal` and `particle` set to `textures.portal` (default `minecraft:block/nether_portal`, referenced, never bundled), the blockstate `axis=x`/`axis=z`, the `block.<ns>.<id>` key and the `#minecraft:portals` block tag entry. Editor-only `textures` are stripped as for every type. A portal has no block item unless `item` is given (`blockItemIdOf`), so no item model, item key or loot table by default; with an item, a flat item model of the portal texture.
+- New `validators-portals.ts` (validators `msm.blocks-items.portals` and `msm.blocks-items.light-portal`): `portal-destination-unknown`, `portal-same-dimension`, `portal-frame-unknown`, `portal-frame-block-needed`, `portal-igniter-unknown`, `portal-particle-options`, `portal-sound-unknown` (only with `target.blocks.portal`), `portal-event-unknown`, `portal-frame-clash`, `light-portal-not-portal`, and `component-not-for-type` for components outside the portal's six.
+- Three templates in the new category "Portals" (ADR 0078 D3): `msm_block_portal_nether`, `msm_block_portal_end`, `msm_block_portal_trigger_lit` (56 in the plugin).
+- Tests: `portals.golden.test.ts` (four samples, goldens for both targets), `validators-portals.test.ts`, template goldens, the template test now runs every validator the plugin contributes; `packages/exporters/test/portal-vanilla-pack.test.ts` proves the vanilla data pack keeps the dimension and travel function, makes the `#minecraft:portals` entry optional, leaves out the frame block's loot table (`export.mod-only-reference`) and warns for a function that `setblock`s the portal (`export.mod-only-function`), on both targets.
+- F17 checked with `javap -c` over the Loom-cached merged jars of 26.3 and 26.4-snapshot-7: `BlockTags.PORTALS` is read only by `LivingEntity.dismountVehicle(Entity)` on both (not by `ServerLevel`).
+- Checks: `pnpm lint`, `pnpm typecheck`, full `turbo run test --force` green.
+
+Decisions
+- Outside the brief's owner files, kept minimal: `lowering/block-item.ts` (no item for a portal without `item`), `validators-types.ts` (`type-needs-appearance` counts models generated from the data, which also stops a false error on crops given only `textures.stages`), `validators.ts` (`entity-inside-solid-block` skips portals; `item-collision` uses `blockItemId`), and the app's `block-type-model.ts` (label "Portal", texture slot "Portal surface", `portal` kept out of the Type picker until B337) so the workspace typechecks.
+- `portal-sound-unknown` is skipped for a target without `blocks.portal`, as B332's note says.
+
+Next
+- B337 (Portal section, offering `portal` in the Type picker), B338 (flows and example), B340 (AI helper), B339 (eject; `blockItemIdOf` now gives no item for portals).

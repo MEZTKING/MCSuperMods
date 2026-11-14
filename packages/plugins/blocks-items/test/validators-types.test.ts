@@ -83,6 +83,16 @@ describe('block type validators', () => {
       block('demo:by_models', { type: 'stairs', models: { straight: 'minecraft:block/stone' } }),
       block('demo:by_model', { type: 'pillar', model: 'minecraft:block/oak_log' }),
       block('demo:plain', {}),
+      // Models from the data itself: a crop's stages, a portal's (default) texture.
+      block('demo:staged', {
+        type: 'crop',
+        textures: { stages: ['minecraft:block/wheat_stage0'] },
+      }),
+      block('demo:gate', {
+        type: 'portal',
+        frame: 'minecraft:obsidian',
+        destination: 'minecraft:the_nether',
+      }),
     ]);
     const found = withCode(problems, 'type-needs-appearance');
     expect(found.map((problem) => problem.elementId)).toEqual(['demo:bare']);

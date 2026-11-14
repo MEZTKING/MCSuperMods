@@ -25,6 +25,7 @@
  * | `crop` | `stage0`, optional `stage1` to `stage15` (the stage models in order, spread over the ages) |
  * | `sapling` | `sapling` |
  * | `leaves` | `leaves` |
+ * | `portal` | `ns`, `ew` (generated from `textures.portal` or vanilla's Nether portal texture; the element takes no `models`) |
  *
  * `model` fills the `default` slot of `block`, `pillar`, `horizontal` and `directional`. A slot
  * in `models` wins over the model generated for it from `textures`; a required slot that is
@@ -65,6 +66,7 @@ import {
 } from './models';
 import { paneType } from './pane';
 import { pillarType } from './pillar';
+import { portalType } from './portal';
 import { pressurePlateType } from './pressure-plate';
 import { saplingType } from './sapling';
 import { slabType } from './slab';
@@ -101,6 +103,7 @@ export const BLOCK_TYPES = Object.freeze([
   'crop',
   'sapling',
   'leaves',
+  'portal',
 ] as const);
 
 /** A block type name. */
@@ -125,6 +128,7 @@ export const BLOCK_TYPE_LOWERINGS: Readonly<Record<BlockTypeName, TypeLowering>>
   crop: cropType,
   sapling: saplingType,
   leaves: leavesType,
+  portal: portalType,
 });
 
 /** The slot that names the block item's model on every type. */

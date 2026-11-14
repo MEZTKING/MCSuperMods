@@ -1,0 +1,72 @@
+[
+  {
+    "contents": {
+      "destination": "minecraft:the_end",
+      "format": 1,
+      "frame": "minecraft:end_stone_bricks",
+      "particles": {
+        "type": "minecraft:reverse_portal"
+      },
+      "travel": {
+        "arrival": "surface"
+      },
+      "type": "portal"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/nether_portal_ns",
+      "textures": {
+        "particle": "minecraft:block/nether_portal",
+        "portal": "minecraft:block/nether_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_ns.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/nether_portal_ew",
+      "textures": {
+        "particle": "minecraft:block/nether_portal",
+        "portal": "minecraft:block/nether_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_ew.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "demo:block/sample_ns"
+        },
+        "axis=z": {
+          "model": "demo:block/sample_ew"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/portals.json"
+  }
+]

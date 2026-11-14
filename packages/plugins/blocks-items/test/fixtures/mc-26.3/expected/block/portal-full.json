@@ -1,0 +1,133 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 50,
+          "requires_tool": true,
+          "resistance": 1200
+        },
+        "msm:light_emitter": {
+          "level": 15
+        }
+      },
+      "destination": "minecraft:the_nether",
+      "events": {
+        "example:arrived": {
+          "actions": [
+            {
+              "function": "example:ruby/shimmer",
+              "type": "run_function"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "frame": "#minecraft:beacon_base_blocks",
+      "frame_block": "minecraft:gold_block",
+      "igniter": "#minecraft:creeper_igniters",
+      "on_travel": "example:arrived",
+      "particles": {
+        "color": 14702108,
+        "count": 8
+      },
+      "sounds": {
+        "ambient": "minecraft:block.beacon.ambient",
+        "travel": false
+      },
+      "travel": {
+        "arrival": "portal",
+        "cooldown_ticks": 100,
+        "delay_ticks": 40,
+        "overlay": false,
+        "players_only": true,
+        "scale": 8
+      },
+      "type": "portal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ember_portal.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/nether_portal_ns",
+      "textures": {
+        "particle": "minecraft:block/nether_portal",
+        "portal": "minecraft:block/nether_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ember_portal_ns.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/nether_portal_ew",
+      "textures": {
+        "particle": "minecraft:block/nether_portal",
+        "portal": "minecraft:block/nether_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ember_portal_ew.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "example:block/ember_portal_ns"
+        },
+        "axis=z": {
+          "model": "example:block/ember_portal_ew"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ember_portal.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ember_portal": "Ember Portal"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ember_portal"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ember_portal"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/needs_diamond_tool.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ember_portal"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/portals.json",
+    "schema": "tag:block"
+  }
+]

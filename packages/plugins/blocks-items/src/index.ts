@@ -1,7 +1,7 @@
 /**
  * `@msm/plugin-blocks-items`: built-in MSM plugin contributing custom blocks, custom items and
  * the mod metadata (ADR 0025 D8), custom mob effects (ADR 0055) and additions to vanilla
- * content (ADR 0060) and potions (ADR 0063): the `msm:block`, `msm:item`, `msm:effect`,
+ * content (ADR 0060), potions (ADR 0063) and portal blocks (ADR 0077): the `msm:block`, `msm:item`, `msm:effect`,
  * `msm:mod`, `msm:biome_addition`, `msm:loot_addition` and `msm:potion` kinds, their
  * lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
  * project validators and the "New element" templates.
@@ -11,6 +11,7 @@ import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
 import { containerValidators } from './validators-containers';
+import { portalValidators } from './validators-portals';
 import { blockTypeValidators } from './validators-types';
 
 export * from './kinds';
@@ -54,6 +55,12 @@ export {
   keepContentsLootTable,
   keepsContents,
 } from './lowering/types/loot-presets';
+export {
+  DEFAULT_PORTAL_TEXTURE,
+  PORTAL_BLOCK_TAGS,
+  PORTAL_MODEL_PARENTS,
+  portalTextureOf,
+} from './lowering/types/portal';
 export { blocksItemsTemplates, modIdFromNamespace } from './templates';
 export {
   BLOCKS_ITEMS_PROBLEM_CODES,
@@ -79,6 +86,17 @@ export {
   MAX_MACHINE_TICKS,
 } from './validators-containers';
 export {
+  DEFAULT_PORTAL_IGNITER,
+  DEFAULT_PORTAL_RETURN_TO,
+  DUST_PARTICLE,
+  isPortalElement,
+  LIGHT_PORTAL_ACTION,
+  PORTAL_COMPONENTS,
+  PORTAL_PROBLEM_CODES,
+  PORTAL_TYPE,
+  portalValidators,
+} from './validators-portals';
+export {
   BLOCK_TYPE_PROBLEM_CODES,
   blockTypeValidators,
   SHAPED_BLOCK_TYPES,
@@ -91,6 +109,11 @@ export default definePlugin({
   contributes: {
     elementKinds: [...blocksItemsKinds],
     elementTemplates: [...blocksItemsTemplates],
-    validators: [...blocksItemsValidators, ...blockTypeValidators, ...containerValidators],
+    validators: [
+      ...blocksItemsValidators,
+      ...blockTypeValidators,
+      ...containerValidators,
+      ...portalValidators,
+    ],
   },
 });

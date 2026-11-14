@@ -123,6 +123,8 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.block-item-id',
       'msm.blocks-items.containers',
       'msm.blocks-items.machines',
+      'msm.blocks-items.portals',
+      'msm.blocks-items.light-portal',
     ]);
     expect(blocksItemsValidators).toHaveLength(21);
   });

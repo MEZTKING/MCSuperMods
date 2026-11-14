@@ -33,9 +33,12 @@ type JsonObject = { [key: string]: Json };
 
 export type { BlockTypeName };
 
-/** The building types the Type picker offers (ADR 0067 D1), in the format's order. */
+/**
+ * The building types the Type picker offers (ADR 0067 D1), in the format's order. `portal`
+ * (ADR 0077) is left out until the Portal section offers its fields (B337).
+ */
 export const BUILDING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze(
-  BLOCK_TYPES.filter((type) => !['crop', 'sapling', 'leaves'].includes(type)),
+  BLOCK_TYPES.filter((type) => !['crop', 'sapling', 'leaves', 'portal'].includes(type)),
 );
 
 /** The plant types (ADR 0068 D1); their own fields come with the plant sections (B272). */
@@ -64,6 +67,7 @@ export const BLOCK_TYPE_LABELS: Readonly<Record<BlockTypeName, string>> = Object
   crop: 'Crop',
   sapling: 'Sapling',
   leaves: 'Leaves',
+  portal: 'Portal',
 });
 
 /** The vanilla set types in words (ADR 0067 D2); unknown names show as written. */
@@ -218,6 +222,7 @@ export const TEXTURE_SLOTS: Readonly<Record<BlockTypeName, readonly TextureSlot[
     crop: [],
     sapling: [{ key: 'sapling', label: 'Sapling (also the item)' }],
     leaves: [{ key: 'all', label: 'Leaves (every face)' }],
+    portal: [{ key: 'portal', label: 'Portal surface' }],
   },
 );
 

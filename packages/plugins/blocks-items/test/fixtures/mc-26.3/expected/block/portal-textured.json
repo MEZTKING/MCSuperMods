@@ -1,0 +1,122 @@
+[
+  {
+    "contents": {
+      "destination": "minecraft:the_end",
+      "format": 1,
+      "frame": "example:chime_block",
+      "item": {
+        "creative_tab": "minecraft:functional_blocks"
+      },
+      "return_to": "minecraft:the_nether",
+      "type": "portal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/sky_portal.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/nether_portal_ns",
+      "textures": {
+        "particle": "example:block/sky_portal",
+        "portal": "example:block/sky_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/sky_portal_ns.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/nether_portal_ew",
+      "textures": {
+        "particle": "example:block/sky_portal",
+        "portal": "example:block/sky_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/sky_portal_ew.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "example:block/sky_portal_ns"
+        },
+        "axis=z": {
+          "model": "example:block/sky_portal_ew"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/sky_portal.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/sky_portal"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/sky_portal.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/sky_portal",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/sky_portal.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.sky_portal": "Sky Portal"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:sky_portal"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/portals.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:sky_portal",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/sky_portal",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/sky_portal.json",
+    "schema": "resource:loot_table"
+  }
+]

@@ -187,6 +187,9 @@ const givenModelSlots = (data: JsonObject): string[] =>
 
 function hasAppearance(type: BlockTypeName, data: JsonObject): boolean {
   if (Object.keys(readTextures(data)).length > 0) return true;
+  // Types whose models come from the data itself: a crop's `stages`, a portal's texture (or
+  // vanilla's Nether portal texture, so a portal always has one; ADR 0077 D8).
+  if ((BLOCK_TYPE_LOWERINGS[type].generateFromData?.(data).length ?? 0) > 0) return true;
   if (givenModelSlots(data).length > 0) return true;
   return BLOCK_TYPE_LOWERINGS[type].acceptsModel === true && text(data.model) !== undefined;
 }
