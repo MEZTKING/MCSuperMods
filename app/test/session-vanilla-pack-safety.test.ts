@@ -192,6 +192,101 @@ describe('vanillaSafeDataFiles: fatal folders', () => {
       },
       'demo:frost',
     ],
+    [
+      'enchantment provider',
+      'data/demo/enchantment_provider/spawn.json',
+      { type: 'minecraft:single', enchantment: 'demo:frost', level: 1 },
+      'demo:frost',
+    ],
+    [
+      'dialog item body',
+      'data/demo/dialog/rubies.json',
+      {
+        type: 'minecraft:notice',
+        title: 'Rubies',
+        body: [{ type: 'minecraft:item', item: { id: 'demo:ruby' } }],
+      },
+      'demo:ruby',
+    ],
+    [
+      'worldgen ore feature',
+      'data/demo/worldgen/feature/ore_ruby.json',
+      {
+        type: 'minecraft:ore',
+        size: 4,
+        discard_chance_on_air_exposure: 0,
+        targets: [
+          {
+            state: 'demo:ruby_block',
+            target: {
+              predicate_type: 'minecraft:tag_match',
+              tag: 'minecraft:stone_ore_replaceables',
+            },
+          },
+        ],
+      },
+      'demo:ruby_block',
+    ],
+    [
+      'worldgen placed feature with an inline feature',
+      'data/demo/worldgen/placed_feature/ruby_rock.json',
+      {
+        feature: { type: 'minecraft:simple_block', to_place: { id: 'demo:ruby_block' } },
+        placement: [{ type: 'minecraft:in_square' }],
+      },
+      'demo:ruby_block',
+    ],
+    [
+      'worldgen noise settings default block',
+      'data/demo/worldgen/noise_settings/ruby.json',
+      { default_block: 'demo:ruby_block', default_fluid: 'minecraft:water' },
+      'demo:ruby_block',
+    ],
+    [
+      'worldgen structure spawn override',
+      'data/demo/worldgen/structure/tower.json',
+      {
+        type: 'minecraft:jigsaw',
+        spawn_overrides: {
+          monster: { bounding_box: 'full', spawns: [{ type: 'demo:golem', count: 1, weight: 1 }] },
+        },
+      },
+      'demo:golem',
+    ],
+    [
+      'worldgen processor list output state',
+      'data/demo/worldgen/processor_list/rubify.json',
+      {
+        processors: [
+          {
+            processor_type: 'minecraft:rule',
+            rules: [
+              {
+                input_predicate: { predicate_type: 'minecraft:always_true' },
+                location_predicate: { predicate_type: 'minecraft:always_true' },
+                output_state: 'demo:ruby_block',
+              },
+            ],
+          },
+        ],
+      },
+      'demo:ruby_block',
+    ],
+    [
+      'dimension flat layer',
+      'data/demo/dimension/rubyland.json',
+      {
+        type: 'minecraft:overworld',
+        generator: {
+          type: 'minecraft:flat',
+          settings: {
+            biome: 'minecraft:plains',
+            layers: [{ block: 'demo:ruby_block', height: 1 }],
+          },
+        },
+      },
+      'demo:ruby_block',
+    ],
   ];
 
   for (const [name, path, contents, id] of cases) {
@@ -245,6 +340,71 @@ describe('vanillaSafeDataFiles: fatal folders', () => {
       'data/demo/trade_set/rubies.json',
       'data/demo/villager_trade/ruby.json',
     ]);
+  });
+
+  it('cascades through worldgen: features, placed features, biomes and dimensions', () => {
+    const files = [
+      json('data/demo/worldgen/feature/ore_ruby.json', {
+        type: 'minecraft:simple_block',
+        to_place: { id: 'demo:ruby_block' },
+      }),
+      json('data/demo/worldgen/placed_feature/ore_ruby_placed.json', {
+        feature: 'demo:ore_ruby',
+        placement: [],
+      }),
+      json('data/demo/worldgen/biome/ruby_hills.json', {
+        features: [[], ['demo:ore_ruby_placed']],
+      }),
+      json('data/demo/dimension/rubyland.json', {
+        type: 'minecraft:overworld',
+        generator: { type: 'minecraft:noise', biome_source: { biome: 'demo:ruby_hills' } },
+      }),
+      json('data/demo/tags/worldgen/biome/hills.json', {
+        values: ['minecraft:plains', 'demo:ruby_hills'],
+      }),
+    ];
+    const result = run(files);
+    expect(paths(result.files)).toEqual(['data/demo/tags/worldgen/biome/hills.json']);
+    expect(result.files[0]?.contents).toEqual({
+      values: ['minecraft:plains', { id: 'demo:ruby_hills', required: false }],
+    });
+    expect(result.problems.map((problem) => [problem.file, problem.message])).toEqual([
+      [
+        'data/demo/dimension/rubyland.json',
+        modOnlyReferenceMessage('data/demo/dimension/rubyland.json', 'demo:ruby_hills'),
+      ],
+      [
+        'data/demo/worldgen/biome/ruby_hills.json',
+        modOnlyReferenceMessage('data/demo/worldgen/biome/ruby_hills.json', 'demo:ore_ruby_placed'),
+      ],
+      [
+        'data/demo/worldgen/feature/ore_ruby.json',
+        modOnlyReferenceMessage('data/demo/worldgen/feature/ore_ruby.json', 'demo:ruby_block'),
+      ],
+      [
+        'data/demo/worldgen/placed_feature/ore_ruby_placed.json',
+        modOnlyReferenceMessage(
+          'data/demo/worldgen/placed_feature/ore_ruby_placed.json',
+          'demo:ore_ruby',
+        ),
+      ],
+    ]);
+  });
+
+  it('keeps a biome whose spawners name a mod entity (the game drops that entry)', () => {
+    const biome = json('data/demo/worldgen/biome/haunted.json', {
+      attributes: {
+        'minecraft:gameplay/natural_mob_spawns': {
+          argument: { spawns_by_category: { monster: [{ type: 'demo:golem', weight: 1 }] } },
+        },
+      },
+    });
+    const structure = json('data/demo/worldgen/structure/tower.json', {
+      spawn_overrides: { monster: { spawns: [{ type: 'demo:golem', weight: 1 }] } },
+    });
+    const result = run([biome, structure]);
+    expect(paths(result.files)).toEqual([biome.path]);
+    expect(result.problems.map((problem) => problem.file)).toEqual([structure.path]);
   });
 
   it('gives one warning per element, naming its first file', () => {

@@ -336,15 +336,11 @@ describe('AI helper scenario: the ruby tools mod (build mode)', () => {
     ) as Record<string, string>;
     expect(lang['item.ruby.ruby_pickaxe']).toBe('Ruby Pickaxe');
     expect(lang['item.ruby.ruby_sword']).toBe('Ruby Sword');
-    expect(Object.keys(dataZip ?? {})).toEqual(
-      expect.arrayContaining([
-        // The ore generation's worldgen files.
-        'data/ruby/worldgen/feature/ore_ruby.json',
-        'data/ruby/worldgen/placed_feature/ore_ruby_placed.json',
-      ]),
-    );
-    // ADR 0066: files naming the mod's items are only in the mod jar.
+    // ADR 0066: files naming the mod's items or blocks, including the ore generation's
+    // worldgen files, are only in the mod jar.
     const modOnlyFiles = [
+      'data/ruby/worldgen/feature/ore_ruby.json',
+      'data/ruby/worldgen/placed_feature/ore_ruby_placed.json',
       'data/ruby/recipe/ruby_pickaxe_from_rubies.json',
       'data/ruby/loot_table/blocks/ruby_block.json',
     ];

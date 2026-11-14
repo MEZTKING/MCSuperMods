@@ -4,9 +4,11 @@
  *
  * A vanilla server rejects a whole data pack when any file of a registry-loaded folder
  * (recipes, loot tables, advancements, predicates, item modifiers, villager trades, trade
- * sets, enchantments, jukebox songs) names an id or `#tag` it does not know. Mod-only ids are
- * the ids MSM runtime kinds register (blocks and their items, items, effects, potions and
- * their versions, entities and their spawn eggs) plus project tags that hold nothing else.
+ * sets, enchantments, jukebox songs, enchantment providers, dialogs, worldgen, dimensions)
+ * names an id or `#tag` it does not know, or names a file of its own registries that is not
+ * there. Mod-only ids are the ids MSM runtime kinds register (blocks and their items, items,
+ * effects, potions and their versions, entities and their spawn eggs) plus project tags that
+ * hold nothing else.
  * For the vanilla data pack, files that name one are left out (one warning per element), tag
  * entries that name one become `{ "id": ..., "required": false }`, and functions that name
  * one are kept with a warning (the game skips only that function).
@@ -41,7 +43,9 @@ export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
 
 /**
  * Data folders where one unknown id or `#tag` makes the game reject the whole data pack
- * (ADR 0066, verified on vanilla servers of both targets; `trade_set` by inference).
+ * (ADR 0066, verified on vanilla servers of both targets; `trade_set` by inference). Every
+ * `worldgen` registry folder is one (`worldgen/<registry>/...`), and a reference to a
+ * missing worldgen or dimension file is just as fatal.
  */
 export const FATAL_DATA_FOLDERS: readonly DataFolderKey[] = Object.freeze([
   'recipe',
@@ -53,7 +57,19 @@ export const FATAL_DATA_FOLDERS: readonly DataFolderKey[] = Object.freeze([
   'trade_set',
   'enchantment',
   'jukebox_song',
+  'enchantment_provider',
+  'dialog',
+  'worldgen',
+  'dimension',
 ] satisfies DataFolderKey[]);
+
+/**
+ * Runtime registries whose unknown ids a file's registry tolerates (logged, that entry
+ * dropped), per registry: a biome's spawners naming an unknown entity type (ADR 0066).
+ */
+const TOLERATED: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  ['worldgen/biome', new Set(['entity_type'])],
+]);
 
 /**
  * Keys whose string values name data the game does not resolve at load time (advancement
@@ -148,8 +164,8 @@ function entryId(entry: Json): { id: string; optional: boolean } | undefined {
 class ModOnlySet {
   readonly #ids = new Map<string, Set<string>>();
   #tags = new Map<string, Set<string>>();
-  /** Every mod-only id of a registry a generic reference may name. */
-  readonly #generic = new Set<string>();
+  /** Every mod-only id of a registry a generic reference may name, with its registries. */
+  readonly #generic = new Map<string, Set<string>>();
   #anyTag = new Set<string>();
 
   constructor(initial: ModOnlyIds) {
@@ -160,7 +176,10 @@ class ModOnlySet {
     const ids = this.#ids.get(registry);
     if (ids === undefined) this.#ids.set(registry, new Set([id]));
     else ids.add(id);
-    if (!SKIPPED_REGISTRIES.has(registry)) this.#generic.add(id);
+    if (SKIPPED_REGISTRIES.has(registry)) return;
+    const registries = this.#generic.get(id);
+    if (registries === undefined) this.#generic.set(id, new Set([registry]));
+    else registries.add(registry);
   }
 
   has(registry: string, id: string): boolean {
@@ -171,9 +190,18 @@ class ModOnlySet {
     return this.#tags.get(registry)?.has(id) === true;
   }
 
-  /** Whether a string in a generic position names a mod-only id or `#tag`. */
-  generic(value: string): boolean {
-    return value.startsWith('#') ? this.#anyTag.has(value.slice(1)) : this.#generic.has(value);
+  /**
+   * Whether a string in a generic position names a mod-only id or `#tag`.
+   *
+   * @param tolerated - Registries whose ids do not count here.
+   */
+  generic(value: string, tolerated?: ReadonlySet<string>): boolean {
+    if (value.startsWith('#')) return this.#anyTag.has(value.slice(1));
+    const registries = this.#generic.get(value);
+    if (registries === undefined) return false;
+    if (tolerated === undefined) return true;
+    for (const registry of registries) if (!tolerated.has(registry)) return true;
+    return false;
   }
 
   /** Whether a tag entry of `registry` names a mod-only id or tag. */
@@ -243,10 +271,16 @@ function isType(value: Json | undefined, name: string): boolean {
  * @param value - The parsed JSON.
  * @param set - The mod-only ids and tags.
  * @param folders - Folder names of the referenced data registries.
+ * @param tolerated - Registries whose ids the file's own registry tolerates.
  */
-function firstHit(value: Json, set: ModOnlySet, folders: DataRefFolders): string | undefined {
+function firstHit(
+  value: Json,
+  set: ModOnlySet,
+  folders: DataRefFolders,
+  tolerated?: ReadonlySet<string>,
+): string | undefined {
   const check = (text: string, registry: string | undefined): boolean => {
-    if (registry === undefined) return set.generic(text);
+    if (registry === undefined) return set.generic(text, tolerated);
     return set.entry(registry, text);
   };
   const walk = (node: Json, registry: string | undefined): string | undefined => {
@@ -260,7 +294,7 @@ function firstHit(value: Json, set: ModOnlySet, folders: DataRefFolders): string
     }
     if (!isObject(node)) return undefined;
     for (const [key, child] of Object.entries(node)) {
-      if (set.generic(key)) return key;
+      if (set.generic(key, tolerated)) return key;
       if (SKIPPED_KEYS.has(key) && (typeof child === 'string' || Array.isArray(child))) continue;
       let childRegistry: string | undefined;
       let tagName = false;
@@ -403,7 +437,15 @@ export function vanillaSafeDataFiles(
     if (!fatalFolders.has(parts.folder)) continue;
     const json = decode(file.contents);
     if (json === undefined) continue;
-    fatal.push({ file, registry: parts.folder, id: `${parts.ns}:${rest}`, json });
+    // A worldgen file's registry is `worldgen/<registry>`; its id is the path below that.
+    const own = parts.folder === folders.worldgen ? splitTagRest(`worldgen/${rest}`) : undefined;
+    if (parts.folder === folders.worldgen && own === undefined) continue;
+    fatal.push({
+      file,
+      registry: own?.registry ?? parts.folder,
+      id: `${parts.ns}:${own?.path ?? rest}`,
+      json,
+    });
   }
 
   const set = new ModOnlySet(modOnly);
@@ -414,7 +456,7 @@ export function vanillaSafeDataFiles(
     set.refreshTags(tags);
     for (const parsed of fatal) {
       if (dropped.has(parsed.file.path)) continue;
-      const hit = firstHit(parsed.json, set, refFolders);
+      const hit = firstHit(parsed.json, set, refFolders, TOLERATED.get(parsed.registry));
       if (hit === undefined) continue;
       dropped.set(parsed.file.path, hit);
       set.add(parsed.registry, parsed.id);
