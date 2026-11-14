@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 5
+      }
+    },
+    "display_name": "Sky Stone",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_portals:block/sky_stone",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:sky_stone",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

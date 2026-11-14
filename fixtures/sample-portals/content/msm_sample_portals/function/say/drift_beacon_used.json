@@ -1,0 +1,13 @@
+{
+  "data": {
+    "lines": [
+      "say The drift beacon is used."
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:say/drift_beacon_used",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample portals: a sky portal to a flat sky realm, an ember portal to the Nether lit with a key, and a drift portal lit by a beacon block.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_portals",
+    "name": "MSM Sample Portals",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

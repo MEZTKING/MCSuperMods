@@ -1,0 +1,34 @@
+{
+  "data": {
+    "generator": {
+      "settings": {
+        "biome": "minecraft:plains",
+        "features": false,
+        "lakes": false,
+        "layers": [
+          {
+            "block": "minecraft:bedrock",
+            "height": 1
+          },
+          {
+            "block": "minecraft:dirt",
+            "height": 3
+          },
+          {
+            "block": "minecraft:grass_block",
+            "height": 1
+          }
+        ],
+        "structure_overrides": []
+      },
+      "type": "minecraft:flat"
+    },
+    "type": "minecraft:overworld"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:sky_realm",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

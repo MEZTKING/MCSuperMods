@@ -1,0 +1,21 @@
+{
+  "data": {
+    "destination": "msm_sample_portals:sky_realm",
+    "display_name": "Drift Portal",
+    "format": 1,
+    "frame": "minecraft:crying_obsidian",
+    "igniter": false,
+    "travel": {
+      "arrival": "surface",
+      "overlay": false,
+      "players_only": true
+    },
+    "type": "portal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:drift_portal",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

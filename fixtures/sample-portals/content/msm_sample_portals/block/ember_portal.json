@@ -1,0 +1,28 @@
+{
+  "data": {
+    "destination": "minecraft:the_nether",
+    "display_name": "Ember Portal",
+    "format": 1,
+    "frame": "#msm_sample_portals:ember_frame",
+    "frame_block": "minecraft:gold_block",
+    "igniter": "msm_sample_portals:ember_key",
+    "particles": {
+      "color": 14586912,
+      "count": 6,
+      "type": "minecraft:dust"
+    },
+    "sounds": {
+      "ambient": "msm_sample_portals:ember.hum"
+    },
+    "textures": {
+      "portal": "msm_sample_portals:block/ember_portal"
+    },
+    "type": "portal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:ember_portal",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

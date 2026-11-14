@@ -1,0 +1,32 @@
+{
+  "data": {
+    "destination": "msm_sample_portals:sky_realm",
+    "display_name": "Sky Portal",
+    "events": {
+      "msm_sample_portals:sky_portal_travelled": {
+        "actions": [
+          {
+            "function": "msm_sample_portals:say/sky_portal_travelled",
+            "type": "run_function"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "frame": "msm_sample_portals:sky_stone",
+    "on_travel": "msm_sample_portals:sky_portal_travelled",
+    "textures": {
+      "portal": "msm_sample_portals:block/sky_portal"
+    },
+    "travel": {
+      "scale": 1
+    },
+    "type": "portal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:sky_portal",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

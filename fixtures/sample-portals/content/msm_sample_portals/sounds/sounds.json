@@ -1,0 +1,15 @@
+{
+  "data": {
+    "ember.hum": {
+      "sounds": [
+        "minecraft:block/beacon/ambient"
+      ]
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:sounds",
+  "kind": "minecraft:sounds",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_sample_portals:block/drift_beacon"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_portals:block/drift_beacon",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-14T00:00:00.000Z"
+  }
+}
