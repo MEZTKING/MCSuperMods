@@ -6,6 +6,8 @@ A kitchen-sink MCSuperMods project for custom portal blocks (ADRs 0077 and 0078)
 
 CI exports the project with the real runtime and starts a headless Fabric server on 26.3 and on 26.4 (`tools/run-fabric-server`). The server must log `[msm_runtime] registered 3 portal block(s)`, `[msm_runtime] registered blocks by type: block 2, portal 3`, `registered 5 block(s) and 3 item(s) from 6 definition file(s); 0 error(s), 0 warning(s)` and `registered 1 sound event(s)`, with no warning such as `portal ...: dimension ... is not a level of this world` (the dimension is in the jar, so `msm_sample_portals:sky_realm` loads). The ejected 26.3 project builds with its own `./gradlew build` and starts without `msm_runtime`. The server draws nothing and has no player, so how the portals look, sound and feel is left to the in-game check below.
 
+CI also runs 13 black-box parity tests (`SamplePortalsParityTest`, filter `msm_parity_tests:sample_portals_*`) on the 26.3 content jar, the 26.3 ejected jar and the 26.4 content jar: lighting with flint and steel and the Ember Key, wrong items and broken frames, the Drift Beacon, no loot, and the Ember Portal taking items and a cow to the Nether and back. **Trips into `sky_realm` are not parity-tested**: the GameTest server creates no level for a data pack dimension (limit P8), so the parity run only checks that the Sky Portal and the Drift Portal take nobody there, and the Sky Portal's `on_travel` line is not reached. Those trips are covered by the dedicated-server checks above (the level loads, no missing-level warning) and by the in-game check below.
+
 ## Contents
 
 | Element | Kind | What it shows |
@@ -43,7 +45,7 @@ Do the whole list twice, once per version.
 
 **Building a frame:** stand on flat ground and build an upright ring around an opening 2 blocks wide and 3 high: 2 blocks under the opening, 3 up each side of it and 2 over it (10 blocks; the four corners may be added or left out). Bigger openings work too, up to 21 by 21. To light it with an item, use the item on the top face of a bottom frame block, inside the opening (as with flint and steel and a Nether frame).
 
-Things you meet here that are limits of this feature, not faults, are marked "known limit" with their number from the plan (P1 to P18). Report them only if they look different from what is written.
+Things you meet here that are limits of this feature, not faults, are marked "known limit" with their number from the limits table in ADR 0077's findings (`docs/adr/0077-custom-portal-blocks.md`, P1 to P18). Report them only if they look different from what is written.
 
 ### Loading
 
