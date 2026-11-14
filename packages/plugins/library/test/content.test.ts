@@ -20,9 +20,11 @@ import {
   MOB_PRESET_NAMES,
   mobSkinPng,
   PLACEHOLDER_PATTERNS,
+  POPULAR_CATEGORY,
   paintingPng,
   placeholderPng,
   placeholderSkinPng,
+  popularExamples,
   presetSkinPng,
   rulesBehaviourExamples,
   STARTERS_CATEGORY,
@@ -642,7 +644,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 97 per-kind examples, one per built-in kind, 33 behaviour examples and 4 starter projects', () => {
+  it('has 97 per-kind examples, one per built-in kind, 33 behaviour examples, 16 popular ideas and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(97);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -690,7 +692,31 @@ describe('examples', () => {
     expect(rulesBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_rules_guard_mob',
     ]);
-    expect(libraryExamples).toHaveLength(134);
+    expect(popularExamples.map((example) => example.id)).toEqual(
+      [
+        'glowshard',
+        'ember_drake',
+        'cottage_furniture',
+        'camp_stove',
+        'pull_charm',
+        'sunken_crypt',
+        'amber_realm',
+        'boomerang',
+        'paper_glider',
+        'rocket_boots',
+        'orchard_tree',
+        'spell_scrolls',
+        'coordinates_bar',
+        'go_kart',
+        'mini_tank',
+        'biplane',
+      ].map((id) => `example_popular_${id}`),
+    );
+    for (const example of popularExamples) {
+      expect(example.category).toBe(POPULAR_CATEGORY);
+      expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
+    }
+    expect(libraryExamples).toHaveLength(150);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -935,7 +961,7 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the eight worldgen starters, the 21 structure and worldgen examples, the generating ores and the trees and wild crops', () => {
+  it('covers the eight worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops and four popular ideas', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
@@ -958,6 +984,10 @@ describe('structure and worldgen content', () => {
       'example_msm_loot_crate',
       'example_msm_ore_crusher',
       'example_msm_sky_portal',
+      'example_popular_glowshard',
+      'example_popular_sunken_crypt',
+      'example_popular_amber_realm',
+      'example_popular_orchard_tree',
       'starter_custom_ore',
     ]);
   });

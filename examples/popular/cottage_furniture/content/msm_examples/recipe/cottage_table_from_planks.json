@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "P": "#minecraft:planks",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "PPP",
+      "S S",
+      "S S"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:cottage_table"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_table_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shaped recipe for the cottage table; #minecraft:planks and #minecraft:wooden_slabs take any wood.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

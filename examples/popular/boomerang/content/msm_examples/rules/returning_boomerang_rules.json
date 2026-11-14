@@ -1,0 +1,69 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "effect": "minecraft:slowness",
+            "level": 2,
+            "seconds": 2,
+            "step": "give_effect",
+            "who": "other"
+          },
+          {
+            "effect": "minecraft:glowing",
+            "seconds": 3,
+            "step": "give_effect",
+            "who": "other"
+          },
+          {
+            "sound": "minecraft:entity.player.attack.crit",
+            "step": "play_sound",
+            "where": "here"
+          }
+        ],
+        "key": "hit_mob",
+        "name": "Stun the mob it hits",
+        "when": {
+          "subject": "msm_examples:returning_boomerang",
+          "trigger": "thrown_hit_mob"
+        }
+      },
+      {
+        "do": [
+          {
+            "sound": "minecraft:block.wood.hit",
+            "step": "play_sound",
+            "where": "here"
+          },
+          {
+            "count": 6,
+            "particle": "minecraft:crit",
+            "spread": 0.2,
+            "step": "spawn_particles",
+            "where": "here"
+          }
+        ],
+        "key": "hit_block",
+        "name": "Clatter on a block",
+        "when": {
+          "subject": "msm_examples:returning_boomerang",
+          "trigger": "thrown_hit_block"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:returning_boomerang_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book for msm_examples:returning_boomerang. The boomerang comes back by itself (after_throw return puts it back in the thrower's inventory when it lands); the rules add what it does on the way: a mob it hits is slowed and glows for a moment, and hitting a block clatters with a few sparks. These rules use only plain steps, so they become ordinary events on the item when exported (no script), in the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -2,8 +2,8 @@
  * The Examples gallery (ADR 0020): one commented example per registered kind, the blocks and
  * items behaviour examples (with the container and machine examples, ADR 0076 D4, the portal
  * example, ADR 0078 D4, and the firefly jar, ADR 0081 D5), the entity behaviour examples, the
- * script behaviour examples, the rules behaviour examples (ADR 0082 D11), then the four content
- * starters as complete projects.
+ * script behaviour examples, the rules behaviour examples (ADR 0082 D11), the "Popular ideas"
+ * examples, then the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import { KINDS } from '../content/bundle';
@@ -23,6 +23,7 @@ import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
 import { entityBehaviourExamples, entityKindExamples } from './entities';
 import { particleExamples, particleKindExamples } from './particles';
+import { popularExamples } from './popular';
 import { portalExamples } from './portals';
 import { registryExamples } from './registries';
 import { resourcePackExamples } from './resource-pack';
@@ -34,6 +35,7 @@ import { worldgenExamples } from './worldgen';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
 export { entityBehaviourExamples } from './entities';
+export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
 export { scriptBehaviourExamples } from './scripts';
 
@@ -128,5 +130,6 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...entityBehaviourExamples,
   ...scriptBehaviourExamples,
   ...rulesBehaviourExamples,
+  ...popularExamples,
   ...starterExamples,
 ]);

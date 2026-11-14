@@ -1,0 +1,111 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "speed": 1,
+            "targets": [
+              "minecraft:zombie",
+              "minecraft:skeleton",
+              "minecraft:creeper"
+            ],
+            "type": "ranged_attack"
+          },
+          {
+            "speed": 0.7,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/ember_drake_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/ember_drake",
+        "renderer": "auto",
+        "scale": 1.5,
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_examples:entity/ember_drake",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 40
+      },
+      "msm:movement": {
+        "fire_immune": true,
+        "flying_speed": 0.4,
+        "follow_range": 24,
+        "hovers": true,
+        "mode": "fly",
+        "speed": 0.3
+      },
+      "msm:ranged_attack": {
+        "charge_ticks": 20,
+        "inaccuracy": 6,
+        "interval_ticks": 50,
+        "projectile": "minecraft:fire_charge",
+        "range": 16,
+        "sound": "minecraft:entity.blaze.shoot",
+        "speed": 1.6
+      },
+      "msm:rideable": {
+        "controlled_by": "owner",
+        "jump": 0,
+        "passengers": 1,
+        "saddle": true,
+        "saddle_bone": "saddle",
+        "speed": 1
+      },
+      "msm:tameable": {
+        "chance": 0.33,
+        "defends_owner": true,
+        "follows_owner": true,
+        "items": [
+          "minecraft:beef",
+          "minecraft:porkchop",
+          "minecraft:mutton",
+          "minecraft:chicken"
+        ],
+        "sit": false
+      }
+    },
+    "display_name": "Ember Drake",
+    "format": 1,
+    "size": {
+      "height": 1.65,
+      "width": 1.35
+    },
+    "sounds": {
+      "ambient": "minecraft:entity.blaze.ambient",
+      "death": "minecraft:entity.blaze.death",
+      "hurt": "minecraft:entity.blaze.hurt"
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/ember_drake_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_drake",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A tameable flying mount from the Mount flow (quadruped preset, flying, only its owner steers). msm:tameable tames it one time in three with raw beef, porkchop, mutton or chicken; once tamed it follows its owner and defends them (follows_owner, defends_owner). Its owner rides it with an empty hand and steers it once it wears a vanilla saddle: it flies along the rider's view and rises while jump is held. msm:ranged_attack shoots vanilla fire charges every two and a half seconds, and the ranged_attack goal aims them at zombies, skeletons and creepers within 16 blocks and at anything that hurts it (retaliate). It is fire immune, uses the blaze's sounds and never spawns on its own: hatch it from its spawn egg.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

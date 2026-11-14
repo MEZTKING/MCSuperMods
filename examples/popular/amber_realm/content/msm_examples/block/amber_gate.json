@@ -1,0 +1,29 @@
+{
+  "data": {
+    "destination": "msm_examples:amber_realm",
+    "display_name": "Amber Gate",
+    "format": 1,
+    "frame": "msm_examples:amber_gate_frame",
+    "particles": {
+      "color": 14586912
+    },
+    "textures": {
+      "portal": "msm_examples:block/amber_gate"
+    },
+    "travel": {
+      "scale": 1
+    },
+    "type": "portal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amber_gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The portal (type portal). Build an upright frame of amber gate frame blocks with an opening 2 to 21 blocks wide and 3 to 21 high (the corners may be left out) and use flint and steel on the inside: the opening fills with this block, which takes players, mobs and items to Amber Realm (overworld terrain with plains everywhere, and the overworld sky with day and night) and back to the overworld (return_to). travel.scale 1: one block there is one block here. Arriving, it finds the nearest linked portal of the same block or builds one (of the frame block). particles.color gives coloured dust particles. It hums and whooshes as the Nether portal does. Standing in it wobbles the screen with the Nether portal overlay (the game draws that one picture for every portal). textures.portal is the surface, drawn see-through from textures/block/amber_gate.png. A portal has no item, no loot and cannot be mined; it needs the Fabric mod jar export, and the travel function msm_examples:amber_realm/travel still works in vanilla packs.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

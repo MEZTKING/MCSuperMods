@@ -1,0 +1,58 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/go_kart_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/go_kart",
+        "renderer": "auto",
+        "sit": "sit",
+        "texture": "msm_examples:entity/go_kart",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 30
+      },
+      "msm:movement": {
+        "knockback_resistance": 0.6,
+        "speed": 0.32,
+        "step_height": 1
+      },
+      "msm:rideable": {
+        "controlled_by": "anyone",
+        "jump": 0,
+        "passengers": 2,
+        "saddle": false,
+        "speed": 1
+      }
+    },
+    "display_name": "Go-Kart",
+    "format": 1,
+    "size": {
+      "height": 1,
+      "width": 0.9
+    },
+    "sounds": {
+      "ambient": "minecraft:entity.minecart.inside",
+      "death": "minecraft:entity.generic.explode",
+      "hurt": "minecraft:entity.iron_golem.hurt"
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/go_kart_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:go_kart",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An interim vehicle: a rideable mob with a script, until MSM has a vehicle kind. The kart is a mob with no AI goals, so it never moves by itself. msm:rideable with saddle false lets anyone get in with an empty hand and drive it with W, A, S and D, with a second seat behind the driver (passengers 2); sneaking gets out. step_height 1 lets it drive up full blocks. Its spawn egg is the kart item: use it on the ground to place a kart. Being a mob, it can still be hurt (fire, falls) and pushed.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

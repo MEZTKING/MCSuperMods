@@ -1,0 +1,22 @@
+{
+  "formatVersion": 1,
+  "name": "Go-kart",
+  "namespaces": [
+    "msm_examples"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.structures",
+    "msm.worldgen",
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim",
+    "msm.scripting",
+    "msm.rules"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "F": "minecraft:furnace",
+      "X": "minecraft:cobblestone"
+    },
+    "pattern": [
+      "XXX",
+      "XFX",
+      "XXX"
+    ],
+    "result": {
+      "id": "msm_examples:camp_stove"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:camp_stove_from_furnace",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight cobblestone around a furnace make one camp stove. Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

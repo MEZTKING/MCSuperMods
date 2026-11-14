@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/amber_block"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/amber_block",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The block of amber: a full cube drawn from textures/block/amber_block.png.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

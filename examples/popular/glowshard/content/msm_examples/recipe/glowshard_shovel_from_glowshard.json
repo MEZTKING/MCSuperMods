@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "#": "minecraft:stick",
+      "X": "msm_examples:glowshard"
+    },
+    "pattern": [
+      "X",
+      "#",
+      "#"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:glowshard_shovel"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard_shovel_from_glowshard",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The vanilla shovel recipe with glowshards and sticks.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

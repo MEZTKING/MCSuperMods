@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:food": {
+        "nutrition": 8,
+        "saturation": 0.3
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Plum Pie",
+    "format": 1,
+    "model": "msm_examples:item/plum_pie"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:plum_pie",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A pie of plums, eaten whole as a pumpkin pie is (msm:food, 8 hunger). A placed pie eaten one slice per use, as cake is, needs a block type with bites that MSM does not have yet.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

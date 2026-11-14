@@ -1,0 +1,54 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "command": [
+              "tp @e[type=minecraft:item,distance=..8] @s"
+            ],
+            "step": "run_command"
+          },
+          {
+            "command": [
+              "tp @e[type=minecraft:experience_orb,distance=..8] @s"
+            ],
+            "step": "run_command"
+          }
+        ],
+        "key": "pull_drops",
+        "name": "Pull drops and experience to the holder",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "player_sneaking",
+              "not": true
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "options": {
+            "hand": "off",
+            "interval_seconds": 0.5
+          },
+          "subject": "msm_examples:pull_charm",
+          "trigger": "item_held"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pull_charm_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book for msm_examples:pull_charm. Every half second while a player holds the charm in the off hand, and is not sneaking, two Run a command steps run as that player: tp moves every dropped item and experience orb within 8 blocks to them, so they are picked up at once. Sneak to stop it. On export the book becomes a held event on the charm and a generated script, so it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

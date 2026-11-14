@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "I": "minecraft:iron_ingot",
+      "R": "minecraft:redstone"
+    },
+    "pattern": [
+      "R I",
+      "I I",
+      " I "
+    ],
+    "result": {
+      "id": "msm_examples:pull_charm"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pull_charm_from_iron",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A horseshoe of iron ingots with redstone at one end makes the charm.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

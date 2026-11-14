@@ -1,0 +1,65 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "step": "show_action_bar",
+            "text": [
+              "X ",
+              {
+                "axis": "x",
+                "value": "player_position"
+              },
+              "   Y ",
+              {
+                "axis": "y",
+                "value": "player_position"
+              },
+              "   Z ",
+              {
+                "axis": "z",
+                "value": "player_position"
+              },
+              "   Time ",
+              {
+                "value": "time_of_day"
+              }
+            ]
+          }
+        ],
+        "key": "show_coordinates",
+        "name": "Show the coordinates while holding a compass",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "player_holding",
+              "hand": "either",
+              "item": "minecraft:compass"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "options": {
+            "interval_seconds": 0.5
+          },
+          "trigger": "player_every"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:coordinates_bar_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book with one player rule and no blocks or items of its own. Every half second, for each player holding a vanilla compass in either hand, the text above the hotbar shows their X, Y and Z position (two decimals) and the time of day in ticks (0 is sunrise, 6000 noon, 18000 midnight). Readings mix with words in a text slot. The facing direction cannot be shown: Rules have no reading of where a player looks. Rules compile to a script, so this needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

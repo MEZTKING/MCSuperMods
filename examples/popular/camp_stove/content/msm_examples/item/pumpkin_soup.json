@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "eat",
+        "converts_to": "minecraft:bowl",
+        "seconds": 1.6
+      },
+      "msm:food": {
+        "nutrition": 10,
+        "saturation": 0.6
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Pumpkin Soup",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/pumpkin_soup"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pumpkin_soup",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Pumpkin Soup: msm:food restores 10 hunger with saturation 0.6, and msm:consumable leaves a bowl behind, as a vanilla stew does (converts_to). It stacks to one.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.4,
+            "type": "panic"
+          },
+          {
+            "items": [
+              "msm_examples:amber"
+            ],
+            "speed": 1,
+            "type": "tempt"
+          },
+          {
+            "speed": 0.8,
+            "type": "wander"
+          },
+          {
+            "distance": 6,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/amber_beetle_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/amber_beetle",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_examples:entity/amber_beetle",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 10
+      },
+      "msm:movement": {
+        "speed": 0.2
+      }
+    },
+    "display_name": "Amber Beetle",
+    "format": 1,
+    "loot_table": "msm_examples:entities/amber_beetle",
+    "size": {
+      "height": 1.1,
+      "width": 0.9
+    },
+    "spawn": {
+      "biomes": [
+        "msm_examples:amber_woods"
+      ],
+      "max_group": 4,
+      "min_group": 2,
+      "rule": "animal",
+      "weight": 12
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/amber_beetle_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:amber_beetle",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The creature of the Amber Realm: a calm animal (base animal) that spawns in groups of two to four on the grass of msm_examples:amber_woods, and only there, since that biome exists only in the realm. It follows players who hold amber (tempt), panics when hurt and drops amber.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

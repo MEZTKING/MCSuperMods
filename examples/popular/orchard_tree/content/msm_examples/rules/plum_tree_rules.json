@@ -1,0 +1,45 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_examples:plum",
+            "step": "drop_item",
+            "where": "here"
+          },
+          {
+            "pitch": 1.6,
+            "sound": "minecraft:block.cave_vines.pick_berries",
+            "step": "play_sound",
+            "volume": 0.5,
+            "where": "here"
+          }
+        ],
+        "key": "drop_fruit",
+        "name": "Ripe plums fall from the leaves",
+        "when": {
+          "options": {
+            "chance": 0.04
+          },
+          "subject": "msm_examples:plum_leaves",
+          "trigger": "block_random_tick"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:plum_tree_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book for msm_examples:plum_leaves. Leaves get random ticks, and on one in 25 of them a ripe plum drops from the leaves with a soft pop, so plums gather under the tree over time. Drop an item is a world step without an event action, so the rule compiles to a script; it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

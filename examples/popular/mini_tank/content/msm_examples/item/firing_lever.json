@@ -1,0 +1,20 @@
+{
+  "data": {
+    "creative_tab": "minecraft:combat",
+    "display_name": "Firing Lever",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/firing_lever"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:firing_lever",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The trigger of the tank: the script fires the cannon when the driver uses it.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

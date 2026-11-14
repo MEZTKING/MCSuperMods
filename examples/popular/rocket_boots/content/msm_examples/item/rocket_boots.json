@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:armor": {
+        "material": "iron",
+        "slot": "boots"
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Rocket Boots",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/rocket_boots",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:rocket_boots",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Boots of the vanilla iron armour material (msm:armor, slot boots), so they look and protect as iron boots do. The rule book adds the worn event (msm:while_worn) on export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

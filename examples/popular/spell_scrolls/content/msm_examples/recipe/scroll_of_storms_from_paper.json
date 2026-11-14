@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:paper",
+      "minecraft:glow_ink_sac",
+      "minecraft:lapis_lazuli"
+    ],
+    "result": {
+      "count": 2,
+      "id": "msm_examples:scroll_of_storms"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:scroll_of_storms_from_paper",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Paper, a glow ink sac and lapis lazuli make two Scrolls of Storms.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

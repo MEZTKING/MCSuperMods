@@ -1,0 +1,162 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "conditions": [
+              {
+                "condition": "player_holding",
+                "item": "msm_examples:crypt_key"
+              }
+            ],
+            "do": [
+              {
+                "count": 1,
+                "item": "msm_examples:crypt_key",
+                "step": "take_item"
+              },
+              {
+                "block": "minecraft:air",
+                "step": "place_block",
+                "where": "here"
+              },
+              {
+                "conditions": [
+                  {
+                    "block": "msm_examples:crypt_vault_door",
+                    "condition": "block_is",
+                    "where": {
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "place": "offset"
+                    }
+                  }
+                ],
+                "do": [
+                  {
+                    "block": "minecraft:air",
+                    "step": "place_block",
+                    "where": {
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "place": "offset"
+                    }
+                  }
+                ],
+                "match": "all",
+                "step": "if"
+              },
+              {
+                "conditions": [
+                  {
+                    "block": "msm_examples:crypt_vault_door",
+                    "condition": "block_is",
+                    "where": {
+                      "offset": [
+                        0,
+                        -1,
+                        0
+                      ],
+                      "place": "offset"
+                    }
+                  }
+                ],
+                "do": [
+                  {
+                    "block": "minecraft:air",
+                    "step": "place_block",
+                    "where": {
+                      "offset": [
+                        0,
+                        -1,
+                        0
+                      ],
+                      "place": "offset"
+                    }
+                  }
+                ],
+                "match": "all",
+                "step": "if"
+              },
+              {
+                "sound": "minecraft:block.iron_door.open",
+                "step": "play_sound",
+                "where": "here"
+              },
+              {
+                "step": "show_title",
+                "title": [
+                  "The vault opens"
+                ]
+              }
+            ],
+            "else": [
+              {
+                "sound": "minecraft:block.iron_door.close",
+                "step": "play_sound",
+                "where": "here"
+              },
+              {
+                "step": "show_action_bar",
+                "text": [
+                  "Locked. The Crypt Warden keeps the key."
+                ]
+              }
+            ],
+            "match": "all",
+            "step": "if"
+          }
+        ],
+        "key": "open_vault",
+        "name": "Open the vault with the Crypt Key",
+        "when": {
+          "subject": "msm_examples:crypt_vault_door",
+          "trigger": "block_used"
+        }
+      },
+      {
+        "do": [
+          {
+            "step": "show_title",
+            "subtitle": [
+              "It dropped the key to the vault"
+            ],
+            "title": [
+              "The Crypt Warden falls"
+            ],
+            "who": {
+              "radius": 32,
+              "who": "players_nearby"
+            }
+          }
+        ],
+        "key": "warden_falls",
+        "name": "The Crypt Warden falls",
+        "when": {
+          "subject": "msm_examples:crypt_warden",
+          "trigger": "mob_died"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crypt_vault_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book for the crypt. The first rule runs when a player uses msm_examples:crypt_vault_door: holding the Crypt Key, the player gives up the key and the door opens (Place a block sets air here, and above or below when that block is the other half of the door), with a sound and a title; without the key the door stays shut and says who has it. The second rule tells every player within 32 blocks when the Crypt Warden dies. On export the book becomes events on the door and the warden plus a generated script, so it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

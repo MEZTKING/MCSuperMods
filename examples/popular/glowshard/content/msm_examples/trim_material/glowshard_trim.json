@@ -1,0 +1,20 @@
+{
+  "data": {
+    "description": {
+      "color": "#d6e2ee",
+      "translate": "trim_material.msm_examples.glowshard"
+    },
+    "palette_id": "minecraft:trim/iron"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard_trim",
+  "kind": "minecraft:trim_material",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The armour trim material the glowshard provides: palette_id picks the vanilla iron trim colours (the vanilla palette nearest to the set colour), and description is the tooltip line in the set colour. A trim material cannot share the material item's id, so it is msm_examples:glowshard_trim.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/mini_tank_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/mini_tank",
+        "renderer": "auto",
+        "scale": 1.4,
+        "sit": "sit",
+        "texture": "msm_examples:entity/mini_tank",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 80
+      },
+      "msm:movement": {
+        "fire_immune": true,
+        "knockback_resistance": 1,
+        "speed": 0.16,
+        "step_height": 1
+      },
+      "msm:rideable": {
+        "controlled_by": "anyone",
+        "jump": 0,
+        "passengers": 1,
+        "saddle": false,
+        "speed": 1
+      }
+    },
+    "display_name": "Mini Tank",
+    "format": 1,
+    "size": {
+      "height": 1.4,
+      "width": 1.25
+    },
+    "sounds": {
+      "ambient": "minecraft:entity.iron_golem.step",
+      "death": "minecraft:entity.generic.explode",
+      "hurt": "minecraft:entity.iron_golem.damage"
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/mini_tank_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mini_tank",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An interim vehicle: a rideable mob with a script, until MSM has a vehicle kind. A slow, tough mob with no AI goals: 80 health, no knockback and fire immune. Anyone gets in with an empty hand and drives it with W, A, S and D (msm:rideable, saddle false); it faces where the driver looks, as there is no turret yet. The script fires its cannon from the Firing Lever and repairs it with iron.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "data": {
+    "components": {
+      "msm:components": {
+        "minecraft:provides_trim_material": "msm_examples:glowshard_trim"
+      }
+    },
+    "creative_tab": "minecraft:ingredients",
+    "format": 1,
+    "max_stack_size": 64,
+    "model": "msm_examples:item/glowshard"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The material: a gem the glowshard ore drops. Every recipe of the set uses it, and it repairs the set's tools and armour on an anvil through the tag msm_examples:glowshard_repair_materials. Its vanilla component minecraft:provides_trim_material (set through msm:components) names the trim material msm_examples:glowshard_trim, so it also trims armour at a smithing table.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "name": "msm_examples:crypt_key",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "modifier": [
+              {
+                "count": {
+                  "max": 6,
+                  "min": 2,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              }
+            ],
+            "name": "minecraft:bone",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_examples:entities/crypt_warden",
+    "type": "minecraft:entity"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:entities/crypt_warden",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What the Crypt Warden drops: always the Crypt Key, and two to six bones.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

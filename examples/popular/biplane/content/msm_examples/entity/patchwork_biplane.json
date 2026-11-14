@@ -1,0 +1,61 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/patchwork_biplane_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_examples:entity/patchwork_biplane",
+        "renderer": "auto",
+        "scale": 1.5,
+        "shoot": "shoot",
+        "texture": "msm_examples:entity/patchwork_biplane",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 40
+      },
+      "msm:movement": {
+        "flying_speed": 0.8,
+        "hovers": true,
+        "mode": "fly",
+        "speed": 0.3
+      },
+      "msm:rideable": {
+        "controlled_by": "anyone",
+        "jump": 0,
+        "passengers": 1,
+        "saddle": false,
+        "speed": 1
+      }
+    },
+    "display_name": "Patchwork Biplane",
+    "format": 1,
+    "size": {
+      "height": 1.2,
+      "width": 1.2
+    },
+    "sounds": {
+      "ambient": "minecraft:entity.bee.loop",
+      "death": "minecraft:entity.armor_stand.break",
+      "hurt": "minecraft:entity.armor_stand.hit"
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/patchwork_biplane_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:patchwork_biplane",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An interim vehicle: a rideable mob with a script, until MSM has a vehicle kind. A flying mob with no AI goals (mode fly, hovering, no fall damage). Anyone gets in with an empty hand; it flies where the pilot looks and climbs while jump is held. The script burns fuel while it flies and refuels it with coal.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_examples:scroll_of_mending",
+            "step": "take_item"
+          },
+          {
+            "amount": 8,
+            "step": "heal"
+          },
+          {
+            "effect": "minecraft:regeneration",
+            "seconds": 5,
+            "step": "give_effect"
+          },
+          {
+            "count": 8,
+            "particle": "minecraft:heart",
+            "spread": 0.6,
+            "step": "spawn_particles",
+            "where": "player"
+          }
+        ],
+        "key": "scroll_of_mending",
+        "name": "Read the Scroll of Mending",
+        "when": {
+          "options": {
+            "cooldown_seconds": 1
+          },
+          "subject": "msm_examples:scroll_of_mending",
+          "trigger": "item_used"
+        }
+      },
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_examples:scroll_of_blinking",
+            "step": "take_item"
+          },
+          {
+            "count": 20,
+            "particle": "minecraft:portal",
+            "spread": 0.5,
+            "step": "spawn_particles",
+            "where": "player"
+          },
+          {
+            "step": "teleport",
+            "to": {
+              "distance": 12,
+              "place": "player_looking"
+            }
+          },
+          {
+            "sound": "minecraft:entity.enderman.teleport",
+            "step": "play_sound",
+            "where": "player"
+          }
+        ],
+        "key": "scroll_of_blinking",
+        "name": "Read the Scroll of Blinking",
+        "when": {
+          "options": {
+            "cooldown_seconds": 1
+          },
+          "subject": "msm_examples:scroll_of_blinking",
+          "trigger": "item_used"
+        }
+      },
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_examples:scroll_of_storms",
+            "step": "take_item"
+          },
+          {
+            "count": 1,
+            "mob": "minecraft:lightning_bolt",
+            "step": "spawn_mob",
+            "where": {
+              "distance": 24,
+              "place": "player_looking"
+            }
+          }
+        ],
+        "key": "scroll_of_storms",
+        "name": "Read the Scroll of Storms",
+        "when": {
+          "options": {
+            "cooldown_seconds": 1
+          },
+          "subject": "msm_examples:scroll_of_storms",
+          "trigger": "item_used"
+        }
+      },
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "msm_examples:scroll_of_frost",
+            "step": "take_item"
+          },
+          {
+            "command": [
+              "effect give @e[distance=..6,type=!minecraft:player] minecraft:slowness 6 3"
+            ],
+            "step": "run_command"
+          },
+          {
+            "count": 40,
+            "particle": "minecraft:snowflake",
+            "spread": 3,
+            "step": "spawn_particles",
+            "where": "player"
+          },
+          {
+            "sound": "minecraft:block.glass.break",
+            "step": "play_sound",
+            "where": "player"
+          }
+        ],
+        "key": "scroll_of_frost",
+        "name": "Read the Scroll of Frost",
+        "when": {
+          "options": {
+            "cooldown_seconds": 1
+          },
+          "subject": "msm_examples:scroll_of_frost",
+          "trigger": "item_used"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:spell_scroll_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book with one rule per scroll: using a scroll takes one from the hand and casts its spell. Mending heals and gives Regeneration; Blinking teleports to where you look (Where the player looks stops at the first block or mob, up to 12 blocks); Storms spawns a lightning bolt where you look; Frost runs an effect command as the reader that slows every mob within 6 blocks. A one-second cooldown keeps a held button from reading a whole stack. The rules take items and use places, so they compile to a script; they need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

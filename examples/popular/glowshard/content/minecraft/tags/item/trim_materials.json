@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:glowshard"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:trim_materials",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Adds the glowshard to the vanilla tag #minecraft:trim_materials, so the smithing table accepts it in the material slot of an armour trim.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "data": {
+    "criteria": {
+      "has_pickaxe": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_examples:glowshard_pickaxe"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Make a Glowshard Pickaxe",
+      "frame": "task",
+      "icon": {
+        "id": "msm_examples:glowshard_pickaxe"
+      },
+      "title": "Bright Idea"
+    },
+    "parent": "msm_examples:glowshard/root"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard/bright_idea",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Granted the first time a Glowshard Pickaxe is in the inventory.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

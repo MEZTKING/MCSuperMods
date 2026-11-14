@@ -1,0 +1,21 @@
+{
+  "data": {
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Crypt Key",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/crypt_key",
+    "rarity": "rare"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crypt_key",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The key to the vault, dropped by the Crypt Warden. Use it on the vault door; the rule book takes it.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Kart Horn",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/kart_horn"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:kart_horn",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A horn to honk while driving: the script plays a note when it is used.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

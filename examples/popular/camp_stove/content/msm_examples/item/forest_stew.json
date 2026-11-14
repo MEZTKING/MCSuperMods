@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "eat",
+        "converts_to": "minecraft:bowl",
+        "seconds": 1.6
+      },
+      "msm:food": {
+        "nutrition": 8,
+        "saturation": 0.7
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Forest Stew",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/forest_stew"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:forest_stew",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Forest Stew: msm:food restores 8 hunger with saturation 0.7, and msm:consumable leaves a bowl behind, as a vanilla stew does (converts_to). It stacks to one.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "values": [
+      "minecraft:swamp",
+      "minecraft:dark_forest",
+      "minecraft:old_growth_spruce_taiga",
+      "minecraft:old_growth_pine_taiga"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:has_sunken_crypt",
+  "kind": "minecraft:tag/worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The gloomy biomes where sunken crypts generate.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

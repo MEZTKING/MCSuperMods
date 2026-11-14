@@ -1,0 +1,38 @@
+{
+  "data": {
+    "criteria": {
+      "has_glowshard": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_examples:glowshard"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "announce_to_chat": false,
+      "background": "minecraft:gui/advancements/backgrounds/stone",
+      "description": "Mine a glowing shard deep underground",
+      "frame": "task",
+      "icon": {
+        "id": "msm_examples:glowshard"
+      },
+      "show_toast": false,
+      "title": "Glowshard"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard/root",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The root of a Glowshard tab in the advancements screen: it has a background and no parent, and is granted when a glowshard first enters the inventory. The other advancements name it as their parent.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

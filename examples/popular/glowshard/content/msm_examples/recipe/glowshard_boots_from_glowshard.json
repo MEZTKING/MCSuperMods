@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "X": "msm_examples:glowshard"
+    },
+    "pattern": [
+      "X X",
+      "X X"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:glowshard_boots"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard_boots_from_glowshard",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The vanilla boots recipe with glowshards.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

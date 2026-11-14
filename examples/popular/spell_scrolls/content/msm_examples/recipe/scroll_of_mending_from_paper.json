@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "minecraft:paper",
+      "minecraft:glow_ink_sac",
+      "minecraft:glistering_melon_slice"
+    ],
+    "result": {
+      "count": 2,
+      "id": "msm_examples:scroll_of_mending"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:scroll_of_mending_from_paper",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Paper, a glow ink sac and glistering melon slice make two Scrolls of Mending.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

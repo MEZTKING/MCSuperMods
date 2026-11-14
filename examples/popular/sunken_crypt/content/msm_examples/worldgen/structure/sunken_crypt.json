@@ -1,0 +1,28 @@
+{
+  "data": {
+    "biomes": "#msm_examples:has_sunken_crypt",
+    "max_distance_from_center": 80,
+    "project_start_to_heightmap": "WORLD_SURFACE_WG",
+    "size": 1,
+    "spawn_overrides": {},
+    "start_height": {
+      "absolute": -11
+    },
+    "start_pool": "msm_examples:sunken_crypt/start",
+    "step": "underground_structures",
+    "terrain_adaptation": "none",
+    "type": "minecraft:jigsaw",
+    "use_expansion_hack": false
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sunken_crypt",
+  "kind": "minecraft:worldgen/structure",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The sunken crypt: a one-piece jigsaw structure in the biomes of #msm_examples:has_sunken_crypt. project_start_to_heightmap puts its start on the surface and start_height -11 sinks it 11 blocks, so only the top of the ladder shaft shows above ground. Try /locate structure msm_examples:sunken_crypt in a new world.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

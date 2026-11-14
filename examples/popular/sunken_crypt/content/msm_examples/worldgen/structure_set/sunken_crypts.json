@@ -1,0 +1,27 @@
+{
+  "data": {
+    "placement": {
+      "salt": 2054436325,
+      "separation": 10,
+      "spacing": 34,
+      "type": "minecraft:random_spread"
+    },
+    "structures": [
+      {
+        "structure": "msm_examples:sunken_crypt",
+        "weight": 1
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sunken_crypts",
+  "kind": "minecraft:worldgen/structure_set",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Places sunken crypts about one in every 34 by 34 chunks, at least 10 chunks apart. Structure sets load when a world opens, so reopen the world after adding it.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

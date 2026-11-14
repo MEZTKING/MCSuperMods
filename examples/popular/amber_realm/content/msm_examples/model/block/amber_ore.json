@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/amber_ore"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/amber_ore",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube with the same texture on every side. The texture id names textures/block/amber_ore.png in this namespace; paint over it to restyle the ore.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

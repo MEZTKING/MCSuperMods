@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:components": {
+        "minecraft:equippable": {
+          "slot": "chest"
+        },
+        "minecraft:glider": {}
+      },
+      "msm:durability": {
+        "max": 96
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Paper Glider",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/paper_glider"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:paper_glider",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A glider made of vanilla components: msm:components passes minecraft:glider and minecraft:equippable (worn in the chest slot) to the item, the same pair that makes an elytra fly. Wear it, jump off something high and press jump in the air to glide. msm:durability gives it 96 uses: gliding wears it down one point a second, and it stops gliding when one point is left. It shows nothing on the body, since it has no equipment asset.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

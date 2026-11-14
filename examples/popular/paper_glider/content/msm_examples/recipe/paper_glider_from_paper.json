@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "P": "minecraft:paper",
+      "S": "minecraft:stick",
+      "T": "minecraft:string"
+    },
+    "pattern": [
+      "PPP",
+      "SPS",
+      "T T"
+    ],
+    "result": {
+      "id": "msm_examples:paper_glider"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:paper_glider_from_paper",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Paper over a frame of sticks with two strings to hold makes a glider.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

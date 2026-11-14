@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "equipment",
+    "ingredients": [
+      "minecraft:feather",
+      "minecraft:stick"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:returning_boomerang"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:returning_boomerang_from_feather",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Feather and a stick anywhere in the crafting grid make a returning boomerang.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

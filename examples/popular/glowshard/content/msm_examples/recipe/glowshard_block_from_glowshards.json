@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "X": "msm_examples:glowshard"
+    },
+    "pattern": [
+      "XXX",
+      "XXX",
+      "XXX"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:glowshard_block"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard_block_from_glowshards",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Nine glowshards make a block of glowshard.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

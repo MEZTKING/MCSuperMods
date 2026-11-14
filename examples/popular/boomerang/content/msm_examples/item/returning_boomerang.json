@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "return",
+        "damage": 5,
+        "gravity": 0.01,
+        "sound": "minecraft:item.trident.throw",
+        "speed": 1.6
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Returning Boomerang",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_examples:item/returning_boomerang"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:returning_boomerang",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A throwable: msm:throwable throws it at 1.6 blocks per tick with gravity 0.01 at once on use, dealing 5 half hearts to the mob hit. It goes back into the thrower's inventory when it lands, or drops at their feet when there is no room (after_throw return). In flight it is drawn as its item picture.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

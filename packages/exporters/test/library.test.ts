@@ -19,7 +19,8 @@
  * projects: `examples/all-kinds/` (every per-kind example in one project),
  * `examples/blocks-items/` (the blocks and items behaviour examples), `examples/entities/`
  * (the entity behaviour examples), `examples/scripts/` (the script behaviour examples),
- * `examples/rules/` (the Rules examples, ADR 0082 D11) and `examples/starters/<starter id>/`
+ * `examples/rules/` (the Rules examples, ADR 0082 D11), `examples/popular/<name>/` (each
+ * "Popular ideas" example as a project of its own) and `examples/starters/<starter id>/`
  * (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
@@ -70,6 +71,8 @@ import libraryPlugin, {
   kindExamples,
   libraryExamples,
   libraryStarters,
+  popularExamples,
+  popularFolder,
   rulesBehaviourExamples,
   rulesKindExamples,
   scriptBehaviourExamples,
@@ -1545,6 +1548,13 @@ const MIRROR: readonly MirrorProject[] = [
         ),
       ),
   },
+  ...popularExamples.map((example) => ({
+    folder: `popular/${popularFolder(example)}`,
+    build: () =>
+      buildProject(example.title, 'msm_examples', [
+        buildEntry(example, 'msm_examples', example.title),
+      ]),
+  })),
   ...MIRRORED_STARTERS.map((id) => ({
     folder: `starters/${id}`,
     build: () => {
@@ -1694,7 +1704,7 @@ describe('library bundles', () => {
     expect(kindExamples.map((example: ExampleProject) => example.kind).sort()).toEqual(kinds);
   });
 
-  it('has scripts in the Scripted ore and Scripted behaviour starters and the script examples', () => {
+  it('has scripts in the Scripted ore and Scripted behaviour starters, the script examples and the interim vehicles', () => {
     expect(libraryScripts().map(([label]) => label)).toEqual([
       'scripted_ore demo:ore_glow',
       'scripted_ore demo:ruby_block_guard',
@@ -1711,6 +1721,9 @@ describe('library bundles', () => {
       'example_msm_full_set_bonus demo:full_set_bonus',
       'example_msm_teleport_staff demo:teleport_staff',
       'example_msm_boss_fight_bar demo:boss_fight',
+      'example_popular_go_kart demo:go_kart_controls',
+      'example_popular_mini_tank demo:mini_tank_cannon',
+      'example_popular_biplane demo:patchwork_biplane_fuel',
     ]);
   });
 

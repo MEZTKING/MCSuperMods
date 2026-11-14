@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:consumable": {
+        "animation": "eat",
+        "converts_to": "minecraft:bowl",
+        "effects": [
+          {
+            "effect": "minecraft:regeneration",
+            "seconds": 5
+          }
+        ],
+        "seconds": 1.6
+      },
+      "msm:food": {
+        "nutrition": 8,
+        "saturation": 0.8
+      }
+    },
+    "creative_tab": "minecraft:food_and_drinks",
+    "display_name": "Root Stew",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/root_stew"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:root_stew",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Root Stew: msm:food restores 8 hunger with saturation 0.8, and msm:consumable leaves a bowl behind, as a vanilla stew does (converts_to), and gives Regeneration for five seconds. It stacks to one.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

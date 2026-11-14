@@ -1,0 +1,65 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "direction": "up",
+            "step": "launch",
+            "strength": 0.45
+          },
+          {
+            "effect": "minecraft:slow_falling",
+            "seconds": 2,
+            "step": "give_effect"
+          },
+          {
+            "count": 8,
+            "particle": "minecraft:flame",
+            "speed": 0.02,
+            "spread": 0.2,
+            "step": "spawn_particles",
+            "where": "player"
+          },
+          {
+            "pitch": 1.4,
+            "sound": "minecraft:entity.firework_rocket.launch",
+            "step": "play_sound",
+            "volume": 0.4,
+            "where": "player"
+          }
+        ],
+        "key": "thrust",
+        "name": "Rocket up while sneaking",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "player_sneaking"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "options": {
+            "interval_seconds": 0.25
+          },
+          "subject": "msm_examples:rocket_boots",
+          "trigger": "item_worn"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:rocket_boots_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book for msm_examples:rocket_boots. Every quarter second while a player wears the boots and sneaks, they are launched straight up with flames and a rocket sound, and Slow Falling for two seconds lets them land safely. The rule has a condition, so it compiles to a script; it needs the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

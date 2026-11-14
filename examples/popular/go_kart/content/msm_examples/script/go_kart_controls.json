@@ -1,0 +1,40 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "const KART = \"msm_examples:go_kart\";",
+      "const KART_ITEM = \"msm_examples:go_kart_spawn_egg\";",
+      "const HORN = \"msm_examples:kart_horn\";",
+      "",
+      "// Sneak and use a kart to pick it up again as its item.",
+      "msm.events.on(\"entity.interact\", (e) => {",
+      "  if (e.entity.type !== KART || !e.player.isSneaking) return;",
+      "  e.cancel();",
+      "  e.entity.remove();",
+      "  if (!e.player.isCreative) e.player.give(KART_ITEM);",
+      "  e.world.playSound(\"minecraft:entity.item.pickup\", e.player.pos);",
+      "});",
+      "",
+      "// The horn honks, at most once a second.",
+      "msm.events.on(\"item.use\", (e) => {",
+      "  if (e.item.id !== HORN) return;",
+      "  const ready = e.player.data.get(\"horn_ready\");",
+      "  if (typeof ready === \"number\" && e.world.time < ready) return;",
+      "  e.player.data.set(\"horn_ready\", e.world.time + 20);",
+      "  e.world.playSound(\"minecraft:block.note_block.didgeridoo\", e.player.pos, { volume: 2, pitch: 1.4 });",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:go_kart_controls",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The go-kart's controls. The entity.interact handler runs before the kart's own use: when the player is sneaking it cancels getting in, removes the kart (remove leaves no loot) and gives back the kart item, msm_examples:go_kart_spawn_egg, unless the player is in creative. The item.use handler honks the horn, keeping the time of the next honk in player.data. Scripts run only in the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

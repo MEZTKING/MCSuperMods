@@ -1,0 +1,21 @@
+{
+  "data": {
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Scroll of Frost",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_examples:item/scroll_of_frost",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:scroll_of_frost",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A one-use spell scroll: reading it (using it) slows every mob within 6 blocks for six seconds, and uses it up. The rule book adds the use event (msm:on_use) on export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

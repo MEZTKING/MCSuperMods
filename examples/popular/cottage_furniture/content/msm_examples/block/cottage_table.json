@@ -1,0 +1,79 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "resistance": 3,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 20
+      },
+      "msm:shape": {
+        "boxes": [
+          [
+            0,
+            13,
+            0,
+            16,
+            16,
+            16
+          ],
+          [
+            1,
+            0,
+            1,
+            3,
+            13,
+            3
+          ],
+          [
+            13,
+            0,
+            1,
+            15,
+            13,
+            3
+          ],
+          [
+            1,
+            0,
+            13,
+            3,
+            13,
+            15
+          ],
+          [
+            13,
+            0,
+            13,
+            15,
+            13,
+            15
+          ]
+        ],
+        "preset": "custom"
+      }
+    },
+    "display_name": "Cottage Table",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/cottage_table",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_table",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The cottage table: a table top three pixels thick on four legs. msm:shape with custom boxes (in pixels, 0 to 16) gives it the same outline and collision as its model, so it is see-through where it is empty, and it drops itself. msm:flammable lets fire burn it as it burns planks.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

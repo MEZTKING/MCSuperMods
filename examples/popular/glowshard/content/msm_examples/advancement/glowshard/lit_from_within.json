@@ -1,0 +1,66 @@
+{
+  "data": {
+    "criteria": {
+      "has_boots": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_examples:glowshard_boots"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      },
+      "has_chestplate": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_examples:glowshard_chestplate"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      },
+      "has_helmet": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_examples:glowshard_helmet"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      },
+      "has_leggings": {
+        "conditions": {
+          "items": [
+            {
+              "items": "msm_examples:glowshard_leggings"
+            }
+          ]
+        },
+        "trigger": "minecraft:inventory_changed"
+      }
+    },
+    "display": {
+      "description": "Have every piece of Glowshard armour",
+      "frame": "challenge",
+      "icon": {
+        "id": "msm_examples:glowshard_chestplate"
+      },
+      "title": "Lit from Within"
+    },
+    "parent": "msm_examples:glowshard/bright_idea"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard/lit_from_within",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A challenge: it has one criterion per armour piece, and without requirements all of them must be met, so it is granted once all four pieces have been in the inventory.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "G": "minecraft:glowstone_dust",
+      "P": "#minecraft:wooden_slabs",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "G",
+      "S",
+      "P"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:cottage_lamp"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_lamp_from_planks",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shaped recipe for the cottage lamp; #minecraft:planks and #minecraft:wooden_slabs take any wood.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

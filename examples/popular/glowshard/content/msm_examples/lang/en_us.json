@@ -1,0 +1,28 @@
+{
+  "data": {
+    "block.msm_examples.glowshard_block": "Block of Glowshard",
+    "block.msm_examples.glowshard_ore": "Glowshard Ore",
+    "item.msm_examples.glowshard": "Glowshard",
+    "item.msm_examples.glowshard_axe": "Glowshard Axe",
+    "item.msm_examples.glowshard_boots": "Glowshard Boots",
+    "item.msm_examples.glowshard_chestplate": "Glowshard Chestplate",
+    "item.msm_examples.glowshard_helmet": "Glowshard Helmet",
+    "item.msm_examples.glowshard_hoe": "Glowshard Hoe",
+    "item.msm_examples.glowshard_leggings": "Glowshard Leggings",
+    "item.msm_examples.glowshard_pickaxe": "Glowshard Pickaxe",
+    "item.msm_examples.glowshard_shovel": "Glowshard Shovel",
+    "item.msm_examples.glowshard_sword": "Glowshard Sword",
+    "trim_material.msm_examples.glowshard": "Glowshard Material"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English names of everything the set adds. Another language file (for example de_de) can name them in that language.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

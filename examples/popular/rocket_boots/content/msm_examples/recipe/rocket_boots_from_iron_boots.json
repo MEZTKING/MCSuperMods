@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "equipment",
+    "ingredients": [
+      "minecraft:iron_boots",
+      "minecraft:firework_rocket",
+      "minecraft:firework_rocket",
+      "minecraft:blaze_powder"
+    ],
+    "result": {
+      "id": "msm_examples:rocket_boots"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:rocket_boots_from_iron_boots",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Iron boots, two firework rockets and blaze powder anywhere in the grid make the rocket boots.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

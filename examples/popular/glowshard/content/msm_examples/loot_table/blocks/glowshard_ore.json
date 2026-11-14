@@ -1,0 +1,38 @@
+{
+  "data": {
+    "pools": [
+      {
+        "condition": {
+          "type": "minecraft:survives_explosion"
+        },
+        "entries": [
+          {
+            "modifier": [
+              {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:ore_drops",
+                "type": "minecraft:apply_bonus"
+              }
+            ],
+            "name": "msm_examples:glowshard",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "random_sequence": "msm_examples:blocks/glowshard_ore",
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blocks/glowshard_ore",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "What glowshard ore drops: one glowshard, more with Fortune, nothing when blown up.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:item/handheld",
+    "textures": {
+      "layer0": "msm_examples:item/returning_boomerang"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:item/returning_boomerang",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A handheld item model drawn from textures/item/returning_boomerang.png. Paint over the placeholder to restyle it.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

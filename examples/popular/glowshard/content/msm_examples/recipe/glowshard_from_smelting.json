@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "misc",
+    "cookingtime": 200,
+    "experience": 1,
+    "ingredient": "msm_examples:glowshard_ore",
+    "result": {
+      "id": "msm_examples:glowshard"
+    },
+    "type": "minecraft:smelting"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glowshard_from_smelting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Smelting glowshard ore (from the creative menu, or picked up with Silk Touch from another mod) gives a glowshard.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "data": {
+    "base": "monster",
+    "category": "monster",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "retaliate": true,
+            "speed": 1,
+            "targets": [
+              "minecraft:player"
+            ],
+            "type": "melee_attack"
+          },
+          {
+            "speed": 0.8,
+            "type": "wander"
+          },
+          {
+            "distance": 16,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/crypt_warden_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/crypt_warden",
+        "renderer": "auto",
+        "scale": 1.5,
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_examples:entity/crypt_warden",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 8,
+        "knockback": 1.5
+      },
+      "msm:boss_bar": {
+        "colour": "green",
+        "darken_sky": true,
+        "fog": false,
+        "music": false,
+        "overlay": "notched_6"
+      },
+      "msm:health": {
+        "max": 120
+      },
+      "msm:movement": {
+        "fire_immune": true,
+        "follow_range": 40,
+        "knockback_resistance": 1,
+        "speed": 0.3
+      }
+    },
+    "display_name": "Crypt Warden",
+    "format": 1,
+    "loot_table": "msm_examples:entities/crypt_warden",
+    "size": {
+      "height": 2.95,
+      "width": 0.9
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/crypt_warden_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:crypt_warden",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A boss: base monster in the monster category, large (scale 1.5), with knockback resistance 1 and fire immunity. It hunts players and hits for 8 damage with a strong knockback (msm:attack). msm:boss_bar shows its health in a green bar (6 notches) and darkens the sky for players nearby; a boss never despawns and is seen from ten chunks away. It never spawns on its own: summon it with its spawn egg or /summon. msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

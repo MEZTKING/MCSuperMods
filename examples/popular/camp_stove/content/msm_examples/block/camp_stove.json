@@ -1,0 +1,54 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:machine": {}
+    },
+    "display_name": "Camp Stove",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "recipes": [
+      {
+        "experience": 0.2,
+        "ingredient": "minecraft:brown_mushroom",
+        "result": "msm_examples:forest_stew"
+      },
+      {
+        "experience": 0.2,
+        "ingredient": "minecraft:carrot",
+        "result": "msm_examples:root_stew"
+      },
+      {
+        "experience": 0.2,
+        "ingredient": "minecraft:pumpkin",
+        "result": "msm_examples:pumpkin_soup"
+      }
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "front": "msm_examples:block/camp_stove_front",
+      "front_lit": "msm_examples:block/camp_stove_front_lit",
+      "side": "msm_examples:block/camp_stove",
+      "top": "msm_examples:block/camp_stove_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:camp_stove",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A cooking machine from the Machine flow (msm:machine) in a vanilla furnace screen: an ingredient, fuel and the meal. It burns fuel as a furnace does and takes its own recipes only, which are the element's recipes: a brown mushroom cooks into Forest Stew, a carrot into Root Stew and a pumpkin into Pumpkin Soup, ten seconds each, with a little experience when you take the meal. Each recipe becomes a data pack file data/msm_examples/recipe/camp_stove/<name>.json whose type is msm_examples:camp_stove; the vanilla data pack leaves them out. A machine recipe has one ingredient, so a pot that mixes several ingredients (or needs a bowl) is not possible yet. It turns its front to the player who places it and glows while it cooks.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

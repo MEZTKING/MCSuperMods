@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "msm_examples:plum",
+      "msm_examples:plum",
+      "minecraft:sugar",
+      "minecraft:egg",
+      "minecraft:wheat"
+    ],
+    "result": {
+      "id": "msm_examples:plum_pie"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:plum_pie_from_plums",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two plums, sugar, an egg and wheat anywhere in the grid bake a plum pie.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}
