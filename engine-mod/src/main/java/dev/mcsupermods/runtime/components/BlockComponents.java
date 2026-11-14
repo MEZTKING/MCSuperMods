@@ -12,6 +12,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -28,12 +30,16 @@ public record BlockComponents(
         Optional<OnBreak> onBreak,
         Optional<OnPlace> onPlace,
         Optional<OnRandomTick> onRandomTick,
-        Optional<OnEntityInside> onEntityInside) {
+        Optional<OnEntityInside> onEntityInside,
+        Optional<Flammable> flammable,
+        Optional<Strippable> strippable) {
 
     public static final List<String> KEYS = List.of("msm:breakable", "msm:light_emitter", "msm:on_interact", "msm:on_step", "msm:redstone",
-            "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside");
+            "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside",
+            "msm:flammable", "msm:strippable");
     public static final BlockComponents NONE = new BlockComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+            Optional.empty());
 
     public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             optional("msm:breakable", Breakable.CODEC).forGetter(BlockComponents::breakable),
@@ -45,8 +51,40 @@ public record BlockComponents(
             optional("msm:on_break", OnBreak.CODEC).forGetter(BlockComponents::onBreak),
             optional("msm:on_place", OnPlace.CODEC).forGetter(BlockComponents::onPlace),
             optional("msm:on_random_tick", OnRandomTick.CODEC).forGetter(BlockComponents::onRandomTick),
-            optional("msm:on_entity_inside", OnEntityInside.CODEC).forGetter(BlockComponents::onEntityInside))
+            optional("msm:on_entity_inside", OnEntityInside.CODEC).forGetter(BlockComponents::onEntityInside),
+            optional("msm:flammable", Flammable.CODEC).forGetter(BlockComponents::flammable),
+            optional("msm:strippable", Strippable.CODEC).forGetter(BlockComponents::strippable))
             .apply(i, BlockComponents::new));
+
+    /** The keys of the components present, in {@link #KEYS} order. */
+    public List<String> present() {
+        List<Optional<?>> values = List.of(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
+                onEntityInside, flammable, strippable);
+        List<String> out = new ArrayList<>();
+        for (int n = 0; n < KEYS.size(); n++) {
+            if (values.get(n).isPresent()) {
+                out.add(KEYS.get(n));
+            }
+        }
+        return List.copyOf(out);
+    }
+
+    /** These components without the ones named in {@code keys} (a component not allowed for the block type, ADR 0067 D3). */
+    public BlockComponents without(Collection<String> keys) {
+        return new BlockComponents(
+                keys.contains("msm:breakable") ? Optional.empty() : breakable,
+                keys.contains("msm:light_emitter") ? Optional.empty() : lightEmitter,
+                keys.contains("msm:on_interact") ? Optional.empty() : onInteract,
+                keys.contains("msm:on_step") ? Optional.empty() : onStep,
+                keys.contains("msm:redstone") ? Optional.empty() : redstone,
+                keys.contains("msm:shape") ? Optional.empty() : shape,
+                keys.contains("msm:on_break") ? Optional.empty() : onBreak,
+                keys.contains("msm:on_place") ? Optional.empty() : onPlace,
+                keys.contains("msm:on_random_tick") ? Optional.empty() : onRandomTick,
+                keys.contains("msm:on_entity_inside") ? Optional.empty() : onEntityInside,
+                keys.contains("msm:flammable") ? Optional.empty() : flammable,
+                keys.contains("msm:strippable") ? Optional.empty() : strippable);
+    }
 
     /** Every event id a component names, with the component for messages. */
     public Stream<String[]> eventReferences() {
@@ -131,6 +169,23 @@ public record BlockComponents(
                 required("event", ID).forGetter(OnEntityInside::event),
                 optional("cooldown_ticks", intAtLeast(5), 20).forGetter(OnEntityInside::cooldownTicks)).apply(i, OnEntityInside::new)),
                 List.of("event", "cooldown_ticks"));
+    }
+
+    /**
+     * Fire odds (ADR 0067 D3), registered with Fabric's flammable block registry: {@code burn_odds} (how readily fire
+     * spreads to the block) and {@code ignite_odds} (how readily it burns away), each 0 to 300.
+     */
+    public record Flammable(int burnOdds, int igniteOdds) {
+        public static final Codec<Flammable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("burn_odds", intRange(0, 300)).forGetter(Flammable::burnOdds),
+                required("ignite_odds", intRange(0, 300)).forGetter(Flammable::igniteOdds)).apply(i, Flammable::new)),
+                List.of("burn_odds", "ignite_odds"));
+    }
+
+    /** An axe strips the block into {@code into} (ADR 0067 D3, D4); the axis is copied when both blocks have one. */
+    public record Strippable(Identifier into) {
+        public static final Codec<Strippable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("into", ID).forGetter(Strippable::into)).apply(i, Strippable::new)), List.of("into"));
     }
 
     /** Constant signal source ({@code emit}) and events on neighbour-update power transitions. */

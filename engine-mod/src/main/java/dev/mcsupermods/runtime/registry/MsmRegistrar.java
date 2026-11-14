@@ -7,6 +7,7 @@ import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.events.Events;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
+import dev.mcsupermods.runtime.loader.BlockType;
 import dev.mcsupermods.runtime.loader.DefinitionException;
 import dev.mcsupermods.runtime.loader.DefinitionParser;
 import dev.mcsupermods.runtime.loader.EffectDefinition;
@@ -347,6 +348,15 @@ public final class MsmRegistrar {
 
     private static void registerBlock(RawDefinition raw, BlockDefinition def, List<Identifier> items, List<String> errors) {
         Identifier id = raw.id();
+        // B261: types and item.id are decoded but not registered yet (B263, B267, B271 replace these two lines).
+        if (def.type() != BlockType.BLOCK) {
+            MsmRuntime.LOGGER.warn("[{}] {}: type '{}' not supported yet; registered as a plain block", MsmRuntime.MOD_ID, raw.describe(),
+                    def.type().id());
+        }
+        if (def.item().flatMap(BlockDefinition.ItemSettings::id).isPresent()) {
+            MsmRuntime.LOGGER.warn("[{}] {}: item.id not supported yet; the block item keeps the block's id", MsmRuntime.MOD_ID,
+                    raw.describe());
+        }
         BlockComponents c = def.components();
         BlockComponents.Breakable breakable = c.breakable().orElse(BlockComponents.Breakable.DEFAULT);
         int light = c.lightEmitter().map(BlockComponents.LightEmitter::level).orElse(0);

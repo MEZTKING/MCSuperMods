@@ -31,6 +31,8 @@ import net.minecraft.resources.Identifier;
  *   <li>Events that failed on their own are errors; the definition registers without them.</li>
  *   <li>Event ids named by components or {@code trigger_event} must be declared.</li>
  *   <li>Entities: goals that failed on their own are errors; the entity registers without them.</li>
+ *   <li>Blocks: {@code type} selects the type's own top-level fields; a field of another type is an error (closed per
+ *       type), and a component the type does not allow is an error and is not applied (ADR 0067 D2, D3).</li>
  *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
  *   <li>Items: two or more of {@code msm:tool}, {@code msm:armor}, {@code msm:ranged_weapon} and {@code msm:shield}
  *       are an error; the item registers without them (ADR 0042 D1, ADR 0044 D3).</li>
@@ -53,7 +55,28 @@ public final class DefinitionParser {
     public static ParseResult<BlockDefinition> parseBlock(JsonElement json) {
         ParseResult<BlockDefinition> result = parse(json, BlockDefinition.KEYS, BlockComponents.KEYS, BlockDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents);
+        return dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents));
+    }
+
+    /**
+     * A component the block's type does not allow (ADR 0067 D3, {@link BlockType#allows}): an error, and that component
+     * is not applied; the block still registers, as {@code msm:while_worn} without armour on an item.
+     */
+    private static ParseResult<BlockDefinition> dropComponentsNotForType(ParseResult<BlockDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        BlockDefinition def = result.definition().get();
+        List<String> disallowed = def.components().present().stream().filter(key -> !def.type().allows(key)).toList();
+        if (disallowed.isEmpty()) {
+            return result;
+        }
+        List<String> errors = new ArrayList<>(result.errors());
+        for (String key : disallowed) {
+            errors.add("components: " + key + " is not allowed on type '" + def.type().id() + "'; it is not applied");
+        }
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().without(disallowed))), List.copyOf(errors),
+                result.warnings());
     }
 
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {

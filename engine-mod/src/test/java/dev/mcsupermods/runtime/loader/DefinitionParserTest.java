@@ -863,4 +863,69 @@ class DefinitionParserTest {
         ParseResult<PotionDefinition> future = potion("{\"format\": 2, \"effects\": [" + one + "]}");
         assertTrue(String.join("\n", future.errors()).contains("newer than this runtime"), future.errors().toString());
     }
+
+    @Test
+    void absentTypeIsBlockWithNoFieldsAndUnknownKeysStayWarnings() {
+        ParseResult<BlockDefinition> result = block("{\"format\": 1, \"textures\": {\"all\": \"t:block/x\"}}");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of("unknown top-level key 'textures' ignored"), result.warnings());
+        BlockDefinition def = result.definition().orElseThrow();
+        assertEquals(BlockType.BLOCK, def.type());
+        assertEquals(BlockType.None.INSTANCE, def.typeFields());
+        assertEquals(Optional.empty(), def.item().orElseThrow().id());
+    }
+
+    @Test
+    void typeFieldsDecodeWithTheirDefaults() {
+        BlockDefinition stairs = block("{\"format\": 1, \"type\": \"stairs\"}").definition().orElseThrow();
+        assertEquals(new BlockType.Stairs(Identifier.parse("minecraft:stone")), stairs.typeFields());
+        BlockType.Button wooden = (BlockType.Button) block("{\"format\": 1, \"type\": \"button\", \"set_type\": \"cherry\"}")
+                .definition().orElseThrow().typeFields();
+        assertEquals(30, wooden.pressTicks());
+        BlockType.Button stone = (BlockType.Button) block("{\"format\": 1, \"type\": \"button\", \"set_type\": \"stone\"}")
+                .definition().orElseThrow().typeFields();
+        assertEquals(20, stone.pressTicks());
+        BlockType.Crop crop = (BlockType.Crop) block("{\"format\": 1, \"type\": \"crop\", \"item\": {\"id\": \"t:seeds\"}}")
+                .definition().orElseThrow().typeFields();
+        assertEquals(new BlockType.Crop(7, Optional.empty(), Identifier.parse("minecraft:supports_crops"), BlockType.BonemealGrowth.DEFAULT),
+                crop);
+        assertEquals(List.of(2, 4, 6, 8, 10, 12, 14, 16),
+                java.util.stream.IntStream.rangeClosed(0, 7).mapToObj(n -> BlockType.Crop.defaultStageHeight(n, 7)).toList());
+        BlockType.Sapling sapling = (BlockType.Sapling) block("{\"format\": 1, \"type\": \"sapling\", \"tree\": \"t:tree\"}")
+                .definition().orElseThrow().typeFields();
+        assertEquals(Identifier.parse("t:tree"), sapling.flowerTree());
+        assertEquals(Identifier.parse("minecraft:supports_vegetation"), sapling.soil());
+        BlockType.Leaves leaves = (BlockType.Leaves) block("{\"format\": 1, \"type\": \"leaves\", \"tint\": 255}")
+                .definition().orElseThrow().typeFields();
+        assertEquals(new BlockType.Leaves(Optional.of(new BlockType.ColourTint(255)), 0.01f, Optional.empty()), leaves);
+        assertEquals(Optional.of(new BlockType.SourceTint(BlockType.TintSource.DRY_FOLIAGE)),
+                ((BlockType.Leaves) block("{\"format\": 1, \"type\": \"leaves\", \"tint\": \"dry_foliage\"}").definition().orElseThrow()
+                        .typeFields()).tint());
+        assertEquals(Optional.of(Identifier.parse("t:seeds")),
+                block("{\"format\": 1, \"type\": \"crop\", \"item\": {\"id\": \"t:seeds\"}}").definition().orElseThrow().item()
+                        .orElseThrow().id());
+    }
+
+    @Test
+    void aFieldOfAnotherTypeIsAnError() {
+        ParseResult<BlockDefinition> result = block("{\"format\": 1, \"type\": \"slab\", \"set_type\": \"stone\", \"tree\": \"t:x\"}");
+        assertTrue(result.definition().isEmpty());
+        assertTrue(result.errors().getFirst().contains("set_type, tree: unknown field for type 'slab'"), result.errors().toString());
+    }
+
+    @Test
+    void componentsTheTypeDoesNotAllowAreDroppedWithAnError() {
+        ParseResult<BlockDefinition> result = block("""
+                {"format": 1, "type": "stairs", "components": {"msm:redstone": {"emit": 3}, "msm:shape": {"boxes": [[0, 0, 0, 16, 8, 16]]},
+                 "msm:flammable": {"burn_odds": 5, "ignite_odds": 20}, "msm:strippable": {"into": "t:stripped"}}}
+                """);
+        assertEquals(List.of("components: msm:redstone is not allowed on type 'stairs'; it is not applied",
+                "components: msm:shape is not allowed on type 'stairs'; it is not applied"), result.errors());
+        BlockComponents c = result.definition().orElseThrow().components();
+        assertEquals(List.of("msm:flammable", "msm:strippable"), c.present());
+        assertEquals(new BlockComponents.Flammable(5, 20), c.flammable().orElseThrow());
+        assertTrue(BlockType.PILLAR.allows("msm:redstone") && BlockType.DIRECTIONAL.allows("msm:shape"));
+        assertFalse(BlockType.LEAVES.allows("msm:shape") || BlockType.DOOR.allows("msm:redstone"));
+        assertTrue(BlockType.DOOR.allows("msm:flammable") && BlockType.CROP.allows("msm:on_random_tick"));
+    }
 }
