@@ -204,3 +204,5 @@ The hard limits of this batch, in the style of the coverage audit's L and S rows
 ## Notes from implementation
 
 Appended by the orchestrator from each brief's "Notes for the plan", with the brief number.
+
+- B332 (see the previous commit): plugin API 1.13.0; `TargetFacts.blocks?.portal = { ambientSound: 'minecraft:block.portal.ambient', travelSound: 'minecraft:block.portal.travel', triggerSound: 'minecraft:block.portal.trigger', particle: 'minecraft:portal' }` on both targets (javap-checked: `SoundEvents.PORTAL_AMBIENT/TRAVEL/TRIGGER`, `ParticleTypes.PORTAL`, a `SimpleParticleType` with no options), optional as a whole. **B335:** read it for the default sounds and particle and for `portal-sound-unknown`, skip when absent; only `minecraft:dust` carries a colour. **B337, B340** and external plugins get it through the existing `target.blocks` pass-through. **B344/B345:** `packages/plugin-api/CLAUDE.md` and `packages/targets/CLAUDE.md` status lines to 1.13.0 and `blocks.portal`.
