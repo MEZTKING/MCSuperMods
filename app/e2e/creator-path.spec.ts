@@ -47,7 +47,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { type LaunchedApp, launchApp, outputDir, toast } from './fixtures';
 import { oggVorbis } from './ogg';
 import { gradientPng } from './png';
 
@@ -240,7 +240,7 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await dialog.getByTestId('creator-create').click();
   await expect(dialog).toBeHidden();
   await expect(
-    window.getByText(/^Create Gear set: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Gear set: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
 
   for (const piece of PIECES.filter((entry) => entry !== 'hoe')) {
@@ -294,7 +294,7 @@ test('Creator: Gear set create, kept edits on Edit in Creator, jar export, undo'
   await edit.getByTestId('creator-create').click();
   await expect(edit).toBeHidden();
   await expect(
-    window.getByText(/^Update Gear set: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Update Gear set: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   await save(window);
   expect(
@@ -375,7 +375,7 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
   await painting.getByTestId('creator-create').click();
   await expect(painting).toBeHidden();
   await expect(
-    window.getByText(/^Create Painting: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Painting: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('ruby_sunset')}`)).toBeVisible();
   const paintingTexture = join(
@@ -398,7 +398,7 @@ test('Creator: Painting with a picked PNG and a bow from the Weapon flow', async
   await weapon.getByTestId('creator-create').click();
   await expect(weapon).toBeHidden();
   await expect(
-    window.getByText(/^Create Weapon: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Weapon: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('sapphire_bow')}`)).toBeVisible();
   await expectNoErrors(window);
@@ -521,7 +521,9 @@ test('Creator: Status effect with a drink and a Throwable (ADRs 0055, 0056)', as
   await effect.getByTestId('creator-create').click();
   await expect(effect).toBeHidden();
   await expect(
-    window.getByText(/^Create Status effect: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({
+      hasText: /^Create Status effect: \d+ element\(s\) and file\(s\) changed/,
+    }),
   ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('ruby_rush')}`)).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('ruby_rush_tonic')}`)).toBeVisible();
@@ -551,7 +553,9 @@ test('Creator: Status effect with a drink and a Throwable (ADRs 0055, 0056)', as
   await edit.getByTestId('creator-create').click();
   await expect(edit).toBeHidden();
   await expect(
-    window.getByText(/^Update Status effect: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({
+      hasText: /^Update Status effect: \d+ element\(s\) and file\(s\) changed/,
+    }),
   ).toBeVisible();
   await save(window);
   expect(savedData(folders.projectDir, 'effect', 'ruby_rush').category).toBe('harmful');
@@ -604,7 +608,7 @@ test('Creator: Custom ore that generates in the world (ADR 0060 D6)', async () =
   await ore.getByTestId('creator-create').click();
   await expect(ore).toBeHidden();
   await expect(
-    window.getByText(/^Create Custom ore: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Custom ore: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   for (const element of [
     'ruby_ore',
@@ -699,7 +703,7 @@ test('Creator: Potion with its own effect, brewing chain and jar export (ADR 006
   await potion.getByTestId('creator-create').click();
   await expect(potion).toBeHidden();
   await expect(
-    window.getByText(/^Create Potion: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Potion: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   await expect(window.getByRole('heading', { name: /^Potions\b/ })).toBeVisible();
 
@@ -791,7 +795,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   await skin.getByTestId('creator-create').click();
   await expect(skin).toBeHidden();
   await expect(
-    window.getByText(/^Create Mob skin: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Mob skin: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   await expect(window.getByTestId(`element-row-${id('ember_coat')}`)).toBeVisible();
   await expect(window.getByRole('heading', { name: /^Wolf skins\b/ })).toBeVisible();
@@ -808,7 +812,7 @@ test('Creator: Mob skin and Goat horn in vanilla packs (ADR 0064)', async () => 
   await horn.getByTestId('creator-create').click();
   await expect(horn).toBeHidden();
   await expect(
-    window.getByText(/^Create Goat horn: \d+ element\(s\) and file\(s\) changed/),
+    toast(window).filter({ hasText: /^Create Goat horn: \d+ element\(s\) and file\(s\) changed/ }),
   ).toBeVisible();
   for (const element of ['storm_call', 'storm_call_goat_horn']) {
     await expect(window.getByTestId(`element-row-${id(element)}`)).toBeVisible();

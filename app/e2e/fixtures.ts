@@ -11,9 +11,17 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } fro
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { _electron, type ElectronApplication, type Page } from 'playwright/test';
+import { _electron, type ElectronApplication, type Locator, type Page } from 'playwright/test';
 
 /** The `app/` folder. */
+/**
+ * The status toast's text. Use this, never a page-wide `getByText`: Radix Toast also renders a
+ * hidden screen-reader announcer that copies the text for about a second (two matches).
+ */
+export function toast(window: Page): Locator {
+  return window.getByTestId('status-toast-text');
+}
+
 export const appDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Where tests write screenshots (uploaded by CI on failure). */
