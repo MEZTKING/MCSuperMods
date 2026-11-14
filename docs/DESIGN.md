@@ -506,7 +506,7 @@ Fabric API events first. Mixins only where no event exists, each with a justific
 
 Testing uses JUnit 5 for parsing and Fabric **GameTest** for behaviour (section 16).
 
-Proposed additions ([ADR 0060](adr/0060-adding-to-vanilla-content.md), [ADR 0062](adr/0062-persistent-script-data.md)): the kinds `msm:biome_addition` (features and spawns into vanilla biomes through Fabric `BiomeModifications`, fixed per world load) and `msm:loot_addition` (pools added to vanilla loot tables through `LootTableEvents.MODIFY`, reloadable, never over a data pack's replacement); fuel and composting are item components, trades are plain data kinds, and no mixin is used. Persistent script data lives in a Fabric data attachment `msm_runtime:script_data`, per script namespace.
+Additions ([ADR 0060](adr/0060-adding-to-vanilla-content.md), [ADR 0062](adr/0062-persistent-script-data.md)): the kinds `msm:biome_addition` (features and spawns into vanilla biomes through Fabric `BiomeModifications`, fixed per world load) and `msm:loot_addition` (pools added to vanilla loot tables through `LootTableEvents.MODIFY`, reloadable, never over a data pack's replacement); fuel and composting are item components, trades are plain data kinds, and no mixin is used. Persistent script data lives in a Fabric data attachment `msm_runtime:script_data`, per script namespace.
 
 Additions ([ADR 0055](adr/0055-custom-status-effects.md), [ADR 0056](adr/0056-throwables.md)): the definition kind `msm:effect` (category, colour, attribute modifiers and the trigger components `msm:on_start`, `msm:on_tick` and `msm:on_end`), the item component `msm:throwable` (speed, gravity, damage, `after_throw`, `on_hit_entity`, `on_hit_block`), and the actions `damage` and `heal`.
 
@@ -560,7 +560,7 @@ On export this lowers to `msm/mymod/block/ruby_ore.json` (the runtime definition
 
 A new component's MSM mcdoc and runtime implementation land in the same change. The Phase 4 components and the six actions are implemented in `msm_runtime` v1 and edited in the Block and Item Studios; action fields, defaults and the runtime rules (dropped events, chain depth 16, strict types, `"item": false`) are in [ADR 0025](adr/0025-msm-definition-format-v1.md). The Phase 5 entity components, implemented in `msm_runtime` 0.5 and edited in the Entity Studio, are in [ADR 0028](adr/0028-entity-definition-format-v1.md): goals run in list order unless `priority` says otherwise, an undecodable goal is dropped with an error, `msm:on_hurt` fires only when the mob survives, and `play_animation` (`{ "animation", "controller"? }`, controller `msm_triggered` by default) triggers a GeckoLib animation on the event's entity; in block and item definitions it is dropped at load with a warning.
 
-Proposed addition ([ADR 0061](adr/0061-more-triggers.md)): ten more triggers, items `msm:on_hit`, `msm:on_use_on_block`, `msm:while_held` and `msm:while_worn`, blocks `msm:on_break`, `msm:on_place`, `msm:on_random_tick` and `msm:on_entity_inside`, entities `msm:on_tick` and `msm:on_spawn`; tick triggers have a 5-tick minimum interval and a shared cap of 2,000 firings per server tick.
+Addition ([ADR 0061](adr/0061-more-triggers.md)): ten more triggers, items `msm:on_hit`, `msm:on_use_on_block`, `msm:while_held` and `msm:while_worn`, blocks `msm:on_break`, `msm:on_place`, `msm:on_random_tick` and `msm:on_entity_inside`, entities `msm:on_tick` and `msm:on_spawn`; tick triggers have a 5-tick minimum interval and a shared cap of 2,000 firings per server tick.
 
 Step events ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `msm:on_step` events carry the stepping entity (`self` and `other` are the stepper, so jump pads work on mobs and items), and the step cooldown is keyed per dimension.
 
@@ -624,7 +624,7 @@ The API is described once, in `packages/plugins/scripting/api/script-api-v1.json
 
 Entity commands and cancel resync ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `World.runCommand` and `World.runFunction` take an optional position, `Entity.runCommand` and `Entity.runFunction` run as and at the entity (the one-argument `World` forms run at the world spawn point with no `@s`), and a cancelled `block.interact`, `item.use`, `entity.interact` or `block.break` resends the player's inventory (and the neighbouring blocks of a placement). Script API v1 grows additively.
 
-Proposed addition ([ADR 0062](adr/0062-persistent-script-data.md)): `Entity.data` (so `Player.data`) and `msm.storage` are JSON key-value stores saved with the world, per script namespace; they survive `/reload`, restart, death and dimension change, while `msm.schedule` stays unsaved. This amends ADR 0032 and closes limitation L4.
+Addition ([ADR 0062](adr/0062-persistent-script-data.md)): `Entity.data` (so `Player.data`) and `msm.storage` are JSON key-value stores saved with the world, per script namespace; they survive `/reload`, restart, death and dimension change, while `msm.schedule` stays unsaved. This amends ADR 0032 and closes limitation L4.
 
 ## 13. Interop (Blockbench, NBT, Minecraft Installation)
 

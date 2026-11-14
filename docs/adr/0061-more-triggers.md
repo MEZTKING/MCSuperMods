@@ -2,7 +2,7 @@
 
 ## Context
 
-The event model has a small set of triggers: item `on_use`, block `on_interact` and `on_step`, entity `on_hurt`, `on_death` and `on_interact`, and the effect and throwable triggers (coverage audit L6, backlog B4). A project cannot react to a hit with its sword, a click on a block, an item held or worn, a block being broken or placed, a random block tick, an entity inside a block, or a mob's tick and spawn. Facts read on 2026-11-13 (`docs/PLAN-vanilla-additions.md` section 1, V9–V11):
+The event model has a small set of triggers: item `on_use`, block `on_interact` and `on_step`, entity `on_hurt`, `on_death` and `on_interact`, and the effect and throwable triggers (coverage audit L6, backlog B4). A project cannot react to a hit with its sword, a click on a block, an item held or worn, a block being broken or placed, a random block tick, an entity inside a block, or a mob's tick and spawn. Facts read on 2026-11-13 (the deleted plan's fact table, V9–V11, summarised here):
 
 - Item hooks, the same on 26.3 and 26.4: `postHurtEnemy(ItemStack, LivingEntity target, LivingEntity attacker)`, `useOn(UseOnContext)`, `inventoryTick(ItemStack, ServerLevel, Entity, EquipmentSlot)` (server only), `onCraftedBy`. `Inventory.tick` calls `inventoryTick` for every main inventory stack with `MAINHAND` for the selected slot and `null` otherwise; `EntityEquipment.tick` calls it for every equipment slot with that slot. Whether the main hand is reported by both paths in one tick: (verify at implementation; the acceptance test is "exactly once per interval").
 - Block hooks, the same on both: `playerWillDestroy`, `setPlacedBy`, `randomTick` with `Properties.randomTicks()`, `entityInside`, `onPlace`. `spawnAfterBreak` differs (26.4 adds an `Entity` argument) and is not used.
@@ -27,7 +27,7 @@ The event model has a small set of triggers: item `on_use`, block `on_interact` 
 
 ## Status
 
-Proposed (2026-11-13). Defaults the user may veto: the 5-tick minimum interval and the 2,000 firings per server tick. Findings from the runtime brief (the main-hand double report, any seam) are added here before the mirrors are written. Accepted on close.
+Accepted (2026-11-14). Defaults the user may veto: the 5-tick minimum interval and the 2,000 firings per server tick.
 
 Runtime findings (B235, 2026-11-14; 164 GameTests on all three builds; no version seam):
 
@@ -36,3 +36,5 @@ Runtime findings (B235, 2026-11-14; 164 GameTests on all three builds; no versio
 - `msm:on_spawn` fires in `finalizeSpawn`, before the mob is added to the level; a loaded copy does not fire it again. A `NoAI` mob never fires the entity `msm:on_tick`.
 - In an item event with no player, `run_function` runs as the mob using or holding the item (extends ADR 0058 D1).
 - `while_worn` without `msm:armor` is a load error and the component is dropped. Interval triggers fire when `(game time + entity id) % interval == 0`; the shared limiter caps firings at 2,000 per server tick and logs at most once a minute; `on_entity_inside` checks its per-entity cooldown before the limiter.
+
+Entity events and `run_function` (W4, 2026-11-14): in an entity's own events, `run_function` runs as the player when the event has one (the player who interacts with, hurts or kills the entity, or the player it hits through `on_attack`), else as the mob itself (its level, position and rotation), so `@s` in `msm:on_tick` and `msm:on_spawn`, and in `on_hurt`/`on_death` without a player, is the mob. Before this they ran as the server at the mob, with no `@s`. This completes the actor rule of ADR 0058 D1 (block events) and of the item finding above; effect and thrown-item events keep the player-only rule. `msm:on_spawn` runs before the mob joins the level, and `tag @s` there still tags it. The Java eject mirrors the rule; projects without entity `run_function` generate identical Java.

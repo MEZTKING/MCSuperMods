@@ -2,7 +2,7 @@
 
 ## Context
 
-A project can only add new things today. It cannot put its ore into vanilla biomes, add a drop to a vanilla mob, make an item burn or compost, or offer a trade to a vanilla villager, except by replacing whole vanilla files (coverage audit backlog B3, and the data half of B9). Facts read on 2026-11-13 (full table in `docs/PLAN-vanilla-additions.md` section 1; sources: `javap` over the Loom-cached merged jars for 26.3 and 26.4-snapshot-7, `javap` over the pinned Fabric API module jars, data files in the 26.3 game jar, the vendored mcdoc, this repository):
+A project can only add new things today. It cannot put its ore into vanilla biomes, add a drop to a vanilla mob, make an item burn or compost, or offer a trade to a vanilla villager, except by replacing whole vanilla files (coverage audit backlog B3, and the data half of B9). Facts read on 2026-11-13 (the plan with the full fact table was deleted at close and its findings live in this ADR; sources: `javap` over the Loom-cached merged jars for 26.3 and 26.4-snapshot-7, `javap` over the pinned Fabric API module jars, data files in the 26.3 game jar, the vendored mcdoc, this repository):
 
 - Fabric `BiomeModifications` (`addFeature`, `addSpawn`, `addCarver`; `BiomeSelectors.tag`, `includeByKey`, `foundInOverworld`) has the same API on 26.3 and 26.4. Modifications are applied when a server starts, so they are fixed per world load and never reload. The runtime already uses it for natural spawns of project mobs.
 - `LootTableEvents.MODIFY` (`modifyLootTable(ResourceKey<LootTable>, LootTable.Builder, LootTableSource, HolderLookup.Provider)`) is identical on both. It fires on every data pack load, so additions are reloadable. A data pack alone can only replace a whole table.
@@ -35,7 +35,7 @@ A project can only add new things today. It cannot put its ore into vanilla biom
 
 ## Status
 
-Proposed (2026-11-13). Defaults the user may veto: additions never override a world data pack; a new trade is a candidate, not a guarantee; Custom ore generates by default in new projects; the kind names `msm:biome_addition` and `msm:loot_addition` and the Studio labels "World addition" and "Extra drops". Findings from the runtime brief (whether the components needed `DELAYED`, Fabric's behaviour for a missing feature key) are added here before the mirrors are written. Accepted on close.
+Accepted (2026-11-14). Defaults the user may veto: additions never override a world data pack; a new trade is a candidate, not a guarantee; Custom ore generates by default in new projects; the kind names `msm:biome_addition` and `msm:loot_addition` and the Studio labels "World addition" and "Extra drops".
 
 Runtime findings (B234, 2026-11-14; 151 GameTests on 26.3, 26.3 without GeckoLib and 26.4):
 
@@ -43,3 +43,8 @@ Runtime findings (B234, 2026-11-14; 151 GameTests on 26.3, 26.3 without GeckoLib
 - Fabric's `BiomeModifications` throws for an unregistered placed feature and would stop the server, so the runtime adds each feature through `BiomeModifications.create(id).add(ADDITIONS, …)` after looking the key up in `selection.getRegistryAccess()`; a missing feature, biome, tag, entity type or loot table is a warning after start-up.
 - Loot additions decode each pool with `LootPool.CODEC` on every `LootTableEvents.MODIFY` and only change built-in tables; a pool that fails to decode is one error per load and changes nothing. A pool naming an unknown key in a registry loaded with loot tables (for example a made-up `rolls` provider) stops the data pack load, as it does in vanilla; the editor's full pool check (the `pools` type is substituted with vanilla `LootPool` per target) reports these before export.
 - Block item settings and addition files are closed structs: unknown keys are errors.
+
+Implementation notes (close, 2026-11-14):
+
+- The ore starters use `block_match` on stone and deepslate rather than the replaceable tags (D6), because the schema validator does not read implicit tag ids yet (follow-up in the ROADMAP; the targets move to the replaceable tags once it does).
+- The sample data pack trade is now checked in CI on a vanilla server (`tools/run-fabric-server/vanilla-datapack.ts`), no longer by hand only.

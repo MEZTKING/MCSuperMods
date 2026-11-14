@@ -3102,3 +3102,18 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 **Next**
 - The user's Windows test of the 1.1.0–1.3.0 drafts, then the 1.4.0 build; in-game checks added by this batch (own and mob sounds, ruby spring on mobs, script commands and cancel resync, block shapes in `fixtures/sample-mod/README.md`, the villager trade in `fixtures/sample-datapack/README.md`).
 - Continue `PLAN-vanilla-additions.md` (B232 onward); put the sample data pack server check into CI.
+
+## 2026-11-14 — main session — adding to vanilla content, triggers and saved data closed
+
+**What**
+- Closed the batch (B229–B242 and B144; B243 stays in reserve): ADRs 0060, 0061 and 0062 are Accepted (2026-11-14) with the runtime findings kept; ADR 0060 gains the note that the ore starters use `block_match` on stone and deepslate (D6) because the schema validator does not read implicit tag ids yet, and that the sample data pack trade is checked in CI on a vanilla server; ADR 0061 gains the entity events finding (`run_function` in a mob's own events runs as the player when there is one, else as the mob). DESIGN "Proposed" notes for 0060–0062 are plain statements (19 H2 headings kept). ROADMAP ticks the batch and gains the Milestone Log row and the follow-ups; CHANGELOG `[Unreleased]` gains the mob events change; coverage audit B3, B4 and B6 are marked closed.
+- Counts: 67 kinds, 141 templates (resourcepack 15, datapack 60, structures 9, worldgen 21, blocks-items 26, models-anim 3, entities 3, scripting 4), 29 starters, 82 examples. `node_modules/.bin/turbo run test --force --concurrency=4`: 21 of 21 tasks, 4,655 tests passed (48 skipped). Runtime 165 GameTests per variant and 315 JUnit; parity sample mod 59, sample mob 10, sample script 4 (as reported by the briefs; CI is the check). CI also runs a two-run restart of the sample script server and the vanilla data pack check.
+- Status lines refreshed (root, docs, app, engine-mod, plugins and targets `CLAUDE.md`), the guide page `entities-and-models.md` gains the actor sentence, `fixtures/sample-datapack/README.md` points to the scripted check, `HANDOFF.md` rewritten for the new state, `docs/PLAN-vanilla-additions.md` deleted and its references repointed to the ADRs.
+
+**Decisions**
+- The plan's fact table is not kept; the ADR contexts and findings carry what matters.
+- Version stays 1.4.0; the batch is unreleased (CHANGELOG `[Unreleased]`).
+
+**Next**
+- The user's Windows test of the 1.1.0–1.3.0 drafts, then the 1.4.0 build; the in-game checks added by this batch (ore in a new world, zombie drop, fuel and compost, each trigger, golem `on_tick`/`on_spawn`, kill and start counters across a restart, villager trade).
+- ROADMAP follow-ups: implicit tag ids in the schema validator, `on_attack` against a player, actors for effect and thrown-item events, the B243 chunk-generation check.

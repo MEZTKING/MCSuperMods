@@ -2,7 +2,7 @@
 
 ## Context
 
-Scripts have no storage: `ScriptHost` drops schedules and scopes on `/reload` and on stop, and nothing is saved ([ADR 0032](0032-script-api-v1-and-typings.md), limitation L4; coverage audit backlog B6, reserve brief B144). A counter or a flag kept by a script is lost when the world closes. Facts read on 2026-11-13 (`docs/PLAN-vanilla-additions.md`, V12 and V13):
+Scripts have no storage: `ScriptHost` drops schedules and scopes on `/reload` and on stop, and nothing is saved ([ADR 0032](0032-script-api-v1-and-typings.md), limitation L4; coverage audit backlog B6, reserve brief B144). A counter or a flag kept by a script is lost when the world closes. Facts read on 2026-11-13 (the deleted plan's fact table, V12 and V13, summarised here):
 
 - Fabric's data attachment API (`fabric-data-attachment-api-v1`, identical on the 26.3 and 26.4 builds) offers `AttachmentRegistry.create(Identifier, b -> b.persistent(Codec).copyOnDeath()...)`; `AttachmentTarget` is mixed into entities, levels, chunks and block entities, and `GlobalAttachments` is reached through `GlobalAttachmentsProvider.globalAttachments()` (which class provides it: verify at implementation). The vanilla route is `SavedDataType` with `MinecraftServer.getDataStorage()`. The runtime uses neither today.
 - `ScriptApiContractTest` fails as soon as `script-api-v1.json` and `ScriptApi` differ, so a contract change and its runtime land in one CI push.
@@ -26,7 +26,7 @@ Scripts have no storage: `ScriptHost` drops schedules and scopes on `/reload` an
 
 ## Status
 
-Proposed (2026-11-13). Defaults the user may veto: 16 KiB per entity and 1 MiB per world, per namespace. The finding on global attachment versus overworld storage is added here by the runtime brief. Accepted on close.
+Accepted (2026-11-14). Defaults the user may veto: 16 KiB per entity and 1 MiB per world, per namespace.
 
 Runtime findings (B144, 2026-11-14; 138 GameTests at the time; a real restart counted 1 then 2 on 26.3 and 26.4):
 

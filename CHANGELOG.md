@@ -29,6 +29,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- Mob events run `run_function` as the mob when no player is involved (**On tick**, **On spawn**, and **On hurt** and **On death** without a player), so `@s` in those functions is the mob; before, they ran as the server and had no `@s`.
 - The AI helper writes plain sound keys inside MCSuperMods' own data, `{ "sound_id" }` in vanilla data, and uses `entity.runCommand` to run something "as" a creature.
 - The guide chapters on blocks and items, entities, scripting and the Java project export describe the above, including the new **Block shapes** and **Triggers** sections, and a new chapter, **Adding to vanilla**, covers world additions, extra drops, fuel and compost and villager trades with their limits.
 - The AI helper knows world additions, extra drops, fuel and compost, the new triggers and saved script data.

@@ -537,28 +537,29 @@ Takes up suspects S1, S4, S5, S6, S7 (and S10 in passing) and backlog item B1 of
 - [x] B228 Shapes: sample, parity, e2e, guide.
 - [ ] The user checks in game: project sounds (Play sound action, drink, armour equip, thrown item, script), mob sounds, a mob bounced by a jump pad, cancelled placements showing no ghost block, cut-out and translucent textures on a see-through block on 26.3 and 26.4, outline and collision of a half block and a plant.
 
-### Add-on after 1.0 — Adding to vanilla content, triggers and saved data (planned)
+### Add-on after 1.0 — Adding to vanilla content, triggers and saved data
 
-Takes up backlog items B3, B4 and B6 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md) and the data half of B9 (trades). Design: [ADR 0060](adr/0060-adding-to-vanilla-content.md) (adding to vanilla content), [ADR 0061](adr/0061-more-triggers.md) (more triggers) and [ADR 0062](adr/0062-persistent-script-data.md) (persistent script data), all proposed; working plan `PLAN-vanilla-additions.md`, deleted at close. Waves 1 and 2 may start at once; the rest waits until the runtime fixes batch (B224–B228) is committed and CI is green. Parts B and C may ship one release after Part A. Defaults that need the user's veto: additions never override a world data pack; a new villager trade is a candidate, not a guarantee; Custom ore generates by default; 5-tick minimum trigger interval and 2,000 firings per server tick; script data limits of 16 KiB per entity and 1 MiB per world; the names `msm:biome_addition` and `msm:loot_addition`, "World addition" and "Extra drops".
+Takes up backlog items B3, B4 and B6 of [`COVERAGE-AUDIT.md`](COVERAGE-AUDIT.md) and the data half of B9 (trades). Design: [ADR 0060](adr/0060-adding-to-vanilla-content.md) (adding to vanilla content), [ADR 0061](adr/0061-more-triggers.md) (more triggers) and [ADR 0062](adr/0062-persistent-script-data.md) (persistent script data), all accepted 2026-11-14; the working plan is deleted and its history is in the DEVLOG. Parts B and C may ship one release after Part A. Defaults that need the user's veto: additions never override a world data pack; a new villager trade is a candidate, not a guarantee; Custom ore generates by default; 5-tick minimum trigger interval and 2,000 firings per server tick; script data limits of 16 KiB per entity and 1 MiB per world; the names `msm:biome_addition` and `msm:loot_addition`, "World addition" and "Extra drops".
 
-- [ ] B229 Plugin API 1.8.0 and target facts (trade folders, compost providers).
-- [ ] B230 Plugin `datapack`: trade kinds, tag registry, templates.
-- [ ] B231 Creator flow "Villager trade" (group `worlds`), example, sample data pack trade.
-- [ ] B232 Format: addition definitions, `BlockItem.components`, `fuel` and `compost`, ten trigger components, corpus.
-- [ ] B233 Script API contract: `DataStore`.
-- [ ] B234 Runtime: biome and loot additions, block item components.
-- [ ] B235 Runtime: triggers and the tick limiter.
-- [ ] B144 Runtime: persistent script data.
-- [ ] B236 Plugin `blocks-items`: addition kinds, `fuel` and `compost` lowering, validators, templates.
-- [ ] B237 Exporters: `java-project` routing for the addition folders.
-- [ ] B238 Java eject (26.3 generator): `ModWorldgen`, `ModLoot`, trigger overrides.
-- [ ] B239 App Studios: World addition, Extra drops, Triggers, Fuel and compost.
-- [ ] B240 Library and AI helper: ore generation, "Extra drop" flow, examples, prompt.
-- [ ] B241 Samples and parity, including the two-run script data check.
-- [ ] B242 e2e, guide and changelog.
-- [ ] B243 (reserve) real-generation check on the headless server.
+- [x] B229 Plugin API 1.8.0 and target facts (trade folders, compost providers).
+- [x] B230 Plugin `datapack`: trade kinds, tag registry, templates.
+- [x] B231 Creator flow "Villager trade" (group `worlds`), example, sample data pack trade.
+- [x] B232 Format: addition definitions, `BlockItem.components`, `fuel` and `compost`, ten trigger components, corpus.
+- [x] B233 Script API contract: `DataStore`.
+- [x] B234 Runtime: biome and loot additions, block item components.
+- [x] B235 Runtime: triggers and the tick limiter.
+- [x] B144 Runtime: persistent script data.
+- [x] B236 Plugin `blocks-items`: addition kinds, `fuel` and `compost` lowering, validators, templates.
+- [x] B237 Exporters: `java-project` routing for the addition folders.
+- [x] B238 Java eject (26.3 generator): `ModWorldgen`, `ModLoot`, trigger overrides.
+- [x] B239 App Studios: World addition, Extra drops, Triggers, Fuel and compost.
+- [x] B240 Library and AI helper: ore generation, "Extra drop" flow, examples, prompt.
+- [x] B241 Samples and parity, including the two-run script data check.
+- [x] B242 e2e, guide and changelog.
+- [ ] B243 (reserve, not started) real-generation check on the headless server: generate real chunks on a dedicated server and count the ore, instead of the GameTests' direct feature placement.
 - [ ] The user checks in game: ore in a new world only, the extra drop, furnace and composter, the villager trade, each trigger in play, script data across quit, death and portal.
-- Deferred and kept in the audit backlog: flammability and block pairs, values on vanilla items, custom compost chances, `on_crafted`, no-code conditions on stored data.
+- Deferred and kept in the audit backlog: flammability, strip and oxidise pairs, values on vanilla items, removing vanilla features, new professions, custom compost chances, `on_crafted`, no-code conditions on stored data.
+- Follow-ups: implicit tag ids in the schema validator (then the ore targets use the replaceable tags instead of `block_match` on stone and deepslate); `on_attack` against a player runs `run_function` as the victim (decide whether the attacking mob should be the actor); effect and thrown-item events could use the holder or thrower as the actor; the real chunk-generation check (B243, reserve).
 
 ### Exit criteria
 
@@ -603,3 +604,4 @@ Not committed; each needs an ADR before work starts.
 | 2026-11-07 | v1.3.0 prepared | ADR 0049 (Music disc song files; plugin API 1.4.0 `audio` parameters), ADR 0050 (passthrough data pack warning, `ItemFacts.vanillaTools` in the Creator's Stats, optional `defense.body` for horse and wolf armour); app and `mod_version` 1.3.0. Release pending the user's Windows test, after 1.1.0 and 1.2.0. |
 | 2026-11-13 | 1.4.0 prepared: custom status effects and throwables | ADRs 0055 (`msm:effect`, Effect Studio, `damage`/`heal` actions, script `hasEffect`/`effectLevel`/`removeEffect`/`ActionEvent.other`) and 0056 (`msm:throwable` item component, `msm_runtime:thrown_item`, dispensers), plugin API 1.6.0, the Creator groups Magic (Status effect) and Gear (Throwable), Java eject for both (`ModEffects`, `ThrownItemEntity`), AI helper knowledge, sample mod and script additions. Also in 1.4.0: Dimension flow, launch and real pushes, Wishlist, picture options, texture drag and drop, the feature-order fix (different steps are a warning), the Music disc `sound_id` fix and the eject `Actions.java` fix. 62 kinds, 129 templates (resourcepack 15, datapack 56, structures 9, worldgen 21, blocks-items 18, models-anim 3, entities 3, scripting 4), 27 starters, 73 examples. Tests (`turbo run test --force --continue`, 21 tasks): 20 tasks pass with 4,234 tests (45 skipped); `@msm/plugin-scripting` passed 44 of 48, the four failures coming from the plugin API 1.7.0 work in progress in the same worktree, not from 1.4.0; GameTests 97 runtime (78 plus 9 effect plus 10 throwable) and 28 sample-mod parity as reported by the runtime and parity briefs (CI is the check). Prepared, not built: the release build waits for the user's Windows test of the 1.1.0–1.3.0 drafts; in-game checks in `fixtures/sample-mod/README.md` (Effects and throwables). |
 | 2026-11-14 | Runtime fixes and sounds | ADRs 0057 (project sound events registered from `sounds.json`, mob sounds, kind-aware sound ids), 0058 (step events carry the stepper, script commands as an entity or at a position, cancel resync) and 0059 (block shapes and see-through blocks: `msm:shape`, Block Studio Shape section, presets, Half block, Plant (cross) and Glass-like block templates, two warnings) accepted; plugin API 1.7.0 (`JavaProjectInput.soundEvents`) and 1.8.0 (villager trade folders, biome and loot additions, compost providers); also the Villager trade Creator flow and the `villager_trade` and `trade_set` kinds. 65 kinds, 136 templates (resourcepack 15, datapack 60, structures 9, worldgen 21, blocks-items 21, models-anim 3, entities 3, scripting 4), 28 starters, 76 examples. Tests (`turbo run test --force --concurrency=4`, 21 tasks, all successful): 4,417 passed (47 skipped); runtime 130 GameTests per variant (26.3, 26.3 without GeckoLib, 26.4) and 231 JUnit; parity: sample mod 44, sample mob 8, sample script 3 (five CI parity runs), as reported by the runtime and parity briefs (CI is the check). In-game checks in `fixtures/sample-mod/README.md`, `fixtures/sample-script/README.md` and `fixtures/sample-datapack/README.md`. |
+| 2026-11-14 | Adding to vanilla content, triggers and saved data | ADRs 0060 (biome and loot additions, fuel and compost, ore that generates by default, villager trades), 0061 (ten more triggers, tick limiter; mob events run `run_function` as the mob when no player is involved) and 0062 (persistent script data, `Entity.data` and `msm.storage`) accepted; plugin API 1.8.0; kinds `msm:biome_addition` and `msm:loot_addition`, World addition and Extra drops Studios, Triggers in the Events editor, Java eject for all of it, guide page `adding-to-vanilla.md`. 67 kinds, 141 templates (resourcepack 15, datapack 60, structures 9, worldgen 21, blocks-items 26, models-anim 3, entities 3, scripting 4), 29 starters, 82 examples. Tests (`node_modules/.bin/turbo run test --force --concurrency=4`, 21 tasks, all successful): 4,655 passed (48 skipped); runtime 165 GameTests per variant (26.3, 26.3 without GeckoLib, 26.4) and 315 JUnit; parity: sample mod 59, sample mob 10, sample script 4; CI also runs a two-run restart of the sample script server and the vanilla data pack check (`tools/run-fabric-server/vanilla-datapack.ts`), as reported by the runtime and parity briefs (CI is the check). B243 (real chunk-generation check) stays in reserve. In-game checks in `fixtures/sample-mod/README.md`, `fixtures/sample-mob/README.md`, `fixtures/sample-script/README.md` and `fixtures/sample-datapack/README.md`. |

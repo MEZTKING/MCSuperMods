@@ -52,7 +52,7 @@ All content is original work written for MCSuperMods; the project contains no Mo
 
 ## Headless server check (villager trade)
 
-The trade is plain data, so a vanilla dedicated server proves it (no Fabric, no runtime). Export the data pack zip with `MSM_SAMPLE_DATAPACK_OUT=<folder> pnpm --filter @msm/exporters exec vitest run test/sample-datapack.golden.test.ts` (it writes `msm-sample-data-pack-mc-26.3.zip` and `server-facts.json`), put the zip into `world/datapacks/` of a fresh server folder with the 26.3 server jar, start it with JDK 25 and run on its console:
+The scripted, CI-run form of this check is `tools/run-fabric-server/vanilla-datapack.ts` (the `engine-mod` job runs it on every push); the manual steps below stay for reference. The trade is plain data, so a vanilla dedicated server proves it (no Fabric, no runtime). Export the data pack zip with `MSM_SAMPLE_DATAPACK_OUT=<folder> pnpm --filter @msm/exporters exec vitest run test/sample-datapack.golden.test.ts` (it writes `msm-sample-data-pack-mc-26.3.zip` and `server-facts.json`), put the zip into `world/datapacks/` of a fresh server folder with the 26.3 server jar, start it with JDK 25 and run on its console:
 
 ```
 datapack list enabled

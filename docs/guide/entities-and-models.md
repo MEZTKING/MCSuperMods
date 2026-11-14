@@ -84,6 +84,8 @@ Events work as for blocks and items ([Events and actions](blocks-and-items.md#ev
 - **On tick** runs again and again while the mob is alive, every **Every (ticks)** ticks (default 20, one second; at least 5). A mob with `NoAI` set never runs it. Mobs with the same interval are spread over the ticks, and all repeating triggers together run at most 2,000 times in one server tick (see [Triggers](blocks-and-items.md#triggers)).
 - **On spawn** runs once when the mob spawns naturally, from a spawn egg or from a spawner, just before it enters the world. It does not run again when its chunk is loaded or the world is reopened, so it suits setting a mob up once.
 
+In a mob's events a `run_function` action runs as the player involved (the one who interacts with, hurts or kills it, or whom it hits) and, when no player is involved, as the mob itself, so `@s` in the function is the mob; this is always the case for **On tick** and **On spawn**.
+
 Like every trigger, both need the runtime that ships with this release; the [Java project export](eject.md) writes them too.
 
 Entities also have an eighth action, `play_animation` (after the seven that blocks and items share, `run_script` among them): it plays one animation of the animation set once, chosen in the action's animation field (a list of the names in the chosen **Animation set**). The controller field is optional; leave it empty unless two animations should play at the same time, each in its own controller. Example: an **On interact** event with `play_sound` and `play_animation` `wave` makes the mob wave and chime when right-clicked. Blocks and items cannot use `play_animation`.
