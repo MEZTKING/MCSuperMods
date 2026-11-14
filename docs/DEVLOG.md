@@ -4053,3 +4053,11 @@ Decisions
 
 Next
 - B359: CI step with `libegl1 libegl-mesa0` and the command above on both versions, screenshots as an artefact. B374: reuse the route (the stub is already a `FabricClientGameTest`). B361: L16 and K4 updated (drawing checked in CI), ROADMAP B123.
+
+## 2026-11-14 — orchestrator — toolbar tooltips: live hover check
+
+What: CI run 43624166718 (fcb5437) again failed `creator-path.spec.ts:678` on the Export menu's tooltip ("instant-open") over `dock-tab-problems`, even with the input-modality rule. The remembered hover and press flags can go stale around a menu (a missed `pointerleave`), and the helper's Escape key press counted as keyboard input. `Tip` now asks the browser at open time: the trigger must match `:hover`, or have keyboard focus after keyboard input (`:focus-visible` or active element); the remembered flags remain only as a fallback without layout (unit tests). `openDockTab` blurs the focused element instead of pressing Escape, then waits for tooltips to detach. `creator-path` 3 runs, 24 of 24; app tests 1597; Tip tests 4.
+
+Decisions: ask live state rather than track events; keep keyboard tooltips.
+
+Next: none.

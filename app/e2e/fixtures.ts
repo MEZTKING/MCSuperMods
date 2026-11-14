@@ -148,13 +148,20 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
 }
 
 /**
- * Opens a dock tab (`dock-tab-<name>`). Moves the mouse away, presses Escape and waits until no
+ * Opens a dock tab (`dock-tab-<name>`). Moves the mouse away, takes focus off the toolbar and waits until no
  * tooltip is shown, so that a toolbar tooltip left open by an earlier click cannot sit over the
  * tab and swallow the click (the app keeps such tooltips shut; this guards the test as well).
  */
 export async function openDockTab(window: Page, name: string): Promise<void> {
   await window.mouse.move(0, 0);
-  await window.keyboard.press('Escape');
+  // Take focus off any toolbar trigger (a menu hands focus back to it) without a key press,
+  // then wait until no tooltip is shown.
+  await window.evaluate(() => {
+    const doc = (
+      globalThis as unknown as { document: { activeElement: { blur?: () => void } | null } }
+    ).document;
+    doc.activeElement?.blur?.();
+  });
   await window
     .getByRole('tooltip')
     .first()
