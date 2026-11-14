@@ -119,6 +119,25 @@ describe('Play store helpers', () => {
     expect(own[0]?.elementId).toBe('demo:other');
   });
 
+  it('leaves out the pack files the content jar leaves out (B379)', () => {
+    const outputs = playOutputs(
+      [
+        ...LOWERED,
+        { path: 'pack.mcmeta', layer: 'datapack', contents: { pack: {} } },
+        { path: 'pack.mcmeta', layer: 'resourcepack', contents: { pack: {} } },
+        { path: 'pack.png', layer: 'resourcepack', contents: new Uint8Array([1]) },
+        { path: 'fabric.mod.json', layer: 'msm', contents: { id: 'demo' } },
+      ],
+      playProject(),
+    );
+    expect(outputs.map((file) => file.path)).toEqual([
+      'msm/demo/block/ruby_lamp.json',
+      'data/demo/recipe/ruby_recipe.json',
+      'assets/demo/lang/en_us.json',
+      'fabric.mod.json',
+    ]);
+  });
+
   it('words Play results and New test world', () => {
     expect(playResultMessage(PLAY_OK as never)).toBe(
       'Minecraft is starting. It opens the test world by itself.',

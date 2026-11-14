@@ -18,6 +18,14 @@
  * conversation (one client, so the script's turns run in order across the app session) and
  * report the key as set (tail `e2e!`). No key and no SDK are used then.
  *
+ * Two more, also independent of `MSM_E2E_PROJECT_DIR` (ADRs 0083 and 0084, B379):
+ *
+ * - `MSM_E2E_RUNTIME_DIR` (absolute, optional): the folder searched for the `msm_runtime` jars
+ *   instead of `engine-mod/build/libs/` when running from source, so Play and Share can nest a
+ *   stand-in runtime in a checkout where Gradle has not run.
+ * - `MSM_E2E_NEW_INSTALL=1` (optional): the launch notice is not suppressed, so a fresh
+ *   `MSM_HOME` (no settings file) shows the Welcome of a brand-new install.
+ *
  * Combine with `MSM_HOME` (see `platform/settings.ts`) so settings and the asset cache live
  * in a temporary folder. The hooks are inert unless `MSM_E2E_PROJECT_DIR` is set.
  *
@@ -92,4 +100,22 @@ export function readE2eAiScript(
     throw new Error(`MSM_E2E_AI_SCRIPT is not a valid model script: ${parsed.error.message}`);
   }
   return parsed.data as AiModelScript;
+}
+
+/**
+ * The runtime jar folder named by `MSM_E2E_RUNTIME_DIR`, or `null` when it is unset. Throws when
+ * the path is relative.
+ */
+export function readE2eRuntimeDir(
+  env: Readonly<Record<string, string | undefined>>,
+): string | null {
+  const dir = env.MSM_E2E_RUNTIME_DIR;
+  if (dir === undefined || dir === '') return null;
+  if (!isAbsolute(dir)) throw new Error('MSM_E2E_RUNTIME_DIR must be an absolute path.');
+  return dir;
+}
+
+/** Whether `MSM_E2E_NEW_INSTALL=1` asks for a brand-new install's launch notice. */
+export function readE2eNewInstall(env: Readonly<Record<string, string | undefined>>): boolean {
+  return env.MSM_E2E_NEW_INSTALL === '1';
 }

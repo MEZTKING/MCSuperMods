@@ -1,6 +1,11 @@
 import { delimiter } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { applyE2eHooks, readE2eHooks } from '../src/main/e2e-hooks';
+import {
+  applyE2eHooks,
+  readE2eHooks,
+  readE2eNewInstall,
+  readE2eRuntimeDir,
+} from '../src/main/e2e-hooks';
 import type { NativeDialogs } from '../src/main/platform/node-platform';
 
 const native: NativeDialogs = {
@@ -55,5 +60,15 @@ describe('e2e hooks', () => {
     expect(() => readE2eHooks({ MSM_E2E_PROJECT_DIR: '/p', MSM_E2E_PICK_FILES: 'a.png' })).toThrow(
       /absolute/,
     );
+  });
+
+  it('read the runtime folder and the new-install switch (B379)', () => {
+    expect(readE2eRuntimeDir({})).toBeNull();
+    expect(readE2eRuntimeDir({ MSM_E2E_RUNTIME_DIR: '' })).toBeNull();
+    expect(readE2eRuntimeDir({ MSM_E2E_RUNTIME_DIR: '/e2e/runtime' })).toBe('/e2e/runtime');
+    expect(() => readE2eRuntimeDir({ MSM_E2E_RUNTIME_DIR: 'runtime' })).toThrow(/absolute/);
+    expect(readE2eNewInstall({})).toBe(false);
+    expect(readE2eNewInstall({ MSM_E2E_NEW_INSTALL: '0' })).toBe(false);
+    expect(readE2eNewInstall({ MSM_E2E_NEW_INSTALL: '1' })).toBe(true);
   });
 });

@@ -213,14 +213,16 @@ export function playNames(project: Project): Record<string, string> {
 /**
  * The lowered files as Play and Reload send them. A file without `elementId` gets the id of
  * the project element its path names (`msm/<ns>/<folder>/<path>.json`, also under `data/`
- * and `assets/`), so restart reasons can name the thing.
+ * and `assets/`), so restart reasons can name the thing. Pack files the content jar leaves out
+ * (a resource or data layer file outside `assets/` or `data/`, such as `pack.mcmeta`) are not
+ * sent: they never reach the game, so a change to them must not ask for a restart (B379).
  */
 export function playOutputs(files: readonly OutputFile[], project: Project): PlayOutputFile[] {
   const ids = new Set<string>();
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) ids.add(element.id);
   }
-  return files.map((file) => {
+  return files.filter(inContentJar).map((file) => {
     const own = (file as OutputFile & { elementId?: string }).elementId;
     const elementId = own ?? elementOfPath(file.path, ids);
     return {
@@ -229,6 +231,13 @@ export function playOutputs(files: readonly OutputFile[], project: Project): Pla
       ...(elementId === undefined ? {} : { elementId }),
     };
   });
+}
+
+/** Whether the content jar holds `file` (the exporter's rule for pack layers). */
+function inContentJar(file: OutputFile): boolean {
+  if (file.layer === 'resourcepack') return file.path.startsWith('assets/');
+  if (file.layer === 'datapack') return file.path.startsWith('data/');
+  return true;
 }
 
 function elementOfPath(path: string, ids: ReadonlySet<string>): string | undefined {

@@ -24,7 +24,13 @@ import { EventChannels } from '../shared/ipc-channels';
 import { createAiKeyStore } from './ai/ai-key-store';
 import { createAiService } from './ai/ai-service';
 import { registerAppSchemePrivileges } from './app-scheme';
-import { applyE2eHooks, readE2eAiScript, readE2eHooks } from './e2e-hooks';
+import {
+  applyE2eHooks,
+  readE2eAiScript,
+  readE2eHooks,
+  readE2eNewInstall,
+  readE2eRuntimeDir,
+} from './e2e-hooks';
 import { registerIpc, registerPlayEvents } from './ipc';
 import { installMenu, registerMenuIpc } from './menu';
 import { createNodePlatform, type NativeDialogs } from './platform/node-platform';
@@ -154,8 +160,9 @@ const platform = createNodePlatform({
   installEnv: nodeEnv(),
   // ADR 0083 D6: Very easy's new projects; test runs keep them under the MSM home.
   documentsDir: isTestRun(process.env) ? join(msmHome, 'Documents') : app.getPath('documents'),
-  // "What's new" never opens by itself in smoke and end-to-end runs.
-  suppressWhatsNew: isTestRun(process.env),
+  // "What's new" never opens by itself in smoke and end-to-end runs (unless an e2e run asks
+  // for a brand-new install's Welcome, `MSM_E2E_NEW_INSTALL`).
+  suppressWhatsNew: isTestRun(process.env) && !readE2eNewInstall(process.env),
   // The menu exists only once the app is ready; before that the start-up read installs it.
   onRecentChanged: (recent) => {
     if (app.isReady()) installMenu(recent);
@@ -172,7 +179,8 @@ const platform = createNodePlatform({
   runtimeJar: {
     isPackaged: app.isPackaged,
     resourcesPath: process.resourcesPath,
-    devLibsDir: join(app.getAppPath(), '..', 'engine-mod', 'build', 'libs'),
+    devLibsDir:
+      readE2eRuntimeDir(process.env) ?? join(app.getAppPath(), '..', 'engine-mod', 'build', 'libs'),
   },
   // ADR 0033 D2: packaged, `resources/runtime/gradle-wrapper/`; from source, `engine-mod/`'s
   // own wrapper.
