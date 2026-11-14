@@ -4288,3 +4288,24 @@ Decisions
 
 Next
 - B376: the controls over `window.msm.play` (pass `names` and the jar at Reload). B379: the stub launcher through `testInMinecraft.spawnLauncher` or a new e2e hook. B374: honour the formats and the quit or settle timing.
+
+## 2026-11-14 — executor — B372 Rule book Studio and ThingPicker
+
+What
+- New lazy Studio `app/src/renderer/src/studios/rules/` for `msm:rules` (entry `msm.rules.book`, `handlesFocus`, found by the existing `import.meta.glob`, so no shared registry line): the Rule book with "Add a rule", rule cards (`RuleCard`: name, On, Move rule up/down, Duplicate rule, Delete rule; When, Only if, Do), `StepList` (Do menu grouped Players, World, Sounds and particles, Mobs, Logic, Counters; custom cards for "If ... Then ... Otherwise", "Repeat N times" and "For each player"), `ConditionList` (all of these or any of these, "Not", Move condition up/down, Remove condition), `SlotChip` (every blank a button named "<slot>: <words>", for example "Item: Ruby"), `ValueEditor` (a number with words or a reading: random, counter, the player's health, food, level, position, the number of players, the time of day, one level of sums; text made of pieces and readings; the counter picker that declares a counter on first use), the book's Counters list, and "What this becomes" (Advanced only: the book's patches and generated script, compiled with `compileRuleBooks` over every book of the project).
+- `rules-model.ts`: pure edits returning the next book (add, remove, move, duplicate rules and list items, turn on and off, set trigger keeping a same-sort subject, set counter with declaration), defaults for new steps and conditions, the caps (`countSteps` against `MAX_STEPS`, logic only in lists of level 1 and 2), what the pickers offer per trigger (`ruleScope`, `innerScope` adds the player inside "For each player"; `offeredSteps`, `offeredConditions`, `offeredValues`, `offeredPlaces`, `offeredWho`, `offeredCounterScopes`; Very easy hides `veryEasy: false` entries; "Stop the normal action" only on cancellable triggers) and `problemAnchor` (a problem's pointer to the chip, row, condition, When or card that shows it).
+- New `app/src/renderer/src/components/thing-picker/`: `ThingPicker` (dialog: search box, "Your things", then "Minecraft blocks", "Minecraft items", "Spawn eggs", "Minecraft mobs" and so on; arrows, Home, End, Enter, Esc, typing on a tile goes to the search; "Show all" past 48 tiles; generic icon per sort and a note when the game's files are not found) and `thing-sources.ts` (pure: sections, names, picture sources: a project texture from the element's model or the usual texture paths, vanilla jar paths `textures/item`, `textures/block`, spawn eggs for mobs, `mob_effect` icons).
+- Every edit is one `onChange('', nextBook)`; typing uses `typingKey(pointer)` and coalesces. Moves, adds and duplicates move focus to the new place; Alt+Up and Alt+Down move a step, condition or rule.
+- Tests: `app/test/rules-model.test.ts` (18), `app/test/components/ThingPicker.test.tsx` (13), `app/test/components/RuleBookStudio.test.tsx` (18). Full app suite 178 files, 1646 tests green; `pnpm lint`, `pnpm typecheck` green; `pnpm build`: `RuleBookStudio-*.js` 54.6 kB (15.6 kB gzip), a chunk of its own; check-size within budget after `dist:dir`, app.asar 27.3 MB (28,584,254 bytes).
+
+Decisions
+- The mode is read through `studios/rules/mode.ts` (`rulesModeOf`): `'very-easy'` does not exist yet (B378), so Very easy reads as off until the store has it; nothing else needs to change then.
+- Plain words come from `PlainProblemWordsContext` in `studios/rules/problem-words.ts` (default `null`: the problem's message). B378 provides its table there.
+- Pictures come from the blocks and items Studio host (`thumbnail`, `modelPreview.vanilla`), which `App` already provides around the Form tab; no App change.
+- `app/tsconfig.node.json` lists `studios/rules/rules-model.ts` so the Node test `app/test/rules-model.test.ts` type-checks (the pattern other model files use).
+- Number slots that the format types as literals (wait seconds, effect level, particle count, spread and speed, sound volume and pitch, repeat times, radius, distances, trigger options) offer no readings; text pieces offer readings only.
+
+Next
+- B375: embed `RuleCard` with `fixedSubject` inside a `RulesEnvContext` built by `makeRulesEnv`.
+- B376/B378: add `'very-easy'` to `UiMode`; provide `PlainProblemWordsContext`; reuse `ThingPicker` and `thingSections` for Home.
+- B371: the book's `sessionProblems` must carry the compile problems mapped to the book (pointer into the book) for the chips to show them.
