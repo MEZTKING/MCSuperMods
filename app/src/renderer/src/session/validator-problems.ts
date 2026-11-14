@@ -2,12 +2,22 @@
  * Project validators (ADR 0022, `@msm/plugin-api` 0.5.0) as the session runs them: collected
  * from the registered plugins, re-run when an element of one of their kinds changes, and
  * guarded so that one failing validator becomes a warning instead of breaking validation.
- * Their error problems block exports like schema errors do.
+ * Their error problems block exports like schema errors do. Validators read the expanded
+ * project (ADR 0082 D9), so their problems on patched data are mapped back to the rule that
+ * made it ({@link expandedValidatorProblems}).
  *
  * @packageDocumentation
  */
 
-import type { Element, Problem, Project } from '@msm/core';
+import {
+  type Element,
+  type ExpandProjectResult,
+  type Json,
+  mapProblemsToOrigins,
+  type Problem,
+  type Project,
+  parseJsonPointer,
+} from '@msm/core';
 import type {
   MaybePromise,
   OutputLayer,
@@ -16,6 +26,7 @@ import type {
   Target,
   ValidationRegistry,
 } from '@msm/plugin-api';
+import { findHandlerDefinitions } from '@msm/plugin-scripting';
 
 /** Problem codes the validator runner reports itself. */
 export const ValidatorProblemCodes = {
@@ -142,4 +153,74 @@ export async function blockingValidatorErrors(
     }
   }
   return blocking;
+}
+
+/** The scripting plugin's code for a `run_script` handler no script defines. */
+export const UNKNOWN_HANDLER_CODE = 'scripting.unknown-handler';
+
+/** The value at an RFC 6901 pointer inside JSON data, or `undefined`. */
+function valueAt(data: Json, pointer: string): Json | undefined {
+  let segments: string[];
+  try {
+    segments = parseJsonPointer(pointer);
+  } catch {
+    return undefined;
+  }
+  let value: Json | undefined = data;
+  for (const segment of segments) {
+    if (Array.isArray(value)) value = value[Number(segment)];
+    else if (typeof value === 'object' && value !== null && Object.hasOwn(value, segment)) {
+      value = value[segment];
+    } else return undefined;
+  }
+  return value;
+}
+
+/**
+ * `problems` without the `scripting.unknown-handler` warnings whose handler a generated rule
+ * script defines (ADR 0082 D3): the scripting plugin finds handlers only in `msm:script`
+ * elements, while Rules write theirs into the expanded book (`generated_script`).
+ *
+ * @param problems - Validator problems found in the expanded project.
+ * @param expanded - The expanded project.
+ * @param ruleScriptLines - The generated rule scripts' lines.
+ */
+export function withoutRuleHandlerWarnings(
+  problems: readonly Problem[],
+  expanded: Project,
+  ruleScriptLines: Iterable<readonly string[]>,
+): Problem[] {
+  const defined = new Set<string>();
+  for (const lines of ruleScriptLines) {
+    for (const definition of findHandlerDefinitions(lines)) defined.add(definition.handler);
+  }
+  if (defined.size === 0) return [...problems];
+  const elements = new Map(projectElements(expanded).map((element) => [element.id, element]));
+  return problems.filter((problem) => {
+    if (problem.code !== UNKNOWN_HANDLER_CODE || problem.elementId === undefined) return true;
+    const element = elements.get(problem.elementId);
+    if (element === undefined || problem.path === undefined) return true;
+    const handler = valueAt(element.data, problem.path);
+    return !(typeof handler === 'string' && defined.has(handler));
+  });
+}
+
+/**
+ * The validator problems of an expanded project as the user sees them: the rule handler
+ * warnings dropped ({@link withoutRuleHandlerWarnings}), then every problem inside a patch
+ * moved to the rule that made it (`mapProblemsToOrigins`).
+ *
+ * @param problems - Validator problems found in `expansion.project`.
+ * @param expansion - The expansion the validators read.
+ * @param ruleScriptLines - The generated rule scripts' lines.
+ */
+export function expandedValidatorProblems(
+  problems: readonly Problem[],
+  expansion: Pick<ExpandProjectResult, 'project' | 'origins'>,
+  ruleScriptLines: Iterable<readonly string[]>,
+): Problem[] {
+  return mapProblemsToOrigins(
+    withoutRuleHandlerWarnings(problems, expansion.project, ruleScriptLines),
+    expansion.origins,
+  );
 }

@@ -4235,3 +4235,24 @@ Decisions
 
 Next
 - B361: root `CLAUDE.md` status and counts, HANDOFF, ADR 0080/0081 findings, DESIGN and ROADMAP; engine-mod totals; Script API 1.4 runtime label (1.8.0) to confirm; patterns 70.
+
+## 2026-11-14 — executor — B371 app session: the expanded project everywhere
+
+What
+- `ProjectSession` expands the project once per path with `expandProject` (every registered plugin, registration order; never `options.plugins` as well): the live validation pass, `checkProject` (so the AI helper's `run_checks` checks the expanded scratch project), and every export through `#runPipeline` (resource, data and both packs, the content jar, Test in Minecraft, modpack builds through `buildContentJar`, plugin exporters and the Java eject). One expansion per project state and target is cached, so the live pass and an export of the same state share it.
+- Problems in patched data move to the rule that made them (`mapProblemsToOrigins`): schema problems of expanded elements, validator problems, lowering conflicts and export report problems that carry an element. Hidden paths are filtered before mapping, so `/generated_script` never shows. Expansion problems (`rules.*` compile codes, `core.expansion-*`) are in the live problems and block exports that package `msm` (a rule book counts as `msm` even when it lowers to nothing); vanilla packs are not blocked by them.
+- A validation pass re-checks every element whose expansion changed (signature of its expanded data and patch origins) and re-runs that kind's validators, so editing a book re-checks its subjects.
+- `scripting.unknown-handler` warnings whose handler a generated rule script defines are dropped (`withoutRuleHandlerWarnings` in `validator-problems.ts`); hand-made `run_script` actions with no handler still warn.
+- Generated rule scripts are checked live and in `checkProject` (TypeScript checker) and transpiled into the content jar; their problems land on the book, at `/rules/<index>` when the line carries `// rule:<key>`, else on the book as a whole (`ruleScriptSource`, `ruleScriptLocation`, `checkRuleScript` in `scripting-problems.ts`; `scriptTextValidator` and `scriptTranspiler` take a lookup).
+- `rules.needs-jar` (info, on the book) on vanilla pack exports of a project with rules, once in "both packs"; `rules.not-in-eject` (warning, on the book at the rule) on the Java eject for each enabled rule that runs in the generated script. Plain rules eject as events.
+- New `session/rules-view.ts`: `createRulesView(project, expansion?)` with `books`, `rulesFor(subjectId)`, `ruleEventsFor(subjectId)`, `scriptRuleKeys(bookId)`, plus `rulesNeedJarProblem`, `rulesNotInEjectProblems`, `RulesSessionProblemCodes`. Session: `rulesView` (from the last validation pass), `rulesViewNow()`, `expandedProject()`, `lowerExpandedProject()`.
+- Tests: new `app/test/session-rules.test.ts` (12): the content jar holds the rule event on the block and the transpiled `msm/demo/script/rules/rules.js`; the saved project is untouched; a rule error blocks the jar and not a vanilla pack; no schema or unknown-handler problems for generated data; a hand-made unknown handler still warns; a definition-schema problem in a generated event shows on the rule; generated script diagnostics land on the rule by marker; the real generated script checks clean; `rules.needs-jar` once; `rules.not-in-eject` on the script rule only; the Rules view and its update after an edit; `run_checks` reports a pending book's `rules.unknown-step`. App suite 176 files, 1609 tests green; `pnpm lint`, `pnpm typecheck`, `pnpm build` green; `check-size` within budget (app.asar 27.2 MB).
+
+Decisions
+- `app/tsconfig.node.json` lists the new `rules-view.ts` (one line; the node project lists its session files by name).
+- Export file schema problems carry `file`, not `elementId`, so they are not mapped; the live pass already shows the same problems on the rule.
+- `rules.needs-jar` is added on both vanilla packs, not only the data pack: rules need the jar whichever pack is exported.
+
+Next
+- B375: read `session.rulesView` / `rulesViewNow()`; `ruleEventsFor` gives the read-only "From rules" list with each event's origin; `rulesNotInEjectProblems` feeds the eject dialog's list.
+- B373/B376: `lowerExpandedProject()` gives the lowered outputs (each with `elementId`) of the expanded project for Play and Reload hashing and overlays; `buildContentJar()` gives the jar.

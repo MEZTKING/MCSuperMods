@@ -8,7 +8,9 @@
  * - Proposal tools check first (kind, id, reserved namespaces, duplicates, schema errors,
  *   texture paths and patterns, starter values) and answer `isError` with the reasons; what
  *   passes becomes change items. Nothing touches the project until the user applies.
- * - `run_checks` runs the session's full check over the scratch project.
+ * - `run_checks` runs the session's full check over the scratch project, expanded as an export
+ *   would expand it (ADR 0082 D10: rule events and generated rule scripts are checked, and their
+ *   problems land on the rule book).
  * - `propose_plan` and `checkpoint` wait for the user through the {@link DecisionHost}.
  *
  * Every tool obeys the run's abort signal: a cancelled run answers `cancelled`. Calls run one
@@ -986,6 +988,8 @@ export function createToolExecutor(
       const project = live();
       changeset.markConflicts(project, planOptions);
       const state = scratch();
+      // `checkProject` expands the scratch project first (ADR 0082 D9), so rule problems are on
+      // the books and the generated events and scripts are checked as the export checks them.
       const problems = await session.checkProject(state);
       const pending = pendingItems();
       const byElement = new Map<string, Problem[]>();

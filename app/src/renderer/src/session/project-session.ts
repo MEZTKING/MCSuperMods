@@ -7,6 +7,13 @@
  * library contributions (templates, starters, examples; ADR 0020) and adds content bundles to
  * new or open projects. No DOM access, so it is testable with an in-memory platform.
  *
+ * Project expanders (ADR 0082 D9; Rules) run once per path: the live validation, the full
+ * check, every export (packs, content jar, Java eject, plugin exporters, Test in Minecraft and
+ * modpack builds through {@link ProjectSession.buildContentJar}) validate and lower the expanded
+ * copy (`expandProject` of `@msm/core` with every registered plugin in registration order),
+ * never the saved project, and problems found in patched data are moved to the rule that made
+ * them (`mapProblemsToOrigins`).
+ *
  * @packageDocumentation
  */
 
@@ -20,11 +27,14 @@ import {
   DuplicateElementError,
   type Element,
   ElementKindRegistry,
+  type ExpandProjectResult,
   elementFilePath,
+  expandProject,
   isValidNamespace,
   type Json,
   loadProject,
   lowerProjectAsync,
+  mapProblemsToOrigins,
   mediaTypeForPath,
   type Problem,
   ProblemCodes,
@@ -83,6 +93,7 @@ import type {
   TargetFacts,
 } from '@msm/plugin-api';
 import { particleSpritePath, potionNeedsJarProblem } from '@msm/plugin-blocks-items';
+import { RULES_KIND } from '@msm/plugin-rules';
 import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
 import { targetFacts } from '@msm/targets';
@@ -140,6 +151,13 @@ import {
   type SessionReferences,
 } from './references';
 import {
+  createRulesView,
+  RulesSessionProblemCodes,
+  type RulesView,
+  rulesNeedJarProblem,
+  rulesNotInEjectProblems,
+} from './rules-view';
+import {
   dataRegistryIds,
   loadSchemaContext,
   outputKindFor,
@@ -149,7 +167,11 @@ import {
   UNREGISTERED_SOUND_EVENT,
 } from './schema-context';
 import {
+  checkRuleScript,
   checkScriptElement,
+  type RuleScriptSource,
+  ruleScriptSource,
+  ruleScriptSources,
   SCRIPT_KIND,
   SCRIPT_TYPINGS_FILE,
   type ScriptingChecker,
@@ -168,6 +190,7 @@ import {
   blockingValidatorErrors,
   changedKinds,
   collectValidators,
+  expandedValidatorProblems,
   projectElements,
   type RegisteredValidator,
   runValidator,
@@ -656,6 +679,10 @@ export const SessionProblemCodes = {
   modOnlyReference: MOD_ONLY_REFERENCE,
   /** A vanilla data pack function that names mod-only content (warning, ADR 0066). */
   modOnlyFunction: MOD_ONLY_FUNCTION,
+  /** A vanilla pack export of a project with rules: rules need the mod jar (info, ADR 0082 D10). */
+  rulesNeedJar: RulesSessionProblemCodes.needsJar,
+  /** A rule that needs a script, left out of the Java eject (warning, ADR 0082 D10). */
+  rulesNotInEject: RulesSessionProblemCodes.notInEject,
 } as const;
 
 /**
@@ -734,6 +761,47 @@ function elementsById(project: Project | null): Map<ResourceLocation, Element> {
   return map;
 }
 
+/**
+ * A signature of each element an expansion patched: its expanded data and the origins of its
+ * patches, so a validation pass can tell which expanded elements changed.
+ */
+function patchedSignatures(expansion: ExpandProjectResult): Map<string, string> {
+  const origins = new Map<string, [string, string, string][]>();
+  for (const [key, origin] of expansion.origins) {
+    const hash = key.indexOf('#');
+    const id = key.slice(0, hash);
+    const list = origins.get(id) ?? [];
+    list.push([key.slice(hash + 1), origin.elementId, origin.pointer]);
+    origins.set(id, list);
+  }
+  const elements = elementsById(expansion.project);
+  const signatures = new Map<string, string>();
+  for (const [id, list] of origins) {
+    signatures.set(
+      id,
+      stableStringify({ data: elements.get(id as ResourceLocation)?.data ?? null, origins: list }),
+    );
+  }
+  return signatures;
+}
+
+/**
+ * The layers an element's errors block in an export: its lowered files' layers; a rule book
+ * always counts as `msm` (its rules reach the game only through the mod jar, ADR 0082 D10,
+ * even when it lowers to nothing because every rule is plain).
+ */
+function blockingLower(
+  registry: ElementKindRegistry,
+  target: Target,
+): (element: Element) => MaybePromise<readonly { layer: OutputFile['layer'] }[]> {
+  return async (element) => {
+    if (element.kind === RULES_KIND) return [{ layer: 'msm' }];
+    const kind = registry.get(element.kind);
+    if (kind === undefined) return [];
+    return kind.lower(element, target);
+  };
+}
+
 /** A project session over a {@link PlatformAdapter}. */
 /** The `id` of a written `fabric.mod.json`, or `undefined` when it has none. */
 function modIdOf(bytes: Uint8Array | undefined): string | undefined {
@@ -804,6 +872,20 @@ export class ProjectSession {
   readonly #textureLayers = new TextureLayerCache();
   /** `blocks-items.transparent-texture-on-solid-block` warnings of the last texture pass. */
   #textureProblems: Problem[] = [];
+  /** The last expansion asked for, by project state and target (ADR 0082 D9). */
+  #expansionCache: {
+    project: Project;
+    targetId: string;
+    result: Promise<ExpandProjectResult>;
+  } | null = null;
+  /** The expansion the last validation pass read (for {@link rulesView}). */
+  #lastExpansion: ExpandProjectResult | null = null;
+  /** The expanders' own problems in the last validation pass (`rules.*`, `core.expansion-*`). */
+  #expansionProblems: readonly Problem[] = [];
+  /** {@link patchedSignatures} of the last validation pass. */
+  #patchedSignatures = new Map<string, string>();
+  /** The generated rule scripts of the export running now, by lowered path. */
+  #ruleScripts = new Map<string, RuleScriptSource>();
   /** Whether blocks, models or texture bytes changed since the last texture pass. */
   #texturesPending = false;
   #generation = 0;
@@ -870,7 +952,11 @@ export class ProjectSession {
       // Minecraft alike.
       ...(options.scripting === undefined
         ? {}
-        : { transpileScript: scriptTranspiler(options.scripting) }),
+        : {
+            transpileScript: scriptTranspiler(options.scripting, (file) =>
+              this.#ruleScripts.get(file),
+            ),
+          }),
     });
     // ADR 0033 D2: main serves the Gradle wrapper (packaged resources or `engine-mod/`).
     this.#javaProjectExporter = createJavaProjectExporter({
@@ -997,6 +1083,72 @@ export class ProjectSession {
   /** The live problems of one element. */
   problemsFor(elementId: ResourceLocation): Problem[] {
     return this.#snapshot.problems.filter((problem) => problem.elementId === elementId);
+  }
+
+  // Expansion (ADR 0082 D9) ---------------------------------------------------------------
+
+  /**
+   * The expansion of `project` for `target`: every registered plugin's project expanders, in
+   * registration order, applied to a copy. One expansion per project state and target is kept,
+   * so the live pass and an export of the same state share it.
+   */
+  #expand(project: Project, target: Target): Promise<ExpandProjectResult> {
+    const cached = this.#expansionCache;
+    if (cached !== null && cached.project === project && cached.targetId === target.id) {
+      return cached.result;
+    }
+    const result = expandProject(project, this.#plugins, target);
+    this.#expansionCache = { project, targetId: target.id, result };
+    return result;
+  }
+
+  /**
+   * The open project as lowering, validation and export see it (ADR 0082 D9): the expanded
+   * copy, the origin of every patch and the expanders' problems. The saved project is not
+   * changed.
+   *
+   * @throws Error If no project is open or the schemas cannot be loaded.
+   */
+  async expandedProject(): Promise<ExpandProjectResult> {
+    const project = this.#requireStack().state;
+    const context = await this.schemas();
+    return this.#expand(project, context.target);
+  }
+
+  /**
+   * Lowers the expanded open project in memory, as an export does (for Play and Reload,
+   * ADR 0084): every output file (each with its `elementId`), with lowering problems and the
+   * expanders' problems moved to the rules that made them. Writes nothing.
+   *
+   * @throws Error If no project is open or the schemas cannot be loaded.
+   */
+  async lowerExpandedProject(): Promise<{ files: OutputFile[]; problems: Problem[] }> {
+    const project = this.#requireStack().state;
+    const context = await this.schemas();
+    const expansion = await this.#expand(project, context.target);
+    const lowered = await lowerProjectAsync(expansion.project, this.registry, context.target);
+    return {
+      files: lowered.files,
+      problems: [
+        ...expansion.problems,
+        ...mapProblemsToOrigins(lowered.problems, expansion.origins),
+      ],
+    };
+  }
+
+  /**
+   * Rules of the open project for the Studios (ADR 0082 D7): which rules name a subject and
+   * which events they generate on it. The generated events come from the last validation pass
+   * (so they may trail an edit by the validation debounce); {@link rulesViewNow} waits for it.
+   */
+  get rulesView(): RulesView {
+    return createRulesView(this.#snapshot.project, this.#lastExpansion ?? undefined);
+  }
+
+  /** {@link rulesView} after any pending validation has run. */
+  async rulesViewNow(): Promise<RulesView> {
+    await this.flushValidation();
+    return this.rulesView;
   }
 
   /**
@@ -1625,8 +1777,10 @@ export class ProjectSession {
   }
 
   /**
-   * The full check of an arbitrary project, as the live pass runs it over the open one: the
-   * schema pass per element (with the registries and dangling `#[id]` references of
+   * The full check of an arbitrary project, as the live pass runs it over the open one, on
+   * its expansion (ADR 0082 D9; problems in patched data move to the rule that made them, and
+   * the expanders' own problems are included; generated rule scripts are checked like
+   * scripts): the schema pass per element (with the registries and dangling `#[id]` references of
    * `project`), the mcfunction checker and the TypeScript check for elements without schema
    * errors, then every plugin validator, then the lowering conflicts (two elements writing one
    * output file, `lowering.conflict` and `lowering.merge-conflict`, found by lowering in
@@ -1649,11 +1803,14 @@ export class ProjectSession {
       ];
     }
     const projectIds = mcfunctionProjectIds(project);
+    const expansion = await this.#expand(project, context.target);
+    const expanded = expansion.project;
     const elementProblems: Problem[] = [];
     let scriptFailure: unknown;
-    for (const element of elementsById(project).values()) {
+    for (const element of elementsById(expanded).values()) {
       const problems = this.#validateElement(element, context, project);
       const clean = !problems.some((problem) => problem.severity === 'error');
+      const rules = clean ? ruleScriptSource(element) : undefined;
       if (clean && element.kind === FUNCTION_KIND && this.#mcfunction !== undefined) {
         problems.push(
           ...(await this.#functionProblems(this.#mcfunction, element, context, projectIds)),
@@ -1671,12 +1828,22 @@ export class ProjectSession {
         } catch (error) {
           scriptFailure ??= error;
         }
+      } else if (rules !== undefined && this.#scripting !== undefined) {
+        try {
+          problems.push(...(await checkRuleScript(this.#scripting, rules, this.#scriptTypings)));
+        } catch (error) {
+          scriptFailure ??= error;
+        }
       }
-      elementProblems.push(...problems);
+      elementProblems.push(...mapProblemsToOrigins(problems, expansion.origins));
     }
-    const input = this.#validatorInput(context, project);
+    const input = this.#validatorInput(context, project, expanded);
     const results = await Promise.all(this.#validators.map((entry) => runValidator(entry, input)));
-    const lowering = await this.#loweringConflicts(project, context.target);
+    const ruleScripts = [...ruleScriptSources(expanded).values()].map((source) => source.lines);
+    const lowering = mapProblemsToOrigins(
+      await this.#loweringConflicts(expanded, context.target),
+      expansion.origins,
+    );
     return [
       ...(scriptFailure === undefined
         ? []
@@ -1688,7 +1855,8 @@ export class ProjectSession {
             },
           ]),
       ...elementProblems,
-      ...results.flat(),
+      ...expansion.problems,
+      ...expandedValidatorProblems(results.flat(), expansion, ruleScripts),
       ...lowering,
     ];
   }
@@ -2222,7 +2390,13 @@ export class ProjectSession {
       problems.filter((problem) => problem.code !== ExportProblemCodes.layerSkipped);
     const report: ExportReport = {
       ok: resources.report.ok && data.report.ok,
-      problems: [...relevant(resources.report.problems), ...relevant(data.report.problems)],
+      problems: [
+        ...relevant(resources.report.problems),
+        // Both packs carry the Rules note; once is enough.
+        ...relevant(data.report.problems).filter(
+          (problem) => problem.code !== SessionProblemCodes.rulesNeedJar,
+        ),
+      ],
       files: [...resources.report.files, ...data.report.files],
     };
     if (resources.data === undefined || data.data === undefined) return report;
@@ -2382,13 +2556,21 @@ export class ProjectSession {
    * the packs; nothing is asked or written then. `folder` is used when given (a folder picked
    * in this session), else the user picks one. A root folder that already holds files is the
    * blocking problem `export.folder-not-empty`. `location` is the written project folder.
+   * Rules that need a script are listed as `rules.not-in-eject` warnings (ADR 0082 D10).
    *
    * @param folder - A folder already picked in this session.
    * @throws Error If no project is open, or main refuses the tree.
    */
   async exportJavaProject(folder?: string): Promise<ExportResult> {
     const sink = createMemorySink();
-    const { report, project } = await this.#runPipeline(this.#javaProjectExporter, sink);
+    const piped = await this.#runPipeline(this.#javaProjectExporter, sink);
+    const { project } = piped;
+    // ADR 0082 D10: rules that need a script are not in the eject; plain ones are events.
+    const notInEject = rulesNotInEjectProblems(project, piped.expansion);
+    const report: ExportReport = {
+      ...piped.report,
+      problems: [...piped.report.problems, ...notInEject],
+    };
     if (!report.ok) return report;
     const written = sink.files();
     if (written.size === 0) return report;
@@ -2480,7 +2662,10 @@ export class ProjectSession {
         : undefined,
     );
     const fileName = packFileName(project.name, target, pack);
-    const warned = pack === 'data' ? withPotionNeedsJar(report, project) : report;
+    const warned = withRulesNeedJar(
+      pack === 'data' ? withPotionNeedsJar(report, project) : report,
+      project,
+    );
     if (!warned.ok) return { report: warned, fileName };
     return { report: warned, fileName, data: sink.finish() };
   }
@@ -2531,18 +2716,29 @@ export class ProjectSession {
       lowered: Project,
       target: Target,
     ) => Promise<Exporter>,
-  ): Promise<{ report: ExportReport; project: Project; target: Target }> {
+  ): Promise<{
+    report: ExportReport;
+    project: Project;
+    target: Target;
+    expansion: ExpandProjectResult;
+  }> {
     const stack = this.#requireStack();
     await this.flushValidation();
     await this.flushAssetFiles();
     const project = stack.state;
-    const lowered = exported(project);
+    const exportedProject = exported(project);
     const context = await this.schemas();
+    // ADR 0082 D9: the export lowers the expanded copy (rule events on their subjects, the
+    // generated rule scripts on their books); the saved project is not changed.
+    const expansion = await this.#expand(exportedProject, context.target);
+    const lowered = expansion.project;
+    const ruleScripts = ruleScriptSources(lowered);
+    this.#ruleScripts = ruleScripts;
     const packager =
       prepare === undefined ? exporter : await prepare(exporter, project, lowered, context.target);
     const info = await this.#platform.app.info();
-    const validateText = this.#textValidator(project, context.target);
-    const report = await runExport({
+    const validateText = this.#textValidator(project, context.target, ruleScripts);
+    const exportReport = await runExport({
       project: lowered,
       registry: this.registry,
       target: context.target,
@@ -2562,24 +2758,34 @@ export class ProjectSession {
       ...(options === undefined ? {} : { options }),
       ...(validateText === undefined ? {} : { validateText }),
     });
+    const report: ExportReport = {
+      ...exportReport,
+      problems: mapProblemsToOrigins(exportReport.problems, expansion.origins),
+    };
+    // Expansion errors (`rules.*`, `core.expansion-*`) block like validator errors: rule books
+    // count as `msm`, so they block the mod jar and the eject, not the vanilla packs.
     const blocking = [
       ...this.#unavailablePluginProblems(project),
       ...(await blockingValidatorErrors(
-        droppedElementProblems([...this.#validatorProblems.values()].flat(), project, lowered),
+        [
+          ...droppedElementProblems(
+            [...this.#validatorProblems.values()].flat(),
+            project,
+            exportedProject,
+          ),
+          ...expansion.problems,
+        ],
         lowered,
-        async (element) => {
-          const kind = this.registry.get(element.kind);
-          if (kind === undefined) return [];
-          return kind.lower(element, context.target);
-        },
+        blockingLower(this.registry, context.target),
         exporter.layers,
       )),
     ];
-    if (blocking.length === 0) return { report, project, target: context.target };
+    if (blocking.length === 0) return { report, project, target: context.target, expansion };
     return {
       report: { ok: false, problems: [...blocking, ...report.problems], files: [] },
       project,
       target: context.target,
+      expansion,
     };
   }
 
@@ -2591,6 +2797,7 @@ export class ProjectSession {
   #textValidator(
     project: Project,
     target: Target,
+    ruleScripts: ReadonlyMap<string, RuleScriptSource> = new Map(),
   ): ((file: OutputFile) => Promise<Problem[]>) | undefined {
     const mcfunction =
       this.#mcfunction === undefined
@@ -2599,7 +2806,9 @@ export class ProjectSession {
     const scripts =
       this.#scripting === undefined
         ? undefined
-        : scriptTextValidator(this.#scripting, this.#scriptTypings);
+        : scriptTextValidator(this.#scripting, this.#scriptTypings, (file) =>
+            ruleScripts.get(file),
+          );
     if (mcfunction === undefined && scripts === undefined) return undefined;
     return async (file) => {
       if (file.language === 'typescript') return scripts === undefined ? [] : scripts(file);
@@ -2703,18 +2912,42 @@ export class ProjectSession {
     if (generation !== this.#generation || this.#stack === null) return;
     this.#schemaLoadProblems = [];
     const project = this.#stack.state;
-    const elements = elementsById(project);
+    // ADR 0082 D9: the pass validates the expanded copy; an element whose expansion changed
+    // (a rule book edit patches its subjects) is checked again, with its kind's validators.
+    const expansion = await this.#expand(project, context.target);
+    if (generation !== this.#generation || this.#stack === null) return;
+    this.#lastExpansion = expansion;
+    this.#expansionProblems = expansion.problems;
+    const signatures = patchedSignatures(expansion);
+    const elements = elementsById(expansion.project);
+    const expandedKinds = new Set<string>();
+    for (const id of new Set([...signatures.keys(), ...this.#patchedSignatures.keys()])) {
+      if (signatures.get(id) === this.#patchedSignatures.get(id)) continue;
+      const element = elements.get(id as ResourceLocation);
+      if (element === undefined) continue;
+      this.#pending.add(element.id);
+      expandedKinds.add(element.kind);
+    }
+    this.#patchedSignatures = signatures;
+    for (const entry of validatorsFor(this.#validators, expandedKinds)) {
+      this.#pendingValidators.add(entry.validator.id);
+    }
     const pending = [...this.#pending];
     this.#pending.clear();
     const functions: { element: Element; problems: Problem[] }[] = [];
     const scripts: { element: Element; problems: Problem[] }[] = [];
+    const ruleScripts: { element: Element; source: RuleScriptSource; problems: Problem[] }[] = [];
     for (const id of pending) {
       const element = elements.get(id);
       if (element === undefined) {
         this.#schemaProblems.delete(id);
         continue;
       }
-      const problems = this.#validateElement(element, context, project);
+      const problems = mapProblemsToOrigins(
+        this.#validateElement(element, context, project),
+        expansion.origins,
+      );
+      const source = ruleScriptSource(element);
       if (
         element.kind === FUNCTION_KIND &&
         this.#mcfunction !== undefined &&
@@ -2728,17 +2961,55 @@ export class ProjectSession {
         !problems.some((problem) => problem.severity === 'error')
       ) {
         scripts.push({ element, problems });
+      } else if (
+        source !== undefined &&
+        this.#scripting !== undefined &&
+        !problems.some((problem) => problem.severity === 'error')
+      ) {
+        ruleScripts.push({ element, source, problems });
       } else {
         this.#schemaProblems.set(id, problems);
       }
     }
-    await this.#runValidators(context, project);
+    await this.#runValidators(context, project, expansion);
     if (generation !== this.#generation || this.#stack === null) return;
     await this.#checkTextures(project, generation);
     if (generation !== this.#generation || this.#stack === null) return;
     this.#publish();
     if (functions.length > 0) await this.#checkFunctions(functions, context, project, generation);
     if (scripts.length > 0) await this.#checkScripts(scripts, generation);
+    if (ruleScripts.length > 0) await this.#checkRuleScripts(ruleScripts, generation);
+  }
+
+  /**
+   * Runs the injected TypeScript checker over the generated scripts of rule books (ADR 0082
+   * D3) after their schema check; the problems land on the book, at the rule whose marker the
+   * line carries.
+   */
+  async #checkRuleScripts(
+    books: readonly { element: Element; source: RuleScriptSource; problems: Problem[] }[],
+    generation: number,
+  ): Promise<void> {
+    const checker = this.#scripting;
+    if (checker === undefined) return;
+    for (const { element, source, problems: schemaProblems } of books) {
+      let problems: Problem[] = [];
+      try {
+        problems = await checkRuleScript(checker, source, this.#scriptTypings);
+      } catch (error) {
+        if (this.#scriptingProblem === null) {
+          this.#scriptingProblem = {
+            severity: 'warning',
+            code: SessionProblemCodes.scriptingUnavailable,
+            message: `Scripts could not be checked: ${messageOf(error)}`,
+          };
+        }
+      }
+      if (generation !== this.#generation || this.#stack === null) return;
+      if (!elementsById(this.#stack.state).has(element.id)) continue;
+      this.#schemaProblems.set(element.id, [...schemaProblems, ...problems]);
+      this.#publish();
+    }
   }
 
   /**
@@ -2830,24 +3101,36 @@ export class ProjectSession {
     }
   }
 
-  /** What the plugin validators read for `project`. */
-  #validatorInput(context: SchemaContext, project: Project) {
+  /**
+   * What the plugin validators read: the elements of `expanded` (the expansion of `project`),
+   * with the registry ids of `project` (an expansion adds no ids, and the registry view is
+   * cached per project state).
+   */
+  #validatorInput(context: SchemaContext, project: Project, expanded: Project = project) {
     return {
-      elements: projectElements(project),
+      elements: projectElements(expanded),
       target: context.target,
       registry: context.registries(project),
     };
   }
 
   /**
-   * Runs the pending project validators (those whose kinds changed) over `project`, after the
-   * schema pass, with the registry index of the session's registered kinds.
+   * Runs the pending project validators (those whose kinds changed) over the expanded project,
+   * after the schema pass, with the registry index of the session's registered kinds; their
+   * problems in patched data move to the rule that made it.
    */
-  async #runValidators(context: SchemaContext, project: Project): Promise<void> {
+  async #runValidators(
+    context: SchemaContext,
+    project: Project,
+    expansion: ExpandProjectResult,
+  ): Promise<void> {
     if (this.#pendingValidators.size === 0) return;
     const pending = this.#pendingValidators;
     this.#pendingValidators = new Set();
-    const input = this.#validatorInput(context, project);
+    const input = this.#validatorInput(context, project, expansion.project);
+    const ruleScripts = [...ruleScriptSources(expansion.project).values()].map(
+      (source) => source.lines,
+    );
     const generation = this.#generation;
     // Validators of third-party plugins resolve through their workers (ADR 0035 D3); all run
     // at once and their problems are kept in validator order.
@@ -2857,7 +3140,9 @@ export class ProjectSession {
         .map(async (entry) => [entry.validator.id, await runValidator(entry, input)] as const),
     );
     if (generation !== this.#generation) return;
-    for (const [id, problems] of results) this.#validatorProblems.set(id, problems);
+    for (const [id, problems] of results) {
+      this.#validatorProblems.set(id, expandedValidatorProblems(problems, expansion, ruleScripts));
+    }
   }
 
   /**
@@ -3231,6 +3516,11 @@ export class ProjectSession {
     this.#renameProblems = [];
     this.#referenceCache = null;
     this.#scriptingProblem = null;
+    this.#expansionCache = null;
+    this.#lastExpansion = null;
+    this.#expansionProblems = [];
+    this.#patchedSignatures = new Map();
+    this.#ruleScripts = new Map();
   }
 
   #close(): void {
@@ -3269,6 +3559,7 @@ export class ProjectSession {
           ...this.#overwriteProblems(project),
           ...this.#unavailablePluginProblems(project),
           ...schemaProblems,
+          ...this.#expansionProblems,
           ...validatorProblems,
           ...this.#textureProblems,
           ...particleTextureProblems(project, this.#currentTarget()),
@@ -3339,6 +3630,18 @@ export function withPotionNeedsJar(report: ExportReport, project: Project): Expo
     .find((element) => element.kind === POTION_KIND);
   if (potion === undefined) return report;
   return { ...report, problems: [...report.problems, potionNeedsJarProblem(potion.id)] };
+}
+
+/**
+ * `report` with the `rules.needs-jar` note (ADR 0082 D10, R8) added once when `project` has
+ * rules: vanilla packs carry no rules, which need the Fabric mod jar.
+ *
+ * @param report - A vanilla pack export report.
+ * @param project - The exported project.
+ */
+export function withRulesNeedJar(report: ExportReport, project: Project): ExportReport {
+  const note = rulesNeedJarProblem(project);
+  return note === undefined ? report : { ...report, problems: [...report.problems, note] };
 }
 
 /** The code of the app-reported missing particle picture warning (ADR 0081 D1). */
