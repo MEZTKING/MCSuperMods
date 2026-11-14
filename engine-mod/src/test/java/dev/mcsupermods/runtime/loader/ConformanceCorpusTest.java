@@ -33,12 +33,11 @@ class ConformanceCorpusTest {
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
     /**
-     * Prefixes whose schema reached the corpus before the runtime's Codec: ADR 0080's {@code action-particle-} and
-     * {@code ambient-particles-} (B352). {@code container-} was decoded by B314, {@code machine-} by B316,
-     * {@code portal-} by B334 and {@code particle-} by B350. Machine recipe files have their own corpus
-     * ({@link MachineRecipeCodecTest}).
+     * Prefixes whose schema reached the corpus before the runtime's Codec; none now. {@code container-} was decoded by
+     * B314, {@code machine-} by B316, {@code portal-} by B334, {@code particle-} by B350, {@code action-particle-} and
+     * {@code ambient-particles-} by B352. Machine recipe files have their own corpus ({@link MachineRecipeCodecTest}).
      */
-    private static final List<String> PENDING = List.of("action-particle-", "ambient-particles-");
+    private static final List<String> PENDING = List.of();
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -84,7 +83,9 @@ class ConformanceCorpusTest {
             new Kind("portal-", DefinitionParser::parseBlock),
             new Kind("portal-item-", DefinitionParser::parseItem),
             new Kind("portal-entity-", DefinitionParser::parseEntity),
-            new Kind("portal-effect-", DefinitionParser::parseEffect))
+            new Kind("portal-effect-", DefinitionParser::parseEffect),
+            new Kind("action-particle-", DefinitionParser::parseBlock),
+            new Kind("ambient-particles-", DefinitionParser::parseBlock))
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

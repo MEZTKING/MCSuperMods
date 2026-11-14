@@ -5,6 +5,7 @@ import dev.mcsupermods.runtime.components.BlockComponents;
 import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventRunner;
+import dev.mcsupermods.runtime.events.ParticleSpecs;
 import dev.mcsupermods.runtime.events.Events;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
@@ -356,11 +357,7 @@ public final class MsmRegistrar {
                         errors.add(where + "unknown sound " + a.sound());
                         MsmRuntime.LOGGER.error("[{}] {}unknown sound {}", MsmRuntime.MOD_ID, where, a.sound());
                     }
-                    case Action.SpawnParticle a when !(BuiltInRegistries.PARTICLE_TYPE.containsKey(a.particle())
-                            && BuiltInRegistries.PARTICLE_TYPE.getValue(a.particle()) instanceof SimpleParticleType) -> {
-                        errors.add(where + a.particle() + " is not a particle type without options");
-                        MsmRuntime.LOGGER.error("[{}] {}{} is not a particle type without options", MsmRuntime.MOD_ID, where, a.particle());
-                    }
+                    case Action.SpawnParticle a -> checkParticle(where + "spawn_particle: ", a.spec(), errors);
                     case Action.GiveItem a -> LATE.add(new LateCheck(raw.describe(), "give_item item", a.item()));
                     case Action.RunFunction a -> LATE.add(new LateCheck(raw.describe(), "run_function function", a.function()));
                     case Action.SetBlockState a -> LATE_STATES.computeIfAbsent(a.state(), s -> new ArrayList<>()).add(raw.describe());
@@ -372,12 +369,63 @@ public final class MsmRegistrar {
         });
     }
 
+    /**
+     * A particle named by an action or component (ADR 0080 D5): a plain id must be a registered particle type without
+     * options (an error otherwise); an options object must name a registered type and is queued for the start check
+     * ({@link ParticleSpecs#checkAfterStart}), because its block or item may not exist yet. {@code where} ends in ": ".
+     */
+    private static void checkParticle(String where, ParticleSpecs.Spec spec, List<String> errors) {
+        String problem = null;
+        if (!BuiltInRegistries.PARTICLE_TYPE.containsKey(spec.type())) {
+            problem = spec.isObject() ? "particle: type: unknown particle type " + spec.type() : spec.type() + " is not a particle type without options";
+        } else if (!spec.isObject() && !(BuiltInRegistries.PARTICLE_TYPE.getValue(spec.type()) instanceof SimpleParticleType)) {
+            problem = spec.type() + " is not a particle type without options";
+        }
+        if (problem != null) {
+            errors.add(where + problem);
+            MsmRuntime.LOGGER.error("[{}] {}{}", MsmRuntime.MOD_ID, where, problem);
+            return;
+        }
+        ParticleSpecs.queue(where, spec);
+    }
+
+    /**
+     * {@code msm:ambient_particles} of a registered block (ADR 0080 D6): its particle as {@link #checkParticle}; a
+     * {@code states} property the block does not have, or a value it never takes, is a warning (the particles never show).
+     */
+    private static void checkAmbientParticles(RawDefinition raw, BlockDefinition def, List<String> errors, List<String> warnings) {
+        Optional<BlockComponents.AmbientParticles> ambient = def.components().ambientParticles();
+        if (ambient.isEmpty()) {
+            return;
+        }
+        String where = raw.describe() + ": components: msm:ambient_particles: ";
+        checkParticle(where, ambient.get().particle(), errors);
+        Block block = BuiltInRegistries.BLOCK.getValue(raw.id());
+        ambient.get().states().forEach((name, value) -> {
+            var property = block.getStateDefinition().getProperty(name);
+            if (property == null) {
+                warn(warnings, where + "states: " + name + " is not a property of the block (it has "
+                        + block.getStateDefinition().getProperties().stream().map(p -> p.getName()).sorted().toList()
+                        + "); the particles never show");
+            } else if (property.getValue(value).isEmpty()) {
+                warn(warnings, where + "states: " + name + ": '" + value + "' is not one of its values "
+                        + property.getPossibleValues().stream().map(v -> valueName(property, v)).toList() + "; the particles never show");
+            }
+        });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static String valueName(net.minecraft.world.level.block.state.properties.Property property, Object value) {
+        return property.getName((Comparable) value);
+    }
+
     /** {@link #registerBlock} with its events checked; a failure is a load error. Returns whether the block registered. */
     private static boolean tryRegisterBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,
             List<String> errors, List<String> warnings) {
         try {
             checkEvents(raw, def.events(), errors);
             registerBlock(raw, def, stairsBase, items, errors, warnings);
+            checkAmbientParticles(raw, def, errors, warnings);
             return true;
         } catch (DefinitionException | RuntimeException e) {
             fail(errors, raw, e);
@@ -996,6 +1044,9 @@ public final class MsmRegistrar {
         for (String w : warnings) {
             MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, w);
         }
+        // ADR 0080 D5 (limit K11): particle options objects decode against the running server's registries; each broken
+        // one is logged here as an error (ParticleSpecs.startErrors) and sends nothing.
+        ParticleSpecs.checkAfterStart(server);
         return warnings;
     }
 }

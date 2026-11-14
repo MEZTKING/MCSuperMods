@@ -84,4 +84,11 @@ public class MsmUntintedLeavesBlock extends UntintedParticleLeavesBlock implemen
         super.entityInside(state, level, pos, entity, effects, intersects);
         driver.entityInside(level, pos, entity);
     }
+
+    /** Client: vanilla's own particles first (falling leaves), then {@code msm:ambient_particles} (ADR 0080 D6). */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+        driver.animateTick(state, level, pos, random);
+    }
 }

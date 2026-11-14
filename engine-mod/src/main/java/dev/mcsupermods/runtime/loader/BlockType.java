@@ -102,8 +102,8 @@ public enum BlockType {
     /**
      * Whether a block of this type may carry the component {@code key} (ADR 0067 D3): {@code msm:shape},
      * {@code msm:redstone}, {@code msm:container} (ADR 0074 D1) and {@code msm:machine} (ADR 0075 D1) only on the {@link #shaped()} types; every other component (breaking, light, triggers,
-     * {@code msm:flammable}, {@code msm:strippable}) on every type but {@link #PORTAL}, which allows only
-     * {@link #PORTAL_COMPONENTS} (ADR 0077 D1).
+     * {@code msm:flammable}, {@code msm:strippable}, {@code msm:ambient_particles} of ADR 0080 D6) on every type but
+     * {@link #PORTAL}, which allows only {@link #PORTAL_COMPONENTS} (ADR 0077 D1; a portal has its own {@code particles}).
      */
     public boolean allows(String key) {
         if (this == PORTAL) {

@@ -105,8 +105,12 @@ describe('script API 1.1 is additive', () => {
   });
 
   it('keeps every previous signature line of the typings', () => {
-    // Widened parameter types (`give` takes an ItemSpec) are the only lines that change.
-    const widened = new Set(['  give(item: string, count?: number): void;']);
+    // Widened parameter types are the only lines that change: `give` takes an ItemSpec (1.1) and
+    // `spawnParticle` a ParticleOptions object and more options (1.3, ADR 0080 D5).
+    const widened = new Set([
+      '  give(item: string, count?: number): void;',
+      '  spawnParticle(id: string, pos: Pos, options?: { count?: number; spread?: number; speed?: number }): void;',
+    ]);
     const lines = new Set(MSM_RUNTIME_TYPINGS.split('\n'));
     const previous = generateTypings(PREVIOUS)
       .split('\n')

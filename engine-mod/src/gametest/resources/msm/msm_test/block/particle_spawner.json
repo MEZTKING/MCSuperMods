@@ -1,0 +1,139 @@
+{
+  "events": {
+    "msm_test:block": {
+      "actions": [
+        {
+          "count": 2,
+          "particle": {
+            "block_state": "minecraft:stone",
+            "type": "minecraft:block"
+          },
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:dust": {
+      "actions": [
+        {
+          "count": 3,
+          "particle": {
+            "color": [
+              1,
+              0.5,
+              0
+            ],
+            "scale": 1.5,
+            "type": "minecraft:dust"
+          },
+          "spread": 0.25,
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:dust_array": {
+      "actions": [
+        {
+          "particle": {
+            "color": [
+              1,
+              0.82,
+              0.38
+            ],
+            "scale": 1.5,
+            "type": "minecraft:dust"
+          },
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:dust_int": {
+      "actions": [
+        {
+          "particle": {
+            "color": 16744448,
+            "scale": 1,
+            "type": "minecraft:dust"
+          },
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:force": {
+      "actions": [
+        {
+          "count": 2,
+          "force": true,
+          "particle": "msm_test:spark",
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:item": {
+      "actions": [
+        {
+          "count": 2,
+          "particle": {
+            "item": {
+              "id": "msm_test:fuel_gem"
+            },
+            "type": "minecraft:item"
+          },
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:item_diamond": {
+      "actions": [
+        {
+          "particle": {
+            "item": {
+              "id": "minecraft:diamond"
+            },
+            "type": "minecraft:item"
+          },
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:many": {
+      "actions": [
+        {
+          "count": 1000,
+          "particle": "minecraft:flame",
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:motion": {
+      "actions": [
+        {
+          "count": 5,
+          "motion": [
+            0,
+            0.25,
+            -0.1
+          ],
+          "particle": "msm_test:spark",
+          "speed": 3,
+          "spread": 0.5,
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "msm_test:motion_one": {
+      "actions": [
+        {
+          "motion": [
+            0.1,
+            0,
+            0
+          ],
+          "particle": "msm_test:spark",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": false
+}

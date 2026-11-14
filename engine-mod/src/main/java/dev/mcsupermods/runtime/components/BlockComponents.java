@@ -9,13 +9,19 @@ import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
 import com.mojang.serialization.Codec;
+import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
+import dev.mcsupermods.runtime.events.ParticleSpecs;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
 
@@ -34,16 +40,20 @@ public record BlockComponents(
         Optional<Flammable> flammable,
         Optional<Strippable> strippable,
         Optional<Container> container,
-        Optional<Machine> machine) {
+        Optional<Machine> machine,
+        Optional<AmbientParticles> ambientParticles) {
 
     public static final List<String> KEYS = List.of("msm:breakable", "msm:light_emitter", "msm:on_interact", "msm:on_step", "msm:redstone",
             "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside",
-            "msm:flammable", "msm:strippable", "msm:container", "msm:machine");
+            "msm:flammable", "msm:strippable", "msm:container", "msm:machine", "msm:ambient_particles");
     public static final BlockComponents NONE = new BlockComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
-    /** 14 of the 16 fields a {@code RecordCodecBuilder} group takes (limit C18): a later component needs a nested group. */
+    /**
+     * 15 of the 16 fields a {@code RecordCodecBuilder} group takes (limit C18, ADR 0080 D6; limit K14): a later component
+     * needs a nested group.
+     */
     public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             optional("msm:breakable", Breakable.CODEC).forGetter(BlockComponents::breakable),
             optional("msm:light_emitter", LightEmitter.CODEC).forGetter(BlockComponents::lightEmitter),
@@ -58,13 +68,14 @@ public record BlockComponents(
             optional("msm:flammable", Flammable.CODEC).forGetter(BlockComponents::flammable),
             optional("msm:strippable", Strippable.CODEC).forGetter(BlockComponents::strippable),
             optional("msm:container", Container.CODEC).forGetter(BlockComponents::container),
-            optional("msm:machine", Machine.CODEC).forGetter(BlockComponents::machine))
+            optional("msm:machine", Machine.CODEC).forGetter(BlockComponents::machine),
+            optional("msm:ambient_particles", AmbientParticles.CODEC).forGetter(BlockComponents::ambientParticles))
             .apply(i, BlockComponents::new));
 
     /** The keys of the components present, in {@link #KEYS} order. */
     public List<String> present() {
         List<Optional<?>> values = List.of(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, container, machine);
+                onEntityInside, flammable, strippable, container, machine, ambientParticles);
         List<String> out = new ArrayList<>();
         for (int n = 0; n < KEYS.size(); n++) {
             if (values.get(n).isPresent()) {
@@ -90,13 +101,14 @@ public record BlockComponents(
                 keys.contains("msm:flammable") ? Optional.empty() : flammable,
                 keys.contains("msm:strippable") ? Optional.empty() : strippable,
                 keys.contains("msm:container") ? Optional.empty() : container,
-                keys.contains("msm:machine") ? Optional.empty() : machine);
+                keys.contains("msm:machine") ? Optional.empty() : machine,
+                keys.contains("msm:ambient_particles") ? Optional.empty() : ambientParticles);
     }
 
     /** These components with {@code msm:container} replaced (empty removes it). */
     public BlockComponents withContainer(Optional<Container> other) {
         return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, other, machine);
+                onEntityInside, flammable, strippable, other, machine, ambientParticles);
     }
 
     /**
@@ -511,5 +523,55 @@ public record BlockComponents(
             }
             return MachineMenu.FURNACE;
         }
+    }
+
+    /**
+     * Ambient block particles ({@code ::msm::definition::AmbientParticles}, ADR 0080 D6); closed. Drawn on the client from
+     * {@code animateTick} by {@code registry.AmbientParticles}, which states the spawn rule; allowed on every block type
+     * but {@code portal} ({@code BlockType#allows}).
+     *
+     * @param particle an id of a particle type without options, or a vanilla particle options object
+     * @param chance per animation tick, 0 to 1; default 1
+     * @param count particles per animation tick that passes {@code chance}, 1 to 16; default 1
+     * @param offset {@code [x, y, z]} from the block's corner; default the centre
+     * @param spread {@code [x, y, z]}: each particle is placed uniformly within {@code offset} plus or minus {@code spread}
+     *     on each axis; default {@code [0.5, 0.5, 0.5]} (the whole block)
+     * @param velocity {@code [x, y, z]} blocks per tick, given exactly; default none
+     * @param states block state properties that must match ({@code { "lit": "true" }}); empty: every state
+     */
+    public record AmbientParticles(ParticleSpecs.Spec particle, float chance, int count, List<Double> offset, List<Double> spread,
+            List<Double> velocity, Map<String, String> states) {
+        public static final List<String> KEYS = List.of("particle", "chance", "count", "offset", "spread", "velocity", "states");
+        public static final int MAX_COUNT = 16;
+        private static final List<Double> CENTRE = List.of(0.5, 0.5, 0.5);
+        private static final List<Double> NONE = List.of(0.0, 0.0, 0.0);
+        private static final Codec<List<Double>> XYZ = MsmCodecs.listOfLength(Codec.DOUBLE.validate(d -> Double.isFinite(d)
+                ? DataResult.success(d)
+                : DataResult.error(() -> "not a finite number: " + d)), 3, 3);
+        /** Property name to value, each value a string: a value of another type is an error naming its property. */
+        private static final Codec<Map<String, String>> STATES = Codec.unboundedMap(Codec.STRING, Codec.PASSTHROUGH).flatXmap(map -> {
+            Map<String, String> out = new TreeMap<>();
+            for (Map.Entry<String, Dynamic<?>> e : map.entrySet()) {
+                DataResult<String> value = e.getValue().asString();
+                if (value.isError()) {
+                    return DataResult.error(() -> e.getKey() + ": expected a string such as \"true\", not " + e.getValue().getValue());
+                }
+                out.put(e.getKey(), value.getOrThrow());
+            }
+            return DataResult.success(Map.copyOf(out));
+        }, map -> {
+            Map<String, Dynamic<?>> out = new TreeMap<>();
+            map.forEach((k, v) -> out.put(k, new Dynamic<>(JsonOps.INSTANCE, new JsonPrimitive(v))));
+            return DataResult.success(out);
+        });
+
+        public static final Codec<AmbientParticles> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("particle", ParticleSpecs.Spec.CODEC).forGetter(AmbientParticles::particle),
+                optional("chance", floatRange(0, 1), 1.0f).forGetter(AmbientParticles::chance),
+                optional("count", intRange(1, MAX_COUNT), 1).forGetter(AmbientParticles::count),
+                optional("offset", XYZ, CENTRE).forGetter(AmbientParticles::offset),
+                optional("spread", XYZ, CENTRE).forGetter(AmbientParticles::spread),
+                optional("velocity", XYZ, NONE).forGetter(AmbientParticles::velocity),
+                optional("states", STATES, Map.of()).forGetter(AmbientParticles::states)).apply(i, AmbientParticles::new)), KEYS);
     }
 }

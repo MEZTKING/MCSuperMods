@@ -9,11 +9,14 @@ import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * One action of an event (ADR 0025 D4), selected by {@code type}. Mirrors {@code action.mcdoc}.
@@ -61,13 +64,38 @@ public sealed interface Action {
         }
     }
 
-    /** Server-side particles at the block centre or the player's position. */
-    record SpawnParticle(Identifier particle, int count, float spread, float speed) implements Action {
+    /**
+     * Server-side particles at the event position (ADR 0080 D5): {@code particle} is an id or a vanilla options object
+     * ({@link ParticleSpecs.Spec}), {@code count} 1 to {@value ParticleSpecs#MAX_COUNT}; {@code motion} gives each
+     * particle exactly that velocity (one count-0 packet per particle; {@code speed} is then not used) and {@code force}
+     * sends it as {@code /particle ... force}. {@link ParticleSpecs#send} states how {@code spread} and {@code speed} are
+     * drawn.
+     */
+    record SpawnParticle(ParticleSpecs.Spec spec, int count, float spread, float speed, Optional<Vec3> motion, boolean force)
+            implements Action {
+        private static final Codec<Double> FINITE = Codec.DOUBLE.validate(d -> Double.isFinite(d)
+                ? DataResult.success(d)
+                : DataResult.error(() -> "not a finite number: " + d));
+        /** {@code [x, y, z]} in blocks per tick. */
+        static final Codec<Vec3> MOTION = MsmCodecs.listOfLength(FINITE, 3, 3)
+                .xmap(l -> new Vec3(l.get(0), l.get(1), l.get(2)), v -> List.of(v.x, v.y, v.z));
         static final MapCodec<SpawnParticle> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                required("particle", ID).forGetter(SpawnParticle::particle),
-                optional("count", intAtLeast(1), 1).forGetter(SpawnParticle::count),
+                required("particle", ParticleSpecs.Spec.CODEC).forGetter(SpawnParticle::spec),
+                optional("count", intRange(1, ParticleSpecs.MAX_COUNT), 1).forGetter(SpawnParticle::count),
                 optional("spread", floatAtLeast(0), 0.0f).forGetter(SpawnParticle::spread),
-                optional("speed", floatAtLeast(0), 0.0f).forGetter(SpawnParticle::speed)).apply(i, SpawnParticle::new));
+                optional("speed", floatAtLeast(0), 0.0f).forGetter(SpawnParticle::speed),
+                optional("motion", MOTION).forGetter(SpawnParticle::motion),
+                optional("force", Codec.BOOL, false).forGetter(SpawnParticle::force)).apply(i, SpawnParticle::new));
+
+        /** A plain particle type id without {@code motion} or {@code force}. */
+        public SpawnParticle(Identifier particle, int count, float spread, float speed) {
+            this(ParticleSpecs.Spec.of(particle), count, spread, speed, Optional.empty(), false);
+        }
+
+        /** The particle type id: the id as written, or the options object's {@code type}. */
+        public Identifier particle() {
+            return spec.type();
+        }
 
         @Override
         public Type type() {

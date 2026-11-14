@@ -756,6 +756,13 @@ interface MsmLog {
   warn(message: string): void;
 }
 
+/**
+ * A vanilla particle options object: `type` names a particle type and the other fields are that type's options, as in vanilla's particle JSON, for example `{ type: "minecraft:dust", color: [1, 0.5, 0], scale: 1.5 }`, `{ type: "minecraft:block", block_state: "minecraft:stone" }` or `{ type: "minecraft:item", item: { id: "minecraft:diamond" } }`; fields that do not decode are a script error.
+ *
+ * Since runtime 1.7.0.
+ */
+type ParticleOptions = { type: string; [field: string]: unknown };
+
 /** A player, wrapped for scripts. */
 interface Player extends Entity {
   /**
@@ -1131,12 +1138,14 @@ interface World {
    */
   spawnEntity(id: string, pos: Pos): Entity | undefined;
   /**
-   * Spawns particles of a simple particle type at a position.
+   * Spawns particles at a position for nearby players. A particle that does not decode (an unknown id, a type that needs options given as an id, an options object with a wrong field) is a `TypeError`.
    *
-   * @param id - The particle type id, for example `minecraft:flame`.
-   * @param options - How many particles, how far they spread in blocks and how fast they move.
+   * Options objects, `motion` and `force`: since runtime 1.7.0.
+   *
+   * @param particle - A particle type without options, for example `minecraft:flame` or a project particle such as `mymod:spark`, or a vanilla particle options object such as `{ type: "minecraft:dust", color: [1, 0.5, 0], scale: 1.5 }`.
+   * @param options - `count` particles (1 by default; at most 1000 with `motion`), placed at a random offset of about `spread` blocks on each axis (a Gaussian with that standard deviation, 0 by default) and moving at a random speed of about `speed` (0 by default). `motion` (`[x, y, z]` in blocks per tick) gives each particle exactly that velocity instead of the random one, sending one packet per particle; `speed` is then not used. `force` sends to players up to 512 blocks away and draws whatever their Particles setting, as `/particle ... force`.
    */
-  spawnParticle(id: string, pos: Pos, options?: { count?: number; spread?: number; speed?: number }): void;
+  spawnParticle(particle: string | ParticleOptions, pos: Pos, options?: { count?: number; spread?: number; speed?: number; motion?: [number, number, number]; force?: boolean }): void;
   /** The dimension's game time in ticks. */
   readonly time: number;
 }
@@ -1183,6 +1192,7 @@ declare module "msm:runtime" {
   export type MsmBossBars = globalThis.MsmBossBars;
   export type MsmEvents = globalThis.MsmEvents;
   export type MsmLog = globalThis.MsmLog;
+  export type ParticleOptions = globalThis.ParticleOptions;
   export type Player = globalThis.Player;
   export type PlayerChangeDimensionEvent = globalThis.PlayerChangeDimensionEvent;
   export type PlayerChatEvent = globalThis.PlayerChatEvent;

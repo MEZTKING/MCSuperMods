@@ -93,9 +93,9 @@
           "kind": "method",
           "params": [
             {
-              "name": "id",
-              "type": "string",
-              "doc": "The particle type id, for example `minecraft:flame`."
+              "name": "particle",
+              "type": "string | ParticleOptions",
+              "doc": "A particle type without options, for example `minecraft:flame` or a project particle such as `mymod:spark`, or a vanilla particle options object such as `{ type: \"minecraft:dust\", color: [1, 0.5, 0], scale: 1.5 }`."
             },
             {
               "name": "pos",
@@ -103,12 +103,12 @@
             },
             {
               "name": "options",
-              "type": "{ count?: number; spread?: number; speed?: number }",
+              "type": "{ count?: number; spread?: number; speed?: number; motion?: [number, number, number]; force?: boolean }",
               "optional": true,
-              "doc": "How many particles, how far they spread in blocks and how fast they move."
+              "doc": "`count` particles (1 by default; at most 1000 with `motion`), placed at a random offset of about `spread` blocks on each axis (a Gaussian with that standard deviation, 0 by default) and moving at a random speed of about `speed` (0 by default). `motion` (`[x, y, z]` in blocks per tick) gives each particle exactly that velocity instead of the random one, sending one packet per particle; `speed` is then not used. `force` sends to players up to 512 blocks away and draws whatever their Particles setting, as `/particle ... force`."
             }
           ],
-          "doc": "Spawns particles of a simple particle type at a position."
+          "doc": "Spawns particles at a position for nearby players. A particle that does not decode (an unknown id, a type that needs options given as an id, an options object with a wrong field) is a `TypeError`.\n\nOptions objects, `motion` and `force`: since runtime 1.7.0."
         },
         "playSound": {
           "kind": "method",
@@ -2031,6 +2031,10 @@
     "RaycastOptions": {
       "type": "{ fluids?: boolean; entities?: boolean; ignore?: Entity }",
       "doc": "What a ray stops at: `fluids` (false by default) makes fluid surfaces count as blocks, `entities` (true by default) lets the ray hit living entities, and `ignore` is an entity the ray passes through.\n\nSince runtime 1.5.0."
+    },
+    "ParticleOptions": {
+      "type": "{ type: string; [field: string]: unknown }",
+      "doc": "A vanilla particle options object: `type` names a particle type and the other fields are that type's options, as in vanilla's particle JSON, for example `{ type: \"minecraft:dust\", color: [1, 0.5, 0], scale: 1.5 }`, `{ type: \"minecraft:block\", block_state: \"minecraft:stone\" }` or `{ type: \"minecraft:item\", item: { id: \"minecraft:diamond\" } }`; fields that do not decode are a script error.\n\nSince runtime 1.7.0."
     }
   }
 }

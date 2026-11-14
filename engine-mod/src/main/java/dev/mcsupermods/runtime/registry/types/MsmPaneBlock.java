@@ -72,4 +72,11 @@ public class MsmPaneBlock extends IronBarsBlock implements DrivenBlock {
         super.entityInside(state, level, pos, entity, effects, intersects);
         driver.entityInside(level, pos, entity);
     }
+
+    /** Client: {@code msm:ambient_particles} (ADR 0080 D6), after vanilla's own. */
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+        driver.animateTick(state, level, pos, random);
+    }
 }

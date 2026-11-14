@@ -1,13 +1,18 @@
 package dev.mcsupermods.runtime.scripting;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import dev.mcsupermods.runtime.events.EventRunner;
+import dev.mcsupermods.runtime.events.ParticleSpecs;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -21,11 +26,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.mozilla.javascript.Function;
 import org.mozilla.javascript.ScriptRuntime;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * {@code World} (ADR 0032 D2) over a {@link ServerLevel}; {@code getContainer} (script API 1.2, ADR 0076 D5) gives a
- * {@link ScriptContainer}. Commands and functions run as the server with permission
+ * {@link ScriptContainer}; {@code spawnParticle} takes particle options objects, {@code motion} and {@code force} (script
+ * API 1.3, ADR 0080 D5). Commands and functions run as the server with permission
  * level 2 (as {@code run_function} actions do) and suppressed output, at the world spawn point with no {@code @s}, or
  * at the optional {@code at} position (ADR 0058 D2). {@code Entity.runCommand} and {@code Entity.runFunction} share
  * {@link #runCommand} and {@link #runFunction}.
@@ -44,16 +52,19 @@ final class ScriptWorld {
                 return state.isPresent() && l.setBlockAndUpdate(pos.block(), state.get());
             })
             .method("spawnParticle", 2, 3, ServerLevel.class, (api, l, args) -> {
-                String id = ScriptValues.string(args, 0, "id");
-                ParticleType<?> type = ScriptValues.entry(BuiltInRegistries.PARTICLE_TYPE, id, "particle type");
-                if (!(type instanceof SimpleParticleType simple)) {
-                    throw ScriptRuntime.typeError(id + " is not a particle type without options");
-                }
+                ParticleOptions particle = particle(l, args);
                 Vec3 at = ScriptPos.arg(args, 1, "pos").vec();
-                int count = (int) Math.max(1, ScriptValues.option(args, 2, "count", 1));
-                double spread = Math.max(0, ScriptValues.option(args, 2, "spread", 0));
-                double speed = Math.max(0, ScriptValues.option(args, 2, "speed", 0));
-                l.sendParticles(simple, at.x, at.y, at.z, count, spread, spread, spread, speed);
+                Scriptable options = ScriptValues.options(args, 2, "options");
+                Optional<Vec3> motion = motion(ScriptValues.member(options, "motion"));
+                int count = (int) Math.max(1, ScriptValues.numberMember(options, "count", 1));
+                if (motion.isPresent() && count > ParticleSpecs.MAX_COUNT) {
+                    throw ScriptValues.rangeError("options.count is " + count + "; with options.motion at most "
+                            + ParticleSpecs.MAX_COUNT + " particles are sent per call");
+                }
+                double spread = Math.max(0, ScriptValues.numberMember(options, "spread", 0));
+                double speed = Math.max(0, ScriptValues.numberMember(options, "speed", 0));
+                boolean force = ScriptValues.booleanMember(options, "force", false);
+                ParticleSpecs.send(l, particle, at, count, spread, speed, motion, force);
                 return null;
             })
             .method("playSound", 2, 3, ServerLevel.class, (api, l, args) -> {
@@ -92,6 +103,47 @@ final class ScriptWorld {
                 ScriptContainer container = ScriptContainer.at(l, ScriptPos.arg(args, 0, "pos").block());
                 return container == null ? null : api.container(container);
             });
+
+    /**
+     * The {@code particle} argument of {@code spawnParticle} (script API 1.3, ADR 0080 D5): a particle type id without
+     * options, or a vanilla options object such as {@code { type: "minecraft:dust", color: [1, 0.5, 0], scale: 1.5 }},
+     * converted to JSON and decoded as a {@code spawn_particle} action's object is. Anything that does not decode is a
+     * {@code TypeError} naming the problem.
+     */
+    private static ParticleOptions particle(ServerLevel level, Object[] args) {
+        ParticleSpecs.Spec spec;
+        if (ScriptValues.present(args, 0) && args[0] instanceof Scriptable object && !(args[0] instanceof Function)
+                && !(args[0] instanceof CharSequence)) {
+            JsonElement json = ScriptJson.fromScript(object);
+            DataResult<ParticleSpecs.Spec> parsed = ParticleSpecs.Spec.CODEC.parse(JsonOps.INSTANCE, json);
+            if (parsed.isError()) {
+                throw ScriptRuntime.typeError("particle: " + parsed.error().map(DataResult.Error::message).orElse(""));
+            }
+            spec = parsed.getOrThrow();
+        } else {
+            String id = ScriptValues.string(args, 0, "particle");
+            ScriptValues.entry(BuiltInRegistries.PARTICLE_TYPE, id, "particle type");
+            spec = ParticleSpecs.Spec.of(ScriptValues.id(id, "particle type"));
+        }
+        DataResult<ParticleOptions> decoded = ParticleSpecs.decode(spec, level.registryAccess());
+        if (decoded.isError()) {
+            throw ScriptRuntime.typeError("particle " + spec.describe() + ": " + decoded.error().map(DataResult.Error::message).orElse(""));
+        }
+        return decoded.getOrThrow();
+    }
+
+    /** {@code options.motion}: absent, or {@code [x, y, z]} of three finite numbers; anything else is a {@code TypeError}. */
+    private static Optional<Vec3> motion(Object value) {
+        if (value == null) {
+            return Optional.empty();
+        }
+        JsonElement json = value instanceof Scriptable ? ScriptJson.fromScript(value) : null;
+        if (json instanceof JsonArray array && array.size() == 3 && array.asList().stream().allMatch(e -> e instanceof JsonPrimitive p
+                && p.isNumber() && Double.isFinite(p.getAsDouble()))) {
+            return Optional.of(new Vec3(array.get(0).getAsDouble(), array.get(1).getAsDouble(), array.get(2).getAsDouble()));
+        }
+        throw ScriptRuntime.typeError("options.motion must be [x, y, z]: three finite numbers in blocks per tick");
+    }
 
     /**
      * The server's source in {@code level} with permission level 2 and suppressed output: at the world spawn point

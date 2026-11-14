@@ -1,8 +1,10 @@
 /**
- * Script API 1.2 (ADR 0076 D5): containers. The description changes only by additions to the one
- * of runtime 1.5.0 (`test/fixtures/previous/script-api-v1-1.5.0.json`), adds exactly
- * `World.getContainer` and the `Container` type the runtime's `ScriptApi` installs (B317), and
- * type-checks scripts that use them.
+ * Script API 1.2 (ADR 0076 D5): containers. The 1.2 description as runtime 1.6.0 has it
+ * (`test/fixtures/previous/script-api-v1-1.6.0.json`) changes only by additions to the one of
+ * runtime 1.5.0 (`test/fixtures/previous/script-api-v1-1.5.0.json`); the current description adds
+ * exactly `World.getContainer` and the `Container` type the runtime's `ScriptApi` installs (B317),
+ * and scripts that use them type-check. Later changes (1.3, ADR 0080 D5) are pinned in their own
+ * test file.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -22,6 +24,13 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
+/** The 1.2 description as runtime 1.6.0 has it, before the 1.3 changes. */
+const API_1_2: ScriptApi = parseScriptApi(
+  JSON.parse(
+    readFileSync(new URL('./fixtures/previous/script-api-v1-1.6.0.json', import.meta.url), 'utf8'),
+  ),
+);
+
 const SINCE = 'Since runtime 1.6.0.';
 
 function signatureCounts(member: ScriptApiMember | undefined): string[] {
@@ -35,22 +44,22 @@ function signatureCounts(member: ScriptApiMember | undefined): string[] {
 
 describe('script API 1.2 is additive', () => {
   it('keeps the version at 1 and every type, member, global and event of runtime 1.5.0', () => {
-    expect(SCRIPT_API.version).toBe(1);
+    expect(API_1_2.version).toBe(1);
     for (const [name, type] of Object.entries(PREVIOUS.types)) {
-      const now = SCRIPT_API.types[name];
+      const now = API_1_2.types[name];
       expect(now?.extends, name).toBe(type.extends);
       for (const [member, old] of Object.entries(type.members)) {
         expect(now?.members[member], `${name}.${member}`).toEqual(old);
       }
     }
-    expect(SCRIPT_API.globals).toEqual(PREVIOUS.globals);
-    expect(SCRIPT_API.events).toEqual(PREVIOUS.events);
-    expect(SCRIPT_API.functions).toEqual(PREVIOUS.functions);
-    expect(SCRIPT_API.aliases).toEqual(PREVIOUS.aliases);
+    expect(API_1_2.globals).toEqual(PREVIOUS.globals);
+    expect(API_1_2.events).toEqual(PREVIOUS.events);
+    expect(API_1_2.functions).toEqual(PREVIOUS.functions);
+    expect(API_1_2.aliases).toEqual(PREVIOUS.aliases);
   });
 
   it('keeps every previous line of the typings', () => {
-    const lines = new Set(MSM_RUNTIME_TYPINGS.split('\n'));
+    const lines = new Set(generateTypings(API_1_2).split('\n'));
     const previous = generateTypings(PREVIOUS).split('\n');
     expect(previous.filter((line) => !lines.has(line))).toEqual([]);
   });

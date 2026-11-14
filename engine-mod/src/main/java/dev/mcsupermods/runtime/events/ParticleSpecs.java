@@ -1,0 +1,259 @@
+package dev.mcsupermods.runtime.events;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import dev.mcsupermods.runtime.MsmRuntime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
+
+/**
+ * Particles named in definitions and scripts (ADR 0080 D5): a particle type id, or a vanilla particle options object
+ * ({@code { "type": "minecraft:dust", "color": [1, 0.5, 0], "scale": 1.5 }}) kept as JSON and decoded with
+ * {@link ParticleTypes#CODEC} through the registry ops of a running world, because block and item options name registry
+ * entries that may not exist while definitions load (limit K11).
+ *
+ * <p>Decoding: {@link #resolve} decodes a definition's particle once per registry access and caches the result (a
+ * failure is logged once and sends nothing); {@link #decode} decodes without the cache (scripts, whose objects change
+ * from call to call). {@link #checkAfterStart} decodes every queued options object once the server has started and logs
+ * one error per broken object naming the definition and the field.
+ *
+ * <p>Sending ({@link #send}): without {@code motion}, one vanilla packet of {@code count} particles, each placed at a
+ * Gaussian offset of standard deviation {@code spread} blocks on each axis and moving with a Gaussian velocity of
+ * standard deviation {@code speed} on each axis (the client's own rule for a count above 0). With {@code motion}, one
+ * count-0 packet per particle (vanilla's exact-velocity form): each particle starts with exactly {@code motion} blocks per
+ * tick, placed at a Gaussian offset of standard deviation {@code spread} blocks on each axis drawn on the server (the same
+ * distribution as without {@code motion}); {@code speed} is not used. {@code force} sends to players up to 512 blocks
+ * away and lets them draw it whatever their Particles option, as {@code /particle ... force}.
+ */
+public final class ParticleSpecs {
+    private ParticleSpecs() {}
+
+    /** The most particles one {@code spawn_particle} action sends (ADR 0080 D5). */
+    public static final int MAX_COUNT = 1000;
+
+    /**
+     * A particle as written: {@code type} is the id, or the options object's {@code type}; {@code options} holds the whole
+     * object when it was written as one.
+     */
+    public record Spec(Identifier type, Optional<JsonObject> options) {
+        /** A plain particle type id. */
+        public static Spec of(Identifier type) {
+            return new Spec(type, Optional.empty());
+        }
+
+        /** Whether the particle was written as an options object. */
+        public boolean isObject() {
+            return options.isPresent();
+        }
+
+        /** The id, or the options object as compact JSON, for messages. */
+        public String describe() {
+            return options.map(JsonObject::toString).orElse(type.toString());
+        }
+
+        /**
+         * {@code ::msm::action::ParticleSpec}: a string decodes as an id; a map must have a string {@code type} id and is
+         * kept whole (its other fields are the options, checked by {@link #decode}); anything else is an error.
+         */
+        public static final Codec<Spec> CODEC = new Codec<>() {
+            @Override
+            public <T> DataResult<Pair<Spec, T>> decode(DynamicOps<T> ops, T input) {
+                DataResult<String> string = ops.getStringValue(input);
+                if (string.isSuccess()) {
+                    String text = string.getOrThrow();
+                    Identifier id = Identifier.tryParse(text);
+                    return id == null
+                            ? DataResult.error(() -> "invalid particle type id '" + text + "'")
+                            : DataResult.success(Pair.of(Spec.of(id), ops.empty()));
+                }
+                if (ops.getMap(input).isError()) {
+                    return DataResult.error(() -> "expected a particle type id or an options object with a type, not " + input);
+                }
+                JsonElement json = new Dynamic<>(ops, input).convert(JsonOps.INSTANCE).getValue();
+                if (!(json instanceof JsonObject object)) {
+                    return DataResult.error(() -> "expected a particle type id or an options object with a type, not " + input);
+                }
+                JsonElement type = object.get("type");
+                if (type == null) {
+                    return DataResult.error(() -> "type: missing (an options object names its particle type in 'type')");
+                }
+                if (!(type instanceof JsonPrimitive primitive) || !primitive.isString()) {
+                    return DataResult.error(() -> "type: expected a particle type id, not " + type);
+                }
+                Identifier id = Identifier.tryParse(primitive.getAsString());
+                if (id == null) {
+                    return DataResult.error(() -> "type: invalid particle type id '" + primitive.getAsString() + "'");
+                }
+                return DataResult.success(Pair.of(new Spec(id, Optional.of(object.deepCopy())), ops.empty()));
+            }
+
+            @Override
+            public <T> DataResult<T> encode(Spec input, DynamicOps<T> ops, T prefix) {
+                JsonElement json = input.options.<JsonElement>map(JsonObject::deepCopy).orElseGet(() -> new JsonPrimitive(input.type.toString()));
+                return DataResult.success(JsonOps.INSTANCE.convertTo(ops, json));
+            }
+
+            @Override
+            public String toString() {
+                return "ParticleSpec";
+            }
+        };
+    }
+
+    // Decoding
+
+    /**
+     * {@code spec} as the particle to send, decoded with {@code registries}: a plain id must name a registered particle
+     * type without options; an options object is decoded by {@link ParticleTypes#CODEC}, and an object whose type takes
+     * no options may hold no other field. Not cached.
+     */
+    public static DataResult<ParticleOptions> decode(Spec spec, HolderLookup.Provider registries) {
+        if (spec.options().isEmpty()) {
+            Optional<ParticleType<?>> type = BuiltInRegistries.PARTICLE_TYPE.getOptional(spec.type());
+            if (type.isEmpty()) {
+                return DataResult.error(() -> "unknown particle type " + spec.type());
+            }
+            if (!(type.get() instanceof SimpleParticleType simple)) {
+                return DataResult.error(() -> spec.type() + " is not a particle type without options (write an options object with its fields)");
+            }
+            return DataResult.success(simple);
+        }
+        JsonObject object = spec.options().get();
+        Optional<ParticleType<?>> type = BuiltInRegistries.PARTICLE_TYPE.getOptional(spec.type());
+        if (type.isEmpty()) {
+            return DataResult.error(() -> "type: unknown particle type " + spec.type());
+        }
+        if (type.get() instanceof SimpleParticleType) {
+            List<String> extra = object.keySet().stream().filter(k -> !k.equals("type")).sorted().toList();
+            if (!extra.isEmpty()) {
+                return DataResult.error(() -> extra.getFirst() + ": unknown field (particle type " + spec.type() + " takes no options)");
+            }
+        }
+        return ParticleTypes.CODEC.parse(registries.createSerializationContext(JsonOps.INSTANCE), object)
+                .mapError(message -> "options of " + spec.type() + ": " + message);
+    }
+
+    /** A cache key: the spec by value and the registry access by identity (a client and its integrated server differ). */
+    private record Key(Spec spec, Object registries) {
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof Key k && k.registries == registries && k.spec.equals(spec);
+        }
+
+        @Override
+        public int hashCode() {
+            return spec.hashCode() * 31 + System.identityHashCode(registries);
+        }
+    }
+
+    private static final Map<Key, DataResult<ParticleOptions>> CACHE = new ConcurrentHashMap<>();
+    /** Specs whose failure has been logged since the last server start: each is logged once. */
+    private static final Set<Spec> REPORTED = ConcurrentHashMap.newKeySet();
+
+    /**
+     * {@code spec} decoded with {@code registries}, cached per spec and registry access. A failure sends nothing; it is
+     * logged as an error naming {@code where} the first time (unless {@link #checkAfterStart} reported it already).
+     */
+    public static Optional<ParticleOptions> resolve(Spec spec, HolderLookup.Provider registries, String where) {
+        DataResult<ParticleOptions> result = CACHE.computeIfAbsent(new Key(spec, registries), k -> decode(spec, registries));
+        if (result.isError() && REPORTED.add(spec)) {
+            MsmRuntime.LOGGER.error("[{}] {}: particle {}: {}; nothing is sent", MsmRuntime.MOD_ID, where, spec.describe(),
+                    result.error().map(DataResult.Error::message).orElse(""));
+        }
+        return result.result();
+    }
+
+    // The start check (ADR 0080 D5, limit K11)
+
+    private record Use(String where, Spec spec) {}
+
+    private static final List<Use> USES = new ArrayList<>();
+    private static volatile List<String> startErrors = List.of();
+
+    /** Queues an options object for {@link #checkAfterStart}; plain ids are checked while definitions load. */
+    public static void queue(String where, Spec spec) {
+        if (spec.isObject()) {
+            synchronized (USES) {
+                USES.add(new Use(where, spec));
+            }
+        }
+    }
+
+    /**
+     * Decodes every queued options object with the server's registries; each failure is logged as one error naming the
+     * definition (and where in it) and the field. Clears the cache first, so a later world decodes afresh. Returns the
+     * messages, which {@link #startErrors} keeps.
+     */
+    public static List<String> checkAfterStart(MinecraftServer server) {
+        CACHE.clear();
+        REPORTED.clear();
+        List<String> errors = new ArrayList<>();
+        List<Use> uses;
+        synchronized (USES) {
+            uses = List.copyOf(USES);
+        }
+        for (Use use : uses) {
+            DataResult<ParticleOptions> result = CACHE.computeIfAbsent(new Key(use.spec(), server.registryAccess()),
+                    k -> decode(use.spec(), server.registryAccess()));
+            if (result.isError()) {
+                REPORTED.add(use.spec());
+                String message = use.where() + "particle " + use.spec().describe() + ": "
+                        + result.error().map(DataResult.Error::message).orElse("") + "; nothing is sent";
+                errors.add(message);
+                MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
+            }
+        }
+        startErrors = List.copyOf(errors);
+        return startErrors;
+    }
+
+    /** The errors of the last {@link #checkAfterStart}. */
+    public static List<String> startErrors() {
+        return startErrors;
+    }
+
+    // Sending
+
+    /**
+     * Sends {@code count} particles at {@code at} to the players near it (see the class comment for {@code spread},
+     * {@code speed}, {@code motion} and {@code force}).
+     */
+    public static void send(ServerLevel level, ParticleOptions particle, Vec3 at, int count, double spread, double speed,
+            Optional<Vec3> motion, boolean force) {
+        if (motion.isEmpty()) {
+            level.sendParticles(particle, force, false, at.x, at.y, at.z, count, spread, spread, spread, speed);
+            return;
+        }
+        Vec3 m = motion.get();
+        RandomSource random = level.getRandom();
+        for (int n = 0; n < count; n++) {
+            double x = at.x + (spread > 0 ? random.nextGaussian() * spread : 0);
+            double y = at.y + (spread > 0 ? random.nextGaussian() * spread : 0);
+            double z = at.z + (spread > 0 ? random.nextGaussian() * spread : 0);
+            // Count 0: the client gives the particle exactly distance x speed per axis, here motion x 1.
+            level.sendParticles(particle, force, false, x, y, z, 0, m.x, m.y, m.z, 1.0);
+        }
+    }
+}

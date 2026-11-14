@@ -142,6 +142,16 @@ public final class BlockBehaviourDriver {
         }
     }
 
+    // msm:ambient_particles (ADR 0080 D6): client only; AmbientParticles.planFor gives nothing on a server level.
+
+    /** {@code animateTick}, after {@code super}: the component's particles on the client. */
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        var ambient = definition.components().ambientParticles();
+        if (ambient.isPresent()) {
+            AmbientParticles.animate(id, ambient.get(), level, state, pos, random);
+        }
+    }
+
     // msm:redstone
 
     /** {@code isSignalSource}: a constant {@code emit} above 0. */

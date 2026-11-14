@@ -14,8 +14,7 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -137,14 +136,16 @@ public final class EventRunner {
         server.getFunctions().execute(function.get(), source);
     }
 
+    /**
+     * {@code spawn_particle} (ADR 0080 D5): the particle is decoded once per registry access ({@link ParticleSpecs#resolve});
+     * a particle that does not decode sends nothing.
+     */
     private static void spawnParticle(Identifier owner, Action.SpawnParticle a, EventContext ctx) {
-        ParticleType<?> type = BuiltInRegistries.PARTICLE_TYPE.getValue(a.particle());
-        if (!(type instanceof SimpleParticleType simple) || !BuiltInRegistries.PARTICLE_TYPE.containsKey(a.particle())) {
-            MsmRuntime.LOGGER.error("[{}] {}: {} is not a particle type without options", MsmRuntime.MOD_ID, owner, a.particle());
+        Optional<ParticleOptions> particle = ParticleSpecs.resolve(a.spec(), ctx.level().registryAccess(), owner + ": spawn_particle");
+        if (particle.isEmpty()) {
             return;
         }
-        Vec3 o = ctx.origin();
-        ctx.level().sendParticles(simple, o.x, o.y, o.z, a.count(), a.spread(), a.spread(), a.spread(), a.speed());
+        ParticleSpecs.send(ctx.level(), particle.get(), ctx.origin(), a.count(), a.spread(), a.speed(), a.motion(), a.force());
     }
 
     private static void setBlockState(Identifier owner, Action.SetBlockState a, EventContext ctx) {

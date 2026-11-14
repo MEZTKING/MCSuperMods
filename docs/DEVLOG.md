@@ -3882,3 +3882,22 @@ Next
 **Decisions:** none; no behaviour. Lint, typecheck, check-deps, tests and the three engine-mod variants plus parity build are green. The first full `pnpm test` run had one app failure under load (CI-style timeout, not reproduced); the app suite alone passed 1543/1543.
 
 **Next:** B363 to B365 fill the plugin; later briefs fill the stubs.
+
+## 2026-11-14 — executor — B352 particle options, motion, Script API 1.3, ambient particles
+
+What
+- Runtime (ADR 0080 D5, D6): `spawn_particle.particle` is an id or a vanilla options object (`events/ParticleSpecs.Spec`, kept as JSON, decoded with `ParticleTypes.CODEC` through the running world's registry ops, cached per spec and registry access); new `motion` (`[x, y, z]`), `force` and the `count` cap 1000. Every options object is decoded once at `SERVER_STARTED` (`ParticleSpecs.checkAfterStart`, called from `MsmRegistrar.checkAfterStart`): one ERROR per broken object naming the definition, the event and the field; it then sends nothing. Plain ids are still checked while definitions load (`MsmRegistrar.checkParticle`).
+- `msm:ambient_particles` is `BlockComponents`' 15th field (one left, limit C18/K14). `registry/AmbientParticles` holds the pure spawn plan; `BlockBehaviourDriver.animateTick` draws it on the client; `MsmBlock` and every family class but `MsmPortalBlock` override `animateTick` (super first, then the driver). On a portal the component is an error and is dropped (`BlockType.allows`). A `states` property the block lacks, or a value it never takes, is a warning.
+- Script API 1.3 (`World.spawnParticle(particle: string | ParticleOptions, pos, { count, spread, speed, motion, force })`, alias `ParticleOptions`, "since runtime 1.7.0"); snapshot `script-api-v1-1.6.0.json`; new `script-api-1-3.test.ts`; the 1.1 and 1.2 tests treat `spawnParticle` as widened.
+- `ConformanceCorpusTest.PENDING` is empty: `action-particle-` and `ambient-particles-` decode (parseBlock).
+- GameTests: `MsmParticleSpawnGameTest` (18): dust (array and integer colours), block (plain id), item (project and vanilla), `motion`, `force`, count 1000/1001, a broken object (one start error, nothing sent), the script forms and errors, the ambient plan with a seeded random (placement, `chance`, a machine's `lit`, nothing on a server level, nothing sent by `animateTick`), portal and `states` problems. New test files `block/particle_spawner.json`, `ambient_*.json`, `particle_bad_*.json`, `script/particles.js`.
+- Verified: `./gradlew build` on 26.3, `-Pmc=26.4`, `-PwithoutGeckolib`: 429 GameTests each, 685 JUnit; `./gradlew -p parity build -Pmc=26.3` green; dedicated 26.3 and 26.4 servers with a hand-made jar (a particle, ambient particles on a block, a slab and leaves, a dust object with `motion` and `force`, a block object) pass with 0 errors; with `-verbose:class` no `dev.mcsupermods.runtime.client` class, no `net.minecraft.client` class and not `AmbientParticles` is loaded. Scripting, schemas and target-mc-26.3 tests, lint, typecheck green.
+
+Decisions
+- `spread` of `spawn_particle` is vanilla's: a Gaussian offset with standard deviation `spread` on each axis. With `motion` the server draws the same Gaussian offset per particle and sends one count-0 packet each (distance = motion, speed 1), so each particle starts with exactly `motion`; `speed` is not used with `motion`.
+- `msm:ambient_particles` `spread` is uniform: `offset + (2r - 1) * spread` per axis (the defaults cover the whole block); `velocity` is exact; `chance` draws one `nextFloat` only when below 1.
+- Scripts: `count` above 1000 is a `RangeError` only with `motion` (without it one packet, as before); an options object whose type takes no options may hold no other field (also in the start check).
+- `MsmScriptGameTest`'s script count went from 22 to 23 for the new `particles.js` (outside the brief's owner list; no other way to add a script).
+
+Next
+- B355 eject mirrors `ParticleSpecs.send` and `AmbientParticles.plan`; mcdoc wording for `spread`/`motion` (orchestrator); the block `block_state` object form `{Name, Properties}` does not decode on 26.3 (only a plain id string was checked).
