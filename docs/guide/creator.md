@@ -36,6 +36,8 @@ Flows that make new items or blocks need the **Fabric mod jar** export ([Blocks 
 | **Stone set** | Blocks | A stone with its stairs, slab and wall and, if you choose, a button, pressure plate, polished stone, bricks and a pillar, with crafting and stonecutting recipes | **Stone**: **Stone name**, **Colour**, **Pickaxe needed**, **Stone crafted from**. **Members**: **Blocks in the set**. **Pictures**. |
 | **Crop** | Blocks | A crop that grows in stages on farmland, from its own seeds or from its produce, with loot, composting, villager farming and wild patches | **Crop**: **Crop name**, **Produce colour**, **Plant colour**, **Growth stages**. **Harvest**: **Planted from**, **Seeds name**, **Hunger restored**, **Saturation**, **Most produce per harvest**. **Farming**: **Seeds in a composter**, **Produce in a composter**, **Villagers plant it**. **World**: **Wild plants in the world**, **Biomes**, **One patch in this many chunks**. **Pictures**. |
 | **Tree** | Blocks | A sapling and the tree it grows, from a new log and leaves or vanilla ones | **Tree**: **Tree name**, **Tree shape**. **Blocks**: **Trunk**, **Leaves**, **Wood colour**, **Leaf colour**, **Leaf colour in the world**. **World**: **Grows in the world**, **Biomes**, **Trees per chunk**. **Pictures**. |
+| **Storage crate** | Blocks | A crate with a chest window of 1, 3 or 6 rows that can keep its contents when broken | **Crate**: **Crate name**, **Size**, **Keep contents when broken**, **Look**, **Colour**. **Recipe**: **Crafted from**. **Pictures**: **Front**, **Front when open**. |
+| **Machine** | Blocks | A machine with a power, a speed and up to three recipes of its own | **Machine**: **Machine name**, **Colour**, **Power**, **Speed**. **Recipes**: **Also takes vanilla recipes**, **First recipe**, **Second recipe**, **Third recipe**. **Crafting**: **Crafted from**. **Pictures**: **Front**, **Front when working**, **Sides and back**, **Top and bottom**. |
 | **Painting** | Blocks | A painting of your own picture, 1 by 1 to 4 by 4 blocks | **Painting**: **Title**, **Author**, **Size**. **Picture**: **Picture** (a PNG you pick, or a placeholder landscape), **Placeholder colour**. |
 | **Dimension** | Worlds | A world of its own, with a key or a command to get there | **World**: **Dimension name**, **Terrain**, **Biome**, **Sky and rules**. **Travel**: **How to get there** (a key item, or a command only for vanilla packs), **Key colour**. |
 | **Villager trade** | Worlds | A trade that a vanilla villager or the wandering trader may offer | **Villager**: **Villager** (a profession or **Wandering trader**), **Level**. **Trade**: **The villager** (sells or buys the item), **Item**, **Number of items**, **Number of emeralds**, **Uses before restocking**, **Villager experience per trade**. |
@@ -119,6 +121,10 @@ The **Mob skin** flow (under **Mobs**) and the **Goat horn** flow (under **Gear*
 ## Make a block family or a plant
 
 The **Wood set**, **Stone set**, **Crop** and **Tree** flows (under **Blocks**) make whole families: stairs, slabs, doors and the rest, crops with seeds and produce, and trees with a sapling. Their **Blocks** preview tab shows "The whole set, left to right" as a row of block models, and the recipes appear as crafting grids. Every member is an ordinary block you can open in the Block Studio and edit; [Block types, families and plants](block-types-and-plants.md) explains the types, the fields and the limits.
+
+## Make a crate or a machine
+
+The **Storage crate** and **Machine** flows (under **Blocks**) make a block that holds items: a crate with a chest window of 1, 3 or 6 rows, or a grinder-like machine with recipes of your own, a power and a speed. Each creates with its untouched defaults and zero problems, and opens in the Block Studio's **Inventory** section for the rest. [Containers and machines](containers-and-machines.md) explains the answers and the limits. Both need the Fabric mod jar.
 
 ## Make a dimension
 

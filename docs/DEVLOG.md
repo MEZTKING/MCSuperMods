@@ -3438,3 +3438,17 @@ Decisions
 
 Next
 - B325 CI wording and B327 guide may link this README.
+## 2026-11-14 — executor — B327 guide, changelog and status lines
+
+What
+- New guide page `docs/guide/containers-and-machines.md` (Creator flows, the Inventory section, what players see, holders, keep contents, loot, machine recipes, vanilla packs, the 12 problem codes, the limits C3, C5, C9, C10, C11, C12, C14, C16 and others in plain words, in-game check, troubleshooting), with a sidebar entry in `docs/site/.vitepress/config.ts` and a row in `docs/guide/README.md`.
+- Linked from `blocks-and-items.md` (Inventory section bullet), `creator.md` (two flow rows and a section) and `scripting.md` (new "Containers and machines from scripts": `world.getContainer`, Script API 1.2); `templates-and-examples.md` lists the eight templates, two starters and three examples and the counts 185, 44, 128.
+- `CHANGELOG.md` `[Unreleased]` gains the containers, machines, flows, Script API 1.2, problems, eject and plugin API 1.12.0 entries.
+- Status lines updated in `engine-mod`, `packages/plugins`, `packages/schemas` (238 types), `packages/plugin-api` (1.12.0), `packages/targets`, `packages/exporters` and `app` `CLAUDE.md` files, plus the guide list in `docs/CLAUDE.md`; all still within 55 lines.
+
+Decisions
+- UI labels come from the Inventory section source and the flows' labels, not only the notes (the notes hold test ids). The sample machines parity count is written "see CI"; the close fixes it.
+- The guide says runtime 1.6.0 for Script API 1.2, as B317's notes give.
+
+Next
+- B328 close: root `CLAUDE.md`, DESIGN, ROADMAP, HANDOFF; the sample machines parity count; align the runtime version of Script API 1.1 and 1.2 if both ship together.

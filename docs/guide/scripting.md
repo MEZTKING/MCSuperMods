@@ -108,6 +108,25 @@ player.give({ id: "minecraft:diamond_sword", components: { "minecraft:custom_nam
 
 The templates **Full set bonus** (a bonus while a whole armour set is worn, with `player.tick`) and **Boss bar countdown** show these in use.
 
+### Containers and machines from scripts
+
+Script API 1.2, runtime 1.6.0 or later. `world.getContainer(pos)` returns the container at a block position, or `undefined` when the block holds no items. It works on vanilla chests, barrels, hoppers and furnaces as well as on the containers and machines of [Containers and machines](containers-and-machines.md).
+
+| Member | What it does |
+|---|---|
+| `container.size` | The number of slots. A double chest gives the half at the position. |
+| `container.get(slot)` | A copy of the stack in the slot, or `undefined` when it is empty. |
+| `container.set(slot, item?)` | Puts a stack in the slot (no item empties it) and returns `false` when the slot refuses it. A machine's output slot refuses items; its input slot takes any. |
+| `container.count(id)` | How many of an item the container holds in all. |
+| `container.add(item)` | Puts an item in the first slots that take it, as a hopper would, and returns what did not fit, or `undefined` when everything did. It ignores which side of the block a hopper would use. |
+
+Changes update comparators and are saved with the block. A `Container` you keep after the block is removed throws an error when used; fetch it again each time.
+
+```ts
+const box = world.getContainer(e.pos);
+if (box && box.count("minecraft:diamond") >= 3) box.set(0, { id: "minecraft:emerald", count: 1 });
+```
+
 ## run_script from the Events editor
 
 The `run_script` action lets a block, item or entity event call a script, so people who build with the Studios and people who write code can work on the same mod.
