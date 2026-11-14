@@ -32,6 +32,9 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `particle` / `particleDefinition`: element data of the `msm:particle` kind (the definition
  *   with `format` optional) and the runtime definition written to
  *   `msm/<ns>/particle/<path>.json` (ADR 0080 D1).
+ * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
+ *   the rules plugin compiles it at lowering time into events and a script, so no runtime
+ *   definition exists and the conformance corpus has no rule book files.
  * - `machineRecipe`: a machine recipe file `data/<ns>/recipe/<path>.json` whose `type` is a
  *   machine block's id (ADR 0075 D2, D8); vanilla's recipe dispatch does not know such types.
  */
@@ -56,6 +59,7 @@ export const MSM_SCHEMA_REFS = {
   machineRecipe: 'msm:machine_recipe',
   particle: 'msm:particle',
   particleDefinition: 'msm:particle_definition',
+  rules: 'msm:rules',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -80,6 +84,7 @@ export const MSM_TYPE_PATHS = {
   machineRecipe: '::msm::recipe::MachineRecipe',
   particle: '::msm::element::Particle',
   particleDefinition: '::msm::definition::Particle',
+  rules: '::msm::rules::RuleBook',
   action: '::msm::action::Action',
 } as const;
 
@@ -105,6 +110,7 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.machineRecipe]: MSM_TYPE_PATHS.machineRecipe,
   [MSM_SCHEMA_REFS.particle]: MSM_TYPE_PATHS.particle,
   [MSM_SCHEMA_REFS.particleDefinition]: MSM_TYPE_PATHS.particleDefinition,
+  [MSM_SCHEMA_REFS.rules]: MSM_TYPE_PATHS.rules,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

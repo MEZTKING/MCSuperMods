@@ -3921,3 +3921,20 @@ What: the user asked for a way to test inside the app instead of launching Minec
 Decisions: ADR 0085 accepted with its defaults (vetoable); slice 1 ("Look and place", B385–B392) starts with the B385 measurement gate (20 fps at 640x360 with 2,000 blocks under SwiftShader, single-chunk rebuild under 16 ms); B390 and later wait for the Rules and Play batch's shared app files.
 
 Next: B385; then slice 1 after the particles and Rules/Play app waves.
+## 2026-11-14 — executor — B363 Rules format
+
+What
+- New `packages/schemas/mcdoc/msm/rules.mcdoc` (ADR 0082 D2, D4, D5, D8): `::msm::rules::RuleBook` (`format: 1`, `rules`, `counters?`), `Counter` (`name`, `scope` player/mob/world, `start?`), `Rule` (`key` 1..32, `name?`, `enabled?`, `when`, `only_if?`, `do` up to 50), `When` (`trigger` enum of the 43 D4 ids, spread over the dispatcher `msm:rule_trigger`, which gives each trigger its `subject` with the right `#[id]` registry and its own `options`), `Conditions` (`match` all/any, `conditions`), `Condition` (`condition`, `not?`, dispatcher `msm:rule_condition`), steps on three levels (`Step`, `NestedStep`, `InnermostStep`; plain steps in `msm:rule_step`, logic steps in `msm:rule_logic_step` and `msm:rule_logic_step_nested`; level 3 takes plain steps only), values (`Value`, `PlainValue` inside `math`, dispatcher `msm:rule_value`), `NumberSlot`, `TextSlot`, `Place`, `Who`.
+- `symbols.json` regenerated (257 to 362 types); `MSM_SCHEMA_REFS.rules` = `msm:rules`, `MSM_TYPE_PATHS.rules` = `::msm::rules::RuleBook` and the alias.
+- New `packages/schemas/test/rules-schema.test.ts` (127 tests): the ADR example, every trigger with and without a subject, options per trigger, every step, condition and value, caps, three levels accepted and a step nested four deep rejected, unknown ids, references collected with their registries. `tools/build-msm-mcdoc` test lists `rules.mcdoc`.
+- Verified: `node tools/build-msm-mcdoc/index.ts --check`, schemas tests (1186), tools test, target-mc-26.3 and 26.4, blocks-items, scripting and core tests, `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- No conformance corpus for rule books: the runtime never reads them, and `ConformanceCorpusTest` decodes the `definition/` group by prefix.
+- The nesting cap is made with distinct types per level; the total of 50 steps per rule is left to the plugin validators (B368). Values nest two deep: `math` takes plain numbers and readings other than `math`.
+- Definition triggers require `subject`; player and world triggers take none; `any_` triggers take an optional one. `if` carries `match` and `conditions` directly (spread of `Conditions`), plus `do` and `else?` (orchestrator decision: `then` was renamed to `do`, as an object with a `then` property is a thenable).
+- `counters` is optional; trigger `chance` is 0 to 1 as on the component, the `chance` condition uses `percent` 0 to 100.
+
+Next
+- B365, B368: field names and ids in the B363 report.
+- `packages/schemas/CLAUDE.md` status line for `rules.mcdoc` (B383).

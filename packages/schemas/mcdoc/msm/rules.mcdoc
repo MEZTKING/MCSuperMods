@@ -1,0 +1,1166 @@
+// MSM rule books, the element data of the `msm:rules` kind (ADR 0082 D2, D5, D8). A rule book is
+// editor-only: the rules plugin compiles it at lowering time into events on the subjects'
+// definitions and a generated script (ADR 0082 D3), so the runtime never reads this format and
+// the conformance corpus has no rule book files. Every trigger, step, condition and value id is
+// part of format 1; a new id is additive within format 1, a removed or changed meaning is
+// format 2 with a migration (ADR 0082 D8). Nesting caps are made by distinct types per level:
+// a rule's `do` is level 1, the steps inside a logic step at level 1 are level 2, and so on;
+// level 3 holds no logic step that contains steps, so a step nested four deep is rejected.
+// The total of 50 steps per rule is checked by the plugin validators, not here.
+
+use super::action::LaunchDirection
+use super::action::ParticleSpec
+
+/// A rule book (ADR 0082 D2): rules plus the counters they use.
+struct RuleBook {
+	/// Rule book format; this is version 1.
+	format: 1,
+	/// The rules, run in this order when several share a trigger and subject.
+	rules: [Rule],
+	/// Counters the rules read and change, saved with the world (ADR 0062); the editor declares
+	/// a counter on first use.
+	counters?: [Counter],
+}
+
+/// Whose a counter is.
+enum(string) CounterScope {
+	/// One value per player.
+	Player = "player",
+	/// One value per mob.
+	Mob = "mob",
+	/// One value for the whole world.
+	World = "world",
+}
+
+/// A named number saved with the world.
+struct Counter {
+	/// The counter's name, 1 to 32 of `a-z`, `0-9` and `_` (the plugin validator checks the
+	/// characters), unique per scope in the book.
+	name: string @ 1..32,
+	/// Whose the counter is.
+	scope: CounterScope,
+	/// The value before anything changes it; defaults to 0.
+	start?: double,
+}
+
+/// One rule card: when something happens, and only if the conditions hold, do the steps.
+struct Rule {
+	/// Stable key, 1 to 32 of `a-z`, `0-9` and `_` (`[a-z0-9_]{1,32}`; the plugin validator
+	/// checks the characters and that it is unique in the book). It names generated ids.
+	key: string @ 1..32,
+	/// The card's title; defaults to the sentence the card reads as.
+	name?: string,
+	/// `false` keeps the rule without effect; defaults to true.
+	enabled?: boolean,
+	/// What starts the rule.
+	when: When,
+	/// Conditions that must hold for the steps to run; absent means always.
+	only_if?: Conditions,
+	/// Steps, in order (level 1).
+	do: [Step] @ ..50,
+}
+
+// ---------------------------------------------------------------------------------------------
+// Triggers (ADR 0082 D4)
+// ---------------------------------------------------------------------------------------------
+
+/// What starts a rule. Definition triggers (blocks, containers, machines, portals, items,
+/// thrown items, mobs and effects) need a project `subject`; player and world triggers have
+/// none; `any_` triggers may name a vanilla or project subject and fire for every one without.
+enum(string) Trigger {
+	/// A player uses (right-clicks) the block.
+	BlockUsed = "block_used",
+	/// An entity steps on the block.
+	BlockSteppedOn = "block_stepped_on",
+	/// A player breaks the block.
+	BlockBroken = "block_broken",
+	/// The block is placed.
+	BlockPlaced = "block_placed",
+	/// The block gets a random tick.
+	BlockRandomTick = "block_random_tick",
+	/// An entity is inside the block.
+	BlockEntityInside = "block_entity_inside",
+	/// The block becomes powered by redstone.
+	BlockPowered = "block_powered",
+	/// The block stops being powered.
+	BlockUnpowered = "block_unpowered",
+	/// A player opens the container block.
+	ContainerOpened = "container_opened",
+	/// A player closes the container block.
+	ContainerClosed = "container_closed",
+	/// The machine block starts a recipe.
+	MachineStarted = "machine_started",
+	/// The machine block finishes a recipe.
+	MachineFinished = "machine_finished",
+	/// An entity travels through the portal block.
+	PortalTravelled = "portal_travelled",
+	/// A player uses the item.
+	ItemUsed = "item_used",
+	/// A player uses the item on a block.
+	ItemUsedOnBlock = "item_used_on_block",
+	/// The holder hits a mob with the item.
+	ItemHitMob = "item_hit_mob",
+	/// Every few seconds while the item is held.
+	ItemHeld = "item_held",
+	/// Every few seconds while the item is worn.
+	ItemWorn = "item_worn",
+	/// The thrown item hits a mob.
+	ThrownHitMob = "thrown_hit_mob",
+	/// The thrown item hits a block.
+	ThrownHitBlock = "thrown_hit_block",
+	/// The mob is hurt.
+	MobHurt = "mob_hurt",
+	/// The mob dies.
+	MobDied = "mob_died",
+	/// A player uses (right-clicks) the mob.
+	MobUsed = "mob_used",
+	/// The mob attacks something.
+	MobAttacked = "mob_attacked",
+	/// Every few seconds while the mob is alive.
+	MobEvery = "mob_every",
+	/// The mob spawns.
+	MobSpawned = "mob_spawned",
+	/// The effect starts on an entity.
+	EffectStarted = "effect_started",
+	/// Every few seconds while the effect is active.
+	EffectEvery = "effect_every",
+	/// The effect ends.
+	EffectEnded = "effect_ended",
+	/// A player joins the world.
+	PlayerJoined = "player_joined",
+	/// A player leaves the world.
+	PlayerLeft = "player_left",
+	/// A player respawns.
+	PlayerRespawned = "player_respawned",
+	/// A player sends a chat message.
+	PlayerChatted = "player_chatted",
+	/// A player changes dimension.
+	PlayerChangedDimension = "player_changed_dimension",
+	/// Every few seconds, for each player.
+	PlayerEvery = "player_every",
+	/// The world starts.
+	WorldStarted = "world_started",
+	/// Every few seconds.
+	WorldEvery = "world_every",
+	/// A player uses any block, or any block of one kind.
+	AnyBlockUsed = "any_block_used",
+	/// A player breaks any block, or any block of one kind.
+	AnyBlockBroken = "any_block_broken",
+	/// A player uses any item, or any item of one kind.
+	AnyItemUsed = "any_item_used",
+	/// Any mob, or any mob of one kind, is hurt.
+	AnyMobHurt = "any_mob_hurt",
+	/// Any mob, or any mob of one kind, dies.
+	AnyMobDied = "any_mob_died",
+	/// A player uses any mob, or any mob of one kind.
+	AnyMobUsed = "any_mob_used",
+}
+
+/// What starts a rule, selected by `trigger`.
+struct When {
+	/// The trigger.
+	trigger: Trigger,
+	...msm:rule_trigger[[trigger]],
+}
+
+/// Block triggers without options; also containers, machines and portals.
+dispatch msm:rule_trigger[
+	block_used,
+	block_broken,
+	block_placed,
+	block_powered,
+	block_unpowered,
+	container_opened,
+	container_closed,
+	machine_started,
+	machine_finished,
+	portal_travelled,
+] to struct BlockTrigger {
+	/// The project block.
+	subject: #[id="block"] string,
+}
+
+/// Block triggers with a cooldown.
+dispatch msm:rule_trigger[block_stepped_on, block_entity_inside] to struct BlockCooldownTrigger {
+	/// The project block.
+	subject: #[id="block"] string,
+	options?: CooldownOptions,
+}
+
+/// A random block tick.
+dispatch msm:rule_trigger[block_random_tick] to struct BlockRandomTickTrigger {
+	/// The project block.
+	subject: #[id="block"] string,
+	options?: ChanceOptions,
+}
+
+/// Item triggers with a cooldown.
+dispatch msm:rule_trigger[item_used, item_used_on_block] to struct ItemCooldownTrigger {
+	/// The project item.
+	subject: #[id="item"] string,
+	options?: CooldownOptions,
+}
+
+/// Item triggers without options; also thrown items.
+dispatch msm:rule_trigger[item_hit_mob, thrown_hit_mob, thrown_hit_block] to struct ItemTrigger {
+	/// The project item.
+	subject: #[id="item"] string,
+}
+
+/// While the item is held.
+dispatch msm:rule_trigger[item_held] to struct ItemHeldTrigger {
+	/// The project item.
+	subject: #[id="item"] string,
+	options?: HeldOptions,
+}
+
+/// While the item is worn.
+dispatch msm:rule_trigger[item_worn] to struct ItemWornTrigger {
+	/// The project item.
+	subject: #[id="item"] string,
+	options?: IntervalOptions,
+}
+
+/// Mob triggers without options.
+dispatch msm:rule_trigger[mob_hurt, mob_died, mob_used, mob_attacked, mob_spawned] to struct MobTrigger {
+	/// The project mob.
+	subject: #[id="entity_type"] string,
+}
+
+/// Every few seconds while the mob is alive.
+dispatch msm:rule_trigger[mob_every] to struct MobEveryTrigger {
+	/// The project mob.
+	subject: #[id="entity_type"] string,
+	options?: IntervalOptions,
+}
+
+/// Effect triggers without options.
+dispatch msm:rule_trigger[effect_started, effect_ended] to struct EffectTrigger {
+	/// The project effect.
+	subject: #[id="mob_effect"] string,
+}
+
+/// Every few seconds while the effect is active.
+dispatch msm:rule_trigger[effect_every] to struct EffectEveryTrigger {
+	/// The project effect.
+	subject: #[id="mob_effect"] string,
+	options?: EffectIntervalOptions,
+}
+
+/// A player chats.
+dispatch msm:rule_trigger[player_chatted] to struct PlayerChattedTrigger {
+	options?: ChatOptions,
+}
+
+/// Every few seconds for each player, or for the world.
+dispatch msm:rule_trigger[player_every, world_every] to struct EveryTrigger {
+	options?: IntervalOptions,
+}
+
+/// Any block, or any block of one kind.
+dispatch msm:rule_trigger[any_block_used, any_block_broken] to struct AnyBlockTrigger {
+	/// The block, vanilla or project; absent means every block.
+	subject?: #[id="block"] string,
+}
+
+/// Any item, or any item of one kind.
+dispatch msm:rule_trigger[any_item_used] to struct AnyItemTrigger {
+	/// The item, vanilla or project; absent means every item.
+	subject?: #[id="item"] string,
+}
+
+/// Any mob, or any mob of one kind.
+dispatch msm:rule_trigger[any_mob_hurt, any_mob_died, any_mob_used] to struct AnyMobTrigger {
+	/// The mob, vanilla or project; absent means every mob.
+	subject?: #[id="entity_type"] string,
+}
+
+/// Trigger options with a cooldown. The subject's own trigger component values win; else the
+/// first rule's (ADR 0082 D3).
+struct CooldownOptions {
+	/// Seconds before the trigger fires again; defaults to 0.
+	cooldown_seconds?: double @ 0..3600,
+}
+
+/// Options of a random tick.
+struct ChanceOptions {
+	/// Probability that a random tick fires the rule, 0 to 1; defaults to 1.
+	chance?: double @ 0..1,
+}
+
+/// Options of a repeating trigger.
+struct IntervalOptions {
+	/// Seconds between two firings, 0.25 to 3600; defaults to 1.
+	interval_seconds?: double @ 0.25..3600,
+}
+
+/// Options of an effect's repeating trigger.
+struct EffectIntervalOptions {
+	/// Seconds between two firings, 0.05 to 3600; defaults to 1.
+	interval_seconds?: double @ 0.05..3600,
+}
+
+/// The hand a held item fires in.
+enum(string) Hand {
+	/// The main hand.
+	Main = "main",
+	/// The off hand.
+	Off = "off",
+	/// Either hand.
+	Either = "either",
+}
+
+/// Options of a held item.
+struct HeldOptions {
+	/// Seconds between two firings, 0.25 to 3600; defaults to 1.
+	interval_seconds?: double @ 0.25..3600,
+	/// Defaults to `main`.
+	hand?: Hand,
+}
+
+/// Options of a chat message.
+struct ChatOptions {
+	/// Fires only when the message contains this text (ignoring case); absent means every
+	/// message.
+	message_contains?: string @ 1..,
+}
+
+// ---------------------------------------------------------------------------------------------
+// Values (ADR 0082 D2, D5)
+// ---------------------------------------------------------------------------------------------
+
+/// A reading that fills a number or text slot.
+enum(string) ValueKind {
+	/// A random number between `min` and `max`.
+	Random = "random",
+	/// A counter's value.
+	Counter = "counter",
+	/// The player's health in half hearts.
+	PlayerHealth = "player_health",
+	/// The player's food level, 0 to 20.
+	PlayerFood = "player_food",
+	/// The player's experience level.
+	PlayerLevel = "player_level",
+	/// One part of the player's position.
+	PlayerPosition = "player_position",
+	/// The number of players in the world.
+	PlayerCount = "player_count",
+	/// The time of day in ticks, 0 to 23999.
+	TimeOfDay = "time_of_day",
+	/// Two numbers added, taken away, multiplied or divided.
+	Math = "math",
+}
+
+/// The readings allowed inside `math`: every one but `math` itself, so values nest at most two
+/// deep.
+enum(string) PlainValueKind {
+	Random = "random",
+	Counter = "counter",
+	PlayerHealth = "player_health",
+	PlayerFood = "player_food",
+	PlayerLevel = "player_level",
+	PlayerPosition = "player_position",
+	PlayerCount = "player_count",
+	TimeOfDay = "time_of_day",
+}
+
+/// A value object, selected by `value`.
+struct Value {
+	/// The reading.
+	value: ValueKind,
+	...msm:rule_value[[value]],
+}
+
+/// A value object inside `math`.
+struct PlainValue {
+	/// The reading.
+	value: PlainValueKind,
+	...msm:rule_value[[value]],
+}
+
+/// A number, or a reading.
+type NumberSlot = (double | Value)
+
+/// A number, or a reading other than `math`.
+type PlainNumberSlot = (double | PlainValue)
+
+/// Text made of pieces: plain strings and readings, joined in order.
+type TextSlot = [(string | Value)]
+
+/// A random number.
+dispatch msm:rule_value[random] to struct RandomValue {
+	/// The smallest number.
+	min: double,
+	/// The largest number.
+	max: double,
+	/// Whole numbers only; defaults to true.
+	whole?: boolean,
+}
+
+/// A counter's value.
+dispatch msm:rule_value[counter] to struct CounterValue {
+	/// The counter's name.
+	counter: string @ 1..32,
+	/// Whose counter.
+	scope: CounterScope,
+}
+
+/// A position axis.
+enum(string) Axis {
+	X = "x",
+	Y = "y",
+	Z = "z",
+}
+
+/// One part of the player's position.
+dispatch msm:rule_value[player_position] to struct PlayerPositionValue {
+	/// Which part.
+	axis: Axis,
+}
+
+/// An arithmetic operator.
+enum(string) MathOperator {
+	/// Add.
+	Add = "+",
+	/// Take away.
+	Subtract = "-",
+	/// Multiply.
+	Multiply = "*",
+	/// Divide; dividing by zero gives 0.
+	Divide = "/",
+}
+
+/// Two numbers combined; only one level (ADR 0082 D2).
+dispatch msm:rule_value[math] to struct MathValue {
+	/// The operator.
+	op: MathOperator,
+	/// The left number.
+	a: PlainNumberSlot,
+	/// The right number.
+	b: PlainNumberSlot,
+}
+
+// ---------------------------------------------------------------------------------------------
+// Places and who (ADR 0082 D5)
+// ---------------------------------------------------------------------------------------------
+
+/// A named place.
+enum(string) PlaceName {
+	/// Where the trigger happened: the block, the mob or the player.
+	Here = "here",
+	/// One block above here.
+	AboveHere = "above_here",
+	/// At the player.
+	Player = "player",
+	/// At the mob.
+	Mob = "mob",
+}
+
+/// Where the player looks.
+struct LookingPlace {
+	place: "player_looking",
+	/// How far the player can look, in blocks, 1 to 64; defaults to 5.
+	distance?: int @ 1..64,
+}
+
+/// An offset from a named place (hidden in Very easy).
+struct OffsetPlace {
+	place: "offset",
+	/// The place the offset starts from; defaults to `here`.
+	from?: PlaceName,
+	/// `[x, y, z]` in blocks.
+	offset: [double] @ 3,
+}
+
+/// A place in the world.
+type Place = (PlaceName | LookingPlace | OffsetPlace)
+
+/// A named actor.
+enum(string) WhoName {
+	/// The player of the trigger.
+	Player = "player",
+	/// The mob of the trigger.
+	Mob = "mob",
+	/// The other entity of the trigger: the mob hit, the player who used a mob.
+	Other = "other",
+	/// Every player in the world.
+	EveryPlayer = "every_player",
+}
+
+/// Every player near here.
+struct NearbyPlayers {
+	who: "players_nearby",
+	/// Blocks from here, 1 to 64.
+	radius: int @ 1..64,
+}
+
+/// Whom a step affects.
+type Who = (WhoName | NearbyPlayers)
+
+// ---------------------------------------------------------------------------------------------
+// Conditions (ADR 0082 D5)
+// ---------------------------------------------------------------------------------------------
+
+/// How a list of conditions combines.
+enum(string) Match {
+	/// Every condition must hold.
+	All = "all",
+	/// At least one condition must hold.
+	Any = "any",
+}
+
+/// A list of conditions.
+struct Conditions {
+	/// Whether every condition or at least one must hold.
+	match: Match,
+	/// The conditions.
+	conditions: [Condition] @ ..50,
+}
+
+/// A condition.
+enum(string) ConditionKind {
+	/// The player is sneaking.
+	PlayerSneaking = "player_sneaking",
+	/// The player is in creative mode.
+	PlayerInCreative = "player_in_creative",
+	/// The player holds an item.
+	PlayerHolding = "player_holding",
+	/// The player has at least some of an item.
+	PlayerHasItem = "player_has_item",
+	/// The player's health compared with a number.
+	PlayerHealth = "player_health",
+	/// The player's food level compared with a number.
+	PlayerFood = "player_food",
+	/// The player's experience level compared with a number.
+	PlayerLevel = "player_level",
+	/// A chance in percent.
+	Chance = "chance",
+	/// It is day.
+	IsDay = "is_day",
+	/// It is night.
+	IsNight = "is_night",
+	/// It is raining.
+	IsRaining = "is_raining",
+	/// It is thundering.
+	IsThundering = "is_thundering",
+	/// The block at a place is a given block.
+	BlockIs = "block_is",
+	/// An entity is a given kind of mob.
+	MobIs = "mob_is",
+	/// The dimension is a given one.
+	DimensionIs = "dimension_is",
+	/// A counter compared with a number or another counter.
+	Counter = "counter",
+}
+
+/// One condition, selected by `condition`.
+struct Condition {
+	/// The condition.
+	condition: ConditionKind,
+	/// `true` turns the condition round ("not"); defaults to false.
+	not?: boolean,
+	...msm:rule_condition[[condition]],
+}
+
+/// How a number compares.
+enum(string) Compare {
+	LessThan = "less_than",
+	AtMost = "at_most",
+	EqualTo = "equal_to",
+	AtLeast = "at_least",
+	MoreThan = "more_than",
+}
+
+/// The player holds an item.
+dispatch msm:rule_condition[player_holding] to struct PlayerHoldingCondition {
+	/// The item.
+	item: #[id="item"] string,
+	/// Defaults to `main`.
+	hand?: Hand,
+}
+
+/// The player has at least `count` of an item.
+dispatch msm:rule_condition[player_has_item] to struct PlayerHasItemCondition {
+	/// The item.
+	item: #[id="item"] string,
+	/// Defaults to 1.
+	count?: NumberSlot,
+}
+
+/// A reading of the player compared with a number.
+dispatch msm:rule_condition[player_health, player_food, player_level] to struct PlayerCompareCondition {
+	/// How it compares.
+	compare: Compare,
+	/// The number.
+	number: NumberSlot,
+}
+
+/// A chance.
+dispatch msm:rule_condition[chance] to struct ChanceCondition {
+	/// Percent of the time, 0 to 100.
+	percent: (double @ 0..100 | Value),
+}
+
+/// The block at a place.
+dispatch msm:rule_condition[block_is] to struct BlockIsCondition {
+	/// The block.
+	block: #[id="block"] string,
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// An entity is a kind of mob.
+dispatch msm:rule_condition[mob_is] to struct MobIsCondition {
+	/// The mob.
+	mob: #[id="entity_type"] string,
+	/// Defaults to `other`.
+	who?: WhoName,
+}
+
+/// The dimension of here.
+dispatch msm:rule_condition[dimension_is] to struct DimensionIsCondition {
+	/// The dimension.
+	dimension: #[id="dimension"] string,
+}
+
+/// A counter compared with a number or another counter.
+dispatch msm:rule_condition[counter] to struct CounterCondition {
+	/// The counter's name.
+	counter: string @ 1..32,
+	/// Whose counter.
+	scope: CounterScope,
+	/// How it compares.
+	compare: Compare,
+	/// The number, or `{ "value": "counter", ... }` for another counter.
+	number: NumberSlot,
+}
+
+// ---------------------------------------------------------------------------------------------
+// Steps (ADR 0082 D5)
+// ---------------------------------------------------------------------------------------------
+
+/// A step that holds no other steps (allowed at every level). `StepKind` repeats these ids
+/// and adds `LogicStepKind`'s; keep the three lists in step.
+enum(string) PlainStepKind {
+	/// Gives an item.
+	GiveItem = "give_item",
+	/// Takes an item away.
+	TakeItem = "take_item",
+	/// Heals.
+	Heal = "heal",
+	/// Hurts.
+	Hurt = "hurt",
+	/// Fills food.
+	Feed = "feed",
+	/// Gives experience points or levels.
+	GiveExperience = "give_experience",
+	/// Sets the game mode.
+	SetGameMode = "set_game_mode",
+	/// Teleports to a place.
+	Teleport = "teleport",
+	/// Pushes.
+	Launch = "launch",
+	/// Shows a chat message.
+	ShowMessage = "show_message",
+	/// Shows a title.
+	ShowTitle = "show_title",
+	/// Shows text above the hotbar.
+	ShowActionBar = "show_action_bar",
+	/// Gives an effect.
+	GiveEffect = "give_effect",
+	/// Removes an effect.
+	RemoveEffect = "remove_effect",
+	/// Places a block.
+	PlaceBlock = "place_block",
+	/// Removes a block.
+	RemoveBlock = "remove_block",
+	/// Spawns a mob.
+	SpawnMob = "spawn_mob",
+	/// Drops an item.
+	DropItem = "drop_item",
+	/// Makes an explosion.
+	Explode = "explode",
+	/// Sets the weather.
+	SetWeather = "set_weather",
+	/// Runs a data pack function.
+	RunFunction = "run_function",
+	/// Runs a command (hidden in Very easy).
+	RunCommand = "run_command",
+	/// Lights a project portal.
+	LightPortal = "light_portal",
+	/// Plays a sound.
+	PlaySound = "play_sound",
+	/// Spawns particles.
+	SpawnParticles = "spawn_particles",
+	/// Plays an animation of a project mob.
+	PlayAnimation = "play_animation",
+	/// Removes the mob.
+	RemoveMob = "remove_mob",
+	/// Shows, updates or hides a boss bar.
+	ShowBossBar = "show_boss_bar",
+	/// Waits before the next step.
+	Wait = "wait",
+	/// Stops the normal action (cancellable script triggers only).
+	StopNormalAction = "stop_normal_action",
+	/// Sets a counter.
+	SetCounter = "set_counter",
+	/// Adds to a counter.
+	AddToCounter = "add_to_counter",
+	/// Takes from a counter.
+	TakeFromCounter = "take_from_counter",
+}
+
+/// A step that holds other steps (levels 1 and 2 only).
+enum(string) LogicStepKind {
+	/// If the conditions hold, then some steps, otherwise others.
+	If = "if",
+	/// Repeats steps.
+	Repeat = "repeat",
+	/// Runs steps once for each player nearby, or for every player.
+	ForEachPlayer = "for_each_player",
+}
+
+/// Any step: the plain steps of `PlainStepKind` and the logic steps of `LogicStepKind`.
+enum(string) StepKind {
+	/// Gives an item.
+	GiveItem = "give_item",
+	/// Takes an item away.
+	TakeItem = "take_item",
+	/// Heals.
+	Heal = "heal",
+	/// Hurts.
+	Hurt = "hurt",
+	/// Fills food.
+	Feed = "feed",
+	/// Gives experience points or levels.
+	GiveExperience = "give_experience",
+	/// Sets the game mode.
+	SetGameMode = "set_game_mode",
+	/// Teleports to a place.
+	Teleport = "teleport",
+	/// Pushes.
+	Launch = "launch",
+	/// Shows a chat message.
+	ShowMessage = "show_message",
+	/// Shows a title.
+	ShowTitle = "show_title",
+	/// Shows text above the hotbar.
+	ShowActionBar = "show_action_bar",
+	/// Gives an effect.
+	GiveEffect = "give_effect",
+	/// Removes an effect.
+	RemoveEffect = "remove_effect",
+	/// Places a block.
+	PlaceBlock = "place_block",
+	/// Removes a block.
+	RemoveBlock = "remove_block",
+	/// Spawns a mob.
+	SpawnMob = "spawn_mob",
+	/// Drops an item.
+	DropItem = "drop_item",
+	/// Makes an explosion.
+	Explode = "explode",
+	/// Sets the weather.
+	SetWeather = "set_weather",
+	/// Runs a data pack function.
+	RunFunction = "run_function",
+	/// Runs a command (hidden in Very easy).
+	RunCommand = "run_command",
+	/// Lights a project portal.
+	LightPortal = "light_portal",
+	/// Plays a sound.
+	PlaySound = "play_sound",
+	/// Spawns particles.
+	SpawnParticles = "spawn_particles",
+	/// Plays an animation of a project mob.
+	PlayAnimation = "play_animation",
+	/// Removes the mob.
+	RemoveMob = "remove_mob",
+	/// Shows, updates or hides a boss bar.
+	ShowBossBar = "show_boss_bar",
+	/// Waits before the next step.
+	Wait = "wait",
+	/// Stops the normal action (cancellable script triggers only).
+	StopNormalAction = "stop_normal_action",
+	/// Sets a counter.
+	SetCounter = "set_counter",
+	/// Adds to a counter.
+	AddToCounter = "add_to_counter",
+	/// Takes from a counter.
+	TakeFromCounter = "take_from_counter",
+	/// If the conditions hold, then some steps, otherwise others.
+	If = "if",
+	/// Repeats steps.
+	Repeat = "repeat",
+	/// Runs steps once for each player nearby, or for every player.
+	ForEachPlayer = "for_each_player",
+}
+
+/// A step at level 1 (a rule's `do`), selected by `step`.
+struct Step {
+	/// The step.
+	step: StepKind,
+	...msm:rule_step[[step]],
+	...msm:rule_logic_step[[step]],
+}
+
+/// A step at level 2, inside a logic step at level 1.
+struct NestedStep {
+	/// The step.
+	step: StepKind,
+	...msm:rule_step[[step]],
+	...msm:rule_logic_step_nested[[step]],
+}
+
+/// A step at level 3, the deepest: no logic step that holds other steps.
+struct InnermostStep {
+	/// The step.
+	step: PlainStepKind,
+	...msm:rule_step[[step]],
+}
+
+// Logic steps at level 1 (their steps are level 2).
+
+/// If the conditions hold, run `do`, otherwise `else`.
+dispatch msm:rule_logic_step[if] to struct IfStep {
+	...Conditions,
+	/// Steps when the conditions hold.
+	do: [NestedStep] @ ..50,
+	/// Steps when they do not.
+	else?: [NestedStep] @ ..50,
+}
+
+/// Repeat steps a number of times.
+dispatch msm:rule_logic_step[repeat] to struct RepeatStep {
+	/// How many times, 1 to 100.
+	times: int @ 1..100,
+	/// The steps.
+	do: [NestedStep] @ ..50,
+}
+
+/// Run steps once for each player; inside, "the player" is that player.
+dispatch msm:rule_logic_step[for_each_player] to struct ForEachPlayerStep {
+	/// Blocks from here, 1 to 64; absent means every player in the world.
+	radius?: int @ 1..64,
+	/// The steps.
+	do: [NestedStep] @ ..50,
+}
+
+// Logic steps at level 2 (their steps are level 3).
+
+/// If the conditions hold, run `do`, otherwise `else`.
+dispatch msm:rule_logic_step_nested[if] to struct NestedIfStep {
+	...Conditions,
+	/// Steps when the conditions hold.
+	do: [InnermostStep] @ ..50,
+	/// Steps when they do not.
+	else?: [InnermostStep] @ ..50,
+}
+
+/// Repeat steps a number of times.
+dispatch msm:rule_logic_step_nested[repeat] to struct NestedRepeatStep {
+	/// How many times, 1 to 100.
+	times: int @ 1..100,
+	/// The steps.
+	do: [InnermostStep] @ ..50,
+}
+
+/// Run steps once for each player; inside, "the player" is that player.
+dispatch msm:rule_logic_step_nested[for_each_player] to struct NestedForEachPlayerStep {
+	/// Blocks from here, 1 to 64; absent means every player in the world.
+	radius?: int @ 1..64,
+	/// The steps.
+	do: [InnermostStep] @ ..50,
+}
+
+// Plain steps (every level).
+
+/// Gives an item.
+dispatch msm:rule_step[give_item] to struct GiveItemStep {
+	/// The item.
+	item: #[id="item"] string,
+	/// Defaults to 1.
+	count?: NumberSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Takes an item away from the player's inventory.
+dispatch msm:rule_step[take_item] to struct TakeItemStep {
+	/// The item.
+	item: #[id="item"] string,
+	/// Defaults to 1.
+	count?: NumberSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Heals or hurts.
+dispatch msm:rule_step[heal, hurt] to struct HealthStep {
+	/// Half hearts.
+	amount: NumberSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Fills the food bar.
+dispatch msm:rule_step[feed] to struct FeedStep {
+	/// Food points, as on the food bar (20 is full).
+	food: NumberSlot,
+	/// Saturation added; defaults to 0.
+	saturation?: NumberSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Gives experience.
+dispatch msm:rule_step[give_experience] to struct GiveExperienceStep {
+	/// Points, or levels with `levels`.
+	amount: NumberSlot,
+	/// `true` gives levels instead of points; defaults to false.
+	levels?: boolean,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// A game mode.
+enum(string) GameMode {
+	Survival = "survival",
+	Creative = "creative",
+	Adventure = "adventure",
+	Spectator = "spectator",
+}
+
+/// Sets the game mode.
+dispatch msm:rule_step[set_game_mode] to struct SetGameModeStep {
+	/// The game mode.
+	mode: GameMode,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Teleports to a place.
+dispatch msm:rule_step[teleport] to struct TeleportStep {
+	/// The place.
+	to: Place,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Pushes, as a slime block or a wind charge does.
+dispatch msm:rule_step[launch] to struct LaunchStep {
+	/// Blocks per tick along `direction`, 0 to 10.
+	strength: (double @ 0..10 | Value),
+	/// Defaults to `look`.
+	direction?: LaunchDirection,
+	/// Extra upward speed in blocks per tick; defaults to 0.
+	up?: (double @ -10..10 | Value),
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Shows a chat message or text above the hotbar.
+dispatch msm:rule_step[show_message, show_action_bar] to struct ShowTextStep {
+	/// The text.
+	text: TextSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Shows a title in the middle of the screen.
+dispatch msm:rule_step[show_title] to struct ShowTitleStep {
+	/// The title.
+	title: TextSlot,
+	/// A smaller line below it.
+	subtitle?: TextSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Gives a mob effect.
+dispatch msm:rule_step[give_effect] to struct GiveEffectStep {
+	/// The effect, vanilla or project.
+	effect: #[id="mob_effect"] string,
+	/// How long.
+	seconds: (double @ 0.. | Value),
+	/// The level, 1 to 256; defaults to 1.
+	level?: int @ 1..256,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Removes a mob effect.
+dispatch msm:rule_step[remove_effect] to struct RemoveEffectStep {
+	/// The effect.
+	effect: #[id="mob_effect"] string,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Places a block.
+dispatch msm:rule_step[place_block] to struct PlaceBlockStep {
+	/// The block.
+	block: #[id="block"] string,
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// Removes a block (sets it to air).
+dispatch msm:rule_step[remove_block] to struct RemoveBlockStep {
+	/// Defaults to `here`.
+	where?: Place,
+	/// `true` drops the block's items as if broken; defaults to false.
+	drop_items?: boolean,
+}
+
+/// Spawns a mob.
+dispatch msm:rule_step[spawn_mob] to struct SpawnMobStep {
+	/// The mob, vanilla or project.
+	mob: #[id="entity_type"] string,
+	/// Defaults to 1.
+	count?: (int @ 1..100 | Value),
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// Drops an item on the ground.
+dispatch msm:rule_step[drop_item] to struct DropItemStep {
+	/// The item.
+	item: #[id="item"] string,
+	/// Defaults to 1.
+	count?: NumberSlot,
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// Makes an explosion.
+dispatch msm:rule_step[explode] to struct ExplodeStep {
+	/// Power, 0 to 16 (TNT is 4).
+	power: (double @ 0..16 | Value),
+	/// Defaults to `here`.
+	where?: Place,
+	/// Whether it sets fires; defaults to false.
+	fire?: boolean,
+	/// Whether it breaks blocks; defaults to true.
+	break_blocks?: boolean,
+}
+
+/// A kind of weather.
+enum(string) Weather {
+	Clear = "clear",
+	Rain = "rain",
+	Thunder = "thunder",
+}
+
+/// Sets the weather.
+dispatch msm:rule_step[set_weather] to struct SetWeatherStep {
+	/// The weather.
+	weather: Weather,
+	/// How long; absent leaves it to the game.
+	seconds?: NumberSlot,
+}
+
+/// Runs a data pack function.
+dispatch msm:rule_step[run_function] to struct RunFunctionStep {
+	/// The function.
+	function: #[id="function"] string,
+}
+
+/// Runs a command (hidden in Very easy).
+dispatch msm:rule_step[run_command] to struct RunCommandStep {
+	/// The command, without the leading `/`.
+	command: TextSlot,
+}
+
+/// Lights a project portal's empty frame.
+dispatch msm:rule_step[light_portal] to struct LightPortalStep {
+	/// The portal block, a project block of type `portal`.
+	portal: #[id="block"] string,
+	/// Defaults to `here`.
+	where?: Place,
+}
+
+/// Plays a sound.
+dispatch msm:rule_step[play_sound] to struct PlaySoundStep {
+	/// The sound event.
+	sound: #[id="sound_event"] string,
+	/// Defaults to `here`.
+	where?: Place,
+	/// Defaults to 1.
+	volume?: double @ 0..,
+	/// Defaults to 1.
+	pitch?: double @ 0..,
+}
+
+/// Spawns particles (ADR 0080: project particles, and options objects such as dust colours).
+dispatch msm:rule_step[spawn_particles] to struct SpawnParticlesStep {
+	/// A particle type, or a vanilla particle options object.
+	particle: ParticleSpec,
+	/// Defaults to `here`.
+	where?: Place,
+	/// How many, 1 to 1000; defaults to 1.
+	count?: int @ 1..1000,
+	/// Random offset in blocks; defaults to 0.
+	spread?: double @ 0..,
+	/// Defaults to 0.
+	speed?: double @ 0..,
+}
+
+/// Plays an animation of a project mob.
+dispatch msm:rule_step[play_animation] to struct PlayAnimationStep {
+	/// The animation name in the mob's animation file.
+	animation: string @ 1..,
+	/// The controller; defaults to `msm_triggered`.
+	controller?: string,
+}
+
+/// Removes a mob from the world without drops.
+dispatch msm:rule_step[remove_mob] to struct RemoveMobStep {
+	/// Defaults to `mob`.
+	who?: Who,
+}
+
+/// A boss bar colour.
+enum(string) BossBarColor {
+	Pink = "pink",
+	Blue = "blue",
+	Red = "red",
+	Green = "green",
+	Yellow = "yellow",
+	Purple = "purple",
+	White = "white",
+}
+
+/// Shows, updates or hides a boss bar.
+dispatch msm:rule_step[show_boss_bar] to struct ShowBossBarStep {
+	/// The bar's name, 1 to 32 of `a-z`, `0-9` and `_`; the same name updates the same bar.
+	bar: string @ 1..32,
+	/// The text on the bar.
+	title?: TextSlot,
+	/// How full the bar is, out of `max`.
+	value?: NumberSlot,
+	/// The full value; defaults to 100.
+	max?: NumberSlot,
+	/// Defaults to `purple`.
+	color?: BossBarColor,
+	/// `false` hides the bar; defaults to true.
+	visible?: boolean,
+	/// Defaults to `every_player`.
+	who?: Who,
+}
+
+/// Waits before the next step.
+dispatch msm:rule_step[wait] to struct WaitStep {
+	/// Seconds, 0.05 to 3600.
+	seconds: double @ 0.05..3600,
+}
+
+/// Changes a counter.
+dispatch msm:rule_step[set_counter, add_to_counter, take_from_counter] to struct CounterStep {
+	/// The counter's name.
+	counter: string @ 1..32,
+	/// Whose counter.
+	scope: CounterScope,
+	/// The number to set, add or take.
+	amount: NumberSlot,
+}

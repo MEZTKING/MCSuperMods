@@ -12135,6 +12135,3839 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::rules::AnyBlockTrigger": {
+      "fields": [
+        {
+          "desc": "The block, vanilla or project; absent means every block.",
+          "key": "subject",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::AnyItemTrigger": {
+      "fields": [
+        {
+          "desc": "The item, vanilla or project; absent means every item.",
+          "key": "subject",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::AnyMobTrigger": {
+      "fields": [
+        {
+          "desc": "The mob, vanilla or project; absent means every mob.",
+          "key": "subject",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Axis": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "X",
+          "value": "x"
+        },
+        {
+          "identifier": "Y",
+          "value": "y"
+        },
+        {
+          "identifier": "Z",
+          "value": "z"
+        }
+      ]
+    },
+    "::msm::rules::BlockCooldownTrigger": {
+      "fields": [
+        {
+          "desc": "The project block.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::CooldownOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::BlockIsCondition": {
+      "fields": [
+        {
+          "desc": "The block.",
+          "key": "block",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::BlockRandomTickTrigger": {
+      "fields": [
+        {
+          "desc": "The project block.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::ChanceOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::BlockTrigger": {
+      "fields": [
+        {
+          "desc": "The project block.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::BossBarColor": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Pink",
+          "value": "pink"
+        },
+        {
+          "identifier": "Blue",
+          "value": "blue"
+        },
+        {
+          "identifier": "Red",
+          "value": "red"
+        },
+        {
+          "identifier": "Green",
+          "value": "green"
+        },
+        {
+          "identifier": "Yellow",
+          "value": "yellow"
+        },
+        {
+          "identifier": "Purple",
+          "value": "purple"
+        },
+        {
+          "identifier": "White",
+          "value": "white"
+        }
+      ]
+    },
+    "::msm::rules::ChanceCondition": {
+      "fields": [
+        {
+          "desc": "Percent of the time, 0 to 100.",
+          "key": "percent",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 100,
+                  "min": 0
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ChanceOptions": {
+      "fields": [
+        {
+          "desc": "Probability that a random tick fires the rule, 0 to 1; defaults to 1.",
+          "key": "chance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ChatOptions": {
+      "fields": [
+        {
+          "desc": "Fires only when the message contains this text (ignoring case); absent means every\nmessage.",
+          "key": "message_contains",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Compare": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "LessThan",
+          "value": "less_than"
+        },
+        {
+          "identifier": "AtMost",
+          "value": "at_most"
+        },
+        {
+          "identifier": "EqualTo",
+          "value": "equal_to"
+        },
+        {
+          "identifier": "AtLeast",
+          "value": "at_least"
+        },
+        {
+          "identifier": "MoreThan",
+          "value": "more_than"
+        }
+      ]
+    },
+    "::msm::rules::Condition": {
+      "fields": [
+        {
+          "desc": "The condition.",
+          "key": "condition",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::ConditionKind"
+          }
+        },
+        {
+          "desc": "`true` turns the condition round (\"not\"); defaults to false.",
+          "key": "not",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["condition"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_condition"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ConditionKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The player is sneaking.",
+          "identifier": "PlayerSneaking",
+          "value": "player_sneaking"
+        },
+        {
+          "desc": "The player is in creative mode.",
+          "identifier": "PlayerInCreative",
+          "value": "player_in_creative"
+        },
+        {
+          "desc": "The player holds an item.",
+          "identifier": "PlayerHolding",
+          "value": "player_holding"
+        },
+        {
+          "desc": "The player has at least some of an item.",
+          "identifier": "PlayerHasItem",
+          "value": "player_has_item"
+        },
+        {
+          "desc": "The player's health compared with a number.",
+          "identifier": "PlayerHealth",
+          "value": "player_health"
+        },
+        {
+          "desc": "The player's food level compared with a number.",
+          "identifier": "PlayerFood",
+          "value": "player_food"
+        },
+        {
+          "desc": "The player's experience level compared with a number.",
+          "identifier": "PlayerLevel",
+          "value": "player_level"
+        },
+        {
+          "desc": "A chance in percent.",
+          "identifier": "Chance",
+          "value": "chance"
+        },
+        {
+          "desc": "It is day.",
+          "identifier": "IsDay",
+          "value": "is_day"
+        },
+        {
+          "desc": "It is night.",
+          "identifier": "IsNight",
+          "value": "is_night"
+        },
+        {
+          "desc": "It is raining.",
+          "identifier": "IsRaining",
+          "value": "is_raining"
+        },
+        {
+          "desc": "It is thundering.",
+          "identifier": "IsThundering",
+          "value": "is_thundering"
+        },
+        {
+          "desc": "The block at a place is a given block.",
+          "identifier": "BlockIs",
+          "value": "block_is"
+        },
+        {
+          "desc": "An entity is a given kind of mob.",
+          "identifier": "MobIs",
+          "value": "mob_is"
+        },
+        {
+          "desc": "The dimension is a given one.",
+          "identifier": "DimensionIs",
+          "value": "dimension_is"
+        },
+        {
+          "desc": "A counter compared with a number or another counter.",
+          "identifier": "Counter",
+          "value": "counter"
+        }
+      ]
+    },
+    "::msm::rules::Conditions": {
+      "fields": [
+        {
+          "desc": "Whether every condition or at least one must hold.",
+          "key": "match",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Match"
+          }
+        },
+        {
+          "desc": "The conditions.",
+          "key": "conditions",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::Condition"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::CooldownOptions": {
+      "fields": [
+        {
+          "desc": "Seconds before the trigger fires again; defaults to 0.",
+          "key": "cooldown_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 3600,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Counter": {
+      "fields": [
+        {
+          "desc": "The counter's name, 1 to 32 of `a-z`, `0-9` and `_` (the plugin validator checks the\ncharacters), unique per scope in the book.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whose the counter is.",
+          "key": "scope",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::CounterScope"
+          }
+        },
+        {
+          "desc": "The value before anything changes it; defaults to 0.",
+          "key": "start",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::CounterCondition": {
+      "fields": [
+        {
+          "desc": "The counter's name.",
+          "key": "counter",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whose counter.",
+          "key": "scope",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::CounterScope"
+          }
+        },
+        {
+          "desc": "How it compares.",
+          "key": "compare",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Compare"
+          }
+        },
+        {
+          "desc": "The number, or `{ \"value\": \"counter\", ... }` for another counter.",
+          "key": "number",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::CounterScope": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "One value per player.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "One value per mob.",
+          "identifier": "Mob",
+          "value": "mob"
+        },
+        {
+          "desc": "One value for the whole world.",
+          "identifier": "World",
+          "value": "world"
+        }
+      ]
+    },
+    "::msm::rules::CounterStep": {
+      "fields": [
+        {
+          "desc": "The counter's name.",
+          "key": "counter",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whose counter.",
+          "key": "scope",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::CounterScope"
+          }
+        },
+        {
+          "desc": "The number to set, add or take.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::CounterValue": {
+      "fields": [
+        {
+          "desc": "The counter's name.",
+          "key": "counter",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whose counter.",
+          "key": "scope",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::CounterScope"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::DimensionIsCondition": {
+      "fields": [
+        {
+          "desc": "The dimension.",
+          "key": "dimension",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dimension"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::DropItemStep": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::EffectEveryTrigger": {
+      "fields": [
+        {
+          "desc": "The project effect.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::EffectIntervalOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::EffectIntervalOptions": {
+      "fields": [
+        {
+          "desc": "Seconds between two firings, 0.05 to 3600; defaults to 1.",
+          "key": "interval_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 3600,
+              "min": 0.05
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::EffectTrigger": {
+      "fields": [
+        {
+          "desc": "The project effect.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::EveryTrigger": {
+      "fields": [
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::IntervalOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ExplodeStep": {
+      "fields": [
+        {
+          "desc": "Power, 0 to 16 (TNT is 4).",
+          "key": "power",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 16,
+                  "min": 0
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "Whether it sets fires; defaults to false.",
+          "key": "fire",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether it breaks blocks; defaults to true.",
+          "key": "break_blocks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::FeedStep": {
+      "fields": [
+        {
+          "desc": "Food points, as on the food bar (20 is full).",
+          "key": "food",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Saturation added; defaults to 0.",
+          "key": "saturation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ForEachPlayerStep": {
+      "fields": [
+        {
+          "desc": "Blocks from here, 1 to 64; absent means every player in the world.",
+          "key": "radius",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The steps.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::NestedStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::GameMode": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Survival",
+          "value": "survival"
+        },
+        {
+          "identifier": "Creative",
+          "value": "creative"
+        },
+        {
+          "identifier": "Adventure",
+          "value": "adventure"
+        },
+        {
+          "identifier": "Spectator",
+          "value": "spectator"
+        }
+      ]
+    },
+    "::msm::rules::GiveEffectStep": {
+      "fields": [
+        {
+          "desc": "The effect, vanilla or project.",
+          "key": "effect",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "How long.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "min": 0
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "The level, 1 to 256; defaults to 1.",
+          "key": "level",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 256,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::GiveExperienceStep": {
+      "fields": [
+        {
+          "desc": "Points, or levels with `levels`.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "`true` gives levels instead of points; defaults to false.",
+          "key": "levels",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::GiveItemStep": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Hand": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The main hand.",
+          "identifier": "Main",
+          "value": "main"
+        },
+        {
+          "desc": "The off hand.",
+          "identifier": "Off",
+          "value": "off"
+        },
+        {
+          "desc": "Either hand.",
+          "identifier": "Either",
+          "value": "either"
+        }
+      ]
+    },
+    "::msm::rules::HealthStep": {
+      "fields": [
+        {
+          "desc": "Half hearts.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::HeldOptions": {
+      "fields": [
+        {
+          "desc": "Seconds between two firings, 0.25 to 3600; defaults to 1.",
+          "key": "interval_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 3600,
+              "min": 0.25
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `main`.",
+          "key": "hand",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Hand"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::IfStep": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Conditions"
+          }
+        },
+        {
+          "desc": "Steps when the conditions hold.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::NestedStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        },
+        {
+          "desc": "Steps when they do not.",
+          "key": "else",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::NestedStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::InnermostStep": {
+      "fields": [
+        {
+          "desc": "The step.",
+          "key": "step",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::PlainStepKind"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["step"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_step"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::IntervalOptions": {
+      "fields": [
+        {
+          "desc": "Seconds between two firings, 0.25 to 3600; defaults to 1.",
+          "key": "interval_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 3600,
+              "min": 0.25
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ItemCooldownTrigger": {
+      "fields": [
+        {
+          "desc": "The project item.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::CooldownOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ItemHeldTrigger": {
+      "fields": [
+        {
+          "desc": "The project item.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::HeldOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ItemTrigger": {
+      "fields": [
+        {
+          "desc": "The project item.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ItemWornTrigger": {
+      "fields": [
+        {
+          "desc": "The project item.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::IntervalOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::LaunchStep": {
+      "fields": [
+        {
+          "desc": "Blocks per tick along `direction`, 0 to 10.",
+          "key": "strength",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 10,
+                  "min": 0
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Defaults to `look`.",
+          "key": "direction",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::LaunchDirection"
+          }
+        },
+        {
+          "desc": "Extra upward speed in blocks per tick; defaults to 0.",
+          "key": "up",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 10,
+                  "min": -10
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::LightPortalStep": {
+      "fields": [
+        {
+          "desc": "The portal block, a project block of type `portal`.",
+          "key": "portal",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::LogicStepKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "If the conditions hold, then some steps, otherwise others.",
+          "identifier": "If",
+          "value": "if"
+        },
+        {
+          "desc": "Repeats steps.",
+          "identifier": "Repeat",
+          "value": "repeat"
+        },
+        {
+          "desc": "Runs steps once for each player nearby, or for every player.",
+          "identifier": "ForEachPlayer",
+          "value": "for_each_player"
+        }
+      ]
+    },
+    "::msm::rules::LookingPlace": {
+      "fields": [
+        {
+          "key": "place",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "player_looking"
+            }
+          }
+        },
+        {
+          "desc": "How far the player can look, in blocks, 1 to 64; defaults to 5.",
+          "key": "distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Match": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Every condition must hold.",
+          "identifier": "All",
+          "value": "all"
+        },
+        {
+          "desc": "At least one condition must hold.",
+          "identifier": "Any",
+          "value": "any"
+        }
+      ]
+    },
+    "::msm::rules::MathOperator": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Add.",
+          "identifier": "Add",
+          "value": "+"
+        },
+        {
+          "desc": "Take away.",
+          "identifier": "Subtract",
+          "value": "-"
+        },
+        {
+          "desc": "Multiply.",
+          "identifier": "Multiply",
+          "value": "*"
+        },
+        {
+          "desc": "Divide; dividing by zero gives 0.",
+          "identifier": "Divide",
+          "value": "/"
+        }
+      ]
+    },
+    "::msm::rules::MathValue": {
+      "fields": [
+        {
+          "desc": "The operator.",
+          "key": "op",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::MathOperator"
+          }
+        },
+        {
+          "desc": "The left number.",
+          "key": "a",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::PlainNumberSlot"
+          }
+        },
+        {
+          "desc": "The right number.",
+          "key": "b",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::PlainNumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::MobEveryTrigger": {
+      "fields": [
+        {
+          "desc": "The project mob.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::IntervalOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::MobIsCondition": {
+      "fields": [
+        {
+          "desc": "The mob.",
+          "key": "mob",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `other`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::WhoName"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::MobTrigger": {
+      "fields": [
+        {
+          "desc": "The project mob.",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::NearbyPlayers": {
+      "fields": [
+        {
+          "key": "who",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "players_nearby"
+            }
+          }
+        },
+        {
+          "desc": "Blocks from here, 1 to 64.",
+          "key": "radius",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::NestedForEachPlayerStep": {
+      "fields": [
+        {
+          "desc": "Blocks from here, 1 to 64; absent means every player in the world.",
+          "key": "radius",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The steps.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::InnermostStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::NestedIfStep": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Conditions"
+          }
+        },
+        {
+          "desc": "Steps when the conditions hold.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::InnermostStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        },
+        {
+          "desc": "Steps when they do not.",
+          "key": "else",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::InnermostStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::NestedRepeatStep": {
+      "fields": [
+        {
+          "desc": "How many times, 1 to 100.",
+          "key": "times",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The steps.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::InnermostStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::NestedStep": {
+      "fields": [
+        {
+          "desc": "The step.",
+          "key": "step",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::StepKind"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["step"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_step"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["step"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_logic_step_nested"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::NumberSlot": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "double"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::rules::Value"
+        }
+      ]
+    },
+    "::msm::rules::OffsetPlace": {
+      "fields": [
+        {
+          "key": "place",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "offset"
+            }
+          }
+        },
+        {
+          "desc": "The place the offset starts from; defaults to `here`.",
+          "key": "from",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::PlaceName"
+          }
+        },
+        {
+          "desc": "`[x, y, z]` in blocks.",
+          "key": "offset",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "double"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Place": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "reference",
+          "path": "::msm::rules::PlaceName"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::rules::LookingPlace"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::rules::OffsetPlace"
+        }
+      ]
+    },
+    "::msm::rules::PlaceBlockStep": {
+      "fields": [
+        {
+          "desc": "The block.",
+          "key": "block",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlaceName": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Where the trigger happened: the block, the mob or the player.",
+          "identifier": "Here",
+          "value": "here"
+        },
+        {
+          "desc": "One block above here.",
+          "identifier": "AboveHere",
+          "value": "above_here"
+        },
+        {
+          "desc": "At the player.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "At the mob.",
+          "identifier": "Mob",
+          "value": "mob"
+        }
+      ]
+    },
+    "::msm::rules::PlainNumberSlot": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "double"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::rules::PlainValue"
+        }
+      ]
+    },
+    "::msm::rules::PlainStepKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Gives an item.",
+          "identifier": "GiveItem",
+          "value": "give_item"
+        },
+        {
+          "desc": "Takes an item away.",
+          "identifier": "TakeItem",
+          "value": "take_item"
+        },
+        {
+          "desc": "Heals.",
+          "identifier": "Heal",
+          "value": "heal"
+        },
+        {
+          "desc": "Hurts.",
+          "identifier": "Hurt",
+          "value": "hurt"
+        },
+        {
+          "desc": "Fills food.",
+          "identifier": "Feed",
+          "value": "feed"
+        },
+        {
+          "desc": "Gives experience points or levels.",
+          "identifier": "GiveExperience",
+          "value": "give_experience"
+        },
+        {
+          "desc": "Sets the game mode.",
+          "identifier": "SetGameMode",
+          "value": "set_game_mode"
+        },
+        {
+          "desc": "Teleports to a place.",
+          "identifier": "Teleport",
+          "value": "teleport"
+        },
+        {
+          "desc": "Pushes.",
+          "identifier": "Launch",
+          "value": "launch"
+        },
+        {
+          "desc": "Shows a chat message.",
+          "identifier": "ShowMessage",
+          "value": "show_message"
+        },
+        {
+          "desc": "Shows a title.",
+          "identifier": "ShowTitle",
+          "value": "show_title"
+        },
+        {
+          "desc": "Shows text above the hotbar.",
+          "identifier": "ShowActionBar",
+          "value": "show_action_bar"
+        },
+        {
+          "desc": "Gives an effect.",
+          "identifier": "GiveEffect",
+          "value": "give_effect"
+        },
+        {
+          "desc": "Removes an effect.",
+          "identifier": "RemoveEffect",
+          "value": "remove_effect"
+        },
+        {
+          "desc": "Places a block.",
+          "identifier": "PlaceBlock",
+          "value": "place_block"
+        },
+        {
+          "desc": "Removes a block.",
+          "identifier": "RemoveBlock",
+          "value": "remove_block"
+        },
+        {
+          "desc": "Spawns a mob.",
+          "identifier": "SpawnMob",
+          "value": "spawn_mob"
+        },
+        {
+          "desc": "Drops an item.",
+          "identifier": "DropItem",
+          "value": "drop_item"
+        },
+        {
+          "desc": "Makes an explosion.",
+          "identifier": "Explode",
+          "value": "explode"
+        },
+        {
+          "desc": "Sets the weather.",
+          "identifier": "SetWeather",
+          "value": "set_weather"
+        },
+        {
+          "desc": "Runs a data pack function.",
+          "identifier": "RunFunction",
+          "value": "run_function"
+        },
+        {
+          "desc": "Runs a command (hidden in Very easy).",
+          "identifier": "RunCommand",
+          "value": "run_command"
+        },
+        {
+          "desc": "Lights a project portal.",
+          "identifier": "LightPortal",
+          "value": "light_portal"
+        },
+        {
+          "desc": "Plays a sound.",
+          "identifier": "PlaySound",
+          "value": "play_sound"
+        },
+        {
+          "desc": "Spawns particles.",
+          "identifier": "SpawnParticles",
+          "value": "spawn_particles"
+        },
+        {
+          "desc": "Plays an animation of a project mob.",
+          "identifier": "PlayAnimation",
+          "value": "play_animation"
+        },
+        {
+          "desc": "Removes the mob.",
+          "identifier": "RemoveMob",
+          "value": "remove_mob"
+        },
+        {
+          "desc": "Shows, updates or hides a boss bar.",
+          "identifier": "ShowBossBar",
+          "value": "show_boss_bar"
+        },
+        {
+          "desc": "Waits before the next step.",
+          "identifier": "Wait",
+          "value": "wait"
+        },
+        {
+          "desc": "Stops the normal action (cancellable script triggers only).",
+          "identifier": "StopNormalAction",
+          "value": "stop_normal_action"
+        },
+        {
+          "desc": "Sets a counter.",
+          "identifier": "SetCounter",
+          "value": "set_counter"
+        },
+        {
+          "desc": "Adds to a counter.",
+          "identifier": "AddToCounter",
+          "value": "add_to_counter"
+        },
+        {
+          "desc": "Takes from a counter.",
+          "identifier": "TakeFromCounter",
+          "value": "take_from_counter"
+        }
+      ]
+    },
+    "::msm::rules::PlainValue": {
+      "fields": [
+        {
+          "desc": "The reading.",
+          "key": "value",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::PlainValueKind"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["value"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_value"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlainValueKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Random",
+          "value": "random"
+        },
+        {
+          "identifier": "Counter",
+          "value": "counter"
+        },
+        {
+          "identifier": "PlayerHealth",
+          "value": "player_health"
+        },
+        {
+          "identifier": "PlayerFood",
+          "value": "player_food"
+        },
+        {
+          "identifier": "PlayerLevel",
+          "value": "player_level"
+        },
+        {
+          "identifier": "PlayerPosition",
+          "value": "player_position"
+        },
+        {
+          "identifier": "PlayerCount",
+          "value": "player_count"
+        },
+        {
+          "identifier": "TimeOfDay",
+          "value": "time_of_day"
+        }
+      ]
+    },
+    "::msm::rules::PlayAnimationStep": {
+      "fields": [
+        {
+          "desc": "The animation name in the mob's animation file.",
+          "key": "animation",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The controller; defaults to `msm_triggered`.",
+          "key": "controller",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlaySoundStep": {
+      "fields": [
+        {
+          "desc": "The sound event.",
+          "key": "sound",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "volume",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "pitch",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerChattedTrigger": {
+      "fields": [
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::ChatOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerCompareCondition": {
+      "fields": [
+        {
+          "desc": "How it compares.",
+          "key": "compare",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Compare"
+          }
+        },
+        {
+          "desc": "The number.",
+          "key": "number",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerHasItemCondition": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerHoldingCondition": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `main`.",
+          "key": "hand",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Hand"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerPositionValue": {
+      "fields": [
+        {
+          "desc": "Which part.",
+          "key": "axis",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Axis"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RandomValue": {
+      "fields": [
+        {
+          "desc": "The smallest number.",
+          "key": "min",
+          "kind": "pair",
+          "type": {
+            "kind": "double"
+          }
+        },
+        {
+          "desc": "The largest number.",
+          "key": "max",
+          "kind": "pair",
+          "type": {
+            "kind": "double"
+          }
+        },
+        {
+          "desc": "Whole numbers only; defaults to true.",
+          "key": "whole",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RemoveBlockStep": {
+      "fields": [
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "`true` drops the block's items as if broken; defaults to false.",
+          "key": "drop_items",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RemoveEffectStep": {
+      "fields": [
+        {
+          "desc": "The effect.",
+          "key": "effect",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RemoveMobStep": {
+      "fields": [
+        {
+          "desc": "Defaults to `mob`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RepeatStep": {
+      "fields": [
+        {
+          "desc": "How many times, 1 to 100.",
+          "key": "times",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The steps.",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::NestedStep"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Rule": {
+      "fields": [
+        {
+          "desc": "Stable key, 1 to 32 of `a-z`, `0-9` and `_` (`[a-z0-9_]{1,32}`; the plugin validator\nchecks the characters and that it is unique in the book). It names generated ids.",
+          "key": "key",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The card's title; defaults to the sentence the card reads as.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "`false` keeps the rule without effect; defaults to true.",
+          "key": "enabled",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "What starts the rule.",
+          "key": "when",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::When"
+          }
+        },
+        {
+          "desc": "Conditions that must hold for the steps to run; absent means always.",
+          "key": "only_if",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Conditions"
+          }
+        },
+        {
+          "desc": "Steps, in order (level 1).",
+          "key": "do",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::Step"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 50
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RuleBook": {
+      "fields": [
+        {
+          "desc": "Rule book format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "The rules, run in this order when several share a trigger and subject.",
+          "key": "rules",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::Rule"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Counters the rules read and change, saved with the world (ADR 0062); the editor declares\na counter on first use.",
+          "key": "counters",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::rules::Counter"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RunCommandStep": {
+      "fields": [
+        {
+          "desc": "The command, without the leading `/`.",
+          "key": "command",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::TextSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RunFunctionStep": {
+      "fields": [
+        {
+          "desc": "The function.",
+          "key": "function",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "function"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::SetGameModeStep": {
+      "fields": [
+        {
+          "desc": "The game mode.",
+          "key": "mode",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::GameMode"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::SetWeatherStep": {
+      "fields": [
+        {
+          "desc": "The weather.",
+          "key": "weather",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Weather"
+          }
+        },
+        {
+          "desc": "How long; absent leaves it to the game.",
+          "key": "seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ShowBossBarStep": {
+      "fields": [
+        {
+          "desc": "The bar's name, 1 to 32 of `a-z`, `0-9` and `_`; the same name updates the same bar.",
+          "key": "bar",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The text on the bar.",
+          "key": "title",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::TextSlot"
+          }
+        },
+        {
+          "desc": "How full the bar is, out of `max`.",
+          "key": "value",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "The full value; defaults to 100.",
+          "key": "max",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `purple`.",
+          "key": "color",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::BossBarColor"
+          }
+        },
+        {
+          "desc": "`false` hides the bar; defaults to true.",
+          "key": "visible",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to `every_player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ShowTextStep": {
+      "fields": [
+        {
+          "desc": "The text.",
+          "key": "text",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::TextSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ShowTitleStep": {
+      "fields": [
+        {
+          "desc": "The title.",
+          "key": "title",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::TextSlot"
+          }
+        },
+        {
+          "desc": "A smaller line below it.",
+          "key": "subtitle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::TextSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::SpawnMobStep": {
+      "fields": [
+        {
+          "desc": "The mob, vanilla or project.",
+          "key": "mob",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "int",
+                "valueRange": {
+                  "kind": 0,
+                  "max": 100,
+                  "min": 1
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::rules::Value"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::SpawnParticlesStep": {
+      "fields": [
+        {
+          "desc": "A particle type, or a vanilla particle options object.",
+          "key": "particle",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::ParticleSpec"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "where",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "How many, 1 to 1000; defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1000,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Random offset in blocks; defaults to 0.",
+          "key": "spread",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Defaults to 0.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Step": {
+      "fields": [
+        {
+          "desc": "The step.",
+          "key": "step",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::StepKind"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["step"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_step"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["step"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_logic_step"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::StepKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Gives an item.",
+          "identifier": "GiveItem",
+          "value": "give_item"
+        },
+        {
+          "desc": "Takes an item away.",
+          "identifier": "TakeItem",
+          "value": "take_item"
+        },
+        {
+          "desc": "Heals.",
+          "identifier": "Heal",
+          "value": "heal"
+        },
+        {
+          "desc": "Hurts.",
+          "identifier": "Hurt",
+          "value": "hurt"
+        },
+        {
+          "desc": "Fills food.",
+          "identifier": "Feed",
+          "value": "feed"
+        },
+        {
+          "desc": "Gives experience points or levels.",
+          "identifier": "GiveExperience",
+          "value": "give_experience"
+        },
+        {
+          "desc": "Sets the game mode.",
+          "identifier": "SetGameMode",
+          "value": "set_game_mode"
+        },
+        {
+          "desc": "Teleports to a place.",
+          "identifier": "Teleport",
+          "value": "teleport"
+        },
+        {
+          "desc": "Pushes.",
+          "identifier": "Launch",
+          "value": "launch"
+        },
+        {
+          "desc": "Shows a chat message.",
+          "identifier": "ShowMessage",
+          "value": "show_message"
+        },
+        {
+          "desc": "Shows a title.",
+          "identifier": "ShowTitle",
+          "value": "show_title"
+        },
+        {
+          "desc": "Shows text above the hotbar.",
+          "identifier": "ShowActionBar",
+          "value": "show_action_bar"
+        },
+        {
+          "desc": "Gives an effect.",
+          "identifier": "GiveEffect",
+          "value": "give_effect"
+        },
+        {
+          "desc": "Removes an effect.",
+          "identifier": "RemoveEffect",
+          "value": "remove_effect"
+        },
+        {
+          "desc": "Places a block.",
+          "identifier": "PlaceBlock",
+          "value": "place_block"
+        },
+        {
+          "desc": "Removes a block.",
+          "identifier": "RemoveBlock",
+          "value": "remove_block"
+        },
+        {
+          "desc": "Spawns a mob.",
+          "identifier": "SpawnMob",
+          "value": "spawn_mob"
+        },
+        {
+          "desc": "Drops an item.",
+          "identifier": "DropItem",
+          "value": "drop_item"
+        },
+        {
+          "desc": "Makes an explosion.",
+          "identifier": "Explode",
+          "value": "explode"
+        },
+        {
+          "desc": "Sets the weather.",
+          "identifier": "SetWeather",
+          "value": "set_weather"
+        },
+        {
+          "desc": "Runs a data pack function.",
+          "identifier": "RunFunction",
+          "value": "run_function"
+        },
+        {
+          "desc": "Runs a command (hidden in Very easy).",
+          "identifier": "RunCommand",
+          "value": "run_command"
+        },
+        {
+          "desc": "Lights a project portal.",
+          "identifier": "LightPortal",
+          "value": "light_portal"
+        },
+        {
+          "desc": "Plays a sound.",
+          "identifier": "PlaySound",
+          "value": "play_sound"
+        },
+        {
+          "desc": "Spawns particles.",
+          "identifier": "SpawnParticles",
+          "value": "spawn_particles"
+        },
+        {
+          "desc": "Plays an animation of a project mob.",
+          "identifier": "PlayAnimation",
+          "value": "play_animation"
+        },
+        {
+          "desc": "Removes the mob.",
+          "identifier": "RemoveMob",
+          "value": "remove_mob"
+        },
+        {
+          "desc": "Shows, updates or hides a boss bar.",
+          "identifier": "ShowBossBar",
+          "value": "show_boss_bar"
+        },
+        {
+          "desc": "Waits before the next step.",
+          "identifier": "Wait",
+          "value": "wait"
+        },
+        {
+          "desc": "Stops the normal action (cancellable script triggers only).",
+          "identifier": "StopNormalAction",
+          "value": "stop_normal_action"
+        },
+        {
+          "desc": "Sets a counter.",
+          "identifier": "SetCounter",
+          "value": "set_counter"
+        },
+        {
+          "desc": "Adds to a counter.",
+          "identifier": "AddToCounter",
+          "value": "add_to_counter"
+        },
+        {
+          "desc": "Takes from a counter.",
+          "identifier": "TakeFromCounter",
+          "value": "take_from_counter"
+        },
+        {
+          "desc": "If the conditions hold, then some steps, otherwise others.",
+          "identifier": "If",
+          "value": "if"
+        },
+        {
+          "desc": "Repeats steps.",
+          "identifier": "Repeat",
+          "value": "repeat"
+        },
+        {
+          "desc": "Runs steps once for each player nearby, or for every player.",
+          "identifier": "ForEachPlayer",
+          "value": "for_each_player"
+        }
+      ]
+    },
+    "::msm::rules::TakeItemStep": {
+      "fields": [
+        {
+          "desc": "The item.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to 1.",
+          "key": "count",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::TeleportStep": {
+      "fields": [
+        {
+          "desc": "The place.",
+          "key": "to",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Place"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::TextSlot": {
+      "item": {
+        "kind": "union",
+        "members": [
+          {
+            "kind": "string"
+          },
+          {
+            "kind": "reference",
+            "path": "::msm::rules::Value"
+          }
+        ]
+      },
+      "kind": "list"
+    },
+    "::msm::rules::Trigger": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A player uses (right-clicks) the block.",
+          "identifier": "BlockUsed",
+          "value": "block_used"
+        },
+        {
+          "desc": "An entity steps on the block.",
+          "identifier": "BlockSteppedOn",
+          "value": "block_stepped_on"
+        },
+        {
+          "desc": "A player breaks the block.",
+          "identifier": "BlockBroken",
+          "value": "block_broken"
+        },
+        {
+          "desc": "The block is placed.",
+          "identifier": "BlockPlaced",
+          "value": "block_placed"
+        },
+        {
+          "desc": "The block gets a random tick.",
+          "identifier": "BlockRandomTick",
+          "value": "block_random_tick"
+        },
+        {
+          "desc": "An entity is inside the block.",
+          "identifier": "BlockEntityInside",
+          "value": "block_entity_inside"
+        },
+        {
+          "desc": "The block becomes powered by redstone.",
+          "identifier": "BlockPowered",
+          "value": "block_powered"
+        },
+        {
+          "desc": "The block stops being powered.",
+          "identifier": "BlockUnpowered",
+          "value": "block_unpowered"
+        },
+        {
+          "desc": "A player opens the container block.",
+          "identifier": "ContainerOpened",
+          "value": "container_opened"
+        },
+        {
+          "desc": "A player closes the container block.",
+          "identifier": "ContainerClosed",
+          "value": "container_closed"
+        },
+        {
+          "desc": "The machine block starts a recipe.",
+          "identifier": "MachineStarted",
+          "value": "machine_started"
+        },
+        {
+          "desc": "The machine block finishes a recipe.",
+          "identifier": "MachineFinished",
+          "value": "machine_finished"
+        },
+        {
+          "desc": "An entity travels through the portal block.",
+          "identifier": "PortalTravelled",
+          "value": "portal_travelled"
+        },
+        {
+          "desc": "A player uses the item.",
+          "identifier": "ItemUsed",
+          "value": "item_used"
+        },
+        {
+          "desc": "A player uses the item on a block.",
+          "identifier": "ItemUsedOnBlock",
+          "value": "item_used_on_block"
+        },
+        {
+          "desc": "The holder hits a mob with the item.",
+          "identifier": "ItemHitMob",
+          "value": "item_hit_mob"
+        },
+        {
+          "desc": "Every few seconds while the item is held.",
+          "identifier": "ItemHeld",
+          "value": "item_held"
+        },
+        {
+          "desc": "Every few seconds while the item is worn.",
+          "identifier": "ItemWorn",
+          "value": "item_worn"
+        },
+        {
+          "desc": "The thrown item hits a mob.",
+          "identifier": "ThrownHitMob",
+          "value": "thrown_hit_mob"
+        },
+        {
+          "desc": "The thrown item hits a block.",
+          "identifier": "ThrownHitBlock",
+          "value": "thrown_hit_block"
+        },
+        {
+          "desc": "The mob is hurt.",
+          "identifier": "MobHurt",
+          "value": "mob_hurt"
+        },
+        {
+          "desc": "The mob dies.",
+          "identifier": "MobDied",
+          "value": "mob_died"
+        },
+        {
+          "desc": "A player uses (right-clicks) the mob.",
+          "identifier": "MobUsed",
+          "value": "mob_used"
+        },
+        {
+          "desc": "The mob attacks something.",
+          "identifier": "MobAttacked",
+          "value": "mob_attacked"
+        },
+        {
+          "desc": "Every few seconds while the mob is alive.",
+          "identifier": "MobEvery",
+          "value": "mob_every"
+        },
+        {
+          "desc": "The mob spawns.",
+          "identifier": "MobSpawned",
+          "value": "mob_spawned"
+        },
+        {
+          "desc": "The effect starts on an entity.",
+          "identifier": "EffectStarted",
+          "value": "effect_started"
+        },
+        {
+          "desc": "Every few seconds while the effect is active.",
+          "identifier": "EffectEvery",
+          "value": "effect_every"
+        },
+        {
+          "desc": "The effect ends.",
+          "identifier": "EffectEnded",
+          "value": "effect_ended"
+        },
+        {
+          "desc": "A player joins the world.",
+          "identifier": "PlayerJoined",
+          "value": "player_joined"
+        },
+        {
+          "desc": "A player leaves the world.",
+          "identifier": "PlayerLeft",
+          "value": "player_left"
+        },
+        {
+          "desc": "A player respawns.",
+          "identifier": "PlayerRespawned",
+          "value": "player_respawned"
+        },
+        {
+          "desc": "A player sends a chat message.",
+          "identifier": "PlayerChatted",
+          "value": "player_chatted"
+        },
+        {
+          "desc": "A player changes dimension.",
+          "identifier": "PlayerChangedDimension",
+          "value": "player_changed_dimension"
+        },
+        {
+          "desc": "Every few seconds, for each player.",
+          "identifier": "PlayerEvery",
+          "value": "player_every"
+        },
+        {
+          "desc": "The world starts.",
+          "identifier": "WorldStarted",
+          "value": "world_started"
+        },
+        {
+          "desc": "Every few seconds.",
+          "identifier": "WorldEvery",
+          "value": "world_every"
+        },
+        {
+          "desc": "A player uses any block, or any block of one kind.",
+          "identifier": "AnyBlockUsed",
+          "value": "any_block_used"
+        },
+        {
+          "desc": "A player breaks any block, or any block of one kind.",
+          "identifier": "AnyBlockBroken",
+          "value": "any_block_broken"
+        },
+        {
+          "desc": "A player uses any item, or any item of one kind.",
+          "identifier": "AnyItemUsed",
+          "value": "any_item_used"
+        },
+        {
+          "desc": "Any mob, or any mob of one kind, is hurt.",
+          "identifier": "AnyMobHurt",
+          "value": "any_mob_hurt"
+        },
+        {
+          "desc": "Any mob, or any mob of one kind, dies.",
+          "identifier": "AnyMobDied",
+          "value": "any_mob_died"
+        },
+        {
+          "desc": "A player uses any mob, or any mob of one kind.",
+          "identifier": "AnyMobUsed",
+          "value": "any_mob_used"
+        }
+      ]
+    },
+    "::msm::rules::Value": {
+      "fields": [
+        {
+          "desc": "The reading.",
+          "key": "value",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::ValueKind"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["value"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_value"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::ValueKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A random number between `min` and `max`.",
+          "identifier": "Random",
+          "value": "random"
+        },
+        {
+          "desc": "A counter's value.",
+          "identifier": "Counter",
+          "value": "counter"
+        },
+        {
+          "desc": "The player's health in half hearts.",
+          "identifier": "PlayerHealth",
+          "value": "player_health"
+        },
+        {
+          "desc": "The player's food level, 0 to 20.",
+          "identifier": "PlayerFood",
+          "value": "player_food"
+        },
+        {
+          "desc": "The player's experience level.",
+          "identifier": "PlayerLevel",
+          "value": "player_level"
+        },
+        {
+          "desc": "One part of the player's position.",
+          "identifier": "PlayerPosition",
+          "value": "player_position"
+        },
+        {
+          "desc": "The number of players in the world.",
+          "identifier": "PlayerCount",
+          "value": "player_count"
+        },
+        {
+          "desc": "The time of day in ticks, 0 to 23999.",
+          "identifier": "TimeOfDay",
+          "value": "time_of_day"
+        },
+        {
+          "desc": "Two numbers added, taken away, multiplied or divided.",
+          "identifier": "Math",
+          "value": "math"
+        }
+      ]
+    },
+    "::msm::rules::WaitStep": {
+      "fields": [
+        {
+          "desc": "Seconds, 0.05 to 3600.",
+          "key": "seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 3600,
+              "min": 0.05
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Weather": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Clear",
+          "value": "clear"
+        },
+        {
+          "identifier": "Rain",
+          "value": "rain"
+        },
+        {
+          "identifier": "Thunder",
+          "value": "thunder"
+        }
+      ]
+    },
+    "::msm::rules::When": {
+      "fields": [
+        {
+          "desc": "The trigger.",
+          "key": "trigger",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Trigger"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["trigger"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:rule_trigger"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::Who": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "reference",
+          "path": "::msm::rules::WhoName"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::rules::NearbyPlayers"
+        }
+      ]
+    },
+    "::msm::rules::WhoName": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The player of the trigger.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "The mob of the trigger.",
+          "identifier": "Mob",
+          "value": "mob"
+        },
+        {
+          "desc": "The other entity of the trigger: the mob hit, the player who used a mob.",
+          "identifier": "Other",
+          "value": "other"
+        },
+        {
+          "desc": "Every player in the world.",
+          "identifier": "EveryPlayer",
+          "value": "every_player"
+        }
+      ]
     }
   },
   "mcdoc/dispatcher": {
@@ -12411,7 +16244,379 @@
         "kind": "reference",
         "path": "::msm::definition::HolderLayoutFields"
       }
+    },
+    "msm:rule_condition": {
+      "block_is": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockIsCondition"
+      },
+      "chance": {
+        "kind": "reference",
+        "path": "::msm::rules::ChanceCondition"
+      },
+      "counter": {
+        "kind": "reference",
+        "path": "::msm::rules::CounterCondition"
+      },
+      "dimension_is": {
+        "kind": "reference",
+        "path": "::msm::rules::DimensionIsCondition"
+      },
+      "mob_is": {
+        "kind": "reference",
+        "path": "::msm::rules::MobIsCondition"
+      },
+      "player_food": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerCompareCondition"
+      },
+      "player_has_item": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerHasItemCondition"
+      },
+      "player_health": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerCompareCondition"
+      },
+      "player_holding": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerHoldingCondition"
+      },
+      "player_level": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerCompareCondition"
+      }
+    },
+    "msm:rule_logic_step": {
+      "for_each_player": {
+        "kind": "reference",
+        "path": "::msm::rules::ForEachPlayerStep"
+      },
+      "if": {
+        "kind": "reference",
+        "path": "::msm::rules::IfStep"
+      },
+      "repeat": {
+        "kind": "reference",
+        "path": "::msm::rules::RepeatStep"
+      }
+    },
+    "msm:rule_logic_step_nested": {
+      "for_each_player": {
+        "kind": "reference",
+        "path": "::msm::rules::NestedForEachPlayerStep"
+      },
+      "if": {
+        "kind": "reference",
+        "path": "::msm::rules::NestedIfStep"
+      },
+      "repeat": {
+        "kind": "reference",
+        "path": "::msm::rules::NestedRepeatStep"
+      }
+    },
+    "msm:rule_step": {
+      "add_to_counter": {
+        "kind": "reference",
+        "path": "::msm::rules::CounterStep"
+      },
+      "drop_item": {
+        "kind": "reference",
+        "path": "::msm::rules::DropItemStep"
+      },
+      "explode": {
+        "kind": "reference",
+        "path": "::msm::rules::ExplodeStep"
+      },
+      "feed": {
+        "kind": "reference",
+        "path": "::msm::rules::FeedStep"
+      },
+      "give_effect": {
+        "kind": "reference",
+        "path": "::msm::rules::GiveEffectStep"
+      },
+      "give_experience": {
+        "kind": "reference",
+        "path": "::msm::rules::GiveExperienceStep"
+      },
+      "give_item": {
+        "kind": "reference",
+        "path": "::msm::rules::GiveItemStep"
+      },
+      "heal": {
+        "kind": "reference",
+        "path": "::msm::rules::HealthStep"
+      },
+      "hurt": {
+        "kind": "reference",
+        "path": "::msm::rules::HealthStep"
+      },
+      "launch": {
+        "kind": "reference",
+        "path": "::msm::rules::LaunchStep"
+      },
+      "light_portal": {
+        "kind": "reference",
+        "path": "::msm::rules::LightPortalStep"
+      },
+      "place_block": {
+        "kind": "reference",
+        "path": "::msm::rules::PlaceBlockStep"
+      },
+      "play_animation": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayAnimationStep"
+      },
+      "play_sound": {
+        "kind": "reference",
+        "path": "::msm::rules::PlaySoundStep"
+      },
+      "remove_block": {
+        "kind": "reference",
+        "path": "::msm::rules::RemoveBlockStep"
+      },
+      "remove_effect": {
+        "kind": "reference",
+        "path": "::msm::rules::RemoveEffectStep"
+      },
+      "remove_mob": {
+        "kind": "reference",
+        "path": "::msm::rules::RemoveMobStep"
+      },
+      "run_command": {
+        "kind": "reference",
+        "path": "::msm::rules::RunCommandStep"
+      },
+      "run_function": {
+        "kind": "reference",
+        "path": "::msm::rules::RunFunctionStep"
+      },
+      "set_counter": {
+        "kind": "reference",
+        "path": "::msm::rules::CounterStep"
+      },
+      "set_game_mode": {
+        "kind": "reference",
+        "path": "::msm::rules::SetGameModeStep"
+      },
+      "set_weather": {
+        "kind": "reference",
+        "path": "::msm::rules::SetWeatherStep"
+      },
+      "show_action_bar": {
+        "kind": "reference",
+        "path": "::msm::rules::ShowTextStep"
+      },
+      "show_boss_bar": {
+        "kind": "reference",
+        "path": "::msm::rules::ShowBossBarStep"
+      },
+      "show_message": {
+        "kind": "reference",
+        "path": "::msm::rules::ShowTextStep"
+      },
+      "show_title": {
+        "kind": "reference",
+        "path": "::msm::rules::ShowTitleStep"
+      },
+      "spawn_mob": {
+        "kind": "reference",
+        "path": "::msm::rules::SpawnMobStep"
+      },
+      "spawn_particles": {
+        "kind": "reference",
+        "path": "::msm::rules::SpawnParticlesStep"
+      },
+      "take_from_counter": {
+        "kind": "reference",
+        "path": "::msm::rules::CounterStep"
+      },
+      "take_item": {
+        "kind": "reference",
+        "path": "::msm::rules::TakeItemStep"
+      },
+      "teleport": {
+        "kind": "reference",
+        "path": "::msm::rules::TeleportStep"
+      },
+      "wait": {
+        "kind": "reference",
+        "path": "::msm::rules::WaitStep"
+      }
+    },
+    "msm:rule_trigger": {
+      "any_block_broken": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyBlockTrigger"
+      },
+      "any_block_used": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyBlockTrigger"
+      },
+      "any_item_used": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyItemTrigger"
+      },
+      "any_mob_died": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyMobTrigger"
+      },
+      "any_mob_hurt": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyMobTrigger"
+      },
+      "any_mob_used": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyMobTrigger"
+      },
+      "block_broken": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "block_entity_inside": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockCooldownTrigger"
+      },
+      "block_placed": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "block_powered": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "block_random_tick": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockRandomTickTrigger"
+      },
+      "block_stepped_on": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockCooldownTrigger"
+      },
+      "block_unpowered": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "block_used": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "container_closed": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "container_opened": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "effect_ended": {
+        "kind": "reference",
+        "path": "::msm::rules::EffectTrigger"
+      },
+      "effect_every": {
+        "kind": "reference",
+        "path": "::msm::rules::EffectEveryTrigger"
+      },
+      "effect_started": {
+        "kind": "reference",
+        "path": "::msm::rules::EffectTrigger"
+      },
+      "item_held": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemHeldTrigger"
+      },
+      "item_hit_mob": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemTrigger"
+      },
+      "item_used": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemCooldownTrigger"
+      },
+      "item_used_on_block": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemCooldownTrigger"
+      },
+      "item_worn": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemWornTrigger"
+      },
+      "machine_finished": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "machine_started": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "mob_attacked": {
+        "kind": "reference",
+        "path": "::msm::rules::MobTrigger"
+      },
+      "mob_died": {
+        "kind": "reference",
+        "path": "::msm::rules::MobTrigger"
+      },
+      "mob_every": {
+        "kind": "reference",
+        "path": "::msm::rules::MobEveryTrigger"
+      },
+      "mob_hurt": {
+        "kind": "reference",
+        "path": "::msm::rules::MobTrigger"
+      },
+      "mob_spawned": {
+        "kind": "reference",
+        "path": "::msm::rules::MobTrigger"
+      },
+      "mob_used": {
+        "kind": "reference",
+        "path": "::msm::rules::MobTrigger"
+      },
+      "player_chatted": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerChattedTrigger"
+      },
+      "player_every": {
+        "kind": "reference",
+        "path": "::msm::rules::EveryTrigger"
+      },
+      "portal_travelled": {
+        "kind": "reference",
+        "path": "::msm::rules::BlockTrigger"
+      },
+      "thrown_hit_block": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemTrigger"
+      },
+      "thrown_hit_mob": {
+        "kind": "reference",
+        "path": "::msm::rules::ItemTrigger"
+      },
+      "world_every": {
+        "kind": "reference",
+        "path": "::msm::rules::EveryTrigger"
+      }
+    },
+    "msm:rule_value": {
+      "counter": {
+        "kind": "reference",
+        "path": "::msm::rules::CounterValue"
+      },
+      "math": {
+        "kind": "reference",
+        "path": "::msm::rules::MathValue"
+      },
+      "player_position": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerPositionValue"
+      },
+      "random": {
+        "kind": "reference",
+        "path": "::msm::rules::RandomValue"
+      }
     }
   },
-  "ref": "msm-mcdoc:sha256:87aa3b4372db81022b05760fc184a82bbe508dd0dfcc304e4116f35002359c63"
+  "ref": "msm-mcdoc:sha256:c9c08552402d1533edfdf347f3ff01d3b9e203a89ca4c5db35df2ee6b155542d"
 }
