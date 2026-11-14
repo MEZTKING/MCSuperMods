@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { projectContextBlock, systemPrompt } from '../src/index';
+import {
+  projectContextBlock,
+  RULES_PROMPT_CANCELLABLE,
+  RULES_PROMPT_IDS,
+  RULES_PROMPT_PLAIN_STEPS,
+  RULES_PROMPT_TEMPLATES,
+  systemPrompt,
+} from '../src/index';
 
 describe('systemPrompt', () => {
   it.each(['chat', 'build'] as const)('is identical across calls in %s mode', (mode) => {
@@ -304,5 +311,50 @@ describe('systemPrompt Script API 1.3 and 1.4 lines', () => {
     ]) {
       expect(text, term).toContain(term);
     }
+  });
+});
+
+describe('systemPrompt rules paragraph (ADR 0082 D10)', () => {
+  it.each(['chat', 'build'] as const)(
+    'prefers rule books and names the catalogue, plain versus script and the limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        'msm:rules',
+        'prefer a rule book for behaviour',
+        'rather than a script',
+        '"only_if"',
+        '"<namespace>:rules"',
+        '"<subject id>_rules_<trigger>"',
+        'Copy as my own script',
+        'at most 3 levels deep',
+        'at most 50 steps',
+        'at most 100 times',
+        'at most 64 blocks',
+        'needs a game restart',
+        'reload',
+        'Fabric mod jar',
+        'rules.needs-jar',
+        'rules.not-in-eject',
+        'run_checks compiles the books',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+    },
+  );
+
+  it('names every catalogue id, plain step, cancellable trigger and template it lists', () => {
+    const text = systemPrompt('build');
+    const all = [
+      ...Object.values(RULES_PROMPT_IDS).flat(),
+      ...RULES_PROMPT_PLAIN_STEPS,
+      ...RULES_PROMPT_CANCELLABLE,
+      ...RULES_PROMPT_TEMPLATES,
+    ];
+    for (const id of all) expect(text, id).toMatch(new RegExp(`\\b${id}\\b`));
+    expect(RULES_PROMPT_PLAIN_STEPS.every((id) => RULES_PROMPT_IDS.steps.includes(id))).toBe(true);
+    expect(RULES_PROMPT_CANCELLABLE.every((id) => RULES_PROMPT_IDS.triggers.includes(id))).toBe(
+      true,
+    );
   });
 });

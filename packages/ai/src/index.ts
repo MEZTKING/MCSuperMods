@@ -88,7 +88,15 @@ export type {
   BetaTool,
   ModelRequest,
 } from './sdk-types';
-export { type AiProjectContext, projectContextBlock, systemPrompt } from './system-prompt';
+export {
+  type AiProjectContext,
+  projectContextBlock,
+  RULES_PROMPT_CANCELLABLE,
+  RULES_PROMPT_IDS,
+  RULES_PROMPT_PLAIN_STEPS,
+  RULES_PROMPT_TEMPLATES,
+  systemPrompt,
+} from './system-prompt';
 export {
   AI_TOOL_NAMES,
   type AiToolDefinition,
