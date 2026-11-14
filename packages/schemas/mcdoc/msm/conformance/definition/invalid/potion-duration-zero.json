@@ -1,0 +1,9 @@
+{
+  "effects": [
+    {
+      "duration_ticks": 0,
+      "id": "minecraft:speed"
+    }
+  ],
+  "format": 1
+}

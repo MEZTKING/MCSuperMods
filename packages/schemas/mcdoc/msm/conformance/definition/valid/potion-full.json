@@ -1,0 +1,14 @@
+{
+  "effects": [
+    {
+      "ambient": true,
+      "amplifier": 1,
+      "duration_ticks": 3600,
+      "id": "minecraft:speed",
+      "show_icon": false,
+      "show_particles": false
+    }
+  ],
+  "format": 1,
+  "name": "mymod.swift"
+}

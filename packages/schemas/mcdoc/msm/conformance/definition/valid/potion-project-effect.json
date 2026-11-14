@@ -1,0 +1,10 @@
+{
+  "effects": [
+    {
+      "duration_ticks": 1,
+      "id": "mymod:glow"
+    }
+  ],
+  "format": 1,
+  "name": "mymod.glow"
+}

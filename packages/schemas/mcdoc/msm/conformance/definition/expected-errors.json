@@ -503,6 +503,46 @@
     "code": "schema.unknown-field",
     "path": "/replace"
   },
+  "potion-amplifier-256.json": {
+    "code": "schema.out-of-range",
+    "path": "/effects/0/amplifier"
+  },
+  "potion-brewing-in-definition.json": {
+    "code": "schema.unknown-field",
+    "path": "/brewing"
+  },
+  "potion-duration-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/effects/0/duration_ticks"
+  },
+  "potion-editor-field.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "potion-effect-missing-id.json": {
+    "code": "schema.missing-field",
+    "path": "/effects/0/id"
+  },
+  "potion-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "potion-missing-effects.json": {
+    "code": "schema.missing-field",
+    "path": "/effects"
+  },
+  "potion-nine-effects.json": {
+    "code": "schema.invalid-length",
+    "path": "/effects"
+  },
+  "potion-no-effects.json": {
+    "code": "schema.invalid-length",
+    "path": "/effects"
+  },
+  "potion-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/colour"
+  },
   "trigger-block-entity-inside-cooldown-4.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:on_entity_inside/cooldown_ticks"

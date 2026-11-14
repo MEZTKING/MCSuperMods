@@ -106,5 +106,21 @@
   "mod-missing-version.json": {
     "code": "schema.missing-field",
     "path": "/version"
+  },
+  "potion-brewing-no-reagent.json": {
+    "code": "schema.missing-field",
+    "path": "/brewing/reagent"
+  },
+  "potion-long-duration-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/long/duration_ticks"
+  },
+  "potion-reagent-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/brewing/reagent"
+  },
+  "potion-strong-no-amplifier.json": {
+    "code": "schema.missing-field",
+    "path": "/strong/amplifier"
   }
 }

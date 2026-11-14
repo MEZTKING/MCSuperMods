@@ -66,6 +66,7 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     item: MSM_SCHEMA_REFS.itemDefinition,
     entity: MSM_SCHEMA_REFS.entityDefinition,
     effect: MSM_SCHEMA_REFS.effectDefinition,
+    potion: MSM_SCHEMA_REFS.potionDefinition,
     'biome-addition': ADDITIONS.biomeAdditionDefinition,
     'loot-addition': ADDITIONS.lootAdditionDefinition,
     'trigger-block': MSM_SCHEMA_REFS.blockDefinition,
@@ -78,6 +79,7 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     mod: MSM_SCHEMA_REFS.mod,
     entity: MSM_SCHEMA_REFS.entity,
     effect: MSM_SCHEMA_REFS.effect,
+    potion: MSM_SCHEMA_REFS.potion,
     'biome-addition': ADDITIONS.biomeAddition,
     'loot-addition': ADDITIONS.lootAddition,
     'trigger-block': MSM_SCHEMA_REFS.block,
@@ -282,6 +284,8 @@ describe('MSM conformance corpus coverage', () => {
 
   it.each([
     ['definition', 'effect-', 8, 10],
+    ['definition', 'potion-', 6, 8],
+    ['element', 'potion-', 4, 4],
     ['definition', 'item-throwable-', 6, 8],
     ['definition', 'block-shape-', 6, 8],
     ['definition', 'biome-addition-', 4, 4],
@@ -337,6 +341,8 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'entity', MSM_SCHEMA_REFS.entity],
     ['definition', 'effect', MSM_SCHEMA_REFS.effectDefinition],
     ['element', 'effect', MSM_SCHEMA_REFS.effect],
+    ['definition', 'potion', MSM_SCHEMA_REFS.potionDefinition],
+    ['element', 'potion', MSM_SCHEMA_REFS.potion],
     ['definition', 'biome-addition', ADDITIONS.biomeAdditionDefinition],
     ['definition', 'loot-addition', ADDITIONS.lootAdditionDefinition],
     ['element', 'biome-addition', ADDITIONS.biomeAddition],

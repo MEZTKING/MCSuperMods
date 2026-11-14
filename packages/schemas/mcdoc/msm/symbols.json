@@ -4437,6 +4437,122 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Potion": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "Name key part of the item name; defaults to `<ns>.<path>`.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "key": "effects",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::PotionEffect"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::PotionEffect": {
+      "fields": [
+        {
+          "desc": "Mob effect id, vanilla or a project effect.",
+          "key": "id",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "mob_effect"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "duration_ticks",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Effect level minus one; defaults to 0 (level I).",
+          "key": "amplifier",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 255,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "ambient",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "key": "show_particles",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "key": "show_icon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::RangedWeapon": {
       "fields": [
         {
@@ -6086,6 +6202,241 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Potion": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Potion"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the four potion language keys.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "key": "brewing",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::PotionBrewing"
+          }
+        },
+        {
+          "key": "long",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::PotionLong"
+          }
+        },
+        {
+          "key": "strong",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::PotionStrong"
+          }
+        },
+        {
+          "desc": "Splash version; defaults to true.",
+          "key": "splash",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Lingering version and tipped arrow; defaults to true.",
+          "key": "lingering",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::PotionBrewing": {
+      "fields": [
+        {
+          "desc": "Potion the ingredient is added to; defaults to `minecraft:awkward`.",
+          "key": "base",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "potion"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ingredient item or item tag.",
+          "key": "reagent",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::PotionLong": {
+      "fields": [
+        {
+          "key": "duration_ticks",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `minecraft:redstone`.",
+          "key": "reagent",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::PotionStrong": {
+      "fields": [
+        {
+          "desc": "Effect level minus one.",
+          "key": "amplifier",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 255,
+              "min": 0
+            }
+          }
+        },
+        {
+          "key": "duration_ticks",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `minecraft:glowstone_dust`.",
+          "key": "reagent",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Shape": {
       "fields": [
         {
@@ -6827,5 +7178,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:f2bd9bd09d8975868dd7d4b0a1dcc8494ca59c4eb4732a881e3c1a073f883fcc"
+  "ref": "msm-mcdoc:sha256:a6dff19fc970e03729f8ecb298b14efc3fe138524bb55fc71a2c4254de05ccf7"
 }

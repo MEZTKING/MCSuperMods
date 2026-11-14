@@ -20,6 +20,8 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `effect` / `effectDefinition`: element data of the `msm:effect` kind (definition plus
  *   `display_name`) and the runtime definition written to `msm/<ns>/effect/<path>.json`
  *   (ADR 0055).
+ * - `potion` / `potionDefinition`: element data of the `msm:potion` kind (definition plus editor
+ *   fields) and the runtime definition written to `msm/<ns>/potion/<path>.json` (ADR 0063).
  * - `biomeAddition` / `biomeAdditionDefinition`, `lootAddition` / `lootAdditionDefinition`:
  *   element data of the `msm:biome_addition` and `msm:loot_addition` kinds and the runtime
  *   definitions written to `msm/<ns>/biome_addition/<path>.json` and
@@ -40,6 +42,8 @@ export const MSM_SCHEMA_REFS = {
   animation: 'msm:animation',
   effect: 'msm:effect',
   effectDefinition: 'msm:effect_definition',
+  potion: 'msm:potion',
+  potionDefinition: 'msm:potion_definition',
   biomeAddition: 'msm:biome_addition',
   biomeAdditionDefinition: 'msm:biome_addition_definition',
   lootAddition: 'msm:loot_addition',
@@ -59,6 +63,8 @@ export const MSM_TYPE_PATHS = {
   animation: '::msm::animation::Animations',
   effect: '::msm::element::Effect',
   effectDefinition: '::msm::definition::Effect',
+  potion: '::msm::element::Potion',
+  potionDefinition: '::msm::definition::Potion',
   biomeAddition: '::msm::element::BiomeAddition',
   biomeAdditionDefinition: '::msm::definition::BiomeAddition',
   lootAddition: '::msm::element::LootAddition',
@@ -79,6 +85,8 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.animation]: MSM_TYPE_PATHS.animation,
   [MSM_SCHEMA_REFS.effect]: MSM_TYPE_PATHS.effect,
   [MSM_SCHEMA_REFS.effectDefinition]: MSM_TYPE_PATHS.effectDefinition,
+  [MSM_SCHEMA_REFS.potion]: MSM_TYPE_PATHS.potion,
+  [MSM_SCHEMA_REFS.potionDefinition]: MSM_TYPE_PATHS.potionDefinition,
   [MSM_SCHEMA_REFS.biomeAddition]: MSM_TYPE_PATHS.biomeAddition,
   [MSM_SCHEMA_REFS.biomeAdditionDefinition]: MSM_TYPE_PATHS.biomeAdditionDefinition,
   [MSM_SCHEMA_REFS.lootAddition]: MSM_TYPE_PATHS.lootAddition,

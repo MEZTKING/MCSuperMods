@@ -1,0 +1,12 @@
+{
+  "brewing": {
+    "reagent": 5
+  },
+  "effects": [
+    {
+      "duration_ticks": 3600,
+      "id": "minecraft:speed"
+    }
+  ],
+  "format": 1
+}

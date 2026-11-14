@@ -1,0 +1,14 @@
+{
+  "brewing": {
+    "reagent": "mymod:dust"
+  },
+  "display_name": "Plain",
+  "effects": [
+    {
+      "duration_ticks": 3600,
+      "id": "minecraft:speed"
+    }
+  ],
+  "format": 1,
+  "splash": false
+}

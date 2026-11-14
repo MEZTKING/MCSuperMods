@@ -14,6 +14,7 @@ use super::definition::EntityCommon
 use super::definition::SpawnEgg as DefinitionSpawnEgg
 use super::definition::ItemCommon
 use super::definition::LootAddition as DefinitionLootAddition
+use super::definition::Potion as DefinitionPotion
 use super::definition::ToolTier
 
 /// A tool whose mineable tag a block joins.
@@ -172,6 +173,44 @@ struct Effect {
 	...EffectCommon,
 	/// Display name, lowered to the `effect.<ns>.<path>` language key.
 	display_name?: string,
+}
+
+/// Brewing of a potion: the base potion and the ingredient (ADR 0063 D3).
+struct PotionBrewing {
+	/// Potion the ingredient is added to; defaults to `minecraft:awkward`.
+	base?: #[id="potion"] string,
+	/// Ingredient item or item tag.
+	reagent: #[id(registry="item", tags="allowed")] string,
+}
+
+/// The longer version of a potion (ADR 0063 D3).
+struct PotionLong {
+	duration_ticks: int @ 1..,
+	/// Defaults to `minecraft:redstone`.
+	reagent?: #[id(registry="item", tags="allowed")] string,
+}
+
+/// The stronger version of a potion (ADR 0063 D3).
+struct PotionStrong {
+	/// Effect level minus one.
+	amplifier: int @ 0..255,
+	duration_ticks: int @ 1..,
+	/// Defaults to `minecraft:glowstone_dust`.
+	reagent?: #[id(registry="item", tags="allowed")] string,
+}
+
+/// `msm:potion` element data: the definition plus editor fields stripped in lowering.
+struct Potion {
+	...DefinitionPotion,
+	/// Display name, lowered to the four potion language keys.
+	display_name?: string,
+	brewing?: PotionBrewing,
+	long?: PotionLong,
+	strong?: PotionStrong,
+	/// Splash version; defaults to true.
+	splash?: boolean,
+	/// Lingering version and tipped arrow; defaults to true.
+	lingering?: boolean,
 }
 
 /// `msm:biome_addition` element data: the definition as written (ADR 0060 D2).

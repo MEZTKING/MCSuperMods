@@ -975,6 +975,28 @@ struct Effect {
 	...EffectCommon,
 }
 
+/// One effect of a potion (ADR 0063 D2). Times are ticks; the amplifier is the level minus one.
+struct PotionEffect {
+	/// Mob effect id, vanilla or a project effect.
+	id: #[id="mob_effect"] string,
+	duration_ticks: int @ 1..,
+	/// Effect level minus one; defaults to 0 (level I).
+	amplifier?: int @ 0..255,
+	ambient?: boolean,
+	show_particles?: boolean,
+	show_icon?: boolean,
+}
+
+/// A potion definition, `msm/<ns>/potion/<path>.json` (ADR 0063 D2): one `Potion` registry entry.
+/// Runtimes older than 1.5.0 (verify at implementation) ignore the `potion` folder with a warning.
+struct Potion {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// Name key part of the item name; defaults to `<ns>.<path>`.
+	name?: string,
+	effects: [PotionEffect] @ 1..8,
+}
+
 /// A vanilla `GenerationStep.Decoration` in lower case: when a feature is placed while a chunk
 /// generates.
 enum(string) GenerationStep {

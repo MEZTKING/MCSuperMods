@@ -1,0 +1,30 @@
+{
+  "brewing": {
+    "base": "minecraft:awkward",
+    "reagent": "minecraft:sugar"
+  },
+  "display_name": "Swiftness",
+  "effects": [
+    {
+      "ambient": true,
+      "amplifier": 1,
+      "duration_ticks": 3600,
+      "id": "minecraft:speed",
+      "show_icon": false,
+      "show_particles": false
+    }
+  ],
+  "format": 1,
+  "lingering": false,
+  "long": {
+    "duration_ticks": 9600,
+    "reagent": "minecraft:redstone"
+  },
+  "name": "mymod.swift",
+  "splash": true,
+  "strong": {
+    "amplifier": 1,
+    "duration_ticks": 1800,
+    "reagent": "minecraft:glowstone_dust"
+  }
+}
