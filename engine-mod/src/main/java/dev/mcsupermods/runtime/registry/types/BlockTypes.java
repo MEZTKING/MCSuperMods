@@ -2,12 +2,16 @@ package dev.mcsupermods.runtime.registry.types;
 
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
+import dev.mcsupermods.runtime.registry.BlockSetTypes;
 import dev.mcsupermods.runtime.registry.MsmBlock;
+import java.util.Optional;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -20,11 +24,18 @@ import net.minecraft.world.phys.AABB;
  *       {@code ofLegacyCopy}, here the definition's own are used)</li>
  *   <li>{@code wall}, {@code fence}, {@code fence_gate}: {@code forceSolidOn}</li>
  *   <li>{@code pane}: {@code noOcclusion} (glass pane and iron bars)</li>
+ *   <li>{@code door}: {@code noOcclusion}, {@code pushReaction(POPPED)} (oak and iron doors)</li>
+ *   <li>{@code trapdoor}: {@code noOcclusion}, {@code isValidSpawn(never)} (oak and iron trapdoors)</li>
+ *   <li>{@code button}: {@code noCollision}, {@code pushReaction(POPPED)} ({@code Blocks.buttonProperties}, whose
+ *       {@code strength(0.5)} is the definition's here)</li>
+ *   <li>{@code pressure_plate}: {@code forceSolidOn}, {@code noCollision}, {@code pushReaction(POPPED)} (oak, stone and
+ *       weighted plates)</li>
  *   <li>{@code pillar}, {@code horizontal}, {@code directional}: nothing of their own (logs, furnaces and droppers set only
  *       map colour, instrument and strength)</li>
  * </ul>
- * Types without a block class yet ({@code door}, {@code trapdoor}, {@code button}, {@code pressure_plate}, {@code crop},
- * {@code sapling}, {@code leaves}) are not {@link #supported}; the registrar makes them plain blocks for now.
+ * Vanilla's wooden doors, trapdoors and plates also set {@code ignitedByLava}; here {@code msm:flammable} sets it for every
+ * type (the registrar). Types without a block class yet ({@code crop}, {@code sapling}, {@code leaves}) are not
+ * {@link #supported}; the registrar makes them plain blocks for now.
  */
 public final class BlockTypes {
     private BlockTypes() {}
@@ -32,8 +43,9 @@ public final class BlockTypes {
     /** Whether this runtime has the type's own block class. */
     public static boolean supported(BlockType type) {
         return switch (type) {
-            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, STAIRS, WALL, FENCE, FENCE_GATE, PANE -> true;
-            case DOOR, TRAPDOOR, BUTTON, PRESSURE_PLATE, CROP, SAPLING, LEAVES -> false;
+            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, STAIRS, WALL, FENCE, FENCE_GATE, PANE, DOOR, TRAPDOOR, BUTTON,
+                    PRESSURE_PLATE -> true;
+            case CROP, SAPLING, LEAVES -> false;
         };
     }
 
@@ -43,6 +55,10 @@ public final class BlockTypes {
             case STAIRS, SLAB -> props.isViewBlocking(BlockTypes::nearPlaneIntersectsOutline);
             case WALL, FENCE, FENCE_GATE -> props.forceSolidOn();
             case PANE -> props.noOcclusion();
+            case DOOR -> props.noOcclusion().pushReaction(PushReaction.POPPED);
+            case TRAPDOOR -> props.noOcclusion().isValidSpawn((state, level, pos, entityType) -> false);
+            case BUTTON -> props.noCollision().pushReaction(PushReaction.POPPED);
+            case PRESSURE_PLATE -> props.forceSolidOn().noCollision().pushReaction(PushReaction.POPPED);
             default -> props;
         };
     }
@@ -72,8 +88,28 @@ public final class BlockTypes {
             case FENCE_GATE -> new MsmFenceGateBlock(id, definition,
                     woodType(((BlockType.FenceGate) definition.typeFields()).woodType()), props);
             case PANE -> new MsmPaneBlock(id, definition, props);
+            case DOOR -> new MsmDoorBlock(id, definition, setType(definition), props);
+            case TRAPDOOR -> new MsmTrapDoorBlock(id, definition, setType(definition), props);
+            case BUTTON -> new MsmButtonBlock(id, definition, setType(definition),
+                    ((BlockType.Button) definition.typeFields()).pressTicks(), props);
+            case PRESSURE_PLATE -> {
+                Optional<Integer> weightedMax = ((BlockType.PressurePlate) definition.typeFields()).weightedMax();
+                yield weightedMax.isPresent()
+                        ? new MsmWeightedPressurePlateBlock(id, definition, weightedMax.get(), setType(definition), props)
+                        : new MsmPressurePlateBlock(id, definition, setType(definition), props);
+            }
             default -> MsmBlock.create(id, definition, props);
         };
+    }
+
+    /** The vanilla {@link BlockSetType} of a door, trapdoor, button or pressure plate (version seam {@link BlockSetTypes}). */
+    private static BlockSetType setType(BlockDefinition definition) {
+        return BlockSetTypes.of(switch (definition.typeFields()) {
+            case BlockType.Opening o -> o.setType();
+            case BlockType.Button b -> b.setType();
+            case BlockType.PressurePlate p -> p.setType();
+            default -> throw new IllegalArgumentException("type '" + definition.type().id() + "' has no set_type");
+        });
     }
 
     /** The vanilla {@link WoodType} of an MSM wood type name; the constants are named alike on both targets. */

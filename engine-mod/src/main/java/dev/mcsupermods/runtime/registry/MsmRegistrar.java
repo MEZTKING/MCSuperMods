@@ -64,6 +64,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.alchemy.Potion;
@@ -407,8 +408,8 @@ public final class MsmRegistrar {
     private static void registerBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,
             List<String> errors) {
         Identifier id = raw.id();
-        // B261: types without their own block class yet register as a plain block (B267 and B271 remove this line), and
-        // item.id is not registered yet (B271).
+        // B261: types without their own block class yet (crop, sapling, leaves) register as a plain block (B271 removes
+        // this line), and item.id is not registered yet (B271).
         if (!BlockTypes.supported(def.type())) {
             MsmRuntime.LOGGER.warn("[{}] {}: type '{}' not supported yet; registered as a plain block", MsmRuntime.MOD_ID, raw.describe(),
                     def.type().id());
@@ -431,6 +432,9 @@ public final class MsmRegistrar {
         }
         props = MsmBlock.shapeProperties(props, c); // msm:shape (ADR 0059 D3)
         props = BlockTypes.properties(def.type(), props); // the family's own vanilla properties (ADR 0067 D4)
+        if (c.flammable().isPresent()) {
+            props = props.ignitedByLava(); // as vanilla's planks, logs, fences, gates, doors and plates (ADR 0067 D3)
+        }
         if (c.onRandomTick().isPresent()) {
             props = props.randomTicks(); // msm:on_random_tick (ADR 0061 D2): random ticks only with the component
         }
@@ -453,7 +457,9 @@ public final class MsmRegistrar {
         itemProps = ComponentPassthrough.apply(itemProps, raw, settings.components(), errors)
                 .stacksTo(settings.maxStackSize())
                 .rarity(rarity(settings.rarity()));
-        BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey, new BlockItem(block, itemProps));
+        // A door's item places both halves (ADR 0067 D4), as vanilla's door items.
+        BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey,
+                def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, itemProps) : new BlockItem(block, itemProps));
         items.add(id);
         settings.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
     }

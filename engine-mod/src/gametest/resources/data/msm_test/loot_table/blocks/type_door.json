@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "msm_test:type_door",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "msm_test:type_door"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "msm_test:blocks/type_door"
+}
