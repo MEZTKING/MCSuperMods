@@ -6,7 +6,9 @@
  *
  * - `entities.unknown-event` (error): an event field of a trigger component (`msm:on_hurt`,
  *   `msm:on_death`, `msm:on_interact`, `msm:on_tick`, `msm:on_spawn` (ADR 0061 D3),
- *   `msm:attack.on_attack`) or a `trigger_event` action
+ *   `msm:attack.on_attack`, `msm:ranged_attack.on_shoot`, `msm:tameable.on_tame`,
+ *   `msm:breedable.on_breed`, `msm:rideable.on_mount` (ADRs 0070, 0071)) or a `trigger_event`
+ *   action
  *   naming an event the entity does not declare.
  *   A `run_script` action (ADR 0032 D4) names a script handler, not an event, so it is never
  *   an event reference; `scripting.unknown-handler` of `@msm/plugin-scripting` checks it.
@@ -16,8 +18,9 @@
  *   element id.
  * - `entities.unknown-animations` (error): `msm:animated_model.animations` is set but is not an
  *   `msm:animation` element id.
- * - `entities.unknown-animation-name` (warning): `idle`, `walk`, `attack` or a
- *   `play_animation` action names an animation the referenced animation element lacks.
+ * - `entities.unknown-animation-name` (warning): `idle`, `walk`, `attack`, the state
+ *   animations `sit`, `fly`, `swim` and `shoot` (ADR 0071 D6) or a `play_animation` action
+ *   names an animation the referenced animation element lacks.
  * - `entities.missing-texture` (warning): `msm:animated_model.texture` has no texture
  *   (project asset `textures/<path>.png`) in the registry index. Skipped when the index has no
  *   textures at all.
@@ -30,6 +33,9 @@
  * - `entities.melee-without-attack` (warning): an `msm:ai_goals` list with a `melee_attack`
  *   goal but no `msm:attack` component; the runtime then adds no melee goals and the mob never
  *   attacks (ADR 0028 D2). Reported once per entity, at the first `melee_attack` goal.
+ *
+ * The mob checks of ADRs 0070 to 0072 live in `validators-mobs.ts`; their codes are part of
+ * {@link ENTITIES_PROBLEM_CODES}.
  *
  * The event checks are a copy of the blocks-items ones, because plugins cannot import each
  * other.
@@ -45,6 +51,7 @@ import type {
 import { ANIMATION_KIND, ENTITY_KIND, GEO_MODEL_KIND } from './kinds';
 import { hasSpawnEgg } from './lowering/entity';
 import { isRecord } from './lowering/paths';
+import { ENTITIES_MOB_PROBLEM_CODES } from './validators-mobs';
 
 /** Every code the validators report. */
 export const ENTITIES_PROBLEM_CODES = Object.freeze([
@@ -58,6 +65,7 @@ export const ENTITIES_PROBLEM_CODES = Object.freeze([
   'entities.group-range',
   'entities.goal-needs-targets',
   'entities.melee-without-attack',
+  ...ENTITIES_MOB_PROBLEM_CODES,
 ] as const);
 
 const ANIMATED_MODEL = 'msm:animated_model';
@@ -88,6 +96,10 @@ const EVENT_FIELDS: readonly (readonly [string, string])[] = [
   ['msm:on_interact', 'event'],
   ['msm:on_tick', 'event'],
   ['msm:on_spawn', 'event'],
+  ['msm:ranged_attack', 'on_shoot'],
+  ['msm:tameable', 'on_tame'],
+  ['msm:breedable', 'on_breed'],
+  ['msm:rideable', 'on_mount'],
 ];
 
 /** One event reference inside an element. */
@@ -289,7 +301,7 @@ function unknownAnimationNames(elements: readonly Element[]): Problem[] {
         message: `Animation "${name}" is not in animation set "${set.id}", so nothing plays. Pick one of: ${[...names].sort().join(', ') || '(none)'}.`,
       });
     };
-    for (const field of ['idle', 'walk', 'attack'] as const) {
+    for (const field of ['idle', 'walk', 'attack', 'sit', 'fly', 'swim', 'shoot'] as const) {
       const name = animated?.[field];
       if (typeof name === 'string') report(name, pointer('components', ANIMATED_MODEL, field));
     }

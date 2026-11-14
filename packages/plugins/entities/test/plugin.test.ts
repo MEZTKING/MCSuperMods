@@ -88,6 +88,12 @@ describe('@msm/plugin-entities', () => {
       'msm.entities.group-range',
       'msm.entities.goal-needs-targets',
       'msm.entities.melee-without-attack',
+      'msm.entities.component-needs-base',
+      'msm.entities.ranged-attack',
+      'msm.entities.rideable',
+      'msm.entities.variants',
+      'msm.entities.renderer',
+      'msm.entities.kind-of-mob',
     ]);
     expect(entitiesValidators).toHaveLength(8);
   });

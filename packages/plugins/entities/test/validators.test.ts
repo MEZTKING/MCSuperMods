@@ -2,7 +2,11 @@ import type { Element, Problem, ResourceLocation, ValidationInput } from '@msm/p
 import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { ENTITIES_PROBLEM_CODES, entitiesValidators } from '../src/index';
+import {
+  ENTITIES_MOB_PROBLEM_CODES,
+  ENTITIES_PROBLEM_CODES,
+  entitiesValidators,
+} from '../src/index';
 import { element, indexesFor } from './support';
 
 const bundle = builtInTargets[0] as TargetBundle;
@@ -70,7 +74,7 @@ const withRefs = (...elements: Element[]): Element[] => [geoModel, animationSet,
 
 describe('entities validators', () => {
   it('lists every code it reports', () => {
-    expect(ENTITIES_PROBLEM_CODES).toHaveLength(10);
+    expect(ENTITIES_PROBLEM_CODES).toHaveLength(23);
   });
 
   it('accepts a clean project', async () => {
@@ -425,8 +429,10 @@ describe('entities validators', () => {
   });
 
   it('reports every listed code somewhere in these tests', () => {
-    // Guard: the codes the suite asserts above are exactly the listed codes.
-    expect([...ENTITIES_PROBLEM_CODES].sort()).toEqual([
+    // Guard: the codes the suite asserts above are exactly the listed codes; the mob codes are
+    // asserted in validators-mobs.test.ts.
+    const mobCodes: readonly string[] = ENTITIES_MOB_PROBLEM_CODES;
+    expect([...ENTITIES_PROBLEM_CODES].filter((code) => !mobCodes.includes(code)).sort()).toEqual([
       'entities.egg-texture-missing',
       'entities.event-cycle',
       'entities.goal-needs-targets',

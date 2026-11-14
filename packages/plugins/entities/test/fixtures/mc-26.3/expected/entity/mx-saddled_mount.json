@@ -1,0 +1,207 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "speed": 1,
+              "strafe": true,
+              "targets": [
+                "minecraft:zombie"
+              ],
+              "type": "ranged_attack"
+            },
+            {
+              "items": [
+                "minecraft:wheat"
+              ],
+              "scared": true,
+              "speed": 1.1,
+              "type": "tempt"
+            },
+            {
+              "speed": 1.4,
+              "type": "panic"
+            },
+            {
+              "height": 0.5,
+              "type": "leap_at_target"
+            },
+            {
+              "type": "wander"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "example:entity/shade_animations",
+          "fly": "fly",
+          "idle": "idle",
+          "model": "example:entity/shade",
+          "renderer": "vanilla",
+          "shoot": "shoot",
+          "sit": "sit",
+          "swim": "swim",
+          "texture": "example:entity/shade",
+          "walk": "walk"
+        },
+        "msm:boss_bar": {
+          "colour": "red",
+          "darken_sky": true,
+          "fog": false,
+          "music": true,
+          "overlay": "notched_10",
+          "range": 48
+        },
+        "msm:breedable": {
+          "baby_scale": 0.4,
+          "follow_parents": true,
+          "grow_up_ticks": 12000,
+          "items": [
+            "minecraft:wheat"
+          ],
+          "on_breed": "example:born",
+          "tempted": false
+        },
+        "msm:movement": {
+          "flying_speed": 0.5,
+          "hovers": false,
+          "mode": "fly",
+          "speed": 0.3,
+          "step_height": 1
+        },
+        "msm:ranged_attack": {
+          "charge_ticks": 10,
+          "inaccuracy": 4,
+          "interval_ticks": 30,
+          "on_shoot": "example:shot",
+          "projectile": "minecraft:snowball",
+          "range": 12,
+          "sound": "minecraft:entity.snowball.throw",
+          "speed": 1.2
+        },
+        "msm:rideable": {
+          "controlled_by": "owner",
+          "jump": 0.7,
+          "on_mount": "example:mounted",
+          "passengers": 2,
+          "rider_offset": [
+            0,
+            1.2,
+            -0.2
+          ],
+          "saddle_bone": "saddle",
+          "speed": 1.5
+        },
+        "msm:tameable": {
+          "chance": 0.5,
+          "defends_owner": false,
+          "follow": {
+            "speed": 1.2,
+            "start_distance": 8,
+            "stop_distance": 3
+          },
+          "follows_owner": true,
+          "items": [
+            "minecraft:bone"
+          ],
+          "on_tame": "example:tamed",
+          "sit": true,
+          "tamed_health": 40
+        },
+        "msm:variants": {
+          "choose": "biome",
+          "variants": [
+            {
+              "id": "plain",
+              "texture": "example:entity/ruby_golem"
+            },
+            {
+              "biomes": [
+                "#minecraft:is_forest"
+              ],
+              "id": "forest",
+              "texture": "example:entity/ruby_golem",
+              "weight": 3
+            }
+          ]
+        }
+      },
+      "events": {
+        "example:born": {
+          "actions": [
+            {
+              "sound": "minecraft:entity.horse.ambient",
+              "type": "play_sound"
+            }
+          ]
+        },
+        "example:mounted": {
+          "actions": [
+            {
+              "sound": "minecraft:entity.horse.saddle",
+              "type": "play_sound"
+            }
+          ]
+        },
+        "example:shot": {
+          "actions": [
+            {
+              "animation": "shoot",
+              "type": "play_animation"
+            }
+          ]
+        },
+        "example:tamed": {
+          "actions": [
+            {
+              "count": 5,
+              "particle": "minecraft:heart",
+              "type": "spawn_particle"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.4,
+        "width": 1.2
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:plains"
+        ],
+        "max_group": 3,
+        "min_group": 1,
+        "rule": "animal",
+        "weight": 4
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/shade.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.shade": "Shade Steed"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:shade"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/entity_type/can_equip_saddle.json",
+    "schema": "tag:entity_type"
+  }
+]

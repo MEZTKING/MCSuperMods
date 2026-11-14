@@ -8,11 +8,13 @@ import { definePlugin } from '@msm/plugin-api';
 import { entitiesKinds } from './kinds';
 import { entitiesTemplates } from './templates';
 import { entitiesValidators } from './validators';
+import { entitiesMobValidators } from './validators-mobs';
 
 export * from './kinds';
 export * from './lowering';
 export { displayName, entitiesTemplates } from './templates';
 export { ENTITIES_PROBLEM_CODES, entitiesValidators } from './validators';
+export { ENTITIES_MOB_PROBLEM_CODES, entitiesMobValidators } from './validators-mobs';
 
 export default definePlugin({
   id: 'msm.entities',
@@ -20,6 +22,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...entitiesKinds],
     elementTemplates: [...entitiesTemplates],
-    validators: [...entitiesValidators],
+    validators: [...entitiesValidators, ...entitiesMobValidators],
   },
 });

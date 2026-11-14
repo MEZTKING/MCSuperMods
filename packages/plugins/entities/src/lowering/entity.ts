@@ -1,7 +1,11 @@
 /**
  * Lowering of `msm:entity` (ADR 0028 D1, D3): the runtime definition under `msm/`, the language
- * keys of the entity and its spawn egg, and the egg's item definition and item model when the
- * egg has a texture. No loot table is generated; `loot_table` passes through to the runtime.
+ * keys of the entity and its spawn egg, the egg's item definition and item model when the egg
+ * has a texture, and for a saddled mount the entry in the target's saddle tag (ADR 0071 D7). No
+ * loot table is generated; `loot_table` passes through to the runtime, and so do `base` and the
+ * mob components of ADRs 0070 and 0071 (`msm:ranged_attack`, `msm:tameable`, `msm:breedable`,
+ * `msm:rideable`, `msm:variants`, `msm:boss_bar`, the new movement fields, goals, animation
+ * names and `renderer`).
  */
 import type { Element, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
@@ -29,6 +33,8 @@ export const ITEM_DEFINITION_SCHEMA = '::java::assets::item_definition::ItemDefi
 export const MODEL_SCHEMA = 'resource:model';
 /** The parent model of a spawn egg's item model, as vanilla eggs use it. */
 export const SPAWN_EGG_PARENT_MODEL = 'minecraft:item/generated';
+/** Schema reference of entity type tags. */
+export const ENTITY_TYPE_TAG_SCHEMA = 'tag:entity_type';
 
 /** A non-empty string, or `undefined`. */
 const nonEmptyString = (value: unknown): string | undefined =>
@@ -65,6 +71,35 @@ export function entityDefinition(element: Element): JsonObject {
   return definition;
 }
 
+/**
+ * True when the entity is a mount that needs a vanilla saddle: `msm:rideable` is present and its
+ * `saddle` is not `false` (ADR 0071 D3).
+ */
+export function needsSaddle(data: JsonObject): boolean {
+  const components = isRecord(data.components) ? data.components : undefined;
+  const rideable = components?.['msm:rideable'];
+  return isRecord(rideable) && rideable.saddle !== false;
+}
+
+/**
+ * The saddle tag entry of a saddled mount (ADR 0071 D7): `data/<ns>/tags/entity_type/<path>.json`
+ * of `target.entities.saddleTag` holding the entity id, declared `merge: 'tag'` so every mount
+ * lands in one file and the vanilla tag is appended to, never replaced. `undefined` when the
+ * target has no entity facts.
+ */
+function saddleTagFile(target: Target, id: string): OutputFile | undefined {
+  const tag = target.entities?.saddleTag;
+  if (tag === undefined) return undefined;
+  const { namespace, path } = splitResourceLocation(tag);
+  return {
+    path: `data/${namespace}/${target.folders.data.tags}/entity_type/${path}.json`,
+    contents: { values: [id] },
+    layer: 'datapack',
+    schema: ENTITY_TYPE_TAG_SCHEMA,
+    merge: 'tag',
+  };
+}
+
 /** The language keys of an entity: its own name and, with an egg, the egg's name. */
 function languageKeys(data: JsonObject, namespace: string, path: string): JsonObject {
   const keys: JsonObject = {};
@@ -86,7 +121,10 @@ function languageKeys(data: JsonObject, namespace: string, path: string): JsonOb
  * `msm`); the `entity.<ns>.<path>` and `item.<ns>.<path>_spawn_egg` keys of `en_us`
  * (`merge: 'object'`) when there are names to write (the egg's name defaults to
  * "<display name> Spawn Egg"); with an egg whose `texture` is set, the egg's item definition
- * and its `minecraft:item/generated` item model.
+ * and its `minecraft:item/generated` item model; for a mount with `msm:rideable` whose `saddle`
+ * is not `false`, the entity's entry in the target's saddle tag (`target.entities.saddleTag`,
+ * layer `datapack`, `merge: 'tag'`; ADR 0071 D7). ADR 0066 turns that entry into
+ * `required: false` in vanilla data packs, since the entity id is mod-only.
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
@@ -131,6 +169,10 @@ export function lowerEntity(element: Element, target: Target): OutputFile[] {
         schema: MODEL_SCHEMA,
       },
     );
+  }
+  if (needsSaddle(data)) {
+    const tagFile = saddleTagFile(target, element.id);
+    if (tagFile !== undefined) files.push(tagFile);
   }
   return files;
 }

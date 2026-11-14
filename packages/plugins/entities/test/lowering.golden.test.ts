@@ -156,6 +156,155 @@ const SAMPLES: Sample[] = [
       },
     },
   },
+  {
+    // A saddled, tameable, breeding mount with every field of ADRs 0070-0072: the definition
+    // carries them all and lowering adds the saddle tag entry (ADR 0071 D7).
+    name: 'mx-saddled_mount',
+    id: 'example:shade',
+    data: {
+      format: 1,
+      base: 'animal',
+      display_name: 'Shade Steed',
+      category: 'creature',
+      size: { width: 1.2, height: 1.4 },
+      spawn_egg: false,
+      spawn: {
+        biomes: ['minecraft:plains'],
+        weight: 4,
+        min_group: 1,
+        max_group: 3,
+        rule: 'animal',
+      },
+      components: {
+        'msm:movement': {
+          speed: 0.3,
+          mode: 'fly',
+          flying_speed: 0.5,
+          hovers: false,
+          step_height: 1,
+        },
+        'msm:ranged_attack': {
+          projectile: 'minecraft:snowball',
+          speed: 1.2,
+          inaccuracy: 4,
+          interval_ticks: 30,
+          charge_ticks: 10,
+          range: 12,
+          sound: 'minecraft:entity.snowball.throw',
+          on_shoot: 'example:shot',
+        },
+        'msm:ai_goals': {
+          goals: [
+            { type: 'ranged_attack', speed: 1, strafe: true, targets: ['minecraft:zombie'] },
+            { type: 'tempt', items: ['minecraft:wheat'], speed: 1.1, scared: true },
+            { type: 'panic', speed: 1.4 },
+            { type: 'leap_at_target', height: 0.5 },
+            { type: 'wander' },
+          ],
+        },
+        'msm:tameable': {
+          items: ['minecraft:bone'],
+          chance: 0.5,
+          sit: true,
+          follows_owner: true,
+          follow: { speed: 1.2, start_distance: 8, stop_distance: 3 },
+          defends_owner: false,
+          tamed_health: 40,
+          on_tame: 'example:tamed',
+        },
+        'msm:breedable': {
+          items: ['minecraft:wheat'],
+          baby_scale: 0.4,
+          grow_up_ticks: 12000,
+          tempted: false,
+          follow_parents: true,
+          on_breed: 'example:born',
+        },
+        'msm:rideable': {
+          controlled_by: 'owner',
+          speed: 1.5,
+          jump: 0.7,
+          passengers: 2,
+          rider_offset: [0, 1.2, -0.2],
+          saddle_bone: 'saddle',
+          on_mount: 'example:mounted',
+        },
+        'msm:variants': {
+          choose: 'biome',
+          variants: [
+            { id: 'plain', texture: 'example:entity/ruby_golem' },
+            {
+              id: 'forest',
+              texture: 'example:entity/ruby_golem',
+              weight: 3,
+              biomes: ['#minecraft:is_forest'],
+            },
+          ],
+        },
+        'msm:boss_bar': {
+          colour: 'red',
+          overlay: 'notched_10',
+          darken_sky: true,
+          fog: false,
+          music: true,
+          range: 48,
+        },
+        'msm:animated_model': {
+          model: 'example:entity/shade',
+          animations: 'example:entity/shade_animations',
+          texture: 'example:entity/shade',
+          renderer: 'vanilla',
+          idle: 'idle',
+          walk: 'walk',
+          sit: 'sit',
+          fly: 'fly',
+          swim: 'swim',
+          shoot: 'shoot',
+        },
+      },
+      events: {
+        'example:shot': { actions: [{ type: 'play_animation', animation: 'shoot' }] },
+        'example:tamed': {
+          actions: [{ type: 'spawn_particle', particle: 'minecraft:heart', count: 5 }],
+        },
+        'example:born': {
+          actions: [{ type: 'play_sound', sound: 'minecraft:entity.horse.ambient' }],
+        },
+        'example:mounted': {
+          actions: [{ type: 'play_sound', sound: 'minecraft:entity.horse.saddle' }],
+        },
+      },
+    },
+  },
+  {
+    // A rideable swimmer without a saddle: no saddle tag entry; monster base in a water category.
+    name: 'mx-unsaddled_swimmer',
+    id: 'example:mobs/moth',
+    data: {
+      format: 1,
+      base: 'monster',
+      category: 'water_creature',
+      size: { width: 0.8, height: 0.6 },
+      spawn_egg: false,
+      spawn: {
+        biomes: ['minecraft:ocean'],
+        weight: 2,
+        min_group: 1,
+        max_group: 1,
+        placement: 'in_water',
+        rule: 'water_animal',
+      },
+      components: {
+        'msm:movement': { mode: 'swim', breathes_air: false, dry_out_ticks: 200 },
+        'msm:rideable': { saddle: false },
+        'msm:animated_model': {
+          model: 'example:entity/moth',
+          texture: 'example:entity/moth',
+          renderer: 'auto',
+        },
+      },
+    },
+  },
 ];
 
 const fixturesRoot = new URL('./fixtures/', import.meta.url);

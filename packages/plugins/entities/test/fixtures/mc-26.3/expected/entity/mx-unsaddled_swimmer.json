@@ -1,0 +1,42 @@
+[
+  {
+    "contents": {
+      "base": "monster",
+      "category": "water_creature",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/moth",
+          "renderer": "auto",
+          "texture": "example:entity/moth"
+        },
+        "msm:movement": {
+          "breathes_air": false,
+          "dry_out_ticks": 200,
+          "mode": "swim"
+        },
+        "msm:rideable": {
+          "saddle": false
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.6,
+        "width": 0.8
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:ocean"
+        ],
+        "max_group": 1,
+        "min_group": 1,
+        "placement": "in_water",
+        "rule": "water_animal",
+        "weight": 2
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/mobs/moth.json",
+    "schema": "msm:entity_definition"
+  }
+]
