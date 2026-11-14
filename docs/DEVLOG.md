@@ -3549,3 +3549,9 @@ Decisions
 
 Next
 - B337 (Portal section, offering `portal` in the Type picker), B338 (flows and example), B340 (AI helper), B339 (eject; `blockItemIdOf` now gives no item for portals).
+
+## 2026-11-14 — executor — B340 AI helper for portals
+
+What: added a "Portals" paragraph to the AI helper's system prompt (`packages/ai/src/system-prompt.ts`, after "Containers and machines"): the `portal` block type, its fields and defaults, the frame rule, `light_portal`, `on_travel`, the allowed components and the limits users meet (mod jar only, the Nether's overlay, dust-only colour, vertical frames, lit by igniter or action only, restart, Nether game rule, two dimensions per block, client and server together). Test added to `packages/ai/test/system-prompt.test.ts`.
+Decisions: element summaries (`project_summary`) are generic per-kind counts, so no change under `tools/`. Flow details are phrased as in ADR 0078 (flow "Portal", card "Portal to a dimension", the Dimension flow's portal answer) without inventing names.
+Next: B338 lands the flow; B344 documents it in the guide.

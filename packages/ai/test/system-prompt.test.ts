@@ -232,3 +232,26 @@ describe('systemPrompt containers and machines paragraph (ADR 0076 D6)', () => {
     }
   });
 });
+
+describe('systemPrompt portals paragraph (ADR 0078 D5)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the type, fields, action and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        'type "portal"',
+        'frame_block',
+        'return_to',
+        'light_portal',
+        'on_travel',
+        'arrival',
+        'Portal to a dimension',
+        'need the Fabric mod jar',
+        'vertical only',
+        'note_missing_feature',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+    },
+  );
+});
