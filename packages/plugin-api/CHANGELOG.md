@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.9.0 — 2026-11-14
+
+Potions and the data kinds sweep (ADRs 0063 D7 and 0064 D5). `API_VERSION` is `1.9.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `DataFolderKey` gains seventeen keys: `'wolf_variant'`, `'cat_variant'`, `'pig_variant'`, `'cow_variant'`, `'chicken_variant'`, `'frog_variant'`, `'zombie_nautilus_variant'`, `'wolf_sound_variant'`, `'cat_sound_variant'`, `'pig_sound_variant'`, `'cow_sound_variant'`, `'chicken_sound_variant'`, `'instrument'`, `'enchantment_provider'`, `'trial_spawner'`, `'timeline'` and `'world_clock'`, so `Target.folders.data` has seventeen more required entries. `ResourceFolderKey` is unchanged.
+- `JavaProjectInput.potions?: DefinitionInput[]`: the project's `msm/<namespace>/potion/*.json` definitions, in a stable order, for generators that register potions. Optional; absent means none.
+
+### Migration from 1.8.0
+
+A target (or a test fixture building a `Target`) must add the seventeen keys to `folders.data`, because `Record<DataFolderKey, string>` is exhaustive; each maps to the folder of the same name. A generator that reads `potions` should declare `^1.9.0` and treat an absent value as empty; generators written earlier ignore it.
+
 ## 1.8.0 — 2026-11-13
 
 Additions to vanilla content (ADR 0060). `API_VERSION` is `1.8.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

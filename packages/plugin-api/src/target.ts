@@ -107,6 +107,23 @@ export type ResourceFolderKey =
  * - `villager_trade`: villager trades. Since 1.8.0 (ADR 0060).
  * - `trade_set`: trade sets, the pools of trades a villager level draws from. Since 1.8.0
  *   (ADR 0060).
+ * - `wolf_variant`: wolf variants. Since 1.9.0 (ADR 0064 D5).
+ * - `cat_variant`: cat variants. Since 1.9.0 (ADR 0064 D5).
+ * - `pig_variant`: pig variants. Since 1.9.0 (ADR 0064 D5).
+ * - `cow_variant`: cow variants. Since 1.9.0 (ADR 0064 D5).
+ * - `chicken_variant`: chicken variants. Since 1.9.0 (ADR 0064 D5).
+ * - `frog_variant`: frog variants. Since 1.9.0 (ADR 0064 D5).
+ * - `zombie_nautilus_variant`: zombie nautilus variants. Since 1.9.0 (ADR 0064 D5).
+ * - `wolf_sound_variant`: wolf sound variants. Since 1.9.0 (ADR 0064 D5).
+ * - `cat_sound_variant`: cat sound variants. Since 1.9.0 (ADR 0064 D5).
+ * - `pig_sound_variant`: pig sound variants. Since 1.9.0 (ADR 0064 D5).
+ * - `cow_sound_variant`: cow sound variants. Since 1.9.0 (ADR 0064 D5).
+ * - `chicken_sound_variant`: chicken sound variants. Since 1.9.0 (ADR 0064 D5).
+ * - `instrument`: instruments (goat horns). Since 1.9.0 (ADR 0064 D5).
+ * - `enchantment_provider`: enchantment providers. Since 1.9.0 (ADR 0064 D5).
+ * - `trial_spawner`: trial spawner configurations. Since 1.9.0 (ADR 0064 D5).
+ * - `timeline`: timelines. Since 1.9.0 (ADR 0064 D5).
+ * - `world_clock`: world clocks. Since 1.9.0 (ADR 0064 D5).
  */
 export type DataFolderKey =
   | 'recipe'
@@ -130,7 +147,24 @@ export type DataFolderKey =
   | 'dimension'
   | 'worldgen'
   | 'villager_trade'
-  | 'trade_set';
+  | 'trade_set'
+  | 'wolf_variant'
+  | 'cat_variant'
+  | 'pig_variant'
+  | 'cow_variant'
+  | 'chicken_variant'
+  | 'frog_variant'
+  | 'zombie_nautilus_variant'
+  | 'wolf_sound_variant'
+  | 'cat_sound_variant'
+  | 'pig_sound_variant'
+  | 'cow_sound_variant'
+  | 'chicken_sound_variant'
+  | 'instrument'
+  | 'enchantment_provider'
+  | 'trial_spawner'
+  | 'timeline'
+  | 'world_clock';
 
 /**
  * World generation facts of a target. Since 0.5.0.
@@ -384,6 +418,12 @@ export interface JavaProjectInput {
    * means the same as an empty array. Since 1.8.0 (ADR 0060).
    */
   lootAdditions?: DefinitionInput[];
+  /**
+   * The project's potion definitions (`msm/<namespace>/potion/*.json`), in a stable order, for
+   * generators that register potions. Optional: absent means the same as an empty array.
+   * Since 1.9.0 (ADR 0063 D7).
+   */
+  potions?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }

@@ -122,6 +122,23 @@ describe('target mc-26.4', () => {
       worldgen: 'worldgen',
       villager_trade: 'villager_trade',
       trade_set: 'trade_set',
+      wolf_variant: 'wolf_variant',
+      cat_variant: 'cat_variant',
+      pig_variant: 'pig_variant',
+      cow_variant: 'cow_variant',
+      chicken_variant: 'chicken_variant',
+      frog_variant: 'frog_variant',
+      zombie_nautilus_variant: 'zombie_nautilus_variant',
+      wolf_sound_variant: 'wolf_sound_variant',
+      cat_sound_variant: 'cat_sound_variant',
+      pig_sound_variant: 'pig_sound_variant',
+      cow_sound_variant: 'cow_sound_variant',
+      chicken_sound_variant: 'chicken_sound_variant',
+      instrument: 'instrument',
+      enchantment_provider: 'enchantment_provider',
+      trial_spawner: 'trial_spawner',
+      timeline: 'timeline',
+      world_clock: 'world_clock',
     });
     for (const name of Object.values(target.folders.data)) {
       expect(name).not.toBe('');
@@ -172,6 +189,36 @@ describe('target mc-26.4', () => {
     >;
     expect(registries.villager_trade?.length).toBeGreaterThan(0);
     expect(registries.trade_set?.length).toBeGreaterThan(0);
+  });
+
+  it('maps the seventeen data kinds sweep keys to registry folders (ADR 0064 D5)', async () => {
+    const keys = [
+      'wolf_variant',
+      'cat_variant',
+      'pig_variant',
+      'cow_variant',
+      'chicken_variant',
+      'frog_variant',
+      'zombie_nautilus_variant',
+      'wolf_sound_variant',
+      'cat_sound_variant',
+      'pig_sound_variant',
+      'cow_sound_variant',
+      'chicken_sound_variant',
+      'instrument',
+      'enchantment_provider',
+      'trial_spawner',
+      'timeline',
+      'world_clock',
+    ] as const;
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    for (const key of keys) {
+      expect(target.folders.data[key]).toBe(key);
+      expect(registries[key]?.length, key).toBeGreaterThan(0);
+    }
   });
 
   it('matches the vendored mcmeta data version', async () => {

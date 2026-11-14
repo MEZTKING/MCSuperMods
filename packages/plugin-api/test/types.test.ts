@@ -209,6 +209,23 @@ describe('0.3.0 additions', () => {
       | 'worldgen'
       | 'villager_trade'
       | 'trade_set'
+      | 'wolf_variant'
+      | 'cat_variant'
+      | 'pig_variant'
+      | 'cow_variant'
+      | 'chicken_variant'
+      | 'frog_variant'
+      | 'zombie_nautilus_variant'
+      | 'wolf_sound_variant'
+      | 'cat_sound_variant'
+      | 'pig_sound_variant'
+      | 'cow_sound_variant'
+      | 'chicken_sound_variant'
+      | 'instrument'
+      | 'enchantment_provider'
+      | 'trial_spawner'
+      | 'timeline'
+      | 'world_clock'
     >();
     expectTypeOf<Target['folders']['data']>().toEqualTypeOf<
       Readonly<Record<DataFolderKey, string>>
@@ -328,12 +345,34 @@ describe('0.8.0 additions', () => {
       soundEvents?: string[];
       biomeAdditions?: DefinitionInput[];
       lootAdditions?: DefinitionInput[];
+      potions?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
       (input: JavaProjectInput) => GeneratedFile[]
     >();
     expectTypeOf<Target['javaProject']>().toEqualTypeOf<JavaProjectGenerator | undefined>();
+  });
+
+  it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {
+    const input: JavaProjectInput = {
+      modId: 'm',
+      javaPackage: 'a.b',
+      modClassName: 'M',
+      blocks: [],
+      items: [],
+      entities: [],
+      biomeAdditions: [],
+      lootAdditions: [],
+      geckolib: false,
+    };
+    expect(input.potions).toBeUndefined();
+    const withPotions: JavaProjectInput = {
+      ...input,
+      potions: [{ id: 'ns:a', path: 'msm/ns/potion/a.json', definition: {} }],
+    };
+    expect(withPotions.potions).toHaveLength(1);
+    expectTypeOf<JavaProjectInput['potions']>().toEqualTypeOf<DefinitionInput[] | undefined>();
   });
 
   it('keeps a 1.7.0-shaped JavaProjectInput assignable (additions are optional, 1.8.0)', () => {
