@@ -3971,3 +3971,20 @@ Decisions
 Next
 - Exports and Test in Minecraft read the session state without `flushPendingEdits`: an export within 150 ms of typing uses the old lines (minor; could flush in the export paths too).
 - Two saves started back to back are not queued; with atomic writes the later one wins per file, but a session-level queue would be cleaner.
+
+## 2026-11-14 — executor — B364 plugin API 1.15.0
+
+What
+- `@msm/plugin-api` 1.15.0 (ADR 0082 D9, ADR 0084 D10): `PluginContributions.projectExpanders?` with `ProjectExpander`, `ExpansionInput`, `ExpansionResult`, `ElementPatch` and `ElementPatchOrigin`; `TargetFacts.dev?: DevFacts` (`gameRules: DevGameRuleFacts`, `worldDataFolders`). CHANGELOG, version, package version, type tests; the core registry pin moved to 1.15.0.
+- `mc-26.3` and `mc-26.4`: `dev` facts. Game rules `advance_time`, `advance_weather`, `spawn_mobs`, `keep_inventory` (vendored `game_rule` registry and `gamerule` command literals). World data folders: the registries of `RegistryDataLoader.WORLD_REGISTRIES` and `DIMENSION_REGISTRIES`, read with javap from the Loom-cached merged jars (53 on 26.3, 54 on 26.4 with `block_sound_set`), each in the vendored `registries.json`. CHANGES.md rows; per-target tests pin the lists; `all/test/targets.test.ts` checks every target's facts against its vendored registries and command tree, that the folders are vendored registry folders named as the target names them, and that `/reload` folders stay out.
+- App: `toTargetFacts` (external plugins) and the AI helper's `target_facts` copy `dev`.
+- Verified: `pnpm lint`, `pnpm typecheck`, full `turbo run test --force --concurrency=4` (app's `PortalSection` lazy-load test timed out once under load; passed alone and in a full app rerun, 1592 tests).
+
+Decisions
+- Game rule ids carry no namespace: the `/gamerule` command takes the bare literals, so the setup function (B366) uses them as they are.
+- `worldDataFolders` holds every world-loaded registry folder, including ones without a `DataFolderKey` (`block_transformer`, `decorated_pot_pattern`, `sulfur_cube_archetype`, `test_environment`, `test_instance`, `worldgen/block_state_provider`, `worldgen/*` registries, 26.4's `block_sound_set`); tag folders are left out.
+- A named `DevGameRuleFacts` interface for the brief's inline `gameRules` shape, for JSDoc.
+
+Next
+- B367 applies expanders (path semantics in the `ElementPatch` JSDoc: missing parent objects created, an empty path replaces `data`, the same path twice is a conflict).
+- B366 and B369: whether tags of world registries reload on `/reload` is unverified (verify at implementation).

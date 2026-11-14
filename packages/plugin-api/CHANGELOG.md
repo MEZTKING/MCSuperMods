@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.15.0 — 2026-11-14
+
+Project expanders and test-in-game facts (ADR 0082 D9, ADR 0084 D10). `API_VERSION` is `1.15.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `PluginContributions.projectExpanders?: ProjectExpander[]` with `ProjectExpander { id; kinds: readonly string[]; expand(input: ExpansionInput): MaybePromise<ExpansionResult> }`, `ExpansionInput { elements: readonly Element[]; target: TargetFacts }`, `ExpansionResult { patches: ElementPatch[]; problems: Problem[] }` and `ElementPatch { elementId; path: readonly (string | number)[]; value: Json; origin: ElementPatchOrigin }` (`ElementPatchOrigin { elementId; pointer }`): changes a plugin makes to copies of elements before lowering, validation, export and eject, never to the saved project.
+- `TargetFacts.dev?: DevFacts` with `DevFacts { gameRules: DevGameRuleFacts; worldDataFolders: readonly string[] }` and `DevGameRuleFacts { advanceTime; advanceWeather; spawnMobs; keepInventory }`: the game rule ids a test world sets (without a namespace, as `/gamerule` takes them) and the data folders whose registries load with the world rather than on `/reload`.
+
+### Migration from 1.14.0
+
+None. A plugin that contributes expanders or reads `dev` should declare `^1.15.0`; a host older than 1.15.0 ignores `projectExpanders`, and an absent `dev` means "no facts to test with".
+
 ## 1.14.0 — 2026-11-14
 
 Custom particle types (ADR 0080 D9). `API_VERSION` is `1.14.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

@@ -3,9 +3,13 @@ import type {
   BlockFacts,
   DataFolderKey,
   DefinitionInput,
+  DevFacts,
   Element,
   ElementKind,
+  ElementPatch,
   EntityFacts,
+  ExpansionInput,
+  ExpansionResult,
   Exporter,
   ExporterInput,
   ExporterOption,
@@ -26,6 +30,7 @@ import type {
   PluginContributions,
   Problem,
   Project,
+  ProjectExpander,
   ProjectValidator,
   ResourceFolderKey,
   Target,
@@ -435,6 +440,74 @@ describe('0.8.0 additions', () => {
     expect(facts.withOptions).toContain('minecraft:dust');
     // A 1.13.0-shaped target without particle facts stays assignable.
     expect(testTarget.particles).toBeUndefined();
+  });
+
+  it('carries optional dev facts on a target (1.15.0)', () => {
+    expectTypeOf<TargetFacts['dev']>().toEqualTypeOf<DevFacts | undefined>();
+    expectTypeOf<DevFacts['worldDataFolders']>().toEqualTypeOf<readonly string[]>();
+    const facts: DevFacts = {
+      gameRules: {
+        advanceTime: 'advance_time',
+        advanceWeather: 'advance_weather',
+        spawnMobs: 'spawn_mobs',
+        keepInventory: 'keep_inventory',
+      },
+      worldDataFolders: ['dimension_type', 'worldgen/biome'],
+    };
+    expect(facts.gameRules.keepInventory).toBe('keep_inventory');
+    // A 1.14.0-shaped target without dev facts stays assignable.
+    expect(testTarget.dev).toBeUndefined();
+  });
+
+  it('types project expanders and element patches (1.15.0)', async () => {
+    expectTypeOf<PluginContributions['projectExpanders']>().toEqualTypeOf<
+      ProjectExpander[] | undefined
+    >();
+    expectTypeOf<ProjectExpander['kinds']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<ProjectExpander['expand']>().parameter(0).toEqualTypeOf<ExpansionInput>();
+    expectTypeOf<ProjectExpander['expand']>().returns.toEqualTypeOf<
+      MaybePromise<ExpansionResult>
+    >();
+    expectTypeOf<ElementPatch['path']>().toEqualTypeOf<readonly (string | number)[]>();
+    expectTypeOf<ElementPatch['value']>().toEqualTypeOf<Json>();
+    const expander: ProjectExpander = {
+      id: 'test.expander',
+      kinds: ['test:book'],
+      expand: async ({ elements }) => ({
+        patches: elements
+          .filter((element) => element.kind === 'test:block')
+          .map((element) => ({
+            elementId: element.id,
+            path: ['events', 0],
+            value: { actions: [] },
+            origin: { elementId: 'test:book', pointer: '/rules/0' },
+          })),
+        problems: [],
+      }),
+    };
+    const result = await expander.expand({
+      elements: [
+        {
+          formatVersion: 1,
+          id: 'test:a',
+          kind: 'test:block',
+          data: {},
+          meta: { createdAt: '2026-11-14T00:00:00.000Z' },
+        },
+      ],
+      target: testTarget,
+    });
+    expect(result.patches).toEqual([
+      {
+        elementId: 'test:a',
+        path: ['events', 0],
+        value: { actions: [] },
+        origin: { elementId: 'test:book', pointer: '/rules/0' },
+      },
+    ]);
+    // A 1.14.0-shaped contributions object without expanders stays assignable.
+    const older: PluginContributions = { validators: [] };
+    expect(older.projectExpanders).toBeUndefined();
   });
 
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {

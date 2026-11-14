@@ -518,6 +518,78 @@ export const target: Target = {
     descriptionFolder: 'particles',
     textureFolder: 'particle',
   },
+  // dev (ADR 0084 D10; plugin API 1.15.0): the test world's game rules and the data folders read
+  // only when a world loads. Verified 2026-11-14: the four game rule ids are in the vendored
+  // `registries.json` `game_rule` list and are literals of the vendored `commands.json` `gamerule`
+  // node (asserted by `test/target.test.ts` and `all/test/targets.test.ts`). The world data
+  // folders are the registries of `RegistryDataLoader.WORLD_REGISTRIES` and
+  // `DIMENSION_REGISTRIES` (`dimension`) in the Loom-cached 26.3 merged jar (javap of their static
+  // initialiser, names from `core.registries.Registries`), 52 in all; every one is in
+  // the vendored `registries.json`. `RELOADABLE_REGISTRIES` (loot tables, predicates, item
+  // modifiers, advancements, recipes and the like), functions and tags are left out: `/reload`
+  // reads them.
+  dev: {
+    gameRules: {
+      advanceTime: 'advance_time',
+      advanceWeather: 'advance_weather',
+      spawnMobs: 'spawn_mobs',
+      keepInventory: 'keep_inventory',
+    },
+    worldDataFolders: [
+      'banner_pattern',
+      'block_transformer',
+      'cat_sound_variant',
+      'cat_variant',
+      'chat_type',
+      'chicken_sound_variant',
+      'chicken_variant',
+      'cow_sound_variant',
+      'cow_variant',
+      'damage_type',
+      'decorated_pot_pattern',
+      'dialog',
+      'dimension',
+      'dimension_type',
+      'enchantment',
+      'enchantment_provider',
+      'frog_variant',
+      'instrument',
+      'jukebox_song',
+      'painting_variant',
+      'pig_sound_variant',
+      'pig_variant',
+      'sulfur_cube_archetype',
+      'test_environment',
+      'test_instance',
+      'timeline',
+      'trade_set',
+      'trial_spawner',
+      'trim_material',
+      'trim_pattern',
+      'villager_trade',
+      'wolf_sound_variant',
+      'wolf_variant',
+      'world_clock',
+      'worldgen/biome',
+      'worldgen/block_state_provider',
+      'worldgen/carver',
+      'worldgen/density_function',
+      'worldgen/feature',
+      'worldgen/flat_level_generator_preset',
+      'worldgen/material_condition',
+      'worldgen/material_rule',
+      'worldgen/multi_noise_biome_source_parameter_list',
+      'worldgen/noise',
+      'worldgen/noise_settings',
+      'worldgen/placed_feature',
+      'worldgen/processor_list',
+      'worldgen/structure',
+      'worldgen/structure_set',
+      'worldgen/template_pool',
+      'worldgen/world_preset',
+      'zombie_nautilus_variant',
+    ],
+  },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).
   fabric: {

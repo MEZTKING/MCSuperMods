@@ -595,6 +595,7 @@ export function createToolExecutor(
       if (target.blocks !== undefined) facts.blocks = target.blocks;
       if (target.entities !== undefined) facts.entities = target.entities;
       if (target.particles !== undefined) facts.particles = target.particles;
+      if (target.dev !== undefined) facts.dev = target.dev;
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
     },
 

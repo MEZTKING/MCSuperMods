@@ -185,6 +185,7 @@ export function toTargetFacts(target: TargetFacts | Target): TargetFacts {
       ...(target.blocks === undefined ? {} : { blocks: target.blocks }),
       ...(target.entities === undefined ? {} : { entities: target.entities }),
       ...(target.particles === undefined ? {} : { particles: target.particles }),
+      ...(target.dev === undefined ? {} : { dev: target.dev }),
     });
   facts.set(target, out);
   return out;

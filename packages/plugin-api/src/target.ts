@@ -304,6 +304,38 @@ export interface ParticleFacts {
 }
 
 /**
+ * The game rules a test world sets, by their registry ids without a namespace (the names the
+ * `/gamerule` command takes, for example `keep_inventory`). Since 1.15.0 (ADR 0084 D10).
+ */
+export interface DevGameRuleFacts {
+  /** The rule that makes the time of day advance; set to false to stop the clock. */
+  advanceTime: string;
+  /** The rule that makes the weather change; set to false to stop it. */
+  advanceWeather: string;
+  /** The rule that lets mobs spawn naturally; set to false to stop natural spawning. */
+  spawnMobs: string;
+  /** The rule that keeps a player's inventory on death. */
+  keepInventory: string;
+}
+
+/**
+ * Facts the host's test-in-game tools need: the game rules of the test world and which data
+ * pack folders are read only when a world is loaded. Since 1.15.0 (ADR 0084 D10).
+ */
+export interface DevFacts {
+  /** The game rules a test world sets. */
+  gameRules: DevGameRuleFacts;
+  /**
+   * The folders under `data/<namespace>/` whose registries the game loads with the world, not
+   * on `/reload`: world generation folders (such as `worldgen/biome`), `dimension`,
+   * `dimension_type`, `enchantment`, `damage_type`, the mob variant folders and the like.
+   * A change to a file in one of them takes effect only when the world is opened again. Paths
+   * of one or two segments separated by `/`, sorted, without tag folders.
+   */
+  worldDataFolders: readonly string[];
+}
+
+/**
  * Item facts of a target: names the definition format checks against the game's own
  * constants. Since 1.1.0 (ADR 0042 D4).
  */
@@ -651,6 +683,13 @@ export interface TargetFacts {
    * (ADR 0080 D9).
    */
   particles?: ParticleFacts;
+  /**
+   * Facts for testing a project in the game: the test world's game rules and the data folders
+   * read only when a world loads. Optional: a target without them cannot drive the host's Play
+   * and Reload, and an external plugin reading them must handle their absence. Since 1.15.0
+   * (ADR 0084 D10).
+   */
+  dev?: DevFacts;
 }
 
 /**

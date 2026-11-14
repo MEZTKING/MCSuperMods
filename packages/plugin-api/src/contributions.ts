@@ -306,6 +306,110 @@ export interface ProjectValidator {
 }
 
 /**
+ * Where an {@link ElementPatch} comes from: the element and the place in its data that caused it,
+ * so the host can report a problem found in patched data on the element the user edits. Since
+ * 1.15.0 (ADR 0082 D9).
+ */
+export interface ElementPatchOrigin {
+  /** The id of the element that caused the patch, for example a rule book's id. */
+  elementId: string;
+  /**
+   * An RFC 6901 pointer into that element's `data`, for example `/rules/0`; `''` for the
+   * element as a whole.
+   */
+  pointer: string;
+}
+
+/**
+ * One change a {@link ProjectExpander} makes to a copy of an element before it is lowered,
+ * validated, exported or ejected. Never applied to the saved project. Since 1.15.0
+ * (ADR 0082 D9).
+ *
+ * @example
+ * ```ts
+ * const patch: ElementPatch = {
+ *   elementId: 'example:ruby_block',
+ *   path: ['events', 'example:ruby_block_rules_on_use'],
+ *   value: { actions: [{ type: 'play_sound', sound: 'minecraft:block.note_block.bell' }] },
+ *   origin: { elementId: 'example:rules', pointer: '/rules/0' },
+ * };
+ * ```
+ */
+export interface ElementPatch {
+  /** The id of the element whose copy is changed. */
+  elementId: string;
+  /**
+   * The place in the element's `data` to set, as path segments: strings for object keys,
+   * numbers for array indexes. Missing parent objects are created. An empty path replaces the
+   * whole of `data`. Two patches on the same path are an error the host reports.
+   */
+  path: readonly (string | number)[];
+  /** The value written at {@link ElementPatch.path}. */
+  value: Json;
+  /** The element and place that caused the patch. */
+  origin: ElementPatchOrigin;
+}
+
+/**
+ * Everything a {@link ProjectExpander} receives. Carries no Node or DOM types. Since 1.15.0
+ * (ADR 0082 D9).
+ */
+export interface ExpansionInput {
+  /**
+   * Every element of the project (all kinds, not only the expander's own), in a stable order,
+   * as saved: no other expander's patches are applied. Read only.
+   */
+  elements: readonly Element[];
+  /** The facts of the target being lowered for. */
+  target: TargetFacts;
+}
+
+/**
+ * What a {@link ProjectExpander} returns. Since 1.15.0 (ADR 0082 D9).
+ */
+export interface ExpansionResult {
+  /** The changes to apply to copies of elements, in order. */
+  patches: ElementPatch[];
+  /** Problems found while expanding, merged into the project's problems. */
+  problems: Problem[];
+}
+
+/**
+ * Changes other elements' data, on copies, before the project is lowered, validated, exported
+ * or ejected: for example a rule book adding events to the blocks it names. The host runs every
+ * expander over the saved elements, applies the patches in plugin order and lowers the patched
+ * copies; the saved project never changes, so the patches are invisible in project files.
+ * Since 1.15.0 (ADR 0082 D9).
+ *
+ * @example
+ * ```ts
+ * const expander: ProjectExpander = {
+ *   id: 'msm.example.greetings',
+ *   kinds: ['example:greeting'],
+ *   expand: ({ elements }) => ({ patches: [], problems: [] }),
+ * };
+ * ```
+ */
+export interface ProjectExpander {
+  /** Unique id, for example `msm.rules.expand`. */
+  id: string;
+  /**
+   * Kind ids whose elements drive this expander; the host re-runs it when an element of any of
+   * them changes, and reports a thrown error on those elements.
+   */
+  kinds: readonly string[];
+  /**
+   * Works out the patches. Must be pure and deterministic: the same input always gives the same
+   * patches in the same order. May return a Promise (a sandboxed plugin's functions resolve
+   * through a worker); hosts await the result.
+   *
+   * @param input - The project's elements and the target.
+   * @returns The patches and problems, or a Promise of them.
+   */
+  expand(input: ExpansionInput): MaybePromise<ExpansionResult>;
+}
+
+/**
  * Everything one plugin contributes. Every field is optional; omit the ones a plugin does not
  * use.
  */
@@ -335,4 +439,9 @@ export interface PluginContributions {
   examples?: ExampleProject[];
   /** Cross-element project checks; see {@link ProjectValidator}. Since 0.5.0. */
   validators?: ProjectValidator[];
+  /**
+   * Changes to copies of elements made before lowering; see {@link ProjectExpander}. Since
+   * 1.15.0.
+   */
+  projectExpanders?: ProjectExpander[];
 }

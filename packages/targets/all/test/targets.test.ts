@@ -428,6 +428,69 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(entityTypeTags).toContain('can_equip_saddle');
     });
 
+    it('lists dev facts the vendored registries and command tree know (ADR 0084 D10)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const commands = (await readVendoredJson(bundle, 'mcmetaCommands', nodeReadFile)) as {
+        children: Record<string, { children?: Record<string, unknown> }>;
+      };
+      const facts = target.dev;
+      expect(facts).toBeDefined();
+      const rules = Object.values(facts?.gameRules ?? {});
+      expect(rules).toHaveLength(4);
+      for (const id of rules) {
+        // Registry ids without a namespace, as the `/gamerule` literals are.
+        expect(id, id).toMatch(/^[a-z0-9_]+$/);
+        expect(registries.game_rule, id).toContain(id);
+        expect(Object.keys(commands.children.gamerule?.children ?? {}), id).toContain(id);
+      }
+      const folders = facts?.worldDataFolders ?? [];
+      expect(folders.length).toBeGreaterThan(0);
+      expect([...folders].sort()).toEqual(folders);
+      expect(new Set(folders).size).toBe(folders.length);
+      // A subset of the target's data folders: every entry is a vendored registry folder, and a
+      // folder with a data folder key is named as the target names it.
+      const dataFolders = new Set(Object.values(target.folders.data));
+      for (const folder of folders) {
+        expect(folder, folder).toMatch(/^[a-z0-9_]+(\/[a-z0-9_]+)?$/);
+        expect(Object.keys(registries), folder).toContain(folder);
+        const [first, second] = folder.split('/');
+        if (second !== undefined) expect(first).toBe(target.folders.data.worldgen);
+      }
+      for (const key of [
+        'dimension',
+        'dimension_type',
+        'enchantment',
+        'damage_type',
+        'painting_variant',
+        'jukebox_song',
+        'chat_type',
+        'trim_material',
+        'trim_pattern',
+        'timeline',
+        'world_clock',
+      ] as const) {
+        expect(dataFolders).toContain(target.folders.data[key]);
+        expect(folders, key).toContain(target.folders.data[key]);
+      }
+      expect(folders).toContain(`${target.folders.data.worldgen}/biome`);
+      // Folders `/reload` reads stay out.
+      for (const key of [
+        'recipe',
+        'loot_table',
+        'advancement',
+        'predicate',
+        'item_modifier',
+        'function',
+        'tags',
+      ] as const) {
+        expect(folders, key).not.toContain(target.folders.data[key]);
+      }
+    });
+
     it('loads its vanilla-mcdoc export through @msm/schemas', async () => {
       const raw = await readVendoredJson(bundle, 'vanillaMcdocSymbols', nodeReadFile);
       const symbols = parseVanillaMcdocSymbols(raw);

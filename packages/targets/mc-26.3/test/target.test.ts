@@ -458,4 +458,84 @@ describe('target mc-26.3', () => {
     expect(facts?.descriptionFolder).toBe('particles');
     expect(facts?.textureFolder).toBe('particle');
   });
+
+  it('sets the test world game rules and the world data folders (ADR 0084 D10)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const commands = (await readJson('../vendor/mcmeta/commands.json')) as {
+      children: Record<string, { children?: Record<string, unknown> }>;
+    };
+    const facts = target.dev;
+    expect(facts?.gameRules).toEqual({
+      advanceTime: 'advance_time',
+      advanceWeather: 'advance_weather',
+      spawnMobs: 'spawn_mobs',
+      keepInventory: 'keep_inventory',
+    });
+    for (const id of Object.values(facts?.gameRules ?? {})) {
+      expect(registries.game_rule, id).toContain(id);
+      expect(Object.keys(commands.children.gamerule?.children ?? {}), id).toContain(id);
+    }
+    // `RegistryDataLoader.WORLD_REGISTRIES` and `DIMENSION_REGISTRIES` in the merged jar (javap,
+    // 2026-11-14): 52 world registries plus `dimension`.
+    expect(facts?.worldDataFolders).toEqual([
+      'banner_pattern',
+      'block_transformer',
+      'cat_sound_variant',
+      'cat_variant',
+      'chat_type',
+      'chicken_sound_variant',
+      'chicken_variant',
+      'cow_sound_variant',
+      'cow_variant',
+      'damage_type',
+      'decorated_pot_pattern',
+      'dialog',
+      'dimension',
+      'dimension_type',
+      'enchantment',
+      'enchantment_provider',
+      'frog_variant',
+      'instrument',
+      'jukebox_song',
+      'painting_variant',
+      'pig_sound_variant',
+      'pig_variant',
+      'sulfur_cube_archetype',
+      'test_environment',
+      'test_instance',
+      'timeline',
+      'trade_set',
+      'trial_spawner',
+      'trim_material',
+      'trim_pattern',
+      'villager_trade',
+      'wolf_sound_variant',
+      'wolf_variant',
+      'world_clock',
+      'worldgen/biome',
+      'worldgen/block_state_provider',
+      'worldgen/carver',
+      'worldgen/density_function',
+      'worldgen/feature',
+      'worldgen/flat_level_generator_preset',
+      'worldgen/material_condition',
+      'worldgen/material_rule',
+      'worldgen/multi_noise_biome_source_parameter_list',
+      'worldgen/noise',
+      'worldgen/noise_settings',
+      'worldgen/placed_feature',
+      'worldgen/processor_list',
+      'worldgen/structure',
+      'worldgen/structure_set',
+      'worldgen/template_pool',
+      'worldgen/world_preset',
+      'zombie_nautilus_variant',
+    ]);
+    for (const folder of facts?.worldDataFolders ?? []) {
+      expect(Object.keys(registries), folder).toContain(folder);
+    }
+  });
 });
