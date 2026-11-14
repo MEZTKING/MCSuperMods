@@ -3134,3 +3134,18 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 - Finish ADR 0066 (exporters move, CI for mod projects), then accept it.
 - Follow-ups: re-sync the vendored mcdoc and add the two dropped kinds; a test for boss bar removal on server stop; `on_attack` against a player; effect and thrown-item event actors; implicit tag ids in the schema validator; B243.
 - Backlog: B2 block families and states with B12 crops, saplings and trees, then B7, B8, B13, B14, B15.
+
+## 2026-11-14 — orchestrator — vanilla pack safety and CI flakes
+
+What
+- ADR 0066 (Proposed): vanilla and combined data pack exports leave out registry-loaded files naming mod-only ids (recipes, loot tables, advancements, predicates, item modifiers, villager trades, trade sets, enchantments, jukebox songs, enchantment providers, dialogs, every worldgen registry and dimensions), chaining through what refers to them; tag entries naming mod-only content become `required: false`; functions naming it are kept with a warning, and function tag entries naming them become optional. Biomes keep spawn entries for mod mobs (the game drops only that entry). Verified on real 26.3 and 26.4-snapshot-7 servers. The rule lives in `@msm/exporters` (`vanilla-packs/mod-only.ts`).
+- CI loads the data pack of every library starter, example and mirror project on a vanilla server (26.3: 179 packs, 26.4: 162, incl. projects with mod content through the rule), bisecting to the pack and file on failure.
+- Flakes: the sample data pack check matched unrelated console lines as command answers and zombie villagers burned in daylight; it now waits for each command's own answer, runs at night with the clock stopped and polls until mobs are visible (30/30 runs, also under CPU load). The golden-path and Creator e2e read toasts by test id (Radix's screen-reader announcer copies toast text for about a second). The Nether parity test waits a tick for the moved cow.
+
+Decisions
+- No app change for the toast duplicate: the announcer is accessibility support.
+- The mirror projects with mod content are exported for 26.3 only in the library server check (they are written for that target).
+
+Next
+- Accept ADR 0066 after CI is green on both targets; guide note on the new export warnings.
+- Backlog: B2 block families and states with B12 crops, saplings and trees.

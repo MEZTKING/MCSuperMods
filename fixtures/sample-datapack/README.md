@@ -70,17 +70,20 @@ The scripted, CI-run form of this check is `tools/run-fabric-server/vanilla-data
 datapack list enabled
 difficulty hard
 gamerule max_entity_cramming 0
+gamerule advance_time false
+time set midnight
 forceload add 0 0
 setblock 0 200 0 minecraft:barrier
 setblock 4 200 0 minecraft:barrier
 summon minecraft:zombie 4 201 0 {NoAI:1b,Invulnerable:1b,PersistenceRequired:1b,Tags:["msm_killer"]}
 summon minecraft:villager 0 201 0 {NoAI:1b,VillagerData:{profession:"minecraft:fletcher",level:1,type:"minecraft:plains"}}   (40 times)
+execute if entity @e[type=minecraft:villager]   (repeat until it counts 40)
 execute as @e[type=minecraft:villager] run damage @s 1000 minecraft:mob_attack by @e[tag=msm_killer,limit=1]
 execute if entity @e[type=minecraft:zombie_villager,nbt={Offers:{Recipes:[{sell:{id:"minecraft:spectral_arrow",count:4},buy:{id:"minecraft:emerald"}}]}}]
 execute if entity @e[type=minecraft:zombie_villager,nbt={Offers:{Recipes:[{sell:{id:"minecraft:arrow"}}]}}]
 ```
 
-A villager draws its trades only when they are first needed; a zombie kill on hard turns it into a zombie villager that keeps them, which forces the draw without a player. Expected: the pack is listed as enabled, the log has no `Failed to load`, `Couldn't load tag` or other error line, and both tests pass with a count above zero (the new trade is in `minecraft:fletcher/level_1`, and the vanilla arrow trade is still there). With 40 villagers and a one-in-two chance each, a false failure is negligible. Recorded run (2026-11-14, 26.3): 40 zombie villagers, 23 with the new trade, 21 with the vanilla arrow trade (`gamerule max_entity_cramming 0` keeps the 40 villagers on one block alive).
+A mob summoned into the just force-loaded chunk is not seen by `@e` for a moment, so the kill and the checks wait until all 40 fletchers (and the zombie, the wolf and the horn) are counted; the stopped midnight clock keeps the zombie villagers from burning in daylight before the checks (a slow CI run once counted none for either reason). A villager draws its trades only when they are first needed; a zombie kill on hard turns it into a zombie villager that keeps them, which forces the draw without a player. Expected: the pack is listed as enabled, the log has no `Failed to load`, `Couldn't load tag` or other error line, and both tests pass with a count above zero (the new trade is in `minecraft:fletcher/level_1`, and the vanilla arrow trade is still there). With 40 villagers and a one-in-two chance each, a false failure is negligible. Recorded run (2026-11-14, 26.3): 40 zombie villagers, 23 with the new trade, 21 with the vanilla arrow trade (`gamerule max_entity_cramming 0` keeps the 40 villagers on one block alive).
 
 ## Changing the sample
 

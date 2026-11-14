@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ANSWER,
   CHECKS,
   checkDatapackRun,
   INSTRUMENT,
+  KILL,
   parseDatapackArgs,
+  READY,
   serverDownload,
   setupCommands,
   testCount,
@@ -85,7 +88,23 @@ describe('the console script', () => {
     expect(
       commands.filter((command) => command.startsWith('summon minecraft:villager')),
     ).toHaveLength(3);
-    expect(commands.at(-1)).toMatch(/^execute as @e\[type=minecraft:villager\] run damage/);
+    // The kill is sent apart, after polling until `@e` sees every fletcher and the zombie.
+    expect(commands.some((command) => command.includes('damage'))).toBe(false);
+    expect(KILL).toMatch(
+      /^execute as @e\[type=minecraft:villager\] run damage .* by @e\[tag=msm_killer/,
+    );
+    expect(READY.map(([, command]) => command)).toEqual([
+      'execute if entity @e[type=minecraft:villager]',
+      'execute if entity @e[type=minecraft:zombie,tag=msm_killer]',
+      'execute if entity @e[type=minecraft:wolf,tag=msm_wolf]',
+      'execute if entity @e[type=minecraft:item,tag=msm_horn]',
+    ]);
+    expect(commands.some((command) => command.includes('Tags:["msm_horn"]'))).toBe(true);
+    // The clock stops at midnight before any mob exists, so no zombie villager burns.
+    const summon = commands.findIndex((command) => command.startsWith('summon'));
+    expect(commands.indexOf('gamerule advance_time false')).toBeLessThan(summon);
+    expect(commands.indexOf('time set midnight')).toBeLessThan(summon);
+    expect(commands.indexOf('time set midnight')).toBeGreaterThan(0);
     expect(CHECKS.map(([name]) => name)).toEqual(Object.keys(ALL));
     expect(CHECKS[1]?.[1]).toContain('minecraft:spectral_arrow');
     // The wolf and the horn name the sample's registry entries, found again by those ids.
@@ -93,6 +112,20 @@ describe('the console script', () => {
     expect(commands.filter((command) => command.includes(`"${INSTRUMENT}"`))).toHaveLength(1);
     expect(CHECKS[3]?.[1]).toContain(`variant:"${WOLF_VARIANT}"`);
     expect(CHECKS[4]?.[1]).toContain(`"minecraft:instrument":"${INSTRUMENT}"`);
+  });
+
+  it('takes only command feedback for an answer', () => {
+    expect(
+      ANSWER.test('[x] [Server thread/INFO]: System chat: Changed the block at 0, 200, 0'),
+    ).toBe(true);
+    expect(
+      ANSWER.test(
+        "[x] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 2000ms or 40 ticks behind",
+      ),
+    ).toBe(false);
+    expect(
+      ANSWER.test("[x] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'"),
+    ).toBe(false);
   });
 
   it('reads the counts of both message forms', () => {

@@ -15,22 +15,27 @@
  * 2. Prepares a run folder: `eula.txt`, the offline `server.properties` of `index.ts`, the
  *    server jar and a fresh `world/` whose `datapacks/` holds the zip (no Fabric, no runtime: the
  *    trade is plain data).
- * 3. Starts the server, waits for `Done (`, then runs on its console: `datapack list enabled`,
- *    hard difficulty, `max_entity_cramming 0`, a force-loaded chunk with two barrier blocks, a
- *    `NoAI` zombie and `--villagers` (default 40) `NoAI` level 1 fletchers, which the zombie
- *    kills with `damage ... by`. On hard every kill turns the villager into a zombie villager
+ * 3. Starts the server, waits for `Done (`, then runs on its console, each command waiting for
+ *    its own `System chat:` answer (so a `Can't keep up!` line is never taken for one):
+ *    `datapack list enabled`, hard difficulty, `max_entity_cramming 0`, the clock stopped at
+ *    midnight (`advance_time false`, `time set midnight`: a zombie villager in daylight burns,
+ *    which emptied the checks of a slow run), a force-loaded chunk with two barrier blocks, a
+ *    `NoAI` zombie and `--villagers` (default 40) `NoAI` level 1 fletchers. A mob summoned into
+ *    the just force-loaded chunk exists before `@e` can see it, so once the wolf and the horn below
+ *    are summoned too it polls (at most 60 s each) until `@e` counts every fletcher, the zombie,
+ *    the wolf and the horn, and only then has the zombie kill the fletchers with `damage ... by`. On hard every kill turns the villager into a zombie villager on the spot
  *    that keeps its offers, which makes it draw them from `minecraft:fletcher/level_1` without a
- *    player. It also summons a `NoAI` wolf of the sample's wolf variant and a goat horn item
- *    whose `minecraft:instrument` names the sample's instrument (B255, ADR 0064): an entity or
- *    item naming an id that is not in its registry does not keep it, so finding them again by
- *    that id proves both are registered. Then five `execute if entity` checks count the zombie
- *    villagers, those offering the sample's new trade (4 spectral arrows for emeralds), those
- *    offering the vanilla arrow trade, the wolves of the variant and the horns of the call, and
- *    `stop`.
- * 4. Passes when the zip is listed as enabled, all five counts are above zero and the log has
- *    no `Failed to load`, `Couldn't load tag`, `Couldn't parse`, registry loading error or ERROR
- *    line. With one in two villagers drawing each trade, a false failure needs every one of 40
- *    to miss it.
+ *    player; it polls again until every one is a zombie villager. It also summons a `NoAI` wolf
+ *    of the sample's wolf variant and a goat horn item whose `minecraft:instrument` names the
+ *    sample's instrument (B255, ADR 0064): an entity or item naming an id that is not in its
+ *    registry does not keep it, so finding them again by that id proves both are registered.
+ *    Then five `execute if entity` checks count the zombie villagers, those offering the
+ *    sample's new trade (4 spectral arrows for emeralds), those offering the vanilla arrow
+ *    trade, the wolves of the variant and the horns of the call, and `stop`.
+ * 4. Passes when the zip is listed as enabled, every fletcher, the zombie, the wolf and the
+ *    horn were found before the kill, all five counts are above zero and the log has no `Failed to load`,
+ *    `Couldn't load tag`, `Couldn't parse`, registry loading error or ERROR line. With one in
+ *    two villagers drawing each trade, a false failure needs every one of 40 to miss it.
  *
  * Downloads are untrusted data: written to disk and run only as the server they claim to be.
  */
@@ -187,23 +192,47 @@ export const NEW_TRADE =
 export const VANILLA_TRADE =
   '@e[type=minecraft:zombie_villager,nbt={Offers:{Recipes:[{sell:{id:"minecraft:arrow"}}]}}]';
 
-/** The console commands before the checks, in order. */
+/**
+ * The console commands before the kill, in order. Night with the clock stopped keeps the zombie
+ * villagers from burning in daylight however long the server takes to reach the checks.
+ */
 export function setupCommands(villagers: number): string[] {
   const villager =
     'summon minecraft:villager 0 201 0 {NoAI:1b,VillagerData:{profession:"minecraft:fletcher",level:1,type:"minecraft:plains"}}';
   return [
     'difficulty hard',
     'gamerule max_entity_cramming 0',
+    'gamerule advance_time false',
+    'time set midnight',
     'forceload add 0 0',
     'setblock 0 200 0 minecraft:barrier',
     'setblock 4 200 0 minecraft:barrier',
     `summon minecraft:wolf 2 201 0 {NoAI:1b,PersistenceRequired:1b,Tags:["msm_wolf"],variant:"${WOLF_VARIANT}"}`,
-    `summon minecraft:item 0 201 4 {NoGravity:1b,PickupDelay:32767s,Age:-32768s,Item:{id:"minecraft:goat_horn",count:1,components:{"minecraft:instrument":"${INSTRUMENT}"}}}`,
+    `summon minecraft:item 0 201 4 {NoGravity:1b,PickupDelay:32767s,Age:-32768s,Tags:["msm_horn"],Item:{id:"minecraft:goat_horn",count:1,components:{"minecraft:instrument":"${INSTRUMENT}"}}}`,
     'summon minecraft:zombie 4 201 0 {NoAI:1b,Invulnerable:1b,PersistenceRequired:1b,Tags:["msm_killer"]}',
     ...Array.from({ length: villagers }, () => villager),
-    'execute as @e[type=minecraft:villager] run damage @s 1000 minecraft:mob_attack by @e[tag=msm_killer,limit=1]',
   ];
 }
+
+/**
+ * Counts polled before the kill and the checks: an entity summoned into the just force-loaded
+ * chunk exists before `@e` can see it, so nothing goes on until every fletcher, the zombie, the
+ * wolf and the horn are found (by tag only: the checks still find the wolf and the horn by the
+ * sample's ids). Fletchers count `--villagers`, the others one each.
+ */
+export const READY: readonly (readonly [string, string])[] = [
+  ['villagers', 'execute if entity @e[type=minecraft:villager]'],
+  ['the killer zombie', 'execute if entity @e[type=minecraft:zombie,tag=msm_killer]'],
+  ['the wolf', 'execute if entity @e[type=minecraft:wolf,tag=msm_wolf]'],
+  ['the goat horn', 'execute if entity @e[type=minecraft:item,tag=msm_horn]'],
+];
+
+/** The zombie kills every fletcher; on hard each kill converts it on the spot. */
+export const KILL =
+  'execute as @e[type=minecraft:villager] run damage @s 1000 minecraft:mob_attack by @e[tag=msm_killer,limit=1]';
+
+/** Polled after the kill until every fletcher is a zombie villager. */
+export const CONVERTED = 'execute if entity @e[type=minecraft:zombie_villager]';
 
 /** The sample's wolf variant and goat horn instrument (data kinds of ADR 0064). */
 export const WOLF_VARIANT = 'msm_sample_data:frost';
@@ -369,9 +398,15 @@ export function startServer(
 }
 
 export const DONE = /\bDone \(\d/;
-/** Any console line after a command: the dedicated server answers every command with one. */
-const ANY = /\S/;
+/**
+ * A command's own answer: the dedicated server echoes command feedback as `System chat:`, so an
+ * unrelated line (`Can't keep up!`, a save) is never taken for one.
+ */
+export const ANSWER = /System chat: /;
 const TEST = /Test (passed|failed)/;
+/** How long a poll may keep asking, and how long it waits between questions. */
+export const POLL_SECONDS = 60;
+const POLL_INTERVAL_MS = 250;
 
 /** Runs the whole check. */
 export async function runDatapackCheck(options: DatapackOptions): Promise<DatapackOutcome> {
@@ -403,13 +438,37 @@ export async function runDatapackCheck(options: DatapackOptions): Promise<Datapa
       server.send(command);
       return server.waitFor(pattern, from, seconds);
     };
-    await run('datapack list enabled', /data pack/i);
-    for (const command of setupCommands(options.villagers)) await run(command, ANY);
-    // Conversions happen on the kill; one more command round trip lets the tick finish.
-    await run('time query gametime', ANY);
-    for (const [name, command] of CHECKS) {
+    const count = async (command: string) => {
       const line = await run(command, TEST);
-      counts[name] = line === undefined ? undefined : testCount(line);
+      return line === undefined ? undefined : testCount(line);
+    };
+    /** Asks `command` until it counts `want`, for at most `POLL_SECONDS`; the last count. */
+    const poll = async (command: string, want: number) => {
+      const deadline = Date.now() + POLL_SECONDS * 1000;
+      for (;;) {
+        const found = await count(command);
+        if ((found !== undefined && found >= want) || Date.now() >= deadline) return found;
+        await new Promise((wake) => setTimeout(wake, POLL_INTERVAL_MS));
+      }
+    };
+    await run('datapack list enabled', /data pack/i);
+    for (const command of setupCommands(options.villagers)) {
+      if ((await run(command, ANSWER)) === undefined) log(`no answer to ${command}`);
+    }
+    const wanted: Record<string, number> = { villagers: options.villagers };
+    for (const [name, command] of READY) {
+      const want = wanted[name] ?? 1;
+      const found = await poll(command, want);
+      log(`${name} in the world: ${String(found)} of ${want}`);
+      if (found === undefined || found < want) {
+        failures.push(`only ${String(found ?? 0)} of ${want} ${name} in the world before the kill`);
+      }
+    }
+    await run(KILL, ANSWER);
+    const converted = await poll(CONVERTED, options.villagers);
+    log(`zombie villagers after the kill: ${String(converted)} of ${options.villagers}`);
+    for (const [name, command] of CHECKS) {
+      counts[name] = await count(command);
       log(`${name}: ${String(counts[name])}`);
     }
   }
