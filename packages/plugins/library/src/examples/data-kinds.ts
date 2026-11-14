@@ -324,6 +324,45 @@ const otherExamples: readonly ExampleProject[] = [
     },
   }),
   defineExample({
+    id: 'example_trial_spawner',
+    title: 'Trial spawner wave',
+    description:
+      'A trial spawner configuration that sends husks and baby zombies, with its own rewards.',
+    kind: KINDS.trialSpawner,
+    category: 'Mob variants',
+    tags: ['trial spawner', 'trial chamber', 'mob', 'loot'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'desert_wave');
+      return {
+        elements: [
+          element(
+            id,
+            KINDS.trialSpawner,
+            {
+              spawn_range: 4,
+              total_mobs: 6,
+              simultaneous_mobs: 2,
+              total_mobs_added_per_player: 2,
+              simultaneous_mobs_added_per_player: 1,
+              ticks_between_spawn: 40,
+              spawn_potentials: [
+                { weight: 3, data: { entity: { id: 'minecraft:husk' } } },
+                { weight: 1, data: { entity: { id: 'minecraft:zombie', IsBaby: 1 } } },
+              ],
+              loot_tables_to_eject: [
+                { weight: 3, data: 'minecraft:spawners/trial_chamber/consumables' },
+                { weight: 1, data: 'minecraft:spawners/trial_chamber/key' },
+              ],
+              items_to_drop_when_ominous: 'minecraft:spawners/trial_chamber/items_to_drop_when_ominous',
+            },
+            `A trial spawner configuration: the wave a trial spawner sends. spawn_potentials picks each mob by weight, here mostly husks and now and then a baby zombie (IsBaby: 1, written as vanilla's own files do). total_mobs and simultaneous_mobs grow with each extra player. When the wave is beaten the spawner ejects one of loot_tables_to_eject. A trial spawner block uses it when its normal_config names ${id}, for example /setblock ~ ~ ~ minecraft:trial_spawner{normal_config:"${id}"}.`,
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
     id: 'example_enchantment_provider',
     title: 'Enchantment provider',
     description: 'A rule that enchants gear like a level 5 to 20 enchanting table.',

@@ -130,6 +130,7 @@ const KIND_IDS = [
   'minecraft:cow_sound_variant',
   'minecraft:chicken_sound_variant',
   'minecraft:instrument',
+  'minecraft:trial_spawner',
   'minecraft:enchantment_provider',
   'minecraft:timeline',
   'minecraft:world_clock',
@@ -608,8 +609,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 93 per-kind examples, one per built-in kind, 21 behaviour examples and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(93);
+  it('has 94 per-kind examples, one per built-in kind, 21 behaviour examples and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(94);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -642,7 +643,7 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(118);
+    expect(libraryExamples).toHaveLength(119);
   });
 
   it('reuses the starter builders for the starter projects', () => {

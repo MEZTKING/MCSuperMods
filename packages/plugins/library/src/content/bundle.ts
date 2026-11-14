@@ -83,6 +83,7 @@ export const KINDS = Object.freeze({
   cowSoundVariant: 'minecraft:cow_sound_variant',
   chickenSoundVariant: 'minecraft:chicken_sound_variant',
   instrument: 'minecraft:instrument',
+  trialSpawner: 'minecraft:trial_spawner',
   enchantmentProvider: 'minecraft:enchantment_provider',
   timeline: 'minecraft:timeline',
   worldClock: 'minecraft:world_clock',
