@@ -1,6 +1,7 @@
 package dev.mcsupermods.runtime.components;
 
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.ID_OR_TAG;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
@@ -18,7 +19,8 @@ import net.minecraft.resources.Identifier;
 /**
  * One AI goal of {@code msm:ai_goals}, selected by {@code type} (dispatcher {@code msm:ai_goal} in
  * {@code definition.mcdoc}). Every goal takes an optional {@code priority}; absent means its
- * position in the list.
+ * position in the list. The goals of ADR 0070 D5 ({@code ranged_attack}, {@code tempt}, {@code panic},
+ * {@code leap_at_target}) are closed: an unknown key drops the goal with an error naming the key.
  */
 public sealed interface Goal {
     Type type();
@@ -38,7 +40,11 @@ public sealed interface Goal {
         LOOK_AROUND("look_around", LookAround.CODEC),
         MELEE_ATTACK("melee_attack", MeleeAttack.CODEC),
         FLEE("flee", Flee.CODEC),
-        FOLLOW("follow", Follow.CODEC);
+        FOLLOW("follow", Follow.CODEC),
+        RANGED_ATTACK("ranged_attack", RangedAttack.CODEC),
+        TEMPT("tempt", Tempt.CODEC),
+        PANIC("panic", Panic.CODEC),
+        LEAP_AT_TARGET("leap_at_target", LeapAtTarget.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Goal> codec;
@@ -151,6 +157,80 @@ public sealed interface Goal {
         @Override
         public List<Identifier> entityTypes() {
             return entities;
+        }
+    }
+
+    /** The closed form of a goal's codec: its own keys plus {@code type} and {@code priority}. */
+    private static <G extends Goal> MapCodec<G> closed(MapCodec<G> codec, String... keys) {
+        List<String> all = new java.util.ArrayList<>(List.of("type", "priority"));
+        all.addAll(List.of(keys));
+        return MsmCodecs.closedMap(codec, List.copyOf(all));
+    }
+
+    /**
+     * The runtime's {@code MsmRangedAttackGoal} with the mob's {@code msm:ranged_attack} (ADR 0070 D5; B291), plus target
+     * goals as {@code melee_attack}; adds nothing without {@code msm:ranged_attack}.
+     */
+    record RangedAttack(Optional<Integer> priority, float speed, boolean strafe, List<Identifier> targets, boolean mustSee,
+            boolean retaliate) implements Goal {
+        static final MapCodec<RangedAttack> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(RangedAttack::priority),
+                optional("speed", floatAtLeast(0), 1.0f).forGetter(RangedAttack::speed),
+                optional("strafe", Codec.BOOL, false).forGetter(RangedAttack::strafe),
+                optional("targets", ID.listOf(), List.of()).forGetter(RangedAttack::targets),
+                optional("must_see", Codec.BOOL, true).forGetter(RangedAttack::mustSee),
+                optional("retaliate", Codec.BOOL, false).forGetter(RangedAttack::retaliate)).apply(i, RangedAttack::new)),
+                "speed", "strafe", "targets", "must_see", "retaliate");
+
+        @Override
+        public Type type() {
+            return Type.RANGED_ATTACK;
+        }
+
+        @Override
+        public List<Identifier> entityTypes() {
+            return targets;
+        }
+    }
+
+    /** {@code TemptGoal}: follows players holding one of {@code items} (ids or {@code #}-prefixed item tags). */
+    record Tempt(Optional<Integer> priority, List<String> items, float speed, boolean scared) implements Goal {
+        static final MapCodec<Tempt> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(Tempt::priority),
+                required("items", ID_OR_TAG.listOf()).forGetter(Tempt::items),
+                optional("speed", floatAtLeast(0), 1.0f).forGetter(Tempt::speed),
+                optional("scared", Codec.BOOL, false).forGetter(Tempt::scared)).apply(i, Tempt::new)),
+                "items", "speed", "scared");
+
+        @Override
+        public Type type() {
+            return Type.TEMPT;
+        }
+    }
+
+    /** {@code PanicGoal}: runs about when hurt or burning; speed defaults to 1.25. */
+    record Panic(Optional<Integer> priority, float speed) implements Goal {
+        static final MapCodec<Panic> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(Panic::priority),
+                optional("speed", floatAtLeast(0), 1.25f).forGetter(Panic::speed)).apply(i, Panic::new)),
+                "speed");
+
+        @Override
+        public Type type() {
+            return Type.PANIC;
+        }
+    }
+
+    /** {@code LeapAtTargetGoal}: leaps at the attack target; {@code height} (upward speed) defaults to 0.4. */
+    record LeapAtTarget(Optional<Integer> priority, float height) implements Goal {
+        static final MapCodec<LeapAtTarget> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(LeapAtTarget::priority),
+                optional("height", floatAtLeast(0), 0.4f).forGetter(LeapAtTarget::height)).apply(i, LeapAtTarget::new)),
+                "height");
+
+        @Override
+        public Type type() {
+            return Type.LEAP_AT_TARGET;
         }
     }
 

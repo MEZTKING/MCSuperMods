@@ -1,5 +1,6 @@
 package dev.mcsupermods.runtime.registry.mob;
 
+import dev.mcsupermods.runtime.components.Goal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.registry.MsmMob;
 import java.util.function.BooleanSupplier;
@@ -26,6 +27,17 @@ public final class MobMovement {
 
     /** The body's constructor tail: move and look controls through {@link MsmMob#setControls}, no gravity. Nothing yet. */
     public void afterConstruct() {}
+
+    /**
+     * The goal a {@code wander} entry adds (from {@code MobGoals}, inside the {@code Mob} constructor): {@code fly} makes it
+     * {@code WaterAvoidingRandomFlyingGoal}, {@code swim} {@code RandomSwimmingGoal} (ADR 0070 D3). Today the walking
+     * stroll {@code vanilla} builds ({@code WaterAvoidingRandomStrollGoal}, or {@code RandomStrollGoal} without
+     * {@code avoid_water}).
+     */
+    public net.minecraft.world.entity.ai.goal.Goal wanderGoal(Goal.Wander wander,
+            Supplier<net.minecraft.world.entity.ai.goal.Goal> vanilla) {
+        return vanilla.get();
+    }
 
     /** Runs inside the {@code Mob} constructor. Vanilla's ground navigation. */
     public PathNavigation createNavigation(Level level, Supplier<PathNavigation> vanilla) {

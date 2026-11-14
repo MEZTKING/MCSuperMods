@@ -1,0 +1,34 @@
+{
+  "base": "monster",
+  "category": "monster",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "height": 0.5,
+          "type": "leap_at_target"
+        },
+        {
+          "targets": [
+            "minecraft:player"
+          ],
+          "type": "melee_attack"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:attack": {
+      "damage": 2.0
+    },
+    "msm:boss_bar": {}
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

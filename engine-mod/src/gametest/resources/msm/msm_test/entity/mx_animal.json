@@ -1,0 +1,32 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "flying_speed": 0.6,
+      "step_height": 1.0
+    },
+    "msm:rideable": {
+      "jump": 0.7
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn": {
+    "biomes": [
+      "minecraft:the_void"
+    ],
+    "max_group": 1,
+    "min_group": 1,
+    "rule": "animal",
+    "weight": 1
+  },
+  "spawn_egg": false
+}

@@ -928,4 +928,81 @@ class DefinitionParserTest {
         assertFalse(BlockType.LEAVES.allows("msm:shape") || BlockType.DOOR.allows("msm:redstone"));
         assertTrue(BlockType.DOOR.allows("msm:flammable") && BlockType.CROP.allows("msm:on_random_tick"));
     }
+
+    // Mob bases, components and goals (ADR 0070, ADR 0071, ADR 0072 D4; B286)
+
+    @Test
+    void mobFieldsDecodeWithTheirDefaults() {
+        ParseResult<EntityDefinition> result = entity("\"msm:ranged_attack\": {\"projectile\": \"minecraft:arrow\"}, "
+                + "\"msm:rideable\": {}, \"msm:boss_bar\": {}, \"msm:variants\": {\"variants\": [{\"id\": \"a\", \"texture\": \"t:entity/a\"}]}, "
+                + "\"msm:movement\": {\"mode\": \"fly\"}, ", "");
+        assertEquals(List.of(), result.errors());
+        assertEquals(List.of(), result.warnings());
+        EntityDefinition def = result.definition().orElseThrow();
+        var c = def.components();
+        assertEquals(EntityDefinition.Base.MOB, def.base());
+        assertEquals(dev.mcsupermods.runtime.components.EntityComponents.Renderer.AUTO, c.animatedModel().renderer());
+        assertEquals(new dev.mcsupermods.runtime.components.EntityComponents.RangedAttack(Identifier.parse("minecraft:arrow"), 2.0f, 1.6f,
+                6.0f, 40, 20, 15.0f, Identifier.parse("minecraft:entity.skeleton.shoot"), Optional.empty()), c.rangedAttack().orElseThrow());
+        assertEquals(new dev.mcsupermods.runtime.components.EntityComponents.Rideable(true,
+                dev.mcsupermods.runtime.components.EntityComponents.RideControl.ANYONE, 1.0f, 0.0f, 1, Optional.empty(), Optional.empty(),
+                Optional.empty()), c.rideable().orElseThrow());
+        assertEquals(new dev.mcsupermods.runtime.components.EntityComponents.BossBar(
+                dev.mcsupermods.runtime.components.EntityComponents.BossBarColour.PURPLE,
+                dev.mcsupermods.runtime.components.EntityComponents.BossBarOverlay.PROGRESS, false, false, false, Optional.empty()),
+                c.bossBar().orElseThrow());
+        var variants = c.variants().orElseThrow();
+        assertEquals(dev.mcsupermods.runtime.components.EntityComponents.VariantChoice.RANDOM, variants.choose());
+        assertEquals(1, variants.variants().getFirst().weight());
+        var movement = c.movementOrDefault();
+        assertEquals(dev.mcsupermods.runtime.components.EntityComponents.MovementMode.FLY, movement.mode());
+        assertEquals(0.4f, movement.flyingSpeed());
+        assertTrue(movement.hovers() && movement.swims() && !movement.breathesAir());
+        assertEquals(300, movement.dryOutTicks());
+        assertEquals(Optional.empty(), movement.stepHeight());
+    }
+
+    @Test
+    void tameableAndBreedableNeedTheAnimalBase() {
+        String parts = "\"msm:tameable\": {\"items\": [\"minecraft:bone\"]}, \"msm:breedable\": {\"items\": [\"#minecraft:meat\"]}, "
+                + "\"msm:rideable\": {}, ";
+        ParseResult<EntityDefinition> monster = entity(parts, "\"base\": \"monster\", ");
+        assertEquals(List.of("components: msm:tameable needs base 'animal' (base is 'monster'); it is not applied",
+                "components: msm:breedable needs base 'animal' (base is 'monster'); it is not applied"), monster.errors());
+        var kept = monster.definition().orElseThrow().components();
+        assertTrue(kept.tameable().isEmpty() && kept.breedable().isEmpty() && kept.rideable().isPresent());
+        ParseResult<EntityDefinition> animal = entity(parts, "\"base\": \"animal\", ");
+        assertEquals(List.of(), animal.errors());
+        var c = animal.definition().orElseThrow().components();
+        assertEquals(0.33f, c.tameable().orElseThrow().chance());
+        assertEquals(new dev.mcsupermods.runtime.components.EntityComponents.TameableFollow(1.0f, 10.0f, 2.0f), c.tameable().orElseThrow().follow());
+        assertEquals(List.of("#minecraft:meat"), c.breedable().orElseThrow().items());
+        assertEquals(24000, c.breedable().orElseThrow().growUpTicks());
+    }
+
+    @Test
+    void newGoalsDecodeAndAreClosed() {
+        ParseResult<EntityDefinition> result = entity("\"msm:ai_goals\": {\"goals\": [{\"type\": \"panic\"}, "
+                + "{\"type\": \"tempt\", \"items\": [\"minecraft:wheat\", \"#minecraft:flowers\"], \"priority\": 2}, "
+                + "{\"type\": \"leap_at_target\", \"height\": 0.5}, {\"type\": \"ranged_attack\", \"strafe\": true}, "
+                + "{\"type\": \"panic\", \"distance\": 3}, {\"type\": \"wander\", \"distance\": 3}]}, ", "");
+        assertEquals(1, result.errors().size(), "errors: " + result.errors());
+        assertTrue(result.errors().getFirst().contains("goals[4]") && result.errors().getFirst().contains("distance: unknown field"),
+                result.errors().getFirst());
+        List<dev.mcsupermods.runtime.components.Goal> goals = result.definition().orElseThrow().components().goals();
+        assertEquals(List.of(new dev.mcsupermods.runtime.components.Goal.Panic(Optional.empty(), 1.25f),
+                new dev.mcsupermods.runtime.components.Goal.Tempt(Optional.of(2), List.of("minecraft:wheat", "#minecraft:flowers"), 1.0f, false),
+                new dev.mcsupermods.runtime.components.Goal.LeapAtTarget(Optional.empty(), 0.5f),
+                new dev.mcsupermods.runtime.components.Goal.RangedAttack(Optional.empty(), 1.0f, true, List.of(), true, false),
+                new dev.mcsupermods.runtime.components.Goal.Wander(Optional.empty(), 1.0f, true)), goals,
+                "the older goals stay open: wander ignores an unknown key");
+    }
+
+    @Test
+    void mobEventReferencesMustBeDeclared() {
+        ParseResult<EntityDefinition> result = entity("\"msm:ranged_attack\": {\"projectile\": \"minecraft:snowball\", \"on_shoot\": \"t:shot\"}, "
+                + "\"msm:rideable\": {\"on_mount\": \"t:mounted\"}, ", "");
+        assertEquals(List.of("components: msm:ranged_attack.on_shoot names event t:shot, which is not declared in events (or was dropped)",
+                "components: msm:rideable.on_mount names event t:mounted, which is not declared in events (or was dropped)"), result.errors());
+    }
 }

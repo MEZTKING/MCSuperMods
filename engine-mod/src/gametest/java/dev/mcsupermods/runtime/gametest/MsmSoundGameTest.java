@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -113,10 +112,6 @@ public class MsmSoundGameTest {
             server.getPlayerList().remove(player);
             channel.close();
         }
-    }
-
-    private static boolean geckolib() {
-        return FabricLoader.getInstance().isModLoaded("geckolib");
     }
 
     @SuppressWarnings("unchecked")
@@ -253,11 +248,6 @@ public class MsmSoundGameTest {
 
     @GameTest(structure = ARENA, maxTicks = 100)
     public void mobSoundsAreTheConfiguredEvents(GameTestHelper helper) {
-        if (!geckolib()) {
-            helper.assertFalse(BuiltInRegistries.ENTITY_TYPE.containsKey(id("singer")), "singer registered without GeckoLib");
-            helper.succeed();
-            return;
-        }
         Ears ears = new Ears(helper, MID.above());
         try {
             MsmEntity mob = helper.spawnWithNoFreeWill(type("singer"), MID);
@@ -293,11 +283,6 @@ public class MsmSoundGameTest {
 
     @GameTest(structure = ARENA)
     public void unknownMobSoundWarnsAndVanillaStays(GameTestHelper helper) {
-        if (!geckolib()) {
-            helper.assertFalse(BuiltInRegistries.ENTITY_TYPE.containsKey(id("off_key")), "off_key registered without GeckoLib");
-            helper.succeed();
-            return;
-        }
         List<String> warnings = MsmRuntime.report().warnings();
         helper.assertTrue(warnings.stream().anyMatch(w -> w.contains("entity/off_key.json") && w.contains("msm_test:no_such_sound")
                 && w.contains("vanilla sound stays")), "no warning for the unknown sound: " + warnings);

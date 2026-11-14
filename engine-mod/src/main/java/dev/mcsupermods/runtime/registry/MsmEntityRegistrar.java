@@ -26,7 +26,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
@@ -39,13 +42,16 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * Registers {@code msm/<ns>/entity/*.json} definitions (ADR 0028 D5): the entity type with default
- * attributes and spawn placement, the spawn egg and the natural spawn. Every entity renders through
- * GeckoLib, so without GeckoLib a definition logs one error and registers nothing. GeckoLib types
- * are reached only through {@link GeckolibEntities}, after checking that GeckoLib is loaded.
+ * attributes and spawn placement, the spawn egg and the natural spawn. The body class follows {@code base}
+ * (ADR 0070 D1: {@link MsmEntity}, {@link MsmAnimal}, {@link MsmMonster}) and {@code msm:animated_model.renderer}
+ * (ADR 0072 D4): {@code geckolib} needs GeckoLib (without it the definition logs one error and registers nothing),
+ * {@code auto} is the GeckoLib body when GeckoLib is loaded and the plain body otherwise, {@code vanilla} is always the
+ * plain body. GeckoLib types are reached only through {@link GeckolibEntities}, after checking that GeckoLib is loaded.
  */
 public final class MsmEntityRegistrar {
     public static final String GECKOLIB = "geckolib";
@@ -70,8 +76,8 @@ public final class MsmEntityRegistrar {
     }
 
     /**
-     * Types whose instances are geo bodies ({@code MsmGeoEntity}, and from B286 on {@code MsmGeoAnimal} and
-     * {@code MsmGeoMonster}); the client entrypoint gives them a GeckoLib renderer.
+     * Types whose instances are geo bodies ({@code MsmGeoEntity}, {@code MsmGeoAnimal} or {@code MsmGeoMonster}); the
+     * client entrypoint gives them a GeckoLib renderer. The other types are plain bodies, for the vanilla renderer (B295).
      */
     public static List<EntityType<? extends Mob>> geoTypes() {
         return Collections.unmodifiableList(GEO_TYPES);
@@ -94,10 +100,12 @@ public final class MsmEntityRegistrar {
                 continue;
             }
             EntityDefinition def = parsed.definition().get();
-            if (!geckolib) {
-                // ADR 0028 D5: the entity needs its GeckoLib renderer; content jars nest GeckoLib, so this
-                // only happens with hand-made installs.
-                String message = raw.describe() + ": msm:animated_model needs the mod 'geckolib', which is not loaded; entity not registered";
+            EntityComponents.Renderer renderer = def.components().animatedModel().renderer();
+            if (renderer == EntityComponents.Renderer.GECKOLIB && !geckolib) {
+                // ADR 0028 D5, ADR 0072 D4: renderer geckolib needs GeckoLib; content jars nest it, so this only happens
+                // with hand-made installs.
+                String message = raw.describe() + ": msm:animated_model needs the mod 'geckolib', which is not loaded"
+                        + " (renderer 'geckolib'); entity not registered";
                 errors.add(message);
                 MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
                 continue;
@@ -111,9 +119,15 @@ public final class MsmEntityRegistrar {
                     throw new DefinitionException("spawn egg id " + eggId + " is already registered");
                 }
                 MsmRegistrar.checkEvents(raw, def.events(), errors);
-                // Every mob is the GeckoLib creature body until the bases arrive (B286).
-                EntityType<? extends Mob> type = register(raw.id(), def, GeckolibEntities.factory());
-                GEO_TYPES.add(type);
+                boolean geo = renderer == EntityComponents.Renderer.GECKOLIB || (renderer == EntityComponents.Renderer.AUTO && geckolib);
+                EntityType<? extends Mob> type = switch (def.base()) {
+                    case MOB -> register(raw.id(), def, geo ? GeckolibEntities.factory() : MsmEntity::new);
+                    case ANIMAL -> register(raw.id(), def, geo ? GeckolibEntities.animalFactory() : MsmAnimal::new);
+                    case MONSTER -> register(raw.id(), def, geo ? GeckolibEntities.monsterFactory() : MsmMonster::new);
+                };
+                if (geo) {
+                    GEO_TYPES.add(type);
+                }
                 registered.add(raw.id());
                 if (def.spawnEgg().isPresent()) {
                     registerEgg(raw, eggId, def.spawnEgg().get(), type);
@@ -148,6 +162,9 @@ public final class MsmEntityRegistrar {
         if (def.components().movementOrDefault().fireImmune()) {
             builder = builder.fireImmune();
         }
+        if (def.components().bossBar().isPresent()) {
+            builder = builder.clientTrackingRange(BOSS_TRACKING_RANGE); // ADR 0071 D5: the wither's 10 chunks
+        }
         EntityType<T> type = builder.build(key);
         // The definition must be known before the first instance exists: registerGoals runs in the constructor.
         DEFINITIONS.put(type, def);
@@ -156,16 +173,33 @@ public final class MsmEntityRegistrar {
         return type;
     }
 
+    /** Chunks; the wither's tracking range, for {@code msm:boss_bar} (ADR 0071 D5). */
+    static final int BOSS_TRACKING_RANGE = 10;
+    /** {@code Animal.createAnimalAttributes}'s tempt range, on every base: {@code TemptGoal} reads the attribute. */
+    static final double TEMPT_RANGE = 10.0;
+
+    /**
+     * The same attributes for every base (an explicit value each, so the base class changes none): vanilla's mob
+     * attributes, the definition's health, movement and attack, {@code tempt_range} (vanilla's animals' 10, which
+     * {@code TemptGoal} reads on any base), {@code flying_speed} (ADR 0070 D3, default 0.4), {@code step_height} when
+     * given (absent keeps vanilla's 0.6) and {@code jump_strength} from {@code msm:rideable.jump} when above 0 (ADR 0071
+     * D3; 0 keeps vanilla's 0.42 so the mob still jumps on its own).
+     */
     private static AttributeSupplier.Builder attributes(EntityComponents c) {
         EntityComponents.Movement movement = c.movementOrDefault();
         EntityComponents.Attack attack = c.attack().orElse(null);
-        return Mob.createMobAttributes()
+        AttributeSupplier.Builder builder = Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, c.maxHealth())
                 .add(Attributes.MOVEMENT_SPEED, movement.speed())
                 .add(Attributes.FOLLOW_RANGE, movement.followRange())
                 .add(Attributes.KNOCKBACK_RESISTANCE, movement.knockbackResistance())
                 .add(Attributes.ATTACK_DAMAGE, attack == null ? 0.0 : attack.damage())
-                .add(Attributes.ATTACK_KNOCKBACK, attack == null ? 0.0 : attack.knockback());
+                .add(Attributes.ATTACK_KNOCKBACK, attack == null ? 0.0 : attack.knockback())
+                .add(Attributes.TEMPT_RANGE, TEMPT_RANGE)
+                .add(Attributes.FLYING_SPEED, movement.flyingSpeed());
+        movement.stepHeight().ifPresent(step -> builder.add(Attributes.STEP_HEIGHT, step));
+        c.rideable().filter(r -> r.jump() > 0).ifPresent(r -> builder.add(Attributes.JUMP_STRENGTH, r.jump()));
+        return builder;
     }
 
     private static MobCategory category(EntityDefinition.Category category) {
@@ -192,7 +226,10 @@ public final class MsmEntityRegistrar {
 
     /**
      * Vanilla spawn checks. {@code Monster.checkAnyLightMonsterSpawnRules} needs a {@code Monster}
-     * type, so {@code any_light_monster} repeats its body: not peaceful, plus the mob rule.
+     * type, so {@code any_light_monster} repeats its body: not peaceful, plus the mob rule. {@code animal} and
+     * {@code water_animal} (ADR 0070 D6) repeat {@code Animal.checkAnimalSpawnRules} and
+     * {@code WaterAnimal.checkSurfaceWaterAnimalSpawnRules} (bound to those classes' types; identical on 26.3 and 26.4,
+     * read with javap on 2026-11-14) for any base.
      */
     private static <T extends Mob> SpawnPlacements.SpawnPredicate<T> rule(EntityDefinition.Rule rule) {
         return switch (rule) {
@@ -202,6 +239,14 @@ public final class MsmEntityRegistrar {
             case ANY_LIGHT_MONSTER -> (type, level, reason, pos, random) ->
                     level.getDifficulty() != Difficulty.PEACEFUL && Mob.checkMobSpawnRules(type, level, reason, pos, random);
             case ALWAYS -> (type, level, reason, pos, random) -> true;
+            case ANIMAL -> (type, level, reason, pos, random) ->
+                    level.getBlockState(pos.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON)
+                            && (EntitySpawnReason.ignoresLightRequirements(reason) || level.getRawBrightness(pos, 0) > 8);
+            case WATER_ANIMAL -> (type, level, reason, pos, random) -> {
+                int sea = level.getSeaLevel();
+                return pos.getY() >= sea - 13 && pos.getY() <= sea && level.getFluidState(pos.below()).is(FluidTags.WATER)
+                        && level.getBlockState(pos.above()).is(Blocks.WATER);
+            };
         };
     }
 

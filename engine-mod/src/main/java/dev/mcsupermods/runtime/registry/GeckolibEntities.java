@@ -15,12 +15,12 @@ final class GeckolibEntities {
         return MsmGeoEntity::new;
     }
 
-    /** The {@code animal} body with GeckoLib (registered from B286 on). */
+    /** The {@code animal} body with GeckoLib (ADR 0070 D2). */
     static EntityType.EntityFactory<MsmAnimal> animalFactory() {
         return MsmGeoAnimal::new;
     }
 
-    /** The {@code monster} body with GeckoLib (registered from B286 on). */
+    /** The {@code monster} body with GeckoLib (ADR 0070 D2). */
     static EntityType.EntityFactory<MsmMonster> monsterFactory() {
         return MsmGeoMonster::new;
     }

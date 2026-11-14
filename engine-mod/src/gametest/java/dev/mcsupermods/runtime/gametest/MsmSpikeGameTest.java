@@ -29,12 +29,12 @@ public class MsmSpikeGameTest {
     public void definitionsAreRegistered(GameTestHelper helper) {
         // msm_test/ ships six deliberately broken files (MsmRuntimeGameTest, MsmGearGameTest, MsmBlockTypeGameTest); nothing
         // else may fail,
-        // except the missing-GeckoLib errors of a run with -PwithoutGeckolib (MsmEntityGameTest).
+        // except mx_tame_on_mob (MsmMobBaseGameTest) and the missing-GeckoLib error of mx_geckolib_only without GeckoLib.
         helper.assertTrue(MsmRuntime.report().errors().stream()
                 .allMatch(e -> e.contains("partly_broken.json") || e.contains("future_format.json") || e.contains("armed_helmet.json")
                         || e.contains("enchanted_blade.json") || e.contains("type_stairs_unknown_base.json")
                         || e.contains("type_stairs_redstone.json") || e.contains("seeds_clash.json")
-                        || e.contains("needs the mod 'geckolib'")),
+                        || e.contains("mx_tame_on_mob.json") || e.contains("needs the mod 'geckolib'")),
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");
         Block block = BuiltInRegistries.BLOCK.getValue(ORE);

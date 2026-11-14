@@ -5,11 +5,14 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -46,6 +49,16 @@ public final class MsmCodecs {
                         : DataResult.success(id);
             },
             id -> "#" + id);
+
+    /**
+     * An id or a {@code #}-prefixed tag (mcdoc {@code #[id(registry=..., tags="allowed")] string}), kept as written: the
+     * mob components' item lists (ADR 0070 D5, ADR 0071 D1, D2) and variant biomes (ADR 0071 D4) are resolved later.
+     */
+    public static final Codec<String> ID_OR_TAG = Codec.STRING.comapFlatMap(
+            s -> Identifier.tryParse(s.startsWith("#") ? s.substring(1) : s) != null
+                    ? DataResult.success(s)
+                    : DataResult.error(() -> "invalid id or tag '" + s + "'"),
+            s -> s);
 
     /** An mcdoc {@code float}: any finite number. */
     public static final Codec<Float> FLOAT = Codec.FLOAT.validate(f -> Float.isFinite(f)
@@ -97,6 +110,53 @@ public final class MsmCodecs {
         return codec.listOf().validate(list -> list.isEmpty()
                 ? DataResult.error(() -> "must not be empty (expected at least 1 element)")
                 : DataResult.success(list));
+    }
+
+    /**
+     * mcdoc {@code [T] @ min..max}: as {@link #nonEmptyList}, element errors name the element's field; a length outside
+     * the range is an error naming the range.
+     */
+    public static <A> Codec<List<A>> listOfLength(Codec<A> codec, int min, int max) {
+        return codec.listOf().validate(list -> list.size() >= min && list.size() <= max
+                ? DataResult.success(list)
+                : DataResult.error(() -> "has " + list.size() + " element(s) (expected "
+                        + (min == max ? String.valueOf(min) : min + ".." + max) + ")"));
+    }
+
+    /**
+     * A struct without a spread as a {@link MapCodec}, for the members of a dispatch such as {@code msm:ai_goal}: a key
+     * outside {@code keys} is an error naming the key, as {@link #closed}.
+     */
+    public static <A> MapCodec<A> closedMap(MapCodec<A> codec, List<String> keys) {
+        return new MapCodec<>() {
+            @Override
+            public <T> Stream<T> keys(DynamicOps<T> ops) {
+                return codec.keys(ops);
+            }
+
+            @Override
+            public <T> DataResult<A> decode(DynamicOps<T> ops, MapLike<T> input) {
+                List<String> unknown = input.entries()
+                        .map(e -> ops.getStringValue(e.getFirst()).result().orElse(String.valueOf(e.getFirst())))
+                        .filter(k -> !keys.contains(k))
+                        .sorted()
+                        .toList();
+                if (!unknown.isEmpty()) {
+                    return DataResult.error(() -> unknown.getFirst() + ": unknown field (expected one of " + String.join(", ", keys) + ")");
+                }
+                return codec.decode(ops, input);
+            }
+
+            @Override
+            public <T> RecordBuilder<T> encode(A input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+                return codec.encode(input, ops, prefix);
+            }
+
+            @Override
+            public String toString() {
+                return "ClosedMap[" + codec + "]";
+            }
+        };
     }
 
     /** mcdoc {@code int @ min..}. */

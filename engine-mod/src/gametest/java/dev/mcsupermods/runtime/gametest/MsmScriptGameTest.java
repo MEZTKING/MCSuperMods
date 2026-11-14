@@ -19,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -451,8 +450,9 @@ public class MsmScriptGameTest {
         helper.assertFalse(doomed.isAlive(), "kill()");
         assertLogged(helper, host, "msm_test:entity: killed minecraft:cow alive=false");
 
-        if (FabricLoader.getInstance().isModLoaded("geckolib")) {
-            // playAnimation on an MSM entity triggers its animation (a cow above did nothing); no error either way.
+        {
+            // playAnimation on an MSM entity triggers its animation (a cow above did nothing); no error either way. With or
+            // without GeckoLib: kitchen_sink's renderer is auto (ADR 0072 D4).
             @SuppressWarnings("unchecked")
             EntityType<MsmEntity> type = (EntityType<MsmEntity>) BuiltInRegistries.ENTITY_TYPE.getValue(id("kitchen_sink"));
             LivingEntity mob = named(helper.spawnWithNoFreeWill(type, AT.south()), "msm-api");

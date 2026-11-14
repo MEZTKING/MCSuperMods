@@ -1,10 +1,11 @@
 package dev.mcsupermods.runtime.client;
 
+import com.geckolib.animatable.GeoEntity;
 import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 import dev.mcsupermods.runtime.components.EntityComponents;
-import dev.mcsupermods.runtime.registry.MsmGeoEntity;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Mob;
 
 /**
  * Resource ids for one geo entity type. GeckoLib keys loaded files by their path with
@@ -13,9 +14,10 @@ import net.minecraft.resources.Identifier;
  * {@code assets/ns/geckolib/models/entity/x.geo.json} is {@code ns:entity/x}: the definition's ids
  * are the lookup keys as they are. Textures are full paths: {@code ns:entity/x} becomes
  * {@code ns:textures/entity/x.png}. Without {@code animations} the model id is used, which names no
- * animation file, so nothing plays.
+ * animation file, so nothing plays. One class for every geo body ({@code MsmGeoEntity}, {@code MsmGeoAnimal},
+ * {@code MsmGeoMonster}; ADR 0070 D2).
  */
-final class MsmGeoModel extends GeoModel<MsmGeoEntity> {
+final class MsmGeoModel<T extends Mob & GeoEntity> extends GeoModel<T> {
     private final Identifier model;
     private final Identifier animations;
     private final Identifier texture;
@@ -37,7 +39,7 @@ final class MsmGeoModel extends GeoModel<MsmGeoEntity> {
     }
 
     @Override
-    public Identifier getAnimationResource(MsmGeoEntity animatable) {
+    public Identifier getAnimationResource(T animatable) {
         return animations;
     }
 }

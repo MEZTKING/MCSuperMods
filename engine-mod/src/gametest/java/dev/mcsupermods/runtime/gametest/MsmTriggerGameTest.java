@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -401,14 +400,11 @@ public class MsmTriggerGameTest {
         });
     }
 
-    // msm:on_tick and msm:on_spawn (entities need GeckoLib)
+    // msm:on_tick and msm:on_spawn (renderer auto: registered with or without GeckoLib, ADR 0072 D4)
 
     @SuppressWarnings("unchecked")
     private static EntityType<Mob> ticker(GameTestHelper helper) {
-        if (!BuiltInRegistries.ENTITY_TYPE.containsKey(id("ticker"))) {
-            helper.assertFalse(FabricLoader.getInstance().isModLoaded("geckolib"), "ticker not registered although GeckoLib is loaded");
-            return null; // -PwithoutGeckolib: entities register nothing (MsmEntityGameTest)
-        }
+        helper.assertTrue(BuiltInRegistries.ENTITY_TYPE.containsKey(id("ticker")), "ticker not registered");
         return (EntityType<Mob>) BuiltInRegistries.ENTITY_TYPE.getValue(id("ticker"));
     }
 

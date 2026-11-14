@@ -31,6 +31,8 @@ import net.minecraft.resources.Identifier;
  *   <li>Events that failed on their own are errors; the definition registers without them.</li>
  *   <li>Event ids named by components or {@code trigger_event} must be declared.</li>
  *   <li>Entities: goals that failed on their own are errors; the entity registers without them.</li>
+ *   <li>Entities: {@code msm:tameable} and {@code msm:breedable} on a {@code base} other than {@code animal} are an
+ *       error; the entity registers without them (ADR 0070 D1, ADR 0071 D1, D2, as ADR 0067 D3 for block types).</li>
  *   <li>Blocks: {@code type} selects the type's own top-level fields; a field of another type is an error (closed per
  *       type), and a component the type does not allow is an error and is not applied (ADR 0067 D2, D3).</li>
  *   <li>Blocks and items: {@code play_animation} actions are dropped with a warning (ADR 0028 D4).</li>
@@ -186,8 +188,26 @@ public final class DefinitionParser {
     }
 
     public static ParseResult<EntityDefinition> parseEntity(JsonElement json) {
-        return parse(json, EntityDefinition.KEYS, EntityComponents.KEYS, EntityDefinition.CODEC,
-                def -> new Refs(def.events(), def.components().eventReferences(), def.components().goalErrors()));
+        return dropComponentsNotForBase(parse(json, EntityDefinition.KEYS, EntityComponents.KEYS, EntityDefinition.CODEC,
+                def -> new Refs(def.events(), def.components().eventReferences(), def.components().goalErrors())));
+    }
+
+    /** {@code msm:tameable} and {@code msm:breedable} need the {@code animal} base: an error each, and it is not applied. */
+    private static ParseResult<EntityDefinition> dropComponentsNotForBase(ParseResult<EntityDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        EntityDefinition def = result.definition().get();
+        List<String> present = def.components().animalOnlyPresent();
+        if (def.base() == EntityDefinition.Base.ANIMAL || present.isEmpty()) {
+            return result;
+        }
+        List<String> errors = new ArrayList<>(result.errors());
+        for (String key : present) {
+            errors.add("components: " + key + " needs base 'animal' (base is '" + def.base().serialName() + "'); it is not applied");
+        }
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().withoutAnimalOnly())), List.copyOf(errors),
+                result.warnings());
     }
 
     private record Refs(Events events, Stream<String[]> componentRefs, List<String> otherErrors) {}

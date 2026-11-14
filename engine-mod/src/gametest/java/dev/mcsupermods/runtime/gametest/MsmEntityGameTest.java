@@ -57,9 +57,10 @@ import net.minecraft.world.phys.Vec3;
  * {@code monster_spawn}, {@code future_format}, and one definition per observable goal
  * ({@code wanderer}, {@code watcher}, {@code brawler}, {@code coward}, {@code follower}).
  *
- * <p>Every entity renders through GeckoLib, so without GeckoLib ({@code -PwithoutGeckolib}) no
- * entity registers (ADR 0028 D5): the entity tests then assert the per-definition error instead.
- * GeckoLib types are touched only inside {@link Geo}. Movement tests run in the
+ * <p>Every definition here has the default renderer {@code auto} (ADR 0072 D4), so it registers with GeckoLib
+ * (the geo body) and without it ({@code -PwithoutGeckolib} and 26.4: the plain body), and every test runs in all
+ * three variants; only {@code mx_geckolib_only} needs GeckoLib ({@code MsmMobBaseGameTest}).
+ * GeckoLib types are touched only inside {@link Geo}, after {@link #geckolib()}. Movement tests run in the
  * {@code msm_runtime_gametest:arena} structure (stone floor, 9x9 interior, walls three high) and
  * never assert exact positions.
  */
@@ -81,21 +82,18 @@ public class MsmEntityGameTest {
     }
 
     /**
-     * Without GeckoLib, asserts that {@code paths} registered nothing and each logged the one
-     * missing-GeckoLib error, then succeeds; returns true when the caller must stop.
+     * Asserts that {@code paths} registered, with or without GeckoLib (renderer {@code auto}, ADR 0072 D4), and logged
+     * no missing-GeckoLib error. Before B286 a run without GeckoLib registered no entity and stopped here; now it always
+     * returns false, so every test runs on all three variants.
      */
     private static boolean withoutGeckolib(GameTestHelper helper, String... paths) {
-        if (geckolib()) {
-            return false;
-        }
         for (String path : paths) {
-            helper.assertFalse(BuiltInRegistries.ENTITY_TYPE.containsKey(id(path)), path + " registered without GeckoLib");
+            helper.assertTrue(BuiltInRegistries.ENTITY_TYPE.containsKey(id(path)), path + " not registered");
             String file = "msm/msm_test/entity/" + path + ".json (mod msm_runtime_gametest): msm:animated_model needs the mod 'geckolib'";
             long count = MsmRuntime.report().errors().stream().filter(e -> e.startsWith(file)).count();
-            helper.assertValueEqual(count, 1L, "missing-GeckoLib errors for " + path);
+            helper.assertValueEqual(count, 0L, "missing-GeckoLib errors for " + path);
         }
-        helper.succeed();
-        return true;
+        return false;
     }
 
     private static void assertNear(GameTestHelper helper, double actual, double expected, String what) {
@@ -182,7 +180,11 @@ public class MsmEntityGameTest {
         helper.assertValueEqual(sink.getDefaultLootTable().orElseThrow().identifier(), id("entities/kitchen_sink"), "vanilla default loot id");
         helper.assertTrue(MsmRuntime.report().entities().contains(id("kitchen_sink")), "kitchen_sink missing from the report");
         MsmEntity mob = helper.spawnWithNoFreeWill(sink, MID);
-        helper.assertTrue(Geo.isGeo(mob), "kitchen_sink is not an MsmGeoEntity: " + mob.getClass());
+        if (geckolib()) {
+            helper.assertTrue(Geo.isGeo(mob), "kitchen_sink is not an MsmGeoEntity: " + mob.getClass());
+        } else {
+            helper.assertValueEqual(mob.getClass(), MsmEntity.class, "kitchen_sink body without GeckoLib");
+        }
         helper.assertValueEqual(mob.getMaxHealth(), 30.0f, "msm:health max");
         helper.assertValueEqual(mob.getHealth(), 30.0f, "health");
         assertNear(helper, mob.getAttributeBaseValue(Attributes.MOVEMENT_SPEED), 0.28, "msm:movement speed");
@@ -259,15 +261,15 @@ public class MsmEntityGameTest {
 
     @GameTest
     public void geckolibDecidesWhetherEntitiesRegister(GameTestHelper helper) {
-        List<String> all = List.of("kitchen_sink", "minimal", "no_egg", "monster_spawn", "wanderer", "watcher", "brawler", "coward", "follower",
-                "singer", "off_key", "ticker");
-        if (withoutGeckolib(helper, all.toArray(String[]::new))) {
-            helper.assertTrue(MsmRuntime.report().entities().isEmpty(), "entities registered without GeckoLib");
-            return;
-        }
-        helper.assertValueEqual(MsmRuntime.report().entities().size(), all.size(), "entity types in the report");
-        helper.assertValueEqual(MsmEntityRegistrar.geoTypes().size(), all.size(), "geo types");
-        helper.assertFalse(MsmRuntime.report().errors().stream().anyMatch(e -> e.contains("/entity/") && !e.contains("future_format.json")),
+        // renderer auto (ADR 0072 D4): registered either way, a geo type exactly with GeckoLib
+        List<String> auto = List.of("kitchen_sink", "minimal", "no_egg", "monster_spawn", "wanderer", "watcher", "brawler", "coward",
+                "follower", "singer", "off_key", "ticker", "mx_animal", "mx_monster", "mx_swimmer", "mx_tame_on_mob", "mx_tempter", "mx_panicker");
+        withoutGeckolib(helper, auto.toArray(String[]::new));
+        int geo = geckolib() ? auto.size() + 1 : 0; // plus mx_geckolib_only, which needs GeckoLib; never mx_vanilla
+        helper.assertValueEqual(MsmRuntime.report().entities().size(), auto.size() + 1 + (geckolib() ? 1 : 0), "entity types in the report");
+        helper.assertValueEqual(MsmEntityRegistrar.geoTypes().size(), geo, "geo types");
+        helper.assertFalse(MsmRuntime.report().errors().stream().anyMatch(e -> e.contains("/entity/") && !e.contains("future_format.json")
+                        && !e.contains("mx_tame_on_mob.json") && !(e.contains("mx_geckolib_only.json") && !geckolib())),
                 "entity errors: " + MsmRuntime.report().errors());
         helper.succeed();
     }
@@ -476,7 +478,13 @@ public class MsmEntityGameTest {
         MsmEntity mob = helper.spawnWithNoFreeWill(type("kitchen_sink"), MID);
         helper.assertValueEqual(mob.definition().triggerableAnimations().get(EntityDefinition.TRIGGERED_CONTROLLER), Set.of("idle", "walk", "attack", "flinch", "slam"),
                 "triggerable animations of msm_triggered");
+        int before = mob.getEntityData().get(mob.animData());
         mob.playAnimation(EntityDefinition.TRIGGERED_CONTROLLER, "slam");
+        helper.assertTrue(mob.getEntityData().get(mob.animData()) != before, "DATA_ANIM did not move on");
+        if (!geckolib()) {
+            helper.succeed(); // the rest is GeckoLib's own trigger and resource keys
+            return;
+        }
         Geo.trigger(mob, EntityDefinition.TRIGGERED_CONTROLLER, "not_in_the_file");
         Geo.trigger(mob, "no_such_controller", "attack");
         helper.assertValueEqual(Geo.lookupKey("geckolib/models/entity/golem.geo.json"), "msm_test:entity/golem", "geo model lookup key");

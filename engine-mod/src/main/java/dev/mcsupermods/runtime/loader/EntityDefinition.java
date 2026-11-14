@@ -35,6 +35,7 @@ import net.minecraft.resources.Identifier;
  */
 public record EntityDefinition(
         int format,
+        Base base,
         Category category,
         Size size,
         Optional<Float> eyeHeight,
@@ -45,13 +46,27 @@ public record EntityDefinition(
         Events events,
         Optional<Sounds> sounds) {
 
-    public static final List<String> KEYS = List.of("format", "category", "size", "eye_height", "loot_table", "spawn_egg", "spawn",
+    public static final List<String> KEYS = List.of("format", "base", "category", "size", "eye_height", "loot_table", "spawn_egg", "spawn",
             "components", "events", "sounds");
 
     /** The GeckoLib controller that {@code play_animation} uses by default and that plays the {@code attack} animation. */
     public static final String TRIGGERED_CONTROLLER = "msm_triggered";
     /** The GeckoLib controller that loops {@code idle} and {@code walk}. */
     public static final String MAIN_CONTROLLER = "msm_main";
+
+    /**
+     * The vanilla class the mob builds on (ADR 0070 D1, {@code ::msm::definition::EntityBase}); absent means {@link #MOB},
+     * the {@code PathfinderMob} of every entity before ADR 0070. The registrar picks the body class from it.
+     */
+    public enum Base {
+        MOB, ANIMAL, MONSTER;
+
+        public String serialName() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+
+        public static final Codec<Base> CODEC = MsmCodecs.named("entity base", values(), Base::serialName);
+    }
 
     /** {@code MobCategory} in lower case; each maps onto the vanilla constant of the same name. */
     public enum Category {
@@ -86,9 +101,12 @@ public record EntityDefinition(
         public static final Codec<HeightmapType> CODEC = MsmCodecs.named("heightmap", values(), HeightmapType::serialName);
     }
 
-    /** The vanilla spawn check of a natural spawn. */
+    /**
+     * The vanilla spawn check of a natural spawn. {@code animal} and {@code water_animal} (ADR 0070 D6) repeat vanilla's
+     * class-bound checks for any base.
+     */
     public enum Rule {
-        MOB, MONSTER, SURFACE_MONSTER, ANY_LIGHT_MONSTER, ALWAYS;
+        MOB, MONSTER, SURFACE_MONSTER, ANY_LIGHT_MONSTER, ALWAYS, ANIMAL, WATER_ANIMAL;
 
         public String serialName() {
             return name().toLowerCase(Locale.ROOT);
@@ -159,6 +177,7 @@ public record EntityDefinition(
 
     public static final Codec<EntityDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
             required("format", intRange(1, 1)).forGetter(EntityDefinition::format),
+            optional("base", Base.CODEC, Base.MOB).forGetter(EntityDefinition::base),
             required("category", Category.CODEC).forGetter(EntityDefinition::category),
             required("size", Size.CODEC).forGetter(EntityDefinition::size),
             optional("eye_height", floatAtLeast(0)).forGetter(EntityDefinition::eyeHeight),
@@ -168,6 +187,11 @@ public record EntityDefinition(
             required("components", EntityComponents.CODEC).forGetter(EntityDefinition::components),
             optional("events", Events.CODEC, Events.NONE).forGetter(EntityDefinition::events),
             optional("sounds", Sounds.CODEC).forGetter(EntityDefinition::sounds)).apply(i, EntityDefinition::new));
+
+    /** A copy with other components (the parser drops components the base does not allow). */
+    public EntityDefinition withComponents(EntityComponents other) {
+        return new EntityDefinition(format, base, category, size, eyeHeight, lootTable, spawnEgg, spawn, other, events, sounds);
+    }
 
     /**
      * Animation names to register as triggerable, by controller: the {@code idle}, {@code walk} and
