@@ -73,10 +73,17 @@ export class BlockTimers {
   private readonly plates = new Map<string, PlateTimer>();
 
   private readonly world: SimWorld;
-  private readonly catalogue: BlockCatalogue;
+  private catalogue: BlockCatalogue;
 
   constructor(world: SimWorld, catalogue: BlockCatalogue) {
     this.world = world;
+    this.catalogue = catalogue;
+  }
+
+  /**
+   * Takes the catalogue built after a live edit (ADR 0085 D4); the timers keep running (B390).
+   */
+  setCatalogue(catalogue: BlockCatalogue): void {
     this.catalogue = catalogue;
   }
 

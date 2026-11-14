@@ -16,7 +16,8 @@ export type ShortcutCommand =
   | 'commandPalette'
   | 'toggleAiHelper'
   | 'play'
-  | 'reloadGame';
+  | 'reloadGame'
+  | 'tryIt';
 
 /** How long a command from one path suppresses the same command from the other path. */
 export const DEDUPE_WINDOW_MS = 300;
@@ -34,7 +35,8 @@ export interface ShortcutKeyEvent {
 /**
  * Maps a key press to a command: Ctrl/Cmd+S save, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z and
  * Ctrl+Y redo, Ctrl/Cmd+N new element, Ctrl/Cmd+Shift+P command palette, Ctrl/Cmd+Shift+A
- * the AI helper, F2 rename element, F5 Play and Ctrl/Cmd+R Reload in game (ADR 0084 D1, D6).
+ * the AI helper, F2 rename element, F5 Play and Ctrl/Cmd+R Reload in game (ADR 0084 D1, D6),
+ * F6 Try it (ADR 0085 D13).
  * Ctrl/Cmd+Shift+R is left to the window reload. Events another handler already consumed (Monaco's own undo, for example) are
  * ignored.
  */
@@ -44,6 +46,7 @@ export function shortcutFor(event: ShortcutKeyEvent): ShortcutCommand | null {
     return 'renameElement';
   }
   if (event.key === 'F5' && !(event.ctrlKey || event.metaKey || event.shiftKey)) return 'play';
+  if (event.key === 'F6' && !(event.ctrlKey || event.metaKey || event.shiftKey)) return 'tryIt';
   if (!(event.ctrlKey || event.metaKey)) return null;
   const key = event.key.toLowerCase();
   if (key === 'p' && event.shiftKey) return 'commandPalette';

@@ -38,6 +38,12 @@ describe('shortcutFor', () => {
     expect(shortcutFor(key('r'))).toBeNull();
   });
 
+  it('maps F6 to Try it (ADR 0085 D13)', () => {
+    expect(shortcutFor(key('F6'))).toBe('tryIt');
+    expect(shortcutFor(key('F6', { ctrlKey: true }))).toBeNull();
+    expect(shortcutFor(key('F6', { shiftKey: true }))).toBeNull();
+  });
+
   it('maps the command palette and rename shortcuts', () => {
     expect(shortcutFor(key('P', { ctrlKey: true, shiftKey: true }))).toBe('commandPalette');
     expect(shortcutFor(key('p', { metaKey: true, shiftKey: true }))).toBe('commandPalette');

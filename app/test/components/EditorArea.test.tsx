@@ -68,3 +68,21 @@ describe('EditorArea Creator entry points (ADR 0043)', () => {
     expect(onOpenCreator).toHaveBeenCalledOnce();
   });
 });
+
+describe('EditorArea Try it (ADR 0085 D13)', () => {
+  it('shows the Try it view instead of the element or Home', () => {
+    render(
+      <EditorArea
+        element={element()}
+        onApply={vi.fn()}
+        home={<p>Home</p>}
+        tryIt={<p data-testid="tryit-here">Try it</p>}
+      />,
+    );
+    expect(screen.getByTestId('tryit-here')).toBeTruthy();
+    expect(screen.queryByTestId('editor-tab-form')).toBeNull();
+    cleanup();
+    render(<EditorArea element={null} onApply={vi.fn()} home={<p>Home</p>} />);
+    expect(screen.getByText('Home')).toBeTruthy();
+  });
+});

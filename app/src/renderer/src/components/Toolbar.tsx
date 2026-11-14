@@ -6,6 +6,7 @@ import {
   FilePlus,
   FolderOpen,
   FolderPlus,
+  Footprints,
   Gamepad2,
   Gauge,
   House,
@@ -91,6 +92,13 @@ export interface ToolbarProps {
   onWhatsNew?(): void;
   /** Shows the Play controls (ADR 0084 D1); default true. */
   showPlay?: boolean;
+  /**
+   * Opens Try it, the test area in the app (ADR 0085 D13); the button sits before Play in every
+   * mode. Hidden when absent.
+   */
+  onTryIt?(): void;
+  /** Whether Try it is the open view (the button then shows as pressed). */
+  tryItOpen?: boolean;
   onOpen(): void;
   /** Recent projects for the "Open" split arrow, newest first. */
   recentProjects?: readonly RecentProjectView[];
@@ -543,6 +551,34 @@ function ModeRow(props: { mode: UiMode; onSetMode(mode: UiMode): void }) {
   );
 }
 
+/** The Try it button (ADR 0085 D13): before Play in every mode. */
+function TryItButton(props: ToolbarProps) {
+  if (props.onTryIt === undefined) return null;
+  return (
+    <Tip
+      label={
+        props.hasProject
+          ? 'Walk around your blocks and mobs here in the app, without Minecraft (F6). A preview, not the real game.'
+          : 'Open a project to try it.'
+      }
+    >
+      <span className="inline-flex">
+        <RadixToolbar.Button
+          type="button"
+          className={buttonClass}
+          disabled={!props.hasProject}
+          data-testid="toolbar-try-it"
+          aria-pressed={props.tryItOpen === true}
+          onClick={props.onTryIt}
+        >
+          <Footprints size={18} aria-hidden />
+          Try it
+        </RadixToolbar.Button>
+      </span>
+    </Tip>
+  );
+}
+
 /**
  * Very easy's toolbar (ADR 0083 D4): Home, Undo, Redo, Play and Reload, Share my mod, the AI
  * helper, Help and the mode switch. Everything else stays in the native menu.
@@ -584,6 +620,7 @@ function VeryEasyToolbar(props: ToolbarProps) {
         onClick={props.onRedo}
       />
       {separator}
+      <TryItButton {...props} />
       {props.showPlay !== false && <PlayControls />}
       <ToolButton
         label="Share my mod"
@@ -929,12 +966,9 @@ function FullToolbar(props: ToolbarProps) {
           },
         ]}
       />
-      {props.showPlay !== false && (
-        <>
-          {separator}
-          <PlayControls />
-        </>
-      )}
+      {(props.onTryIt !== undefined || props.showPlay !== false) && separator}
+      <TryItButton {...props} />
+      {props.showPlay !== false && <PlayControls />}
       {separator}
       {props.onAiHelper !== undefined && (
         <ToolButton

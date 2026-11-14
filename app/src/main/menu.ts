@@ -149,6 +149,8 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
         // reload keys (Electron's "reload" role); View > Reload Window keeps Ctrl/Cmd+Shift+R.
         { label: 'Play', accelerator: 'F5', click: () => send('play') },
         { label: 'Reload in Game', accelerator: 'CmdOrCtrl+R', click: () => send('reloadGame') },
+        // ADR 0085 D13: the test area in the app; F6 sits on View > Try it.
+        { label: 'Try it', click: () => send('tryIt') },
         { type: 'separator' },
         { label: 'Import Assets…', click: () => send('importAssets') },
         { label: 'Import Structure…', click: () => send('importStructure') },
@@ -222,6 +224,7 @@ export function installMenu(recent: readonly RecentProject[] = currentRecent): v
         { label: 'Switch Easy / Advanced Mode', click: () => send('toggleMode') },
         // ADR 0083 D2: Very easy's Home.
         { label: 'Home', click: () => send('home') },
+        { label: 'Try it', accelerator: 'F6', click: () => send('tryIt') },
         { type: 'separator' },
         // Ctrl/Cmd+R is File > Reload in Game (ADR 0084 D6), so the window reload moves.
         { role: 'reload', label: 'Reload Window', accelerator: 'CmdOrCtrl+Shift+R' },

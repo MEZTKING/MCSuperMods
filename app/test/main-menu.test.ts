@@ -77,6 +77,25 @@ describe('Play and the modes (ADR 0083, ADR 0084)', () => {
     expect(sent.at(-1)).toBe('reloadGame');
   });
 
+  it('offers View > "Try it" on F6 and File > "Try it" after Reload in Game (ADR 0085 D13)', () => {
+    installMenu();
+    const template = templates.at(-1) as MenuEntry[];
+    const view = template.find((entry) => entry.label === 'View')?.submenu ?? [];
+    const tryIt = view.find((entry) => entry.label === 'Try it');
+    expect(tryIt?.accelerator).toBe('F6');
+    tryIt?.click?.();
+    expect(sent.at(-1)).toBe('tryIt');
+    const file = template.find((entry) => entry.label === 'File')?.submenu ?? [];
+    const labels = file.map((entry) => entry.label);
+    expect(labels.indexOf('Try it')).toBe(labels.indexOf('Reload in Game') + 1);
+    expect(file.find((entry) => entry.label === 'Try it')?.accelerator).toBeUndefined();
+    const keys = template
+      .flatMap((entry) => entry.submenu ?? [])
+      .map((entry) => entry.accelerator)
+      .filter((key) => key === 'F6');
+    expect(keys).toEqual(['F6']);
+  });
+
   it('moves the window reload off F5 and CmdOrCtrl+R', () => {
     installMenu();
     const template = templates.at(-1) as (MenuEntry & { role?: string })[];

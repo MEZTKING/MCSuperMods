@@ -412,3 +412,26 @@ describe('Toolbar Java project export', () => {
     expect(button('Add element').textContent).toBe('Add element');
   });
 });
+
+describe('Toolbar Try it (ADR 0085 D13)', () => {
+  it('shows Try it in every mode, enabled only with a project', async () => {
+    for (const mode of ['very-easy', 'easy', 'advanced'] as const) {
+      const onTryIt = vi.fn();
+      renderToolbar(props({ mode, onTryIt, tryItOpen: mode === 'easy' }));
+      const tryIt = screen.getByTestId('toolbar-try-it') as HTMLButtonElement;
+      expect(tryIt.disabled).toBe(false);
+      expect(tryIt.getAttribute('aria-pressed')).toBe(String(mode === 'easy'));
+      await userEvent.setup().click(tryIt);
+      expect(onTryIt).toHaveBeenCalledOnce();
+      cleanup();
+      renderToolbar(props({ mode, onTryIt, hasProject: false }));
+      expect((screen.getByTestId('toolbar-try-it') as HTMLButtonElement).disabled).toBe(true);
+      cleanup();
+    }
+  });
+
+  it('hides Try it without a handler', () => {
+    renderToolbar(props());
+    expect(screen.queryByTestId('toolbar-try-it')).toBeNull();
+  });
+});

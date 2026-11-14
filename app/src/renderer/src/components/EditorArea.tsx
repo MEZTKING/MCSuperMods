@@ -47,6 +47,11 @@ export interface EditorAreaProps {
   home?: ReactNode;
   /** Hides the element's id and kind in the header (Very easy shows no ids, ADR 0083 D3). */
   hideIds?: boolean;
+  /**
+   * Try it's view (ADR 0085 D13): when given, it fills the editor area instead of the element
+   * or Home, as Home does.
+   */
+  tryIt?: ReactNode;
 }
 
 /**
@@ -70,11 +75,13 @@ export function EditorArea({
   onTogglePreview,
   home,
   hideIds = false,
+  tryIt,
 }: EditorAreaProps) {
   const [ownTab, setOwnTab] = useState<EditorTab>('form');
   const current = hideRawJson ? 'form' : (tab ?? ownTab);
   const previewDrop = useTextureDrop(element?.id ?? null);
 
+  if (tryIt !== undefined) return tryIt;
   if (element === null && home !== undefined) return home;
   if (element === null) {
     return (

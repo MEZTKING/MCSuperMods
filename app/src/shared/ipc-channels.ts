@@ -170,6 +170,8 @@ export const MENU_COMMANDS = [
   // ADR 0084 D1, D6: File > "Play" (F5) and "Reload in Game" (Ctrl/Cmd+R).
   'play',
   'reloadGame',
+  // ADR 0085 D13: View > "Try it" (F6), also in File after Play and Reload in Game.
+  'tryIt',
   // ADR 0083 D1, D2: View > the three modes and "Home".
   'modeVeryEasy',
   'modeEasy',

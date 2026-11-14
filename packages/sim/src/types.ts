@@ -179,11 +179,27 @@ export type PlayerAction =
       readonly pos: BlockPos;
     }
   | {
-      /** Use (right-click) the block with an empty hand or the held item. */
+      /**
+       * Use (right-click) the block with an empty hand or the held item. The source decides what
+       * happens, as the game does: a block that reacts to a hand (a door, a button) is used
+       * unless the player sneaks; otherwise a held block is placed against the face and a held
+       * spawn egg hatches its mob there (B390).
+       */
       readonly type: 'use';
       readonly pos: BlockPos;
       readonly face: Face;
       readonly hit: Vec3;
+      /** The held thing's id (a block or a spawn egg), when the hand is not empty. */
+      readonly item?: string;
+    }
+  | {
+      /** Hit (left-click) a mob by its id (B390). */
+      readonly type: 'hit';
+      readonly entity: number;
+    }
+  | {
+      /** "Clear the area": every block, mob, timer and effect goes (ADR 0085 D13). */
+      readonly type: 'clear';
     }
   | {
       /** Use a Try it tool such as Grow or Power on a block. */

@@ -8,7 +8,16 @@ import type {
 import type { Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
 import { Toast, Tooltip } from 'radix-ui';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { MenuCommand } from '../../shared/ipc-channels';
 import type {
   AppSettingsPatch,
@@ -154,6 +163,7 @@ import { templateContext, templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
 import { retexture, textureIdOf } from './textures/retexture';
 import { TextureDropContext, type TextureDropHandler } from './textures/texture-drop';
+import { useTryItStore } from './tryit/tryit-store';
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -177,6 +187,9 @@ export function joinProjectPath(root: string, relative: string): string {
   return `${trimmed}${separator}${relative.split('/').join(separator)}`;
 }
 
+/** Try it's view (ADR 0085), a lazy chunk with the simulation and the renderer. */
+const TryItView = lazy(() => import('./tryit/TryItView'));
+
 /** The menu command bound to the same accelerator as each keyboard shortcut. */
 const menuEquivalent = {
   save: 'save',
@@ -187,6 +200,7 @@ const menuEquivalent = {
   toggleAiHelper: 'toggleAiHelper',
   play: 'play',
   reloadGame: 'reloadGame',
+  tryIt: 'tryIt',
 } as const satisfies Record<string, MenuCommand>;
 
 /** Whether an export report was blocked because the GeckoLib jar could not be had. */
@@ -603,6 +617,18 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     [session, bridge],
   );
   const playConnected = usePlayStore((state) => state.host !== null);
+  const tryItOpen = useTryItStore((state) => state.open);
+  // Try it's area belongs to one project (ADR 0085 D13): a new root, or none, resets it.
+  const projectRoot = snapshot.root;
+  useEffect(() => {
+    const store = useTryItStore.getState();
+    if (store.areaRoot !== null && store.areaRoot !== projectRoot) store.reset();
+    if (projectRoot === null) store.reset();
+  }, [projectRoot]);
+  // Choosing an element leaves Try it (it keeps its area for the way back).
+  useEffect(() => {
+    if (selectedId !== null) useTryItStore.getState().close();
+  }, [selectedId]);
   const canReloadGame = usePlayStore((state) => state.status?.canReload === true);
   const veryEasy = uiMode === 'very-easy';
   // The plain-language words for Rule cards and "Things to fix" (ADR 0083 D5).
@@ -1464,6 +1490,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     chooseMode(usePreferences.getState().mode === 'easy' ? 'advanced' : 'easy');
   const goHome = (): void => {
     if (usePreferences.getState().mode !== 'very-easy') chooseMode('very-easy');
+    useTryItStore.getState().close();
     select(null);
   };
   const playNow = (): void => {
@@ -1706,6 +1733,18 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     },
     play: playNow,
     reloadGame,
+    tryIt: () => {
+      if (project === null) {
+        setMessage({ kind: 'error', text: 'Open a project to try it.' });
+        return;
+      }
+      if (useTryItStore.getState().open) {
+        useTryItStore.getState().close();
+        return;
+      }
+      select(null);
+      useTryItStore.getState().openView();
+    },
     modeVeryEasy: () => chooseMode('very-easy'),
     modeEasy: () => chooseMode('easy'),
     modeAdvanced: () => chooseMode('advanced'),
@@ -1770,6 +1809,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     creator: project === null ? null : handlers.creator,
     play: project === null || !playConnected ? null : playNow,
     reloadGame: project === null || !canReloadGame ? null : reloadGame,
+    tryIt: project === null ? null : () => handlers.tryIt(),
     home: goHome,
     veryEasyMode: uiMode === 'very-easy' ? null : handlers.modeVeryEasy,
     easyMode: uiMode === 'easy' ? null : handlers.modeEasy,
@@ -2064,8 +2104,38 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       preview
     );
 
+  const tryItView =
+    tryItOpen && project !== null ? (
+      <Suspense
+        fallback={
+          <p className="grid size-full place-items-center text-sm text-muted">
+            Loading the test area…
+          </p>
+        }
+      >
+        <TryItView
+          session={session}
+          root={snapshot.root}
+          vanilla={vanilla}
+          readProjectAsset={readProjectAsset}
+          picture={(assetPath) => thumbnail(assetPath, 32)}
+          assetRevision={assetRevision}
+          vanillaBlockIds={async () => {
+            const current = session.snapshot.project;
+            if (current === null) return [];
+            return (await session.schemas()).registries(current).ids('block');
+          }}
+          playAvailable={playConnected}
+          onPlay={playNow}
+          onTestInMinecraft={testInMinecraft}
+          onSetUpVanilla={() => setDialog({ type: 'settings' })}
+        />
+      </Suspense>
+    ) : undefined;
+
   const editorArea = (
     <EditorArea
+      {...(tryItView === undefined ? {} : { tryIt: tryItView })}
       element={selected}
       form={form}
       tab={activeTab}
@@ -2145,6 +2215,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onSetMode={chooseMode}
                 onHome={goHome}
                 onShare={shareMyMod}
+                onTryIt={handlers.tryIt}
+                tryItOpen={tryItOpen}
                 shareDisabledReason={fabricJarReason}
                 onFirstMod={handlers.firstMod}
                 onWhatsNew={whatsNew}
