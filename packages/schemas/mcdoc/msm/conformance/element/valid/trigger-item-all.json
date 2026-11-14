@@ -1,0 +1,62 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "helmet"
+    },
+    "msm:on_hit": {
+      "event": "mymod:a"
+    },
+    "msm:on_use_on_block": {
+      "cooldown_ticks": 10,
+      "event": "mymod:b"
+    },
+    "msm:while_held": {
+      "event": "mymod:c",
+      "hand": "either",
+      "interval_ticks": 20
+    },
+    "msm:while_worn": {
+      "event": "mymod:d",
+      "interval_ticks": 40
+    }
+  },
+  "display_name": "Ruby Charm",
+  "events": {
+    "mymod:a": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:b": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:c": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:d": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1,
+  "model": "mymod:item/ruby_charm"
+}

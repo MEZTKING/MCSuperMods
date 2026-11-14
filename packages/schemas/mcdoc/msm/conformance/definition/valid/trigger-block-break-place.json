@@ -1,0 +1,29 @@
+{
+  "components": {
+    "msm:on_break": {
+      "event": "mymod:broken"
+    },
+    "msm:on_place": {
+      "event": "mymod:placed"
+    }
+  },
+  "events": {
+    "mymod:broken": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:placed": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

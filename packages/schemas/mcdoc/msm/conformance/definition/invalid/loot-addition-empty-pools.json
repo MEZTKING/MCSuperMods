@@ -1,0 +1,5 @@
+{
+  "format": 1,
+  "pools": [],
+  "tables": ["minecraft:entities/zombie"]
+}

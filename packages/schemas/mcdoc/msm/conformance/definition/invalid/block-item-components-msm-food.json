@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "item": {
+    "components": {
+      "msm:food": {
+        "nutrition": 2,
+        "saturation": 0.3
+      }
+    }
+  }
+}

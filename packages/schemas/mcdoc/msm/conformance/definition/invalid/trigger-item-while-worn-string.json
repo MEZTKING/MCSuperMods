@@ -1,0 +1,20 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "boots"
+    },
+    "msm:while_worn": "mymod:step"
+  },
+  "events": {
+    "mymod:step": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "pools": [
+    {
+      "entries": [
+        {
+          "name": "mymod:ruby",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

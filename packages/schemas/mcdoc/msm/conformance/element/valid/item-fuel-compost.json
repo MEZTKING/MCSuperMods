@@ -1,0 +1,9 @@
+{
+  "compost": "65%",
+  "display_name": "Ruby Leaf",
+  "format": 1,
+  "fuel": {
+    "burn_seconds": 7.5
+  },
+  "model": "mymod:item/ruby_leaf"
+}

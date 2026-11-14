@@ -1,0 +1,30 @@
+{
+  "biomes": ["#minecraft:is_overworld", "minecraft:mushroom_fields"],
+  "features": [
+    {
+      "feature": "mymod:ruby_ore",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "mymod:ruby_flowers",
+      "step": "vegetal_decoration"
+    }
+  ],
+  "format": 1,
+  "spawns": [
+    {
+      "category": "monster",
+      "entity": "mymod:ruby_golem",
+      "max_group": 3,
+      "min_group": 1,
+      "weight": 10
+    },
+    {
+      "category": "creature",
+      "entity": "minecraft:fox",
+      "max_group": 2,
+      "min_group": 2,
+      "weight": 1
+    }
+  ]
+}

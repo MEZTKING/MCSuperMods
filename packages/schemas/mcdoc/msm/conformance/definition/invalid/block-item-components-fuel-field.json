@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "item": {
+    "fuel": {
+      "burn_seconds": 15
+    }
+  }
+}

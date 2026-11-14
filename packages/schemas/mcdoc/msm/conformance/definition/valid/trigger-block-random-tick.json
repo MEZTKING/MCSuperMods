@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_random_tick": {
+      "chance": 0.05,
+      "event": "mymod:grow"
+    }
+  },
+  "events": {
+    "mymod:grow": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

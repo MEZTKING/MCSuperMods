@@ -1,0 +1,13 @@
+{
+  "biomes": ["#minecraft:is_forest"],
+  "format": 1,
+  "spawns": [
+    {
+      "category": "ambient",
+      "entity": "minecraft:bat",
+      "max_group": 8,
+      "min_group": 1,
+      "weight": 5
+    }
+  ]
+}

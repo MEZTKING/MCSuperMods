@@ -1,0 +1,24 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "helmet"
+    },
+    "msm:while_worn": {
+      "event": "mymod:breathe",
+      "interval_ticks": 40
+    }
+  },
+  "events": {
+    "mymod:breathe": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

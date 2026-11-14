@@ -1,0 +1,50 @@
+{
+  "biomes": ["#minecraft:is_nether"],
+  "features": [
+    {
+      "feature": "mymod:feature_0",
+      "step": "raw_generation"
+    },
+    {
+      "feature": "mymod:feature_1",
+      "step": "lakes"
+    },
+    {
+      "feature": "mymod:feature_2",
+      "step": "local_modifications"
+    },
+    {
+      "feature": "mymod:feature_3",
+      "step": "underground_structures"
+    },
+    {
+      "feature": "mymod:feature_4",
+      "step": "surface_structures"
+    },
+    {
+      "feature": "mymod:feature_5",
+      "step": "strongholds"
+    },
+    {
+      "feature": "mymod:feature_6",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "mymod:feature_7",
+      "step": "underground_decoration"
+    },
+    {
+      "feature": "mymod:feature_8",
+      "step": "fluid_springs"
+    },
+    {
+      "feature": "mymod:feature_9",
+      "step": "vegetal_decoration"
+    },
+    {
+      "feature": "mymod:feature_10",
+      "step": "top_layer_modification"
+    }
+  ],
+  "format": 1
+}

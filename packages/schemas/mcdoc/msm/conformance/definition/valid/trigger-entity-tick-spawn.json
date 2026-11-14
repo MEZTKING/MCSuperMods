@@ -1,0 +1,39 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/ruby_golem",
+      "texture": "mymod:entity/ruby_golem"
+    },
+    "msm:on_spawn": {
+      "event": "mymod:arrive"
+    },
+    "msm:on_tick": {
+      "event": "mymod:pulse",
+      "interval_ticks": 100
+    }
+  },
+  "events": {
+    "mymod:arrive": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:pulse": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

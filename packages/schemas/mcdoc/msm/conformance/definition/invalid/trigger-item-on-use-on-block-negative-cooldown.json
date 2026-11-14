@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_use_on_block": {
+      "cooldown_ticks": -1,
+      "event": "mymod:tap"
+    }
+  },
+  "events": {
+    "mymod:tap": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

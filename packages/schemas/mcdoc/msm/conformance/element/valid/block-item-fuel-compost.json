@@ -1,0 +1,13 @@
+{
+  "display_name": "Ruby Bush",
+  "format": 1,
+  "item": {
+    "compost": "100%",
+    "creative_tab": "minecraft:natural_blocks",
+    "fuel": {
+      "burn_seconds": 5
+    }
+  },
+  "loot": "self",
+  "model": "mymod:block/ruby_bush"
+}

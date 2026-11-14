@@ -1,0 +1,22 @@
+{
+  "components": {
+    "msm:on_hit": {
+      "event": "mymod:hit"
+    },
+    "msm:tool": {
+      "tier": "iron",
+      "type": "sword"
+    }
+  },
+  "events": {
+    "mymod:hit": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

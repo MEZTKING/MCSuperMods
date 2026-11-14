@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:on_break": {
+      "event": 3
+    }
+  },
+  "events": {},
+  "format": 1
+}

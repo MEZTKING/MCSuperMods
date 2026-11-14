@@ -1,8 +1,10 @@
-// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5), `msm:entity` (ADR 0028 D3)
-// and `msm:effect` (ADR 0055 D2): the runtime definition plus editor-only fields that lower to
-// ordinary pack files.
+// MSM element data for `msm:block` and `msm:item` (ADR 0025 D5), `msm:entity` (ADR 0028 D3),
+// `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3):
+// the runtime definition plus editor-only fields that lower to ordinary pack files.
 
+use super::definition::BiomeAddition as DefinitionBiomeAddition
 use super::definition::BlockBehaviourComponents
+use super::definition::BlockItem as DefinitionBlockItem
 use super::definition::BlockCommon
 use super::definition::EffectCommon
 use super::definition::Breakable as DefinitionBreakable
@@ -11,6 +13,7 @@ use super::definition::EntityBehaviourComponents
 use super::definition::EntityCommon
 use super::definition::SpawnEgg as DefinitionSpawnEgg
 use super::definition::ItemCommon
+use super::definition::LootAddition as DefinitionLootAddition
 use super::definition::ToolTier
 
 /// A tool whose mineable tag a block joins.
@@ -57,9 +60,39 @@ struct BlockComponents {
 	...BlockBehaviourComponents,
 }
 
+/// Burn time in a furnace (ADR 0060 D4), lowered to the vanilla `minecraft:cooking_fuel`
+/// component inside `msm:components`.
+struct Fuel {
+	/// Seconds the item burns (vanilla coal is 80), lowered to ticks.
+	burn_seconds: float @ 0.05..,
+}
+
+/// The chance that composting the item raises the composter level (ADR 0060 D4), lowered to
+/// the vanilla `minecraft:compostable` component with the target's provider for that chance.
+enum(string) CompostChance {
+	Chance30 = "30%",
+	Chance50 = "50%",
+	Chance65 = "65%",
+	Chance85 = "85%",
+	Chance100 = "100%",
+}
+
+/// The block item in element data: `fuel` and `compost` are editor-only and lower into the
+/// item's `components` (ADR 0060 D4).
+struct BlockItem {
+	...DefinitionBlockItem,
+	/// Makes the block item burn in a furnace.
+	fuel?: Fuel,
+	/// Makes the block item compostable.
+	compost?: CompostChance,
+}
+
 /// `msm:block` element data.
 struct Block {
 	...BlockCommon,
+	/// The block item; absent means a stack size of 64 in no creative tab; `false` means no
+	/// block item.
+	item?: (BlockItem | false),
 	/// Block model, lowered to a single-variant blockstate and the block item definition.
 	model?: #[id="model"] string,
 	/// Display name, lowered to the `block.<ns>.<path>` language key.
@@ -78,6 +111,10 @@ struct Item {
 	model?: #[id="model"] string,
 	/// Display name, lowered to the `item.<ns>.<path>` language key.
 	display_name?: string,
+	/// Makes the item burn in a furnace; lowered into `msm:components`.
+	fuel?: Fuel,
+	/// Makes the item compostable; lowered into `msm:components`.
+	compost?: CompostChance,
 }
 
 /// `msm:animated_model` in element data: the definition's fields, with `model` and `animations`
@@ -135,4 +172,12 @@ struct Effect {
 	...EffectCommon,
 	/// Display name, lowered to the `effect.<ns>.<path>` language key.
 	display_name?: string,
+}
+
+/// `msm:biome_addition` element data: the definition as written (ADR 0060 D2).
+type BiomeAddition = DefinitionBiomeAddition
+
+/// `msm:loot_addition` element data: the definition as written (ADR 0060 D3).
+struct LootAddition {
+	...DefinitionLootAddition,
 }

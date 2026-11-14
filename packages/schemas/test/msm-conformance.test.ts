@@ -15,7 +15,10 @@ import {
  * `conformance/definition/` holds runtime definitions, `conformance/element/` element data,
  * `conformance/geometry/` and `conformance/animation/` the GeckoLib JSON of the
  * `msm:geo_model` and `msm:animation` elements. Effect files (`effect-`) are ADR 0055's
- * `msm:effect`. The file name prefix selects the schema;
+ * `msm:effect`; `biome-addition-` and `loot-addition-` files ADR 0060's additions,
+ * `block-item-components-` files are blocks whose item carries components (ADR 0060 D4), and
+ * `trigger-block-`, `trigger-item-` and `trigger-entity-` files are blocks, items and entities
+ * using ADR 0061's trigger components. The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
  */
@@ -23,12 +26,25 @@ const CORPUS = new URL('../mcdoc/msm/conformance/', import.meta.url);
 
 type Group = 'definition' | 'element' | 'geometry' | 'animation';
 
+/** Type paths of ADR 0060's additions (no schema reference names them yet). */
+const ADDITIONS = {
+  biomeAdditionDefinition: '::msm::definition::BiomeAddition',
+  lootAdditionDefinition: '::msm::definition::LootAddition',
+  biomeAddition: '::msm::element::BiomeAddition',
+  lootAddition: '::msm::element::LootAddition',
+} as const;
+
 const SCHEMAS: Record<Group, Record<string, string>> = {
   definition: {
     block: MSM_SCHEMA_REFS.blockDefinition,
     item: MSM_SCHEMA_REFS.itemDefinition,
     entity: MSM_SCHEMA_REFS.entityDefinition,
     effect: MSM_SCHEMA_REFS.effectDefinition,
+    'biome-addition': ADDITIONS.biomeAdditionDefinition,
+    'loot-addition': ADDITIONS.lootAdditionDefinition,
+    'trigger-block': MSM_SCHEMA_REFS.blockDefinition,
+    'trigger-item': MSM_SCHEMA_REFS.itemDefinition,
+    'trigger-entity': MSM_SCHEMA_REFS.entityDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -36,6 +52,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     mod: MSM_SCHEMA_REFS.mod,
     entity: MSM_SCHEMA_REFS.entity,
     effect: MSM_SCHEMA_REFS.effect,
+    'biome-addition': ADDITIONS.biomeAddition,
+    'loot-addition': ADDITIONS.lootAddition,
+    'trigger-block': MSM_SCHEMA_REFS.block,
+    'trigger-item': MSM_SCHEMA_REFS.item,
+    'trigger-entity': MSM_SCHEMA_REFS.entity,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -62,10 +83,16 @@ const expectations = (group: Group): Record<string, Expected> =>
     Expected
   >;
 
+/** The longest prefix of `SCHEMAS[group]` that `name` starts with (followed by `-`). */
+const prefixOf = (group: Group, name: string): string | undefined =>
+  Object.keys(SCHEMAS[group])
+    .filter((prefix) => name.startsWith(`${prefix}-`))
+    .sort((a, b) => b.length - a.length)[0];
+
 const schemaFor = (group: Group, name: string): SchemaNode => {
-  const prefix = name.split('-')[0] ?? '';
-  const ref = SCHEMAS[group][prefix];
-  if (ref === undefined) throw new Error(`${group}/${name}: unknown file name prefix "${prefix}"`);
+  const prefix = prefixOf(group, name);
+  const ref = prefix === undefined ? undefined : SCHEMAS[group][prefix];
+  if (ref === undefined) throw new Error(`${group}/${name}: unknown file name prefix`);
   return index.resolveSchemaRef(ref);
 };
 
@@ -81,6 +108,17 @@ describe('MSM mcdoc symbols', () => {
     for (const path of Object.values(MSM_TYPE_PATHS)) {
       expect(index.has(path)).toBe(true);
       expect(index.resolveSchemaRef(path).kind).toBe('struct');
+    }
+    for (const path of Object.values(ADDITIONS)) expect(index.has(path)).toBe(true);
+    expect(index.resolveSchemaRef(ADDITIONS.lootAdditionDefinition).kind).toBe('struct');
+    // At least one of `features` and `spawns` (ADR 0060 D2): a union of two structs.
+    const biome = index.resolveSchemaRef(ADDITIONS.biomeAdditionDefinition);
+    expect(biome.kind).toBe('union');
+    if (biome.kind === 'union') {
+      expect(biome.members.map((m) => (m.kind === 'reference' ? m.resolve() : m).kind)).toEqual([
+        'struct',
+        'struct',
+      ]);
     }
     expect(index.resolveSchemaRef(MSM_SCHEMA_REFS.block)).toBe(index.resolve(MSM_TYPE_PATHS.block));
     expect(index.dispatcherKeys('msm:action')).toEqual([
@@ -134,10 +172,17 @@ describe.each(GROUPS)('MSM conformance corpus: %s', (group) => {
 });
 
 describe('MSM conformance corpus coverage', () => {
-  /** Field paths of a struct schema (map fields as `*`), depth-first. */
+  /**
+   * Field paths of a struct schema (map fields as `*`), depth-first; a union at the root (the
+   * biome addition) contributes the fields of every member.
+   */
   const fieldPaths = (node: SchemaNode, path: string, out: Set<string>, depth = 0): void => {
     if (depth > 6) return;
     const target = node.kind === 'reference' ? node.resolve() : node;
+    if (target.kind === 'union' && depth === 0) {
+      for (const member of target.members) fieldPaths(member, path, out, depth + 1);
+      return;
+    }
     if (target.kind === 'list') {
       fieldPaths(target.item, path, out, depth + 1);
       return;
@@ -190,11 +235,19 @@ describe('MSM conformance corpus coverage', () => {
     return maps;
   };
 
+  /**
+   * Keys and action types of the valid files of a schema: those whose longest prefix is
+   * `prefix`, plus the `trigger-<prefix>-` files of the same schema.
+   */
   const covered = (group: Group, prefix: string) => {
     const keys = new Set<string>();
     const actions = new Set<string>();
     const maps = mapPaths(SCHEMAS[group][prefix]);
-    for (const name of files(group, 'valid').filter((n) => n.startsWith(`${prefix}-`))) {
+    const owned = (name: string): boolean => {
+      const own = prefixOf(group, name);
+      return own === prefix || own === `trigger-${prefix}`;
+    };
+    for (const name of files(group, 'valid').filter(owned)) {
       collect(read(group, 'valid', name), '', maps, keys, actions);
     }
     return { keys, actions };
@@ -216,8 +269,15 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'effect-', 8, 10],
     ['definition', 'item-throwable-', 6, 8],
     ['definition', 'block-shape-', 6, 8],
+    ['definition', 'biome-addition-', 4, 4],
+    ['definition', 'loot-addition-', 4, 4],
+    ['definition', 'block-item-components-', 4, 4],
+    ['definition', 'trigger-', 4, 4],
+    ['definition', 'trigger-item-', 2, 2],
+    ['definition', 'trigger-block-', 2, 2],
+    ['definition', 'trigger-entity-', 2, 2],
   ] as const)(
-    'has enough %s %s cases (ADR 0055, ADR 0056, ADR 0059)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -262,6 +322,10 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'entity', MSM_SCHEMA_REFS.entity],
     ['definition', 'effect', MSM_SCHEMA_REFS.effectDefinition],
     ['element', 'effect', MSM_SCHEMA_REFS.effect],
+    ['definition', 'biome-addition', ADDITIONS.biomeAdditionDefinition],
+    ['definition', 'loot-addition', ADDITIONS.lootAdditionDefinition],
+    ['element', 'biome-addition', ADDITIONS.biomeAddition],
+    ['element', 'loot-addition', ADDITIONS.lootAddition],
     ['geometry', 'geometry', MSM_SCHEMA_REFS.geoModel],
     ['animation', 'animation', MSM_SCHEMA_REFS.animation],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
@@ -272,5 +336,58 @@ describe('MSM conformance corpus coverage', () => {
       .filter((path) => !path.includes('/actions/'))
       .filter((path) => !covered(group, prefix).keys.has(path));
     expect(missing).toEqual([]);
+  });
+});
+
+describe('ADR 0060 and ADR 0061 format additions', () => {
+  const field = (ref: string, path: string): SchemaNode | undefined => {
+    let node: SchemaNode | undefined = index.resolveSchemaRef(ref);
+    for (const key of path.split('/')) {
+      while (node?.kind === 'reference') node = node.resolve();
+      if (node?.kind === 'union') {
+        node = node.members
+          .map((m) => (m.kind === 'reference' ? m.resolve() : m))
+          .find((m) => m.kind === 'struct');
+      }
+      if (node?.kind !== 'struct') return undefined;
+      node = node.fields.find((f) => f.key === key)?.type;
+    }
+    while (node?.kind === 'reference') node = node.resolve();
+    return node;
+  };
+
+  it('keeps fuel and compost out of the definitions and in the element data', () => {
+    expect(field(MSM_SCHEMA_REFS.itemDefinition, 'fuel')).toBeUndefined();
+    expect(field(MSM_SCHEMA_REFS.itemDefinition, 'compost')).toBeUndefined();
+    expect(field(MSM_SCHEMA_REFS.blockDefinition, 'item/fuel')).toBeUndefined();
+    expect(field(MSM_SCHEMA_REFS.item, 'fuel')?.kind).toBe('struct');
+    expect(field(MSM_SCHEMA_REFS.item, 'compost')?.kind).toBe('enum');
+    expect(field(MSM_SCHEMA_REFS.block, 'item/fuel')?.kind).toBe('struct');
+    expect(field(MSM_SCHEMA_REFS.block, 'item/compost')?.kind).toBe('enum');
+    expect(field(MSM_SCHEMA_REFS.blockDefinition, 'item/components')?.kind).toBe('struct');
+    expect(field(MSM_SCHEMA_REFS.block, 'item/components')?.kind).toBe('struct');
+  });
+
+  it.each([
+    [
+      MSM_SCHEMA_REFS.itemDefinition,
+      ['msm:on_hit', 'msm:on_use_on_block', 'msm:while_held', 'msm:while_worn'],
+    ],
+    [
+      MSM_SCHEMA_REFS.blockDefinition,
+      ['msm:on_break', 'msm:on_place', 'msm:on_random_tick', 'msm:on_entity_inside'],
+    ],
+    [MSM_SCHEMA_REFS.entityDefinition, ['msm:on_tick', 'msm:on_spawn']],
+    [
+      MSM_SCHEMA_REFS.item,
+      ['msm:on_hit', 'msm:on_use_on_block', 'msm:while_held', 'msm:while_worn'],
+    ],
+    [
+      MSM_SCHEMA_REFS.block,
+      ['msm:on_break', 'msm:on_place', 'msm:on_random_tick', 'msm:on_entity_inside'],
+    ],
+    [MSM_SCHEMA_REFS.entity, ['msm:on_tick', 'msm:on_spawn']],
+  ])('%s has the ADR 0061 trigger components', (ref, keys) => {
+    for (const key of keys) expect(field(ref, `components/${key}/event`)?.kind).toBe('string');
   });
 });

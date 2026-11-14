@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:armor": {
+      "material": "iron",
+      "slot": "boots"
+    },
+    "msm:while_worn": {
+      "interval_ticks": 20
+    }
+  },
+  "events": {},
+  "format": 1
+}

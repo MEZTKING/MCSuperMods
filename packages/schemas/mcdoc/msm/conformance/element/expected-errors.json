@@ -1,4 +1,8 @@
 {
+  "biome-addition-neither.json": {
+    "code": "schema.missing-field",
+    "path": "/features"
+  },
   "block-bad-min-tier.json": {
     "code": "schema.invalid-enum",
     "path": "/components/msm:breakable/min_tier"
@@ -10,6 +14,10 @@
   "block-display-name-number.json": {
     "code": "schema.type-mismatch",
     "path": "/display_name"
+  },
+  "block-item-compost-40.json": {
+    "code": "schema.invalid-enum",
+    "path": "/item/compost"
   },
   "block-loot-number.json": {
     "code": "schema.no-union-match",
@@ -51,9 +59,21 @@
     "code": "schema.out-of-range",
     "path": "/sounds/ambient_interval_ticks"
   },
+  "item-compost-40.json": {
+    "code": "schema.invalid-enum",
+    "path": "/compost"
+  },
   "item-consumable-seconds-negative.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:consumable/seconds"
+  },
+  "item-fuel-missing-seconds.json": {
+    "code": "schema.missing-field",
+    "path": "/fuel/burn_seconds"
+  },
+  "item-fuel-too-short.json": {
+    "code": "schema.out-of-range",
+    "path": "/fuel/burn_seconds"
   },
   "item-missing-format.json": {
     "code": "schema.missing-field",
@@ -66,6 +86,10 @@
   "item-throwable-bad-after-throw.json": {
     "code": "schema.invalid-enum",
     "path": "/components/msm:throwable/after_throw"
+  },
+  "loot-addition-empty-pools.json": {
+    "code": "schema.invalid-length",
+    "path": "/pools"
   },
   "mod-authors-not-list.json": {
     "code": "schema.type-mismatch",

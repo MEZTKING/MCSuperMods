@@ -1,0 +1,10 @@
+{
+  "biomes": ["minecraft:plains"],
+  "features": [
+    {
+      "feature": "mymod:ruby_ore",
+      "step": "ores"
+    }
+  ],
+  "format": 1
+}

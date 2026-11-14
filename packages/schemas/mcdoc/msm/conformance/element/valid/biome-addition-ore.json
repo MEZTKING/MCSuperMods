@@ -1,0 +1,10 @@
+{
+  "biomes": ["#minecraft:is_overworld"],
+  "features": [
+    {
+      "feature": "mymod:ruby_ore",
+      "step": "underground_ores"
+    }
+  ],
+  "format": 1
+}

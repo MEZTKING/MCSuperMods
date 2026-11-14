@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "item": {
+    "components": {
+      "msm:components": {
+        "minecraft:compostable": {
+          "layers": "minecraft:compostable/medium"
+        }
+      }
+    }
+  }
+}

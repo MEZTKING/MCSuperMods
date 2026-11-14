@@ -1,7 +1,8 @@
 // MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
-// entities (ADR 0028 D2) and mob effects (ADR 0055 D2). Lowering writes these to
-// `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json` and
-// `msm/<ns>/effect/<path>.json`.
+// entities (ADR 0028 D2), mob effects (ADR 0055 D2) and additions to vanilla content (ADR 0060
+// D2, D3). Lowering writes these to `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`,
+// `msm/<ns>/entity/<path>.json`, `msm/<ns>/effect/<path>.json`,
+// `msm/<ns>/biome_addition/<path>.json` and `msm/<ns>/loot_addition/<path>.json`.
 
 use super::action::Event
 
@@ -91,6 +92,21 @@ struct BlockItem {
 	max_stack_size?: int @ 1..99,
 	/// Defaults to `common`.
 	rarity?: Rarity,
+	/// Components of the block item (ADR 0060 D4); runtimes older than the one that ships ADR
+	/// 0060 reject the field.
+	components?: BlockItemComponents,
+}
+
+/// Components of a block item: the vanilla data component passthrough only.
+struct BlockItemComponents {
+	/// Vanilla data components by id, as on an item's `msm:components`.
+	"msm:components"?: VanillaComponents,
+}
+
+/// Vanilla data components by id, each in its vanilla JSON form (ADR 0044 D1), checked against
+/// the target's own component schemas.
+struct VanillaComponents {
+	[#[id="data_component_type"] string]: minecraft:data_component[[%key]],
 }
 
 /// Fields every block definition and block element share.
@@ -150,12 +166,49 @@ struct Redstone {
 	on_unpowered?: string,
 }
 
+/// Fires an event when a player starts breaking the block for good (`playerWillDestroy`), in
+/// any game mode (ADR 0061 D2). The player is self.
+struct OnBreak {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Fires an event when the block is placed by an entity (`setPlacedBy`, ADR 0061 D2). The
+/// placer, when there is one, is self.
+struct OnPlace {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Fires an event on a random block tick (ADR 0061 D2). The block only gets random ticks when
+/// this component is present.
+struct OnRandomTick {
+	/// An event id declared in `events`.
+	event: string,
+	/// Probability that a random tick fires the event, 0 to 1; defaults to 1.
+	chance?: float @ 0..1,
+}
+
+/// Fires an event when an entity is inside the block (ADR 0061 D2), as an entity can only be
+/// in a block that is not full or is walk-through. Self follows the step actor rule (ADR 0058
+/// D1).
+struct OnEntityInside {
+	/// An event id declared in `events`.
+	event: string,
+	/// Minimum ticks between two firings for the same entity, at least 5; defaults to 20.
+	cooldown_ticks?: int @ 5..,
+}
+
 /// Block components other than `msm:breakable`, shared with the element data.
 struct BlockBehaviourComponents {
 	"msm:light_emitter"?: LightEmitter,
 	"msm:on_interact"?: OnInteract,
 	"msm:on_step"?: OnStep,
 	"msm:redstone"?: Redstone,
+	"msm:on_break"?: OnBreak,
+	"msm:on_place"?: OnPlace,
+	"msm:on_random_tick"?: OnRandomTick,
+	"msm:on_entity_inside"?: OnEntityInside,
 }
 
 /// The block's outline and collision shape (ADR 0059 D1). Absent means the full solid cube.
@@ -428,6 +481,48 @@ struct Throwable {
 	on_hit_block?: OnThrownHit,
 }
 
+/// Fires an event after the holder hits an entity with the item (`postHurtEnemy`, ADR 0061
+/// D1). Self is the attacker, player or mob; `other` is the entity hit.
+struct OnHit {
+	/// An event id declared in `events`.
+	event: string,
+}
+
+/// Fires an event when a player uses the item on a block (`useOn`, ADR 0061 D1); `base` and
+/// `block` are the clicked block.
+struct OnUseOnBlock {
+	/// An event id declared in `events`.
+	event: string,
+	/// Ticks before the item can be used again; defaults to 0.
+	cooldown_ticks?: int @ 0..,
+}
+
+/// The hand a held item fires in.
+enum(string) HeldHand {
+	Main = "main",
+	Off = "off",
+	Either = "either",
+}
+
+/// Fires an event repeatedly while an entity holds the item (ADR 0061 D1).
+struct WhileHeld {
+	/// An event id declared in `events`.
+	event: string,
+	/// Ticks between two firings, at least 5; defaults to 20.
+	interval_ticks?: int @ 5..,
+	/// Defaults to `main`.
+	hand?: HeldHand,
+}
+
+/// Fires an event repeatedly while an entity wears the item in the armour slot of its
+/// `msm:armor` (ADR 0061 D1); without `msm:armor` it is an error (checked by the validators).
+struct WhileWorn {
+	/// An event id declared in `events`.
+	event: string,
+	/// Ticks between two firings, at least 5; defaults to 20.
+	interval_ticks?: int @ 5..,
+}
+
 /// Runtime item components.
 struct ItemComponents {
 	"msm:food"?: Food,
@@ -450,12 +545,18 @@ struct ItemComponents {
 	"msm:throwable"?: Throwable,
 	/// Saves the holder from death.
 	"msm:death_protection"?: DeathProtection,
+	/// Fires after a hit with the item.
+	"msm:on_hit"?: OnHit,
+	/// Fires when the item is used on a block.
+	"msm:on_use_on_block"?: OnUseOnBlock,
+	/// Fires repeatedly while the item is held.
+	"msm:while_held"?: WhileHeld,
+	/// Fires repeatedly while the item is worn; needs `msm:armor`.
+	"msm:while_worn"?: WhileWorn,
 	/// Vanilla data components by id, each in its vanilla JSON form (ADR 0044 D1), checked
 	/// against the target's own component schemas. MSM's own components win: a vanilla
 	/// component that an MSM component also sets is an error (checked by the validators).
-	"msm:components"?: struct VanillaComponents {
-		[#[id="data_component_type"] string]: minecraft:data_component[[%key]],
-	},
+	"msm:components"?: VanillaComponents,
 }
 
 /// Fields every item definition and item element share.
@@ -703,6 +804,21 @@ struct OnDeath {
 	event: string,
 }
 
+/// Fires an event repeatedly while the mob is alive (`customServerAiStep`, ADR 0061 D3).
+struct OnEntityTick {
+	/// An event id declared in `events`.
+	event: string,
+	/// Ticks between two firings, at least 5; defaults to 20.
+	interval_ticks?: int @ 5..,
+}
+
+/// Fires an event when the mob spawns naturally, from an egg or from a spawner
+/// (`finalizeSpawn`, ADR 0061 D3); not when its chunk loads.
+struct OnSpawn {
+	/// An event id declared in `events`.
+	event: string,
+}
+
 /// Entity components other than `msm:animated_model`, shared with the element data.
 struct EntityBehaviourComponents {
 	"msm:health"?: Health,
@@ -713,6 +829,10 @@ struct EntityBehaviourComponents {
 	"msm:on_death"?: OnDeath,
 	/// Fires when a player right-clicks the entity.
 	"msm:on_interact"?: OnInteract,
+	/// Fires repeatedly while the mob is alive.
+	"msm:on_tick"?: OnEntityTick,
+	/// Fires when the mob spawns.
+	"msm:on_spawn"?: OnSpawn,
 }
 
 /// Runtime entity components; `msm:animated_model` is required.
@@ -853,4 +973,80 @@ struct EffectCommon {
 /// 1.4.0 ignore the `effect` folder with a warning.
 struct Effect {
 	...EffectCommon,
+}
+
+/// A vanilla `GenerationStep.Decoration` in lower case: when a feature is placed while a chunk
+/// generates.
+enum(string) GenerationStep {
+	RawGeneration = "raw_generation",
+	Lakes = "lakes",
+	LocalModifications = "local_modifications",
+	UndergroundStructures = "underground_structures",
+	SurfaceStructures = "surface_structures",
+	Strongholds = "strongholds",
+	UndergroundOres = "underground_ores",
+	UndergroundDecoration = "underground_decoration",
+	FluidSprings = "fluid_springs",
+	VegetalDecoration = "vegetal_decoration",
+	TopLayerModification = "top_layer_modification",
+}
+
+/// A placed feature added to the selected biomes' generation settings.
+struct BiomeFeature {
+	feature: #[id="worldgen/placed_feature"] string,
+	step: GenerationStep,
+}
+
+/// A natural spawn added to the selected biomes.
+struct BiomeSpawn {
+	entity: #[id="entity_type"] string,
+	/// Spawn group the entry is added to.
+	category: MobCategory,
+	/// Spawn weight relative to the other spawns of the category.
+	weight: int @ 1..,
+	/// Smallest group size.
+	min_group: int @ 1..,
+	/// Largest group size; at least `min_group` (checked by the validators).
+	max_group: int @ 1..,
+}
+
+/// Fields every biome addition shares.
+struct BiomeAdditionCommon {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// Biome ids and biome tags (`#`-prefixed); the addition applies to their union.
+	biomes: [#[id(registry="worldgen/biome", tags="allowed")] string] @ 1..,
+}
+
+/// A biome addition, `msm/<ns>/biome_addition/<path>.json` (ADR 0060 D2): placed features and
+/// natural spawns added to vanilla or other biomes when a server starts. At least one of
+/// `features` and `spawns` is required. Only chunks generated afterwards get the features.
+type BiomeAddition = (
+	struct BiomeFeatureAddition {
+		...BiomeAdditionCommon,
+		/// Placed features to add.
+		features: [BiomeFeature] @ 1..,
+		/// Natural spawns to add.
+		spawns?: [BiomeSpawn] @ 1..,
+	} |
+	struct BiomeSpawnAddition {
+		...BiomeAdditionCommon,
+		/// Placed features to add.
+		features?: [BiomeFeature] @ 1..,
+		/// Natural spawns to add.
+		spawns: [BiomeSpawn] @ 1..,
+	}
+)
+
+/// A loot addition, `msm/<ns>/loot_addition/<path>.json` (ADR 0060 D3): extra pools added to
+/// built-in loot tables on every data pack load. A world data pack that replaces a table wins.
+struct LootAddition {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// The loot tables to add to, such as `minecraft:entities/zombie`.
+	tables: [#[id="loot_table"] string] @ 1..,
+	/// Vanilla loot pools in their JSON form, decoded by the runtime with the game's own pool
+	/// Codec. MSM mcdoc cannot name vanilla's pool type with a length bound, so the pools are
+	/// checked against the target's loot table schema by the validators.
+	pools: [any] @ 1..,
 }

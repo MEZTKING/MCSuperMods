@@ -1,0 +1,58 @@
+{
+  "components": {
+    "msm:on_break": {
+      "event": "mymod:a"
+    },
+    "msm:on_entity_inside": {
+      "cooldown_ticks": 20,
+      "event": "mymod:d"
+    },
+    "msm:on_place": {
+      "event": "mymod:b"
+    },
+    "msm:on_random_tick": {
+      "chance": 0.1,
+      "event": "mymod:c"
+    },
+    "msm:shape": {
+      "preset": "cross"
+    }
+  },
+  "display_name": "Ruby Thorns",
+  "events": {
+    "mymod:a": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:b": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:c": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:d": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "model": "mymod:block/ruby_thorns"
+}

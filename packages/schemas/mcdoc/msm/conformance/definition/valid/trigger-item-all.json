@@ -1,0 +1,42 @@
+{
+  "components": {
+    "msm:on_hit": {
+      "event": "mymod:a"
+    },
+    "msm:on_use_on_block": {
+      "event": "mymod:b"
+    },
+    "msm:while_held": {
+      "event": "mymod:c",
+      "hand": "either",
+      "interval_ticks": 20
+    }
+  },
+  "events": {
+    "mymod:a": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:b": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:c": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

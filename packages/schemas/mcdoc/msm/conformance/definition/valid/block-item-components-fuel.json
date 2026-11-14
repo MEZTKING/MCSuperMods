@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "item": {
+    "components": {
+      "msm:components": {
+        "minecraft:cooking_fuel": {
+          "burn_time": 300
+        }
+      }
+    }
+  }
+}

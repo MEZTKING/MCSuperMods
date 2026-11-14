@@ -1,0 +1,18 @@
+{
+  "components": {
+    "msm:while_held": {
+      "event": "mymod:glow"
+    }
+  },
+  "events": {
+    "mymod:glow": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

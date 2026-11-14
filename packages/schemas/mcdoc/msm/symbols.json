@@ -1659,6 +1659,348 @@
         }
       ]
     },
+    "::msm::definition::BiomeAddition": {
+      "kind": "union",
+      "members": [
+        {
+          "fields": [
+            {
+              "kind": "spread",
+              "type": {
+                "kind": "reference",
+                "path": "::msm::definition::BiomeAdditionCommon"
+              }
+            },
+            {
+              "desc": "Placed features to add.",
+              "key": "features",
+              "kind": "pair",
+              "type": {
+                "item": {
+                  "kind": "reference",
+                  "path": "::msm::definition::BiomeFeature"
+                },
+                "kind": "list",
+                "lengthRange": {
+                  "kind": 0,
+                  "min": 1
+                }
+              }
+            },
+            {
+              "desc": "Natural spawns to add.",
+              "key": "spawns",
+              "kind": "pair",
+              "optional": true,
+              "type": {
+                "item": {
+                  "kind": "reference",
+                  "path": "::msm::definition::BiomeSpawn"
+                },
+                "kind": "list",
+                "lengthRange": {
+                  "kind": 0,
+                  "min": 1
+                }
+              }
+            }
+          ],
+          "kind": "struct"
+        },
+        {
+          "fields": [
+            {
+              "kind": "spread",
+              "type": {
+                "kind": "reference",
+                "path": "::msm::definition::BiomeAdditionCommon"
+              }
+            },
+            {
+              "desc": "Placed features to add.",
+              "key": "features",
+              "kind": "pair",
+              "optional": true,
+              "type": {
+                "item": {
+                  "kind": "reference",
+                  "path": "::msm::definition::BiomeFeature"
+                },
+                "kind": "list",
+                "lengthRange": {
+                  "kind": 0,
+                  "min": 1
+                }
+              }
+            },
+            {
+              "desc": "Natural spawns to add.",
+              "key": "spawns",
+              "kind": "pair",
+              "type": {
+                "item": {
+                  "kind": "reference",
+                  "path": "::msm::definition::BiomeSpawn"
+                },
+                "kind": "list",
+                "lengthRange": {
+                  "kind": 0,
+                  "min": 1
+                }
+              }
+            }
+          ],
+          "kind": "struct"
+        }
+      ]
+    },
+    "::msm::definition::BiomeAdditionCommon": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "Biome ids and biome tags (`#`-prefixed); the addition applies to their union.",
+          "key": "biomes",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "worldgen/biome"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BiomeFeature": {
+      "fields": [
+        {
+          "key": "feature",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "worldgen/placed_feature"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "step",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::GenerationStep"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BiomeFeatureAddition": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BiomeAdditionCommon"
+          }
+        },
+        {
+          "desc": "Placed features to add.",
+          "key": "features",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::BiomeFeature"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Natural spawns to add.",
+          "key": "spawns",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::BiomeSpawn"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BiomeSpawn": {
+      "fields": [
+        {
+          "key": "entity",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Spawn group the entry is added to.",
+          "key": "category",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::MobCategory"
+          }
+        },
+        {
+          "desc": "Spawn weight relative to the other spawns of the category.",
+          "key": "weight",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Smallest group size.",
+          "key": "min_group",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Largest group size; at least `min_group` (checked by the validators).",
+          "key": "max_group",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BiomeSpawnAddition": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BiomeAdditionCommon"
+          }
+        },
+        {
+          "desc": "Placed features to add.",
+          "key": "features",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::BiomeFeature"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Natural spawns to add.",
+          "key": "spawns",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::BiomeSpawn"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Block": {
       "fields": [
         {
@@ -1717,6 +2059,42 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::Redstone"
+          }
+        },
+        {
+          "key": "msm:on_break",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnBreak"
+          }
+        },
+        {
+          "key": "msm:on_place",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnPlace"
+          }
+        },
+        {
+          "key": "msm:on_random_tick",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnRandomTick"
+          }
+        },
+        {
+          "key": "msm:on_entity_inside",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnEntityInside"
           }
         }
       ],
@@ -1903,6 +2281,31 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::Rarity"
+          }
+        },
+        {
+          "desc": "Components of the block item (ADR 0060 D4); runtimes older than the one that ships ADR\n0060 reject the field.",
+          "key": "components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockItemComponents"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BlockItemComponents": {
+      "fields": [
+        {
+          "desc": "Vanilla data components by id, as on an item's `msm:components`.",
+          "key": "msm:components",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VanillaComponents"
           }
         }
       ],
@@ -2526,6 +2929,26 @@
             "kind": "reference",
             "path": "::msm::definition::OnInteract"
           }
+        },
+        {
+          "desc": "Fires repeatedly while the mob is alive.",
+          "key": "msm:on_tick",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnEntityTick"
+          }
+        },
+        {
+          "desc": "Fires when the mob spawns.",
+          "key": "msm:on_spawn",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnSpawn"
+          }
         }
       ],
       "kind": "struct"
@@ -2978,6 +3401,56 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::GenerationStep": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "RawGeneration",
+          "value": "raw_generation"
+        },
+        {
+          "identifier": "Lakes",
+          "value": "lakes"
+        },
+        {
+          "identifier": "LocalModifications",
+          "value": "local_modifications"
+        },
+        {
+          "identifier": "UndergroundStructures",
+          "value": "underground_structures"
+        },
+        {
+          "identifier": "SurfaceStructures",
+          "value": "surface_structures"
+        },
+        {
+          "identifier": "Strongholds",
+          "value": "strongholds"
+        },
+        {
+          "identifier": "UndergroundOres",
+          "value": "underground_ores"
+        },
+        {
+          "identifier": "UndergroundDecoration",
+          "value": "underground_decoration"
+        },
+        {
+          "identifier": "FluidSprings",
+          "value": "fluid_springs"
+        },
+        {
+          "identifier": "VegetalDecoration",
+          "value": "vegetal_decoration"
+        },
+        {
+          "identifier": "TopLayerModification",
+          "value": "top_layer_modification"
+        }
+      ]
+    },
     "::msm::definition::Goal": {
       "fields": [
         {
@@ -3090,6 +3563,24 @@
         {
           "identifier": "OceanFloor",
           "value": "ocean_floor"
+        }
+      ]
+    },
+    "::msm::definition::HeldHand": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Main",
+          "value": "main"
+        },
+        {
+          "identifier": "Off",
+          "value": "off"
+        },
+        {
+          "identifier": "Either",
+          "value": "either"
         }
       ]
     },
@@ -3297,46 +3788,53 @@
           }
         },
         {
+          "desc": "Fires after a hit with the item.",
+          "key": "msm:on_hit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnHit"
+          }
+        },
+        {
+          "desc": "Fires when the item is used on a block.",
+          "key": "msm:on_use_on_block",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::OnUseOnBlock"
+          }
+        },
+        {
+          "desc": "Fires repeatedly while the item is held.",
+          "key": "msm:while_held",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::WhileHeld"
+          }
+        },
+        {
+          "desc": "Fires repeatedly while the item is worn; needs `msm:armor`.",
+          "key": "msm:while_worn",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::WhileWorn"
+          }
+        },
+        {
           "desc": "Vanilla data components by id, each in its vanilla JSON form (ADR 0044 D1), checked\nagainst the target's own component schemas. MSM's own components win: a vanilla\ncomponent that an MSM component also sets is an error (checked by the validators).",
           "key": "msm:components",
           "kind": "pair",
           "optional": true,
           "type": {
-            "fields": [
-              {
-                "key": {
-                  "attributes": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "kind": "literal",
-                        "value": {
-                          "kind": "string",
-                          "value": "data_component_type"
-                        }
-                      }
-                    }
-                  ],
-                  "kind": "string"
-                },
-                "kind": "pair",
-                "type": {
-                  "kind": "dispatcher",
-                  "parallelIndices": [
-                    {
-                      "accessor": [
-                        {
-                          "keyword": "key"
-                        }
-                      ],
-                      "kind": "dynamic"
-                    }
-                  ],
-                  "registry": "minecraft:data_component"
-                }
-              }
-            ],
-            "kind": "struct"
+            "kind": "reference",
+            "path": "::msm::definition::VanillaComponents"
           }
         }
       ],
@@ -3391,6 +3889,65 @@
             "valueRange": {
               "kind": 0,
               "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::LootAddition": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "desc": "The loot tables to add to, such as `minecraft:entities/zombie`.",
+          "key": "tables",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "loot_table"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Vanilla loot pools in their JSON form, decoded by the runtime with the game's own pool\nCodec. MSM mcdoc cannot name vanilla's pool type with a length bound, so the pools are\nchecked against the target's loot table schema by the validators.",
+          "key": "pools",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "any"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
             }
           }
         }
@@ -3558,6 +4115,19 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::OnBreak": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::OnDeath": {
       "fields": [
         {
@@ -3632,6 +4202,71 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::OnEntityInside": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Minimum ticks between two firings for the same entity, at least 5; defaults to 20.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 5
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnEntityTick": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two firings, at least 5; defaults to 20.",
+          "key": "interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 5
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnHit": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::OnHurt": {
       "fields": [
         {
@@ -3646,6 +4281,59 @@
       "kind": "struct"
     },
     "::msm::definition::OnInteract": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnPlace": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnRandomTick": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Probability that a random tick fires the event, 0 to 1; defaults to 1.",
+          "key": "chance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnSpawn": {
       "fields": [
         {
           "desc": "An event id declared in `events`.",
@@ -3698,6 +4386,32 @@
       "kind": "struct"
     },
     "::msm::definition::OnUse": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks before the item can be used again; defaults to 0.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::OnUseOnBlock": {
       "fields": [
         {
           "desc": "An event id declared in `events`.",
@@ -4790,6 +5504,68 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::WhileHeld": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two firings, at least 5; defaults to 20.",
+          "key": "interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 5
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `main`.",
+          "key": "hand",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::HeldHand"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::WhileWorn": {
+      "fields": [
+        {
+          "desc": "An event id declared in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two firings, at least 5; defaults to 20.",
+          "key": "interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 5
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::AnimatedModel": {
       "fields": [
         {
@@ -4873,6 +5649,10 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::BiomeAddition": {
+      "kind": "reference",
+      "path": "::msm::definition::BiomeAddition"
+    },
     "::msm::element::Block": {
       "fields": [
         {
@@ -4880,6 +5660,28 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::BlockCommon"
+          }
+        },
+        {
+          "desc": "The block item; absent means a stack size of 64 in no creative tab; `false` means no\nblock item.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::element::BlockItem"
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ]
           }
         },
         {
@@ -4988,6 +5790,38 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::BlockItem": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BlockItem"
+          }
+        },
+        {
+          "desc": "Makes the block item burn in a furnace.",
+          "key": "fuel",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::Fuel"
+          }
+        },
+        {
+          "desc": "Makes the block item compostable.",
+          "key": "compost",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::CompostChance"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::BlockTool": {
       "enumKind": "string",
       "kind": "enum",
@@ -5041,6 +5875,32 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::element::CompostChance": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Chance30",
+          "value": "30%"
+        },
+        {
+          "identifier": "Chance50",
+          "value": "50%"
+        },
+        {
+          "identifier": "Chance65",
+          "value": "65%"
+        },
+        {
+          "identifier": "Chance85",
+          "value": "85%"
+        },
+        {
+          "identifier": "Chance100",
+          "value": "100%"
+        }
+      ]
     },
     "::msm::element::Effect": {
       "fields": [
@@ -5135,6 +5995,23 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Fuel": {
+      "fields": [
+        {
+          "desc": "Seconds the item burns (vanilla coal is 80), lowered to ticks.",
+          "key": "burn_seconds",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0.05
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Item": {
       "fields": [
         {
@@ -5172,6 +6049,38 @@
           "optional": true,
           "type": {
             "kind": "string"
+          }
+        },
+        {
+          "desc": "Makes the item burn in a furnace; lowered into `msm:components`.",
+          "key": "fuel",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::Fuel"
+          }
+        },
+        {
+          "desc": "Makes the item compostable; lowered into `msm:components`.",
+          "key": "compost",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::CompostChance"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::LootAddition": {
+      "fields": [
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::LootAddition"
           }
         }
       ],
@@ -5918,5 +6827,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:19bfff758906458e7234410a1c41bf11dfa84888efc34491f258a500d323148f"
+  "ref": "msm-mcdoc:sha256:f2bd9bd09d8975868dd7d4b0a1dcc8494ca59c4eb4732a881e3c1a073f883fcc"
 }

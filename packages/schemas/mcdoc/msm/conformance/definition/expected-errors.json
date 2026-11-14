@@ -1,4 +1,36 @@
 {
+  "biome-addition-bad-category.json": {
+    "code": "schema.invalid-enum",
+    "path": "/spawns/0/category"
+  },
+  "biome-addition-empty-biomes.json": {
+    "code": "schema.invalid-length",
+    "path": "/biomes"
+  },
+  "biome-addition-empty-features.json": {
+    "code": "schema.invalid-length",
+    "path": "/features"
+  },
+  "biome-addition-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "biome-addition-missing-biomes.json": {
+    "code": "schema.missing-field",
+    "path": "/biomes"
+  },
+  "biome-addition-neither.json": {
+    "code": "schema.missing-field",
+    "path": "/features"
+  },
+  "biome-addition-unknown-step.json": {
+    "code": "schema.invalid-enum",
+    "path": "/features/0/step"
+  },
+  "biome-addition-weight-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/spawns/0/weight"
+  },
   "block-action-missing-type.json": {
     "code": "schema.missing-field",
     "path": "/events/mymod:x/actions/0/type"
@@ -26,6 +58,26 @@
   "block-hardness-string.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:breakable/hardness"
+  },
+  "block-item-components-compost-field.json": {
+    "code": "schema.unknown-field",
+    "path": "/item/compost"
+  },
+  "block-item-components-fuel-field.json": {
+    "code": "schema.unknown-field",
+    "path": "/item/fuel"
+  },
+  "block-item-components-msm-food.json": {
+    "code": "schema.unknown-field",
+    "path": "/item/components/msm:food"
+  },
+  "block-item-components-not-object.json": {
+    "code": "schema.type-mismatch",
+    "path": "/item/components"
+  },
+  "block-item-components-passthrough-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/item/components/msm:components"
   },
   "block-item-stack-100.json": {
     "code": "schema.out-of-range",
@@ -422,5 +474,85 @@
   "item-trigger-event-not-string.json": {
     "code": "schema.type-mismatch",
     "path": "/events/mymod:x/actions/0/event"
+  },
+  "loot-addition-empty-pools.json": {
+    "code": "schema.invalid-length",
+    "path": "/pools"
+  },
+  "loot-addition-empty-tables.json": {
+    "code": "schema.invalid-length",
+    "path": "/tables"
+  },
+  "loot-addition-missing-pools.json": {
+    "code": "schema.missing-field",
+    "path": "/pools"
+  },
+  "loot-addition-missing-tables.json": {
+    "code": "schema.missing-field",
+    "path": "/tables"
+  },
+  "loot-addition-pools-object.json": {
+    "code": "schema.type-mismatch",
+    "path": "/pools"
+  },
+  "loot-addition-tables-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/tables"
+  },
+  "loot-addition-unknown-field.json": {
+    "code": "schema.unknown-field",
+    "path": "/replace"
+  },
+  "trigger-block-entity-inside-cooldown-4.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:on_entity_inside/cooldown_ticks"
+  },
+  "trigger-block-on-break-event-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:on_break/event"
+  },
+  "trigger-block-random-tick-chance-1.5.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:on_random_tick/chance"
+  },
+  "trigger-entity-on-spawn-missing-event.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:on_spawn/event"
+  },
+  "trigger-entity-tick-interval-4.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:on_tick/interval_ticks"
+  },
+  "trigger-item-on-hit-cooldown.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:on_hit/cooldown_ticks"
+  },
+  "trigger-item-on-use-on-block-negative-cooldown.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:on_use_on_block/cooldown_ticks"
+  },
+  "trigger-item-while-held-bad-hand.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:while_held/hand"
+  },
+  "trigger-item-while-held-interval-4.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:while_held/interval_ticks"
+  },
+  "trigger-item-while-worn-hand.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:while_worn/hand"
+  },
+  "trigger-item-while-worn-interval-4.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:while_worn/interval_ticks"
+  },
+  "trigger-item-while-worn-missing-event.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:while_worn/event"
+  },
+  "trigger-item-while-worn-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:while_worn"
   }
 }

@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "item": {
+    "components": {
+      "msm:components": {
+        "minecraft:compostable": {
+          "layers": "minecraft:compostable/always_add_one"
+        },
+        "minecraft:cooking_fuel": {
+          "burn_time": 100
+        }
+      }
+    },
+    "creative_tab": "minecraft:natural_blocks",
+    "max_stack_size": 16,
+    "rarity": "uncommon"
+  },
+  "sound_type": "grass"
+}

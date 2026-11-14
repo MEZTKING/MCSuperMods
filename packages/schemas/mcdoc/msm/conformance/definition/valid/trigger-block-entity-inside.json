@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:on_entity_inside": {
+      "cooldown_ticks": 5,
+      "event": "mymod:sting"
+    },
+    "msm:shape": {
+      "boxes": [[2, 0, 2, 14, 12, 14]],
+      "collision": false
+    }
+  },
+  "events": {
+    "mymod:sting": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1
+}
