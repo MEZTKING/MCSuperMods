@@ -90,6 +90,14 @@ import {
   writeMachineFiles,
 } from './machines';
 import { className, constantName, NameTable, splitId } from './names';
+import {
+  PORTAL_BREAKABLE,
+  PORTAL_DEFAULT_LIGHT,
+  portalRegisterLine,
+  portalSpecField,
+  portalTravelMembers,
+  writePortalFiles,
+} from './portals';
 import { blockItemId, checkFormat, type Reader, readDefinition } from './read';
 import { blockStrippingJava } from './templates/block-stripping-java';
 
@@ -220,6 +228,8 @@ interface BlockSpec {
   readonly container: ContainerInfo | undefined;
   /** `msm:machine` (ADR 0075 D11). */
   readonly machine: MachineInfo | undefined;
+  /** Method of a portal's `on_travel` event (ADR 0077 D6). */
+  readonly onTravel: string | undefined;
 }
 
 /**
@@ -272,15 +282,19 @@ function readBlock(input: DefinitionInput): BlockSpec {
   const components = reader.object('components');
   components?.onlyKeys(BLOCK_COMPONENTS, 'component');
   const type = readType(reader, components);
+  // A portal's on_travel runs with the arrived entity as the actor (ADR 0077 D6).
   const actorTrigger =
-    components?.has('msm:on_place') === true || components?.has('msm:on_entity_inside') === true;
+    components?.has('msm:on_place') === true ||
+    components?.has('msm:on_entity_inside') === true ||
+    type.portal?.onTravel !== undefined;
   const kind: EventOwnerKind =
     components?.has('msm:on_step') === true || actorTrigger ? 'step_block' : 'block';
   const events = readEvents(reader, kind, actorTrigger);
 
   let item: BlockSpec['item'];
   const rawItem = input.definition.item;
-  if (rawItem === false) item = undefined;
+  // A portal has no item unless the definition gives it one (ADR 0077 D1).
+  if (rawItem === false || (rawItem === undefined && type.portal !== undefined)) item = undefined;
   else if (rawItem === true) reader.fail('item must be an object or false');
   else {
     const settings = reader.object('item');
@@ -364,13 +378,24 @@ function readBlock(input: DefinitionInput): BlockSpec {
         ? undefined
         : { burnOdds: odds('burn_odds'), igniteOdds: odds('ignite_odds') },
     strippable: into === undefined || into.includes(':') ? into : `minecraft:${into}`,
-    soundType: reader.enumConstant('sound_type', SOUND_TYPES, 'stone'),
+    soundType: reader.enumConstant(
+      'sound_type',
+      SOUND_TYPES,
+      type.portal === undefined ? 'stone' : 'glass',
+    ),
     lootTable: reader.optionalString('loot_table'),
     item,
-    hardness: breakable?.number('hardness', 1.5) ?? 1.5,
-    resistance: breakable?.number('resistance', 6) ?? 6,
+    // A portal without msm:breakable is unbreakable (ADR 0077 D1).
+    hardness:
+      breakable?.number('hardness', 1.5) ??
+      (type.portal === undefined ? 1.5 : PORTAL_BREAKABLE.hardness),
+    resistance:
+      breakable?.number('resistance', 6) ??
+      (type.portal === undefined ? 6 : PORTAL_BREAKABLE.resistance),
     requiresTool: breakable?.boolean('requires_tool', false) ?? false,
-    light: light?.requiredInteger('level'),
+    light:
+      light?.requiredInteger('level') ??
+      (type.portal === undefined ? undefined : PORTAL_DEFAULT_LIGHT),
     kind,
     events,
     onInteract:
@@ -419,6 +444,13 @@ function readBlock(input: DefinitionInput): BlockSpec {
       machineComponent === undefined
         ? undefined
         : readMachine(input.id, machineComponent, firedEvent),
+    onTravel:
+      type.portal?.onTravel === undefined
+        ? undefined
+        : (events.methods.get(type.portal.onTravel) ??
+          reader.fail(
+            `on_travel names event ${type.portal.onTravel}, which is not declared in events`,
+          )),
   };
 }
 
@@ -648,6 +680,7 @@ export function generateBlocks(
         `${flammable}.getDefaultInstance().add(${field}, ${javaInt(spec.flammable.burnOdds)}, ${javaInt(spec.flammable.igniteOdds)}); // msm:flammable`,
       );
     }
+    if (spec.type.portal !== undefined) extras.push(portalRegisterLine(file, context, field));
     if (spec.strippable !== undefined) {
       extras.push(
         `BlockStripping.add(${field}, ${identifierExpression(file, spec.strippable)}); // msm:strippable`,
@@ -708,6 +741,7 @@ export function generateBlocks(
     }
   }
   if (specs.some((spec) => spec.container !== undefined)) writeContainerFiles(context);
+  if (specs.some((spec) => spec.type.portal !== undefined)) writePortalFiles(context);
   if (machines.length > 0) writeMachineFiles(context);
   if (blockEntities.length > 0) writeBlockEventsFile(context);
   const strips = specs.some((spec) => spec.strippable !== undefined);
@@ -924,7 +958,9 @@ function writeBlockClass(
   const actions = noteActions(context, file, spec.events);
   const power = tracksPower(spec);
   const ts = spec.type;
-  const superClass = file.use(familyClass(ts).fqcn);
+  const superClass = file.use(
+    ts.portal === undefined ? familyClass(ts).fqcn : `${packageOf(context, 'portal')}.PortalBlock`,
+  );
   const facing = isFacing(ts);
   const open = spec.container !== undefined;
   const lit = spec.machine !== undefined;
@@ -1040,6 +1076,10 @@ function writeBlockClass(
     if (members.length > 0) members.push('');
     members.push(...plant.fields);
   }
+  if (ts.portal !== undefined) {
+    if (members.length > 0) members.push('');
+    members.push(...portalSpecField(file, ts.portal, packageOf(context, 'portal')));
+  }
   if (ts.type === 'stairs') {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     members.push(
@@ -1071,6 +1111,9 @@ function writeBlockClass(
   }
   members.push('}');
   members.push(...plant.methods);
+  if (ts.portal?.onTravel !== undefined && spec.onTravel !== undefined) {
+    members.push(...portalTravelMembers(file, ts.portal.onTravel, spec.onTravel));
+  }
 
   if (power || facing || open || lit) {
     const stateDefinition = file.use('net.minecraft.world.level.block.state.StateDefinition');

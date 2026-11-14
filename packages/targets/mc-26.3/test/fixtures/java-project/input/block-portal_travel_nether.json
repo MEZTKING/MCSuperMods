@@ -1,0 +1,20 @@
+{
+  "destination": "minecraft:the_nether",
+  "events": {
+    "msm_test:arrived": {
+      "actions": [
+        {
+          "function": "msm_test:portal/arrived",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "frame": "minecraft:polished_blackstone_bricks",
+  "on_travel": "msm_test:arrived",
+  "travel": {
+    "cooldown_ticks": 345
+  },
+  "type": "portal"
+}

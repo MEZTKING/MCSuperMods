@@ -1,0 +1,7 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:chiseled_quartz_block",
+  "igniter": "msm_test:portal_key",
+  "type": "portal"
+}

@@ -1,0 +1,10 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:waxed_copper_block",
+  "igniter": false,
+  "particles": {
+    "type": "minecraft:dust"
+  },
+  "type": "portal"
+}

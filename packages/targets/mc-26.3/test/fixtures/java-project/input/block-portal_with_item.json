@@ -1,0 +1,9 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:smooth_basalt",
+  "igniter": false,
+  "item": {},
+  "loot_table": "minecraft:blocks/glass",
+  "type": "portal"
+}

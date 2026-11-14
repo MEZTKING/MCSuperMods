@@ -1,0 +1,18 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:light"
+    }
+  },
+  "events": {
+    "msm_test:light": {
+      "actions": [
+        {
+          "portal": "msm_test:portal_quiet",
+          "type": "light_portal"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

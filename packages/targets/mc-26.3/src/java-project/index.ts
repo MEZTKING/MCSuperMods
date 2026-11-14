@@ -26,8 +26,12 @@
  * vanilla content (ADR 0060 D9) add `ModWorldgen.java` (biome additions through Fabric's
  * `BiomeModifications`) and `ModLoot.java` (loot additions in a `LootTableEvents.MODIFY`
  * listener); the triggers of ADR 0061 add `TickLimiter.java` (tick triggers) and
- * `CooldownMap.java` (`msm:on_entity_inside`). Paths are sorted; text uses LF and four-space
- * indentation.
+ * `CooldownMap.java` (`msm:on_entity_inside`). Portal blocks (ADR 0077 D9) add `portal/` with
+ * the shared classes copied from the runtime (`PortalSpec`, `PortalBlock`, `PortalFrame`,
+ * `ExitPortals`, `PortalIndex`, `PortalIndexAttachment`, `PortalLighting`, `PortalTravel`), one
+ * `block/<Name>Block.java` per portal extending `PortalBlock`, and the attachment, the igniter
+ * callback and the levels check in the mod initialiser. Paths are sorted; text uses LF and
+ * four-space indentation.
  *
  * @packageDocumentation
  */
@@ -44,6 +48,7 @@ import { generateLoot } from './loot';
 import { generateRecipes } from './machines';
 import { generateMod } from './mod';
 import { NameTable, splitId } from './names';
+import { checkLightPortals, isPortal, portalInitLines } from './portals';
 import { generatePotions } from './potions';
 import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
@@ -108,6 +113,10 @@ export function generateJavaProject(input: JavaProjectInput): {
     ...BLOCK_ENTITY_CLASS_NAMES,
   );
   if (throwables) classNames.reserve('item.ThrowableItem', 'entity.ThrownItemEntity');
+  // A block named portal would share the shared class's simple name (ADR 0077 D9).
+  const portals = input.blocks.some(isPortal);
+  if (portals) classNames.reserve('block.PortalBlock');
+  checkLightPortals(input);
   const registrations: string[] = [];
   // Sound events first (ADR 0057 D5): effects, items, events and entities name them.
   const sounds = generateSounds(context);
@@ -146,7 +155,11 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (worldgen !== undefined) registrations.push(worldgen);
   const loot = generateLoot(context);
   if (loot !== undefined) registrations.push(loot);
-  const main = generateMod(context, registrations);
+  const main = generateMod(
+    context,
+    registrations,
+    portals ? (file) => portalInitLines(file, context) : undefined,
+  );
   const leafTints = blocks?.leafTints ?? [];
   const client =
     entities === undefined && !throwables && leafTints.length === 0

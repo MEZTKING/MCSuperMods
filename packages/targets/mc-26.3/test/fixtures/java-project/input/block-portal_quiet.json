@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:light_emitter": {
+      "level": 15
+    }
+  },
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "minecraft:gilded_blackstone",
+  "igniter": false,
+  "particles": {
+    "color": 5636010,
+    "count": 2
+  },
+  "sounds": {
+    "ambient": false,
+    "travel": false
+  },
+  "travel": {
+    "delay_ticks": 7,
+    "overlay": false,
+    "players_only": true
+  },
+  "type": "portal"
+}

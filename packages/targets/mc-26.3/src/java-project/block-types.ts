@@ -35,6 +35,10 @@
  *   plain leaves with a warning), else `LeavesBlock`; no ambient sound. A `falling_particle` on
  *   tinted leaves is ignored, as in the runtime.
  *
+ * The `portal` type (ADR 0077 D9; `portals.ts`) is a generated subclass of the shared
+ * `portal/PortalBlock` with its fields as a `PortalSpec`, the properties of `BlockTypes.properties`
+ * (no collision, immovable) and no loot unless `loot_table` is set.
+ *
  * Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
@@ -42,6 +46,7 @@
 
 import type { JavaFile } from './java';
 import { identifierExpression, javaFloat, javaInt, javaString } from './java';
+import { PORTAL_FIELDS, type PortalInfo, readPortal } from './portals';
 import type { Reader } from './read';
 
 /** The block types this generator writes (ADR 0067 D1). */
@@ -69,8 +74,8 @@ export type BuildingType = (typeof BUILDING_TYPES)[number];
 
 export type PlantType = (typeof PLANT_TYPES)[number];
 
-/** Every block type (ADR 0067 D1, ADR 0068). */
-export type BlockTypeName = BuildingType | PlantType;
+/** Every block type (ADR 0067 D1, ADR 0068, ADR 0077). */
+export type BlockTypeName = BuildingType | PlantType | 'portal';
 
 /** The types that keep a fixed or rotating shape and their own `powered` state (ADR 0067 D3). */
 const SHAPED_TYPES: readonly BlockTypeName[] = ['block', 'pillar', 'horizontal', 'directional'];
@@ -97,6 +102,7 @@ const TYPE_FIELDS: Readonly<Record<string, readonly string[]>> = {
   crop: ['max_age', 'stage_heights', 'soil', 'bonemeal_growth'],
   sapling: ['tree', 'mega_tree', 'flower_tree', 'soil'],
   leaves: ['tint', 'particle_chance', 'falling_particle'],
+  portal: PORTAL_FIELDS,
 };
 
 /** MSM set type names (`BlockType.SetType`) to the 26.3 `BlockSetType` constant (`BlockSetTypes`). */
@@ -186,6 +192,8 @@ export interface TypeSpec {
   readonly crop?: CropSpec;
   readonly sapling?: SaplingSpec;
   readonly leaves?: LeavesSpec;
+  /** `portal`: the portal's fields (ADR 0077 D1). */
+  readonly portal?: PortalInfo;
 }
 
 /** The top-level keys a definition of `type` may have besides the shared ones. */
@@ -201,7 +209,7 @@ export function typeKeys(reader: Reader): string[] {
  */
 export function readType(reader: Reader, components: Reader | undefined): TypeSpec {
   const raw = reader.string('type', 'block');
-  const all: readonly string[] = [...BUILDING_TYPES, ...PLANT_TYPES];
+  const all: readonly string[] = [...BUILDING_TYPES, ...PLANT_TYPES, 'portal'];
   if (!all.includes(raw)) {
     reader.fail(`type '${raw}' is not one of ${all.join(', ')}`);
   }
@@ -229,6 +237,8 @@ export function readType(reader: Reader, components: Reader | undefined): TypeSp
       return { type, sapling: readSapling(reader) };
     case 'leaves':
       return { type, leaves: readLeaves(reader) };
+    case 'portal':
+      return { type, portal: readPortal(reader, components) };
     case 'fence_gate': {
       const wood = reader.requiredString('wood_type');
       if (!WOOD_TYPES.includes(wood)) {
@@ -438,6 +448,9 @@ export function familyClass(spec: TypeSpec): FamilyClass {
         : spec.leaves?.fallingParticle !== undefined
           ? block('UntintedParticleLeavesBlock')
           : block('LeavesBlock');
+    case 'portal':
+      // Always a generated subclass of the project's portal/PortalBlock (which extends Block).
+      return block('Block', true);
   }
 }
 
@@ -452,6 +465,8 @@ export function constructorArguments(file: JavaFile, spec: TypeSpec, modPackage:
   const noAmbientSound = (): string =>
     `${file.use('net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer')}.noAmbientSound()`;
   switch (spec.type) {
+    case 'portal':
+      return ['SPEC'];
     case 'sapling':
       return ['GROWER'];
     case 'leaves': {
@@ -520,6 +535,15 @@ export function typeProperties(file: JavaFile, spec: TypeSpec, nearPlane: () => 
     case 'crop':
     case 'sapling':
       return [`        .noCollision().randomTicks()${popped()} // ${spec.type}: as vanilla`];
+    case 'portal': {
+      const pushReaction = file.use('net.minecraft.world.level.material.PushReaction');
+      return [
+        `        .noCollision().pushReaction(${pushReaction}.IMMOVEABLE) // portal: as vanilla's Nether portal`,
+        ...(spec.portal?.lootTable === true
+          ? []
+          : ['        .noLootTable() // portal: drops nothing unless loot_table is set']),
+      ];
+    }
     case 'leaves': {
       const entityTypes = file.use('net.minecraft.world.entity.EntityTypes');
       return [

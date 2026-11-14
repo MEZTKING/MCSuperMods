@@ -1,0 +1,22 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "msm_test:x"
+    }
+  },
+  "destination": "minecraft:the_end",
+  "events": {
+    "msm_test:x": {
+      "actions": [
+        {
+          "sound": "minecraft:block.glass.break",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "frame": "minecraft:waxed_cut_copper",
+  "igniter": false,
+  "type": "portal"
+}

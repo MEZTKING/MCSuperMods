@@ -27,12 +27,22 @@
  * entity's own events `run_function` runs as the player when the event has one (the player who
  * interacts with, hurts or kills the entity, or the player it hits), else as the entity itself,
  * so `@s` in `msm:on_tick` and `msm:on_spawn` is the mob (the runtime's `EventRunner`).
+ * `light_portal` (ADR 0077 D3 (b)) lights the named portal block of the project in an empty frame
+ * at the event's block (else its base) or a neighbour, through the generated
+ * `portal/PortalLighting` (`portals.ts` fails generation for a `portal` that is no project portal).
  *
  * @packageDocumentation
  */
 
 import type { GenerationContext } from './context';
-import { indent, type JavaFile, javaFloat, javaInt, javaString } from './java';
+import {
+  identifierExpression,
+  indent,
+  type JavaFile,
+  javaFloat,
+  javaInt,
+  javaString,
+} from './java';
 import { eventMethodNames } from './names';
 import type { Reader } from './read';
 
@@ -89,6 +99,7 @@ export const ACTION_TYPES = [
   'launch',
   'damage',
   'heal',
+  'light_portal',
 ] as const;
 
 /** The default `play_animation` controller (the runtime's `TRIGGERED_CONTROLLER`). */
@@ -247,6 +258,7 @@ export function usesActions(events: Events): boolean {
  * them by from `file` (`Actions`, imported when the events use it).
  */
 export function noteActions(context: GenerationContext, file: JavaFile, events: Events): string {
+  MOD_PACKAGES.set(file, context.input.javaPackage);
   if (!usesActions(events)) return 'Actions';
   context.usesActions = true;
   if (events.appliesEffects) context.usesApplyEffect = true;
@@ -259,6 +271,13 @@ export function noteActions(context: GenerationContext, file: JavaFile, events: 
   if (events.runsFunctionsAsStepper && events.ownMob) context.usesRunFunctionAsOwnMob = true;
   return file.use(`${context.input.javaPackage}.Actions`);
 }
+
+/**
+ * The mod package of each file whose events are written, recorded by {@link noteActions} (which
+ * every owner calls before {@link eventMethods}), for actions that call a generated class
+ * outside the `Actions` helper (`light_portal`).
+ */
+const MOD_PACKAGES = new WeakMap<JavaFile, string>();
 
 /** Every `play_animation` of the events as `[controller, animation]`, events in id order. */
 export function playAnimations(events: Events): [string, string][] {
@@ -448,6 +467,18 @@ function actionLines(
       return type === 'damage'
         ? [`${actions}.damage(level, ${target}, ${javaFloat(amount)});`]
         : [`${actions}.heal(${target}, ${javaFloat(amount)});`];
+    }
+    case 'light_portal': {
+      action.onlyKeys(['type', 'portal'], 'light_portal field');
+      const raw = action.requiredString('portal');
+      const portal = raw.includes(':') ? raw : `minecraft:${raw}`;
+      const modPackage =
+        MOD_PACKAGES.get(file) ?? action.fail('light_portal: the events were not noted');
+      const lighting = file.use(`${modPackage}.portal.PortalLighting`);
+      // As the runtime's EventRunner.lightPortal: the event's block, else its base (both are base here).
+      return [
+        `${lighting}.byId(${identifierExpression(file, portal)}).ifPresent(portal -> ${lighting}.lightNear(level, portal, base));`,
+      ];
     }
     default:
       return action.fail(`action type '${type}' cannot be ejected`);

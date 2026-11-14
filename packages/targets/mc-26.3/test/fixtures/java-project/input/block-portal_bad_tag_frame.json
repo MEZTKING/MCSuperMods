@@ -1,0 +1,7 @@
+{
+  "destination": "minecraft:the_end",
+  "format": 1,
+  "frame": "#minecraft:wool",
+  "igniter": false,
+  "type": "portal"
+}

@@ -1,0 +1,6 @@
+{
+  "destination": "minecraft:the_nether",
+  "format": 1,
+  "frame": "msm_test:portal_frame",
+  "type": "portal"
+}
