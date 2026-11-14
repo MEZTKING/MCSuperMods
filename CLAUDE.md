@@ -36,6 +36,7 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 
 ## Golden rules
 
+- **Vanilla parity (user, 2026-11-14):** anything that can be made in vanilla Minecraft Java must be possible through MSM; a gap is a bug for the coverage audit (`docs/COVERAGE-AUDIT.md`).
 - Version-specific facts live only in `packages/targets`.
 - `@msm/plugin-api` has no internal dependencies.
 - Built-in plugins use only the public plugin API (plus `@msm/schemas`).
