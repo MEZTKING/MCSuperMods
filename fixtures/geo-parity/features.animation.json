@@ -1,0 +1,116 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "pose_check": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "base": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              2,
+              4,
+              -6
+            ]
+          }
+        },
+        "neck": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              30,
+              -40,
+              20
+            ]
+          }
+        },
+        "tip": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.5": [
+              1.5,
+              0.5,
+              2
+            ]
+          }
+        },
+        "wing": {
+          "rotation": [
+            0,
+            15,
+            -10
+          ]
+        }
+      }
+    },
+    "features": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 2,
+      "bones": {
+        "neck": {
+          "rotation": {
+            "0.0": {
+              "post": [
+                0,
+                0,
+                0
+              ],
+              "lerp_mode": "catmullrom"
+            },
+            "1.0": {
+              "pre": [
+                10,
+                0,
+                0
+              ],
+              "post": [
+                20,
+                0,
+                0
+              ],
+              "lerp_mode": "catmullrom"
+            },
+            "2.0": [
+              "math.sin(query.anim_time * 90) * 5",
+              "1.5",
+              0
+            ]
+          }
+        },
+        "base": {
+          "position": {
+            "0.5": 2,
+            "0.0": [
+              0,
+              1,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "once": {
+      "bones": {
+        "wing": {
+          "scale": {
+            "0.0": 1,
+            "1.0": "1.25"
+          }
+        }
+      }
+    }
+  }
+}
