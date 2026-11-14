@@ -1,0 +1,24 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 2.0,
+      "resistance": 2.0
+    },
+    "msm:flammable": {
+      "burn_odds": 5,
+      "ignite_odds": 5
+    },
+    "msm:redstone": {
+      "emit": 4
+    },
+    "msm:shape": {
+      "boxes": [[4, 0, 4, 12, 16, 12]]
+    },
+    "msm:strippable": {
+      "into": "mymod:stripped_ruby_log"
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "pillar"
+}

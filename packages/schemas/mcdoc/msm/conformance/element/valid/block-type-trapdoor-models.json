@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "bottom": "mymod:block/ruby_trapdoor_bottom",
+    "open": "mymod:block/ruby_trapdoor_open"
+  },
+  "set_type": "wood",
+  "type": "trapdoor"
+}

@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby"
+  },
+  "type": "fence"
+}

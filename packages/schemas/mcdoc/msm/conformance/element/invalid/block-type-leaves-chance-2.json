@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "leaves_drops": {
+    "extra": {
+      "chances": [2],
+      "item": "minecraft:apple"
+    }
+  },
+  "type": "leaves"
+}

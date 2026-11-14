@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "set_type": "wood",
+  "textures": {
+    "all": "mymod:block/ruby"
+  },
+  "type": "button"
+}

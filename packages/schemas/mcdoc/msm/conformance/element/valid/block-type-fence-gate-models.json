@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "closed": "mymod:block/ruby_fence_gate",
+    "open": "mymod:block/ruby_fence_gate_open"
+  },
+  "type": "fence_gate",
+  "wood_type": "oak"
+}

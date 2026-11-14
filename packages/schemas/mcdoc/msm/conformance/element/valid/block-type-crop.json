@@ -1,0 +1,28 @@
+{
+  "crop_drops": {
+    "produce": "mymod:tomato",
+    "produce_count": {
+      "max": 3,
+      "min": 1
+    },
+    "seed_bonus": true
+  },
+  "display_name": "Ruby",
+  "format": 1,
+  "item": {
+    "compost": "30%",
+    "id": "mymod:tomato_seeds"
+  },
+  "loot": "crop",
+  "max_age": 3,
+  "textures": {
+    "stages": [
+      "mymod:block/tomatoes_stage0",
+      "mymod:block/tomatoes_stage1",
+      "mymod:block/tomatoes_stage2",
+      "mymod:block/tomatoes_stage3"
+    ]
+  },
+  "type": "crop",
+  "villager_plantable": false
+}

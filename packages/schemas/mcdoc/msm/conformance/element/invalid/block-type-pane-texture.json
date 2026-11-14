@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "texture": "mymod:block/a"
+  },
+  "type": "pane"
+}

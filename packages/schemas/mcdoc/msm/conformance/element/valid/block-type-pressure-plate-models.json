@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "down": "mymod:block/ruby_plate_down",
+    "up": "mymod:block/ruby_plate"
+  },
+  "set_type": "wood",
+  "type": "pressure_plate"
+}

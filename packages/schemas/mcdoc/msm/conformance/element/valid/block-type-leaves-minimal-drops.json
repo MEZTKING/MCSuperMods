@@ -1,0 +1,14 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "leaves_drops": {
+    "extra": {
+      "item": "minecraft:apple"
+    }
+  },
+  "loot": "leaves",
+  "textures": {
+    "all": "mymod:block/ruby_leaves"
+  },
+  "type": "leaves"
+}

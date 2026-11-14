@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "post": "mymod:block/ruby_pane_post"
+  },
+  "type": "pane"
+}

@@ -86,6 +86,9 @@ enum(string) ToolTier {
 
 /// The block item registered with a block.
 struct BlockItem {
+	/// The block item's own id (ADR 0068 D2), such as seeds planting a crop; defaults to the
+	/// block's id. The name key and the item model definition then follow this id.
+	id?: #[id="item"] string,
 	/// The creative tab that lists the item; absent means none.
 	creative_tab?: #[id="creative_mode_tab"] string,
 	/// Maximum stack size; defaults to 64.
@@ -113,6 +116,10 @@ struct VanillaComponents {
 struct BlockCommon {
 	/// Definition format; this is version 1.
 	format: 1,
+	/// The kind of block (ADR 0067 D1, ADR 0068 D1); absent means `block`, a block that is the
+	/// same in every state. Each type adds its own fields, selected by this value.
+	type?: BlockType,
+	...msm:block_type[[type]],
 	/// Sounds for breaking, placing and stepping; defaults to `stone`.
 	sound_type?: SoundType,
 	/// Drops; absent means the vanilla default for the block id.
@@ -156,7 +163,8 @@ struct OnStep {
 	cooldown_ticks?: int @ 0..,
 }
 
-/// Redstone behaviour.
+/// Redstone behaviour. Only on the types `block`, `pillar`, `horizontal` and `directional`
+/// (ADR 0067 D3); doors, gates, buttons and plates have vanilla's own `powered`.
 struct Redstone {
 	/// Constant signal strength the block emits, 0 to 15; defaults to 0.
 	emit?: int @ 0..15,
@@ -209,10 +217,31 @@ struct BlockBehaviourComponents {
 	"msm:on_place"?: OnPlace,
 	"msm:on_random_tick"?: OnRandomTick,
 	"msm:on_entity_inside"?: OnEntityInside,
+	"msm:flammable"?: Flammable,
+	"msm:strippable"?: Strippable,
+}
+
+/// Makes the block catch fire and burn away (ADR 0067 D3), through Fabric's flammable block
+/// registry. Vanilla planks are 5 and 20, logs 5 and 5, leaves 30 and 60.
+struct Flammable {
+	/// How readily fire spreads to the block, 0 to 300.
+	burn_odds: int @ 0..300,
+	/// How readily the block burns away once alight, 0 to 300.
+	ignite_odds: int @ 0..300,
+}
+
+/// Lets an axe strip the block into another block (ADR 0067 D3), as logs turn into stripped
+/// logs. Any item whose `minecraft:block_transformer` names `minecraft:axe` strips it; the axis
+/// is copied when both blocks have one.
+struct Strippable {
+	/// The block the stripped block becomes.
+	into: #[id="block"] string,
 }
 
 /// The block's outline and collision shape (ADR 0059 D1). Absent means the full solid cube.
-/// The shape is the same in every block state.
+/// Only on the types `block`, `pillar`, `horizontal` and `directional` (ADR 0067 D3); on the
+/// rotating types the boxes are written for the default orientation (facing north, axis `y`)
+/// and turn with the block state.
 struct Shape {
 	/// Pixel boxes `[x1, y1, z1, x2, y2, z2]` from 0 to 16, as model elements, joined into one
 	/// shape; absent means the full cube.
@@ -223,6 +252,170 @@ struct Shape {
 	/// Whether the block lets light and the view of neighbouring faces through, as glass does.
 	/// Defaults to true when `boxes` is present and is not the single full cube, else false.
 	see_through?: boolean,
+}
+
+/// The kind of block (ADR 0067 D1, ADR 0068 D1). Every type is an ordinary `msm:block` with
+/// the same item, sounds, breaking, loot and triggers; the type picks the vanilla behaviour.
+enum(string) BlockType {
+	/// The same in every state; the default.
+	Block = "block",
+	/// Turns to the clicked face's axis, as logs do.
+	Pillar = "pillar",
+	/// Faces one of four directions, towards the placer, as a furnace does.
+	Horizontal = "horizontal",
+	/// Faces one of six directions, as an observer does.
+	Directional = "directional",
+	/// A half block that stacks into a double slab.
+	Slab = "slab",
+	/// Stairs that shape into corners next to other stairs.
+	Stairs = "stairs",
+	/// A wall that connects to walls and solid blocks.
+	Wall = "wall",
+	/// A fence that connects to fences of the same kind and solid blocks.
+	Fence = "fence",
+	/// A gate that opens on use and fits fences and walls.
+	FenceGate = "fence_gate",
+	/// A two-block-high door.
+	Door = "door",
+	/// A trapdoor.
+	Trapdoor = "trapdoor",
+	/// A button that gives a short redstone pulse.
+	Button = "button",
+	/// A pressure plate.
+	PressurePlate = "pressure_plate",
+	/// A pane that connects to panes and walls, as glass panes and iron bars do.
+	Pane = "pane",
+	/// A crop that grows through age stages on farmland (ADR 0068 D3).
+	Crop = "crop",
+	/// A sapling that grows into a tree feature (ADR 0068 D4).
+	Sapling = "sapling",
+	/// Leaves that decay away from logs (ADR 0068 D6).
+	Leaves = "leaves",
+}
+
+/// A vanilla block set type (ADR 0067 D2): sounds, whether hands open the block (not `iron`),
+/// whether arrows press buttons and which entities press plates.
+enum(string) BlockSetType {
+	/// Oak's sounds; vanilla's oak set type on 26.3 and default wood set type on 26.4.
+	Wood = "wood",
+	Cherry = "cherry",
+	Bamboo = "bamboo",
+	Crimson = "crimson",
+	Warped = "warped",
+	Iron = "iron",
+	Copper = "copper",
+	Gold = "gold",
+	Stone = "stone",
+	PolishedBlackstone = "polished_blackstone",
+}
+
+/// A vanilla wood type (ADR 0067 D2), which gives a fence gate its open and close sounds.
+enum(string) WoodType {
+	Oak = "oak",
+	Spruce = "spruce",
+	Birch = "birch",
+	Acacia = "acacia",
+	Cherry = "cherry",
+	Jungle = "jungle",
+	DarkOak = "dark_oak",
+	PaleOak = "pale_oak",
+	Poplar = "poplar",
+	Crimson = "crimson",
+	Warped = "warped",
+	Mangrove = "mangrove",
+	Bamboo = "bamboo",
+}
+
+/// A type with no fields of its own; absent `type` means `block`.
+dispatch msm:block_type[%none, block, pillar, horizontal, directional, slab, wall, fence, pane] to struct NoTypeFields {}
+
+/// Stairs (ADR 0067 D2).
+dispatch msm:block_type[stairs] to struct StairsFields {
+	/// The block whose look and behaviour the stairs copy; defaults to `minecraft:stone`. It
+	/// must be registered before the stairs.
+	base_block?: #[id="block"] string,
+}
+
+/// A fence gate (ADR 0067 D2).
+dispatch msm:block_type[fence_gate] to struct FenceGateFields {
+	/// The wood type whose open and close sounds the gate plays.
+	wood_type: WoodType,
+}
+
+/// A door or trapdoor (ADR 0067 D2).
+dispatch msm:block_type[door, trapdoor] to struct OpeningFields {
+	/// The vanilla set type; `iron` cannot be opened by hand.
+	set_type: BlockSetType,
+}
+
+/// A button (ADR 0067 D2).
+dispatch msm:block_type[button] to struct ButtonFields {
+	/// The vanilla set type; arrows press only wooden buttons.
+	set_type: BlockSetType,
+	/// Ticks the button stays pressed, 1 to 200; defaults to 30 for the wooden set types and
+	/// 20 otherwise, as vanilla.
+	press_ticks?: int @ 1..200,
+}
+
+/// A pressure plate (ADR 0067 D2).
+dispatch msm:block_type[pressure_plate] to struct PressurePlateFields {
+	/// The vanilla set type; wooden plates are pressed by any entity, the others by mobs and
+	/// players only.
+	set_type: BlockSetType,
+	/// Present: a weighted plate whose signal grows with the number of entities up to this
+	/// count, as gold and iron plates; absent: an ordinary plate.
+	weighted_max?: int @ 1..,
+}
+
+/// How many stages bone meal grows a crop by, picked at random from `min` to `max`.
+struct BonemealGrowth {
+	min: int @ 0..15,
+	max: int @ 0..15,
+}
+
+/// A crop (ADR 0068 D3).
+dispatch msm:block_type[crop] to struct CropFields {
+	/// The last age stage, 1 to 15; the crop has `max_age + 1` stages. Defaults to 7.
+	max_age?: int @ 1..15,
+	/// Outline height in pixels of each stage, one per stage (`max_age + 1` entries; the
+	/// validators check the length). Defaults to vanilla's ramp, `2 + 2 * stage * 7 / max_age`
+	/// pixels rounded.
+	stage_heights?: [int @ 1..16],
+	/// The blocks the crop can be planted on; defaults to `#minecraft:supports_crops`.
+	soil?: #[id(registry="block", tags="required")] string,
+	/// Stages added by bone meal; defaults to vanilla's 2 to 5.
+	bonemeal_growth?: BonemealGrowth,
+}
+
+/// A sapling (ADR 0068 D4). The tree features are looked up when the sapling grows; a missing
+/// one is a warning at server start and the sapling does not grow.
+dispatch msm:block_type[sapling] to struct SaplingFields {
+	/// The configured feature grown, usually a `minecraft:tree` feature.
+	tree: #[id="worldgen/feature"] string,
+	/// The feature grown from four saplings in a square; absent means none.
+	mega_tree?: #[id="worldgen/feature"] string,
+	/// The feature grown when flowers are near, as oak's bee-nest trees; defaults to `tree`.
+	flower_tree?: #[id="worldgen/feature"] string,
+	/// The blocks the sapling can be planted on; defaults to `#minecraft:supports_vegetation`.
+	soil?: #[id(registry="block", tags="required")] string,
+}
+
+/// A vanilla tint source for leaves (ADR 0068 D6), from the biome's colours.
+enum(string) LeavesTintSource {
+	Foliage = "foliage",
+	Grass = "grass",
+	DryFoliage = "dry_foliage",
+}
+
+/// Leaves (ADR 0068 D6). Decay needs the tree's trunk block in `#minecraft:logs`.
+dispatch msm:block_type[leaves] to struct LeavesFields {
+	/// Tint from a biome colour or a constant RGB colour; absent means no tint, the texture's
+	/// own colours.
+	tint?: (LeavesTintSource | int @ 0..16777215),
+	/// Chance of a falling leaf particle per animation tick, 0 to 1; defaults to 0.01.
+	particle_chance?: float @ 0..1,
+	/// The falling leaf particle of untinted leaves; only without `tint`; absent means none.
+	falling_particle?: #[id="particle_type"] string,
 }
 
 /// Runtime block components.

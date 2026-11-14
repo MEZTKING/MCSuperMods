@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:flammable": {
+      "burn_odds": 301,
+      "ignite_odds": 5
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,17 @@
+{
+  "crop_drops": {
+    "produce": "mymod:onion",
+    "produce_count": 2,
+    "seed_bonus": false
+  },
+  "display_name": "Ruby",
+  "format": 1,
+  "item": {
+    "id": "mymod:onion"
+  },
+  "loot": "crop",
+  "textures": {
+    "stages": ["mymod:block/onions_stage0"]
+  },
+  "type": "crop"
+}

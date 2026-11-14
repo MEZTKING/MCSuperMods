@@ -31,6 +31,122 @@
     "code": "schema.out-of-range",
     "path": "/components/msm:shape/boxes/0/4"
   },
+  "block-type-absent-models.json": {
+    "code": "schema.unknown-field",
+    "path": "/models"
+  },
+  "block-type-block-textures.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures"
+  },
+  "block-type-button-edge.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/edge"
+  },
+  "block-type-crop-count-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/crop_drops/produce_count"
+  },
+  "block-type-crop-leaves-drops.json": {
+    "code": "schema.unknown-field",
+    "path": "/leaves_drops"
+  },
+  "block-type-crop-no-produce.json": {
+    "code": "schema.missing-field",
+    "path": "/crop_drops/produce"
+  },
+  "block-type-crop-plantable-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/villager_plantable"
+  },
+  "block-type-crop-stages-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/textures/stages"
+  },
+  "block-type-directional-pane.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/pane"
+  },
+  "block-type-door-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-fence-gate-stages.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/stages"
+  },
+  "block-type-fence-wooden-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/wooden"
+  },
+  "block-type-horizontal-end.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/end"
+  },
+  "block-type-item-id-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/item/id"
+  },
+  "block-type-leaves-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/leaves_drops/extra/chances/0"
+  },
+  "block-type-leaves-crop-drops.json": {
+    "code": "schema.unknown-field",
+    "path": "/crop_drops"
+  },
+  "block-type-leaves-extra-no-item.json": {
+    "code": "schema.missing-field",
+    "path": "/leaves_drops/extra/item"
+  },
+  "block-type-leaves-sticks-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/leaves_drops/sticks"
+  },
+  "block-type-loot-preset-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/loot"
+  },
+  "block-type-models-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/models/straight"
+  },
+  "block-type-pane-texture.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/texture"
+  },
+  "block-type-pillar-front.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/front"
+  },
+  "block-type-pressure-plate-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-sapling-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "block-type-slab-texture.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/texture"
+  },
+  "block-type-stairs-front.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/front"
+  },
+  "block-type-trapdoor-top.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/top"
+  },
+  "block-type-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/type"
+  },
+  "block-type-wall-wooden.json": {
+    "code": "schema.unknown-field",
+    "path": "/wooden"
+  },
   "effect-bad-category.json": {
     "code": "schema.invalid-enum",
     "path": "/category"

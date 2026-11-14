@@ -1,0 +1,6 @@
+{
+  "format": 1,
+  "max_age": 7,
+  "stage_heights": [2, 4, 6],
+  "type": "crop"
+}

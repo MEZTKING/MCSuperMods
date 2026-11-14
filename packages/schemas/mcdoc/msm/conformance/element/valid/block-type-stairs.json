@@ -1,0 +1,9 @@
+{
+  "base_block": "mymod:ruby_block",
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby"
+  },
+  "type": "stairs"
+}

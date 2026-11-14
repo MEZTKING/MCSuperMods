@@ -1,0 +1,32 @@
+{
+  "bonemeal_growth": {
+    "max": 2,
+    "min": 1
+  },
+  "components": {
+    "msm:on_random_tick": {
+      "chance": 0.1,
+      "event": "mymod:sparkle"
+    }
+  },
+  "events": {
+    "mymod:sparkle": {
+      "actions": [
+        {
+          "particle": "minecraft:happy_villager",
+          "type": "spawn_particle"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks",
+    "id": "mymod:tomato_seeds"
+  },
+  "max_age": 3,
+  "soil": "#mymod:rich_soil",
+  "sound_type": "grass",
+  "stage_heights": [2, 6, 10, 16],
+  "type": "crop"
+}

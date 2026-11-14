@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "front": "mymod:block/a"
+  },
+  "type": "pillar"
+}

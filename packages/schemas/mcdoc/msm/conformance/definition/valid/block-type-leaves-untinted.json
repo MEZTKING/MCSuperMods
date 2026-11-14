@@ -1,0 +1,6 @@
+{
+  "falling_particle": "minecraft:cherry_leaves",
+  "format": 1,
+  "particle_chance": 0.1,
+  "type": "leaves"
+}

@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "horizontal": "mymod:block/ruby_log_horizontal",
+    "vertical": "mymod:block/ruby_log"
+  },
+  "type": "pillar"
+}

@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "block": "mymod:block/ruby_eye"
+  },
+  "type": "directional"
+}

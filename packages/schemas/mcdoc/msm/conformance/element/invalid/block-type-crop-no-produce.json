@@ -1,0 +1,9 @@
+{
+  "crop_drops": {
+    "seed_bonus": true
+  },
+  "display_name": "Ruby",
+  "format": 1,
+  "loot": "crop",
+  "type": "crop"
+}

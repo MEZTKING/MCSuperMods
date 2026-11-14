@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "bottom_left": "mymod:block/ruby_door_bottom_left"
+  },
+  "set_type": "wood",
+  "type": "door"
+}

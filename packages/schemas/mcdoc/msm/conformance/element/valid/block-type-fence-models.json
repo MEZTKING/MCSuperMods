@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "post": "mymod:block/ruby_fence_post",
+    "side": "mymod:block/ruby_fence_side"
+  },
+  "type": "fence"
+}

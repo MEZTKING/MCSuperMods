@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:redstone": {
+      "emit": 15
+    },
+    "msm:shape": {
+      "boxes": [[0, 0, 0, 16, 16, 8]]
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

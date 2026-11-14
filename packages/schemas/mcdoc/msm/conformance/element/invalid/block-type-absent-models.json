@@ -1,0 +1,7 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "all": "mymod:block/ruby"
+  }
+}

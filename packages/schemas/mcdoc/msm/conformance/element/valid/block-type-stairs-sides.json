@@ -1,0 +1,11 @@
+{
+  "base_block": "minecraft:sandstone",
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "bottom": "mymod:block/ruby_bottom",
+    "side": "mymod:block/ruby_side",
+    "top": "mymod:block/ruby_top"
+  },
+  "type": "stairs"
+}

@@ -1,0 +1,18 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "leaves_drops": {
+    "extra": {
+      "chances": [0.005, 0.0055555557, 0.00625, 0.008333334, 0.025],
+      "item": "mymod:ruby_fruit"
+    },
+    "sapling": "mymod:ruby_sapling",
+    "sticks": true
+  },
+  "loot": "leaves",
+  "textures": {
+    "all": "mymod:block/ruby_leaves"
+  },
+  "tint": "foliage",
+  "type": "leaves"
+}

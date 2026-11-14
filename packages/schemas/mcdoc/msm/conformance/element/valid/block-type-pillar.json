@@ -1,0 +1,24 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 2.0,
+      "tool": "axe"
+    },
+    "msm:flammable": {
+      "burn_odds": 5,
+      "ignite_odds": 5
+    },
+    "msm:strippable": {
+      "into": "mymod:stripped_ruby_log"
+    }
+  },
+  "display_name": "Ruby",
+  "format": 1,
+  "loot": "self",
+  "sound_type": "wood",
+  "textures": {
+    "end": "mymod:block/ruby_log_top",
+    "side": "mymod:block/ruby_log"
+  },
+  "type": "pillar"
+}

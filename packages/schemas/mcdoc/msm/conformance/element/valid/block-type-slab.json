@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "loot": "self",
+  "textures": {
+    "bottom": "mymod:block/ruby_bottom",
+    "side": "mymod:block/ruby_side",
+    "top": "mymod:block/ruby_top"
+  },
+  "type": "slab"
+}

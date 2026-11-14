@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:shape": {
+      "preset": "slab_bottom"
+    }
+  },
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby_eye"
+  },
+  "type": "directional"
+}

@@ -1,0 +1,9 @@
+{
+  "flower_tree": "mymod:ruby_tree_bees",
+  "format": 1,
+  "mega_tree": "mymod:mega_ruby_tree",
+  "soil": "#minecraft:dirt",
+  "sound_type": "grass",
+  "tree": "mymod:ruby_tree",
+  "type": "sapling"
+}

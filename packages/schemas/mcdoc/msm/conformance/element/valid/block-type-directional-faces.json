@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "front": "mymod:block/ruby_eye_front",
+    "side": "mymod:block/ruby_eye_side",
+    "top": "mymod:block/ruby_eye_top"
+  },
+  "type": "directional"
+}

@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "texture": "mymod:block/ruby_planks"
+  },
+  "type": "fence_gate",
+  "wood_type": "bamboo"
+}

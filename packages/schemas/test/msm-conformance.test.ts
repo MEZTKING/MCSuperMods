@@ -358,6 +358,96 @@ describe('MSM conformance corpus coverage', () => {
       .filter((path) => !covered(group, prefix).keys.has(path));
     expect(missing).toEqual([]);
   });
+
+  describe('ADR 0067 and ADR 0068 block types', () => {
+    /** The 17 block types of ADR 0067 D1 and ADR 0068 D1. */
+    const TYPES = [
+      'block',
+      'button',
+      'crop',
+      'directional',
+      'door',
+      'fence',
+      'fence_gate',
+      'horizontal',
+      'leaves',
+      'pane',
+      'pillar',
+      'pressure_plate',
+      'sapling',
+      'slab',
+      'stairs',
+      'trapdoor',
+      'wall',
+    ];
+
+    /** `block-type-` files of a group whose `type` is `type`. */
+    const ofType = (group: Group, kind: 'valid' | 'invalid', type: string): Json[] =>
+      files(group, kind)
+        .filter((name) => name.startsWith('block-type-'))
+        .map((name) => read(group, kind, name))
+        .filter(
+          (value) =>
+            typeof value === 'object' &&
+            value !== null &&
+            !Array.isArray(value) &&
+            value.type === type,
+        );
+
+    it.each([
+      ['msm:block_type', 'definition'],
+      ['msm:block_type_element', 'element'],
+    ] as const)('%s dispatches every type and no type at all', (registry, _group) => {
+      expect(index.dispatcherKeys(registry)).toEqual(['%none', ...TYPES]);
+      expect(index.dispatch(registry, '%none')).toBeDefined();
+    });
+
+    it.each(TYPES.flatMap((type) => [['definition', type] as const, ['element', type] as const]))(
+      'has valid and invalid %s cases of type %s',
+      (group, type) => {
+        expect(ofType(group, 'valid', type).length).toBeGreaterThan(0);
+        expect(ofType(group, 'invalid', type).length).toBeGreaterThan(0);
+      },
+    );
+
+    it.each([
+      ['msm:block_type', 'definition'],
+      ['msm:block_type_element', 'element'],
+    ] as const)(
+      'sets every field of every %s member in a valid file of that type',
+      (registry, group) => {
+        const missing: string[] = [];
+        for (const type of TYPES) {
+          let member = index.dispatch(registry, type);
+          while (member?.kind === 'reference') member = member.resolve();
+          if (member?.kind !== 'struct') throw new Error(`${registry}[${type}] is not a struct`);
+          const keys = new Set<string>();
+          for (const value of ofType(group, 'valid', type))
+            collect(value, '', new Set(), keys, new Set());
+          const declared = new Set<string>();
+          fieldPaths(member, '', declared);
+          for (const path of declared) {
+            // Map-like structs (`models`) are covered by any key.
+            const covered = path.endsWith('/*')
+              ? [...keys].some((key) => key.startsWith(path.slice(0, -1)))
+              : keys.has(path);
+            if (!covered) missing.push(`${type}${path}`);
+          }
+        }
+        expect(missing).toEqual([]);
+      },
+    );
+
+    it('keeps editor fields out of the definition', () => {
+      for (const key of ['textures', 'models', 'crop_drops', 'leaves_drops', 'wooden']) {
+        for (const type of TYPES) {
+          let member = index.dispatch('msm:block_type', type);
+          while (member?.kind === 'reference') member = member.resolve();
+          expect(member?.kind === 'struct' && member.fields.some((f) => f.key === key)).toBe(false);
+        }
+      }
+    });
+  });
 });
 
 describe('ADR 0060 and ADR 0061 format additions', () => {

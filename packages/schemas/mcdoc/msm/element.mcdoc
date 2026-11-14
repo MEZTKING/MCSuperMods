@@ -88,19 +88,253 @@ struct BlockItem {
 	compost?: CompostChance,
 }
 
+/// Models of a block type by model slot (ADR 0067 D7), used instead of generated models from
+/// `textures`. The slots are the type's own (lowering names them); the validators check them.
+struct BlockModels {
+	[string]: #[id="model"] string,
+}
+
+/// Textures of a `pillar` (ADR 0067 D7): `all`, or `side` and `end`.
+struct PillarTextures {
+	/// One texture on every face.
+	all?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+	end?: #[id="texture"] string,
+}
+
+/// Textures of a `horizontal` or `directional` block (ADR 0067 D7): `all`, or `front`, `side`
+/// and `top`.
+struct FacingTextures {
+	/// One texture on every face.
+	all?: #[id="texture"] string,
+	front?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+	top?: #[id="texture"] string,
+}
+
+/// Textures of a `slab` or `stairs` (ADR 0067 D7): `all`, or `top`, `bottom` and `side`.
+struct SlabTextures {
+	/// One texture on every face.
+	all?: #[id="texture"] string,
+	top?: #[id="texture"] string,
+	bottom?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+}
+
+/// Textures of a `wall` (ADR 0067 D7): `all` or `texture`, or `top`, `bottom` and `side`.
+struct WallTextures {
+	/// One texture on every face.
+	all?: #[id="texture"] string,
+	/// The wall texture, as vanilla's wall templates use one.
+	texture?: #[id="texture"] string,
+	top?: #[id="texture"] string,
+	bottom?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+}
+
+/// Textures of a `door` (ADR 0067 D7): `all`, or `top` and `bottom` for the two halves.
+struct DoorTextures {
+	/// One texture for both halves.
+	all?: #[id="texture"] string,
+	top?: #[id="texture"] string,
+	bottom?: #[id="texture"] string,
+}
+
+/// Textures of a `trapdoor`, `button`, `pressure_plate`, `fence` or `fence_gate` (ADR 0067
+/// D7): one texture, as `all` or `texture`.
+struct SingleTextures {
+	all?: #[id="texture"] string,
+	texture?: #[id="texture"] string,
+}
+
+/// Textures of a `pane` (ADR 0067 D7): `all`, or `pane` and `edge`.
+struct PaneTextures {
+	/// One texture for the pane and its edge.
+	all?: #[id="texture"] string,
+	/// The face of the pane.
+	pane?: #[id="texture"] string,
+	/// The thin edge of the pane.
+	edge?: #[id="texture"] string,
+}
+
+/// Textures of a `crop` (ADR 0068 D3).
+struct CropTextures {
+	/// One texture per age stage, from age 0; fewer textures than stages are repeated, as
+	/// vanilla potatoes do.
+	stages?: [#[id="texture"] string] @ 1..16,
+}
+
+/// Textures of a `sapling` (ADR 0068 D4).
+struct SaplingTextures {
+	/// The sapling, drawn as a cross and as the item.
+	sapling?: #[id="texture"] string,
+}
+
+/// Textures of `leaves` (ADR 0068 D6).
+struct LeavesTextures {
+	/// The leaves texture on every face, tinted with tint index 0.
+	all?: #[id="texture"] string,
+}
+
+/// A count range, `min` to `max` inclusive.
+struct CountRange {
+	min: int @ 0..64,
+	max: int @ 0..64,
+}
+
+/// The drops of the `crop` loot preset (ADR 0068 D3), in the shape of vanilla wheat: the
+/// produce at the maximum age, else the seed item.
+struct CropDrops {
+	/// The item harvested at the maximum age; equal to the block item for a crop planted from
+	/// its produce.
+	produce: #[id="item"] string,
+	/// How many of the produce drop; defaults to 1.
+	produce_count?: (int @ 1..64 | CountRange),
+	/// Whether extra seeds drop at the maximum age, with Fortune as vanilla wheat; defaults to
+	/// true.
+	seed_bonus?: boolean,
+}
+
+/// An extra drop of the `leaves` loot preset, as vanilla oak leaves drop apples.
+struct LeavesExtraDrop {
+	item: #[id="item"] string,
+	/// Chance per Fortune level, from none; defaults to vanilla's apple chances, 0.005 to
+	/// 0.025.
+	chances?: [float @ 0..1] @ 1..,
+}
+
+/// The drops of the `leaves` loot preset (ADR 0068 D6), in the shape of vanilla oak leaves:
+/// shears or Silk Touch drop the leaves, otherwise a chance of the sapling, sticks and the extra
+/// item.
+struct LeavesDrops {
+	/// The sapling dropped now and then; absent means none.
+	sapling?: #[id="item"] string,
+	/// Whether sticks drop now and then; defaults to true.
+	sticks?: boolean,
+	/// An extra item dropped now and then, as apples.
+	extra?: LeavesExtraDrop,
+}
+
+/// Element fields of a type: none for `block` (its `model` field is the appearance).
+dispatch msm:block_type_element[%none, block] to struct BlockElementFields {}
+
+/// Element fields of a `pillar`.
+dispatch msm:block_type_element[pillar] to struct PillarElementFields {
+	/// Textures of the generated models.
+	textures?: PillarTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `horizontal` or `directional` block.
+dispatch msm:block_type_element[horizontal, directional] to struct FacingElementFields {
+	/// Textures of the generated models.
+	textures?: FacingTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `slab` or `stairs`.
+dispatch msm:block_type_element[slab, stairs] to struct SlabElementFields {
+	/// Textures of the generated models.
+	textures?: SlabTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `wall`.
+dispatch msm:block_type_element[wall] to struct WallElementFields {
+	/// Textures of the generated models.
+	textures?: WallTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `door`.
+dispatch msm:block_type_element[door] to struct DoorElementFields {
+	/// Textures of the generated models.
+	textures?: DoorTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `trapdoor`, `button`, `pressure_plate` or `fence_gate`.
+dispatch msm:block_type_element[trapdoor, button, pressure_plate, fence_gate] to struct SingleTextureElementFields {
+	/// Textures of the generated models.
+	textures?: SingleTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `fence`.
+dispatch msm:block_type_element[fence] to struct FenceElementFields {
+	/// Textures of the generated models.
+	textures?: SingleTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+	/// Whether the fence joins `#minecraft:wooden_fences` (connecting to wooden fences);
+	/// defaults to true when `sound_type` is a wood sound (ADR 0067 D6).
+	wooden?: boolean,
+}
+
+/// Element fields of a `pane`.
+dispatch msm:block_type_element[pane] to struct PaneElementFields {
+	/// Textures of the generated models.
+	textures?: PaneTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `crop`.
+dispatch msm:block_type_element[crop] to struct CropElementFields {
+	/// Textures of the generated stage models.
+	textures?: CropTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+	/// Drops of the `crop` loot preset; `produce` is required with that preset.
+	crop_drops?: CropDrops,
+	/// Whether the block item joins `#minecraft:villager_plantable_seeds`, so farmer villagers
+	/// plant it; defaults to true.
+	villager_plantable?: boolean,
+}
+
+/// Element fields of a `sapling`.
+dispatch msm:block_type_element[sapling] to struct SaplingElementFields {
+	/// Textures of the generated models.
+	textures?: SaplingTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of `leaves`.
+dispatch msm:block_type_element[leaves] to struct LeavesElementFields {
+	/// Textures of the generated models.
+	textures?: LeavesTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+	/// Drops of the `leaves` loot preset.
+	leaves_drops?: LeavesDrops,
+}
+
 /// `msm:block` element data.
 struct Block {
 	...BlockCommon,
+	// Editor fields of the block's type (ADR 0067 D7, ADR 0068): textures, models and loot
+	// preset drops, stripped in lowering.
+	...msm:block_type_element[[type]],
 	/// The block item; absent means a stack size of 64 in no creative tab; `false` means no
 	/// block item.
 	item?: (BlockItem | false),
-	/// Block model, lowered to a single-variant blockstate and the block item definition.
+	/// Block model, lowered to a single-variant blockstate and the block item definition. For
+	/// `block`; also accepted as the single model of `pillar`, `horizontal` and `directional`.
 	model?: #[id="model"] string,
 	/// Display name, lowered to the `block.<ns>.<path>` language key.
 	display_name?: string,
-	/// `"self"` generates a loot table that drops the block; an id points at a loot table
-	/// element; absent means no generated table.
-	loot?: ("self" | #[id="loot_table"] string),
+	/// `"self"` generates a loot table that drops the block (two for a double slab, the lower
+	/// half of a door); `"crop"` and `"leaves"` are the presets of those types, with
+	/// `crop_drops` and `leaves_drops`; an id points at a loot table element; absent means no
+	/// generated table.
+	loot?: ("self" | "crop" | "leaves" | #[id="loot_table"] string),
 	/// Behaviour components.
 	components?: BlockComponents,
 }

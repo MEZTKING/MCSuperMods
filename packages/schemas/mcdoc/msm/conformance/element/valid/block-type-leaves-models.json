@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "models": {
+    "leaves": "mymod:block/ruby_leaves"
+  },
+  "type": "leaves"
+}

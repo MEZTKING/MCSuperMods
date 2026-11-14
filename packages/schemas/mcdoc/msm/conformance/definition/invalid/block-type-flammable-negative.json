@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:flammable": {
+      "burn_odds": 5,
+      "ignite_odds": -1
+    }
+  },
+  "format": 1,
+  "type": "fence"
+}

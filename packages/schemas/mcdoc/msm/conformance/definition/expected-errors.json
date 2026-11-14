@@ -147,6 +147,190 @@
     "code": "schema.out-of-range",
     "path": "/components/msm:on_step/cooldown_ticks"
   },
+  "block-type-absent-base-block.json": {
+    "code": "schema.unknown-field",
+    "path": "/base_block"
+  },
+  "block-type-block-set-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/set_type"
+  },
+  "block-type-button-no-set-type.json": {
+    "code": "schema.missing-field",
+    "path": "/set_type"
+  },
+  "block-type-button-press-ticks-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/press_ticks"
+  },
+  "block-type-button-press-ticks-201.json": {
+    "code": "schema.out-of-range",
+    "path": "/press_ticks"
+  },
+  "block-type-crop-bonemeal-no-max.json": {
+    "code": "schema.missing-field",
+    "path": "/bonemeal_growth/max"
+  },
+  "block-type-crop-max-age-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/max_age"
+  },
+  "block-type-crop-max-age-16.json": {
+    "code": "schema.out-of-range",
+    "path": "/max_age"
+  },
+  "block-type-crop-set-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/set_type"
+  },
+  "block-type-crop-soil-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/soil"
+  },
+  "block-type-crop-stage-height-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/stage_heights/0"
+  },
+  "block-type-crop-stage-height-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/stage_heights/1"
+  },
+  "block-type-crop-tree.json": {
+    "code": "schema.unknown-field",
+    "path": "/tree"
+  },
+  "block-type-directional-max-age.json": {
+    "code": "schema.unknown-field",
+    "path": "/max_age"
+  },
+  "block-type-door-bad-set-type.json": {
+    "code": "schema.invalid-enum",
+    "path": "/set_type"
+  },
+  "block-type-door-no-set-type.json": {
+    "code": "schema.missing-field",
+    "path": "/set_type"
+  },
+  "block-type-door-press-ticks.json": {
+    "code": "schema.unknown-field",
+    "path": "/press_ticks"
+  },
+  "block-type-fence-gate-bad-wood-type.json": {
+    "code": "schema.invalid-enum",
+    "path": "/wood_type"
+  },
+  "block-type-fence-gate-no-wood-type.json": {
+    "code": "schema.missing-field",
+    "path": "/wood_type"
+  },
+  "block-type-fence-gate-set-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/set_type"
+  },
+  "block-type-fence-wood-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/wood_type"
+  },
+  "block-type-flammable-301.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:flammable/burn_odds"
+  },
+  "block-type-flammable-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:flammable/ignite_odds"
+  },
+  "block-type-flammable-no-ignite.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:flammable/ignite_odds"
+  },
+  "block-type-horizontal-base-block.json": {
+    "code": "schema.unknown-field",
+    "path": "/base_block"
+  },
+  "block-type-item-id-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/item/id"
+  },
+  "block-type-leaves-bad-tint.json": {
+    "code": "schema.no-union-match",
+    "path": "/tint"
+  },
+  "block-type-leaves-max-age.json": {
+    "code": "schema.unknown-field",
+    "path": "/max_age"
+  },
+  "block-type-leaves-particle-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/particle_chance"
+  },
+  "block-type-leaves-tint-too-big.json": {
+    "code": "schema.out-of-range",
+    "path": "/tint"
+  },
+  "block-type-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/type"
+  },
+  "block-type-pane-soil.json": {
+    "code": "schema.unknown-field",
+    "path": "/soil"
+  },
+  "block-type-pillar-wood-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/wood_type"
+  },
+  "block-type-pressure-plate-press-ticks.json": {
+    "code": "schema.unknown-field",
+    "path": "/press_ticks"
+  },
+  "block-type-pressure-plate-weighted-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/weighted_max"
+  },
+  "block-type-sapling-max-age.json": {
+    "code": "schema.unknown-field",
+    "path": "/max_age"
+  },
+  "block-type-sapling-no-tree.json": {
+    "code": "schema.missing-field",
+    "path": "/tree"
+  },
+  "block-type-sapling-tree-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/tree"
+  },
+  "block-type-slab-set-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/set_type"
+  },
+  "block-type-stairs-base-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/base_block"
+  },
+  "block-type-stairs-tree.json": {
+    "code": "schema.unknown-field",
+    "path": "/tree"
+  },
+  "block-type-strippable-into-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:strippable/into"
+  },
+  "block-type-strippable-no-into.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:strippable/into"
+  },
+  "block-type-trapdoor-weighted-max.json": {
+    "code": "schema.unknown-field",
+    "path": "/weighted_max"
+  },
+  "block-type-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/type"
+  },
+  "block-type-wall-tint.json": {
+    "code": "schema.unknown-field",
+    "path": "/tint"
+  },
   "block-unknown-action.json": {
     "code": "schema.invalid-enum",
     "path": "/events/mymod:x/actions/0/type"

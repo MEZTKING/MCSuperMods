@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:flammable": {
+      "burn_odds": 30,
+      "ignite_odds": 60
+    }
+  },
+  "format": 1,
+  "particle_chance": 0.01,
+  "sound_type": "grass",
+  "tint": "foliage",
+  "type": "leaves"
+}

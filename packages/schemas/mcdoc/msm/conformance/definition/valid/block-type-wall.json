@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 2.0,
+      "requires_tool": true
+    }
+  },
+  "format": 1,
+  "type": "wall"
+}

@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "edge": "mymod:block/ruby_glass_pane_top",
+    "pane": "mymod:block/ruby_glass"
+  },
+  "type": "pane"
+}

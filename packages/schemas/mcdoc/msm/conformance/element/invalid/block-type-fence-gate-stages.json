@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "textures": {
+    "stages": ["mymod:block/a"]
+  },
+  "type": "fence_gate",
+  "wood_type": "oak"
+}

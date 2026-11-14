@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:light_emitter": {
+      "level": 7
+    }
+  },
+  "format": 1,
+  "type": "directional"
+}

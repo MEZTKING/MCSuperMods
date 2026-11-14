@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby",
+  "format": 1,
+  "loot": "self",
+  "textures": {
+    "sapling": "mymod:block/ruby_sapling"
+  },
+  "tree": "mymod:ruby_tree",
+  "type": "sapling"
+}

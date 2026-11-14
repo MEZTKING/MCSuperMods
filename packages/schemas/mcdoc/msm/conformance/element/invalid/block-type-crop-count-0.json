@@ -1,0 +1,9 @@
+{
+  "crop_drops": {
+    "produce": "mymod:tomato",
+    "produce_count": 0
+  },
+  "display_name": "Ruby",
+  "format": 1,
+  "type": "crop"
+}

@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:flammable": {
+      "burn_odds": 5,
+      "ignite_odds": 20
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "fence"
+}
