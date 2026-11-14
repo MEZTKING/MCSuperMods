@@ -239,7 +239,7 @@ The mod id must be unique among the mods you install, and the ids `minecraft`, `
 
 ## Separate runtime and GeckoLib (for modpacks)
 
-Every exported jar needs the small `msm_runtime` mod, which registers the blocks and items and runs their behaviour. By default it is nested inside the jar (`META-INF/jars/`), so one file is all a player needs, and Fabric Loader uses the newest copy when several MCSuperMods mods carry one. A project with entities also nests GeckoLib (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-geckolib)); for blocks and items alone it plays no part.
+Every exported jar needs the small `msm_runtime` mod, which registers the blocks and items and runs their behaviour. By default it is nested inside the jar (`META-INF/jars/`), so one file is all a player needs, and Fabric Loader uses the newest copy when several MCSuperMods mods carry one. A project with entities also nests GeckoLib (see [Entities and models](entities-and-models.md#export-the-mod-jar-and-the-renderer)); for blocks and items alone it plays no part.
 
 Tick **Separate runtime and GeckoLib (for modpacks)** in the export dialog to leave the runtime (and GeckoLib, when there are entities) out. The jar still depends on `msm_runtime`, so the game refuses to start unless something else provides it: for example another MCSuperMods mod in the same modpack exported with the runtime nested. Use it when you put several MCSuperMods mods into one modpack and want only one copy of the runtime. MCSuperMods does not publish `msm_runtime` as a download of its own yet.
 
