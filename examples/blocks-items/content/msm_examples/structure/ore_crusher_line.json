@@ -1,0 +1,88 @@
+{
+  "data": {
+    "block_entities": [
+      {
+        "nbt": "{Items:[{Slot:0b,id:\"minecraft:coal\",count:16}]}",
+        "pos": [
+          1,
+          3,
+          0
+        ]
+      },
+      {
+        "nbt": "{Items:[{Slot:0b,id:\"minecraft:raw_iron\",count:16}]}",
+        "pos": [
+          0,
+          4,
+          0
+        ]
+      }
+    ],
+    "blocks": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        2,
+        0,
+        2
+      ],
+      [
+        1,
+        2,
+        0,
+        3
+      ],
+      [
+        0,
+        3,
+        0,
+        1
+      ],
+      [
+        1,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        4,
+        0,
+        0
+      ]
+    ],
+    "palette": [
+      "minecraft:chest[facing=south]",
+      "minecraft:hopper[facing=down]",
+      "msm_examples:ore_crusher",
+      "minecraft:hopper[facing=west]"
+    ],
+    "size": [
+      2,
+      5,
+      1
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ore_crusher_line",
+  "kind": "minecraft:structure_template",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The ore crusher with a hopper chain: the top chest holds raw iron, which the hopper under it puts into the crusher's top (its input); the chest beside it holds coal, which the hopper below it puts into the crusher's side (its fuel); the hopper under the crusher takes the iron ingots from its bottom (its output) into the chest at the foot. Place it with /place template msm_examples:ore_crusher_line ~ ~ ~ and watch the bottom chest fill.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

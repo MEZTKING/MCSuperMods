@@ -8,7 +8,10 @@
  *   model (not in the project) cannot be changed.
  * - A typed `msm:block` without a `model` (stairs, slabs, saplings, leaves, ...; ADR 0067 D7)
  *   is changed itself: its `textures.all`, else the slot it already uses, else its type's first
- *   slot. A crop's stage textures are a list and are not changed by a drop.
+ *   slot. A crop's stage textures are a list and are not changed by a drop. The open and
+ *   working fronts of a container or machine (`front_open`, `front_lit`) count as slots, and
+ *   when the drop replaces `front` (or `all`) they follow it where they showed the same
+ *   picture.
  * - The texture slot is `layer0` when the model has one, else `all`, else its first texture,
  *   else a new `layer0` (a flat item model).
  *
@@ -16,7 +19,11 @@
  */
 
 import type { Element, Json, Project } from '@msm/core';
-import { blockTypeOfData, TEXTURE_SLOTS } from '../studios/blocks-items/block-type-model';
+import {
+  blockTypeOfData,
+  STATE_TEXTURE_SLOTS,
+  textureSlotsOf,
+} from '../studios/blocks-items/block-type-model';
 
 /** The drag data type of a texture asset: `<namespace>:<asset path>`. */
 export const TEXTURE_DRAG_TYPE = 'application/x-msm-texture';
@@ -90,7 +97,9 @@ function typedBlockTexture(element: Element, textureId: string): RetextureResult
   if (type === undefined || type === 'block') {
     return { ok: false, reason: `${element.id} has no model to put the texture on.` };
   }
-  const slots = TEXTURE_SLOTS[type];
+  // The type's slots, plus "Front when open" and "Front when working" of a container or
+  // machine (ADR 0076 D1), so a block with only those set still takes the drop.
+  const slots = textureSlotsOf(type, element.data);
   if (slots.length === 0) {
     return {
       ok: false,
@@ -102,11 +111,19 @@ function typedBlockTexture(element: Element, textureId: string): RetextureResult
   const used = slots.find((slot) => typeof textures[slot.key] === 'string');
   const slot = 'all' in textures ? 'all' : (used?.key ?? slots[0]?.key ?? 'all');
   const previous = textures[slot];
+  const next: Record<string, Json> = { ...textures, [slot]: textureId };
+  // The open and working fronts that showed the replaced picture follow it, so the block does
+  // not change back to the old look while open or working; ones of their own stay.
+  if (typeof previous === 'string' && (slot === 'front' || slot === 'all')) {
+    for (const { key } of Object.values(STATE_TEXTURE_SLOTS)) {
+      if (key !== slot && textures[key] === previous) next[key] = textureId;
+    }
+  }
   return {
     ok: true,
     modelId: element.id,
     slot,
-    data: { ...data, textures: { ...textures, [slot]: textureId } },
+    data: { ...data, textures: next },
     previous: typeof previous === 'string' ? previous : null,
   };
 }

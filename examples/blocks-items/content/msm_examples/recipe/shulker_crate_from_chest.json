@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "C": "minecraft:chest",
+      "X": "#minecraft:planks"
+    },
+    "pattern": [
+      "XXX",
+      "XCX",
+      "XXX"
+    ],
+    "result": {
+      "id": "msm_examples:shulker_crate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shulker_crate_from_chest",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight planks of any wood around a chest make one shulker crate. Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

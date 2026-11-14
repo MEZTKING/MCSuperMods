@@ -1,6 +1,6 @@
 /**
  * The Examples gallery (ADR 0020): one commented example per registered kind, the blocks and
- * items behaviour examples, the entity behaviour examples, the script behaviour examples, then
+ * items behaviour examples (with the container and machine examples, ADR 0076 D4), the entity behaviour examples, the script behaviour examples, then
  * the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
@@ -11,7 +11,11 @@ import {
   musicDiscBundle,
   recipePackBundle,
 } from '../starters/index';
-import { behaviourExamples, blocksItemsExamples } from './blocks-items';
+import {
+  behaviourExamples as blocksItemsBehaviourExamples,
+  blocksItemsExamples,
+} from './blocks-items';
+import { containerExamples } from './containers';
 import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
@@ -23,7 +27,6 @@ import { structureExamples } from './structures';
 import { tagExamples } from './tags';
 import { worldgenExamples } from './worldgen';
 
-export { behaviourExamples } from './blocks-items';
 export { categoryTag, defineExample, type ExampleInput } from './define';
 export { entityBehaviourExamples } from './entities';
 export { scriptBehaviourExamples } from './scripts';
@@ -43,6 +46,15 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...blocksItemsExamples,
   ...entityKindExamples,
   ...scriptKindExamples,
+]);
+
+/**
+ * The blocks and items behaviour examples, then the container and machine examples (ADR 0076
+ * D4); the `examples/blocks-items` mirror holds them all in one project.
+ */
+export const behaviourExamples: readonly ExampleProject[] = Object.freeze([
+  ...blocksItemsBehaviourExamples,
+  ...containerExamples,
 ]);
 
 /** The category of the starter projects in the gallery. */

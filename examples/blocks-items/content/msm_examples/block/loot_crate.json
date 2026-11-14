@@ -1,0 +1,39 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "layout": "chest",
+        "rows": 3
+      }
+    },
+    "display_name": "Loot Crate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "stone",
+    "textures": {
+      "all": "msm_examples:block/loot_crate",
+      "front": "msm_examples:block/loot_crate_front",
+      "front_open": "msm_examples:block/loot_crate_front_open"
+    },
+    "type": "directional"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:loot_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A crate with 27 slots in a vanilla chest screen of 3 rows (msm:container, layout chest). It faces any of six directions, as a barrel does, and shows textures.front_open while a player has it open (the block state open). Hoppers fill it from above and the sides and empty it from below, and comparators read how full it is; \"hoppers\": false or \"comparator\": false turn that off. Breaking it drops its contents and the crate. The open and close sounds are a barrel's unless open_sound and close_sound name others; on_open and on_close run events. Containers need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -18,6 +18,7 @@ import {
   typePreviewProject,
   withBlockType,
 } from '../../../../src/renderer/src/studios/blocks-items/block-type-model';
+import { asObject } from '../../../../src/renderer/src/studios/blocks-items/blocks-items-model';
 
 const el = (id: string, kind: string, data: Json): Element => ({
   id: id as `${string}:${string}`,
@@ -138,6 +139,39 @@ describe('withBlockType', () => {
       textures: { all: 'minecraft:block/dirt' },
     });
     expect(withBlockType({ format: 1 }, 'sapling').tree).toBe('minecraft:oak');
+  });
+
+  it('drops a machine with its recipes and state looks for a type that cannot hold one (ADR 0076 D1)', () => {
+    const machine: Json = {
+      format: 1,
+      type: 'horizontal',
+      textures: {
+        front: 'demo:block/m_front',
+        front_lit: 'demo:block/m_lit',
+        side: 'demo:block/m',
+      },
+      models: { lit: 'demo:block/m_on' },
+      components: { 'msm:machine': { speed: 2 }, 'msm:breakable': { hardness: 3 } },
+      recipes: [{ ingredient: 'minecraft:cobblestone', result: 'minecraft:gravel' }],
+    };
+    const slab = withBlockType(machine, 'slab', { texture: 'demo:block/m' });
+    expect(slab.recipes).toBeUndefined();
+    expect(slab.components).toEqual({ 'msm:breakable': { hardness: 3 } });
+    expect(slab.textures).toEqual({ all: 'demo:block/m' });
+    expect(slab.models).toBeUndefined();
+    // A container type keeps the machine and its recipes; the look is rebuilt.
+    const directional = withBlockType(machine, 'directional', { texture: 'demo:block/m' });
+    expect(directional.recipes).toEqual(asObject(machine).recipes);
+    expect(asObject(directional.components)['msm:machine']).toEqual({ speed: 2 });
+    const crate: Json = {
+      format: 1,
+      type: 'directional',
+      textures: { all: 'demo:block/c', front_open: 'demo:block/c_open' },
+      components: { 'msm:container': { layout: 'chest' } },
+    };
+    const wall = withBlockType(crate, 'wall', { texture: 'demo:block/c' });
+    expect(wall.components).toBeUndefined();
+    expect(wall.textures).toEqual({ all: 'demo:block/c' });
   });
 });
 

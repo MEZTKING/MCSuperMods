@@ -31,6 +31,7 @@ import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 import { jigsawStructureBundle } from './jigsaw-structure';
+import { MACHINE_PARAMETERS, machineBundle } from './machine';
 import { MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
 import { MOUNT_PARAMETERS, mountBundle } from './mount';
 import { musicDiscBundle } from './music-disc';
@@ -45,6 +46,7 @@ import { scriptedOreBundle } from './scripted-ore';
 import { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 import { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 import { STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
+import { STORAGE_CRATE_PARAMETERS, storageCrateBundle } from './storage-crate';
 import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
 import { TREE_PARAMETERS, treeBundle } from './tree';
@@ -71,6 +73,12 @@ export { functionStarterBundle } from './function-starter';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
 export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
+export {
+  MACHINE_PARAMETERS,
+  MACHINE_RECIPES,
+  MACHINE_VANILLA_TYPES,
+  machineBundle,
+} from './machine';
 export { MOB_SKIN_BIOMES, MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
 export { MOUNT_PARAMETERS, mountBundle } from './mount';
 export { musicDiscBundle, SONG } from './music-disc';
@@ -99,6 +107,11 @@ export { scriptedOreBundle, scriptedOreIds } from './scripted-ore';
 export { SIMPLE_BLOCK_PARAMETERS, simpleBlockBundle } from './simple-block';
 export { STATUS_EFFECT_PARAMETERS, statusEffectBundle } from './status-effect';
 export { STONE_SET_MEMBERS, STONE_SET_PARAMETERS, stoneSetBundle } from './stone-set';
+export {
+  STORAGE_CRATE_PARAMETERS,
+  STORAGE_CRATE_SIZES,
+  storageCrateBundle,
+} from './storage-crate';
 export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
 export { TREE_PARAMETERS, treeBundle } from './tree';
@@ -298,6 +311,37 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'blocks',
         blurb: 'A sapling and the tree it grows, with new or vanilla log and leaves.',
+      },
+    },
+  ),
+  starter(
+    'storage-crate',
+    'Storage crate',
+    'A crate that stores items in a chest screen of one, three or six rows, opens its front while someone looks inside and, if you choose, keeps its contents when broken as a shulker box does, with a wood or stone look and a crafting recipe. Hoppers and comparators work with it. Containers need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    storageCrateBundle,
+    {
+      parameters: STORAGE_CRATE_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb:
+          'A crate that stores items in a chest screen, and keeps them when broken if you like.',
+      },
+    },
+  ),
+  starter(
+    'machine',
+    'Machine',
+    'A machine that works items in a furnace screen: it burns fuel, runs on a redstone signal or always works, at the speed you pick, with up to three recipes of its own and, if you choose, the recipes of a furnace, blast furnace, smoker or campfire, a front that lights up while it works and a crafting recipe. Machine recipes need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    machineBundle,
+    {
+      parameters: MACHINE_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A machine with its own recipes that burns fuel or runs on redstone.',
       },
     },
   ),

@@ -49,7 +49,12 @@ import type {
   ProjectStarter,
   TargetFacts,
 } from '@msm/plugin-api';
-import blocksItemsPlugin, { blockGeneratedModelIds, blockItemIdOf } from '@msm/plugin-blocks-items';
+import blocksItemsPlugin, {
+  blockGeneratedModelIds,
+  blockItemIdOf,
+  blockStateFlag,
+  blockTypeOf,
+} from '@msm/plugin-blocks-items';
 import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
@@ -687,6 +692,47 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       tree_shape: 'fancy',
     },
   ],
+  // ADR 0076 D2: every size and look, keep contents, the recipe choices, pictures.
+  'storage-crate': [
+    {
+      crate_name: 'Rock Bin',
+      size: 'large',
+      look: 'stone',
+      ingredient: 'minecraft:iron_ingot',
+      picture_front: pngDataUrl(16, 16),
+      picture_front_open: pngDataUrl(16, 16),
+    },
+    { crate_name: 'Treasure Box', keep_contents: true, ingredient: 'none' },
+    { crate_name: 'Pouch Crate', size: 'small', keep_contents: true, colour: '#28a060' },
+  ],
+  // ADR 0076 D2: every power, speeds, vanilla recipe types with and without its own, pictures.
+  machine: [
+    {
+      machine_name: 'Ore Mill',
+      power: 'redstone',
+      speed: 2,
+      vanilla_types: ['minecraft:smelting', 'minecraft:blasting'],
+      recipe_1: 'iron_ingot',
+      recipe_2: 'gold_ingot',
+      recipe_3: 'copper_ingot',
+      ingredient: 'minecraft:stone_bricks',
+      picture_front: pngDataUrl(16, 16),
+      picture_front_lit: pngDataUrl(16, 16),
+      picture_side: pngDataUrl(16, 16),
+      picture_top: pngDataUrl(16, 16),
+    },
+    {
+      machine_name: 'Kitchen',
+      power: 'always',
+      speed: 0.5,
+      vanilla_types: ['minecraft:smoking', 'minecraft:campfire_cooking'],
+      recipe_1: 'none',
+      recipe_2: 'none',
+      recipe_3: 'none',
+      ingredient: 'none',
+    },
+    { machine_name: 'Spinner', recipe_1: 'string', recipe_2: 'string', recipe_3: 'sugar' },
+  ],
   'goat-horn': [
     {
       horn_name: 'Thunder',
@@ -786,6 +832,8 @@ const MIRRORED_STARTERS = [
   'stone-set',
   'crop',
   'tree',
+  'storage-crate',
+  'machine',
   'food',
   'scripted-item',
   'weapon',
@@ -941,10 +989,20 @@ const NON_DATA_KINDS = new Set([
  * `item` too. An element in the `entity_type` registry with a spawn egg
  * (any `spawn_egg` but `false`) registers the item `<id>_spawn_egg`, and an egg with a
  * texture also gets the generated item model `<ns>:item/<path>_spawn_egg` (as lowering
- * writes it). An `msm:potion` with `long` or `strong` also registers `<ns>:long_<path>` and
+ * writes it). A machine block (`msm:machine` on a type that takes it) also registers its id as
+ * a `recipe_type` and a `recipe_serializer` (ADR 0075 D2). An `msm:potion` with `long` or `strong` also registers `<ns>:long_<path>` and
  * `<ns>:strong_<path>` (ADR 0063 D9). `msm:script` has no registry, so script ids register
  * nothing.
  */
+/** Whether `msm:block` data makes a machine (the app's `isMachineBlock`). */
+function isMachine(data: Json): boolean {
+  try {
+    return blockStateFlag(blockTypeOf(data), data) === 'lit';
+  } catch {
+    return false;
+  }
+}
+
 function projectRegistryIds(project: Project): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
   const add = (name: string, id: string): void => {
@@ -963,6 +1021,11 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
         if (itemId !== undefined) add('item', itemId);
         // The models lowering generates for the block (ADR 0067 D7), flat item models included.
         for (const id of blockGeneratedModelIds(element.id, element.data as Json)) add('model', id);
+        // A machine registers a recipe type and serialiser with its own id (ADR 0075 D2).
+        if (element.kind === 'msm:block' && isMachine(element.data as Json)) {
+          add('recipe_type', element.id);
+          add('recipe_serializer', element.id);
+        }
       }
       if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
         const egg = (element.data as { spawn_egg?: unknown }).spawn_egg;

@@ -1,0 +1,63 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:machine": {}
+    },
+    "display_name": "Ore Crusher",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "recipes": [
+      {
+        "experience": 0.7,
+        "ingredient": "minecraft:raw_iron",
+        "result": {
+          "count": 2,
+          "id": "minecraft:iron_ingot"
+        }
+      },
+      {
+        "experience": 1,
+        "ingredient": "minecraft:raw_gold",
+        "result": {
+          "count": 2,
+          "id": "minecraft:gold_ingot"
+        }
+      },
+      {
+        "experience": 0.7,
+        "ingredient": "minecraft:raw_copper",
+        "result": {
+          "count": 2,
+          "id": "minecraft:copper_ingot"
+        }
+      }
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "front": "msm_examples:block/ore_crusher_front",
+      "front_lit": "msm_examples:block/ore_crusher_front_lit",
+      "side": "msm_examples:block/ore_crusher",
+      "top": "msm_examples:block/ore_crusher_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ore_crusher",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A machine (msm:machine) in a vanilla furnace screen: input, fuel and output. It burns fuel in its fuel slot, as a furnace does, and takes its own recipes. Its recipes (raw iron into two iron ingots; raw gold into two gold ingots; raw copper into two copper ingots) are the element's recipes: each becomes a data pack file data/msm_examples/recipe/ore_crusher/<name>.json whose type is msm_examples:ore_crusher, at the machine's default time of 10 seconds unless a recipe sets time, with experience paid when a player takes the output. The vanilla data pack leaves them out, as a vanilla game cannot load them. It turns its front towards the player who places it and shows textures.front_lit while it works (the block state lit), giving light of level 13. Hoppers fill the input from above and the fuel from the sides and empty the output from below; comparators read its contents. Machines need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

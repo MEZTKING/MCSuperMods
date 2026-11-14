@@ -12,7 +12,10 @@
  *   in the Creator;
  * - each 0.8.0 flow (Weapon as spear and bow, Consumable as drink and charm, Totem,
  *   Enchantment, Painting with a picked PNG, Music disc) creates in a blank project and exports
- *   with no blocking problems.
+ *   with no blocking problems;
+ * - the Storage crate and Machine flows (ADR 0076 D2) create with their defaults and no
+ *   problems at all, export (machine recipes only in the jar), reopen with every choice changed
+ *   and keep an Inventory field edited by hand.
  */
 
 import { createMemoryFileSystem, type Element, type Json, type Project } from '@msm/core';
@@ -431,6 +434,159 @@ describe('Creator scenario: 0.8.0 flows', () => {
 
       expect(session.undo()).toBe(true);
       expect(session.snapshot.project).toEqual(before);
+    });
+  }
+});
+
+/** Every problem (any severity) after validation, as `id: code`. */
+async function problemsAfterValidation(session: ProjectSession): Promise<string[]> {
+  await session.flushValidation();
+  return session.snapshot.problems.map(
+    (problem) => `${problem.elementId ?? ''}: ${problem.code} ${problem.message}`,
+  );
+}
+
+/** The ADR 0076 D2 flows: defaults, and a reopen that changes every choice. */
+const CONTAINER_FLOWS: {
+  flowId: string;
+  title: string;
+  blockId: string;
+  /** Files the jar must hold and the data pack must not (ADR 0066). */
+  jarOnly: string[];
+  /** Every choice changed, names kept so the ids stay. */
+  reopen: () => Record<string, Json>;
+  /** What the reopened block's data must contain. */
+  reopened: Record<string, Json>;
+}[] = [
+  {
+    flowId: 'storage-crate',
+    title: 'Storage crate',
+    blockId: 'demo:supply_crate',
+    jarOnly: [
+      'msm/demo/block/supply_crate.json',
+      'data/demo/recipe/supply_crate_from_chest.json',
+      'data/demo/loot_table/blocks/supply_crate.json',
+    ],
+    reopen: () => ({
+      size: 'large',
+      keep_contents: true,
+      look: 'stone',
+      colour: '#808080',
+      ingredient: 'minecraft:copper_ingot',
+      picture_front: pngDataUrl(paintingPng(1, 1, [40, 40, 40])),
+      picture_front_open: pngDataUrl(paintingPng(1, 1, [10, 10, 10])),
+    }),
+    reopened: {
+      sound_type: 'stone',
+      components: {
+        'msm:breakable': { hardness: 3.5, resistance: 3.5, tool: 'pickaxe' },
+        'msm:container': { layout: 'chest', rows: 6 },
+      },
+    },
+  },
+  {
+    flowId: 'machine',
+    title: 'Machine',
+    blockId: 'demo:grinder',
+    jarOnly: [
+      'msm/demo/block/grinder.json',
+      'data/demo/recipe/grinder/gravel.json',
+      'data/demo/recipe/grinder/flint.json',
+      'data/demo/recipe/grinder/bone_meal.json',
+      'data/demo/recipe/grinder_from_furnace.json',
+    ],
+    reopen: () => ({
+      colour: '#a04020',
+      power: 'always',
+      speed: 2,
+      vanilla_types: ['minecraft:smelting'],
+      recipe_1: 'iron_ingot',
+      recipe_2: 'none',
+      recipe_3: 'sugar',
+      ingredient: 'minecraft:cobblestone',
+      picture_front: pngDataUrl(paintingPng(1, 1, [40, 40, 40])),
+      picture_front_lit: pngDataUrl(paintingPng(1, 1, [250, 200, 40])),
+      picture_side: pngDataUrl(paintingPng(1, 1, [90, 90, 90])),
+      picture_top: pngDataUrl(paintingPng(1, 1, [70, 70, 70])),
+    }),
+    reopened: {
+      components: {
+        'msm:breakable': { hardness: 3.5, resistance: 3.5, tool: 'pickaxe' },
+        'msm:machine': {
+          recipe_types: ['demo:grinder', 'minecraft:smelting'],
+          power: 'always',
+          speed: 2,
+        },
+      },
+      recipes: [
+        {
+          ingredient: 'minecraft:raw_iron',
+          result: { id: 'minecraft:iron_ingot', count: 2 },
+          experience: 0.7,
+        },
+        { ingredient: 'minecraft:sugar_cane', result: { id: 'minecraft:sugar', count: 2 } },
+      ],
+    },
+  },
+];
+
+describe('Creator scenario: Storage crate and Machine (ADR 0076 D2)', () => {
+  for (const entry of CONTAINER_FLOWS) {
+    it(`${entry.flowId}: defaults create with no problems; recipes and block only in the jar`, async () => {
+      const { session, calls } = await openSession();
+      const before = session.snapshot.project;
+      const flow = flowOf(session, entry.flowId);
+      expect(flow.title).toBe(entry.title);
+      expect(flow.creator?.group).toBe('blocks');
+      const { label } = await create(session, flow, valuesOf(flow));
+      expect(label).toBe(`Create ${entry.title}`);
+      expect(elementOf(session, entry.blockId)?.meta.creator?.flowId).toBe(entry.flowId);
+      expect(await problemsAfterValidation(session)).toEqual([]);
+
+      const resource = await session.exportPack('resource', 'zip');
+      expect(errorsOf(resource)).toEqual([]);
+      const data = await session.exportPack('data', 'zip');
+      expect(errorsOf(data)).toEqual([]);
+      expect(data.problems.some((problem) => problem.code === 'export.mod-only-reference')).toBe(
+        true,
+      );
+      const jar = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: false });
+      expect(errorsOf(jar)).toEqual([]);
+      const [, dataZip, modJar] = calls.saved.map((saved) => Object.keys(unzipSync(saved.data)));
+      expect(modJar).toEqual(expect.arrayContaining(entry.jarOnly));
+      for (const file of entry.jarOnly) expect(dataZip, file).not.toContain(file);
+
+      expect(session.undo()).toBe(true);
+      expect(session.snapshot.project).toEqual(before);
+    });
+
+    it(`${entry.flowId}: reopens with every choice changed and keeps an Inventory field edited by hand`, async () => {
+      const { session } = await openSession();
+      const flow = flowOf(session, entry.flowId);
+      await create(session, flow, valuesOf(flow));
+
+      // Every choice changed: the untouched block is rewritten with the new output.
+      const plan = await reopen(session, flow, entry.blockId, entry.reopen());
+      expect(plan.mode).toBe('update');
+      expect(statusOf(plan, entry.blockId)).toBe('replace');
+      await applyCreatorPlan(session, creatorChanges(plan), creatorLabel(plan, flow.title));
+      expect(elementOf(session, entry.blockId)?.data).toMatchObject(entry.reopened);
+      expect(await errorsAfterValidation(session)).toEqual([]);
+
+      // An Inventory field edited by hand (a container's comparator, a machine's light while
+      // working), then a reopen with another colour: the edited block is kept.
+      const block = elementOf(session, entry.blockId) as Element;
+      const edited = structuredClone(block.data) as { components: Record<string, Json> };
+      const component = entry.flowId === 'machine' ? 'msm:machine' : 'msm:container';
+      const inventory = edited.components[component] as Record<string, Json>;
+      if (entry.flowId === 'machine') inventory.lit_light = 7;
+      else inventory.comparator = false;
+      session.setElementData(entry.blockId as `${string}:${string}`, edited as unknown as Json);
+      const again = await reopen(session, flow, entry.blockId, { colour: '#20e0a0' });
+      expect(statusOf(again, entry.blockId)).toBe('keep');
+      await applyCreatorPlan(session, creatorChanges(again), creatorLabel(again, flow.title));
+      expect(elementOf(session, entry.blockId)?.data).toEqual(edited);
+      expect(await errorsAfterValidation(session)).toEqual([]);
     });
   }
 });

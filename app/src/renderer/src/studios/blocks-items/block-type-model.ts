@@ -393,7 +393,9 @@ export interface TypeChangeOptions {
  * The block data after changing its type to `next` (ADR 0069 D5), as one edit: shared fields
  * (name, sounds, mining, light, item, triggers, events) stay; the old type's own fields go
  * (`textures`, `models`, set and wood types, ...); components the new type does not take
- * (`msm:shape`, `msm:redstone`) go; a loot preset of the old type becomes `self`. Required
+ * (`msm:shape`, `msm:redstone`, `msm:container`, `msm:machine`) go, with a machine's
+ * `recipes` (the container and machine state textures and models go with `textures` and
+ * `models`); a loot preset of the old type becomes `self`. Required
  * fields of the new type get a default (the target's first set or wood type, the vanilla oak
  * tree for a sapling), and the old look is carried over as the new type's `all` texture (a
  * crop's first stage), or kept as `model` where the new type takes one.
@@ -426,6 +428,8 @@ export function withBlockType(
     for (const id of SHAPED_ONLY_COMPONENTS) delete components[id];
     if (Object.keys(components).length === 0) delete out.components;
     else out.components = components;
+    // A machine's recipes go with `msm:machine` (ADR 0075 D8): the type cannot lower them.
+    delete out.recipes;
   }
   const preset = typeof out.loot === 'string' ? out.loot : undefined;
   const presetType = Object.entries(TYPE_LOOT_PRESETS).find(([, value]) => value === preset)?.[0];

@@ -41,6 +41,8 @@ const STARTER_IDS = [
   'stone-set',
   'crop',
   'tree',
+  'storage-crate',
+  'machine',
   'food',
   'weapon',
   'consumable',
@@ -246,7 +248,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the forty-two starters in order', () => {
+  it('lists the forty-four starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -256,7 +258,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(38).fill('content'),
+      ...Array<string>(40).fill('content'),
     ]);
   });
 
@@ -623,7 +625,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 94 per-kind examples, one per built-in kind, 27 behaviour examples and 4 starter projects', () => {
+  it('has 94 per-kind examples, one per built-in kind, 30 behaviour examples and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(94);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -643,6 +645,9 @@ describe('examples', () => {
       'example_msm_tree',
       'example_msm_machine_block',
       'example_msm_iron_door',
+      'example_msm_loot_crate',
+      'example_msm_ore_crusher',
+      'example_msm_shulker_crate',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -663,7 +668,7 @@ describe('examples', () => {
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
     ]);
-    expect(libraryExamples).toHaveLength(125);
+    expect(libraryExamples).toHaveLength(128);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -889,7 +894,7 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the eight worldgen starters, the 19 structure and worldgen examples, the generating ores and the trees and wild crops', () => {
+  it('covers the eight worldgen starters, the 21 structure and worldgen examples, the generating ores and the trees and wild crops', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
@@ -908,6 +913,8 @@ describe('structure and worldgen content', () => {
       'example_msm_wood_set',
       'example_msm_crop',
       'example_msm_tree',
+      'example_msm_loot_crate',
+      'example_msm_ore_crusher',
       'starter_custom_ore',
     ]);
   });

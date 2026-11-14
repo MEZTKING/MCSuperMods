@@ -1,0 +1,51 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:machine": {}
+    },
+    "display_name": "Grinder",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "recipes": [
+      {
+        "ingredient": "minecraft:cobblestone",
+        "result": "minecraft:gravel"
+      },
+      {
+        "experience": 0.1,
+        "ingredient": "minecraft:gravel",
+        "result": "minecraft:flint"
+      },
+      {
+        "ingredient": "minecraft:bone",
+        "result": {
+          "count": 4,
+          "id": "minecraft:bone_meal"
+        }
+      }
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "front": "msm_starter:block/grinder_front",
+      "front_lit": "msm_starter:block/grinder_front_lit",
+      "side": "msm_starter:block/grinder",
+      "top": "msm_starter:block/grinder_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:grinder",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A machine (msm:machine) in a vanilla furnace screen: input, fuel and output. It burns fuel in its fuel slot, as a furnace does, and takes its own recipes. Its recipes (cobblestone into gravel; gravel into flint; a bone into four bone meal) are the element's recipes: each becomes a data pack file data/msm_starter/recipe/grinder/<name>.json whose type is msm_starter:grinder, at the machine's default time of 10 seconds unless a recipe sets time, with experience paid when a player takes the output. The vanilla data pack leaves them out, as a vanilla game cannot load them. It turns its front towards the player who places it and shows textures.front_lit while it works (the block state lit), giving light of level 13. Hoppers fill the input from above and the fuel from the sides and empty the output from below; comparators read its contents. Machines need the Fabric mod jar export."
+  }
+}

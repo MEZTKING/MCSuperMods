@@ -98,6 +98,8 @@ const WIZARDS = [
   'stone-set',
   'crop',
   'tree',
+  'storage-crate',
+  'machine',
   'food',
   'weapon',
   'consumable',
@@ -132,6 +134,8 @@ const FLOWS: Record<string, string> = {
   'stone-set': 'blocks',
   crop: 'blocks',
   tree: 'blocks',
+  'storage-crate': 'blocks',
+  machine: 'blocks',
   food: 'food',
   weapon: 'gear',
   consumable: 'food',
@@ -197,6 +201,8 @@ describe('wizard starters', () => {
     expect(groups('goat-horn')).toEqual(['Horn', 'Getting it']);
     expect(groups('crop')).toEqual(['Crop', 'Harvest', 'Farming', 'World', 'Pictures']);
     expect(groups('tree')).toEqual(['Tree', 'Blocks', 'World', 'Pictures']);
+    expect(groups('storage-crate')).toEqual(['Crate', 'Recipe', 'Pictures']);
+    expect(groups('machine')).toEqual(['Machine', 'Recipes', 'Crafting', 'Pictures']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {

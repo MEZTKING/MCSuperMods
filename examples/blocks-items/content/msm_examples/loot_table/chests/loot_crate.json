@@ -1,0 +1,63 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "max": 4,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:bread",
+            "type": "minecraft:item",
+            "weight": 4
+          },
+          {
+            "modifier": {
+              "count": {
+                "max": 3,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:iron_ingot",
+            "type": "minecraft:item",
+            "weight": 3
+          },
+          {
+            "name": "minecraft:emerald",
+            "type": "minecraft:item",
+            "weight": 2
+          },
+          {
+            "name": "minecraft:diamond",
+            "type": "minecraft:item",
+            "weight": 1
+          }
+        ],
+        "rolls": {
+          "max": 5,
+          "min": 3,
+          "type": "minecraft:uniform"
+        }
+      }
+    ],
+    "type": "minecraft:chest"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:chests/loot_crate",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The loot of the crate in the loot crate room: three to five rolls of bread, iron, an emerald or a rare diamond. It names only vanilla items, so the vanilla data pack keeps it. The structure gives the crate this table in its block entity (LootTable), and the crate fills from it when a player first opens it, as a dungeon chest does. Try /loot give @s loot msm_examples:chests/loot_crate.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

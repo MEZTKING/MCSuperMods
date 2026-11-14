@@ -3353,3 +3353,21 @@ Decisions
 
 Next
 - B320's flows and B324's e2e use the test ids listed in B318's report; `withBlockType` still keeps `recipes` when the type changes to one without machines (B319's `machine-recipes-without-machine` warning covers it).
+
+## 2026-11-14 — executor — B320 container and machine flows and examples
+
+What
+- Creator flows (ADR 0076 D2, group `blocks`, after Tree): **Storage crate** (`storage-crate`, `src/starters/storage-crate.ts`): a `directional` block with `msm:container` (chest layout, rows 1, 3 or 6 from "Size"), "Keep contents when broken" (written only with 3 rows), "Look" wood or stone (sounds, axe or pickaxe breaking, placeholder patterns), a crafting recipe (eight of a material around a chest), pictures "Front" and "Front when open" (`textures.front_open`). **Machine** (`machine`, `src/starters/machine.ts`): a `horizontal` block with `msm:machine`: "Power" (Fuel, Redstone signal, Always), "Speed" (0.5 to 4), "Also takes vanilla recipes" (the target's `machineRecipeTypes`), three recipe slots from a list of eight vanilla-item recipes (distinct ingredients and results) or "No recipe", a crafting recipe (eight around a furnace) and pictures "Front", "Front when working" (`front_lit`), "Sides and back", "Top and bottom". Defaults: Supply Crate (3 rows, wood, planks) and Grinder (fuel, speed 1, gravel, flint and bone meal recipes); `msm:machine` stays `{}` when everything is default.
+- Examples (ADR 0076 D4, `src/examples/containers.ts`, category Blocks, in `behaviourExamples` and so in the `examples/blocks-items` mirror): `example_msm_loot_crate` "Loot crate in a structure" (stone crate, its own chest loot table of vanilla items, structure template `loot_crate_room` whose `block_entities` gives the crate `{LootTable:...}`), `example_msm_ore_crusher` "Ore crusher" (raw iron, gold and copper into two ingots each, structure template `ore_crusher_line`: chest and hopper into the top, chest and hopper into the side with coal, hopper from the bottom into a chest), `example_msm_shulker_crate` "Shulker crate" (keep contents).
+- Gaps from B318: `withBlockType` removes `recipes` with `msm:machine` when the new type cannot hold one (state textures and models already go with `textures` and `models`); `retexture` counts `front_open` and `front_lit` as slots and carries them along when they showed the replaced `front` (or `all`).
+- Tests: `packages/plugins/library/test/container-flows.test.ts` (12), library pins (44 starters, 30 behaviour examples, 128 examples, 21 worldgen examples), `packages/exporters/test/library.test.ts` (mirrored starters `storage-crate` and `machine`, wizard alternatives for every choice, machine ids counted as `recipe_type` and `recipe_serializer` in its copy of the app's registry ids), four Creator scenarios in `app/test/creator-scenario.test.ts`, `retexture` and `withBlockType` cases. `examples/` regenerated.
+- Checks: `pnpm lint`, `pnpm typecheck`, `turbo run test --force --concurrency=4` (21 tasks; library 514, exporters 1101, app 1520), `pnpm build`, `dist:dir`, check-size (`app.asar` 32,990,705 bytes, 31.5 MiB; +27.6 kB). The library vanilla server check (`MSM_LIBRARY_PACKS_OUT` and `tools/run-fabric-server/vanilla-packs.ts`) passes on vanilla 26.3 and 26.4-snapshot-7 for the 16 (13 on 26.4) packs of the new starters, wizard variants, examples and mirrors; no machine recipe, crate recipe or keep-contents loot table is in them.
+
+Decisions
+- The examples give `/place template` in their notes instead of a place function: the library test's copy of the mcfunction ids does not declare project structures (the app's does), so a function naming one fails there.
+- Structure palettes use the blocks' default states (no `[facing=...]`) so the library's self-containment test reads the ids.
+- No new placeholder patterns: the crate front is `trapdoor`, the open front and the machine fronts `block_front` (the working front in amber).
+
+Next
+- B324: flow ids `storage-crate` and `machine`, titles "Storage crate" and "Machine"; default block ids `<ns>:supply_crate` and `<ns>:grinder`.
+- The library's `src/index.ts` header and export list do not name the two flows yet (not an owner file).

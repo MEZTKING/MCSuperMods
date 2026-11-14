@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "F": "minecraft:furnace",
+      "X": "minecraft:iron_ingot"
+    },
+    "pattern": [
+      "XXX",
+      "XFX",
+      "XXX"
+    ],
+    "result": {
+      "id": "msm_examples:ore_crusher"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ore_crusher_from_furnace",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight iron ingots around a furnace make one ore crusher. Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}
