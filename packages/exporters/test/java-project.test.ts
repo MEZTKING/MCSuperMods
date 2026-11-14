@@ -336,6 +336,50 @@ describe.each(
     expect(unknownProblems[0]?.file).toBe('msm/ruby/mystery/thing.json');
   });
 
+  it('routes biome and loot additions into their inputs, never entities, and omits them when absent', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const biome = raw('ruby:ore', {
+      path: 'msm/ruby/biome_addition/ruby_ore.json',
+      layer: 'msm',
+      json: { format: 1 },
+    });
+    const loot = raw('ruby:drop', {
+      path: 'msm/ruby/loot_addition/zombie_ruby.json',
+      layer: 'msm',
+      json: { format: 1 },
+    });
+    const unknown = raw('ruby:mystery', {
+      path: 'msm/ruby/mystery_addition/thing.json',
+      layer: 'msm',
+      json: { format: 1 },
+    });
+    const { report } = await eject([biome, loot, unknown, plainItem], { wrapper, target: spy });
+    expect(report.ok).toBe(true);
+    expect(captured?.biomeAdditions?.map((entry) => entry.id)).toEqual(['ruby:ruby_ore']);
+    expect(captured?.biomeAdditions?.[0]?.path).toBe('msm/ruby/biome_addition/ruby_ore.json');
+    expect(captured?.lootAdditions?.map((entry) => entry.id)).toEqual(['ruby:zombie_ruby']);
+    expect(captured?.entities).toEqual([]);
+    expect(captured?.geckolib).toBe(false);
+    const warnings = report.problems.filter(
+      (problem) => problem.code === ExportProblemCodes.javaGenerationFailed,
+    );
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]?.file).toBe('msm/ruby/mystery_addition/thing.json');
+
+    await eject([plainItem], { wrapper, target: spy });
+    expect(captured?.biomeAdditions).toBeUndefined();
+    expect(captured?.lootAdditions).toBeUndefined();
+  });
+
   it('collects sorted, namespaced sound events from every sounds.json, without minecraft', async () => {
     let captured: JavaProjectInput | undefined;
     const spy: Target = {

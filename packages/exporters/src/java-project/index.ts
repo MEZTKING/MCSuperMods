@@ -331,6 +331,8 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const items: DefinitionInput[] = [];
       const entities: DefinitionInput[] = [];
       const effects: DefinitionInput[] = [];
+      const biomeAdditions: DefinitionInput[] = [];
+      const lootAdditions: DefinitionInput[] = [];
       const scripts: string[] = [];
       const resources: OutputFile[] = [];
       let provided: OutputFile | undefined;
@@ -362,7 +364,14 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         const match = DEFINITION_PATTERN.exec(file.path);
         if (match === null) continue;
         const kind = match[2];
-        if (kind !== 'block' && kind !== 'item' && kind !== 'entity' && kind !== 'effect') {
+        if (
+          kind !== 'block' &&
+          kind !== 'item' &&
+          kind !== 'entity' &&
+          kind !== 'effect' &&
+          kind !== 'biome_addition' &&
+          kind !== 'loot_addition'
+        ) {
           problems.report({
             severity: 'warning',
             code: ExportProblemCodes.javaGenerationFailed,
@@ -398,6 +407,8 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         if (match[2] === 'block') blocks.push(entry);
         else if (match[2] === 'item') items.push(entry);
         else if (kind === 'effect') effects.push(entry);
+        else if (kind === 'biome_addition') biomeAdditions.push(entry);
+        else if (kind === 'loot_addition') lootAdditions.push(entry);
         else entities.push(entry);
       }
       const soundEvents = collectSoundEvents(resources, problems);
@@ -456,6 +467,8 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           entities,
           effects,
           soundEvents,
+          ...(biomeAdditions.length > 0 ? { biomeAdditions } : {}),
+          ...(lootAdditions.length > 0 ? { lootAdditions } : {}),
           geckolib: geckolib !== undefined,
         });
       } catch (error) {
