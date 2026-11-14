@@ -648,3 +648,149 @@ describe('AI helper scenario: the poison dart (build mode)', () => {
     expect(session.snapshot.project).toEqual(before);
   });
 });
+
+/** The maple wood set (ADR 0069 D6, brief B279): the Wood set flow through `add_starter`. */
+const MAPLE_PROMPT = 'make a maple wood set';
+
+const mapleScript = (): AiModelScript =>
+  aiModelScriptSchema.parse({
+    turns: [
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'propose_plan',
+            input: {
+              title: 'Maple wood set',
+              items: [
+                {
+                  itemId: 'set',
+                  kind: 'msm:block',
+                  elementId: 'maple:maple_log',
+                  summary: 'The Wood set flow: every member, the tree, recipes and tags.',
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'add_starter',
+            input: { starterId: 'wood-set', namespace: 'maple', values: { wood_name: 'Maple' } },
+          },
+        ],
+      },
+      { content: [{ type: 'tool_use', name: 'run_checks', input: { scope: 'all' } }] },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'checkpoint',
+            input: {
+              completedItemIds: ['set'],
+              summary: 'The maple wood set is proposed and the checks report no errors.',
+            },
+          },
+        ],
+      },
+      {
+        content: [
+          {
+            type: 'text',
+            text: 'The maple wood set is ready to review. The textures are placeholders to replace.',
+          },
+        ],
+      },
+    ],
+  }) as AiModelScript;
+
+describe('AI helper scenario: the maple wood set (build mode)', () => {
+  it('builds the Wood set flow through add_starter with no errors and applies in one step', async () => {
+    const { session } = await openSession();
+    const before = session.snapshot.project;
+    const changeset = new PendingChangeset();
+    const client = new ScriptedModelClient(mapleScript());
+    const conversation = createConversation('conversation-4', 'claude-opus-5-5');
+
+    const { result, record } = await run(session, changeset, client, conversation, {
+      mode: 'build',
+      text: MAPLE_PROMPT,
+    });
+    expect(result.reason).toBe('end_turn');
+    expect(client.remaining).toBe(0);
+    expect(record.checkpoints).toBe(1);
+    expect(
+      [...record.results.entries()]
+        .filter(([, answer]) => answer.isError)
+        .map(([id, answer]) => `${id}: ${answer.content}`),
+    ).toEqual([]);
+
+    // The set's members carry their block types; ids derive from the wood name.
+    expect(changeset.items.filter((item) => item.conflict !== undefined)).toEqual([]);
+    const created = new Map<string, Record<string, Json> | undefined>(
+      changeset.items
+        .filter((item) => item.op === 'create')
+        .map((item) => [String(item.elementId), item.after as Record<string, Json> | undefined]),
+    );
+    const types: Record<string, string> = {
+      'maple:maple_log': 'pillar',
+      'maple:maple_planks': 'block',
+      'maple:maple_stairs': 'stairs',
+      'maple:maple_slab': 'slab',
+      'maple:maple_fence': 'fence',
+      'maple:maple_fence_gate': 'fence_gate',
+      'maple:maple_door': 'door',
+      'maple:maple_trapdoor': 'trapdoor',
+      'maple:maple_button': 'button',
+      'maple:maple_pressure_plate': 'pressure_plate',
+      'maple:maple_leaves': 'leaves',
+      'maple:maple_sapling': 'sapling',
+    };
+    for (const [id, type] of Object.entries(types)) {
+      const data = created.get(id);
+      expect(data, id).toBeDefined();
+      expect(data?.type ?? 'block', id).toBe(type);
+    }
+    expect(created.has('maple:maple_tree')).toBe(true);
+    expect(changeset.items.filter((item) => item.op === 'asset').length).toBeGreaterThanOrEqual(10);
+
+    // run_checks reported no errors.
+    const checkUse = conversation.messages
+      .flatMap((message) =>
+        message.role === 'assistant' && typeof message.content !== 'string' ? message.content : [],
+      )
+      .find((block) => block.type === 'tool_use' && block.name === 'run_checks');
+    const checkId = checkUse?.type === 'tool_use' ? checkUse.id : '';
+    const checks = JSON.parse(record.results.get(checkId)?.content ?? '{}') as {
+      counts: { error: number };
+      elements: { elementId: string; problems: { severity: string; message: string }[] }[];
+    };
+    expect(
+      checks.elements.flatMap((group) =>
+        group.problems
+          .filter((problem) => problem.severity === 'error')
+          .map((problem) => `${group.elementId}: ${problem.message}`),
+      ),
+    ).toEqual([]);
+    expect(checks.counts.error).toBe(0);
+    expectAppendOnly(client);
+
+    // One undo step, no blocking problems, and the Fabric mod jar is not blocked.
+    const applied = await session.applyChangeset(changeset.items);
+    expect(applied.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+    expect([...elementIds(session.snapshot.project)]).toEqual(
+      expect.arrayContaining(Object.keys(types)),
+    );
+    await session.flushValidation();
+    expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    const jar = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: false });
+    expect(jar.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    expect(jar.location).toBeDefined();
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+  });
+});

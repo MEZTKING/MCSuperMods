@@ -52,6 +52,28 @@ export const PLACEHOLDER_PATTERN_NAMES = [
   'boomerang',
   'flask',
   'effect_icon',
+  'bark',
+  'log_top',
+  'stripped_log',
+  'stripped_log_top',
+  'planks',
+  'door_top',
+  'door_bottom',
+  'trapdoor',
+  'leaves',
+  'sapling',
+  'stone',
+  'polished_stone',
+  'bricks',
+  'pillar_side',
+  'pillar_top',
+  'crop_stage0',
+  'crop_stage1',
+  'crop_stage2',
+  'crop_stage3',
+  'seeds',
+  'produce',
+  'block_front',
 ] as const;
 
 /** Most elements one `create_elements` call may propose. */
@@ -94,7 +116,7 @@ export const createTextureInput = z.object({
   pattern: z
     .enum(PLACEHOLDER_PATTERN_NAMES)
     .describe(
-      'The placeholder pattern: plain, ore (speckles on stone), gem, disc, egg (spawn egg), sword, pickaxe, axe, shovel, hoe, helmet, chestplate, leggings, boots, ingot, bow, crossbow, shield, spear, mace, bottle, totem, smithing_template, horse_armor, wolf_armor, ball, knife, boomerang, flask (all 16x16; the last four for throwables), effect_icon (18x18 status effect icon, under textures/mob_effect), armor_layer_1 and armor_layer_2 (64x32 worn armour layers, under textures/entity/equipment/humanoid and humanoid_leggings), horse_armor_layer (64x64, under textures/entity/equipment/horse_body) or wolf_armor_layer (64x32, under textures/entity/equipment/wolf_body).',
+      'The placeholder pattern: plain, ore (speckles on stone), gem, disc, egg (spawn egg), sword, pickaxe, axe, shovel, hoe, helmet, chestplate, leggings, boots, ingot, bow, crossbow, shield, spear, mace, bottle, totem, smithing_template, horse_armor, wolf_armor, ball, knife, boomerang, flask (all 16x16; the last four for throwables), effect_icon (18x18 status effect icon, under textures/mob_effect), armor_layer_1 and armor_layer_2 (64x32 worn armour layers, under textures/entity/equipment/humanoid and humanoid_leggings), horse_armor_layer (64x64, under textures/entity/equipment/horse_body), wolf_armor_layer (64x32, under textures/entity/equipment/wolf_body); block family textures (16x16, under textures/block): bark and log_top (log side and end), stripped_log and stripped_log_top, planks, door_top and door_bottom, trapdoor, leaves, sapling (also the item texture), stone, polished_stone, bricks, pillar_side and pillar_top, block_front (furnace-like front), crop_stage0 to crop_stage3 (crop stalks, sprouts to ripe); seeds and produce (item textures).',
     ),
   colour: z
     .string()

@@ -126,3 +126,41 @@ describe('systemPrompt potions, data kinds and Script API 1.1 paragraphs (ADRs 0
     }
   });
 });
+
+describe('systemPrompt block types and plants paragraph (ADR 0069 D6)', () => {
+  it.each(['chat', 'build'] as const)('names the types, fields and flows in %s mode', (mode) => {
+    const text = systemPrompt(mode);
+    for (const term of [
+      '"type"',
+      '"pillar"',
+      '"stairs"',
+      '"fence_gate"',
+      '"pressure_plate"',
+      '"crop"',
+      '"sapling"',
+      '"leaves"',
+      'base_block',
+      'wood_type',
+      'set_type',
+      'weighted_max',
+      'max_age',
+      'crop_drops',
+      'leaves_drops',
+      '"textures"',
+      'msm:strippable',
+      'msm:flammable',
+      'item.id',
+      '#minecraft:logs',
+      'Wood set',
+      'Stone set',
+      '"Crop"',
+      '"Tree"',
+      'wood-set',
+      'stone-set',
+      'add_starter',
+      'note_missing_feature',
+    ]) {
+      expect(text, term).toContain(term);
+    }
+  });
+});

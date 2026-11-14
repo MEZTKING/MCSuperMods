@@ -166,12 +166,13 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed in B211: create_texture gained the five effect and throwable patterns.
+  // The hash last changed in B279: create_texture gained the 22 block family patterns (ADR 0069
+  // D2), list_kinds names the block types and list_starters the four block family flows.
   it('has 22 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '0dae315bc60b6cfed327ba531b7fab0e675d23bd7f4f28b7c389746978ad297a',
+      '004116788c9084b7ad7d05e55cc3fd9a4778089539ec6bf7d80a20f529e80a2f',
     );
   });
 });
