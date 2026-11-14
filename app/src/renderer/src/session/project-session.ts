@@ -82,7 +82,7 @@ import type {
   Target,
   TargetFacts,
 } from '@msm/plugin-api';
-import { potionNeedsJarProblem } from '@msm/plugin-blocks-items';
+import { particleSpritePath, potionNeedsJarProblem } from '@msm/plugin-blocks-items';
 import { MSM_RUNTIME_TYPINGS } from '@msm/plugin-scripting';
 import { type SchemaNode, type VanillaMcdocSymbols, validateJson } from '@msm/schemas';
 import { targetFacts } from '@msm/targets';
@@ -3265,6 +3265,7 @@ export class ProjectSession {
           ...schemaProblems,
           ...validatorProblems,
           ...this.#textureProblems,
+          ...particleTextureProblems(project, this.#currentTarget()),
         ],
       };
     }
@@ -3274,6 +3275,8 @@ export class ProjectSession {
 
 /** Kind id of potions (ADR 0063 D1), matched by string. */
 const POTION_KIND = 'msm:potion';
+/** Kind id of particle types (ADR 0080 D1), matched by string. */
+const PARTICLE_ELEMENT_KIND = 'msm:particle';
 
 /**
  * `problems` without those of elements `project` has and `lowered` (the project an export
@@ -3330,4 +3333,62 @@ export function withPotionNeedsJar(report: ExportReport, project: Project): Expo
     .find((element) => element.kind === POTION_KIND);
   if (potion === undefined) return report;
   return { ...report, problems: [...report.problems, potionNeedsJarProblem(potion.id)] };
+}
+
+/** The code of the app-reported missing particle picture warning (ADR 0081 D1). */
+export const PARTICLE_TEXTURE_MISSING_CODE = 'blocks-items.particle-texture-missing';
+
+/**
+ * One warning per frame of an `msm:particle` element (ADR 0080 D2) whose project sprite has no
+ * picture in the project (`assets/<ns>/textures/particle/<name>.png`, folders from the target
+ * through `particleSpritePath`): the game draws nothing for that frame. Vanilla sprites
+ * (`minecraft:` or no namespace) are not checked; without a target nothing is reported.
+ *
+ * @param project - The project.
+ * @param target - The project's target, or `undefined`.
+ */
+export function particleTextureProblems(
+  project: Project,
+  target: Pick<TargetFacts, 'particles' | 'folders'> | undefined,
+): Problem[] {
+  if (target === undefined) return [];
+  const problems: Problem[] = [];
+  for (const namespace of project.namespaces) {
+    for (const element of namespace.elements) {
+      const data = element.data;
+      if (element.kind !== PARTICLE_ELEMENT_KIND) continue;
+      const textures =
+        typeof data === 'object' &&
+        data !== null &&
+        !Array.isArray(data) &&
+        Array.isArray(data.textures)
+          ? data.textures
+          : [];
+      textures.forEach((sprite, index) => {
+        if (
+          typeof sprite !== 'string' ||
+          !sprite.includes(':') ||
+          sprite.startsWith('minecraft:')
+        ) {
+          return;
+        }
+        const assetPath = particleSpritePath(target, sprite);
+        if (assetPath === undefined) return;
+        const [, owner, ...rest] = assetPath.split('/');
+        const path = rest.join('/');
+        const found = project.namespaces.some(
+          (entry) => entry.name === owner && entry.assets.some((asset) => asset.path === path),
+        );
+        if (found) return;
+        problems.push({
+          severity: 'warning',
+          code: PARTICLE_TEXTURE_MISSING_CODE,
+          elementId: element.id,
+          path: `/textures/${index}`,
+          message: `Frame ${index + 1} names the picture "${sprite}", but the project has no ${assetPath}. Paint it with "New picture", split a strip into frames, or pick another picture; until then the game draws nothing for this frame.`,
+        });
+      });
+    }
+  }
+  return problems;
 }

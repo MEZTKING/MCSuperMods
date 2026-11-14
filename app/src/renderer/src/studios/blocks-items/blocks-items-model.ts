@@ -32,6 +32,8 @@ export const ITEM_KIND = 'msm:item';
 export const ENTITY_KIND = 'msm:entity';
 /** The kind id of custom mob effects (the Effect Studio, ADR 0055). */
 export const EFFECT_KIND = 'msm:effect';
+/** The kind id of custom particle types (the Particle Studio, ADR 0080 D1, ADR 0081 D1). */
+export const PARTICLE_KIND = 'msm:particle';
 /** The kind id a model id may name in the project (go to definition). */
 export const MODEL_KIND = 'minecraft:model';
 

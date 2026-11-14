@@ -3,7 +3,8 @@
  * thumbnails, opening the texture editor on a project texture (painting an effect icon,
  * ADR 0055 D6), the Block Studio's texture layer hint (ADR 0059 D4) and adding an element
  * ("Make a potion", ADR 0063 D9), a new element from a template (a sapling's "New tree") and
- * the 3D preview of a typed block's models (B272). `App` provides it around the Form tab; without a provider the Effect Studio
+ * the 3D preview of a typed block's models (B272), and one-step asset writes (the Particle
+ * Studio's frames, ADR 0081 D1). `App` provides it around the Form tab; without a provider the Effect Studio
  * shows no thumbnail and points to "New texture…" instead of painting.
  *
  * @packageDocumentation
@@ -11,6 +12,7 @@
 
 import type { Json, ResourceLocation } from '@msm/core';
 import { createContext, useContext } from 'react';
+import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 
 /** The host actions of the blocks and items Studios. */
@@ -41,6 +43,16 @@ export interface BlocksItemsStudioHost {
    * it (the sapling's "New tree", B272). Absent where the host cannot add elements.
    */
   newFromTemplate?(templateId: string, id: ResourceLocation): void;
+  /**
+   * Applies `items` and the byte `writes` as one undo step labelled `label` (ADR 0045), for the
+   * Particle Studio's "Split a strip into frames" (ADR 0081 D1). Rejects when an item no longer
+   * fits the project. Absent where the host cannot write assets.
+   */
+  applyChanges?(
+    items: readonly ChangeItem[],
+    label: string,
+    writes: readonly ChangeAsset[],
+  ): Promise<void>;
   /**
    * What the Block Studio's 3D preview of a typed block's models reads (B272): the target's
    * resource folders, the project's assets and the vanilla cache. Absent: no preview.

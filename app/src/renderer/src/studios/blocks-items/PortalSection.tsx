@@ -27,6 +27,7 @@ import { typingKey } from '../../forms/context';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import { Section } from '../worldgen/parts';
 import { asObject, eventNames, pointerOf } from './blocks-items-model';
+import { particlesFirst } from './particle-model';
 import { CheckField, EventSelect, ProblemsAt } from './parts';
 import {
   ARRIVAL_LABELS,
@@ -361,7 +362,7 @@ export function PortalSection(props: PortalSectionProps) {
           label="Particle type"
           value={textOf(particles.type)}
           registry="particle_type"
-          suggest={suggest}
+          suggest={particlesFirst(suggest)}
           testId="block-portal-particle"
           onCommit={(text) => setIn('particles', 'type', text === '' ? undefined : text)}
         />

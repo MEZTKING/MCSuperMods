@@ -53,6 +53,7 @@ import {
   tickInterval,
 } from './effect-model';
 import { useBlocksItemsStudioHost } from './host';
+import { particlesFirst } from './particle-model';
 import { CheckField, EventSelect, ProblemsAt, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { newPotionFor, POTION_KIND } from './potion-model';
@@ -199,7 +200,7 @@ export function EffectStudio(props: StudioProps) {
           label="Particle (instead of the swirl)"
           value={typeof data.particle === 'string' ? data.particle : ''}
           registry="particle_type"
-          suggest={suggest}
+          suggest={particlesFirst(suggest)}
           testId="effect-particle"
           onCommit={(value) => set(['particle'], value === '' ? undefined : value)}
         />

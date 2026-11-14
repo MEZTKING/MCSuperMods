@@ -7,8 +7,10 @@
  * project's own effects offered first; "Hurt" (`damage`) and "Heal" (`heal`), ADR 0055 D4;
  * entity events also offer `play_animation`, ADR 0028; every element offers "Light a portal"
  * (`light_portal`, ADR 0077 D3, ADR 0078 D1) with the project's portals to pick from, or a
- * block id typed when the Studio gives none). Action types are listed by label with their
- * format id.
+ * block id typed when the Studio gives none). "Spawn particle" (ADR 0081 D2) has a "Kind" (a
+ * particle, coloured dust, block pieces or item pieces; ADR 0080 D5 options objects) with the
+ * matching fields, "Motion" and "Show from far away", and its particle picker lists the
+ * project's particles first. Action types are listed by label with their format id.
  *
  * Renaming rewrites the references in trigger components and `trigger_event` actions in one
  * edit (one undo step); removing an event leaves its references, which the
@@ -32,6 +34,7 @@ import {
 import { typingKey } from '../../forms/context';
 import { isJsonObject } from '../../forms/pointer';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
+import { ColourField } from '../worldgen/ColourField';
 import { Section } from '../worldgen/parts';
 import {
   type ActionField,
@@ -48,8 +51,191 @@ import {
   suggestEventId,
   withProjectIds,
 } from './blocks-items-model';
-import { EventSelect } from './parts';
+import {
+  blockPiecesId,
+  DEFAULT_DUST_SCALE,
+  itemPiecesId,
+  motionWith,
+  PARTICLE_SPEC_KIND_LABELS,
+  PARTICLE_SPEC_KINDS,
+  type ParticleSpecKind,
+  particleSpecFor,
+  particleSpecKind,
+  particlesFirst,
+  withItemPieces,
+  withOption,
+} from './particle-model';
+import { CheckField, EventSelect } from './parts';
 import { LIGHT_PORTAL_ACTION, newLightPortalAction } from './portal-model';
+
+/** The action type that spawns particles (ADR 0025 D4, ADR 0080 D5). */
+const SPAWN_PARTICLE = 'spawn_particle';
+
+const offsetAxes = ['X', 'Y', 'Z'] as const;
+
+/** A select over values shown by their labels; a value outside them is kept as an option. */
+export function LabelledChoice(props: {
+  label: string;
+  value: string;
+  labels: Readonly<Record<string, string>>;
+  order: readonly string[];
+  testId?: string;
+  onChange(value: string): void;
+}) {
+  const id = useId();
+  const options = props.order.includes(props.value) ? props.order : [props.value, ...props.order];
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+      <label htmlFor={id} className="text-muted">
+        {props.label}
+      </label>
+      <select
+        id={id}
+        className={inputClass}
+        data-testid={props.testId}
+        value={props.value}
+        onChange={(event) => props.onChange(event.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {props.labels[option] ?? option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+/**
+ * A particle to spawn (ADR 0080 D5, ADR 0081 D2): "Kind" and the kind's fields: a particle
+ * type id (project particles first in `suggest`), dust's colour and size, a block or an item.
+ * Every change replaces the whole value in one edit; another options object is left to
+ * Advanced.
+ */
+export function ParticleSpecField(props: {
+  label: string;
+  value: Json | undefined;
+  suggest(registry: string, prefix: string): string[];
+  /** Replaces the value (`coalesce` merges typing). */
+  onChange(value: Json, coalesce?: string): void;
+  /** The value's pointer in the element, for coalescing typing. */
+  pointer: string;
+  /** Prefix of the fields' test ids, for example `spawn-particle`. */
+  testId: string;
+}) {
+  const { label, value, onChange, testId, pointer } = props;
+  const kind = particleSpecKind(value);
+  return (
+    <>
+      <LabelledChoice
+        label={`${label} kind`}
+        value={kind}
+        labels={PARTICLE_SPEC_KIND_LABELS}
+        order={PARTICLE_SPEC_KINDS}
+        testId={`${testId}-kind`}
+        onChange={(next) => {
+          if (next === kind || next === 'other') return;
+          onChange(particleSpecFor(next as Exclude<ParticleSpecKind, 'other'>));
+        }}
+      />
+      {kind === 'particle' && (
+        <IdField
+          label={label}
+          value={typeof value === 'string' ? value : ''}
+          registry="particle_type"
+          suggest={props.suggest}
+          className="min-w-48"
+          testId={`${testId}-id`}
+          onCommit={(text) => onChange(text)}
+        />
+      )}
+      {kind === 'dust' && (
+        <>
+          <ColourField
+            label={`${label} colour`}
+            value={isJsonObject(value) ? value.color : undefined}
+            testId={`${testId}-dust-colour`}
+            onChange={(colour) => {
+              if (colour !== undefined)
+                onChange(withOption(value, 'color', colour), typingKey(`${pointer}/color`));
+            }}
+          />
+          <NumberField
+            label={`${label} size`}
+            value={isJsonObject(value) ? (value.scale ?? DEFAULT_DUST_SCALE) : DEFAULT_DUST_SCALE}
+            testId={`${testId}-dust-size`}
+            onCommit={(scale) =>
+              onChange(
+                withOption(value, 'scale', scale ?? DEFAULT_DUST_SCALE),
+                typingKey(`${pointer}/scale`),
+              )
+            }
+          />
+        </>
+      )}
+      {kind === 'block' && (
+        <IdField
+          label={`${label} block`}
+          value={blockPiecesId(value)}
+          registry="block"
+          suggest={props.suggest}
+          className="min-w-48"
+          testId={`${testId}-block`}
+          onCommit={(text) => onChange(withOption(value, 'block_state', text))}
+        />
+      )}
+      {kind === 'item' && (
+        <IdField
+          label={`${label} item`}
+          value={itemPiecesId(value)}
+          registry="item"
+          suggest={props.suggest}
+          className="min-w-48"
+          testId={`${testId}-item`}
+          onCommit={(text) => onChange(withItemPieces(value, text))}
+        />
+      )}
+      {kind === 'other' && (
+        <span className="text-muted text-xs" data-testid={`${testId}-other`}>
+          {PARTICLE_SPEC_KIND_LABELS.other}
+        </span>
+      )}
+    </>
+  );
+}
+
+/** "Motion" (three numbers, blocks per tick) and "Show from far away" of a Spawn particle. */
+function SpawnParticleExtras(props: {
+  name: string;
+  action: { [key: string]: Json };
+  pointer: string;
+  set(key: string, value: Json | undefined, coalesce?: string): void;
+}) {
+  const { name, action, set } = props;
+  const motion = Array.isArray(action.motion) ? action.motion : [];
+  return (
+    <>
+      {offsetAxes.map((axis, at) => (
+        <NumberField
+          key={axis}
+          label={`${name} motion ${axis}`}
+          value={motion[at]}
+          allowEmpty
+          testId={`spawn-particle-motion-${axis.toLowerCase()}`}
+          onCommit={(next) =>
+            set('motion', motionWith(action.motion, at, next), typingKey(`${props.pointer}/motion`))
+          }
+        />
+      ))}
+      <CheckField
+        label="Show from far away"
+        checked={action.force === true}
+        testId="spawn-particle-force"
+        onChange={(checked) => set('force', checked ? true : undefined)}
+      />
+    </>
+  );
+}
 
 /** "Light a portal" (ADR 0077 D3): lights the portal's empty frame at or next to the event's block. */
 export const LIGHT_PORTAL_SPEC: ActionSpec = Object.freeze({
@@ -123,8 +309,6 @@ function ActionTypeSelect(props: {
   );
 }
 
-const offsetAxes = ['X', 'Y', 'Z'] as const;
-
 function ActionFieldEditor(props: {
   field: ActionField;
   action: { [key: string]: Json };
@@ -141,6 +325,18 @@ function ActionFieldEditor(props: {
   const label = `${name} ${field.label.toLowerCase()}`;
   const value = action[field.key];
   const fieldPointer = `${pointer}/${field.key}`;
+  if (action.type === SPAWN_PARTICLE && field.key === 'particle') {
+    return (
+      <ParticleSpecField
+        label={label}
+        value={value}
+        suggest={props.suggest}
+        pointer={fieldPointer}
+        testId="spawn-particle"
+        onChange={(next, coalesce) => set(field.key, next, coalesce)}
+      />
+    );
+  }
   if (
     action.type === LIGHT_PORTAL_ACTION &&
     field.key === 'portal' &&
@@ -428,6 +624,14 @@ function EventEditor(props: {
                     set={set}
                   />
                 ))}
+                {action.type === SPAWN_PARTICLE && (
+                  <SpawnParticleExtras
+                    name={actionName}
+                    action={action}
+                    pointer={pointer}
+                    set={set}
+                  />
+                )}
                 {spec === undefined && (
                   <span className="text-muted text-xs">
                     Unknown action type; edit it under Advanced.
@@ -508,7 +712,7 @@ export function EventsEditor({
   effects = [],
   portals,
 }: EventsEditorProps) {
-  const suggestIds = withProjectIds(suggest, 'mob_effect', effects);
+  const suggestIds = particlesFirst(withProjectIds(suggest, 'mob_effect', effects));
   const events = eventNames(element.data);
   const actions = editorActionsFor(element.kind);
   const [draft, setDraft] = useState('');

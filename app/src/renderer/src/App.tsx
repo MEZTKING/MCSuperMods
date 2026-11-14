@@ -1713,6 +1713,13 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     ...(target === null
       ? {}
       : { modelPreview: { folders: target.folders.resource, readProjectAsset, vanilla } }),
+    applyChanges: async (items, label, writes) => {
+      const result = await session.applyChangeset(items, label, { writes });
+      setAssetRevision((revision) => revision + 1);
+      if (result.skipped.length > 0) {
+        throw new Error('The project changed meanwhile: nothing was written. Try again.');
+      }
+    },
     paintTexture: (namespace, path, size) => {
       const exists = project?.namespaces
         .find((entry) => entry.name === namespace)

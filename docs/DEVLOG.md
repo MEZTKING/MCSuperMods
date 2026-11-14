@@ -3859,3 +3859,18 @@ Decisions
 
 Next
 - B357 (e2e particles path) uses the flow's labels; B360 documents the flow, the patterns and the counts.
+## 2026-11-14 — executor — B353 Particle Studio and editors
+
+What
+- Particle Studio (ADR 0081 D1): `studios/blocks-items/ParticleStudio.tsx`, registered in `studios.tsx` as a `React.lazy` entry inside `Suspense` (chunk `ParticleStudio-*.js`, 18.8 kB). Groups Pictures (frames with reorder, remove, "Paint", "Add frame", "New picture" at 8 by 8, "Split a strip into frames", "Animation"), Life and size, Movement (gravity shortcuts "Floats up" -0.05, "None", "Falls" 0.1), Colour and light, and a 2D canvas Preview (`ParticlePreview.tsx`: Burst, Stream, dark or light background, pause). `particle-sim.ts` is the TypeScript twin of the runtime's `ParticleLook` and passes `fixtures/particle-look/golden.json` (all 14 cases and 5 lifetimes within 1e-5); `particle-frames.ts` splits strips and grids; `particle-model.ts` holds the pure helpers.
+- Block Studio: lazy "Ambient particles" section (`AmbientParticlesSection.tsx`, 5.0 kB chunk, `ambient-particles-model.ts`) on every type but portals. Events editor: "Spawn particle" gains "Kind" (A particle, Coloured dust, Block pieces, Item pieces), "Motion" and "Show from far away"; project particles come first in the particle pickers of the events editor, the Effect Studio and the Portal section.
+- Session: `blocks-items.particle-texture-missing` (warning per project frame without its picture, through `particleSpritePath`). Sidebar labels "Particles" (`msm:particle`) and "Particle pictures" (`minecraft:particle`).
+- Verified: `pnpm lint`, `pnpm typecheck`, `pnpm --filter @msm/app test` (175 files, 1590 tests), `pnpm build`, `dist:dir`, `check-size` (app.asar 26.9 MB of 32 MB).
+
+Decisions
+- "Split a strip into frames" needs a one-step asset write the Studio host did not offer: `BlocksItemsStudioHost.applyChanges` (optional) was added in `host.ts` and wired in `App.tsx` to `session.applyChangeset(items, label, { writes })` (outside the brief's owner list; reported).
+- The three pure tests live under `app/test/components/studios/blocks-items/` (the node tsconfig does not include studio files); the missing-picture check lives in `project-session.ts` for the same reason.
+- Options objects use `block_state` as a block id string and `item` as `{ id }` (both valid on 26.3 and 26.4 per the vendored vanilla-mcdoc); dust starts red at scale 1. The full vanilla options check with the app's schema index was not added (optional).
+
+Next
+- B357: e2e `particles-path` with the test ids in the B353 report. B360: guide labels. B354: the Particle flow can reuse the Studio for reopening.

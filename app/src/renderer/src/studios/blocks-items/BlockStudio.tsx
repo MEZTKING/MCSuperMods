@@ -18,6 +18,8 @@
  * - Portal (B337, ADR 0078 D1; `portal` type only): frame, travel and looks, lazily loaded
  *   from `PortalSection`. A portal takes only its own components (no interact, step or
  *   redstone triggers) and has no block item unless `item` is given.
+ * - Ambient particles (ADR 0081 D2; every type but `portal`): `msm:ambient_particles`, lazily
+ *   loaded from `AmbientParticlesSection`.
  * - Drops: `loot` as drops itself, a loot table id, or none.
  * - Block item: on, or off as `"item": false`; stack size, rarity, creative tab, and "Fuel and
  *   compost" (ADR 0060 D4).
@@ -39,6 +41,7 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
+import { takesAmbientParticles } from './ambient-particles-model';
 import { BlockTypePreview } from './BlockTypePreview';
 import { BlockTypeSection } from './BlockTypeSection';
 import { acceptsSingleModel, blockTypeOfData, isShapedType } from './block-type-model';
@@ -69,6 +72,7 @@ import { EventsEditor } from './EventsEditor';
 import { useBlocksItemsStudioHost } from './host';
 import { takesInventory } from './inventory-model';
 import { PlantSection } from './PlantSection';
+import { projectParticles } from './particle-model';
 import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { TexturesSection } from './TexturesSection';
@@ -78,6 +82,8 @@ import { FuelCompostFields, TriggersSection } from './triggers';
 const InventorySection = lazy(() => import('./InventorySection'));
 /** The Portal section (ADR 0078 D1), a chunk of its own. */
 const PortalSection = lazy(() => import('./PortalSection'));
+/** The Ambient particles section (ADR 0081 D2), a chunk of its own. */
+const AmbientParticlesSection = lazy(() => import('./AmbientParticlesSection'));
 
 type TextureLayer = 'solid' | 'cutout' | 'translucent';
 
@@ -819,6 +825,23 @@ export function BlockStudio(props: StudioProps) {
             suggest={suggest}
             set={set}
             replace={(next) => onChange('', next)}
+          />
+        </Suspense>
+      )}
+      {takesAmbientParticles(blockType) && (
+        <Suspense
+          fallback={
+            <p className="text-muted text-xs" data-testid="block-ambient-loading">
+              Loading the Ambient particles section…
+            </p>
+          }
+        >
+          <AmbientParticlesSection
+            element={element}
+            problems={problems}
+            suggest={suggest}
+            particles={projectParticles(project)}
+            set={set}
           />
         </Suspense>
       )}
