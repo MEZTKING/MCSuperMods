@@ -4023,3 +4023,19 @@ Decisions
 
 Next
 - B368: registration, the expander (one `compileRuleBook` per book; two books on one subject and trigger collide on the event id), validators reusing `RULES_COMPILE_CODES`, lowering of `script` lines, the 50-step and key checks beside the schema's, deleting the local 1.4 declarations after B370.
+
+## 2026-11-14 — executor — B385 Try it measurements
+
+What
+- Measured ADR 0085 D11's gate with a throwaway probe in the scratchpad (not committed): an esbuild bundle of deepslate 0.27.2 `StructureRenderer` over a mutable 48 by 32 by 48 `StructureProvider` (48 by 48 floor plus 2,000 random blocks: 4,304 blocks, `sample-mod` textures on MSM fallback parents) and the app's own `preview/geo/renderer.ts`, `geometry.ts` and `keyframes.ts` drawing twelve `sample-mob` glow golems with `walk`; Electron 45.2.2 under `xvfb-run -a -s "-screen 0 1920x1080x24"` with `--use-angle=swiftshader --enable-unsafe-swiftshader`; a first-person camera on a fixed circle, one block placed or removed per frame with `updateStructureBuffers([touched chunks])`. Frame rate from `requestAnimationFrame` over 6 s; CPU per frame from `/proc/<pid>/stat` of every Electron process. No hardware GPU in the container.
+- The container was shared with other agents (load average 10 to 37 on 4 cores), so frame rates are pessimistic; CPU milliseconds per frame are the steadier figure.
+- Results at 640 by 360, chunk size 8 (medians of 3 to 7 runs): plain `drawStructure` 14 to 20 fps (median about 16), 60 to 92 CPU ms a frame; drawing only the chunk meshes inside the view frustum 20 to 36 fps (median about 24), 49 to 60 CPU ms; the same with the twelve mobs in the shared context and a state reset 19 to 54 fps (median about 23); 320 by 180 with culling and mobs 43 to 47 fps; 960 by 540 8 to 11 fps. Single-block rebuild (own chunk plus neighbours across a boundary): chunk 8 median 1.1 to 1.5 ms, p95 4 to 14 ms; chunk 16 median 8 to 12 ms, p95 20 to 77 ms. Full build 170 to 600 ms (about 270 typical). Blocks as non-opaque (the preview's current `{ opaque: false }` for every block) cost 60 per cent more quads and halve the frame rate.
+- Shared context: deepslate and the geo renderer share one WebGL context with no GL error, but the geo pass disables `CULL_FACE` and deepslate enables it only in its constructor, so the next frame differs (checked by a pixel hash) and costs about 20 CPU ms more; re-enabling cull face, blend and depth before deepslate (2 microseconds) gives an identical picture. A stacked second canvas costs about 8 CPU ms a frame more and does not hide mobs behind blocks.
+- T9: Electron 45 on this GPU-less machine gives no WebGL without flags (also with `--disable-gpu`); `--enable-unsafe-swiftshader` alone is enough for SwiftShader WebGL. The app's main process sets neither switch today.
+
+Decisions
+- Verdict: go, at 48 by 32 by 48, with chunk size 8, per-chunk frustum culling, real opacity flags and the state reset after the mob pass; without the culling it is borderline under SwiftShader on a busy machine. Chunk 16 fails the rebuild threshold.
+- Mobs share deepslate's context (no stacked canvas).
+
+Next
+- B389: chunk 8, own frustum-culled draw over deepslate's chunk meshes, real `BlockFlags`, a `getBlocks()` scoped to the dirty chunks, rebuild of neighbour chunks across a boundary; B395: reset GL state after the geo pass. Orchestrator: whether main appends `enable-unsafe-swiftshader` (Windows with a blocked GPU still unchecked); a re-measure on a quiet machine and on a hardware GPU.
