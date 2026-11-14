@@ -3938,3 +3938,20 @@ Decisions
 Next
 - B365, B368: field names and ids in the B363 report.
 - `packages/schemas/CLAUDE.md` status line for `rules.mcdoc` (B383).
+## 2026-11-14 — executor — B366 dev session files
+
+What
+- New `packages/interop/src/fabric/dev-session.ts` (ADR 0084 D3, D5): types, builders, stable JSON text and null-on-invalid parsers for `msm-dev/dev.json`, `play.json`, `request.json`, `status.json` and `installed.json`; `devPaths`, `devDataPackPath`, `devWorldFolder` (`msm-test-<ns>`), `oldWorldFolder` (`<world>-old-<n>`), `isGameRunning(status, now)` (fresher than 10 s), `isHandled`, `nextRequest` and `nextPlayRequest` (one sequence across play requests, requests and the status's last handled `seq`); timing constants (10 s stale, 30 s quit wait, 10 and 40 ticks).
+- New `options-txt.ts`: `withResourcePack(text | null, 'file/msm-dev')` changes only the `resourcePacks` line (moves the pack last, drops duplicates, keeps CRLF and a missing final newline, leaves text already right untouched), creates the line with `["vanilla","fabric",<pack>]` when the file, the line or a readable list is missing; `readResourcePacks`.
+- New `changes.ts` (ADR 0084 D6): `hashOutputs` (SHA-256 of each lowered file, plus a `frozen` hash of definitions without `events` and of `sounds.json`'s keys), `classifyChanges(installed, next, { worldDataFolders })` into reload (data, scripts, events, assets), reopen-world and restart reasons (`new-definition`, `definition-changed`, `definition-renamed`, `file-removed`, `sound-events`, `mod-file`, `mod-id`, `runtime-version`, `fabric-api-version`), `pending` and `stale` against the current overlay, `overlayAfterReload`, `overlayTarget`, `restartReasonKey` (`play.restart.<code>`).
+- New `setup-function.ts` (ADR 0084 D2): `setupFunctionLines({ gameRules, items, spawn? })` gives the setup lines (time 6000, game rules from `TargetFacts.dev.gameRules`, the 21 by 21 test area, hotbar) and the chest refill lines (18 single chests, every slot written, unused chests removed only when present); `setupFunctionText` writes them under `# msm:setup` and `# msm:refill`.
+- Tests `packages/interop/test/fabric/{dev-session,options-txt,changes,setup-function}.test.ts`; the setup function passes the offline Spyglass checker with vanilla mcdoc symbols on every target package found on disk (26.3 and 26.4-snapshot-7).
+- Verified: interop tests (151), `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- `classifyChanges` takes the parsed `installed.json` (jar facts, files with hashes and element ids, the current overlay) rather than a bare path-to-hash map, so jar-level restarts, renames and stale overlay files can be told.
+- Every setup and refill line succeeds on the flat test world whatever ran before (guards with `execute if|unless block`), so the runtime may log any failed line as an error.
+- The setup test reads the targets' vendored data by relative path and their versions from `vendor/mcmeta/version.json`: `@msm/interop` cannot depend on the target packages and no lockfile change was allowed.
+
+Next
+- B369, B373, B374: formats and wording keys in the B366 report.
