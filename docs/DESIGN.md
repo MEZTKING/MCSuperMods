@@ -449,6 +449,8 @@ A **modpack** groups projects ([ADR 0046](adr/0046-modpacks.md)): a folder with 
 
 Step 4 is a hard gate: every lowered JSON file is validated against the schema model derived from vanilla-mcdoc, and every `.mcfunction` file with Spyglass; parse and check errors block, warnings pass. Invalid lowered output is a bug in a lowering function or target, not a user error; the export stops with a report. CI runs the same check on golden fixtures. A struct with dispatcher spreads accepts a key only when the struct or one of its resolved spreads declares it, and reports any other key as `schema.unknown-field`; when a spread cannot be resolved to fields (an `any` member, an unknown dispatch key), every key is allowed. Project texture animation sidecars (`.png.mcmeta`) pass the same gate as `resource:texture_meta`. Binary outputs (structure `.nbt`) carry no schema; their element is validated before lowering. Scripts pass the gate through the TypeScript checker in the main process: syntax errors (`typescript.syntax`) block, semantic findings against the generated typings and the curated `lib` set (`typescript.semantic`) only warn, since Rhino is duck-typed ([ADR 0031](adr/0031-rhino-runtime-and-typescript-es5-scripts.md) D5). Project validators ([Plugin System](#7-plugin-system)) gate export through the problem list: an error from a validator blocks export like a schema error ([ADR 0022](adr/0022-worldgen-element-model-and-validators.md)).
 
+Vanilla pack safety ([ADR 0066](adr/0066-vanilla-pack-safety.md), Proposed, in progress): a vanilla server rejects a whole data pack when a registry-loaded file (recipe, loot table, advancement, worldgen and others) names an id only the Fabric mod jar registers. The vanilla data pack and the data half of the combined export therefore leave such files out with the warning `export.mod-only-reference`, make tag entries naming mod-only ids `required: false`, and keep functions with the warning `export.mod-only-function`; potions are left out by the rule of [ADR 0063](adr/0063-potions-and-brewing.md). The rule is moving from the app session into `@msm/exporters`, with CI loading mod projects' vanilla data packs too.
+
 ## 10. Engine Mod (Runtime)
 
 `msm_runtime` is a Fabric mod (Java package `dev.mcsupermods.runtime`) that turns `msm/` definitions into real blocks, items and entities.
@@ -512,7 +514,7 @@ Additions ([ADR 0055](adr/0055-custom-status-effects.md), [ADR 0056](adr/0056-th
 
 Project sounds and block shapes ([ADR 0057](adr/0057-project-sound-events-and-mob-sounds.md), [ADR 0059](adr/0059-block-shapes-and-see-through-blocks.md)): the runtime registers one sound event per key of each `assets/<ns>/sounds.json` before effects, so project sounds resolve everywhere vanilla takes a sound id; entities gain `sounds` (ambient, hurt, death, step); blocks gain the component `msm:shape` (pixel boxes, collision, see-through). Render layers need no code in 26.x: the texture's pixels choose cut-out or translucent.
 
-Proposed addition ([ADR 0063](adr/0063-potions-and-brewing.md)): the runtime registers project potions after effects and before blocks and items, from `msm/<ns>/potion/` definitions.
+Potions ([ADR 0063](adr/0063-potions-and-brewing.md)): the runtime registers project potions as vanilla `Potion` entries after effects and before blocks and items, from `msm/<ns>/potion/` definitions; a potion naming an unknown effect is skipped with one error. Brewing, splash and lingering bottles, tipped arrows and the creative tabs are vanilla behaviour over the registered potions, and the brewing recipes are data. The code is shared by both versions (no seam).
 
 ## 11. Behaviour Model (Components and Events)
 
@@ -566,7 +568,7 @@ Addition ([ADR 0061](adr/0061-more-triggers.md)): ten more triggers, items `msm:
 
 Step events ([ADR 0058](adr/0058-event-actors-entity-commands-and-cancel-resync.md)): `msm:on_step` events carry the stepping entity (`self` and `other` are the stepper, so jump pads work on mobs and items), and the step cooldown is keyed per dimension.
 
-Proposed addition ([ADR 0063](adr/0063-potions-and-brewing.md), [ADR 0064](adr/0064-data-kinds-sweep.md)): the definition kind `potion` (`msm:potion`, with brewing recipes lowered as data), and sixteen more data kinds, two resource kinds and eight tag registries that need no runtime code.
+Potions and data kinds ([ADR 0063](adr/0063-potions-and-brewing.md), [ADR 0064](adr/0064-data-kinds-sweep.md)): the definition kind `potion` (`msm:potion`, with up to 15 brewing recipes and four name keys lowered as data; potions need the Fabric mod jar, and the vanilla packs leave them out with the warning `blocks-items.potion-needs-jar`), and fifteen more data kinds (mob and sound variants, `instrument`, `enchantment_provider`, `timeline`, `world_clock`), two resource kinds (`minecraft:atlas`, `minecraft:font`) and eight tag registries that need no runtime code. `wolf_sound_variant` and `trial_spawner` wait for a re-sync of the vendored mcdoc.
 
 ## 12. Scripting and Escape Hatches
 
@@ -630,7 +632,7 @@ Entity commands and cancel resync ([ADR 0058](adr/0058-event-actors-entity-comma
 
 Addition ([ADR 0062](adr/0062-persistent-script-data.md)): `Entity.data` (so `Player.data`) and `msm.storage` are JSON key-value stores saved with the world, per script namespace; they survive `/reload`, restart, death and dimension change, while `msm.schedule` stays unsaved. This amends ADR 0032 and closes limitation L4.
 
-Proposed addition ([ADR 0065](adr/0065-script-api-1-1.md)): Script API 1.1 is additive over version 1: item and inventory access, player state, titles and boss bars, typed damage with an attacker, raycast, cross-dimension teleport, and the events `player.tick`, `player.respawn`, `player.leave`, `player.changeDimension`, `player.chat` and `entity.damaged`. `block.place` and `msm.commands.register` stay deferred.
+Script API 1.1 ([ADR 0065](adr/0065-script-api-1-1.md)) is additive over version 1 (the contract keeps `version: 1`): item and inventory access, player state, titles and boss bars, typed damage with an attacker, raycast, cross-dimension teleport, and the events `player.tick`, `player.respawn`, `player.leave`, `player.changeDimension`, `player.chat` and `entity.damaged`. `entity.damaged` reports the health actually lost (after armour) and fires once for a killing blow too, before `entity.death`. `block.place` and `msm.commands.register` stay deferred.
 
 ## 13. Interop (Blockbench, NBT, Minecraft Installation)
 

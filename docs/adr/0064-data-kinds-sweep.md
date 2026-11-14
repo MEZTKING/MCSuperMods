@@ -28,8 +28,15 @@ Several vanilla data folders have no MSM kind, so a project cannot add a wolf sk
 - Plugin API 1.9.0 is additive and shared with the potions ADR.
 - Mob skins and goat horns work in vanilla packs; no jar is needed.
 
+## Findings
+
+Recorded at close (2026-11-14) from B245 and B250:
+
+- **Two kinds dropped: `wolf_sound_variant` and `trial_spawner`.** Every vanilla file of each new kind in the 26.3 and 26.4 jars was validated with `validateJson`; these two fail because the vendored vanilla-mcdoc is stale, not because the files are wrong: its wolf sound variant schema has no `step_sound`, which the game's files carry, and in the vanilla trial spawner files a spawned mob's `IsBaby` is a number where the vendored entity schema expects a boolean. As D1 and the Consequences require, the kinds are dropped and reported, not relaxed. Their `DataFolderKey`s and target folders stay (plugin API 1.9.0 is additive), so the kinds can return without an API change. Follow-up: re-sync the vendored mcdoc (`tools/sync-mcdoc`) and add the two kinds back. D1 therefore delivers fifteen generic kinds: the seven mob variants, four sound variants (cat, pig, cow, chicken), `instrument`, `enchantment_provider`, `timeline` and `world_clock`.
+- **Folder keys are listed twice.** A new `DataFolderKey` needs the folder on both targets and an entry in the aggregator test's `DATA_FOLDER_KEYS` list (`packages/targets/all/test/targets.test.ts`), which asserts the exact key set; B245 updated both.
+- **Sound fields.** Sound variants and `instrument.sound_event` decode with vanilla's sound event holder codec, so a registered id or the inline `{ "sound_id": ... }` form both work; the Goat horn flow writes a project sound in the inline form, and the kind defaults name vanilla sound ids. The horn sound in game is a user check.
+- The headless vanilla data pack check in CI loads the sample data pack's wolf variant and goat horn (`tools/run-fabric-server/vanilla-datapack.ts`). The kinds, the eight tag kinds and the two resource kinds bring the total to 93 kinds.
+
 ## Status
 
-Proposed (2026-11-14). Defaults the user may veto: the flow names "Mob skin" and "Goat horn"; the choice of which registries are in and out (D1, D4).
-
-Open finding to record before acceptance: the sound-variant and instrument codec forms.
+Accepted (2026-11-14). Defaults the user may veto: the flow names "Mob skin" and "Goat horn"; the choice of which registries are in and out (D1, D4).

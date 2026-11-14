@@ -35,8 +35,15 @@ A project can make a custom status effect ([ADR 0055](0055-custom-status-effects
 - Potions need the Fabric mod export; vanilla pack export warns and carries the (dangling) recipes only.
 - The guide documents the variant ids, the reagent defaults and that colour follows the effects.
 
+## Findings
+
+Recorded at close (2026-11-14) from B247, B252, B253 and the vanilla server checks:
+
+- **P8: an unregistered potion fails the whole pack.** Recipes are a registry loaded with the data pack, so a brewing recipe naming a potion the game does not know makes the whole data pack fail to load on 26.3 and 26.4 (the server refuses to start; a later `/reload` is rejected), not just that recipe. The vanilla packs therefore leave potions out entirely: the project's `msm:potion` elements are removed before the vanilla data pack and the combined export lower, so their definitions, brewing recipes and name keys go only into the mod jar, and the export reports `blocks-items.potion-needs-jar` once (`potionNeedsJarProblem` in `@msm/plugin-blocks-items`). D6 is amended accordingly ("carries the dangling recipes" no longer holds). The runtime's GameTest decodes such a recipe in place rather than shipping it as a test file. The same failure holds for any registry-loaded data file naming a mod-only id; the general rule is [ADR 0066](0066-vanilla-pack-safety.md) (Proposed, in progress), which supersedes D6 in part while keeping this potion rule and its warning.
+- **Registration order.** `MsmRegistrar` registers sound events, then effects, then potions, then blocks, items and entities (`ModPotions` after `ModEffects` in the Java eject), so an item's `minecraft:potion_contents` passthrough can name a project potion without a `DELAYED` entry. An unknown effect id skips the potion with one error naming every unknown id; an id already in the potion registry is an error. In the eject an unknown effect is a generation error (the generator knows the vendored vanilla `mob_effect` registry, `VANILLA_MOB_EFFECTS`, and the project's effects).
+- **No 26.4 seam.** The potion and brewing code is shared; nothing for potions lives in `src/mc/<mc>/`. Twelve runtime GameTests (`MsmPotionGameTest`) pass on 26.3, 26.3 without GeckoLib and 26.4, including a real brewing stand, splash, lingering, tipped arrows and the creative tab listing (P6, asserted on the server); nine sample mod parity tests pass on the content and ejected jars.
+- The creative tabs and the in-game look of names and colours remain user checks.
+
 ## Status
 
-Proposed (2026-11-14). Defaults the user may veto: the kind name `msm:potion`; variant ids `long_<id>` and `strong_<id>`; the default reagents and base; the flow name "Potion".
-
-Open findings to record before acceptance: registration order and the unregistered-potion behaviour (runtime GameTests), and any version seam.
+Accepted (2026-11-14). Defaults the user may veto: the kind name `msm:potion`; variant ids `long_<id>` and `strong_<id>`; the default reagents and base; the flow name "Potion".

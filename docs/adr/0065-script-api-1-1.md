@@ -34,6 +34,17 @@ Additive: `version` stays 1, every existing member keeps its meaning, and the JS
 - Scripts that loop on `server.tick` can move to `player.tick` with its interval.
 - No plugin API change: scripts are not part of `JavaProjectInput`.
 
+## Findings
+
+Recorded at close (2026-11-14) from B246, B248, B255 and the follow-up commits:
+
+- **`entity.damaged` amount.** Fabric's `AFTER_DAMAGE` reports `damageTaken` before armour, so the runtime snapshots health plus absorption in `ALLOW_DAMAGE` and reports what the entity actually lost (after armour, effects and enchantments); Fabric's value is used only without a snapshot. The parity test `entityDamagedReportsTheDamageAfterArmour` checks it.
+- **Killing blows.** Fabric calls `AFTER_DAMAGE` only when the entity survives, so a lethal hit never reached it. `ALLOW_DEATH` (which runs after the damage is applied, before the totem check, and never vetoes) records the amount, and `entity.damaged` fires exactly once per hit, before `entity.death`, or from `AFTER_DAMAGE` when a totem saved the entity (`ScriptBridges.allowDeath`, `afterDeath`, `afterDamage`). A runtime GameTest and the parity test `smiteKillsWithThePlayerAsTheAttacker` cover it.
+- **Cross-dimension wrappers.** A non-player entity that changes dimension is re-created by vanilla; `EntityHandle` follows it through Fabric's `AFTER_ENTITY_CHANGE_LEVEL` and by UUID. A moved entity in a chunk loaded in the same tick is not yet visible to level lookups until the next tick, so the Nether parity test waits one tick before looking for the moved cow.
+- **Item components.** An `ItemSpec`'s components decode with `DataComponentPatch.CODEC` and the stack is checked with `ItemStack.validateStrict` as a single item; the count is applied afterwards (split by `give`, capped by `set`), so a count above the stack size is not a validation error. `setComponent` validates the same way on a copy; a failure is a `TypeError` and nothing changes.
+- **Contract.** `script-api-v1.json` keeps `version: 1`; the change is additive, checked by a test against the 1.4.0 golden and by `ScriptApiContractTest`.
+- Open: boss bar removal on server stop has no test (`/reload` and leave are covered); the on-screen look of titles, the action bar and boss bars is a user check.
+
 ## Status
 
-Proposed (2026-11-14). Defaults the user may veto: the `player.tick` minimum of 5 ticks; 32 boss bars per namespace; the 128-block raycast limit.
+Accepted (2026-11-14). Defaults the user may veto: the `player.tick` minimum of 5 ticks; 32 boss bars per namespace; the 128-block raycast limit.

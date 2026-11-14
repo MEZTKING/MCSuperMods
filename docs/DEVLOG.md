@@ -3117,3 +3117,20 @@ Next: CI for the velocity Java (ADR 0052), then the user's Windows test; these c
 **Next**
 - The user's Windows test of the 1.1.0–1.3.0 drafts, then the 1.4.0 build; the in-game checks added by this batch (ore in a new world, zombie drop, fuel and compost, each trigger, golem `on_tick`/`on_spawn`, kill and start counters across a restart, villager trade).
 - ROADMAP follow-ups: implicit tag ids in the schema validator, `on_attack` against a player, actors for effect and thrown-item events, the B243 chunk-generation check.
+
+## 2026-11-14 — orchestrator — potions, data kinds and Script API 1.1 closed
+
+**What**
+- Closed the batch B244–B257 (commits b99ea29 to 53eaa63): ADRs 0063, 0064 and 0065 are Accepted (2026-11-14), each with a "Findings" section. 0063: finding P8 (a registry-loaded file naming an unregistered id fails the whole vanilla data pack, so the vanilla packs leave potions and their brewing recipes out with `blocks-items.potion-needs-jar`, `potionNeedsJarProblem`; superseded in part by ADR 0066), registration order (potions after effects, before blocks and items; `ModPotions` after `ModEffects`), no 26.4 seam. 0064: `wolf_sound_variant` and `trial_spawner` dropped because the vendored mcdoc is stale (no wolf sound `step_sound`; trial spawner files' `IsBaby` is a number where the schema wants a boolean), the `DATA_FOLDER_KEYS` list in the aggregator test, sound fields taking the inline `{ sound_id }` form. 0065: `entity.damaged` takes a health snapshot because Fabric's `AFTER_DAMAGE` reports before armour; killing blows through `ALLOW_DEATH` (8e214a5); `EntityHandle` follows dimension changes through `AFTER_ENTITY_CHANGE_LEVEL`, and a moved entity in a chunk loaded the same tick is visible to level lookups only on the next tick (53eaa63); `ItemStack.validateStrict` on a single item; contract stays `version: 1`, additive.
+- DESIGN §9 to §12: the "Proposed addition" notes for 0063 to 0065 are plain statements, and §9 notes ADR 0066 (vanilla pack safety, Proposed, in progress); 19 H2 headings kept. ROADMAP: B244–B257 ticked, deferred items and follow-ups listed, Milestone Log row, the Post-1.0 brewing idea marked done. Coverage audit: B5, B10, B11, L11 and L12 closed with their commits, coverage rows updated, suspect S14 added for the vanilla pack finding (ADR 0066, in progress). Target `mc-26.3/CHANGES.md`: row for `VANILLA_MOB_EFFECTS`. CHANGELOG `[Unreleased]`: the killing blow and vanilla pack safety added beside potions, the data kinds and Script API 1.1. Status lines in the root, docs, app, engine-mod and plugins `CLAUDE.md`. HANDOFF rewritten. `docs/PLAN-potions-datakinds-scripts.md` deleted (no links pointed at it).
+- Counts recomputed: 93 kinds, 151 templates (resourcepack 16, datapack 65, structures 9, worldgen 21, blocks-items 28, models-anim 3, entities 3, scripting 6), 32 starters, 112 examples (from `builtInPlugins` contributions); runtime 193 GameTests per variant (local 26.3 run "All 193 required tests passed"; 192 `@GameTest` methods) and 334 JUnit (corpus 262, parser 52, sounds 4, contract 7, script data 9); parity sample mod 68 (44, additions 15, potions 9), sample mob 10, sample script 15.
+
+**Decisions**
+- Findings go in a "Findings" section of each ADR, before Status.
+- ADR 0066 stays Proposed until the rule lives in `@msm/exporters` and CI covers mod projects (parallel brief).
+- No full clean-worktree test run at this close; the next push to `main` needs one.
+
+**Next**
+- Finish ADR 0066 (exporters move, CI for mod projects), then accept it.
+- Follow-ups: re-sync the vendored mcdoc and add the two dropped kinds; a test for boss bar removal on server stop; `on_attack` against a player; effect and thrown-item event actors; implicit tag ids in the schema validator; B243.
+- Backlog: B2 block families and states with B12 crops, saplings and trees, then B7, B8, B13, B14, B15.
