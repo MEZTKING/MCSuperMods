@@ -1,0 +1,265 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.5,
+          "requires_tool": true,
+          "resistance": 0.5
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:redstone_blocks"
+      },
+      "set_type": "stone",
+      "sound_type": "stone",
+      "type": "button"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/button",
+      "textures": {
+        "texture": "minecraft:block/stone"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/button_pressed",
+      "textures": {
+        "texture": "minecraft:block/stone"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_pressed.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/button_inventory",
+      "textures": {
+        "texture": "minecraft:block/stone"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_inventory.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "face=ceiling,facing=east,powered=false": {
+          "model": "demo:block/sample",
+          "x": 180,
+          "y": 270
+        },
+        "face=ceiling,facing=east,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "x": 180,
+          "y": 270
+        },
+        "face=ceiling,facing=north,powered=false": {
+          "model": "demo:block/sample",
+          "x": 180,
+          "y": 180
+        },
+        "face=ceiling,facing=north,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "x": 180,
+          "y": 180
+        },
+        "face=ceiling,facing=south,powered=false": {
+          "model": "demo:block/sample",
+          "x": 180
+        },
+        "face=ceiling,facing=south,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "x": 180
+        },
+        "face=ceiling,facing=west,powered=false": {
+          "model": "demo:block/sample",
+          "x": 180,
+          "y": 90
+        },
+        "face=ceiling,facing=west,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "x": 180,
+          "y": 90
+        },
+        "face=floor,facing=east,powered=false": {
+          "model": "demo:block/sample",
+          "y": 90
+        },
+        "face=floor,facing=east,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "y": 90
+        },
+        "face=floor,facing=north,powered=false": {
+          "model": "demo:block/sample"
+        },
+        "face=floor,facing=north,powered=true": {
+          "model": "demo:block/sample_pressed"
+        },
+        "face=floor,facing=south,powered=false": {
+          "model": "demo:block/sample",
+          "y": 180
+        },
+        "face=floor,facing=south,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "y": 180
+        },
+        "face=floor,facing=west,powered=false": {
+          "model": "demo:block/sample",
+          "y": 270
+        },
+        "face=floor,facing=west,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "y": 270
+        },
+        "face=wall,facing=east,powered=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "x": 90,
+          "y": 90
+        },
+        "face=wall,facing=east,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "uvlock": true,
+          "x": 90,
+          "y": 90
+        },
+        "face=wall,facing=north,powered=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "x": 90
+        },
+        "face=wall,facing=north,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "uvlock": true,
+          "x": 90
+        },
+        "face=wall,facing=south,powered=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "x": 90,
+          "y": 180
+        },
+        "face=wall,facing=south,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "uvlock": true,
+          "x": 90,
+          "y": 180
+        },
+        "face=wall,facing=west,powered=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "x": 90,
+          "y": 270
+        },
+        "face=wall,facing=west,powered=true": {
+          "model": "demo:block/sample_pressed",
+          "uvlock": true,
+          "x": 90,
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_inventory",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/buttons.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/stone_buttons.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/buttons.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/stone_buttons.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

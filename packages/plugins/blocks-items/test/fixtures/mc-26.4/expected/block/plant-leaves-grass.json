@@ -1,0 +1,86 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "tint": "grass",
+      "type": "leaves"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/moss_leaves.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/leaves",
+      "textures": {
+        "all": "example:block/moss_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/moss_leaves.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/moss_leaves"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/moss_leaves.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/moss_leaves",
+        "tints": [
+          {
+            "downfall": 1,
+            "temperature": 0.5,
+            "type": "minecraft:grass"
+          }
+        ],
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/moss_leaves.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:moss_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/leaves.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:moss_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/hoe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:moss_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/leaves.json",
+    "schema": "tag:item"
+  }
+]

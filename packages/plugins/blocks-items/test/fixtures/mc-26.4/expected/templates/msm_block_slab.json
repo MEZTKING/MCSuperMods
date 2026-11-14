@@ -1,0 +1,158 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 2,
+          "requires_tool": true,
+          "resistance": 6
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "stone",
+      "type": "slab"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/slab",
+      "textures": {
+        "bottom": "minecraft:block/stone_bricks",
+        "side": "minecraft:block/stone_bricks",
+        "top": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/slab_top",
+      "textures": {
+        "bottom": "minecraft:block/stone_bricks",
+        "side": "minecraft:block/stone_bricks",
+        "top": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_top.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_bottom_top",
+      "textures": {
+        "bottom": "minecraft:block/stone_bricks",
+        "side": "minecraft:block/stone_bricks",
+        "top": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_double.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "type=bottom": {
+          "model": "demo:block/sample"
+        },
+        "type=double": {
+          "model": "demo:block/sample_double"
+        },
+        "type=top": {
+          "model": "demo:block/sample_top"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/slabs.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/slabs.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "type": "double"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

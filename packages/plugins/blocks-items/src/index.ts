@@ -10,6 +10,7 @@ import { definePlugin } from '@msm/plugin-api';
 import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
+import { blockTypeValidators } from './validators-types';
 
 export * from './kinds';
 export * from './lowering';
@@ -57,6 +58,12 @@ export {
   TRANSPARENT_TEXTURE_CODE,
   transparentTextureProblem,
 } from './validators';
+export {
+  BLOCK_TYPE_PROBLEM_CODES,
+  blockTypeValidators,
+  SHAPED_BLOCK_TYPES,
+  SHAPED_ONLY_COMPONENTS,
+} from './validators-types';
 
 export default definePlugin({
   id: 'msm.blocks-items',
@@ -64,6 +71,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...blocksItemsKinds],
     elementTemplates: [...blocksItemsTemplates],
-    validators: [...blocksItemsValidators],
+    validators: [...blocksItemsValidators, ...blockTypeValidators],
   },
 });

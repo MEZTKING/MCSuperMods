@@ -1,0 +1,125 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "requires_tool": true,
+          "resistance": 3
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:redstone_blocks"
+      },
+      "sound_type": "stone",
+      "type": "directional"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "minecraft:block/observer_front",
+        "side": "minecraft:block/observer_side",
+        "top": "minecraft:block/observer_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable_vertical",
+      "textures": {
+        "front": "minecraft:block/observer_front",
+        "side": "minecraft:block/observer_side"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_vertical.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=down": {
+          "model": "demo:block/sample_vertical",
+          "x": 180
+        },
+        "facing=east": {
+          "model": "demo:block/sample",
+          "y": 90
+        },
+        "facing=north": {
+          "model": "demo:block/sample"
+        },
+        "facing=south": {
+          "model": "demo:block/sample",
+          "y": 180
+        },
+        "facing=up": {
+          "model": "demo:block/sample_vertical"
+        },
+        "facing=west": {
+          "model": "demo:block/sample",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

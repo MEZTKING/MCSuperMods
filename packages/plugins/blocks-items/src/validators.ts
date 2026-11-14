@@ -111,6 +111,7 @@ import { type BrewingStep, potionBrewingSteps, potionVariantIds } from './loweri
 import { FULL_CUBE, lowerShapeInPlace, SHAPE_COMPONENT, shapeOf } from './lowering/shape';
 import { rangedPullModels } from './lowering/shared';
 import { incorrectForTierTag, toolTierName } from './lowering/tools';
+import { SHAPED_BLOCK_TYPES } from './validators-types';
 
 /** Kind id of equipment assets, contributed by `@msm/plugin-resourcepack` (ADR 0042 D2). */
 export const EQUIPMENT_KIND = 'minecraft:equipment';
@@ -721,7 +722,10 @@ function passthroughNeedsDataPack(
 function missingModels(elements: readonly Element[]): Problem[] {
   const problems: Problem[] = [];
   for (const element of definitions(elements)) {
-    const model = dataOf(element).model;
+    const data = dataOf(element);
+    // A block type other than `block` is checked by `type-needs-appearance` (ADR 0067 D7).
+    if (element.kind === BLOCK_KIND && data.type !== undefined && data.type !== 'block') continue;
+    const model = data.model;
     if (typeof model === 'string' && model.length > 0) continue;
     const what = element.kind === BLOCK_KIND ? 'block' : 'item';
     problems.push({
@@ -827,6 +831,11 @@ function modelsNotCube(elements: readonly Element[]): Problem[] {
   for (const element of elements) {
     if (element.kind !== BLOCK_KIND) continue;
     const data = dataOf(element);
+    // Family and plant types keep vanilla's own shapes (ADR 0067 D8): only the types that take
+    // `msm:shape` can collide as a wrong full cube.
+    if (data.type !== undefined && !(SHAPED_BLOCK_TYPES as readonly Json[]).includes(data.type)) {
+      continue;
+    }
     if (record(data.components)?.[SHAPE_COMPONENT] !== undefined) continue;
     const model = data.model;
     if (typeof model !== 'string' || !models.has(model)) continue;

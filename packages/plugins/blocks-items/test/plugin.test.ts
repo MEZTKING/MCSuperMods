@@ -87,7 +87,7 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
   });
 
-  it('contributes its templates and the twenty-one validators', () => {
+  it('contributes its templates, the twenty-one validators and the eight type validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -113,6 +113,14 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.potion-effect',
       'msm.blocks-items.potion-brewing',
       'msm.blocks-items.potion-id',
+      'msm.blocks-items.type-components',
+      'msm.blocks-items.type-appearance',
+      'msm.blocks-items.type-facts',
+      'msm.blocks-items.type-references',
+      'msm.blocks-items.crop',
+      'msm.blocks-items.sapling',
+      'msm.blocks-items.leaves-particle',
+      'msm.blocks-items.block-item-id',
     ]);
     expect(blocksItemsValidators).toHaveLength(21);
   });

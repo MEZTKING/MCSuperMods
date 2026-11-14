@@ -1,0 +1,136 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "tint": 4886315,
+      "type": "leaves"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/glow_leaves.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/glow_leaves_custom"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_leaves.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/glow_leaves_custom",
+        "tints": [
+          {
+            "type": "minecraft:constant",
+            "value": -11890901
+          }
+        ],
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/glow_leaves.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/leaves.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/hoe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/leaves.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": {
+                "terms": [
+                  "minecraft:tool/can_shear",
+                  "minecraft:tool/can_silk_touch"
+                ],
+                "type": "minecraft:any_of"
+              },
+              "name": "example:glow_leaves",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "term": {
+              "terms": [
+                "minecraft:tool/can_shear",
+                "minecraft:tool/can_silk_touch"
+              ],
+              "type": "minecraft:any_of"
+            },
+            "type": "minecraft:inverted"
+          },
+          "entries": [
+            {
+              "condition": {
+                "terms": [
+                  {
+                    "type": "minecraft:survives_explosion"
+                  },
+                  {
+                    "chances": [
+                      0.1,
+                      0.2
+                    ],
+                    "enchantment": "minecraft:fortune",
+                    "type": "minecraft:table_bonus"
+                  }
+                ],
+                "type": "minecraft:all_of"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/glow_leaves",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/glow_leaves.json",
+    "schema": "resource:loot_table"
+  }
+]

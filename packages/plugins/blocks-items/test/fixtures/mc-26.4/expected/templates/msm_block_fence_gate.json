@@ -1,0 +1,221 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 2,
+          "requires_tool": false,
+          "resistance": 3
+        },
+        "msm:flammable": {
+          "burn_odds": 5,
+          "ignite_odds": 20
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:redstone_blocks"
+      },
+      "sound_type": "wood",
+      "type": "fence_gate",
+      "wood_type": "oak"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate_open",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_open.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate_wall",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_wall.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_fence_gate_wall_open",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_wall_open.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,in_wall=false,open=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,in_wall=false,open=true": {
+          "model": "demo:block/sample_open",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,in_wall=true,open=false": {
+          "model": "demo:block/sample_wall",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=east,in_wall=true,open=true": {
+          "model": "demo:block/sample_wall_open",
+          "uvlock": true,
+          "y": 270
+        },
+        "facing=north,in_wall=false,open=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,in_wall=false,open=true": {
+          "model": "demo:block/sample_open",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,in_wall=true,open=false": {
+          "model": "demo:block/sample_wall",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=north,in_wall=true,open=true": {
+          "model": "demo:block/sample_wall_open",
+          "uvlock": true,
+          "y": 180
+        },
+        "facing=south,in_wall=false,open=false": {
+          "model": "demo:block/sample",
+          "uvlock": true
+        },
+        "facing=south,in_wall=false,open=true": {
+          "model": "demo:block/sample_open",
+          "uvlock": true
+        },
+        "facing=south,in_wall=true,open=false": {
+          "model": "demo:block/sample_wall",
+          "uvlock": true
+        },
+        "facing=south,in_wall=true,open=true": {
+          "model": "demo:block/sample_wall_open",
+          "uvlock": true
+        },
+        "facing=west,in_wall=false,open=false": {
+          "model": "demo:block/sample",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,in_wall=false,open=true": {
+          "model": "demo:block/sample_open",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,in_wall=true,open=false": {
+          "model": "demo:block/sample_wall",
+          "uvlock": true,
+          "y": 90
+        },
+        "facing=west,in_wall=true,open=true": {
+          "model": "demo:block/sample_wall_open",
+          "uvlock": true,
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/fence_gates.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/fence_gates.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

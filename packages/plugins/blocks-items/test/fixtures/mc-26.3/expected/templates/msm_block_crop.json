@@ -1,0 +1,273 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks",
+        "id": "demo:sample_seeds"
+      },
+      "max_age": 7,
+      "sound_type": "grass",
+      "type": "crop"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage0.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage1.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage2"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage3"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage3.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage4"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage4.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage5"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage5.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage6"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage6.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "minecraft:block/wheat_stage7"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage7.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "demo:block/sample_stage0"
+        },
+        "age=1": {
+          "model": "demo:block/sample_stage1"
+        },
+        "age=2": {
+          "model": "demo:block/sample_stage2"
+        },
+        "age=3": {
+          "model": "demo:block/sample_stage3"
+        },
+        "age=4": {
+          "model": "demo:block/sample_stage4"
+        },
+        "age=5": {
+          "model": "demo:block/sample_stage5"
+        },
+        "age=6": {
+          "model": "demo:block/sample_stage6"
+        },
+        "age=7": {
+          "model": "demo:block/sample_stage7"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/wheat_stage7"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_seeds.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_seeds",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_seeds.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample_seeds": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_seeds"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/villager_plantable_seeds.json"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "7"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "name": "minecraft:wheat",
+                  "type": "minecraft:item"
+                },
+                {
+                  "name": "demo:sample_seeds",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "blocks": "demo:sample",
+            "state": {
+              "age": "7"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "modifier": {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:binomial_with_bonus_count",
+                "parameters": {
+                  "extra": 3,
+                  "probability": 0.5714286
+                },
+                "type": "minecraft:apply_bonus"
+              },
+              "name": "demo:sample_seeds",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

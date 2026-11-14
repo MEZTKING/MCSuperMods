@@ -1,0 +1,198 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 2,
+          "requires_tool": false,
+          "resistance": 3
+        },
+        "msm:flammable": {
+          "burn_odds": 5,
+          "ignite_odds": 20
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "wood",
+      "type": "fence"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/fence_post",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_post.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/fence_side",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_side.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/fence_inventory",
+      "textures": {
+        "texture": "minecraft:block/oak_planks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_inventory.json"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "demo:block/sample_post"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "true"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_inventory",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/fences.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/wooden_fences.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/fences.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/wooden_fences.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

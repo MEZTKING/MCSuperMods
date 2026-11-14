@@ -1,0 +1,126 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "max_age": 5,
+      "type": "crop"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/glow_berries_crop.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "example:block/glow_crop_small"
+        },
+        "age=1": {
+          "model": "example:block/glow_crop_small"
+        },
+        "age=2": {
+          "model": "example:block/glow_crop_medium"
+        },
+        "age=3": {
+          "model": "example:block/glow_crop_medium"
+        },
+        "age=4": {
+          "model": "example:block/glow_crop_ripe"
+        },
+        "age=5": {
+          "model": "example:block/glow_crop_ripe"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_berries_crop.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/glow_seeds",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/glow_berries_crop.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_berries_crop"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_berries_crop"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_berries_crop"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "blocks": "example:glow_berries_crop",
+                    "state": {
+                      "age": "5"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "modifier": {
+                    "count": 2,
+                    "type": "minecraft:set_count"
+                  },
+                  "name": "example:glow_fruit",
+                  "type": "minecraft:item"
+                },
+                {
+                  "name": "example:glow_berries_crop",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/glow_berries_crop",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/glow_berries_crop.json",
+    "schema": "resource:loot_table"
+  }
+]

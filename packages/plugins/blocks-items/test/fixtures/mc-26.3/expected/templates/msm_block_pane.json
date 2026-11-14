@@ -1,0 +1,184 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.3,
+          "resistance": 0.3
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "glass",
+      "type": "pane"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_post",
+      "textures": {
+        "edge": "minecraft:block/glass_pane_top",
+        "pane": "minecraft:block/glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_post.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_side",
+      "textures": {
+        "edge": "minecraft:block/glass_pane_top",
+        "pane": "minecraft:block/glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_side.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_side_alt",
+      "textures": {
+        "edge": "minecraft:block/glass_pane_top",
+        "pane": "minecraft:block/glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_side_alt.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_noside",
+      "textures": {
+        "edge": "minecraft:block/glass_pane_top",
+        "pane": "minecraft:block/glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_noside.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_glass_pane_noside_alt",
+      "textures": {
+        "edge": "minecraft:block/glass_pane_top",
+        "pane": "minecraft:block/glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_noside_alt.json"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "demo:block/sample_post"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side"
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side_alt"
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side_alt",
+            "y": 90
+          },
+          "when": {
+            "west": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_noside"
+          },
+          "when": {
+            "north": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_noside_alt"
+          },
+          "when": {
+            "east": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_noside_alt",
+            "y": 90
+          },
+          "when": {
+            "south": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_noside",
+            "y": 270
+          },
+          "when": {
+            "west": "false"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/glass"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

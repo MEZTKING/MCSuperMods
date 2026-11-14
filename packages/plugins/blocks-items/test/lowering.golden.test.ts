@@ -926,24 +926,6 @@ describe('block types', () => {
     for (const type of BLOCK_TYPES) expect(BLOCK_TYPE_MODEL_SLOTS[type].at(-1)).toBe('item');
   });
 
-  it('writes only the definition and a single-variant block state for the plant stubs', async () => {
-    for (const type of ['crop', 'sapling', 'leaves']) {
-      const files = await blockKind.lower(
-        element(blockKind.id, 'example:ruby_plant', { format: 1, type, display_name: 'Plant' }),
-        target,
-      );
-      expect(files.map((file) => file.path)).toEqual([
-        'msm/example/block/ruby_plant.json',
-        `assets/example/${target.folders.resource.block_definition}/ruby_plant.json`,
-        `assets/example/${target.folders.resource.item_definition}/ruby_plant.json`,
-        `assets/example/${target.folders.resource.lang}/en_us.json`,
-      ]);
-      expect(files[1]?.contents).toEqual({
-        variants: { '': { model: 'example:block/ruby_plant' } },
-      });
-    }
-  });
-
   it('leaves a block with no model, models or textures without appearance files', async () => {
     const files = await blockKind.lower(
       element(blockKind.id, 'example:bare', { format: 1, type: 'stairs' }),

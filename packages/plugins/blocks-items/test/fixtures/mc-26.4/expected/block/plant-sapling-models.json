@@ -1,0 +1,58 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "mega_tree": "minecraft:mega_spruce",
+      "tree": "minecraft:birch",
+      "type": "sapling"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/glow_sapling.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/glow_sapling_cross"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_sapling.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/glow_sapling",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/glow_sapling.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_sapling"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/saplings.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_sapling"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/saplings.json",
+    "schema": "tag:item"
+  }
+]

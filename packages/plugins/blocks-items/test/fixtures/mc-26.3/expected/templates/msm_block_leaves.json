@@ -1,0 +1,234 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.2,
+          "resistance": 0.2
+        },
+        "msm:flammable": {
+          "burn_odds": 30,
+          "ignite_odds": 60
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "grass",
+      "tint": "foliage",
+      "type": "leaves"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/leaves",
+      "textures": {
+        "all": "minecraft:block/oak_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "tints": [
+          {
+            "type": "minecraft:constant",
+            "value": -12012264
+          }
+        ],
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/leaves.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/hoe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/leaves.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "terms": [
+                      "minecraft:tool/can_shear",
+                      "minecraft:tool/can_silk_touch"
+                    ],
+                    "type": "minecraft:any_of"
+                  },
+                  "name": "demo:sample",
+                  "type": "minecraft:item"
+                },
+                {
+                  "condition": {
+                    "terms": [
+                      {
+                        "type": "minecraft:survives_explosion"
+                      },
+                      {
+                        "chances": [
+                          0.05,
+                          0.0625,
+                          0.083333336,
+                          0.1
+                        ],
+                        "enchantment": "minecraft:fortune",
+                        "type": "minecraft:table_bonus"
+                      }
+                    ],
+                    "type": "minecraft:all_of"
+                  },
+                  "name": "minecraft:oak_sapling",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "term": {
+              "terms": [
+                "minecraft:tool/can_shear",
+                "minecraft:tool/can_silk_touch"
+              ],
+              "type": "minecraft:any_of"
+            },
+            "type": "minecraft:inverted"
+          },
+          "entries": [
+            {
+              "condition": {
+                "chances": [
+                  0.02,
+                  0.022222223,
+                  0.025,
+                  0.033333335,
+                  0.1
+                ],
+                "enchantment": "minecraft:fortune",
+                "type": "minecraft:table_bonus"
+              },
+              "modifier": [
+                {
+                  "count": {
+                    "max": 2,
+                    "min": 1,
+                    "type": "minecraft:uniform"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "minecraft:stick",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "term": {
+              "terms": [
+                "minecraft:tool/can_shear",
+                "minecraft:tool/can_silk_touch"
+              ],
+              "type": "minecraft:any_of"
+            },
+            "type": "minecraft:inverted"
+          },
+          "entries": [
+            {
+              "condition": {
+                "terms": [
+                  {
+                    "type": "minecraft:survives_explosion"
+                  },
+                  {
+                    "chances": [
+                      0.005,
+                      0.0055555557,
+                      0.00625,
+                      0.008333334,
+                      0.025
+                    ],
+                    "enchantment": "minecraft:fortune",
+                    "type": "minecraft:table_bonus"
+                  }
+                ],
+                "type": "minecraft:all_of"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

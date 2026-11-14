@@ -1,0 +1,194 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "item": {
+        "id": "example:onion"
+      },
+      "max_age": 3,
+      "type": "crop"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/onions.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/onions_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/onions_stage0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/onions_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/onions_stage1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/onions_stage2"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/onions_stage2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/onions_stage3"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/onions_stage3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "example:block/onions_stage0"
+        },
+        "age=1": {
+          "model": "example:block/onions_stage1"
+        },
+        "age=2": {
+          "model": "example:block/onions_stage2"
+        },
+        "age=3": {
+          "model": "example:block/onions_stage3"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/onions.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/onions_stage3"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/onion.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/onion",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/onion.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:onions"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:onions"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:onions"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:onion"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/villager_plantable_seeds.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "example:onion",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "blocks": "example:onions",
+            "state": {
+              "age": "3"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "modifier": {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:binomial_with_bonus_count",
+                "parameters": {
+                  "extra": 3,
+                  "probability": 0.5714286
+                },
+                "type": "minecraft:apply_bonus"
+              },
+              "name": "example:onion",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/onions",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/onions.json",
+    "schema": "resource:loot_table"
+  }
+]

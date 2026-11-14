@@ -24,6 +24,7 @@ import {
   lowerBlockAppearance,
   type TypeContext,
 } from './types';
+import { isPlantLootPreset, plantLootTable } from './types/loot-presets';
 
 /**
  * The element data fields that exist only in the editor: the appearance (`model`, and per type
@@ -156,7 +157,9 @@ export function dropsItselfLootTable(id: string, namespace: string, path: string
  * 5. the vanilla tags the type always joins (ADR 0067 D6), block tags then item tags;
  * 6. with `"loot": "self"` and a block item: the type's own loot table at
  *    `loot_table/blocks/<path>.json` (drops the item; two from a double slab, a door from its
- *    lower half). A block without an item has nothing to drop.
+ *    lower half). A block without an item has nothing to drop. With `"loot": "crop"` (crops)
+ *    or `"leaves"`: the preset's table in vanilla wheat's or oak leaves' shape (ADR 0068 D3,
+ *    D6).
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
@@ -210,6 +213,16 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
       layer: 'datapack',
       schema: LOOT_TABLE_SCHEMA,
     });
+  } else if (isPlantLootPreset(fields.loot)) {
+    const table = plantLootTable(type, fields.loot, context);
+    if (table !== undefined) {
+      files.push({
+        path: dataPath(target, 'loot_table', namespace, `blocks/${path}`),
+        contents: table,
+        layer: 'datapack',
+        schema: LOOT_TABLE_SCHEMA,
+      });
+    }
   }
   return files;
 }

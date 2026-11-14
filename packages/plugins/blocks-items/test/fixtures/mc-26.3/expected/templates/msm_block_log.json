@@ -1,0 +1,121 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 2,
+          "requires_tool": false,
+          "resistance": 3
+        },
+        "msm:flammable": {
+          "burn_odds": 5,
+          "ignite_odds": 5
+        },
+        "msm:strippable": {
+          "into": "minecraft:stripped_oak_log"
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "wood",
+      "type": "pillar"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column",
+      "textures": {
+        "end": "minecraft:block/oak_log_top",
+        "side": "minecraft:block/oak_log"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_column_horizontal",
+      "textures": {
+        "end": "minecraft:block/oak_log_top",
+        "side": "minecraft:block/oak_log"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_horizontal.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "demo:block/sample_horizontal",
+          "x": 90,
+          "y": 90
+        },
+        "axis=y": {
+          "model": "demo:block/sample"
+        },
+        "axis=z": {
+          "model": "demo:block/sample_horizontal",
+          "x": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

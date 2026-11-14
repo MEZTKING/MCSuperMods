@@ -1,0 +1,113 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "item": false,
+      "max_age": 1,
+      "type": "crop"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/wild_wheat.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/wild_wheat_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wild_wheat_stage0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/wild_wheat_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wild_wheat_stage1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "example:block/wild_wheat_stage0"
+        },
+        "age=1": {
+          "model": "example:block/wild_wheat_stage1"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/wild_wheat.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:wild_wheat"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:wild_wheat"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:wild_wheat"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "condition": {
+            "blocks": "example:wild_wheat",
+            "state": {
+              "age": "1"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "minecraft:wheat",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/wild_wheat",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/wild_wheat.json",
+    "schema": "resource:loot_table"
+  }
+]

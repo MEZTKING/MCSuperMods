@@ -1,0 +1,103 @@
+[
+  {
+    "contents": {
+      "falling_particle": "minecraft:cherry_leaves",
+      "format": 1,
+      "type": "leaves"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/blossom_leaves.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/leaves",
+      "textures": {
+        "all": "example:block/blossom_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/blossom_leaves.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/blossom_leaves"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/blossom_leaves.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/blossom_leaves",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/blossom_leaves.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:blossom_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/leaves.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:blossom_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/hoe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:blossom_leaves"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/leaves.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:blossom_leaves",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/blossom_leaves",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/blossom_leaves.json",
+    "schema": "resource:loot_table"
+  }
+]

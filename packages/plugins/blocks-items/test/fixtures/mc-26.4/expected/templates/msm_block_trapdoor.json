@@ -1,0 +1,215 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "requires_tool": false,
+          "resistance": 3
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:redstone_blocks"
+      },
+      "set_type": "wood",
+      "sound_type": "wood",
+      "type": "trapdoor"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_orientable_trapdoor_bottom",
+      "textures": {
+        "texture": "minecraft:block/oak_trapdoor"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_bottom.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_orientable_trapdoor_top",
+      "textures": {
+        "texture": "minecraft:block/oak_trapdoor"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_top.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_orientable_trapdoor_open",
+      "textures": {
+        "texture": "minecraft:block/oak_trapdoor"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_open.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=bottom,open=false": {
+          "model": "demo:block/sample_bottom",
+          "y": 90
+        },
+        "facing=east,half=bottom,open=true": {
+          "model": "demo:block/sample_open",
+          "y": 90
+        },
+        "facing=east,half=top,open=false": {
+          "model": "demo:block/sample_top",
+          "y": 90
+        },
+        "facing=east,half=top,open=true": {
+          "model": "demo:block/sample_open",
+          "x": 180,
+          "y": 270
+        },
+        "facing=north,half=bottom,open=false": {
+          "model": "demo:block/sample_bottom"
+        },
+        "facing=north,half=bottom,open=true": {
+          "model": "demo:block/sample_open"
+        },
+        "facing=north,half=top,open=false": {
+          "model": "demo:block/sample_top"
+        },
+        "facing=north,half=top,open=true": {
+          "model": "demo:block/sample_open",
+          "x": 180,
+          "y": 180
+        },
+        "facing=south,half=bottom,open=false": {
+          "model": "demo:block/sample_bottom",
+          "y": 180
+        },
+        "facing=south,half=bottom,open=true": {
+          "model": "demo:block/sample_open",
+          "y": 180
+        },
+        "facing=south,half=top,open=false": {
+          "model": "demo:block/sample_top",
+          "y": 180
+        },
+        "facing=south,half=top,open=true": {
+          "model": "demo:block/sample_open",
+          "x": 180
+        },
+        "facing=west,half=bottom,open=false": {
+          "model": "demo:block/sample_bottom",
+          "y": 270
+        },
+        "facing=west,half=bottom,open=true": {
+          "model": "demo:block/sample_open",
+          "y": 270
+        },
+        "facing=west,half=top,open=false": {
+          "model": "demo:block/sample_top",
+          "y": 270
+        },
+        "facing=west,half=top,open=true": {
+          "model": "demo:block/sample_open",
+          "x": 180,
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_bottom",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/trapdoors.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/wooden_trapdoors.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/trapdoors.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/wooden_trapdoors.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

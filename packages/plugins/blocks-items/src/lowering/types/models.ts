@@ -118,11 +118,6 @@ export interface TypeLowering {
   readonly optionalSlots?: readonly string[];
   /** Whether the element's single `model` field fills the primary slot. */
   readonly acceptsModel?: boolean;
-  /**
-   * Whether a block with neither `models` nor `textures` still points its block state at
-   * `<ns>:block/<path>` (the plant stubs until B264).
-   */
-  readonly ownModelFallback?: boolean;
   /** The slot the block item shows when `models.item` is absent; default the primary slot. */
   readonly itemSlot?: string;
   /** The models generated from the element's textures, one per slot; `[]` without textures. */
@@ -132,6 +127,18 @@ export interface TypeLowering {
    * (doors and panes, as vanilla), used when `models.item` is absent and the textures give one.
    */
   itemTexture?(texture: TextureLookup): string;
+  /**
+   * For a type whose textures are not a flat map of strings (a crop's `stages` list): the
+   * models generated from the element data, used instead of {@link TypeLowering.generate}.
+   */
+  generateFromData?(data: JsonObject): ModelSpec[];
+  /**
+   * Likewise the texture of the flat item model, used instead of
+   * {@link TypeLowering.itemTexture}; `undefined` when the data gives none.
+   */
+  itemTextureFromData?(data: JsonObject): string | undefined;
+  /** The `tints` of the block item's model definition (leaves); none when empty. */
+  itemTints?(data: JsonObject): JsonObject[];
   /** The block state definition from the slot models (every slot of `slots` is present). */
   blockstate(models: SlotModels, context: TypeContext): JsonObject;
   /** Vanilla tags the type always joins (ADR 0067 D6). */

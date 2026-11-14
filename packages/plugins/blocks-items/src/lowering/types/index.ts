@@ -22,7 +22,9 @@
  * | `button` | `default`, `pressed`, `inventory` |
  * | `pressure_plate` | `up`, `down` |
  * | `pane` | `post`, `side`, `side_alt`, `noside`, `noside_alt` |
- * | `crop`, `sapling`, `leaves` | `default` (provisional until B264) |
+ * | `crop` | `stage0`, optional `stage1` to `stage15` (the stage models in order, spread over the ages) |
+ * | `sapling` | `sapling` |
+ * | `leaves` | `leaves` |
  *
  * `model` fills the `default` slot of `block`, `pillar`, `horizontal` and `directional`. A slot
  * in `models` wins over the model generated for it from `textures`; a required slot that is
@@ -189,7 +191,9 @@ export function blockTypeModels(type: BlockTypeName, context: TypeContext): Bloc
   const single = lowering.acceptsModel === true ? nonEmptyString(data.model) : undefined;
   if (single !== undefined && given[primary] === undefined) given[primary] = single;
   const lookup = textureLookup(readTextures(data));
-  const generated: GeneratedModel[] = (lookup === undefined ? [] : lowering.generate(lookup))
+  const specs =
+    lowering.generateFromData?.(data) ?? (lookup === undefined ? [] : lowering.generate(lookup));
+  const generated: GeneratedModel[] = specs
     .filter((spec) => given[spec.slot] === undefined)
     .map((spec) => ({ ...spec, id: blockModelId(namespace, path, spec.suffix) }));
   const slots: Record<string, string> = {};
@@ -198,8 +202,7 @@ export function blockTypeModels(type: BlockTypeName, context: TypeContext): Bloc
   const known = [...lowering.slots, ...(lowering.optionalSlots ?? [])];
   const fallback =
     known.map((slot) => slots[slot]).find((model) => model !== undefined) ??
-    Object.entries(given).find(([slot]) => slot !== ITEM_MODEL_SLOT)?.[1] ??
-    (lowering.ownModelFallback === true ? blockModelId(namespace, path, '') : undefined);
+    Object.entries(given).find(([slot]) => slot !== ITEM_MODEL_SLOT)?.[1];
   if (fallback === undefined) return { generated, slots: {} };
   for (const slot of lowering.slots) slots[slot] ??= fallback;
   return { generated, slots };
@@ -232,19 +235,23 @@ export function lowerBlockAppearance(
   if (context.itemId === undefined) return files;
   const item = splitResourceLocation(context.itemId);
   let itemModel = slots[ITEM_MODEL_SLOT];
-  if (itemModel === undefined && lowering.itemTexture !== undefined) {
+  if (itemModel === undefined) {
     const lookup = textureLookup(readTextures(context.data));
-    if (lookup !== undefined) {
+    const layer0 =
+      lowering.itemTextureFromData?.(context.data) ??
+      (lookup === undefined ? undefined : lowering.itemTexture?.(lookup));
+    if (layer0 !== undefined) {
       itemModel = `${item.namespace}:item/${item.path}`;
-      files.push(
-        modelFile(target, itemModel, GENERATED_ITEM_PARENT, {
-          layer0: lowering.itemTexture(lookup),
-        }),
-      );
+      files.push(modelFile(target, itemModel, GENERATED_ITEM_PARENT, { layer0 }));
     }
   }
   itemModel ??= slots[lowering.itemSlot ?? primary] ?? (slots[primary] as string);
-  files.push(itemDefinitionFile(target, item.namespace, item.path, itemModel));
+  const definition = itemDefinitionFile(target, item.namespace, item.path, itemModel);
+  const tints = lowering.itemTints?.(context.data) ?? [];
+  if (tints.length > 0) {
+    definition.contents = { model: { type: 'minecraft:model', model: itemModel, tints } };
+  }
+  files.push(definition);
   return files;
 }
 

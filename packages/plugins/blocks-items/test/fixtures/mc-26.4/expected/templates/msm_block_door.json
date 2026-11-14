@@ -1,0 +1,346 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "requires_tool": false,
+          "resistance": 3
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:redstone_blocks"
+      },
+      "set_type": "wood",
+      "sound_type": "wood",
+      "type": "door"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_left",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_bottom_left.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_left_open",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_bottom_left_open.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_right",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_bottom_right.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_right_open",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_bottom_right_open.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_left",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_top_left.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_left_open",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_top_left_open.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_right",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_top_right.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_right_open",
+      "textures": {
+        "bottom": "minecraft:block/oak_door_bottom",
+        "top": "minecraft:block/oak_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_top_right_open.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=lower,hinge=left,open=false": {
+          "model": "demo:block/sample_bottom_left"
+        },
+        "facing=east,half=lower,hinge=left,open=true": {
+          "model": "demo:block/sample_bottom_left_open",
+          "y": 90
+        },
+        "facing=east,half=lower,hinge=right,open=false": {
+          "model": "demo:block/sample_bottom_right"
+        },
+        "facing=east,half=lower,hinge=right,open=true": {
+          "model": "demo:block/sample_bottom_right_open",
+          "y": 270
+        },
+        "facing=east,half=upper,hinge=left,open=false": {
+          "model": "demo:block/sample_top_left"
+        },
+        "facing=east,half=upper,hinge=left,open=true": {
+          "model": "demo:block/sample_top_left_open",
+          "y": 90
+        },
+        "facing=east,half=upper,hinge=right,open=false": {
+          "model": "demo:block/sample_top_right"
+        },
+        "facing=east,half=upper,hinge=right,open=true": {
+          "model": "demo:block/sample_top_right_open",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=left,open=false": {
+          "model": "demo:block/sample_bottom_left",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=left,open=true": {
+          "model": "demo:block/sample_bottom_left_open"
+        },
+        "facing=north,half=lower,hinge=right,open=false": {
+          "model": "demo:block/sample_bottom_right",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=right,open=true": {
+          "model": "demo:block/sample_bottom_right_open",
+          "y": 180
+        },
+        "facing=north,half=upper,hinge=left,open=false": {
+          "model": "demo:block/sample_top_left",
+          "y": 270
+        },
+        "facing=north,half=upper,hinge=left,open=true": {
+          "model": "demo:block/sample_top_left_open"
+        },
+        "facing=north,half=upper,hinge=right,open=false": {
+          "model": "demo:block/sample_top_right",
+          "y": 270
+        },
+        "facing=north,half=upper,hinge=right,open=true": {
+          "model": "demo:block/sample_top_right_open",
+          "y": 180
+        },
+        "facing=south,half=lower,hinge=left,open=false": {
+          "model": "demo:block/sample_bottom_left",
+          "y": 90
+        },
+        "facing=south,half=lower,hinge=left,open=true": {
+          "model": "demo:block/sample_bottom_left_open",
+          "y": 180
+        },
+        "facing=south,half=lower,hinge=right,open=false": {
+          "model": "demo:block/sample_bottom_right",
+          "y": 90
+        },
+        "facing=south,half=lower,hinge=right,open=true": {
+          "model": "demo:block/sample_bottom_right_open"
+        },
+        "facing=south,half=upper,hinge=left,open=false": {
+          "model": "demo:block/sample_top_left",
+          "y": 90
+        },
+        "facing=south,half=upper,hinge=left,open=true": {
+          "model": "demo:block/sample_top_left_open",
+          "y": 180
+        },
+        "facing=south,half=upper,hinge=right,open=false": {
+          "model": "demo:block/sample_top_right",
+          "y": 90
+        },
+        "facing=south,half=upper,hinge=right,open=true": {
+          "model": "demo:block/sample_top_right_open"
+        },
+        "facing=west,half=lower,hinge=left,open=false": {
+          "model": "demo:block/sample_bottom_left",
+          "y": 180
+        },
+        "facing=west,half=lower,hinge=left,open=true": {
+          "model": "demo:block/sample_bottom_left_open",
+          "y": 270
+        },
+        "facing=west,half=lower,hinge=right,open=false": {
+          "model": "demo:block/sample_bottom_right",
+          "y": 180
+        },
+        "facing=west,half=lower,hinge=right,open=true": {
+          "model": "demo:block/sample_bottom_right_open",
+          "y": 90
+        },
+        "facing=west,half=upper,hinge=left,open=false": {
+          "model": "demo:block/sample_top_left",
+          "y": 180
+        },
+        "facing=west,half=upper,hinge=left,open=true": {
+          "model": "demo:block/sample_top_left_open",
+          "y": 270
+        },
+        "facing=west,half=upper,hinge=right,open=false": {
+          "model": "demo:block/sample_top_right",
+          "y": 180
+        },
+        "facing=west,half=upper,hinge=right,open=true": {
+          "model": "demo:block/sample_top_right_open",
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/oak_door_bottom"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/doors.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/wooden_doors.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/doors.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/wooden_doors.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "condition": {
+                "blocks": "demo:sample",
+                "state": {
+                  "half": "lower"
+                },
+                "type": "minecraft:match_block"
+              },
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

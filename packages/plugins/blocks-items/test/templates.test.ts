@@ -2,22 +2,34 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
+  Element,
   ElementTemplate,
   Json,
+  OutputFile,
   ResourceLocation,
   TargetFacts,
   TemplateContext,
 } from '@msm/plugin-api';
+import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
+  blockItemId,
   blocksItemsKinds,
   blocksItemsTemplates,
   blocksItemsValidators,
   MOD_ID_PATTERN,
   modIdFromNamespace,
 } from '../src/index';
-import { blockingProblems, element, indexesFor, sortedJson } from './support';
+import { BLOCK_KIND } from '../src/kinds';
+import {
+  blockingProblems,
+  element,
+  indexesFor,
+  PROJECT_IDS,
+  sortedJson,
+  type TargetIndexes,
+} from './support';
 
 /** The first target's facts without its hooks: a template context is plain data. */
 const {
@@ -36,6 +48,23 @@ const IDS = [
   'msm_block_plant',
   'msm_block_glass_like',
   'msm_block_bounce_pad',
+  'msm_block_log',
+  'msm_block_facing',
+  'msm_block_observer_like',
+  'msm_block_slab',
+  'msm_block_stairs',
+  'msm_block_wall',
+  'msm_block_fence',
+  'msm_block_fence_gate',
+  'msm_block_door',
+  'msm_block_trapdoor',
+  'msm_block_button',
+  'msm_block_pressure_plate',
+  'msm_block_weighted_pressure_plate',
+  'msm_block_pane',
+  'msm_block_crop',
+  'msm_block_sapling',
+  'msm_block_leaves',
   'msm_item_food',
   'msm_item_tool',
   'msm_item_tool_custom_material',
@@ -90,6 +119,26 @@ function contextFor(
     kindDefault: kindDefault === undefined ? undefined : structuredClone(kindDefault),
     target,
   };
+}
+
+/**
+ * The test indexes plus the ids a new element brings into the project, as the app's registry
+ * index counts them: its block item's own id (`blockItemId`, the Crop template's seeds) and the
+ * block models its lowering generates from `textures` (ADR 0067 D7).
+ */
+function withOwnIds(indexes: TargetIndexes, created: Element, files: OutputFile[]): TargetIndexes {
+  const itemId = created.kind === BLOCK_KIND ? blockItemId(created) : undefined;
+  const modelIds = files
+    .map((file) => /^assets\/([^/]+)\/models\/(.+)\.json$/.exec(file.path))
+    .filter((match) => match !== null)
+    .map((match) => `${match[1]}:${match[2]}`);
+  if (itemId === undefined && modelIds.length === 0) return indexes;
+  const project: Record<string, readonly string[]> = {
+    ...PROJECT_IDS,
+    item: [...(PROJECT_IDS.item ?? []), ...(itemId === undefined ? [] : [itemId])],
+    model: [...(PROJECT_IDS.model ?? []), ...modelIds],
+  };
+  return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
 }
 
 describe('blocks-items templates', () => {
@@ -152,9 +201,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const context = contextFor(template, bundle.target);
         const data = await template.data(context);
         const kind = kindOf(template);
-        const indexes = await indexesFor(bundle);
-        expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
         const created = element(kind.id, context.id, data);
+        const files = await kind.lower(created, bundle.target);
+        const indexes = withOwnIds(await indexesFor(bundle), created, files);
+        expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
         const problems = await Promise.all(
           blocksItemsValidators.map((validator) =>
             validator.validate({
@@ -165,7 +215,6 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ),
         );
         expect(problems.flat()).toEqual([]);
-        const files = await kind.lower(created, bundle.target);
         for (const file of files) {
           if (file.schema === undefined) continue;
           expect(blockingProblems(indexes, file.schema, file.contents as Json), file.path).toEqual(

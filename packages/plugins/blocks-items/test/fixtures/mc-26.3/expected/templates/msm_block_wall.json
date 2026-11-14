@@ -1,0 +1,226 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 1.5,
+          "requires_tool": true,
+          "resistance": 6
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "stone",
+      "type": "wall"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_post",
+      "textures": {
+        "wall": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_post.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_side",
+      "textures": {
+        "wall": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_side.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_side_tall",
+      "textures": {
+        "wall": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_side_tall.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/wall_inventory",
+      "textures": {
+        "wall": "minecraft:block/stone_bricks"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_inventory.json"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "demo:block/sample_post"
+          },
+          "when": {
+            "up": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true
+          },
+          "when": {
+            "north": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "low"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side_tall",
+            "uvlock": true
+          },
+          "when": {
+            "north": "tall"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side_tall",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "tall"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side_tall",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "tall"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_side_tall",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "tall"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_inventory",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/walls.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/walls.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]
