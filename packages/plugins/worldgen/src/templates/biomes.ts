@@ -4,7 +4,9 @@
  * at their index. Each list here is a subsequence of what the matching vanilla biome places in
  * that step, in vanilla's order, so a world mixing these biomes with vanilla ones cannot hit
  * the "Feature order cycle" crash (`worldgen.feature-order` checks project biomes against each
- * other). The template test checks every list index against the target's step names.
+ * other). The template test checks every list index against the target's step names, and every
+ * list against the measured vanilla step order of the user's reference pack
+ * (`docs/reference/vanilla-worldgen/tools/feature_indices.txt`): pumpkins come before sugar cane.
  */
 import type { ElementTemplate, Json } from '@msm/plugin-api';
 import { BIOMES, fixed } from './shared';
@@ -148,8 +150,8 @@ export const biomeTemplates: readonly ElementTemplate[] = [
           'minecraft:patch_grass_forest',
           'minecraft:brown_mushroom_normal',
           'minecraft:red_mushroom_normal',
-          'minecraft:patch_sugar_cane',
           'minecraft:patch_pumpkin',
+          'minecraft:patch_sugar_cane',
         ],
       ),
     },

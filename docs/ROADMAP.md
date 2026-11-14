@@ -200,7 +200,7 @@ Known gaps of the v0.3 design; none blocks the Phase 3 exit criterion.
 - [ ] Go to definition from the Biome Studio's "Used in" list and the other Studio id lists (today only form fields, the textarea editor and Monaco have it).
 - [ ] Gallery entries for the worldgen starters: `custom_biome`, `jigsaw_structure` and `worldgen_pack` are in the New project dialog and under `examples/starters/`, but not in Help → Examples….
 - [ ] Full-cube culling in the structure view: deepslate draws every face of neighbouring blocks, so large templates render slowly.
-- [ ] `#[id(tags="implicit")]` support in `@msm/schemas`, so the ore vein template can use a block tag rule instead of `block_match`.
+- [x] `#[id(tags="implicit")]` support in `@msm/schemas`, so the ore vein template can use a block tag rule instead of `block_match` (2026-11-14, worldgen accuracy audit; the Custom ore starter still uses `block_match`: COVERAGE-AUDIT W-D5).
 
 ### Phase 2 follow-ups
 

@@ -1,9 +1,11 @@
+import { NbtCompound, NbtString } from 'deepslate/nbt';
 import { describe, expect, it } from 'vitest';
 import {
   bitsForPalette,
   blockStateString,
   ChunkFormatError,
   decompressChunk,
+  isFullChunk,
   locateChunk,
   parseChunk,
   RegionFormatError,
@@ -110,6 +112,33 @@ describe('block states and palettes', () => {
       ),
     ).toBe('minecraft:oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]');
     expect(blockStateString(stateCompound('minecraft:stone'))).toBe('minecraft:stone');
+  });
+
+  it('reads all three palette entry forms of the reference pack (region.state)', () => {
+    const palette = [AIR, 'minecraft:stone', 'minecraft:leaf_litter[facing=east,segment_amount=3]'];
+    const indexes = Uint16Array.from({ length: 4096 }, (_, i) => i % 3);
+    for (const form of ['Name', 'id', 'string'] as const) {
+      const chunk = parseChunk(chunkNbt(0, 0, { sections: [{ y: 0, palette, indexes, form }] }));
+      // A reader that knows only `Name` turns every 26.x `{ id, properties }` entry into air.
+      expect(chunk.sections.get(0)?.palette, form).toEqual(palette);
+    }
+    expect(blockStateString(stateCompound('stone', 'id'))).toBe('minecraft:stone');
+    expect(blockStateString(new NbtString('oak_log[axis=y]'))).toBe('minecraft:oak_log[axis=y]');
+    expect(blockStateString(new NbtCompound().set('', new NbtString('minecraft:dirt')))).toBe(
+      'minecraft:dirt',
+    );
+  });
+
+  it('reads the status under Status or status, and a chunk with none as full', () => {
+    const sections = [{ y: 0, palette: ['minecraft:stone'] }];
+    expect(parseChunk(chunkNbt(0, 0, { sections, statusKey: 'status' })).status).toBe(
+      'minecraft:full',
+    );
+    const none = parseChunk(chunkNbt(0, 0, { sections, statusKey: null }));
+    expect(none.status).toBe('');
+    expect(isFullChunk(none.status)).toBe(true);
+    expect(isFullChunk('minecraft:features')).toBe(false);
+    expect(isFullChunk('full')).toBe(true);
   });
 
   it('uses max(4, ceil(log2 n)) bits per entry', () => {

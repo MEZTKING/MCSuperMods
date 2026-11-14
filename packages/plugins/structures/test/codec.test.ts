@@ -197,6 +197,42 @@ describe('structure template NBT', () => {
     ]);
   });
 
+  it('reads all three palette entry forms of the reference pack (region.state)', () => {
+    const block = (state: number) =>
+      new NbtCompound()
+        .set('pos', new NbtList([new NbtInt(0), new NbtInt(state), new NbtInt(0)]))
+        .set('state', new NbtInt(state));
+    const root = new NbtCompound()
+      .set('size', new NbtList([new NbtInt(1), new NbtInt(3), new NbtInt(1)]))
+      .set(
+        'palette',
+        new NbtList<NbtCompound | NbtString>([
+          new NbtCompound()
+            .set('Name', new NbtString('minecraft:oak_log'))
+            .set('Properties', new NbtCompound().set('axis', new NbtString('y'))),
+          new NbtCompound()
+            .set('id', new NbtString('minecraft:oak_stairs'))
+            .set(
+              'properties',
+              new NbtCompound()
+                .set('half', new NbtString('bottom'))
+                .set('facing', new NbtString('north')),
+            ),
+          new NbtString('stone'),
+        ]),
+      )
+      .set('blocks', new NbtList([block(0), block(1), block(2)]))
+      .set('entities', new NbtList())
+      .set('DataVersion', new NbtInt(5));
+    expect(structureTemplateFromNbt(root).data.palette).toEqual([
+      'minecraft:oak_log[axis=y]',
+      'minecraft:oak_stairs[facing=north,half=bottom]',
+      'minecraft:stone',
+    ]);
+    const bad = root.set('palette', new NbtList([new NbtCompound()]));
+    expect(() => structureTemplateFromNbt(bad)).toThrow(/has no Name/);
+  });
+
   it('reports templates over 48 blocks and rejects broken data', () => {
     const big = structureTemplateFromNbt(
       structureTemplateToNbt({ size: [49, 1, 1], palette: [], blocks: [] }, 1),

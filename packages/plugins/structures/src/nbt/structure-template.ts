@@ -333,18 +333,36 @@ function numbers(tag: NbtTag | undefined, length: number, where: string): number
   return values;
 }
 
+/**
+ * A palette entry as a block state string. Vanilla's structure files write `{ Name,
+ * Properties }`; the reference pack's `region.state()` also reads `{ id, properties }` (the 26.x
+ * chunk form) and a bare string, so files from newer writers and tools load too.
+ */
 function paletteEntry(tag: NbtTag, index: number): string {
-  if (!tag.isCompound() || !tag.hasString('Name')) {
+  if (tag.isString() && tag.getAsString() !== '') {
+    try {
+      return canonicalBlockState(tag.getAsString());
+    } catch (error) {
+      if (error instanceof BlockStateError) {
+        throw new StructureFormatError(`Palette entry ${index}: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+  const key = tag.isCompound()
+    ? ['Name', 'id'].find((name) => tag.hasString(name) && tag.getString(name) !== '')
+    : undefined;
+  if (!tag.isCompound() || key === undefined) {
     throw new StructureFormatError(`Palette entry ${index} has no Name.`);
   }
   const properties: Record<string, string> = {};
-  const props = tag.get('Properties');
+  const props = tag.get(key === 'Name' ? 'Properties' : 'properties');
   if (props?.isCompound()) {
     props.forEach((key, value) => {
       properties[key] = value.isString() ? value.getAsString() : printSnbt(value);
     });
   }
-  const name = tag.getString('Name');
+  const name = tag.getString(key);
   const keys = Object.keys(properties).sort();
   return keys.length === 0
     ? name

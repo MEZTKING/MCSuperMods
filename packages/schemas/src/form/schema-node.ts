@@ -66,7 +66,10 @@ export type SchemaNode =
   | (NodeBase & { kind: 'tuple'; items: SchemaNode[] })
   | (NodeBase & {
       kind: 'string';
-      /** From `#[id=...]` (string form, or the tree form's `registry`). */
+      /**
+       * From `#[id=...]` (string form, or the tree form's `registry`); `tag/<registry>` under
+       * `tags="implicit"`, whose value is a tag id written without `#`.
+       */
       idRegistry?: string;
       /**
        * The tree form's `path`, e.g. `entity/banner/`: the registry id of a written `ns:name`

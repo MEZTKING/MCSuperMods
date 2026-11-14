@@ -36,6 +36,7 @@ export interface ChunkSection {
 /** A chunk read for its blocks. */
 export interface ParsedChunk {
   dataVersion: number;
+  /** `Status` (or `status`); `''` when the chunk saved none. */
   status: string;
   /** Sections with block states, by section Y. */
   sections: Map<number, ChunkSection>;
@@ -59,12 +60,27 @@ function asCompound(tag: NbtTag | undefined): NbtCompound | null {
   return tag?.isCompound() ? tag : null;
 }
 
-/** The block state string of a palette entry `{ Name, Properties }`; properties sorted by key. */
-export function blockStateString(entry: NbtCompound): string {
-  const nameTag = entry.get('Name');
-  const name = nameTag?.isString() ? nameTag.getAsString() : '';
+/** The first of `keys` that holds a non-empty string in `compound`, else `''`. */
+function firstString(compound: NbtCompound, keys: readonly string[]): string {
+  for (const key of keys) {
+    const tag = compound.get(key);
+    if (tag?.isString() && tag.getAsString() !== '') return tag.getAsString();
+  }
+  return '';
+}
+
+/**
+ * The block state string of a palette entry, properties sorted by key. An entry comes in any of
+ * three forms (the reference pack's `region.state()`): a bare string `"minecraft:stone"`,
+ * `{ Name, Properties }` (older) or `{ id, properties }` (what 26.x writes); a few exporters
+ * write the name under `""`. Reading only one form turns every other entry into air.
+ */
+export function blockStateString(entry: NbtTag): string {
+  if (entry.isString()) return namespacedState(entry.getAsString());
+  if (!entry.isCompound()) return 'minecraft:air';
+  const name = firstString(entry, ['Name', 'id', '']);
   const id = name === '' ? 'minecraft:air' : name.includes(':') ? name : `minecraft:${name}`;
-  const properties = asCompound(entry.get('Properties'));
+  const properties = asCompound(entry.get('Properties')) ?? asCompound(entry.get('properties'));
   if (properties === null || properties.size === 0) return id;
   const pairs: string[] = [];
   for (const key of [...properties.keys()].sort()) {
@@ -72,6 +88,14 @@ export function blockStateString(entry: NbtCompound): string {
     pairs.push(`${key}=${value?.isString() ? value.getAsString() : ''}`);
   }
   return `${id}[${pairs.join(',')}]`;
+}
+
+/** A bare-string palette entry, `stone` or `minecraft:oak_stairs[...]`, with its namespace. */
+function namespacedState(state: string): string {
+  if (state === '') return 'minecraft:air';
+  const bracket = state.indexOf('[');
+  const name = bracket === -1 ? state : state.slice(0, bracket);
+  return name.includes(':') ? state : `minecraft:${state}`;
 }
 
 /** Bits per entry for a block state palette of `size` entries (0 for one entry). */
@@ -92,7 +116,7 @@ function readSection(section: NbtCompound): ChunkSection | null {
   if (paletteTag === undefined || !paletteTag.isList()) return null;
   const palette: string[] = [];
   for (const entry of paletteTag.getItems()) {
-    palette.push(entry.isCompound() ? blockStateString(entry) : 'minecraft:air');
+    palette.push(blockStateString(entry));
   }
   if (palette.length === 0) return null;
   const bits = bitsForPalette(palette.length);
@@ -140,7 +164,12 @@ export function parseChunk(nbt: Uint8Array): ParsedChunk {
   if (root.has('Level') || dataVersion < FIRST_FLAT_CHUNK_DATA_VERSION) {
     throw new ChunkFormatError('old-format', 'A chunk was saved before Minecraft 1.18.');
   }
-  const status = root.hasString('Status') ? root.getString('Status') : '';
+  // `Status` as vanilla writes it; `status` from a few tools (the reference pack reads both).
+  const status = root.hasString('Status')
+    ? root.getString('Status')
+    : root.hasString('status')
+      ? root.getString('status')
+      : '';
   const sections = new Map<number, ChunkSection>();
   const problems: string[] = [];
   const sectionsTag = root.get('sections');
@@ -171,9 +200,13 @@ export function parseChunk(nbt: Uint8Array): ParsedChunk {
   return { dataVersion, status, sections, blockEntities, problems };
 }
 
-/** Whether a chunk status means fully generated (`minecraft:full` or the older `full`). */
+/**
+ * Whether a chunk status means fully generated (`minecraft:full` or the older `full`). A chunk
+ * that saved no status (`''`, written by some tools) counts as full, as the reference pack's
+ * `ore_counts.py` reads it; below `full` a chunk has terrain but no features.
+ */
 export function isFullChunk(status: string): boolean {
-  return status === 'minecraft:full' || status === 'full';
+  return status === 'minecraft:full' || status === 'full' || status === '';
 }
 
 /**

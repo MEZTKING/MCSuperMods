@@ -4784,3 +4784,18 @@ Decisions
 
 Next
 - None.
+
+## 2026-11-14 — executor — Worldgen accuracy against the reference pack
+
+What
+- Audited MSM's worldgen output against the user's reference pack (`docs/reference/vanilla-worldgen/`, measured on 26.3): placed features and biome lists, structures and jigsaw defaults, the data formats of §8, the `@msm/interop` world reader and the Creator flows. Findings, fixes and test names are in `docs/COVERAGE-AUDIT.md` §4.
+- Fixed with tests: the Temperate forest biome template listed sugar cane before pumpkins against vanilla's step order (a possible "Feature order cycle" with vanilla biomes); `@msm/schemas` now reads `#[id(tags="implicit")]` ids against `tag/<registry>` (ROADMAP follow-up since Phase 3); the Ore vein template uses vanilla's `tag_match` on `#stone_ore_replaceables` and `#deepslate_ore_replaceables`; the Patch placement template filters by biome once at the centre and spreads its tries with trapezoid offsets; the oak-like Tree template uses `minecraft:soil_beneath_tree` under the trunk; the interop reader takes palette entries in all three forms (string, `Name`/`Properties`, the 26.x `id`/`properties`: a 26.x world used to read as air) and the status under `Status` or `status`; the structure `.nbt` importer reads all three palette forms.
+- `packages/plugins/worldgen/test/reference-pack.ts` reads `feature_indices.txt` (tests only) and checks biome templates against vanilla's order. New `packages/plugins/worldgen/CLAUDE.md` points to the pack.
+- Tests: schemas 1187, worldgen 161, structures 73, interop 174; `pnpm test` (23 tasks), `pnpm lint` and `pnpm typecheck` pass. No goldens changed.
+
+Decisions
+- Library starters (Custom ore, Custom biome) and the AI prompt are not changed here: they would change the `examples/` mirror, which the examples agent owns; listed as W-D5 and W-D6.
+- A chunk with no status saved counts as full, as the pack's `ore_counts.py` reads it.
+
+Next
+- Orchestrator: W-D1 (vanilla feature order as a target fact, warnings for out-of-order biomes and additions naming vanilla placed features; needs an ADR), W-D3 (same-step duplicate from a biome addition is likely a crash), W-D4 (guide note on index shifts), W-D5 to W-D7.

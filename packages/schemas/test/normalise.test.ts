@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createRegistryIndex,
   createSchemaIndex,
   normaliseRange,
   type RawMcdocType,
   type SchemaNode,
   type VanillaMcdocSymbols,
+  validateJson,
 } from '../src/index';
 
 const since = (value: string) => ({
@@ -244,6 +246,34 @@ describe('normalisation rules', () => {
     expect(expectKind(index.resolve('::t::E'), 'enum').values).toEqual([
       { identifier: 'A', value: 'a', desc: 'first' },
     ]);
+  });
+
+  it('reads an implicit tag id as an id of the registry tag registry (ore rule tests)', () => {
+    const tree = (tags: string) => ({
+      name: 'id',
+      value: {
+        kind: 'tree',
+        values: {
+          registry: { kind: 'literal', value: { kind: 'string', value: 'block' } },
+          tags: { kind: 'literal', value: { kind: 'string', value: tags } },
+        },
+      },
+    });
+    const index = indexOf({
+      '::t::Implicit': { kind: 'string', attributes: [tree('implicit')] },
+      '::t::Allowed': { kind: 'string', attributes: [tree('allowed')] },
+    });
+    const implicit = expectKind(index.resolve('::t::Implicit'), 'string');
+    expect(implicit.idRegistry).toBe('tag/block');
+    expect(expectKind(index.resolve('::t::Allowed'), 'string').idRegistry).toBe('block');
+    const registries = createRegistryIndex({
+      vanilla: { block: ['stone'], 'tag/block': ['stone_ore_replaceables'] },
+    });
+    const codes = (value: string) =>
+      validateJson(value, implicit, { registries }).map((problem) => problem.code);
+    expect(codes('minecraft:stone_ore_replaceables')).toEqual([]);
+    expect(codes('stone_ore_replaceables')).toEqual([]);
+    expect(codes('minecraft:stone')).toEqual(['schema.unknown-id']);
   });
 
   it('marks deprecated fields and keeps descriptions', () => {

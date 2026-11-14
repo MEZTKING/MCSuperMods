@@ -16,11 +16,17 @@ import {
 } from 'deepslate/nbt';
 import { gzipSync, zlibSync } from 'fflate';
 
+/**
+ * The three palette entry forms of the reference pack's `region.state()`: `{ Name, Properties }`
+ * (older), `{ id, properties }` (26.x) and a bare string.
+ */
+export type PaletteForm = 'Name' | 'id' | 'string';
+
 /** Turns `minecraft:oak_stairs[half=bottom,facing=north]` into a palette compound. */
-export function stateCompound(state: string): NbtCompound {
+export function stateCompound(state: string, form: 'Name' | 'id' = 'Name'): NbtCompound {
   const bracket = state.indexOf('[');
   const compound = new NbtCompound().set(
-    'Name',
+    form === 'id' ? 'id' : 'Name',
     new NbtString(bracket === -1 ? state : state.slice(0, bracket)),
   );
   if (bracket !== -1) {
@@ -29,9 +35,14 @@ export function stateCompound(state: string): NbtCompound {
       const [key, value] = pair.split('=');
       properties.set(key ?? '', new NbtString(value ?? ''));
     }
-    compound.set('Properties', properties);
+    compound.set(form === 'id' ? 'properties' : 'Properties', properties);
   }
   return compound;
+}
+
+/** A palette entry in `form`. */
+export function paletteEntry(state: string, form: PaletteForm = 'Name'): NbtTag {
+  return form === 'string' ? new NbtString(state) : stateCompound(state, form);
 }
 
 /** Packs 4,096 palette indexes the 1.16+ way (no spanning), with an explicit bit count. */
@@ -53,12 +64,16 @@ export interface SectionSpec {
   y: number;
   palette: string[];
   indexes?: ArrayLike<number>;
+  /** How the palette entries are written (default `Name`). */
+  form?: PaletteForm;
 }
 
 /** A chunk description. */
 export interface ChunkSpec {
   dataVersion?: number;
   status?: string;
+  /** The key the status is saved under (default `Status`); `null` saves none. */
+  statusKey?: 'Status' | 'status' | null;
   sections: SectionSpec[];
   blockEntities?: { x: number; y: number; z: number; id?: string }[];
   /** Write the pre-1.18 `Level` wrapper instead (for refusal tests). */
@@ -78,7 +93,7 @@ export function chunkNbt(cx: number, cz: number, spec: ChunkSpec): Uint8Array {
   for (const section of spec.sections) {
     const states = new NbtCompound().set(
       'palette',
-      new NbtList(section.palette.map(stateCompound)),
+      new NbtList<NbtTag>(section.palette.map((state) => paletteEntry(state, section.form))),
     );
     const bits = bitsFor(section.palette.length);
     if (bits > 0) {
@@ -99,9 +114,10 @@ export function chunkNbt(cx: number, cz: number, spec: ChunkSpec): Uint8Array {
     .set('xPos', new NbtInt(cx))
     .set('zPos', new NbtInt(cz))
     .set('yPos', new NbtInt(-4))
-    .set('Status', new NbtString(spec.status ?? 'minecraft:full'))
     .set('sections', sections)
     .set('block_entities', blockEntities);
+  const statusKey = spec.statusKey === undefined ? 'Status' : spec.statusKey;
+  if (statusKey !== null) body.set(statusKey, new NbtString(spec.status ?? 'minecraft:full'));
   const root = spec.oldLayout
     ? new NbtCompound().set('Level', body).set('DataVersion', new NbtInt(spec.dataVersion ?? 2730))
     : body.set('DataVersion', new NbtInt(spec.dataVersion ?? 4440));

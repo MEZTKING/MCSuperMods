@@ -145,6 +145,16 @@ function idPath(attributes: readonly RawAttribute[] | undefined): string | undef
   return path === undefined || path === '' ? undefined : path;
 }
 
+/**
+ * The tree form's `tags`, e.g. `implicit` in `#[id(registry="block", tags="implicit")]`: the
+ * value is then a tag id written without `#` (the ore feature's `tag_match` rule test).
+ */
+function idTags(attributes: readonly RawAttribute[] | undefined): string | undefined {
+  const value = attributes?.find((a) => a.name === 'id')?.value;
+  if (value === undefined || value.kind !== 'tree') return undefined;
+  return literalString(value.values.tags);
+}
+
 function tagsOf(attributes: readonly RawAttribute[] | undefined): string[] {
   if (attributes === undefined) return [];
   const names = new Set<string>();
@@ -219,7 +229,12 @@ export function normaliseType(
       const node: SchemaNode = { kind: 'string' };
       const registry = idRegistry(raw.attributes);
       if (registry !== undefined) {
-        node.idRegistry = registry;
+        // An implicit tag id names a tag of the registry, so it is checked against
+        // `tag/<registry>` (vanilla tags from mcmeta plus project tags).
+        node.idRegistry =
+          idTags(raw.attributes) === 'implicit'
+            ? `tag/${registry.startsWith('minecraft:') ? registry.slice('minecraft:'.length) : registry}`
+            : registry;
         const path = idPath(raw.attributes);
         if (path !== undefined) node.idPath = path;
       }

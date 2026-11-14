@@ -9,6 +9,7 @@ import type {
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, { worldgenKinds, worldgenTemplates } from '../src/index';
+import { vanillaFeatureOrder, vanillaOrderProblems } from './reference-pack';
 import { blockingProblems, indexesFor, NOISE_SETTINGS_SCHEMA, schemaHasField } from './support';
 
 /** The first target's facts without its hooks: a template context is plain data. */
@@ -185,6 +186,96 @@ describe('worldgen templates', () => {
       expect(stepOf('minecraft:flower_default'), id).toBe(steps[at('vegetal_decoration')]);
       expect(stepOf('minecraft:freeze_top_layer'), id).toBe(steps[at('top_layer_modification')]);
     }
+  });
+
+  it('lists vanilla features in the vanilla order of the reference pack', () => {
+    const order = vanillaFeatureOrder();
+    expect(order.size).toBe(171);
+    // The checker itself: sugar cane before pumpkins is the forest template's old order.
+    expect(
+      vanillaOrderProblems(
+        [[], [], [], [], [], [], [], [], [], ['patch_sugar_cane', 'minecraft:patch_pumpkin']],
+        order,
+      ),
+    ).toEqual([
+      'minecraft:patch_pumpkin comes after minecraft:patch_sugar_cane in step 9; vanilla runs it first',
+    ]);
+    const biomes = worldgenTemplates.filter((entry) => entry.kind === 'minecraft:worldgen/biome');
+    expect(biomes.length).toBeGreaterThan(0);
+    for (const template of biomes) {
+      const { features } = template.data(contextFor(template)) as { features: Json };
+      expect(vanillaOrderProblems(features, order), template.id).toEqual([]);
+    }
+  });
+
+  it('shapes the ore vein like vanilla iron ore, on the replaceable tags', () => {
+    const template = worldgenTemplates.find((entry) => entry.id === 'feature_ore_vein');
+    if (template === undefined) throw new Error('no feature_ore_vein');
+    expect(template.data(contextFor(template))).toEqual({
+      type: 'minecraft:ore',
+      size: 9,
+      discard_chance_on_air_exposure: 0,
+      targets: [
+        {
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:stone_ore_replaceables',
+          },
+          state: 'minecraft:iron_ore',
+        },
+        {
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:deepslate_ore_replaceables',
+          },
+          state: 'minecraft:deepslate_iron_ore',
+        },
+      ],
+    });
+  });
+
+  it('turns the soil under the oak-like tree to dirt with the vanilla rule-based provider', () => {
+    const template = worldgenTemplates.find((entry) => entry.id === 'feature_tree');
+    if (template === undefined) throw new Error('no feature_tree');
+    const data = template.data(contextFor(template)) as Record<string, Json>;
+    expect(data.below_trunk_provider).toBe('minecraft:soil_beneath_tree');
+  });
+
+  it('places trees as vanilla does: OCEAN_FLOOR, dry land, where the sapling survives', () => {
+    const template = worldgenTemplates.find((entry) => entry.id === 'placed_feature_tree');
+    if (template === undefined) throw new Error('no placed_feature_tree');
+    const { placement } = template.data(contextFor(template)) as {
+      placement: { type: string }[];
+    };
+    expect(placement.map((modifier) => modifier.type)).toEqual([
+      'minecraft:count',
+      'minecraft:in_square',
+      'minecraft:surface_water_depth_filter',
+      'minecraft:heightmap',
+      'minecraft:block_predicate_filter',
+      'minecraft:biome',
+    ]);
+    expect(placement[3]).toEqual({ type: 'minecraft:heightmap', heightmap: 'OCEAN_FLOOR' });
+  });
+
+  it('filters a patch by biome once at its centre, before the 32 tries spread out', () => {
+    const template = worldgenTemplates.find((entry) => entry.id === 'placed_feature_patch');
+    if (template === undefined) throw new Error('no placed_feature_patch');
+    const { placement } = template.data(contextFor(template)) as {
+      placement: Record<string, Json>[];
+    };
+    expect(placement.map((modifier) => modifier.type)).toEqual([
+      'minecraft:rarity_filter',
+      'minecraft:in_square',
+      'minecraft:heightmap',
+      'minecraft:biome',
+      'minecraft:count',
+      'minecraft:offset',
+      'minecraft:block_predicate_filter',
+    ]);
+    // Flowers stand on crowns too (the reference pack's §3): MOTION_BLOCKING.
+    expect(placement[2]?.heightmap).toBe('MOTION_BLOCKING');
+    expect(placement[5]?.x).toEqual({ type: 'minecraft:trapezoid', min: -7, max: 7, plateau: 0 });
   });
 
   it('keeps src free of @msm/targets and @msm/core imports and of version literals', async () => {

@@ -31,9 +31,10 @@ export const featureTemplates: readonly ElementTemplate[] = [
       kind: 'minecraft:worldgen/feature',
       category: FEATURES,
       title: 'Ore vein',
-      description: 'A blob of ore that replaces stone and deepslate; place it with Ore placement.',
-      // `block_match` rather than vanilla's `tag_match` on `#stone_ore_replaceables`: the schema
-      // validator does not yet read `tags="implicit"` ids, so a tag here reports unknown-id.
+      description:
+        'A blob of ore shaped like iron ore (up to 9 blocks) that replaces the stones ores replace, granite, diorite, andesite, deepslate and tuff included; place it with Ore placement.',
+      // Vanilla's rule tests (the reference pack's §4 and §5): `tag_match` on the two
+      // replaceable tags, so blobs also form in granite, diorite, andesite and tuff pockets.
     },
     {
       type: 'minecraft:ore',
@@ -41,11 +42,17 @@ export const featureTemplates: readonly ElementTemplate[] = [
       discard_chance_on_air_exposure: 0,
       targets: [
         {
-          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:stone' },
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:stone_ore_replaceables',
+          },
           state: 'minecraft:iron_ore',
         },
         {
-          target: { predicate_type: 'minecraft:block_match', block: 'minecraft:deepslate' },
+          target: {
+            predicate_type: 'minecraft:tag_match',
+            tag: 'minecraft:deepslate_ore_replaceables',
+          },
           state: 'minecraft:deepslate_iron_ore',
         },
       ],
@@ -69,7 +76,9 @@ export const featureTemplates: readonly ElementTemplate[] = [
         lower_size: 0,
         upper_size: 1,
       },
-      below_trunk_provider: simple('minecraft:dirt'),
+      // Vanilla's rule-based soil provider: the block under the trunk becomes dirt unless it is
+      // in `#cannot_replace_below_tree_trunk` (the reference pack's §6), not always dirt.
+      below_trunk_provider: 'minecraft:soil_beneath_tree',
       trunk_provider: simple('minecraft:oak_log'),
       foliage_provider: simple('minecraft:oak_leaves'),
       trunk_placer: {
@@ -210,18 +219,21 @@ export const featureTemplates: readonly ElementTemplate[] = [
         { type: 'minecraft:rarity_filter', chance: 4 },
         { type: 'minecraft:in_square' },
         { type: 'minecraft:heightmap', heightmap: 'MOTION_BLOCKING' },
+        // Once, at the patch centre: the patch spills over a biome border as vanilla's do.
+        { type: 'minecraft:biome' },
         { type: 'minecraft:count', count: 32 },
+        // The old patch spread (the difference of two draws from 0 to 7, or 0 to 3): most
+        // tries near the centre, as in the Crop flow's wild patches.
         {
           type: 'minecraft:offset',
-          x: { type: 'minecraft:uniform', min_inclusive: -7, max_inclusive: 7 },
-          y: { type: 'minecraft:uniform', min_inclusive: -3, max_inclusive: 3 },
-          z: { type: 'minecraft:uniform', min_inclusive: -7, max_inclusive: 7 },
+          x: { type: 'minecraft:trapezoid', min: -7, max: 7, plateau: 0 },
+          y: { type: 'minecraft:trapezoid', min: -3, max: 3, plateau: 0 },
+          z: { type: 'minecraft:trapezoid', min: -7, max: 7, plateau: 0 },
         },
         {
           type: 'minecraft:block_predicate_filter',
           predicate: { type: 'minecraft:matching_blocks', blocks: 'minecraft:air' },
         },
-        { type: 'minecraft:biome' },
       ],
     }),
   ),
