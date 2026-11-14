@@ -1,0 +1,46 @@
+{
+  "category": "water_ambient",
+  "components": {
+    "msm:animated_model": {
+      "animations": "mymod:entity/critter_animations",
+      "model": "mymod:entity/critter",
+      "renderer": "geckolib",
+      "swim": "swim",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:movement": {
+      "breathes_air": false,
+      "dry_out_ticks": 300,
+      "mode": "swim",
+      "speed": 0.9
+    },
+    "msm:variants": {
+      "choose": "random",
+      "variants": [
+        {
+          "id": "blue",
+          "texture": "mymod:entity/critter_blue"
+        },
+        {
+          "id": "gold",
+          "texture": "mymod:entity/critter_gold",
+          "weight": 1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_ocean"],
+    "heightmap": "ocean_floor",
+    "max_group": 6,
+    "min_group": 3,
+    "placement": "in_water",
+    "rule": "water",
+    "weight": 10
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "category": "water_ambient",
+  "components": {
+    "msm:animated_model": {
+      "animations": "mymod:entity/critter_animations",
+      "model": "mymod:entity/critter",
+      "renderer": "geckolib",
+      "swim": "swim",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:movement": {
+      "breathes_air": false,
+      "dry_out_ticks": 300,
+      "mode": "swim",
+      "speed": 0.9
+    },
+    "msm:variants": {
+      "choose": "random",
+      "variants": [
+        {
+          "id": "v0",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v1",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v2",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v3",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v4",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v5",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v6",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v7",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v8",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v9",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v10",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v11",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v12",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v13",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v14",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v15",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v16",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v17",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v18",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v19",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v20",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v21",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v22",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v23",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v24",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v25",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v26",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v27",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v28",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v29",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v30",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v31",
+          "texture": "mymod:entity/critter"
+        },
+        {
+          "id": "v32",
+          "texture": "mymod:entity/critter"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_ocean"],
+    "heightmap": "ocean_floor",
+    "max_group": 6,
+    "min_group": 3,
+    "placement": "in_water",
+    "rule": "water_animal",
+    "weight": 10
+  }
+}

@@ -11,6 +11,7 @@ use super::definition::Breakable as DefinitionBreakable
 use super::definition::Shape as DefinitionShape
 use super::definition::EntityBehaviourComponents
 use super::definition::EntityCommon
+use super::definition::EntityRenderer
 use super::definition::SpawnEgg as DefinitionSpawnEgg
 use super::definition::ItemCommon
 use super::definition::LootAddition as DefinitionLootAddition
@@ -372,6 +373,17 @@ struct AnimatedModel {
 	attack?: string,
 	/// Ticks to blend between animations; defaults to 0.
 	transition_ticks?: int @ 0..,
+	/// Defaults to `auto` (ADR 0072 D4). Runtimes older than the release that ships ADR 0072
+	/// ignore the field and always use GeckoLib.
+	renderer?: EntityRenderer,
+	/// Animation looped while sitting (ADR 0071 D6); played before every other loop.
+	sit?: string,
+	/// Animation looped while moving in the air (ADR 0071 D6).
+	fly?: string,
+	/// Animation looped while moving in water (ADR 0071 D6).
+	swim?: string,
+	/// Animation played once on each ranged shot (ADR 0071 D6, ADR 0070 D4).
+	shoot?: string,
 }
 
 /// Entity components in element data.

@@ -435,6 +435,186 @@
     "code": "schema.missing-field",
     "path": "/components/msm:animated_model/texture"
   },
+  "entity-mx-base-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/base"
+  },
+  "entity-mx-boss-bar-color-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:boss_bar/color"
+  },
+  "entity-mx-boss-bar-colour-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:boss_bar/colour"
+  },
+  "entity-mx-boss-bar-music-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:boss_bar/music"
+  },
+  "entity-mx-boss-bar-overlay-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:boss_bar/overlay"
+  },
+  "entity-mx-boss-bar-range-7.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:boss_bar/range"
+  },
+  "entity-mx-breathes-air-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:movement/breathes_air"
+  },
+  "entity-mx-breedable-baby-scale-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:breedable/baby_scale"
+  },
+  "entity-mx-breedable-grow-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:breedable/grow_up_ticks"
+  },
+  "entity-mx-breedable-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:breedable/partner"
+  },
+  "entity-mx-dry-out-19.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:movement/dry_out_ticks"
+  },
+  "entity-mx-dry-out-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/components/msm:movement/dry_out_ticks"
+  },
+  "entity-mx-flying-speed-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:movement/flying_speed"
+  },
+  "entity-mx-goal-leap-height-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/1/height"
+  },
+  "entity-mx-goal-panic-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:ai_goals/goals/0/distance"
+  },
+  "entity-mx-goal-ranged-strafe-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:ai_goals/goals/0/strafe"
+  },
+  "entity-mx-goal-tempt-missing-items.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ai_goals/goals/1/items"
+  },
+  "entity-mx-hovers-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:movement/hovers"
+  },
+  "entity-mx-movement-mode-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:movement/mode"
+  },
+  "entity-mx-ranged-charge-201.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ranged_attack/charge_ticks"
+  },
+  "entity-mx-ranged-damage-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ranged_attack/damage"
+  },
+  "entity-mx-ranged-inaccuracy-21.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ranged_attack/inaccuracy"
+  },
+  "entity-mx-ranged-interval-4.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ranged_attack/interval_ticks"
+  },
+  "entity-mx-ranged-missing-projectile.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ranged_attack/projectile"
+  },
+  "entity-mx-ranged-range-65.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ranged_attack/range"
+  },
+  "entity-mx-ranged-speed-6.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ranged_attack/speed"
+  },
+  "entity-mx-ranged-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:ranged_attack/ammo"
+  },
+  "entity-mx-renderer-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:animated_model/renderer"
+  },
+  "entity-mx-rideable-controlled-by-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:rideable/controlled_by"
+  },
+  "entity-mx-rideable-offset-2.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:rideable/rider_offset"
+  },
+  "entity-mx-rideable-passengers-5.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:rideable/passengers"
+  },
+  "entity-mx-rideable-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:rideable/steer_item"
+  },
+  "entity-mx-sit-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:animated_model/sit"
+  },
+  "entity-mx-spawn-rule-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/spawn/rule"
+  },
+  "entity-mx-step-height-11.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:movement/step_height"
+  },
+  "entity-mx-tameable-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:tameable/chance"
+  },
+  "entity-mx-tameable-follow-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:tameable/follow/distance"
+  },
+  "entity-mx-tameable-health-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:tameable/tamed_health"
+  },
+  "entity-mx-tameable-missing-items.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:tameable/items"
+  },
+  "entity-mx-variants-33.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:variants/variants"
+  },
+  "entity-mx-variants-choose-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:variants/choose"
+  },
+  "entity-mx-variants-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:variants/variants"
+  },
+  "entity-mx-variants-missing-texture.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:variants/variants/0/texture"
+  },
+  "entity-mx-variants-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:variants/variants/0/model"
+  },
+  "entity-mx-variants-weight-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:variants/variants/0/weight"
+  },
   "entity-play-animation-missing-animation.json": {
     "code": "schema.missing-field",
     "path": "/events/mymod:x/actions/0/animation"

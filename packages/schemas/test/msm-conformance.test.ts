@@ -295,8 +295,10 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'trigger-item-', 2, 2],
     ['definition', 'trigger-block-', 2, 2],
     ['definition', 'trigger-entity-', 2, 2],
+    ['definition', 'entity-mx-', 6, 40],
+    ['element', 'entity-mx-', 6, 10],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070, 0071, 0072)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;

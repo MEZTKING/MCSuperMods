@@ -1,0 +1,48 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "type": "ranged_attack"
+        },
+        {
+          "type": "panic"
+        },
+        {
+          "type": "leap_at_target"
+        },
+        {
+          "items": ["minecraft:wheat"],
+          "type": "tempt"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:boss_bar": {},
+    "msm:movement": {
+      "mode": "amphibious"
+    },
+    "msm:ranged_attack": {
+      "projectile": "mymod:throwing_star"
+    },
+    "msm:rideable": {},
+    "msm:variants": {
+      "variants": [
+        {
+          "id": "only",
+          "texture": "mymod:entity/critter"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  }
+}

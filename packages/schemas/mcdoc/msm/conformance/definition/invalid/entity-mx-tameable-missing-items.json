@@ -1,0 +1,23 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:breedable": {
+      "items": ["minecraft:wheat"]
+    },
+    "msm:movement": {
+      "mode": "walk",
+      "swims": true
+    },
+    "msm:tameable": {}
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  }
+}

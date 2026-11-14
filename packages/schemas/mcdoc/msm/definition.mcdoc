@@ -815,6 +815,42 @@ enum(string) SpawnRule {
 	AnyLightMonster = "any_light_monster",
 	/// No check beyond the placement.
 	Always = "always",
+	/// The animal check (ADR 0070 D6): grass-like ground under the mob and enough light. The
+	/// runtime repeats it for any `base`, since vanilla binds `Animal.checkAnimalSpawnRules` to
+	/// animals. Runtimes older than the release that ships ADR 0070 reject the value, and the
+	/// entity does not register.
+	Animal = "animal",
+	/// The surface water check (ADR 0070 D6): in water near the surface, as vanilla's water
+	/// animals; repeated by the runtime for any `base`. Runtimes older than the release that ships
+	/// ADR 0070 reject the value, and the entity does not register.
+	WaterAnimal = "water_animal",
+}
+
+/// The vanilla class a mob builds on (ADR 0070 D1). The class changes vanilla behaviour beyond
+/// the components (wander preferences, despawning, iron golems), so it is chosen explicitly and
+/// stays separate from `category`.
+enum(string) EntityBase {
+	/// A plain `PathfinderMob`: every entity before ADR 0070.
+	Mob = "mob",
+	/// `TamableAnimal`: ages, babies, breeding, leads and animal spawn checks; taming stays off
+	/// unless `msm:tameable` is present. Needed by `msm:tameable` and `msm:breedable`.
+	Animal = "animal",
+	/// `Monster`: an enemy that iron golems attack, stops players sleeping nearby, plays hostile
+	/// sounds and is removed in peaceful.
+	Monster = "monster",
+}
+
+/// How a mob moves (ADR 0070 D3).
+enum(string) MovementMode {
+	/// Walks on the ground, as before ADR 0070.
+	Walk = "walk",
+	/// Flies: no gravity and no fall damage; `wander` strolls through the air.
+	Fly = "fly",
+	/// Swims: lives in water, `wander` swims about, no float goal; out of water it flops and dries
+	/// out unless `breathes_air`.
+	Swim = "swim",
+	/// Walks on land and swims in water, breathing both; `wander` stays the walking stroll.
+	Amphibious = "amphibious",
 }
 
 /// The entity's hitbox in blocks.
@@ -854,7 +890,8 @@ struct Health {
 }
 
 /// Movement attributes. Absent means speed 0.25, follow range 16, no knockback resistance,
-/// swims and not fire immune.
+/// swims, not fire immune and walking. Runtimes older than the release that ships ADR 0070
+/// ignore `mode`, `flying_speed`, `hovers`, `breathes_air`, `dry_out_ticks` and `step_height`.
 struct Movement {
 	/// The `movement_speed` attribute.
 	speed?: float @ 0..,
@@ -862,10 +899,52 @@ struct Movement {
 	follow_range?: float @ 0..,
 	/// The `knockback_resistance` attribute, 0 to 1.
 	knockback_resistance?: float @ 0..1,
-	/// Whether the mob floats up in water (adds a float goal first).
+	/// Whether the mob floats up in water (adds a float goal first); for `walk` and `fly` only.
 	swims?: boolean,
 	/// Whether the mob ignores fire and lava damage.
 	fire_immune?: boolean,
+	/// How the mob moves (ADR 0070 D3); defaults to `walk`.
+	mode?: MovementMode,
+	/// The `flying_speed` attribute, used by `fly`; defaults to 0.4, a bee's (verify at
+	/// implementation).
+	flying_speed?: float @ 0..,
+	/// `fly` only: whether the mob stays in place when idle, as a bee; defaults to true.
+	hovers?: boolean,
+	/// `swim` only: whether the mob needs to surface for air, as a dolphin; defaults to false.
+	breathes_air?: boolean,
+	/// `swim` without `breathes_air`: ticks out of water before the mob starts losing health;
+	/// defaults to 300, as vanilla's water animals (verify at implementation).
+	dry_out_ticks?: int @ 20..,
+	/// The `step_height` attribute in blocks; absent keeps vanilla's 0.6.
+	step_height?: float @ 0..10,
+}
+
+/// Ranged attacks (ADR 0070 D4), used by the `ranged_attack` goal as `msm:attack` is by
+/// `melee_attack`. Runtimes older than the release that ships ADR 0070 ignore the component with
+/// a warning.
+struct RangedAttack {
+	/// The projectile: `minecraft:arrow`, `minecraft:tipped_arrow` or `minecraft:spectral_arrow`
+	/// (shot as a mob's arrow from a bow), another vanilla projectile item of the target, or a
+	/// project item with `msm:throwable` (thrown with the mob as thrower, so its damage, gravity
+	/// and hit events apply). Anything else is a load error that drops the component.
+	projectile: #[id="item"] string,
+	/// Arrows only: base damage, as `setBaseDamage` (a hit deals about damage times speed,
+	/// rounded up); defaults to 2.
+	damage?: float @ 0..,
+	/// Launch speed in blocks per tick; defaults to 1.6 (a skeleton's arrow).
+	speed?: float @ 0.1..5,
+	/// Spread of the shot; defaults to 6.
+	inaccuracy?: float @ 0..20,
+	/// Ticks between shots; defaults to 40.
+	interval_ticks?: int @ 5..,
+	/// Ticks spent aiming before a shot (the bow pose); defaults to 20.
+	charge_ticks?: int @ 0..200,
+	/// Range in blocks; defaults to 15.
+	range?: float @ 1..64,
+	/// Sound played on each shot; defaults to `minecraft:entity.skeleton.shoot`.
+	sound?: #[id="sound_event"] string,
+	/// Event fired after each shot; `other` is the target.
+	on_shoot?: string,
 }
 
 /// Melee attack attributes; absent means no melee damage.
@@ -892,6 +971,14 @@ enum(string) GoalType {
 	Flee = "flee",
 	/// Follows the nearest of the listed entity types.
 	Follow = "follow",
+	/// Shoots at the listed entity types; needs `msm:ranged_attack` (ADR 0070 D5).
+	RangedAttack = "ranged_attack",
+	/// Follows players holding one of the listed items (`TemptGoal`, ADR 0070 D5).
+	Tempt = "tempt",
+	/// Runs about when hurt or burning (`PanicGoal`, ADR 0070 D5).
+	Panic = "panic",
+	/// Leaps at its attack target (`LeapAtTargetGoal`, ADR 0070 D5).
+	LeapAtTarget = "leap_at_target",
 }
 
 /// One AI goal, selected by `type`.
@@ -957,14 +1044,68 @@ dispatch msm:ai_goal[follow] to struct FollowGoal {
 	range?: float @ 0..,
 }
 
+/// Shoots at entities with the mob's `msm:ranged_attack` (ADR 0070 D5): approaches until within
+/// range and in sight, aims for `charge_ticks`, shoots, then waits `interval_ticks`. Without
+/// `msm:ranged_attack` the goal adds nothing. Runtimes older than the release that ships ADR 0070
+/// drop the goal with an error.
+dispatch msm:ai_goal[ranged_attack] to struct RangedAttackGoal {
+	/// Speed multiplier while approaching; defaults to 1.
+	speed?: float @ 0..,
+	/// Whether the mob circles its target while shooting, as a skeleton; defaults to false.
+	strafe?: boolean,
+	/// Entity types to shoot at; `minecraft:player` matches players. Absent or empty with
+	/// `retaliate` only fights back.
+	targets?: [#[id="entity_type"] string],
+	/// Whether a target must be in sight; defaults to true.
+	must_see?: boolean,
+	/// Whether to fight back when hurt; defaults to false.
+	retaliate?: boolean,
+}
+
+/// Follows players holding one of the listed items (`TemptGoal`, ADR 0070 D5). Runtimes older
+/// than the release that ships ADR 0070 drop the goal with an error.
+dispatch msm:ai_goal[tempt] to struct TemptGoal {
+	/// Items and item tags (`#`-prefixed) that tempt the mob.
+	items: [#[id(registry="item", tags="allowed")] string],
+	/// Speed multiplier; defaults to 1.
+	speed?: float @ 0..,
+	/// Whether a player moving quickly scares the mob off, as a chicken's; defaults to false.
+	scared?: boolean,
+}
+
+/// Runs about when hurt or burning (`PanicGoal`, ADR 0070 D5). Runtimes older than the release
+/// that ships ADR 0070 drop the goal with an error.
+dispatch msm:ai_goal[panic] to struct PanicGoal {
+	/// Speed multiplier; defaults to 1.25.
+	speed?: float @ 0..,
+}
+
+/// Leaps at the attack target when close, as a spider (`LeapAtTargetGoal`, ADR 0070 D5).
+/// Runtimes older than the release that ships ADR 0070 drop the goal with an error.
+dispatch msm:ai_goal[leap_at_target] to struct LeapAtTargetGoal {
+	/// Upward speed of the leap in blocks per tick; defaults to 0.4.
+	height?: float @ 0..,
+}
+
 /// The mob's AI goals.
 struct AiGoals {
 	/// Goals in priority order.
 	goals: [Goal],
 }
 
-/// The GeckoLib model, animations and texture the entity renders with (ADR 0029). Required:
-/// every entity renders through GeckoLib.
+/// Which renderer draws the entity (ADR 0072 D4).
+enum(string) EntityRenderer {
+	/// GeckoLib when it is loaded, the runtime's vanilla renderer otherwise (such as on 26.4).
+	Auto = "auto",
+	/// GeckoLib only: the entity does not register without GeckoLib.
+	Geckolib = "geckolib",
+	/// The runtime's vanilla renderer, never GeckoLib. It plays a subset of GeckoLib's animation
+	/// features: no Molang, no easings, no sound or particle keyframes.
+	Vanilla = "vanilla",
+}
+
+/// The model, animations and texture the entity renders with (ADR 0029). Required: the
+/// GeckoLib resources serve both renderers (ADR 0072 D1).
 struct AnimatedModel {
 	/// Geo model id; `ns:entity/x` is `assets/ns/geckolib/models/entity/x.geo.json`.
 	model: string,
@@ -983,6 +1124,17 @@ struct AnimatedModel {
 	attack?: string,
 	/// Ticks to blend between animations; defaults to 0.
 	transition_ticks?: int @ 0..,
+	/// Defaults to `auto` (ADR 0072 D4). Runtimes older than the release that ships ADR 0072
+	/// ignore the field and always use GeckoLib.
+	renderer?: EntityRenderer,
+	/// Animation looped while sitting (ADR 0071 D6); played before every other loop.
+	sit?: string,
+	/// Animation looped while moving in the air (ADR 0071 D6).
+	fly?: string,
+	/// Animation looped while moving in water (ADR 0071 D6).
+	swim?: string,
+	/// Animation played once on each ranged shot (ADR 0071 D6, ADR 0070 D4).
+	shoot?: string,
 }
 
 /// Fires an event after the entity takes damage.
@@ -1012,6 +1164,166 @@ struct OnSpawn {
 	event: string,
 }
 
+/// How a tamed mob follows its owner (vanilla `FollowOwnerGoal`).
+struct TameableFollow {
+	/// Speed multiplier; defaults to 1.
+	speed?: float @ 0..,
+	/// Distance in blocks at which the mob starts following; defaults to 10.
+	start_distance?: float @ 0..,
+	/// Distance in blocks at which the mob stops; defaults to 2.
+	stop_distance?: float @ 0..,
+}
+
+/// Makes the mob tameable as vanilla's wolf (ADR 0071 D1); needs `base` `animal`, otherwise a
+/// load error that drops the component. Feeding a taming item uses it up (not in creative) and
+/// tames with `chance`: hearts on success, smoke on failure. Tamed mobs teleport to an owner who
+/// is far away and do not despawn. Runtimes older than the release that ships ADR 0071 ignore
+/// the component with a warning.
+struct Tameable {
+	/// Taming items and item tags (`#`-prefixed).
+	items: [#[id(registry="item", tags="allowed")] string],
+	/// Chance per item; defaults to 0.33 (a wolf's bone).
+	chance?: float @ 0..1,
+	/// Whether the owner's right click toggles sitting; defaults to true.
+	sit?: boolean,
+	/// Whether the mob follows its owner; defaults to true.
+	follows_owner?: boolean,
+	/// How the mob follows its owner; defaults to speed 1, start 10 and stop 2 (a wolf's).
+	follow?: TameableFollow,
+	/// Whether the mob attacks what hurts its owner and what its owner attacks; defaults to true.
+	defends_owner?: boolean,
+	/// Maximum health in half hearts once tamed; absent keeps `msm:health`.
+	tamed_health?: float @ 1..,
+	/// Event fired when the mob is tamed; `player` is the new owner.
+	on_tame?: string,
+}
+
+/// Makes the mob breed and have babies as vanilla's farm animals (ADR 0071 D2); needs `base`
+/// `animal`, otherwise a load error that drops the component. A baby is the same type and takes
+/// a random parent's variant. Natural spawns and spawn eggs make adults; a spawn egg used on an
+/// adult makes a baby. Runtimes older than the release that ships ADR 0071 ignore the component
+/// with a warning.
+struct Breedable {
+	/// Breeding items and item tags (`#`-prefixed); feeding one to a baby makes it grow.
+	items: [#[id(registry="item", tags="allowed")] string],
+	/// Size of a baby relative to an adult (hitbox and model); defaults to 0.5.
+	baby_scale?: float @ 0.1..1,
+	/// Ticks a baby takes to grow up; defaults to 24000 (a vanilla baby's 20 minutes).
+	grow_up_ticks?: int @ 1..,
+	/// Whether the breeding items tempt the mob; defaults to true.
+	tempted?: boolean,
+	/// Whether babies follow their parents; defaults to true.
+	follow_parents?: boolean,
+	/// Event fired when a baby is born; self is the baby, `player` who bred the parents.
+	on_breed?: string,
+}
+
+/// Who may steer a ridden mob.
+enum(string) RideControl {
+	/// Any rider.
+	Anyone = "anyone",
+	/// The owner only; needs `msm:tameable`.
+	Owner = "owner",
+}
+
+/// Makes the mob rideable (ADR 0071 D3), on any `base`. An empty hand mounts it and sneaking
+/// dismounts. The first passenger steers when the mob is saddled (or `saddle` is false) and
+/// `controlled_by` allows it: `walk` and `amphibious` mobs jump with a jump bar when `jump` is
+/// above 0, `fly` mobs fly along the rider's view and rise while jump is held, `swim` mobs follow
+/// the rider's view under water. A ridden mob is moved by the rider's game. Runtimes older than
+/// the release that ships ADR 0071 ignore the component with a warning.
+struct Rideable {
+	/// Whether a vanilla saddle is needed to steer; defaults to true. A saddled mob joins the
+	/// `#minecraft:can_equip_saddle` entity type tag.
+	saddle?: boolean,
+	/// Defaults to `anyone`.
+	controlled_by?: RideControl,
+	/// Ridden speed as a factor of the movement speed; defaults to 1.
+	speed?: float @ 0..,
+	/// Jump strength (the `jump_strength` attribute); 0 means no jump; defaults to 0.
+	jump?: float @ 0..,
+	/// Number of riders; defaults to 1.
+	passengers?: int @ 1..4,
+	/// Seat position in blocks from the mob's feet, `[x, y, z]`; defaults to the top of the
+	/// hitbox.
+	rider_offset?: [float] @ 3,
+	/// A model bone shown only while the mob is saddled.
+	saddle_bone?: string,
+	/// Event fired when a player mounts the mob; `player` is the rider.
+	on_mount?: string,
+}
+
+/// How a mob's variant is picked when it spawns.
+enum(string) VariantChoice {
+	/// A weighted random pick.
+	Random = "random",
+	/// Variants whose `biomes` hold the spawn position's biome; variants without `biomes` are
+	/// the fallback pool; then a weighted random pick.
+	Biome = "biome",
+}
+
+/// One texture variant of a mob.
+struct EntityVariant {
+	/// Saved in the mob's data as `Variant`, so `/summon` and `/data` can set it and reordering
+	/// the list does not repaint saved mobs; an unknown saved id falls back to the first variant.
+	id: string,
+	/// Texture id drawn in place of `msm:animated_model.texture`; `ns:entity/x` is
+	/// `assets/ns/textures/entity/x.png`.
+	texture: #[id="texture"] string,
+	/// Weight of the random pick; defaults to 1.
+	weight?: int @ 1..,
+	/// With `choose` `biome`: biome ids and biome tags (`#`-prefixed) where the variant is picked.
+	biomes?: [#[id(registry="worldgen/biome", tags="allowed")] string],
+}
+
+/// Texture variants (ADR 0071 D4), picked when the mob spawns and drawn by both renderers. Only
+/// textures vary. Runtimes older than the release that ships ADR 0071 ignore the component with
+/// a warning.
+struct Variants {
+	/// Defaults to `random`.
+	choose?: VariantChoice,
+	/// One to 32 variants.
+	variants: [EntityVariant] @ 1..32,
+}
+
+/// The colour of a boss bar (vanilla `BossEvent.BossBarColor`).
+enum(string) BossBarColour {
+	Pink = "pink",
+	Blue = "blue",
+	Red = "red",
+	Green = "green",
+	Yellow = "yellow",
+	Purple = "purple",
+	White = "white",
+}
+
+/// The style of a boss bar (vanilla `BossEvent.BossBarOverlay`).
+enum(string) BossBarOverlay {
+	Progress = "progress",
+	Notched6 = "notched_6",
+	Notched10 = "notched_10",
+	Notched12 = "notched_12",
+	Notched20 = "notched_20",
+}
+
+/// A boss bar showing the mob's health (ADR 0071 D5), named by its custom or display name. A
+/// boss mob does not despawn and is tracked from 10 chunks away. Separate from the scripts' boss
+/// bars. Runtimes older than the release that ships ADR 0071 ignore the component with a warning.
+struct BossBar {
+	/// Defaults to `purple`.
+	colour?: BossBarColour,
+	/// Defaults to `progress`.
+	overlay?: BossBarOverlay,
+	/// Whether the sky darkens; defaults to false.
+	darken_sky?: boolean,
+	/// Whether the world fogs up; defaults to false.
+	fog?: boolean,
+	/// Whether vanilla's boss music plays; defaults to false.
+	music?: boolean,
+	/// Players within this many blocks see the bar; absent means every player tracking the mob.
+	range?: float @ 8..256,
+}
+
 /// Entity components other than `msm:animated_model`, shared with the element data.
 struct EntityBehaviourComponents {
 	"msm:health"?: Health,
@@ -1026,6 +1338,18 @@ struct EntityBehaviourComponents {
 	"msm:on_tick"?: OnEntityTick,
 	/// Fires when the mob spawns.
 	"msm:on_spawn"?: OnSpawn,
+	/// Ranged attacks (ADR 0070 D4).
+	"msm:ranged_attack"?: RangedAttack,
+	/// Taming (ADR 0071 D1); needs `base` `animal`.
+	"msm:tameable"?: Tameable,
+	/// Breeding and babies (ADR 0071 D2); needs `base` `animal`.
+	"msm:breedable"?: Breedable,
+	/// Riding (ADR 0071 D3).
+	"msm:rideable"?: Rideable,
+	/// Texture variants (ADR 0071 D4).
+	"msm:variants"?: Variants,
+	/// A boss bar (ADR 0071 D5).
+	"msm:boss_bar"?: BossBar,
 }
 
 /// Runtime entity components; `msm:animated_model` is required.
@@ -1039,6 +1363,9 @@ struct EntityComponents {
 struct EntityCommon {
 	/// Definition format; this is version 1.
 	format: 1,
+	/// The vanilla class the mob builds on (ADR 0070 D1); defaults to `mob`. Runtimes older than
+	/// the release that ships ADR 0070 ignore the field with a warning.
+	base?: EntityBase,
 	/// Spawn group.
 	category: MobCategory,
 	/// Hitbox size.

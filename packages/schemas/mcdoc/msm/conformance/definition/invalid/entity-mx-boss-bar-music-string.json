@@ -1,0 +1,80 @@
+{
+  "base": "monster",
+  "category": "monster",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "must_see": true,
+          "priority": 1,
+          "retaliate": true,
+          "speed": 1.0,
+          "strafe": true,
+          "targets": ["minecraft:player"],
+          "type": "ranged_attack"
+        },
+        {
+          "height": 0.4,
+          "type": "leap_at_target"
+        },
+        {
+          "targets": ["minecraft:player"],
+          "type": "melee_attack"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "animations": "mymod:entity/critter_animations",
+      "attack": "attack",
+      "model": "mymod:entity/critter",
+      "shoot": "shoot",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:attack": {
+      "damage": 3.0
+    },
+    "msm:boss_bar": {
+      "colour": "red",
+      "darken_sky": true,
+      "fog": true,
+      "music": "minecraft:music.dragon",
+      "overlay": "notched_10",
+      "range": 64.0
+    },
+    "msm:ranged_attack": {
+      "charge_ticks": 20,
+      "damage": 2.0,
+      "inaccuracy": 6.0,
+      "interval_ticks": 40,
+      "on_shoot": "mymod:shot",
+      "projectile": "minecraft:arrow",
+      "range": 15.0,
+      "sound": "minecraft:entity.skeleton.shoot",
+      "speed": 1.6
+    }
+  },
+  "events": {
+    "mymod:shot": {
+      "actions": [
+        {
+          "pitch": 1.0,
+          "sound": "minecraft:entity.fox.ambient",
+          "type": "play_sound",
+          "volume": 1.0
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_overworld"],
+    "max_group": 1,
+    "min_group": 1,
+    "rule": "monster",
+    "weight": 5
+  }
+}

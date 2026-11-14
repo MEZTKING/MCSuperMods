@@ -1,0 +1,56 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "speed": 1.0,
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "animations": "mymod:entity/critter_animations",
+      "fly": "fly",
+      "idle": "idle",
+      "model": "mymod:entity/critter",
+      "renderer": "optifine",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:movement": {
+      "flying_speed": 0.6,
+      "hovers": false,
+      "mode": "fly",
+      "speed": 0.3,
+      "step_height": 1.0
+    },
+    "msm:rideable": {
+      "controlled_by": "owner",
+      "jump": 0.7,
+      "on_mount": "mymod:mounted",
+      "passengers": 2,
+      "rider_offset": [0.0, 1.2, -0.2],
+      "saddle": true,
+      "saddle_bone": "saddle",
+      "speed": 1.5
+    }
+  },
+  "display_name": "Critter",
+  "events": {
+    "mymod:mounted": {
+      "actions": [
+        {
+          "pitch": 1.0,
+          "sound": "minecraft:entity.fox.ambient",
+          "type": "play_sound",
+          "volume": 1.0
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  }
+}

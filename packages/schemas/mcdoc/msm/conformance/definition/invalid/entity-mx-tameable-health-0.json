@@ -1,0 +1,108 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "speed": 1.25,
+          "type": "panic"
+        },
+        {
+          "items": ["minecraft:sweet_berries", "#minecraft:meat"],
+          "scared": true,
+          "speed": 1.1,
+          "type": "tempt"
+        },
+        {
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "animations": "mymod:entity/critter_animations",
+      "idle": "idle",
+      "model": "mymod:entity/critter",
+      "renderer": "auto",
+      "sit": "sit",
+      "texture": "mymod:entity/critter",
+      "walk": "walk"
+    },
+    "msm:breedable": {
+      "baby_scale": 0.5,
+      "follow_parents": true,
+      "grow_up_ticks": 24000,
+      "items": ["#minecraft:meat"],
+      "on_breed": "mymod:born",
+      "tempted": true
+    },
+    "msm:tameable": {
+      "chance": 0.33,
+      "defends_owner": true,
+      "follow": {
+        "speed": 1.0,
+        "start_distance": 10.0,
+        "stop_distance": 2.0
+      },
+      "follows_owner": true,
+      "items": ["minecraft:sweet_berries"],
+      "on_tame": "mymod:tamed",
+      "sit": true,
+      "tamed_health": 0.0
+    },
+    "msm:variants": {
+      "choose": "biome",
+      "variants": [
+        {
+          "biomes": ["#minecraft:is_forest"],
+          "id": "red",
+          "texture": "mymod:entity/critter_red",
+          "weight": 3
+        },
+        {
+          "biomes": ["minecraft:snowy_taiga"],
+          "id": "snowy",
+          "texture": "mymod:entity/critter_snowy"
+        },
+        {
+          "id": "plain",
+          "texture": "mymod:entity/critter"
+        }
+      ]
+    }
+  },
+  "events": {
+    "mymod:born": {
+      "actions": [
+        {
+          "pitch": 1.0,
+          "sound": "minecraft:entity.fox.ambient",
+          "type": "play_sound",
+          "volume": 1.0
+        }
+      ]
+    },
+    "mymod:tamed": {
+      "actions": [
+        {
+          "pitch": 1.0,
+          "sound": "minecraft:entity.fox.ambient",
+          "type": "play_sound",
+          "volume": 1.0
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.7
+  },
+  "spawn": {
+    "biomes": ["#minecraft:is_forest"],
+    "max_group": 3,
+    "min_group": 2,
+    "rule": "animal",
+    "weight": 8
+  }
+}

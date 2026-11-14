@@ -171,6 +171,50 @@
     "code": "schema.missing-field",
     "path": "/components"
   },
+  "entity-mx-base-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/base"
+  },
+  "entity-mx-boss-bar-color-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:boss_bar/color"
+  },
+  "entity-mx-breedable-baby-scale-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:breedable/baby_scale"
+  },
+  "entity-mx-goal-tempt-missing-items.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ai_goals/goals/1/items"
+  },
+  "entity-mx-movement-mode-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:movement/mode"
+  },
+  "entity-mx-ranged-missing-projectile.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ranged_attack/projectile"
+  },
+  "entity-mx-renderer-unknown.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:animated_model/renderer"
+  },
+  "entity-mx-rideable-offset-2.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:rideable/rider_offset"
+  },
+  "entity-mx-sit-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:animated_model/sit"
+  },
+  "entity-mx-tameable-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:tameable/chance"
+  },
+  "entity-mx-variants-33.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:variants/variants"
+  },
   "entity-sounds-interval-19.json": {
     "code": "schema.out-of-range",
     "path": "/sounds/ambient_interval_ticks"

@@ -1235,6 +1235,52 @@
               "min": 0
             }
           }
+        },
+        {
+          "desc": "Defaults to `auto` (ADR 0072 D4). Runtimes older than the release that ships ADR 0072\nignore the field and always use GeckoLib.",
+          "key": "renderer",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityRenderer"
+          }
+        },
+        {
+          "desc": "Animation looped while sitting (ADR 0071 D6); played before every other loop.",
+          "key": "sit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation looped while moving in the air (ADR 0071 D6).",
+          "key": "fly",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation looped while moving in water (ADR 0071 D6).",
+          "key": "swim",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation played once on each ranged shot (ADR 0071 D6, ADR 0070 D4).",
+          "key": "shoot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
         }
       ],
       "kind": "struct"
@@ -2540,6 +2586,132 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::BossBar": {
+      "fields": [
+        {
+          "desc": "Defaults to `purple`.",
+          "key": "colour",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BossBarColour"
+          }
+        },
+        {
+          "desc": "Defaults to `progress`.",
+          "key": "overlay",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BossBarOverlay"
+          }
+        },
+        {
+          "desc": "Whether the sky darkens; defaults to false.",
+          "key": "darken_sky",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether the world fogs up; defaults to false.",
+          "key": "fog",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether vanilla's boss music plays; defaults to false.",
+          "key": "music",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Players within this many blocks see the bar; absent means every player tracking the mob.",
+          "key": "range",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 256,
+              "min": 8
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BossBarColour": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Pink",
+          "value": "pink"
+        },
+        {
+          "identifier": "Blue",
+          "value": "blue"
+        },
+        {
+          "identifier": "Red",
+          "value": "red"
+        },
+        {
+          "identifier": "Green",
+          "value": "green"
+        },
+        {
+          "identifier": "Yellow",
+          "value": "yellow"
+        },
+        {
+          "identifier": "Purple",
+          "value": "purple"
+        },
+        {
+          "identifier": "White",
+          "value": "white"
+        }
+      ]
+    },
+    "::msm::definition::BossBarOverlay": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Progress",
+          "value": "progress"
+        },
+        {
+          "identifier": "Notched6",
+          "value": "notched_6"
+        },
+        {
+          "identifier": "Notched10",
+          "value": "notched_10"
+        },
+        {
+          "identifier": "Notched12",
+          "value": "notched_12"
+        },
+        {
+          "identifier": "Notched20",
+          "value": "notched_20"
+        }
+      ]
+    },
     "::msm::definition::Breakable": {
       "fields": [
         {
@@ -2575,6 +2747,100 @@
           "optional": true,
           "type": {
             "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Breedable": {
+      "fields": [
+        {
+          "desc": "Breeding items and item tags (`#`-prefixed); feeding one to a baby makes it grow.",
+          "key": "items",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "item"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Size of a baby relative to an adult (hitbox and model); defaults to 0.5.",
+          "key": "baby_scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Ticks a baby takes to grow up; defaults to 24000 (a vanilla baby's 20 minutes).",
+          "key": "grow_up_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether the breeding items tempt the mob; defaults to true.",
+          "key": "tempted",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether babies follow their parents; defaults to true.",
+          "key": "follow_parents",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Event fired when a baby is born; self is the baby, `player` who bred the parents.",
+          "key": "on_breed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -3200,6 +3466,27 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::EntityBase": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A plain `PathfinderMob`: every entity before ADR 0070.",
+          "identifier": "Mob",
+          "value": "mob"
+        },
+        {
+          "desc": "`TamableAnimal`: ages, babies, breeding, leads and animal spawn checks; taming stays off\nunless `msm:tameable` is present. Needed by `msm:tameable` and `msm:breedable`.",
+          "identifier": "Animal",
+          "value": "animal"
+        },
+        {
+          "desc": "`Monster`: an enemy that iron golems attack, stops players sleeping nearby, plays hostile\nsounds and is removed in peaceful.",
+          "identifier": "Monster",
+          "value": "monster"
+        }
+      ]
+    },
     "::msm::definition::EntityBehaviourComponents": {
       "fields": [
         {
@@ -3285,6 +3572,66 @@
             "kind": "reference",
             "path": "::msm::definition::OnSpawn"
           }
+        },
+        {
+          "desc": "Ranged attacks (ADR 0070 D4).",
+          "key": "msm:ranged_attack",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::RangedAttack"
+          }
+        },
+        {
+          "desc": "Taming (ADR 0071 D1); needs `base` `animal`.",
+          "key": "msm:tameable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Tameable"
+          }
+        },
+        {
+          "desc": "Breeding and babies (ADR 0071 D2); needs `base` `animal`.",
+          "key": "msm:breedable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Breedable"
+          }
+        },
+        {
+          "desc": "Riding (ADR 0071 D3).",
+          "key": "msm:rideable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Rideable"
+          }
+        },
+        {
+          "desc": "Texture variants (ADR 0071 D4).",
+          "key": "msm:variants",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Variants"
+          }
+        },
+        {
+          "desc": "A boss bar (ADR 0071 D5).",
+          "key": "msm:boss_bar",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BossBar"
+          }
         }
       ],
       "kind": "struct"
@@ -3301,6 +3648,16 @@
               "kind": "int",
               "value": 1
             }
+          }
+        },
+        {
+          "desc": "The vanilla class the mob builds on (ADR 0070 D1); defaults to `mob`. Runtimes older than\nthe release that ships ADR 0070 ignore the field with a warning.",
+          "key": "base",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityBase"
           }
         },
         {
@@ -3434,6 +3791,27 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::EntityRenderer": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "GeckoLib when it is loaded, the runtime's vanilla renderer otherwise (such as on 26.4).",
+          "identifier": "Auto",
+          "value": "auto"
+        },
+        {
+          "desc": "GeckoLib only: the entity does not register without GeckoLib.",
+          "identifier": "Geckolib",
+          "value": "geckolib"
+        },
+        {
+          "desc": "The runtime's vanilla renderer, never GeckoLib. It plays a subset of GeckoLib's animation\nfeatures: no Molang, no easings, no sound or particle keyframes.",
+          "identifier": "Vanilla",
+          "value": "vanilla"
+        }
+      ]
+    },
     "::msm::definition::EntitySize": {
       "fields": [
         {
@@ -3560,6 +3938,88 @@
               "kind": 0,
               "min": 20
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::EntityVariant": {
+      "fields": [
+        {
+          "desc": "Saved in the mob's data as `Variant`, so `/summon` and `/data` can set it and reordering\nthe list does not repaint saved mobs; an unknown saved id falls back to the first variant.",
+          "key": "id",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Texture id drawn in place of `msm:animated_model.texture`; `ns:entity/x` is\n`assets/ns/textures/entity/x.png`.",
+          "key": "texture",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Weight of the random pick; defaults to 1.",
+          "key": "weight",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "With `choose` `biome`: biome ids and biome tags (`#`-prefixed) where the variant is picked.",
+          "key": "biomes",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "worldgen/biome"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
           }
         }
       ],
@@ -3905,6 +4365,26 @@
           "desc": "Follows the nearest of the listed entity types.",
           "identifier": "Follow",
           "value": "follow"
+        },
+        {
+          "desc": "Shoots at the listed entity types; needs `msm:ranged_attack` (ADR 0070 D5).",
+          "identifier": "RangedAttack",
+          "value": "ranged_attack"
+        },
+        {
+          "desc": "Follows players holding one of the listed items (`TemptGoal`, ADR 0070 D5).",
+          "identifier": "Tempt",
+          "value": "tempt"
+        },
+        {
+          "desc": "Runs about when hurt or burning (`PanicGoal`, ADR 0070 D5).",
+          "identifier": "Panic",
+          "value": "panic"
+        },
+        {
+          "desc": "Leaps at its attack target (`LeapAtTargetGoal`, ADR 0070 D5).",
+          "identifier": "LeapAtTarget",
+          "value": "leap_at_target"
         }
       ]
     },
@@ -4236,6 +4716,24 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::LeapAtTargetGoal": {
+      "fields": [
+        {
+          "desc": "Upward speed of the leap in blocks per tick; defaults to 0.4.",
+          "key": "height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::LeavesFields": {
       "fields": [
         {
@@ -4557,7 +5055,7 @@
           }
         },
         {
-          "desc": "Whether the mob floats up in water (adds a float goal first).",
+          "desc": "Whether the mob floats up in water (adds a float goal first); for `walk` and `fly` only.",
           "key": "swims",
           "kind": "pair",
           "optional": true,
@@ -4573,9 +5071,103 @@
           "type": {
             "kind": "boolean"
           }
+        },
+        {
+          "desc": "How the mob moves (ADR 0070 D3); defaults to `walk`.",
+          "key": "mode",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::MovementMode"
+          }
+        },
+        {
+          "desc": "The `flying_speed` attribute, used by `fly`; defaults to 0.4, a bee's (verify at\nimplementation).",
+          "key": "flying_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "`fly` only: whether the mob stays in place when idle, as a bee; defaults to true.",
+          "key": "hovers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "`swim` only: whether the mob needs to surface for air, as a dolphin; defaults to false.",
+          "key": "breathes_air",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "`swim` without `breathes_air`: ticks out of water before the mob starts losing health;\ndefaults to 300, as vanilla's water animals (verify at implementation).",
+          "key": "dry_out_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 20
+            }
+          }
+        },
+        {
+          "desc": "The `step_height` attribute in blocks; absent keeps vanilla's 0.6.",
+          "key": "step_height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0
+            }
+          }
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::MovementMode": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Walks on the ground, as before ADR 0070.",
+          "identifier": "Walk",
+          "value": "walk"
+        },
+        {
+          "desc": "Flies: no gravity and no fall damage; `wander` strolls through the air.",
+          "identifier": "Fly",
+          "value": "fly"
+        },
+        {
+          "desc": "Swims: lives in water, `wander` swims about, no float goal; out of water it flops and dries\nout unless `breathes_air`.",
+          "identifier": "Swim",
+          "value": "swim"
+        },
+        {
+          "desc": "Walks on land and swims in water, breathing both; `wander` stays the walking stroll.",
+          "identifier": "Amphibious",
+          "value": "amphibious"
+        }
+      ]
     },
     "::msm::definition::NoTypeFields": {
       "fields": [],
@@ -4917,6 +5509,24 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::PanicGoal": {
+      "fields": [
+        {
+          "desc": "Speed multiplier; defaults to 1.25.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Potion": {
       "fields": [
         {
@@ -5060,6 +5670,212 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::RangedAttack": {
+      "fields": [
+        {
+          "desc": "The projectile: `minecraft:arrow`, `minecraft:tipped_arrow` or `minecraft:spectral_arrow`\n(shot as a mob's arrow from a bow), another vanilla projectile item of the target, or a\nproject item with `msm:throwable` (thrown with the mob as thrower, so its damage, gravity\nand hit events apply). Anything else is a load error that drops the component.",
+          "key": "projectile",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Arrows only: base damage, as `setBaseDamage` (a hit deals about damage times speed,\nrounded up); defaults to 2.",
+          "key": "damage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Launch speed in blocks per tick; defaults to 1.6 (a skeleton's arrow).",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Spread of the shot; defaults to 6.",
+          "key": "inaccuracy",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 20,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Ticks between shots; defaults to 40.",
+          "key": "interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 5
+            }
+          }
+        },
+        {
+          "desc": "Ticks spent aiming before a shot (the bow pose); defaults to 20.",
+          "key": "charge_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 200,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Range in blocks; defaults to 15.",
+          "key": "range",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Sound played on each shot; defaults to `minecraft:entity.skeleton.shoot`.",
+          "key": "sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Event fired after each shot; `other` is the target.",
+          "key": "on_shoot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::RangedAttackGoal": {
+      "fields": [
+        {
+          "desc": "Speed multiplier while approaching; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether the mob circles its target while shooting, as a skeleton; defaults to false.",
+          "key": "strafe",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Entity types to shoot at; `minecraft:player` matches players. Absent or empty with\n`retaliate` only fights back.",
+          "key": "targets",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "entity_type"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Whether a target must be in sight; defaults to true.",
+          "key": "must_see",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether to fight back when hurt; defaults to false.",
+          "key": "retaliate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::RangedWeapon": {
       "fields": [
         {
@@ -5193,6 +6009,121 @@
         {
           "desc": "Event fired when the block stops being powered.",
           "key": "on_unpowered",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::RideControl": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Any rider.",
+          "identifier": "Anyone",
+          "value": "anyone"
+        },
+        {
+          "desc": "The owner only; needs `msm:tameable`.",
+          "identifier": "Owner",
+          "value": "owner"
+        }
+      ]
+    },
+    "::msm::definition::Rideable": {
+      "fields": [
+        {
+          "desc": "Whether a vanilla saddle is needed to steer; defaults to true. A saddled mob joins the\n`#minecraft:can_equip_saddle` entity type tag.",
+          "key": "saddle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to `anyone`.",
+          "key": "controlled_by",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::RideControl"
+          }
+        },
+        {
+          "desc": "Ridden speed as a factor of the movement speed; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Jump strength (the `jump_strength` attribute); 0 means no jump; defaults to 0.",
+          "key": "jump",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Number of riders; defaults to 1.",
+          "key": "passengers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 4,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Seat position in blocks from the mob's feet, `[x, y, z]`; defaults to the top of the\nhitbox.",
+          "key": "rider_offset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "A model bone shown only while the mob is saddled.",
+          "key": "saddle_bone",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Event fired when a player mounts the mob; `player` is the rider.",
+          "key": "on_mount",
           "kind": "pair",
           "optional": true,
           "type": {
@@ -5781,6 +6712,16 @@
           "desc": "No check beyond the placement.",
           "identifier": "Always",
           "value": "always"
+        },
+        {
+          "desc": "The animal check (ADR 0070 D6): grass-like ground under the mob and enough light. The\nruntime repeats it for any `base`, since vanilla binds `Animal.checkAnimalSpawnRules` to\nanimals. Runtimes older than the release that ships ADR 0070 reject the value, and the\nentity does not register.",
+          "identifier": "Animal",
+          "value": "animal"
+        },
+        {
+          "desc": "The surface water check (ADR 0070 D6): in water near the surface, as vanilla's water\nanimals; repeated by the runtime for any `base`. Runtimes older than the release that ships\nADR 0070 reject the value, and the entity does not register.",
+          "identifier": "WaterAnimal",
+          "value": "water_animal"
         }
       ]
     },
@@ -5830,6 +6771,225 @@
               }
             ],
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Tameable": {
+      "fields": [
+        {
+          "desc": "Taming items and item tags (`#`-prefixed).",
+          "key": "items",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "item"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Chance per item; defaults to 0.33 (a wolf's bone).",
+          "key": "chance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether the owner's right click toggles sitting; defaults to true.",
+          "key": "sit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether the mob follows its owner; defaults to true.",
+          "key": "follows_owner",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "How the mob follows its owner; defaults to speed 1, start 10 and stop 2 (a wolf's).",
+          "key": "follow",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::TameableFollow"
+          }
+        },
+        {
+          "desc": "Whether the mob attacks what hurts its owner and what its owner attacks; defaults to true.",
+          "key": "defends_owner",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Maximum health in half hearts once tamed; absent keeps `msm:health`.",
+          "key": "tamed_health",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Event fired when the mob is tamed; `player` is the new owner.",
+          "key": "on_tame",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::TameableFollow": {
+      "fields": [
+        {
+          "desc": "Speed multiplier; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Distance in blocks at which the mob starts following; defaults to 10.",
+          "key": "start_distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Distance in blocks at which the mob stops; defaults to 2.",
+          "key": "stop_distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::TemptGoal": {
+      "fields": [
+        {
+          "desc": "Items and item tags (`#`-prefixed) that tempt the mob.",
+          "key": "items",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "item"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Speed multiplier; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether a player moving quickly scares the mob off, as a chicken's; defaults to false.",
+          "key": "scared",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -6251,6 +7411,54 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::VariantChoice": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A weighted random pick.",
+          "identifier": "Random",
+          "value": "random"
+        },
+        {
+          "desc": "Variants whose `biomes` hold the spawn position's biome; variants without `biomes` are\nthe fallback pool; then a weighted random pick.",
+          "identifier": "Biome",
+          "value": "biome"
+        }
+      ]
+    },
+    "::msm::definition::Variants": {
+      "fields": [
+        {
+          "desc": "Defaults to `random`.",
+          "key": "choose",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VariantChoice"
+          }
+        },
+        {
+          "desc": "One to 32 variants.",
+          "key": "variants",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::EntityVariant"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::WanderGoal": {
       "fields": [
         {
@@ -6476,6 +7684,52 @@
               "kind": 0,
               "min": 0
             }
+          }
+        },
+        {
+          "desc": "Defaults to `auto` (ADR 0072 D4). Runtimes older than the release that ships ADR 0072\nignore the field and always use GeckoLib.",
+          "key": "renderer",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::EntityRenderer"
+          }
+        },
+        {
+          "desc": "Animation looped while sitting (ADR 0071 D6); played before every other loop.",
+          "key": "sit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation looped while moving in the air (ADR 0071 D6).",
+          "key": "fly",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation looped while moving in water (ADR 0071 D6).",
+          "key": "swim",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Animation played once on each ranged shot (ADR 0071 D6, ADR 0070 D4).",
+          "key": "shoot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -9032,6 +10286,10 @@
         "kind": "reference",
         "path": "::msm::definition::FollowGoal"
       },
+      "leap_at_target": {
+        "kind": "reference",
+        "path": "::msm::definition::LeapAtTargetGoal"
+      },
       "look_around": {
         "kind": "reference",
         "path": "::msm::definition::LookAroundGoal"
@@ -9043,6 +10301,18 @@
       "melee_attack": {
         "kind": "reference",
         "path": "::msm::definition::MeleeAttackGoal"
+      },
+      "panic": {
+        "kind": "reference",
+        "path": "::msm::definition::PanicGoal"
+      },
+      "ranged_attack": {
+        "kind": "reference",
+        "path": "::msm::definition::RangedAttackGoal"
+      },
+      "tempt": {
+        "kind": "reference",
+        "path": "::msm::definition::TemptGoal"
       },
       "wander": {
         "kind": "reference",
@@ -9198,5 +10468,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:c9749b9017ced7e67662bfe903db7c3cff5d94c50cacff49b255d3e77e4402e3"
+  "ref": "msm-mcdoc:sha256:2a43b7855cd4a5b3c6f3453412ca6b651539c1905fcb92d8c9897289ca689920"
 }
