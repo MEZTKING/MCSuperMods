@@ -145,6 +145,56 @@ describe('msm-runtime.d.ts', () => {
     );
   });
 
+  it('declares persistent script data (ADR 0062 D1)', () => {
+    expect(Object.keys(SCRIPT_API.types.DataStore?.members ?? {}).sort()).toEqual([
+      'get',
+      'has',
+      'keys',
+      'remove',
+      'set',
+    ]);
+    expect(SCRIPT_API.types.Entity?.members.data).toMatchObject({
+      kind: 'property',
+      type: 'DataStore',
+    });
+    expect(SCRIPT_API.globals.msm?.members.storage).toMatchObject({
+      kind: 'property',
+      type: 'DataStore',
+    });
+    // The limits of D4 are in the doc strings the editor shows.
+    expect(SCRIPT_API.types.Entity?.members.data?.doc).toContain('16 KiB');
+    expect(SCRIPT_API.globals.msm?.members.storage?.doc).toContain('1 MiB');
+    expect(MSM_RUNTIME_TYPINGS).toContain('get(key: string): unknown;');
+    expect(MSM_RUNTIME_TYPINGS).toContain('set(key: string, value: unknown): void;');
+    expect(MSM_RUNTIME_TYPINGS).toContain('readonly storage: DataStore;');
+    expect(MSM_RUNTIME_TYPINGS).toContain('readonly data: DataStore;');
+  });
+
+  it('type-checks entity, player and world data', () => {
+    const src = [
+      'msm.events.on("player.join", (e) => {',
+      '  const visits = e.player.data.get("visits");',
+      '  const n = typeof visits === "number" ? visits + 1 : 1;',
+      '  e.player.data.set("visits", n);',
+      '  e.player.data.set("last", { at: [e.player.pos.x, e.player.pos.z], name: e.player.name, tag: null });',
+      '  const total = msm.storage.get("joins");',
+      '  msm.storage.set("joins", typeof total === "number" ? total + 1 : 1);',
+      '  const had: boolean = msm.storage.remove("old") || msm.storage.has("joins");',
+      '  const keys: string[] = msm.storage.keys();',
+      '  msm.log.info(String(had) + keys.join(","));',
+      '});',
+      'msm.events.on("entity.hurt", (e) => { if (e.entity.data.has("boss")) e.cancel(); });',
+    ].join('\n');
+    expect(typeCheck(src)).toEqual([]);
+    // Stored values are unknown: they must be narrowed before use.
+    expect(typeCheck('const n: number = msm.storage.get("x");')).not.toEqual([]);
+    // Stores are read-only properties; scripts change them through methods.
+    expect(
+      typeCheck('msm.events.on("player.join", (e) => { e.player.data = msm.storage; });'),
+    ).not.toEqual([]);
+    expect(typeCheck('msm.storage.set(1, 2);')).not.toEqual([]);
+  });
+
   it('type-checks relative and runtime requires (no TS2591)', () => {
     const required = [
       'const util = require("./util");',

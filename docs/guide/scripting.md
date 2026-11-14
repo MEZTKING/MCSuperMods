@@ -51,6 +51,7 @@ Every script can start with `import { msm } from "msm:runtime";` (the templates 
 | `msm.schedule(ticks, () => { ... })` | Runs the function after that many server ticks (20 ticks are one second). |
 | `msm.log.info(text)`, `msm.log.warn(text)`, `msm.log.error(text)` | Writes a line to the game log, starting `[msm_runtime] <script id>:`. |
 | `msm.version` | The version of the running `msm_runtime`. |
+| `msm.storage.get(key)`, `msm.storage.set(key, value)` | Reads and saves data kept with the world (see [Saved data](#saved-data)). `entity.data` does the same for one entity or player. |
 
 Every event object `e` has `e.world`, the dimension it happened in. Through it a script can read and place blocks (`getBlock`, `setBlock`), spawn particles and entities (`spawnParticle`, `spawnEntity`), play sounds (`playSound`), find entities nearby (`entitiesNear`) and run commands and functions (`runCommand`, `runFunction`). On the world they run at the world spawn point with no `@s`; pass a position as the second argument (`e.world.runCommand("particle flame ~ ~1 ~", pos)`) to make `~ ~ ~` that position. To run "as" something, call `entity.runCommand("effect give @s speed 5")` or `entity.runFunction("mymod:reward")`: they run as and at the entity, so `@s` and `~ ~ ~` mean it. A sound id in `playSound` can be a vanilla sound or one of the project's own sound keys. Entities have a type, a position, health, `damage`, `heal`, `kill`, `teleport`, `addEffect`, `hasEffect`, `effectLevel` (0 when the entity does not have the effect), `removeEffect`, `velocity` and `look` (where it faces) with `setVelocity(x, y, z)` and `addVelocity(x, y, z)` for a real push (for example `p.addVelocity(p.look.x * 1.5, 0.4, p.look.z * 1.5)` for a dash) and, for MSM mobs, `playAnimation`; players also have `isSneaking`, `heldItem`, `give`, `hasItem` and `sendMessage`. Positions (`pos`) have `x`, `y`, `z` and `offset(dx, dy, dz)`. The editor's completions list every member with a sentence on what it does.
 
@@ -85,6 +86,34 @@ The `run_script` action lets a block, item or entity event call a script, so peo
 ### A script for a status effect
 
 A [status effect](effects-and-throwables.md) runs a script every few seconds while it is active: in the Effect Studio, choose **New event** next to **While active**, add a `run_script` action to that event and pick the handler. The handler's `e.entity` and `e.other` are both the holder, so `e.entity.effectLevel("<namespace>:<effect name>")` gives the effect's level (0 when the holder no longer has it) and `e.entity.removeEffect("minecraft:poison")` cures poison. The example **Script: scripted effect** (Help → Examples…) is an antidote that works this way. In a throwable's **On hit entity** event, `e.player` is the thrower and `e.other` the mob or player hit.
+
+## Saved data
+
+Ordinary variables are lost on `/reload` and when the world closes. To keep something, save it: `msm.storage` holds data for the whole world and `entity.data` (so also `player.data`) holds data for one entity. Both have `get(key)`, `set(key, value)`, `remove(key)`, `has(key)` and `keys()`.
+
+```ts
+msm.events.on("player.join", (e) => {
+  const visits = e.player.data.get("visits");
+  const count = typeof visits === "number" ? visits + 1 : 1;
+  e.player.data.set("visits", count);
+  e.player.sendMessage("Visit number " + count);
+});
+```
+
+- **What can be saved:** text, finite numbers, `true` and `false`, `null`, and arrays and plain objects made of these. A function, `undefined`, `NaN` or `Infinity` is an error. A value is copied when you save it and again when you read it, so changing an object after `set` changes nothing until you `set` it again.
+- **Each namespace has its own data.** A script sees only the keys saved by scripts of its own namespace, so two mods never overwrite each other.
+- **How long it lasts:** saved data survive `/reload`, closing and reopening the world, a player's death and respawn, and travel to another dimension. Data on a mob go when the mob is gone.
+- **Size limits:** a key is at most 64 characters; one namespace may keep at most 16 KiB on each entity and 1 MiB in `msm.storage`. Saving over a limit is a script error and the old value stays.
+- **`get` returns `unknown`:** the editor cannot know what was saved, so check it first (`typeof visits === "number"`).
+- **Timers are not saved.** `msm.schedule` is cleared by `/reload` and when the world closes. To keep a timer going, save when it should fire and start it again in `server.started`:
+
+```ts
+// When the event starts, save its time: msm.storage.set("eventAt", world.time + 6000).
+msm.events.on("server.started", (e) => {
+  const due = msm.storage.get("eventAt");
+  if (typeof due === "number") msm.schedule(Math.max(1, due - e.world.time), startEvent);
+});
+```
 
 ## Commands as an entity
 
@@ -124,7 +153,7 @@ What that means in practice:
 - **No Java.** Scripts see only the `msm` API. Java classes, packages and reflection are blocked.
 - **2 second budget.** A single handler call (or the script's top level when it loads) that runs for more than 2 seconds is stopped and logged; the game carries on. This protects the server from endless loops, not the frame rate: a handler that takes 50 ms on every `server.tick` still makes the game stutter.
 - **Server side only.** Scripts run on the server (in single player, the built-in server). They cannot draw on screen, read keys or change client settings.
-- **No saved data yet.** Variables live while the server runs and are reset by `/reload` and by restarting the world. Store lasting state in the world itself (blocks, scoreboards through `runCommand`).
+- **Saved data is small.** Variables are reset by `/reload` and by restarting the world; keep what must last in `msm.storage` or `entity.data`, within 64-character keys, 16 KiB per entity and 1 MiB per world for each namespace (see [Saved data](#saved-data)).
 - **Fabric mod jar only.** The Java project export leaves scripts and `run_script` actions out (see [Eject to a Java project](eject.md)).
 
 ## The in-game check

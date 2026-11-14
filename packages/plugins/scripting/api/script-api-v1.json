@@ -259,6 +259,11 @@
           "type": "Pos",
           "doc": "The direction the entity looks, as a vector of length 1."
         },
+        "data": {
+          "kind": "property",
+          "type": "DataStore",
+          "doc": "Data saved on this entity for the script's namespace, at most 16 KiB per namespace; a player keeps it on respawn."
+        },
         "setVelocity": {
           "kind": "method",
           "params": [
@@ -538,6 +543,69 @@
           "kind": "property",
           "type": "number",
           "doc": "The number of items in the stack."
+        }
+      }
+    },
+    "DataStore": {
+      "doc": "Saved data of one script namespace, on an entity or with the world: values are JSON values, copied in and out, and survive `/reload`, restarts, death and dimension changes.",
+      "members": {
+        "get": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            }
+          ],
+          "doc": "Returns a copy of the value stored under a key, or `undefined` when there is none.",
+          "returns": "unknown"
+        },
+        "set": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            },
+            {
+              "name": "value",
+              "type": "unknown",
+              "doc": "A JSON value: a string, a finite number, a boolean, `null`, an array or a plain object of these."
+            }
+          ],
+          "doc": "Stores a copy of a JSON value under a key; any other value is a `TypeError`, and a key longer than 64 characters or a store over its size limit is a script error that leaves the old value."
+        },
+        "remove": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            }
+          ],
+          "doc": "Removes the value stored under a key; returns `true` when there was one.",
+          "returns": "boolean"
+        },
+        "has": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            }
+          ],
+          "doc": "Returns `true` when a value is stored under a key.",
+          "returns": "boolean"
+        },
+        "keys": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns the keys stored for this script's namespace.",
+          "returns": "string[]"
         }
       }
     },
@@ -976,6 +1044,11 @@
             }
           ],
           "doc": "Runs a function after a number of server ticks; pending calls are cleared when scripts reload."
+        },
+        "storage": {
+          "kind": "property",
+          "type": "DataStore",
+          "doc": "Data saved with the world for the script's namespace, at most 1 MiB per namespace; unlike `msm.schedule`, it survives `/reload` and restarts."
         }
       }
     }

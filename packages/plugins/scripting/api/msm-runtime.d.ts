@@ -52,6 +52,37 @@ interface BlockRef {
   readonly state: string;
 }
 
+/** Saved data of one script namespace, on an entity or with the world: values are JSON values, copied in and out, and survive `/reload`, restarts, death and dimension changes. */
+interface DataStore {
+  /**
+   * Returns a copy of the value stored under a key, or `undefined` when there is none.
+   *
+   * @param key - The key, at most 64 characters.
+   */
+  get(key: string): unknown;
+  /**
+   * Returns `true` when a value is stored under a key.
+   *
+   * @param key - The key, at most 64 characters.
+   */
+  has(key: string): boolean;
+  /** Returns the keys stored for this script's namespace. */
+  keys(): string[];
+  /**
+   * Removes the value stored under a key; returns `true` when there was one.
+   *
+   * @param key - The key, at most 64 characters.
+   */
+  remove(key: string): boolean;
+  /**
+   * Stores a copy of a JSON value under a key; any other value is a `TypeError`, and a key longer than 64 characters or a store over its size limit is a script error that leaves the old value.
+   *
+   * @param key - The key, at most 64 characters.
+   * @param value - A JSON value: a string, a finite number, a boolean, `null`, an array or a plain object of these.
+   */
+  set(key: string, value: unknown): void;
+}
+
 /** A living entity, wrapped for scripts; check `isAlive` before using one held across ticks. */
 interface Entity {
   /**
@@ -78,6 +109,8 @@ interface Entity {
    * @param amount - The damage in half hearts.
    */
   damage(amount: number): void;
+  /** Data saved on this entity for the script's namespace, at most 16 KiB per namespace; a player keeps it on respawn. */
+  readonly data: DataStore;
   /**
    * Returns the level of the mob effect (the amplifier plus 1), or 0 when the entity does not have it.
    *
@@ -229,6 +262,8 @@ interface Msm {
    * @param ticks - The delay in ticks, 1 or more.
    */
   schedule(ticks: number, fn: () => void): void;
+  /** Data saved with the world for the script's namespace, at most 1 MiB per namespace; unlike `msm.schedule`, it survives `/reload` and restarts. */
+  readonly storage: DataStore;
   /** The version of the running `msm_runtime` mod. */
   readonly version: string;
 }
@@ -415,6 +450,7 @@ declare module "msm:runtime" {
   export type BlockBreakEvent = globalThis.BlockBreakEvent;
   export type BlockInteractEvent = globalThis.BlockInteractEvent;
   export type BlockRef = globalThis.BlockRef;
+  export type DataStore = globalThis.DataStore;
   export type Entity = globalThis.Entity;
   export type EntityDeathEvent = globalThis.EntityDeathEvent;
   export type EntityHurtEvent = globalThis.EntityHurtEvent;
