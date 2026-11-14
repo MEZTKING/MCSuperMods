@@ -21,9 +21,9 @@
 
 import type { Json, Project, ResourceLocation } from '@msm/core';
 import type { ContentBundle, ProjectStarter, TargetFacts } from '@msm/plugin-api';
-import { ArrowLeft, Dices } from 'lucide-react';
+import { ArrowLeft, Dices, TriangleAlert } from 'lucide-react';
 import { Dialog } from 'radix-ui';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { ChangeItem } from '../../changeset/changeset';
 import {
   applyCreatorPlan,
@@ -34,8 +34,10 @@ import {
   creatorValues,
   planCreate,
   reopenPlan,
+  skippedThings,
 } from '../../changeset/creator-sets';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
+import type { UiMode } from '../../store/preferences';
 import { newSeed, pickForMe } from '../../surprise/surprise';
 import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { fieldClass } from '../NewElementDialog';
@@ -61,6 +63,16 @@ import {
   parameterGroups,
   rawValuesFromStored,
 } from './creator-model';
+
+/** "Your mod already has Glow Stone, so it will not be made again. Choose another name." */
+export function skippedWarning(names: readonly string[], mode?: UiMode): string {
+  const unique = [...new Set(names)];
+  const list = unique.length <= 3 ? unique.join(', ') : `${unique.slice(0, 3).join(', ')} and more`;
+  const it = unique.length === 1 ? 'it' : 'they';
+  return mode === 'very-easy'
+    ? `You already have ${list}, so ${it} will not be made again. Type a different name.`
+    : `Your mod already has ${list}, so ${it} will not be made again. Choose another name.`;
+}
 
 /** What the Creator needs of the project session. */
 export interface CreatorSession {
@@ -96,6 +108,8 @@ export interface CreatorCreated extends CreatorApplyResult {
   changed: number;
   /** The element ids the plan created, in order. */
   created: ResourceLocation[];
+  /** The names of things skipped because the project already had their ids. */
+  skippedNames: string[];
   /** What "Use AI pictures" did (ADR 0093 D7), or absent when it was off. */
   aiNote?: string;
 }
@@ -127,6 +141,8 @@ export interface CreatorDialogProps {
   pickImage?: PickImage;
   /** Opens the host's Ogg file picker for an `audio` field (ADR 0049); else the wizard's input. */
   pickAudio?: PickAudio;
+  /** The app's mode, for the wording of the skipped warning (Very easy talks plainly). */
+  mode?: UiMode;
   /** Test hook: overrides WebGL detection in the preview. */
   webgl?: boolean;
   /** Test hook: the rebuild delay (default 150 ms). */
@@ -382,6 +398,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
         ...result,
         label,
         created,
+        skippedNames: skippedThings(plan).map((thing) => thing.name),
         changed,
         ...(ai.note === null ? {} : { aiNote: ai.note }),
       });
@@ -391,10 +408,11 @@ export function CreatorDialog(props: CreatorDialogProps) {
     }
   };
 
+  const editing = edit !== null && edit !== undefined;
   const plan = built?.plan ?? null;
+  const skipped = plan === null || editing ? [] : skippedThings(plan);
   const pending = plan === null ? null : creatorChanges(plan, overwrite);
   const willChange = pending !== null && pending.items.length + pending.writes.length > 0;
-  const editing = edit !== null && edit !== undefined;
   const title = starter === null ? 'Create' : `${editing ? 'Edit' : 'Create'}: ${starter.title}`;
 
   return (
@@ -513,13 +531,29 @@ export function CreatorDialog(props: CreatorDialogProps) {
                           {...(nameHint === undefined ? {} : { nameHint })}
                         />
                       ) : (
-                        <ParameterField
-                          key={parameter.id}
-                          parameter={parameter}
-                          value={raw[parameter.id] ?? ''}
-                          error={errors[parameter.id] ?? null}
-                          onChange={(value) => change(parameter.id, value)}
-                        />
+                        <Fragment key={parameter.id}>
+                          <ParameterField
+                            parameter={parameter}
+                            value={raw[parameter.id] ?? ''}
+                            error={errors[parameter.id] ?? null}
+                            onChange={(value) => change(parameter.id, value)}
+                          />
+                          {parameter.id === nameParameter?.id && skipped.length > 0 && (
+                            <p
+                              role="alert"
+                              data-testid="creator-skipped-warning"
+                              className="m-0 flex items-start gap-1 rounded border border-warning px-2 py-1 text-xs text-warning"
+                            >
+                              <TriangleAlert size={12} aria-hidden className="mt-0.5 shrink-0" />
+                              <span>
+                                {skippedWarning(
+                                  skipped.map((thing) => thing.name),
+                                  props.mode,
+                                )}
+                              </span>
+                            </p>
+                          )}
+                        </Fragment>
                       ),
                     )}
                   </fieldset>

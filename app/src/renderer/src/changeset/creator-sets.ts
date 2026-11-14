@@ -208,6 +208,45 @@ function existingEntry(
   };
 }
 
+/** One thing the Creator will not make because the project already has its id. */
+export interface SkippedThing {
+  /** The element id. */
+  id: string;
+  /** Its display name, or the id's last part in words ("glow_stone" becomes "Glow Stone"). */
+  name: string;
+}
+
+/**
+ * The elements a plan skips because the project already has that id (not the shared `pack` and `mod`
+ * elements, the one-only elements, or files). Shown before and after Create.
+ */
+export function skippedThings(plan: CreatorPlan): SkippedThing[] {
+  const out: SkippedThing[] = [];
+  for (const entry of plan.entries) {
+    if (entry.status !== 'conflict' || entry.kind === undefined || entry.current === undefined) {
+      continue;
+    }
+    // The pack and mod descriptions every flow shares are not things the user named.
+    if (/:(pack|mod)$/.test(entry.key)) continue;
+    const data = entry.current;
+    const shown =
+      typeof data === 'object' && data !== null && !Array.isArray(data)
+        ? (data as { [key: string]: Json }).display_name
+        : undefined;
+    const last = (entry.key.split(':').pop() ?? entry.key).split('/').pop() ?? entry.key;
+    const words = last
+      .split('_')
+      .filter((word) => word !== '')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    out.push({
+      id: entry.key,
+      name: typeof shown === 'string' && shown.trim() !== '' ? shown : words,
+    });
+  }
+  return out;
+}
+
 /**
  * The plan of a new set: every bundle element is created (stamped with `meta.creator`), every
  * asset added; ids and files the project already has are conflicts (shared language files and

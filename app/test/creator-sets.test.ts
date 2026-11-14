@@ -12,6 +12,7 @@ import {
   mergeShared,
   planCreate,
   reopenPlan,
+  skippedThings,
   stampItems,
 } from '../src/renderer/src/changeset/creator-sets';
 import { toValues } from '../src/renderer/src/components/wizard/wizard-model';
@@ -303,5 +304,36 @@ describe('creator-sets (ADR 0043 D3, D4)', () => {
       a: 'A',
       b: 'C',
     });
+  });
+});
+
+describe('skippedThings', () => {
+  it('names the elements whose ids the project already has, not the shared pack', async () => {
+    const { session, flow } = await openProject();
+    const values = valuesOf(flow, { material_name: 'Ruby' });
+    await createSet(session, flow, values);
+    const bundle = await flow.build({
+      namespace: 'demo',
+      projectName: project(session).name,
+      target: session.target,
+      values,
+    });
+    const plan = planCreate(
+      bundle,
+      project(session),
+      { flowId: flow.id, setId: 'another-set', values: creatorValues(values) },
+      isKnownKind(session),
+    );
+    const skipped = skippedThings(plan);
+    expect(skipped.map((thing) => thing.id)).toContain('demo:ruby_sword');
+    expect(skipped.some((thing) => /:pack$/.test(thing.id))).toBe(false);
+    expect(skipped.every((thing) => thing.name !== '')).toBe(true);
+    const fresh = planCreate(
+      bundle,
+      { ...project(session), namespaces: [] } as Project,
+      { flowId: flow.id, setId: 'x', values: creatorValues(values) },
+      isKnownKind(session),
+    );
+    expect(skippedThings(fresh)).toEqual([]);
   });
 });

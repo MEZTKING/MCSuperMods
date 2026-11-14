@@ -45,6 +45,12 @@ function useModelTextures(model: string): readonly string[] {
   return textures;
 }
 
+/** Whether a model id names a vanilla model (`minecraft:` or no namespace). */
+export function isVanillaModel(model: string): boolean {
+  const trimmed = model.trim();
+  return trimmed !== '' && (trimmed.startsWith('minecraft:') || !trimmed.includes(':'));
+}
+
 /** Props of {@link ModelPicturesAi}. */
 export interface ModelPicturesAiProps {
   project: Project;
@@ -62,7 +68,16 @@ export function ModelPicturesAi(props: ModelPicturesAiProps) {
   const ai = useAiPictures();
   const host = useBlocksItemsStudioHost();
   const textures = useModelTextures(props.model);
-  if (ai === null || host?.applyChanges === undefined || textures.length === 0) return null;
+  if (ai === null || host?.applyChanges === undefined) return null;
+  if (textures.length === 0) {
+    // Vanilla models have no project pictures, so there is nothing to make: say why (no button).
+    return isVanillaModel(props.model) ? (
+      <p className="text-muted text-xs" data-testid={`${props.testId}-vanilla-note`}>
+        This {props.kind} uses Minecraft's own model, so it has no pictures of its own. Give it its
+        own model to paint or make pictures.
+      </p>
+    ) : null;
+  }
   const apply = host.applyChanges;
   return (
     <div className="flex flex-col gap-1" data-testid={props.testId}>

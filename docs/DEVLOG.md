@@ -4940,3 +4940,17 @@ Decisions
 
 Next
 - Optional UI idea: say in the Block Studio that a vanilla model has no project pictures to make.
+
+## 2026-11-14 — executor — Skipped things and the missing AI pictures button explain themselves
+
+What
+- Creator: `skippedThings(plan)` (`changeset/creator-sets.ts`) names the elements skipped because the project already has their ids (the shared `pack` and `mod` elements, one-only elements and files are not counted). `CreatorDialog` shows `creator-skipped-warning` under the name field before Create ("Your mod already has Glow Stone, so it will not be made again. Choose another name."; Very easy: "You already have ... Type a different name."); new `mode` prop, passed by `App.tsx`. `CreatorCreated.skippedNames` feeds the post-Create toast, which turns into the long red (error) toast when anything was skipped.
+- Block and Item Studios: on a vanilla model `ModelPicturesAi` now shows a note (`<testId>-vanilla-note`) in place of the missing "Make with AI". Text only: no existing action gives a block or item its own model.
+- Tests: `app/test/components/polish-explains.test.tsx`, plus `skippedThings` in `app/test/creator-sets.test.ts`.
+
+Decisions
+- No "Give it its own model" button, as nothing in the app already does it.
+- Warning is hidden when reopening a set (Edit in Creator), where the set's own elements are not conflicts.
+
+Next
+- A one-click "Give it its own model" action, if wanted, would need its own brief.

@@ -2648,6 +2648,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 edit={dialog.edit ?? null}
                 {...(dialog.flowIds === undefined ? {} : { flowIds: dialog.flowIds })}
                 folders={target.folders.resource}
+                mode={uiMode}
                 readProjectAsset={readProjectAsset}
                 vanilla={vanilla}
                 pickImage={(title) =>
@@ -2672,9 +2673,16 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     result.skipped > 0
                       ? ` ${result.skipped} no longer fitted and were skipped.`
                       : '';
+                  const names = [...new Set(result.skippedNames)].join(', ');
+                  const already =
+                    result.skippedNames.length === 0
+                      ? ''
+                      : uiMode === 'very-easy'
+                        ? ` Not made again, because you already have ${names}. Use a different name to make a new one.`
+                        : ` Skipped, because the project already has ${names}. Use a different name to make a new one.`;
                   setMessage({
-                    kind: 'info',
-                    text: `${result.label}: ${result.changed} element(s) and file(s) changed. Undo reverts them in one step.${skipped}${result.aiNote === undefined ? '' : ` ${result.aiNote}`}`,
+                    kind: result.skippedNames.length === 0 ? 'info' : 'error',
+                    text: `${result.label}: ${result.changed} element(s) and file(s) changed. Undo reverts them in one step.${skipped}${already}${result.aiNote === undefined ? '' : ` ${result.aiNote}`}`,
                   });
                   const first = result.created[0];
                   if (first !== undefined) select(first);
