@@ -22,7 +22,8 @@ import net.minecraft.resources.Identifier;
  * keys of {@code assets/<namespace>/sounds.json} through {@link SoundScanner}.
  */
 public final class DefinitionScanner {
-    private static final List<String> KINDS = List.of("block", "item", "entity", "effect", "potion", "particle", "biome_addition", "loot_addition");
+    private static final List<String> KINDS = List.of("block", "item", "entity", "effect", "potion", "particle", "biome_addition", "loot_addition",
+            KeyBindParser.KIND, HudParser.KIND, VehicleParser.KIND);
 
     private DefinitionScanner() {}
 

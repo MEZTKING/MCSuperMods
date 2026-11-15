@@ -4,13 +4,15 @@
  * and examples over the kinds of the others, and the structures and worldgen plugins
  * (Phase 3, ADRs 0021 and 0022), the blocks and items plugin (Phase 4, ADR 0025), and the
  * models and animations and entities plugins (Phase 5, ADRs 0028 and 0029), and the scripting
- * plugin (Phase 6, ADRs 0031 and 0032).
+ * plugin (Phase 6, ADRs 0031 and 0032), the Rules plugin (ADR 0082) and the controls plugin
+ * (key binds and HUD elements, ADRs 0088 and 0089; no kinds yet).
  *
  * @packageDocumentation
  */
 
 import type { Plugin } from '@msm/plugin-api';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
+import controlsPlugin from '@msm/plugin-controls';
 import datapackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin from '@msm/plugin-library';
@@ -23,6 +25,7 @@ import worldgenPlugin from '@msm/plugin-worldgen';
 
 export {
   blocksItemsPlugin,
+  controlsPlugin,
   datapackPlugin,
   entitiesPlugin,
   libraryPlugin,
@@ -45,5 +48,6 @@ export const builtInPlugins: readonly Plugin[] = Object.freeze([
   entitiesPlugin,
   scriptingPlugin,
   rulesPlugin,
+  controlsPlugin,
   libraryPlugin,
 ]);

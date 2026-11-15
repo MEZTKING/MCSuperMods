@@ -1,9 +1,12 @@
 package dev.mcsupermods.runtime.client;
 
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.client.controls.ControlsClient;
 import dev.mcsupermods.runtime.client.dev.DevClient;
+import dev.mcsupermods.runtime.client.hud.HudClient;
 import dev.mcsupermods.runtime.client.particle.MsmParticleProvider;
 import dev.mcsupermods.runtime.client.vanilla.MsmVanillaRenderer;
+import dev.mcsupermods.runtime.client.vehicle.VehicleClient;
 import dev.mcsupermods.runtime.loader.BlockType;
 import dev.mcsupermods.runtime.registry.MsmEntityRegistrar;
 import dev.mcsupermods.runtime.registry.MsmParticles;
@@ -45,6 +48,10 @@ public final class MsmRuntimeClient implements ClientModInitializer {
         registerVanillaRenderers();
         BlockTypes.tintedLeaves().forEach((block, tint) -> BlockColorRegistry.register(List.of(tintSource(tint)), block));
         registerParticleProviders();
+        // Vehicles, project and runtime keys, HUD elements (ADRs 0088 to 0090).
+        VehicleClient.init();
+        ControlsClient.init();
+        HudClient.init();
         DevClient.register();
     }
 

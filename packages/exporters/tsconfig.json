@@ -18,6 +18,7 @@
     { "path": "../plugins/entities" },
     { "path": "../plugins/models-anim" },
     { "path": "../plugins/scripting" },
-    { "path": "../plugins/rules" }
+    { "path": "../plugins/rules" },
+    { "path": "../plugins/controls" }
   ]
 }

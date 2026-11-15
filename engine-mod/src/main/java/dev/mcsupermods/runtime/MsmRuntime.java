@@ -1,12 +1,16 @@
 package dev.mcsupermods.runtime;
 
+import dev.mcsupermods.runtime.controls.KeyBinds;
 import dev.mcsupermods.runtime.dev.DevMode;
+import dev.mcsupermods.runtime.hud.HudServer;
 import dev.mcsupermods.runtime.loader.DefinitionScanner;
 import dev.mcsupermods.runtime.loader.LoadReport;
+import dev.mcsupermods.runtime.net.MsmNetworking;
 import dev.mcsupermods.runtime.registry.BlockExtras;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import dev.mcsupermods.runtime.registry.portal.PortalIndexAttachment;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
+import dev.mcsupermods.runtime.registry.vehicle.MsmVehicles;
 import dev.mcsupermods.runtime.scripting.ScriptBridges;
 import dev.mcsupermods.runtime.scripting.ScriptDataAttachment;
 import net.fabricmc.api.ModInitializer;
@@ -33,6 +37,15 @@ public final class MsmRuntime implements ModInitializer {
                 report.warnings().size());
         LOGGER.info("[{}] registered {} entity type(s) and {} mob effect(s)", MOD_ID, report.entities().size(), report.effects().size());
         LOGGER.info("[{}] registered {} sound event(s)", MOD_ID, report.sounds().size());
+        // The runtime's channel (ADR 0088 D1): payload types and receivers on both sides.
+        MsmNetworking.init();
+        // Vehicles (ADR 0090) before key binds and HUD elements, which may name a vehicle type.
+        report = MsmVehicles.register(report);
+        report = KeyBinds.init(report);
+        report = HudServer.init(report);
+        LOGGER.info("[{}] registered {} vehicle type(s)", MOD_ID, report.vehicles().size());
+        LOGGER.info("[{}] registered {} key bind(s)", MOD_ID, report.keyBinds().size());
+        LOGGER.info("[{}] registered {} HUD element(s)", MOD_ID, report.hudElements().size());
         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
         // exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));

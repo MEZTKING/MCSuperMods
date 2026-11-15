@@ -11,6 +11,7 @@
     { "path": "packages/interop" },
     { "path": "packages/plugin-api" },
     { "path": "packages/plugins/blocks-items" },
+    { "path": "packages/plugins/controls" },
     { "path": "packages/plugins/datapack" },
     { "path": "packages/plugins/entities" },
     { "path": "packages/plugins/library" },

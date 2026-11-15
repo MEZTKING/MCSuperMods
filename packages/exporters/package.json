@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@msm/plugin-blocks-items": "workspace:*",
+    "@msm/plugin-controls": "workspace:*",
     "@msm/plugin-datapack": "workspace:*",
     "@msm/plugin-entities": "workspace:*",
     "@msm/plugin-library": "workspace:*",

@@ -8,6 +8,7 @@
     "@msm/core",
     "@msm/targets",
     "@msm/plugin-blocks-items",
+    "@msm/plugin-controls",
     "@msm/plugin-datapack",
     "@msm/plugin-entities",
     "@msm/plugin-library",

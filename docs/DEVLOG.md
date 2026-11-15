@@ -4969,3 +4969,21 @@ Decisions
 
 Next
 - Slice close: `packages/sim/CLAUDE.md` (the parity test, `events/`), the fixture README's "not in `pnpm test` yet" wording in the plan; turbo caches `@msm/sim#test` on the package's own files, so a change to `fixtures/sim-parity/` or a plugin alone does not invalidate a local cached run (CI starts clean).
+
+## 2026-11-14 — executor — B408 scaffold and stubs for vehicles and the client side
+
+What
+- Wiring only, no behaviour, for `docs/PLAN-vehicles-and-client.md` (ADRs 0088–0091), so no later brief edits the shared registration points.
+- `@msm/plugin-controls` from `tools/new-plugin controls` (id `msm.controls`, no kinds yet), with its lockfile lines, its `tools/check-deps/layers.json` line (exporters may depend on it), the dependency in `app/package.json` and `packages/exporters/package.json` (and the exporters' tsconfig reference), and its line in `app/src/renderer/src/plugins/built-in.ts`.
+- Runtime: `MsmRuntime` calls `net.MsmNetworking.init()`, `registry.vehicle.MsmVehicles.register(report)`, `controls.KeyBinds.init(report)` and `hud.HudServer.init(report)` (vehicles first: key binds and HUD elements may name a vehicle) and logs `[msm_runtime] registered N vehicle type(s)`, `N key bind(s)` and `N HUD element(s)`; `MsmRuntimeClient` calls `client.vehicle.VehicleClient.init()`, `client.controls.ControlsClient.init()` and `client.hud.HudClient.init()`. `DefinitionScanner` reads the kinds `key_bind`, `hud` and `vehicle`; `LoadReport` gains `keyBinds`, `hudElements`, `vehicles` with `withKeyBinds`, `withHudElements`, `withVehicles` (ids, errors, warnings) and keeps its old 13-argument constructor. Parsers `KeyBindParser`, `HudParser`, `VehicleParser` return empty lists.
+- GameTest stubs `MsmKeyBindGameTest`, `MsmHudGameTest`, `MsmVehicleGameTest`, `MsmVehicleWeaponGameTest`, `MsmScriptApi15GameTest` and client GameTest stubs `MsmControlsClientGameTest`, `MsmVehicleClientGameTest`, each with one passing placeholder, registered in the gametest `fabric.mod.json`; the parity stub `SampleVehiclesParityTest` registered in the parity `fabric.mod.json`.
+- `fixtures/sample-vehicles/README.md` (title only), `fixtures/vehicle-physics/README.md`, skipped e2e placeholders `app/e2e/vehicles-path.spec.ts` and `controls-path.spec.ts`, and `app/src/renderer/src/studios/controls/studios.tsx` (an empty list).
+- Checked: `pnpm i --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (one Play service timing test failed once under load from parallel e2e runs and passed 3 of 3 on its own); `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib` with 510 GameTests each (505 plus the five placeholders) and the three new lines at 0; `runClientGameTest` on both versions; `./gradlew -p parity build`.
+
+Decisions
+- No line in `studios/studio-registry.ts`: it finds `studios/<area>/studios.tsx` files with `import.meta.glob`, so the new file is enough.
+- No version seam yet: the stubs name no class that differs between 26.3 and 26.4; B416 adds the `HudRegistration` seams and B418 the vehicle line in `EntityRendererRegistration`.
+- The init methods take and return the `LoadReport`, so B411, B412 and B416 add their ids, errors and warnings without editing `MsmRuntime` or `LoadReport`.
+
+Next
+- Wave 1: B409 (format) and B410 (plugin API 1.16.0 and target facts).

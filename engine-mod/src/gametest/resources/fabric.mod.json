@@ -42,11 +42,18 @@
       "dev.mcsupermods.runtime.gametest.MsmParticleSpawnGameTest",
       "dev.mcsupermods.runtime.gametest.MsmDevModeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmScriptApi14GameTest",
-      "dev.mcsupermods.runtime.gametest.MsmSimParityGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmSimParityGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmKeyBindGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmHudGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVehicleGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVehicleWeaponGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi15GameTest"
     ],
     "fabric-client-gametest": [
       "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmControlsClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest"
     ]
   },
   "depends": {
