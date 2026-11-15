@@ -2,7 +2,7 @@
 
 **Try it** is a small test area inside MCSuperMods. You walk or fly around in it, put down and break your blocks, see how they look in every state, open your doors, grow your crops, hatch your mobs and watch your particles. It opens at once, needs no Minecraft, no launcher and no account, and it changes as you edit.
 
-It is a preview, not the game. A strip across the top always says **Preview, not the real game.**, with a **Play in Minecraft** button for the real check ([Playing and testing](playing-and-testing.md)). Walking is roughly right, mobs only wander, and commands, redstone, survival and world generation are not there. The full list is under [Limits](#limits).
+It is a preview, not the game. A strip across the top always says **Preview, not the real game.**, with a **Play in Minecraft** button for the real check ([Playing and testing](playing-and-testing.md)). Walking is roughly right, mobs only wander, commands are checked and logged but not carried out in the world, and redstone, survival and world generation are not there. The full list is under [Limits](#limits).
 
 ## What it is
 
