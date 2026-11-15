@@ -1,0 +1,149 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "particle": "minecraft:soul_fire_flame",
+      "type": "torch"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/soul_lamp.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_torch",
+      "textures": {
+        "torch": "example:block/soul_lamp"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/soul_lamp.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_torch_wall",
+      "textures": {
+        "torch": "example:block/soul_lamp"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/soul_lamp_wall.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/soul_lamp"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/soul_lamp.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "example:block/soul_lamp_wall"
+        },
+        "facing=north": {
+          "model": "example:block/soul_lamp_wall",
+          "y": 270
+        },
+        "facing=south": {
+          "model": "example:block/soul_lamp_wall",
+          "y": 90
+        },
+        "facing=west": {
+          "model": "example:block/soul_lamp_wall",
+          "y": 180
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/soul_lamp_wall.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/soul_lamp"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/soul_lamp.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/soul_lamp",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/soul_lamp.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.soul_lamp": "Soul Lamp"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:soul_lamp",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/soul_lamp",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/soul_lamp.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:soul_lamp",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/soul_lamp_wall",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/soul_lamp_wall.json",
+    "schema": "resource:loot_table"
+  }
+]

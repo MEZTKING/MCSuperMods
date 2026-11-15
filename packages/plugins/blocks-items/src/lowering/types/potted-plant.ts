@@ -11,9 +11,8 @@
  * `"loot": "self"` drops vanilla's empty flower pot and the plant (the item with the plant's
  * id), each surviving explosions, in the shape of vanilla's potted plant tables (B440, S3).
  *
- * The block has no item of its own in the game (ADR 0094 D2); the plugin's block item helpers
- * still treat it as having one unless `"item": false`, which also turns `self` loot off, so
- * leave `item` out.
+ * The block has no item of its own (ADR 0094 D2): `blockItemIdOf` gives none unless `item` is
+ * given, as for a portal, and `"loot": "self"` still writes the pot-and-plant table (B448).
  *
  * Model slots: `potted`.
  */

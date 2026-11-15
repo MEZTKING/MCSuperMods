@@ -1,0 +1,94 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "lantern"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/paper_lantern.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_lantern",
+      "textures": {
+        "lantern": "example:block/paper_lantern"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/paper_lantern.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_hanging_lantern",
+      "textures": {
+        "lantern": "example:block/paper_lantern"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/paper_lantern_hanging.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "hanging=false": {
+          "model": "example:block/paper_lantern"
+        },
+        "hanging=true": {
+          "model": "example:block/paper_lantern_hanging"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/paper_lantern.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/paper_lantern"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/paper_lantern.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/paper_lantern",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/paper_lantern.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:paper_lantern",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/paper_lantern",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/paper_lantern.json",
+    "schema": "resource:loot_table"
+  }
+]

@@ -1,0 +1,379 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "item": {
+        "max_stack_size": 16
+      },
+      "type": "hanging_sign",
+      "wood_type": "bamboo"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ruby_hanging_sign.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_hanging_sign_rot_0",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_rot_0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_hanging_sign_rot_1",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_rot_1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_hanging_sign_rot_2",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_rot_2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_hanging_sign_rot_3",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_rot_3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_attached_hanging_sign_rot_0",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_attached_rot_0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_attached_hanging_sign_rot_1",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_attached_rot_1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_attached_hanging_sign_rot_2",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_attached_rot_2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_attached_hanging_sign_rot_3",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_attached_rot_3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_wall_hanging_sign",
+      "textures": {
+        "all": "example:block/ruby_hanging_sign",
+        "particle": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ruby_hanging_sign_wall.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "attached=false,rotation=0": {
+          "model": "example:block/ruby_hanging_sign_rot_0"
+        },
+        "attached=false,rotation=1": {
+          "model": "example:block/ruby_hanging_sign_rot_1"
+        },
+        "attached=false,rotation=10": {
+          "model": "example:block/ruby_hanging_sign_rot_2",
+          "y": 180
+        },
+        "attached=false,rotation=11": {
+          "model": "example:block/ruby_hanging_sign_rot_3",
+          "y": 180
+        },
+        "attached=false,rotation=12": {
+          "model": "example:block/ruby_hanging_sign_rot_0",
+          "y": 270
+        },
+        "attached=false,rotation=13": {
+          "model": "example:block/ruby_hanging_sign_rot_1",
+          "y": 270
+        },
+        "attached=false,rotation=14": {
+          "model": "example:block/ruby_hanging_sign_rot_2",
+          "y": 270
+        },
+        "attached=false,rotation=15": {
+          "model": "example:block/ruby_hanging_sign_rot_3",
+          "y": 270
+        },
+        "attached=false,rotation=2": {
+          "model": "example:block/ruby_hanging_sign_rot_2"
+        },
+        "attached=false,rotation=3": {
+          "model": "example:block/ruby_hanging_sign_rot_3"
+        },
+        "attached=false,rotation=4": {
+          "model": "example:block/ruby_hanging_sign_rot_0",
+          "y": 90
+        },
+        "attached=false,rotation=5": {
+          "model": "example:block/ruby_hanging_sign_rot_1",
+          "y": 90
+        },
+        "attached=false,rotation=6": {
+          "model": "example:block/ruby_hanging_sign_rot_2",
+          "y": 90
+        },
+        "attached=false,rotation=7": {
+          "model": "example:block/ruby_hanging_sign_rot_3",
+          "y": 90
+        },
+        "attached=false,rotation=8": {
+          "model": "example:block/ruby_hanging_sign_rot_0",
+          "y": 180
+        },
+        "attached=false,rotation=9": {
+          "model": "example:block/ruby_hanging_sign_rot_1",
+          "y": 180
+        },
+        "attached=true,rotation=0": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_0"
+        },
+        "attached=true,rotation=1": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_1"
+        },
+        "attached=true,rotation=10": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_2",
+          "y": 180
+        },
+        "attached=true,rotation=11": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_3",
+          "y": 180
+        },
+        "attached=true,rotation=12": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_0",
+          "y": 270
+        },
+        "attached=true,rotation=13": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_1",
+          "y": 270
+        },
+        "attached=true,rotation=14": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_2",
+          "y": 270
+        },
+        "attached=true,rotation=15": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_3",
+          "y": 270
+        },
+        "attached=true,rotation=2": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_2"
+        },
+        "attached=true,rotation=3": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_3"
+        },
+        "attached=true,rotation=4": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_0",
+          "y": 90
+        },
+        "attached=true,rotation=5": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_1",
+          "y": 90
+        },
+        "attached=true,rotation=6": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_2",
+          "y": 90
+        },
+        "attached=true,rotation=7": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_3",
+          "y": 90
+        },
+        "attached=true,rotation=8": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_0",
+          "y": 180
+        },
+        "attached=true,rotation=9": {
+          "model": "example:block/ruby_hanging_sign_attached_rot_1",
+          "y": 180
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_hanging_sign.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "example:block/ruby_hanging_sign_wall",
+          "y": 270
+        },
+        "facing=north": {
+          "model": "example:block/ruby_hanging_sign_wall",
+          "y": 180
+        },
+        "facing=south": {
+          "model": "example:block/ruby_hanging_sign_wall"
+        },
+        "facing=west": {
+          "model": "example:block/ruby_hanging_sign_wall",
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ruby_hanging_sign_wall.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/ruby_hanging_sign"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/ruby_hanging_sign.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/ruby_hanging_sign",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ruby_hanging_sign.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_hanging_sign"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/ceiling_hanging_signs.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_hanging_sign_wall"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/wall_hanging_signs.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ruby_hanging_sign"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/hanging_signs.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_hanging_sign",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_hanging_sign",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_hanging_sign.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_hanging_sign",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ruby_hanging_sign_wall",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ruby_hanging_sign_wall.json",
+    "schema": "resource:loot_table"
+  }
+]

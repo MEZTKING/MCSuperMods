@@ -1,0 +1,190 @@
+[
+  {
+    "contents": {
+      "colour": "yellow",
+      "format": 1,
+      "item": {
+        "max_stack_size": 1
+      },
+      "rule": "straw_bed",
+      "type": "bed"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/straw_bed.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_bed_head",
+      "textures": {
+        "east": "example:block/straw_bed",
+        "north": "example:block/straw_bed",
+        "particle": "example:block/straw_bed",
+        "up": "example:block/straw_bed",
+        "west": "example:block/straw_bed"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/straw_bed_head.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_bed_foot",
+      "textures": {
+        "east": "example:block/straw_bed",
+        "particle": "example:block/straw_bed",
+        "south": "example:block/straw_bed",
+        "up": "example:block/straw_bed",
+        "west": "example:block/straw_bed"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/straw_bed_foot.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,part=foot": {
+          "model": "example:block/straw_bed_foot",
+          "y": 90
+        },
+        "facing=east,part=head": {
+          "model": "example:block/straw_bed_head",
+          "y": 90
+        },
+        "facing=north,part=foot": {
+          "model": "example:block/straw_bed_foot"
+        },
+        "facing=north,part=head": {
+          "model": "example:block/straw_bed_head"
+        },
+        "facing=south,part=foot": {
+          "model": "example:block/straw_bed_foot",
+          "y": 180
+        },
+        "facing=south,part=head": {
+          "model": "example:block/straw_bed_head",
+          "y": 180
+        },
+        "facing=west,part=foot": {
+          "model": "example:block/straw_bed_foot",
+          "y": 270
+        },
+        "facing=west,part=head": {
+          "model": "example:block/straw_bed_head",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/straw_bed.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "models": [
+          {
+            "model": "example:block/straw_bed_head",
+            "type": "minecraft:model"
+          },
+          {
+            "model": "example:block/straw_bed_foot",
+            "transformation": {
+              "left_rotation": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "right_rotation": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ],
+              "translation": [
+                0,
+                0,
+                1
+              ]
+            },
+            "type": "minecraft:model"
+          }
+        ],
+        "type": "minecraft:composite"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/straw_bed.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.straw_bed": "Straw Bed"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:straw_bed"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/beds.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:straw_bed"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/beds.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "condition": {
+                "blocks": "example:straw_bed",
+                "state": {
+                  "part": "head"
+                },
+                "type": "minecraft:match_block"
+              },
+              "name": "example:straw_bed",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/straw_bed",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/straw_bed.json",
+    "schema": "resource:loot_table"
+  }
+]

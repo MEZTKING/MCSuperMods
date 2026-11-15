@@ -56,6 +56,7 @@ import type {
   TargetFacts,
 } from '@msm/plugin-api';
 import blocksItemsPlugin, {
+  blockGeneratedBlockIds,
   blockGeneratedModelIds,
   blockItemIdOf,
   blockStateFlag,
@@ -1134,6 +1135,8 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
         if (itemId !== undefined) add('item', itemId);
         // The models lowering generates for the block (ADR 0067 D7), flat item models included.
         for (const id of blockGeneratedModelIds(element.id, element.data as Json)) add('model', id);
+        // The companion blocks of torches, signs and stems (ADR 0094 D3).
+        for (const id of blockGeneratedBlockIds(element.id, element.data as Json)) add('block', id);
         // A machine registers a recipe type and serialiser with its own id (ADR 0075 D2).
         if (element.kind === 'msm:block' && isMachine(element.data as Json)) {
           add('recipe_type', element.id);

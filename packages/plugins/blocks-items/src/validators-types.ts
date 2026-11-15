@@ -5,9 +5,12 @@
  *
  * - `blocks-items.component-not-for-type` (error): `msm:shape`, `msm:redstone`, `msm:container`
  *   or `msm:machine` on a type other than `block`, `pillar`, `horizontal` and `directional`
- *   (ADR 0067 D3, ADR 0074 D1, ADR 0075 D1).
+ *   (ADR 0067 D3, ADR 0074 D1, ADR 0075 D1), and also `msm:strippable` on the twenty types of
+ *   ADR 0094 (D4; {@link VANILLA_PARITY_TYPES}).
  * - `blocks-items.type-needs-appearance` (error): a type other than `block` with neither
- *   `textures` nor `models` (nor `model` on the types that take one).
+ *   `textures` nor `models` (nor `model` on the types that take one). The types whose models
+ *   come from other data count it: a crop's `stages`, a portal (always), a potted plant's
+ *   `plant`, and the `stages` of a berry bush or cocoa pod.
  * - `blocks-items.generated-model-clash` (error): a project model with the id of a model that
  *   lowering generates from `textures`.
  * - `blocks-items.unknown-model-slot` (error): a `models` key the type has no slot for (the slot
@@ -101,12 +104,43 @@ export const SHAPED_ONLY_COMPONENTS: readonly string[] = Object.freeze([
   'msm:machine',
 ]);
 
+/**
+ * The twenty types of ADR 0094 (D1). Besides the shaped-only components they take no
+ * `msm:strippable` (D4): they behave as their vanilla class, which axes do not strip.
+ */
+export const VANILLA_PARITY_TYPES: readonly BlockTypeName[] = Object.freeze([
+  'cake',
+  'berry_bush',
+  'tall_plant',
+  'potted_plant',
+  'vine',
+  'sea_pickle',
+  'carpet',
+  'layers',
+  'cocoa',
+  'candle',
+  'bed',
+  'ladder',
+  'torch',
+  'lantern',
+  'chain',
+  'rod',
+  'sign',
+  'hanging_sign',
+  'stem',
+  'scaffolding',
+]);
+
+/** Components the {@link VANILLA_PARITY_TYPES} do not take, besides the shaped-only ones. */
+const NOT_ON_VANILLA_PARITY_TYPES: readonly string[] = Object.freeze(['msm:strippable']);
+
 /** What a type outside the shaped types keeps instead of each shaped-only component. */
 const KEPT_INSTEAD: Readonly<Record<string, string>> = {
   'msm:shape': "vanilla's own shape",
   'msm:redstone': "vanilla's own redstone behaviour",
   'msm:container': 'no block entity, so it cannot hold items',
   'msm:machine': 'no block entity, so it cannot process items',
+  'msm:strippable': "vanilla's own behaviour, and axes do not strip it",
 };
 
 /** Kind ids of other plugins' elements these checks read. */
@@ -166,14 +200,19 @@ function componentsNotForType(blocks: readonly TypedBlock[]): Problem[] {
   for (const { element, data, type } of blocks) {
     if (SHAPED_BLOCK_TYPES.includes(type)) continue;
     const components = record(data.components);
-    for (const key of SHAPED_ONLY_COMPONENTS) {
+    const parity = VANILLA_PARITY_TYPES.includes(type);
+    const keys = parity
+      ? [...SHAPED_ONLY_COMPONENTS, ...NOT_ON_VANILLA_PARITY_TYPES]
+      : SHAPED_ONLY_COMPONENTS;
+    for (const key of keys) {
       if (components?.[key] === undefined) continue;
+      const name = type.replaceAll('_', ' ');
       problems.push({
         severity: 'error',
         code: 'blocks-items.component-not-for-type',
         elementId: element.id,
         path: pointer('components', key),
-        message: `A ${type} block cannot have "${key}": it keeps ${KEPT_INSTEAD[key] ?? "vanilla's own behaviour"}. Remove the component, or change the type to block, pillar, horizontal or directional.`,
+        message: `A ${name} block cannot have "${key}": it keeps ${KEPT_INSTEAD[key] ?? "vanilla's own behaviour"}. Remove the component${NOT_ON_VANILLA_PARITY_TYPES.includes(key) ? '' : ', or change the type to block, pillar, horizontal or directional'}.`,
       });
     }
   }
@@ -201,7 +240,7 @@ function typesNeedAppearance(blocks: readonly TypedBlock[]): Problem[] {
       severity: 'error' as const,
       code: 'blocks-items.type-needs-appearance',
       elementId: element.id,
-      message: `This ${type} block has no textures and no models, so it would show as the missing-model cube. Pick its textures (or its own models).`,
+      message: `This ${type.replaceAll('_', ' ')} block has no textures and no models, so it would show as the missing-model cube. Pick its textures (or its own models).`,
     }));
 }
 

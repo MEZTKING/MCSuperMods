@@ -53,6 +53,7 @@ import { candleType } from './candle';
 import { carpetType } from './carpet';
 import { chainType } from './chain';
 import { cocoaType } from './cocoa';
+import { companionBlockstateFiles, companionTagFiles } from './companions';
 import { cropType } from './crop';
 import { directionalType } from './directional';
 import { doorType } from './door';
@@ -368,8 +369,9 @@ export function blockTypeModels(type: BlockTypeName, context: TypeContext): Bloc
 
 /**
  * The appearance files of a block of `type`, in this order: the generated block models, the
- * block state definition, and with a block item its generated flat item model (doors, panes)
- * and its item model definition at the item id (ADR 0068 D2). A block with no model at all
+ * block state definition, the block state definitions of its companions (ADR 0094 D3), and with
+ * a block item its generated flat item model (doors, panes) and its item model definition at
+ * the item id (ADR 0068 D2). A block with no model at all
  * (no `model`, `models` or `textures`) gets none of them, as before types.
  */
 export function lowerBlockAppearance(
@@ -390,20 +392,26 @@ export function lowerBlockAppearance(
     layer: 'resourcepack',
     schema: BLOCK_STATE_SCHEMA,
   });
+  files.push(...companionBlockstateFiles(type, target, context, slots));
   if (context.itemId === undefined) return files;
   const item = splitResourceLocation(context.itemId);
   let itemModel = slots[ITEM_MODEL_SLOT];
+  let ownItemModel: JsonObject | undefined;
   if (itemModel === undefined) {
     const layer0 = flatItemTexture(lowering, context.data);
     if (layer0 !== undefined) {
       itemModel = `${item.namespace}:item/${item.path}`;
       files.push(modelFile(target, itemModel, GENERATED_ITEM_PARENT, { layer0 }));
+    } else {
+      ownItemModel = lowering.itemModel?.(slots);
     }
   }
   itemModel ??= slots[lowering.itemSlot ?? primary] ?? (slots[primary] as string);
   const definition = itemDefinitionFile(target, item.namespace, item.path, itemModel);
   const tints = lowering.itemTints?.(context.data) ?? [];
-  if (tints.length > 0) {
+  if (ownItemModel !== undefined) {
+    definition.contents = { model: ownItemModel };
+  } else if (tints.length > 0) {
     definition.contents = { model: { type: 'minecraft:model', model: itemModel, tints } };
   }
   files.push(definition);
@@ -483,17 +491,22 @@ export function blockGeneratedModelIds(blockId: string, data: Json | undefined):
   }
 }
 
-/** The vanilla tag files a block of `type` always joins (ADR 0067 D6), block then item tags. */
+/**
+ * The vanilla tag files a block of `type` always joins (ADR 0067 D6), block then item tags; the
+ * block tags of its companions (ADR 0094 D3) follow its own block tags.
+ */
 export function blockTypeTagFiles(
   type: BlockTypeName,
   target: Target,
   context: TypeContext,
 ): OutputFile[] {
   const tags = BLOCK_TYPE_LOWERINGS[type].tags?.(context.data);
-  if (tags === undefined) return [];
+  const companions = companionTagFiles(type, target, context);
+  if (tags === undefined) return companions;
   const { itemId } = context;
   return [
     ...tags.block.map((tag) => vanillaTagFile(target, 'block', tag, context.blockId)),
+    ...companions,
     ...(itemId === undefined
       ? []
       : tags.item.map((tag) => vanillaTagFile(target, 'item', tag, itemId))),

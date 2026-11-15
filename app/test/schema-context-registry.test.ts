@@ -158,6 +158,30 @@ describe('dataRegistryIds', () => {
     expect(ids.item).toEqual(['demo:ruby', 'demo:ruby_block']);
   });
 
+  it('counts the companion blocks of torches, signs and stems under block (B448)', () => {
+    const msm = project([
+      { id: 'demo:lamp', kind: 'msm:block', data: { type: 'torch' } },
+      { id: 'demo:board', kind: 'msm:block', data: { type: 'hanging_sign' } },
+      {
+        id: 'demo:gourd_stem',
+        kind: 'msm:block',
+        data: { type: 'stem', item: { id: 'demo:seeds' } },
+      },
+      { id: 'demo:pot', kind: 'msm:block', data: { type: 'potted_plant' } },
+    ]);
+    const ids = projectRegistryIds(msm);
+    expect(ids.block).toEqual([
+      'demo:board',
+      'demo:board_wall',
+      'demo:gourd_stem',
+      'demo:gourd_stem_attached',
+      'demo:lamp',
+      'demo:lamp_wall',
+      'demo:pot',
+    ]);
+    expect(ids.item).toEqual(['demo:board', 'demo:lamp', 'demo:seeds']);
+  });
+
   it('counts entities under entity_type and their spawn eggs under item', () => {
     const msm = project([
       { id: 'demo:gloom', kind: 'msm:entity', data: { spawn_egg: {} } },

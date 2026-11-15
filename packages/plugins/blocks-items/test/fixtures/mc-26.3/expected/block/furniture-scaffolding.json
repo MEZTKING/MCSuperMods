@@ -1,0 +1,100 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "scaffolding"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/bamboo_frame.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/scaffolding_stable",
+      "textures": {
+        "bottom": "example:block/bamboo_frame_bottom",
+        "particle": "example:block/bamboo_frame_top",
+        "side": "example:block/bamboo_frame_side",
+        "top": "example:block/bamboo_frame_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bamboo_frame_stable.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/scaffolding_unstable",
+      "textures": {
+        "bottom": "example:block/bamboo_frame_bottom",
+        "particle": "example:block/bamboo_frame_top",
+        "side": "example:block/bamboo_frame_side",
+        "top": "example:block/bamboo_frame_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bamboo_frame_unstable.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "bottom=false": {
+          "model": "example:block/bamboo_frame_stable"
+        },
+        "bottom=true": {
+          "model": "example:block/bamboo_frame_unstable"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/bamboo_frame.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/bamboo_frame_stable",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/bamboo_frame.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:bamboo_frame"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:bamboo_frame",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/bamboo_frame",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/bamboo_frame.json",
+    "schema": "resource:loot_table"
+  }
+]

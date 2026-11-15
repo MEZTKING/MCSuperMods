@@ -1,0 +1,93 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "rod"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/crystal_rod.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/end_rod",
+      "textures": {
+        "end_rod": "example:block/crystal_rod",
+        "particle": "example:block/crystal_rod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/crystal_rod.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=down": {
+          "model": "example:block/crystal_rod",
+          "x": 180
+        },
+        "facing=east": {
+          "model": "example:block/crystal_rod",
+          "x": 90,
+          "y": 90
+        },
+        "facing=north": {
+          "model": "example:block/crystal_rod",
+          "x": 90
+        },
+        "facing=south": {
+          "model": "example:block/crystal_rod",
+          "x": 90,
+          "y": 180
+        },
+        "facing=up": {
+          "model": "example:block/crystal_rod"
+        },
+        "facing=west": {
+          "model": "example:block/crystal_rod",
+          "x": 90,
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/crystal_rod.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/crystal_rod",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/crystal_rod.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:crystal_rod",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/crystal_rod",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/crystal_rod.json",
+    "schema": "resource:loot_table"
+  }
+]

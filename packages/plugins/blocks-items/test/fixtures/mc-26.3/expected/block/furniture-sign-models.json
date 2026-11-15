@@ -1,0 +1,149 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "sign",
+      "wood_type": "oak"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/plain_sign.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "rotation=0": {
+          "model": "example:block/plain_sign_a"
+        },
+        "rotation=1": {
+          "model": "example:block/plain_sign_b"
+        },
+        "rotation=10": {
+          "model": "example:block/plain_sign_c",
+          "y": 180
+        },
+        "rotation=11": {
+          "model": "example:block/plain_sign_d",
+          "y": 180
+        },
+        "rotation=12": {
+          "model": "example:block/plain_sign_a",
+          "y": 270
+        },
+        "rotation=13": {
+          "model": "example:block/plain_sign_b",
+          "y": 270
+        },
+        "rotation=14": {
+          "model": "example:block/plain_sign_c",
+          "y": 270
+        },
+        "rotation=15": {
+          "model": "example:block/plain_sign_d",
+          "y": 270
+        },
+        "rotation=2": {
+          "model": "example:block/plain_sign_c"
+        },
+        "rotation=3": {
+          "model": "example:block/plain_sign_d"
+        },
+        "rotation=4": {
+          "model": "example:block/plain_sign_a",
+          "y": 90
+        },
+        "rotation=5": {
+          "model": "example:block/plain_sign_b",
+          "y": 90
+        },
+        "rotation=6": {
+          "model": "example:block/plain_sign_c",
+          "y": 90
+        },
+        "rotation=7": {
+          "model": "example:block/plain_sign_d",
+          "y": 90
+        },
+        "rotation=8": {
+          "model": "example:block/plain_sign_a",
+          "y": 180
+        },
+        "rotation=9": {
+          "model": "example:block/plain_sign_b",
+          "y": 180
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/plain_sign.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "example:block/plain_sign_wall",
+          "y": 270
+        },
+        "facing=north": {
+          "model": "example:block/plain_sign_wall",
+          "y": 180
+        },
+        "facing=south": {
+          "model": "example:block/plain_sign_wall"
+        },
+        "facing=west": {
+          "model": "example:block/plain_sign_wall",
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/plain_sign_wall.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/plain_sign_a",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/plain_sign.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:plain_sign"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/standing_signs.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:plain_sign_wall"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/wall_signs.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:plain_sign"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/signs.json",
+    "schema": "tag:item"
+  }
+]

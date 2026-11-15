@@ -34,17 +34,6 @@
   },
   {
     "contents": {
-      "model": {
-        "model": "example:block/potted_ruby_sapling",
-        "type": "minecraft:model"
-      }
-    },
-    "layer": "resourcepack",
-    "path": "assets/example/items/potted_ruby_sapling.json",
-    "schema": "::java::assets::item_definition::ItemDefinition"
-  },
-  {
-    "contents": {
       "values": [
         "example:potted_ruby_sapling"
       ]

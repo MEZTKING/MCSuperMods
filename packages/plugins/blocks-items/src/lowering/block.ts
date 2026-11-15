@@ -25,6 +25,7 @@ import {
   lowerBlockAppearance,
   type TypeContext,
 } from './types';
+import { companionLootFiles } from './types/companions';
 import {
   isPlantLootPreset,
   keepContentsLootTable,
@@ -170,7 +171,9 @@ export function dropsItselfLootTable(id: string, namespace: string, path: string
  * 5. the vanilla tags the type always joins (ADR 0067 D6), block tags then item tags;
  * 6. with `"loot": "self"` and a block item: the type's own loot table at
  *    `loot_table/blocks/<path>.json` (drops the item; two from a double slab, a door from its
- *    lower half). A block without an item has nothing to drop. With `"loot": "crop"` (crops)
+ *    lower half; a torch, sign, hanging sign or stem also writes its companion's table,
+ *    ADR 0094 D3). A block without an item has nothing to drop, except a potted plant (the
+ *    pot and the plant). With `"loot": "crop"` (crops)
  *    or `"leaves"`: the preset's table in vanilla wheat's or oak leaves' shape (ADR 0068 D3,
  *    D6). A container that keeps its contents (ADR 0074 D6) takes the keep-contents form of
  *    `self` instead, in vanilla's shulker box shape;
@@ -221,16 +224,21 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
   const needs = fields.minTier === undefined ? undefined : needsTierTag(fields.minTier);
   if (needs !== undefined) files.push(vanillaTagFile(target, 'block', needs, element.id));
   files.push(...blockTypeTagFiles(type, target, context));
-  if (fields.loot === 'self' && itemId !== undefined) {
+  // A potted plant has no item but drops the pot and the plant (ADR 0094 D10; B448).
+  const lootItemId = itemId ?? (type === 'potted_plant' ? element.id : undefined);
+  if (fields.loot === 'self' && lootItemId !== undefined) {
+    const lootContext = { ...context, itemId: lootItemId };
     files.push({
       path: dataPath(target, 'loot_table', namespace, `blocks/${path}`),
       contents: keepsContents(type, data)
-        ? keepContentsLootTable({ ...context, itemId })
-        : (blockTypeSelfLoot(type, { ...context, itemId }) ??
-          dropsItselfLootTable(itemId, namespace, path)),
+        ? keepContentsLootTable(lootContext)
+        : (blockTypeSelfLoot(type, lootContext) ??
+          dropsItselfLootTable(lootItemId, namespace, path)),
       layer: 'datapack',
       schema: LOOT_TABLE_SCHEMA,
     });
+    // The companions' tables (ADR 0094 D3; B448).
+    if (itemId !== undefined) files.push(...companionLootFiles(type, target, lootContext));
   } else if (isPlantLootPreset(fields.loot)) {
     const table = plantLootTable(type, fields.loot, context);
     if (table !== undefined) {

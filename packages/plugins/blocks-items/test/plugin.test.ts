@@ -136,6 +136,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.particles',
       'msm.blocks-items.particle-references',
       'msm.blocks-items.plants-2',
+      'msm.blocks-items.furniture',
       'msm.blocks-items.waterlog-weathering-types',
       'msm.blocks-items.weathering',
       'msm.blocks-items.item-inventory',

@@ -5294,3 +5294,23 @@ Next
 
 **Next**
 - B449/B450 read the definitions as lowered (full ids; `max_stack_size` 1; no `rows` outside the chest). B457 uses `WEATHERING_STAGES`, `fullBlockId` and `bundleItemFiles` paths. The app's `EVENT_FIELDS` in `blocks-items-model.ts` and the generated-model clash check for bundle item models are follow-ups.
+## 2026-11-15 — executor — B448 lowering of the furniture, light, sign and stem types
+
+**What**
+- `@msm/plugin-blocks-items` lowers `bed`, `ladder`, `torch`, `lantern`, `chain`, `rod`, `sign`, `hanging_sign`, `stem` and `scaffolding` (ADR 0094 D10): the type fields reach the runtime definition unchanged; blockstates in vanilla's shape (bed `facing` by `part`, ladder and wall blocks by `facing`, lantern `hanging`, chain `axis`, rod six facings, signs sixteen `rotation` steps, hanging signs `attached` by `rotation`, stem `age`, scaffolding `bottom`); block models parented only on `BlockFacts.modelTemplates`; item model definitions (flat pictures for ladder, torch, lantern, chain, signs and stem seeds; block models for rod and scaffolding; a bed shows its head and foot as a `minecraft:composite`, as vanilla's, unless `textures.item` is given).
+- Companions (ADR 0094 D3), new `lowering/types/companions.ts`: a `TypeLowering.companions` list (`CompanionLowering`: suffix, blockstate, block tags, own loot), `blockGeneratedBlockIds` (`<id>_wall` for torch, sign and hanging sign, `<id>_attached` for stem), and the helpers that write each companion's blockstate, block tags and `self` loot table (the element's item; the attached stem drops seeds as vanilla's). `lowerBlockAppearance` and `blockTypeTagFiles` call them; `lowerBlock` writes the companion tables next to the element's own.
+- Tags: `beds` (block and item), `climbable` (ladder, scaffolding), `standing_signs`, `wall_signs`, `ceiling_hanging_signs`, `wall_hanging_signs`, item `signs` and `hanging_signs`, stem `crops`, `bee_growables`, `maintains_farmland` and the attached stem `maintains_farmland`; every name checked on both targets' vendored registries.
+- Validators `msm.blocks-items.furniture`: `generated-block-clash`, `stem-fruit-unknown`, `torch-particle-not-simple` (errors). `component-not-for-type` now also refuses `msm:strippable` on the twenty ADR 0094 types (`VANILLA_PARITY_TYPES`); `type-needs-appearance` is tested on all twenty.
+- Potted plants (B447's open note): `blockItemIdOf` gives a `potted_plant` no item unless `item` is given (`ITEMLESS_TYPES`, as a portal), and `lowerBlock` still writes the pot-and-plant table without an item; B447's two potted plant goldens lose their item definition.
+- Registry views: the app's `dataRegistryIds` and the library test's registry list the companions under `block` through `blockGeneratedBlockIds`.
+- Tests: `furniture.golden.test.ts` (12 goldens per target, tags, template parents, each type's defaults lowered and validated with zero schema and validator problems on both targets, the potted plant fix), `validators-furniture.test.ts` (one test per code, the twenty types in `component-not-for-type` and `type-needs-appearance`), `plugin.test.ts` lists the validator id, the app's `schema-context-registry.test.ts` lists companions.
+
+**Decisions**
+- A bed's one picture goes on every face variable the templates leave to the bed and on `particle`; the underside keeps the template's picture. Model slots: bed `head`, `foot`; ladder `ladder`; torch `torch`, `wall`; lantern `lantern`, `hanging`; chain `chain`; rod `rod`; sign `rot0..3`, `wall`; hanging sign `rot0..3`, `attached_rot0..3`, `wall`; stem `stage0..7`, `attached`; scaffolding `stable`, `unstable`.
+- Stems join the crop's tags and drop seeds in the shape of vanilla's melon stem (three tries at `(age + 1) / 15`; attached `8 / 15`).
+- The sign edit-screen pictures cannot be written by lowering (it writes JSON and never sees asset bytes): `signGuiTextureId`, `signGuiTexturePath` and `signGuiPicture` name where the picture must be (`<ns>:gui/signs/<path>`, `<ns>:gui/hanging_signs/<path>`); placing it is left to the Studio or the exporters.
+- `TypeLowering` gains `companions` and `itemModel` (the bed's composite item); `lowering/types/index.ts` got three small hunks to call them, and `lowering/block.ts` one hunk (the potted plant table and the companion tables).
+
+**Next**
+- B446: companions' loot tables are `<ns>:blocks/<path>_wall` and `<ns>:blocks/<path>_attached` (written only with `"loot": "self"` and an item); the wall and attached blocks have no lang key of their own, so the runtime should take the element's description.
+- B452 or B457: put the sign and hanging sign edit-screen picture at `signGuiTextureId` (copy the chosen texture, or save it there in the Studio).

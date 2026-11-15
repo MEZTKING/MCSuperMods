@@ -8,6 +8,7 @@
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
 import type { Element, Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
 import {
+  blockGeneratedBlockIds,
   blockGeneratedModelIds,
   blockItemIdOf,
   blockStateFlag,
@@ -174,6 +175,8 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * also registers its block item, so the item id is in `item` too: the block's own id, or its
  * `item.id` when the block item has its own id (seeds planting a crop, ADR 0068 D2), and none
  * when its data has `"item": false` (`blockItemIdOf`, the single source; {@link blockHasItem}).
+ * An `msm:block` torch, sign, hanging sign or stem also registers its companion block
+ * (`<id>_wall`, `<id>_attached`; `blockGeneratedBlockIds`, ADR 0094 D3) in `block`.
  * An `msm:entity` element (registry `entity_type`) also registers its spawn egg
  * `<id>_spawn_egg` in `item` unless `spawn_egg` is `false` ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
  * plain registries, which no vanilla schema reads. An `msm:vehicle` element (registry
@@ -209,6 +212,11 @@ export function dataRegistryIds(
         if (registered === BLOCK_REGISTRY) {
           const itemId = blockItemIdOf(element.id, element.data);
           if (itemId !== undefined) add(ITEM_REGISTRY, itemId);
+        }
+        if (element.kind === BLOCK_KIND) {
+          for (const id of blockGeneratedBlockIds(element.id, element.data)) {
+            add(BLOCK_REGISTRY, id);
+          }
         }
         if (element.kind === ENTITY_KIND && entityHasSpawnEgg(element.data)) {
           add(ITEM_REGISTRY, spawnEggId(element.id));

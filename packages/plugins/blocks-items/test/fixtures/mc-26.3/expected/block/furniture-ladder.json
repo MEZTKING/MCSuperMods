@@ -1,0 +1,104 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "ladder"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/rope_ladder.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/ladder",
+      "textures": {
+        "particle": "example:block/rope_ladder",
+        "texture": "example:block/rope_ladder"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/rope_ladder.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "example:block/rope_ladder",
+          "y": 90
+        },
+        "facing=north": {
+          "model": "example:block/rope_ladder"
+        },
+        "facing=south": {
+          "model": "example:block/rope_ladder",
+          "y": 180
+        },
+        "facing=west": {
+          "model": "example:block/rope_ladder",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/rope_ladder.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/rope_ladder"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/rope_ladder.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/rope_ladder",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/rope_ladder.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:rope_ladder"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:rope_ladder",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/rope_ladder",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/rope_ladder.json",
+    "schema": "resource:loot_table"
+  }
+]

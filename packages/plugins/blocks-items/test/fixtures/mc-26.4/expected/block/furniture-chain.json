@@ -1,0 +1,89 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "chain"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/rope.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_chain",
+      "textures": {
+        "texture": "example:block/rope"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/rope.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "axis=x": {
+          "model": "example:block/rope",
+          "x": 90,
+          "y": 90
+        },
+        "axis=y": {
+          "model": "example:block/rope"
+        },
+        "axis=z": {
+          "model": "example:block/rope",
+          "x": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/rope.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/rope"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/rope.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/rope",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/rope.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:rope",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/rope",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/rope.json",
+    "schema": "resource:loot_table"
+  }
+]

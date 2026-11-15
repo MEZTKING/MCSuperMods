@@ -7,6 +7,7 @@
 import type { JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { assetPath, isRecord, splitResourceLocation } from '../paths';
 import { MODEL_SCHEMA, nonEmptyString } from '../shared';
+import type { CompanionLowering } from './companions';
 import type { TypeTags } from './tags';
 
 /** One generated model: the slot it fills, its id suffix, vanilla parent and textures. */
@@ -70,6 +71,11 @@ export function slotSpecs(
 ): ModelSpec[] {
   return slots.map((slot) => ({ slot, suffix: suffix(slot), parent: parent(slot), textures }));
 }
+
+/** The suffix of the wall companion of a torch, sign or hanging sign (ADR 0094 D3). */
+export const WALL_COMPANION_SUFFIX = '_wall';
+/** The suffix of the attached companion of a stem (ADR 0094 D3). */
+export const ATTACHED_COMPANION_SUFFIX = '_attached';
 
 /** The model id `<ns>:block/<path><suffix>`. */
 export const blockModelId = (namespace: string, path: string, suffix: string): string =>
@@ -149,4 +155,11 @@ export interface TypeLowering {
   tags?(data: JsonObject): TypeTags;
   /** The `"loot": "self"` table when it is not "drops itself" (slab double, door lower half). */
   selfLoot?(context: TypeContext & { itemId: string }): JsonObject;
+  /** The companion blocks the type registers (ADR 0094 D3; `companions.ts`). */
+  readonly companions?: readonly CompanionLowering[];
+  /**
+   * The block item's `model` (an item model of the item definition) when neither `models.item`
+   * nor a flat item picture is given: a bed's head and foot side by side, as vanilla's bed item.
+   */
+  itemModel?(models: SlotModels): JsonObject;
 }

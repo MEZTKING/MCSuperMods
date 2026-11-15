@@ -1,0 +1,416 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "fruit": "example:gourd",
+      "item": {
+        "id": "example:gourd_seeds"
+      },
+      "type": "stem"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/gourd_stem.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth0",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth1",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth2",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth3",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth4",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth5",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage5.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth6",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage6.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth7",
+      "textures": {
+        "stem": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_stage7.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_fruit",
+      "textures": {
+        "stem": "example:block/gourd_stem",
+        "upperstem": "example:block/gourd_stem_bent"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/gourd_stem_attached.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "example:block/gourd_stem_stage0"
+        },
+        "age=1": {
+          "model": "example:block/gourd_stem_stage1"
+        },
+        "age=2": {
+          "model": "example:block/gourd_stem_stage2"
+        },
+        "age=3": {
+          "model": "example:block/gourd_stem_stage3"
+        },
+        "age=4": {
+          "model": "example:block/gourd_stem_stage4"
+        },
+        "age=5": {
+          "model": "example:block/gourd_stem_stage5"
+        },
+        "age=6": {
+          "model": "example:block/gourd_stem_stage6"
+        },
+        "age=7": {
+          "model": "example:block/gourd_stem_stage7"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/gourd_stem.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "example:block/gourd_stem_attached",
+          "y": 180
+        },
+        "facing=north": {
+          "model": "example:block/gourd_stem_attached",
+          "y": 90
+        },
+        "facing=south": {
+          "model": "example:block/gourd_stem_attached",
+          "y": 270
+        },
+        "facing=west": {
+          "model": "example:block/gourd_stem_attached"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/gourd_stem_attached.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/gourd_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/gourd_seeds.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/gourd_seeds",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/gourd_seeds.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:gourd_stem"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:gourd_stem"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:gourd_stem"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:gourd_stem_attached"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "0"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.06666667,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "1"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.13333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.2,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.26666667,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.33333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "5"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.4,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "6"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.46666667,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:gourd_stem",
+                    "state": {
+                      "age": "7"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.53333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                }
+              ],
+              "name": "example:gourd_seeds",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/gourd_stem",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/gourd_stem.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": {
+                    "n": 3,
+                    "p": 0.53333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                }
+              ],
+              "name": "example:gourd_seeds",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/gourd_stem_attached",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/gourd_stem_attached.json",
+    "schema": "resource:loot_table"
+  }
+]

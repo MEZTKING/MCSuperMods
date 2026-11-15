@@ -77,6 +77,12 @@ export {
   WOODEN_SET_TYPES,
 } from './lowering/types';
 export {
+  ATTACHED_COMPANION_SUFFIX,
+  blockGeneratedBlockIds,
+  type CompanionLowering,
+  WALL_COMPANION_SUFFIX,
+} from './lowering/types/companions';
+export {
   KEEP_CONTENTS_COMPONENTS,
   keepContentsLootTable,
   keepsContents,
@@ -87,6 +93,12 @@ export {
   PORTAL_MODEL_PARENTS,
   portalTextureOf,
 } from './lowering/types/portal';
+export {
+  SIGN_GUI_FOLDERS,
+  signGuiPicture,
+  signGuiTextureId,
+  signGuiTexturePath,
+} from './lowering/types/sign';
 export {
   hasWaterloggable,
   isWaterloggable,
@@ -163,6 +175,7 @@ export {
   blockTypeValidators,
   SHAPED_BLOCK_TYPES,
   SHAPED_ONLY_COMPONENTS,
+  VANILLA_PARITY_TYPES,
 } from './validators-types';
 export { WEATHERING_PROBLEM_CODES, weatheringValidators } from './validators-weathering';
 
