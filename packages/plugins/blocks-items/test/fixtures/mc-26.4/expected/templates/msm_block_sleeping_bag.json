@@ -1,0 +1,188 @@
+[
+  {
+    "contents": {
+      "colour": "green",
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.2,
+          "resistance": 0.2
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:colored_blocks"
+      },
+      "rule": "straw_bed",
+      "sound_type": "wool",
+      "type": "bed"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_bed_head",
+      "textures": {
+        "east": "minecraft:block/green_bed_head_up",
+        "north": "minecraft:block/green_bed_head_up",
+        "particle": "minecraft:block/green_bed_head_up",
+        "up": "minecraft:block/green_bed_head_up",
+        "west": "minecraft:block/green_bed_head_up"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_head.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_bed_foot",
+      "textures": {
+        "east": "minecraft:block/green_bed_head_up",
+        "particle": "minecraft:block/green_bed_head_up",
+        "south": "minecraft:block/green_bed_head_up",
+        "up": "minecraft:block/green_bed_head_up",
+        "west": "minecraft:block/green_bed_head_up"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_foot.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,part=foot": {
+          "model": "demo:block/sample_foot",
+          "y": 90
+        },
+        "facing=east,part=head": {
+          "model": "demo:block/sample_head",
+          "y": 90
+        },
+        "facing=north,part=foot": {
+          "model": "demo:block/sample_foot"
+        },
+        "facing=north,part=head": {
+          "model": "demo:block/sample_head"
+        },
+        "facing=south,part=foot": {
+          "model": "demo:block/sample_foot",
+          "y": 180
+        },
+        "facing=south,part=head": {
+          "model": "demo:block/sample_head",
+          "y": 180
+        },
+        "facing=west,part=foot": {
+          "model": "demo:block/sample_foot",
+          "y": 270
+        },
+        "facing=west,part=head": {
+          "model": "demo:block/sample_head",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "models": [
+          {
+            "model": "demo:block/sample_head",
+            "type": "minecraft:model"
+          },
+          {
+            "model": "demo:block/sample_foot",
+            "transformation": {
+              "left_rotation": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "right_rotation": [
+                0,
+                0,
+                0,
+                1
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ],
+              "translation": [
+                0,
+                0,
+                1
+              ]
+            },
+            "type": "minecraft:model"
+          }
+        ],
+        "type": "minecraft:composite"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/beds.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/beds.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "condition": {
+                "blocks": "demo:sample",
+                "state": {
+                  "part": "head"
+                },
+                "type": "minecraft:match_block"
+              },
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

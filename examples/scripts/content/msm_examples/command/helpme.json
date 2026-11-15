@@ -1,0 +1,32 @@
+{
+  "data": {
+    "aliases": [
+      "tips"
+    ],
+    "event": "help",
+    "events": {
+      "help": {
+        "actions": [
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "feedback_text": "Ask an operator, or try /hub to go to the lobby.",
+    "format": 1,
+    "name": "helpme"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:helpme",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A command for everyone that runs an event and answers in chat. Nothing here needs operator rights, so there is no function.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

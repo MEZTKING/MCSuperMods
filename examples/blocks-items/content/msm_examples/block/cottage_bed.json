@@ -1,0 +1,33 @@
+{
+  "data": {
+    "colour": "red",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Cottage Bed",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:colored_blocks"
+    },
+    "loot": "self",
+    "rule": "straw_bed",
+    "textures": {
+      "bed": "msm_examples:block/cottage_bed"
+    },
+    "type": "bed"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_bed",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A bed of type bed: placing it puts down both halves. The straw rule lets you sleep in it by day and sets your spawn, as vanilla beds do; \"colour\" tints the bed picture. Villagers do not use project beds.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

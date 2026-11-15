@@ -1,0 +1,27 @@
+{
+  "data": {
+    "bundle_textures": {
+      "closed": "msm_examples:item/supply_roll",
+      "open_back": "msm_examples:item/supply_roll_open_back",
+      "open_front": "msm_examples:item/supply_roll_open_front"
+    },
+    "components": {
+      "msm:bundle": {}
+    },
+    "creative_tab": "msm_examples:adventurer_tab",
+    "display_name": "Supply Roll",
+    "format": 1,
+    "max_stack_size": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:supply_roll",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An item that works like a bundle: click items onto it to put them in, right-click to take them out. \"bundle_textures\" are its closed picture and the two halves of its open picture (back and front), which show the contents between them.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

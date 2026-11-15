@@ -1,0 +1,48 @@
+{
+  "data": {
+    "berry": "msm_examples:orchard_berry",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Orchard Bush",
+    "format": 1,
+    "harvest": {
+      "full": [
+        2,
+        4
+      ],
+      "ripe": [
+        1,
+        2
+      ]
+    },
+    "item": {
+      "creative_tab": "minecraft:natural_blocks",
+      "id": "msm_examples:orchard_berry"
+    },
+    "loot": "self",
+    "textures": {
+      "stages": [
+        "msm_examples:block/orchard_bush_0",
+        "msm_examples:block/orchard_bush_1",
+        "msm_examples:block/orchard_bush_2",
+        "msm_examples:block/orchard_bush_3"
+      ]
+    },
+    "type": "berry_bush"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:orchard_bush",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A berry bush of type berry_bush with four ages, one picture each. At age 2 a click picks \"harvest.ripe\" berries and goes back to age 1; fully grown gives \"harvest.full\". Breaking it drops the same by age, with Fortune. The bush hurts what walks through it unless \"hurts\" is false. Its item is the berry, so a player plants the berries they pick.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

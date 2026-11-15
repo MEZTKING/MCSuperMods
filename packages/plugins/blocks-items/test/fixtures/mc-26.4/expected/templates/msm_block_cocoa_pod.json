@@ -1,0 +1,171 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.2,
+          "requires_tool": false,
+          "resistance": 3
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "wood",
+      "support": "#minecraft:supports_cocoa",
+      "type": "cocoa"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cocoa_stage0",
+      "textures": {
+        "cocoa": "minecraft:block/cocoa_stage0",
+        "particle": "minecraft:block/cocoa_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage0.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cocoa_stage1",
+      "textures": {
+        "cocoa": "minecraft:block/cocoa_stage1",
+        "particle": "minecraft:block/cocoa_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage1.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cocoa_stage2",
+      "textures": {
+        "cocoa": "minecraft:block/cocoa_stage2",
+        "particle": "minecraft:block/cocoa_stage2"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage2.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0,facing=east": {
+          "model": "demo:block/sample_stage0",
+          "y": 270
+        },
+        "age=0,facing=north": {
+          "model": "demo:block/sample_stage0",
+          "y": 180
+        },
+        "age=0,facing=south": {
+          "model": "demo:block/sample_stage0"
+        },
+        "age=0,facing=west": {
+          "model": "demo:block/sample_stage0",
+          "y": 90
+        },
+        "age=1,facing=east": {
+          "model": "demo:block/sample_stage1",
+          "y": 270
+        },
+        "age=1,facing=north": {
+          "model": "demo:block/sample_stage1",
+          "y": 180
+        },
+        "age=1,facing=south": {
+          "model": "demo:block/sample_stage1"
+        },
+        "age=1,facing=west": {
+          "model": "demo:block/sample_stage1",
+          "y": 90
+        },
+        "age=2,facing=east": {
+          "model": "demo:block/sample_stage2",
+          "y": 270
+        },
+        "age=2,facing=north": {
+          "model": "demo:block/sample_stage2",
+          "y": 180
+        },
+        "age=2,facing=south": {
+          "model": "demo:block/sample_stage2"
+        },
+        "age=2,facing=west": {
+          "model": "demo:block/sample_stage2",
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_stage2",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 3,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

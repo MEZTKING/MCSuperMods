@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Cottage Torch",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "particle": "minecraft:flame",
+    "textures": {
+      "texture": "msm_examples:block/cottage_torch"
+    },
+    "type": "torch"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_torch",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A torch of type torch with flame particles. Lowering also makes its wall form, cottage_torch_wall, which you never place by hand.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

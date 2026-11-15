@@ -1,0 +1,32 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "B": "msm_examples:orchard_berry",
+      "E": "minecraft:egg",
+      "S": "minecraft:sugar",
+      "W": "minecraft:wheat"
+    },
+    "pattern": [
+      "BBB",
+      "SES",
+      "WWW"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:orchard_pie"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:craft_orchard_pie",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three berries over sugar and an egg over wheat make a pie.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

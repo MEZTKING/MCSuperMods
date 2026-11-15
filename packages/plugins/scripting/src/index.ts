@@ -7,14 +7,14 @@
  */
 import { definePlugin } from '@msm/plugin-api';
 import { scriptingKinds } from './kinds';
-import { scriptingTemplates } from './templates';
+import { commandTemplates, scriptingTemplates } from './templates';
 import { scriptingValidators } from './validators';
 import { commandValidators } from './validators-commands';
 
 export * from './api/index';
 export * from './kinds';
 export * from './lowering';
-export { scriptingTemplates } from './templates';
+export { commandTemplates, scriptingTemplates } from './templates';
 export {
   findHandlerDefinitions,
   type HandlerDefinition,
@@ -36,7 +36,7 @@ export default definePlugin({
   apiVersion: '^1.0.0',
   contributes: {
     elementKinds: [...scriptingKinds],
-    elementTemplates: [...scriptingTemplates],
+    elementTemplates: [...scriptingTemplates, ...commandTemplates],
     validators: [...scriptingValidators, ...commandValidators],
   },
 });

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "lines": [
+      "# Moves the player who typed /hub to the lobby and slows their fall.",
+      "execute in minecraft:overworld run tp @s 0 120 0",
+      "effect give @s minecraft:slow_falling 10 0 true"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:hub_trip",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The function /hub runs, as the player. Edit the coordinates to your own lobby.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

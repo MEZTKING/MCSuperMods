@@ -14,6 +14,7 @@ import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
+  blockGeneratedBlockIds,
   blockItemId,
   blocksItemsKinds,
   blocksItemsTemplates,
@@ -77,6 +78,28 @@ const IDS = [
   'msm_block_portal_nether',
   'msm_block_portal_end',
   'msm_block_portal_trigger_lit',
+  'msm_block_sleeping_bag',
+  'msm_block_pie',
+  'msm_block_berry_bush',
+  'msm_block_tall_flower',
+  'msm_block_rope_ladder',
+  'msm_block_torch',
+  'msm_block_lantern',
+  'msm_block_chain',
+  'msm_block_candle',
+  'msm_block_wooden_sign',
+  'msm_block_hanging_sign',
+  'msm_block_potted_sapling',
+  'msm_block_sea_pickle',
+  'msm_block_vine',
+  'msm_block_rug',
+  'msm_block_snow_layers',
+  'msm_block_glow_rod',
+  'msm_block_melon_stem',
+  'msm_block_cocoa_pod',
+  'msm_block_scaffold',
+  'msm_block_copper_block',
+  'msm_block_waterlogged_lamp',
   'msm_item_food',
   'msm_item_tool',
   'msm_item_tool_custom_material',
@@ -90,6 +113,9 @@ const IDS = [
   'msm_item_throwable',
   'msm_item_fuel',
   'msm_item_life_steal_sword',
+  'msm_item_satchel',
+  'msm_item_pouch',
+  'msm_item_quiver_bundle',
   'msm_effect_status',
   'msm_effect_damage_over_time',
   'msm_effect_stat_boost',
@@ -105,6 +131,9 @@ const IDS = [
 ];
 const CATEGORIES = new Set([
   'Blocks',
+  'Blocks: furniture and lights',
+  'Blocks: plants',
+  'Copper',
   'Portals',
   'Items',
   'Effects',
@@ -148,7 +177,7 @@ function contextFor(
 /**
  * The test indexes plus the ids a new element brings into the project, as the app's registry
  * index counts them: its block item's own id (`blockItemId`, the Crop template's seeds), the
- * block models its lowering generates from `textures` (ADR 0067 D7) and, for a machine, its own
+ * companion blocks (a wall sign, a bent stem), the block models its lowering generates from `textures` (ADR 0067 D7) and, for a machine, its own
  * id as a recipe type and serialiser (ADR 0075 D2).
  */
 function withOwnIds(indexes: TargetIndexes, created: Element, files: OutputFile[]): TargetIndexes {
@@ -158,9 +187,14 @@ function withOwnIds(indexes: TargetIndexes, created: Element, files: OutputFile[
     .filter((match) => match !== null)
     .map((match) => `${match[1]}:${match[2]}`);
   const machine = created.kind === BLOCK_KIND && machineOf(created.data) !== undefined;
-  if (itemId === undefined && modelIds.length === 0 && !machine) return indexes;
+  const companions =
+    created.kind === BLOCK_KIND ? blockGeneratedBlockIds(created.id, created.data as never) : [];
+  if (itemId === undefined && modelIds.length === 0 && !machine && companions.length === 0) {
+    return indexes;
+  }
   const project: Record<string, readonly string[]> = {
     ...PROJECT_IDS,
+    block: [...(PROJECT_IDS.block ?? []), ...companions],
     item: [...(PROJECT_IDS.item ?? []), ...(itemId === undefined ? [] : [itemId])],
     model: [...(PROJECT_IDS.model ?? []), ...modelIds],
     ...(machine ? { recipe_type: [created.id], recipe_serializer: [created.id] } : {}),

@@ -1,0 +1,35 @@
+{
+  "data": {
+    "base_block": "minecraft:copper_block",
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "requires_tool": true,
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Roof Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_examples:block/roof_unaffected"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:waxed_roof_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The waxed copy of the unaffected stage: a plain block with no msm:weathering, so it never ages, and it shares the stage's picture. It belongs to one source block only.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,111 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "bamboo",
+      "type": "scaffolding"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/scaffolding_stable",
+      "textures": {
+        "bottom": "minecraft:block/scaffolding_bottom",
+        "particle": "minecraft:block/scaffolding_top",
+        "side": "minecraft:block/scaffolding_side",
+        "top": "minecraft:block/scaffolding_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stable.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/scaffolding_unstable",
+      "textures": {
+        "bottom": "minecraft:block/scaffolding_bottom",
+        "particle": "minecraft:block/scaffolding_top",
+        "side": "minecraft:block/scaffolding_side",
+        "top": "minecraft:block/scaffolding_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_unstable.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "bottom=false": {
+          "model": "demo:block/sample_stable"
+        },
+        "bottom=true": {
+          "model": "demo:block/sample_unstable"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_stable",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

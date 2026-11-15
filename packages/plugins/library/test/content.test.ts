@@ -202,6 +202,8 @@ const KIND_IDS = [
   'msm:vehicle',
   'msm:key_bind',
   'msm:hud',
+  'msm:command',
+  'msm:creative_tab',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -729,8 +731,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 100 per-kind examples, one per built-in kind, 34 behaviour examples, 16 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(100);
+  it('has 102 per-kind examples, one per built-in kind, 39 behaviour examples, 16 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(102);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -754,6 +756,10 @@ describe('examples', () => {
       'example_msm_shulker_crate',
       'example_msm_sky_portal',
       'example_msm_firefly_jar',
+      'example_msm_cottage_furniture',
+      'example_msm_orchard_pie',
+      'example_msm_copper_roof',
+      'example_msm_adventurers_satchel',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -773,6 +779,7 @@ describe('examples', () => {
       'example_msm_full_set_bonus',
       'example_msm_teleport_staff',
       'example_msm_boss_fight_bar',
+      'example_msm_server_helper',
     ]);
     expect(rulesBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_rules_guard_mob',
@@ -804,7 +811,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(154);
+    expect(libraryExamples).toHaveLength(161);
   });
 
   it('reuses the starter builders for the starter projects', () => {

@@ -1,0 +1,245 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.1,
+          "resistance": 0.1
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:colored_blocks"
+      },
+      "sound_type": "wool",
+      "type": "candle"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_candle",
+      "textures": {
+        "all": "minecraft:block/candle",
+        "particle": "minecraft:block/candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_one_candle.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_candle",
+      "textures": {
+        "all": "minecraft:block/candle_lit",
+        "particle": "minecraft:block/candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_one_candle_lit.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_two_candles",
+      "textures": {
+        "all": "minecraft:block/candle",
+        "particle": "minecraft:block/candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_two_candles.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_two_candles",
+      "textures": {
+        "all": "minecraft:block/candle_lit",
+        "particle": "minecraft:block/candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_two_candles_lit.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_three_candles",
+      "textures": {
+        "all": "minecraft:block/candle",
+        "particle": "minecraft:block/candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_three_candles.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_three_candles",
+      "textures": {
+        "all": "minecraft:block/candle_lit",
+        "particle": "minecraft:block/candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_three_candles_lit.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_four_candles",
+      "textures": {
+        "all": "minecraft:block/candle",
+        "particle": "minecraft:block/candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_four_candles.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_four_candles",
+      "textures": {
+        "all": "minecraft:block/candle_lit",
+        "particle": "minecraft:block/candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_four_candles_lit.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "candles=1,lit=false": {
+          "model": "demo:block/sample_one_candle"
+        },
+        "candles=1,lit=true": {
+          "model": "demo:block/sample_one_candle_lit"
+        },
+        "candles=2,lit=false": {
+          "model": "demo:block/sample_two_candles"
+        },
+        "candles=2,lit=true": {
+          "model": "demo:block/sample_two_candles_lit"
+        },
+        "candles=3,lit=false": {
+          "model": "demo:block/sample_three_candles"
+        },
+        "candles=3,lit=true": {
+          "model": "demo:block/sample_three_candles_lit"
+        },
+        "candles=4,lit=false": {
+          "model": "demo:block/sample_four_candles"
+        },
+        "candles=4,lit=true": {
+          "model": "demo:block/sample_four_candles_lit"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/candles.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/candles.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "candles": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "candles": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 3,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "candles": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 4,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

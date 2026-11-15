@@ -1,0 +1,39 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "step": "show_message",
+            "text": [
+              "Welcome! Type /helpme if you need a hand."
+            ]
+          },
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "step": "play_sound",
+            "where": "player"
+          }
+        ],
+        "key": "tip",
+        "name": "Point new players at /helpme",
+        "when": {
+          "trigger": "player_joined"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:server_tips",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rule book with one rule: when a player joins, show a chat message and a chime that point at /helpme. It compiles to a script on export.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

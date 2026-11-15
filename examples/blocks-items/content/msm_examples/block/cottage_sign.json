@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Cottage Sign",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "textures": {
+      "all": "msm_examples:block/cottage_sign",
+      "sign": "msm_examples:gui/signs/cottage_sign"
+    },
+    "type": "sign",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_sign",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A standing sign of type sign: it turns in sixteen steps on the floor and, as cottage_sign_wall, sits on walls. Both sides take text, dye, glow ink and honeycomb. The wood type gives the sounds; \"sign\" is the picture the edit screen shows (a placeholder board here; draw a 24 by 26 picture for the real look).",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

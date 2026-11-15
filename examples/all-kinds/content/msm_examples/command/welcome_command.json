@@ -1,0 +1,38 @@
+{
+  "data": {
+    "aliases": [
+      "hi"
+    ],
+    "event": "welcome",
+    "events": {
+      "welcome": {
+        "actions": [
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "type": "play_sound"
+          },
+          {
+            "count": 6,
+            "particle": "minecraft:heart",
+            "spread": 0.5,
+            "type": "spawn_particle"
+          }
+        ]
+      }
+    },
+    "feedback_text": "Welcome! Have a nice stay.",
+    "format": 1,
+    "name": "welcome"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:welcome_command",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A server command. \"name\" is the word typed after the slash and \"aliases\" are other words for it; neither may be a vanilla command. The command runs the event \"welcome\", which is declared in \"events\" with the same actions blocks and items use, as the player who typed it. \"feedback_text\" is the answer in chat (its language key is generated). To run a data pack function instead of an event, name it in \"function\" and set \"permission\" to 2 or more. It needs the Fabric mod jar export; the vanilla packs keep only its models, pictures and language keys.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

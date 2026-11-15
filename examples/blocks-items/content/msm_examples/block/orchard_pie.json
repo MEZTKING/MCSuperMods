@@ -1,0 +1,39 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "resistance": 0.5
+      }
+    },
+    "display_name": "Orchard Pie",
+    "food": {
+      "nutrition": 3,
+      "saturation": 0.3
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:food_and_drinks",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "textures": {
+      "bottom": "msm_examples:block/orchard_pie_bottom",
+      "inside": "msm_examples:block/orchard_pie_inside",
+      "side": "msm_examples:block/orchard_pie_side",
+      "top": "msm_examples:block/orchard_pie_top"
+    },
+    "type": "cake"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:orchard_pie",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A pie of type cake: place it and click with an empty hand to eat a slice (seven slices, \"food\" per slice), with the cake sounds. A comparator reads what is left. It drops nothing once started.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

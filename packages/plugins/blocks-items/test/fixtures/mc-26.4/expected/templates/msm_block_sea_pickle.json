@@ -1,0 +1,327 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "grass",
+      "type": "sea_pickle"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/sea_pickle",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_one.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/dead_sea_pickle",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_dead_one.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/two_sea_pickles",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_two.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/two_dead_sea_pickles",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_dead_two.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/three_sea_pickles",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_three.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/three_dead_sea_pickles",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_dead_three.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/four_sea_pickles",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_four.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/four_dead_sea_pickles",
+      "textures": {
+        "all": "minecraft:block/sea_pickle",
+        "particle": "minecraft:block/sea_pickle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_dead_four.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "pickles=1,waterlogged=false": [
+          {
+            "model": "demo:block/sample_dead_one"
+          },
+          {
+            "model": "demo:block/sample_dead_one",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_dead_one",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_dead_one",
+            "y": 270
+          }
+        ],
+        "pickles=1,waterlogged=true": [
+          {
+            "model": "demo:block/sample_one"
+          },
+          {
+            "model": "demo:block/sample_one",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_one",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_one",
+            "y": 270
+          }
+        ],
+        "pickles=2,waterlogged=false": [
+          {
+            "model": "demo:block/sample_dead_two"
+          },
+          {
+            "model": "demo:block/sample_dead_two",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_dead_two",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_dead_two",
+            "y": 270
+          }
+        ],
+        "pickles=2,waterlogged=true": [
+          {
+            "model": "demo:block/sample_two"
+          },
+          {
+            "model": "demo:block/sample_two",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_two",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_two",
+            "y": 270
+          }
+        ],
+        "pickles=3,waterlogged=false": [
+          {
+            "model": "demo:block/sample_dead_three"
+          },
+          {
+            "model": "demo:block/sample_dead_three",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_dead_three",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_dead_three",
+            "y": 270
+          }
+        ],
+        "pickles=3,waterlogged=true": [
+          {
+            "model": "demo:block/sample_three"
+          },
+          {
+            "model": "demo:block/sample_three",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_three",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_three",
+            "y": 270
+          }
+        ],
+        "pickles=4,waterlogged=false": [
+          {
+            "model": "demo:block/sample_dead_four"
+          },
+          {
+            "model": "demo:block/sample_dead_four",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_dead_four",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_dead_four",
+            "y": 270
+          }
+        ],
+        "pickles=4,waterlogged=true": [
+          {
+            "model": "demo:block/sample_four"
+          },
+          {
+            "model": "demo:block/sample_four",
+            "y": 90
+          },
+          {
+            "model": "demo:block/sample_four",
+            "y": 180
+          },
+          {
+            "model": "demo:block/sample_four",
+            "y": 270
+          }
+        ]
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample_one",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "pickles": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "pickles": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 3,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "pickles": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 4,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

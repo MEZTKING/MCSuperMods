@@ -1,0 +1,202 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.5,
+          "resistance": 0.5
+        }
+      },
+      "food": {
+        "nutrition": 2,
+        "saturation": 0.1
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:food_and_drinks"
+      },
+      "sound_type": "wool",
+      "type": "cake"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice1",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "inside": "minecraft:block/cake_inner",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_slice1.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice2",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "inside": "minecraft:block/cake_inner",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_slice2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice3",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "inside": "minecraft:block/cake_inner",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_slice3.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice4",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "inside": "minecraft:block/cake_inner",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_slice4.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice5",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "inside": "minecraft:block/cake_inner",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_slice5.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice6",
+      "textures": {
+        "bottom": "minecraft:block/cake_bottom",
+        "inside": "minecraft:block/cake_inner",
+        "particle": "minecraft:block/cake_side",
+        "side": "minecraft:block/cake_side",
+        "top": "minecraft:block/cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_slice6.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "bites=0": {
+          "model": "demo:block/sample"
+        },
+        "bites=1": {
+          "model": "demo:block/sample_slice1"
+        },
+        "bites=2": {
+          "model": "demo:block/sample_slice2"
+        },
+        "bites=3": {
+          "model": "demo:block/sample_slice3"
+        },
+        "bites=4": {
+          "model": "demo:block/sample_slice4"
+        },
+        "bites=5": {
+          "model": "demo:block/sample_slice5"
+        },
+        "bites=6": {
+          "model": "demo:block/sample_slice6"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:block/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "terms": [
+              {
+                "blocks": "demo:sample",
+                "state": {
+                  "bites": "0"
+                },
+                "type": "minecraft:match_block"
+              },
+              {
+                "type": "minecraft:survives_explosion"
+              }
+            ],
+            "type": "minecraft:all_of"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

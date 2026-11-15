@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Foxglove",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "textures": {
+      "bottom": "msm_examples:block/orchard_foxglove_bottom",
+      "top": "msm_examples:block/orchard_foxglove_top"
+    },
+    "type": "tall_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:orchard_foxglove",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A flower two blocks high, of type tall_plant: placing it makes both halves, breaking either half drops one flower, and bone meal drops another.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

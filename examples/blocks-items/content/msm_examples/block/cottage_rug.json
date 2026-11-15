@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "resistance": 0.1
+      }
+    },
+    "display_name": "Cottage Rug",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:colored_blocks"
+    },
+    "loot": "self",
+    "textures": {
+      "texture": "msm_examples:block/cottage_rug"
+    },
+    "type": "carpet"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_rug",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A rug of type carpet: one sixteenth of a block high, it sits on the floor and breaks when its floor goes.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

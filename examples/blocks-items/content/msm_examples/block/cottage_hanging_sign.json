@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Cottage Hanging Sign",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "textures": {
+      "all": "msm_examples:block/cottage_hanging_sign",
+      "hanging_gui": "msm_examples:gui/hanging_signs/cottage_hanging_sign"
+    },
+    "type": "hanging_sign",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_hanging_sign",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A hanging sign of type hanging_sign: it hangs under a block or a chain, or sticks out of a wall as its attached form.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

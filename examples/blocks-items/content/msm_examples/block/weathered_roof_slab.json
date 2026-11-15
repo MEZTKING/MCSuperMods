@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "requires_tool": true,
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_examples:waxed_weathered_roof_slab"
+      },
+      "msm:weathering": {
+        "next": "msm_examples:oxidized_roof_slab",
+        "stage": "weathered"
+      }
+    },
+    "display_name": "Weathered Roof Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_examples:block/roof_weathered"
+    },
+    "type": "slab"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:weathered_roof_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Stage 3 of 4 (weathered). Same shape, picture and behaviour as the stage before, one step older.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

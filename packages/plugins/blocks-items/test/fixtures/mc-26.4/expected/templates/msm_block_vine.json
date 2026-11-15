@@ -1,0 +1,227 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.2,
+          "requires_tool": false,
+          "resistance": 0.2
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "grass",
+      "type": "vine"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/vine",
+      "textures": {
+        "particle": "minecraft:block/vine",
+        "vine": "minecraft:block/vine"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "demo:block/sample"
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample"
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "up": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/vine"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

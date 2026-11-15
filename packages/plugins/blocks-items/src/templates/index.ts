@@ -1,6 +1,6 @@
 /**
  * "New element" templates of `@msm/plugin-blocks-items`: blocks, items, effects, the mod
- * metadata, the additions to vanilla content, portals and particles.
+ * metadata, the additions to vanilla content, portals, particles and the vanilla parity block types and bags.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
 import { additionTemplates } from './additions';
@@ -12,6 +12,7 @@ import { itemTemplates } from './items';
 import { modTemplates } from './mod';
 import { particleTemplates } from './particles';
 import { portalTemplates } from './portals';
+import { vanillaParityBlockTemplates, vanillaParityItemTemplates } from './vanilla-parity';
 
 export { modIdFromNamespace } from './mod';
 
@@ -24,7 +25,9 @@ export const blocksItemsTemplates: readonly ElementTemplate[] = Object.freeze([
   ...blockTypeTemplates,
   ...containerTemplates,
   ...portalTemplates,
+  ...vanillaParityBlockTemplates,
   ...itemTemplates,
+  ...vanillaParityItemTemplates,
   ...effectTemplates,
   ...modTemplates,
   ...additionTemplates,

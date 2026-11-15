@@ -5426,3 +5426,20 @@ Next
 - B459: confirm the flow ids (or change `MAKE_BLOCK_PICKS` / `MAKE_ITEM_PICKS`), then empty `FLOWS_AWAITING_LIBRARY` in `app/test/components/Home.test.tsx`.
 - B458: a subject trigger for `msm:command` makes the Command Studio's Rules section appear by itself; `RulesSection`'s `THING_WORDS` could then say "command".
 - B467: `docs/guide/very-easy.md` tile sentences changed; guide page for the two Studios.
+
+## 2026-11-15 — executor — B461 templates and examples
+
+**What**
+- blocks-items: `templates/vanilla-parity.ts` adds 22 block templates (Sleeping bag, Pie, Berry bush, Tall flower, Rope ladder, Torch, Lantern, Chain, Candle, Wooden sign, Hanging sign, Potted plant, Glow pod, Vine, Rug, Snow-like layers, Glow rod, Melon-like stem, Cocoa-like pod, Scaffold, Copper-like block, Waterlogged lamp) in the categories "Blocks: furniture and lights", "Blocks: plants" and "Copper", and 3 item templates (Satchel, Pouch, Quiver-like bundle). Goldens under `test/fixtures/<target id>/expected/templates/`.
+- scripting: `templates/commands.ts` adds Help command, Hop command and Creative tab (`msm:creative_tab`, whose kind blocks-items owns) as `commandTemplates`, contributed beside `scriptingTemplates`.
+- library: `examples/vanilla-parity.ts` adds the per-kind examples of `msm:command` (/welcome) and `msm:creative_tab` (Curios), and the Cottage furniture and lights, Orchard and pie, Copper roof and Adventurer's satchel examples (blocks and items mirror) and Server helper (scripts mirror). `KINDS_AWAITING_EXAMPLES` is empty. `examples/` regenerated.
+- exporters test: bundle item models counted as project model ids, and a project check for the command and tab templates.
+
+**Decisions**
+- Teleport home became Hop: a template cannot create the function a teleport needs, and an unknown function is a schema error. The Server helper example holds the function-backed `/hub` and `/boost`.
+- The Copper block template is the first stage naming vanilla's exposed copper (one template, one element); the Copper roof example holds four stages and waxed copies of stairs and slabs.
+- Example title "Cottage furniture and lights", because "Cottage furniture" is a Popular ideas title already. Examples use only the library's placeholder pictures, so the sign edit pictures are 16 by 16 boards, not 24 by 26.
+- Bed template picture is vanilla's `block/green_bed_head_up` (verify in game that it suits the bed model).
+
+**Next**
+- B452 and the app's `dataRegistryIds` should count bundle models (`bundleModelIds`) like the library test does; draw real sign pictures when the placeholder set has a 24 by 26 pattern.

@@ -3,6 +3,7 @@ import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   commandKind,
+  commandTemplates,
   lowerScript,
   SCRIPTING_PROBLEM_CODES,
   ScriptingLoweringError,
@@ -63,7 +64,7 @@ describe('@msm/plugin-scripting', () => {
 
   it('contributes its templates and validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
-      scriptingTemplates.map((t) => t.id),
+      [...scriptingTemplates, ...commandTemplates].map((t) => t.id),
     );
     expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
       ...scriptingValidators.map((v) => v.id),

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "display_name": "Adventurer's gear",
+    "format": 1,
+    "icon": "msm_examples:satchel"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:adventurer_tab",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The tab both items join through their \"creative_tab\" field. Its icon is the satchel; items show in the order they were made.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

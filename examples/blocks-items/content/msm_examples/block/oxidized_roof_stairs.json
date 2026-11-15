@@ -1,0 +1,41 @@
+{
+  "data": {
+    "base_block": "minecraft:copper_block",
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "requires_tool": true,
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_examples:waxed_oxidized_roof_stairs"
+      },
+      "msm:weathering": {
+        "stage": "oxidized"
+      }
+    },
+    "display_name": "Oxidized Roof Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_examples:block/roof_oxidized"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:oxidized_roof_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Stage 4 of 4 (oxidized). Same shape, picture and behaviour as the stage before, one step older.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

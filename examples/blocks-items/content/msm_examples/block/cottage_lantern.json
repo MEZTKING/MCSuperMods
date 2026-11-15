@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Cottage Lantern",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "lantern",
+    "textures": {
+      "texture": "msm_examples:block/cottage_lantern"
+    },
+    "type": "lantern"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:cottage_lantern",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A lantern of type lantern: it stands on a block or hangs under one, and gives light 15 (a light level the type sets). Chains hold it up.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

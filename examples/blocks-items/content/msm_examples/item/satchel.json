@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:item_inventory": {
+        "close_sound": "minecraft:item.armor.equip_leather",
+        "layout": "chest",
+        "open": "sneak_use",
+        "open_sound": "minecraft:item.armor.equip_leather",
+        "rows": 2
+      }
+    },
+    "creative_tab": "msm_examples:adventurer_tab",
+    "display_name": "Satchel",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_examples:item/satchel",
+    "rarity": "uncommon"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:satchel",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A bag: msm:item_inventory gives the item a chest screen of two rows that opens when you sneak and use it. What is inside stays in the item when you carry it, drop it or put it in a chest; a bag cannot go inside another bag or a shulker box, and bags always stack to one.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

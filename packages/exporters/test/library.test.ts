@@ -61,6 +61,7 @@ import blocksItemsPlugin, {
   blockItemIdOf,
   blockStateFlag,
   blockTypeOf,
+  bundleModelIds,
 } from '@msm/plugin-blocks-items';
 import controlsPlugin from '@msm/plugin-controls';
 import dataPackPlugin from '@msm/plugin-datapack';
@@ -83,6 +84,7 @@ import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
 import rulesPlugin, { generatedScript, RULES_KIND, ruleScriptPath } from '@msm/plugin-rules';
 import scriptingPlugin, {
+  commandTemplates,
   findHandlerDefinitions,
   MSM_RUNTIME_TYPINGS,
 } from '@msm/plugin-scripting';
@@ -1143,6 +1145,17 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
           add('recipe_serializer', element.id);
         }
       }
+      if (name === 'item' && typeof element.data === 'object' && element.data !== null) {
+        // The models a bundle's `bundle_textures` generate (ADR 0095 D4; B451).
+        const pictures = (element.data as { bundle_textures?: unknown }).bundle_textures;
+        if (typeof pictures === 'object' && pictures !== null) {
+          const colon = element.id.indexOf(':');
+          const models = bundleModelIds(element.id.slice(0, colon), element.id.slice(colon + 1));
+          for (const slot of Object.keys(pictures) as (keyof typeof models)[]) {
+            if (models[slot] !== undefined) add('model', models[slot]);
+          }
+        }
+      }
       if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
         const egg = (element.data as { spawn_egg?: unknown }).spawn_egg;
         if (egg !== undefined && egg !== false) {
@@ -1710,9 +1723,9 @@ function typeCheck(script: string): string[] {
 
 /**
  * Kinds registered before their per-kind example exists. A new kind may wait here only until
- * its library brief lands: commands and creative tabs (ADR 0096, B456) until B461.
+ * its library brief lands. Empty since B461 added the command and creative tab examples.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = ['msm:command', 'msm:creative_tab'];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 // Tests --------------------------------------------------------------------------------------
 
@@ -1828,6 +1841,29 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         }
         expect(bundleData.elements.some((entry) => (entry.notes ?? '').length > 0)).toBe(true);
         const built = await buildProject('Library Test', 'demo', [bundleData]);
+        await checkProject(bundle, context, built);
+      },
+    );
+
+    // The command and creative tab templates (B461): the tab's kind belongs to blocks-items, so
+    // only a whole project checks it against its schema, validators and lowering.
+    it.each(commandTemplates.map((template) => [template.id, template] as const))(
+      'template %s loads, validates and exports with zero problems',
+      async (_templateId, template) => {
+        const kind = registry.get(template.kind);
+        const id = `demo:${template.defaultName ?? 'sample'}` as const;
+        const data = await template.data({
+          id,
+          namespace: 'demo',
+          path: template.defaultName ?? 'sample',
+          projectNamespace: 'demo',
+          namespaces: ['demo'],
+          kindDefault: structuredClone(kind?.defaultData),
+          target: bundle.target,
+        });
+        const built = await buildProject('Template Test', 'demo', [
+          { elements: [{ id, kind: template.kind, data }], assets: [] },
+        ]);
         await checkProject(bundle, context, built);
       },
     );

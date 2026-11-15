@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "P": "#minecraft:planks",
+      "W": "#minecraft:wool"
+    },
+    "pattern": [
+      "WWW",
+      "PPP"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:cottage_bed"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:craft_cottage_bed",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Wool over planks, as a vanilla bed.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

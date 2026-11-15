@@ -1,0 +1,200 @@
+[
+  {
+    "contents": {
+      "berry": "minecraft:sweet_berries",
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "grass",
+      "type": "berry_bush"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/sweet_berry_bush_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage0.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/sweet_berry_bush_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage1.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/sweet_berry_bush_stage2"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/sweet_berry_bush_stage3"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage3.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "demo:block/sample_stage0"
+        },
+        "age=1": {
+          "model": "demo:block/sample_stage1"
+        },
+        "age=2": {
+          "model": "demo:block/sample_stage2"
+        },
+        "age=3": {
+          "model": "demo:block/sample_stage3"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/sweet_berry_bush_stage3"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "condition": {
+            "blocks": "demo:sample",
+            "state": {
+              "age": "3"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "minecraft:sweet_berries",
+              "type": "minecraft:item"
+            }
+          ],
+          "modifier": [
+            {
+              "count": {
+                "max": 3,
+                "min": 2,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:uniform_bonus_count",
+              "parameters": {
+                "bonusMultiplier": 1
+              },
+              "type": "minecraft:apply_bonus"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "blocks": "demo:sample",
+            "state": {
+              "age": "2"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "minecraft:sweet_berries",
+              "type": "minecraft:item"
+            }
+          ],
+          "modifier": [
+            {
+              "count": {
+                "max": 2,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:uniform_bonus_count",
+              "parameters": {
+                "bonusMultiplier": 1
+              },
+              "type": "minecraft:apply_bonus"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

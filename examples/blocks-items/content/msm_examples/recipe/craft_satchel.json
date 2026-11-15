@@ -1,0 +1,30 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "L": "minecraft:leather",
+      "S": "minecraft:string"
+    },
+    "pattern": [
+      "LSL",
+      "L L",
+      "LLL"
+    ],
+    "result": {
+      "count": 1,
+      "id": "msm_examples:satchel"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:craft_satchel",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Leather with a string for the strap.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

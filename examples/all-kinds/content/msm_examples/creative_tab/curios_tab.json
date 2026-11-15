@@ -1,0 +1,19 @@
+{
+  "data": {
+    "display_name": "Curios",
+    "format": 1,
+    "icon": "msm_examples:curio_block",
+    "order": "by_name"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:curios_tab",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A creative inventory tab. \"icon\" is the item whose picture the tab shows (here the curio block's item); \"display_name\" is its title and \"order\" lists its items by name instead of the order they were made in. Blocks and items join it by naming it in their \"creative_tab\" field. Extra tabs sit on further pages of the creative inventory. It needs the Fabric mod jar export; the vanilla packs keep only its models, pictures and language keys.",
+    "tags": [
+      "example",
+      "items"
+    ]
+  }
+}

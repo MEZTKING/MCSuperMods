@@ -1,0 +1,20 @@
+{
+  "data": {
+    "feedback_text": "Whoosh! Welcome to the lobby.",
+    "format": 1,
+    "function": "msm_examples:hub_trip",
+    "name": "hub",
+    "permission": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:hub",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A command that runs the function hub_trip. Its permission is 2: only operators can type it, so the function's operator rights are not handed to everyone.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

@@ -28,9 +28,17 @@ import { portalExamples } from './portals';
 import { registryExamples } from './registries';
 import { resourcePackExamples } from './resource-pack';
 import { rulesBehaviourExamples, rulesKindExamples } from './rules';
-import { scriptBehaviourExamples, scriptKindExamples } from './scripts';
+import {
+  scriptKindExamples,
+  scriptBehaviourExamples as scriptOnlyBehaviourExamples,
+} from './scripts';
 import { structureExamples } from './structures';
 import { tagExamples } from './tags';
+import {
+  vanillaParityBehaviourExamples,
+  vanillaParityKindExamples,
+  vanillaParityScriptExamples,
+} from './vanilla-parity';
 import { vehicleBehaviourExamples, vehicleKindExamples } from './vehicles';
 import { worldgenExamples } from './worldgen';
 
@@ -38,8 +46,16 @@ export { categoryTag, defineExample, type ExampleInput } from './define';
 export { entityBehaviourExamples } from './entities';
 export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
-export { scriptBehaviourExamples } from './scripts';
 export { vehicleBehaviourExamples } from './vehicles';
+
+/**
+ * The script behaviour examples, then the Server helper (commands, a function and a rule book,
+ * B461); the `examples/scripts` mirror holds them all in one project.
+ */
+export const scriptBehaviourExamples: readonly ExampleProject[] = Object.freeze([
+  ...scriptOnlyBehaviourExamples,
+  ...vanillaParityScriptExamples,
+]);
 
 /** The per-kind particle examples (ADR 0081 D5): the description first, then the type. */
 const [particleDescriptionExample, particleTypeExample] = particleKindExamples as [
@@ -68,6 +84,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...scriptKindExamples,
   ...rulesKindExamples,
   ...vehicleKindExamples,
+  ...vanillaParityKindExamples,
 ]);
 
 /**
@@ -80,6 +97,7 @@ export const behaviourExamples: readonly ExampleProject[] = Object.freeze([
   ...containerExamples,
   ...portalExamples,
   ...particleExamples,
+  ...vanillaParityBehaviourExamples,
 ]);
 
 /** The category of the starter projects in the gallery. */

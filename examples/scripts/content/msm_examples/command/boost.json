@@ -1,0 +1,28 @@
+{
+  "data": {
+    "arguments": [
+      {
+        "max": 5,
+        "min": 1,
+        "name": "power",
+        "type": "integer"
+      }
+    ],
+    "feedback_text": "Boosted!",
+    "format": 1,
+    "function": "msm_examples:boost_speed",
+    "name": "boost",
+    "permission": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:boost",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A command with an argument: /boost 3. The runtime passes \"power\" to the function through command storage, so the function can write $(power).",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

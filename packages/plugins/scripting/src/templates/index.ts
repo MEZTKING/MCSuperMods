@@ -7,6 +7,8 @@
 import type { ElementTemplate, TemplateContext } from '@msm/plugin-api';
 import { SCRIPT_KIND } from '../kinds';
 
+export { commandTemplates } from './commands';
+
 const CATEGORY = 'Scripts';
 
 const IMPORT = 'import { msm } from "msm:runtime";';

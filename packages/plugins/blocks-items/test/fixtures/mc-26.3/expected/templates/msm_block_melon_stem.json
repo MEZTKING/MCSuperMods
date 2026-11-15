@@ -1,0 +1,420 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "format": 1,
+      "fruit": "minecraft:melon",
+      "item": {
+        "creative_tab": "minecraft:natural_blocks",
+        "id": "demo:sample_seeds"
+      },
+      "sound_type": "grass",
+      "type": "stem"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth0",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage0.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth1",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage1.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth2",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth3",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage3.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth4",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage4.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth5",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage5.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth6",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage6.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_growth7",
+      "textures": {
+        "stem": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stage7.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/stem_fruit",
+      "textures": {
+        "stem": "minecraft:block/melon_stem",
+        "upperstem": "minecraft:block/attached_melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_attached.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "demo:block/sample_stage0"
+        },
+        "age=1": {
+          "model": "demo:block/sample_stage1"
+        },
+        "age=2": {
+          "model": "demo:block/sample_stage2"
+        },
+        "age=3": {
+          "model": "demo:block/sample_stage3"
+        },
+        "age=4": {
+          "model": "demo:block/sample_stage4"
+        },
+        "age=5": {
+          "model": "demo:block/sample_stage5"
+        },
+        "age=6": {
+          "model": "demo:block/sample_stage6"
+        },
+        "age=7": {
+          "model": "demo:block/sample_stage7"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "demo:block/sample_attached",
+          "y": 180
+        },
+        "facing=north": {
+          "model": "demo:block/sample_attached",
+          "y": 90
+        },
+        "facing=south": {
+          "model": "demo:block/sample_attached",
+          "y": 270
+        },
+        "facing=west": {
+          "model": "demo:block/sample_attached"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample_attached.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/melon_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_seeds.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_seeds",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_seeds.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample_seeds": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_attached"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "0"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.06666667,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "1"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.13333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.2,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.26666667,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.33333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "5"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.4,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "6"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.46666667,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "age": "7"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": {
+                    "n": 3,
+                    "p": 0.53333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                }
+              ],
+              "name": "demo:sample_seeds",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": {
+                    "n": 3,
+                    "p": 0.53333333,
+                    "type": "minecraft:binomial"
+                  },
+                  "type": "minecraft:set_count"
+                }
+              ],
+              "name": "demo:sample_seeds",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample_attached",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample_attached.json"
+  }
+]
