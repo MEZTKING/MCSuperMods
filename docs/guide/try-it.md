@@ -52,7 +52,7 @@ There is no sprinting. Sneaking is slower walking and does not stop you at an ed
 
 ## The hotbar and the picker
 
-The hotbar holds your project's blocks first, then the spawn eggs of your mobs, in the order of their ids. **Choose…** (or E) opens the picker for the selected slot: **Your blocks and spawn eggs**, and **Minecraft blocks, for looks only**, with a **Find** box. Minecraft's blocks need your Minecraft folder ([Getting started](getting-started.md#2-first-launch-tell-mcsupermods-where-minecraft-is)); without it the picker says "Set up your Minecraft folder to place Minecraft's own blocks as props." with **Set it up**.
+The hotbar holds your project's blocks first, then the spawn eggs of your mobs, then your vehicles, in the order of their ids. **Choose…** (or E) opens the picker for the selected slot: **Your blocks, spawn eggs and vehicles**, and **Minecraft blocks, for looks only**, with a **Find** box. Minecraft's blocks need your Minecraft folder ([Getting started](getting-started.md#2-first-launch-tell-mcsupermods-where-minecraft-is)); without it the picker says "Set up your Minecraft folder to place Minecraft's own blocks as props." with **Set it up**.
 
 When you change a block in its Studio, Try it picks the change up a moment later: a new name, picture, shape or model shows in the hotbar and in the placed blocks, and the blocks stay where they are. A block you delete from the project is taken out of the area ("<Name> is no longer in the project; it was taken out of the preview.").
 
