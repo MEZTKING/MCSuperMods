@@ -344,19 +344,22 @@ jobs:
           --forbid-line NoClassDefFoundError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
-      # The sample vanilla blocks (B464): the twenty types, both commands and the tab register, and
-      # the runtime's Mixins (B455) apply: a failed Mixin is an error at start, and a dedicated server
-      # loads no client class. The explosion Mixin loads only at the first explosion, which the
-      # parity run's TNT test makes.
+      # The sample vanilla blocks (B464, B462b): the twenty types, the conveyor, both commands and the
+      # tabs register, the Script API 1.6 script and the rule book's script load (the facts'
+      # expectScripts also requires the line), and the runtime's Mixins (B455) apply: a failed Mixin
+      # is an error at start, and a dedicated server loads no client class. The explosion Mixin loads
+      # at the first explosion, which the script's World.explode at server.started makes, so a plain
+      # start applies it too.
       - name: Headless Fabric server check (sample vanilla blocks)
         run: >-
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar"
           --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json"
-          --expect-line '[msm_runtime] registered 30 block(s) and 33 item(s) from 38 definition file(s); 0 error(s), 0 warning(s)'
-          --expect-line '[msm_runtime] registered blocks by type: block 10, cake 1, berry_bush 1, tall_plant 1, potted_plant 1, vine 1, sea_pickle 1, carpet 1, layers 1, cocoa 1, candle 1, bed 1, ladder 1, torch 1, lantern 1, chain 1, rod 1, sign 1, hanging_sign 1, stem 1, scaffolding 1'
+          --expect-line '[msm_runtime] registered 31 block(s) and 34 item(s) from 39 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered blocks by type: block 10, horizontal 1, cake 1, berry_bush 1, tall_plant 1, potted_plant 1, vine 1, sea_pickle 1, carpet 1, layers 1, cocoa 1, candle 1, bed 1, ladder 1, torch 1, lantern 1, chain 1, rod 1, sign 1, hanging_sign 1, stem 1, scaffolding 1'
           --expect-line '[msm_runtime] registered 2 command(s)'
           --expect-line '[msm_runtime] registered 2 creative tab(s)'
+          --expect-line '[msm_runtime] loaded 2 script(s); 0 error(s)'
           --forbid-line NoClassDefFoundError
           --forbid-line 'Mixin apply'
           --forbid-line MixinTransformerError
@@ -747,14 +750,18 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-vehicles-content.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
-      # Vanilla blocks (B464, B464a, SampleVanillaBlocksParityTest, 21 tests): registration, items,
+      # Vanilla blocks (B464, B464a, B462b; SampleVanillaBlocksParityTest, 21 tests): registration, items,
       # tags, the as_listed tab's order and the by_name tab's; tin ageing at copper's rate and lower neighbours stopping it; waxing
       # and scraping with their level events; water in the lamp; the bags' layouts, sounds, saved
       # contents and the guard's outcome; the bundle; /greet, /hiya and /kit's macro values,
       # permission and execute-as forks (the candles arrive); signs sounding as spruce and taking text; sleeping;
-      # cake, berries, light, drops, the stem, scaffolding; and primed TNT (the run's first
-      # explosion, so the explosion Mixin must apply). Black-box, on the content jar of every
-      # version and on the ejected jar.
+      # cake, berries, light, drops, the stem, scaffolding; primed TNT; and the plain rule's cookie
+      # on /greet. Black-box, on the content jar of every version and on the ejected jar. The
+      # script behaviour (SampleVanillaBlocksScriptParityTest, 8 tests: the Script API 1.6 script's
+      # placing, explosion, command, riding, items-nearby and bag-contents handlers, and the rules
+      # that need a script: the conveyor, /kit, creepers and cobwebs) on the content jar only, as
+      # scripts are not ejected: sample_vanilla_blocks_* matches both classes,
+      # sample_vanilla_blocks_parity_test_* only the first.
       - name: Parity GameTests (sample vanilla blocks, content jar)
         run: >-
           node tools/run-fabric-server/index.ts
@@ -774,7 +781,7 @@ jobs:
           --jar "$MSM_EJECTED_VANILLA_BLOCKS_JAR"
           --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json" --no-runtime
           --forbid-line NoClassDefFoundError
-          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_vanilla_blocks_*'
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_vanilla_blocks_parity_test_*'
           --report "$RUNNER_TEMP/parity-reports/sample-vanilla-blocks-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server

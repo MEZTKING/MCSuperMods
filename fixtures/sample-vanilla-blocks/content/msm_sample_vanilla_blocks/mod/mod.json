@@ -3,7 +3,7 @@
     "authors": [
       "MCSuperMods"
     ],
-    "description": "Sample vanilla blocks: one block of each vanilla-like type, a lamp that holds water, tin that ages like copper, bags, a bundle, two commands and two creative tabs.",
+    "description": "Sample vanilla blocks: one block of each vanilla-like type, a lamp that holds water, tin that ages like copper, a conveyor, bags, a bundle, two commands, two creative tabs, a Script API 1.6 script and a rule book.",
     "licence": "MIT",
     "mod_id": "msm_sample_vanilla_blocks",
     "name": "MSM Sample Vanilla Blocks",

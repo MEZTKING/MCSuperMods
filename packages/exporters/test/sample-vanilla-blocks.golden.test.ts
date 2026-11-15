@@ -23,17 +23,26 @@
  *   `/kit <who> <count>` (operators, a macro function giving candles);
  * - the creative tab `vanilla_blocks` (`as_listed`), listing every item but the tin set, and the
  *   tab `tin_blocks` (`by_name`, B464a), listing the eight tin blocks by display name, whose order
- *   ("Block of Tin" first) differs from their registration order.
+ *   ("Block of Tin" first) differs from their registration order;
+ * - `conveyor`, a horizontal block for the rule book's conveyor rule (B462b);
+ * - the script `script_api_1_6`, using every Script API 1.6 member (B455; see
+ *   {@link API_SCRIPT_LINES}), and the rule book `vanilla_blocks_rules` with B458's cards (see
+ *   {@link RULE_BOOK_DATA}).
  *
  * Pictures are MSM's own (the library's placeholder pictures, `placeholderPng`, and a sign
  * writing-screen board drawn here); none is vanilla's.
  *
  * - The fixture equals the project built from {@link SAMPLE_ELEMENTS} and {@link SAMPLE_ASSETS}
  *   now; `UPDATE_GOLDENS=1` rewrites it (the README is hand-written).
- * - Every element validates with zero problems, the plugins' project validators report nothing
- *   on every target, and the function passes the offline mcfunction checker.
- * - The content jar exports with zero errors and warnings, holds the definitions (valid) and its
- *   SHA-256 is pinned per target in two time zones
+ * - Every element validates with zero problems; as the app does (ADR 0082 D9, B371), the
+ *   project is expanded with every plugin's project expanders before validating and exporting,
+ *   with no expansion problems; the plugins' project validators then report nothing on every
+ *   target (dropping `scripting.unknown-handler` for handlers the rules' script defines); both
+ *   scripts type-check; the function passes the offline mcfunction checker.
+ * - The rule on `/greet` is plain and goes into the command's event; the others compile to the
+ *   book's script (the conveyor through `run_script`, `/kit` as a `command` listener).
+ * - The content jar exports with zero errors and warnings, holds the definitions (valid) and the
+ *   two scripts as JavaScript, and its SHA-256 is pinned per target in two time zones
  *   (`test/fixtures/<target id>/sample-vanilla-blocks-jar.sha256`).
  * - The vanilla data pack (vanilla pack safety, ADR 0066) leaves out the loot tables with
  *   `export.mod-only-reference` and keeps the macro function with `export.mod-only-function`;
@@ -44,7 +53,9 @@
  *   `fabric-facts.json` for `tools/run-fabric-server`. Without them that test is skipped.
  */
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -53,6 +64,7 @@ import {
   createMemoryFileSystem,
   type DirEntry,
   ElementKindRegistry,
+  expandProject,
   loadProject,
   type MemoryFileSystem,
   type ProjectFileSystem,
@@ -60,7 +72,7 @@ import {
   saveProject,
   utf8,
 } from '@msm/core';
-import type { Element, Json, Plugin, Problem, Project } from '@msm/plugin-api';
+import type { Element, Json, Plugin, Problem, Project, TargetFacts } from '@msm/plugin-api';
 import blocksItemsPlugin, {
   blockGeneratedBlockIds,
   blockGeneratedModelIds,
@@ -75,7 +87,17 @@ import {
   type Rgb,
 } from '@msm/plugin-library';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
-import scriptingPlugin from '@msm/plugin-scripting';
+import rulesPlugin, {
+  generatedScript,
+  RULES_KIND,
+  ruleEventId,
+  ruleHandlerId,
+  ruleScriptPath,
+} from '@msm/plugin-rules';
+import scriptingPlugin, {
+  findHandlerDefinitions,
+  MSM_RUNTIME_TYPINGS,
+} from '@msm/plugin-scripting';
 import {
   createRegistryIndex,
   createSchemaIndex,
@@ -88,7 +110,8 @@ import {
 import { createMcfunctionService, type McfunctionService } from '@msm/schemas/mcfunction';
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 import { unzipSync } from 'fflate';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import ts from 'typescript';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   commandLiteralsOf,
   createFabricContentJarExporter,
@@ -102,9 +125,14 @@ import {
   nestedRuntimePath,
   resourcePackExporter,
   runExport,
+  type ScriptTranspileResult,
   vanillaSafeExporter,
 } from '../src/index';
 import { defaultTarget, selectedTarget } from './selected-target';
+
+// Expanding, compiling and exporting the project with its rules and scripts takes a few
+// seconds; under load the default 5 s is too short (B368, B377).
+vi.setConfig({ testTimeout: 60_000 });
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -120,12 +148,13 @@ const HAND_WRITTEN = new Set(['README.md']);
 /** Two zones on opposite sides of the date line, so a local-time leak changes the bytes. */
 const TIME_ZONES = ['Pacific/Kiritimati', 'America/Los_Angeles'] as const;
 
-/** The plugins the sample needs, in the app's registration order. */
+/** The plugins the sample needs, in the app's registration order (rules after scripting). */
 const PLUGINS: readonly Plugin[] = [
   resourcePackPlugin,
   dataPackPlugin,
   blocksItemsPlugin,
   scriptingPlugin,
+  rulesPlugin,
 ];
 const VALIDATORS = PLUGINS.flatMap((plugin) => plugin.contributes.validators ?? []);
 
@@ -134,9 +163,37 @@ for (const plugin of PLUGINS) registerPlugin(registry, plugin);
 
 const meta = {
   msmVersion: '1.5.1',
-  plugins: ['msm.blocks-items', 'msm.datapack', 'msm.scripting'],
+  plugins: ['msm.blocks-items', 'msm.datapack', 'msm.rules', 'msm.scripting'],
 };
 const stubRuntimeJar = utf8.encode('PK stub msm_runtime jar for the sample-vanilla-blocks golden');
+
+/** The transpiler of ADR 0031 D2: TypeScript to ES5 CommonJS; syntax errors as problems. */
+function typescriptTranspile(source: string, name: string): ScriptTranspileResult {
+  const output = ts.transpileModule(source, {
+    fileName: name,
+    reportDiagnostics: true,
+    compilerOptions: {
+      target: ts.ScriptTarget.ES5,
+      module: ts.ModuleKind.CommonJS,
+      downlevelIteration: true,
+      ignoreDeprecations: '6.0',
+    },
+  });
+  const diagnostics = (output.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  );
+  if (diagnostics.length > 0) {
+    return {
+      problems: diagnostics.map((diagnostic) => ({
+        severity: 'error',
+        code: 'scripting.syntax',
+        message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+        file: name,
+      })),
+    };
+  }
+  return { js: output.outputText };
+}
 
 // The project -----------------------------------------------------------------------------
 
@@ -184,6 +241,8 @@ const COLOURS = {
   pouch: [120, 140, 60] as Rgb,
   kit: [180, 60, 52] as Rgb,
   charm: [168, 92, 176] as Rgb,
+  belt: [70, 74, 82] as Rgb,
+  arrow: [236, 196, 64] as Rgb,
 } as const satisfies Record<string, Rgb>;
 
 const TAB = ns('vanilla_blocks');
@@ -263,6 +322,10 @@ const CHARM_BUNDLE = ns('charm_bundle');
 const GREET = ns('greet');
 const KIT = ns('kit');
 const GIVE_KIT = ns('give_kit');
+const CONVEYOR = ns('conveyor');
+/** The Script API 1.6 script (B455) and the rule book with B458's cards. */
+const API_SCRIPT = ns('script_api_1_6');
+const RULE_BOOK = ns('vanilla_blocks_rules');
 
 const CAKE_EATEN = ns('honey_cake_eaten');
 const SATCHEL_OPENED = ns('satchel_opened');
@@ -549,6 +612,23 @@ const SEA_LAMP_BLOCK = block(SEA_LAMP, {
   },
 });
 
+/**
+ * A horizontal block that faces the player who places it (as a furnace does); the rule book's conveyor
+ * rule moves a player who steps on it one block east while it faces east (B458).
+ */
+const CONVEYOR_BLOCK = block(CONVEYOR, {
+  type: 'horizontal',
+  display_name: 'Conveyor',
+  sound_type: 'metal',
+  textures: {
+    front: ns('block/conveyor_front'),
+    side: ns('block/conveyor_side'),
+    top: ns('block/conveyor_top'),
+  },
+  item: IN_TAB,
+  components: breakable(1.5, { tool: 'pickaxe' }),
+});
+
 /** The four stages of tin, then the waxed copy of each (blocks-items `weathering-tin-set`). */
 const TIN_STAGES = ['unaffected', 'exposed', 'weathered', 'oxidized'] as const;
 const tinName = (stage: (typeof TIN_STAGES)[number]): string =>
@@ -700,6 +780,157 @@ const COMMANDS: readonly SampleElement[] = [
   },
 ];
 
+/** The lines the script and the rules say, which parity reads back. */
+const SCRIPT_TEXT = {
+  bedrock: 'Bedrock stays where the world put it.',
+  creeper: "The creeper's blast left the blocks alone.",
+  greet: 'The script heard /',
+  hopOff: 'You hop off to say hello.',
+  cow: 'Moo. Say /greet to get off.',
+  satchelEmpty: 'The satchel is empty.',
+  satchel: 'The satchel holds ',
+  lamp: 'The sea lamp tidied ',
+} as const;
+const RULE_TEXT = {
+  kit: 'Kit handed out.',
+  cobweb: 'Cobwebs are not welcome here.',
+} as const;
+
+/**
+ * Every Script API 1.6 member (B455, "Since runtime 1.5.1"): `block.place` cancelling bedrock,
+ * `world.explosion` keeping the blocks of a creeper's blast, `command` answering `/greet` (and
+ * `/hiya`), `Entity.ride` onto a cow and `dismount` on `/greet`, `World.itemsNear` with
+ * `remove` and `setItem` from the sea lamp, `ItemRef.contents` of the satchel, and one
+ * `World.explode` at `server.started` that breaks nothing, so a plain server start applies the
+ * runtime's explosion Mixin.
+ */
+const API_SCRIPT_LINES = [
+  'import { msm } from "msm:runtime";',
+  '',
+  '// Script API 1.6 (runtime 1.5.1) in the vanilla blocks sample: placing, explosions, commands,',
+  '// riding, items lying on the ground and what a bag holds.',
+  `const NS = "${NAMESPACE}";`,
+  '',
+  "// block.place: bedrock is the world's floor here, not a building block (cancel).",
+  'msm.events.on("block.place", (e) => {',
+  '  if (e.block !== "minecraft:bedrock") return;',
+  '  e.cancel();',
+  `  e.player.sendMessage(${JSON.stringify(SCRIPT_TEXT.bedrock)});`,
+  '});',
+  '',
+  "// world.explosion: a creeper's blast still hurts and pushes, but keeps every block (keepBlocks).",
+  'msm.events.on("world.explosion", (e) => {',
+  '  if (e.cause !== "minecraft:creeper") return;',
+  '  e.keepBlocks();',
+  '  for (const entity of e.world.entitiesNear(e.pos, 8)) {',
+  '    const player = entity.asPlayer();',
+  `    if (player !== undefined) player.sendMessage(${JSON.stringify(SCRIPT_TEXT.creeper)});`,
+  '  }',
+  '});',
+  '',
+  '// command: /greet (or /hiya) gets an answer from the script too, and a rider gets off first',
+  '// (Entity.dismount).',
+  'msm.events.on("command", (e) => {',
+  '  if (e.id !== NS + ":greet" || e.source === undefined) return;',
+  '  const player = e.source.asPlayer();',
+  '  if (player === undefined) return;',
+  `  if (player.vehicle !== undefined && player.dismount()) player.sendMessage(${JSON.stringify(SCRIPT_TEXT.hopOff)});`,
+  `  player.sendMessage(${JSON.stringify(SCRIPT_TEXT.greet)} + e.name + ".");`,
+  '});',
+  '',
+  '// Entity.ride: using a cow with an empty hand gets on it.',
+  'msm.events.on("entity.interact", (e) => {',
+  '  if (e.hand !== "main" || e.entity.type !== "minecraft:cow" || e.player.heldItem !== undefined) return;',
+  `  if (e.player.vehicle === undefined && e.player.ride(e.entity)) e.player.sendMessage(${JSON.stringify(SCRIPT_TEXT.cow)});`,
+  '});',
+  '',
+  '// World.itemsNear: using the sea lamp with an empty hand tidies the items lying within 4 blocks:',
+  '// rotten flesh goes (remove) and cobblestone becomes as much stone (setItem).',
+  'msm.events.on("block.interact", (e) => {',
+  '  if (e.hand !== "main" || e.block.id !== NS + ":sea_lamp" || e.player.heldItem !== undefined) return;',
+  '  let removed = 0;',
+  '  let polished = 0;',
+  '  for (const dropped of e.world.itemsNear(e.block.pos, 4)) {',
+  '    if (dropped.item.id === "minecraft:rotten_flesh") {',
+  '      dropped.remove();',
+  '      removed++;',
+  '    } else if (dropped.item.id === "minecraft:cobblestone") {',
+  '      dropped.setItem({ id: "minecraft:stone", count: dropped.item.count });',
+  '      polished++;',
+  '    }',
+  '  }',
+  `  e.player.sendMessage(${JSON.stringify(SCRIPT_TEXT.lamp)} + removed + " and polished " + polished + " stack(s).");`,
+  '});',
+  '',
+  '// ItemRef.contents: using the satchel without sneaking says what it holds (sneak and use opens it).',
+  'msm.events.on("item.use", (e) => {',
+  '  if (e.hand !== "main" || e.item.id !== NS + ":satchel" || e.player.isSneaking) return;',
+  '  const held = e.item.contents.map((stack) => stack.count + " " + stack.id);',
+  `  e.player.sendMessage(held.length === 0 ? ${JSON.stringify(SCRIPT_TEXT.satchelEmpty)} : ${JSON.stringify(SCRIPT_TEXT.satchel)} + held.join(", ") + ".");`,
+  '});',
+  '',
+  '// World.explode at the start: a small blast high above the world centre that breaks nothing, so a',
+  "// plain server start applies the runtime's explosion Mixin (B455).",
+  'msm.events.on("server.started", (e) => {',
+  '  e.world.explode({ x: 0.5, y: 300, z: 0.5 } as Pos, 1, { breaksBlocks: false });',
+  '});',
+];
+
+/**
+ * The rule book with B458's cards: the conveyor (`block_stepped_on`, only while it faces east,
+ * teleport to the block in front of it; a script rule), a plain rule on `/greet` (a cookie, in
+ * the command's event), a rule on `/kit` (a line; `/kit` runs a function, so a script listener of
+ * the `command` event), a creeper's explosion keeping the blocks safe and cobwebs refused.
+ */
+const RULE_BOOK_DATA: Json = {
+  counters: [],
+  format: 1,
+  rules: [
+    {
+      do: [{ step: 'teleport', to: 'in_front_of_here' }],
+      key: 'conveyor',
+      name: 'The conveyor carries you east',
+      only_if: {
+        conditions: [{ condition: 'is_facing', direction: 'east', of: 'here' }],
+        match: 'all',
+      },
+      when: {
+        options: { cooldown_seconds: 0.5 },
+        subject: CONVEYOR,
+        trigger: 'block_stepped_on',
+      },
+    },
+    {
+      do: [{ count: 1, item: 'minecraft:cookie', step: 'give_item' }],
+      key: 'greet_cookie',
+      name: 'A cookie for a greeting',
+      when: { subject: GREET, trigger: 'command_used' },
+    },
+    {
+      do: [{ step: 'show_message', text: [RULE_TEXT.kit] }],
+      key: 'kit_note',
+      name: 'Kits are noted',
+      when: { subject: KIT, trigger: 'command_used' },
+    },
+    {
+      do: [{ step: 'keep_blocks_safe' }],
+      key: 'creeper_safe',
+      name: 'Creepers break no blocks',
+      only_if: {
+        conditions: [{ cause: 'minecraft:creeper', condition: 'caused_by' }],
+        match: 'all',
+      },
+      when: { trigger: 'explosion' },
+    },
+    {
+      do: [{ step: 'stop_placing' }, { step: 'show_message', text: [RULE_TEXT.cobweb] }],
+      key: 'no_cobwebs',
+      name: 'No cobwebs',
+      when: { subject: 'minecraft:cobweb', trigger: 'any_block_placed' },
+    },
+  ],
+};
+
 const SAMPLE_ELEMENTS: readonly SampleElement[] = [
   {
     id: ns('mod'),
@@ -709,7 +940,7 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       version: '1.0.0',
       name: PROJECT_NAME,
       description:
-        'Sample vanilla blocks: one block of each vanilla-like type, a lamp that holds water, tin that ages like copper, bags, a bundle, two commands and two creative tabs.',
+        'Sample vanilla blocks: one block of each vanilla-like type, a lamp that holds water, tin that ages like copper, a conveyor, bags, a bundle, two commands, two creative tabs, a Script API 1.6 script and a rule book.',
       authors: ['MCSuperMods'],
       licence: 'MIT',
     },
@@ -739,6 +970,7 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
   blockModel('gourd'),
   SEA_LAMP_BLOCK,
   blockModel('sea_lamp'),
+  CONVEYOR_BLOCK,
   ...TIN_BLOCKS,
   ...TIN_STAGES.map((stage) => blockModel(tinName(stage))),
   ...ITEMS,
@@ -757,6 +989,8 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       ],
     },
   },
+  { id: API_SCRIPT, kind: 'msm:script', data: { lines: API_SCRIPT_LINES } },
+  { id: RULE_BOOK, kind: RULES_KIND, data: RULE_BOOK_DATA },
 ];
 
 const SAMPLE_ASSETS: readonly SampleAsset[] = [
@@ -803,6 +1037,9 @@ const SAMPLE_ASSETS: readonly SampleAsset[] = [
   texture('block/bamboo_frame_side', 'trapdoor', COLOURS.bamboo),
   texture('block/bamboo_frame_bottom', 'planks', mix(COLOURS.bamboo, [0, 0, 0], 0.2)),
   texture('block/sea_lamp', 'polished_stone', COLOURS.sea),
+  texture('block/conveyor_front', 'block_front', COLOURS.arrow),
+  texture('block/conveyor_side', 'planks', COLOURS.belt),
+  texture('block/conveyor_top', 'bricks', COLOURS.belt),
   ...TIN_STAGES.map((stage, i) =>
     texture(`block/${tinName(stage)}`, 'polished_stone', mix(COLOURS.tin, COLOURS.patina, i / 3)),
   ),
@@ -932,6 +1169,82 @@ const elementsOf = (project: Project): Element[] =>
 
 const dataOf = (project: Project, id: string): JsonRecord =>
   elementsOf(project).find((element) => element.id === id)?.data as JsonRecord;
+
+/**
+ * The project as the app's session validates and exports it (ADR 0082 D9, B371): expanded by
+ * every plugin's project expanders in registration order, with zero expansion problems.
+ */
+async function expandSample(target: TargetFacts): Promise<Project> {
+  const expansion = await expandProject(await loadSample(), PLUGINS, target);
+  expect(expansion.problems).toEqual([]);
+  return expansion.project;
+}
+
+/** The generated script lines of every rule book of an expanded project, by book id. */
+function ruleScripts(expanded: Project): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const element of elementsOf(expanded)) {
+    if (element.kind !== RULES_KIND) continue;
+    const lines = generatedScript(element.data);
+    if (lines !== undefined) out.set(element.id, lines);
+  }
+  return out;
+}
+
+/**
+ * `problems` without the `scripting.unknown-handler` warnings for handlers a generated rule
+ * script defines, as the app's session drops them (B371).
+ */
+function withoutRuleHandlers(problems: readonly Problem[], expanded: Project): Problem[] {
+  const defined = new Set<string>();
+  for (const lines of ruleScripts(expanded).values()) {
+    for (const definition of findHandlerDefinitions(lines)) defined.add(definition.handler);
+  }
+  return problems.filter(
+    (problem) =>
+      problem.code !== 'scripting.unknown-handler' ||
+      ![...defined].some((handler) => problem.message.includes(`"${handler}"`)),
+  );
+}
+
+/**
+ * Type-checks scripts against the generated typings with `lib.es5` only, as
+ * `sample-script.golden.test.ts` does.
+ */
+function typeCheckScripts(scripts: ReadonlyMap<string, string[]>): string[] {
+  const libDir = dirname(createRequire(import.meta.url).resolve('typescript/lib/lib.es5.d.ts'));
+  const files = new Map<string, string>([['/msm-runtime.d.ts', MSM_RUNTIME_TYPINGS]]);
+  for (const [id, lines] of scripts) files.set(`/script/${nameOf(id)}.ts`, `${lines.join('\n')}\n`);
+  const options: ts.CompilerOptions = {
+    strict: true,
+    noEmit: true,
+    target: ts.ScriptTarget.ES2018,
+    module: ts.ModuleKind.CommonJS,
+    lib: ['lib.es5.d.ts'],
+    types: [],
+  };
+  const host = ts.createCompilerHost(options);
+  host.getDefaultLibLocation = () => libDir;
+  host.getSourceFile = (fileName, languageVersion) => {
+    const text =
+      files.get(fileName) ?? readFileSync(join(libDir, fileName.split('/').pop() ?? ''), 'utf8');
+    return ts.createSourceFile(fileName, text, languageVersion);
+  };
+  host.fileExists = (fileName) => files.has(fileName) || fileName.startsWith(libDir);
+  host.directoryExists = (name) => name === '/' || name === '/script' || name.startsWith(libDir);
+  host.readFile = (fileName) => files.get(fileName);
+  const program = ts.createProgram([...files.keys()], options, host);
+  return ts.getPreEmitDiagnostics(program).map((d) => {
+    const where = d.file === undefined ? '' : `${d.file.fileName}: `;
+    return `${where}${ts.flattenDiagnosticMessageText(d.messageText, '\n')}`;
+  });
+}
+
+/** The script files of the content jar: the hand-written script and the rule book's script. */
+const SCRIPT_FILES = [
+  `msm/${NAMESPACE}/script/${nameOf(API_SCRIPT)}.js`,
+  ruleScriptPath(RULE_BOOK).replace(/\.ts$/, '.js'),
+].sort();
 
 // Registries and checkers -------------------------------------------------------------------
 
@@ -1077,7 +1390,7 @@ describe('sample vanilla blocks project', () => {
       .filter((element) => element.kind === 'msm:block')
       .map((element) => (element.data as JsonRecord).type)
       .filter((type) => type !== undefined);
-    expect(types.sort()).toEqual([...BLOCK_TYPES].sort());
+    expect(types.sort()).toEqual([...BLOCK_TYPES, 'horizontal'].sort());
     expect(COMPANIONS.sort()).toEqual([
       'cedar_hanging_sign_wall',
       'cedar_sign_wall',
@@ -1106,6 +1419,46 @@ describe('sample vanilla blocks project', () => {
     expect(components(CHARM_BUNDLE)['msm:bundle']).toEqual({});
     expect(COMMAND_NAMES).toEqual(['greet', 'kit']);
     expect(dataOf(project, GIVE_KIT).lines).toContain(KIT_LINE);
+    // The script uses every Script API 1.6 member (B455), the rule book B458's cards.
+    const script = (dataOf(project, API_SCRIPT).lines as string[]).join('\n');
+    for (const member of [
+      '"block.place"',
+      'e.cancel()',
+      '"world.explosion"',
+      'e.keepBlocks()',
+      '"command"',
+      '.ride(',
+      '.dismount()',
+      '.itemsNear(',
+      '.remove()',
+      '.setItem(',
+      '.contents',
+      '"server.started"',
+      '.explode(',
+      'breaksBlocks: false',
+    ]) {
+      expect(script, member).toContain(member);
+    }
+    const rules = (dataOf(project, RULE_BOOK).rules as { when: { trigger: string } }[]).map(
+      (rule) => rule.when.trigger,
+    );
+    expect(rules).toEqual([
+      'block_stepped_on',
+      'command_used',
+      'command_used',
+      'explosion',
+      'any_block_placed',
+    ]);
+    const book = JSON.stringify(dataOf(project, RULE_BOOK));
+    for (const card of [
+      '"is_facing"',
+      '"in_front_of_here"',
+      '"caused_by"',
+      '"keep_blocks_safe"',
+      '"stop_placing"',
+    ]) {
+      expect(book, card).toContain(card);
+    }
     // Every item of the project names a tab: the tin set the by-name tab, the rest the first.
     const tinIds = new Set(TIN_BLOCKS.map((element) => element.id));
     for (const element of elementsOf(project)) {
@@ -1127,6 +1480,8 @@ describe('sample vanilla blocks project', () => {
       'msm:creative_tab',
       'msm:item',
       'msm:mod',
+      'msm:rules',
+      'msm:script',
     ]);
     expect(project.namespaces[0]?.assets.map((asset) => asset.path).sort()).toEqual(
       SAMPLE_ASSETS.map((asset) => asset.path).sort(),
@@ -1166,12 +1521,15 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     ): Promise<Uint8Array> {
       const sink = createZipSink();
       const report = await runExport({
-        project: await loadSample(),
+        project: await expandSample(target),
         registry,
         target,
         schemaIndex: context.schemaIndex,
         registries: context.registries,
-        exporter: createFabricContentJarExporter(factory),
+        exporter: createFabricContentJarExporter({
+          ...factory,
+          transpileScript: async (source, name) => typescriptTranspile(source, name),
+        }),
         sink,
         readAsset: (namespace, path) => sampleFs.readFile(`assets/${namespace}/${path}`),
         meta,
@@ -1201,8 +1559,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(problems).toEqual([]);
     });
 
-    it('passes every project validator with no problems at all', async () => {
-      const elements = elementsOf(await loadSample());
+    it('expands with no problems and passes every project validator with no problems at all', async () => {
+      const expanded = await expandSample(target);
+      const elements = elementsOf(expanded);
       const found = (
         await Promise.all(
           VALIDATORS.map((validator) =>
@@ -1210,7 +1569,59 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ),
         )
       ).flat();
-      expect(found).toEqual([]);
+      expect(withoutRuleHandlers(found, expanded)).toEqual([]);
+    });
+
+    it('compiles the rules (the /greet one into its event) and type-checks both scripts', async () => {
+      const expanded = await expandSample(target);
+      const scripts = ruleScripts(expanded);
+      expect([...scripts.keys()]).toEqual([RULE_BOOK]);
+      expect(
+        typeCheckScripts(
+          new Map([...scripts, [API_SCRIPT, dataOf(expanded, API_SCRIPT).lines as string[]]]),
+        ),
+      ).toEqual([]);
+      // `/greet` is event-only: its wave runs first, then the plain rule's cookie.
+      const greet = dataOf(expanded, GREET);
+      const greetEvent = ruleEventId(GREET, 'command_used');
+      expect(greet.event).toBe(greetEvent);
+      expect((greet.events as JsonRecord)[greetEvent]).toEqual({
+        actions: [
+          { type: 'trigger_event', event: 'wave' },
+          { type: 'give_item', item: 'minecraft:cookie', count: 1 },
+        ],
+      });
+      // `/kit` runs a function, so its rule listens to the `command` event in the script.
+      expect(dataOf(expanded, KIT).event).toBeUndefined();
+      // The conveyor's rule has a condition: its step event runs the book's handler.
+      const conveyor = dataOf(expanded, CONVEYOR);
+      const stepEvent = ruleEventId(CONVEYOR, 'block_stepped_on');
+      expect((conveyor.components as JsonRecord)['msm:on_step']).toMatchObject({
+        event: stepEvent,
+      });
+      expect((conveyor.events as JsonRecord)[stepEvent]).toEqual({
+        actions: [
+          {
+            type: 'run_script',
+            handler: ruleHandlerId(RULE_BOOK, CONVEYOR, 'block_stepped_on'),
+          },
+        ],
+      });
+      const book = (scripts.get(RULE_BOOK) ?? []).join('\n');
+      for (const text of [
+        '"command"',
+        `"${KIT}"`,
+        '"world.explosion"',
+        'e.keepBlocks();',
+        '"minecraft:creeper"',
+        '"block.place"',
+        'e.cancel();',
+        '"minecraft:cobweb"',
+        RULE_TEXT.kit,
+        RULE_TEXT.cobweb,
+      ]) {
+        expect(book, text).toContain(text);
+      }
     });
 
     it('holds the definitions (valid), the companions, the pictures and the tab', async () => {
@@ -1237,8 +1648,12 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         ]),
       ];
       expect(paths.filter((path) => path.startsWith('msm/'))).toEqual(
-        definitions.map(([path]) => path).sort(),
+        [...definitions.map(([path]) => path), ...SCRIPT_FILES].sort(),
       );
+      expect(paths.filter((path) => path.endsWith('.ts'))).toEqual([]);
+      for (const path of SCRIPT_FILES) {
+        expect(utf8.decode(files[path] as Uint8Array), path).toContain('require("msm:runtime")');
+      }
       for (const path of [
         'fabric.mod.json',
         'msm.export.json',
@@ -1313,7 +1728,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     });
 
     it('leaves out the loot tables and keeps the macro function in the vanilla data pack', async () => {
-      const project = await loadSample();
+      const project = await expandSample(target);
       const modOnly = modOnlyIdsOf(context.ids, commandLiteralsOf(elementsOf(project)));
       const sink = createMemorySink();
       const report = await runExport({
@@ -1388,7 +1803,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     it('keeps the pictures and the writing-screen pictures in the vanilla resource pack', async () => {
       const sink = createMemorySink();
       const report = await runExport({
-        project: await loadSample(),
+        project: await expandSample(target),
         registry,
         target,
         schemaIndex: context.schemaIndex,
@@ -1406,7 +1821,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       for (const name of [...BLOCK_NAMES, ...COMPANIONS]) {
         expect(paths).toContain(`assets/${NAMESPACE}/blockstates/${name}.json`);
       }
-      expect(paths.some((path) => path.startsWith('msm/'))).toBe(false);
+      expect(paths.some((path) => path.startsWith('msm/') || path.includes('/script/'))).toBe(
+        false,
+      );
     });
 
     describe('content jar', () => {
@@ -1453,7 +1870,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           expectBlocks: EXPECTED_BLOCKS,
           expectEntities: 0,
           expectItems: EXPECTED_ITEMS,
-          expectScripts: 0,
+          expectScripts: SCRIPT_FILES.length,
           fabricApi: fabric.api,
           java: target.java,
           loader: fabric.loader,

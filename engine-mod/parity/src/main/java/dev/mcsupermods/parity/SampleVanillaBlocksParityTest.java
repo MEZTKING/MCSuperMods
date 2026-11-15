@@ -58,7 +58,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Behaviour parity over {@code fixtures/sample-vanilla-blocks} (ADRs 0094 to 0096, 0101 D6; B464), written against
  * vanilla and Fabric API only, so the same tests run against the content jar (the runtime's classes, B445 to B454) and
- * the ejected jar (the generated ones, B457). Run with {@code --gametest-filter msm_parity_tests:sample_vanilla_blocks_*}.
+ * the ejected jar (the generated ones, B457). Run with {@code --gametest-filter msm_parity_tests:sample_vanilla_blocks_parity_test_*}
+ * (or {@code sample_vanilla_blocks_*} on a content jar, which also runs {@link SampleVanillaBlocksScriptParityTest}: the
+ * sample's Script API 1.6 script and its rules that need a script are not ejected, B462b).
  *
  * <p>Black box, as {@code SampleVehiclesParityTest} (B426): states are set and tested with {@code setblock} and
  * {@code execute if block} (their names are the format's), light with {@code getLightEmission}, loot with
@@ -68,7 +70,7 @@ import net.minecraft.world.phys.Vec3;
  * mechanism: where the runtime and the eject differ inside (the bag guard refuses a click; the eject puts the item back
  * after it), the tests compare the outcome (B450's note).
  *
- * <p>Covered: the 30 blocks, 33 items and four companions, the item ids of the berry bush, pod and stem, stack sizes and
+ * <p>Covered: the 31 blocks (with the conveyor, B462b), 34 items and four companions, the item ids of the berry bush, pod and stem, stack sizes and
  * vanilla tags; the {@code as_listed} tab's contents in registration order (block items, then items, each by file path;
  * B454's correction) and the {@code by_name} tab's by display name (B464a); tin ageing at vanilla copper's rate with a lower-stage neighbour (project or vanilla) stopping it in both
  * directions (B449's measurements); honeycomb and axe with level events 3003, 3004 and 3005; water in the sea lamp and the
@@ -77,7 +79,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code /kit}'s macro values, range, permission and the {@code execute as} fork (B454, B457); signs sounding as vanilla
  * spruce signs and taking text, dye, glow and wax (B457a); sleeping in the bed and its spawn; the cake's slices and
  * refused candle; the berry harvest; light levels; drops by piece; the stem's fruit; scaffolding falling unsupported;
- * primed TNT breaking project blocks as vanilla blocks of the same resistance (the first explosion of the run).
+ * primed TNT breaking project blocks as vanilla blocks of the same resistance (no rule keeps a TNT blast's blocks); the
+ * plain rule on {@code /greet} (a cookie after the wave, ejected with the command, B462b).
  *
  * <p>Not covered here: sign text written from a real client
  * (the client GameTest {@code MsmVanillaBlocksClientGameTest} does that on a dedicated server), anything drawn.
@@ -88,11 +91,12 @@ public class SampleVanillaBlocksParityTest {
     /** Where {@link #ifBlock} places its gold block when the predicate matches. */
     private static final BlockPos MARKER = new BlockPos(9, 3, 9);
 
-    /** The fixture's 30 blocks. */
+    /** The fixture's 31 blocks. */
     private static final List<String> BLOCKS = List.of("honey_cake", "blue_berry_bush", "tall_bluebell", "potted_grass_tuft", "ivy",
             "glow_pod", "moss_rug", "ash_layer", "coffee_pod", "tallow_candle", "cosy_bed", "rope_ladder", "ember_torch", "paper_lantern",
             "brass_chain", "crystal_rod", "cedar_sign", "cedar_hanging_sign", "gourd_stem", "gourd", "bamboo_frame", "sea_lamp", "tin",
-            "exposed_tin", "weathered_tin", "oxidized_tin", "waxed_tin", "waxed_exposed_tin", "waxed_weathered_tin", "waxed_oxidized_tin");
+            "exposed_tin", "weathered_tin", "oxidized_tin", "waxed_tin", "waxed_exposed_tin", "waxed_weathered_tin", "waxed_oxidized_tin",
+            "conveyor");
     /** The blocks the types make beside their own, without items. */
     private static final List<String> COMPANIONS = List.of("ember_torch_wall", "cedar_sign_wall", "cedar_hanging_sign_wall",
             "gourd_stem_attached");
@@ -101,7 +105,7 @@ public class SampleVanillaBlocksParityTest {
      * registration order); the tin set is in the other tab.
      */
     private static final List<String> TAB = List.of("ash_layer", "bamboo_frame", "blue_berries", "brass_chain", "cedar_hanging_sign",
-            "cedar_sign", "coffee_beans", "cosy_bed", "crystal_rod", "ember_torch", "glow_pod", "gourd", "gourd_seeds", "honey_cake", "ivy",
+            "cedar_sign", "coffee_beans", "conveyor", "cosy_bed", "crystal_rod", "ember_torch", "glow_pod", "gourd", "gourd_seeds", "honey_cake", "ivy",
             "moss_rug", "paper_lantern", "rope_ladder", "sea_lamp", "tall_bluebell", "tallow_candle", "charm_bundle", "satchel", "seed_pouch",
             "tool_kit");
     /**
@@ -291,7 +295,7 @@ public class SampleVanillaBlocksParityTest {
     // Registration, items, tags and the creative tab
 
     /**
-     * The 30 blocks and four companions are registered; 33 items: a block item for every block but the potted grass and
+     * The 31 blocks and four companions are registered; 34 items: a block item for every block but the potted grass and
      * the companions, the bush, pod and stem under their item ids, and the four bags and bundle; stack sizes and the
      * vanilla tags the types join.
      */
@@ -318,7 +322,7 @@ public class SampleVanillaBlocksParityTest {
                 items++;
             }
         }
-        helper.assertValueEqual(items, 33, "items in the namespace");
+        helper.assertValueEqual(items, 34, "items in the namespace");
         Map<String, Integer> stacks = Map.of("cedar_sign", 16, "cedar_hanging_sign", 16, "cosy_bed", 1, "honey_cake", 1, "satchel", 1,
                 "seed_pouch", 1, "tool_kit", 1, "charm_bundle", 1, "tin", 64, "tallow_candle", 64);
         stacks.forEach((path, size) -> helper.assertValueEqual(new ItemStack(item(helper, path)).getMaxStackSize(), size, path + " stack size"));
@@ -788,7 +792,8 @@ public class SampleVanillaBlocksParityTest {
 
     /**
      * {@code /greet} and its alias {@code /hiya}, for everyone: the chime for others, five seconds of glowing on the player
-     * and the answer line.
+     * and the answer line; the rule book's plain rule "A cookie for a greeting" gives one cookie a run (in the command's
+     * event after the wave, so also in the eject; B462b).
      */
     @GameTest(structure = ARENA)
     public void greetAndHiyaChimeGlowAndAnswer(GameTestHelper helper) {
@@ -797,6 +802,7 @@ public class SampleVanillaBlocksParityTest {
             ServerPlayer player = user.player;
             for (String literal : List.of("greet", "hiya")) {
                 player.removeAllEffects();
+                int cookies = player.getInventory().countItem(Items.COOKIE);
                 user.packets();
                 ears.packets();
                 int result = command(player.createCommandSourceStack().withPermission(LevelBasedPermissionSet.ALL), literal);
@@ -809,6 +815,7 @@ public class SampleVanillaBlocksParityTest {
                         "/" + literal + ": answer " + chatLines(mine));
                 List<Identifier> heard = sounds(ears.packets());
                 helper.assertTrue(heard.contains(CHIME), "/" + literal + ": others heard " + heard);
+                helper.assertValueEqual(player.getInventory().countItem(Items.COOKIE), cookies + 1, "/" + literal + ": cookies");
             }
         }
         helper.succeed();
@@ -1184,8 +1191,9 @@ public class SampleVanillaBlocksParityTest {
 
     /**
      * Primed TNT in the arena: tin and the sea lamp beside it break as vanilla iron ore (the same blast resistance, 3)
-     * and glass do (no rule keeps them: B458's "keep the blocks safe" is not in the fixture yet). This is also the first
-     * explosion of the server run, which loads the runtime's explosion Mixin (B455) on the content jar.
+     * and glass do (the rule book keeps the blocks of a creeper's blast only, B462b). On the content jar the script's
+     * {@code World.explode} at {@code server.started} has already loaded the runtime's explosion Mixin (B455); on the
+     * ejected jar this is the first explosion of the run.
      */
     @GameTest(structure = ARENA, maxTicks = 100)
     public void anExplosionBreaksProjectBlocksAsVanillaBlocks(GameTestHelper helper) {

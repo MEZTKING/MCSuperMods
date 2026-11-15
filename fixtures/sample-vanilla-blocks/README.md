@@ -1,12 +1,10 @@
 # Sample vanilla blocks project
 
-A kitchen-sink MCSuperMods project for the vanilla-like blocks of batch 1 of the vanilla parity plan (ADRs 0094 to 0096 and 0101), namespace `msm_sample_vanilla_blocks`: an `msm:mod`, one block of each of the twenty new block types with the companion blocks they make, a lamp that holds water, tin that ages like copper in four stages with a waxed copy of each, three bags (one of each layout), a bundle, two commands and two creative tabs: one that lists every item but the tin in registration order, and one that lists the tin by name. The pictures are MCSuperMods' own placeholder pictures (and a writing-screen board drawn by the golden test); nothing in the folder is a Mojang file. It works on **26.3** and on **26.4**. Its siblings are `fixtures/sample-mod/` (blocks and items), `fixtures/sample-machines/` (containers and machines) and `fixtures/sample-particles/` (particles).
+A kitchen-sink MCSuperMods project for the vanilla-like blocks of batch 1 of the vanilla parity plan (ADRs 0094 to 0096 and 0101), namespace `msm_sample_vanilla_blocks`: an `msm:mod`, one block of each of the twenty new block types with the companion blocks they make, a lamp that holds water, tin that ages like copper in four stages with a waxed copy of each, a conveyor, three bags (one of each layout), a bundle, two commands, two creative tabs (one that lists every item but the tin in registration order, and one that lists the tin by name), a script that uses every Script API 1.6 member (B455) and a rule book with the Rules cards for placing, explosions, commands and facing (B458). The pictures are MCSuperMods' own placeholder pictures (and a writing-screen board drawn by the golden test); nothing in the folder is a Mojang file. It works on **26.3** and on **26.4**. Its siblings are `fixtures/sample-mod/` (blocks and items), `fixtures/sample-machines/` (containers and machines) and `fixtures/sample-particles/` (particles).
 
-`packages/exporters/test/sample-vanilla-blocks.golden.test.ts` checks it on every run: the folder equals the project built in code, every element validates with zero problems, the plugins' validators report nothing on either target, the `/kit` function passes the offline command checker, and the content jar exports for both targets with its SHA-256 pinned per target. The jar holds 30 block, 4 item, 2 command and 2 creative tab definitions under `msm/msm_sample_vanilla_blocks/`, block states and loot tables for the 30 blocks and the four companions (`ember_torch_wall`, `cedar_sign_wall`, `cedar_hanging_sign_wall`, `gourd_stem_attached`), and the sign writing-screen pictures at `textures/gui/signs/cedar_sign.png` (24 by 26) and `textures/gui/hanging_signs/cedar_hanging_sign.png` (16 by 16). `sample-vanilla-blocks.java.golden.test.ts` pins the Java project export of 26.3 (`ModBlocks.java` with the companions, the shared `block/type/Mod*Block` drivers, `BlockWaxing.java`, the bags in `item/`, `ModCommands.java`, `ModCreativeTabs.java`). The vanilla data pack keeps the vanilla tags the types join (with the project's entries optional), the `/kit` function with the warning `export.mod-only-function` (it gives a mod-only item), and the potted grass's loot table (a pot and vanilla grass); every other loot table is left out (`export.mod-only-reference`). This README is the one file in the folder that is written by hand; the test leaves it alone.
+`packages/exporters/test/sample-vanilla-blocks.golden.test.ts` checks it on every run: the folder equals the project built in code, every element validates with zero problems, the project expands (the rule book compiles) with no problems and the plugins' validators report nothing on either target, both scripts (the hand-written one and the one Rules generates) type-check, the `/kit` function passes the offline command checker, and the content jar exports for both targets with its SHA-256 pinned per target. The jar holds 31 block, 4 item, 2 command and 2 creative tab definitions under `msm/msm_sample_vanilla_blocks/`, the two scripts as JavaScript (`script/script_api_1_6.js` and `script/rules/vanilla_blocks_rules.js`), block states and loot tables for the 31 blocks and the four companions (`ember_torch_wall`, `cedar_sign_wall`, `cedar_hanging_sign_wall`, `gourd_stem_attached`), and the sign writing-screen pictures at `textures/gui/signs/cedar_sign.png` (24 by 26) and `textures/gui/hanging_signs/cedar_hanging_sign.png` (16 by 16). `sample-vanilla-blocks.java.golden.test.ts` pins the Java project export of 26.3 (`ModBlocks.java` with the companions, the shared `block/type/Mod*Block` drivers, `BlockWaxing.java`, the bags in `item/`, `ModCommands.java`, `ModCreativeTabs.java`) from the expanded project, as the app ejects it: the plain rule on `/greet` is part of the command's event there, while both scripts are left out (`export.scripts-not-ejected`, and `export.not-in-eject` for their placing and explosion events, which need the runtime's Mixins), and with them the conveyor's rule and every other rule that needs a script. The vanilla data pack keeps the vanilla tags the types join (with the project's entries optional), the `/kit` function with the warning `export.mod-only-function` (it gives a mod-only item), and the potted grass's loot table (a pot and vanilla grass); every other loot table is left out (`export.mod-only-reference`). This README is the one file in the folder that is written by hand; the test leaves it alone.
 
-To get a jar for the headless server check, run the golden test with `MSM_RUNTIME_JAR=<a built msm_runtime jar>` and `MSM_SAMPLE_VANILLA_BLOCKS_OUT=<folder>`: it writes `msm_sample_vanilla_blocks.jar` and `fabric-facts.json` (30 blocks, 33 items, 0 entities, 0 scripts) there. With `MSM_SAMPLE_VANILLA_BLOCKS_JAVA_OUT=<folder>` the Java golden writes the ejected project, which builds with its own `./gradlew build` (JDK 25).
-
-Not in this sample yet: scripts using the Script API 1.6 members and a rule book with the new cards. They wait for the runtime's Mixins and Script API 1.6 (B455) and the new Rules cards (B458); a later brief adds them here.
+To get a jar for the headless server check, run the golden test with `MSM_RUNTIME_JAR=<a built msm_runtime jar>` and `MSM_SAMPLE_VANILLA_BLOCKS_OUT=<folder>`: it writes `msm_sample_vanilla_blocks.jar` and `fabric-facts.json` (31 blocks, 34 items, 0 entities, 2 scripts) there. With `MSM_SAMPLE_VANILLA_BLOCKS_JAVA_OUT=<folder>` the Java golden writes the ejected project, which builds with its own `./gradlew build` (JDK 25).
 
 ## Contents
 
@@ -36,7 +34,8 @@ Not in this sample yet: scripts using the Script API 1.6 members and a rule book
 | `gourd_stem` | block, stem | planted on farmland from **gourd seeds**; grows through eight stages, then grows a **gourd** beside it and bends towards it (`gourd_stem_attached`) |
 | `gourd` | block | the stem's fruit |
 | `bamboo_frame` | block, scaffolding | climbable; builds sideways up to six blocks from a supported column, falls when too far out |
-| `sea_lamp` | block | light 12; **holds water** (place it in water or use a water bucket on it) |
+| `sea_lamp` | block | light 12; **holds water** (place it in water or use a water bucket on it); the script tidies the items lying around it when you use it with an empty hand |
+| `conveyor` | block, horizontal | faces you when placed, as a furnace does; the rule book moves a player who steps on it one block on while it faces **east** |
 | `tin`, `exposed_tin`, `weathered_tin`, `oxidized_tin` | blocks | **tin that ages** like copper, stage by stage, over in-game days; honeycomb waxes each stage, an axe scrapes a stage back |
 | `waxed_tin`, `waxed_exposed_tin`, `waxed_weathered_tin`, `waxed_oxidized_tin` | blocks | the waxed copies, which never age; an axe takes the wax off |
 | `satchel` | item, bag | a **chest-style bag of two rows** (18 slots); opened with **sneak and right-click**; leather sounds; a bell when opened, a low note when closed |
@@ -46,7 +45,9 @@ Not in this sample yet: scripts using the Script API 1.6 members and a rule book
 | `greet` | command | `/greet` (or `/hiya`), for everyone: a chime, five seconds of glowing and the answer "Hello from the vanilla blocks sample!" |
 | `kit` | command | `/kit <who> <count>` (1 to 16), operators only: runs the function `give_kit`, which gives that many tallow candles, and answers "A kit of candles is on its way." |
 | `give_kit` | function | the macro line `$give $(who) msm_sample_vanilla_blocks:tallow_candle $(count)` |
-| `block/gourd`, `block/sea_lamp`, `block/*tin`, `item/*` | models | cubes over the placeholder pictures; the items are flat |
+| `script_api_1_6` | script | every Script API 1.6 member: placing **bedrock** is cancelled ("Bedrock stays where the world put it."); a **creeper's** blast keeps the blocks and tells the players within 8 blocks; `/greet` (and `/hiya`) also answers "The script heard /greet." and gets a rider off first; using a **cow** with an empty hand rides it; using the sea lamp with an empty hand removes rotten flesh and turns cobblestone into stone within 4 blocks; a plain right-click of the satchel says what it holds; at server start, one small explosion high above the world centre that breaks nothing (so the runtime's explosion Mixin is applied at start) |
+| `vanilla_blocks_rules` | rule book | "The conveyor carries you east" (stepped on, only if the block faces east, teleport in front of it); "A cookie for a greeting" (`/greet` gives a cookie: a plain rule in the command's event); "Kits are noted" (`/kit` answers "Kit handed out."); "Creepers break no blocks" (caused by a creeper, keep the blocks safe); "No cobwebs" (placing a cobweb is stopped with "Cobwebs are not welcome here.") |
+| `block/gourd`, `block/sea_lamp`, `block/*tin`, `item/*` | models | cubes over the placeholder pictures; the items are flat (the conveyor's models are generated from its front, side and top pictures) |
 
 All content is original work written for MCSuperMods; the project contains no Mojang files.
 
@@ -66,7 +67,7 @@ Do the whole list four times: on **26.3** and on **26.4**, each in **singleplaye
 | Check | Expected |
 |---|---|
 | Title screen, **Mods** | `MSM Sample Vanilla Blocks` and `MSM Runtime` |
-| `logs/latest.log` (Prism: the instance's **Minecraft Log**; on the server its console) | `[msm_runtime] registered 30 block(s) and 33 item(s)`, `registered 2 command(s)` and `registered 2 creative tab(s)`; nothing at warning or error level from `msm_runtime`, and no `NoClassDefFoundError` or `Mixin apply failed` anywhere |
+| `logs/latest.log` (Prism: the instance's **Minecraft Log**; on the server its console) | `[msm_runtime] registered 31 block(s) and 34 item(s)`, `registered 2 command(s)`, `registered 2 creative tab(s)` and `loaded 2 script(s); 0 error(s)`; nothing at warning or error level from `msm_runtime`, and no `NoClassDefFoundError` or `Mixin apply failed` anywhere |
 | Creative inventory: the tab arrows to the second page | A tab **Vanilla Blocks** with the Paper Lantern icon, holding every block and item of this list but the tin, block items first and then the bags and bundle, each in the order of their ids (the potted grass and the companions have no item, so they are not there) |
 | The tab **Tin Blocks** next to it | The Block of Tin icon; Block of Tin, Exposed Tin, Oxidised Tin, Waxed Block of Tin, Waxed Exposed Tin, Waxed Oxidised Tin, Waxed Weathered Tin, Weathered Tin, in that order |
 | Hover over each item | The names in the table above, no `block.msm_sample...` keys |
@@ -126,7 +127,7 @@ Place each block from the tab and try it. Every block shows its own picture (no 
 
 | Check | Expected |
 |---|---|
-| Satchel: right-click it | Nothing opens |
+| Satchel: right-click it | Nothing opens; the chat says "The satchel is empty.", or what it holds ("The satchel holds 5 minecraft:diamond, ...") |
 | Satchel: sneak and right-click | A two-row chest screen opens with a leather sound and a bell; closing it plays a low note and the leather sound |
 | Seed Pouch and Tool Kit: right-click | A five-slot hopper screen, and a three-by-three dispenser screen |
 | Put things in a bag, close it, drop it, pick it up again, log out and back in | The contents are still there |
@@ -141,12 +142,21 @@ Place each block from the tab and try it. Every block shows its own picture (no 
 | Check | Expected |
 |---|---|
 | Type `/gr` and look at the suggestions | `/greet` is offered |
-| `/greet`, and `/hiya` | A chime, five seconds of glowing and the chat line "Hello from the vanilla blocks sample!" |
-| `/kit @s 5` as an operator | Five Tallow Candles in your inventory and "A kit of candles is on its way." |
+| `/greet`, and `/hiya` | A chime, five seconds of glowing, a cookie, and the chat lines "Hello from the vanilla blocks sample!" and "The script heard /greet." |
+| `/kit @s 5` as an operator | Five Tallow Candles in your inventory, "A kit of candles is on its way." and "Kit handed out." |
 | `/kit @s 20` | Refused: the count must be from 1 to 16 |
 | On the dedicated server, `/kit` as a player who is not an operator | The command is not offered and does not run |
 | `/reload`, then `/greet` again | Still works; the suggestions still offer both commands |
 
-### TNT with "keep the blocks safe"
+### Scripts and rules (Script API 1.6, B455; Rules cards, B458)
 
-This needs the B458 Rules cards, which this sample does not hold yet. When they arrive, a rule book here will keep the tin blocks safe from explosions; until then, check that TNT next to the blocks breaks them as usual and that each drops itself.
+| Check | Expected |
+|---|---|
+| Place TNT next to tin blocks and the sea lamp and light it | They break and each drops itself (no rule keeps a TNT blast's blocks) |
+| `/summon minecraft:creeper` next to tin blocks and glass, and let it explode near you (in Survival) | You and mobs nearby are hurt and pushed, but no block breaks; the chat says "The creeper's blast left the blocks alone." |
+| In Survival, try to place bedrock (take it from the creative inventory first), then a cobweb | Neither is placed and the item stays in your hand; the chat says "Bedrock stays where the world put it." and "Cobwebs are not welcome here." |
+| Place a Conveyor while looking west (its front then faces you, east, as a furnace's does), with air east of it, and walk onto it | You are moved one block east; a Conveyor facing any other way does nothing |
+| Right-click a cow with an empty hand | You ride it and the chat says "Moo. Say /greet to get off."; `/greet` gets you off ("You hop off to say hello.") |
+| Drop rotten flesh, cobblestone and dirt next to the Sea Lamp, then right-click the lamp with an empty hand | The rotten flesh is gone, the cobblestone is stone, the dirt stays; the chat counts them ("The sea lamp tidied 1 and polished 1 stack(s).") |
+| `logs/latest.log` at the start (singleplayer and server) | No `Mixin apply failed`; the script's small explosion at start breaks nothing and makes no warning |
+| Export the Java project and build it | The build has no script or rule that needs one: placing, the creeper, the conveyor, `/kit`'s line, the cow, the sea lamp and the satchel lines do nothing there; `/greet` still gives the cookie |

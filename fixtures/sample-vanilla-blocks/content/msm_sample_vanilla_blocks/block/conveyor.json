@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "resistance": 1.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Conveyor",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "sound_type": "metal",
+    "textures": {
+      "front": "msm_sample_vanilla_blocks:block/conveyor_front",
+      "side": "msm_sample_vanilla_blocks:block/conveyor_side",
+      "top": "msm_sample_vanilla_blocks:block/conveyor_top"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:conveyor",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

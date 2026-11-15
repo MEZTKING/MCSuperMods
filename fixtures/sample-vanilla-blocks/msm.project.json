@@ -8,7 +8,8 @@
     "msm.resourcepack",
     "msm.datapack",
     "msm.blocks-items",
-    "msm.scripting"
+    "msm.scripting",
+    "msm.rules"
   ],
   "settings": {},
   "targets": [

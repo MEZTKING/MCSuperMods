@@ -1,0 +1,112 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "step": "teleport",
+            "to": "in_front_of_here"
+          }
+        ],
+        "key": "conveyor",
+        "name": "The conveyor carries you east",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "is_facing",
+              "direction": "east",
+              "of": "here"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "options": {
+            "cooldown_seconds": 0.5
+          },
+          "subject": "msm_sample_vanilla_blocks:conveyor",
+          "trigger": "block_stepped_on"
+        }
+      },
+      {
+        "do": [
+          {
+            "count": 1,
+            "item": "minecraft:cookie",
+            "step": "give_item"
+          }
+        ],
+        "key": "greet_cookie",
+        "name": "A cookie for a greeting",
+        "when": {
+          "subject": "msm_sample_vanilla_blocks:greet",
+          "trigger": "command_used"
+        }
+      },
+      {
+        "do": [
+          {
+            "step": "show_message",
+            "text": [
+              "Kit handed out."
+            ]
+          }
+        ],
+        "key": "kit_note",
+        "name": "Kits are noted",
+        "when": {
+          "subject": "msm_sample_vanilla_blocks:kit",
+          "trigger": "command_used"
+        }
+      },
+      {
+        "do": [
+          {
+            "step": "keep_blocks_safe"
+          }
+        ],
+        "key": "creeper_safe",
+        "name": "Creepers break no blocks",
+        "only_if": {
+          "conditions": [
+            {
+              "cause": "minecraft:creeper",
+              "condition": "caused_by"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "trigger": "explosion"
+        }
+      },
+      {
+        "do": [
+          {
+            "step": "stop_placing"
+          },
+          {
+            "step": "show_message",
+            "text": [
+              "Cobwebs are not welcome here."
+            ]
+          }
+        ],
+        "key": "no_cobwebs",
+        "name": "No cobwebs",
+        "when": {
+          "subject": "minecraft:cobweb",
+          "trigger": "any_block_placed"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:vanilla_blocks_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}
