@@ -52,6 +52,7 @@ const BLOCK_EDITOR_FIELDS = [
   'leaves_drops',
   'villager_plantable',
   'recipes',
+  'plant_item',
 ] as const;
 /** Loot values that are editor presets rather than loot table ids. */
 const LOOT_PRESETS: readonly string[] = ['self', 'crop', 'leaves'];
@@ -112,6 +113,9 @@ export function blockDefinition(
   const definition = structuredClone(data);
   for (const field of BLOCK_EDITOR_FIELDS) delete definition[field];
   definition.format = DEFINITION_FORMAT;
+  // The runtime gives every block an item unless `item: false`; a potted plant has none unless
+  // `item` is given (ITEMLESS_TYPES), so the definition says so (B462a).
+  if (data.type === 'potted_plant' && data.item === undefined) definition.item = false;
   const components = definition.components;
   if (isRecord(components)) {
     const breakable = components[BREAKABLE];

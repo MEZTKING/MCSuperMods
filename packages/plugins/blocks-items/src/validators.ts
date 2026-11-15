@@ -736,6 +736,9 @@ function missingModels(elements: readonly Element[]): Problem[] {
     if (element.kind === BLOCK_KIND && data.type !== undefined && data.type !== 'block') continue;
     const model = data.model;
     if (typeof model === 'string' && model.length > 0) continue;
+    // A bundle's picture is its `bundle_textures.closed` (ADR 0095 D4).
+    const bundle = data.bundle_textures;
+    if (isRecord(bundle) && typeof bundle.closed === 'string' && bundle.closed.length > 0) continue;
     const what = element.kind === BLOCK_KIND ? 'block' : 'item';
     problems.push({
       severity: 'warning',

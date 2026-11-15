@@ -192,6 +192,21 @@ describe('blocks-items validators', () => {
     ]);
   });
 
+  it('accepts bundle_textures.closed as an item picture', async () => {
+    const problems = await validate([
+      element('msm:item', 'demo:bag', {
+        format: 1,
+        components: { 'msm:bundle': {} },
+        bundle_textures: {
+          closed: 'demo:item/bag',
+          open_back: 'demo:item/bag_back',
+          open_front: 'demo:item/bag_front',
+        },
+      }),
+    ]);
+    expect(problems.filter((p) => p.code === 'blocks-items.missing-model')).toEqual([]);
+  });
+
   it('reports unknown events in trigger components and trigger_event actions', async () => {
     const problems = await validate([
       block('demo:a', {

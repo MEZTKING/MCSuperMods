@@ -48,6 +48,19 @@ export function pottedPlantTexture(data: JsonObject): string | undefined {
   return `${plant.slice(0, colon)}:block/${plant.slice(colon + 1)}`;
 }
 
+/** The editor-only field the project expander fills with the plant block's item id. */
+export const POTTED_PLANT_ITEM_FIELD = 'plant_item';
+
+/**
+ * The item the pot drops with the pot: `plant_item` (written by the project expander from the
+ * plant block's own `item`, B462a), else the plant's id (a vanilla plant, or a project plant
+ * whose item has its block's id).
+ */
+export function pottedPlantItemOf(data: JsonObject): string | undefined {
+  const given = nonEmptyString(data[POTTED_PLANT_ITEM_FIELD]);
+  return given === undefined ? pottedPlantOf(data) : namespaced(given);
+}
+
 const survives = { type: 'minecraft:survives_explosion' };
 
 export const pottedPlantType: TypeLowering = {
@@ -72,7 +85,7 @@ export const pottedPlantType: TypeLowering = {
     const pools: JsonObject[] = [
       { condition: survives, entries: [{ type: 'minecraft:item', name: FLOWER_POT }], rolls: 1 },
     ];
-    const plant = pottedPlantOf(data);
+    const plant = pottedPlantItemOf(data);
     if (plant !== undefined) {
       pools.push({
         condition: survives,

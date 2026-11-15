@@ -5746,3 +5746,11 @@ Next: B426 pins `registered 7 vehicle type(s)`, `registered 2 key bind(s)`, `reg
 - ADR 0091 D8 names a scenario "a tank that fires shells"; the brief asked for the go-kart instead, so the close (B432) should decide whether the tank one is still wanted.
 - `kindSchemaSummary`'s `inlineType` recurses without a bound on unions and lists: `msm:item` at depth 5 with lists of 64 overflows the stack (not hit by any allowance in use).
 - B467: the plain-words limits in the prompt match the B454/B457 notes; keep the guide's wording in step.
+
+## 2026-11-15 — executor — B462a potted plant loot, bundle model check, itemless pot
+
+**What:** Three fixes in `packages/plugins/blocks-items`. (1) The pot's loot table dropped the plant's block id; a berry bush with item `blue_berries` gave `schema.unknown-id`. New project expander `msm.blocks-items.potted-plant-item` (`src/expand-potted-plant.ts`) writes the plant block's `blockItemIdOf` to the pot copy's editor-only `plant_item` when it differs from the plant's id; `pottedPlantItemOf` makes the loot use it, `plant_item` is stripped from the runtime definition. (2) `blocks-items.missing-model` accepts `bundle_textures.closed`. (3) `blockDefinition` writes `item: false` for a `potted_plant` that sets no `item`, so the runtime agrees with `ITEMLESS_TYPES` (engine-mod untouched). New `test/potted-plant-item.test.ts` and a validator test; goldens `plant2-potted-plant` and `plant2-potted-plant-vanilla` (both targets) regenerated. Exporter tests (library, sample-vanilla-blocks, sample-mod) pass with no golden change.
+
+**Decisions:** Lowering sees one element, so an expander (plugin API 1.15.0, as rules) is the only way to read the plant's item without a new schema field. A plant block with `item: false` gets no patch (the loot still names the plant id); a validator could warn later. Where lowering runs without expansion the old behaviour (plant id) remains.
+
+**Next:** App Block Studio need not change (`plant_item` is never saved). Consider a warning for a potted plant whose plant block has no item.

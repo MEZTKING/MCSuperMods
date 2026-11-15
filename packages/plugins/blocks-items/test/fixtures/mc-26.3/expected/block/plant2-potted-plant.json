@@ -2,6 +2,7 @@
   {
     "contents": {
       "format": 1,
+      "item": false,
       "plant": "example:ruby_sprout",
       "type": "potted_plant"
     },

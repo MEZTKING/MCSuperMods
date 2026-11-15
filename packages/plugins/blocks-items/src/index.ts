@@ -9,6 +9,7 @@
  * project validators and the "New element" templates.
  */
 import { definePlugin } from '@msm/plugin-api';
+import { pottedPlantExpander } from './expand-potted-plant';
 import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
@@ -22,6 +23,11 @@ import { portalValidators } from './validators-portals';
 import { blockTypeValidators } from './validators-types';
 import { weatheringValidators } from './validators-weathering';
 
+export {
+  expandPottedPlants,
+  POTTED_PLANT_EXPANDER_ID,
+  pottedPlantExpander,
+} from './expand-potted-plant';
 export * from './kinds';
 export * from './kinds/creative-tab';
 export * from './lowering';
@@ -192,6 +198,7 @@ export default definePlugin({
   contributes: {
     elementKinds: [...blocksItemsKinds],
     elementTemplates: [...blocksItemsTemplates],
+    projectExpanders: [pottedPlantExpander],
     validators: [
       ...blocksItemsValidators,
       ...blockTypeValidators,
