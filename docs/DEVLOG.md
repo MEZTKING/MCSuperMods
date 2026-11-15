@@ -6054,3 +6054,22 @@ Next
 - Main session: merge `b468`, run the clean worktree and CI on the merged commit, record the totals and re-measure `app.asar` and the renderer (B463 did not).
 - The user: the questions in HANDOFF "Waiting on the user", then the in-game checks of `fixtures/sample-vanilla-blocks/README.md`.
 - Vanilla parity 2 batch 2: ADRs 0098–0100's vetoable defaults to the user, then Wave 9 (B469, B470, B471) and B472–B485; reserves B486 and B487.
+## 2026-11-15 — executor — B471 Dimension Type Studio, flow answer and validators
+
+**What**
+- Plugin API 1.18.0 (ADR 0100 D5): `WorldgenFacts.dimensionHeight?: DimensionHeightFacts` (`minY`, `maxY`, `step`) and `WorldgenFacts.environmentAttributes?: readonly string[]`; changelog section, `API_VERSION` and the version tests.
+- Targets: `dimensionHeight` `{ minY: -2032, maxY: 2031, step: 16 }` on both (the vendored mcdoc ranges, the same on both); `environmentAttributes` the vendored `environment_attribute` registry, namespaced and sorted: 51 ids on 26.3, 52 on 26.4 (adds `minecraft:visual/has_sky_occluder`). Tests tie both to the vendored data; rows in each `CHANGES.md`.
+- Worldgen validators (ADR 0100 D3): `worldgen.dimension-height-multiple`, `dimension-height-range`, `dimension-logical-height`, `dimension-attribute-unknown` (errors) and `dimension-attribute-mod-particle` (info), over `minecraft:dimension_type` elements and dimension types written inline in a dimension.
+- Templates "Moon dimension type" and "Nether-like dimension type" (worldgen plugin, kind `minecraft:dimension_type`), keeping only the attributes the target lists; they validate and lower on both targets.
+- The Dimension Type Studio (`app/src/renderer/src/studios/worldgen/DimensionTypeStudio.tsx`, `dimension-type-sections.tsx`, `dimension-type-model.ts`), lazy: sections Sky (with the sky swatch), Light, Time, Rules, Height and Spawning, and Advanced. Chunk `DimensionTypeStudio-*.js` 14.9 kB; renderer 15.9 MiB, `app.asar` 28.8 MiB.
+- The Dimension flow's answer "Give it its own sky and rules" (off by default) with Sky colour, Fog colour, Time of day and Beds: on, it adds the dimension type `<id>_type` copied from the chosen vanilla one and points the dimension at it.
+- The library vanilla server check gains the case: a new Dimension wizard alternative (own sky, night, exploding beds) and the minimums answer carry a project dimension type; both load on vanilla 26.3 and 26.4-snapshot-7 servers locally.
+
+**Decisions**
+- The own-sky questions sit in the flow's World step (no new step) and only in the Dimension flow, so the Portal flow and every golden are unchanged with the answer off.
+- A fixed time drops `default_clock` and keeps only `#minecraft:universal` timelines, then sets the sun, moon and star angles (noon 0, midnight 180) and the night's sky light; the copied End type gets `has_ender_dragon_fight: false`.
+- `dimension-attribute-unknown` is an error, as a vanilla server refuses the pack.
+
+**Next**
+- The user: in-game checks of the moon and nether-like types and the flow's always night (sun and star angles, sky light at night).
+- B473 adds to plugin API 1.18.0 on top of this; B483 shows the sky colour in Try it (`skySwatch` in `dimension-type-model.ts` is the helper to reuse).

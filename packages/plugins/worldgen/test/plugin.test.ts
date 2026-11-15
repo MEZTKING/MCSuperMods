@@ -105,8 +105,10 @@ describe('@msm/plugin-worldgen', () => {
       'msm.worldgen.preset-selectable',
       'msm.worldgen.preset-overworld',
       'msm.worldgen.placed-feature-usage',
+      'msm.worldgen.dimension-height',
+      'msm.worldgen.dimension-attributes',
     ]);
-    expect(worldgenValidators).toHaveLength(5);
+    expect(worldgenValidators).toHaveLength(7);
   });
 
   it('returns a fresh copy of the default data for every kind', () => {

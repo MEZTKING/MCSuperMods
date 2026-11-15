@@ -291,6 +291,51 @@ describe('target mc-26.4', () => {
     expect(Number.isInteger(target.dataVersion)).toBe(true);
   });
 
+  it('lists the dimension height bounds of the vendored mcdoc (ADR 0100 D5)', async () => {
+    type Range = { min: number; max: number };
+    type Field = {
+      key?: string;
+      type: {
+        valueRange?: Range;
+        attributes?: { name: string; value?: { value?: { value?: unknown } } }[];
+      };
+    };
+    const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
+      mcdoc: Record<string, { fields: Field[] }>;
+    };
+    const fields = symbols.mcdoc['::java::data::worldgen::dimension::DimensionType']?.fields ?? [];
+    const field = (key: string): Field['type'] => {
+      const found = fields.find((entry) => entry.key === key);
+      if (found === undefined) throw new Error(`no ${key}`);
+      return found.type;
+    };
+    const divisor = (type: Field['type']): unknown =>
+      type.attributes?.find((entry) => entry.name === 'divisible_by')?.value?.value?.value;
+    const facts = target.worldgen.dimensionHeight;
+    expect(facts).toEqual({ minY: -2032, maxY: 2031, step: 16 });
+    if (facts === undefined) return;
+    expect(field('min_y').valueRange?.min).toBe(facts.minY);
+    expect(field('min_y').valueRange?.max).toBe(facts.maxY);
+    expect(field('height').valueRange?.min).toBe(facts.step);
+    expect(field('height').valueRange?.max).toBe(facts.maxY - facts.minY + 1);
+    expect(divisor(field('min_y'))).toBe(facts.step);
+    expect(divisor(field('height'))).toBe(facts.step);
+  });
+
+  it('lists every environment attribute of the vendored registries (ADR 0100 D5)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const expected = (registries.environment_attribute ?? []).map((id) => `minecraft:${id}`).sort();
+    expect(target.worldgen.environmentAttributes).toEqual(expected);
+    expect(target.worldgen.environmentAttributes).toHaveLength(52);
+    expect(target.worldgen.environmentAttributes).toContain('minecraft:visual/has_sky_occluder');
+    for (const id of target.worldgen.biomeAttributes?.colours ?? []) {
+      expect(target.worldgen.environmentAttributes, id).toContain(id);
+    }
+  });
+
   it('lists the feature decoration steps in the vendored mcdoc order', async () => {
     const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
       mcdoc: Record<string, { kind: string; values?: { value: unknown }[] }>;

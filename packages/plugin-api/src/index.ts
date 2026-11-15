@@ -72,6 +72,7 @@ export type {
   DefinitionInput,
   DevFacts,
   DevGameRuleFacts,
+  DimensionHeightFacts,
   EntityFacts,
   FabricFacts,
   GeckolibFacts,

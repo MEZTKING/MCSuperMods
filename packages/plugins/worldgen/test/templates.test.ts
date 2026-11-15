@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import type {
+  ElementKind,
   ElementTemplate,
   Json,
   ResourceLocation,
@@ -8,7 +9,7 @@ import type {
 } from '@msm/plugin-api';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import plugin, { worldgenKinds, worldgenTemplates } from '../src/index';
+import plugin, { lowerJsonData, worldgenKinds, worldgenTemplates } from '../src/index';
 import { vanillaFeatureOrder, vanillaOrderProblems } from './reference-pack';
 import { blockingProblems, indexesFor, NOISE_SETTINGS_SCHEMA, schemaHasField } from './support';
 
@@ -34,6 +35,8 @@ const IDS = [
   'dimension_multi_noise',
   'dimension_single_biome',
   'world_preset',
+  'dimension_type_moon',
+  'dimension_type_nether_like',
   'noise_settings',
   'density_function',
   'noise',
@@ -47,7 +50,23 @@ const IDS = [
 
 const CATEGORIES = new Set(['Biomes', 'Features', 'Dimensions', 'Worldgen (advanced)']);
 
-const kindOf = (template: ElementTemplate) => {
+/**
+ * The dimension type kind is the data pack plugin's generic kind (`resource:dimension_type`,
+ * lowered to `data/<ns>/dimension_type/<path>.json`); the worldgen plugin contributes its
+ * templates only (ADR 0100).
+ */
+const DIMENSION_TYPE = 'minecraft:dimension_type';
+const dimensionTypeKind: ElementKind = {
+  id: DIMENSION_TYPE,
+  schema: 'resource:dimension_type',
+  folder: 'dimension_type',
+  defaultData: {},
+  lower: (element, target) =>
+    lowerJsonData(element, target, 'dimension_type', 'resource:dimension_type'),
+};
+
+const kindOf = (template: ElementTemplate): ElementKind => {
+  if (template.kind === DIMENSION_TYPE) return dimensionTypeKind;
   const kind = worldgenKinds.find((entry) => entry.id === template.kind);
   if (kind === undefined) throw new Error(`no kind ${template.kind}`);
   return kind;
@@ -96,11 +115,35 @@ describe('worldgen templates', () => {
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
   });
 
-  it('creates only kinds this plugin registers, and covers every kind', () => {
+  it('creates only kinds this plugin registers (and dimension types), and covers every kind', () => {
     const kinds = new Set(worldgenKinds.map((kind) => kind.id));
     for (const template of worldgenTemplates)
-      expect(kinds.has(template.kind), template.id).toBe(true);
-    expect(new Set(worldgenTemplates.map((template) => template.kind))).toEqual(kinds);
+      expect(kinds.has(template.kind) || template.kind === DIMENSION_TYPE, template.id).toBe(true);
+    expect(new Set(worldgenTemplates.map((template) => template.kind))).toEqual(
+      new Set([...kinds, DIMENSION_TYPE]),
+    );
+  });
+
+  it('leaves out environment attributes the target does not list (ADR 0100 D5)', async () => {
+    for (const bundle of builtInTargets) {
+      const known = new Set(bundle.target.worldgen.environmentAttributes ?? []);
+      expect(known.size, bundle.target.id).toBeGreaterThan(0);
+      for (const template of worldgenTemplates.filter((entry) => entry.kind === DIMENSION_TYPE)) {
+        const data = (await template.data(contextFor(template, bundle.target))) as {
+          attributes: Record<string, Json>;
+        };
+        expect(Object.keys(data.attributes).length, template.id).toBeGreaterThan(0);
+        for (const id of Object.keys(data.attributes)) expect(known.has(id), id).toBe(true);
+      }
+    }
+    const template = worldgenTemplates.find((entry) => entry.id === 'dimension_type_moon');
+    if (template === undefined) throw new Error('no dimension_type_moon');
+    const only = {
+      ...FIRST_TARGET,
+      worldgen: { ...FIRST_TARGET.worldgen, environmentAttributes: ['minecraft:visual/sky_color'] },
+    };
+    const data = (await template.data(contextFor(template, only))) as { attributes: Json };
+    expect(data.attributes).toEqual({ 'minecraft:visual/sky_color': '#000000' });
   });
 
   it('has a title, description and one of the four categories for every template', () => {

@@ -32,6 +32,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Work in progress: Try it will show what your rules and events do when you use, break and step on your blocks.
 - A **Try it** page in the user guide: how to open it, the keys, the tools and the clock, mobs, particles and portals, **What happened**, and the full list of what Try it cannot show. The link on Try it's first-run card opens it.
+- **Skies and rules of your own**: a **Dimension Type Studio** sets a dimension's sky picture and sky, fog, cloud and sunrise colours (with a small preview of the sky), the sun, moon and stars, light, a fixed time of day or the day and night clock, the rules (beds, respawn anchors, piglins, monsters burning, fast lava, water evaporating, raids) and the height. The **Dimension** flow's new answer **Give it its own sky and rules** copies the chosen sky into a dimension type of your own with your sky and fog colours, time of day and beds. Templates **Moon dimension type** and **Nether-like dimension type**. Plugin API 1.18.0.
 
 ## [1.5.1] - 2026-11-14
 

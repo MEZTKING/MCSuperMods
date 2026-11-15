@@ -100,9 +100,9 @@ function run(elements: Element[], code: string, on: Target = target): Problem[] 
 }
 
 describe('worldgen validators', () => {
-  it('declares the seven codes and reads only the kinds they name', () => {
-    expect(WORLDGEN_PROBLEM_CODES).toHaveLength(7);
-    expect(new Set(worldgenValidators.map((validator) => validator.id)).size).toBe(5);
+  it('declares the twelve codes and reads only the kinds they name', () => {
+    expect(WORLDGEN_PROBLEM_CODES).toHaveLength(12);
+    expect(new Set(worldgenValidators.map((validator) => validator.id)).size).toBe(7);
     for (const validator of worldgenValidators) expect(validator.kinds.length).toBeGreaterThan(0);
   });
 
@@ -535,6 +535,174 @@ describe('worldgen validators', () => {
           worldgenValidators.map((validator) => validator.validate({ elements, target, registry })),
         )
       ).flat(),
+    ).toEqual([]);
+  });
+});
+
+describe('worldgen dimension type validators (ADR 0100 D3)', () => {
+  const DIMENSION_TYPE = 'minecraft:dimension_type';
+  const base = {
+    has_skylight: true,
+    has_ceiling: false,
+    has_ender_dragon_fight: false,
+    coordinate_scale: 1,
+    ambient_light: 0,
+    logical_height: 384,
+    infiniburn: '#minecraft:infiniburn_overworld',
+    min_y: -64,
+    height: 384,
+    monster_spawn_light_level: 0,
+    monster_spawn_block_light_limit: 0,
+  };
+  const type = (fields: Record<string, Json>, id: ResourceLocation = 'demo:moon'): Element =>
+    element(DIMENSION_TYPE, id, { ...base, ...fields });
+  const codes = (elements: Element[], on: Target = target): string[] =>
+    worldgenValidators
+      .flatMap((validator) => validator.validate({ elements, target: on, registry }) as Problem[])
+      .map((problem) => problem.code)
+      .filter((code) => code.startsWith('worldgen.dimension-'));
+
+  it('accepts a valid dimension type on every target', () => {
+    for (const bundle of builtInTargets) {
+      expect(codes([type({})], bundle.target), bundle.target.id).toEqual([]);
+      expect(
+        codes([type({ min_y: -2032, height: 4064, logical_height: 4064 })], bundle.target),
+      ).toEqual([]);
+    }
+  });
+
+  it('worldgen.dimension-height-multiple: min_y and height in steps of 16', () => {
+    const problems = run([type({ min_y: -60, height: 380 })], 'worldgen.dimension-height-multiple');
+    expect(problems.map((problem) => problem.path)).toEqual(['/min_y', '/height']);
+    expect(problems[0]?.severity).toBe('error');
+    expect(problems[0]?.message).toContain('-64');
+  });
+
+  it('worldgen.dimension-height-range: the bounds come from the target', () => {
+    expect(
+      run([type({ min_y: -2048, height: 256 })], 'worldgen.dimension-height-range').map(
+        (problem) => problem.path,
+      ),
+    ).toEqual(['/min_y']);
+    const top = run([type({ min_y: 0, height: 2048 })], 'worldgen.dimension-height-range');
+    expect(top.map((problem) => problem.path)).toEqual(['/height']);
+    expect(top[0]?.message).toContain('y 2047');
+    expect(top[0]?.message).toContain('at most 2032');
+    expect(
+      run([type({ height: 0, logical_height: 0 })], 'worldgen.dimension-height-range'),
+    ).toHaveLength(1);
+    // A target without the fact skips the height checks.
+    const { dimensionHeight: _bounds, ...worldgen } = target.worldgen;
+    const bare = { ...target, worldgen } as Target;
+    expect(codes([type({ min_y: -60, height: 8000 })], bare)).toEqual([]);
+  });
+
+  it('worldgen.dimension-logical-height: not above the height', () => {
+    const problems = run(
+      [type({ height: 256, logical_height: 384 })],
+      'worldgen.dimension-logical-height',
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.path).toBe('/logical_height');
+  });
+
+  it('checks a dimension type written inline in a dimension', () => {
+    const inline = element('minecraft:dimension', 'demo:moon_world', {
+      type: { ...base, min_y: 8, logical_height: 512 },
+      generator: { type: 'minecraft:debug' },
+    });
+    const problems = worldgenValidators
+      .flatMap(
+        (validator) => validator.validate({ elements: [inline], target, registry }) as Problem[],
+      )
+      .filter((problem) => problem.code.startsWith('worldgen.dimension-'));
+    expect(problems.map((problem) => [problem.code, problem.path])).toEqual([
+      ['worldgen.dimension-height-multiple', '/type/min_y'],
+      ['worldgen.dimension-logical-height', '/type/logical_height'],
+    ]);
+  });
+
+  it('worldgen.dimension-attribute-unknown: only the target attributes, namespace optional', () => {
+    const attributes = {
+      'minecraft:visual/sky_color': '#000000',
+      'visual/fog_color': '#101010',
+      'minecraft:visual/sky_colour': '#000000',
+      'minecraft:visual/has_sky_occluder': true,
+    };
+    // The newer target adds visual/has_sky_occluder (plan F31); the older one does not list it,
+    // so the checks follow each target's own list.
+    const lists = new Set<boolean>();
+    for (const bundle of builtInTargets) {
+      const occluder = bundle.target.worldgen.environmentAttributes?.includes(
+        'minecraft:visual/has_sky_occluder',
+      );
+      lists.add(occluder === true);
+      expect(
+        run([type({ attributes })], 'worldgen.dimension-attribute-unknown', bundle.target).map(
+          (problem) => problem.path,
+        ),
+        bundle.target.id,
+      ).toEqual([
+        '/attributes/minecraft:visual~1sky_colour',
+        ...(occluder === true ? [] : ['/attributes/minecraft:visual~1has_sky_occluder']),
+      ]);
+    }
+    expect(lists).toEqual(new Set([true, false]));
+    const problem = run([type({ attributes })], 'worldgen.dimension-attribute-unknown')[0];
+    expect(problem?.severity).toBe('error');
+  });
+
+  it('worldgen.dimension-attribute-mod-particle: an info for a project particle', () => {
+    const particle = element('msm:particle', 'demo:moon_dust', { format: 1 });
+    const attributes = {
+      'minecraft:visual/ambient_particles': [
+        { particle: { type: 'demo:moon_dust' }, probability: 0.01 },
+      ],
+    };
+    const problems = run(
+      [particle, type({ attributes })],
+      'worldgen.dimension-attribute-mod-particle',
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.severity).toBe('info');
+    expect(problems[0]?.path).toBe('/attributes/minecraft:visual~1ambient_particles');
+    expect(problems[0]?.message).toContain('"demo:moon_dust"');
+    // A vanilla particle, or no project particle at all, is fine.
+    const vanilla = {
+      'minecraft:visual/ambient_particles': [
+        { particle: { type: 'minecraft:white_ash' }, probability: 0.01 },
+      ],
+    };
+    expect(
+      run([particle, type({ attributes: vanilla })], 'worldgen.dimension-attribute-mod-particle'),
+    ).toEqual([]);
+    expect(run([type({ attributes })], 'worldgen.dimension-attribute-mod-particle')).toEqual([]);
+  });
+
+  it('finds nothing in the two dimension type templates on any target', async () => {
+    for (const bundle of builtInTargets) {
+      for (const id of ['dimension_type_moon', 'dimension_type_nether_like']) {
+        const template = worldgenTemplates.find((entry) => entry.id === id);
+        if (template === undefined) throw new Error(`no ${id}`);
+        const data = (await template.data({
+          id: 'demo:sample',
+          namespace: 'demo',
+          path: 'sample',
+          projectNamespace: 'demo',
+          namespaces: ['demo'],
+          kindDefault: undefined,
+          target: bundle.target,
+        })) as Json;
+        expect(codes([element(DIMENSION_TYPE, 'demo:sample', data)], bundle.target), id).toEqual(
+          [],
+        );
+      }
+    }
+  });
+
+  it('leaves values the schema rejects to the schema', () => {
+    expect(
+      codes([type({ min_y: 'low', height: null, logical_height: 1.5, attributes: 3 })]),
     ).toEqual([]);
   });
 });

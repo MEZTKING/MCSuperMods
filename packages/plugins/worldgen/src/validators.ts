@@ -32,8 +32,31 @@
  *   end may be left out.
  * - `worldgen.placed-feature-unused` (info): a project placed feature that no other project
  *   element names.
+ *
+ * Dimension types (ADR 0100 D3), for every `minecraft:dimension_type` element and every
+ * dimension type written inline in a project dimension's `type`:
+ *
+ * - `worldgen.dimension-height-multiple` (error): `min_y` or `height` is not a whole multiple
+ *   of the target's `worldgen.dimensionHeight.step` (16).
+ * - `worldgen.dimension-height-range` (error): `min_y` below the target's lowest, `height`
+ *   below one step, or the top (`min_y + height - 1`) above the target's highest block y.
+ * - `worldgen.dimension-logical-height` (error): `logical_height` above `height`.
+ * - `worldgen.dimension-attribute-unknown` (error): an `attributes` key the target's
+ *   `worldgen.environmentAttributes` does not list; the game refuses the whole data pack.
+ * - `worldgen.dimension-attribute-mod-particle` (info): an attribute names a project particle
+ *   type (`msm:particle`), so vanilla data packs leave the file out (ADR 0066, ADR 0080 D10).
+ *
+ * The height checks are skipped on a target without `dimensionHeight`, the attribute check on
+ * one without `environmentAttributes`; values the schema rejects (not numbers) are left to it.
  */
-import type { Element, Json, Problem, ProjectValidator, ResourceLocation } from '@msm/plugin-api';
+import type {
+  Element,
+  Json,
+  Problem,
+  ProjectValidator,
+  ResourceLocation,
+  TargetFacts,
+} from '@msm/plugin-api';
 
 const BIOME = 'minecraft:worldgen/biome';
 const PLACED_FEATURE = 'minecraft:worldgen/placed_feature';
@@ -41,6 +64,8 @@ const DIMENSION = 'minecraft:dimension';
 const WORLD_PRESET = 'minecraft:worldgen/world_preset';
 const BIOME_TAG = 'minecraft:tag/worldgen/biome';
 const WORLD_PRESET_TAG = 'minecraft:tag/worldgen/world_preset';
+const DIMENSION_TYPE = 'minecraft:dimension_type';
+const PARTICLE = 'msm:particle';
 
 /** The world preset tags that the Create World screen offers (`#normal`, `#extended`). */
 const SELECTABLE_PRESET_TAGS = ['minecraft:normal', 'minecraft:extended'] as const;
@@ -446,6 +471,152 @@ function placedFeatureUsage(elements: readonly Element[]): Problem[] {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Dimension types (ADR 0100 D3)
+
+/** One dimension type to check: its element, its data and where it sits in the element. */
+interface DimensionTypeAt {
+  elementId: ResourceLocation;
+  data: JsonRecord;
+  /** JSON pointer of the dimension type in the element: empty, or `/type` when inline. */
+  base: string;
+}
+
+/** The project's dimension types: `minecraft:dimension_type` elements and inline `type`s. */
+function dimensionTypes(elements: readonly Element[]): DimensionTypeAt[] {
+  const found: DimensionTypeAt[] = [];
+  for (const element of elements) {
+    if (element.kind === DIMENSION_TYPE && isRecord(element.data)) {
+      found.push({ elementId: element.id, data: element.data, base: '' });
+    } else if (element.kind === DIMENSION && isRecord(element.data)) {
+      const inline = element.data.type;
+      if (isRecord(inline)) found.push({ elementId: element.id, data: inline, base: '/type' });
+    }
+  }
+  return found;
+}
+
+const isInteger = (value: Json | undefined): value is number =>
+  typeof value === 'number' && Number.isInteger(value);
+
+/** JSON pointer escaping of one key (`~` and `/`). */
+const pointerKey = (key: string): string => key.replaceAll('~', '~0').replaceAll('/', '~1');
+
+function dimensionHeights(elements: readonly Element[], target: TargetFacts): Problem[] {
+  const bounds = target.worldgen.dimensionHeight;
+  if (bounds === undefined) return [];
+  const { minY, maxY, step } = bounds;
+  const problems: Problem[] = [];
+  for (const { elementId, data, base } of dimensionTypes(elements)) {
+    const { min_y: low, height, logical_height: logical } = data;
+    for (const [key, value] of [
+      ['min_y', low],
+      ['height', height],
+    ] as const) {
+      if (isInteger(value) && value % step !== 0) {
+        problems.push({
+          severity: 'error',
+          code: 'worldgen.dimension-height-multiple',
+          elementId,
+          path: `${base}/${key}`,
+          message: `${key} is ${value}; it must be a whole multiple of ${step} (for example ${Math.round(value / step) * step}), or the game refuses the dimension type.`,
+        });
+      }
+    }
+    if (isInteger(low) && low < minY) {
+      problems.push({
+        severity: 'error',
+        code: 'worldgen.dimension-height-range',
+        elementId,
+        path: `${base}/min_y`,
+        message: `min_y is ${low}; the lowest the game allows is ${minY}.`,
+      });
+    }
+    if (isInteger(height) && height < step) {
+      problems.push({
+        severity: 'error',
+        code: 'worldgen.dimension-height-range',
+        elementId,
+        path: `${base}/height`,
+        message: `height is ${height}; a dimension is at least ${step} blocks high.`,
+      });
+    } else if (isInteger(low) && isInteger(height) && low + height - 1 > maxY) {
+      problems.push({
+        severity: 'error',
+        code: 'worldgen.dimension-height-range',
+        elementId,
+        path: `${base}/height`,
+        message: `min_y ${low} and height ${height} put the top at y ${low + height - 1}; the highest the game allows is y ${maxY}, so the height can be at most ${Math.max(step, Math.floor((maxY + 1 - low) / step) * step)}.`,
+      });
+    }
+    if (isInteger(logical) && isInteger(height) && logical > height) {
+      problems.push({
+        severity: 'error',
+        code: 'worldgen.dimension-logical-height',
+        elementId,
+        path: `${base}/logical_height`,
+        message: `logical_height is ${logical}, above the height ${height}; it may not be more than the height.`,
+      });
+    }
+  }
+  return problems;
+}
+
+/** Every namespaced string in `value`, for the project particle check. */
+function namespacedStrings(value: Json, into: Set<string>): void {
+  if (typeof value === 'string') {
+    // A project particle has its own namespace; bare ids are vanilla's.
+    if (value.includes(':')) into.add(value);
+  } else if (Array.isArray(value)) {
+    for (const item of value) namespacedStrings(item, into);
+  } else if (isRecord(value)) {
+    for (const item of Object.values(value)) namespacedStrings(item, into);
+  }
+}
+
+function dimensionAttributes(elements: readonly Element[], target: TargetFacts): Problem[] {
+  const known =
+    target.worldgen.environmentAttributes === undefined
+      ? undefined
+      : new Set(target.worldgen.environmentAttributes);
+  const particles = new Set<string>(
+    ofKind(elements, PARTICLE)
+      .map((particle) => particle.id)
+      .filter((id) => !id.startsWith('minecraft:')),
+  );
+  const problems: Problem[] = [];
+  for (const { elementId, data, base } of dimensionTypes(elements)) {
+    const { attributes } = data;
+    if (!isRecord(attributes)) continue;
+    for (const [key, value] of Object.entries(attributes)) {
+      const path = `${base}/attributes/${pointerKey(key)}`;
+      if (known !== undefined && !known.has(namespaced(key))) {
+        problems.push({
+          severity: 'error',
+          code: 'worldgen.dimension-attribute-unknown',
+          elementId,
+          path,
+          message: `"${key}" is not an environment attribute of this Minecraft version; the game refuses the whole data pack. Remove it or pick one the Dimension Type Studio lists.`,
+        });
+      }
+      if (particles.size === 0) continue;
+      const named = new Set<string>();
+      namespacedStrings(value, named);
+      const used = [...named].filter((id) => particles.has(id)).sort();
+      if (used.length > 0) {
+        problems.push({
+          severity: 'info',
+          code: 'worldgen.dimension-attribute-mod-particle',
+          elementId,
+          path,
+          message: `"${key}" names your particle ${list(used)}, which only the Fabric mod jar adds, so vanilla data packs leave this dimension type out (a vanilla server would refuse the whole pack). Use a vanilla particle to keep it in vanilla packs.`,
+        });
+      }
+    }
+  }
+  return problems;
+}
+
+// ---------------------------------------------------------------------------------------------
 
 /** Kinds whose elements can name a placed feature (biomes, features, tags, template pools). */
 const PLACED_FEATURE_USERS = [
@@ -484,6 +655,16 @@ export const worldgenValidators: readonly ProjectValidator[] = Object.freeze([
     kinds: [...PLACED_FEATURE_USERS],
     validate: ({ elements }) => placedFeatureUsage(elements),
   },
+  {
+    id: 'msm.worldgen.dimension-height',
+    kinds: [DIMENSION_TYPE, DIMENSION],
+    validate: ({ elements, target }) => dimensionHeights(elements, target),
+  },
+  {
+    id: 'msm.worldgen.dimension-attributes',
+    kinds: [DIMENSION_TYPE, DIMENSION, PARTICLE],
+    validate: ({ elements, target }) => dimensionAttributes(elements, target),
+  },
 ] satisfies ProjectValidator[]);
 
 /** The problem codes the validators report. */
@@ -495,4 +676,9 @@ export const WORLDGEN_PROBLEM_CODES = Object.freeze([
   'worldgen.preset-not-selectable',
   'worldgen.preset-missing-overworld',
   'worldgen.placed-feature-unused',
+  'worldgen.dimension-height-multiple',
+  'worldgen.dimension-height-range',
+  'worldgen.dimension-logical-height',
+  'worldgen.dimension-attribute-unknown',
+  'worldgen.dimension-attribute-mod-particle',
 ] as const);

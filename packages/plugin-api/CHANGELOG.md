@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.18.0 — 2026-11-15
+
+Dimension type facts (ADR 0100 D5). `API_VERSION` is `1.18.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `WorldgenFacts.dimensionHeight?: DimensionHeightFacts` with `DimensionHeightFacts { minY: number; maxY: number; step: number }`: the lowest `min_y` of a dimension type, its highest block y (`min_y + height - 1` may not pass it) and the step `min_y` and `height` are multiples of. The worldgen validators `worldgen.dimension-height-multiple` and `worldgen.dimension-height-range` read it.
+- `WorldgenFacts.environmentAttributes?: readonly string[]`: every namespaced id of the game's `environment_attribute` registry, sorted, from the vendored registries. The Dimension Type Studio shows only these, and `worldgen.dimension-attribute-unknown` reports any other key of a dimension type's `attributes`.
+
+### Migration from 1.17.0
+
+None. A plugin that reads `dimensionHeight` or `environmentAttributes` should declare `^1.18.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
+
 ## 1.17.0 — 2026-11-15
 
 Vanilla's feature order, block type facts and command facts (ADR 0097 D1, ADR 0094 D12, ADR 0096 D6). `API_VERSION` is `1.17.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

@@ -34,6 +34,66 @@ const vanillaFeatureOrder: Record<string, readonly string[]> = Object.fromEntrie
   FEATURE_STEPS.map((step, index) => [step, featureOrder.steps[index] ?? []]),
 );
 
+/**
+ * `worldgen.environmentAttributes` (ADR 0100 D5; plugin API 1.18.0): the 52 ids of the vendored
+ * `registries.json` `environment_attribute` list, namespaced and sorted (tied to it by
+ * `test/target.test.ts`).
+ */
+const ENVIRONMENT_ATTRIBUTES = [
+  'minecraft:audio/ambient_sounds',
+  'minecraft:audio/background_music',
+  'minecraft:audio/firefly_bush_sounds',
+  'minecraft:audio/music_volume',
+  'minecraft:gameplay/baby_villager_activity',
+  'minecraft:gameplay/bed_rule',
+  'minecraft:gameplay/bees_stay_in_hive',
+  'minecraft:gameplay/can_pillager_patrol_spawn',
+  'minecraft:gameplay/can_start_raid',
+  'minecraft:gameplay/cat_waking_up_gift_chance',
+  'minecraft:gameplay/creaking_active',
+  'minecraft:gameplay/creature_world_gen_spawn_probability',
+  'minecraft:gameplay/eyeblossom_open',
+  'minecraft:gameplay/fast_lava',
+  'minecraft:gameplay/increased_fire_burnout',
+  'minecraft:gameplay/monsters_burn',
+  'minecraft:gameplay/natural_mob_spawns',
+  'minecraft:gameplay/nether_portal_spawns_piglin',
+  'minecraft:gameplay/piglins_zombify',
+  'minecraft:gameplay/respawn_anchor_works',
+  'minecraft:gameplay/sky_light_level',
+  'minecraft:gameplay/snow_golem_melts',
+  'minecraft:gameplay/straw_bed_rule',
+  'minecraft:gameplay/surface_slime_spawn_chance',
+  'minecraft:gameplay/turtle_egg_hatch_chance',
+  'minecraft:gameplay/villager_activity',
+  'minecraft:gameplay/water_evaporates',
+  'minecraft:visual/ambient_light_color',
+  'minecraft:visual/ambient_particles',
+  'minecraft:visual/block_light_tint',
+  'minecraft:visual/cloud_color',
+  'minecraft:visual/cloud_fog_end_distance',
+  'minecraft:visual/cloud_height',
+  'minecraft:visual/default_dripstone_particle',
+  'minecraft:visual/fog_color',
+  'minecraft:visual/fog_end_distance',
+  'minecraft:visual/fog_start_distance',
+  'minecraft:visual/has_sky_occluder',
+  'minecraft:visual/moon_angle',
+  'minecraft:visual/moon_phase',
+  'minecraft:visual/night_vision_color',
+  'minecraft:visual/sky_color',
+  'minecraft:visual/sky_fog_end_distance',
+  'minecraft:visual/sky_light_color',
+  'minecraft:visual/sky_light_factor',
+  'minecraft:visual/star_angle',
+  'minecraft:visual/star_brightness',
+  'minecraft:visual/sun_angle',
+  'minecraft:visual/sunrise_sunset_color',
+  'minecraft:visual/water_fog_color',
+  'minecraft:visual/water_fog_end_distance',
+  'minecraft:visual/water_fog_start_distance',
+] as const;
+
 export const target: Target = {
   id: ID,
   mcVersion: MC_VERSION,
@@ -113,6 +173,11 @@ export const target: Target = {
     // noise_settings lost default_block (`until 26.4` in the vendored mcdoc; ADR 0036 D8).
     noiseSettingsDefaultBlock: false,
     vanillaFeatureOrder,
+    // dimensionHeight (ADR 0100 D5): the vendored mcdoc's `DimensionType` ranges, `min_y`
+    // -2032 to 2031 and `height` 16 to 4064, both `divisible_by` 16, so the highest block is
+    // y 2031 (tied to the mcdoc by `test/target.test.ts`, 2026-11-15).
+    dimensionHeight: { minY: -2032, maxY: 2031, step: 16 },
+    environmentAttributes: ENVIRONMENT_ATTRIBUTES,
   },
   // items.armorMaterials: the ArmorMaterials constants in lower case. B151's error table had no
   // armour entry; javap over the Loom-cached 26.4-snapshot-7 merged jar (2026-11-05) lists the

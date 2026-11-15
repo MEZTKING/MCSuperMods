@@ -200,6 +200,29 @@ export interface WorldgenFacts {
    * and a plugin reading it must handle its absence. Since 1.17.0 (ADR 0097 D1).
    */
   vanillaFeatureOrder?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * The bounds of a dimension type's height: the lowest `min_y`, the highest block y
+   * (`min_y + height - 1` may not pass it) and the step `min_y` and `height` are multiples of.
+   * Optional: a target without it skips the height checks. Since 1.18.0 (ADR 0100 D5).
+   */
+  dimensionHeight?: DimensionHeightFacts;
+  /**
+   * Every environment attribute id the game's `environment_attribute` registry lists, with its
+   * namespace (for example `minecraft:visual/sky_color`), sorted. The keys a dimension type's
+   * or biome's `attributes` map may hold; Studios show only these. Optional: a target without
+   * it skips the attribute checks. Since 1.18.0 (ADR 0100 D5).
+   */
+  environmentAttributes?: readonly string[];
+}
+
+/** The height bounds of a dimension type ({@link WorldgenFacts.dimensionHeight}). Since 1.18.0. */
+export interface DimensionHeightFacts {
+  /** The lowest `min_y` a dimension type may have. */
+  minY: number;
+  /** The highest block y: `min_y + height - 1` may not be above it. */
+  maxY: number;
+  /** `min_y` and `height` are whole multiples of this, and `height` is at least this. */
+  step: number;
 }
 
 /**

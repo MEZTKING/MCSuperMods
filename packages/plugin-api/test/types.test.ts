@@ -7,6 +7,7 @@ import type {
   DataFolderKey,
   DefinitionInput,
   DevFacts,
+  DimensionHeightFacts,
   Element,
   ElementKind,
   ElementPatch,
@@ -514,6 +515,25 @@ describe('0.8.0 additions', () => {
     expect(worldgen.vanillaFeatureOrder?.underground_ores?.[1]).toBe('minecraft:ore_gravel');
     // A 1.16.0-shaped target without the order stays assignable.
     expect(testTarget.worldgen.vanillaFeatureOrder).toBeUndefined();
+  });
+
+  it('carries optional dimension height and environment attribute facts (1.18.0)', () => {
+    expectTypeOf<WorldgenFacts['dimensionHeight']>().toEqualTypeOf<
+      DimensionHeightFacts | undefined
+    >();
+    expectTypeOf<WorldgenFacts['environmentAttributes']>().toEqualTypeOf<
+      readonly string[] | undefined
+    >();
+    const worldgen: WorldgenFacts = {
+      featureSteps: [],
+      dimensionHeight: { minY: -2032, maxY: 2031, step: 16 },
+      environmentAttributes: ['minecraft:visual/fog_color', 'minecraft:visual/sky_color'],
+    };
+    expect(worldgen.dimensionHeight?.step).toBe(16);
+    expect(worldgen.environmentAttributes).toContain('minecraft:visual/sky_color');
+    // A 1.17.0-shaped target without them stays assignable.
+    expect(testTarget.worldgen.dimensionHeight).toBeUndefined();
+    expect(testTarget.worldgen.environmentAttributes).toBeUndefined();
   });
 
   it('carries optional bed, dye, stem, model template and torch facts on blocks (1.17.0)', () => {

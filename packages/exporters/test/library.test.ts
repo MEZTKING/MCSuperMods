@@ -517,6 +517,19 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       travel: 'portal',
       colour: '#28a060',
     },
+    // ADR 0100 D2: its own sky and rules, a project dimension type in the vanilla data pack
+    // (the vanilla server check of B471 loads it).
+    {
+      dimension_name: 'Glow Moon',
+      terrain: 'floating_islands',
+      biome: 'minecraft:end_highlands',
+      own_sky: true,
+      sky_colour: '#101028',
+      fog_colour: '#202040',
+      time: 'night',
+      beds: 'explode',
+      travel: 'command',
+    },
   ],
   // ADR 0078 D2: every destination, frame, igniter, scale, particle, sound and overlay answer.
   portal: [
@@ -2586,6 +2599,46 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           utf8.decode(report.contents.get('data/minecraft/tags/block/portals.json') as Uint8Array),
         );
         expect(tag.values).toEqual([{ id: `demo:${path}`, required: false }]);
+      },
+    );
+
+    it.each([
+      [{ own_sky: true, travel: 'command' }],
+      [{ own_sky: true, sky: 'nether', time: 'day', beds: 'work', travel: 'command' }],
+      [{ own_sky: true, sky: 'end', time: 'as_sky', beds: 'as_sky' }],
+    ] as const)(
+      'dimension with %j: its own dimension type, no problems at all, kept in the vanilla data pack (ADR 0100 D2)',
+      async (values) => {
+        const entry = starterById('dimension');
+        const built = await buildProject('Moon', 'demo', [
+          buildEntry(entry, 'demo', 'Moon', bundle.target, values),
+        ]);
+        const project = await reload(built.fs);
+        const ids = projectRegistryIds(project);
+        const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
+        // Warnings and infos too.
+        expect(validatorProblems(project, bundle.target, registries)).toEqual([]);
+        await checkProject(bundle, context, built);
+        const report = await exportProblems(
+          bundle,
+          context,
+          built.fs,
+          project,
+          registries,
+          ids,
+          vanillaSafeExporter(dataPackExporter, modOnlyIdsFor(project)),
+        );
+        expect(report.ok).toBe(true);
+        expect(report.files).toEqual(
+          expect.arrayContaining([
+            'data/demo/dimension_type/ruby_realm_type.json',
+            'data/demo/dimension/ruby_realm.json',
+          ]),
+        );
+        const dimension = JSON.parse(
+          utf8.decode(report.contents.get('data/demo/dimension/ruby_realm.json') as Uint8Array),
+        );
+        expect(dimension.type).toBe('demo:ruby_realm_type');
       },
     );
 

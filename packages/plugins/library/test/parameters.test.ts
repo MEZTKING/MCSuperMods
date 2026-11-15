@@ -1344,6 +1344,79 @@ describe('Creator flows', () => {
     expect((flat.generator as JsonObject).type).toBe('minecraft:flat');
   });
 
+  it('Dimension: its own sky and rules copy the vanilla type with the answers (ADR 0100 D2)', () => {
+    // Off by default: no dimension type, the vanilla one by id.
+    const plain = build(starter('dimension'), {});
+    expect(plain.elements.map((entry) => entry.kind)).not.toContain('minecraft:dimension_type');
+    const own = build(starter('dimension'), {
+      own_sky: true,
+      sky_colour: '#204060',
+      fog_colour: '#102030',
+    });
+    expect(data(own, 'demo:ruby_realm').type).toBe('demo:ruby_realm_type');
+    const type = own.elements.find((entry) => entry.id === 'demo:ruby_realm_type');
+    expect(type?.kind).toBe('minecraft:dimension_type');
+    const copied = type?.data as JsonObject;
+    const attributes = copied.attributes as JsonObject;
+    expect(attributes['minecraft:visual/sky_color']).toBe('#204060');
+    expect(attributes['minecraft:visual/fog_color']).toBe('#102030');
+    // As the chosen sky has it: the overworld's clock, timelines and beds.
+    expect(copied.default_clock).toBe('minecraft:overworld');
+    expect(copied.timelines).toBe('#minecraft:in_overworld');
+    expect(copied).not.toHaveProperty('has_fixed_time');
+    expect(attributes['minecraft:gameplay/bed_rule']).toMatchObject({ can_sleep: 'when_dark' });
+    expect(Object.keys(attributes)).toEqual(Object.keys(attributes).sort());
+    expect(type?.notes).toMatch(/copied from the vanilla dimension type minecraft:overworld/);
+
+    // Always night and exploding beds, from the End: a fixed time without the clock.
+    const night = build(starter('dimension'), {
+      own_sky: true,
+      sky: 'end',
+      time: 'night',
+      beds: 'explode',
+    });
+    const nightType = data(night, 'demo:ruby_realm_type');
+    const nightAttributes = nightType.attributes as JsonObject;
+    expect(nightType.has_fixed_time).toBe(true);
+    expect(nightType).not.toHaveProperty('default_clock');
+    expect(nightType.timelines).toBe('#minecraft:universal');
+    expect(nightType.skybox).toBe('end');
+    expect(nightType.has_ender_dragon_fight).toBe(false);
+    expect(nightAttributes['minecraft:visual/sun_angle']).toBe(180);
+    expect(nightAttributes['minecraft:gameplay/bed_rule']).toEqual({
+      can_set_spawn: 'never',
+      can_sleep: 'never',
+      destroy_on_use: true,
+    });
+    // Beds that work in the Nether-like sky.
+    const nether = data(
+      build(starter('dimension'), { own_sky: true, sky: 'nether', beds: 'work' }),
+      'demo:ruby_realm_type',
+    );
+    expect((nether.attributes as JsonObject)['minecraft:gameplay/bed_rule']).toMatchObject({
+      can_set_spawn: 'always',
+    });
+    expect(nether.coordinate_scale).toBe(8);
+  });
+
+  it('Dimension: the own type keeps only the attributes each target lists', () => {
+    for (const bundle of builtInTargets) {
+      const built = starter('dimension').build({
+        namespace: 'demo',
+        projectName: 'Demo',
+        target: bundle.target,
+        values: { own_sky: true },
+      }) as ContentBundle;
+      const attributes = data(built, 'demo:ruby_realm_type').attributes as JsonObject;
+      const known = new Set(bundle.target.worldgen.environmentAttributes ?? []);
+      for (const id of Object.keys(attributes)) expect(known.has(id), id).toBe(true);
+      // The newer target's has_sky_occluder (plan F31) appears exactly where it is listed.
+      expect(Object.hasOwn(attributes, 'minecraft:visual/has_sky_occluder')).toBe(
+        known.has('minecraft:visual/has_sky_occluder'),
+      );
+    }
+  });
+
   it('Villager trade: one trade merged into the profession and level tag', () => {
     const plain = build(starter('villager-trade'), {});
     expect(plain.elements.map((entry) => `${entry.kind} ${entry.id}`)).toEqual([
