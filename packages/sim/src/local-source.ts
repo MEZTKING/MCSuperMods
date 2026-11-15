@@ -20,6 +20,11 @@
  * the Power tool and the tick make their changes; their effects (particles, sounds, chips,
  * animations) go out as `effect` events, and every step is in {@link LocalWorldSource.trace}.
  *
+ * Keys and the HUD (B429, `controls/`): {@link LocalWorldSource.controls} fires the project's
+ * key binds (the view sends `controls.keys.press` and `release` with the game's key names) and
+ * keeps the HUD the `show_hud`, `hide_hud` and `set_hud` actions change; held keys run
+ * `msm:while_held` at the end of each tick.
+ *
  * Screens (B398): using a container or machine block opens its screen ({@link
  * LocalWorldSource.screen}, which the view draws as a mock-up, ADR 0085 L11) and sets the block's
  * `open` property as the game does; {@link LocalWorldSource.closeScreen} closes it and fires the
@@ -31,6 +36,7 @@ import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blo
 import { useBlock } from './blocks/interact.js';
 import { breakBlock, placeBlock } from './blocks/placement.js';
 import { type ScreenSpec, screensFromFiles } from './blocks/screens.js';
+import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
 import type { EntityHit } from './entities/spawn.js';
@@ -70,8 +76,11 @@ import { buildVehicleCatalogue } from './vehicles/catalogue.js';
 import { type VehicleHit, VehicleWorld } from './vehicles/vehicle-world.js';
 import { SimWorld, sameState, type WorldChange } from './world/sim-world.js';
 
-/** What the local source reads from a target: folder names and the block names of the version. */
-export type LocalSourceTarget = CatalogueTarget;
+/**
+ * What the local source reads from a target: folder names, the block names of the version and,
+ * when it has them, the runtime's vehicle keys (B429).
+ */
+export type LocalSourceTarget = CatalogueTarget & ControlsTarget;
 
 /** Options of a {@link LocalWorldSource}. */
 export interface LocalSourceOptions {
@@ -178,6 +187,8 @@ export class LocalWorldSource implements WorldSource {
   readonly entities: EntityWorld;
   /** The vehicles (B428). */
   readonly vehicles: VehicleWorld;
+  /** Key binds, the HUD and the vehicle dashboard (B429). */
+  readonly controls: SimControls;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -260,6 +271,16 @@ export class LocalWorldSource implements WorldSource {
       this.emit({ type: 'blockChanged', pos: change.pos, state: change.state }),
     );
     this.traceNow = new SimTrace(this.log, () => this.ticks);
+    this.controls = new SimControls(this.files, this.target, {
+      now: () => this.ticks,
+      player: this.player,
+      vehicles: this.vehicles,
+      screenOpen: () => this.screenNow !== null,
+      fire: (owner, eventId, ctx, sentence) =>
+        this.triggers.fireOwned(owner, eventId, ctx, sentence),
+      trace: this.traceNow,
+      log: this.log,
+    });
     this.triggers = new TriggerEngine(readEventDefinitions(this.files, this.target), {
       world: this.world,
       catalogue: () => this.blockCatalogue,
@@ -271,6 +292,7 @@ export class LocalWorldSource implements WorldSource {
       seed: options.seed ?? 1,
       ...(options.chance === undefined ? {} : { chance: options.chance }),
       ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
+      hud: this.controls.hudActions,
     });
   }
 
@@ -334,6 +356,7 @@ export class LocalWorldSource implements WorldSource {
     this.entities.clear();
     this.world.clear();
     this.triggers.clear();
+    this.controls.clear();
     this.emit({ type: 'entities', entities: [] });
     const ground = this.groundBlocks;
     const { size } = ground;
@@ -542,6 +565,7 @@ export class LocalWorldSource implements WorldSource {
     this.emit({ type: 'entities', entities: snapshots });
     this.timers.tick([this.player.box, ...this.entities.boxes(), ...this.vehicles.boxes()]);
     this.triggers.tick();
+    this.controls.tick();
   }
 
   /**
@@ -632,6 +656,7 @@ export class LocalWorldSource implements WorldSource {
     );
     this.timers.setCatalogue(this.blockCatalogue);
     this.triggers.setDefinitions(readEventDefinitions(files, target));
+    this.controls.setFiles(files, target);
     const open = this.screenNow;
     if (open !== null) {
       const spec = this.screens.get(open.block);
@@ -658,6 +683,7 @@ export class LocalWorldSource implements WorldSource {
     this.entities.clear();
     this.world.clear();
     this.triggers.clear();
+    this.controls.clear();
     this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
@@ -736,6 +762,8 @@ export class LocalWorldSource implements WorldSource {
     const spec = this.screens.get(state.name);
     if (spec === undefined) return false;
     if (this.screenNow !== null) this.closeScreen();
+    // The game's client lets go of every held key when a screen opens (ADR 0088 D4).
+    this.controls.keys.releaseAll();
     const block = this.blockCatalogue.blockFor(state.name);
     const displayName = block?.displayName ?? state.name;
     const origin: SimOrigin = block?.origin ?? { elementId: state.name };

@@ -212,9 +212,10 @@ function onlyInGame(name: string, d: JsonObject): string[] {
     out.push(`${name}'s engine sound plays only in the game`);
   }
   if (str(engine.horn) !== undefined) out.push(`${name}'s horn sounds only in the game`);
-  if (d.hud !== false) {
+  // The dashboard is drawn over the preview (B429); only its weapon rows are not the game's.
+  if (d.hud !== false && weapons > 0) {
     out.push(
-      `${name}'s dashboard on the screen shows only in the game; the panel beside the preview stands in for it`,
+      `${name}'s dashboard shows its weapons as always ready: ammunition and reloading count only in the game`,
     );
   }
   out.push(

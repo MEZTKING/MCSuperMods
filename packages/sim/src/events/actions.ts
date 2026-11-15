@@ -10,8 +10,8 @@
  * | `play_sound`, `spawn_particle`, `play_animation` | effects for the view |
  * | `apply_effect`, `damage`, `heal` | a log line and a chip; what they do is said once |
  * | `launch` | pushes the player or the mob by its vector, with a chip |
- * | `light_portal`, `run_function`, `run_script` | "Only in Minecraft" |
- * | `explode`, `show_hud`, `hide_hud`, `set_hud` | "Only in Minecraft" (the vehicles batch's B428 and B429 may draw them) |
+ * | `show_hud`, `hide_hud`, `set_hud` | the player's HUD in the area (B429), drawn by the view |
+ * | `light_portal`, `run_function`, `run_script`, `explode` | "Only in Minecraft" |
  *
  * Whom an action affects follows the runtime's `self` and `other` (`EffectTarget`): `self` is
  * the event's player, else its mob; `other` is the other entity of the event.
@@ -50,9 +50,9 @@ export const SIM_ACTIONS: Readonly<Record<string, ActionHandling>> = Object.free
   heal: 'chip',
   light_portal: 'onlyInMinecraft',
   explode: 'onlyInMinecraft',
-  show_hud: 'onlyInMinecraft',
-  hide_hud: 'onlyInMinecraft',
-  set_hud: 'onlyInMinecraft',
+  show_hud: 'runs',
+  hide_hud: 'runs',
+  set_hud: 'runs',
 });
 
 /** `trigger_event` chains nest at most this deep; the fired event is depth 1 (as the runtime). */
@@ -160,6 +160,20 @@ export interface ActionNames {
   effect(id: string): string;
 }
 
+/**
+ * The hooks of the HUD actions (ADR 0089 D6, B429): each false for an id the project has no
+ * HUD element for.
+ */
+export interface ActionHud {
+  /** Whether the project has a HUD element `id`. */
+  has(id: string): boolean;
+  show(id: string): boolean;
+  hide(id: string): boolean;
+  set(id: string, value: number | string): boolean;
+  /** An element's name in plain words. */
+  name(id: string): string;
+}
+
 /** What the actions work on: the area, its player and mobs, and where they report. */
 export interface ActionHost {
   readonly world: SimWorld;
@@ -177,6 +191,8 @@ export interface ActionHost {
   rulesFor(owner: EventOwner, eventId: string): ReadonlyMap<number, readonly RuleRef[]>;
   /** Called when an action names a project definition (an effect), to say its triggers. */
   mentioned(kind: 'effect', id: string): void;
+  /** The player's HUD (B429); without it the HUD actions are "Only in Minecraft". */
+  readonly hud?: ActionHud;
 }
 
 const isRecord = (value: Json | undefined): value is JsonObject =>
@@ -528,11 +544,9 @@ function runAction(
     case 'explode':
       return [add('onlyInMinecraft', `make an explosion of power ${num(action.power, 0)}`)];
     case 'show_hud':
-      return [add('onlyInMinecraft', `show ${str(action.hud) ?? ''} on screen`)];
     case 'hide_hud':
-      return [add('onlyInMinecraft', `hide ${str(action.hud) ?? ''} from the screen`)];
     case 'set_hud':
-      return [add('onlyInMinecraft', `set ${str(action.hud) ?? ''} on screen`)];
+      return [hudAction(host, ctx, type, action, add)];
     case 'run_function':
       return [add('onlyInMinecraft', `run function ${str(action.function) ?? ''}`)];
     case 'run_script': {
@@ -551,6 +565,44 @@ function runAction(
     default:
       return [add('onlyInMinecraft', `an action the preview does not know ("${type}")`)];
   }
+}
+
+/**
+ * `show_hud`, `hide_hud` and `set_hud` (ADR 0089 D6): the viewer is the event's player; without
+ * one, or for an id the project has no HUD element for, nothing happens (the runtime logs it).
+ */
+function hudAction(
+  host: ActionHost,
+  ctx: EventContext,
+  type: string,
+  action: JsonObject,
+  add: (kind: TraceEntry['kind'], text: string) => TraceEntry,
+): TraceEntry {
+  const id = str(action.hud) ?? '';
+  const hud = host.hud;
+  if (hud === undefined) {
+    const words = type === 'show_hud' ? 'show' : type === 'hide_hud' ? 'hide' : 'set the value of';
+    return add('onlyInMinecraft', `${words} ${id} on screen`);
+  }
+  const name = hud.name(id);
+  if (!ctx.player)
+    return add('skipped', `${name} was not changed: there is no player in this event.`);
+  if (!hud.has(id))
+    return add('skipped', `There is no HUD element ${id}; nothing changed on screen.`);
+  if (type === 'show_hud') {
+    hud.show(id);
+    return add('action', `Showed ${name} on screen.`);
+  }
+  if (type === 'hide_hud') {
+    hud.hide(id);
+    return add('action', `Hid ${name} from the screen.`);
+  }
+  const value = action.value;
+  if ((typeof value !== 'number' && typeof value !== 'string') || !hud.set(id, value)) {
+    return add('skipped', `${name} was not changed: the value is not a number or a text.`);
+  }
+  const shown = typeof value === 'number' ? String(Math.round(value * 100) / 100) : `"${value}"`;
+  return add('action', `Set ${name} to ${shown} on screen.`);
 }
 
 const capitalise = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);

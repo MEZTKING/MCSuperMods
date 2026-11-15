@@ -36,6 +36,7 @@ import type { BlockPos, BlockState, SimEffect, SimOrigin, Vec3 } from '../types.
 import type { SimWorld } from '../world/sim-world.js';
 import {
   type ActionHost,
+  type ActionHud,
   type ActionNames,
   type Actor,
   type EventContext,
@@ -84,6 +85,8 @@ export interface TriggerEngineOptions {
   readonly chance?: ChanceMode;
   /** Rule books, to name the rule behind each action of a plain generated event. */
   readonly ruleBooks?: readonly RuleBookInfo[];
+  /** The player's HUD for the HUD actions (B429). */
+  readonly hud?: ActionHud;
 }
 
 /** What a use of a block or item did, so the caller knows whether the click was taken. */
@@ -171,6 +174,7 @@ export class TriggerEngine {
         const owner = this.definitions.get(kind, id);
         if (owner !== undefined) this.sayUnhandled(owner);
       },
+      ...(options.hud === undefined ? {} : { hud: options.hud }),
     };
     options.world.onChange((change) => this.track(change.pos, change.state));
     this.sayScripts();

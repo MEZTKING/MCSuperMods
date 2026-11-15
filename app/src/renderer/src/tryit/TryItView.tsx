@@ -72,6 +72,8 @@ import {
   type TryItThing,
   texturePath,
 } from './hotbar';
+import { gameKeyName, gameMouseName, projectKey, projectKeyLines, takenKeyLine } from './hud/keys';
+import { TryItHud } from './hud/TryItHud';
 import {
   commandForButton,
   commandForKey,
@@ -305,6 +307,7 @@ export default function TryItView(props: TryItViewProps) {
   const held = useRef(new Set<string>());
   const look = useRef({ yaw: 0, pitch: 0 });
   const lastSpace = useRef<number | null>(null);
+  const keysSaid = useRef(new Set<string>());
   const flyPending = useRef(false);
   const vanillaStatesRef = useRef(vanillaStates);
   vanillaStatesRef.current = vanillaStates;
@@ -535,6 +538,16 @@ export default function TryItView(props: TryItViewProps) {
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    // The project's key binds hear every key of the picture first (B429).
+    const own =
+      area === null || event.target !== event.currentTarget || event.ctrlKey || event.metaKey
+        ? null
+        : projectKey(
+            area.source.controls.keys,
+            gameKeyName(area.target, event.code),
+            true,
+            event.repeat,
+          );
     if (area !== null && vehicleKey(event, true, area.source.vehicles)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target !== event.currentTarget) return;
@@ -555,11 +568,23 @@ export default function TryItView(props: TryItViewProps) {
     const command = commandForKey(event.code);
     if (command === null) return;
     event.preventDefault();
+    if (own !== null && area !== null) {
+      // A project key takes one of Try it's own keys; said once per key.
+      if (!keysSaid.current.has(own)) {
+        keysSaid.current.add(own);
+        const bind = area.source.controls.keys.binds.onKey(own)[0];
+        area.source.log.info(takenKeyLine(own, bind?.displayName ?? own, command));
+      }
+      return;
+    }
     if (event.repeat && command.type !== 'turn') return;
     run(command);
   };
 
   const onKeyUp = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (area !== null) {
+      projectKey(area.source.controls.keys, gameKeyName(area.target, event.code), false);
+    }
     if (area !== null && vehicleKey(event, false, area.source.vehicles)) return;
     held.current.delete(event.code);
   };
@@ -578,11 +603,20 @@ export default function TryItView(props: TryItViewProps) {
       }
       return;
     }
+    const own =
+      area === null
+        ? null
+        : projectKey(area.source.controls.keys, gameMouseName(area.target, event.button), true);
     const command = commandForButton(event.button);
     if (command !== null) {
       event.preventDefault();
-      run(command);
+      if (own === null) run(command);
     }
+  };
+
+  const onMouseUp = (event: MouseEvent<HTMLDivElement>): void => {
+    if (area === null) return;
+    projectKey(area.source.controls.keys, gameMouseName(area.target, event.button), false);
   };
 
   const onMouseMove = (event: MouseEvent<HTMLDivElement>): void => {
@@ -782,8 +816,13 @@ export default function TryItView(props: TryItViewProps) {
             className="relative min-h-64 flex-1 outline-none focus-visible:outline-2 focus-visible:outline-accent"
             onKeyDown={onKeyDown}
             onKeyUp={onKeyUp}
-            onBlur={() => held.current.clear()}
+            onBlur={() => {
+              held.current.clear();
+              // The game's client lets go of held keys when the window loses focus.
+              area?.source.controls.keys.releaseAll();
+            }}
             onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
             onMouseMove={onMouseMove}
             onContextMenu={(event) => event.preventDefault()}
           >
@@ -922,6 +961,14 @@ export default function TryItView(props: TryItViewProps) {
                 chips={area.effects.chips}
                 captions={area.effects.captions}
                 mobName={(entity) => area.source.entities.entity(entity)?.kind.displayName}
+              />
+            )}
+            {area !== null && (
+              <TryItHud
+                frame={() => area.source.controls.hud.frame()}
+                dashboard={() => area.source.controls.dashboard()}
+                files={area.files}
+                target={area.target}
               />
             )}
             {screenOpen !== null && <MockScreen screen={screenOpen} onClose={closeScreen} />}
@@ -1264,8 +1311,9 @@ export default function TryItView(props: TryItViewProps) {
                 ...(area !== null && area.source.vehicles.types.ids().length > 0
                   ? VEHICLE_KEYS
                   : []),
+                ...(area === null ? [] : projectKeyLines(area.source.controls.keys.binds)),
               ].map((entry) => (
-                <div key={entry.keys} className="contents">
+                <div key={`${entry.keys}|${entry.does}`} className="contents">
                   <dt className="font-mono">{entry.keys}</dt>
                   <dd>{entry.does}</dd>
                 </div>

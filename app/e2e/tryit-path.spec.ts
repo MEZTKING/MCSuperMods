@@ -31,6 +31,13 @@
  * up, and "What happened" says what only the game does. With `MSM_TRYIT_VEHICLE_SHOT=<file.png>`
  * it saves a picture of the drive (launch at device scale 2 by the same switch).
  *
+ * A fourth test (B429) presses a project key: the block project gains the Controls plugin, a
+ * mana bar (a `set` value out of 100) and a hidden "Mana charged" text, and a key bind on K that
+ * sets the bar to 60 and shows the text. Before the press the HUD layer draws nothing; after it,
+ * the bar sits above the hotbar, centred and filled 49 of 81 pixels, the text at the top left,
+ * and "What happened" says the key ran its event. With `MSM_TRYIT_HUD_SHOT=<file.png>` it saves a
+ * picture of it (launch at device scale 2 by the same switch).
+ *
  * A second test (B399) adds a project rule to a copy of `fixtures/sample-rules`: "when the Chime
  * Block is used, play a sound, give a Ruby and run a function". Using the block in Try it shows
  * the rule's sentence and its actions in "What happened", the Ruby in "Your items", the sound's
@@ -43,7 +50,15 @@
  * `42-tryit-flat.png`), also at device scale 2.
  */
 
-import { copyFileSync, cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { vehicleGeometry } from '@msm/plugin-entities';
@@ -60,6 +75,7 @@ const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as
 const SHOT = process.env.MSM_TRYIT_SHOT;
 const GROUND_SHOTS = process.env.MSM_TRYIT_GROUND_SHOTS;
 const VEHICLE_SHOT = process.env.MSM_TRYIT_VEHICLE_SHOT;
+const HUD_SHOT = process.env.MSM_TRYIT_HUD_SHOT;
 const SHARP = SHOT !== undefined || GROUND_SHOTS !== undefined || VEHICLE_SHOT !== undefined;
 
 let base: string | undefined;
@@ -756,4 +772,127 @@ test('Try it: place the go-kart, get in, drive and steer, get out, hit it and pi
   await window.keyboard.up('ShiftLeft');
   await expect(vehicle).toHaveAttribute('data-vehicles', '0');
   await expect(log).toContainText('You picked up Go-kart.');
+});
+
+/** The block project with the Controls plugin, a mana bar, a hidden text and a key on K. */
+function makeHudProject(projectDir: string): void {
+  makeProject(projectDir);
+  const manifestPath = join(projectDir, 'msm.project.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { plugins: string[] };
+  manifest.plugins = [...manifest.plugins, 'msm.controls'].sort();
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const meta = { createdAt: '2026-11-15T00:00:00.000Z' };
+  writeElement(projectDir, 'hud', 'mana', {
+    data: {
+      anchor: 'above_hotbar',
+      back_color: '#14183c',
+      fill_color: '#3c6cf0',
+      format: 1,
+      max: 100,
+      size: [81, 5],
+      type: 'bar',
+      value: { source: 'set' },
+    },
+    formatVersion: 1,
+    id: `${NAMESPACE}:mana`,
+    kind: 'msm:hud',
+    meta,
+  });
+  writeElement(projectDir, 'hud', 'charged', {
+    data: {
+      anchor: 'top_left',
+      color: '#a0c0ff',
+      format: 1,
+      show: 'always',
+      starts_hidden: true,
+      text: 'Mana charged',
+      type: 'text',
+      value: { source: 'set' },
+    },
+    formatVersion: 1,
+    id: `${NAMESPACE}:charged`,
+    kind: 'msm:hud',
+    meta,
+  });
+  const press = `${NAMESPACE}:charge_press`;
+  writeElement(projectDir, 'key_bind', 'charge', {
+    data: {
+      default_key: 'key.keyboard.k',
+      display_name: 'Charge',
+      events: {
+        [press]: {
+          actions: [
+            { hud: `${NAMESPACE}:mana`, type: 'set_hud', value: 60 },
+            { hud: `${NAMESPACE}:charged`, type: 'show_hud' },
+          ],
+        },
+      },
+      format: 1,
+      'msm:on_press': press,
+    },
+    formatVersion: 1,
+    id: `${NAMESPACE}:charge`,
+    kind: 'msm:key_bind',
+    meta,
+  });
+}
+
+test('Try it: a project key fills the mana bar and shows a hidden text on the HUD', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-hud-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  makeHudProject(folders.projectDir);
+  const launched = await launchApp({
+    reuse: folders,
+    args: HUD_SHOT === undefined ? WEBGL_ARGS : [...WEBGL_ARGS, '--force-device-scale-factor=2'],
+  });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  if (HUD_SHOT !== undefined) {
+    await launched.app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
+    );
+  }
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${NAMESPACE}:charge`)).toBeVisible();
+  const { view, canvas, state } = await openTryIt(window);
+  await window.getByTestId('tryit-card-close').click();
+  await expect(window.getByTestId('tryit-keys')).toContainText('Charge (your key)');
+  const items = window.getByTestId('tryit-hud-item');
+  await expect(items).toHaveCount(0);
+
+  // A block in front, for the picture.
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await press(canvas, 'Digit1', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+  await press(canvas, 'ArrowUp', 'ArrowUp');
+
+  // K runs the key's event: the bar fills to 60 of 100 and the hidden text shows.
+  await press(canvas, 'KeyK');
+  await expect(items).toHaveCount(2);
+  const mana = window.locator(`[data-testid="tryit-hud-item"][data-id="${NAMESPACE}:mana"]`);
+  await expect(mana).toHaveAttribute('data-value', '60');
+  await expect(mana).toHaveAttribute('data-filled', '49');
+  const gui = (await window.getByTestId('tryit-hud').getAttribute('data-gui')) ?? '0 0';
+  const [width, height] = gui.split(' ').map(Number) as [number, number];
+  await expect(mana).toHaveAttribute('data-x', String(Math.floor((width - 81) / 2)));
+  await expect(mana).toHaveAttribute('data-y', String(height - 52 - 5));
+  const charged = window.locator(`[data-testid="tryit-hud-item"][data-id="${NAMESPACE}:charged"]`);
+  await expect(charged).toHaveAttribute('data-text', 'Mana charged');
+  await expect(charged).toHaveAttribute('data-x', '2');
+  await expect(charged).toHaveAttribute('data-y', '2');
+  await expect(window.getByTestId('tryit-log')).toContainText(
+    `You pressed Charge (K), so its event "${NAMESPACE}:charge_press" ran.`,
+  );
+  await expect(window.getByTestId('tryit-log')).toContainText('Set Mana to 60 on screen.');
+  await expect.poll(() => pictureColours(view), { timeout: 10_000 }).toBeGreaterThan(1);
+  if (HUD_SHOT !== undefined) {
+    await window.waitForTimeout(500);
+    await view.screenshot({ path: HUD_SHOT });
+  }
 });
