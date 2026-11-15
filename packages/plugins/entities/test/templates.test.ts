@@ -87,7 +87,10 @@ function contextFor(
 describe('entities templates', () => {
   it('has the ids in picker order, unique, and contributed by the plugin', () => {
     expect(entitiesTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
+    // The vehicle templates follow (`vehicle-templates.test.ts`).
+    expect(
+      plugin.contributes.elementTemplates?.slice(0, IDS.length).map((template) => template.id),
+    ).toEqual(IDS);
   });
 
   it('are msm:entity templates with a title, a description naming the model gap, and a category', () => {

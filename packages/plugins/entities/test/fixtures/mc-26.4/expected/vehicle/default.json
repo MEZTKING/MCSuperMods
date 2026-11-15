@@ -1,0 +1,17 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "model": {
+        "geometry": "",
+        "texture": ""
+      },
+      "movement": {
+        "mode": "ground"
+      }
+    },
+    "layer": "msm",
+    "path": "msm/demo/vehicle/sample.json",
+    "schema": "msm:vehicle_definition"
+  }
+]

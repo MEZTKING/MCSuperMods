@@ -290,7 +290,7 @@ function variantChecks(elements: readonly Element[], registry: ValidationRegistr
 }
 
 /** The bone names of an `msm:geo_model` element, over all its geometries. */
-function boneNames(model: Element): Set<string> {
+export function boneNames(model: Element): Set<string> {
   const names = new Set<string>();
   const geometries = dataOf(model)['minecraft:geometry'];
   if (!Array.isArray(geometries)) return names;
@@ -332,7 +332,7 @@ function saddleBones(elements: readonly Element[]): Problem[] {
 }
 
 /** What an animation set uses that the vanilla renderer does not play (ADR 0072 D3). */
-interface Unsupported {
+export interface Unsupported {
   molang: string[];
   easing: string[];
   sound: string[];
@@ -378,7 +378,7 @@ function scanChannel(channel: Json | undefined): { molang: boolean; easing: bool
   return found;
 }
 
-function unsupportedFeatures(set: Element): Unsupported {
+export function unsupportedFeatures(set: Element): Unsupported {
   const found: Unsupported = { molang: [], easing: [], sound: [], particle: [], instruction: [] };
   const animations = record(dataOf(set).animations) ?? {};
   for (const name of Object.keys(animations).sort()) {

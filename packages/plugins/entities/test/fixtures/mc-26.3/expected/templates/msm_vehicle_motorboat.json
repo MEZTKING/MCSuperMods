@@ -1,0 +1,86 @@
+[
+  {
+    "contents": {
+      "camera": {
+        "distance": 5
+      },
+      "engine": {
+        "horn": "minecraft:item.goat_horn.sound.0",
+        "sound": "minecraft:entity.boat.paddle_water"
+      },
+      "format": 1,
+      "health": {
+        "max": 30
+      },
+      "item": {
+        "places_on": "water",
+        "texture": "demo:item/sample"
+      },
+      "model": {
+        "geometry": "demo:entity/sample",
+        "texture": "demo:entity/sample"
+      },
+      "movement": {
+        "max_speed": 0.4,
+        "mode": "water",
+        "turn_rate": 4
+      },
+      "parts": {
+        "propellers": [
+          "propeller"
+        ]
+      },
+      "seats": [
+        {
+          "offset": [
+            0,
+            0.3,
+            0
+          ]
+        },
+        {
+          "offset": [
+            0,
+            0.3,
+            -0.6
+          ]
+        }
+      ],
+      "size": [
+        1.6,
+        0.7
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/vehicle/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  }
+]

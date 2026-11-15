@@ -5056,3 +5056,21 @@ Decisions
 
 Next
 - B444 builds on 1.17.0. Extend the vanilla cache to `data/minecraft/worldgen/placed_feature/` so Make my own copy copies placement (interop `PREVIEW_ASSET_PATTERNS`, cache `schemaVersion`). The `msm:biome_addition` kind default names `minecraft:flower_plains`, so a new addition starts with the new warning.
+
+## 2026-11-15 — executor — B414 entities plugin: `msm:vehicle`
+
+What
+- `@msm/plugin-entities` gains the kind `msm:vehicle` (ADR 0090 D2; folder `vehicle`, registry `entity_type`, preview `vehicle`, hidden `/format`; default data `{ format: 1, model: { geometry: '', texture: '' }, movement: { mode: 'ground' } }`), in `src/kinds/vehicle.ts`.
+- Lowering (`src/lowering/vehicle.ts`): `msm/<ns>/vehicle/<path>.json` (layer `msm`, schema `msm:vehicle_definition`) without `display_name` and `item_display_name`; `en_us` keys `entity.<ns>.<path>` and `item.<ns>.<path>` (the item's name falls back to the vehicle's); the item's model definition `assets/<ns>/items/<path>.json` pointing at `item.model`, or at a flat `minecraft:item/generated` model of `item.texture` written next to it; nothing when neither is set. No vanilla data files (ADR 0090 D14).
+- Validators (`src/validators-vehicles.ts`, five validators, 15 codes in `VEHICLE_PROBLEM_CODES`): `vehicles.unknown-mode`, `too-fast` (both from `TargetFacts.vehicles`, skipped when absent), `takeoff-too-fast`, `unknown-geometry`, `unknown-bone` (turret, parts, muzzle), `unknown-animations`, `vanilla-renderer-subset`, `unknown-projectile` (skipped without entity facts), `duplicate-weapon-id`, `unknown-seat-weapon`, `turret-seat-missing`, `duplicate-paint-id`, `item-used-twice`, `item-picture-missing`, `unknown-event`. `boneNames` and `unsupportedFeatures` in `validators-mobs.ts` are now exported for them.
+- Eight templates in category "Vehicles" (`src/templates/vehicles/`): Go-kart, Car, Tank, Biplane, Helicopter, Motorboat, Raft, Hovercraft (`msm_vehicle_<shape>`), with MSM-made starter geometries (`vehicleGeometry(shape, name)`: plain boxes, box UV packed on a square power-of-two texture).
+- Tests: kind and lowering (goldens `default`, `car`, `tank` per target), one test per validator code plus a clean tank and the target-fact skips, templates (zero problems on both targets with their geometry and pictures; goldens). `pnpm lint`, `pnpm typecheck`, `pnpm test` (24 of 24 tasks) green.
+
+Decisions
+- Ids the schema already checks (fuel, ammunition, repair and dye items, `immune_to`, textures, sounds) are not checked again by a validator (the plugins rule "never repeat `schema.unknown-id`"); a test shows the schema reports them. `item-used-twice` covers what the schema cannot: one item for two jobs.
+- A missing geometry is a warning (`vehicles.unknown-geometry`), as the plan asks; templates are proven clean with their starter geometry, since a template makes one element.
+- `VEHICLE_PROBLEM_CODES` stays outside `ENTITIES_PROBLEM_CODES` so the app's plain-words test does not fail before the plain words land.
+
+Next
+- App: plain words for the 15 codes in `plain-problems.ts` (and its test), the vehicle's own id in the `item` registry of `schema-context.ts`, the Vehicle Studio (B419) and preview kind `vehicle`.
+- B422 and B423 may reuse the starter shapes (copied into the library, which cannot import this plugin).

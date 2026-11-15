@@ -1,0 +1,107 @@
+[
+  {
+    "contents": {
+      "camera": {
+        "distance": 10
+      },
+      "engine": {
+        "fuel": {
+          "items": [
+            {
+              "item": "minecraft:coal",
+              "ticks": 1200
+            },
+            {
+              "item": "minecraft:charcoal",
+              "ticks": 1200
+            }
+          ]
+        },
+        "sound": "minecraft:item.elytra.flying",
+        "start_sound": "minecraft:block.piston.extend"
+      },
+      "format": 1,
+      "health": {
+        "max": 40,
+        "repair": [
+          {
+            "amount": 10,
+            "item": "minecraft:iron_ingot"
+          }
+        ]
+      },
+      "item": {
+        "texture": "demo:item/sample"
+      },
+      "model": {
+        "geometry": "demo:entity/sample",
+        "texture": "demo:entity/sample"
+      },
+      "movement": {
+        "lift_speed": 0.2,
+        "max_speed": 0.5,
+        "mode": "hover",
+        "turn_rate": 5
+      },
+      "parts": {
+        "propellers": [
+          "tail_rotor"
+        ],
+        "rotors": [
+          "rotor"
+        ]
+      },
+      "seats": [
+        {
+          "offset": [
+            -0.3,
+            0.4,
+            0.2
+          ]
+        },
+        {
+          "offset": [
+            0.3,
+            0.4,
+            0.2
+          ]
+        }
+      ],
+      "size": [
+        2.2,
+        1.8
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/vehicle/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  }
+]

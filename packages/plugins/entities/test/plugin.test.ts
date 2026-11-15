@@ -16,6 +16,8 @@ import plugin, {
   SPAWN_EGG_PARENT_MODEL,
   spawnEggPath,
   splitResourceLocation,
+  vehicleKind,
+  vehicleTemplates,
 } from '../src/index';
 import { blockingProblems, element, indexesFor } from './support';
 
@@ -43,8 +45,8 @@ describe('@msm/plugin-entities', () => {
   });
 
   it('contributes msm:entity with its schema, folder, registry and preview', () => {
-    expect(kinds().map((kind) => kind.id)).toEqual(['msm:entity']);
-    expect(entitiesKinds).toEqual([entityKind]);
+    expect(kinds().map((kind) => kind.id)).toEqual(['msm:entity', 'msm:vehicle']);
+    expect(entitiesKinds).toEqual([entityKind, vehicleKind]);
     expect([
       entityKind.schema,
       entityKind.folder,
@@ -76,9 +78,10 @@ describe('@msm/plugin-entities', () => {
   });
 
   it('contributes its templates and validators', () => {
-    expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
-      entitiesTemplates.map((t) => t.id),
-    );
+    expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual([
+      ...entitiesTemplates.map((t) => t.id),
+      ...vehicleTemplates.map((t) => t.id),
+    ]);
     expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
       'msm.entities.unknown-event',
       'msm.entities.event-cycle',
@@ -94,6 +97,11 @@ describe('@msm/plugin-entities', () => {
       'msm.entities.variants',
       'msm.entities.renderer',
       'msm.entities.kind-of-mob',
+      'msm.entities.vehicle-movement',
+      'msm.entities.vehicle-model',
+      'msm.entities.vehicle-weapons',
+      'msm.entities.vehicle-items',
+      'msm.entities.vehicle-events',
     ]);
     expect(entitiesValidators).toHaveLength(8);
   });

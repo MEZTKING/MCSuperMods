@@ -1,0 +1,161 @@
+[
+  {
+    "contents": {
+      "engine": {
+        "sound": "minecraft:entity.minecart.riding"
+      },
+      "events": {
+        "shot": {
+          "actions": [
+            {
+              "at": "other",
+              "power": 1,
+              "type": "explode"
+            }
+          ]
+        },
+        "wrecked": {
+          "actions": [
+            {
+              "fire": true,
+              "power": 3,
+              "type": "explode"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "health": {
+        "explodes": 2,
+        "immune_to": [
+          "#minecraft:is_fire",
+          "minecraft:cactus"
+        ],
+        "max": 120,
+        "repair": [
+          {
+            "amount": 20,
+            "item": "minecraft:iron_ingot"
+          }
+        ]
+      },
+      "item": {
+        "model": "example:item/tank_model"
+      },
+      "model": {
+        "geometry": "example:entity/tank",
+        "paints": [
+          {
+            "dye": "minecraft:sand",
+            "id": "desert",
+            "texture": "example:entity/tank_desert"
+          }
+        ],
+        "texture": "example:entity/tank"
+      },
+      "movement": {
+        "max_speed": 0.25,
+        "mode": "ground",
+        "turn_rate": 3,
+        "turns_in_place": true
+      },
+      "on_destroy": "wrecked",
+      "seats": [
+        {
+          "offset": [
+            0,
+            1.6,
+            0
+          ],
+          "weapons": [
+            "cannon",
+            "machine_gun"
+          ]
+        }
+      ],
+      "size": [
+        3,
+        1.6
+      ],
+      "turret": {
+        "bone": "turret",
+        "pitch_bone": "barrel",
+        "pitch_limit": [
+          -20,
+          10
+        ],
+        "seat": 0,
+        "turn_rate": 4,
+        "yaw_limit": [
+          -180,
+          180
+        ]
+      },
+      "weapons": [
+        {
+          "ammo": {
+            "capacity": 16,
+            "item": "minecraft:fire_charge",
+            "per_shot": 1
+          },
+          "cooldown_ticks": 60,
+          "id": "cannon",
+          "inaccuracy": 0.5,
+          "key": "fire",
+          "muzzle": {
+            "bone": "barrel",
+            "offset": [
+              0,
+              1.3,
+              2.5
+            ]
+          },
+          "on_fire": "shot",
+          "projectile": "minecraft:fire_charge",
+          "recoil": 0.1,
+          "sound": "minecraft:entity.generic.explode",
+          "speed": 2.5
+        },
+        {
+          "automatic": true,
+          "cooldown_ticks": 4,
+          "damage": 2,
+          "id": "machine_gun",
+          "key": "second",
+          "muzzle": {
+            "offset": [
+              0.6,
+              0.9,
+              1.8
+            ]
+          },
+          "projectile": "minecraft:arrow"
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/example/vehicle/tank.json",
+    "schema": "msm:vehicle_definition"
+  },
+  {
+    "contents": {
+      "entity.example.tank": "Tank",
+      "item.example.tank": "Tank"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/tank_model",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tank.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

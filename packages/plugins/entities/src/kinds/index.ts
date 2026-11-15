@@ -1,11 +1,15 @@
 /**
  * Element kinds contributed by `@msm/plugin-entities` (ADR 0028 D6): `msm:entity` (kind folder
- * `entity`). Element ids are the registry ids: `msm:entity` elements belong to the
- * `entity_type` registry; the spawn egg `<id>_spawn_egg` is derived, not an element.
+ * `entity`) and `msm:vehicle` (kind folder `vehicle`, ADR 0090; `./vehicle`). Element ids are
+ * the registry ids: both kinds belong to the `entity_type` registry; the spawn egg
+ * `<id>_spawn_egg` and a vehicle's item (the vehicle's own id) are derived, not elements.
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { lowerEntity } from '../lowering/entity';
+import { vehicleKind } from './vehicle';
+
+export { VEHICLE_KIND, vehicleKind } from './vehicle';
 
 /** Kind id of custom entities. */
 export const ENTITY_KIND = 'msm:entity';
@@ -40,4 +44,4 @@ export const entityKind: ElementKind = {
 };
 
 /** Every kind this plugin contributes, in order. */
-export const entitiesKinds: readonly ElementKind[] = Object.freeze([entityKind]);
+export const entitiesKinds: readonly ElementKind[] = Object.freeze([entityKind, vehicleKind]);

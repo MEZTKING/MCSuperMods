@@ -1,0 +1,111 @@
+[
+  {
+    "contents": {
+      "camera": {
+        "distance": 10
+      },
+      "engine": {
+        "fuel": {
+          "items": [
+            {
+              "item": "minecraft:coal",
+              "ticks": 1200
+            },
+            {
+              "item": "minecraft:charcoal",
+              "ticks": 1200
+            }
+          ]
+        },
+        "sound": "minecraft:item.elytra.flying",
+        "start_sound": "minecraft:block.piston.extend"
+      },
+      "format": 1,
+      "health": {
+        "max": 40,
+        "repair": [
+          {
+            "amount": 10,
+            "item": "minecraft:iron_ingot"
+          }
+        ]
+      },
+      "item": {
+        "texture": "demo:item/sample"
+      },
+      "model": {
+        "geometry": "demo:entity/sample",
+        "texture": "demo:entity/sample"
+      },
+      "movement": {
+        "acceleration": 0.02,
+        "lift_speed": 0.15,
+        "max_speed": 1,
+        "mode": "air",
+        "takeoff_speed": 0.5,
+        "turn_rate": 3
+      },
+      "parts": {
+        "propellers": [
+          "propeller"
+        ],
+        "wheel_radius": 0.19,
+        "wheels": [
+          "wheel_front_left",
+          "wheel_front_right"
+        ]
+      },
+      "seats": [
+        {
+          "offset": [
+            0,
+            0.6,
+            -0.5
+          ]
+        },
+        {
+          "offset": [
+            0,
+            0.6,
+            0.5
+          ]
+        }
+      ],
+      "size": [
+        2.5,
+        1.2
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/vehicle/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  }
+]

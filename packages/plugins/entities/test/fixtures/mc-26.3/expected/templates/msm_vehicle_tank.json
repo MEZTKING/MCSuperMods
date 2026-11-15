@@ -1,0 +1,138 @@
+[
+  {
+    "contents": {
+      "camera": {
+        "distance": 8
+      },
+      "engine": {
+        "sound": "minecraft:entity.minecart.riding",
+        "start_sound": "minecraft:block.piston.extend"
+      },
+      "format": 1,
+      "health": {
+        "explodes": 2,
+        "immune_to": [
+          "#minecraft:is_fire"
+        ],
+        "max": 120,
+        "repair": [
+          {
+            "amount": 20,
+            "item": "minecraft:iron_ingot"
+          }
+        ]
+      },
+      "item": {
+        "texture": "demo:item/sample"
+      },
+      "model": {
+        "geometry": "demo:entity/sample",
+        "texture": "demo:entity/sample"
+      },
+      "movement": {
+        "acceleration": 0.01,
+        "grip": 1,
+        "max_speed": 0.25,
+        "mode": "ground",
+        "step_height": 1,
+        "turn_rate": 3,
+        "turns_in_place": true
+      },
+      "seats": [
+        {
+          "offset": [
+            0,
+            1.6,
+            0
+          ]
+        }
+      ],
+      "size": [
+        3,
+        1.6
+      ],
+      "turret": {
+        "bone": "turret",
+        "pitch_bone": "barrel",
+        "pitch_limit": [
+          -20,
+          10
+        ],
+        "turn_rate": 4
+      },
+      "weapons": [
+        {
+          "ammo": {
+            "capacity": 16,
+            "item": "minecraft:fire_charge"
+          },
+          "cooldown_ticks": 60,
+          "id": "cannon",
+          "inaccuracy": 0.5,
+          "key": "fire",
+          "muzzle": {
+            "bone": "barrel",
+            "offset": [
+              0,
+              1.3,
+              2.5
+            ]
+          },
+          "projectile": "minecraft:fire_charge",
+          "recoil": 0.1,
+          "sound": "minecraft:entity.generic.explode",
+          "speed": 2.5
+        },
+        {
+          "automatic": true,
+          "cooldown_ticks": 4,
+          "damage": 2,
+          "id": "machine_gun",
+          "inaccuracy": 3,
+          "key": "second",
+          "muzzle": {
+            "offset": [
+              0.6,
+              0.9,
+              1.8
+            ]
+          },
+          "projectile": "minecraft:arrow",
+          "sound": "minecraft:entity.arrow.shoot",
+          "speed": 3
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/vehicle/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  }
+]
