@@ -51,7 +51,7 @@ public enum BlockType {
     LEAVES("leaves", List.of("tint", "particle_chance", "falling_particle")),
     PORTAL("portal", List.of("frame", "frame_block", "igniter", "destination", "return_to", "travel", "sounds", "particles", "on_travel")),
     // The ten plant and food types and the ten furniture, light and sign types of batch 1 (ADR 0094 D1). Their own fields
-    // and codecs live in loader/types/PlantFields and FurnitureFields (empty until B445 and B446).
+    // and codecs live in loader/types/PlantFields and FurnitureFields.
     CAKE("cake", PlantFields.fields("cake")),
     BERRY_BUSH("berry_bush", PlantFields.fields("berry_bush")),
     TALL_PLANT("tall_plant", PlantFields.fields("tall_plant")),
