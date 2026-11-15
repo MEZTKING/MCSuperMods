@@ -217,7 +217,7 @@ const KIND_IDS = [
  * Kinds the starters use before their per-kind example exists (B461 adds them to
  * {@link KIND_IDS}): commands and creative tabs (ADR 0096), used by the B459 flows.
  */
-const KINDS_AWAITING_EXAMPLES = ['msm:command', 'msm:creative_tab'];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 /**
  * The flows whose pictures are drawn by MSM in the art rules of ADR 0092 rather than taken from
