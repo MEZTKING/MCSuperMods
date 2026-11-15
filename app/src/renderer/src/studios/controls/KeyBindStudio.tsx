@@ -8,8 +8,9 @@
  * validators' warnings at `/default_key`, shown live under the key.
  *
  * Very easy (ADR 0083 D3) shows the name, the key and when it works. The Rules section (ADR
- * 0082) appears once the rules catalogue has a trigger for key binds (B424 adds them; none yet).
- * Loaded lazily by `./studios.tsx`.
+ * 0082) shows the key's rules ("When the player presses, holds or releases the key", B424), as
+ * it does whenever the rules catalogue has a trigger for key binds. Loaded lazily by
+ * `./studios.tsx`.
  *
  * @packageDocumentation
  */

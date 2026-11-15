@@ -15,7 +15,7 @@
  * @packageDocumentation
  */
 
-import type { Element, Json, Problem, Project, ResourceLocation } from '@msm/core';
+import type { Element, Problem, Project } from '@msm/core';
 import type { Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
 import { ExternalLink, Plus } from 'lucide-react';
@@ -28,6 +28,7 @@ import type { SchemaContext } from '../../session/schema-context';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
 import { useStructureStudioHost } from '../structures/host';
 import { Section } from '../worldgen/parts';
+import { bookChange, createChange, type NewElement } from './book-changes';
 import { makeRulesEnv, RulesEnvContext } from './env';
 import { useRulesMode } from './mode';
 import { usePlainProblemWords } from './problem-words';
@@ -68,32 +69,7 @@ export const RULES_READ_ONLY_NOTE = 'Open the rule book to change these rules.';
 
 type ApplyChanges = (items: readonly ChangeItem[], label: string) => Promise<void>;
 
-/** The change item that writes `after` into book `bookId` (created when `before` is missing). */
-export function bookChange(
-  bookId: string,
-  before: Json | undefined,
-  after: RuleBookData,
-): ChangeItem {
-  return before === undefined
-    ? {
-        itemId: `rules-book-${bookId}`,
-        op: 'create',
-        elementId: bookId as ResourceLocation,
-        kind: RULES_KIND,
-        after,
-        accepted: true,
-        problems: [],
-      }
-    : {
-        itemId: `rules-book-${bookId}`,
-        op: 'update',
-        elementId: bookId as ResourceLocation,
-        kind: RULES_KIND,
-        after,
-        accepted: true,
-        problems: [],
-      };
-}
+export { bookChange } from './book-changes';
 
 /**
  * Book edits from the cards: a draft per book shown at once, sent through `apply` one after
@@ -152,6 +128,36 @@ function useBookDrafts(apply: ApplyChanges | undefined, onError: (message: strin
     [flush],
   );
 
+  /** Sends `next` with new elements as one step, after any typing held back for the book. */
+  const changeWith = useCallback(
+    (bookId: string, next: RuleBookData, created: readonly NewElement[], label: string) => {
+      const timer = timers.current.get(bookId);
+      if (timer !== undefined) clearTimeout(timer);
+      timers.current.delete(bookId);
+      const map = new Map(draftsRef.current);
+      map.set(bookId, next);
+      draftsRef.current = map;
+      setDrafts(map);
+      if (apply === undefined) return;
+      chain.current = chain.current
+        .then(() => apply([bookChange(bookId, {}, next), ...created.map(createChange)], label))
+        .then(
+          () =>
+            setDrafts((current) => {
+              if (current.get(bookId) !== next) return current;
+              const without = new Map(current);
+              without.delete(bookId);
+              return without;
+            }),
+          (error: unknown) => {
+            setDrafts(new Map());
+            onError(error instanceof Error ? error.message : String(error));
+          },
+        );
+    },
+    [apply, onError],
+  );
+
   // Save and the discard check send held-back typing first; so does leaving the Studio.
   useEffect(() => {
     const flushAll = () => {
@@ -164,7 +170,7 @@ function useBookDrafts(apply: ApplyChanges | undefined, onError: (message: strin
     };
   }, [flush]);
 
-  return { drafts, change };
+  return { drafts, change, changeWith };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -197,7 +203,7 @@ export function RulesSection(props: RulesSectionProps) {
     () => (hostApply === undefined ? undefined : (items, label) => hostApply(items, label, [])),
     [hostApply],
   );
-  const { drafts, change } = useBookDrafts(apply, setError);
+  const { drafts, change, changeWith } = useBookDrafts(apply, setError);
   const requestFocus = useCallback((bookId: string, pointer: string) => {
     pendingFocus.current = { bookId, pointer };
   }, []);
@@ -303,6 +309,10 @@ export function RulesSection(props: RulesSectionProps) {
               setError(null);
               change(book.id, next, coalesce);
             }}
+            onChangeWith={(next, created, label) => {
+              setError(null);
+              changeWith(book.id, next, created, label);
+            }}
             requestFocus={requestFocus}
           />
         ))}
@@ -340,6 +350,7 @@ function BookGroup(props: {
   showBookName: boolean;
   onOpen: (() => void) | undefined;
   onChange(next: RuleBookData, coalesce?: string): void;
+  onChangeWith(next: RuleBookData, created: readonly NewElement[], label: string): void;
   requestFocus(bookId: string, pointer: string): void;
 }) {
   const { book, data, project, element, env, requestFocus } = props;
@@ -393,7 +404,13 @@ function BookGroup(props: {
         <ol className="flex flex-col gap-3">
           {props.indexes.map((index) => (
             <li key={`${keyOf(data, index)}`}>
-              <RuleCard book={data} index={index} onChange={onChange} fixedSubject={fixed} />
+              <RuleCard
+                book={data}
+                index={index}
+                onChange={onChange}
+                {...(props.editable ? { onChangeWith: props.onChangeWith } : {})}
+                fixedSubject={fixed}
+              />
             </li>
           ))}
         </ol>

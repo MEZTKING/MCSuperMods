@@ -41,6 +41,7 @@ import {
   asArray,
   asObject,
   type JsonObject,
+  lacksTriggerList,
   type RuleBookData,
   rulesOf,
   uniqueKey,
@@ -102,6 +103,7 @@ export function triggersFor(kind: string, data: Json | undefined): TriggerEntry[
     if (definition === undefined || !trigger.subjectKinds.includes(kind)) return false;
     if (definition.blockType !== undefined) return object.type === definition.blockType;
     if (portal) return false;
+    if (definition.list !== undefined) return !lacksTriggerList(trigger, data);
     if (definition.required === true && definition.component !== undefined) {
       return components[definition.component] !== undefined;
     }

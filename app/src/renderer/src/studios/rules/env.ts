@@ -12,6 +12,7 @@ import type { Problem, Project } from '@msm/core';
 import { createContext, useContext } from 'react';
 import type { ThingPictures, ThingRegistries } from '../../components/thing-picker/ThingPicker';
 import { type ThingSort, thingName } from '../../components/thing-picker/thing-sources';
+import type { NewElement } from './book-changes';
 import type { RulesMode } from './mode';
 import { type PlainProblemWords, problemText } from './problem-words';
 import { problemsByAnchor, type RuleBookData } from './rules-model';
@@ -91,6 +92,13 @@ export interface BookEdit {
   readonly book: RuleBookData;
   /** Sends the next book as one undo step; `coalesce` merges typing (`typingKey`). */
   change(next: RuleBookData, coalesce?: string): void;
+  /**
+   * Sends the next book and creates `created` with it, as one undo step labelled `label`;
+   * absent where the host cannot change other elements (then nothing is made inline).
+   */
+  changeWith?:
+    | ((next: RuleBookData, created: readonly NewElement[], label: string) => void)
+    | undefined;
 }
 
 /** Provided by {@link RuleCard} around its parts. */

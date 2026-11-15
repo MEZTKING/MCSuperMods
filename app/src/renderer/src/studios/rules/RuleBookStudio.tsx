@@ -17,6 +17,7 @@ import { typingKey } from '../../forms/context';
 import { useBlocksItemsStudioHost } from '../blocks-items/host';
 import { useStructureStudioHost } from '../structures/host';
 import type { StudioProps } from '../types';
+import { bookChange, createChange, type NewElement } from './book-changes';
 import { planCopyAsScript } from './copy-as-script';
 import { makeRulesEnv, type RulesEnv, RulesEnvContext } from './env';
 import { useRulesMode } from './mode';
@@ -104,6 +105,27 @@ export function RuleBookStudio(props: StudioProps) {
     [onChange],
   );
 
+  // A book change with new elements ("Make a new on-screen number"): one undo step through the
+  // host, where it can change other elements.
+  const [changeError, setChangeError] = useState<string | null>(null);
+  const hostApply = host?.applyChanges;
+  const changeWith = useMemo(
+    () =>
+      hostApply === undefined
+        ? undefined
+        : (next: RuleBookData, created: readonly NewElement[], label: string) => {
+            setChangeError(null);
+            hostApply(
+              [bookChange(element.id, element.data, next), ...created.map(createChange)],
+              label,
+              [],
+            ).catch((error: unknown) =>
+              setChangeError(error instanceof Error ? error.message : String(error)),
+            );
+          },
+    [hostApply, element.id, element.data],
+  );
+
   const focusAt = useCallback((pointer: string): boolean => {
     const node = container.current?.querySelector<HTMLElement>(
       `[data-pointer="${pointer.replace(/["\\]/g, '\\$&')}"]`,
@@ -148,6 +170,11 @@ export function RuleBookStudio(props: StudioProps) {
           </p>
         </header>
         <ProblemLines problems={bookProblems} testId="rule-book-problems" />
+        {changeError !== null && (
+          <p role="alert" className="text-error text-xs" data-testid="rule-book-error">
+            {changeError}
+          </p>
+        )}
         {rules.length === 0 ? (
           <p className="text-muted" data-testid="rule-book-empty">
             No rules yet. Add one to make something happen.
@@ -156,7 +183,12 @@ export function RuleBookStudio(props: StudioProps) {
           <ol className="flex flex-col gap-3">
             {rules.map((rule, index) => (
               <li key={keyOf(rule, index)}>
-                <RuleCard book={book} index={index} onChange={change} />
+                <RuleCard
+                  book={book}
+                  index={index}
+                  onChange={change}
+                  {...(changeWith === undefined ? {} : { onChangeWith: changeWith })}
+                />
               </li>
             ))}
           </ol>

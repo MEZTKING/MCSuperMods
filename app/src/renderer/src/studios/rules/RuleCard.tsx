@@ -9,6 +9,7 @@
  * @packageDocumentation
  */
 
+import type { Json, Project } from '@msm/core';
 import {
   ruleSentence,
   TRIGGERS,
@@ -24,13 +25,14 @@ import { iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { ConditionList } from './ConditionList';
-import { BookEditContext, useBookEdit, useRulesEnv } from './env';
+import { type BookEdit, BookEditContext, useBookEdit, useRulesEnv } from './env';
 import { ChipPopover, chipClass, MenuList, ProblemLines } from './parts';
 import {
   asObject,
   duplicateRule,
   getAt,
   type JsonObject,
+  lacksTriggerList,
   moveRule,
   pointerOf,
   type RuleBookData,
@@ -69,6 +71,8 @@ const SUBJECT_SORTS: Readonly<Record<string, ThingSort>> = {
   item: 'item',
   mob: 'mob',
   effect: 'effect',
+  key: 'key',
+  vehicle: 'vehicle',
 };
 
 /** Props of {@link RuleCard}. */
@@ -79,6 +83,11 @@ export interface RuleCardProps {
   /** Sends the next book as one undo step; `coalesce` merges typing. */
   onChange(next: RuleBookData, coalesce?: string): void;
   /**
+   * Sends the next book with new elements as one undo step (the on-screen number "Show a number
+   * on screen" makes inline); absent where the host cannot change other elements.
+   */
+  onChangeWith?: BookEdit['changeWith'];
+  /**
    * Fixes the rule's subject to one project element (the Rules section of its Studio): the
    * When menu offers only triggers for that element's kind and the thing chip is not shown as a
    * choice.
@@ -88,8 +97,11 @@ export interface RuleCardProps {
 
 /** One rule card. */
 export function RuleCard(props: RuleCardProps) {
-  const { book, index, onChange } = props;
-  const edit = useMemo(() => ({ book, change: onChange }), [book, onChange]);
+  const { book, index, onChange, onChangeWith } = props;
+  const edit = useMemo<BookEdit>(
+    () => ({ book, change: onChange, changeWith: onChangeWith }),
+    [book, onChange, onChangeWith],
+  );
   return (
     <BookEditContext.Provider value={edit}>
       <RuleCardBody index={index} fixedSubject={props.fixedSubject} />
@@ -259,10 +271,15 @@ function WhenRow(props: {
   const { trigger } = props;
   const triggerProblems = env.problems.get(props.pointer) ?? [];
   const fixed = props.fixedSubject;
+  const fixedData = fixed === undefined ? undefined : elementData(env.project, fixed.id);
+  // A fixed thing is not offered a trigger whose list it lacks ("fires" on a vehicle without
+  // weapons); the chosen trigger stays offered so the menu still shows what is picked.
   const triggers = TRIGGERS.filter(
     (entry) =>
       (!env.mode.veryEasy || entry.veryEasy) &&
-      (fixed === undefined || entry.subjectKinds.includes(fixed.kind)),
+      (fixed === undefined ||
+        (entry.subjectKinds.includes(fixed.kind) &&
+          (entry.id === props.triggerId || !lacksTriggerList(entry, fixedData)))),
   );
   const triggerChip = (label: string) => (
     <ChipPopover
@@ -340,6 +357,15 @@ function WhenRow(props: {
       <ProblemLines problems={env.problems.get(`${props.pointer}/subject`) ?? []} />
     </div>
   );
+}
+
+/** The data of project element `id`, if the project has it. */
+function elementData(project: Project, id: string): Json | undefined {
+  for (const namespace of project.namespaces) {
+    const element = namespace.elements.find((entry) => entry.id === id);
+    if (element !== undefined) return element.data;
+  }
+  return undefined;
 }
 
 /** The thing a trigger is about: a project thing (definition triggers) or any thing (`any_`). */

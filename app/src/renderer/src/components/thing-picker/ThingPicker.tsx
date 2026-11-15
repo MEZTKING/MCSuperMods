@@ -10,9 +10,12 @@
 
 import {
   Box,
+  Car,
   Droplets,
   FileCode,
+  Gauge,
   Globe,
+  Keyboard,
   type LucideIcon,
   Music,
   Package,
@@ -101,6 +104,9 @@ const SORT_ICONS: Readonly<Record<ThingSort, LucideIcon>> = {
   effect: Droplets,
   function: FileCode,
   dimension: Globe,
+  key: Keyboard,
+  vehicle: Car,
+  hud: Gauge,
 };
 
 /** Loads a thing's picture as a `data:` URL; `null` while loading or when there is none. */

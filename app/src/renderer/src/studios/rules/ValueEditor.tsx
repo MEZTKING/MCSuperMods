@@ -15,6 +15,7 @@ import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useBookEdit, useRulesEnv } from './env';
+import { WeaponSelect } from './project-pickers';
 import {
   asArray,
   asObject,
@@ -207,6 +208,8 @@ function ReadingFields(props: { pointer: string; kind: string; scope: RuleScope 
     }
     case 'counter':
       return <CounterEditor pointer={props.pointer} scope={props.scope} />;
+    case 'vehicle_ammo':
+      return <WeaponSelect pointer={at('weapon')} />;
     case 'player_position': {
       const axis = asObject(getAt(book, props.pointer))?.axis;
       return (

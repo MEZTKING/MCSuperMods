@@ -637,3 +637,14 @@ export function problemsByAnchor<P extends { path?: string | undefined }>(
   }
   return out;
 }
+
+/**
+ * Whether a thing with `data` lacks the list a trigger's event goes into: a required list of the
+ * data (a vehicle's `weapons` for "The vehicle fires") that is absent or empty.
+ */
+export function lacksTriggerList(trigger: TriggerEntry, data: Json | undefined): boolean {
+  const definition = trigger.definition;
+  if (definition?.list === undefined || definition.required !== true) return false;
+  const list = asObject(data)?.[definition.list];
+  return !Array.isArray(list) || list.length === 0;
+}

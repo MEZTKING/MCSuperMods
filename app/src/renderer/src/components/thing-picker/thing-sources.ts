@@ -19,7 +19,20 @@ export type ThingSort =
   | 'particle'
   | 'effect'
   | 'function'
-  | 'dimension';
+  | 'dimension'
+  /** A project key bind (`msm:key_bind`); only the project has them. */
+  | 'key'
+  /** A project vehicle (`msm:vehicle`); only the project has them. */
+  | 'vehicle'
+  /** A project HUD element (`msm:hud`); only the project has them. */
+  | 'hud';
+
+/** The sorts only the project has (no vanilla section, no registry). */
+export const PROJECT_ONLY_SORTS: ReadonlySet<ThingSort> = new Set<ThingSort>([
+  'key',
+  'vehicle',
+  'hud',
+]);
 
 /** Where a thing's picture comes from. */
 export type ThingPicture =
@@ -78,6 +91,10 @@ export const THING_REGISTRIES: Readonly<Record<ThingSort, string>> = Object.free
   effect: 'mob_effect',
   function: 'function',
   dimension: 'dimension',
+  // Not registries: the project's elements of `PROJECT_KINDS` are the only ones.
+  key: 'msm:key_bind',
+  vehicle: 'msm:vehicle',
+  hud: 'msm:hud',
 });
 
 /** The element kinds whose elements are things of each sort (for names and pictures). */
@@ -90,6 +107,9 @@ const PROJECT_KINDS: Readonly<Record<ThingSort, readonly string[]>> = Object.fre
   effect: ['msm:effect'],
   function: ['minecraft:function'],
   dimension: ['minecraft:dimension'],
+  key: ['msm:key_bind'],
+  vehicle: ['msm:vehicle'],
+  hud: ['msm:hud'],
 });
 
 /** Plain words for each sort, singular and plural. */
@@ -103,6 +123,9 @@ export const THING_WORDS: Readonly<Record<ThingSort, { one: string; many: string
     effect: { one: 'an effect', many: 'effects' },
     function: { one: 'a function', many: 'functions' },
     dimension: { one: 'a dimension', many: 'dimensions' },
+    key: { one: 'a key', many: 'keys' },
+    vehicle: { one: 'a vehicle', many: 'vehicles' },
+    hud: { one: 'something to show on screen', many: 'things on screen' },
   });
 
 type JsonObject = { [key: string]: Json };
@@ -146,10 +169,16 @@ function projectElements(project: Project): Map<string, Element> {
   return out;
 }
 
-/** The `display_name` of an element's data, when it is a non-empty string. */
+/**
+ * The `display_name` of an element's data, when it is a non-empty string; a key bind's own
+ * `name` (the words in Controls) when it has no `display_name`.
+ */
 function displayNameOf(element: Element | undefined): string | undefined {
-  const name = asObject(element?.data)?.display_name;
-  return typeof name === 'string' && name.trim().length > 0 ? name : undefined;
+  const data = asObject(element?.data);
+  const name = data?.display_name;
+  if (typeof name === 'string' && name.trim().length > 0) return name;
+  const keyName = element?.kind === 'msm:key_bind' ? data?.name : undefined;
+  return typeof keyName === 'string' && keyName.trim().length > 0 ? keyName : undefined;
 }
 
 /** Whether the project has the asset `path` in `namespace`. */
@@ -247,8 +276,12 @@ export function vanillaPicturePaths(
   }
 }
 
-/** The ids of `sort` in the registry view; dimensions fall back to the dimension types. */
+/**
+ * The ids of `sort` in the registry view; dimensions fall back to the dimension types, and the
+ * project-only sorts have none (their things are the project's elements).
+ */
 function idsOf(registries: ThingRegistries, sort: ThingSort): readonly string[] {
+  if (PROJECT_ONLY_SORTS.has(sort)) return [];
   const ids = registries.ids(THING_REGISTRIES[sort]);
   if (sort === 'dimension' && ids.length === 0) return registries.ids('dimension_type');
   return ids;

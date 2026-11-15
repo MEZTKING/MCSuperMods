@@ -30,6 +30,8 @@ export const THING_SLOTS: Readonly<Partial<Record<SlotSpec['type'], ThingSort>>>
   effect: 'effect',
   function: 'function',
   dimension: 'dimension',
+  key: 'key',
+  vehicle: 'vehicle',
 };
 
 /** Names of slots for screen readers ("Item: Ruby"). */
@@ -59,6 +61,8 @@ const SLOT_LABELS: Readonly<Record<string, string>> = {
   drop_items: 'Drops',
   break_blocks: 'Breaking blocks',
   bar: 'Boss bar',
+  hud: 'On screen',
+  weapon: 'Weapon',
 };
 
 const capitalise = (text: string): string =>
@@ -90,6 +94,14 @@ export function emptyWords(slot: SlotSpec): string {
       return 'pick a dimension';
     case 'counter':
       return 'pick a counter';
+    case 'key':
+      return 'pick one of your keys';
+    case 'vehicle':
+      return 'pick one of your vehicles';
+    case 'hud':
+      return 'pick what to show';
+    case 'weapon':
+      return 'the first weapon';
     case 'text':
       return 'type some text';
     default:
@@ -145,6 +157,9 @@ function bareSlotWords(
     case 'effect':
     case 'function':
     case 'dimension':
+    case 'key':
+    case 'vehicle':
+    case 'hud':
       return typeof raw === 'string' ? (context.names(raw) ?? raw) : undefined;
     case 'particle': {
       const id = typeof raw === 'string' ? raw : asObject(raw)?.type;

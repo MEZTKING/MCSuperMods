@@ -5804,3 +5804,21 @@ Next: B421's horn listener can add a parity check (the horn's sound packet to ot
 - B463: place and explosion triggers in the sim.
 - B464: a server check line `--forbid-line 'Mixin apply' --forbid-line 'MixinTransformerError'`; `ServerExplosion` loads only at the first explosion, so the check needs one (above, or a parity GameTest with TNT).
 - Limits for B467: a cancelled explosion may still show its smoke and play its bang (the caller sends the explosion packet; not observed in a client); dispensers, endermen and commands placing blocks are not seen; `ride` follows the boarding cooldown.
+## 2026-11-15 — executor — B424a Rules pickers for keys, vehicles, the HUD and weapons
+
+**What**
+- Rule card pickers for the slot types B424 added, in place of plain text. `ThingSort` gains `key`, `vehicle` and `hud` (project-only sorts: `PROJECT_ONLY_SORTS`, no registry, no vanilla section; icons Keyboard, Car, Gauge); a key bind is named by its `name` when it has no `display_name`. Key binds and vehicles as a trigger's thing go through the ThingPicker with the project's own only; `SUBJECT_SORTS` in `RuleCard` has `key` and `vehicle`, so an empty chip reads "pick one of your keys" or "pick one of your vehicles".
+- `hud` blanks (Show on screen, Hide from the screen, Show a number on screen) open a menu of the project's `msm:hud` elements (`rules/project-pickers.tsx` `HudMenu`). "Show a number on screen" also offers "Make a new on-screen number": a text HUD element with `value: {source: 'set'}` and no `text` (the HUD Studio's "Number" look) at a free id `<book namespace>:number`, `number_2`, ..., created with the rule change through the host's `applyChanges` as one undo step labelled "Make a new on-screen number". `BookEdit` and `RuleCard` gain an optional `changeWith`/`onChangeWith` (Rule book Studio and Rules section, only where the host can change other elements); `bookChange` moved to `rules/book-changes.ts` (still exported from `RulesSection`).
+- The `weapon` of "The vehicle's ammunition" is a select of the rule's vehicle's weapons by id (`WeaponSelect`), "The first weapon (<name>)" meaning absent; a weapon the vehicle no longer has stays listed, marked.
+- "The vehicle fires": `lacksTriggerList` (in `rules-model.ts`) checks a required `definition.list`; `triggersFor` leaves "fires" out for a vehicle without weapons, and the When menu of a card with a fixed vehicle (the Vehicle Studio's Rules section) does not offer it either (a trigger already chosen stays listed).
+- `KeyBindStudio.tsx` header comment corrected.
+- Tests: `app/test/components/rules-project-pickers.test.tsx` (12: key and vehicle subjects and their words, project-only sections, the HUD menu, the inline number as one undo step and its absence without a host, free ids, the weapon select, `vehicleWeapons` and `ruleSubjectAt`, `lacksTriggerList` and `triggersFor`, the fixed-vehicle When menu with and without weapons). App suite 241 files, 2321 tests pass; `pnpm lint` (one warning in `packages/ai/src/system-prompt.ts`, not this batch's) and `pnpm typecheck` clean.
+
+**Decisions**
+- The HUD picker is a chip menu, not the ThingPicker: HUD elements have no pictures. Key binds and vehicles use the ThingPicker, as other definition subjects do.
+- "fires" is hidden rather than offered with a note, as `triggersFor` already hides triggers whose required component is missing.
+- Very easy: the Rule book has no key capture pattern (only the Key bind Studio's "Press a key"), so key choice stays the picker.
+
+**Next**
+- B427: test ids `rules-chip-subject` ("Thing: pick one of your keys" / "... vehicles"), `rules-chip-hud` ("On screen: pick what to show"), `rules-hud-<id>`, `rules-hud-new-number` ("Make a new on-screen number"), `rules-hud-none`, `rules-chip-value` then `rules-weapon` (options "The first weapon (<name>)", each weapon's words), `rules-trigger-vehicle_fired` (absent on a vehicle without weapons). B431: undo label "Make a new on-screen number"; a new number is `<namespace>:number` (then `number_2`).
+- Follow-up: "Turn into rules" (`eventAt` in `turn-into-rules.ts`) does not read a vehicle weapon's `on_fire` (a list field) or `on_tick` (an `{ event }` object at the top level), so hand-made events there are not offered for turning into rules.

@@ -13,6 +13,7 @@ import type { SlotSpec } from '@msm/plugin-rules';
 import { type ReactNode, useId, useMemo, useState } from 'react';
 import { ThingPicker } from '../../components/thing-picker/ThingPicker';
 import {
+  PROJECT_ONLY_SORTS,
   THING_WORDS,
   type ThingSort,
   thingSections,
@@ -21,6 +22,7 @@ import { Button } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { useBookEdit, useRulesEnv } from './env';
 import { ChipPopover, chipClass, MenuList, ProblemLines } from './parts';
+import { HudMenu, WeaponSelect } from './project-pickers';
 import {
   acceptsReadings,
   asObject,
@@ -137,6 +139,18 @@ export function SlotChip(props: SlotChipProps) {
           <CounterEditor pointer={props.ownerPointer} scope={props.scope} />
         </ChipPopover>
       );
+    case 'hud':
+      return (
+        <ChipPopover {...common}>
+          <HudMenu pointer={pointer} stepId={props.ownerId} label={label} />
+        </ChipPopover>
+      );
+    case 'weapon':
+      return (
+        <ChipPopover {...common}>
+          <WeaponSelect pointer={pointer} label={label} />
+        </ChipPopover>
+      );
     default:
       return <span className={common.className}>{words}</span>;
   }
@@ -182,6 +196,7 @@ function ThingChip(props: {
             registries: env.registries,
             sort: props.sort,
             texturesFolder: env.texturesFolder,
+            ...(PROJECT_ONLY_SORTS.has(props.sort) ? { projectOnly: true } : {}),
           })
         : [],
     [open, env.project, env.registries, env.texturesFolder, props.sort],
