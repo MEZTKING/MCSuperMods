@@ -225,6 +225,15 @@ jobs:
           test -f "$RUNNER_TEMP/sample-vehicles/msm_sample_vehicles.jar"
           cat "$RUNNER_TEMP/sample-vehicles/fabric-facts.json"
           cat "$RUNNER_TEMP/sample-vehicles/expect-lines.txt"
+      # Vanilla blocks of batch 1 (ADRs 0094-0096, 0101, B462): one block of each of the twenty new
+      # types with their companions, a waterloggable lamp, tin that ages with waxed copies, three
+      # bags, a bundle, two commands and a creative tab.
+      - name: Export the sample vanilla blocks with the real runtime
+        run: |
+          MSM_SAMPLE_VANILLA_BLOCKS_OUT="$RUNNER_TEMP/sample-vanilla-blocks" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-vanilla-blocks.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar"
+          cat "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -333,6 +342,24 @@ jobs:
           --expect-line '[msm_runtime] registered 4 HUD element(s)'
           --expect-line '[msm_runtime] registered 0 block(s) and 2 item(s) from 15 definition file(s); 0 error(s), 0 warning(s)'
           --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The sample vanilla blocks (B464): the twenty types, both commands and the tab register, and
+      # the runtime's Mixins (B455) apply: a failed Mixin is an error at start, and a dedicated server
+      # loads no client class. The explosion Mixin loads only at the first explosion, which the
+      # parity run's TNT test makes.
+      - name: Headless Fabric server check (sample vanilla blocks)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar"
+          --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 30 block(s) and 33 item(s) from 37 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered blocks by type: block 10, cake 1, berry_bush 1, tall_plant 1, potted_plant 1, vine 1, sea_pickle 1, carpet 1, layers 1, cocoa 1, candle 1, bed 1, ladder 1, torch 1, lantern 1, chain 1, rod 1, sign 1, hanging_sign 1, stem 1, scaffolding 1'
+          --expect-line '[msm_runtime] registered 2 command(s)'
+          --expect-line '[msm_runtime] registered 1 creative tab(s)'
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
       # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
@@ -471,6 +498,38 @@ jobs:
             echo "Ejected sample-$sample jar: ${jars[0]}"
             echo "MSM_EJECTED_${sample^^}_JAR=${jars[0]}" >> "$GITHUB_ENV"
           done
+      # The sample vanilla blocks as a Java project (B457, B464): the twenty types' drivers, the
+      # companions, waxing, the bags, the commands and the tab, generated and built for 26.3.
+      - name: Export the sample vanilla blocks as a Java project
+        if: matrix.mc == '26.3'
+        run: |
+          MSM_SAMPLE_VANILLA_BLOCKS_JAVA_OUT="$RUNNER_TEMP/java/sample-vanilla-blocks" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-vanilla-blocks.java.golden.test.ts
+          test -x "$RUNNER_TEMP/java/sample-vanilla-blocks/gradlew"
+      - name: Build the ejected sample vanilla blocks
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-vanilla-blocks
+        run: ./gradlew build --no-daemon
+      - name: Find the ejected sample vanilla blocks jar
+        if: matrix.mc == '26.3'
+        run: |
+          mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-vanilla-blocks"/build/libs/msm_sample_vanilla_blocks-*.jar | grep -v -e '-sources\.jar$')
+          if [ "${#jars[@]}" -ne 1 ]; then
+            echo "::error::Expected one ejected sample-vanilla-blocks jar, found ${#jars[@]}: ${jars[*]}"
+            exit 1
+          fi
+          echo "Ejected sample-vanilla-blocks jar: ${jars[0]}"
+          echo "MSM_EJECTED_VANILLA_BLOCKS_JAR=${jars[0]}" >> "$GITHUB_ENV"
+      # The ejected jar starts without msm_runtime; no client class may load on a dedicated server.
+      - name: Headless Fabric server check (ejected sample vanilla blocks)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_VANILLA_BLOCKS_JAR"
+          --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json" --no-runtime
+          --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
       # The ejected portals start without msm_runtime and load sky_realm: the generated mod logs
       # "[msm_sample_portals] portal ...: dimension ... is not a level of this world" otherwise.
       - name: Headless Fabric server check (ejected sample portals)
@@ -688,6 +747,37 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-vehicles-content.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Vanilla blocks (B464, SampleVanillaBlocksParityTest, 20 tests): registration, items, tags
+      # and the tab's order; tin ageing at copper's rate and lower neighbours stopping it; waxing
+      # and scraping with their level events; water in the lamp; the bags' layouts, sounds, saved
+      # contents and the guard's outcome; the bundle; /greet, /hiya and /kit's macro values,
+      # permission and execute-as forks; signs sounding as spruce and taking text; sleeping;
+      # cake, berries, light, drops, the stem, scaffolding; and primed TNT (the run's first
+      # explosion, so the explosion Mixin must apply). Black-box, on the content jar of every
+      # version and on the ejected jar.
+      - name: Parity GameTests (sample vanilla blocks, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar"
+          --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json"
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_vanilla_blocks_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-vanilla-blocks-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample vanilla blocks, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_VANILLA_BLOCKS_JAR"
+          --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json" --no-runtime
+          --forbid-line NoClassDefFoundError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_vanilla_blocks_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-vanilla-blocks-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -752,6 +842,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-vanilla-blocks-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -767,6 +863,7 @@ jobs:
             ${{ runner.temp }}/java/sample-portals/build/libs/*.jar
             ${{ runner.temp }}/java/sample-particles/build/libs/*.jar
             ${{ runner.temp }}/java/sample-rules/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-vanilla-blocks/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
