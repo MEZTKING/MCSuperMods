@@ -5037,3 +5037,22 @@ Decisions
 
 Next
 - B411 (`key-bind-`), B412 (`vehicle-`, `action-explode-`) and B416 (`hud-`, `action-hud-`) remove their prefixes from `PENDING` and add parsers to `KINDS`.
+## 2026-11-15 — executor — B442 worldgen: vanilla feature order
+
+What
+- New `tools/sync-feature-order` (script, README, test): reads mcmeta's biome and biome tag summaries (`data/worldgen/biome/data.min.json`, `data/tag/worldgen/biome/data.min.json` of the `<version>-summary` tag), reads the biomes in `#is_overworld`, `#is_nether`, `#is_end` order then the rest by id, numbers (step, feature) pairs by first appearance, walks each biome's consecutive features depth first and reverses the post-order. Only ids are written. Vendored `packages/targets/mc-26.3/vendor/worldgen/feature-order.json` (212 features, 8.2 kB) and `mc-26.4/.../feature-order.json` (238, 9.2 kB). The 26.3 overworld part equals the reference pack's `feature_indices.txt` (171 entries) index for index; the test checks the vendored file against it.
+- Plugin API 1.17.0 (additive): `WorldgenFacts.vanillaFeatureOrder?` keyed by step name; both targets set it from the vendored file (`featureSteps` moved into a `FEATURE_STEPS` constant; the JSON is in each target's tsconfig `include`). Built-ins keep `^1.0.0`; `packages/core/test/registry.test.ts` expects 1.17.0.
+- Worldgen: `worldgen.vanilla-feature-order` (warning): two vanilla features of one step listed against vanilla's order ("Vanilla runs X before Y ... Swap them."), and loops that project biomes close with vanilla's order through a project feature. Skipped without the fact.
+- Blocks-items: `blocks-items.addition-vanilla-feature` (warning) on a biome addition naming a `minecraft:` placed feature; `duplicate-biome-feature` now knows the step: same step "does nothing there" (Fabric's `addFeature` skips it), another step "generates twice, once in each step".
+- App: the World addition Studio's **Make my own copy** on a vanilla feature row: one undo step (`applyChanges`) that adds a project placed feature in the addition's namespace (`_copy` when the id is taken) and points the row at it. It copies `feature` and `placement` from `data/minecraft/worldgen/placed_feature/<path>.json` through the host's vanilla reader when it can; otherwise it names the configured feature by id (same path, else the longest `_` prefix) with no placement and says so. Plain words for the new code in `plain-problems.ts`.
+- Guide notes in `worldgen.md` (vanilla's order, added features move vanilla's seeds) and `adding-to-vanilla.md` (own placed features, Make my own copy, the duplicate wording); `COVERAGE-AUDIT.md` 4.2 W-D1 to W-D4 marked done.
+- Checks: tools 188, plugin-api 85, core 206, mc-26.3 194, mc-26.4 105, `@msm/targets` 42, worldgen 169, blocks-items 564, exporters 1307, library 625, app 2059 green; `pnpm lint` (check-deps), `pnpm typecheck`, `pnpm build` green; build outputs deleted.
+
+Decisions
+- Source: mcmeta's summary tag (one biome file and one tag file) rather than 67 files of the data tag; the same data, and the same tag `sync-mcmeta` reads.
+- The biome order comes from the dimension biome tags: the `#is_overworld` tag lists the overworld biomes in the order that reproduces the measured order exactly (alphabetical order does not). Ties are broken by the reversed walk, not plain first appearance as the ADR worded it.
+- The merged order (overworld, Nether, End) keeps each dimension's lists in order; the Nether shares two mushroom features with the overworld.
+- The vanilla asset cache holds no data files, so today the copy falls back to "configured feature, no placement" unless a later brief extends the extraction.
+
+Next
+- B444 builds on 1.17.0. Extend the vanilla cache to `data/minecraft/worldgen/placed_feature/` so Make my own copy copies placement (interop `PREVIEW_ASSET_PATTERNS`, cache `schemaVersion`). The `msm:biome_addition` kind default names `minecraft:flower_plains`, so a new addition starts with the new warning.

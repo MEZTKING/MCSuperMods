@@ -71,9 +71,14 @@
  *   20 ticks whose event, or an event it triggers, runs `run_function` or `run_script`.
  * - `blocks-items.spawn-group-size` (error, ADR 0060 D2): a biome addition spawn whose
  *   `max_group` is below its `min_group`; the game rejects the spawn entry.
- * - `blocks-items.duplicate-biome-feature` (warning, ADR 0060 D2): a placed feature that a
- *   project biome lists and that a biome addition naming that biome by id adds again, so it
- *   generates twice.
+ * - `blocks-items.duplicate-biome-feature` (warning, ADR 0060 D2, ADR 0097 D4): a placed
+ *   feature that a project biome lists and that a biome addition naming that biome by id adds
+ *   again. In the same step Fabric's `addFeature` skips it, so the addition does nothing there;
+ *   in another step it generates twice, once in each step.
+ * - `blocks-items.addition-vanilla-feature` (warning, ADR 0097 D3): a biome addition whose
+ *   placed feature is in the `minecraft` namespace. Added features go to the end of their step,
+ *   after features vanilla runs later, which can close a "Feature order cycle" with vanilla
+ *   biomes. The app offers "Make my own copy".
  * - `blocks-items.bad-loot-pool` (error, ADR 0060 D3): a loot addition pool that is not an
  *   object with `rolls` (a number or a number provider object) and a non-empty `entries` list
  *   of objects with a string `type`; the runtime skips such a pool with a logged error. The
@@ -153,6 +158,7 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.fast-tick-trigger',
   'blocks-items.spawn-group-size',
   'blocks-items.duplicate-biome-feature',
+  'blocks-items.addition-vanilla-feature',
   'blocks-items.bad-loot-pool',
   'blocks-items.unknown-loot-item',
   'blocks-items.potion-effect-missing',
@@ -1013,27 +1019,38 @@ function spawnGroupSizes(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
-/** Every placed feature id a project biome lists, in any step (tags and inline ones skipped). */
-function biomeFeatureIds(biome: Element): Set<string> {
-  const ids = new Set<string>();
+/**
+ * Every placed feature id a project biome lists, with the step indices it is listed in (tags
+ * and inline ones skipped).
+ */
+function biomeFeatureSteps(biome: Element): Map<string, Set<number>> {
+  const ids = new Map<string, Set<number>>();
   const steps = dataOf(biome).features;
   if (!Array.isArray(steps)) return ids;
-  for (const step of steps) {
-    if (!Array.isArray(step)) continue;
+  steps.forEach((step, index) => {
+    if (!Array.isArray(step)) return;
     for (const entry of step) {
-      if (typeof entry === 'string' && !entry.startsWith('#')) ids.add(namespacedId(entry));
+      if (typeof entry !== 'string' || entry.startsWith('#')) continue;
+      const id = namespacedId(entry);
+      const at = ids.get(id) ?? new Set<number>();
+      at.add(index);
+      ids.set(id, at);
     }
-  }
+  });
   return ids;
 }
 
-function duplicateBiomeFeatures(elements: readonly Element[]): Problem[] {
-  const biomes = new Map<string, Set<string>>(
+function duplicateBiomeFeatures(
+  elements: readonly Element[],
+  featureSteps: readonly string[],
+): Problem[] {
+  const biomes = new Map<string, Map<string, Set<number>>>(
     elements
       .filter((element) => element.kind === BIOME_KIND)
-      .map((element) => [element.id, biomeFeatureIds(element)]),
+      .map((element) => [element.id, biomeFeatureSteps(element)]),
   );
   if (biomes.size === 0) return [];
+  const stepName = (index: number): string => featureSteps[index] ?? String(index);
   const problems: Problem[] = [];
   for (const element of elements) {
     if (element.kind !== BIOME_ADDITION_KIND) continue;
@@ -1048,16 +1065,53 @@ function duplicateBiomeFeatures(elements: readonly Element[]): Problem[] {
       const feature = record(entry)?.feature;
       if (typeof feature !== 'string') return;
       const id = namespacedId(feature);
+      const step = record(entry)?.step;
+      const stepIndex = typeof step === 'string' ? featureSteps.indexOf(step) : -1;
       for (const biome of named) {
-        if (biomes.get(namespacedId(biome))?.has(id) !== true) continue;
+        const listed = biomes.get(namespacedId(biome))?.get(id);
+        if (listed === undefined) continue;
+        const where = `Biome "${namespacedId(biome)}" of this project already lists "${id}"`;
+        // Fabric's `addFeature` returns without change when the step already holds the
+        // feature (ADR 0097 D4, plan F32): nothing happens in the same step.
+        const message = listed.has(stepIndex)
+          ? `${where} in step "${step}", so this addition does nothing there: the game skips a feature the step already has. Remove it from this addition.`
+          : `${where} in step "${[...listed].map(stepName).join('", "')}", and this addition adds it in step "${typeof step === 'string' ? step : '?'}" too, so it generates twice, once in each step. Remove it from the biome or from this addition.`;
         problems.push({
           severity: 'warning',
           code: 'blocks-items.duplicate-biome-feature',
           elementId: element.id,
           path: pointer('features', index, 'feature'),
-          message: `Biome "${namespacedId(biome)}" of this project already lists "${id}", and this addition adds it to that biome again, so it generates twice. Remove it from the biome or from this addition.`,
+          message,
         });
       }
+    });
+  }
+  return problems;
+}
+
+/**
+ * Biome additions naming a vanilla placed feature (ADR 0097 D3): Fabric appends an added
+ * feature to the end of its step, after features vanilla runs later in that step, so vanilla
+ * biomes that list both close a "Feature order cycle".
+ */
+function additionVanillaFeatures(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== BIOME_ADDITION_KIND) continue;
+    const features = dataOf(element).features;
+    if (!Array.isArray(features)) continue;
+    features.forEach((entry, index) => {
+      const feature = record(entry)?.feature;
+      if (typeof feature !== 'string' || feature.startsWith('#')) return;
+      const id = namespacedId(feature);
+      if (!id.startsWith('minecraft:')) return;
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.addition-vanilla-feature',
+        elementId: element.id,
+        path: pointer('features', index, 'feature'),
+        message: `"${id}" is a vanilla placed feature. Added features go to the end of their step, after features vanilla runs later; this can stop worlds with "Feature order cycle". Make your own placed feature from the same configured feature instead.`,
+      });
     });
   }
   return problems;
@@ -1330,7 +1384,13 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
   {
     id: 'msm.blocks-items.duplicate-biome-feature',
     kinds: [BIOME_ADDITION_KIND, BIOME_KIND],
-    validate: ({ elements }) => duplicateBiomeFeatures(elements),
+    validate: ({ elements, target }) =>
+      duplicateBiomeFeatures(elements, target.worldgen.featureSteps),
+  },
+  {
+    id: 'msm.blocks-items.addition-vanilla-feature',
+    kinds: [BIOME_ADDITION_KIND],
+    validate: ({ elements }) => additionVanillaFeatures(elements),
   },
   {
     id: 'msm.blocks-items.loot-pool',

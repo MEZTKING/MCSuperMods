@@ -626,4 +626,35 @@ describe('target mc-26.3', () => {
       maxSpeed: 3,
     });
   });
+
+  it("lists vanilla's placed feature order per step (ADR 0097 D1)", async () => {
+    const order = target.worldgen.vanillaFeatureOrder;
+    expect(order).toBeDefined();
+    if (order === undefined) return;
+    expect(Object.keys(order)).toEqual([...target.worldgen.featureSteps]);
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const placed = new Set(registries['worldgen/placed_feature']);
+    let total = 0;
+    for (const [step, ids] of Object.entries(order)) {
+      expect(new Set(ids).size, step).toBe(ids.length);
+      for (const id of ids) {
+        expect(id, step).toMatch(/^minecraft:/);
+        expect(placed.has(id.slice('minecraft:'.length)), id).toBe(true);
+      }
+      total += ids.length;
+    }
+    expect(total).toBe(212);
+    // Ores, then vegetation, where vanilla runs them; the vendored file names its source.
+    expect(order.underground_ores?.[0]).toBe('minecraft:ore_dirt');
+    expect(order.vegetal_decoration?.indexOf('minecraft:patch_pumpkin')).toBeLessThan(
+      order.vegetal_decoration?.indexOf('minecraft:patch_sugar_cane') ?? -1,
+    );
+    const source = (await readJson('../vendor/worldgen/feature-order.json')).source as {
+      ref: string;
+    };
+    expect(source.ref).toBe('26.3-summary');
+  });
 });

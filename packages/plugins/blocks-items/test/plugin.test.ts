@@ -94,7 +94,7 @@ describe('@msm/plugin-blocks-items', () => {
     ]);
   });
 
-  it('contributes its templates, the twenty-one validators and the eight type validators', () => {
+  it('contributes its templates, the twenty-two validators and the eight type validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -116,6 +116,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.fast-tick-trigger',
       'msm.blocks-items.spawn-group-size',
       'msm.blocks-items.duplicate-biome-feature',
+      'msm.blocks-items.addition-vanilla-feature',
       'msm.blocks-items.loot-pool',
       'msm.blocks-items.potion-effect',
       'msm.blocks-items.potion-brewing',
@@ -135,7 +136,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.particles',
       'msm.blocks-items.particle-references',
     ]);
-    expect(blocksItemsValidators).toHaveLength(21);
+    expect(blocksItemsValidators).toHaveLength(22);
   });
 
   it('rejects unsafe ids and non-object data', () => {

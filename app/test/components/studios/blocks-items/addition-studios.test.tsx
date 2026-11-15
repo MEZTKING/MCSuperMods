@@ -7,11 +7,18 @@
  * beyond it left to "Advanced (all fields)" and Raw JSON. Rendered through `ElementForm` over
  * the real schema index.
  */
-import type { Json, ResourceLocation } from '@msm/core';
+import type { CommandStack, Json, ResourceLocation } from '@msm/core';
 import blocksItemsPlugin from '@msm/plugin-blocks-items';
 import { builtInTargets } from '@msm/targets';
 import { cleanup, fireEvent, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { type ChangeItem, planChangeItems } from '../../../../src/renderer/src/changeset/changeset';
+import {
+  guessConfiguredFeature,
+  planOwnCopy,
+  vanillaPlacedFeature,
+} from '../../../../src/renderer/src/studios/blocks-items/AdditionStudios';
 import {
   readSimpleDrop,
   simpleDropsSupported,
@@ -19,16 +26,21 @@ import {
   tableGroupLabel,
   writeSimpleDrop,
 } from '../../../../src/renderer/src/studios/blocks-items/additions-model';
+import {
+  type BlocksItemsStudioHost,
+  BlocksItemsStudioHostContext,
+} from '../../../../src/renderer/src/studios/blocks-items/host';
 import { DISCOVERED_STUDIOS } from '../../../../src/renderer/src/studios/studio-registry';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex, schemaIndexFor } from '../../forms/schemas';
-import { kindOf, renderOnStack, schemaState } from './harness';
+import { kindOf, projectOf, renderOnStack, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
 const VANILLA = {
   loot_table: ['entities/zombie', 'entities/skeleton', 'blocks/stone', 'chests/simple_dungeon'],
   item: ['emerald', 'diamond'],
+  'worldgen/configured_feature': ['ore_coal', 'ore_coal_buried', 'flower_plains'],
 };
 let schema: SchemaContextState;
 
@@ -119,6 +131,148 @@ describe('World addition Studio', () => {
     start(templateData('msm_biome_addition_overworld_ore'));
     fireEvent.click(screen.getByTestId('world-addition-advanced'));
     expect(screen.queryByTestId('world-addition-features')).toBeNull();
+  });
+});
+
+describe('World addition Studio: Make my own copy (ADR 0097 D3)', () => {
+  const id = 'demo:coal_more' as ResourceLocation;
+  const addition = {
+    format: 1,
+    biomes: ['#minecraft:is_overworld'],
+    features: [
+      { feature: 'demo:ruby_ore_placed', step: 'underground_ores' },
+      { feature: 'minecraft:ore_coal_upper', step: 'underground_ores' },
+    ],
+  } as Json;
+  const VANILLA_FILE = {
+    feature: 'minecraft:ore_coal',
+    placement: [{ type: 'minecraft:count', count: 30 }, { type: 'minecraft:in_square' }],
+  };
+
+  /** A host whose `applyChanges` applies the items as one step, and a vanilla cache reader. */
+  const hostFor = (
+    stack: () => CommandStack,
+    files: Record<string, unknown>,
+    reads: string[],
+  ): BlocksItemsStudioHost => ({
+    thumbnail: async () => new Uint8Array(),
+    revision: 0,
+    paintTexture: () => undefined,
+    modelPreview: {
+      folders: bundle.target.folders.resource,
+      readProjectAsset: async () => null,
+      vanilla: {
+        readAsset: async (path) => {
+          reads.push(path);
+          const file = files[path];
+          return file === undefined ? null : new TextEncoder().encode(JSON.stringify(file));
+        },
+      },
+    },
+    applyChanges: async (items: readonly ChangeItem[], label: string) => {
+      const plan = planChangeItems(stack().state, items);
+      if (plan.skipped.length > 0) throw new Error('The project changed meanwhile.');
+      const parts = plan.commands;
+      stack().execute({
+        id: 'test.apply',
+        label,
+        apply(draft) {
+          for (const part of parts) part.apply(draft);
+        },
+      });
+    },
+  });
+
+  const startWith = (files: Record<string, unknown>) => {
+    const reads: string[] = [];
+    let current: CommandStack | undefined;
+    const host = hostFor(() => current as CommandStack, files, reads);
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <BlocksItemsStudioHostContext.Provider value={host}>
+        {children}
+      </BlocksItemsStudioHostContext.Provider>
+    );
+    const rendered = renderOnStack(element(id, 'msm:biome_addition', addition), schema, {
+      wrapper,
+    });
+    current = rendered.stack;
+    const find = (elementId: string): Json | undefined =>
+      rendered.stack.state.namespaces[0]?.elements.find((entry) => entry.id === elementId)?.data;
+    return { ...rendered, reads, find };
+  };
+
+  it('offers the copy only on a vanilla feature row', () => {
+    startWith({});
+    expect(screen.queryByTestId('world-addition-feature-0-copy')).toBeNull();
+    expect(screen.getByTestId('world-addition-feature-1-copy').textContent).toContain(
+      'Make my own copy',
+    );
+  });
+
+  it("copies the game's placed feature into the project and points the row at it, in one undo step", async () => {
+    const { stack, data, reads, find } = startWith({
+      'data/minecraft/worldgen/placed_feature/ore_coal_upper.json': VANILLA_FILE,
+    });
+    fireEvent.click(screen.getByTestId('world-addition-feature-1-copy'));
+    const note = await screen.findByTestId('world-addition-copy-note');
+    expect(note.textContent).toContain(
+      'Made demo:ore_coal_upper, a copy of minecraft:ore_coal_upper',
+    );
+    expect(reads).toEqual(['data/minecraft/worldgen/placed_feature/ore_coal_upper.json']);
+    expect(find('demo:ore_coal_upper')).toEqual(VANILLA_FILE);
+    expect(
+      stack.state.namespaces[0]?.elements.find((entry) => entry.id === 'demo:ore_coal_upper')?.kind,
+    ).toBe('minecraft:worldgen/placed_feature');
+    expect(data()).toMatchObject({
+      features: [
+        { feature: 'demo:ruby_ore_placed' },
+        { feature: 'demo:ore_coal_upper', step: 'underground_ores' },
+      ],
+    });
+    // The row now names a project feature: no more copy button.
+    expect(screen.queryByTestId('world-addition-feature-1-copy')).toBeNull();
+    expect(undoAll(stack)).toBe(1);
+    expect(data()).toEqual(addition);
+    expect(find('demo:ore_coal_upper')).toBeUndefined();
+  });
+
+  it('falls back to the configured feature by id, with no placement, when the file cannot be read', async () => {
+    const { find } = startWith({});
+    fireEvent.click(screen.getByTestId('world-addition-feature-1-copy'));
+    const note = await screen.findByTestId('world-addition-copy-note');
+    expect(note.textContent).toContain('has no placement yet');
+    expect(find('demo:ore_coal_upper')).toEqual({ feature: 'minecraft:ore_coal', placement: [] });
+  });
+
+  it('plans a free id and leaves project rows alone', () => {
+    const taken = element('demo:ore_coal_upper' as ResourceLocation, 'msm:item', {});
+    const project = projectOf(element(id, 'msm:biome_addition', addition), taken);
+    const plan = planOwnCopy({
+      project,
+      addition: { id, kind: 'msm:biome_addition', data: addition },
+      index: 1,
+      vanilla: VANILLA_FILE as Json,
+      configured: [],
+    });
+    expect(plan?.id).toBe('demo:ore_coal_upper_copy');
+    expect(plan?.items.map((item) => item.op)).toEqual(['create', 'update']);
+    expect(
+      planOwnCopy({
+        project,
+        addition: { id, kind: 'msm:biome_addition', data: addition },
+        index: 0,
+        vanilla: null,
+        configured: [],
+      }),
+    ).toBeUndefined();
+    expect(vanillaPlacedFeature('ore_coal_upper')).toBe('minecraft:ore_coal_upper');
+    expect(vanillaPlacedFeature('#minecraft:x')).toBeUndefined();
+    expect(guessConfiguredFeature('ore_coal_upper', ['ore_coal', 'ore'])).toBe(
+      'minecraft:ore_coal',
+    );
+    expect(guessConfiguredFeature('flower_plains', ['flower_plains'])).toBe(
+      'minecraft:flower_plains',
+    );
   });
 });
 

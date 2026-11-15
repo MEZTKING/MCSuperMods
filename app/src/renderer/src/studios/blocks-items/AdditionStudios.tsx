@@ -11,12 +11,18 @@
  * Every edit is one undo step; typing in a number coalesces. Choices (steps, categories) come
  * from the schema.
  *
+ * A feature row naming a vanilla placed feature offers "Make my own copy" (ADR 0097 D3): one
+ * undo step that adds a project placed feature with the vanilla one's configured feature and
+ * placement (read from the game's own file through the vanilla cache when it can be) and points
+ * the row at it, since added vanilla features can close a "Feature order cycle".
+ *
  * @packageDocumentation
  */
 
-import type { Json } from '@msm/core';
-import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
+import type { Json, Project, ResourceLocation } from '@msm/core';
+import { ArrowDown, ArrowUp, Copy, Plus, X } from 'lucide-react';
 import { useState } from 'react';
+import type { ChangeItem } from '../../changeset/changeset';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -38,7 +44,155 @@ import {
   writeSimpleDrop,
 } from './additions-model';
 import { asObject, choicesThrough, moved, pathSetter, pointerOf } from './blocks-items-model';
+import { useBlocksItemsStudioHost } from './host';
 import { CheckField, ProblemsAt } from './parts';
+
+/** The kind of placed features (`@msm/plugin-worldgen`). */
+const PLACED_FEATURE_KIND = 'minecraft:worldgen/placed_feature';
+
+/** A vanilla placed feature id (`minecraft:` or no namespace), or `undefined`. */
+export function vanillaPlacedFeature(id: Json | undefined): string | undefined {
+  if (typeof id !== 'string' || id === '' || id.startsWith('#')) return undefined;
+  const full = id.includes(':') ? id : `minecraft:${id}`;
+  return full.startsWith('minecraft:') ? full : undefined;
+}
+
+/**
+ * The vanilla configured feature a vanilla placed feature most likely places, by id: the same
+ * path, else the longest configured feature path it starts with at a `_` (`ore_coal_upper`
+ * places `ore_coal`). Only used when the game's own file cannot be read.
+ */
+export function guessConfiguredFeature(path: string, configured: readonly string[]): string {
+  if (configured.includes(path)) return `minecraft:${path}`;
+  const prefix = configured
+    .filter((candidate) => path.startsWith(`${candidate}_`))
+    .sort((a, b) => b.length - a.length)[0];
+  return `minecraft:${prefix ?? path}`;
+}
+
+/** What "Make my own copy" changes: the new placed feature and the addition's new data. */
+export interface OwnCopyPlan {
+  id: ResourceLocation;
+  /** The new placed feature's data. */
+  data: Json;
+  /** Whether the vanilla placement was copied from the game's file (else it is empty). */
+  copied: boolean;
+  items: ChangeItem[];
+}
+
+/**
+ * Plans "Make my own copy" for feature row `index` of `addition` (ADR 0097 D3): a project placed
+ * feature in the addition's namespace named after the vanilla one (`_copy`, `_copy_2`... when
+ * taken) holding `vanilla`'s `feature` and `placement` when given (the game's own file), else the
+ * guessed configured feature and no placement; and the addition with the row pointing at it.
+ */
+export function planOwnCopy(input: {
+  project: Project;
+  addition: { id: ResourceLocation; kind: string; data: Json };
+  index: number;
+  vanilla: Json | null;
+  configured: readonly string[];
+}): OwnCopyPlan | undefined {
+  const { project, addition, index } = input;
+  const features = listAt(addition.data, 'features');
+  const row = asObject(features[index]);
+  const vanillaId = vanillaPlacedFeature(row.feature);
+  if (vanillaId === undefined) return undefined;
+  const path = vanillaId.slice('minecraft:'.length);
+  const namespace = addition.id.slice(0, addition.id.indexOf(':'));
+  const taken = new Set(project.namespaces.flatMap((entry) => entry.elements.map((e) => e.id)));
+  let id = `${namespace}:${path}` as ResourceLocation;
+  for (let n = 1; taken.has(id); n += 1) {
+    id = `${namespace}:${path}_copy${n === 1 ? '' : `_${n}`}` as ResourceLocation;
+  }
+  const vanilla = input.vanilla === null ? undefined : asObject(input.vanilla);
+  const copied =
+    vanilla !== undefined && vanilla.feature !== undefined && Array.isArray(vanilla.placement);
+  const data: Json = copied
+    ? { feature: vanilla.feature as Json, placement: vanilla.placement as Json }
+    : { feature: guessConfiguredFeature(path, input.configured), placement: [] };
+  const after = structuredClone(addition.data) as { features: Json[] };
+  after.features[index] = { ...row, feature: id };
+  return {
+    id,
+    data,
+    copied,
+    items: [
+      {
+        itemId: 'own-copy',
+        op: 'create',
+        elementId: id,
+        kind: PLACED_FEATURE_KIND,
+        after: data,
+        accepted: true,
+        problems: [],
+      },
+      {
+        itemId: 'own-copy-addition',
+        op: 'update',
+        elementId: addition.id,
+        kind: addition.kind,
+        before: addition.data,
+        after,
+        accepted: true,
+        problems: [],
+      },
+    ],
+  };
+}
+
+/** "Make my own copy" under a feature row that names a vanilla placed feature. */
+function OwnCopyButton(
+  props: StudioProps & { index: number; feature: string; onNote(note: string): void },
+) {
+  const { project, element, context, index, feature, onNote: setNote } = props;
+  const host = useBlocksItemsStudioHost();
+  const apply = host?.applyChanges;
+  const make = async () => {
+    const path = `data/minecraft/worldgen/placed_feature/${feature.slice('minecraft:'.length)}.json`;
+    let vanilla: Json | null = null;
+    try {
+      const bytes = await host?.modelPreview?.vanilla?.readAsset(path);
+      if (bytes !== null && bytes !== undefined) {
+        vanilla = JSON.parse(new TextDecoder().decode(bytes)) as Json;
+      }
+    } catch {
+      vanilla = null;
+    }
+    const plan = planOwnCopy({
+      project,
+      addition: { id: element.id, kind: element.kind, data: element.data },
+      index,
+      vanilla,
+      configured: context.vanillaRegistries['worldgen/configured_feature'] ?? [],
+    });
+    if (plan === undefined || apply === undefined) return;
+    try {
+      await apply(plan.items, `Make my own copy of ${feature}`, []);
+      setNote(
+        plan.copied
+          ? `Made ${plan.id}, a copy of ${feature}; this addition now adds it.`
+          : `Made ${plan.id} from ${feature}'s configured feature; this addition now adds it. The game's own file could not be read, so it has no placement yet: open it and add where it goes.`,
+      );
+    } catch (error) {
+      setNote(error instanceof Error ? error.message : String(error));
+    }
+  };
+  return (
+    <Button
+      className="self-start text-xs"
+      data-testid={`world-addition-feature-${index}-copy`}
+      disabled={apply === undefined}
+      title={apply === undefined ? 'Not available here' : undefined}
+      onClick={() => {
+        void make();
+      }}
+    >
+      <Copy size={12} aria-hidden />
+      Make my own copy
+    </Button>
+  );
+}
 
 /** Problems inside `pointer` (the row and its fields). */
 function RowProblems(props: { problems: StudioProps['problems']; pointer: string }) {
@@ -94,6 +248,7 @@ function RowButtons(props: {
 export function WorldAdditionStudio(props: StudioProps) {
   const { element, node, problems, suggest, onChange } = props;
   const [advanced, setAdvanced] = useState(false);
+  const [copyNote, setCopyNote] = useState<string | null>(null);
   if (advanced) {
     return (
       <section
@@ -186,6 +341,14 @@ export function WorldAdditionStudio(props: StudioProps) {
                 />
               </div>
               <RowProblems problems={problems} pointer={pointer} />
+              {vanillaPlacedFeature(row.feature) !== undefined && (
+                <OwnCopyButton
+                  {...props}
+                  index={index}
+                  feature={vanillaPlacedFeature(row.feature) as string}
+                  onNote={setCopyNote}
+                />
+              )}
             </li>
           );
         })}
@@ -202,9 +365,16 @@ export function WorldAdditionStudio(props: StudioProps) {
         <Plus size={12} aria-hidden />
         Add feature
       </Button>
+      {copyNote !== null && (
+        <p className="text-muted text-xs" data-testid="world-addition-copy-note">
+          {copyNote}
+        </p>
+      )}
       <p className="text-muted text-xs">
         Placed features from this project or the game. Only chunks generated after the mod is added
-        get them: explore new land to see them.
+        get them: explore new land to see them. Prefer your own placed features: an added game
+        feature runs after features the game runs later, which can stop worlds with "Feature order
+        cycle", so make your own copy of it.
       </p>
       <ProblemsAt problems={problems} pointer="/features" />
     </Section>

@@ -2,6 +2,16 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.17.0 — 2026-11-15
+
+Vanilla's feature order (ADR 0097 D1). `API_VERSION` is `1.17.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `WorldgenFacts.vanillaFeatureOrder?: Readonly<Record<string, readonly string[]>>`: per decoration step name (a `featureSteps` entry), the namespaced ids of the vanilla placed features that step runs, in the order the game's feature sorter puts them. Ids only, vendored per target by `tools/sync-feature-order`. The worldgen validators warn when a project biome lists two of them against this order (`worldgen.vanilla-feature-order`), and the blocks-items validators when a biome addition adds one (`blocks-items.addition-vanilla-feature`).
+
+### Migration from 1.16.0
+
+None. A plugin that reads `vanillaFeatureOrder` should declare `^1.17.0` and treat an absent value as "no order to check against"; plugins written earlier ignore it.
+
 ## 1.16.0 — 2026-11-15
 
 Control and vehicle facts (ADR 0088 D9, ADR 0090 D13). `API_VERSION` is `1.16.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

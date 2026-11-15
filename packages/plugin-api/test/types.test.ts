@@ -498,6 +498,22 @@ describe('0.8.0 additions', () => {
     expect(testTarget.vehicles).toBeUndefined();
   });
 
+  it("carries vanilla's optional feature order in the worldgen facts (1.17.0)", () => {
+    expectTypeOf<WorldgenFacts['vanillaFeatureOrder']>().toEqualTypeOf<
+      Readonly<Record<string, readonly string[]>> | undefined
+    >();
+    const worldgen: WorldgenFacts = {
+      featureSteps: ['underground_ores', 'vegetal_decoration'],
+      vanillaFeatureOrder: {
+        underground_ores: ['minecraft:ore_dirt', 'minecraft:ore_gravel'],
+        vegetal_decoration: [],
+      },
+    };
+    expect(worldgen.vanillaFeatureOrder?.underground_ores?.[1]).toBe('minecraft:ore_gravel');
+    // A 1.16.0-shaped target without the order stays assignable.
+    expect(testTarget.worldgen.vanillaFeatureOrder).toBeUndefined();
+  });
+
   it('types project expanders and element patches (1.15.0)', async () => {
     expectTypeOf<PluginContributions['projectExpanders']>().toEqualTypeOf<
       ProjectExpander[] | undefined

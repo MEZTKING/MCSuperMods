@@ -1,3 +1,4 @@
+import { readdir, readFile } from 'node:fs/promises';
 import type {
   Element,
   Json,
@@ -8,7 +9,7 @@ import type {
 } from '@msm/plugin-api';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { WORLDGEN_PROBLEM_CODES, worldgenValidators } from '../src/index';
+import { WORLDGEN_PROBLEM_CODES, worldgenTemplates, worldgenValidators } from '../src/index';
 
 const target: Target = (builtInTargets[0] as TargetBundle).target;
 const steps = target.worldgen.featureSteps;
@@ -88,10 +89,10 @@ const placed = (id: ResourceLocation): Element =>
 const registry: ValidationInput['registry'] = { has: () => true, ids: () => [] };
 
 /** Runs every validator and returns the problems with the given code. */
-function run(elements: Element[], code: string): Problem[] {
+function run(elements: Element[], code: string, on: Target = target): Problem[] {
   return worldgenValidators
     .flatMap((validator) => {
-      const problems = validator.validate({ elements, target, registry });
+      const problems = validator.validate({ elements, target: on, registry });
       if (problems instanceof Promise) throw new Error(`${validator.id} validates asynchronously.`);
       return problems;
     })
@@ -99,8 +100,8 @@ function run(elements: Element[], code: string): Problem[] {
 }
 
 describe('worldgen validators', () => {
-  it('declares the six codes and reads only the kinds they name', () => {
-    expect(WORLDGEN_PROBLEM_CODES).toHaveLength(6);
+  it('declares the seven codes and reads only the kinds they name', () => {
+    expect(WORLDGEN_PROBLEM_CODES).toHaveLength(7);
     expect(new Set(worldgenValidators.map((validator) => validator.id)).size).toBe(5);
     for (const validator of worldgenValidators) expect(validator.kinds.length).toBeGreaterThan(0);
   });
@@ -186,6 +187,160 @@ describe('worldgen validators', () => {
       );
       expect(problems).toHaveLength(1);
       expect(problems[0]?.message).toContain('"minecraft:birch", "minecraft:oak"');
+    });
+  });
+
+  describe('worldgen.vanilla-feature-order (ADR 0097 D2)', () => {
+    const CODE = 'worldgen.vanilla-feature-order';
+
+    it('has the vanilla order on every built-in target', () => {
+      for (const bundle of builtInTargets) {
+        const order = bundle.target.worldgen.vanillaFeatureOrder;
+        expect(order, bundle.target.id).toBeDefined();
+        const vegetal = order?.vegetal_decoration ?? [];
+        // Vanilla runs pumpkins before sugar cane (the reference pack's W-A1 pair).
+        expect(vegetal.indexOf('minecraft:patch_pumpkin')).toBeGreaterThanOrEqual(0);
+        expect(vegetal.indexOf('minecraft:patch_pumpkin')).toBeLessThan(
+          vegetal.indexOf('minecraft:patch_sugar_cane'),
+        );
+      }
+    });
+
+    it('warns about a swapped vanilla pair in a project biome', () => {
+      const elements = [
+        biome('demo:a', {
+          [VEGETAL]: ['minecraft:patch_sugar_cane', 'demo:x', 'minecraft:patch_pumpkin'],
+        }),
+      ];
+      for (const bundle of builtInTargets) {
+        const problems = run(elements, CODE, bundle.target);
+        expect(problems, bundle.target.id).toHaveLength(1);
+        expect(problems[0]).toMatchObject({
+          severity: 'warning',
+          elementId: 'demo:a',
+          path: `/features/${VEGETAL}/2`,
+        });
+        expect(problems[0]?.message).toBe(
+          'Vanilla runs "minecraft:patch_pumpkin" before "minecraft:patch_sugar_cane" in step "vegetal_decoration"; a world with this biome and vanilla biomes stops with "Feature order cycle". Swap them.',
+        );
+      }
+      // Not an error: the project's own lists agree with each other.
+      expect(run(elements, 'worldgen.feature-order')).toEqual([]);
+    });
+
+    it('accepts vanilla features in vanilla order, an id without a namespace included', () => {
+      expect(
+        run(
+          [
+            biome('demo:a', {
+              [ORES]: ['ore_dirt', 'demo:ruby_ore', 'minecraft:ore_gravel'],
+              [VEGETAL]: ['minecraft:patch_pumpkin', 'demo:x', 'patch_sugar_cane'],
+            }),
+          ],
+          CODE,
+        ),
+      ).toEqual([]);
+    });
+
+    it('finds a loop that a project feature closes between two biomes and vanilla', () => {
+      // a: sugar cane, then x; b: x, then pumpkins. Vanilla runs pumpkins before sugar cane.
+      const problems = run(
+        [
+          biome('demo:a', { [VEGETAL]: ['minecraft:patch_sugar_cane', 'demo:x'] }),
+          biome('demo:b', { [VEGETAL]: ['demo:x', 'minecraft:patch_pumpkin'] }),
+        ],
+        CODE,
+      );
+      expect(problems).toHaveLength(1);
+      expect(problems[0]).toMatchObject({
+        severity: 'warning',
+        elementId: 'demo:b',
+        path: `/features/${VEGETAL}`,
+      });
+      expect(problems[0]?.message).toContain(
+        '"demo:x", "minecraft:patch_pumpkin", "minecraft:patch_sugar_cane"',
+      );
+      expect(problems[0]?.message).toContain('biomes "demo:a", "demo:b"');
+    });
+
+    it('leaves a project-only loop to worldgen.feature-order', () => {
+      const elements = [
+        biome('demo:a', { [VEGETAL]: ['demo:x', 'minecraft:patch_pumpkin', 'demo:y'] }),
+        biome('demo:b', { [VEGETAL]: ['demo:y', 'demo:x'] }),
+      ];
+      expect(run(elements, 'worldgen.feature-order')).toHaveLength(1);
+      expect(run(elements, CODE)).toEqual([]);
+    });
+
+    it('is skipped on a target without the vanilla order', () => {
+      const { vanillaFeatureOrder: _order, ...worldgen } = target.worldgen;
+      const bare: Target = { ...target, worldgen };
+      expect(
+        run(
+          [
+            biome('demo:a', {
+              [VEGETAL]: ['minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin'],
+            }),
+          ],
+          CODE,
+          bare,
+        ),
+      ).toEqual([]);
+    });
+
+    it('stays silent on the biome templates (Temperate forest included) on every target', () => {
+      const biomes = worldgenTemplates.filter((entry) => entry.kind === 'minecraft:worldgen/biome');
+      expect(biomes.map((entry) => entry.id)).toContain('biome_temperate_forest');
+      for (const bundle of builtInTargets) {
+        const elements = biomes.map((template) =>
+          element(
+            template.kind,
+            `demo:${template.id}`,
+            template.data({
+              id: `demo:${template.id}`,
+              namespace: 'demo',
+              path: template.id,
+              projectNamespace: 'demo',
+              namespaces: ['demo'],
+              kindDefault: undefined,
+              target: bundle.target,
+            }) as Json,
+          ),
+        );
+        expect(run(elements, CODE, bundle.target), bundle.target.id).toEqual([]);
+      }
+    });
+
+    it('stays silent on every biome of the worldgen goldens, examples and fixtures', async () => {
+      const root = new URL('../../../../', import.meta.url);
+      const files: string[] = [];
+      const walk = async (dir: URL): Promise<void> => {
+        for (const entry of await readdir(dir, { withFileTypes: true })) {
+          if (entry.isDirectory()) await walk(new URL(`${entry.name}/`, dir));
+          else if (
+            entry.name.endsWith('.json') &&
+            dir.pathname.endsWith('/worldgen/biome/') &&
+            !dir.pathname.includes('/tags/')
+          ) {
+            files.push(new URL(entry.name, dir).pathname);
+          }
+        }
+      };
+      await walk(new URL('examples/', root));
+      await walk(new URL('fixtures/', root));
+      await walk(new URL('packages/plugins/worldgen/test/fixtures/', root));
+      // Five project biomes (starters, examples, the sample) and two goldens per target.
+      expect(files.length).toBe(9);
+      const elements: Element[] = [];
+      for (const [index, file] of files.entries()) {
+        const raw = JSON.parse(await readFile(file, 'utf8')) as { data?: Json } & Json;
+        // Project elements wrap the biome in `data`; lowered goldens are the biome itself.
+        const data = (raw as { data?: Json }).data ?? raw;
+        elements.push(element('minecraft:worldgen/biome', `demo:b${index}`, data));
+      }
+      for (const bundle of builtInTargets) {
+        expect(run(elements, CODE, bundle.target), bundle.target.id).toEqual([]);
+      }
     });
   });
 

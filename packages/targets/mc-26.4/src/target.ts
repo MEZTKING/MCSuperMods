@@ -4,11 +4,35 @@
  */
 
 import type { Target } from '@msm/plugin-api';
+import featureOrder from '../vendor/worldgen/feature-order.json' with { type: 'json' };
 import { controls } from './controls';
 import { createMigrateFrom, migrationTables } from './migrate';
 
 const ID = 'mc-26.4';
 const MC_VERSION = '26.4-snapshot-7';
+
+/** The decoration step names, in the order the game runs them (`worldgen.featureSteps`). */
+const FEATURE_STEPS = [
+  'raw_generation',
+  'lakes',
+  'local_modifications',
+  'underground_structures',
+  'surface_structures',
+  'strongholds',
+  'underground_ores',
+  'underground_decoration',
+  'fluid_springs',
+  'vegetal_decoration',
+  'top_layer_modification',
+] as const;
+
+/**
+ * `worldgen.vanillaFeatureOrder` (ADR 0097 D1): the vendored order per step index, written by
+ * `tools/sync-feature-order` from mcmeta's biome summary (ids only), keyed by step name.
+ */
+const vanillaFeatureOrder: Record<string, readonly string[]> = Object.fromEntries(
+  FEATURE_STEPS.map((step, index) => [step, featureOrder.steps[index] ?? []]),
+);
 
 export const target: Target = {
   id: ID,
@@ -76,19 +100,7 @@ export const target: Target = {
   },
   dataVersion: 5127,
   worldgen: {
-    featureSteps: [
-      'raw_generation',
-      'lakes',
-      'local_modifications',
-      'underground_structures',
-      'surface_structures',
-      'strongholds',
-      'underground_ores',
-      'underground_decoration',
-      'fluid_springs',
-      'vegetal_decoration',
-      'top_layer_modification',
-    ],
+    featureSteps: FEATURE_STEPS,
     biomeAttributes: {
       colours: [
         'minecraft:visual/sky_color',
@@ -100,6 +112,7 @@ export const target: Target = {
     },
     // noise_settings lost default_block (`until 26.4` in the vendored mcdoc; ADR 0036 D8).
     noiseSettingsDefaultBlock: false,
+    vanillaFeatureOrder,
   },
   // items.armorMaterials: the ArmorMaterials constants in lower case. B151's error table had no
   // armour entry; javap over the Loom-cached 26.4-snapshot-7 merged jar (2026-11-05) lists the

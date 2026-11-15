@@ -190,6 +190,16 @@ export interface WorldgenFacts {
    * (the field exists). Since 1.0.0 (ADR 0036 D8).
    */
   noiseSettingsDefaultBlock?: boolean;
+  /**
+   * Vanilla's placed feature order: per decoration step name (a {@link featureSteps} entry),
+   * the namespaced ids of the vanilla placed features that step runs, in the order the game's
+   * feature sorter puts them, over every vanilla biome (the overworld's, then the Nether's and
+   * the End's). A biome that lists two of these in one step against this order can close a
+   * "Feature order cycle" with vanilla biomes; an added feature runs after all of them.
+   * Ids only, no vanilla file. Optional: a target without it skips the checks that need it,
+   * and a plugin reading it must handle its absence. Since 1.17.0 (ADR 0097 D1).
+   */
+  vanillaFeatureOrder?: Readonly<Record<string, readonly string[]>>;
 }
 
 /**

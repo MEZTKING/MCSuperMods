@@ -42,7 +42,7 @@ const THROWABLE = { 'msm:throwable': { damage: 1 } };
 
 describe('blocks-items validators', () => {
   it('lists every code it reports', () => {
-    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(25);
+    expect(BLOCKS_ITEMS_PROBLEM_CODES).toHaveLength(26);
     expect(BLOCKS_ITEMS_PROBLEM_CODES).toContain(TRANSPARENT_TEXTURE_CODE);
   });
 
@@ -898,6 +898,57 @@ describe('trigger and addition validators (ADRs 0060, 0061)', () => {
     expect(summary(problems)).toEqual([
       ['blocks-items.duplicate-biome-feature', 'warning', 'demo:a', '/features/1/feature'],
     ]);
+    // The biome lists it in step 1 (lakes), the addition in another: a real second copy.
+    expect(problems[0]?.message).toContain('generates twice, once in each step');
+    expect(problems[0]?.message).toContain('in step "lakes"');
+  });
+
+  it('says a same-step duplicate does nothing and a different-step one generates twice (ADR 0097 D4)', async () => {
+    const ores = 'underground_ores';
+    // Step 6 is underground_ores.
+    const features: string[][] = [[], [], [], [], [], [], ['demo:ore_placed']];
+    const problems = await validate([
+      element('minecraft:worldgen/biome', 'demo:glade', { features } as never),
+      biomeAddition('demo:same', {
+        biomes: ['demo:glade'],
+        features: [{ feature: 'demo:ore_placed', step: ores }],
+      }),
+      biomeAddition('demo:other', {
+        biomes: ['demo:glade'],
+        features: [{ feature: 'demo:ore_placed', step: 'vegetal_decoration' }],
+      }),
+    ]);
+    expect(summary(problems)).toEqual([
+      ['blocks-items.duplicate-biome-feature', 'warning', 'demo:same', '/features/0/feature'],
+      ['blocks-items.duplicate-biome-feature', 'warning', 'demo:other', '/features/0/feature'],
+    ]);
+    expect(problems[0]?.message).toContain(
+      `in step "${ores}", so this addition does nothing there`,
+    );
+    expect(problems[0]?.message).not.toContain('twice');
+    expect(problems[1]?.message).toContain(
+      `in step "${ores}", and this addition adds it in step "vegetal_decoration" too, so it generates twice`,
+    );
+  });
+
+  it('warns about a biome addition naming a vanilla placed feature (ADR 0097 D3)', async () => {
+    const problems = await validate([
+      biomeAddition('demo:a', {
+        biomes: ['minecraft:plains'],
+        features: [
+          { feature: 'demo:ore_placed', step: 'underground_ores' },
+          { feature: 'minecraft:ore_diamond', step: 'underground_ores' },
+          { feature: 'flower_plains', step: 'vegetal_decoration' },
+        ],
+      }),
+    ]);
+    expect(summary(problems)).toEqual([
+      ['blocks-items.addition-vanilla-feature', 'warning', 'demo:a', '/features/1/feature'],
+      ['blocks-items.addition-vanilla-feature', 'warning', 'demo:a', '/features/2/feature'],
+    ]);
+    expect(problems[0]?.message).toContain('"minecraft:ore_diamond" is a vanilla placed feature');
+    expect(problems[0]?.message).toContain('Feature order cycle');
+    expect(problems[1]?.message).toContain('"minecraft:flower_plains"');
   });
 
   it('checks the outline of loot addition pools and their item ids', async () => {

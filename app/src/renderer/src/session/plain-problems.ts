@@ -158,7 +158,11 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) => `${t} has a biggest group smaller than its smallest group.`,
   ),
   'blocks-items.duplicate-biome-feature': entry(
-    (t) => `${t} adds the same thing to the world twice.`,
+    (t) => `${t} adds something to a place in your mod that already has it.`,
+  ),
+  'blocks-items.addition-vanilla-feature': entry(
+    (t) =>
+      `${t} adds one of the game's own world features, which can stop worlds from loading. Make your own copy of it.`,
   ),
   'blocks-items.bad-loot-pool': entry((t) => `The extra drops of ${t} are set up wrong.`),
   'blocks-items.unknown-loot-item': entry((t) => `${t} drops something that does not exist.`),

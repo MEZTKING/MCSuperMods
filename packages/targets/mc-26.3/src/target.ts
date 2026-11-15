@@ -3,8 +3,32 @@
  */
 
 import type { Target } from '@msm/plugin-api';
+import featureOrder from '../vendor/worldgen/feature-order.json' with { type: 'json' };
 import { controls } from './controls';
 import { javaProjectGenerator } from './java-project/index';
+
+/** The decoration step names, in the order the game runs them (`worldgen.featureSteps`). */
+const FEATURE_STEPS = [
+  'raw_generation',
+  'lakes',
+  'local_modifications',
+  'underground_structures',
+  'surface_structures',
+  'strongholds',
+  'underground_ores',
+  'underground_decoration',
+  'fluid_springs',
+  'vegetal_decoration',
+  'top_layer_modification',
+] as const;
+
+/**
+ * `worldgen.vanillaFeatureOrder` (ADR 0097 D1): the vendored order per step index, written by
+ * `tools/sync-feature-order` from mcmeta's biome summary (ids only), keyed by step name.
+ */
+const vanillaFeatureOrder: Record<string, readonly string[]> = Object.fromEntries(
+  FEATURE_STEPS.map((step, index) => [step, featureOrder.steps[index] ?? []]),
+);
 
 export const target: Target = {
   id: 'mc-26.3',
@@ -72,19 +96,7 @@ export const target: Target = {
   },
   dataVersion: 5023,
   worldgen: {
-    featureSteps: [
-      'raw_generation',
-      'lakes',
-      'local_modifications',
-      'underground_structures',
-      'surface_structures',
-      'strongholds',
-      'underground_ores',
-      'underground_decoration',
-      'fluid_springs',
-      'vegetal_decoration',
-      'top_layer_modification',
-    ],
+    featureSteps: FEATURE_STEPS,
     biomeAttributes: {
       colours: [
         'minecraft:visual/sky_color',
@@ -96,6 +108,7 @@ export const target: Target = {
     },
     // noise_settings still require default_block (vendored mcdoc; ADR 0036 D8).
     noiseSettingsDefaultBlock: true,
+    vanillaFeatureOrder,
   },
   // items.armorMaterials: the ArmorMaterials constants in lower case, verified 2026-11-05 with
   // javap over the Loom-cached 26.3 merged jar (ADR 0042 D4).

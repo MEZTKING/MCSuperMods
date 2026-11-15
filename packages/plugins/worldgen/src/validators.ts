@@ -10,6 +10,12 @@
  *   node per (step, feature) pair and an edge for each consecutive pair of a biome's features
  *   across all its steps; steps only increase along a biome's list, so a cycle can only form
  *   inside one step, and a feature listed in different steps is legal.
+ * - `worldgen.vanilla-feature-order` (warning, ADR 0097 D2): with the target's
+ *   `worldgen.vanillaFeatureOrder`, two vanilla placed features in one step of a project biome
+ *   listed against vanilla's order, or project biomes whose lists, joined with vanilla's order,
+ *   form a loop no project biome forms alone. A world holding these biomes and vanilla biomes
+ *   stops with "Feature order cycle"; a dimension of project biomes only does not, so it is a
+ *   warning. Skipped when the target has no such fact.
  * - `worldgen.feature-step-differs` (warning): the same placed feature in different decoration
  *   steps in two project biomes. The game accepts it, but the feature runs at a different point
  *   of decoration and with a different placement seed in those biomes, which is usually a
@@ -123,7 +129,11 @@ function cycles(
   return found;
 }
 
-function featureOrder(elements: readonly Element[], steps: readonly string[]): Problem[] {
+function featureOrder(
+  elements: readonly Element[],
+  steps: readonly string[],
+  vanillaOrder: Readonly<Record<string, readonly string[]>> | undefined,
+): Problem[] {
   const problems: Problem[] = [];
   const biomes = ofKind(elements, BIOME).map((biome) => ({
     id: biome.id,
@@ -197,6 +207,92 @@ function featureOrder(elements: readonly Element[], steps: readonly string[]): P
         message: `Placed features ${list(component)} are listed in conflicting orders in step "${stepName(step)}" by ${ordered.length === 1 ? 'this biome' : `biomes ${list(ordered)}`}. Every biome must list shared placed features in the same order, or the game stops with "Feature order cycle".`,
       });
     }
+    const vanilla = vanillaOrder?.[stepName(step)];
+    if (vanilla !== undefined && vanilla.length > 0) {
+      problems.push(...vanillaStepOrder(biomes, step, stepName(step), vanilla, edges, edgeOwners));
+    }
+  }
+  return problems;
+}
+
+/**
+ * Vanilla's order in one step (ADR 0097 D2). First every pair of vanilla placed features a
+ * project biome lists against `vanilla` (adjacent within the biome's vanilla features, so each
+ * inversion is reported once). Then the project's edges joined with vanilla's order between
+ * the vanilla features the project uses: a loop that neither a single inverted pair nor the
+ * project's own lists explain, which only a project feature between vanilla ones can close.
+ */
+function vanillaStepOrder(
+  biomes: readonly { id: ResourceLocation; steps: string[][] }[],
+  step: number,
+  name: string,
+  vanilla: readonly string[],
+  edges: ReadonlyMap<string, ReadonlySet<string>>,
+  edgeOwners: ReadonlyMap<string, ReadonlySet<string>>,
+): Problem[] {
+  const problems: Problem[] = [];
+  const position = new Map(vanilla.map((id, index) => [id, index] as const));
+  const explained: [string, string][] = [];
+  const used = new Set<string>();
+  for (const biome of biomes) {
+    const features = biome.steps[step] ?? [];
+    let previous: string | undefined;
+    features.forEach((feature, index) => {
+      const at = position.get(feature);
+      if (at === undefined) return;
+      used.add(feature);
+      if (previous !== undefined && (position.get(previous) as number) > at) {
+        explained.push([previous, feature]);
+        problems.push({
+          severity: 'warning',
+          code: 'worldgen.vanilla-feature-order',
+          elementId: biome.id,
+          path: `/features/${step}/${index}`,
+          message: `Vanilla runs "${feature}" before "${previous}" in step "${name}"; a world with this biome and vanilla biomes stops with "Feature order cycle". Swap them.`,
+        });
+      }
+      if (previous !== feature) previous = feature;
+    });
+  }
+  // The project's edges plus vanilla's chain over the vanilla features the project uses.
+  const chain = vanilla.filter((id) => used.has(id));
+  if (chain.length < 2) return problems;
+  const joined = new Map<string, Set<string>>();
+  const nodes = new Set<string>();
+  for (const [from, targets] of edges) {
+    nodes.add(from);
+    for (const to of targets) nodes.add(to);
+    joined.set(from, new Set(targets));
+  }
+  chain.forEach((id, index) => {
+    const next = chain[index + 1];
+    if (next === undefined) return;
+    const targets = joined.get(id) ?? new Set<string>();
+    targets.add(next);
+    joined.set(id, targets);
+  });
+  for (const id of chain) nodes.add(id);
+  const projectCycles = cycles([...nodes].sort(), edges).map((component) => new Set(component));
+  for (const component of cycles([...nodes].sort(), joined)) {
+    const members = new Set(component);
+    // Already an error (the project's own lists loop) or an inverted pair reported above.
+    if (projectCycles.some((own) => [...own].every((id) => members.has(id)))) continue;
+    if (explained.some(([a, b]) => members.has(a) && members.has(b))) continue;
+    const involved = new Set<string>();
+    for (const [key, owners] of edgeOwners) {
+      const [from, to] = key.split('\n') as [string, string];
+      if (members.has(from) && members.has(to)) for (const owner of owners) involved.add(owner);
+    }
+    const ordered = biomes.map((biome) => biome.id).filter((id) => involved.has(id));
+    const reported = ordered[ordered.length - 1];
+    if (reported === undefined) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'worldgen.vanilla-feature-order',
+      elementId: reported,
+      path: `/features/${step}`,
+      message: `Placed features ${list(component)} in step "${name}" are listed by ${ordered.length === 1 ? 'this biome' : `biomes ${list(ordered)}`} in an order that loops with vanilla's own order; a world with these biomes and vanilla biomes stops with "Feature order cycle". Keep vanilla features in vanilla's order around your own.`,
+    });
   }
   return problems;
 }
@@ -365,7 +461,8 @@ export const worldgenValidators: readonly ProjectValidator[] = Object.freeze([
   {
     id: 'msm.worldgen.feature-order',
     kinds: [BIOME],
-    validate: ({ elements, target }) => featureOrder(elements, target.worldgen.featureSteps),
+    validate: ({ elements, target }) =>
+      featureOrder(elements, target.worldgen.featureSteps, target.worldgen.vanillaFeatureOrder),
   },
   {
     id: 'msm.worldgen.biome-reachability',
@@ -392,6 +489,7 @@ export const worldgenValidators: readonly ProjectValidator[] = Object.freeze([
 /** The problem codes the validators report. */
 export const WORLDGEN_PROBLEM_CODES = Object.freeze([
   'worldgen.feature-order',
+  'worldgen.vanilla-feature-order',
   'worldgen.feature-step-differs',
   'worldgen.biome-unreachable',
   'worldgen.preset-not-selectable',
