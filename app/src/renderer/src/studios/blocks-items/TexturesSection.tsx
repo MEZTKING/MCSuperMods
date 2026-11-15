@@ -9,22 +9,35 @@
  * has the one slot "Portal surface" (empty: vanilla's Nether portal surface) and takes no own
  * models: its two pane models, one per axis, are always made.
  *
+ * B452 (ADR 0094 D10, ADR 0101 D1): the new types' slots in words; a berry bush's or pod's
+ * picture per age (`textures.stages`); and for a sign or hanging sign, choosing the writing
+ * screen picture (`sign` or `hanging_gui`, else `all`) also copies that project picture to
+ * `signGuiTextureId`, the asset the game's sign screen reads, in the same undo step as the field
+ * (ADR 0094 D6 amended at B448; `signPictureCopy`, the host's `applyChanges`).
+ *
  * @packageDocumentation
  */
 
 import type { Element, Json, Project } from '@msm/core';
 import { useEffect, useState } from 'react';
+import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import { pngDataUrl } from '../../components/AssetList';
 import { SlotPictureAi } from '../../components/ai-pictures/StudioAiPictures';
+import { textureChange } from '../../components/ai-pictures/texture-write';
+import { buttonClass } from '../../components/ui/Button';
 import type { FormProblem } from '../../forms';
 import { IdField } from '../structures/pickers';
 import { Section } from '../worldgen/parts';
 import {
   blockTypeOfData,
   isRequiredSlot,
+  isSignType,
   modelSlotLabel,
+  type SignPictureCopy,
+  STAGE_TEXTURE_COUNTS,
   shownModelSlots,
   shownStateModelSlots,
+  signPictureCopy,
   slotModelRows,
   textureAssetPath,
   textureSlotsOf,
@@ -36,7 +49,7 @@ import { ProblemsAt } from './parts';
 const THUMBNAIL_SIZE = 32;
 
 /** A thumbnail of a project texture from the host, or nothing (vanilla or unknown textures). */
-function TextureThumbnail(props: { texture: string; testId: string }) {
+export function TextureThumbnail(props: { texture: string; testId: string }) {
   const host = useBlocksItemsStudioHost();
   const [url, setUrl] = useState<string | null>(null);
   const load = host?.thumbnail;
@@ -78,6 +91,36 @@ const SOURCE_WORDS = {
   none: 'not set',
 } as const;
 
+/**
+ * The change items and byte writes of choosing a sign's writing screen picture: the element
+ * update and the copy of `bytes` to the asset the game reads (an undoable write over an asset
+ * the project has, else a new asset), for one `applyChanges` step.
+ */
+export function signPictureChange(
+  project: Project | null,
+  element: Pick<Element, 'id' | 'kind' | 'data'>,
+  copy: SignPictureCopy,
+  bytes: Uint8Array,
+): { items: ChangeItem[]; writes: ChangeAsset[] } {
+  const change = textureChange(project, copy.to.namespace, copy.to.path, bytes);
+  return {
+    items: [
+      {
+        itemId: 'sign-picture-field',
+        op: 'update',
+        elementId: element.id,
+        kind: element.kind,
+        before: element.data,
+        after: copy.data,
+        accepted: true,
+        problems: [],
+      },
+      ...change.items,
+    ],
+    writes: change.writes,
+  };
+}
+
 /** Props of {@link TexturesSection}. */
 export interface TexturesSectionProps {
   element: Element;
@@ -90,6 +133,7 @@ export interface TexturesSectionProps {
 
 export function TexturesSection(props: TexturesSectionProps) {
   const { element, problems, set, suggest } = props;
+  const host = useBlocksItemsStudioHost();
   const [ownModels, setOwnModels] = useState(false);
   const type = blockTypeOfData(element.data);
   if (type === undefined) return null;
@@ -101,6 +145,23 @@ export function TexturesSection(props: TexturesSectionProps) {
   const showOwn = ownModels || hasOwnModels;
   /** Sets one texture; removes `textures` when the last one is cleared. */
   const setTexture = (key: string, value: string) => {
+    const copy = signPictureCopy(element, key, value);
+    const read = host?.modelPreview?.readProjectAsset;
+    const apply = host?.applyChanges;
+    if (copy !== undefined && read !== undefined && apply !== undefined) {
+      // The writing screen picture goes with the field in one undo step (ADR 0094 D6).
+      void read(copy.from.namespace, copy.from.path)
+        .then(async (bytes) => {
+          if (bytes === null) {
+            set(['textures', key], value);
+            return;
+          }
+          const change = signPictureChange(props.project ?? null, element, copy, bytes);
+          await apply(change.items, 'Sign picture', change.writes);
+        })
+        .catch(() => set(['textures', key], value));
+      return;
+    }
     if (value === '') {
       const rest = Object.keys(textures).filter((entry) => entry !== key);
       set(rest.length === 0 ? ['textures'] : ['textures', key], undefined);
@@ -144,9 +205,19 @@ export function TexturesSection(props: TexturesSectionProps) {
   }
   const slots = textureSlotsOf(type, element.data);
   const portal = type === 'portal';
+  const stageCount = STAGE_TEXTURE_COUNTS[type];
   return (
     <Section title="Textures" testId="block-textures">
-      {slots.length === 0 ? (
+      {stageCount !== undefined ? (
+        <StageTextures
+          count={stageCount}
+          textures={Array.isArray(textures.stages) ? textures.stages : []}
+          suggest={suggest}
+          onChange={(next) =>
+            set(['textures'], next.length === 0 ? undefined : { ...textures, stages: [...next] })
+          }
+        />
+      ) : slots.length === 0 ? (
         <p className="text-muted text-xs" data-testid="block-textures-stages-note">
           A crop's stage textures are set in the Crop section above.
         </p>
@@ -157,6 +228,11 @@ export function TexturesSection(props: TexturesSectionProps) {
               Empty shows vanilla's Nether portal surface, read from your game. The two pane models,
               one for each way the frame can stand, are made on the Nether portal's own templates.
             </p>
+          ) : slots[0]?.label !== 'Every face' ? (
+            <p className="text-muted text-xs" data-testid="block-textures-rule">
+              The models of the {type.replaceAll('_', ' ')} are made from these pictures on
+              vanilla's own templates, read from your game.
+            </p>
           ) : (
             <p className="text-muted text-xs" data-testid="block-textures-rule">
               "Every face" fills each texture left empty.{' '}
@@ -165,6 +241,12 @@ export function TexturesSection(props: TexturesSectionProps) {
                 : 'Without it, an empty texture takes the first texture given.'}{' '}
               The models of the {type.replace('_', ' ')} are made from these on vanilla's own
               templates.
+            </p>
+          )}
+          {isSignType(type) && (
+            <p className="text-muted text-xs" data-testid="block-textures-sign-note">
+              Choosing the writing screen picture (or the board, while the writing screen has none)
+              also saves a copy where the game's sign screen looks for it; Undo takes both back.
             </p>
           )}
           <div className="flex flex-col gap-1">
@@ -213,7 +295,7 @@ export function TexturesSection(props: TexturesSectionProps) {
           <ul aria-label="Models" className="m-0 flex list-none flex-col gap-0.5 p-0 text-xs">
             {rows.map((row) => (
               <li key={row.slot} data-testid={`block-model-row-${row.slot}`}>
-                <span className="text-muted">{modelSlotLabel(row.slot)}:</span>{' '}
+                <span className="text-muted">{modelSlotLabel(row.slot, type)}:</span>{' '}
                 {row.model === undefined ? (
                   <span>{SOURCE_WORDS[row.source]}</span>
                 ) : (
@@ -248,7 +330,7 @@ export function TexturesSection(props: TexturesSectionProps) {
           {shownModelSlots(type, element.data).map((slot) => (
             <IdField
               key={slot}
-              label={`${modelSlotLabel(slot)}${isRequiredSlot(type, slot) ? '' : ' (optional)'}`}
+              label={`${modelSlotLabel(slot, type)}${isRequiredSlot(type, slot) ? '' : ' (optional)'}`}
               value={typeof models[slot] === 'string' ? String(models[slot]) : ''}
               registry="model"
               suggest={suggest}
@@ -263,5 +345,59 @@ export function TexturesSection(props: TexturesSectionProps) {
         </div>
       )}
     </Section>
+  );
+}
+
+/** One picture per age of a berry bush or pod (`textures.stages`, ADR 0094 D10). */
+function StageTextures(props: {
+  count: number;
+  textures: readonly Json[];
+  suggest(registry: string, prefix: string): string[];
+  onChange(next: readonly string[]): void;
+}) {
+  const textures = props.textures.map((entry) => (typeof entry === 'string' ? entry : ''));
+  return (
+    <div className="flex flex-col gap-1" data-testid="block-stage-textures">
+      {textures.map((texture, index) => (
+        <div key={index} className="flex items-end gap-1">
+          <TextureThumbnail texture={texture} testId={`block-stage-texture-${index}-thumbnail`} />
+          <IdField
+            label={`Stage ${index}`}
+            value={texture}
+            registry="texture"
+            suggest={props.suggest}
+            className="flex-1"
+            testId={`block-stage-texture-${index}`}
+            onCommit={(value) =>
+              props.onChange(textures.map((entry, i) => (i === index ? value : entry)))
+            }
+          />
+          <button
+            type="button"
+            className={buttonClass}
+            aria-label={`Remove stage ${index} picture`}
+            data-testid={`block-stage-texture-${index}-remove`}
+            onClick={() => props.onChange(textures.filter((_, i) => i !== index))}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+      <div>
+        <button
+          type="button"
+          className={buttonClass}
+          data-testid="block-stage-texture-add"
+          disabled={textures.length >= props.count}
+          onClick={() => props.onChange([...textures, textures.at(-1) ?? ''])}
+        >
+          Add stage picture
+        </button>
+      </div>
+      <p className="text-muted text-xs">
+        One picture per stage from the youngest, {props.count} stages in all; fewer pictures are
+        repeated over the stages.
+      </p>
+    </div>
   );
 }

@@ -10,10 +10,22 @@
  * - Leaves: the tint (biome colours or one colour, with the note that it shows in game only),
  *   the falling leaf chance and particle, and the leaves drops preset (sapling, sticks, extra).
  *
+ * B452 (ADR 0094 D2, ADR 0101 D1), the new plant and food types' own fields:
+ *
+ * - Cake: what a slice gives (hunger and saturation) and the event fired after a slice.
+ * - Berry bush: the berry item (the bush's own item in one click), the harvest counts when ripe
+ *   and full, and whether it hurts.
+ * - Tall plant: what bone meal does. Vine: whether it spreads. Pod: the blocks it hangs on.
+ * - Potted plant: the plant, picked from the project's saplings and berry bushes or any block.
+ * - Stem: the fruit, picked from the project's blocks or any block, and the soils (defaults from
+ *   the target's `blocks.stemTags`).
+ *
  * @packageDocumentation
  */
 
 import type { Element, Json, Project, ResourceLocation } from '@msm/core';
+import type { Target } from '@msm/plugin-api';
+import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import { ExternalLink } from 'lucide-react';
 import { useId } from 'react';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
@@ -22,10 +34,15 @@ import { typingKey } from '../../forms/context';
 import { useStructureStudioHost } from '../structures/host';
 import { IdField, NumberField } from '../structures/pickers';
 import { Section } from '../worldgen/parts';
-import { blockTypeOfData } from './block-type-model';
-import { asObject, pointerOf } from './blocks-items-model';
+import {
+  BLOCK_TYPE_LABELS,
+  type BlockTypeName,
+  blockTypeOfData,
+  TALL_PLANT_BONEMEAL_LABELS,
+} from './block-type-model';
+import { asObject, eventNames, pointerOf } from './blocks-items-model';
 import { useBlocksItemsStudioHost } from './host';
-import { CheckField, ProblemsAt } from './parts';
+import { CheckField, EventSelect, ProblemsAt } from './parts';
 import {
   bonemealGrowth,
   colourHex,
@@ -67,6 +84,8 @@ export interface PlantSectionProps {
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   set: SetPath;
+  /** The target, for the stem's default soils (`blocks.stemTags`); absent: the schema's words. */
+  target?: Target;
 }
 
 /** The plant section of the element's type, or nothing for the other types. */
@@ -75,7 +94,102 @@ export function PlantSection(props: PlantSectionProps) {
   if (type === 'crop') return <CropSection {...props} />;
   if (type === 'sapling') return <SaplingSection {...props} />;
   if (type === 'leaves') return <LeavesSection {...props} />;
+  if (type === 'cake') return <CakeSection {...props} />;
+  if (type === 'berry_bush') return <BerryBushSection {...props} />;
+  if (type === 'tall_plant') return <TallPlantSection {...props} />;
+  if (type === 'potted_plant') return <PottedPlantSection {...props} />;
+  if (type === 'vine') return <VineSection {...props} />;
+  if (type === 'stem') return <StemSection {...props} />;
+  if (type === 'cocoa') return <CocoaSection {...props} />;
   return null;
+}
+
+/** The plant section test ids of the new types (B452), for the Very easy list. */
+export const NEW_PLANT_SECTION_IDS: readonly string[] = Object.freeze([
+  'block-cake',
+  'block-berry-bush',
+  'block-tall-plant',
+  'block-potted-plant',
+  'block-vine',
+  'block-stem',
+  'block-cocoa',
+]);
+
+/** Defaults of the new plant fields, as the format documents them (ADR 0094 D2). */
+export const PLANT_FIELD_DEFAULTS = Object.freeze({
+  cakeNutrition: 2,
+  cakeSaturation: 0.1,
+  ripe: [1, 2] as const,
+  full: [2, 3] as const,
+  cocoaSupport: '#minecraft:supports_cocoa',
+});
+
+/** The project's blocks of `types`, as `{ id, label }` for a quick picker. */
+export function projectBlocksOf(
+  project: Project,
+  types: readonly BlockTypeName[],
+  except?: string,
+): { id: string; label: string }[] {
+  return project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .filter((entry) => entry.kind === 'msm:block' && entry.id !== except)
+    .flatMap((entry) => {
+      const type = blockTypeOfData(entry.data);
+      if (type === undefined || !types.includes(type)) return [];
+      const name = asObject(entry.data).display_name;
+      const label = typeof name === 'string' && name !== '' ? `${name} (${entry.id})` : entry.id;
+      return [{ id: entry.id, label: `${label}, ${BLOCK_TYPE_LABELS[type].split(' (')[0]}` }];
+    });
+}
+
+/**
+ * The cake's `food` after setting one of its two numbers: both are required once `food` is
+ * given, so the other takes vanilla's slice value; clearing one while the other is vanilla's
+ * removes `food`.
+ */
+export function withCakeFood(
+  food: Json | undefined,
+  key: 'nutrition' | 'saturation',
+  value: number | undefined,
+): Json | undefined {
+  const current = asObject(food);
+  const defaults = {
+    nutrition: PLANT_FIELD_DEFAULTS.cakeNutrition,
+    saturation: PLANT_FIELD_DEFAULTS.cakeSaturation,
+  };
+  const other = key === 'nutrition' ? 'saturation' : 'nutrition';
+  // Clearing the one number while the other says vanilla's slice too removes `food`.
+  if (value === undefined && (current[other] ?? defaults[other]) === defaults[other]) {
+    return undefined;
+  }
+  return {
+    nutrition: current.nutrition ?? defaults.nutrition,
+    saturation: current.saturation ?? defaults.saturation,
+    [key]: value ?? defaults[key],
+  };
+}
+
+/**
+ * A berry bush's `harvest` after setting one bound: `ripe` and `full` are both required pairs
+ * once `harvest` is given, so the others take vanilla's counts.
+ */
+export function withHarvest(
+  harvest: Json | undefined,
+  stage: 'ripe' | 'full',
+  bound: 0 | 1,
+  value: number | undefined,
+): Json {
+  const current = asObject(harvest);
+  const pair = (key: 'ripe' | 'full'): number[] => {
+    const given = current[key];
+    const fallback = PLANT_FIELD_DEFAULTS[key];
+    return Array.isArray(given) && given.length === 2 && given.every((n) => typeof n === 'number')
+      ? (given as number[])
+      : [...fallback];
+  };
+  const next = { ripe: pair('ripe'), full: pair('full') };
+  next[stage][bound] = value ?? PLANT_FIELD_DEFAULTS[stage][bound];
+  return next;
 }
 
 function useAt(problems: readonly FormProblem[]) {
@@ -581,6 +695,315 @@ function LeavesSection(props: PlantSectionProps) {
           {at(['leaves_drops', 'extra'])}
         </div>
       )}
+    </Section>
+  );
+}
+
+/** A quick picker of project blocks next to an id field ("Your plants", "Your blocks"). */
+function OwnBlockPicker(props: {
+  label: string;
+  choices: readonly { id: string; label: string }[];
+  value: string;
+  testId: string;
+  onPick(id: string): void;
+}) {
+  const id = useId();
+  if (props.choices.length === 0) return null;
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+      <label htmlFor={id} className="text-muted">
+        {props.label}
+      </label>
+      <select
+        id={id}
+        className={inputClass}
+        data-testid={props.testId}
+        value={props.choices.some((choice) => choice.id === props.value) ? props.value : ''}
+        onChange={(event) => {
+          if (event.target.value !== '') props.onPick(event.target.value);
+        }}
+      >
+        <option value="">(pick one)</option>
+        {props.choices.map((choice) => (
+          <option key={choice.id} value={choice.id}>
+            {choice.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function CakeSection(props: PlantSectionProps) {
+  const { element, problems, set } = props;
+  const data = asObject(element.data);
+  const food = asObject(data.food);
+  const at = useAt(problems);
+  return (
+    <Section title="Cake" testId="block-cake">
+      <p className="text-muted text-xs">
+        Players eat it a slice at a time, seven slices in all; a comparator reads the slices left.
+        It takes no candles.
+      </p>
+      <NumberField
+        label={`Hunger a slice fills (1 to 20; empty: ${PLANT_FIELD_DEFAULTS.cakeNutrition})`}
+        value={food.nutrition}
+        integer
+        allowEmpty
+        testId="cake-nutrition"
+        onCommit={(value) =>
+          set(['food'], withCakeFood(data.food, 'nutrition', value), typingKey('/food'))
+        }
+      />
+      <NumberField
+        label={`Saturation (0 to 2; empty: ${PLANT_FIELD_DEFAULTS.cakeSaturation})`}
+        value={food.saturation}
+        allowEmpty
+        testId="cake-saturation"
+        onCommit={(value) =>
+          set(['food'], withCakeFood(data.food, 'saturation', value), typingKey('/food'))
+        }
+      />
+      {at(['food'])}
+      {at(['food', 'nutrition'])}
+      {at(['food', 'saturation'])}
+      <EventSelect
+        label="After a slice is eaten, run"
+        value={data.on_eat}
+        events={eventNames(element.data)}
+        emptyLabel="(nothing)"
+        testId="cake-on-eat"
+        onChange={(value) => set(['on_eat'], value)}
+      />
+      {at(['on_eat'])}
+    </Section>
+  );
+}
+
+function BerryBushSection(props: PlantSectionProps) {
+  const { element, problems, set, suggest } = props;
+  const data = asObject(element.data);
+  const at = useAt(problems);
+  const own = blockItemIdOf(element.id, data);
+  const harvest = asObject(data.harvest);
+  const bound = (stage: 'ripe' | 'full', index: 0 | 1): Json | undefined => {
+    const pair = harvest[stage];
+    return Array.isArray(pair) ? pair[index] : undefined;
+  };
+  const countField = (stage: 'ripe' | 'full', index: 0 | 1, label: string) => (
+    <NumberField
+      label={`${label} (empty: ${PLANT_FIELD_DEFAULTS[stage][index]})`}
+      value={bound(stage, index)}
+      integer
+      allowEmpty
+      testId={`berry-harvest-${stage}-${index === 0 ? 'min' : 'max'}`}
+      onCommit={(value) =>
+        set(['harvest'], withHarvest(data.harvest, stage, index, value), typingKey('/harvest'))
+      }
+    />
+  );
+  return (
+    <Section title="Berry bush" testId="block-berry-bush">
+      <div className="flex items-end gap-1">
+        <IdField
+          label="Berry (picked from the bush, and planted to grow a new one)"
+          value={text(data.berry)}
+          registry="item"
+          suggest={suggest}
+          className="flex-1"
+          testId="berry-item"
+          onCommit={(value) => set(['berry'], value === '' ? undefined : value)}
+        />
+        <button
+          type="button"
+          className={buttonClass}
+          data-testid="berry-use-own"
+          disabled={own === undefined || data.berry === own}
+          title={own === undefined ? 'The bush has no item' : `Use ${own}`}
+          onClick={() => {
+            if (own !== undefined) set(['berry'], own);
+          }}
+        >
+          Use the bush's own item
+        </button>
+      </div>
+      <p className="text-muted text-xs">
+        Usually the bush's own item: planting it grows the bush, as sweet berries do.
+      </p>
+      {at(['berry'])}
+      <h4 className="font-medium text-xs">Berries picked</h4>
+      <div className="grid grid-cols-2 gap-1">
+        {countField('ripe', 0, 'When ripe, at least')}
+        {countField('ripe', 1, 'When ripe, at most')}
+        {countField('full', 0, 'When full, at least')}
+        {countField('full', 1, 'When full, at most')}
+      </div>
+      {at(['harvest'])}
+      <CheckField
+        label="Slows and hurts whoever walks through it (like sweet berry bushes)"
+        checked={data.hurts !== false}
+        testId="berry-hurts"
+        onChange={(checked) => set(['hurts'], checked ? undefined : false)}
+      />
+      {at(['hurts'])}
+    </Section>
+  );
+}
+
+function TallPlantSection(props: PlantSectionProps) {
+  const { element, problems, set } = props;
+  const data = asObject(element.data);
+  const at = useAt(problems);
+  const id = useId();
+  const current = typeof data.bonemeal === 'string' ? data.bonemeal : 'drop_copy';
+  return (
+    <Section title="Tall plant" testId="block-tall-plant">
+      <p className="text-muted text-xs">
+        Two blocks high; the lower half drops the item, and placing it places both halves.
+      </p>
+      <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+        <label htmlFor={id} className="text-muted">
+          Bone meal
+        </label>
+        <select
+          id={id}
+          className={inputClass}
+          data-testid="tall-plant-bonemeal"
+          value={current}
+          onChange={(event) =>
+            set(['bonemeal'], event.target.value === 'drop_copy' ? undefined : event.target.value)
+          }
+        >
+          {Object.entries(TALL_PLANT_BONEMEAL_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+      {at(['bonemeal'])}
+    </Section>
+  );
+}
+
+function PottedPlantSection(props: PlantSectionProps) {
+  const { project, element, problems, set, suggest } = props;
+  const data = asObject(element.data);
+  const at = useAt(problems);
+  const plant = text(data.plant);
+  return (
+    <Section title="Potted plant" testId="block-potted-plant">
+      <OwnBlockPicker
+        label="Your plants"
+        choices={projectBlocksOf(project, ['sapling', 'berry_bush'], element.id)}
+        value={plant}
+        testId="potted-plant-own"
+        onPick={(id) => set(['plant'], id)}
+      />
+      <IdField
+        label="Plant in the pot"
+        value={plant}
+        registry="block"
+        suggest={suggest}
+        testId="potted-plant-plant"
+        onCommit={(value) => set(['plant'], value === '' ? undefined : value)}
+      />
+      <p className="text-muted text-xs">
+        A sapling, a berry bush or a block drawn as a cross; a plant Minecraft already pots cannot
+        be potted again, and tall plants do not fit. Breaking it drops the pot and the plant. It has
+        no item of its own: players make it by putting the plant in a flower pot.
+      </p>
+      {at(['plant'])}
+    </Section>
+  );
+}
+
+function VineSection(props: PlantSectionProps) {
+  const { element, problems, set } = props;
+  const data = asObject(element.data);
+  const at = useAt(problems);
+  return (
+    <Section title="Vine" testId="block-vine">
+      <CheckField
+        label="Spreads over time, as vanilla's vines"
+        checked={data.spreads !== false}
+        testId="vine-spreads"
+        onChange={(checked) => set(['spreads'], checked ? undefined : false)}
+      />
+      <p className="text-muted text-xs">It grows on walls and under blocks, and is climbable.</p>
+      {at(['spreads'])}
+    </Section>
+  );
+}
+
+function StemSection(props: PlantSectionProps) {
+  const { project, element, problems, set, suggest } = props;
+  const data = asObject(element.data);
+  const at = useAt(problems);
+  const tags = props.target?.blocks?.stemTags;
+  const fruit = text(data.fruit);
+  return (
+    <Section title="Stem" testId="block-stem">
+      <OwnBlockPicker
+        label="Your blocks"
+        choices={projectBlocksOf(project, ['block', 'horizontal'], element.id)}
+        value={fruit}
+        testId="stem-fruit-own"
+        onPick={(id) => set(['fruit'], id)}
+      />
+      <IdField
+        label="Fruit (grows next to the stem when it is fully grown)"
+        value={fruit}
+        registry="block"
+        suggest={suggest}
+        testId="stem-fruit"
+        onCommit={(value) => set(['fruit'], value === '' ? undefined : value)}
+      />
+      {at(['fruit'])}
+      <IdField
+        label={`Planted on (empty: ${tags?.soil === undefined ? "the melon stem's blocks" : `#${tags.soil}`})`}
+        value={text(data.soil)}
+        registry="block"
+        suggest={suggest}
+        testId="stem-soil"
+        onCommit={(value) => set(['soil'], value === '' ? undefined : value)}
+      />
+      {at(['soil'])}
+      <IdField
+        label={`Fruit grows on (empty: ${tags?.fruitSoil === undefined ? "the melon's blocks" : `#${tags.fruitSoil}`})`}
+        value={text(data.fruit_soil)}
+        registry="block"
+        suggest={suggest}
+        testId="stem-fruit-soil"
+        onCommit={(value) => set(['fruit_soil'], value === '' ? undefined : value)}
+      />
+      <p className="text-muted text-xs">
+        Both are block tags, such as #minecraft:dirt. The stem grows through eight stages, then
+        bends onto the fruit it grew.
+      </p>
+      {at(['fruit_soil'])}
+    </Section>
+  );
+}
+
+function CocoaSection(props: PlantSectionProps) {
+  const { element, problems, set, suggest } = props;
+  const data = asObject(element.data);
+  const at = useAt(problems);
+  return (
+    <Section title="Pod" testId="block-cocoa">
+      <IdField
+        label={`Hangs on (empty: ${PLANT_FIELD_DEFAULTS.cocoaSupport})`}
+        value={text(data.support)}
+        registry="block"
+        suggest={suggest}
+        testId="cocoa-support"
+        onCommit={(value) => set(['support'], value === '' ? undefined : value)}
+      />
+      <p className="text-muted text-xs">
+        A block tag of the logs it grows on; it grows through three stages, as cocoa does.
+      </p>
+      {at(['support'])}
     </Section>
   );
 }

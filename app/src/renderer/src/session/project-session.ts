@@ -179,6 +179,7 @@ import {
   scriptTextValidator,
   scriptTranspiler,
 } from './scripting-problems';
+import { signGuiPictureProblems } from './sign-gui-pictures';
 import {
   type BlockTexture,
   modelTextures,
@@ -3571,6 +3572,7 @@ export class ProjectSession {
           ...validatorProblems,
           ...this.#textureProblems,
           ...particleTextureProblems(project, this.#currentTarget()),
+          ...signGuiPictureProblems(project, this.#currentTarget()),
         ],
       };
     }

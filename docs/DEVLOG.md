@@ -5386,3 +5386,23 @@ Next
 
 **Next**
 - B429 reads `VehicleSnapshot` (fuel, damage, speed) for the HUD's `vehicle` source; B417 lets the sim draw shots once weapons exist; B431 takes the labels and keys in the report.
+## 2026-11-15 — executor — B452 app: Block Studio for the new types
+
+**What**
+- Type picker (ADR 0101 D1): `<optgroup>`s "Building blocks", "Plants" (crop, sapling, leaves and the eight new plants) and "Furniture and lights" (the twelve of the ADR), the chosen type's picture beside the picker and every type as a picture tile under "Pick from pictures" (`block-type-pictures.tsx`: lucide line pictures plus a drawn ladder and stairs; no Minecraft art). `NEW_BLOCK_TYPES` is no longer filtered out; `BLOCK_TYPE_GROUPS`, `NEW_PLANT_BLOCK_TYPES`, `FURNITURE_BLOCK_TYPES` in `block-type-model.ts`.
+- Per-type fields: bed rule and colour (target `bedRules`, `dyeColours`), torch particle (default from `defaultTorchParticle`), sign and hanging sign wood type in the Type section; cake food and on-eat event, berry bush berry ("Use the bush's own item"), harvest counts and hurts, tall plant bone meal, potted plant plant (with "Your plants"), vine spreads, stem fruit (with "Your blocks") and soils (defaults from `stemTags`), pod support in `PlantSection`. `TEXTURE_SLOTS` filled from B443; berry bush and pod stage pictures in the Textures section; new model slot words (`modelSlotLabel(slot, type)`). `withBlockType` fills `fruit`, `plant`, `berry`, carries the look into `stages` for bushes and pods, and drops `msm:strippable`, `msm:waterloggable`, `msm:weathering`/`msm:waxable` where the new type does not take them.
+- Companions shown in the Type section ("Also makes: <id>_wall (the torch on a wall)", `companionRows` over `blockGeneratedBlockIds`).
+- `WaterloggingSwitch.tsx` (in the Type section): the switch on block, pillar and facing types, off and explained with storage or a machine, a note on the types vanilla waterlogs itself.
+- `WeatheringSection.tsx`: "Ages over time, like copper", stage (New, Exposed, Weathered, Oxidised), "Ages into", "Waxed copy"; "Make the next stage", "Make a waxed copy" and "Make the whole set" (later stages and a waxed copy of each, chained), each one `applyChanges` undo step; a waxed copy names its block.
+- Sign writing screen picture: choosing `sign`/`hanging_gui` (or `all` while that is empty) to a project picture copies its bytes to `signGuiTextureId` with the field in one undo step ("Sign picture"); app-side warning `blocks-items.sign-gui-picture-missing` (`session/sign-gui-pictures.ts`, wired in the session's problems) with plain words.
+- Preview: slot words per type, in-game-only notes (stem colour, torch flame, bed halves), the main picture flat when nothing can be drawn or without WebGL, and a sign's writing screen picture.
+- Very easy: the seven new plant sections and `block-weathering` on the Block Studio list.
+- Tests: `block-types-b452.test.tsx` (22), `weathering-section.test.tsx` (11); app suite 230 files, 2157 tests green.
+
+**Decisions**
+- `BlockStudio.tsx` got three small hunks (owner list left it out): `elementId` to the Type section, `target` to `PlantSection`, the Weathering section mount. `app/tsconfig.node.json` lists the new session file.
+- Vanilla pictures are never copied into the project (no Mojang bytes); the warning stays until a project picture is chosen.
+- New stage blocks are named `exposed_<base>` etc. and waxed copies `waxed_<id>`, as vanilla's copper; copies keep the pictures and drop an explicit `item.id`.
+
+**Next**
+- B459 flows that make signs must write the writing screen asset (or the new warning shows). B465 fills `vanilla-blocks-path` with the test ids above; B467 takes the labels into the guide.

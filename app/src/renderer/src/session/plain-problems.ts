@@ -352,6 +352,10 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) =>
       `${t} grows a fruit that is not a block in your mod or in Minecraft. Pick another block.`,
   ),
+  'blocks-items.sign-gui-picture-missing': entry(
+    (t) =>
+      `${t} has no picture for the screen you write on. Pick the sign's picture again in its Textures.`,
+  ),
   'blocks-items.torch-particle-not-simple': entry(
     (t) =>
       `${t} uses a particle that needs extra settings, which a torch cannot give. Pick a simple particle.`,

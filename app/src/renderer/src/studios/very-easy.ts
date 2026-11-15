@@ -53,6 +53,15 @@ export const BLOCK_VERY_EASY_SECTIONS: readonly string[] = [
   'block-leaves',
   'block-portal',
   'block-inventory',
+  // B452 (ADR 0101 D1, D4): the new types' own sections and "Ages like copper".
+  'block-cake',
+  'block-berry-bush',
+  'block-tall-plant',
+  'block-potted-plant',
+  'block-vine',
+  'block-stem',
+  'block-cocoa',
+  'block-weathering',
 ];
 
 /** The Item Studio's sections in Very easy. */

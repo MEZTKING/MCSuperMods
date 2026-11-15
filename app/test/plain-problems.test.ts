@@ -40,6 +40,7 @@ import {
   VEHICLES_NEEDS_JAR_CODE,
 } from '../src/renderer/src/session/project-session';
 import { RulesSessionProblemCodes } from '../src/renderer/src/session/rules-view';
+import { SIGN_GUI_PICTURE_MISSING_CODE } from '../src/renderer/src/session/sign-gui-pictures';
 
 /** The codes a beginner can meet in Very easy, from the plugins' and the session's lists. */
 const BEGINNER_CODES: readonly string[] = [
@@ -63,6 +64,7 @@ const BEGINNER_CODES: readonly string[] = [
   VEHICLES_NEEDS_JAR_CODE,
   ExportProblemCodes.notInEject,
   PARTICLE_TEXTURE_MISSING_CODE,
+  SIGN_GUI_PICTURE_MISSING_CODE,
   // What blocks Play and Share my mod.
   ExportProblemCodes.noFabricTarget,
   ExportProblemCodes.runtimeMissing,

@@ -79,6 +79,7 @@ import { CheckField, EventSelect, ModelField, ProblemsAt, ShapePreview, TextFiel
 import { projectPortals } from './portal-model';
 import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
+import { WeatheringSection } from './WeatheringSection';
 
 /** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
 const RulesSection = lazy(() => import('../rules/RulesSection'));
@@ -206,6 +207,7 @@ export function BlockStudio(props: StudioProps) {
       suggest={suggest}
       set={set}
       replace={(next) => onChange('', next)}
+      elementId={element.id}
     />
   );
 
@@ -784,6 +786,7 @@ export function BlockStudio(props: StudioProps) {
         problems={problems}
         suggest={suggest}
         set={set}
+        target={props.target}
       />
       {portal && (
         <Suspense
@@ -813,6 +816,13 @@ export function BlockStudio(props: StudioProps) {
         set={set}
       />
       <BlockTypePreview key={`preview-${element.id}`} project={project} element={element} />
+      <WeatheringSection
+        project={project}
+        element={element}
+        problems={problems}
+        suggest={suggest}
+        replace={(next) => onChange('', next)}
+      />
       {shaped ? (
         shapeSection
       ) : (

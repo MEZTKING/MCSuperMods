@@ -17,6 +17,7 @@ import {
   BLOCK_TYPE_MODEL_SLOTS,
   BLOCK_TYPES,
   type BlockTypeName,
+  blockGeneratedBlockIds,
   blockItemIdOf,
   blockStateFlag,
   blockTypeModels,
@@ -25,7 +26,16 @@ import {
   SHAPED_BLOCK_TYPES,
   SHAPED_ONLY_COMPONENTS,
   STATE_MODEL_SLOTS,
+  signGuiPicture,
+  signGuiTextureId,
+  VANILLA_PARITY_TYPES,
+  WATERLOGGABLE_BLOCK_TYPES,
+  WATERLOGGABLE_COMPONENT,
+  WAXABLE_COMPONENT,
+  WEATHERING_BLOCK_TYPES,
+  WEATHERING_COMPONENT,
 } from '@msm/plugin-blocks-items';
+import { textureAsset } from '../../components/ai-pictures/texture-write';
 import { isJsonObject } from '../../forms/pointer';
 import { bundlePreviewProject } from '../../preview/bundle-source';
 import { asObject, MODEL_KIND } from './blocks-items-model';
@@ -34,31 +44,51 @@ type JsonObject = { [key: string]: Json };
 
 export type { BlockTypeName };
 
+/** The plant types (ADR 0068 D1); their own fields come with the plant sections (B272). */
+export const PLANT_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
+  'crop',
+  'sapling',
+  'leaves',
+]);
+
 /**
- * The twenty types of ADR 0094 D1 (plants and food, furniture and lights). B441 only made the runtime and lowering accept
- * them; the Type picker does not offer them until B452 adds its two groups.
+ * The plant types of ADR 0094 D1 (ADR 0101 D1's group "Plants"); their own fields are in
+ * `PlantSection` (B452).
  */
-export const NEW_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
-  'cake',
+export const NEW_PLANT_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
   'berry_bush',
   'tall_plant',
   'potted_plant',
   'vine',
   'sea_pickle',
-  'carpet',
-  'layers',
+  'stem',
   'cocoa',
-  'candle',
+  'layers',
+]);
+
+/**
+ * The furniture and light types of ADR 0094 D1 (ADR 0101 D1's group "Furniture and lights");
+ * their own fields are in the Type section (cake's in `PlantSection`, with the food).
+ */
+export const FURNITURE_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
   'bed',
+  'cake',
   'ladder',
   'torch',
   'lantern',
   'chain',
+  'candle',
   'rod',
+  'carpet',
+  'scaffolding',
   'sign',
   'hanging_sign',
-  'stem',
-  'scaffolding',
+]);
+
+/** The twenty types of ADR 0094 D1 (B452 offers them in the Type picker's groups). */
+export const NEW_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
+  ...NEW_PLANT_BLOCK_TYPES,
+  ...FURNITURE_BLOCK_TYPES,
 ]);
 
 /**
@@ -68,16 +98,26 @@ export const NEW_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
 export const BUILDING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze(
   BLOCK_TYPES.filter(
     (type) =>
-      !['crop', 'sapling', 'leaves'].includes(type) &&
+      !(PLANT_BLOCK_TYPES as readonly string[]).includes(type) &&
       !(NEW_BLOCK_TYPES as readonly string[]).includes(type),
   ),
 );
 
-/** The plant types (ADR 0068 D1); their own fields come with the plant sections (B272). */
-export const PLANT_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
-  'crop',
-  'sapling',
-  'leaves',
+/** One group of the Type picker (ADR 0101 D1). */
+export interface BlockTypeGroup {
+  id: 'building' | 'plants' | 'furniture';
+  label: string;
+  types: readonly BlockTypeName[];
+}
+
+/**
+ * The Type picker's groups (ADR 0101 D1): the building types, then the plants (crop, sapling
+ * and leaves first) and the furniture and lights. Every type is in exactly one group.
+ */
+export const BLOCK_TYPE_GROUPS: readonly BlockTypeGroup[] = Object.freeze([
+  { id: 'building', label: 'Building blocks', types: BUILDING_BLOCK_TYPES },
+  { id: 'plants', label: 'Plants', types: [...PLANT_BLOCK_TYPES, ...NEW_PLANT_BLOCK_TYPES] },
+  { id: 'furniture', label: 'Furniture and lights', types: FURNITURE_BLOCK_TYPES },
 ]);
 
 /** Each type in words, as the Type picker shows it. */
@@ -100,26 +140,44 @@ export const BLOCK_TYPE_LABELS: Readonly<Record<BlockTypeName, string>> = Object
   sapling: 'Sapling',
   leaves: 'Leaves',
   portal: 'Portal',
-  cake: 'Cake',
-  berry_bush: 'Berry bush',
-  tall_plant: 'Tall plant',
-  potted_plant: 'Potted plant',
-  vine: 'Vine',
-  sea_pickle: 'Sea pickle',
+  cake: 'Cake (eaten a slice at a time)',
+  berry_bush: 'Berry bush (picked for its berries)',
+  tall_plant: 'Tall plant (two blocks high)',
+  potted_plant: 'Potted plant (a plant in a flower pot)',
+  vine: 'Vine (climbs walls and spreads)',
+  sea_pickle: 'Sea pickle (one to four, glows in water)',
   carpet: 'Carpet',
-  layers: 'Layers',
-  cocoa: 'Cocoa',
-  candle: 'Candle',
+  layers: 'Layers (one to eight, like snow)',
+  cocoa: 'Pod on a log (like cocoa)',
+  candle: 'Candle (one to four, lit with flint and steel)',
   bed: 'Bed',
   ladder: 'Ladder',
-  torch: 'Torch',
-  lantern: 'Lantern',
+  torch: 'Torch (stands or goes on a wall)',
+  lantern: 'Lantern (stands or hangs)',
   chain: 'Chain',
-  rod: 'Rod',
+  rod: 'Rod (like an end rod)',
   sign: 'Sign',
   hanging_sign: 'Hanging sign',
-  stem: 'Stem',
+  stem: 'Stem (grows a fruit, like melons)',
   scaffolding: 'Scaffolding',
+});
+
+/** The bed rules in words (ADR 0094 D2; the names are the target's `blocks.bedRules` keys). */
+export const BED_RULE_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  bed: 'Like a bed (sleep, set your spawn; explodes in the Nether and the End)',
+  straw_bed: 'Like a sleeping bag (the straw bed rule)',
+});
+
+/** The dye colours in words (the target's `blocks.dyeColours`). */
+export function dyeColourLabel(colour: string): string {
+  const words = colour.replaceAll('_', ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/** What bone meal does to a tall plant, in words. */
+export const TALL_PLANT_BONEMEAL_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  drop_copy: 'Drops a copy (like tall flowers)',
+  none: 'Nothing (like tall grass)',
 });
 
 /** The vanilla set types in words (ADR 0067 D2); unknown names show as written. */
@@ -175,7 +233,30 @@ const TYPE_FIELDS: Readonly<Partial<Record<BlockTypeName, readonly string[]>>> =
     'particles',
     'on_travel',
   ],
+  bed: ['rule', 'colour'],
+  cake: ['food', 'on_eat'],
+  berry_bush: ['berry', 'harvest', 'hurts'],
+  tall_plant: ['bonemeal'],
+  torch: ['particle'],
+  sign: ['wood_type'],
+  hanging_sign: ['wood_type'],
+  potted_plant: ['plant'],
+  stem: ['fruit', 'soil', 'fruit_soil'],
+  vine: ['spreads'],
+  cocoa: ['support'],
 });
+
+/**
+ * The defaults of the new types' required fields when a block becomes one (B452): a fruit and a
+ * potted plant Minecraft has (melon; short grass, which vanilla does not pot). A berry bush's
+ * `berry` is the block's own item ({@link withBlockType}).
+ */
+export const NEW_TYPE_DEFAULTS: Readonly<{ fruit: string; plant: string; berry: string }> =
+  Object.freeze({
+    fruit: 'minecraft:melon',
+    plant: 'minecraft:short_grass',
+    berry: 'minecraft:sweet_berries',
+  });
 
 /**
  * The required fields a block gets when it becomes a portal (ADR 0069 D5's rule): a frame no
@@ -238,6 +319,24 @@ export interface TextureSlot {
 }
 
 const ALL_SLOT: TextureSlot = { key: 'all', label: 'Every face' };
+/** The one picture of the single-picture types (B443: `{all, texture}`). */
+const PICTURE_SLOT: TextureSlot = { key: 'all', label: 'Picture' };
+const ITEM_SLOT = (fallback: string): TextureSlot => ({
+  key: 'item',
+  label: `Item picture (empty: ${fallback})`,
+});
+
+/** The types whose `textures` is a `stages` list, one picture per age (ADR 0068, ADR 0094 D10). */
+export const STAGE_TEXTURE_TYPES: readonly BlockTypeName[] = Object.freeze([
+  'crop',
+  'berry_bush',
+  'cocoa',
+]);
+
+/** The most stage pictures a `berry_bush` (four ages) or `cocoa` (three) takes. */
+export const STAGE_TEXTURE_COUNTS: Readonly<Partial<Record<BlockTypeName, number>>> = Object.freeze(
+  { berry_bush: 4, cocoa: 3 },
+);
 
 /**
  * The texture keys of each type's `textures` (the format's per-type texture structs), `all`
@@ -295,26 +394,57 @@ export const TEXTURE_SLOTS: Readonly<Record<BlockTypeName, readonly TextureSlot[
     sapling: [{ key: 'sapling', label: 'Sapling (also the item)' }],
     leaves: [{ key: 'all', label: 'Leaves (every face)' }],
     portal: [{ key: 'portal', label: 'Portal surface' }],
-    cake: [],
+    cake: [
+      { key: 'top', label: 'Top' },
+      { key: 'bottom', label: 'Bottom' },
+      { key: 'side', label: 'Sides' },
+      { key: 'inside', label: 'Cut face (inside)' },
+      ITEM_SLOT('the cake'),
+    ],
     berry_bush: [],
-    tall_plant: [],
-    potted_plant: [],
-    vine: [],
-    sea_pickle: [],
-    carpet: [],
-    layers: [],
+    tall_plant: [
+      { key: 'top', label: 'Upper half (also the item)' },
+      { key: 'bottom', label: 'Lower half' },
+    ],
+    potted_plant: [{ key: 'plant', label: "Plant in the pot (empty: the plant's own picture)" }],
+    vine: [PICTURE_SLOT],
+    sea_pickle: [PICTURE_SLOT],
+    carpet: [PICTURE_SLOT],
+    layers: [PICTURE_SLOT],
     cocoa: [],
-    candle: [],
-    bed: [],
-    ladder: [],
-    torch: [],
-    lantern: [],
-    chain: [],
-    rod: [],
-    sign: [],
-    hanging_sign: [],
-    stem: [],
-    scaffolding: [],
+    candle: [
+      { key: 'candle', label: 'Candle' },
+      { key: 'lit', label: 'Lit candle (empty: the candle)' },
+      ITEM_SLOT('the candle'),
+    ],
+    bed: [
+      { key: 'bed', label: "Bed picture (in vanilla's bed layout)" },
+      ITEM_SLOT("the bed's own shape"),
+    ],
+    ladder: [PICTURE_SLOT],
+    torch: [PICTURE_SLOT],
+    lantern: [PICTURE_SLOT, ITEM_SLOT('the picture')],
+    chain: [PICTURE_SLOT, ITEM_SLOT('the picture')],
+    rod: [PICTURE_SLOT],
+    sign: [
+      { key: 'all', label: 'Board and post' },
+      { key: 'sign', label: 'Writing screen picture (24 by 26; empty: the board)' },
+      ITEM_SLOT('the board'),
+    ],
+    hanging_sign: [
+      { key: 'all', label: 'Board and chains' },
+      { key: 'hanging_gui', label: 'Writing screen picture (16 by 16; empty: the board)' },
+      ITEM_SLOT('the board'),
+    ],
+    stem: [
+      { key: 'stem', label: 'Growing stem' },
+      { key: 'attached', label: 'Stem bent onto its fruit' },
+    ],
+    scaffolding: [
+      { key: 'top', label: 'Top' },
+      { key: 'side', label: 'Sides' },
+      { key: 'bottom', label: 'Bottom (also the sides when not standing)' },
+    ],
   },
 );
 
@@ -357,7 +487,37 @@ const MODEL_SLOT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   ns: 'Along x (seen from north and south)',
   ew: 'Along z (seen from east and west)',
   [ITEM_MODEL_SLOT]: 'Block item',
+  head: 'Head (the pillow end)',
+  foot: 'Foot',
+  cake: 'Whole',
+  potted: 'In the pot',
+  hanging: 'Hanging',
+  stable: 'Standing (supported)',
+  unstable: 'Not supported',
+  attached: 'Bent onto its fruit',
+  ladder: 'Ladder',
+  chain: 'Chain',
+  rod: 'Rod',
+  vine: 'Vine',
+  carpet: 'Carpet',
 });
+
+/** Slot words that depend on the type (`wall` of a torch or sign is not a fence gate's). */
+const TYPE_MODEL_SLOT_LABELS: Readonly<Partial<Record<BlockTypeName, Record<string, string>>>> =
+  Object.freeze({
+    torch: { torch: 'Standing', wall: 'On a wall' },
+    lantern: { lantern: 'Standing' },
+    sign: { wall: 'On a wall' },
+    hanging_sign: { wall: 'On a wall' },
+    tall_plant: { bottom: 'Lower half', top: 'Upper half' },
+  });
+
+const COUNT_WORDS: Readonly<Record<string, string>> = {
+  one: 'One',
+  two: 'Two',
+  three: 'Three',
+  four: 'Four',
+};
 
 /**
  * The texture slots of the block states a container (`open`) or machine (`lit`) adds (ADR 0076
@@ -391,6 +551,16 @@ function stateSlotShown(
  */
 export function textureSlotsOf(type: BlockTypeName, data: Json | undefined): TextureSlot[] {
   const slots = [...TEXTURE_SLOTS[type]];
+  // A key the element sets that the type's list leaves out (a single-picture type's `texture`)
+  // shows by its name, so it can be seen and cleared.
+  if (slots.length > 0 && !STAGE_TEXTURE_TYPES.includes(type)) {
+    for (const key of Object.keys(asObject(asObject(data).textures))) {
+      const stateKeys = Object.values(STATE_TEXTURE_SLOTS).map((slot) => slot.key);
+      if (!slots.some((slot) => slot.key === key) && !stateKeys.includes(key)) {
+        slots.push({ key, label: key.replaceAll('_', ' ') });
+      }
+    }
+  }
   if (!slots.some((slot) => slot.key === 'front')) return slots;
   for (const state of STATE_MODEL_SLOTS) {
     const slot = STATE_TEXTURE_SLOTS[state];
@@ -423,10 +593,34 @@ function isStateSlot(type: BlockTypeName, slot: string): boolean {
   );
 }
 
-/** A model slot in words: `stage3` is "Stage 3"; unknown slots show with spaces. */
-export function modelSlotLabel(slot: string): string {
+/**
+ * A model slot in words: `stage3` is "Stage 3", `slice2` "2 slices eaten", `layers4` "4
+ * layers", `rot1` "Turned a sixteenth", `one_lit` "One, lit"; `type` picks the words a type
+ * gives a shared slot name (a torch's `wall` is "On a wall"). Unknown slots show with spaces.
+ */
+export function modelSlotLabel(slot: string, type?: BlockTypeName): string {
+  const own = type === undefined ? undefined : TYPE_MODEL_SLOT_LABELS[type]?.[slot];
+  if (own !== undefined) return own;
   const stage = /^stage(\d+)$/.exec(slot);
   if (stage !== null) return `Stage ${stage[1]}`;
+  const slice = /^slice(\d)$/.exec(slot);
+  if (slice !== null) return `${slice[1]} ${slice[1] === '1' ? 'slice' : 'slices'} eaten`;
+  const layers = /^layers(\d)$/.exec(slot);
+  if (layers !== null) return `${layers[1]} ${layers[1] === '1' ? 'layer' : 'layers'}`;
+  const rotation = /^(attached_)?rot(\d)$/.exec(slot);
+  if (rotation !== null) {
+    const turn = ['Straight', 'Turned a sixteenth', 'Turned an eighth', 'Turned three sixteenths'][
+      Number(rotation[2])
+    ];
+    return rotation[1] === undefined ? (turn ?? slot) : `Under a block, ${turn?.toLowerCase()}`;
+  }
+  const count = /^(dead_)?(one|two|three|four)(_lit)?$/.exec(slot);
+  if (count !== null) {
+    const words = COUNT_WORDS[count[2] ?? ''] ?? slot;
+    if (count[1] !== undefined) return `${words}, out of water`;
+    if (count[3] !== undefined) return `${words}, lit`;
+    return words;
+  }
   return MODEL_SLOT_LABELS[slot] ?? slot.replaceAll('_', ' ');
 }
 
@@ -486,6 +680,8 @@ export interface TypeChangeOptions {
   woodTypes?: readonly string[] | undefined;
   /** The texture to carry to the new type ({@link appearanceTexture}). */
   texture?: string | undefined;
+  /** The element's id: a new berry bush's `berry` is its own block item (B452). */
+  blockId?: string | undefined;
 }
 
 /**
@@ -530,10 +726,23 @@ export function withBlockType(
   if (!isShapedType(next) && isJsonObject(out.components)) {
     const components: JsonObject = { ...out.components };
     for (const id of SHAPED_ONLY_COMPONENTS) delete components[id];
+    // ADR 0094 D4: the new types are never stripped by axes.
+    if (VANILLA_PARITY_TYPES.includes(next)) delete components['msm:strippable'];
     if (Object.keys(components).length === 0) delete out.components;
     else out.components = components;
     // A machine's recipes go with `msm:machine` (ADR 0075 D8): the type cannot lower them.
     delete out.recipes;
+  }
+  // Waterlogging and weathering stay only on the types that take them (ADR 0094 D7, D8).
+  if (isJsonObject(out.components)) {
+    const components: JsonObject = { ...out.components };
+    if (!WATERLOGGABLE_BLOCK_TYPES.includes(next)) delete components[WATERLOGGABLE_COMPONENT];
+    if (!WEATHERING_BLOCK_TYPES.includes(next)) {
+      delete components[WEATHERING_COMPONENT];
+      delete components[WAXABLE_COMPONENT];
+    }
+    if (Object.keys(components).length === 0) delete out.components;
+    else out.components = components;
   }
   const preset = typeof out.loot === 'string' ? out.loot : undefined;
   const presetType = Object.entries(TYPE_LOOT_PRESETS).find(([, value]) => value === preset)?.[0];
@@ -547,6 +756,18 @@ export function withBlockType(
     out.wood_type = options.woodTypes?.[0] ?? 'oak';
   }
   if (next === 'sapling' && typeof out.tree !== 'string') out.tree = 'minecraft:oak';
+  if (next === 'stem' && typeof out.fruit !== 'string') out.fruit = NEW_TYPE_DEFAULTS.fruit;
+  if (next === 'potted_plant') {
+    if (typeof out.plant !== 'string') out.plant = NEW_TYPE_DEFAULTS.plant;
+    // A potted plant has no item unless one is given (B448), as a portal.
+    if (out.item === false || (isJsonObject(out.item) && Object.keys(out.item).length === 0)) {
+      delete out.item;
+    }
+  }
+  if (next === 'berry_bush' && typeof out.berry !== 'string') {
+    const own = options.blockId === undefined ? undefined : blockItemIdOf(options.blockId, out);
+    out.berry = own ?? NEW_TYPE_DEFAULTS.berry;
+  }
   if (next === 'portal') {
     if (isJsonObject(out.components)) {
       const components: JsonObject = {};
@@ -568,7 +789,7 @@ export function withBlockType(
   const texture = options.texture;
   const keepsModel = acceptsSingleModel(next) && typeof out.model === 'string' && out.model !== '';
   if (next !== 'block' && texture !== undefined && !keepsModel) {
-    if (next === 'crop') out.textures = { stages: [texture] };
+    if (STAGE_TEXTURE_TYPES.includes(next)) out.textures = { stages: [texture] };
     else out.textures = { [TEXTURE_SLOTS[next][0]?.key ?? 'all']: texture };
   }
   return out;
@@ -684,4 +905,82 @@ export function textureAssetPath(textureId: string): string | undefined {
   const { namespace, path } = splitId(textureId);
   if (namespace === 'minecraft' || path === '') return undefined;
   return `assets/${namespace}/textures/${path}.png`;
+}
+
+/** A companion block an element makes (ADR 0094 D3), with its words. */
+export interface CompanionRow {
+  /** The generated id, `<id>_wall` or `<id>_attached`. */
+  id: string;
+  /** What the companion is, in words ("the torch on a wall"). */
+  words: string;
+}
+
+/**
+ * The companion blocks of an `msm:block` element (`blockGeneratedBlockIds`, B448), shown as part
+ * of the element ("Also makes: ..."): the wall block of a torch, sign or hanging sign and the
+ * attached stem. Empty for the other types.
+ */
+export function companionRows(element: { id: string; data: Json | undefined }): CompanionRow[] {
+  const type = blockTypeOfData(element.data);
+  const thing =
+    type === undefined ? 'block' : BLOCK_TYPE_LABELS[type].split(' (')[0]?.toLowerCase();
+  return blockGeneratedBlockIds(element.id, element.data).map((id) => ({
+    id,
+    words: id.endsWith('_attached') ? 'the stem bent onto a grown fruit' : `the ${thing} on a wall`,
+  }));
+}
+
+/** The sign types (ADR 0094 D6), whose writing screen needs a picture of its own. */
+export type SignType = 'sign' | 'hanging_sign';
+
+/** Whether `type` is a sign type. */
+export function isSignType(type: BlockTypeName | undefined): type is SignType {
+  return type === 'sign' || type === 'hanging_sign';
+}
+
+/** The texture slot of each sign type's writing screen picture (B443). */
+export const SIGN_GUI_SLOTS: Readonly<Record<SignType, string>> = Object.freeze({
+  sign: 'sign',
+  hanging_sign: 'hanging_gui',
+});
+
+/** Where the writing screen picture is copied from and to (an asset of the project). */
+export interface SignPictureCopy {
+  /** The chosen picture's texture id. */
+  picture: string;
+  /** The chosen picture's asset (`textures/<path>.png` in its namespace). */
+  from: { namespace: string; path: string };
+  /** The asset at `signGuiTextureId` the game reads. */
+  to: { namespace: string; path: string };
+  /** The element data with the texture set. */
+  data: JsonObject;
+}
+
+/**
+ * What setting the texture slot `key` of a sign or hanging sign to `value` copies (ADR 0094 D6
+ * amended at B448): when the writing screen picture (`sign` or `hanging_gui`, else `all`) is
+ * chosen and is a project picture, it is copied to `signGuiTextureId(blockId, type)`, the asset
+ * the game reads. `undefined` for other types and slots, for a vanilla picture (never copied
+ * into the project) and when the `all` picture changes while the writing screen has its own.
+ */
+export function signPictureCopy(
+  element: { id: string; data: Json | undefined },
+  key: string,
+  value: string,
+): SignPictureCopy | undefined {
+  const type = blockTypeOfData(element.data);
+  if (!isSignType(type) || value === '') return undefined;
+  const guiSlot = SIGN_GUI_SLOTS[type];
+  const source = asObject(element.data);
+  const textures = asObject(source.textures);
+  if (key !== guiSlot && key !== 'all') return undefined;
+  const ownGui = typeof textures[guiSlot] === 'string' && textures[guiSlot] !== '';
+  if (key === 'all' && ownGui) return undefined;
+  const data: JsonObject = { ...source, textures: { ...textures, [key]: value } };
+  const picture = signGuiPicture(data, type);
+  if (picture === undefined) return undefined;
+  const from = textureAsset(picture);
+  const to = textureAsset(signGuiTextureId(element.id, type));
+  if (from === null || to === null) return undefined;
+  return { picture, from, to, data };
 }
