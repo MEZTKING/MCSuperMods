@@ -328,6 +328,8 @@ export const EVENT_FIELDS: Readonly<Record<string, readonly (readonly string[])[
       ['msm:on_use_on_block', 'event'],
       ['msm:while_held', 'event'],
       ['msm:while_worn', 'event'],
+      ['msm:item_inventory', 'on_open'],
+      ['msm:item_inventory', 'on_close'],
     ],
     [ENTITY_KIND]: [
       ['msm:on_hurt', 'event'],

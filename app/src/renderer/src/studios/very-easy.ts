@@ -62,6 +62,7 @@ export const ITEM_VERY_EASY_SECTIONS: readonly string[] = [
   'item-food',
   'item-tool',
   'item-throwable',
+  'item-inventory',
 ];
 
 /** The Effect Studio's sections in Very easy. */
