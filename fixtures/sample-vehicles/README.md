@@ -66,7 +66,7 @@ Do the whole list twice, once per version.
 
 and one each of red, blue and yellow dye. In every vehicle: right-click (use) gets in, the movement keys drive, sneak gets out, and **hitting the empty vehicle while sneaking picks it up**. Look at it from outside too (F5 for third person).
 
-Things that are limits of this batch, not faults, are marked "known limit" with their number from the limits table of `docs/PLAN-vehicles-and-client.md` (V1 to V17; they move into ADR 0090's findings at close). Report them only if they look different from what is written.
+Things that are limits of this batch, not faults, are marked "known limit" with their number from the limits table in [ADR 0090](../../docs/adr/0090-vehicles.md)'s findings (V1 to V17). Report them only if they look different from what is written.
 
 ### Loading
 

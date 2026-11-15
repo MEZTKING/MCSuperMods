@@ -137,7 +137,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Mobs only wander** | No attacks, targets, taming, breeding, riding or boss fights. A hit removes a mob; there is no health or death. |
 | **No commands or functions** | Nothing runs commands or functions. |
 | **Vehicles and keys are rough** | Vehicles drive by our own simulation and fire nothing you can see; keys and on-screen elements follow the rules above, with the exceptions listed there. |
-| **No scripts or rules yet** | Your events, rules and scripts do not run in Try it yet; a later version runs plain rules first. Use **Play**. |
+| **Plain rules only, no scripts** | Your events and plain rules run (see **What happened**). Rules with conditions, repeats or waits, and your scripts, do not run in Try it yet: **What happened** names them with "Only in Minecraft". Use **Play**. |
 | **No redstone** | **Power** changes one block's own picture; nothing travels along dust, and powering a block runs nothing. |
 | **No light, shadows or liquids** | A glowing block looks the same lit or unlit around it. Water and lava in a ground are drawn as plain see-through blocks: they do not flow, and you walk through them as through air. |
 | **No survival** | No health, hunger, damage, armour, mining speed, tool wear, drops or loot. Blocks break at once and drop nothing. |

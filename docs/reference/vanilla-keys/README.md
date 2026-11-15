@@ -1,6 +1,6 @@
 # Vanilla key bindings (B406 dumps)
 
-Dumped on 2026-11-14 by the B406 spike (`docs/PLAN-vehicles-and-client.md`) in the running client, headless on Linux, for
+Dumped on 2026-11-14 by the B406 spike (vehicles batch; answers in [ADR 0090](../../adr/0090-vehicles.md)'s findings) in the running client, headless on Linux, for
 26.3 and 26.4-snapshot-7 (Fabric Loader reports `26.4-alpha.7`). They are the source of `TargetFacts.controls` (ADR 0088
 D9, brief B410); nothing reads them at build time.
 
