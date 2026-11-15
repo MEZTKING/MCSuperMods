@@ -35,6 +35,7 @@ import { mat4 } from 'gl-matrix';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import { normaliseId } from '../../preview/model-chain';
+import { TRYIT_FALLBACK_MODELS } from '../blocks2/fallback-parents';
 import { type VehicleDrawSource, VehiclePass } from '../vehicles/vehicle-pass';
 import {
   boxInFrustum,
@@ -609,7 +610,16 @@ type Status = { state: 'loading' } | { state: 'ready' } | { state: 'error'; mess
 
 /** Draws the test area; see the module comment. */
 export default function TryItCanvas(props: TryItCanvasProps) {
-  const { grid, files, folders, vanilla, vanillaJson, fallbackModels, smaller = false } = props;
+  const {
+    grid,
+    files,
+    folders,
+    vanilla,
+    vanillaJson,
+    // MSM's own parents, with those of the twenty block types (B463).
+    fallbackModels = TRYIT_FALLBACK_MODELS,
+    smaller = false,
+  } = props;
   const active = props.active ?? true;
   const hostRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -696,7 +706,7 @@ export default function TryItCanvas(props: TryItCanvasProps) {
         folders,
         vanilla,
         ...(vanillaJson === undefined ? {} : { vanillaJson }),
-        ...(fallbackModels === undefined ? {} : { fallbackModels }),
+        fallbackModels,
         ...(readProjectAsset === undefined ? {} : { readProjectAsset }),
       })
         .then((prepared) => {

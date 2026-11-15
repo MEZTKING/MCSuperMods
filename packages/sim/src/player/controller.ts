@@ -1,10 +1,17 @@
 /**
  * The Try it player (plan B388): position, velocity, standing on the ground, walking, jumping,
  * sneaking and flying, stepped 20 times a second, with the values the view needs to draw in
- * between ticks. Movement is approximate (ADR 0085 D5, limit L2): no sprinting, no water, ladders,
- * ice or slime, and sneaking is slower walking without edge safety. Pure and deterministic.
+ * between ticks. Movement is approximate (ADR 0085 D5, limit L2): no sprinting, no water, ice or
+ * slime, and sneaking is slower walking without edge safety; ladders, vines and scaffolding are
+ * climbed (B463, `blocks/types2/climb.ts`). Pure and deterministic.
  */
 
+import {
+  type ClimbCheck,
+  climbAfterMove,
+  climbingVelocity,
+  onClimbable,
+} from '../blocks/types2/climb.js';
 import type { BlockPos, BlockShapes, BlockState, PlayerAction, Vec3 } from '../types.js';
 import {
   type BlockLookup,
@@ -121,6 +128,7 @@ export class PlayerController {
   private yawDeg = 0;
   private pitchDeg = 0;
   private ticks = 0;
+  private climbable: ClimbCheck = () => false;
 
   constructor(lookup: BlockLookup, shapes: BlockShapes, start: Vec3) {
     this.lookup = lookup;
@@ -180,6 +188,16 @@ export class PlayerController {
     this.prevPos = { ...position };
     this.vel = { x: 0, y: 0, z: 0 };
     this.ground = false;
+  }
+
+  /** Which blocks can be climbed (B463: ladders, vines, scaffolding); none by default. */
+  setClimbable(check: ClimbCheck): void {
+    this.climbable = check;
+  }
+
+  /** Whether the player is on something climbable now (and not flying). */
+  get climbing(): boolean {
+    return !this.fly && onClimbable(this.climbable, playerBox(this.pos));
   }
 
   /** Turns flying on or off directly (the `toggleFly` input does the same once a press). */
@@ -242,6 +260,8 @@ export class PlayerController {
       vz += wz * accel * factor;
       friction = this.ground ? GROUND_FRICTION : AIR_FRICTION;
     }
+    const climbing = this.climbing;
+    if (climbing) ({ vx, vy, vz } = climbingVelocity(vx, vy, vz, this.sneak));
 
     const moved = moveWithStep(
       this.lookup,
@@ -257,6 +277,7 @@ export class PlayerController {
     if (moved.stoppedX) vx = 0;
     if (moved.stoppedZ) vz = 0;
     if (moved.stoppedY) vy = 0;
+    if (climbing) vy = climbAfterMove(vy, moved.stoppedX || moved.stoppedZ, input.jump);
     this.ground = moved.landed;
     // Coming down onto the ground ends flying, as in the game's creative flight.
     if (this.fly && this.ground) this.fly = false;

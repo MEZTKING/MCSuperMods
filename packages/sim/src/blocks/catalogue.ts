@@ -24,6 +24,9 @@ import {
   type ShapeFacts,
   supportsCentre,
 } from './shapes.js';
+import { types2Entries } from './types2/catalogue.js';
+import { isType2, type SimBlockType2, type Types2Facts } from './types2/facts.js';
+import { type WeatheringFacts, weatheringOf } from './weathering.js';
 
 /** The block types of the `msm:block` format (ADR 0067, 0068, 0077), in the format's order. */
 export const SIM_BLOCK_TYPES = Object.freeze([
@@ -47,8 +50,11 @@ export const SIM_BLOCK_TYPES = Object.freeze([
   'portal',
 ] as const);
 
-/** A block type, or `prop` for a block the simulation only draws (ADR 0085 L10). */
-export type SimBlockType = (typeof SIM_BLOCK_TYPES)[number] | 'prop';
+/**
+ * A block type (with the twenty of vanilla parity 2, B463), or `prop` for a block the simulation
+ * only draws (ADR 0085 L10).
+ */
+export type SimBlockType = (typeof SIM_BLOCK_TYPES)[number] | SimBlockType2 | 'prop';
 
 /**
  * The set types hands cannot open (ADR 0067 D2: `iron`, and `gold`, which is redstone-only
@@ -110,6 +116,12 @@ export interface CatalogueBlock extends ShapeFacts {
   readonly woodenFence?: boolean;
   /** Whether the lowered files hold a block state definition for it. */
   readonly hasBlockstate: boolean;
+  /** What the twenty types of vanilla parity 2 know beyond the state (B463). */
+  readonly types2?: Types2Facts;
+  /** Its weathering (`msm:weathering`, B463). */
+  readonly weathering?: WeatheringFacts;
+  /** Whether players climb it (`#minecraft:climbable` or a climbable type, B463). */
+  readonly climbable?: boolean;
   /** Where log lines about it point. */
   readonly origin: SimOrigin;
 }
@@ -329,7 +341,7 @@ function shapeOf(definition: JsonObject): { boxes: PixelBox[]; collision: boolea
 }
 
 /** Merges the type's properties with the ones the block state definition names. */
-function mergeProperties(
+export function mergeProperties(
   table: PropertyTable,
   fromBlockstate: Map<string, string[]>,
 ): { properties: Record<string, readonly string[]>; defaults: Record<string, string> } {
@@ -395,7 +407,10 @@ export class BlockCatalogue implements BlockShapes {
 
   /** Adds a project block (used by {@link buildCatalogue}). */
   addProjectBlock(block: CatalogueBlock): void {
-    if (!this.blocks.has(block.id)) this.projectIds.push(block.id);
+    // Companions (a wall torch, an attached stem, B463) are blocks but not offered on their own.
+    if (!this.blocks.has(block.id) && block.types2?.companion === undefined) {
+      this.projectIds.push(block.id);
+    }
     this.blocks.set(block.id, block);
   }
 
@@ -591,6 +606,9 @@ export function buildCatalogue(
   const wooden = new Set(
     tagValues(readJsonFile(files, `data/minecraft/${tagsFolder}/block/wooden_fences.json`)),
   );
+  const climbable = new Set(
+    tagValues(readJsonFile(files, `data/minecraft/${tagsFolder}/block/climbable.json`)),
+  );
   const langs = new Map<string, JsonObject>();
   const nameOf = (id: string, namespace: string, path: string): string => {
     let lang = langs.get(namespace);
@@ -629,6 +647,30 @@ export function buildCatalogue(
       continue;
     }
     const rawType = definition.type ?? 'block';
+    if (typeof rawType === 'string' && isType2(rawType)) {
+      // The twenty types of vanilla parity 2 and their companions (B463).
+      for (const entry of types2Entries({
+        id,
+        displayName,
+        type: rawType,
+        definition,
+        origin,
+        blockstateOf: (blockId) =>
+          readJsonFile(
+            files,
+            `assets/${namespace}/${blockstateFolder}/${blockId.slice(namespace.length + 1)}.json`,
+          ),
+        blockstateProperties,
+        merge: mergeProperties,
+        climbable: (blockId) => climbable.has(blockId),
+      })) {
+        const weathering = entry.id === id ? weatheringOf(definition) : undefined;
+        catalogue.addProjectBlock(
+          weathering === undefined ? entry : Object.freeze({ ...entry, weathering }),
+        );
+      }
+      continue;
+    }
     if (typeof rawType !== 'string' || !(SIM_BLOCK_TYPES as readonly string[]).includes(rawType)) {
       asProp(`has a block type the preview does not know (${JSON.stringify(rawType)})`);
       continue;
@@ -665,6 +707,7 @@ export function buildCatalogue(
     const maxAge = type === 'crop' ? cropMaxAge(definition) : undefined;
     const weighted = definition.weighted_max;
     const pressTicks = definition.press_ticks;
+    const weathering = weatheringOf(definition);
     const block: CatalogueBlock = {
       id,
       displayName,
@@ -679,6 +722,8 @@ export function buildCatalogue(
           !HAND_CLOSED_SET_TYPES.includes(setType)),
       hasBlockstate: blockstate !== undefined,
       origin,
+      ...(climbable.has(id) ? { climbable: true } : {}),
+      ...(weathering === undefined ? {} : { weathering }),
       ...(setType !== undefined && needsSetType ? { setType } : {}),
       ...(woodType !== undefined && type === 'fence_gate' ? { woodType } : {}),
       ...(type === 'button' && setType !== undefined

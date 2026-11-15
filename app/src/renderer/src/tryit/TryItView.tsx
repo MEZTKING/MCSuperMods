@@ -51,6 +51,8 @@ import type { TryItWorldArea, TryItWorldsPlatform } from '../../../shared/platfo
 import { Button } from '../components/ui/Button';
 import type { ResourceFolders, VanillaAssetReader } from '../preview/model-chain';
 import { useUiStore } from '../store/ui-store';
+import { Blocks2Overlay, Blocks2Panel, type ChatState } from './blocks2/Blocks2Overlay';
+import { bagThings } from './blocks2/things';
 import { Chips } from './Chips';
 import { webAudioOut } from './effects';
 import { GroundPicker } from './GroundPicker';
@@ -111,6 +113,13 @@ export const CARD_LINES = [
 ] as const;
 /** The clock speeds offered. */
 export const CLOCK_SPEEDS = [0.25, 0.5, 1, 2, 4, 8] as const;
+/** The tools' hints (the Water and Explode tools, B463). */
+const TOOL_TITLES: Readonly<Record<string, string>> = {
+  grow: 'Grow the crop, sapling, bush, pod or stem you point at by one stage',
+  power: 'Turn the powered or lit picture of the block you point at on or off',
+  water: 'Put water into the block you point at, or take it out, when it can hold water',
+  explode: 'Set off an explosion at the block you point at (your explosion rules hear it)',
+};
 /** How many vanilla props the picker lists at once. */
 const PROP_LIST_LIMIT = 60;
 
@@ -312,6 +321,8 @@ export default function TryItView(props: TryItViewProps) {
   const vanillaStatesRef = useRef(vanillaStates);
   vanillaStatesRef.current = vanillaStates;
   const [groundsOpen, setGroundsOpen] = useState<GroundKind | null>(null);
+  // The chat box (B463): closed, or open with its first line.
+  const [chat, setChat] = useState<ChatState>(null);
   const [lastQuick, setLastQuick] = useState<QuickWorldOptions | undefined>(undefined);
   const worlds = props.worlds === undefined ? defaultWorlds() : props.worlds;
 
@@ -411,6 +422,12 @@ export default function TryItView(props: TryItViewProps) {
         : [
             ...projectThings(area.source.catalogue, area.source.mobs, area.files, folders),
             ...vehicleThings(area.source.vehicles.types, area.files, folders),
+            ...bagThings(
+              area.source.parity2.bagItems,
+              (id) => area.source.itemName(id),
+              area.files,
+              folders,
+            ),
           ],
     // The catalogues change with the files.
     [area, folders, area?.files],
@@ -483,6 +500,12 @@ export default function TryItView(props: TryItViewProps) {
       }
       case 'use': {
         const at = pointed();
+        if (at === null && held1?.kind === 'bag') {
+          // A bag opens from the hand, pointed at nothing too (B463).
+          area.source.useItem(held1.id);
+          rerender();
+          return;
+        }
         if (at === null) {
           log('Nothing is in reach: point at a block or the floor.');
           return;
@@ -551,6 +574,14 @@ export default function TryItView(props: TryItViewProps) {
     if (area !== null && vehicleKey(event, true, area.source.vehicles)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target !== event.currentTarget) return;
+    if ((event.code === 'KeyT' || event.code === 'Slash') && !event.repeat) {
+      // The chat box, as the game's T and / (B463).
+      event.preventDefault();
+      held.current.clear();
+      area?.source.controls.keys.releaseAll();
+      setChat({ start: event.code === 'Slash' ? '/' : '' });
+      return;
+    }
     if (MOVEMENT_CODES.has(event.code)) {
       event.preventDefault();
       if (event.code === 'Space' && !event.repeat) {
@@ -972,6 +1003,20 @@ export default function TryItView(props: TryItViewProps) {
               />
             )}
             {screenOpen !== null && <MockScreen screen={screenOpen} onClose={closeScreen} />}
+            {area !== null && (
+              <Blocks2Overlay
+                area={area}
+                pointed={(() => {
+                  const at = pointed();
+                  return at?.kind === 'block' && at.block.pos.y >= 0 ? at.block.pos : null;
+                })()}
+                heldSlot={selected}
+                chat={chat}
+                onCloseChat={() => setChat(null)}
+                onChanged={rerender}
+                onFocusBack={() => wrapperRef.current?.focus({ preventScroll: true })}
+              />
+            )}
             {groundsOpen !== null && area !== null && (
               <GroundPicker
                 initial={groundsOpen}
@@ -1139,11 +1184,7 @@ export default function TryItView(props: TryItViewProps) {
                 key={tool.id}
                 type="button"
                 data-testid={`tryit-tool-${tool.id}`}
-                title={
-                  tool.id === 'grow'
-                    ? 'Grow the crop or sapling you point at by one stage'
-                    : 'Turn the powered or lit picture of the block you point at on or off'
-                }
+                title={TOOL_TITLES[tool.id]}
                 onClick={() => useTool(tool.id)}
               >
                 {tool.label}
@@ -1157,6 +1198,13 @@ export default function TryItView(props: TryItViewProps) {
               Clear the area
             </Button>
           </div>
+          {area !== null && (
+            <Blocks2Panel
+              area={area}
+              onOpenChat={() => setChat({ start: '/' })}
+              onChanged={rerender}
+            />
+          )}
           <fieldset className="flex flex-col gap-1 rounded border border-border p-1">
             <legend className="px-1 text-xs text-muted">Ground</legend>
             <span data-testid="tryit-ground-current" data-ground={area?.ground ?? 'grid'}>

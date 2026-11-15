@@ -14,6 +14,8 @@ import {
   isHorizontal,
   opposite,
 } from './directions.js';
+import { isType2, type Types2Facts } from './types2/facts.js';
+import { types2Collision, types2Outline } from './types2/shapes.js';
 
 /** A box in pixels, 0 to 16 inside the block. */
 export type PixelBox = readonly [number, number, number, number, number, number];
@@ -249,6 +251,8 @@ export interface ShapeFacts {
   readonly shapeCollision?: boolean;
   /** A crop's outline height per age, in pixels. */
   readonly stageHeights?: readonly number[];
+  /** The facts of the twenty types of vanilla parity 2 (B463). */
+  readonly types2?: Types2Facts;
 }
 
 /** The `msm:shape` boxes turned to the state's axis or facing (ADR 0067 D3). */
@@ -265,6 +269,7 @@ function msmShapeBoxes(facts: ShapeFacts, state: BlockState): readonly Box[] {
 /** The outline of a block of a type in a state. */
 export function outlineBoxes(facts: ShapeFacts, state: BlockState): readonly Box[] {
   if (facts.shapeBoxes !== undefined) return msmShapeBoxes(facts, state);
+  if (isType2(facts.type)) return types2Outline(facts.type, facts.types2, state);
   switch (facts.type) {
     case 'slab':
       return slabBoxes(state);
@@ -305,6 +310,7 @@ export function collisionBoxes(facts: ShapeFacts, state: BlockState): readonly B
   if (facts.shapeBoxes !== undefined) {
     return facts.shapeCollision === false ? NO_BOXES : msmShapeBoxes(facts, state);
   }
+  if (isType2(facts.type)) return types2Collision(facts.type, facts.types2, state);
   switch (facts.type) {
     case 'fence':
       return fenceBoxes(state, 24);

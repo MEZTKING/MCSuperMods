@@ -20,6 +20,8 @@ import {
   opposite,
 } from './directions.js';
 import { type BlockChange, connectedState, isSupported, updateNeighbours } from './neighbours.js';
+import { isType2 } from './types2/facts.js';
+import { otherHalf, placeType2, waterloggedIfInWater } from './types2/placement.js';
 
 /** A request to place a block: the clicked block and face, the hit point and the look. */
 export interface PlaceInput {
@@ -34,6 +36,8 @@ export interface PlaceInput {
   /** Where the player looks, in degrees (yaw 0 looks south, 90 west; negative pitch is up). */
   readonly yaw: number;
   readonly pitch: number;
+  /** Whether the player sneaks (a hanging sign hangs attached, B463). */
+  readonly sneak?: boolean;
 }
 
 /** What placing did: the blocks set, in order, or why nothing was placed. */
@@ -203,6 +207,14 @@ export function placeBlock(
   }
   const clicked = world.get(input.pos);
 
+  // The twenty types of vanilla parity 2 place by their own rules (B463).
+  if (isType2(block.type)) {
+    const placing = placeType2(world, catalogue, block, block.type, input);
+    return placing.placed
+      ? finish(world, catalogue, block, placing.sets)
+      : { placed: false, reason: placing.reason };
+  }
+
   // A slab doubles in place when its other half is clicked.
   if (
     block.type === 'slab' &&
@@ -247,7 +259,11 @@ export function placeBlock(
     ]);
   }
 
-  const connected = connectedState(world, catalogue, at, state);
+  const connected = waterloggedIfInWater(
+    catalogue,
+    connectedState(world, catalogue, at, state),
+    there,
+  );
   if (!isSupported(world, catalogue, at, connected)) {
     return { placed: false, reason: `${block.displayName} cannot stand there` };
   }
@@ -270,6 +286,12 @@ function finish(
   return { placed: true, pos: first.pos, changes };
 }
 
+/** The water a broken waterlogged block leaves (a still water prop; it does not flow, Q29). */
+const WATER_LEFT: BlockState = Object.freeze({
+  name: 'minecraft:water',
+  properties: Object.freeze({ level: '0' }),
+});
+
 /**
  * Breaks the block at a position at once (no mining time and no drops, ADR 0085 L8): a door
  * goes with both halves, then the neighbours are brought up to date. Returns every change in
@@ -283,7 +305,13 @@ export function breakBlock(
   const state = world.get(pos);
   if (state === null) return [];
   const removed: BlockPos[] = [pos];
-  if (catalogue.blockFor(state.name)?.type === 'door') {
+  const type = catalogue.blockFor(state.name)?.type;
+  if (type !== undefined && isType2(type)) {
+    // A bed's other part, a tall plant's other half (B463).
+    const other = otherHalf(world, type, pos, state);
+    if (other !== undefined) removed.push(other);
+  }
+  if (type === 'door') {
     const other = offset(pos, state.properties.half === 'upper' ? 'down' : 'up');
     const otherState = world.get(other);
     if (otherState?.name === state.name && otherState.properties.half !== state.properties.half) {
@@ -292,7 +320,9 @@ export function breakBlock(
   }
   const changes: BlockChange[] = [];
   for (const at of removed) {
-    if (world.set(at, null)) changes.push({ pos: at, state: null });
+    // A block holding water leaves the water behind (B449).
+    const left = world.get(at)?.properties.waterlogged === 'true' ? WATER_LEFT : null;
+    if (world.set(at, left)) changes.push({ pos: at, state: left });
   }
   for (const at of removed) changes.push(...updateNeighbours(world, catalogue, at));
   return changes;

@@ -130,6 +130,7 @@ export const TRYIT_KEYS: readonly { readonly keys: string; readonly does: string
   { keys: 'E', does: 'Choose what is in the slot' },
   { keys: 'G', does: 'Grow the block you point at' },
   { keys: 'P', does: 'Power the block you point at' },
+  { keys: 'T or /', does: 'Open the chat box to type a command' },
   { keys: 'Z', does: 'Pause the clock, or start it again' },
   { keys: 'N', does: 'Move the paused clock on by one twentieth of a second' },
   { keys: 'F6', does: 'Open Try it' },

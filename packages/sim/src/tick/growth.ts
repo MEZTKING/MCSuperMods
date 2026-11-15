@@ -6,6 +6,8 @@
  */
 import type { BlockCatalogue } from '../blocks/catalogue.js';
 import type { BlockChange } from '../blocks/neighbours.js';
+import { isType2 } from '../blocks/types2/facts.js';
+import { growType2 } from '../blocks/types2/tools.js';
 import type { BlockPos, SimLog } from '../types.js';
 import type { SimWorld } from '../world/sim-world.js';
 
@@ -55,6 +57,15 @@ export function growBlock(
   if (block.type === 'prop') {
     log.onlyInMinecraft(`${name} grows only by the game's own rules`, origin);
     return NOTHING;
+  }
+  if (isType2(block.type)) {
+    // Berry bushes, cocoa pods and stems (B463).
+    const grown = growType2(world, catalogue, block, block.type, state, pos);
+    if (grown.handled) {
+      if (grown.message !== undefined) log.info(grown.message, origin);
+      if (grown.onlyInMinecraft !== undefined) log.onlyInMinecraft(grown.onlyInMinecraft, origin);
+      return { changed: grown.changes.length > 0, changes: grown.changes };
+    }
   }
   if (block.type !== 'crop' && block.type !== 'sapling') {
     log.info(`${name} does not grow`, origin);

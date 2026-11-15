@@ -30,12 +30,21 @@
  * `open` property as the game does; {@link LocalWorldSource.closeScreen} closes it and fires the
  * container's `on_close`. Breaking the block, clearing the area or an edit that takes the screen
  * away closes it too.
+ *
+ * Vanilla parity 2 (B463, `blocks/types2/area.ts`): {@link LocalWorldSource.parity2} holds sign
+ * text and the sign editor, weathering (each tick and {@link LocalWorldSource.timeLapse}), the
+ * place and explosion rules (asked before placing and by the Explode tool), the chat box
+ * ({@link LocalWorldSource.chat}) and the bag screens ({@link LocalWorldSource.useItem}).
  */
 
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
 import { useBlock } from './blocks/interact.js';
 import { breakBlock, placeBlock } from './blocks/placement.js';
 import { type ScreenSpec, screensFromFiles } from './blocks/screens.js';
+import { Types2Area } from './blocks/types2/area.js';
+import { EXPLODE_TOOL } from './blocks/types2/tools.js';
+import type { CommandsTarget } from './commands/catalogue.js';
+import type { ChatLine } from './commands/run.js';
 import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
@@ -80,7 +89,7 @@ import { SimWorld, sameState, type WorldChange } from './world/sim-world.js';
  * What the local source reads from a target: folder names, the block names of the version and,
  * when it has them, the runtime's vehicle keys (B429).
  */
-export type LocalSourceTarget = CatalogueTarget & ControlsTarget;
+export type LocalSourceTarget = CatalogueTarget & ControlsTarget & CommandsTarget;
 
 /** Options of a {@link LocalWorldSource}. */
 export interface LocalSourceOptions {
@@ -189,6 +198,8 @@ export class LocalWorldSource implements WorldSource {
   readonly vehicles: VehicleWorld;
   /** Key binds, the HUD and the vehicle dashboard (B429). */
   readonly controls: SimControls;
+  /** Signs, weathering, the place and explosion rules, the chat box and bags (B463). */
+  readonly parity2: Types2Area;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -275,7 +286,8 @@ export class LocalWorldSource implements WorldSource {
       now: () => this.ticks,
       player: this.player,
       vehicles: this.vehicles,
-      screenOpen: () => this.screenNow !== null,
+      screenOpen: () =>
+        this.screenNow !== null || this.parity2.bag !== null || this.parity2.signEditing !== null,
       fire: (owner, eventId, ctx, sentence) =>
         this.triggers.fireOwned(owner, eventId, ctx, sentence),
       trace: this.traceNow,
@@ -294,6 +306,25 @@ export class LocalWorldSource implements WorldSource {
       ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
       hud: this.controls.hudActions,
     });
+    this.parity2 = new Types2Area(this.files, this.target, {
+      world: this.world,
+      catalogue: () => this.blockCatalogue,
+      player: this.player,
+      triggers: () => this.triggers,
+      trace: this.traceNow,
+      log: this.log,
+      sayOnce: (key, what, origin) => this.blockCatalogue.sayOnce(key, what, origin),
+      closeOtherScreens: () => this.closeScreen(),
+      seed: options.seed ?? 1,
+      ruleName: (book, key) => this.ruleNameOf(book, key),
+    });
+  }
+
+  private ruleBooksNow: readonly RuleBookInfo[] = [];
+
+  private ruleNameOf(book: string, key: string): string | undefined {
+    return this.ruleBooksNow.find((one) => one.id === book)?.rules.find((rule) => rule.key === key)
+      ?.name;
   }
 
   private buildBlocks(): BlockCatalogue {
@@ -357,6 +388,7 @@ export class LocalWorldSource implements WorldSource {
     this.world.clear();
     this.triggers.clear();
     this.controls.clear();
+    this.parity2.clear();
     this.emit({ type: 'entities', entities: [] });
     const ground = this.groundBlocks;
     const { size } = ground;
@@ -465,6 +497,7 @@ export class LocalWorldSource implements WorldSource {
 
   /** The project's rule books, to name the rule behind each plain action (B396). */
   setRuleBooks(books: readonly RuleBookInfo[]): void {
+    this.ruleBooksNow = books;
     this.triggers.setRuleBooks(books);
   }
 
@@ -542,6 +575,10 @@ export class LocalWorldSource implements WorldSource {
         this.vehicles.hit(action.vehicle, this.player.sneaking);
         return;
       case 'tool': {
+        if (action.tool === EXPLODE_TOOL) {
+          this.parity2.explode(action.pos);
+          return;
+        }
         const before = this.world.get(action.pos);
         applyTool(this.world, this.blockCatalogue, this.log, action.tool, action.pos);
         this.triggers.powerChanged(action.pos, before, this.world.get(action.pos));
@@ -566,6 +603,26 @@ export class LocalWorldSource implements WorldSource {
     this.timers.tick([this.player.box, ...this.entities.boxes(), ...this.vehicles.boxes()]);
     this.triggers.tick();
     this.controls.tick();
+    this.parity2.tick();
+  }
+
+  /** A time-lapse step of weathering: one in-game day of random ticks at once (B463). */
+  timeLapse(): void {
+    this.parity2.timeLapse();
+  }
+
+  /** Runs a line typed in the chat box (B463). */
+  chat(line: string): ChatLine {
+    return this.parity2.chat(line);
+  }
+
+  /**
+   * Uses the held item with nothing pointed at (B463): a bag opens its screen. Returns false
+   * when the item has no use in the air here.
+   */
+  useItem(item: string): boolean {
+    if (this.parity2.useItem(item)) return true;
+    return this.triggers.itemUsed(item).fired;
   }
 
   /**
@@ -657,6 +714,7 @@ export class LocalWorldSource implements WorldSource {
     this.timers.setCatalogue(this.blockCatalogue);
     this.triggers.setDefinitions(readEventDefinitions(files, target));
     this.controls.setFiles(files, target);
+    this.parity2.setFiles(files, target);
     const open = this.screenNow;
     if (open !== null) {
       const spec = this.screens.get(open.block);
@@ -684,6 +742,7 @@ export class LocalWorldSource implements WorldSource {
     this.world.clear();
     this.triggers.clear();
     this.controls.clear();
+    this.parity2.clear();
     this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
@@ -708,6 +767,8 @@ export class LocalWorldSource implements WorldSource {
     const secondaryUse = this.player.sneaking && item !== undefined;
     if (target !== null && !secondaryUse) {
       let taken = this.openScreen(action.pos, target);
+      if (block !== undefined && this.parity2.use(action.pos, target, block, item).taken)
+        taken = true;
       if (
         block !== undefined &&
         ['door', 'trapdoor', 'fence_gate', 'button'].includes(block.type)
@@ -731,6 +792,7 @@ export class LocalWorldSource implements WorldSource {
       z: action.pos.z + action.hit.z,
     };
     if (this.triggers.itemUsedOn(item, action.pos, point).fired) return;
+    if (this.parity2.useItem(item)) return;
     if (this.vehicles.isVehicleItem(item)) {
       this.vehicles.place(item, action, this.player.yaw);
       return;
@@ -762,6 +824,8 @@ export class LocalWorldSource implements WorldSource {
     const spec = this.screens.get(state.name);
     if (spec === undefined) return false;
     if (this.screenNow !== null) this.closeScreen();
+    this.parity2.closeBag();
+    this.parity2.closeSignEditor();
     // The game's client lets go of every held key when a screen opens (ADR 0088 D4).
     this.controls.keys.releaseAll();
     const block = this.blockCatalogue.blockFor(state.name);
@@ -797,6 +861,8 @@ export class LocalWorldSource implements WorldSource {
   }
 
   private place(pos: BlockPos, face: Face, hit: Vec3, block: string): void {
+    // `block.place` rules may stop it before anything changes (B463, ADR 0096 D3).
+    if (!this.parity2.placing(block, this.nameOf(block))) return;
     // Record what was there, so a place that would trap the player or a mob can be undone.
     const previous: { pos: BlockPos; state: BlockState | null }[] = [];
     const stop = this.world.onChange((change) =>
@@ -811,6 +877,7 @@ export class LocalWorldSource implements WorldSource {
         block,
         yaw: this.player.yaw,
         pitch: this.player.pitch,
+        sneak: this.player.sneaking,
       });
     } finally {
       stop();
@@ -831,6 +898,7 @@ export class LocalWorldSource implements WorldSource {
       return;
     }
     this.triggers.blockPlaced(result.pos);
+    this.parity2.placed(result.pos);
   }
 
   private nameOf(id: string): string {

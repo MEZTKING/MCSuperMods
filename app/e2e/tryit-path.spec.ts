@@ -43,6 +43,14 @@
  * the rule's sentence and its actions in "What happened", the Ruby in "Your items", the sound's
  * caption, and the `run_function` action as an "Only in Minecraft" line.
  *
+ * A fifth test (B463) opens a copy of `fixtures/sample-vanilla-blocks`: a sign is placed and its
+ * editor opens, the words written show on the mock-up plaque while the sign is looked at; a bed
+ * takes two blocks and two lanterns one each; the satchel opens its bag screen only while sneaking (18
+ * slots); the chat box runs `/greet` (its event fires, the feedback shows) and refuses
+ * `/kit Player 0` with the game's words; the Explode tool breaks a lantern. With
+ * `MSM_TRYIT_BLOCKS_SHOT=<file.png>` it saves a picture of the signs, the bed, the lanterns and
+ * the bag screen at device scale 2.
+ *
  * With `MSM_TRYIT_SHOT=<file.png>` the run also saves a picture of the area with a few blocks, a
  * mob and particles (launch with `--force-device-scale-factor=2` for a sharp one). With
  * `MSM_TRYIT_GROUND_SHOTS=<folder>` it saves the grounds picker, the island with a block and a
@@ -76,6 +84,7 @@ const SHOT = process.env.MSM_TRYIT_SHOT;
 const GROUND_SHOTS = process.env.MSM_TRYIT_GROUND_SHOTS;
 const VEHICLE_SHOT = process.env.MSM_TRYIT_VEHICLE_SHOT;
 const HUD_SHOT = process.env.MSM_TRYIT_HUD_SHOT;
+const BLOCKS_SHOT = process.env.MSM_TRYIT_BLOCKS_SHOT;
 const SHARP = SHOT !== undefined || GROUND_SHOTS !== undefined || VEHICLE_SHOT !== undefined;
 
 let base: string | undefined;
@@ -895,4 +904,161 @@ test('Try it: a project key fills the mana bar and shows a hidden text on the HU
     await window.waitForTimeout(500);
     await view.screenshot({ path: HUD_SHOT });
   }
+});
+
+const VB = 'msm_sample_vanilla_blocks';
+
+/** Puts a project thing in the selected hotbar slot through the picker. */
+async function hold(window: Page, id: string): Promise<void> {
+  await window.getByTestId('tryit-picker-open').click();
+  await window.getByTestId(`tryit-picker-item-${id}`).click();
+  await expect(window.getByTestId('tryit-picker')).toBeHidden();
+}
+
+test('Try it: signs with text, a bed, lanterns, a bag screen, the chat box and an explosion', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-blocks-'));
+  const folders = {
+    projectDir: join(base, VB),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  cpSync(join(appDir, '..', 'fixtures', 'sample-vanilla-blocks'), folders.projectDir, {
+    recursive: true,
+  });
+  const launched = await launchApp({
+    reuse: folders,
+    args: BLOCKS_SHOT === undefined ? WEBGL_ARGS : [...WEBGL_ARGS, '--force-device-scale-factor=2'],
+  });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  if (BLOCKS_SHOT !== undefined) {
+    await launched.app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
+    );
+  }
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${VB}:cedar_sign`)).toBeVisible();
+  const { view, canvas, state } = await openTryIt(window);
+  await window.getByTestId('tryit-card-close').click();
+
+  // A sign in front: its editor opens; the words show on the plaque while it is looked at.
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await hold(window, `${VB}:cedar_sign`);
+  await canvas.focus();
+  await press(canvas, 'KeyC');
+  const editor = window.getByTestId('tryit-sign-editor');
+  await expect(editor).toBeVisible();
+  await window.getByTestId('tryit-sign-line-1').fill('Welcome to');
+  await window.getByTestId('tryit-sign-line-2').fill('the Cedar Inn');
+  await window.getByTestId('tryit-sign-colour').selectOption('blue');
+  await window.getByTestId('tryit-sign-done').click();
+  await expect(editor).toBeHidden();
+  await expect(window.getByTestId('tryit-log')).toContainText(
+    'You wrote "Welcome to / the Cedar Inn" on the front of Cedar Sign.',
+  );
+  // Looking a little higher points at the sign itself.
+  await canvas.focus();
+  await press(canvas, 'ArrowUp');
+  const sign = `${VB}:cedar_sign[rotation=8,waterlogged=false]`;
+  await expect(state).toHaveAttribute('data-pointed', sign);
+  const plaque = window.getByTestId('tryit-sign-plaque');
+  await expect(plaque).toBeVisible();
+  await expect(plaque).toContainText('Welcome to');
+  await expect(plaque).toContainText('the Cedar Inn');
+
+  // A bed to the right (two blocks), two lanterns to the left, a second sign further right.
+  await press(canvas, 'ArrowRight', 'ArrowRight');
+  await hold(window, `${VB}:cosy_bed`);
+  await canvas.focus();
+  await press(canvas, 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '3');
+  await press(canvas, ...Array.from({ length: 4 }, () => 'ArrowLeft'));
+  await hold(window, `${VB}:paper_lantern`);
+  await canvas.focus();
+  await press(canvas, 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '4');
+  await press(canvas, 'ArrowLeft', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '5');
+  await press(canvas, ...Array.from({ length: 7 }, () => 'ArrowRight'));
+  await hold(window, `${VB}:cedar_sign`);
+  await canvas.focus();
+  await press(canvas, 'KeyC');
+  await window.getByTestId('tryit-sign-line-2').fill('Rooms upstairs');
+  await window.getByTestId('tryit-sign-done').click();
+  await expect(state).toHaveAttribute('data-blocks', '6');
+
+  // The satchel opens only while sneaking: 2 rows of 9.
+  await canvas.focus();
+  await press(canvas, ...Array.from({ length: 4 }, () => 'ArrowLeft'));
+  await expect(state).toHaveAttribute('data-pointed', sign);
+  await hold(window, `${VB}:satchel`);
+  await canvas.focus();
+  await press(canvas, 'ArrowUp', 'ArrowUp');
+  await expect(state).toHaveAttribute('data-pointed', 'nothing');
+  await press(canvas, 'KeyC');
+  await expect(window.getByTestId('tryit-log')).toContainText('Satchel opens only while you sneak');
+  const sneakUse = async (): Promise<void> => {
+    await window.keyboard.down('ShiftLeft');
+    await window.waitForTimeout(300);
+    await press(canvas, 'KeyC');
+    await window.keyboard.up('ShiftLeft');
+  };
+  await sneakUse();
+  const bag = window.getByTestId('tryit-bag-screen');
+  await expect(bag).toBeVisible();
+  await expect(bag).toHaveAttribute('data-slots', '18');
+  await expect(bag.getByTestId('tryit-bag-slot')).toHaveCount(18);
+  await window.getByTestId('tryit-bag-close').click();
+  await expect(bag).toBeHidden();
+
+  // The picture: a few steps back, the signs, the bed and the lanterns, and the bag open.
+  await expect.poll(() => pictureColours(view), { timeout: 10_000 }).toBeGreaterThan(1);
+  if (BLOCKS_SHOT !== undefined) {
+    await canvas.focus();
+    await window.keyboard.down('KeyS');
+    await window.waitForTimeout(450);
+    await window.keyboard.up('KeyS');
+    await press(canvas, 'ArrowDown', 'ArrowDown');
+    await window.waitForTimeout(400);
+    await sneakUse();
+    await expect(bag).toBeVisible();
+    await window.waitForTimeout(800);
+    await view.screenshot({ path: BLOCKS_SHOT });
+    await window.getByTestId('tryit-bag-close').click();
+  }
+
+  // The chat box: /greet runs its event and answers; /kit Player 0 is refused as the game does.
+  await canvas.focus();
+  await press(canvas, 'KeyT');
+  const input = window.getByTestId('tryit-chat-input');
+  await expect(input).toBeFocused();
+  await input.fill('/greet');
+  await input.press('Enter');
+  const chatLines = window.getByTestId('tryit-chat-line');
+  await expect(chatLines.last()).toContainText('Hello from the vanilla blocks sample!');
+  // The Rules command trigger (B458) runs its own event first; the command's "wave" runs too.
+  await expect(window.getByTestId('tryit-log')).toContainText('Ran /greet\'s event "wave" too.');
+  await input.fill('/kit Player 0');
+  await input.press('Enter');
+  await expect(chatLines.last()).toHaveAttribute('data-result', 'error');
+  await expect(chatLines.last()).toContainText('Integer must not be less than 1, found 0');
+  await input.press('Escape');
+  await expect(window.getByTestId('tryit-chat')).toBeHidden();
+
+  // The Explode tool on a block: it and the blocks near it go.
+  await window.getByTestId('tryit-clear').click();
+  await expect(state).toHaveAttribute('data-blocks', '0');
+  await hold(window, `${VB}:tin`);
+  await canvas.focus();
+  await press(canvas, ...Array.from({ length: 6 }, () => 'ArrowDown'));
+  await press(canvas, 'ArrowUp', 'ArrowUp', 'ArrowUp', 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+  await expect(state).toHaveAttribute('data-pointed', `${VB}:tin`);
+  await window.getByTestId('tryit-tool-explode').click();
+  await expect(window.getByTestId('tryit-log')).toContainText(
+    'An explosion went off at Block of Tin',
+  );
+  await expect(state).toHaveAttribute('data-blocks', '0');
 });
