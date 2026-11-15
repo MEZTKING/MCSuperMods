@@ -1,0 +1,15 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "msm_test:weathering_waxed_tin_door"
+    },
+    "msm:weathering": {
+      "next": "msm_test:weathering_exposed_tin_door",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "set_type": "copper",
+  "sound_type": "copper",
+  "type": "door"
+}

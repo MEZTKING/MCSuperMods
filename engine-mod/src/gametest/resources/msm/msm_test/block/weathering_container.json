@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {},
+    "msm:weathering": {
+      "stage": "exposed"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

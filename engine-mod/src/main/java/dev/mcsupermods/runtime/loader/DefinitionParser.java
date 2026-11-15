@@ -60,8 +60,23 @@ public final class DefinitionParser {
     public static ParseResult<BlockDefinition> parseBlock(JsonElement json) {
         ParseResult<BlockDefinition> result = parse(json, BlockDefinition.KEYS, BlockComponents.KEYS, BlockDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return checkContainer(checkMachine(json,
-                dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents))));
+        return checkAgeing(checkContainer(checkMachine(json,
+                dropComponentsNotForType(dropPlayAnimation(result, BlockDefinition::events, BlockDefinition::withEvents)))));
+    }
+
+    /** The rules of waterlogging, weathering and waxing ({@link BlockComponents#checkAgeing}, ADR 0094 D7 to D9). */
+    private static ParseResult<BlockDefinition> checkAgeing(ParseResult<BlockDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        BlockDefinition def = result.definition().get();
+        List<String> errors = new ArrayList<>(result.errors());
+        List<String> warnings = new ArrayList<>(result.warnings());
+        BlockComponents checked = def.components().checkAgeing(errors, warnings);
+        if (checked == def.components()) {
+            return result;
+        }
+        return new ParseResult<>(Optional.of(def.withComponents(checked)), List.copyOf(errors), List.copyOf(warnings));
     }
 
     /**

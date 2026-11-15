@@ -13,6 +13,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import dev.mcsupermods.runtime.events.ParticleSpecs;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -41,20 +42,24 @@ public record BlockComponents(
         Optional<Strippable> strippable,
         Optional<Container> container,
         Optional<Machine> machine,
-        Optional<AmbientParticles> ambientParticles) {
+        Optional<AmbientParticles> ambientParticles,
+        Optional<Waterloggable> waterloggable,
+        Optional<Weathering> weathering,
+        Optional<Waxable> waxable) {
 
     public static final List<String> KEYS = List.of("msm:breakable", "msm:light_emitter", "msm:on_interact", "msm:on_step", "msm:redstone",
             "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside",
-            "msm:flammable", "msm:strippable", "msm:container", "msm:machine", "msm:ambient_particles");
+            "msm:flammable", "msm:strippable", "msm:container", "msm:machine", "msm:ambient_particles",
+            "msm:waterloggable", "msm:weathering", "msm:waxable");
     public static final BlockComponents NONE = new BlockComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
     /**
-     * 15 of the 16 fields a {@code RecordCodecBuilder} group takes (limit C18, ADR 0080 D6; limit K14): a later component
-     * needs a nested group.
+     * The first 15 components, 15 of the 16 fields a {@code RecordCodecBuilder} group takes (limit C18, ADR 0080 D6;
+     * limit K14); the waterlogging and weathering components of ADR 0094 D7 to D9 are the nested group {@link #AGEING}.
      */
-    public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
+    private static final MapCodec<BlockComponents> FIRST = RecordCodecBuilder.mapCodec(i -> i.group(
             optional("msm:breakable", Breakable.CODEC).forGetter(BlockComponents::breakable),
             optional("msm:light_emitter", LightEmitter.CODEC).forGetter(BlockComponents::lightEmitter),
             optional("msm:on_interact", OnInteract.CODEC).forGetter(BlockComponents::onInteract),
@@ -70,12 +75,26 @@ public record BlockComponents(
             optional("msm:container", Container.CODEC).forGetter(BlockComponents::container),
             optional("msm:machine", Machine.CODEC).forGetter(BlockComponents::machine),
             optional("msm:ambient_particles", AmbientParticles.CODEC).forGetter(BlockComponents::ambientParticles))
-            .apply(i, BlockComponents::new));
+            .apply(i, (a, b, c, d, e, f, g, h, j, k, l, m, n, o, q) -> new BlockComponents(a, b, c, d, e, f, g, h, j, k, l, m,
+                    n, o, q, Optional.empty(), Optional.empty(), Optional.empty())));
+
+    /** {@code msm:waterloggable}, {@code msm:weathering} and {@code msm:waxable} (ADR 0094 D7 to D9). */
+    private record Ageing(Optional<Waterloggable> waterloggable, Optional<Weathering> weathering, Optional<Waxable> waxable) {}
+
+    private static final MapCodec<Ageing> AGEING = RecordCodecBuilder.mapCodec(i -> i.group(
+            optional("msm:waterloggable", Waterloggable.CODEC).forGetter(Ageing::waterloggable),
+            optional("msm:weathering", Weathering.CODEC).forGetter(Ageing::weathering),
+            optional("msm:waxable", Waxable.CODEC).forGetter(Ageing::waxable)).apply(i, Ageing::new));
+
+    public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
+            FIRST.forGetter(c -> c),
+            AGEING.forGetter(c -> new Ageing(c.waterloggable, c.weathering, c.waxable)))
+            .apply(i, (first, ageing) -> first.withAgeing(ageing.waterloggable(), ageing.weathering(), ageing.waxable())));
 
     /** The keys of the components present, in {@link #KEYS} order. */
     public List<String> present() {
         List<Optional<?>> values = List.of(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, container, machine, ambientParticles);
+                onEntityInside, flammable, strippable, container, machine, ambientParticles, waterloggable, weathering, waxable);
         List<String> out = new ArrayList<>();
         for (int n = 0; n < KEYS.size(); n++) {
             if (values.get(n).isPresent()) {
@@ -102,13 +121,48 @@ public record BlockComponents(
                 keys.contains("msm:strippable") ? Optional.empty() : strippable,
                 keys.contains("msm:container") ? Optional.empty() : container,
                 keys.contains("msm:machine") ? Optional.empty() : machine,
-                keys.contains("msm:ambient_particles") ? Optional.empty() : ambientParticles);
+                keys.contains("msm:ambient_particles") ? Optional.empty() : ambientParticles,
+                keys.contains("msm:waterloggable") ? Optional.empty() : waterloggable,
+                keys.contains("msm:weathering") ? Optional.empty() : weathering,
+                keys.contains("msm:waxable") ? Optional.empty() : waxable);
+    }
+
+    /** These components with the three of ADR 0094 D7 to D9 replaced. */
+    public BlockComponents withAgeing(Optional<Waterloggable> water, Optional<Weathering> weather, Optional<Waxable> wax) {
+        return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
+                onEntityInside, flammable, strippable, container, machine, ambientParticles, water, weather, wax);
+    }
+
+    /**
+     * The load-time rules of ADR 0094 D7 to D9 that the Codec cannot express. A container or machine cannot hold water or
+     * age (Q8; it keeps its block entity class): {@code msm:waterloggable}, {@code msm:weathering} and {@code msm:waxable}
+     * there are warnings and not applied. {@code msm:waxable} without {@code msm:weathering} is an error and not applied
+     * (only a weathering block is waxed). Problems are added to {@code errors} and {@code warnings}.
+     */
+    public BlockComponents checkAgeing(List<String> errors, List<String> warnings) {
+        BlockComponents out = this;
+        if (container.isPresent() || machine.isPresent()) {
+            String holder = container.isPresent() ? "msm:container" : "msm:machine";
+            List<String> dropped = Stream.of("msm:waterloggable", "msm:weathering", "msm:waxable")
+                    .filter(present()::contains).toList();
+            for (String key : dropped) {
+                warnings.add("components: " + key + " is not applied on a block with " + holder
+                        + " (containers and machines cannot hold water or age)");
+            }
+            out = out.without(dropped);
+        }
+        if (out.waxable.isPresent() && out.weathering.isEmpty()) {
+            errors.add("components: msm:waxable needs msm:weathering on the same block (only a weathering block is waxed);"
+                    + " it is not applied");
+            out = out.without(List.of("msm:waxable"));
+        }
+        return out;
     }
 
     /** These components with {@code msm:container} replaced (empty removes it). */
     public BlockComponents withContainer(Optional<Container> other) {
         return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, other, machine, ambientParticles);
+                onEntityInside, flammable, strippable, other, machine, ambientParticles, waterloggable, weathering, waxable);
     }
 
     /**
@@ -264,6 +318,43 @@ public record BlockComponents(
     public record Strippable(Identifier into) {
         public static final Codec<Strippable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
                 required("into", ID).forGetter(Strippable::into)).apply(i, Strippable::new)), List.of("into"));
+    }
+
+    /** The block holds water (ADR 0094 D7); an empty struct. */
+    public record Waterloggable() {
+        public static final Codec<Waterloggable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.point(new Waterloggable())),
+                List.of());
+    }
+
+    /** A weathering stage, as vanilla copper's ({@code ::msm::definition::WeatheringStage}). */
+    public enum WeatheringStage {
+        UNAFFECTED("unaffected"), EXPOSED("exposed"), WEATHERED("weathered"), OXIDIZED("oxidized");
+
+        private final String id;
+
+        WeatheringStage(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+
+        public static final Codec<WeatheringStage> CODEC = MsmCodecs.named("weathering stage", values(), WeatheringStage::id);
+    }
+
+    /** The block ages into {@code next} over random ticks (ADR 0094 D8); the last stage has no {@code next}. */
+    public record Weathering(Optional<Identifier> next, WeatheringStage stage) {
+        public static final Codec<Weathering> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("next", ID).forGetter(Weathering::next),
+                required("stage", WeatheringStage.CODEC).forGetter(Weathering::stage)).apply(i, Weathering::new)),
+                List.of("next", "stage"));
+    }
+
+    /** Honeycomb waxes the block into {@code into} (ADR 0094 D9); an axe turns {@code into} back into this block. */
+    public record Waxable(Identifier into) {
+        public static final Codec<Waxable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("into", ID).forGetter(Waxable::into)).apply(i, Waxable::new)), List.of("into"));
     }
 
     /** Constant signal source ({@code emit}) and events on neighbour-update power transitions. */

@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:weathering": {
+      "next": "msm_test:weathering_exposed_tin_slab",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper",
+  "type": "slab"
+}

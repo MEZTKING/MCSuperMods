@@ -87,6 +87,19 @@ public enum BlockType {
     public static final List<String> PORTAL_COMPONENTS = List.of("msm:breakable", "msm:light_emitter", "msm:on_break", "msm:on_place",
             "msm:on_random_tick", "msm:on_entity_inside");
 
+    /**
+     * The types that may carry {@code msm:waterloggable} (ADR 0094 D7): the {@code MsmBlock} family; the other types that
+     * vanilla waterlogs keep vanilla's own {@code waterlogged} property.
+     */
+    public static final List<BlockType> WATERLOGGABLE_TYPES = List.of(BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL);
+
+    /**
+     * The types that may carry {@code msm:weathering} and {@code msm:waxable} (ADR 0094 D8, D9): the types vanilla's copper
+     * comes in apart from bulbs.
+     */
+    public static final List<BlockType> WEATHERING_TYPES = List.of(BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, STAIRS, DOOR, TRAPDOOR,
+            PANE, CHAIN, LANTERN);
+
     /** Every type's own top-level field names, in a stable order; the definition's known top-level keys include these. */
     public static final List<String> ALL_FIELDS;
 
@@ -127,11 +140,19 @@ public enum BlockType {
      * Whether a block of this type may carry the component {@code key} (ADR 0067 D3): {@code msm:shape},
      * {@code msm:redstone}, {@code msm:container} (ADR 0074 D1) and {@code msm:machine} (ADR 0075 D1) only on the {@link #shaped()} types; every other component (breaking, light, triggers,
      * {@code msm:flammable}, {@code msm:strippable}, {@code msm:ambient_particles} of ADR 0080 D6) on every type but
-     * {@link #PORTAL}, which allows only {@link #PORTAL_COMPONENTS} (ADR 0077 D1; a portal has its own {@code particles}).
+     * {@link #PORTAL}, which allows only {@link #PORTAL_COMPONENTS} (ADR 0077 D1; a portal has its own {@code particles});
+     * {@code msm:waterloggable} only on {@link #WATERLOGGABLE_TYPES}, {@code msm:weathering} and {@code msm:waxable} only on
+     * {@link #WEATHERING_TYPES} (ADR 0094 D7 to D9).
      */
     public boolean allows(String key) {
         if (this == PORTAL) {
             return PORTAL_COMPONENTS.contains(key);
+        }
+        if (key.equals("msm:waterloggable")) {
+            return WATERLOGGABLE_TYPES.contains(this);
+        }
+        if (key.equals("msm:weathering") || key.equals("msm:waxable")) {
+            return WEATHERING_TYPES.contains(this);
         }
         return shaped() || !SHAPED_ONLY_COMPONENTS.contains(key);
     }

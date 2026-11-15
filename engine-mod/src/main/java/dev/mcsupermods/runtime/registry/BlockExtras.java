@@ -1,6 +1,7 @@
 package dev.mcsupermods.runtime.registry;
 
 import dev.mcsupermods.runtime.components.BlockComponents;
+import dev.mcsupermods.runtime.registry.weathering.Waxing;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -27,7 +28,9 @@ import net.minecraft.world.phys.BlockHitResult;
  * The block components that are not block class behaviour (ADR 0067 D3, D4): {@code msm:flammable} through the
  * {@code Flammability} seam, once per block at start-up, and {@code msm:strippable} through one Fabric
  * {@link UseBlockCallback}. Vanilla stripping is the {@code block_transformer} registry entry {@code minecraft:axe}, which a
- * data pack can only replace whole, so the runtime strips its own blocks before the item's transformer runs.
+ * data pack can only replace whole, so the runtime strips its own blocks before the item's transformer runs. The same
+ * callback waxes with honeycomb and unwaxes or scrapes with an axe (ADR 0094 D9, {@link Waxing}), because vanilla's
+ * honeycomb and axes know only vanilla's copper.
  */
 public final class BlockExtras {
     /** The {@code block_transformer} entry that marks an axe: vanilla axes, project axes and other mods' axes. */
@@ -39,8 +42,12 @@ public final class BlockExtras {
 
     private BlockExtras() {}
 
-    /** Applies the block's {@code msm:flammable} and {@code msm:strippable}; called once per registered block. */
+    /**
+     * Applies the block's {@code msm:flammable} and {@code msm:strippable} and records it for waxing ({@code msm:waxable});
+     * called once per registered block.
+     */
     static void apply(Block block, BlockComponents components) {
+        Waxing.add(block, components);
         components.flammable().ifPresent(f -> Flammability.register(block, f.burnOdds(), f.igniteOdds()));
         components.strippable().ifPresent(s -> STRIPPABLE.put(block, s.into()));
     }
@@ -49,7 +56,7 @@ public final class BlockExtras {
     public static void register() {
         if (!installed) {
             installed = true;
-            UseBlockCallback.EVENT.register(BlockExtras::strip);
+            UseBlockCallback.EVENT.register(BlockExtras::use);
         }
     }
 
@@ -59,28 +66,42 @@ public final class BlockExtras {
     }
 
     /**
-     * Vanilla's axe rule ({@code BlockTransformer.transformBlock}): a main-hand use with a blocking item (a shield) in the
-     * off hand passes unless the player sneaks; otherwise the block turns into its target with every shared property
-     * copied (the axis of a log), the strip sound plays, the item takes 1 damage and the hand swings (a success). The
-     * client predicts the same answer; only the server changes the world.
+     * The use callback: honeycomb waxes ({@link Waxing#wax}); an axe strips, else scrapes or unwaxes
+     * ({@link Waxing#axe}), as vanilla's axe tries stripping first. Vanilla's axe rule ({@code BlockTransformer.transformBlock})
+     * holds for every axe use: a main-hand use with a blocking item (a shield) in the off hand passes unless the player
+     * sneaks. The client predicts the same answer; only the server changes the world.
      */
-    private static InteractionResult strip(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
+    private static InteractionResult use(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
         if (player.isSpectator()) {
             return InteractionResult.PASS;
         }
         BlockPos pos = hit.getBlockPos();
         BlockState state = level.getBlockState(pos);
-        Identifier into = STRIPPABLE.get(state.getBlock());
-        if (into == null) {
-            return InteractionResult.PASS;
-        }
         ItemStack stack = player.getItemInHand(hand);
+        InteractionResult waxed = Waxing.wax(player, level, hand, pos, state, stack);
+        if (waxed != InteractionResult.PASS) {
+            return waxed;
+        }
         Holder<BlockTransformer> transformer = stack.get(DataComponents.BLOCK_TRANSFORMER);
         if (transformer == null || !transformer.is(AXE_TRANSFORMER)) {
             return InteractionResult.PASS;
         }
         if (hand == InteractionHand.MAIN_HAND && player.getOffhandItem().has(DataComponents.BLOCKS_ATTACKS)
                 && !player.isSecondaryUseActive()) {
+            return InteractionResult.PASS;
+        }
+        InteractionResult stripped = strip(player, level, hand, pos, state, stack);
+        return stripped != InteractionResult.PASS ? stripped : Waxing.axe(player, level, hand, pos, state, stack);
+    }
+
+    /**
+     * Stripping with an axe (the caller checked the axe and the shield rule): the block turns into its target with every
+     * shared property copied (the axis of a log), the strip sound plays, the item takes 1 damage and the hand swings (a
+     * success).
+     */
+    private static InteractionResult strip(Player player, Level level, InteractionHand hand, BlockPos pos, BlockState state, ItemStack stack) {
+        Identifier into = STRIPPABLE.get(state.getBlock());
+        if (into == null) {
             return InteractionResult.PASS;
         }
         if (!BuiltInRegistries.BLOCK.containsKey(into)) {
@@ -97,7 +118,7 @@ public final class BlockExtras {
     }
 
     /** {@code to} with every property it shares with {@code from} (the same {@code Property}, such as the axis) set to {@code from}'s value. */
-    static BlockState copyProperties(BlockState from, BlockState to) {
+    public static BlockState copyProperties(BlockState from, BlockState to) {
         BlockState out = to;
         for (Property<?> property : from.getProperties()) {
             if (to.hasProperty(property)) {

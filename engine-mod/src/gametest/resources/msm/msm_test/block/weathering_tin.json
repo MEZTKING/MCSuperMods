@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "msm_test:weathering_waxed_tin"
+    },
+    "msm:weathering": {
+      "next": "msm_test:weathering_exposed_tin",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

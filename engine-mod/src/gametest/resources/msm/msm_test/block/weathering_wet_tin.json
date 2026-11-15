@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:waterloggable": {},
+    "msm:weathering": {
+      "next": "msm_test:weathering_wet_exposed_tin",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

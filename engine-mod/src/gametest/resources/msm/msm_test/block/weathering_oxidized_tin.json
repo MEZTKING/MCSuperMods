@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:weathering": {
+      "stage": "oxidized"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

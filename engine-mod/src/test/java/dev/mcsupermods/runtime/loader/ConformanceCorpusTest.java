@@ -43,8 +43,6 @@ class ConformanceCorpusTest {
      */
     private static final List<String> PENDING =
             List.of(
-                    "waterlog-",
-                    "weathering-",
                     "item-inventory-",
                     "bundle-",
                     "command-",
@@ -95,6 +93,8 @@ class ConformanceCorpusTest {
             new Kind("portal-item-", DefinitionParser::parseItem),
             new Kind("portal-entity-", DefinitionParser::parseEntity),
             new Kind("portal-effect-", DefinitionParser::parseEffect),
+            new Kind("waterlog-", DefinitionParser::parseBlock), // B449
+            new Kind("weathering-", DefinitionParser::parseBlock), // B449
             new Kind("action-particle-", DefinitionParser::parseBlock),
             new Kind("ambient-particles-", DefinitionParser::parseBlock),
             new Kind("vehicle-", VehicleParser::parse),

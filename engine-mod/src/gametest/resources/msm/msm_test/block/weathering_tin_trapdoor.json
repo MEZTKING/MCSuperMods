@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:weathering": {
+      "next": "msm_test:weathering_exposed_tin_trapdoor",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "set_type": "copper",
+  "sound_type": "copper",
+  "type": "trapdoor"
+}

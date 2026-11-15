@@ -1,0 +1,12 @@
+{
+  "base_block": "msm_test:weathering_tin",
+  "components": {
+    "msm:weathering": {
+      "next": "msm_test:weathering_exposed_tin_stairs",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper",
+  "type": "stairs"
+}

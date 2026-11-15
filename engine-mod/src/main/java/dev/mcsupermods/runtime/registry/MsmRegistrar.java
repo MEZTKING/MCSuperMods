@@ -191,6 +191,7 @@ public final class MsmRegistrar {
             }
         }
         registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
+        Weathering.checkAfterRegistration(errors); // ADR 0094 D8, D9: the next and into links, once every block exists
         MsmRuntime.LOGGER.info("[{}] registered {} portal block(s)", MsmRuntime.MOD_ID, typeCounts.getOrDefault(BlockType.PORTAL, 0));
         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
                 : String.join(", ", typeCounts.entrySet().stream().map(e -> e.getKey().id() + " " + e.getValue()).toList()));
@@ -530,7 +531,7 @@ public final class MsmRegistrar {
         } else if (portal) {
             props = props.noLootTable(); // ADR 0077 D1: a portal drops nothing unless loot_table is given
         }
-        // Weathering (ADR 0094 D8) and waterlogging (D7) classes first; both are stubs that answer empty until B449.
+        // Weathering (ADR 0094 D8) and waterlogging (D7) classes first; each answers empty for a block without its component.
         final BlockBehaviour.Properties blockProps = props;
         Block created = Weathering.blockFor(id, def, blockProps)
                 .or(() -> Waterlogging.blockFor(id, def, blockProps))

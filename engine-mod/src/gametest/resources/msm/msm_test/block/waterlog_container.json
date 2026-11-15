@@ -1,0 +1,7 @@
+{
+  "components": {
+    "msm:container": {},
+    "msm:waterloggable": {}
+  },
+  "format": 1
+}

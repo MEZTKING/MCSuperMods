@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "msm_test:weathering_missing_waxed"
+    },
+    "msm:weathering": {
+      "stage": "exposed"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}
