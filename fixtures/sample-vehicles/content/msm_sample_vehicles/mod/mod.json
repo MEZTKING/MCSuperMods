@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample vehicles: a car, a motorboat, a swamp buggy, a biplane, a hovercraft, a helicopter and a tank with a turret, a cannon and a machine gun; fuel, repairs, a boot, paints, two keys and four HUD elements.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_vehicles",
+    "name": "MSM Sample Vehicles",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

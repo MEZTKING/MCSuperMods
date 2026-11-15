@@ -1,0 +1,66 @@
+{
+  "data": {
+    "camera": {
+      "distance": 5
+    },
+    "display_name": "Motorboat",
+    "engine": {
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.boat.paddle_water"
+    },
+    "format": 1,
+    "health": {
+      "max": 30,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "msm_sample_vehicles:repair_kit"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_sample_vehicles:item/motorboat",
+      "places_on": "water"
+    },
+    "model": {
+      "geometry": "msm_sample_vehicles:entity/motorboat",
+      "texture": "msm_sample_vehicles:entity/motorboat"
+    },
+    "movement": {
+      "max_speed": 0.4,
+      "mode": "water",
+      "turn_rate": 4
+    },
+    "parts": {
+      "propellers": [
+        "propeller"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          0.3,
+          0
+        ]
+      },
+      {
+        "offset": [
+          0,
+          0.3,
+          -0.6
+        ]
+      }
+    ],
+    "size": [
+      1.6,
+      0.7
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:motorboat",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

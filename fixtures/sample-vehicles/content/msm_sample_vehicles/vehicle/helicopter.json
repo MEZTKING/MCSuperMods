@@ -1,0 +1,77 @@
+{
+  "data": {
+    "camera": {
+      "distance": 10
+    },
+    "display_name": "Helicopter",
+    "engine": {
+      "fuel": {
+        "items": [
+          {
+            "item": "minecraft:coal",
+            "ticks": 1200
+          }
+        ]
+      },
+      "sound": "minecraft:item.elytra.flying",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "format": 1,
+    "health": {
+      "max": 40,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "msm_sample_vehicles:repair_kit"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_sample_vehicles:item/helicopter"
+    },
+    "model": {
+      "geometry": "msm_sample_vehicles:entity/helicopter",
+      "texture": "msm_sample_vehicles:entity/helicopter"
+    },
+    "movement": {
+      "lift_speed": 0.2,
+      "max_speed": 0.5,
+      "mode": "hover",
+      "turn_rate": 5
+    },
+    "parts": {
+      "propellers": [
+        "tail_rotor"
+      ],
+      "rotors": [
+        "rotor"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          -0.3,
+          0.4,
+          0.2
+        ]
+      },
+      {
+        "offset": [
+          0.3,
+          0.4,
+          0.2
+        ]
+      }
+    ],
+    "size": [
+      2.2,
+      1.8
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:helicopter",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "consume",
+        "gravity": 0.03,
+        "on_hit_block": {
+          "event": "msm_sample_vehicles:battle_tank_shell_hit_block"
+        },
+        "on_hit_entity": {
+          "event": "msm_sample_vehicles:battle_tank_shell_hit"
+        },
+        "sound": "minecraft:entity.snowball.throw",
+        "speed": 1.5
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Battle Tank Shell",
+    "events": {
+      "msm_sample_vehicles:battle_tank_shell_hit": {
+        "actions": [
+          {
+            "power": 1.5,
+            "type": "explode"
+          }
+        ]
+      },
+      "msm_sample_vehicles:battle_tank_shell_hit_block": {
+        "actions": [
+          {
+            "power": 1.5,
+            "type": "explode"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_sample_vehicles:item/battle_tank_shell"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:battle_tank_shell",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

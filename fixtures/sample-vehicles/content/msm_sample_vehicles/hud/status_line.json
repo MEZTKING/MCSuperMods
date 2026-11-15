@@ -1,0 +1,23 @@
+{
+  "data": {
+    "anchor": "top",
+    "color": "#a0e0ff",
+    "format": 1,
+    "offset": [
+      0,
+      20
+    ],
+    "show": "always",
+    "starts_hidden": true,
+    "type": "text",
+    "value": {
+      "source": "set"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:status_line",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

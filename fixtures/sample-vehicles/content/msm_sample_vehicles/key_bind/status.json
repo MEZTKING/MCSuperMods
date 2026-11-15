@@ -1,0 +1,40 @@
+{
+  "data": {
+    "category": "sample_vehicles",
+    "category_name": "Sample vehicles",
+    "default_key": "key.keyboard.k",
+    "display_name": "Show the vehicle keys",
+    "events": {
+      "msm_sample_vehicles:status_pressed": {
+        "actions": [
+          {
+            "hud": "msm_sample_vehicles:status_line",
+            "type": "set_hud",
+            "value": "J flare, R cannon, V machine gun, H horn, Left Alt down"
+          },
+          {
+            "hud": "msm_sample_vehicles:status_line",
+            "type": "show_hud"
+          }
+        ]
+      },
+      "msm_sample_vehicles:status_released": {
+        "actions": [
+          {
+            "hud": "msm_sample_vehicles:status_line",
+            "type": "hide_hud"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "msm:on_press": "msm_sample_vehicles:status_pressed",
+    "msm:on_release": "msm_sample_vehicles:status_released"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:status",
+  "kind": "msm:key_bind",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

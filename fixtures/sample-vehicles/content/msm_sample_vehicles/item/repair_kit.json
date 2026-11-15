@@ -1,0 +1,15 @@
+{
+  "data": {
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Repair Kit",
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_sample_vehicles:item/repair_kit"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:repair_kit",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

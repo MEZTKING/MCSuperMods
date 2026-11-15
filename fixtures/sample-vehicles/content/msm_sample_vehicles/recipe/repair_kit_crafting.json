@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "C": "minecraft:copper_ingot",
+      "I": "minecraft:iron_ingot"
+    },
+    "pattern": [
+      " I ",
+      "ICI",
+      " I "
+    ],
+    "result": {
+      "count": 2,
+      "id": "msm_sample_vehicles:repair_kit"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:repair_kit_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "data": {
+    "camera": {
+      "distance": 5
+    },
+    "display_name": "Racing Car",
+    "engine": {
+      "fuel": {
+        "capacity": 24000,
+        "items": [
+          {
+            "item": "minecraft:coal",
+            "ticks": 1200
+          },
+          {
+            "item": "minecraft:charcoal",
+            "ticks": 1200
+          }
+        ]
+      },
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.minecart.riding",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "exhaust": {
+      "every_ticks": 4,
+      "offset": [
+        0,
+        0.3,
+        -1.3
+      ],
+      "particle": "minecraft:smoke"
+    },
+    "format": 1,
+    "health": {
+      "max": 40,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "msm_sample_vehicles:repair_kit"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_sample_vehicles:item/racing_car"
+    },
+    "model": {
+      "geometry": "msm_sample_vehicles:entity/racing_car",
+      "paints": [
+        {
+          "dye": "minecraft:red_dye",
+          "id": "red",
+          "texture": "msm_sample_vehicles:entity/racing_car_red"
+        },
+        {
+          "dye": "minecraft:blue_dye",
+          "id": "blue",
+          "texture": "msm_sample_vehicles:entity/racing_car_blue"
+        },
+        {
+          "dye": "minecraft:yellow_dye",
+          "id": "yellow",
+          "texture": "msm_sample_vehicles:entity/racing_car_yellow"
+        }
+      ],
+      "texture": "msm_sample_vehicles:entity/racing_car"
+    },
+    "movement": {
+      "max_speed": 0.45,
+      "mode": "ground",
+      "step_height": 1
+    },
+    "parts": {
+      "steering": [
+        "wheel_front_left",
+        "wheel_front_right"
+      ],
+      "wheel_radius": 0.25,
+      "wheels": [
+        "wheel_front_left",
+        "wheel_front_right",
+        "wheel_back_left",
+        "wheel_back_right"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          -0.35,
+          0.35,
+          0.1
+        ]
+      },
+      {
+        "offset": [
+          0.35,
+          0.35,
+          0.1
+        ]
+      }
+    ],
+    "size": [
+      1.6,
+      1.3
+    ],
+    "storage": {
+      "rows": 1
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:racing_car",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

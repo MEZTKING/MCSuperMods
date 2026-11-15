@@ -1,0 +1,187 @@
+{
+  "data": {
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+      {
+        "bones": [
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -10,
+                  4,
+                  -16
+                ],
+                "size": [
+                  20,
+                  18,
+                  30
+                ],
+                "uv": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "origin": [
+                  -2,
+                  14,
+                  14
+                ],
+                "size": [
+                  4,
+                  4,
+                  30
+                ],
+                "uv": [
+                  100,
+                  0
+                ]
+              },
+              {
+                "origin": [
+                  -11,
+                  0,
+                  -14
+                ],
+                "size": [
+                  2,
+                  2,
+                  26
+                ],
+                "uv": [
+                  168,
+                  0
+                ]
+              },
+              {
+                "origin": [
+                  9,
+                  0,
+                  -14
+                ],
+                "size": [
+                  2,
+                  2,
+                  26
+                ],
+                "uv": [
+                  0,
+                  48
+                ]
+              }
+            ],
+            "name": "cabin",
+            "pivot": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -1,
+                  22,
+                  -1
+                ],
+                "size": [
+                  2,
+                  3,
+                  2
+                ],
+                "uv": [
+                  56,
+                  48
+                ]
+              },
+              {
+                "origin": [
+                  -36,
+                  25,
+                  -2
+                ],
+                "size": [
+                  72,
+                  1,
+                  4
+                ],
+                "uv": [
+                  64,
+                  48
+                ]
+              },
+              {
+                "origin": [
+                  -2,
+                  25,
+                  -36
+                ],
+                "size": [
+                  4,
+                  1,
+                  72
+                ],
+                "uv": [
+                  0,
+                  76
+                ]
+              }
+            ],
+            "name": "rotor",
+            "pivot": [
+              0,
+              24,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  2,
+                  9,
+                  41
+                ],
+                "size": [
+                  1,
+                  14,
+                  2
+                ],
+                "uv": [
+                  152,
+                  76
+                ]
+              }
+            ],
+            "name": "tail_rotor",
+            "pivot": [
+              3,
+              16,
+              42
+            ]
+          }
+        ],
+        "description": {
+          "identifier": "geometry.entity.helicopter",
+          "texture_height": 256,
+          "texture_width": 256,
+          "visible_bounds_height": 3.5,
+          "visible_bounds_offset": [
+            0,
+            1.75,
+            0
+          ],
+          "visible_bounds_width": 6
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:entity/helicopter",
+  "kind": "msm:geo_model",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

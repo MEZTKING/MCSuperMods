@@ -1,0 +1,74 @@
+{
+  "data": {
+    "camera": {
+      "distance": 6
+    },
+    "display_name": "Hovercraft",
+    "engine": {
+      "fuel": {
+        "items": [
+          {
+            "item": "minecraft:dried_kelp_block",
+            "ticks": 800
+          }
+        ]
+      },
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.minecart.riding"
+    },
+    "format": 1,
+    "health": {
+      "max": 40,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "msm_sample_vehicles:repair_kit"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_sample_vehicles:item/hovercraft"
+    },
+    "model": {
+      "geometry": "msm_sample_vehicles:entity/hovercraft",
+      "texture": "msm_sample_vehicles:entity/hovercraft"
+    },
+    "movement": {
+      "lift_speed": 0.08,
+      "max_speed": 0.5,
+      "mode": "hover",
+      "turn_rate": 6
+    },
+    "parts": {
+      "propellers": [
+        "fan"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          -0.3,
+          0.5,
+          0
+        ]
+      },
+      {
+        "offset": [
+          0.3,
+          0.5,
+          0
+        ]
+      }
+    ],
+    "size": [
+      2,
+      0.8
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:hovercraft",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

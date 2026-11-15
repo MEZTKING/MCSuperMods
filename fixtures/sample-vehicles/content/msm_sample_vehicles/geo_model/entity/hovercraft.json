@@ -1,0 +1,97 @@
+{
+  "data": {
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+      {
+        "bones": [
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -15,
+                  0,
+                  -20
+                ],
+                "size": [
+                  30,
+                  6,
+                  40
+                ],
+                "uv": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "origin": [
+                  -10,
+                  6,
+                  -12
+                ],
+                "size": [
+                  20,
+                  8,
+                  20
+                ],
+                "uv": [
+                  140,
+                  0
+                ]
+              }
+            ],
+            "name": "skirt",
+            "pivot": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -8,
+                  6,
+                  17
+                ],
+                "size": [
+                  16,
+                  16,
+                  2
+                ],
+                "uv": [
+                  220,
+                  0
+                ]
+              }
+            ],
+            "name": "fan",
+            "pivot": [
+              0,
+              14,
+              18
+            ]
+          }
+        ],
+        "description": {
+          "identifier": "geometry.entity.hovercraft",
+          "texture_height": 256,
+          "texture_width": 256,
+          "visible_bounds_height": 2,
+          "visible_bounds_offset": [
+            0,
+            1,
+            0
+          ],
+          "visible_bounds_width": 3.5
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:entity/hovercraft",
+  "kind": "msm:geo_model",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "anchor": "top_left",
+    "color": "#f0f0f0",
+    "format": 1,
+    "show": "in_vehicle",
+    "text": "Speed: {value} blocks a second",
+    "type": "text",
+    "value": {
+      "source": "vehicle",
+      "stat": "speed"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:speedometer",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

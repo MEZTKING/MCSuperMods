@@ -1,0 +1,22 @@
+{
+  "data": {
+    "anchor": "left",
+    "color": "#e0c040",
+    "format": 1,
+    "show": "driving",
+    "text": "Shells: {value}",
+    "type": "text",
+    "value": {
+      "source": "vehicle",
+      "stat": "ammo",
+      "weapon": "cannon"
+    },
+    "vehicle": "msm_sample_vehicles:battle_tank"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:tank_shells",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

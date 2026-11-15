@@ -1,0 +1,47 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Flare charge lives in each player's script data under \"flare_charge\"; the HUD bar",
+      "// msm_sample_vehicles:flare_charge reads it. It refills by 5 a second up to 100.",
+      "const KEY = \"flare_charge\";",
+      "const FULL = 100;",
+      "const COST = 25;",
+      "const REFILL = 5;",
+      "",
+      "function chargeOf(value: unknown): number {",
+      "  return typeof value === \"number\" ? value : FULL;",
+      "}",
+      "",
+      "msm.events.on(\"player.tick\", (e) => {",
+      "  const now = e.player.data.get(KEY);",
+      "  const charge = chargeOf(now);",
+      "  if (typeof now !== \"number\" || charge < FULL) {",
+      "    e.player.data.set(KEY, Math.min(FULL, charge + (typeof now === \"number\" ? REFILL : 0)));",
+      "  }",
+      "}, { interval: 20 });",
+      "",
+      "// The flare key (msm_sample_vehicles:flare) runs this handler: it spends charge and sends a flare up.",
+      "msm.actions.define(\"msm_sample_vehicles:fire_flare\", (e) => {",
+      "  const player = e.player;",
+      "  if (player === undefined) return;",
+      "  const charge = chargeOf(player.data.get(KEY));",
+      "  if (charge < COST) {",
+      "    player.sendMessage(\"The flare is not charged yet.\");",
+      "    return;",
+      "  }",
+      "  player.data.set(KEY, charge - COST);",
+      "  e.world.spawnParticle(\"minecraft:firework\", e.pos.offset(0, 3, 0), { count: 40, spread: 0.5 });",
+      "  e.world.playSound(\"minecraft:entity.firework_rocket.launch\", e.pos);",
+      "  msm.log.info(\"flare: \" + player.name + \" sent up a flare\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:flares",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

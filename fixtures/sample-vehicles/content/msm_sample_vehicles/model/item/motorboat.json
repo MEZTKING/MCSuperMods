@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_sample_vehicles:item/motorboat"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:item/motorboat",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

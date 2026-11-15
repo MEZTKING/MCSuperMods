@@ -1,0 +1,81 @@
+{
+  "data": {
+    "camera": {
+      "distance": 10
+    },
+    "display_name": "Biplane",
+    "engine": {
+      "fuel": {
+        "items": [
+          {
+            "item": "minecraft:coal",
+            "ticks": 1200
+          }
+        ]
+      },
+      "sound": "minecraft:item.elytra.flying",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "format": 1,
+    "health": {
+      "max": 40,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "msm_sample_vehicles:repair_kit"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_sample_vehicles:item/biplane"
+    },
+    "model": {
+      "geometry": "msm_sample_vehicles:entity/biplane",
+      "texture": "msm_sample_vehicles:entity/biplane"
+    },
+    "movement": {
+      "acceleration": 0.02,
+      "lift_speed": 0.15,
+      "max_speed": 1,
+      "mode": "air",
+      "takeoff_speed": 0.5,
+      "turn_rate": 3
+    },
+    "parts": {
+      "propellers": [
+        "propeller"
+      ],
+      "wheel_radius": 0.19,
+      "wheels": [
+        "wheel_front_left",
+        "wheel_front_right"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          0.6,
+          0.5
+        ]
+      },
+      {
+        "offset": [
+          0,
+          0.6,
+          -0.5
+        ]
+      }
+    ],
+    "size": [
+      2.5,
+      1.2
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:biplane",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

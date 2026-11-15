@@ -1,0 +1,69 @@
+{
+  "data": {
+    "camera": {
+      "distance": 4
+    },
+    "display_name": "Swamp Buggy",
+    "engine": {
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.minecart.riding"
+    },
+    "format": 1,
+    "health": {
+      "max": 30,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "msm_sample_vehicles:repair_kit"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_sample_vehicles:item/swamp_buggy",
+      "places_on": "any"
+    },
+    "model": {
+      "geometry": "msm_sample_vehicles:entity/swamp_buggy",
+      "texture": "msm_sample_vehicles:entity/swamp_buggy"
+    },
+    "movement": {
+      "grip": 0.9,
+      "max_speed": 0.35,
+      "mode": "amphibious",
+      "step_height": 0.5,
+      "turn_rate": 6
+    },
+    "parts": {
+      "steering": [
+        "wheel_front_left",
+        "wheel_front_right"
+      ],
+      "wheel_radius": 0.19,
+      "wheels": [
+        "wheel_front_left",
+        "wheel_front_right",
+        "wheel_back_left",
+        "wheel_back_right"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          0.2,
+          -0.1
+        ]
+      }
+    ],
+    "size": [
+      1.2,
+      0.6
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:swamp_buggy",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

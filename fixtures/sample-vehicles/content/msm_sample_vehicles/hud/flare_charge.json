@@ -1,0 +1,27 @@
+{
+  "data": {
+    "anchor": "above_hotbar",
+    "back_color": "#202020",
+    "fill_color": "#e07020",
+    "format": 1,
+    "max": 100,
+    "show": "in_vehicle",
+    "size": [
+      81,
+      5
+    ],
+    "type": "bar",
+    "value": {
+      "key": "flare_charge",
+      "namespace": "msm_sample_vehicles",
+      "scope": "player",
+      "source": "data"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:flare_charge",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

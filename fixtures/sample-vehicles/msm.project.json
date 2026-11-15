@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Vehicles",
+  "namespaces": [
+    "msm_sample_vehicles"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim",
+    "msm.scripting",
+    "msm.controls"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

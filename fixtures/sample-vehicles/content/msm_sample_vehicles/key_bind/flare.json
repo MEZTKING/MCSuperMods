@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "sample_vehicles",
+    "category_name": "Sample vehicles",
+    "cooldown_ticks": 40,
+    "default_key": "key.keyboard.j",
+    "display_name": "Send up a flare",
+    "events": {
+      "msm_sample_vehicles:flare_pressed": {
+        "actions": [
+          {
+            "handler": "msm_sample_vehicles:fire_flare",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "msm:on_press": "msm_sample_vehicles:flare_pressed",
+    "when": "in_vehicle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vehicles:flare",
+  "kind": "msm:key_bind",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}
