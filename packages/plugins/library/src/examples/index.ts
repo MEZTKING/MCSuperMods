@@ -31,6 +31,7 @@ import { rulesBehaviourExamples, rulesKindExamples } from './rules';
 import { scriptBehaviourExamples, scriptKindExamples } from './scripts';
 import { structureExamples } from './structures';
 import { tagExamples } from './tags';
+import { vehicleBehaviourExamples, vehicleKindExamples } from './vehicles';
 import { worldgenExamples } from './worldgen';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
@@ -38,6 +39,7 @@ export { entityBehaviourExamples } from './entities';
 export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
 export { scriptBehaviourExamples } from './scripts';
+export { vehicleBehaviourExamples } from './vehicles';
 
 /** The per-kind particle examples (ADR 0081 D5): the description first, then the type. */
 const [particleDescriptionExample, particleTypeExample] = particleKindExamples as [
@@ -49,7 +51,7 @@ const [particleDescriptionExample, particleTypeExample] = particleKindExamples a
  * The per-kind examples, in gallery order: resource pack (the particle description last),
  * data pack, tags, registries, the data kinds sweep, structures, worldgen, blocks and items
  * (the particle type last), entities, models and animations, scripts, rules (the lucky block,
- * ADR 0082 D11).
+ * ADR 0082 D11), the vehicle, key bind and HUD examples (ADR 0091 D3).
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
@@ -65,6 +67,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...entityKindExamples,
   ...scriptKindExamples,
   ...rulesKindExamples,
+  ...vehicleKindExamples,
 ]);
 
 /**
@@ -130,6 +133,7 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...entityBehaviourExamples,
   ...scriptBehaviourExamples,
   ...rulesBehaviourExamples,
+  ...vehicleBehaviourExamples,
   ...popularExamples,
   ...starterExamples,
 ]);

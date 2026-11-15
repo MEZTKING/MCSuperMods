@@ -1,0 +1,19 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_examples:block/shell_crate"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/shell_crate",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The crate: a full cube drawn from textures/block/shell_crate.png.",
+    "tags": [
+      "example",
+      "vehicles"
+    ]
+  }
+}

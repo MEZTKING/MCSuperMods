@@ -10,6 +10,7 @@ import { PARTICLE_FRAMES, PARTICLE_PATTERNS } from '../src/assets/png';
 import { COLOURS } from '../src/content/bundle';
 import { SKIN_ANIMALS, SKIN_SHADES, shade } from '../src/content/mob-skins';
 import { DEFAULT_PARTICLE_COLOUR } from '../src/content/particle';
+import { vehicleModelTextureSize } from '../src/content/vehicle-models';
 import {
   behaviourExamples,
   categoryTag,
@@ -30,6 +31,7 @@ import {
   STARTERS_CATEGORY,
   scriptBehaviourExamples,
   starterExamples,
+  vehicleBehaviourExamples,
 } from '../src/index';
 import { TINTABLE_GREY } from '../src/starters/wood-set';
 
@@ -83,8 +85,8 @@ const STARTER_IDS = [
 ];
 
 /**
- * The 96 kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
- * items, entities, models and animations and scripting plugins, in per-kind example order.
+ * The kinds of the built-in resource pack, data pack, structures, worldgen, blocks and
+ * items, entities (with vehicles), controls, models and animations, scripting and rules plugins, in per-kind example order.
  */
 const KIND_IDS = [
   'minecraft:model',
@@ -184,6 +186,9 @@ const KIND_IDS = [
   'msm:animation',
   'msm:script',
   'msm:rules',
+  'msm:vehicle',
+  'msm:key_bind',
+  'msm:hud',
 ];
 
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
@@ -253,6 +258,14 @@ const PLACEHOLDERS = new Set([
       Object.values(COLOURS).map((colour) =>
         Buffer.from(paintingPng(width, height, colour)).toString('hex'),
       ),
+    ),
+  ),
+  // Vehicle model skins (ADR 0091 D3): each example model's square texture in each colour.
+  ...(['tank', 'motorboat', 'raft'] as const).flatMap((model) =>
+    Object.values(COLOURS).map((colour) =>
+      Buffer.from(
+        mobSkinPng(vehicleModelTextureSize(model), vehicleModelTextureSize(model), { colour }),
+      ).toString('hex'),
     ),
   ),
   // Particle frames (ADR 0081 D3): every frame of each particle pattern, in each colour and the
@@ -683,8 +696,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 97 per-kind examples, one per built-in kind, 33 behaviour examples, 16 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(97);
+  it('has 100 per-kind examples, one per built-in kind, 34 behaviour examples, 16 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(100);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -731,6 +744,9 @@ describe('examples', () => {
     expect(rulesBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_rules_guard_mob',
     ]);
+    expect(vehicleBehaviourExamples.map((example) => example.id)).toEqual([
+      'example_vehicles_seaside',
+    ]);
     expect(popularExamples.map((example) => example.id)).toEqual(
       [
         'glowshard',
@@ -755,7 +771,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(150);
+    expect(libraryExamples).toHaveLength(154);
   });
 
   it('reuses the starter builders for the starter projects', () => {

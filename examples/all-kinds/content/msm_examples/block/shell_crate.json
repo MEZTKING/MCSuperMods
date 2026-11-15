@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "resistance": 3
+      }
+    },
+    "display_name": "Shell Crate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/shell_crate",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:shell_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A plain crate to mark an ammunition store. It is an ordinary block that drops itself; the tank is loaded by using fire charges on it, not from the crate.",
+    "tags": [
+      "example",
+      "vehicles"
+    ]
+  }
+}

@@ -5134,3 +5134,11 @@ Decisions
 
 Next
 - The main session copies the report's "Notes for the plan" into the plan; B441 and Wave 1 may start (B441 still after vehicles' B408).
+
+## 2026-11-15 — executor — B423 library examples for vehicles, key binds and HUD
+
+**What:** Added `packages/plugins/library/src/examples/vehicles.ts` (ADR 0091 D3) with the per-kind examples `example_msm_vehicle` ("Vehicles: a tank battle": tank, geo model, shell crate block, a reload HUD line), `example_msm_key_bind` ("Controls: a dash ability": Z key, a charge bar), `example_msm_hud` ("Controls: a score and a mana bar") and the behaviour example `example_vehicles_seaside` (motorboat, raft, dock block), plus `content/vehicle-models.ts` (boxed tank, motorboat and raft geometries). The index puts the three per-kind examples after the Rules one and exports `vehicleBehaviourExamples`. `examples/` goldens regenerated (every project now lists `msm.controls`). Library test counts: 100 per-kind, 34 behaviour, 154 in all.
+
+**Decisions:** The exporters library test now registers `@msm/plugin-controls` (it was missing, so `msm:key_bind` and `msm:hud` were not even registered there). A vehicle's item uses `item.model` with an explicit `minecraft:model` element, because a texture-only item reports `schema.unknown-id` for its generated model. The tank fires vanilla fire charges instead of a custom shell item, and the dash example has no Rules book (the Rules key/HUD cards are B424), so the stamina bar is emptied by `set_hud`. Root CLAUDE.md counts left alone: no test pins them and "134 examples" counts differently from `libraryExamples`.
+
+**Next:** B424 can add the cooldown-counter Rules book to the dash example; B425 builds the sample vehicles fixture.

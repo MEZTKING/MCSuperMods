@@ -1,0 +1,29 @@
+{
+  "data": {
+    "anchor": "above_hotbar",
+    "back_color": "#142c14",
+    "fill_color": "#4cc04c",
+    "format": 1,
+    "max": 100,
+    "show": "always",
+    "size": [
+      81,
+      5
+    ],
+    "type": "bar",
+    "value": {
+      "source": "set"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:dash_charge",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A green bar above the hotbar. Its value comes from source set, so only actions (here the dash key) and scripts change it; the dash empties it to 0. Rules or a script can fill it again.",
+    "tags": [
+      "example",
+      "controls-and-hud"
+    ]
+  }
+}

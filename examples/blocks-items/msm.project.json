@@ -14,7 +14,8 @@
     "msm.entities",
     "msm.models-anim",
     "msm.scripting",
-    "msm.rules"
+    "msm.rules",
+    "msm.controls"
   ],
   "settings": {},
   "targets": [

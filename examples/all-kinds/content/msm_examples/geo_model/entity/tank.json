@@ -1,0 +1,165 @@
+{
+  "data": {
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+      {
+        "bones": [
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -20,
+                  4,
+                  -28
+                ],
+                "size": [
+                  40,
+                  12,
+                  56
+                ],
+                "uv": [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "name": "hull",
+            "pivot": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  20,
+                  0,
+                  -30
+                ],
+                "size": [
+                  8,
+                  10,
+                  60
+                ],
+                "uv": [
+                  0,
+                  68
+                ]
+              }
+            ],
+            "name": "track_left",
+            "pivot": [
+              24,
+              5,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -28,
+                  0,
+                  -30
+                ],
+                "size": [
+                  8,
+                  10,
+                  60
+                ],
+                "uv": [
+                  0,
+                  138
+                ]
+              }
+            ],
+            "name": "track_right",
+            "pivot": [
+              -24,
+              5,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -12,
+                  16,
+                  -12
+                ],
+                "size": [
+                  24,
+                  10,
+                  24
+                ],
+                "uv": [
+                  136,
+                  138
+                ]
+              }
+            ],
+            "name": "turret",
+            "pivot": [
+              0,
+              16,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -2,
+                  19,
+                  -40
+                ],
+                "size": [
+                  4,
+                  4,
+                  28
+                ],
+                "uv": [
+                  0,
+                  208
+                ]
+              }
+            ],
+            "name": "barrel",
+            "parent": "turret",
+            "pivot": [
+              0,
+              21,
+              -12
+            ]
+          }
+        ],
+        "description": {
+          "identifier": "geometry.entity.tank",
+          "texture_height": 256,
+          "texture_width": 256,
+          "visible_bounds_height": 3,
+          "visible_bounds_offset": [
+            0,
+            1.5,
+            0
+          ],
+          "visible_bounds_width": 5
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:entity/tank",
+  "kind": "msm:geo_model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The boxed model of the tank, drawn for MSM. The vehicle names its bones in turret, parts and muzzle.",
+    "tags": [
+      "example",
+      "vehicles"
+    ]
+  }
+}

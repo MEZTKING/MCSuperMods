@@ -1,0 +1,31 @@
+{
+  "data": {
+    "anchor": "above_hotbar",
+    "back_color": "#14183c",
+    "fill_color": "#3c6cf0",
+    "format": 1,
+    "max": 100,
+    "size": [
+      81,
+      5
+    ],
+    "type": "bar",
+    "value": {
+      "key": "mana",
+      "namespace": "msm_examples",
+      "scope": "player",
+      "source": "data"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mana",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A HUD element draws on the player's screen. type bar fills a bar out of max; its value is script data of the player (\"mana\" in this project's namespace), which Rules counters and scripts set. fill_color and back_color are #rrggbb. HUD elements need the Fabric mod jar export; the server sends changed values every few ticks.",
+    "tags": [
+      "example",
+      "controls-and-hud"
+    ]
+  }
+}

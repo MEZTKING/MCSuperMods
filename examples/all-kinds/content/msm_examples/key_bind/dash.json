@@ -1,0 +1,44 @@
+{
+  "data": {
+    "category": "abilities",
+    "category_name": "Abilities",
+    "cooldown_ticks": 20,
+    "default_key": "key.keyboard.z",
+    "display_name": "Dash",
+    "events": {
+      "msm_examples:dash_press": {
+        "actions": [
+          {
+            "direction": "horizontal",
+            "strength": 1.2,
+            "type": "launch",
+            "up": 0.2
+          },
+          {
+            "sound": "minecraft:entity.breeze.wind_burst",
+            "type": "play_sound"
+          },
+          {
+            "hud": "msm_examples:dash_charge",
+            "type": "set_hud",
+            "value": 0
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "msm:on_press": "msm_examples:dash_press",
+    "when": "on_foot"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:dash",
+  "kind": "msm:key_bind",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A key bind adds a key to the Controls screen. default_key names the key as vanilla does (key.keyboard.z); players can rebind it. category and category_name give the Controls group. when on_foot makes it work only while the player rides nothing, and cooldown_ticks 20 allows one press a second. msm:on_press names the event msm_examples:dash_press, run with the player as self: it launches the player forward, plays a whoosh and empties the charge bar. Key binds need the Fabric mod jar export; a new one needs a restart.",
+    "tags": [
+      "example",
+      "controls-and-hud"
+    ]
+  }
+}

@@ -61,6 +61,7 @@ import blocksItemsPlugin, {
   blockStateFlag,
   blockTypeOf,
 } from '@msm/plugin-blocks-items';
+import controlsPlugin from '@msm/plugin-controls';
 import dataPackPlugin from '@msm/plugin-datapack';
 import entitiesPlugin from '@msm/plugin-entities';
 import libraryPlugin, {
@@ -144,6 +145,7 @@ const PLUGINS: readonly Plugin[] = [
   modelsAnimPlugin,
   scriptingPlugin,
   rulesPlugin,
+  controlsPlugin,
   libraryPlugin,
 ];
 const PACK_KIND = 'minecraft:pack_mcmeta';

@@ -79,6 +79,7 @@ export {
   STARTERS_CATEGORY,
   scriptBehaviourExamples,
   starterExamples,
+  vehicleBehaviourExamples,
 } from './examples/index';
 export {
   BREWING_INGREDIENTS,

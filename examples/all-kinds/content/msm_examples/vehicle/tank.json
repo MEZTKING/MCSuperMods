@@ -1,0 +1,99 @@
+{
+  "data": {
+    "camera": {
+      "distance": 8
+    },
+    "display_name": "Tank",
+    "engine": {
+      "sound": "minecraft:entity.minecart.riding",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "format": 1,
+    "health": {
+      "explodes": 2,
+      "immune_to": [
+        "#minecraft:is_fire"
+      ],
+      "max": 120,
+      "repair": [
+        {
+          "amount": 20,
+          "item": "minecraft:iron_ingot"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_examples:item/tank"
+    },
+    "model": {
+      "geometry": "msm_examples:entity/tank",
+      "texture": "msm_examples:entity/tank"
+    },
+    "movement": {
+      "acceleration": 0.01,
+      "grip": 1,
+      "max_speed": 0.25,
+      "mode": "ground",
+      "step_height": 1,
+      "turn_rate": 3,
+      "turns_in_place": true
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          1.6,
+          0
+        ]
+      }
+    ],
+    "size": [
+      3,
+      1.6
+    ],
+    "turret": {
+      "bone": "turret",
+      "pitch_bone": "barrel",
+      "pitch_limit": [
+        -20,
+        10
+      ],
+      "turn_rate": 4
+    },
+    "weapons": [
+      {
+        "ammo": {
+          "capacity": 16,
+          "item": "minecraft:fire_charge"
+        },
+        "cooldown_ticks": 60,
+        "id": "cannon",
+        "inaccuracy": 0.5,
+        "key": "fire",
+        "muzzle": {
+          "bone": "barrel",
+          "offset": [
+            0,
+            1.3,
+            2.5
+          ]
+        },
+        "projectile": "minecraft:fire_charge",
+        "recoil": 0.1,
+        "sound": "minecraft:entity.generic.explode",
+        "speed": 2.5
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:tank",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A slow, tough tank that turns on the spot. movement.mode ground drives it on the vanilla movement keys; turns_in_place lets it spin without moving. The turret follows where the driver looks, within pitch_limit, and the weapon cannon is fired with the Vehicle: fire key (R by default, changeable in Controls) every 60 ticks, using one fire charge from its ammunition (loaded by using fire charges on the tank, up to 16). health.repair lets iron ingots mend it, and explodes makes it blow up when destroyed. Its geometry, texture, item model and item picture are in this example, named after the vehicle. A vehicle needs the Fabric mod jar export; its item places it on the ground.",
+    "tags": [
+      "example",
+      "vehicles"
+    ]
+  }
+}

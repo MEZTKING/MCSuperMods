@@ -1,0 +1,28 @@
+{
+  "data": {
+    "anchor": "top_right",
+    "color": "#ffe060",
+    "format": 1,
+    "offset": [
+      -4,
+      4
+    ],
+    "text": "Score: {value}",
+    "type": "text",
+    "value": {
+      "objective": "points",
+      "source": "score"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:score",
+  "kind": "msm:hud",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A line of text in the top-right corner. Its value is the player's score in the \"points\" scoreboard objective (create it in a load function with scoreboard objectives add points dummy); {value} in text is replaced by the number.",
+    "tags": [
+      "example",
+      "controls-and-hud"
+    ]
+  }
+}
