@@ -5156,3 +5156,19 @@ Decisions
 
 Next
 - B445/B446 (runtime types), B449 (waterlogging, weathering, waxing), B450 (bags, bundles) and B454 (commands, tabs) remove their prefixes from `PENDING` and add their kinds; B447/B448/B451/B456 lower and validate the per-type rules the format cannot express (allowed types per component, stack size 1, argument order).
+## 2026-11-15 — executor — B419 App: Vehicle Studio
+
+What
+- Vehicle Studio for `msm:vehicle` (ADR 0091 D1), a lazy chunk registered in `studios/entities/studios.tsx` (`msm.entities.vehicle`); files in `studios/entities/vehicle/`. Sections: Preview, Name and size, Model and paint (geo model, texture, animation set, scale, "Make a starter model" from `vehicleGeometry` with a shape and a colour as one undo step through `applyChanges`, "Paint the texture", paints), Movement (a picture card per mode, top speed in blocks a second beside blocks a tick, mode fields, ramming), Seats (a seat plan seen from above with draggable numbered markers, one undo step per drag, arrow keys move by 0.05; offsets, weapons per seat), Engine and fuel, Health and repair, Weapons, Turret, Parts ("Find parts by name"), Storage, Item, Camera, Exhaust, Rules (through `RulesSlot`) and the events editor with the vehicle triggers. Bone pickers (`BonePicker.tsx`) read the geometry's bones and keep an unknown value marked "not in the model".
+- Preview: `preview/geo/vehicle-pose.ts` (pure: rig, yaw from a mouse ray onto the turret's level within its limits, wheel roll, steering, rotors, propellers) and the lazy `VehicleCanvas.tsx` over the geo renderer, with seat, muzzle and exhaust markers; Drive and Steer sliders.
+- Very easy: `VEHICLE_VERY_EASY_SECTIONS` (Rules, preview, `vehicle-basics`): How fast, Needs fuel / What fuel?, Has a cannon (vehicles with a turret, barrel or cannon), How many seats, Colour (tints the texture, or paints a plain one).
+- Tests: `test/components/preview/vehicle-pose.test.ts` (13, including the starter tank's barrel and a car's wheel through the real baker), `test/components/studios/entities/vehicle-model.test.ts` (18), `vehicle-studio.test.tsx` (11). App suite 225 files, 2101 tests green; lint, typecheck, build pass. Renderer 15.4 MB of 18 MB (VehicleStudio chunk 61.8 kB, VehicleCanvas 7.3 kB); app.asar 28.1 MB of 32 MB. Screenshot `scratchpad/shots/60-vehicle-studio.png` (Tank template, starter model, turret aimed).
+
+Decisions
+- The Studio draws its own preview (the right-hand preview panel does not know `previewKind: 'vehicle'`, and `preview/geo/` allowed new files only).
+- Weapon key and horn labels take their default keys from `TargetFacts.controls.runtimeKeys`.
+- An extra "Name and size" section holds names, the hitbox, pick-up and the dashboard switch.
+
+Next
+- The right-hand preview panel could show the vehicle as well (`PreviewPanel`, outside B419).
+- B427: e2e over the test ids in the B419 notes; B431: labels for the guide.
