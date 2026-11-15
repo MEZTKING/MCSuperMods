@@ -5093,3 +5093,16 @@ Decisions
 
 Next
 - B411: default name key `key.<ns>.<path>` with `/` as `.`; B420: Studios use `hudSpritePath` and the exported codes; B424, B430, B431 read the plan notes.
+## 2026-11-15 — executor — B442 follow-ups: placed feature cache, clean biome addition default, status lines
+
+What
+- Vanilla asset cache: `PREVIEW_ASSET_PATTERNS` gains `^data/minecraft/worldgen/placed_feature/[^/]+\.json$`; `ASSET_CACHE_SCHEMA_VERSION` 2 to 3 (`cache.ts`; the app's `ipc-contract.ts` and `platform.ts` literals follow), so existing caches re-extract. `host.modelPreview.vanilla.readAsset` goes through `assertPreviewAssetPath`, which uses the same patterns, so "Make my own copy" now reads the game's placement. Cost is cache size on the user's machine only (a few hundred small JSON files); nothing ships in app.asar.
+- `msm:biome_addition` default: the schema needs `features` or `spawns` non-empty, so an empty list is not allowed; the default is now a sheep spawn on plains (no placed feature), which starts without `blocks-items.addition-vanilla-feature`. Both targets' default goldens updated.
+- Status lines: plugin API 1.17.0 in `packages/plugin-api/CLAUDE.md` (1.16.0 was already there) and `packages/targets/CLAUDE.md`; `CHANGES.md` rows for `worldgen.vanillaFeatureOrder` on mc-26.3 and mc-26.4.
+- Tests: interop extract and cache (new kept and skipped entries, schema 2 now stale), app main-minecraft and ipc-contract, blocks-items validators (default is clean).
+
+Decisions
+- Sheep spawn rather than a non-vanilla placeholder feature: it validates and lowers, and a placeholder id would need a project element to resolve.
+
+Next
+- Nothing open from B442.

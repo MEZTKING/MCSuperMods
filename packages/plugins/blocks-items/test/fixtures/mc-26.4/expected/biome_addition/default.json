@@ -4,13 +4,16 @@
       "biomes": [
         "minecraft:plains"
       ],
-      "features": [
+      "format": 1,
+      "spawns": [
         {
-          "feature": "minecraft:flower_plains",
-          "step": "vegetal_decoration"
+          "category": "creature",
+          "entity": "minecraft:sheep",
+          "max_group": 3,
+          "min_group": 2,
+          "weight": 4
         }
-      ],
-      "format": 1
+      ]
     },
     "layer": "msm",
     "path": "msm/demo/biome_addition/sample.json",

@@ -183,7 +183,7 @@ export interface AssetCacheInfoView {
   jarSha1: string;
   fileCount: number;
   extractedAt: string;
-  schemaVersion: 2;
+  schemaVersion: 3;
 }
 
 /** What main knows about the Minecraft installation for one version. */

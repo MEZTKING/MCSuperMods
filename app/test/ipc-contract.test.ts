@@ -359,8 +359,8 @@ const samples: Record<
   [InvokeChannels.minecraftExtract]: {
     request: [{ mcVersion: '1.0' }, { mcVersion: '..' }],
     response: [
+      { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 3 },
       { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 2 },
-      { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 1 },
     ],
   },
   [InvokeChannels.minecraftReadAsset]: {

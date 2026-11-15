@@ -137,7 +137,7 @@ export const modKind: ElementKind = {
 
 /**
  * Features and spawns added to vanilla or other biomes when a server starts (ADR 0060 D2). The
- * default adds vanilla's plains flowers to plains, a valid start to edit.
+ * default adds a small natural spawn of sheep to plains, a valid start to edit. It names no placed feature on purpose: a vanilla one triggers `blocks-items.addition-vanilla-feature` (ADR 0097 D3), and the schema needs `features` or `spawns` to be non-empty.
  */
 export const biomeAdditionKind: ElementKind = {
   id: BIOME_ADDITION_KIND,
@@ -146,7 +146,9 @@ export const biomeAdditionKind: ElementKind = {
   defaultData: {
     format: 1,
     biomes: ['minecraft:plains'],
-    features: [{ feature: 'minecraft:flower_plains', step: 'vegetal_decoration' }],
+    spawns: [
+      { entity: 'minecraft:sheep', category: 'creature', weight: 4, min_group: 2, max_group: 3 },
+    ],
   },
   hiddenPaths: HIDDEN,
   lower: lowerBiomeAddition,

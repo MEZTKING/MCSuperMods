@@ -5,6 +5,7 @@ import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import {
   BLOCKS_ITEMS_PROBLEM_CODES,
+  biomeAdditionKind,
   blocksItemsValidators,
   DELAYED_PASSTHROUGH_COMPONENTS,
   isCubeModel,
@@ -949,6 +950,13 @@ describe('trigger and addition validators (ADRs 0060, 0061)', () => {
     expect(problems[0]?.message).toContain('"minecraft:ore_diamond" is a vanilla placed feature');
     expect(problems[0]?.message).toContain('Feature order cycle');
     expect(problems[1]?.message).toContain('"minecraft:flower_plains"');
+  });
+
+  it('gives a new biome addition no vanilla feature warning', async () => {
+    const problems = await validate([
+      biomeAddition('demo:a', biomeAdditionKind.defaultData as Record<string, unknown>),
+    ]);
+    expect(problems.filter((p) => p.code === 'blocks-items.addition-vanilla-feature')).toEqual([]);
   });
 
   it('checks the outline of loot addition pools and their item ids', async () => {

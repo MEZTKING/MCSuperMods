@@ -109,7 +109,7 @@ const assetCacheInfo = z
     jarSha1: z.string(),
     fileCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(2),
+    schemaVersion: z.literal(3),
   })
   .strict();
 /** A pack zip file name, as written by installs and combined exports. */

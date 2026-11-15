@@ -28,7 +28,7 @@ export interface AssetCacheInfo {
 }
 
 /** The current {@link AssetCacheInfo.schemaVersion}. */
-export const ASSET_CACHE_SCHEMA_VERSION = 2;
+export const ASSET_CACHE_SCHEMA_VERSION = 3;
 
 /** `<msmHome>/cache/assets/<version>`. */
 export function assetCacheDir(msmHome: string, version: string): string {

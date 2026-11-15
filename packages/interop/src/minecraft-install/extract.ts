@@ -8,13 +8,16 @@ import { unzipSync } from 'fflate';
 
 /**
  * The jar entries previews need: vanilla models, block and item definitions, block and item
- * textures with their animation sidecars (`.png.mcmeta`), and the English lang file.
+ * textures with their animation sidecars (`.png.mcmeta`), the English lang file and the vanilla
+ * placed feature files (the only `data/` entries).
  */
 export const PREVIEW_ASSET_PATTERNS: readonly RegExp[] = Object.freeze([
   /^assets\/minecraft\/(?:models|blockstates|items)\/.+\.json$/,
   /^assets\/minecraft\/textures\/(?:block|item)\/.+\.png$/,
   /^assets\/minecraft\/textures\/(?:block|item)\/.+\.png\.mcmeta$/,
   /^assets\/minecraft\/lang\/en_us\.json$/,
+  // Vanilla placed features, read by the World addition Studio's "Make my own copy".
+  /^data\/minecraft\/worldgen\/placed_feature\/[^/]+\.json$/,
 ]);
 
 /**

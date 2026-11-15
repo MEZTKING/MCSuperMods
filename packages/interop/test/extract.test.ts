@@ -14,6 +14,7 @@ describe('extractPreviewAssets', () => {
       'assets/minecraft/textures/block/msm_test.png',
       'assets/minecraft/textures/block/msm_test_anim.png',
       'assets/minecraft/textures/block/msm_test_anim.png.mcmeta',
+      'data/minecraft/worldgen/placed_feature/msm_test_flower.json',
     ]);
     for (const file of files) expect(file.data).toEqual(KEPT_ENTRIES[file.path]);
   });
@@ -58,6 +59,10 @@ describe('extractPreviewAssets', () => {
     expect(matches('assets/minecraft/textures/item/stick.png')).toBe(true);
     expect(matches('assets/minecraft/lang/en_us.json')).toBe(true);
     expect(matches('assets/minecraft/lang/en_gb.json')).toBe(false);
+    expect(matches('data/minecraft/worldgen/placed_feature/flower_plains.json')).toBe(true);
+    expect(matches('data/minecraft/worldgen/placed_feature/sub/flower_plains.json')).toBe(false);
+    expect(matches('data/minecraft/worldgen/configured_feature/flower_plains.json')).toBe(false);
+    expect(matches('data/minecraft/worldgen/placed_feature/flower_plains.txt')).toBe(false);
     expect(matches('assets/minecraft/textures/gui/widgets.png')).toBe(false);
     expect(matches('assets/minecraft/textures/block/water_still.png.mcmeta')).toBe(true);
     expect(matches('assets/minecraft/textures/item/compass.png.mcmeta')).toBe(true);

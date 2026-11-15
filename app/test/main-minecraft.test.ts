@@ -84,7 +84,7 @@ describe('Minecraft service', () => {
       version: VERSION,
       fileCount: Object.keys(KEPT_ENTRIES).length,
       extractedAt: '2026-01-01T00:00:00.000Z',
-      schemaVersion: 2,
+      schemaVersion: 3,
     });
     expect(info.jarSha1).toMatch(/^[0-9a-f]{40}$/);
     expect(progress[0]).toEqual({ mcVersion: VERSION, phase: 'reading', done: 0, total: 1 });
@@ -144,6 +144,11 @@ describe('Minecraft service', () => {
 
   it('serves only preview asset paths', async () => {
     expect(() => assertPreviewAssetPath('assets/minecraft/models/block/a.json')).not.toThrow();
+    // "Make my own copy" reads vanilla placed features.
+    expect(() =>
+      assertPreviewAssetPath('data/minecraft/worldgen/placed_feature/ore_coal_upper.json'),
+    ).not.toThrow();
+    expect(() => assertPreviewAssetPath('data/minecraft/recipe/stick.json')).toThrow();
     for (const path of [
       '../cache.json',
       'cache.json',
