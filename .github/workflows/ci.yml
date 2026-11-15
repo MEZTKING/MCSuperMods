@@ -215,6 +215,16 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-rules.golden.test.ts
           test -f "$RUNNER_TEMP/sample-rules/msm_sample_rules.jar"
           cat "$RUNNER_TEMP/sample-rules/fabric-facts.json"
+      # Vehicles, key binds and HUD elements (ADRs 0088-0091, B425): seven vehicles, a shell and a
+      # repair kit, the flare and status keys, four HUD elements and the flares script. The export
+      # also writes expect-lines.txt with the three registration lines the server check pins.
+      - name: Export the sample vehicles with the real runtime
+        run: |
+          MSM_SAMPLE_VEHICLES_OUT="$RUNNER_TEMP/sample-vehicles" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-vehicles.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-vehicles/msm_sample_vehicles.jar"
+          cat "$RUNNER_TEMP/sample-vehicles/fabric-facts.json"
+          cat "$RUNNER_TEMP/sample-vehicles/expect-lines.txt"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -309,6 +319,22 @@ jobs:
             --work "$RUNNER_TEMP/fabric-server-mob" \
             --cache ~/.cache/msm-fabric-server
           (cd "$dev" && find . -type f | sort) | diff "$RUNNER_TEMP/msm-dev-before.txt" -
+      # The sample vehicles (B426): the seven vehicle types, two key binds and four HUD elements
+      # register (the facts' expectScripts makes "loaded 1 script(s); 0 error(s)" required), and a
+      # dedicated server loads no client class (the vehicle renderer, model, engine sound, input
+      # and HUD drawing are client code, B416, B418).
+      - name: Headless Fabric server check (sample vehicles)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-vehicles/msm_sample_vehicles.jar"
+          --facts "$RUNNER_TEMP/sample-vehicles/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 7 vehicle type(s)'
+          --expect-line '[msm_runtime] registered 2 key bind(s)'
+          --expect-line '[msm_runtime] registered 4 HUD element(s)'
+          --expect-line '[msm_runtime] registered 0 block(s) and 2 item(s) from 15 definition file(s); 0 error(s), 0 warning(s)'
+          --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
       # Phase 6 (B139): scripts on a real server, the Java project eject built with Gradle, and
       # the behaviour-parity GameTests run against both the content jar and the ejected jar.
       - name: Export the sample script with the real runtime
@@ -646,6 +672,22 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-rules-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Vehicles, key binds and HUD (B426, SampleVehiclesParityTest): the seven types and their
+      # items, placing by mode, fuel, the car's boot, paint, the repair kit, the tank's shells, the
+      # cannon (a player-owned shell, cooldown, recoil), the machine gun while held, fire immunity,
+      # the explosion, picking up, the flare key only seated with its cooldown, the status key's HUD
+      # actions and the HUD sync, black-box, on the content jar of every version only (vehicles are
+      # not ejected, ADR 0091 D7). The test's spectator press is dropped with the one warning allowed.
+      - name: Parity GameTests (sample vehicles, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-vehicles/msm_sample_vehicles.jar"
+          --facts "$RUNNER_TEMP/sample-vehicles/fabric-facts.json"
+          --allow-line 'dropped 1 key packet(s) from msm-vh-status-ghost: in spectator mode'
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_vehicles_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-vehicles-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -700,6 +742,12 @@ jobs:
         with:
           name: msm-sample-rules-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-rules/msm_sample_rules.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msm-sample-vehicles-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-vehicles/msm_sample_vehicles.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7
