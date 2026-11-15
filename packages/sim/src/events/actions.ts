@@ -11,6 +11,7 @@
  * | `apply_effect`, `damage`, `heal` | a log line and a chip; what they do is said once |
  * | `launch` | pushes the player or the mob by its vector, with a chip |
  * | `light_portal`, `run_function`, `run_script` | "Only in Minecraft" |
+ * | `explode`, `show_hud`, `hide_hud`, `set_hud` | "Only in Minecraft" (the vehicles batch's B428 and B429 may draw them) |
  *
  * Whom an action affects follows the runtime's `self` and `other` (`EffectTarget`): `self` is
  * the event's player, else its mob; `other` is the other entity of the event.
@@ -48,6 +49,10 @@ export const SIM_ACTIONS: Readonly<Record<string, ActionHandling>> = Object.free
   damage: 'chip',
   heal: 'chip',
   light_portal: 'onlyInMinecraft',
+  explode: 'onlyInMinecraft',
+  show_hud: 'onlyInMinecraft',
+  hide_hud: 'onlyInMinecraft',
+  set_hud: 'onlyInMinecraft',
 });
 
 /** `trigger_event` chains nest at most this deep; the fired event is depth 1 (as the runtime). */
@@ -520,6 +525,14 @@ function runAction(
       const portal = str(action.portal) ?? '';
       return [add('onlyInMinecraft', `light the frame of ${host.names.item(portal)}`)];
     }
+    case 'explode':
+      return [add('onlyInMinecraft', `make an explosion of power ${num(action.power, 0)}`)];
+    case 'show_hud':
+      return [add('onlyInMinecraft', `show ${str(action.hud) ?? ''} on screen`)];
+    case 'hide_hud':
+      return [add('onlyInMinecraft', `hide ${str(action.hud) ?? ''} from the screen`)];
+    case 'set_hud':
+      return [add('onlyInMinecraft', `set ${str(action.hud) ?? ''} on screen`)];
     case 'run_function':
       return [add('onlyInMinecraft', `run function ${str(action.function) ?? ''}`)];
     case 'run_script': {

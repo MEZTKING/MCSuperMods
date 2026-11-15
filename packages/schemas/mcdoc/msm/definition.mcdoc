@@ -1,12 +1,17 @@
 // MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
 // entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
-// D2, D3) and particle types (ADR 0080 D1). Lowering writes these to
+// D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1)
+// and vehicles (ADR 0090 D2). Lowering writes these to
 // `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
 // `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
-// `msm/<ns>/loot_addition/<path>.json` and `msm/<ns>/particle/<path>.json`.
+// `msm/<ns>/loot_addition/<path>.json`, `msm/<ns>/particle/<path>.json`,
+// `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json` and `msm/<ns>/vehicle/<path>.json`.
 
 use super::action::Event
 use super::action::ParticleSpec
+use super::controls::HudCommon
+use super::controls::KeyBindCommon
+use super::vehicle::VehicleCommon
 
 /// A vanilla `SoundType` constant in lower case (verify the list at implementation).
 enum(string) SoundType {
@@ -1922,4 +1927,28 @@ struct Particle {
 	/// Definition format; this is version 1.
 	format: 1,
 	...ParticleCommon,
+}
+
+/// A key bind definition, `msm/<ns>/key_bind/<path>.json` (ADR 0088 D3): a key in vanilla's
+/// Controls screen whose presses the client sends to the server, which fires the events.
+struct KeyBind {
+	/// Definition format; this is version 1.
+	format: 1,
+	...KeyBindCommon,
+}
+
+/// A HUD element definition, `msm/<ns>/hud/<path>.json` (ADR 0089 D1): one bar, text or row of
+/// icons drawn by the runtime's HUD layer.
+struct Hud {
+	/// Definition format; this is version 1.
+	format: 1,
+	...HudCommon,
+}
+
+/// A vehicle definition, `msm/<ns>/vehicle/<path>.json` (ADR 0090 D2): an entity type of the
+/// runtime's vehicle class and an item under the same id.
+struct Vehicle {
+	/// Definition format; this is version 1.
+	format: 1,
+	...VehicleCommon,
 }

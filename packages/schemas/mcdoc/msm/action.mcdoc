@@ -30,6 +30,14 @@ enum(string) ActionType {
 	Heal = "heal",
 	/// Lights a project portal's empty frame at the event block or next to it (ADR 0077 D3).
 	LightPortal = "light_portal",
+	/// Makes an explosion at the event position or the other entity (ADR 0090 D6).
+	Explode = "explode",
+	/// Shows a HUD element to the event's player (ADR 0089 D6).
+	ShowHud = "show_hud",
+	/// Hides a HUD element from the event's player (ADR 0089 D6).
+	HideHud = "hide_hud",
+	/// Sets the value of a HUD element for the event's player (ADR 0089 D6).
+	SetHud = "set_hud",
 }
 
 /// Who an `apply_effect`, `launch`, `damage` or `heal` action affects.
@@ -221,4 +229,55 @@ dispatch msm:action[heal] to struct Heal {
 dispatch msm:action[light_portal] to struct LightPortal {
 	/// The portal block, a project block of type `portal`.
 	portal: #[id="block"] string,
+}
+
+/// Where an `explode` action makes its explosion (ADR 0090 D6).
+enum(string) ExplodeAt {
+	/// The event's own position: the block of a block event, the entity of an entity or vehicle
+	/// event, where a throwable hit for its hit events, the player of an item, effect or key
+	/// event. The default.
+	Self = "self",
+	/// The other entity of the event (as `EffectTarget` `other`); nothing happens without one.
+	Other = "other",
+}
+
+/// Makes an explosion (ADR 0090 D6), so a shell's `on_hit_block` or a vehicle's destruction
+/// needs no script. The event's player, when there is one, is the explosion's cause. Runtimes
+/// older than the release that ships ADR 0090 reject it as an unknown type.
+dispatch msm:action[explode] to struct Explode {
+	/// Power, 0 to 10 (TNT is 4).
+	power: float @ 0..10,
+	/// Whether it sets fires; defaults to false.
+	fire?: boolean,
+	/// Whether it breaks blocks; defaults to false.
+	breaks_blocks?: boolean,
+	/// Defaults to `self`.
+	at?: ExplodeAt,
+}
+
+/// Shows a HUD element (ADR 0089 D6) to the event's player, also one with `starts_hidden`;
+/// without a player it does nothing and logs once. Runtimes older than the release that ships
+/// ADR 0089 reject it as an unknown type.
+dispatch msm:action[show_hud] to struct ShowHud {
+	/// A project HUD element id (`msm:hud`).
+	hud: string @ 1..,
+}
+
+/// Hides a HUD element (ADR 0089 D6) from the event's player until it is shown again; without a
+/// player it does nothing and logs once. Runtimes older than the release that ships ADR 0089
+/// reject it as an unknown type.
+dispatch msm:action[hide_hud] to struct HideHud {
+	/// A project HUD element id (`msm:hud`).
+	hud: string @ 1..,
+}
+
+/// Sets what a HUD element shows (ADR 0089 D6) to the event's player, for elements of every
+/// source (a later computed value of a synced source replaces it); without a player it does
+/// nothing and logs once. Runtimes older than the release that ships ADR 0089 reject it as an
+/// unknown type.
+dispatch msm:action[set_hud] to struct SetHud {
+	/// A project HUD element id (`msm:hud`).
+	hud: string @ 1..,
+	/// A number, or a text of at most 256 characters (bars and icons draw nothing for text).
+	value: (double | string @ 0..256),
 }

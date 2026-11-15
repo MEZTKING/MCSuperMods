@@ -1,0 +1,14 @@
+{
+  "anchor": "left",
+  "empty_icon": "mymod:hud/heart_empty",
+  "format": 1,
+  "half_icon": "mymod:hud/heart_half",
+  "icon": "mymod:hud/heart",
+  "max": 20,
+  "per_icon": 2,
+  "type": "icons",
+  "value": {
+    "source": "player",
+    "stat": "health"
+  }
+}

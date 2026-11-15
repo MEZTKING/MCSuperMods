@@ -1,0 +1,13 @@
+{
+  "anchor": "center",
+  "format": 1,
+  "offset": [0, 12],
+  "show": "in_vehicle",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "reload",
+    "weapon": "cannon"
+  },
+  "vehicle": "mymod:tank"
+}

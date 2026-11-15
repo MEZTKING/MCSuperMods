@@ -1,0 +1,12 @@
+{
+  "anchor": "right",
+  "format": 1,
+  "show": "in_vehicle",
+  "text": "hud.mymod.shells",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "ammo",
+    "weapon": "cannon"
+  }
+}

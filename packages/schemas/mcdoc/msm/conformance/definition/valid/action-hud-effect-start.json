@@ -1,0 +1,34 @@
+{
+  "category": "harmful",
+  "color": 16711680,
+  "components": {
+    "msm:on_start": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "hud": "mymod:mana",
+          "type": "show_hud"
+        },
+        {
+          "hud": "mymod:mana",
+          "type": "set_hud",
+          "value": 12.5
+        },
+        {
+          "hud": "mymod:status",
+          "type": "set_hud",
+          "value": "Ready"
+        },
+        {
+          "hud": "mymod:mana",
+          "type": "hide_hud"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,209 @@
+{
+  "camera": {
+    "distance": 8
+  },
+  "engine": {
+    "fuel": {
+      "capacity": 16000,
+      "items": [
+        {
+          "item": "minecraft:coal",
+          "ticks": 1600
+        },
+        {
+          "item": "#minecraft:logs",
+          "ticks": 300
+        }
+      ]
+    },
+    "horn": "minecraft:block.note_block.bass",
+    "sound": "minecraft:entity.minecart.riding",
+    "start_sound": "minecraft:block.piston.extend"
+  },
+  "events": {
+    "mymod:boom": {
+      "actions": [
+        {
+          "fire": true,
+          "power": 3,
+          "type": "explode"
+        }
+      ]
+    },
+    "mymod:fired": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.generic.explode",
+          "type": "play_sound",
+          "volume": 2
+        }
+      ]
+    },
+    "mymod:in": {
+      "actions": [
+        {
+          "hud": "mymod:tank_reload",
+          "type": "show_hud"
+        }
+      ]
+    },
+    "mymod:out": {
+      "actions": [
+        {
+          "hud": "mymod:tank_reload",
+          "type": "hide_hud"
+        }
+      ]
+    },
+    "mymod:patrol": {
+      "actions": [
+        {
+          "hud": "mymod:tank_status",
+          "type": "set_hud",
+          "value": "Driving"
+        }
+      ]
+    },
+    "mymod:placed": {
+      "actions": [
+        {
+          "count": 5,
+          "item": "mymod:shell",
+          "type": "give_item"
+        }
+      ]
+    }
+  },
+  "exhaust": {
+    "every_ticks": 3,
+    "offset": [0, 1, -1.5],
+    "particle": "minecraft:smoke"
+  },
+  "format": 1,
+  "health": {
+    "explodes": 4,
+    "immune_to": ["minecraft:cactus", "#minecraft:is_fire"],
+    "max": 200,
+    "repair": [
+      {
+        "amount": 20,
+        "item": "minecraft:iron_ingot"
+      }
+    ]
+  },
+  "hud": true,
+  "item": {
+    "model": "mymod:item/tank",
+    "name": "item.mymod.tank",
+    "places_on": "ground",
+    "texture": "mymod:item/tank"
+  },
+  "model": {
+    "animations": "mymod:entity/tank_animations",
+    "geometry": "mymod:entity/tank",
+    "paints": [
+      {
+        "dye": "minecraft:yellow_dye",
+        "id": "desert",
+        "texture": "mymod:entity/tank_desert"
+      },
+      {
+        "id": "plain",
+        "texture": "mymod:entity/tank"
+      }
+    ],
+    "scale": 1.2,
+    "texture": "mymod:entity/tank"
+  },
+  "movement": {
+    "acceleration": 0.01,
+    "braking": 0.05,
+    "grip": 1,
+    "max_speed": 0.2,
+    "mode": "ground",
+    "reverse_factor": 0.5,
+    "step_height": 1,
+    "turn_rate": 3,
+    "turns_in_place": true
+  },
+  "name": "entity.mymod.tank",
+  "on_destroy": "mymod:boom",
+  "on_dismount": "mymod:out",
+  "on_mount": "mymod:in",
+  "on_place": "mymod:placed",
+  "on_tick": {
+    "event": "mymod:patrol",
+    "interval": 40
+  },
+  "parts": {
+    "propellers": ["fan"],
+    "rotors": ["radar"],
+    "steering": ["hatch"],
+    "wheel_radius": 0.4,
+    "wheels": ["wheel_left", "wheel_right"]
+  },
+  "pick_up": true,
+  "ram_damage": {
+    "damage": 6,
+    "min_speed": 0.1
+  },
+  "seats": [
+    {
+      "offset": [0, 1.8, -0.5],
+      "weapons": ["cannon"]
+    },
+    {
+      "offset": [0.5, 1.8, 0.5],
+      "weapons": ["machine_gun"]
+    }
+  ],
+  "size": [3, 1.8],
+  "storage": {
+    "rows": 3
+  },
+  "turret": {
+    "bone": "turret",
+    "pitch_bone": "barrel",
+    "pitch_limit": [-20, 10],
+    "seat": 0,
+    "turn_rate": 6,
+    "yaw_limit": [-180, 180]
+  },
+  "weapons": [
+    {
+      "ammo": {
+        "capacity": 10,
+        "item": "mymod:shell",
+        "per_shot": 1
+      },
+      "automatic": false,
+      "cooldown_ticks": 60,
+      "damage": 10,
+      "id": "cannon",
+      "inaccuracy": 0,
+      "key": "fire",
+      "muzzle": {
+        "bone": "barrel",
+        "offset": [0, 0.2, 2.5]
+      },
+      "on_fire": "mymod:fired",
+      "projectile": "mymod:shell",
+      "recoil": 0.2,
+      "sound": "minecraft:entity.generic.explode",
+      "speed": 3
+    },
+    {
+      "ammo": {
+        "item": "minecraft:arrow"
+      },
+      "automatic": true,
+      "cooldown_ticks": 4,
+      "id": "machine_gun",
+      "key": "second",
+      "muzzle": {
+        "offset": [0.5, 1.5, 1]
+      },
+      "projectile": "minecraft:arrow"
+    }
+  ]
+}

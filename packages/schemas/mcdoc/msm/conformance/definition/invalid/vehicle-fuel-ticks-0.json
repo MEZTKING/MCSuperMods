@@ -1,0 +1,20 @@
+{
+  "engine": {
+    "fuel": {
+      "items": [
+        {
+          "item": "minecraft:coal",
+          "ticks": 0
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "model": {
+    "geometry": "mymod:entity/kart",
+    "texture": "mymod:entity/kart"
+  },
+  "movement": {
+    "mode": "ground"
+  }
+}

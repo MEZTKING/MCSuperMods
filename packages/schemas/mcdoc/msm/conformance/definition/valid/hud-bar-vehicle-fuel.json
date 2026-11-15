@@ -1,0 +1,12 @@
+{
+  "anchor": "above_hotbar",
+  "format": 1,
+  "max": 2400,
+  "show": "driving",
+  "type": "bar",
+  "value": {
+    "source": "vehicle",
+    "stat": "fuel"
+  },
+  "vehicle": "mymod:car"
+}

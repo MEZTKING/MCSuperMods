@@ -11,7 +11,7 @@
       "actions": [
         {
           "power": 4,
-          "type": "explode"
+          "type": "detonate"
         }
       ]
     }

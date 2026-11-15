@@ -1,0 +1,32 @@
+{
+  "engine": {
+    "fuel": {
+      "capacity": 12000,
+      "items": [
+        {
+          "item": "minecraft:blaze_powder",
+          "ticks": 1200
+        }
+      ]
+    }
+  },
+  "exhaust": {
+    "offset": [0, 2, -2],
+    "particle": "minecraft:cloud"
+  },
+  "format": 1,
+  "model": {
+    "geometry": "mymod:entity/helicopter",
+    "texture": "mymod:entity/helicopter"
+  },
+  "movement": {
+    "lift_speed": 0.2,
+    "max_speed": 0.5,
+    "mode": "hover"
+  },
+  "parts": {
+    "propellers": ["rotor_tail"],
+    "rotors": ["rotor_main"]
+  },
+  "size": [2.5, 2]
+}

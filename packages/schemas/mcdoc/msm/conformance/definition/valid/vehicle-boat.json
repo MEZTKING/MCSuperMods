@@ -1,0 +1,21 @@
+{
+  "engine": {
+    "sound": "minecraft:entity.boat.paddle_water"
+  },
+  "format": 1,
+  "item": {
+    "places_on": "water"
+  },
+  "model": {
+    "geometry": "mymod:entity/motorboat",
+    "texture": "mymod:entity/motorboat"
+  },
+  "movement": {
+    "max_speed": 0.35,
+    "mode": "water",
+    "turn_rate": 4
+  },
+  "storage": {
+    "rows": 6
+  }
+}

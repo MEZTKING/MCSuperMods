@@ -5020,3 +5020,20 @@ Decisions
 
 Next
 - B411 reads `runtimeKeys` for its `RuntimeKeys` defaults; B413 validates against `keyNames`, `vanillaKeys` and `vanillaCombinations`; B414 against `vehicles`; B420 maps `KeyboardEvent.code` to a HID usage id and then `keyboardNamesByCode`.
+
+## 2026-11-15 — executor — B409 format: key binds, HUD, vehicles, new actions
+
+What
+- MSM mcdoc for ADRs 0088 D3, 0089 D1, D2, D6 and 0090 D2, D6: new `controls.mcdoc` (`KeyBindCommon`, `HudCommon`, `HudValue` on the dispatcher `msm:hud_value` with the five sources) and `vehicle.mcdoc` (`VehicleCommon` and its closed records: model and paints, movement with five modes, seats, engine and fuel, health and repair, weapons with ammunition and muzzle, turret, parts, storage, item, ram damage, camera, exhaust, events and the five triggers); definitions and elements `KeyBind`, `Hud`, `Vehicle`; actions `explode`, `show_hud`, `hide_hud`, `set_hud`. Defaults are in the doc comments. `symbols.json` regenerated (415 types); `MSM_SCHEMA_REFS` gains `keyBind`, `hud`, `vehicle` and their definitions.
+- Conformance corpus: 120 new definition cases (35 valid, 85 invalid) under the prefixes `key-bind-`, `hud-`, `vehicle-`, `action-explode-` and `action-hud-`; the schemas test maps them, checks every field of the three definitions is set in a valid file and every new action is used in valid block, item, entity and effect definitions. The two "unknown action" cases used `explode`, now real; they use `detonate`.
+- Runtime `ConformanceCorpusTest.PENDING` lists the five prefixes until B411, B412 and B416 land their parsers (unknown prefixes would otherwise fail the test).
+- Try it: `SIM_ACTIONS` and the schema-walk samples know the four actions ("Only in Minecraft" with a plain sentence each), so the sim's action walk stays green. The build tool's test lists the two new mcdoc files.
+- Checks: `node tools/build-msm-mcdoc/index.ts --check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (24 of 24 tasks; schemas 1319 tests), `./gradlew test` (corpus test 536 cases).
+
+Decisions
+- B406 applied: default keys are `InputConstants` names (`key.keyboard.*`, `key.mouse.*`); unbound is vanilla's `key.keyboard.unknown`, not ADR 0088's `"none"`. `category` is the path of a category id in the definition's namespace (default `keys`, lang key `key.category.<ns>.<category>`), since Fabric registers categories by id.
+- Events use the existing `{ actions: [...] }` shape, as on blocks, items and mobs; vehicle and key bind `vehicle` references use the `entity_type` registry; `weapons` and `paints` are bounded (8 and 16) for synched data per index.
+- `explode` keeps ADR 0090's `breaks_blocks` (Rules' step says `break_blocks`; B424 maps it).
+
+Next
+- B411 (`key-bind-`), B412 (`vehicle-`, `action-explode-`) and B416 (`hud-`, `action-hud-`) remove their prefixes from `PENDING` and add parsers to `KINDS`.

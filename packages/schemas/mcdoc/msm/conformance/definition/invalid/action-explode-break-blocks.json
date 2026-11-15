@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "break_blocks": true,
+          "power": 1,
+          "type": "explode"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

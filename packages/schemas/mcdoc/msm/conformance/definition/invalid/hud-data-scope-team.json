@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "type": "text",
+  "value": {
+    "key": "k",
+    "namespace": "mymod",
+    "scope": "team",
+    "source": "data"
+  }
+}

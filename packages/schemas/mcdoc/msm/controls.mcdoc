@@ -1,0 +1,247 @@
+// MSM definition format v1: project key binds (ADR 0088 D3) and HUD elements (ADR 0089 D1, D2).
+// The definitions `::msm::definition::KeyBind` and `::msm::definition::Hud` and their elements
+// spread the common structs below. Lowering writes `msm/<ns>/key_bind/<path>.json` and
+// `msm/<ns>/hud/<path>.json`. Both kinds need the Fabric mod jar; runtimes older than the
+// release that ships ADRs 0088 and 0089 ignore the `key_bind` and `hud` folders. Key binds and
+// HUD elements are read at start (a new one needs a restart; ADR 0088 D3, ADR 0089 D3).
+
+use super::action::Event
+
+/// When a key bind fires (ADR 0088 D3), checked on the server at press time; a press that fails
+/// the check does nothing and is not reported.
+enum(string) KeyBindWhen {
+	/// Whatever the player is doing. The default.
+	Always = "always",
+	/// Only while the player rides nothing.
+	OnFoot = "on_foot",
+	/// Only while the player sits in a vehicle (ADR 0090), in any seat.
+	InVehicle = "in_vehicle",
+	/// Only while the player drives a vehicle (sits in its first seat).
+	Driving = "driving",
+}
+
+/// Fields every key bind definition and key bind element share (ADR 0088 D3). The player who
+/// presses the key is the self and the actor of each event: `run_function` runs as and at the
+/// player, as player events do, at the function permission level (ADR 0088 D7 rule 5).
+struct KeyBindCommon {
+	/// The translation key of the name shown in vanilla's Controls screen; defaults to
+	/// `key.<ns>.<path>`, which lowering writes to the language file.
+	name?: string,
+	/// The default key, by vanilla's `InputConstants` name: `key.keyboard.<name>` (such as
+	/// `key.keyboard.r`, `key.keyboard.left.alt`) or `key.mouse.<name>` (such as
+	/// `key.mouse.4`, `key.mouse.middle`); `key.keyboard.unknown`, vanilla's name for no key,
+	/// leaves the key unbound. Players rebind it in Controls (saved by vanilla in
+	/// `options.txt`). The validators check the name against the target's key names
+	/// (`TargetFacts.controls.keyNames`) and warn on a key a vanilla control uses.
+	default_key: string,
+	/// The Controls group, as the path of a category id in the definition's namespace: the
+	/// runtime registers the category `<ns>:<category>` once per distinct value, whose
+	/// translation key is `key.category.<ns>.<category>` (vanilla's rule, B406). Lowercase
+	/// letters, digits and `_`, `-`, `.`, `/` (checked by the validators); defaults to `keys`.
+	category?: string,
+	/// When the key fires; defaults to `always`.
+	when?: KeyBindWhen,
+	/// With `when` `in_vehicle` or `driving`: only in this vehicle type, a project vehicle id
+	/// (an `msm:vehicle`, which is also an entity type). Absent means any vehicle. With another
+	/// `when` it is a validator error and the runtime ignores it with a warning.
+	vehicle?: #[id="entity_type"] string,
+	/// Ticks between two presses that fire, 0 to 1200 (a minute), enforced on the server; a
+	/// press inside the cooldown does nothing. Defaults to 0.
+	cooldown_ticks?: int @ 0..1200,
+	/// Ticks between two firings of `msm:while_held` while the key is held, 1 to 1200; the
+	/// first firing is one interval after the press. Defaults to 10.
+	hold_interval_ticks?: int @ 1..1200,
+	/// Events that the three triggers below name, by id, as on blocks, items and mobs.
+	events?: struct KeyBindEvents {
+		[string]: Event,
+	},
+	/// An event id in `events`, fired when the key goes down (and passes `when` and the
+	/// cooldown).
+	"msm:on_press"?: string,
+	/// An event id in `events`, fired when the key comes up after a press that fired. Not fired
+	/// when the held key is cleared by death, respawn, a dimension change or leaving.
+	"msm:on_release"?: string,
+	/// An event id in `events`, fired every `hold_interval_ticks` while the key is held after a
+	/// press that fired.
+	"msm:while_held"?: string,
+}
+
+/// What a HUD element draws (ADR 0089 D1).
+enum(string) HudType {
+	/// A line of text.
+	Text = "text",
+	/// A bar filled by `value` out of `max`.
+	Bar = "bar",
+	/// A row of up to 20 icons, filled as vanilla's hearts are.
+	Icons = "icons",
+}
+
+/// Where on screen a HUD element sits (ADR 0089 D4), computed from the GUI's scaled size.
+enum(string) HudAnchor {
+	TopLeft = "top_left",
+	Top = "top",
+	TopRight = "top_right",
+	Left = "left",
+	Center = "center",
+	Right = "right",
+	BottomLeft = "bottom_left",
+	Bottom = "bottom",
+	BottomRight = "bottom_right",
+	/// Above the hotbar and vanilla's status bars, stacking upwards. The default.
+	AboveHotbar = "above_hotbar",
+}
+
+/// When a HUD element is drawn (ADR 0089 D1), on top of `starts_hidden` and the show and hide
+/// actions.
+enum(string) HudShow {
+	/// Always, once shown.
+	Always = "always",
+	/// Once its value has been set or computed at least once. The default.
+	WhenSet = "when_set",
+	/// While the viewer sits in a vehicle.
+	InVehicle = "in_vehicle",
+	/// While the viewer drives a vehicle.
+	Driving = "driving",
+}
+
+/// Where a HUD value comes from (ADR 0089 D2).
+enum(string) HudSource {
+	/// Script data (ADR 0062), where Rules counters also live; synced by the server.
+	Data = "data",
+	/// A scoreboard score; synced by the server.
+	Score = "score",
+	/// A stat of the vehicle the viewer rides (ADR 0090); synced by the server.
+	Vehicle = "vehicle",
+	/// A stat of the viewer, read on the client and never synced.
+	Player = "player",
+	/// Only what a `set_hud` action, a script or a Rules step sets.
+	Set = "set",
+}
+
+/// A HUD value (ADR 0089 D2), selected by `source`. Text values may be strings; bars and icons
+/// take numbers and draw nothing for text.
+struct HudValue {
+	source: HudSource,
+	...msm:hud_value[[source]],
+}
+
+/// Whose script data a `data` value reads.
+enum(string) HudDataScope {
+	/// The viewer's own data.
+	Player = "player",
+	/// The world's data.
+	World = "world",
+}
+
+/// Script data (ADR 0062): the value saved under `namespace` and `key`, which is where a Rules
+/// counter lives too.
+dispatch msm:hud_value[data] to struct HudDataValue {
+	scope: HudDataScope,
+	/// The data namespace, usually the project's.
+	namespace: string @ 1..,
+	/// The data key.
+	key: string @ 1..,
+}
+
+/// A scoreboard score of `objective`.
+dispatch msm:hud_value[score] to struct HudScoreValue {
+	/// The objective name; the validators say when no project file creates it (info).
+	objective: string @ 1..,
+	/// `@s` (the viewer) or a fixed score holder name; defaults to `@s`.
+	holder?: string @ 1..,
+}
+
+/// A stat of a vehicle (ADR 0090).
+enum(string) HudVehicleStat {
+	/// Fuel left, in ticks of burning.
+	Fuel = "fuel",
+	/// Health left: `health.max` less the damage taken.
+	Health = "health",
+	/// Ammunition loaded for `weapon`.
+	Ammo = "ammo",
+	/// Speed in blocks a second.
+	Speed = "speed",
+	/// Ticks left before `weapon` can fire again.
+	Reload = "reload",
+}
+
+/// A stat of the vehicle the viewer rides; nothing is drawn on foot.
+dispatch msm:hud_value[vehicle] to struct HudVehicleValue {
+	stat: HudVehicleStat,
+	/// With `ammo` and `reload`: the weapon `id`; defaults to the vehicle's first weapon.
+	weapon?: string @ 1..,
+}
+
+/// A stat of the viewer, read on the client.
+enum(string) HudPlayerStat {
+	Health = "health",
+	Food = "food",
+	Air = "air",
+	Armor = "armor",
+	/// The experience level.
+	Level = "level",
+	X = "x",
+	Y = "y",
+	Z = "z",
+}
+
+/// A stat of the viewer, read on the client and never synced.
+dispatch msm:hud_value[player] to struct HudPlayerValue {
+	stat: HudPlayerStat,
+}
+
+/// Only what a `set_hud` action, `Player.setHud` or a Rules step sets; nothing until then.
+dispatch msm:hud_value[set] to struct HudSetValue {}
+
+/// Fields every HUD definition and HUD element share (ADR 0089 D1): one element per file. The
+/// server sends changed values of non-`player` sources every 5 ticks and when an action sets
+/// one (ADR 0089 D3). Colours are `#rrggbb` (checked by the validators). Sprites are the
+/// project's own GUI sprites; MSM never ships Mojang's HUD art.
+struct HudCommon {
+	/// What it draws.
+	type: HudType,
+	/// Where it sits; defaults to `above_hotbar`.
+	anchor?: HudAnchor,
+	/// `[x, y]` in GUI pixels from the anchor (right and down are positive); defaults to
+	/// `[0, 0]`.
+	offset?: [int @ -4096..4096] @ 2,
+	/// Order within an anchor, lower first, then by id; defaults to 0.
+	order?: int,
+	/// What it shows.
+	value: HudValue,
+	/// Bars and icons: the full value, a number or another value; defaults to 20.
+	max?: (float @ 0.. | HudValue),
+	/// When it is drawn; defaults to `when_set`.
+	show?: HudShow,
+	/// With `show` `in_vehicle` or `driving`: only in this vehicle type, a project vehicle id.
+	/// With another `show` it is a validator error and the runtime ignores it with a warning.
+	vehicle?: #[id="entity_type"] string,
+	/// Hidden until a `show_hud` action, a script or a Rules step shows it; defaults to false.
+	starts_hidden?: boolean,
+	/// Text: what to draw, with `{value}` and `{max}` replaced; a translation key when it
+	/// contains no space and the language has it. Defaults to `{value}`.
+	text?: string,
+	/// Text: colour, `#rrggbb`; defaults to `#ffffff`.
+	color?: string,
+	/// Text: drawn with a shadow; defaults to true.
+	shadow?: boolean,
+	/// Bar: `[width, height]` in GUI pixels; defaults to `[81, 5]` (a vanilla bar's width).
+	size?: [int @ 1..512] @ 2,
+	/// Bar: colour of the filled part, `#rrggbb`; defaults to `#e0c040`.
+	fill_color?: string,
+	/// Bar: colour of the empty part, `#rrggbb`; defaults to `#202020`.
+	back_color?: string,
+	/// Bar: a GUI sprite for the filled part instead of `fill_color`: `<ns>:hud/x` is
+	/// `assets/<ns>/textures/gui/sprites/hud/x.png`.
+	sprite?: #[id(registry="texture", path="gui/sprites/")] string,
+	/// Bar: a GUI sprite for the empty part instead of `back_color`.
+	back_sprite?: #[id(registry="texture", path="gui/sprites/")] string,
+	/// Icons: the full icon (required for `icons`, checked by the validators).
+	icon?: #[id(registry="texture", path="gui/sprites/")] string,
+	/// Icons: the half icon; absent rounds down to full icons.
+	half_icon?: #[id(registry="texture", path="gui/sprites/")] string,
+	/// Icons: the empty icon drawn up to `max`; absent draws nothing there.
+	empty_icon?: #[id(registry="texture", path="gui/sprites/")] string,
+	/// Icons: the value one full icon stands for; defaults to 2 (as hearts).
+	per_icon?: float @ 0.01..,
+}

@@ -1,0 +1,40 @@
+{
+  "category": "abilities",
+  "cooldown_ticks": 40,
+  "default_key": "key.keyboard.v",
+  "events": {
+    "mymod:held": {
+      "actions": [
+        {
+          "count": 2,
+          "particle": "minecraft:flame",
+          "type": "spawn_particle"
+        }
+      ]
+    },
+    "mymod:pressed": {
+      "actions": [
+        {
+          "sound": "minecraft:block.note_block.bell",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "mymod:released": {
+      "actions": [
+        {
+          "function": "mymod:released",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "hold_interval_ticks": 5,
+  "msm:on_press": "mymod:pressed",
+  "msm:on_release": "mymod:released",
+  "msm:while_held": "mymod:held",
+  "name": "key.mymod.dash",
+  "vehicle": "mymod:tank",
+  "when": "driving"
+}

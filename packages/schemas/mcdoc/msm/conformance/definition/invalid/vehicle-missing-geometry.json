@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "model": {
+    "texture": "mymod:entity/kart"
+  },
+  "movement": {
+    "mode": "ground"
+  }
+}

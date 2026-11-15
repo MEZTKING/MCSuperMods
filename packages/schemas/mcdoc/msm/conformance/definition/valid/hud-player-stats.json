@@ -1,0 +1,10 @@
+{
+  "anchor": "top",
+  "format": 1,
+  "text": "X {value}",
+  "type": "text",
+  "value": {
+    "source": "player",
+    "stat": "x"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "anchor": "bottom_left",
+  "format": 1,
+  "max": {
+    "source": "vehicle",
+    "stat": "health"
+  },
+  "text": "{value} ({max})",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "speed"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "category": "monster",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/bomber",
+      "texture": "mymod:entity/bomber"
+    },
+    "msm:on_death": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "hud": "mymod:mana",
+          "type": "show_hud"
+        },
+        {
+          "hud": "mymod:mana",
+          "type": "set_hud",
+          "value": 12.5
+        },
+        {
+          "hud": "mymod:status",
+          "type": "set_hud",
+          "value": "Ready"
+        },
+        {
+          "hud": "mymod:mana",
+          "type": "hide_hud"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

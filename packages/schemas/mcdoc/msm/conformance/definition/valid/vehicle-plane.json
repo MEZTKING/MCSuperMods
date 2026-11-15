@@ -1,0 +1,22 @@
+{
+  "camera": {
+    "distance": 12
+  },
+  "format": 1,
+  "hud": false,
+  "model": {
+    "geometry": "mymod:entity/biplane",
+    "texture": "mymod:entity/biplane"
+  },
+  "movement": {
+    "lift_speed": 0.15,
+    "max_speed": 1.2,
+    "mode": "air",
+    "takeoff_speed": 0.6,
+    "turn_rate": 3
+  },
+  "parts": {
+    "propellers": ["propeller"]
+  },
+  "size": [3, 1.5]
+}

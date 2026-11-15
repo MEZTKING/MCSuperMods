@@ -1,6 +1,7 @@
 // MSM element data for `msm:block` and `msm:item` (ADR 0025 D5; machine recipes ADR 0075 D8), `msm:entity` (ADR 0028 D3),
 // `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3),
-// `msm:particle` (ADR 0080 D1):
+// `msm:particle` (ADR 0080 D1), `msm:key_bind` (ADR 0088 D3), `msm:hud` (ADR 0089 D1),
+// `msm:vehicle` (ADR 0090 D2):
 // the runtime definition plus editor-only fields that lower to ordinary pack files.
 
 use super::definition::BiomeAddition as DefinitionBiomeAddition
@@ -19,6 +20,9 @@ use super::definition::LootAddition as DefinitionLootAddition
 use super::definition::ParticleCommon
 use super::definition::Potion as DefinitionPotion
 use super::definition::ToolTier
+use super::controls::HudCommon
+use super::controls::KeyBindCommon
+use super::vehicle::VehicleCommon
 use super::recipe::Ingredient
 use super::recipe::ItemStackTemplate
 
@@ -537,4 +541,39 @@ struct Particle {
 	/// Definition format; lowering writes 1.
 	format?: 1,
 	...ParticleCommon,
+}
+
+/// `msm:key_bind` element data (ADR 0088 D3, D8): the definition with `format` optional, as
+/// lowering sets it, plus the language texts lowering writes.
+struct KeyBind {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...KeyBindCommon,
+	/// The name shown in Controls, lowered to the language key `name` (default
+	/// `key.<ns>.<path>`).
+	display_name?: string,
+	/// The Controls group's name, lowered to `key.category.<ns>.<category>`.
+	category_name?: string,
+}
+
+/// `msm:hud` element data (ADR 0089 D1): the definition with `format` optional, as lowering
+/// sets it.
+struct Hud {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...HudCommon,
+}
+
+/// `msm:vehicle` element data (ADR 0090 D2): the definition with `format` optional, as lowering
+/// sets it, plus the language text lowering writes. `model.geometry` and `model.animations` name
+/// the project's `msm:geo_model` and `msm:animation` elements, whose ids lowering copies.
+struct Vehicle {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...VehicleCommon,
+	/// Display name, lowered to the `entity.<ns>.<path>` language key and, unless
+	/// `item_display_name` is set, the `item.<ns>.<path>` one.
+	display_name?: string,
+	/// The item's display name, lowered to the `item.<ns>.<path>` language key.
+	item_display_name?: string,
 }

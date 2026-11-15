@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "type": "text",
+  "value": {
+    "key": "mana",
+    "source": "set"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "default_key": "key.keyboard.r",
+  "events": {
+    "mymod:a": [
+      {
+        "amount": 1,
+        "type": "heal"
+      }
+    ]
+  },
+  "format": 1,
+  "msm:on_press": "mymod:a"
+}

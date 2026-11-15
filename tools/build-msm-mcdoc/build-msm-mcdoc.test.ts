@@ -37,12 +37,14 @@ describe('build-msm-mcdoc', () => {
     expect(await listSources(SOURCE_DIR)).toEqual([
       'action.mcdoc',
       'animation.mcdoc',
+      'controls.mcdoc',
       'definition.mcdoc',
       'element.mcdoc',
       'geometry.mcdoc',
       'mod.mcdoc',
       'recipe.mcdoc',
       'rules.mcdoc',
+      'vehicle.mcdoc',
     ]);
     const fresh = await exportMsmMcdoc();
     const current = await readCheckedIn();

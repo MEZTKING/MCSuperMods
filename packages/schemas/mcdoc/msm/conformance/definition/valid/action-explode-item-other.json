@@ -1,0 +1,21 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "at": "other",
+          "breaks_blocks": false,
+          "fire": false,
+          "power": 10,
+          "type": "explode"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

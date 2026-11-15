@@ -1,0 +1,14 @@
+{
+  "anchor": "bottom",
+  "format": 1,
+  "icon": "mymod:hud/drumstick",
+  "max": {
+    "source": "player",
+    "stat": "armor"
+  },
+  "type": "icons",
+  "value": {
+    "source": "player",
+    "stat": "food"
+  }
+}

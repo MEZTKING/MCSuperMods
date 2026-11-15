@@ -1,4 +1,52 @@
 {
+  "action-explode-at-everywhere.json": {
+    "code": "schema.invalid-enum",
+    "path": "/events/mymod:go/actions/0/at"
+  },
+  "action-explode-break-blocks.json": {
+    "code": "schema.unknown-field",
+    "path": "/events/mymod:go/actions/0/break_blocks"
+  },
+  "action-explode-fire-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:go/actions/0/fire"
+  },
+  "action-explode-missing-power.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:go/actions/0/power"
+  },
+  "action-explode-power-11.json": {
+    "code": "schema.out-of-range",
+    "path": "/events/mymod:go/actions/0/power"
+  },
+  "action-hud-hide-empty-hud.json": {
+    "code": "schema.invalid-length",
+    "path": "/events/mymod:go/actions/0/hud"
+  },
+  "action-hud-hide-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:go/actions/0/hud"
+  },
+  "action-hud-set-missing-value.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:go/actions/0/value"
+  },
+  "action-hud-set-text-257.json": {
+    "code": "schema.invalid-length",
+    "path": "/events/mymod:go/actions/0/value"
+  },
+  "action-hud-set-value-object.json": {
+    "code": "schema.no-union-match",
+    "path": "/events/mymod:go/actions/0/value"
+  },
+  "action-hud-show-missing-hud.json": {
+    "code": "schema.missing-field",
+    "path": "/events/mymod:go/actions/0/hud"
+  },
+  "action-hud-show-value.json": {
+    "code": "schema.unknown-field",
+    "path": "/events/mymod:go/actions/0/value"
+  },
   "action-particle-count-1001.json": {
     "code": "schema.out-of-range",
     "path": "/events/mymod:burst/actions/0/count"
@@ -787,6 +835,90 @@
     "code": "schema.out-of-range",
     "path": "/size/width"
   },
+  "hud-anchor-middle.json": {
+    "code": "schema.invalid-enum",
+    "path": "/anchor"
+  },
+  "hud-data-missing-key.json": {
+    "code": "schema.missing-field",
+    "path": "/value/key"
+  },
+  "hud-data-scope-team.json": {
+    "code": "schema.invalid-enum",
+    "path": "/value/scope"
+  },
+  "hud-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "hud-max-string.json": {
+    "code": "schema.no-union-match",
+    "path": "/max"
+  },
+  "hud-missing-type.json": {
+    "code": "schema.missing-field",
+    "path": "/type"
+  },
+  "hud-missing-value.json": {
+    "code": "schema.missing-field",
+    "path": "/value"
+  },
+  "hud-offset-far.json": {
+    "code": "schema.out-of-range",
+    "path": "/offset/0"
+  },
+  "hud-offset-float.json": {
+    "code": "schema.not-integer",
+    "path": "/offset/0"
+  },
+  "hud-offset-three.json": {
+    "code": "schema.invalid-length",
+    "path": "/offset"
+  },
+  "hud-per-icon-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/per_icon"
+  },
+  "hud-player-stat-mana.json": {
+    "code": "schema.invalid-enum",
+    "path": "/value/stat"
+  },
+  "hud-score-missing-objective.json": {
+    "code": "schema.missing-field",
+    "path": "/value/objective"
+  },
+  "hud-set-extra-field.json": {
+    "code": "schema.unknown-field",
+    "path": "/value/key"
+  },
+  "hud-show-sometimes.json": {
+    "code": "schema.invalid-enum",
+    "path": "/show"
+  },
+  "hud-size-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/size/0"
+  },
+  "hud-source-mana.json": {
+    "code": "schema.invalid-enum",
+    "path": "/value/source"
+  },
+  "hud-starts-hidden-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/starts_hidden"
+  },
+  "hud-type-gauge.json": {
+    "code": "schema.invalid-enum",
+    "path": "/type"
+  },
+  "hud-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/font"
+  },
+  "hud-vehicle-stat-level.json": {
+    "code": "schema.invalid-enum",
+    "path": "/value/stat"
+  },
   "item-actions-not-list.json": {
     "code": "schema.type-mismatch",
     "path": "/events/mymod:x/actions"
@@ -966,6 +1098,58 @@
   "item-trigger-event-not-string.json": {
     "code": "schema.type-mismatch",
     "path": "/events/mymod:x/actions/0/event"
+  },
+  "key-bind-cooldown-1201.json": {
+    "code": "schema.out-of-range",
+    "path": "/cooldown_ticks"
+  },
+  "key-bind-cooldown-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/cooldown_ticks"
+  },
+  "key-bind-default-key-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/default_key"
+  },
+  "key-bind-events-list.json": {
+    "code": "schema.type-mismatch",
+    "path": "/events/mymod:a"
+  },
+  "key-bind-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "key-bind-hold-interval-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/hold_interval_ticks"
+  },
+  "key-bind-hold-interval-float.json": {
+    "code": "schema.not-integer",
+    "path": "/hold_interval_ticks"
+  },
+  "key-bind-missing-default-key.json": {
+    "code": "schema.missing-field",
+    "path": "/default_key"
+  },
+  "key-bind-on-hold.json": {
+    "code": "schema.unknown-field",
+    "path": "/msm:on_hold"
+  },
+  "key-bind-on-press-object.json": {
+    "code": "schema.type-mismatch",
+    "path": "/msm:on_press"
+  },
+  "key-bind-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/key"
+  },
+  "key-bind-vehicle-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/vehicle"
+  },
+  "key-bind-when-swimming.json": {
+    "code": "schema.invalid-enum",
+    "path": "/when"
   },
   "loot-addition-empty-pools.json": {
     "code": "schema.invalid-length",
@@ -1398,5 +1582,161 @@
   "trigger-item-while-worn-string.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:while_worn"
+  },
+  "vehicle-ammo-capacity-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/weapons/0/ammo/capacity"
+  },
+  "vehicle-camera-distance-40.json": {
+    "code": "schema.out-of-range",
+    "path": "/camera/distance"
+  },
+  "vehicle-exhaust-missing-particle.json": {
+    "code": "schema.missing-field",
+    "path": "/exhaust/particle"
+  },
+  "vehicle-explodes-9.json": {
+    "code": "schema.out-of-range",
+    "path": "/health/explodes"
+  },
+  "vehicle-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "vehicle-fuel-items-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/engine/fuel/items"
+  },
+  "vehicle-fuel-ticks-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/engine/fuel/items/0/ticks"
+  },
+  "vehicle-grip-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/movement/grip"
+  },
+  "vehicle-health-max-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/health/max"
+  },
+  "vehicle-max-speed-4.json": {
+    "code": "schema.out-of-range",
+    "path": "/movement/max_speed"
+  },
+  "vehicle-missing-geometry.json": {
+    "code": "schema.missing-field",
+    "path": "/model/geometry"
+  },
+  "vehicle-missing-mode.json": {
+    "code": "schema.missing-field",
+    "path": "/movement/mode"
+  },
+  "vehicle-missing-model.json": {
+    "code": "schema.missing-field",
+    "path": "/model"
+  },
+  "vehicle-missing-movement.json": {
+    "code": "schema.missing-field",
+    "path": "/movement"
+  },
+  "vehicle-mode-rail.json": {
+    "code": "schema.invalid-enum",
+    "path": "/movement/mode"
+  },
+  "vehicle-movement-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/movement/gears"
+  },
+  "vehicle-muzzle-offset-two.json": {
+    "code": "schema.invalid-length",
+    "path": "/weapons/0/muzzle/offset"
+  },
+  "vehicle-on-tick-missing-event.json": {
+    "code": "schema.missing-field",
+    "path": "/on_tick/event"
+  },
+  "vehicle-paint-missing-texture.json": {
+    "code": "schema.missing-field",
+    "path": "/model/paints/0/texture"
+  },
+  "vehicle-pick-up-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/pick_up"
+  },
+  "vehicle-places-on-air.json": {
+    "code": "schema.invalid-enum",
+    "path": "/item/places_on"
+  },
+  "vehicle-repair-missing-amount.json": {
+    "code": "schema.missing-field",
+    "path": "/health/repair/0/amount"
+  },
+  "vehicle-scale-10.json": {
+    "code": "schema.out-of-range",
+    "path": "/model/scale"
+  },
+  "vehicle-seat-missing-offset.json": {
+    "code": "schema.missing-field",
+    "path": "/seats/0/offset"
+  },
+  "vehicle-seats-9.json": {
+    "code": "schema.invalid-length",
+    "path": "/seats"
+  },
+  "vehicle-seats-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/seats"
+  },
+  "vehicle-size-three.json": {
+    "code": "schema.invalid-length",
+    "path": "/size"
+  },
+  "vehicle-storage-rows-7.json": {
+    "code": "schema.out-of-range",
+    "path": "/storage/rows"
+  },
+  "vehicle-turn-rate-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/movement/turn_rate"
+  },
+  "vehicle-turret-missing-bone.json": {
+    "code": "schema.missing-field",
+    "path": "/turret/bone"
+  },
+  "vehicle-turret-pitch-limit-100.json": {
+    "code": "schema.out-of-range",
+    "path": "/turret/pitch_limit/0"
+  },
+  "vehicle-turret-seat-8.json": {
+    "code": "schema.out-of-range",
+    "path": "/turret/seat"
+  },
+  "vehicle-unknown-key.json": {
+    "code": "schema.unknown-field",
+    "path": "/rails"
+  },
+  "vehicle-weapon-cooldown-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/weapons/0/cooldown_ticks"
+  },
+  "vehicle-weapon-key-third.json": {
+    "code": "schema.invalid-enum",
+    "path": "/weapons/0/key"
+  },
+  "vehicle-weapon-missing-id.json": {
+    "code": "schema.missing-field",
+    "path": "/weapons/0/id"
+  },
+  "vehicle-weapon-missing-projectile.json": {
+    "code": "schema.missing-field",
+    "path": "/weapons/0/projectile"
+  },
+  "vehicle-weapon-speed-6.json": {
+    "code": "schema.out-of-range",
+    "path": "/weapons/0/speed"
+  },
+  "vehicle-weapons-9.json": {
+    "code": "schema.invalid-length",
+    "path": "/weapons"
   }
 }

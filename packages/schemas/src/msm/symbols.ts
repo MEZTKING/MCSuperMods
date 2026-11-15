@@ -32,6 +32,13 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `particle` / `particleDefinition`: element data of the `msm:particle` kind (the definition
  *   with `format` optional) and the runtime definition written to
  *   `msm/<ns>/particle/<path>.json` (ADR 0080 D1).
+ * - `keyBind` / `keyBindDefinition`, `hud` / `hudDefinition`: element data of the
+ *   `msm:key_bind` and `msm:hud` kinds (the definition with `format` optional; key binds add
+ *   `display_name` and `category_name`) and the runtime definitions written to
+ *   `msm/<ns>/key_bind/<path>.json` and `msm/<ns>/hud/<path>.json` (ADR 0088 D3, ADR 0089 D1).
+ * - `vehicle` / `vehicleDefinition`: element data of the `msm:vehicle` kind (the definition with
+ *   `format` optional, plus `display_name` and `item_display_name`) and the runtime definition
+ *   written to `msm/<ns>/vehicle/<path>.json` (ADR 0090 D2).
  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
  *   definition exists and the conformance corpus has no rule book files.
@@ -60,6 +67,12 @@ export const MSM_SCHEMA_REFS = {
   particle: 'msm:particle',
   particleDefinition: 'msm:particle_definition',
   rules: 'msm:rules',
+  keyBind: 'msm:key_bind',
+  keyBindDefinition: 'msm:key_bind_definition',
+  hud: 'msm:hud',
+  hudDefinition: 'msm:hud_definition',
+  vehicle: 'msm:vehicle',
+  vehicleDefinition: 'msm:vehicle_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -85,6 +98,12 @@ export const MSM_TYPE_PATHS = {
   particle: '::msm::element::Particle',
   particleDefinition: '::msm::definition::Particle',
   rules: '::msm::rules::RuleBook',
+  keyBind: '::msm::element::KeyBind',
+  keyBindDefinition: '::msm::definition::KeyBind',
+  hud: '::msm::element::Hud',
+  hudDefinition: '::msm::definition::Hud',
+  vehicle: '::msm::element::Vehicle',
+  vehicleDefinition: '::msm::definition::Vehicle',
   action: '::msm::action::Action',
 } as const;
 
@@ -111,6 +130,12 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.particle]: MSM_TYPE_PATHS.particle,
   [MSM_SCHEMA_REFS.particleDefinition]: MSM_TYPE_PATHS.particleDefinition,
   [MSM_SCHEMA_REFS.rules]: MSM_TYPE_PATHS.rules,
+  [MSM_SCHEMA_REFS.keyBind]: MSM_TYPE_PATHS.keyBind,
+  [MSM_SCHEMA_REFS.keyBindDefinition]: MSM_TYPE_PATHS.keyBindDefinition,
+  [MSM_SCHEMA_REFS.hud]: MSM_TYPE_PATHS.hud,
+  [MSM_SCHEMA_REFS.hudDefinition]: MSM_TYPE_PATHS.hudDefinition,
+  [MSM_SCHEMA_REFS.vehicle]: MSM_TYPE_PATHS.vehicle,
+  [MSM_SCHEMA_REFS.vehicleDefinition]: MSM_TYPE_PATHS.vehicleDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

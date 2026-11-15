@@ -1,0 +1,13 @@
+{
+  "category": "keys",
+  "default_key": "key.keyboard.left.alt",
+  "events": {
+    "mymod:a": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "hold_interval_ticks": 1,
+  "msm:on_release": "mymod:a",
+  "when": "always"
+}

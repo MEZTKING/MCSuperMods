@@ -36,6 +36,10 @@ const SAMPLES: Readonly<Record<string, JsonObject>> = {
   damage: { amount: 2 },
   heal: { amount: 2 },
   light_portal: { portal: 'ev:gate' },
+  explode: { power: 2 },
+  show_hud: { hud: 'ev:mana' },
+  hide_hud: { hud: 'ev:mana' },
+  set_hud: { hud: 'ev:mana', value: 3 },
 };
 
 describe('the action list of the schema', () => {

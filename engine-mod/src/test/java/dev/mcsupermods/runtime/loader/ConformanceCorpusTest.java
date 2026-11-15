@@ -33,11 +33,16 @@ class ConformanceCorpusTest {
             "../packages/schemas/mcdoc/msm/conformance/definition"));
 
     /**
-     * Prefixes whose schema reached the corpus before the runtime's Codec; none now. {@code container-} was decoded by
+     * Prefixes whose schema reached the corpus before the runtime's Codec. {@code container-} was decoded by
      * B314, {@code machine-} by B316, {@code portal-} by B334, {@code particle-} by B350, {@code action-particle-} and
      * {@code ambient-particles-} by B352. Machine recipe files have their own corpus ({@link MachineRecipeCodecTest}).
+     * The vehicles and client batch's format (B409): {@code key-bind-} until B411's {@code KeyBindParser},
+     * {@code vehicle-} and {@code action-explode-} until B412 ({@code VehicleParser}, the {@code explode} action),
+     * {@code hud-} and {@code action-hud-} until B416 ({@code HudParser}, the HUD actions); each removes its
+     * prefixes here and adds its kinds to {@link #KINDS}.
      */
-    private static final List<String> PENDING = List.of();
+    private static final List<String> PENDING =
+            List.of("key-bind-", "hud-", "vehicle-", "action-explode-", "action-hud-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);

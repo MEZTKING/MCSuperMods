@@ -1,0 +1,19 @@
+{
+  "anchor": "top_left",
+  "color": "#40a0ff",
+  "format": 1,
+  "max": 100,
+  "offset": [4, -4],
+  "order": -1,
+  "shadow": false,
+  "show": "always",
+  "starts_hidden": true,
+  "text": "Mana: {value} / {max}",
+  "type": "text",
+  "value": {
+    "key": "mana",
+    "namespace": "mymod",
+    "scope": "player",
+    "source": "data"
+  }
+}

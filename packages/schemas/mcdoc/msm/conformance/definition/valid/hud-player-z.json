@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "offset": [-4096, 4096],
+  "type": "text",
+  "value": {
+    "source": "player",
+    "stat": "z"
+  }
+}

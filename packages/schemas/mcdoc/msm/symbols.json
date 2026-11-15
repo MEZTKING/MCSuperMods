@@ -160,6 +160,26 @@
           "desc": "Lights a project portal's empty frame at the event block or next to it (ADR 0077 D3).",
           "identifier": "LightPortal",
           "value": "light_portal"
+        },
+        {
+          "desc": "Makes an explosion at the event position or the other entity (ADR 0090 D6).",
+          "identifier": "Explode",
+          "value": "explode"
+        },
+        {
+          "desc": "Shows a HUD element to the event's player (ADR 0089 D6).",
+          "identifier": "ShowHud",
+          "value": "show_hud"
+        },
+        {
+          "desc": "Hides a HUD element from the event's player (ADR 0089 D6).",
+          "identifier": "HideHud",
+          "value": "hide_hud"
+        },
+        {
+          "desc": "Sets the value of a HUD element for the event's player (ADR 0089 D6).",
+          "identifier": "SetHud",
+          "value": "set_hud"
         }
       ]
     },
@@ -284,6 +304,68 @@
       ],
       "kind": "struct"
     },
+    "::msm::action::Explode": {
+      "fields": [
+        {
+          "desc": "Power, 0 to 10 (TNT is 4).",
+          "key": "power",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 10,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Whether it sets fires; defaults to false.",
+          "key": "fire",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether it breaks blocks; defaults to false.",
+          "key": "breaks_blocks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to `self`.",
+          "key": "at",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::ExplodeAt"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::ExplodeAt": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The event's own position: the block of a block event, the entity of an entity or vehicle\nevent, where a throwable hit for its hit events, the player of an item, effect or key\nevent. The default.",
+          "identifier": "Self",
+          "value": "self"
+        },
+        {
+          "desc": "The other entity of the event (as `EffectTarget` `other`); nothing happens without one.",
+          "identifier": "Other",
+          "value": "other"
+        }
+      ]
+    },
     "::msm::action::GiveItem": {
       "fields": [
         {
@@ -344,6 +426,23 @@
           "type": {
             "kind": "reference",
             "path": "::msm::action::EffectTarget"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::HideHud": {
+      "fields": [
+        {
+          "desc": "A project HUD element id (`msm:hud`).",
+          "key": "hud",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
           }
         }
       ],
@@ -654,6 +753,61 @@
               }
             ],
             "kind": "tuple"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::SetHud": {
+      "fields": [
+        {
+          "desc": "A project HUD element id (`msm:hud`).",
+          "key": "hud",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "A number, or a text of at most 256 characters (bars and icons draw nothing for text).",
+          "key": "value",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "double"
+              },
+              {
+                "kind": "string",
+                "lengthRange": {
+                  "kind": 0,
+                  "max": 256,
+                  "min": 0
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::ShowHud": {
+      "fields": [
+        {
+          "desc": "A project HUD element id (`msm:hud`).",
+          "key": "hud",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
           }
         }
       ],
@@ -1215,6 +1369,903 @@
         },
         {
           "kind": "string"
+        }
+      ]
+    },
+    "::msm::controls::HudAnchor": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "TopLeft",
+          "value": "top_left"
+        },
+        {
+          "identifier": "Top",
+          "value": "top"
+        },
+        {
+          "identifier": "TopRight",
+          "value": "top_right"
+        },
+        {
+          "identifier": "Left",
+          "value": "left"
+        },
+        {
+          "identifier": "Center",
+          "value": "center"
+        },
+        {
+          "identifier": "Right",
+          "value": "right"
+        },
+        {
+          "identifier": "BottomLeft",
+          "value": "bottom_left"
+        },
+        {
+          "identifier": "Bottom",
+          "value": "bottom"
+        },
+        {
+          "identifier": "BottomRight",
+          "value": "bottom_right"
+        },
+        {
+          "desc": "Above the hotbar and vanilla's status bars, stacking upwards. The default.",
+          "identifier": "AboveHotbar",
+          "value": "above_hotbar"
+        }
+      ]
+    },
+    "::msm::controls::HudCommon": {
+      "fields": [
+        {
+          "desc": "What it draws.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudType"
+          }
+        },
+        {
+          "desc": "Where it sits; defaults to `above_hotbar`.",
+          "key": "anchor",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudAnchor"
+          }
+        },
+        {
+          "desc": "`[x, y]` in GUI pixels from the anchor (right and down are positive); defaults to\n`[0, 0]`.",
+          "key": "offset",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "max": 4096,
+                "min": -4096
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Order within an anchor, lower first, then by id; defaults to 0.",
+          "key": "order",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "desc": "What it shows.",
+          "key": "value",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudValue"
+          }
+        },
+        {
+          "desc": "Bars and icons: the full value, a number or another value; defaults to 20.",
+          "key": "max",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "float",
+                "valueRange": {
+                  "kind": 0,
+                  "min": 0
+                }
+              },
+              {
+                "kind": "reference",
+                "path": "::msm::controls::HudValue"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "When it is drawn; defaults to `when_set`.",
+          "key": "show",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudShow"
+          }
+        },
+        {
+          "desc": "With `show` `in_vehicle` or `driving`: only in this vehicle type, a project vehicle id.\nWith another `show` it is a validator error and the runtime ignores it with a warning.",
+          "key": "vehicle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Hidden until a `show_hud` action, a script or a Rules step shows it; defaults to false.",
+          "key": "starts_hidden",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Text: what to draw, with `{value}` and `{max}` replaced; a translation key when it\ncontains no space and the language has it. Defaults to `{value}`.",
+          "key": "text",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Text: colour, `#rrggbb`; defaults to `#ffffff`.",
+          "key": "color",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Text: drawn with a shadow; defaults to true.",
+          "key": "shadow",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Bar: `[width, height]` in GUI pixels; defaults to `[81, 5]` (a vanilla bar's width).",
+          "key": "size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "max": 512,
+                "min": 1
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Bar: colour of the filled part, `#rrggbb`; defaults to `#e0c040`.",
+          "key": "fill_color",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Bar: colour of the empty part, `#rrggbb`; defaults to `#202020`.",
+          "key": "back_color",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Bar: a GUI sprite for the filled part instead of `fill_color`: `<ns>:hud/x` is\n`assets/<ns>/textures/gui/sprites/hud/x.png`.",
+          "key": "sprite",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "path": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "gui/sprites/"
+                      }
+                    },
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "texture"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Bar: a GUI sprite for the empty part instead of `back_color`.",
+          "key": "back_sprite",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "path": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "gui/sprites/"
+                      }
+                    },
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "texture"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Icons: the full icon (required for `icons`, checked by the validators).",
+          "key": "icon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "path": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "gui/sprites/"
+                      }
+                    },
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "texture"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Icons: the half icon; absent rounds down to full icons.",
+          "key": "half_icon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "path": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "gui/sprites/"
+                      }
+                    },
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "texture"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Icons: the empty icon drawn up to `max`; absent draws nothing there.",
+          "key": "empty_icon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "path": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "gui/sprites/"
+                      }
+                    },
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "texture"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Icons: the value one full icon stands for; defaults to 2 (as hearts).",
+          "key": "per_icon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0.01
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::HudDataScope": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The viewer's own data.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "The world's data.",
+          "identifier": "World",
+          "value": "world"
+        }
+      ]
+    },
+    "::msm::controls::HudDataValue": {
+      "fields": [
+        {
+          "key": "scope",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudDataScope"
+          }
+        },
+        {
+          "desc": "The data namespace, usually the project's.",
+          "key": "namespace",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The data key.",
+          "key": "key",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::HudPlayerStat": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Health",
+          "value": "health"
+        },
+        {
+          "identifier": "Food",
+          "value": "food"
+        },
+        {
+          "identifier": "Air",
+          "value": "air"
+        },
+        {
+          "identifier": "Armor",
+          "value": "armor"
+        },
+        {
+          "desc": "The experience level.",
+          "identifier": "Level",
+          "value": "level"
+        },
+        {
+          "identifier": "X",
+          "value": "x"
+        },
+        {
+          "identifier": "Y",
+          "value": "y"
+        },
+        {
+          "identifier": "Z",
+          "value": "z"
+        }
+      ]
+    },
+    "::msm::controls::HudPlayerValue": {
+      "fields": [
+        {
+          "key": "stat",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudPlayerStat"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::HudScoreValue": {
+      "fields": [
+        {
+          "desc": "The objective name; the validators say when no project file creates it (info).",
+          "key": "objective",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "`@s` (the viewer) or a fixed score holder name; defaults to `@s`.",
+          "key": "holder",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::HudSetValue": {
+      "fields": [],
+      "kind": "struct"
+    },
+    "::msm::controls::HudShow": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Always, once shown.",
+          "identifier": "Always",
+          "value": "always"
+        },
+        {
+          "desc": "Once its value has been set or computed at least once. The default.",
+          "identifier": "WhenSet",
+          "value": "when_set"
+        },
+        {
+          "desc": "While the viewer sits in a vehicle.",
+          "identifier": "InVehicle",
+          "value": "in_vehicle"
+        },
+        {
+          "desc": "While the viewer drives a vehicle.",
+          "identifier": "Driving",
+          "value": "driving"
+        }
+      ]
+    },
+    "::msm::controls::HudSource": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Script data (ADR 0062), where Rules counters also live; synced by the server.",
+          "identifier": "Data",
+          "value": "data"
+        },
+        {
+          "desc": "A scoreboard score; synced by the server.",
+          "identifier": "Score",
+          "value": "score"
+        },
+        {
+          "desc": "A stat of the vehicle the viewer rides (ADR 0090); synced by the server.",
+          "identifier": "Vehicle",
+          "value": "vehicle"
+        },
+        {
+          "desc": "A stat of the viewer, read on the client and never synced.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "Only what a `set_hud` action, a script or a Rules step sets.",
+          "identifier": "Set",
+          "value": "set"
+        }
+      ]
+    },
+    "::msm::controls::HudType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A line of text.",
+          "identifier": "Text",
+          "value": "text"
+        },
+        {
+          "desc": "A bar filled by `value` out of `max`.",
+          "identifier": "Bar",
+          "value": "bar"
+        },
+        {
+          "desc": "A row of up to 20 icons, filled as vanilla's hearts are.",
+          "identifier": "Icons",
+          "value": "icons"
+        }
+      ]
+    },
+    "::msm::controls::HudValue": {
+      "fields": [
+        {
+          "key": "source",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudSource"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["source"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:hud_value"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::HudVehicleStat": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Fuel left, in ticks of burning.",
+          "identifier": "Fuel",
+          "value": "fuel"
+        },
+        {
+          "desc": "Health left: `health.max` less the damage taken.",
+          "identifier": "Health",
+          "value": "health"
+        },
+        {
+          "desc": "Ammunition loaded for `weapon`.",
+          "identifier": "Ammo",
+          "value": "ammo"
+        },
+        {
+          "desc": "Speed in blocks a second.",
+          "identifier": "Speed",
+          "value": "speed"
+        },
+        {
+          "desc": "Ticks left before `weapon` can fire again.",
+          "identifier": "Reload",
+          "value": "reload"
+        }
+      ]
+    },
+    "::msm::controls::HudVehicleValue": {
+      "fields": [
+        {
+          "key": "stat",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudVehicleStat"
+          }
+        },
+        {
+          "desc": "With `ammo` and `reload`: the weapon `id`; defaults to the vehicle's first weapon.",
+          "key": "weapon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::KeyBindCommon": {
+      "fields": [
+        {
+          "desc": "The translation key of the name shown in vanilla's Controls screen; defaults to\n`key.<ns>.<path>`, which lowering writes to the language file.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The default key, by vanilla's `InputConstants` name: `key.keyboard.<name>` (such as\n`key.keyboard.r`, `key.keyboard.left.alt`) or `key.mouse.<name>` (such as\n`key.mouse.4`, `key.mouse.middle`); `key.keyboard.unknown`, vanilla's name for no key,\nleaves the key unbound. Players rebind it in Controls (saved by vanilla in\n`options.txt`). The validators check the name against the target's key names\n(`TargetFacts.controls.keyNames`) and warn on a key a vanilla control uses.",
+          "key": "default_key",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The Controls group, as the path of a category id in the definition's namespace: the\nruntime registers the category `<ns>:<category>` once per distinct value, whose\ntranslation key is `key.category.<ns>.<category>` (vanilla's rule, B406). Lowercase\nletters, digits and `_`, `-`, `.`, `/` (checked by the validators); defaults to `keys`.",
+          "key": "category",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "When the key fires; defaults to `always`.",
+          "key": "when",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::KeyBindWhen"
+          }
+        },
+        {
+          "desc": "With `when` `in_vehicle` or `driving`: only in this vehicle type, a project vehicle id\n(an `msm:vehicle`, which is also an entity type). Absent means any vehicle. With another\n`when` it is a validator error and the runtime ignores it with a warning.",
+          "key": "vehicle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two presses that fire, 0 to 1200 (a minute), enforced on the server; a\npress inside the cooldown does nothing. Defaults to 0.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Ticks between two firings of `msm:while_held` while the key is held, 1 to 1200; the\nfirst firing is one interval after the press. Defaults to 10.",
+          "key": "hold_interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Events that the three triggers below name, by id, as on blocks, items and mobs.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "An event id in `events`, fired when the key goes down (and passes `when` and the\ncooldown).",
+          "key": "msm:on_press",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id in `events`, fired when the key comes up after a press that fired. Not fired\nwhen the held key is cleared by death, respawn, a dimension change or leaving.",
+          "key": "msm:on_release",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id in `events`, fired every `hold_interval_ticks` while the key is held after a\npress that fired.",
+          "key": "msm:while_held",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::KeyBindEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::controls::KeyBindWhen": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Whatever the player is doing. The default.",
+          "identifier": "Always",
+          "value": "always"
+        },
+        {
+          "desc": "Only while the player rides nothing.",
+          "identifier": "OnFoot",
+          "value": "on_foot"
+        },
+        {
+          "desc": "Only while the player sits in a vehicle (ADR 0090), in any seat.",
+          "identifier": "InVehicle",
+          "value": "in_vehicle"
+        },
+        {
+          "desc": "Only while the player drives a vehicle (sits in its first seat).",
+          "identifier": "Driving",
+          "value": "driving"
         }
       ]
     },
@@ -4892,6 +5943,30 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Hud": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Item": {
       "fields": [
         {
@@ -5158,6 +6233,30 @@
           "type": {
             "kind": "reference",
             "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::KeyBind": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::KeyBindCommon"
           }
         }
       ],
@@ -8907,6 +10006,30 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Vehicle": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::WanderGoal": {
       "fields": [
         {
@@ -10116,6 +11239,31 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Hud": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::HudCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Item": {
       "fields": [
         {
@@ -10173,6 +11321,49 @@
           "type": {
             "kind": "reference",
             "path": "::msm::element::CompostChance"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::KeyBind": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::controls::KeyBindCommon"
+          }
+        },
+        {
+          "desc": "The name shown in Controls, lowered to the language key `name` (default\n`key.<ns>.<path>`).",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The Controls group's name, lowered to `key.category.<ns>.<category>`.",
+          "key": "category_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -11244,6 +12435,49 @@
         {
           "desc": "Display name, lowered to the `item.<ns>.<path>_spawn_egg` language key.",
           "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::Vehicle": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleCommon"
+          }
+        },
+        {
+          "desc": "Display name, lowered to the `entity.<ns>.<path>` language key and, unless\n`item_display_name` is set, the `item.<ns>.<path>` one.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The item's display name, lowered to the `item.<ns>.<path>` language key.",
+          "key": "item_display_name",
           "kind": "pair",
           "optional": true,
           "type": {
@@ -15968,6 +17202,1655 @@
           "value": "every_player"
         }
       ]
+    },
+    "::msm::vehicle::VehicleAmmo": {
+      "fields": [
+        {
+          "desc": "An item or `#` item tag.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Rounds used per shot; defaults to 1.",
+          "key": "per_shot",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Rounds it holds; defaults to 64.",
+          "key": "capacity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleCamera": {
+      "fields": [
+        {
+          "desc": "Distance in blocks, 1 to 32; absent keeps the player's own.",
+          "key": "distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleCommon": {
+      "fields": [
+        {
+          "desc": "The translation key of the vehicle's name; defaults to `entity.<ns>.<path>`.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The look.",
+          "key": "model",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleModel"
+          }
+        },
+        {
+          "desc": "Hitbox `[width, height]` in blocks; defaults to `[1.375, 0.5625]` (a boat's).",
+          "key": "size",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "max": 16,
+                "min": 0.1
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "How it drives.",
+          "key": "movement",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleMovement"
+          }
+        },
+        {
+          "desc": "Seats, 1 to 8; the first drives. Defaults to one seat on top of the hitbox, at its\ncentre.",
+          "key": "seats",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::vehicle::VehicleSeat"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Engine, fuel and sounds; absent means no fuel and no sounds.",
+          "key": "engine",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleEngine"
+          }
+        },
+        {
+          "desc": "Health and repair; absent means the defaults of `VehicleHealth`.",
+          "key": "health",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleHealth"
+          }
+        },
+        {
+          "desc": "Weapons, fired with the runtime keys.",
+          "key": "weapons",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::vehicle::VehicleWeapon"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "A turret; absent means none.",
+          "key": "turret",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleTurret"
+          }
+        },
+        {
+          "desc": "Bones the renderer turns.",
+          "key": "parts",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleParts"
+          }
+        },
+        {
+          "desc": "Storage; absent means none.",
+          "key": "storage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleStorage"
+          }
+        },
+        {
+          "desc": "The vehicle's item.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleItem"
+          }
+        },
+        {
+          "desc": "A sneaking player hitting the empty vehicle gets its item back with the fuel, damage,\nammunition, paint and name (storage must be empty, or its contents drop); defaults to\ntrue.",
+          "key": "pick_up",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Damage to living entities in the way; absent means none.",
+          "key": "ram_damage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleRamDamage"
+          }
+        },
+        {
+          "desc": "The third-person camera while seated.",
+          "key": "camera",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleCamera"
+          }
+        },
+        {
+          "desc": "Exhaust particles; absent means none.",
+          "key": "exhaust",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleExhaust"
+          }
+        },
+        {
+          "desc": "The built-in dashboard (health, fuel, ammunition and reload per weapon) shown to the\nriders (ADR 0089 D5); defaults to true.",
+          "key": "hud",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Events that the triggers below and the weapons' `on_fire` name, by id.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        },
+        {
+          "desc": "An event id, fired when a player places the vehicle (the player is the placer).",
+          "key": "on_place",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id, fired when a player gets in.",
+          "key": "on_mount",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id, fired when a player gets out.",
+          "key": "on_dismount",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id, fired when the vehicle is destroyed (the player is who destroyed it, when a\nplayer did).",
+          "key": "on_destroy",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Fires an event repeatedly while the vehicle has a driver.",
+          "key": "on_tick",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleOnTick"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleEngine": {
+      "fields": [
+        {
+          "desc": "Fuel; absent means none is needed.",
+          "key": "fuel",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleFuel"
+          }
+        },
+        {
+          "desc": "The engine loop, played on each nearby client with pitch and volume following speed.",
+          "key": "sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Played when a driver gets in.",
+          "key": "start_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Played by the \"Vehicle: horn\" key; absent means the key does nothing.",
+          "key": "horn",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleExhaust": {
+      "fields": [
+        {
+          "desc": "A particle type without options.",
+          "key": "particle",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "particle_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "`[x, y, z]` in blocks from the vehicle's position, turned with its facing.",
+          "key": "offset",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "max": 16,
+                "min": -16
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Ticks between two particles; defaults to 2.",
+          "key": "every_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleFuel": {
+      "fields": [
+        {
+          "key": "items",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::vehicle::VehicleFuelItem"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Ticks of fuel the tank holds; defaults to 10 times the largest item's `ticks`.",
+          "key": "capacity",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleFuelItem": {
+      "fields": [
+        {
+          "desc": "An item or `#` item tag.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks of driving one item gives.",
+          "key": "ticks",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleHealth": {
+      "fields": [
+        {
+          "desc": "Damage it takes before it is destroyed, 1 to 1024; defaults to 40.",
+          "key": "max",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1024,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Items that repair it.",
+          "key": "repair",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::vehicle::VehicleRepair"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Power of the explosion when destroyed, 0 to 8 (TNT is 4); absent means none.",
+          "key": "explodes",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Damage types or `#` damage type tags it ignores; defaults to none.",
+          "key": "immune_to",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "damage_type"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleItem": {
+      "fields": [
+        {
+          "desc": "The translation key of the item's name; defaults to `item.<ns>.<path>`.",
+          "key": "name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An item model id; absent means a flat model of `texture`.",
+          "key": "model",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "model"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The item picture used when there is no `model`; `ns:item/x` is\n`assets/ns/textures/item/x.png`.",
+          "key": "texture",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults: `water` for the `water` mode, `any` for `amphibious`, `ground` for the others\n(verify at implementation).",
+          "key": "places_on",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehiclePlacesOn"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleMode": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Car, tank, kart: drives on the ground, climbs `step_height`, sinks in water unless\n`floats`.",
+          "identifier": "Ground",
+          "value": "ground"
+        },
+        {
+          "desc": "Motorboat, raft, ship: floats at the waterline; on land it barely moves (a tenth of its\nspeed).",
+          "identifier": "Water",
+          "value": "water"
+        },
+        {
+          "desc": "`ground` on land and `water` on water.",
+          "identifier": "Amphibious",
+          "value": "amphibious"
+        },
+        {
+          "desc": "Plane: throttle with forwards and back, the nose follows the driver's view; below\n`takeoff_speed` it sinks; on the ground it rolls as `ground` without turning in place.",
+          "identifier": "Air",
+          "value": "air"
+        },
+        {
+          "desc": "Helicopter, drone, hovercraft: moves relative to its facing, which follows the driver's\nview; jump climbs, the \"Vehicle: descend\" key sinks, otherwise it holds its height\n(without fuel it sinks slowly).",
+          "identifier": "Hover",
+          "value": "hover"
+        }
+      ]
+    },
+    "::msm::vehicle::VehicleModel": {
+      "fields": [
+        {
+          "desc": "The geometry (Bedrock geo JSON, as a mob's): an `msm:geo_model` element id, by\nconvention `<ns>:entity/<name>`, read from `assets/<ns>/geckolib/models/entity/<name>.geo.json`.",
+          "key": "geometry",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The texture used without paint; `ns:entity/x` is `assets/ns/textures/entity/x.png`.",
+          "key": "texture",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Other textures picked by dye items.",
+          "key": "paints",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::vehicle::VehiclePaint"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "An `msm:animation` element id with `idle` and `moving` keyframe animations, played with\nthe vanilla renderer subset (Molang as 0, linear easing: ADR 0072 D3).",
+          "key": "animations",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Render scale, 0.1 to 8; defaults to 1.",
+          "key": "scale",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 0.1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleMovement": {
+      "fields": [
+        {
+          "key": "mode",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleMode"
+          }
+        },
+        {
+          "desc": "Top speed forwards, 0.01 to 3 (the cap stays well inside vanilla's movement check,\n`TargetFacts.vehicles.maxSpeed`). Defaults: `ground` and `amphibious` 0.4 (8 blocks a\nsecond), `water` 0.35, `air` 1.2, `hover` 0.5.",
+          "key": "max_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 0.01
+            }
+          }
+        },
+        {
+          "desc": "Top speed in reverse as a share of `max_speed`; defaults to 0.4.",
+          "key": "reverse_factor",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Speed gained per tick at full throttle; defaults to 0.02 for `ground` (the other modes'\ndefaults are `VehiclePhysics` constants: verify at implementation).",
+          "key": "acceleration",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0.001
+            }
+          }
+        },
+        {
+          "desc": "Speed lost per tick when braking (back while moving forwards); defaults to a\n`VehiclePhysics` constant (verify at implementation).",
+          "key": "braking",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0.001
+            }
+          }
+        },
+        {
+          "desc": "Degrees per tick at full steering. Defaults: `ground` and `amphibious` 5, `water` 4,\n`air` 3, `hover` 5 (verify at implementation).",
+          "key": "turn_rate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 30,
+              "min": 0.5
+            }
+          }
+        },
+        {
+          "desc": "Turns standing still, as a tank; defaults to false (cars must move to turn).",
+          "key": "turns_in_place",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Height in blocks it drives up without jumping, 0 to 2; defaults to 1 on the ground (a\ncar climbs a block).",
+          "key": "step_height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "`ground`: 1 holds the line, low values drift; defaults to 0.8.",
+          "key": "grip",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "`air` and `hover`: climbing speed in blocks per tick; defaults to 0.15.",
+          "key": "lift_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "`air`: below this speed the plane sinks; defaults to half of `max_speed`.",
+          "key": "takeoff_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "`ground`: floats on water like a boat instead of sinking; defaults to false.",
+          "key": "floats",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleMuzzle": {
+      "fields": [
+        {
+          "desc": "A bone of the geometry; with the turret's bone or `pitch_bone` the shot aims along the\nturret. Absent: the shot aims along the hull.",
+          "key": "bone",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "`[x, y, z]` in blocks from the vehicle's position (or from `bone`'s pivot), turned with\nthe hull or the turret.",
+          "key": "offset",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "max": 16,
+                "min": -16
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleOnTick": {
+      "fields": [
+        {
+          "desc": "An event id in `events`.",
+          "key": "event",
+          "kind": "pair",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two firings; defaults to 20.",
+          "key": "interval",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehiclePaint": {
+      "fields": [
+        {
+          "desc": "The paint's id, unique in the vehicle (kept in the item when picked up).",
+          "key": "id",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The texture; `ns:entity/x` is `assets/ns/textures/entity/x.png`.",
+          "key": "texture",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The item that switches to this paint; absent means no item does (scripts may).",
+          "key": "dye",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleParts": {
+      "fields": [
+        {
+          "desc": "Bones spun by the distance travelled over `wheel_radius`.",
+          "key": "wheels",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "min": 1
+              }
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Wheel radius in blocks; defaults to 0.5.",
+          "key": "wheel_radius",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 4,
+              "min": 0.01
+            }
+          }
+        },
+        {
+          "desc": "Bones turned with the steering.",
+          "key": "steering",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "min": 1
+              }
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Bones spun about their vertical axis by throttle.",
+          "key": "rotors",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "min": 1
+              }
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Bones spun about their forward axis by throttle.",
+          "key": "propellers",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "min": 1
+              }
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehiclePlacesOn": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "On a block.",
+          "identifier": "Ground",
+          "value": "ground"
+        },
+        {
+          "desc": "On water, raycasting fluids as vanilla's boat item does.",
+          "identifier": "Water",
+          "value": "water"
+        },
+        {
+          "desc": "On either.",
+          "identifier": "Any",
+          "value": "any"
+        }
+      ]
+    },
+    "::msm::vehicle::VehicleRamDamage": {
+      "fields": [
+        {
+          "desc": "Damage in half hearts per hit.",
+          "key": "damage",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Speed in blocks per tick below which it does not hurt, 0 to 3; defaults to 0.2.",
+          "key": "min_speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleRepair": {
+      "fields": [
+        {
+          "desc": "An item or `#` item tag.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Damage taken away per item used.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleSeat": {
+      "fields": [
+        {
+          "desc": "`[x, y, z]` in blocks from the vehicle's position, turned with its facing (x right,\nz forwards).",
+          "key": "offset",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "max": 16,
+                "min": -16
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 3,
+              "min": 3
+            }
+          }
+        },
+        {
+          "desc": "Weapon ids the player in this seat fires. Absent: every weapon for the first seat, none\nfor the others.",
+          "key": "weapons",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "min": 1
+              }
+            },
+            "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleStorage": {
+      "fields": [
+        {
+          "desc": "Rows of nine slots, 1 to 6.",
+          "key": "rows",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 6,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleTurret": {
+      "fields": [
+        {
+          "desc": "The bone that turns left and right.",
+          "key": "bone",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The bone that turns up and down (a barrel); absent means none.",
+          "key": "pitch_bone",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "`[min, max]` degrees of yaw relative to the hull, -180 to 180; absent means all the way\nround.",
+          "key": "yaw_limit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "max": 180,
+                "min": -180
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "`[min, max]` degrees of pitch (negative is up, as vanilla's), -90 to 90; absent means\nthe gunner's pitch.",
+          "key": "pitch_limit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "float",
+              "valueRange": {
+                "kind": 0,
+                "max": 90,
+                "min": -90
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Degrees per tick, 1 to 45; defaults to 6.",
+          "key": "turn_rate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 45,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The seat whose player aims it, 0 to 7; defaults to 0 (the driver).",
+          "key": "seat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 7,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleWeapon": {
+      "fields": [
+        {
+          "desc": "The weapon's id, unique in the vehicle.",
+          "key": "id",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Which runtime key fires it; defaults to `fire`.",
+          "key": "key",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleWeaponKey"
+          }
+        },
+        {
+          "desc": "`minecraft:arrow`, `minecraft:tipped_arrow` or `minecraft:spectral_arrow`, another\nvanilla projectile item of the target (`TargetFacts.entities`), or a project item with\n`msm:throwable`, as `msm:ranged_attack` (ADR 0070 D4).",
+          "key": "projectile",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Launch speed in blocks per tick, 0.1 to 5; defaults to 1.6.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Spread of the shot, 0 to 20; defaults to 1 (a player's bow).",
+          "key": "inaccuracy",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 20,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Arrows only: base damage, as `msm:ranged_attack`; defaults to 2.",
+          "key": "damage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Ticks between two shots, 1 to 1200; defaults to 20.",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Fires while the key is held, once per cooldown; defaults to false.",
+          "key": "automatic",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Ammunition; absent means endless.",
+          "key": "ammo",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleAmmo"
+          }
+        },
+        {
+          "desc": "Where the shot starts; defaults to the front of the hitbox at half its height.",
+          "key": "muzzle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::vehicle::VehicleMuzzle"
+          }
+        },
+        {
+          "desc": "Played on each shot (to the shooter at once, to others by the server).",
+          "key": "sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Speed in blocks per tick the shot pushes the vehicle back, 0 to 1; defaults to 0.",
+          "key": "recoil",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "An event id in `events`, fired after each shot; self is the vehicle, the player the\nshooter.",
+          "key": "on_fire",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::vehicle::VehicleWeaponKey": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Fire",
+          "value": "fire"
+        },
+        {
+          "identifier": "Second",
+          "value": "second"
+        }
+      ]
     }
   },
   "mcdoc/dispatcher": {
@@ -15980,6 +18863,10 @@
         "kind": "reference",
         "path": "::msm::action::Damage"
       },
+      "explode": {
+        "kind": "reference",
+        "path": "::msm::action::Explode"
+      },
       "give_item": {
         "kind": "reference",
         "path": "::msm::action::GiveItem"
@@ -15987,6 +18874,10 @@
       "heal": {
         "kind": "reference",
         "path": "::msm::action::Heal"
+      },
+      "hide_hud": {
+        "kind": "reference",
+        "path": "::msm::action::HideHud"
       },
       "launch": {
         "kind": "reference",
@@ -16015,6 +18906,14 @@
       "set_block_state": {
         "kind": "reference",
         "path": "::msm::action::SetBlockState"
+      },
+      "set_hud": {
+        "kind": "reference",
+        "path": "::msm::action::SetHud"
+      },
+      "show_hud": {
+        "kind": "reference",
+        "path": "::msm::action::ShowHud"
       },
       "spawn_particle": {
         "kind": "reference",
@@ -16243,6 +19142,28 @@
       "none": {
         "kind": "reference",
         "path": "::msm::definition::HolderLayoutFields"
+      }
+    },
+    "msm:hud_value": {
+      "data": {
+        "kind": "reference",
+        "path": "::msm::controls::HudDataValue"
+      },
+      "player": {
+        "kind": "reference",
+        "path": "::msm::controls::HudPlayerValue"
+      },
+      "score": {
+        "kind": "reference",
+        "path": "::msm::controls::HudScoreValue"
+      },
+      "set": {
+        "kind": "reference",
+        "path": "::msm::controls::HudSetValue"
+      },
+      "vehicle": {
+        "kind": "reference",
+        "path": "::msm::controls::HudVehicleValue"
       }
     },
     "msm:rule_condition": {
@@ -16618,5 +19539,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:714689d671da60b9031eec9e13eb626119cf752a7e65b0ad4582456eb603799b"
+  "ref": "msm-mcdoc:sha256:07107f9baa1439c975db385f4c2cd3170ecc8d77309a2340c18789ff50aea441"
 }

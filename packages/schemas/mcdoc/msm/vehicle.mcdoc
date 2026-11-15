@@ -1,0 +1,368 @@
+// MSM definition format v1: vehicles (ADR 0090 D2, D3, D5 to D12). The definition
+// `::msm::definition::Vehicle` and the element `::msm::element::Vehicle` spread
+// `VehicleCommon`. Lowering writes `msm/<ns>/vehicle/<path>.json`; the runtime registers an
+// entity type and an item under the same id. Every record is closed: an unknown key is an
+// error. Vehicles need the Fabric mod jar; runtimes older than the release that ships ADR 0090
+// ignore the `vehicle` folder. A new vehicle needs a restart (registry freeze).
+
+use super::action::Event
+
+/// How a vehicle moves (ADR 0090 D3). The runtime's own physics (`VehiclePhysics`), not
+/// vanilla's boats or minecarts; the driver's game moves the vehicle and the server checks it
+/// (ADR 0090 D4).
+enum(string) VehicleMode {
+	/// Car, tank, kart: drives on the ground, climbs `step_height`, sinks in water unless
+	/// `floats`.
+	Ground = "ground",
+	/// Motorboat, raft, ship: floats at the waterline; on land it barely moves (a tenth of its
+	/// speed).
+	Water = "water",
+	/// `ground` on land and `water` on water.
+	Amphibious = "amphibious",
+	/// Plane: throttle with forwards and back, the nose follows the driver's view; below
+	/// `takeoff_speed` it sinks; on the ground it rolls as `ground` without turning in place.
+	Air = "air",
+	/// Helicopter, drone, hovercraft: moves relative to its facing, which follows the driver's
+	/// view; jump climbs, the "Vehicle: descend" key sinks, otherwise it holds its height
+	/// (without fuel it sinks slowly).
+	Hover = "hover",
+}
+
+/// One paint of a vehicle (ADR 0090 D12): using `dye` on the vehicle switches to this texture.
+struct VehiclePaint {
+	/// The paint's id, unique in the vehicle (kept in the item when picked up).
+	id: string @ 1..,
+	/// The texture; `ns:entity/x` is `assets/ns/textures/entity/x.png`.
+	texture: #[id="texture"] string,
+	/// The item that switches to this paint; absent means no item does (scripts may).
+	dye?: #[id="item"] string,
+}
+
+/// The vehicle's look (ADR 0090 D10), drawn by the runtime's own renderer (never GeckoLib), so
+/// vehicles work on every target and without GeckoLib.
+struct VehicleModel {
+	/// The geometry (Bedrock geo JSON, as a mob's): an `msm:geo_model` element id, by
+	/// convention `<ns>:entity/<name>`, read from `assets/<ns>/geckolib/models/entity/<name>.geo.json`.
+	geometry: string,
+	/// The texture used without paint; `ns:entity/x` is `assets/ns/textures/entity/x.png`.
+	texture: #[id="texture"] string,
+	/// Other textures picked by dye items.
+	paints?: [VehiclePaint] @ 1..16,
+	/// An `msm:animation` element id with `idle` and `moving` keyframe animations, played with
+	/// the vanilla renderer subset (Molang as 0, linear easing: ADR 0072 D3).
+	animations?: string,
+	/// Render scale, 0.1 to 8; defaults to 1.
+	scale?: float @ 0.1..8,
+}
+
+/// How a vehicle drives (ADR 0090 D3). Speeds are in blocks per tick (20 ticks a second);
+/// defaults depend on `mode`.
+struct VehicleMovement {
+	mode: VehicleMode,
+	/// Top speed forwards, 0.01 to 3 (the cap stays well inside vanilla's movement check,
+	/// `TargetFacts.vehicles.maxSpeed`). Defaults: `ground` and `amphibious` 0.4 (8 blocks a
+	/// second), `water` 0.35, `air` 1.2, `hover` 0.5.
+	max_speed?: float @ 0.01..3,
+	/// Top speed in reverse as a share of `max_speed`; defaults to 0.4.
+	reverse_factor?: float @ 0..1,
+	/// Speed gained per tick at full throttle; defaults to 0.02 for `ground` (the other modes'
+	/// defaults are `VehiclePhysics` constants: verify at implementation).
+	acceleration?: float @ 0.001..1,
+	/// Speed lost per tick when braking (back while moving forwards); defaults to a
+	/// `VehiclePhysics` constant (verify at implementation).
+	braking?: float @ 0.001..1,
+	/// Degrees per tick at full steering. Defaults: `ground` and `amphibious` 5, `water` 4,
+	/// `air` 3, `hover` 5 (verify at implementation).
+	turn_rate?: float @ 0.5..30,
+	/// Turns standing still, as a tank; defaults to false (cars must move to turn).
+	turns_in_place?: boolean,
+	/// Height in blocks it drives up without jumping, 0 to 2; defaults to 1 on the ground (a
+	/// car climbs a block).
+	step_height?: float @ 0..2,
+	/// `ground`: 1 holds the line, low values drift; defaults to 0.8.
+	grip?: float @ 0..1,
+	/// `air` and `hover`: climbing speed in blocks per tick; defaults to 0.15.
+	lift_speed?: float @ 0..1,
+	/// `air`: below this speed the plane sinks; defaults to half of `max_speed`.
+	takeoff_speed?: float @ 0..3,
+	/// `ground`: floats on water like a boat instead of sinking; defaults to false.
+	floats?: boolean,
+}
+
+/// A seat (ADR 0090 D2). The first seat drives.
+struct VehicleSeat {
+	/// `[x, y, z]` in blocks from the vehicle's position, turned with its facing (x right,
+	/// z forwards).
+	offset: [float @ -16..16] @ 3,
+	/// Weapon ids the player in this seat fires. Absent: every weapon for the first seat, none
+	/// for the others.
+	weapons?: [string @ 1..],
+}
+
+/// An item that refuels a vehicle (ADR 0090 D9).
+struct VehicleFuelItem {
+	/// An item or `#` item tag.
+	item: #[id(registry="item", tags="allowed")] string,
+	/// Ticks of driving one item gives.
+	ticks: int @ 1..,
+}
+
+/// Fuel (ADR 0090 D9): using a fuel item on the vehicle adds its ticks up to `capacity`; one
+/// tick burns per tick while the driver gives throttle; without fuel there is no thrust.
+struct VehicleFuel {
+	items: [VehicleFuelItem] @ 1..,
+	/// Ticks of fuel the tank holds; defaults to 10 times the largest item's `ticks`.
+	capacity?: int @ 1..,
+}
+
+/// The engine (ADR 0090 D2, D10).
+struct VehicleEngine {
+	/// Fuel; absent means none is needed.
+	fuel?: VehicleFuel,
+	/// The engine loop, played on each nearby client with pitch and volume following speed.
+	sound?: #[id="sound_event"] string,
+	/// Played when a driver gets in.
+	start_sound?: #[id="sound_event"] string,
+	/// Played by the "Vehicle: horn" key; absent means the key does nothing.
+	horn?: #[id="sound_event"] string,
+}
+
+/// An item that repairs a vehicle (ADR 0090 D9).
+struct VehicleRepair {
+	/// An item or `#` item tag.
+	item: #[id(registry="item", tags="allowed")] string,
+	/// Damage taken away per item used.
+	amount: float @ 0..,
+}
+
+/// Health (ADR 0090 D9): damage counts up in vanilla's vehicle damage counter; at `max` the
+/// vehicle is destroyed (passengers dismounted, storage and the item dropped). Damage does not
+/// heal by itself.
+struct VehicleHealth {
+	/// Damage it takes before it is destroyed, 1 to 1024; defaults to 40.
+	max?: float @ 1..1024,
+	/// Items that repair it.
+	repair?: [VehicleRepair],
+	/// Power of the explosion when destroyed, 0 to 8 (TNT is 4); absent means none.
+	explodes?: float @ 0..8,
+	/// Damage types or `#` damage type tags it ignores; defaults to none.
+	immune_to?: [#[id(registry="damage_type", tags="allowed")] string],
+}
+
+/// Which runtime key fires a weapon (ADR 0088 D5): "Vehicle: fire" or "Vehicle: second weapon".
+enum(string) VehicleWeaponKey {
+	Fire = "fire",
+	Second = "second",
+}
+
+/// Ammunition (ADR 0090 D6), loaded by using `item` on the vehicle (seated or not).
+struct VehicleAmmo {
+	/// An item or `#` item tag.
+	item: #[id(registry="item", tags="allowed")] string,
+	/// Rounds used per shot; defaults to 1.
+	per_shot?: int @ 1..,
+	/// Rounds it holds; defaults to 64.
+	capacity?: int @ 1..,
+}
+
+/// Where a weapon's projectile starts (ADR 0090 D6).
+struct VehicleMuzzle {
+	/// A bone of the geometry; with the turret's bone or `pitch_bone` the shot aims along the
+	/// turret. Absent: the shot aims along the hull.
+	bone?: string @ 1..,
+	/// `[x, y, z]` in blocks from the vehicle's position (or from `bone`'s pivot), turned with
+	/// the hull or the turret.
+	offset: [float @ -16..16] @ 3,
+}
+
+/// A weapon (ADR 0090 D6). The server checks the seat, the cooldown and the ammunition, then
+/// shoots from the muzzle along the turret's or the hull's aim with the shooter as owner.
+struct VehicleWeapon {
+	/// The weapon's id, unique in the vehicle.
+	id: string @ 1..,
+	/// Which runtime key fires it; defaults to `fire`.
+	key?: VehicleWeaponKey,
+	/// `minecraft:arrow`, `minecraft:tipped_arrow` or `minecraft:spectral_arrow`, another
+	/// vanilla projectile item of the target (`TargetFacts.entities`), or a project item with
+	/// `msm:throwable`, as `msm:ranged_attack` (ADR 0070 D4).
+	projectile: #[id="item"] string,
+	/// Launch speed in blocks per tick, 0.1 to 5; defaults to 1.6.
+	speed?: float @ 0.1..5,
+	/// Spread of the shot, 0 to 20; defaults to 1 (a player's bow).
+	inaccuracy?: float @ 0..20,
+	/// Arrows only: base damage, as `msm:ranged_attack`; defaults to 2.
+	damage?: float @ 0..,
+	/// Ticks between two shots, 1 to 1200; defaults to 20.
+	cooldown_ticks?: int @ 1..1200,
+	/// Fires while the key is held, once per cooldown; defaults to false.
+	automatic?: boolean,
+	/// Ammunition; absent means endless.
+	ammo?: VehicleAmmo,
+	/// Where the shot starts; defaults to the front of the hitbox at half its height.
+	muzzle?: VehicleMuzzle,
+	/// Played on each shot (to the shooter at once, to others by the server).
+	sound?: #[id="sound_event"] string,
+	/// Speed in blocks per tick the shot pushes the vehicle back, 0 to 1; defaults to 0.
+	recoil?: float @ 0..1,
+	/// An event id in `events`, fired after each shot; self is the vehicle, the player the
+	/// shooter.
+	on_fire?: string,
+}
+
+/// A turret (ADR 0090 D7): `bone` turns in yaw and `pitch_bone` in pitch to follow the look of
+/// the player in `seat`, at most `turn_rate` degrees a tick. Turning the hull does not turn the
+/// turret's aim, within the limits.
+struct VehicleTurret {
+	/// The bone that turns left and right.
+	bone: string @ 1..,
+	/// The bone that turns up and down (a barrel); absent means none.
+	pitch_bone?: string @ 1..,
+	/// `[min, max]` degrees of yaw relative to the hull, -180 to 180; absent means all the way
+	/// round.
+	yaw_limit?: [float @ -180..180] @ 2,
+	/// `[min, max]` degrees of pitch (negative is up, as vanilla's), -90 to 90; absent means
+	/// the gunner's pitch.
+	pitch_limit?: [float @ -90..90] @ 2,
+	/// Degrees per tick, 1 to 45; defaults to 6.
+	turn_rate?: float @ 1..45,
+	/// The seat whose player aims it, 0 to 7; defaults to 0 (the driver).
+	seat?: int @ 0..7,
+}
+
+/// Bones the renderer turns (ADR 0090 D10).
+struct VehicleParts {
+	/// Bones spun by the distance travelled over `wheel_radius`.
+	wheels?: [string @ 1..],
+	/// Wheel radius in blocks; defaults to 0.5.
+	wheel_radius?: float @ 0.01..4,
+	/// Bones turned with the steering.
+	steering?: [string @ 1..],
+	/// Bones spun about their vertical axis by throttle.
+	rotors?: [string @ 1..],
+	/// Bones spun about their forward axis by throttle.
+	propellers?: [string @ 1..],
+}
+
+/// Storage (ADR 0090 D9): a vanilla chest menu, opened by the inventory key from a seat or by a
+/// sneaking use from outside; saved with the vehicle and dropped when it is destroyed. Hoppers
+/// do not reach it.
+struct VehicleStorage {
+	/// Rows of nine slots, 1 to 6.
+	rows: int @ 1..6,
+}
+
+/// Where a vehicle's item places it (ADR 0090 D5).
+enum(string) VehiclePlacesOn {
+	/// On a block.
+	Ground = "ground",
+	/// On water, raycasting fluids as vanilla's boat item does.
+	Water = "water",
+	/// On either.
+	Any = "any",
+}
+
+/// The vehicle's item (ADR 0090 D5), registered under the vehicle's own id.
+struct VehicleItem {
+	/// The translation key of the item's name; defaults to `item.<ns>.<path>`.
+	name?: string,
+	/// An item model id; absent means a flat model of `texture`.
+	model?: #[id="model"] string,
+	/// The item picture used when there is no `model`; `ns:item/x` is
+	/// `assets/ns/textures/item/x.png`.
+	texture?: #[id="texture"] string,
+	/// Defaults: `water` for the `water` mode, `any` for `amphibious`, `ground` for the others
+	/// (verify at implementation).
+	places_on?: VehiclePlacesOn,
+}
+
+/// Damage to living entities in the way (ADR 0090 D2).
+struct VehicleRamDamage {
+	/// Damage in half hearts per hit.
+	damage: float @ 0..,
+	/// Speed in blocks per tick below which it does not hurt, 0 to 3; defaults to 0.2.
+	min_speed?: float @ 0..3,
+}
+
+/// The third-person camera while seated (ADR 0090 D8), through a modifier of the seated
+/// player's camera distance attribute.
+struct VehicleCamera {
+	/// Distance in blocks, 1 to 32; absent keeps the player's own.
+	distance?: float @ 1..32,
+}
+
+/// Exhaust particles (ADR 0090 D10), spawned on each client while the engine runs.
+struct VehicleExhaust {
+	/// A particle type without options.
+	particle: #[id="particle_type"] string,
+	/// `[x, y, z]` in blocks from the vehicle's position, turned with its facing.
+	offset: [float @ -16..16] @ 3,
+	/// Ticks between two particles; defaults to 2.
+	every_ticks?: int @ 1..,
+}
+
+/// Fires an event repeatedly while the vehicle has a driver (ADR 0090 D11).
+struct VehicleOnTick {
+	/// An event id in `events`.
+	event: string,
+	/// Ticks between two firings; defaults to 20.
+	interval?: int @ 1..,
+}
+
+/// Fields every vehicle definition and vehicle element share (ADR 0090 D2). A vehicle is not
+/// living: no health attribute, effects, AI, breathing, despawning, mob caps, leads or spawn
+/// egg.
+struct VehicleCommon {
+	/// The translation key of the vehicle's name; defaults to `entity.<ns>.<path>`.
+	name?: string,
+	/// The look.
+	model: VehicleModel,
+	/// Hitbox `[width, height]` in blocks; defaults to `[1.375, 0.5625]` (a boat's).
+	size?: [float @ 0.1..16] @ 2,
+	/// How it drives.
+	movement: VehicleMovement,
+	/// Seats, 1 to 8; the first drives. Defaults to one seat on top of the hitbox, at its
+	/// centre.
+	seats?: [VehicleSeat] @ 1..8,
+	/// Engine, fuel and sounds; absent means no fuel and no sounds.
+	engine?: VehicleEngine,
+	/// Health and repair; absent means the defaults of `VehicleHealth`.
+	health?: VehicleHealth,
+	/// Weapons, fired with the runtime keys.
+	weapons?: [VehicleWeapon] @ 1..8,
+	/// A turret; absent means none.
+	turret?: VehicleTurret,
+	/// Bones the renderer turns.
+	parts?: VehicleParts,
+	/// Storage; absent means none.
+	storage?: VehicleStorage,
+	/// The vehicle's item.
+	item?: VehicleItem,
+	/// A sneaking player hitting the empty vehicle gets its item back with the fuel, damage,
+	/// ammunition, paint and name (storage must be empty, or its contents drop); defaults to
+	/// true.
+	pick_up?: boolean,
+	/// Damage to living entities in the way; absent means none.
+	ram_damage?: VehicleRamDamage,
+	/// The third-person camera while seated.
+	camera?: VehicleCamera,
+	/// Exhaust particles; absent means none.
+	exhaust?: VehicleExhaust,
+	/// The built-in dashboard (health, fuel, ammunition and reload per weapon) shown to the
+	/// riders (ADR 0089 D5); defaults to true.
+	hud?: boolean,
+	/// Events that the triggers below and the weapons' `on_fire` name, by id.
+	events?: struct VehicleEvents {
+		[string]: Event,
+	},
+	/// An event id, fired when a player places the vehicle (the player is the placer).
+	on_place?: string,
+	/// An event id, fired when a player gets in.
+	on_mount?: string,
+	/// An event id, fired when a player gets out.
+	on_dismount?: string,
+	/// An event id, fired when the vehicle is destroyed (the player is who destroyed it, when a
+	/// player did).
+	on_destroy?: string,
+	/// Fires an event repeatedly while the vehicle has a driver.
+	on_tick?: VehicleOnTick,
+}

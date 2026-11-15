@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "model": {
+    "geometry": "mymod:entity/kart",
+    "texture": "mymod:entity/kart"
+  },
+  "movement": {
+    "mode": "ground"
+  },
+  "weapons": [
+    {
+      "ammo": {
+        "capacity": 0,
+        "item": "minecraft:arrow"
+      },
+      "id": "a",
+      "projectile": "minecraft:arrow"
+    }
+  ]
+}

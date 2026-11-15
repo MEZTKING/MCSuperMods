@@ -25,6 +25,10 @@ import {
  * entities and effects with that action. `particle-` files are ADR 0080's `msm:particle`;
  * `action-particle-` files are blocks with `spawn_particle` options objects, `motion` and `force`
  * (ADR 0080 D5), and `ambient-particles-` files blocks with `msm:ambient_particles` (ADR 0080 D6).
+ * `key-bind-`, `hud-` and `vehicle-` files are ADR 0088's `msm:key_bind`, ADR 0089's `msm:hud`
+ * and ADR 0090's `msm:vehicle`; `action-explode-` and `action-hud-` files are blocks with the
+ * `explode` (ADR 0090 D6) and HUD actions (ADR 0089 D6), and `action-explode-item-`,
+ * `action-hud-entity-` and the like items, entities and effects with them.
  * The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
@@ -45,8 +49,23 @@ const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
     'portal',
     'action-particle',
     'ambient-particles',
+    'action-explode',
+    'action-hud',
   ],
 };
+
+/** Prefixes of files whose `<prefix>-<kind>-` form is a file of another kind (`trigger-item-`). */
+const KIND_PREFIXES: readonly string[] = ['trigger', 'portal', 'action-explode', 'action-hud'];
+
+/** The `action-explode-` and `action-hud-` prefixes per kind (ADR 0089 D6, ADR 0090 D6). */
+const NEW_ACTION_PREFIXES: Record<string, string> = Object.fromEntries(
+  ['action-explode', 'action-hud'].flatMap((base) => [
+    [base, MSM_SCHEMA_REFS.blockDefinition],
+    [`${base}-item`, MSM_SCHEMA_REFS.itemDefinition],
+    [`${base}-entity`, MSM_SCHEMA_REFS.entityDefinition],
+    [`${base}-effect`, MSM_SCHEMA_REFS.effectDefinition],
+  ]),
+);
 
 /** Schema references of ADR 0060's additions. */
 const ADDITIONS = {
@@ -103,6 +122,10 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     particle: MSM_SCHEMA_REFS.particleDefinition,
     'action-particle': MSM_SCHEMA_REFS.blockDefinition,
     'ambient-particles': MSM_SCHEMA_REFS.blockDefinition,
+    'key-bind': MSM_SCHEMA_REFS.keyBindDefinition,
+    hud: MSM_SCHEMA_REFS.hudDefinition,
+    vehicle: MSM_SCHEMA_REFS.vehicleDefinition,
+    ...NEW_ACTION_PREFIXES,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -178,8 +201,10 @@ describe('MSM mcdoc symbols', () => {
     expect(index.dispatcherKeys('msm:action')).toEqual([
       'apply_effect',
       'damage',
+      'explode',
       'give_item',
       'heal',
+      'hide_hud',
       'launch',
       'light_portal',
       'play_animation',
@@ -187,6 +212,8 @@ describe('MSM mcdoc symbols', () => {
       'run_function',
       'run_script',
       'set_block_state',
+      'set_hud',
+      'show_hud',
       'spawn_particle',
       'trigger_event',
     ]);
@@ -292,8 +319,9 @@ describe('MSM conformance corpus coverage', () => {
 
   /**
    * Keys and action types of the valid files of a schema: those whose longest prefix is
-   * `prefix`, plus the `trigger-<prefix>-` and `portal-<prefix>-` files of the same schema (and,
-   * for blocks, the `container-`, `machine-` and `portal-` files).
+   * `prefix`, plus the `trigger-<prefix>-`, `portal-<prefix>-`, `action-explode-<prefix>-` and
+   * `action-hud-<prefix>-` files of the same schema (and, for blocks, the `container-`,
+   * `machine-`, `portal-` and `action-` files).
    */
   const covered = (group: Group, prefix: string) => {
     const keys = new Set<string>();
@@ -304,8 +332,7 @@ describe('MSM conformance corpus coverage', () => {
       if (own === undefined) return false;
       return (
         own === prefix ||
-        own === `trigger-${prefix}` ||
-        own === `portal-${prefix}` ||
+        KIND_PREFIXES.some((kind) => own === `${kind}-${prefix}`) ||
         (BLOCK_PREFIXES[prefix] ?? []).includes(own)
       );
     };
@@ -354,8 +381,13 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'ambient-particles-', 3, 10],
     ['element', 'particle-', 2, 1],
     ['element', 'ambient-particles-', 1, 1],
+    ['definition', 'key-bind-', 5, 12],
+    ['definition', 'hud-', 12, 20],
+    ['definition', 'vehicle-', 8, 35],
+    ['definition', 'action-explode-', 4, 5],
+    ['definition', 'action-hud-', 5, 6],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -364,14 +396,17 @@ describe('MSM conformance corpus coverage', () => {
     },
   );
 
-  it.each(['damage', 'heal', 'light_portal'])('has valid and invalid %s action cases', (type) => {
-    const uses = (kind: 'valid' | 'invalid') =>
-      files('definition', kind).filter((name) =>
-        JSON.stringify(read('definition', kind, name)).includes(`"type":"${type}"`),
-      ).length;
-    expect(uses('valid')).toBeGreaterThanOrEqual(2);
-    expect(uses('invalid')).toBeGreaterThanOrEqual(2);
-  });
+  it.each(['damage', 'heal', 'light_portal', 'explode', 'show_hud', 'hide_hud', 'set_hud'])(
+    'has valid and invalid %s action cases',
+    (type) => {
+      const uses = (kind: 'valid' | 'invalid') =>
+        files('definition', kind).filter((name) =>
+          JSON.stringify(read('definition', kind, name)).includes(`"type":"${type}"`),
+        ).length;
+      expect(uses('valid')).toBeGreaterThanOrEqual(2);
+      expect(uses('invalid')).toBeGreaterThanOrEqual(2);
+    },
+  );
 
   it('uses every goal type in a valid entity definition and element', () => {
     const goals = (group: Group): string[] => {
@@ -411,6 +446,9 @@ describe('MSM conformance corpus coverage', () => {
     ['machine-recipe', 'machine-recipe', MACHINE_RECIPE],
     ['definition', 'particle', MSM_SCHEMA_REFS.particleDefinition],
     ['element', 'particle', MSM_SCHEMA_REFS.particle],
+    ['definition', 'key-bind', MSM_SCHEMA_REFS.keyBindDefinition],
+    ['definition', 'hud', MSM_SCHEMA_REFS.hudDefinition],
+    ['definition', 'vehicle', MSM_SCHEMA_REFS.vehicleDefinition],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);

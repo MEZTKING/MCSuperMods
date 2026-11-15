@@ -1,0 +1,18 @@
+{
+  "cooldown_ticks": 1200,
+  "default_key": "key.mouse.4",
+  "events": {
+    "mymod:dash": {
+      "actions": [
+        {
+          "direction": "horizontal",
+          "strength": 1,
+          "type": "launch"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "msm:on_press": "mymod:dash",
+  "when": "on_foot"
+}

@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "fire": "yes",
+          "power": 1,
+          "type": "explode"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

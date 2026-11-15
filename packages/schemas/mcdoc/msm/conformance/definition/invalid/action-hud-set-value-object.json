@@ -1,0 +1,21 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "hud": "mymod:mana",
+          "type": "set_hud",
+          "value": {
+            "number": 1
+          }
+        }
+      ]
+    }
+  },
+  "format": 1
+}

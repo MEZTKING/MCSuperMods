@@ -1,0 +1,49 @@
+{
+  "engine": {
+    "fuel": {
+      "items": [
+        {
+          "item": "minecraft:coal",
+          "ticks": 2400
+        }
+      ]
+    },
+    "horn": "minecraft:block.note_block.didgeridoo"
+  },
+  "format": 1,
+  "model": {
+    "geometry": "mymod:entity/car",
+    "paints": [
+      {
+        "dye": "minecraft:blue_dye",
+        "id": "blue",
+        "texture": "mymod:entity/car_blue"
+      }
+    ],
+    "texture": "mymod:entity/car_red"
+  },
+  "movement": {
+    "floats": true,
+    "grip": 0.6,
+    "max_speed": 0.6,
+    "mode": "ground",
+    "step_height": 1
+  },
+  "parts": {
+    "steering": ["wheel_fl", "wheel_fr"],
+    "wheels": ["wheel_fl", "wheel_fr", "wheel_bl", "wheel_br"]
+  },
+  "pick_up": false,
+  "ram_damage": {
+    "damage": 4
+  },
+  "seats": [
+    {
+      "offset": [-0.4, 0.4, 0]
+    },
+    {
+      "offset": [0.4, 0.4, 0]
+    }
+  ],
+  "size": [1.8, 1.2]
+}

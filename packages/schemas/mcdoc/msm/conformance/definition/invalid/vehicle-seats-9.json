@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "model": {
+    "geometry": "mymod:entity/kart",
+    "texture": "mymod:entity/kart"
+  },
+  "movement": {
+    "mode": "ground"
+  },
+  "seats": [
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    },
+    {
+      "offset": [0, 1, 0]
+    }
+  ]
+}

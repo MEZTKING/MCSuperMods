@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "item": {
+    "places_on": "any"
+  },
+  "model": {
+    "geometry": "mymod:entity/hovercraft",
+    "texture": "mymod:entity/hovercraft"
+  },
+  "movement": {
+    "mode": "amphibious"
+  }
+}

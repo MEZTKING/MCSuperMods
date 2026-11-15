@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "icon": "mymod:hud/x",
+  "per_icon": 0,
+  "type": "icons",
+  "value": {
+    "source": "set"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "anchor": "bottom_right",
+  "back_color": "#101010",
+  "back_sprite": "mymod:hud/stamina_empty",
+  "fill_color": "#30d030",
+  "format": 1,
+  "max": {
+    "objective": "stamina_max",
+    "source": "score"
+  },
+  "order": 3,
+  "show": "when_set",
+  "size": [100, 6],
+  "sprite": "mymod:hud/stamina_full",
+  "type": "bar",
+  "value": {
+    "holder": "@s",
+    "objective": "stamina",
+    "source": "score"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "default_key": "key.keyboard.r",
+  "format": 1,
+  "msm:on_press": {
+    "event": "mymod:a"
+  }
+}

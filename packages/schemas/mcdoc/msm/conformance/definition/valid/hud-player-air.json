@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "max": {
+    "source": "player",
+    "stat": "y"
+  },
+  "text": "{value} {max}",
+  "type": "text",
+  "value": {
+    "source": "player",
+    "stat": "air"
+  }
+}

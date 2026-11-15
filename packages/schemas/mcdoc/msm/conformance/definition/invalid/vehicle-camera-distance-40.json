@@ -1,0 +1,13 @@
+{
+  "camera": {
+    "distance": 40
+  },
+  "format": 1,
+  "model": {
+    "geometry": "mymod:entity/kart",
+    "texture": "mymod:entity/kart"
+  },
+  "movement": {
+    "mode": "ground"
+  }
+}
