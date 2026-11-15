@@ -21,7 +21,9 @@
  *   hopper, `tool_kit` dispenser) and a bundle (`charm_bundle`);
  * - two commands: `/greet` (alias `/hiya`, everyone, an event and a message back) and
  *   `/kit <who> <count>` (operators, a macro function giving candles);
- * - the creative tab `vanilla_blocks`, listing every item of the project in element order.
+ * - the creative tab `vanilla_blocks` (`as_listed`), listing every item but the tin set, and the
+ *   tab `tin_blocks` (`by_name`, B464a), listing the eight tin blocks by display name, whose order
+ *   ("Block of Tin" first) differs from their registration order.
  *
  * Pictures are MSM's own (the library's placeholder pictures, `placeholderPng`, and a sign
  * writing-screen board drawn here); none is vanilla's.
@@ -185,8 +187,11 @@ const COLOURS = {
 } as const satisfies Record<string, Rgb>;
 
 const TAB = ns('vanilla_blocks');
-/** Every item joins the project's tab (`as_listed`: element order). */
+/** Every item but the tin set joins the project's first tab (`as_listed`: registration order). */
 const IN_TAB = { creative_tab: TAB };
+/** The tin set's tab (`by_name`, B464a): parity checks the sort against the registration order. */
+const TIN_TAB = ns('tin_blocks');
+const IN_TIN_TAB = { creative_tab: TIN_TAB };
 
 const texture = (path: string, pattern: Pattern, colour: Rgb): SampleAsset => ({
   path: `textures/${path}.png`,
@@ -564,7 +569,7 @@ const TIN_BLOCKS: readonly SampleElement[] = [
       display_name: tinTitle(stage),
       model: ns(`block/${name}`),
       sound_type: 'copper',
-      item: IN_TAB,
+      item: IN_TIN_TAB,
       components: {
         ...breakable(3, { tool: 'pickaxe' }),
         'msm:weathering': next === undefined ? { stage } : { stage, next: ns(tinName(next)) },
@@ -578,7 +583,7 @@ const TIN_BLOCKS: readonly SampleElement[] = [
       display_name: `Waxed ${tinTitle(stage)}`,
       model: ns(`block/${name}`),
       sound_type: 'copper',
-      item: IN_TAB,
+      item: IN_TIN_TAB,
       components: breakable(3, { tool: 'pickaxe' }),
     });
   }),
@@ -704,7 +709,7 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       version: '1.0.0',
       name: PROJECT_NAME,
       description:
-        'Sample vanilla blocks: one block of each vanilla-like type, a lamp that holds water, tin that ages like copper, bags, a bundle, two commands and a creative tab.',
+        'Sample vanilla blocks: one block of each vanilla-like type, a lamp that holds water, tin that ages like copper, bags, a bundle, two commands and two creative tabs.',
       authors: ['MCSuperMods'],
       licence: 'MIT',
     },
@@ -717,6 +722,16 @@ const SAMPLE_ELEMENTS: readonly SampleElement[] = [
       icon: PAPER_LANTERN,
       order: 'as_listed',
       display_name: 'Vanilla Blocks',
+    },
+  },
+  {
+    id: TIN_TAB,
+    kind: 'msm:creative_tab',
+    data: {
+      format: 1,
+      icon: ns('tin'),
+      order: 'by_name',
+      display_name: 'Tin Blocks',
     },
   },
   ...TYPE_BLOCKS,
@@ -1091,14 +1106,18 @@ describe('sample vanilla blocks project', () => {
     expect(components(CHARM_BUNDLE)['msm:bundle']).toEqual({});
     expect(COMMAND_NAMES).toEqual(['greet', 'kit']);
     expect(dataOf(project, GIVE_KIT).lines).toContain(KIT_LINE);
-    // Every item of the project names the tab.
+    // Every item of the project names a tab: the tin set the by-name tab, the rest the first.
+    const tinIds = new Set(TIN_BLOCKS.map((element) => element.id));
     for (const element of elementsOf(project)) {
       const data = element.data as JsonRecord;
       if (element.kind === 'msm:item') expect(data.creative_tab, element.id).toBe(TAB);
       if (element.kind === 'msm:block' && data.item !== undefined && data.item !== false) {
-        expect((data.item as JsonRecord).creative_tab, element.id).toBe(TAB);
+        expect((data.item as JsonRecord).creative_tab, element.id).toBe(
+          tinIds.has(element.id) ? TIN_TAB : TAB,
+        );
       }
     }
+    expect(dataOf(project, TIN_TAB)).toMatchObject({ order: 'by_name' });
     const kinds = new Set(elementsOf(project).map((element) => element.kind));
     expect([...kinds].sort()).toEqual([
       'minecraft:function',
@@ -1212,10 +1231,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           `msm/${NAMESPACE}/command/${name}.json`,
           MSM_SCHEMA_REFS.commandDefinition,
         ]),
-        [
-          `msm/${NAMESPACE}/creative_tab/vanilla_blocks.json`,
+        ...['tin_blocks', 'vanilla_blocks'].map((name): [string, string] => [
+          `msm/${NAMESPACE}/creative_tab/${name}.json`,
           MSM_SCHEMA_REFS.creativeTabDefinition,
-        ],
+        ]),
       ];
       expect(paths.filter((path) => path.startsWith('msm/'))).toEqual(
         definitions.map(([path]) => path).sort(),
@@ -1269,6 +1288,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         function: GIVE_KIT,
       });
       expect(definition('creative_tab', 'vanilla_blocks')).toMatchObject({ icon: PAPER_LANTERN });
+      expect(definition('creative_tab', 'tin_blocks')).toMatchObject({
+        icon: ns('tin'),
+        order: 'by_name',
+      });
       expect(
         utf8.decode(files[`data/${NAMESPACE}/${data.function}/give_kit.mcfunction`] as Uint8Array),
       ).toContain(`${KIT_LINE}\n`);

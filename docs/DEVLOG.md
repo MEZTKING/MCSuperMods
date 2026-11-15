@@ -5920,3 +5920,20 @@ Next: B421's horn listener can add a parity check (the horn's sound packet to ot
 **Next**
 - B432 closes: check the Rules page against B458's final picker labels and update library counts in the root status line.
 - The `rules.md` "Do" table does not list B458's extra steps or places beyond those in the notes.
+## 2026-11-15 — executor — B464a Player macro names, wax events for the actor, a by_name tab in the sample
+
+**What**
+- Commands: a `player` argument now reaches the function's macro as the player's name, not the UUID (vanilla `give` refuses a UUID for a player); `players` stays names separated by spaces and `entity` keeps the UUID. Runtime `commands/CommandArguments.java` and the 26.3 eject generator `packages/targets/mc-26.3/src/java-project/commands.ts` changed together, with their doc comments. The `command` script event's `args` keeps the player's UUID, as Script API 1.6 documents it. `MsmCommandGameTest` asserts the name; `packages/exporters/test/vanilla-parity.test.ts` asserts the generated `getName().getString()` line.
+- Waxing: level events 3003, 3004 and 3005 are sent with a null source in the runtime (`registry/weathering/Waxing.java`) and the eject's `BlockWaxing` (`weathering.ts`), so the acting player's client shows the effect too. `MsmVanillaBlocksClientGameTest` now counts the client's particles over the 10 ticks after the use and asserts that project tin shows some, as vanilla copper does; the targets test `java-project-vanilla-blocks.test.ts` asserts the null source.
+- Fixture: `fixtures/sample-vanilla-blocks` gains the tab `tin_blocks` ("Tin Blocks", `by_name`, the tin icon) holding the eight tin blocks; the other items stay in `vanilla_blocks`. Regenerated with `UPDATE_GOLDENS=1` from `sample-vanilla-blocks.golden.test.ts` (jar pins for both targets and the 26.3 Java pin updated); README and the mod description say two tabs.
+- Parity `SampleVanillaBlocksParityTest` (21 tests): `/kit` is strict (5, 2 and 3 per fork tallow candles arrive; none after the refused counts or the level-0 player), the waxing test asserts the actor receives 3003, 3004 and 3005, the `as_listed` list drops the tin, and the new `theByNameTabSortsTheTinByDisplayName` checks the order Block of Tin, Exposed, Oxidised, Waxed Block of Tin, Waxed Exposed, Waxed Oxidised, Waxed Weathered, Weathered Tin (not the registration order) and the names themselves.
+- `ci.yml`: the server check pins `from 38 definition file(s)` and `registered 2 creative tab(s)`; the parity comment counts 21 tests.
+- Verified locally: `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib` (663 GameTests each); client GameTests on 26.3 and 26.4 (tin and copper both show particles); a negative client run with the old wax-on source fails (`project tin 0 particle(s)`); `./gradlew -p parity build` on both versions; server checks with the pinned lines on the 26.3 and 26.4 content jars; parity 21 of 21 on the 26.3 content jar, the 26.3 ejected jar (built with JDK 25, `--no-runtime` check passes) and the 26.4 content jar; exporters (1538) and targets (26.3 199, 26.4 105) tests; `pnpm lint` (one existing warning in `packages/ai/src/system-prompt.ts`, B458's file) and `pnpm typecheck`.
+
+**Decisions**
+- The script event keeps the UUID for `player`: the brief's decision is about macro values, and changing the event would change the published Script API 1.6 text.
+- The by-name tab holds the tin set because its names sort differently from its ids ("Block of Tin" first), so the parity test tells `by_name` from `as_listed`.
+
+**Next**
+- Orchestrator: update the B457 and B454 macro notes in `docs/PLAN-vanilla-parity-2.md` (player as a name); decide whether the `command` event should also pass the name.
+- First CI run on the branch confirms the new pins.

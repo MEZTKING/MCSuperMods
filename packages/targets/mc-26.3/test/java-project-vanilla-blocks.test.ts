@@ -189,6 +189,11 @@ describe('the 26.3 generator and the ADR 0094 block types', () => {
     expect(blocks.indexOf('BlockWaxing.register();')).toBeGreaterThan(
       blocks.indexOf('BlockWaxing.scrape('),
     );
+    // The wax level events have no source, so the acting player's client shows them (B464a).
+    const waxing = files.get('BlockWaxing.java') ?? '';
+    expect(waxing).toContain('level.levelEvent(null, WAX_ON, pos, 0);');
+    expect(waxing).toContain('level.levelEvent(null, scraping ? SCRAPE : WAX_OFF, pos, 0);');
+    expect(waxing).not.toContain('levelEvent(player');
     expect(files.get('item/BagItem.java')).toContain('public boolean canFitInsideContainerItems()');
     expect(files.get('item/BagItem.class')).toBeUndefined();
     expect(files.get('item/BagItem.java')).toBeDefined();

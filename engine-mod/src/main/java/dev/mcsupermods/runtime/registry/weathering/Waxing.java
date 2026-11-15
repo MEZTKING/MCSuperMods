@@ -67,7 +67,8 @@ public final class Waxing {
         }
         if (!level.isClientSide()) {
             Weathering.replace(level, pos, state, waxed.get());
-            level.levelEvent(player, LevelEvent.PARTICLES_WAX_ON, pos, 0);
+            // A null source: the waxing player's own client shows the effect too (its client predicts nothing, B464a).
+            level.levelEvent(null, LevelEvent.PARTICLES_WAX_ON, pos, 0);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, waxed.get()));
             stack.consume(1, player);
         }
@@ -91,7 +92,8 @@ public final class Waxing {
             SoundEvent sound = scraped.isPresent() ? SoundEvents.AXE_SCRAPE.value() : SoundEvents.AXE_WAX_OFF.value();
             Weathering.replace(level, pos, state, into);
             level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0f, 1.0f);
-            level.levelEvent(player, scraped.isPresent() ? LevelEvent.PARTICLES_SCRAPE : LevelEvent.PARTICLES_WAX_OFF, pos, 0);
+            // A null source, as for wax on: the acting player sees the particles too (B464a).
+            level.levelEvent(null, scraped.isPresent() ? LevelEvent.PARTICLES_SCRAPE : LevelEvent.PARTICLES_WAX_OFF, pos, 0);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, into));
             stack.hurtAndBreak(1, player, hand.asEquipmentSlot());
         }

@@ -14,7 +14,8 @@
  * - `msm:waxable` and scraping: the generated `BlockWaxing`, one `UseBlockCallback` next to
  *   `BlockStripping`: honeycomb waxes (level event 3003, one honeycomb used), an axe scrapes a
  *   weathering block one stage back (`AXE_SCRAPE`, level event 3005) or unwaxes a waxed block
- *   (`AXE_WAX_OFF`, 3004) and takes one damage. Its maps hold only the project's own blocks, so a
+ *   (`AXE_WAX_OFF`, 3004) and takes one damage; the level events have no source, so the acting
+ *   player's own client shows them too (B464a). Its maps hold only the project's own blocks, so a
  *   vanilla `next` or `into` is never scraped or unwaxed into a project block.
  *
  * Minecraft 26.3, Mojang names.
@@ -394,7 +395,8 @@ public final class BlockWaxing {
             }
             if (!level.isClientSide()) {
                 change(level, pos, state, waxed.get(), player);
-                level.levelEvent(player, WAX_ON, pos, 0);
+                // A null source: the waxing player's own client shows the effect too.
+                level.levelEvent(null, WAX_ON, pos, 0);
                 stack.consume(1, player);
             }
             return InteractionResult.SUCCESS;
@@ -422,7 +424,7 @@ public final class BlockWaxing {
             change(level, pos, state, changed.get(), player);
             level.playSound(null, pos, scraping ? SoundEvents.AXE_SCRAPE.value() : SoundEvents.AXE_WAX_OFF.value(), SoundSource.BLOCKS,
                     1.0f, 1.0f);
-            level.levelEvent(player, scraping ? SCRAPE : WAX_OFF, pos, 0);
+            level.levelEvent(null, scraping ? SCRAPE : WAX_OFF, pos, 0);
             stack.hurtAndBreak(1, player, hand.asEquipmentSlot());
         }
         return InteractionResult.SUCCESS;

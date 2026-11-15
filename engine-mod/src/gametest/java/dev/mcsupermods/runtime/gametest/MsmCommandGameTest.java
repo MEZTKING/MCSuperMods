@@ -116,7 +116,10 @@ public class MsmCommandGameTest {
         server(helper).getPlayerList().remove(player);
     }
 
-    /** Integer, number, word, boolean, player and entity reach the function as macro values (and the storage as tags). */
+    /**
+     * Integer, number, word, boolean, player (its name) and entity (its UUID) reach the function as macro values (and the
+     * storage as tags).
+     */
     @GameTest
     public void argumentsReachTheFunctionAsMacrosA(GameTestHelper helper) {
         ServerPlayer player = player(helper);
@@ -131,7 +134,9 @@ public class MsmCommandGameTest {
         helper.assertValueEqual(outString(helper, "n"), "2.5", "number macro");
         helper.assertValueEqual(outString(helper, "w"), "hello", "word macro");
         helper.assertValueEqual(outString(helper, "b"), "1", "boolean macro (a byte)");
-        helper.assertValueEqual(outString(helper, "p"), player.getStringUUID(), "player macro (UUID)");
+        // The player's name, not the UUID: vanilla give refuses a UUID for a player (B464a).
+        helper.assertValueEqual(outString(helper, "p"), player.getName().getString(), "player macro (the name)");
+        helper.assertFalse(outString(helper, "p").equals(player.getStringUUID()), "player macro is no UUID");
         helper.assertValueEqual(outString(helper, "e"), stand.getStringUUID(), "entity macro (UUID)");
         CompoundTag args = server(helper).getCommandStorage().get(ARGS);
         helper.assertValueEqual(args.get("i").getId(), Tag.TAG_INT, "integer as an int tag");

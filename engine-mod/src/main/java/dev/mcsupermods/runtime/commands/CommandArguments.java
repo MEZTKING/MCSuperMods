@@ -35,12 +35,13 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Macro values (the function's {@code $(name)}), exactly as the 26.3 eject's {@code ModCommands} (B457): integer an
  * int tag, number a double tag, word and text the text (raw: no quote or backslash is escaped, as vanilla macros), boolean
- * a byte tag, player and entity the entity's UUID, players the names separated by spaces, position {@code "x y z"} as
+ * a byte tag, player the player's name, entity the entity's UUID, players the names separated by spaces, position {@code "x y z"} as
  * doubles, block_position {@code "x y z"} as integers, item and block the registry id (the components and block state
  * properties given are not passed). A left-out optional argument has no value.
  *
  * <p>Script values (the {@code command} event's {@code args}, JSON): the same values with JSON types: numbers, strings
- * and booleans; {@code players} an array of names; positions an array of three numbers.
+ * and booleans; {@code player} the player's UUID (not the name); {@code players} an array of names; positions an array
+ * of three numbers.
  */
 public final class CommandArguments {
     private CommandArguments() {}
@@ -92,9 +93,11 @@ public final class CommandArguments {
                 json.addProperty(name, value);
             }
             case PLAYER -> {
-                String value = EntityArgument.getPlayer(context, name).getStringUUID();
-                macros.putString(name, value);
-                json.addProperty(name, value);
+                // The macro gets the name, not the UUID: vanilla commands such as give refuse a UUID for a player
+                // (B464a). The script event keeps the UUID (Script API 1.6 documents it).
+                ServerPlayer player = EntityArgument.getPlayer(context, name);
+                macros.putString(name, player.getName().getString());
+                json.addProperty(name, player.getStringUUID());
             }
             case ENTITY -> {
                 String value = EntityArgument.getEntity(context, name).getStringUUID();

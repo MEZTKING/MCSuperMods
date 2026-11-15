@@ -1,0 +1,14 @@
+{
+  "data": {
+    "display_name": "Tin Blocks",
+    "format": 1,
+    "icon": "msm_sample_vanilla_blocks:tin",
+    "order": "by_name"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:tin_blocks",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

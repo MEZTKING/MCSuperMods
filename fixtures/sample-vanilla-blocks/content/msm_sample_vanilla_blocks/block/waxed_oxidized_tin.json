@@ -10,7 +10,7 @@
     "display_name": "Waxed Oxidised Tin",
     "format": 1,
     "item": {
-      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+      "creative_tab": "msm_sample_vanilla_blocks:tin_blocks"
     },
     "loot": "self",
     "model": "msm_sample_vanilla_blocks:block/oxidized_tin",

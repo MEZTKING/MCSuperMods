@@ -7,8 +7,9 @@
  * node from the last required one on runs it. The permission level maps to `Commands.LEVEL_*`.
  *
  * Running a command: the arguments are written to command storage `<mod id>:args` as macro values
- * (`integer` an int, `number` a double, `word` and `text` the text, `boolean` a byte, `player` and
- * `entity` the entity's UUID, `players` the names separated by spaces, `position` "x y z",
+ * (`integer` an int, `number` a double, `word` and `text` the text, `boolean` a byte, `player` the
+ * player's name (vanilla `give` refuses a UUID for a player, B464a), `entity` the entity's UUID,
+ * `players` the names separated by spaces, `position` "x y z",
  * `block_position` "x y z", `item` and `block` the id), then `function <id> with storage <mod id>:args`
  * runs as and at the source with permission level 2 (`LevelBasedPermissionSet.GAMEMASTER`); the
  * `event` fires with the source entity as self and other (the player when it is one); `feedback`
@@ -237,7 +238,7 @@ function putArgument(file: JavaFile, arg: ArgumentSpec): string {
     case 'boolean':
       return `args.putBoolean(${name}, ${cls}.getBool(context, ${name}));`;
     case 'player':
-      return `args.putString(${name}, ${cls}.getPlayer(context, ${name}).getStringUUID());`;
+      return `args.putString(${name}, ${cls}.getPlayer(context, ${name}).getName().getString());`;
     case 'entity':
       return `args.putString(${name}, ${cls}.getEntity(context, ${name}).getStringUUID());`;
     case 'players': {

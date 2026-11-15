@@ -227,7 +227,7 @@ jobs:
           cat "$RUNNER_TEMP/sample-vehicles/expect-lines.txt"
       # Vanilla blocks of batch 1 (ADRs 0094-0096, 0101, B462): one block of each of the twenty new
       # types with their companions, a waterloggable lamp, tin that ages with waxed copies, three
-      # bags, a bundle, two commands and a creative tab.
+      # bags, a bundle, two commands and two creative tabs (as_listed and by_name).
       - name: Export the sample vanilla blocks with the real runtime
         run: |
           MSM_SAMPLE_VANILLA_BLOCKS_OUT="$RUNNER_TEMP/sample-vanilla-blocks" \
@@ -353,10 +353,10 @@ jobs:
           node tools/run-fabric-server/index.ts
           --jar "$RUNNER_TEMP/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar"
           --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json"
-          --expect-line '[msm_runtime] registered 30 block(s) and 33 item(s) from 37 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered 30 block(s) and 33 item(s) from 38 definition file(s); 0 error(s), 0 warning(s)'
           --expect-line '[msm_runtime] registered blocks by type: block 10, cake 1, berry_bush 1, tall_plant 1, potted_plant 1, vine 1, sea_pickle 1, carpet 1, layers 1, cocoa 1, candle 1, bed 1, ladder 1, torch 1, lantern 1, chain 1, rod 1, sign 1, hanging_sign 1, stem 1, scaffolding 1'
           --expect-line '[msm_runtime] registered 2 command(s)'
-          --expect-line '[msm_runtime] registered 1 creative tab(s)'
+          --expect-line '[msm_runtime] registered 2 creative tab(s)'
           --forbid-line NoClassDefFoundError
           --forbid-line 'Mixin apply'
           --forbid-line MixinTransformerError
@@ -747,11 +747,11 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-vehicles-content.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
-      # Vanilla blocks (B464, SampleVanillaBlocksParityTest, 20 tests): registration, items, tags
-      # and the tab's order; tin ageing at copper's rate and lower neighbours stopping it; waxing
+      # Vanilla blocks (B464, B464a, SampleVanillaBlocksParityTest, 21 tests): registration, items,
+      # tags, the as_listed tab's order and the by_name tab's; tin ageing at copper's rate and lower neighbours stopping it; waxing
       # and scraping with their level events; water in the lamp; the bags' layouts, sounds, saved
       # contents and the guard's outcome; the bundle; /greet, /hiya and /kit's macro values,
-      # permission and execute-as forks; signs sounding as spruce and taking text; sleeping;
+      # permission and execute-as forks (the candles arrive); signs sounding as spruce and taking text; sleeping;
       # cake, berries, light, drops, the stem, scaffolding; and primed TNT (the run's first
       # explosion, so the explosion Mixin must apply). Black-box, on the content jar of every
       # version and on the ejected jar.

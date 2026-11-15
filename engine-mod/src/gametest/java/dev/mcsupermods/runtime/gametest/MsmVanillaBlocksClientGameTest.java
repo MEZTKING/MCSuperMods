@@ -56,8 +56,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
  *   <li><b>Bundle.</b> {@code msm_test:bag_bundle} holding diamonds and apples has vanilla's bundle tooltip; the
  *       inventory screen is shot with the cursor on it.</li>
  *   <li><b>Wax.</b> Honeycomb on {@code msm_test:weathering_tin} with the use key: the server waxes it and uses the
- *       honeycomb. Whether the waxing player's own client shows level event 3003 (B449's open check) is measured by its
- *       particles against vanilla copper as the control and logged (B464: it does not; see {@link #wax}).</li>
+ *       honeycomb. The waxing player's own client shows level event 3003 (B449's open check): its particles appear for
+ *       project tin as for vanilla copper, the control (B464a: the server sends 3003 with no source; see {@link #wax}).</li>
  * </ul>
  *
  * <p>Screenshots (kept in {@code build/run/clientGameTest/screenshots/}): {@code msm_vanilla_sign}, {@code msm_vanilla_bed},
@@ -227,9 +227,14 @@ public class MsmVanillaBlocksClientGameTest implements FabricClientGameTest {
         }
     }
 
+    /** Ticks after the use in which the particles are counted: the server's level event takes a round trip. */
+    private static final int PARTICLE_TICKS = 10;
+
     /**
      * Waxes {@code from} at {@code at} with honeycomb by the use key, in survival; checks the server waxed it into
-     * {@code into} and used one honeycomb; returns how many particles the client added while doing it.
+     * {@code into} and used one honeycomb; returns the most particles the client had beyond the count before the use in
+     * the {@value #PARTICLE_TICKS} ticks after it (vanilla copper's appear at once, as the client predicts the use;
+     * project tin's come with the server's level event).
      */
     private static int waxParticles(ClientGameTestContext context, TestDedicatedServerContext server, BlockPos at, Block from, Block into) {
         setBlock(server, at, from.defaultBlockState());
@@ -238,19 +243,23 @@ public class MsmVanillaBlocksClientGameTest implements FabricClientGameTest {
         context.waitTicks(3);
         int before = particles(context);
         use(context, at);
-        int after = particles(context);
+        int most = particles(context) - before;
+        for (int tick = 0; tick < PARTICLE_TICKS; tick++) {
+            context.waitTick();
+            most = Math.max(most, particles(context) - before);
+        }
         server.waitFor(s -> player(s).level().getBlockState(at).is(into), 100);
         context.waitFor(mc -> mc.level.getBlockState(at).is(into), 100);
         check(server.computeOnServer(s -> player(s).getMainHandItem().getCount()) == 3, from + ": the honeycomb was not used up");
-        return after - before;
+        return most;
     }
 
     /**
      * Honeycomb on project tin and, as the control, on vanilla copper. The server waxes both. The client's own wax-on
      * effect (level event 3003: the sound and the wax particles) is measured by its particles, as the headless client has
-     * no sound device: vanilla copper shows them at once (the client predicts the use); for project tin the result is
-     * logged, not asserted (finding, B464: the server sends 3003 to everyone but the player who waxed, so that player's
-     * client neither shows nor plays it; others do).
+     * no sound device: vanilla copper shows them at once (the client predicts the use), project tin when the server's
+     * level event arrives. Asserted since B464a: the server sends 3003 with no source, so the player who waxed gets it
+     * too (B464 found it went to everyone but that player).
      */
     private static void wax(ClientGameTestContext context, TestDedicatedServerContext server, Sounds sounds) {
         server.runOnServer(s -> player(s).setGameMode(GameType.SURVIVAL));
@@ -258,9 +267,10 @@ public class MsmVanillaBlocksClientGameTest implements FabricClientGameTest {
         int tin = waxParticles(context, server, centre.offset(2, 0, 2), block("weathering_tin"), block("weathering_waxed_tin"));
         int copper = waxParticles(context, server, centre.offset(-2, 0, 2), Blocks.COPPER_BLOCK.weathering().unaffected(),
                 Blocks.COPPER_BLOCK.waxed().unaffected());
-        MsmRuntime.LOGGER.info("[{}] B464 wax-on seen by the waxing player's client: project tin {} particle(s), vanilla copper {} "
+        MsmRuntime.LOGGER.info("[{}] wax-on seen by the waxing player's client: project tin {} particle(s), vanilla copper {} "
                 + "particle(s); sounds played {}", MsmRuntime.MOD_ID, tin, copper, sounds.played);
         check(copper > 0, "the control failed: waxing vanilla copper showed no particles on the client");
+        check(tin > 0, "waxing project tin showed no particles on the waxing player's client (level event 3003)");
         if (!sounds.played.isEmpty()) {
             check(sounds.played.contains(WAX_ON), "the client played " + sounds.played + ", not " + WAX_ON);
         }

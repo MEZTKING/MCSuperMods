@@ -69,8 +69,8 @@ import net.minecraft.world.phys.Vec3;
  * after it), the tests compare the outcome (B450's note).
  *
  * <p>Covered: the 30 blocks, 33 items and four companions, the item ids of the berry bush, pod and stem, stack sizes and
- * vanilla tags; the tab's contents in registration order (block items, then items, each by file path; B454's
- * correction); tin ageing at vanilla copper's rate with a lower-stage neighbour (project or vanilla) stopping it in both
+ * vanilla tags; the {@code as_listed} tab's contents in registration order (block items, then items, each by file path;
+ * B454's correction) and the {@code by_name} tab's by display name (B464a); tin ageing at vanilla copper's rate with a lower-stage neighbour (project or vanilla) stopping it in both
  * directions (B449's measurements); honeycomb and axe with level events 3003, 3004 and 3005; water in the sea lamp and the
  * vanilla-waterlogged types; the three bag layouts, opening, sounds, saved contents and the guard's outcome (no bag or
  * shulker box goes in, the bag never moves, nothing is copied); the bundle; {@code /greet} and {@code /hiya},
@@ -79,7 +79,7 @@ import net.minecraft.world.phys.Vec3;
  * refused candle; the berry harvest; light levels; drops by piece; the stem's fruit; scaffolding falling unsupported;
  * primed TNT breaking project blocks as vanilla blocks of the same resistance (the first explosion of the run).
  *
- * <p>Not covered here: {@code by_name} (the fixture's one tab is {@code as_listed}), sign text written from a real client
+ * <p>Not covered here: sign text written from a real client
  * (the client GameTest {@code MsmVanillaBlocksClientGameTest} does that on a dedicated server), anything drawn.
  */
 public class SampleVanillaBlocksParityTest {
@@ -96,12 +96,26 @@ public class SampleVanillaBlocksParityTest {
     /** The blocks the types make beside their own, without items. */
     private static final List<String> COMPANIONS = List.of("ember_torch_wall", "cedar_sign_wall", "cedar_hanging_sign_wall",
             "gourd_stem_attached");
-    /** The tab's contents: block items, then items, each by definition file path (the runtime's registration order). */
+    /**
+     * The {@code as_listed} tab's contents: block items, then items, each by definition file path (the runtime's
+     * registration order); the tin set is in the other tab.
+     */
     private static final List<String> TAB = List.of("ash_layer", "bamboo_frame", "blue_berries", "brass_chain", "cedar_hanging_sign",
-            "cedar_sign", "coffee_beans", "cosy_bed", "crystal_rod", "ember_torch", "exposed_tin", "glow_pod", "gourd", "gourd_seeds",
-            "honey_cake", "ivy", "moss_rug", "oxidized_tin", "paper_lantern", "rope_ladder", "sea_lamp", "tall_bluebell", "tallow_candle",
-            "tin", "waxed_exposed_tin", "waxed_oxidized_tin", "waxed_tin", "waxed_weathered_tin", "weathered_tin", "charm_bundle", "satchel",
-            "seed_pouch", "tool_kit");
+            "cedar_sign", "coffee_beans", "cosy_bed", "crystal_rod", "ember_torch", "glow_pod", "gourd", "gourd_seeds", "honey_cake", "ivy",
+            "moss_rug", "paper_lantern", "rope_ladder", "sea_lamp", "tall_bluebell", "tallow_candle", "charm_bundle", "satchel", "seed_pouch",
+            "tool_kit");
+    /**
+     * The {@code by_name} tab {@code tin_blocks} (B464a): the tin set sorted by display name ("Block of Tin" first), which
+     * differs from its registration order ({@link #TIN_BY_ID}).
+     */
+    private static final List<String> TIN_TAB = List.of("tin", "exposed_tin", "oxidized_tin", "waxed_tin", "waxed_exposed_tin",
+            "waxed_oxidized_tin", "waxed_weathered_tin", "weathered_tin");
+    /** The tin set in registration order (by file path), which a {@code by_name} tab must not keep. */
+    private static final List<String> TIN_BY_ID = List.of("exposed_tin", "oxidized_tin", "tin", "waxed_exposed_tin", "waxed_oxidized_tin",
+            "waxed_tin", "waxed_weathered_tin", "weathered_tin");
+    /** The tin set's display names, in {@link #TIN_TAB} order. */
+    private static final List<String> TIN_NAMES = List.of("Block of Tin", "Exposed Tin", "Oxidised Tin", "Waxed Block of Tin",
+            "Waxed Exposed Tin", "Waxed Oxidised Tin", "Waxed Weathered Tin", "Weathered Tin");
 
     private static final Identifier CHIME = Identifier.withDefaultNamespace("block.note_block.chime");
     private static final Identifier BELL = Identifier.withDefaultNamespace("block.note_block.bell");
@@ -326,20 +340,45 @@ public class SampleVanillaBlocksParityTest {
         helper.succeed();
     }
 
-    /** The tab {@code vanilla_blocks}: its title key, the paper lantern icon and every item in registration order. */
-    @GameTest(structure = ARENA)
-    public void theTabListsEveryItemInRegistrationOrder(GameTestHelper helper) {
-        Identifier tabId = id("vanilla_blocks");
-        helper.assertTrue(BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(tabId), "tab not registered");
+    /** The tab {@code path}, its contents built on the server as the client builds them (Fabric's output events run). */
+    private static CreativeModeTab builtTab(GameTestHelper helper, String path) {
+        Identifier tabId = id(path);
+        helper.assertTrue(BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(tabId), "tab " + tabId + " not registered");
         CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.getValue(tabId);
         MinecraftServer server = server(helper);
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(server.getWorldData().enabledFeatures(), true, server.registryAccess()));
+        return tab;
+    }
+
+    /** The tab {@code vanilla_blocks}: its title key, the paper lantern icon and every item but the tin in registration order. */
+    @GameTest(structure = ARENA)
+    public void theTabListsEveryItemInRegistrationOrder(GameTestHelper helper) {
+        CreativeModeTab tab = builtTab(helper, "vanilla_blocks");
         List<String> got = tab.getDisplayItems().stream().map(s -> BuiltInRegistries.ITEM.getKey(s.getItem()).toString()).toList();
         List<String> expected = TAB.stream().map(p -> NAMESPACE + ":" + p).toList();
         helper.assertValueEqual(got, expected, "tab contents");
         helper.assertTrue(tab.getDisplayName().getContents() instanceof TranslatableContents t
                 && t.getKey().equals("itemGroup." + NAMESPACE + ".vanilla_blocks"), "tab title " + tab.getDisplayName());
         helper.assertTrue(tab.getIconItem().is(item(helper, "paper_lantern")), "tab icon " + tab.getIconItem());
+        helper.succeed();
+    }
+
+    /**
+     * The {@code by_name} tab {@code tin_blocks} (B464a): its title key, the tin icon and the eight tin blocks sorted by
+     * their display names, which is not their registration order. The names are the project's own (the server reads the
+     * mod's language file), so a missing translation, which would sort by key, fails here.
+     */
+    @GameTest(structure = ARENA)
+    public void theByNameTabSortsTheTinByDisplayName(GameTestHelper helper) {
+        CreativeModeTab tab = builtTab(helper, "tin_blocks");
+        List<String> got = tab.getDisplayItems().stream().map(s -> BuiltInRegistries.ITEM.getKey(s.getItem()).toString()).toList();
+        List<String> names = tab.getDisplayItems().stream().map(s -> s.getHoverName().getString()).toList();
+        helper.assertValueEqual(got, TIN_TAB.stream().map(p -> NAMESPACE + ":" + p).toList(), "tin tab contents " + names);
+        helper.assertValueEqual(names, TIN_NAMES, "tin tab names");
+        helper.assertFalse(TIN_TAB.equals(TIN_BY_ID), "the by-name order equals the registration order");
+        helper.assertTrue(tab.getDisplayName().getContents() instanceof TranslatableContents t
+                && t.getKey().equals("itemGroup." + NAMESPACE + ".tin_blocks"), "tab title " + tab.getDisplayName());
+        helper.assertTrue(tab.getIconItem().is(item(helper, "tin")), "tab icon " + tab.getIconItem());
         helper.succeed();
     }
 
@@ -419,9 +458,9 @@ public class SampleVanillaBlocksParityTest {
     }
 
     /**
-     * Honeycomb waxes each stage (used up in survival, level event 3003 for others); an axe takes the wax off (3004, the
-     * wax-off sound) and scrapes a stage back (3005, the scrape sound), losing one durability a use; the unaffected stage
-     * is left alone.
+     * Honeycomb waxes each stage (used up in survival, level event 3003); an axe takes the wax off (3004, the wax-off sound)
+     * and scrapes a stage back (3005, the scrape sound), losing one durability a use; the unaffected stage is left alone.
+     * Each level event reaches others and the acting player too (B464a: a null source, so the actor's client shows it).
      */
     @GameTest(structure = ARENA)
     public void honeycombWaxesAndTheAxeUnwaxesAndScrapes(GameTestHelper helper) {
@@ -433,26 +472,31 @@ public class SampleVanillaBlocksParityTest {
             for (String stage : List.of("tin", "exposed_tin", "weathered_tin", "oxidized_tin")) {
                 setblock(helper, at, id(stage).toString());
                 ears.packets();
+                actor.packets();
                 ItemStack honeycomb = new ItemStack(Items.HONEYCOMB, 2);
                 InteractionResult result = click(helper, actor.player, honeycomb, at, Direction.UP);
                 helper.assertTrue(result.consumesAction(), stage + ": honeycomb " + result);
                 helper.assertTrue(helper.getBlockState(at).is(block(helper, "waxed_" + stage)), stage + " waxed into " + helper.getBlockState(at));
                 helper.assertValueEqual(actor.player.getMainHandItem().getCount(), 1, stage + ": honeycombs left");
                 helper.assertTrue(levelEvents(ears.packets(), abs).contains(WAX_ON), stage + ": no level event 3003");
+                helper.assertTrue(levelEvents(actor.packets(), abs).contains(WAX_ON), stage + ": the waxer got no level event 3003");
             }
             ItemStack axe = new ItemStack(Items.IRON_AXE);
             setblock(helper, at, id("waxed_exposed_tin").toString());
             ears.packets();
+            actor.packets();
             click(helper, actor.player, axe, at, Direction.UP);
             helper.assertTrue(helper.getBlockState(at).is(block(helper, "exposed_tin")), "unwaxed into " + helper.getBlockState(at));
             List<Packet<?>> heard = ears.packets();
             helper.assertTrue(levelEvents(heard, abs).contains(WAX_OFF), "no level event 3004: " + levelEvents(heard, abs));
+            helper.assertTrue(levelEvents(actor.packets(), abs).contains(WAX_OFF), "the actor got no level event 3004");
             helper.assertTrue(sounds(heard).contains(AXE_WAX_OFF), "no wax-off sound: " + sounds(heard));
             helper.assertValueEqual(actor.player.getMainHandItem().getDamageValue(), 1, "axe damage after unwaxing");
             click(helper, actor.player, actor.player.getMainHandItem(), at, Direction.UP);
             helper.assertTrue(helper.getBlockState(at).is(block(helper, "tin")), "scraped into " + helper.getBlockState(at));
             heard = ears.packets();
             helper.assertTrue(levelEvents(heard, abs).contains(SCRAPE), "no level event 3005: " + levelEvents(heard, abs));
+            helper.assertTrue(levelEvents(actor.packets(), abs).contains(SCRAPE), "the actor got no level event 3005");
             helper.assertTrue(sounds(heard).contains(AXE_SCRAPE), "no scrape sound: " + sounds(heard));
             helper.assertValueEqual(actor.player.getMainHandItem().getDamageValue(), 2, "axe damage after scraping");
             click(helper, actor.player, actor.player.getMainHandItem(), at, Direction.UP);
@@ -780,25 +824,18 @@ public class SampleVanillaBlocksParityTest {
     }
 
     /**
-     * Whether {@code give_kit} reached {@code player} with {@code n}: the candles arrived, or the source was told the
-     * instantiated line {@code give <the player's UUID> ...tallow_candle <n>} (the macro's values, one per fork).
-     *
-     * <p>Finding (B464, both jars alike): a {@code player} argument reaches the macro as the player's UUID (B457), and
-     * vanilla's {@code give} refuses a UUID ("Only players may be affected by this command, but the provided selector
-     * includes entities"), so the fixture's {@code $give $(who) ...} never gives anything on either jar. The test checks
-     * the values that reach the function; the strict candle count waits for that fix.
+     * {@code give_kit} gave {@code player} exactly {@code n} candles more than {@code before}. Strict since B464a: a
+     * {@code player} argument reaches the macro as the player's name, which vanilla's {@code give} takes (it refuses a
+     * UUID for a player, the B464 finding).
      */
-    private static boolean kitReached(GameTestHelper helper, ServerPlayer player, List<String> chat, int n, int before) {
-        if (candles(helper, player) == before + n) {
-            return true;
-        }
-        String line = "give " + player.getStringUUID() + " " + NAMESPACE + ":tallow_candle " + n;
-        return chat.stream().anyMatch(l -> l.contains(line));
+    private static void assertKit(GameTestHelper helper, ServerPlayer player, List<String> chat, int n, int before, String what) {
+        helper.assertValueEqual(candles(helper, player), before + n, what + ": tallow candles " + chat);
     }
 
     /**
      * {@code /kit <who> <count>} at permission 2 runs {@code give_kit} with the typed values as macros through the
-     * storage {@code <mod id>:args} ({@code who} the player's UUID, from a selector or a name; {@code count} an int);
+     * storage {@code <mod id>:args} ({@code who} the player's name, from a selector or a name; {@code count} an int), and
+     * the candles arrive;
      * a count outside 1 to 16 and a level-0 player are refused before anything runs; under {@code execute as} with two
      * players each fork passes its own player.
      */
@@ -814,20 +851,22 @@ public class SampleVanillaBlocksParityTest {
             List<String> chat = chatLines(a.packets());
             helper.assertTrue(chat.contains(KIT_TEXT) || chat.stream().anyMatch(l -> l.contains("command." + NAMESPACE + ".kit.feedback")),
                     "/kit answer " + chat);
-            helper.assertValueEqual(args(helper).getStringOr("who", "<missing>"), a.player.getStringUUID(), "who (a selector) as a macro");
+            helper.assertValueEqual(args(helper).getStringOr("who", "<missing>"), a.player.getName().getString(), "who (a selector) as a macro");
             helper.assertValueEqual(args(helper).getIntOr("count", -1), 5, "count as a macro");
-            helper.assertTrue(kitReached(helper, a.player, chat, 5, 0), "give_kit did not reach the player with 5: " + chat);
+            assertKit(helper, a.player, chat, 5, 0, "/kit @s 5");
             for (String refused : List.of("kit @s 17", "kit @s 0")) {
                 command(op, refused);
                 helper.assertValueEqual(args(helper).getIntOr("count", -1), 5, refused + " ran");
             }
+            assertKit(helper, a.player, List.of(), 5, 0, "after the refused counts");
             int before = candles(helper, b.player);
             command(op, "kit msm-svb-kit-b 2");
             chat = chatLines(a.packets());
-            helper.assertValueEqual(args(helper).getStringOr("who", "<missing>"), b.player.getStringUUID(), "who (a name) as a macro");
-            helper.assertTrue(kitReached(helper, b.player, chat, 2, before), "give_kit by name: " + chat);
+            helper.assertValueEqual(args(helper).getStringOr("who", "<missing>"), b.player.getName().getString(), "who (a name) as a macro");
+            assertKit(helper, b.player, chat, 2, before, "/kit by name");
             command(a.player.createCommandSourceStack().withPermission(LevelBasedPermissionSet.ALL), "kit @s 3");
             helper.assertValueEqual(args(helper).getIntOr("count", -1), 2, "a level-0 player ran /kit");
+            assertKit(helper, a.player, List.of(), 5, 0, "after the level-0 /kit");
             a.player.addTag("msm_svb_fork");
             b.player.addTag("msm_svb_fork");
             int beforeA = candles(helper, a.player);
@@ -836,8 +875,8 @@ public class SampleVanillaBlocksParityTest {
             command(op, "execute as @a[tag=msm_svb_fork] run kit @s 3");
             chat = chatLines(a.packets());
             helper.assertValueEqual(chat.stream().filter(KIT_TEXT::equals).count(), 2L, "one answer per fork: " + chat);
-            helper.assertTrue(kitReached(helper, a.player, chat, 3, beforeA), "first fork: " + chat);
-            helper.assertTrue(kitReached(helper, b.player, chat, 3, beforeB), "second fork: " + chat);
+            assertKit(helper, a.player, chat, 3, beforeA, "first fork");
+            assertKit(helper, b.player, chat, 3, beforeB, "second fork");
         }
         helper.succeed();
     }

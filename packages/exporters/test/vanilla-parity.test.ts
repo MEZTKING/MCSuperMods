@@ -473,6 +473,11 @@ describe('the vanilla parity types in the Java project', () => {
       expect(commands).toContain('dispatcher.register(command2("hi", buildContext));');
       expect(commands).toContain('Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)');
       expect(commands).toContain('EntityArgument.player()');
+      // A player argument reaches the macro as the name: vanilla give refuses a UUID (B464a).
+      expect(commands).toContain(
+        'args.putString("target", EntityArgument.getPlayer(context, "target").getName().getString());',
+      );
+      expect(commands).not.toContain('getPlayer(context, "target").getStringUUID()');
       expect(commands).toContain('IntegerArgumentType.integer(1, 64)');
       expect(commands).toContain('ItemArgument.item(buildContext)');
       const tabs = text('ModCreativeTabs.java');
