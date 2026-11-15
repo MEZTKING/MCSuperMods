@@ -8,6 +8,77 @@
  * @packageDocumentation
  */
 
+// ---------------------------------------------------------------------------------------------
+// Very easy picks (ADR 0101 D4): the new kinds of block and item that "Make a block" and "Make
+// an item" offer, in plain words and without ids. Each pick opens a Creator flow; a pick whose
+// flow the library does not have (or the target cannot make) is not shown.
+// ---------------------------------------------------------------------------------------------
+
+/** One pick of a Home tile's chooser: a Creator flow under plain words. */
+export interface VeryEasyPick {
+  /** Stable id; the card's test id stays the flow's (`creator-flow-<flowId>`). */
+  readonly id: string;
+  /** The Creator flow (a library starter id) the pick opens. */
+  readonly flowId: string;
+  /** The card's words. */
+  readonly label: string;
+  /** One short sentence under the label. */
+  readonly sentence: string;
+}
+
+/** The new kinds of block "Make a block" offers (ADR 0101 D4, plan "Very easy wording"). */
+export const MAKE_BLOCK_PICKS: readonly VeryEasyPick[] = [
+  {
+    id: 'lights',
+    flowId: 'lights',
+    label: 'Lights',
+    sentence: 'Torches, lanterns, chains and candles.',
+  },
+  { id: 'bed', flowId: 'bed', label: 'Bed', sentence: 'A bed or sleeping bag.' },
+  { id: 'cake', flowId: 'cake', label: 'Cake', sentence: 'Eat it a slice at a time.' },
+  {
+    id: 'sign',
+    flowId: 'wood-set',
+    label: 'Sign',
+    sentence: 'Write on it. Comes with a whole set of wood.',
+  },
+  {
+    id: 'berry-bush',
+    flowId: 'crop',
+    label: 'Bush with berries',
+    sentence: 'A plant to grow and pick. Choose "Bush with berries".',
+  },
+  {
+    id: 'copper',
+    flowId: 'copper-set',
+    label: 'Ages like copper',
+    sentence: 'Blocks that slowly turn green, and stay as they are when waxed.',
+  },
+];
+
+/** The new kinds of item "Make an item" offers (ADR 0101 D4). */
+export const MAKE_ITEM_PICKS: readonly VeryEasyPick[] = [
+  {
+    id: 'bag',
+    flowId: 'backpack',
+    label: 'A bag that holds things',
+    sentence: 'Opens when you right-click it.',
+  },
+];
+
+/** The flow ids of `picks`, in order, without repeats. */
+export function pickFlowIds(picks: readonly VeryEasyPick[]): string[] {
+  return [...new Set(picks.map((pick) => pick.flowId))];
+}
+
+/** The pick of `flowId` among the tile picks, or `undefined`. */
+export function veryEasyPickOf(
+  flowId: string,
+  picks: readonly VeryEasyPick[] = [...MAKE_BLOCK_PICKS, ...MAKE_ITEM_PICKS],
+): VeryEasyPick | undefined {
+  return picks.find((pick) => pick.flowId === flowId);
+}
+
 /** What a tile opens. */
 export type MakeTileAction =
   /**
@@ -19,6 +90,11 @@ export type MakeTileAction =
       readonly type: 'flows';
       readonly flowIds: readonly string[];
       readonly starterIds?: readonly string[];
+      /**
+       * Plain words for some of the flows' cards (ADR 0101 D4): the Creator's picker shows a
+       * pick's label and sentence on its flow's card.
+       */
+      readonly picks?: readonly VeryEasyPick[];
     }
   /** "Surprise me": a random mod (ADR 0086). */
   | { readonly type: 'surprise' }
@@ -58,6 +134,12 @@ export interface MakeTile {
 }
 
 const flows = (...flowIds: string[]): MakeTileAction => ({ type: 'flows', flowIds });
+/** A flows action with Very easy picks: `flowIds` then the picks' flows, without repeats. */
+const withPicks = (flowIds: string[], picks: readonly VeryEasyPick[]): MakeTileAction => ({
+  type: 'flows',
+  flowIds: [...new Set([...flowIds, ...pickFlowIds(picks)])],
+  picks,
+});
 const choices = (flowIds: string[], starterIds: string[]): MakeTileAction => ({
   type: 'flows',
   flowIds,
@@ -84,9 +166,10 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'block',
     label: 'Make a block',
-    sentence: 'A new block, an ore or a stone with stairs and slabs.',
+    sentence: 'A new block, an ore, stone with stairs, lights, a bed, a cake or a sign.',
     group: 'blocks',
-    action: flows('simple-block', 'custom_ore', 'stone-set'),
+    // The Very easy picks (ADR 0101 D4) follow the first three; flows not in the library are hidden.
+    action: withPicks(['simple-block', 'custom_ore', 'stone-set'], MAKE_BLOCK_PICKS),
   },
   {
     id: 'machine',
@@ -98,9 +181,9 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'item',
     label: 'Make an item',
-    sentence: 'Something to throw, or a totem that saves you.',
+    sentence: 'Something to throw, a totem that saves you, or a bag that holds things.',
     group: 'blocks',
-    action: flows('throwable', 'totem'),
+    action: withPicks(['throwable', 'totem'], MAKE_ITEM_PICKS),
   },
   {
     id: 'tool',

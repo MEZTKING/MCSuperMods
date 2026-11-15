@@ -5406,3 +5406,23 @@ Next
 
 **Next**
 - B459 flows that make signs must write the writing screen asset (or the new warning shows). B465 fills `vanilla-blocks-path` with the test ids above; B467 takes the labels into the guide.
+
+## 2026-11-15 — executor — B460 Command and Creative tab Studios, Very easy picks
+
+**What**
+- Command Studio (`studios/scripting/CommandStudio.tsx`, lazy chunk 12.3 kB; helpers in `command-model.ts`): "How it is typed" (live chat line `/name <arg> [optional]` and the aliases), "Name" (name and up to four other names), "What the player types after it" (argument rows: name, the kind of value in plain words, Lowest and Highest for whole numbers and numbers, "May be left out", move up, move down, remove; each list change one undo step), "Who can use it" (permission 0 to 4 in words, with a note when every player can run a function), "What it does" (an event, a function or nothing for a script, switched in one edit) with the shared events editor (an event rename also moves the command's `event`), "Message back" (`feedback_text`). The Rules section appears only when the rules catalogue has a trigger for commands (none yet).
+- Creative Tab Studio (`studios/blocks-items/CreativeTabStudio.tsx`, lazy chunk 7.2 kB; helpers in `creative-tab-model.ts`): title, icon (item ids, the project's own first), order (as the mod adds them, or by name), a preview, and "What is in it": the project's items, block items and spawn eggs whose `creative_tab` names the tab, in the order the game shows them. "Add", "Take out" and "Add everything without a tab" set or clear `creative_tab` (`/creative_tab`, `/item/creative_tab`, `/spawn_egg/creative_tab`) through the host's `applyChanges`, one undo step however many things change.
+- Very easy picks (ADR 0101 D4): "Make a block" offers Lights, Bed, Cake, Sign (Wood set), Bush with berries (Crop) and Ages like copper; "Make an item" offers A bag that holds things. The pick lists live in `components/home/tiles.ts` (it must stay free of React for the Node build) and are re-exported from `studios/very-easy.ts`; the Creator's flow picker shows a pick's words on its flow's card when the tile opens it (`CreatorDialog` `picks`, passed through `App.tsx`). Flows the library does not have yet are hidden.
+- Sidebar labels "Commands" and "Creative tabs".
+- Tests: `command-studio.test.tsx` (9), `creative-tab-studio.test.tsx` (9), `very-easy-picks.test.tsx` (4); `Home.test.tsx` skips the five pick flows B459 adds (`FLOWS_AWAITING_LIBRARY`). App suite 231 files, 2147 tests green; lint, typecheck, build green; renderer 15.5 MB of 18, `app.asar` 28.2 MB of 32.
+
+**Decisions**
+- No drag ordering of a tab's items: the format has no item order field (`order` is `as_listed` or `by_name` only), so the list shows the order the game will use; ordering by hand needs an ADR 0096 D2 amendment.
+- Argument reordering uses up and down buttons (keyboard friendly), each one undo step.
+- No Very easy section lists for the two Studios: they keep Easy's layout, so the events editor stays reachable.
+- Pick flow ids `lights`, `bed`, `cake`, `copper-set`, `backpack` are assumed from B459's file names.
+
+**Next**
+- B459: confirm the flow ids (or change `MAKE_BLOCK_PICKS` / `MAKE_ITEM_PICKS`), then empty `FLOWS_AWAITING_LIBRARY` in `app/test/components/Home.test.tsx`.
+- B458: a subject trigger for `msm:command` makes the Command Studio's Rules section appear by itself; `RulesSection`'s `THING_WORDS` could then say "command".
+- B467: `docs/guide/very-easy.md` tile sentences changed; guide page for the two Studios.

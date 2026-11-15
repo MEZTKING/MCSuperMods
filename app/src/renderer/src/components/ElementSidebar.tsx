@@ -45,6 +45,8 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:mod': 'Mod settings',
   'msm:biome_addition': 'World additions',
   'msm:loot_addition': 'Extra drops',
+  'msm:command': 'Commands',
+  'msm:creative_tab': 'Creative tabs',
   'minecraft:model': 'Models',
   'minecraft:item_definition': 'Item looks',
   'minecraft:block_definition': 'Block states',

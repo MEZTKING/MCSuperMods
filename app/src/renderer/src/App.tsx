@@ -169,6 +169,7 @@ import { projectScripts } from './studios/scripting/script-model';
 import { type StructureStudioHost, StructureStudioHostContext } from './studios/structures/host';
 import { templateContext, templatesFor } from './studios/templates';
 import { useSchemaContext } from './studios/use-schema-context';
+import type { VeryEasyPick } from './studios/very-easy';
 import { rollSurprise, type SurpriseMod, themeById, themeOfSeed } from './surprise/surprise';
 import { retexture, textureIdOf } from './textures/retexture';
 import { TextureDropContext, type TextureDropHandler } from './textures/texture-drop';
@@ -226,7 +227,12 @@ type DialogState =
   | { type: 'element' }
   | { type: 'new-project' }
   | { type: 'examples' }
-  | { type: 'creator'; edit?: CreatorEditRequest; flowIds?: readonly string[] }
+  | {
+      type: 'creator';
+      edit?: CreatorEditRequest;
+      flowIds?: readonly string[];
+      picks?: readonly VeryEasyPick[];
+    }
   | { type: 'new-mod'; parent: string }
   | { type: 'surprise' }
   | { type: 'make-choice'; title: string; choices: readonly MakeChoice[] }
@@ -1700,7 +1706,11 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     switch (action.type) {
       case 'flows':
         if (shown.starterIds.length === 0) {
-          setDialog({ type: 'creator', flowIds: shown.flowIds });
+          setDialog({
+            type: 'creator',
+            flowIds: shown.flowIds,
+            ...(action.picks === undefined ? {} : { picks: action.picks }),
+          });
           return;
         }
         setDialog({ type: 'make-choice', title: shown.tile.label, choices: tileChoices(shown) });
@@ -2647,6 +2657,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 namespaces={namespaces.filter((name) => name !== 'minecraft')}
                 edit={dialog.edit ?? null}
                 {...(dialog.flowIds === undefined ? {} : { flowIds: dialog.flowIds })}
+                {...(dialog.picks === undefined ? {} : { picks: dialog.picks })}
                 folders={target.folders.resource}
                 mode={uiMode}
                 readProjectAsset={readProjectAsset}

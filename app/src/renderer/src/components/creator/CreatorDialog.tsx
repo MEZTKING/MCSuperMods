@@ -38,6 +38,7 @@ import {
 } from '../../changeset/creator-sets';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import type { UiMode } from '../../store/preferences';
+import { type VeryEasyPick, veryEasyPickOf } from '../../studios/very-easy';
 import { newSeed, pickForMe } from '../../surprise/surprise';
 import { AiPicturesSwitch, useAiBatch } from '../ai-pictures/AiPicturesSwitch';
 import { fieldClass } from '../NewElementDialog';
@@ -127,6 +128,8 @@ export interface CreatorDialogProps {
    * directly, several open the picker with just their cards.
    */
   flowIds?: readonly string[];
+  /** Plain words for some flow cards (Very easy picks, ADR 0101 D4), by flow id. */
+  picks?: readonly VeryEasyPick[];
   folders: ResourceFolders;
   readProjectAsset(namespace: string, path: string): Promise<Uint8Array | null>;
   vanilla: VanillaAssetReader | null;
@@ -161,8 +164,14 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function FlowPicker(props: { flows: readonly CreatorFlow[]; onPick(flow: CreatorFlow): void }) {
+function FlowPicker(props: {
+  flows: readonly CreatorFlow[];
+  onPick(flow: CreatorFlow): void;
+  picks?: readonly VeryEasyPick[] | undefined;
+}) {
   const available = props.flows.filter((flow) => flow.unavailable === null);
+  const pickOf = (flow: CreatorFlow) =>
+    props.picks === undefined ? undefined : veryEasyPickOf(flow.starter.id, props.picks);
   const unavailable = props.flows.filter((flow) => flow.unavailable !== null);
   if (props.flows.length === 0) {
     return <p className="text-sm text-muted">No Creator flows are available.</p>;
@@ -198,8 +207,10 @@ function FlowPicker(props: { flows: readonly CreatorFlow[]; onPick(flow: Creator
                     onClick={() => props.onPick(flow)}
                     className="flex h-full w-full cursor-pointer flex-col items-start gap-0.5 rounded border border-border p-2 text-left hover:border-accent"
                   >
-                    <span className="font-medium">{flow.starter.title}</span>
-                    <span className="text-xs text-muted">{flow.blurb}</span>
+                    <span className="font-medium">{pickOf(flow)?.label ?? flow.starter.title}</span>
+                    <span className="text-xs text-muted">
+                      {pickOf(flow)?.sentence ?? flow.blurb}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -451,7 +462,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                 The flow {edit.flowId} is not available, so this set cannot be reopened.
               </p>
             ) : (
-              <FlowPicker flows={offered} onPick={pick} />
+              <FlowPicker flows={offered} onPick={pick} picks={props.picks} />
             )
           ) : (
             <div className="grid min-h-0 flex-1 grid-cols-[minmax(16rem,24rem)_minmax(0,1fr)] gap-3">

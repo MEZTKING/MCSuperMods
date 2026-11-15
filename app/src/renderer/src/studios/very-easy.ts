@@ -107,3 +107,16 @@ export const MOB_VERY_EASY_SECTIONS: readonly string[] = [
   'entity-spawning',
   'entity-spawn-egg',
 ];
+
+/**
+ * The Very easy picks of "Make a block" and "Make an item" (ADR 0101 D4). They live with the
+ * Home tiles they feed (`components/home/tiles.ts`, which must stay free of React for the Node
+ * build) and are re-exported here.
+ */
+export {
+  MAKE_BLOCK_PICKS,
+  MAKE_ITEM_PICKS,
+  pickFlowIds,
+  type VeryEasyPick,
+  veryEasyPickOf,
+} from '../components/home/tiles';

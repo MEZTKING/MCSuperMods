@@ -8,6 +8,7 @@
  * @packageDocumentation
  */
 
+import { CREATIVE_TAB_KIND } from '@msm/plugin-blocks-items';
 import { lazy, Suspense } from 'react';
 import type { StudioEntry, StudioProps } from '../types';
 import {
@@ -20,7 +21,6 @@ import { ExtraDropsStudio, WorldAdditionStudio } from './AdditionStudios';
 import { BIOME_ADDITION_KIND, LOOT_ADDITION_KIND } from './additions-model';
 import { BlockStudio } from './BlockStudio';
 import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, PARTICLE_KIND } from './blocks-items-model';
-import { CREATIVE_TAB_KIND, CreativeTabStudio } from './CreativeTabStudio';
 import { EffectStudio } from './EffectStudio';
 import { ItemStudio } from './ItemStudio';
 import { PotionStudio } from './PotionStudio';
@@ -40,6 +40,24 @@ function LazyParticleStudio(props: StudioProps) {
       }
     >
       <ParticleStudio {...props} />
+    </Suspense>
+  );
+}
+
+/** The Creative Tab Studio (ADR 0096 D2, ADR 0101 D1), a chunk of its own. */
+const CreativeTabStudio = lazy(() => import('./CreativeTabStudio'));
+
+/** The Creative Tab Studio behind its loading fallback. */
+function LazyCreativeTabStudio(props: StudioProps) {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-muted text-xs" data-testid="creative-tab-studio-loading">
+          Loading the Creative Tab Studio…
+        </p>
+      }
+    >
+      <CreativeTabStudio {...props} />
     </Suspense>
   );
 }
@@ -76,6 +94,10 @@ export const studios: StudioEntry[] = [
   },
   { id: 'msm.blocks-items.loot-addition', kindId: LOOT_ADDITION_KIND, component: ExtraDropsStudio },
   { id: 'msm.blocks-items.particle', kindId: PARTICLE_KIND, component: LazyParticleStudio },
-  // The Creative Tab Studio (ADR 0096 D2): an empty component until B460; the kind arrives with B456.
-  { id: 'msm.blocks-items.creative-tab', kindId: CREATIVE_TAB_KIND, component: CreativeTabStudio },
+  // The Creative Tab Studio (ADR 0096 D2, ADR 0101 D1).
+  {
+    id: 'msm.blocks-items.creative-tab',
+    kindId: CREATIVE_TAB_KIND,
+    component: LazyCreativeTabStudio,
+  },
 ];
