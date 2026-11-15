@@ -5202,3 +5202,11 @@ Next
 **Next**
 - `packages/exporters/test/library.test.ts` "one per-kind example for every registered kind" fails on the base 9c311be (vehicles have no example until B423, merged later); it is not caused by this brief.
 - B443 (format), B445/B446 (runtime), B447/B448 (lowering) fill the stubs; B452 replaces `NEW_BLOCK_TYPES` filtering in the picker.
+
+## 2026-11-15 — executor — B453 Item Studio inventory section
+
+**What:** `studios/blocks-items/ItemInventorySection.tsx`, mounted in `ItemStudio.tsx` after Throwable (section id `item-inventory`). One choice, "This item is": Nothing, "A bag that holds things" (`msm:item_inventory`: layout, a slot picture, rows for the chest only, open with right-click or sneak right-click, open and close sounds, `on_open` and `on_close` events) or "Works like a bundle" (`msm:bundle` and the element's `bundle_textures` closed, open back, open front). Switching is one undo step (`withItemHolds` replaces the element data and removes the other choice and the pictures). UI-only conflict hints from the element (`inventoryHints`): stack size must be 1, no tool, bow, armour, shield, throwable, food or consumable, not both a bag and a bundle. Tests in `test/components/studios/blocks-items/item-inventory.test.tsx` (9).
+
+**Decisions:** the hints are warnings (`role="status"`), as the plugin validators arrive with B451. The `msm:durability` component is not a conflict (it forces stack 1 anyway). Pictures use the texture id picker; no thumbnails yet.
+
+**Next:** B451 validators; add `item-inventory` to `ITEM_VERY_EASY_SECTIONS` (`studios/very-easy.ts`, not in this brief's files); add `['msm:item_inventory', 'on_open'|'on_close']` to `EVENT_FIELDS[ITEM_KIND]` in `blocks-items-model.ts` so renaming an event follows; guide (B467) and e2e (B465).

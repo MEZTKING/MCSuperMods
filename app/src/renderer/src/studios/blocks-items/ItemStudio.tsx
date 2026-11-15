@@ -27,6 +27,7 @@ import {
   projectEffects,
 } from './blocks-items-model';
 import { EventsEditor } from './EventsEditor';
+import { ItemInventorySection } from './ItemInventorySection';
 import { CheckField, EventSelect, ModelField, ProblemsAt, TextField } from './parts';
 import { projectPortals } from './portal-model';
 import { FuelCompostFields, TriggersSection } from './triggers';
@@ -437,6 +438,14 @@ export function ItemStudio(props: StudioProps) {
       {toolSection}
       {behaviour}
       {throwableSection}
+      <ItemInventorySection
+        data={element.data}
+        events={events}
+        problems={problems}
+        suggest={suggest}
+        set={set}
+        replace={(next) => onChange('', next)}
+      />
       <FuelCompostFields
         base={[]}
         data={element.data}
