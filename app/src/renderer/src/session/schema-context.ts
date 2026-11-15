@@ -16,6 +16,7 @@ import {
   bundleModelIds,
   potionVariantIds,
 } from '@msm/plugin-blocks-items';
+import { vehicleItemPicture } from '@msm/plugin-entities';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -379,6 +380,21 @@ export function projectRegistryIds(
         const ids = bundleModelIds(element.id.slice(0, colon), element.id.slice(colon + 1));
         for (const slot of Object.keys(element.data.bundle_textures) as (keyof typeof ids)[]) {
           if (ids[slot] !== undefined) model.push(ids[slot]);
+        }
+      }
+      if (
+        element.kind === 'msm:vehicle' &&
+        typeof element.data === 'object' &&
+        element.data !== null &&
+        !Array.isArray(element.data)
+      ) {
+        // A vehicle with only `item.texture` gets a flat item model at `<ns>:item/<path>` (B414).
+        const picture = vehicleItemPicture(
+          element.data as Parameters<typeof vehicleItemPicture>[0],
+        );
+        if (picture !== undefined && 'texture' in picture) {
+          const colon = element.id.indexOf(':');
+          model.push(`${element.id.slice(0, colon)}:item/${element.id.slice(colon + 1)}`);
         }
       }
       if (element.kind === ENTITY_KIND) {

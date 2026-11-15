@@ -100,4 +100,34 @@ describe('registry view: generated block type models', () => {
     expect(ids.model).toContain('demo:item/pouch_open_front');
     expect(ids.model).not.toContain('demo:item/pouch_open_back');
   });
+
+  it('counts the flat item model of a vehicle that has only an item picture', () => {
+    const ids = projectRegistryIds({
+      formatVersion: 1,
+      name: 'Karts',
+      targets: [],
+      plugins: [],
+      settings: {},
+      namespaces: [
+        {
+          name: 'demo',
+          assets: [],
+          elements: [
+            {
+              id: 'demo:kart',
+              kind: 'msm:vehicle',
+              data: { format: 1, item: { texture: 'demo:item/kart' } },
+            } as unknown as Element,
+            {
+              id: 'demo:boat',
+              kind: 'msm:vehicle',
+              data: { format: 1, item: { model: 'demo:item/boat_model' } },
+            } as unknown as Element,
+          ],
+        },
+      ],
+    } as unknown as Project);
+    expect(ids.model).toContain('demo:item/kart');
+    expect(ids.model).not.toContain('demo:item/boat');
+  });
 });
