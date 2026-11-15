@@ -31,11 +31,22 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  * has 43 triggers and 36 steps behind dispatchers below the rule's `when` and `do`: depth 8
  * shows every trigger and step case with its fields (value objects and steps nested in logic
  * steps stay `{...}`), and lists up to 64 show every id; the text is about 18,000 characters.
+ *
+ * `msm:block` has 38 block types (ADR 0094 adds twenty) behind the `type` dispatchers: cases up
+ * to 48 show every type's fields at the default depth (about 17,200 characters). `msm:vehicle`
+ * (ADR 0090), `msm:key_bind` (ADR 0088) and `msm:command` (ADR 0096) go one level deeper than
+ * the default, so their fuel items and the action types of their events show (about 3,200, 750
+ * and 850 characters). `msm:hud`, `msm:creative_tab` and the bag and bundle components of
+ * `msm:item` are complete within the defaults.
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>
 > = Object.freeze({
   'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 24_000, maxList: 64, maxCases: 64 }),
+  'msm:block': Object.freeze({ maxDepth: 4, maxChars: 20_000, maxList: 48, maxCases: 48 }),
+  'msm:vehicle': Object.freeze({ maxDepth: 5, maxChars: 6_000 }),
+  'msm:key_bind': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
+  'msm:command': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
 });
 
 /** The bounds of the `kind_schema` tool for `kindId`: its allowance, else the defaults. */

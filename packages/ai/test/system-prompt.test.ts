@@ -362,3 +362,111 @@ describe('systemPrompt rules paragraph (ADR 0082 D10)', () => {
     );
   });
 });
+
+describe('systemPrompt vehicles, key binds and HUD paragraphs (ADR 0091 D8)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the kinds, flows, keys and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        'msm:vehicle',
+        'msm:key_bind',
+        'msm:hud',
+        'max_speed in blocks a tick',
+        'the first seat drives',
+        "Its item has the vehicle's id",
+        '"Car" (vehicle-car)',
+        '"Tank" (vehicle-tank',
+        '"Plane" (vehicle-plane)',
+        '"Boat" (vehicle-boat)',
+        'car_name',
+        'fire (R), second fire (V), horn (H) and descend (Left Alt)',
+        'never a key bind',
+        'default_key',
+        'key.keyboard.j',
+        'msm:on_press',
+        'msm:on_release',
+        'msm:while_held',
+        'a button for every player',
+        'while a screen or the chat is open',
+        '"above_hotbar"',
+        '{value}',
+        'speed in blocks a second',
+        'rules.counter.<name>',
+        'show_hud, hide_hud and set_hud',
+        'not with show_action_bar',
+        'needs a game restart',
+        'never run on rails',
+        'hoppers do not reach their storage',
+        'controls.needs-jar',
+        'vehicles.needs-jar',
+        'note_missing_feature',
+        // Script API 1.5 (B421).
+        'Script API 1.5',
+        'player.showHud(id)',
+        'player.setHud(id, value)',
+        'Entity.asVehicle()',
+        'damageTaken and setDamageTaken',
+        'ammo(weapon) and setAmmo',
+        'key.pressed',
+        'vehicle.destroyed',
+        'not reported to scripts',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+    },
+  );
+});
+
+describe('systemPrompt vanilla parity paragraphs (ADR 0101 D7)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the types, components, kinds, flows and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        '"bed" (rule "bed" or "straw_bed"',
+        '"hanging_sign" (wood_type required)',
+        '"stem" (fruit block required',
+        '"<id>_wall"',
+        '"<id>_attached"',
+        'hanging_gui',
+        'msm:waterloggable',
+        'msm:weathering',
+        'msm:waxable',
+        '"oxidized"',
+        'honeycomb',
+        'Containers and machines cannot hold water or age',
+        'msm:item_inventory',
+        'sneak_use',
+        'msm:bundle',
+        'bundle_textures',
+        'max_stack_size 1',
+        'bags never go into bags',
+        'msm:command',
+        'msm:creative_tab',
+        '$(name)',
+        'never both',
+        'feedback_text',
+        '"as_listed" or "by_name"',
+        'is not registered under that name',
+        'raw macro text',
+        'names or selectors',
+        'permission level 2',
+        'block items, then items, then spawn eggs',
+        'shows no picture',
+        '/reload',
+        '"Lights" (lights',
+        '"Bed" (bed',
+        '"Copper set" (copper-set',
+        '"Backpack" (backpack',
+        '"Custom command" (custom-command',
+        '"Creative tab" (creative-tab',
+        'export.needs-jar',
+        'For custom commands and creative tabs use',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+      expect(text).not.toContain('Signs, hanging signs, boats and shelves are not available');
+    },
+  );
+});

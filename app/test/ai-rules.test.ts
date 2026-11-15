@@ -4,6 +4,9 @@
  * - The catalogue ids, plain steps, cancellable triggers, caps and templates the system prompt
  *   names are pinned against `@msm/plugin-rules`, so the prompt cannot drift from the catalogue
  *   (`@msm/ai` does not depend on the plugin, so its lists are written by hand).
+ * - The vehicle, controls and vanilla parity templates and flows the prompt names (ADRs 0091 D8,
+ *   0101 D7) are pinned against the entities, controls, blocks-items and scripting plugins and the
+ *   library's starters, and the limits of B454 and B457 are pinned in plain words.
  * - A scripted build-mode run makes a lucky block with a rule book (a plain rule and a rule
  *   that needs the generated script) through the real tool executor; `run_checks` compiles the
  *   book with no errors, the changeset applies as one undo step, and the content jar holds the
@@ -14,9 +17,11 @@ import {
   type AiModelScript,
   type AiToolResult,
   aiModelScriptSchema,
+  CONTROLS_PROMPT_TEMPLATES,
   createConversation,
   DEFAULT_AI_SETTINGS,
   DEFAULT_LIMITS,
+  NEW_FLOW_PROMPT_IDS,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
@@ -25,9 +30,16 @@ import {
   runAssistant,
   ScriptedModelClient,
   systemPrompt,
+  VANILLA_PARITY_PROMPT_TEMPLATES,
+  VEHICLE_PROMPT_TEMPLATES,
 } from '@msm/ai';
 import { createMemoryFileSystem, type JsonObject } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
+import type { ElementTemplate, Json, TargetFacts } from '@msm/plugin-api';
+import { blocksItemsTemplates } from '@msm/plugin-blocks-items';
+import { controlsTemplates } from '@msm/plugin-controls';
+import { vehicleTemplates } from '@msm/plugin-entities';
+import { libraryStarters } from '@msm/plugin-library';
 import {
   CATALOGUE_IDS,
   MAX_DEPTH,
@@ -40,6 +52,8 @@ import {
   STEPS,
   TRIGGERS,
 } from '@msm/plugin-rules';
+import { commandTemplates } from '@msm/plugin-scripting';
+import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { createScriptingService } from '../src/main/platform/scripting';
@@ -74,6 +88,163 @@ describe('the system prompt names the Rules catalogue exactly (ADR 0082 D10)', (
     expect(text).toContain(`at most ${MAX_REPEAT} times`);
     expect(text).toContain(`at most ${MAX_RADIUS} blocks`);
     expect(text).toContain(`explosion power 0 to ${MAX_EXPLOSION_POWER}`);
+  });
+});
+
+/** The twenty block types of ADR 0094 (B443). */
+const VANILLA_PARITY_TYPES = new Set([
+  'bed',
+  'cake',
+  'berry_bush',
+  'tall_plant',
+  'potted_plant',
+  'vine',
+  'sea_pickle',
+  'carpet',
+  'layers',
+  'cocoa',
+  'candle',
+  'ladder',
+  'torch',
+  'lantern',
+  'chain',
+  'rod',
+  'sign',
+  'hanging_sign',
+  'stem',
+  'scaffolding',
+]);
+
+/** The components of ADRs 0094 and 0095 that make a template a vanilla parity one. */
+const VANILLA_PARITY_COMPONENTS = [
+  'msm:waterloggable',
+  'msm:weathering',
+  'msm:item_inventory',
+  'msm:bundle',
+];
+
+/** A template's data for a throwaway id, to read its type and components. */
+function templateData(template: ElementTemplate): Record<string, Json> {
+  const target = builtInTargets[0]?.target as TargetFacts;
+  const data = template.data({
+    id: 'demo:thing',
+    namespace: 'demo',
+    path: 'thing',
+    projectNamespace: 'demo',
+    namespaces: ['demo'],
+    kindDefault: undefined,
+    target,
+  });
+  return (typeof data === 'object' && data !== null && !Array.isArray(data) ? data : {}) as Record<
+    string,
+    Json
+  >;
+}
+
+describe('the system prompt names the vehicle, controls and vanilla parity content exactly (ADRs 0091 D8, 0101 D7)', () => {
+  it('lists every vehicle template and every key bind and HUD template', () => {
+    expect([...VEHICLE_PROMPT_TEMPLATES]).toEqual(vehicleTemplates.map((template) => template.id));
+    expect([...CONTROLS_PROMPT_TEMPLATES]).toEqual(
+      controlsTemplates.map((template) => template.id),
+    );
+  });
+
+  it('lists every template of the new block types, ageing, bags, commands and tabs', () => {
+    const parity = blocksItemsTemplates
+      .filter((template) => {
+        const data = templateData(template);
+        const components = (data.components ?? {}) as Record<string, Json>;
+        return (
+          VANILLA_PARITY_TYPES.has(String(data.type)) ||
+          VANILLA_PARITY_COMPONENTS.some((component) => component in components)
+        );
+      })
+      .map((template) => template.id);
+    expect([...VANILLA_PARITY_PROMPT_TEMPLATES].sort()).toEqual(
+      [...parity, ...commandTemplates.map((template) => template.id)].sort(),
+    );
+  });
+
+  it('names flows that exist, with their name parameter', () => {
+    for (const [starterId, parameter] of Object.entries(NEW_FLOW_PROMPT_IDS)) {
+      const starter = libraryStarters.find((entry) => entry.id === starterId);
+      expect(starter, starterId).toBeDefined();
+      expect(starter?.creator, starterId).toBeDefined();
+      expect(
+        starter?.parameters?.map((entry) => entry.id),
+        starterId,
+      ).toContain(parameter);
+    }
+  });
+
+  it('names every template, flow and its parameter, and the kinds', () => {
+    const text = systemPrompt('build');
+    for (const id of [
+      ...VEHICLE_PROMPT_TEMPLATES,
+      ...CONTROLS_PROMPT_TEMPLATES,
+      ...VANILLA_PARITY_PROMPT_TEMPLATES,
+      ...Object.entries(NEW_FLOW_PROMPT_IDS).flat(),
+      'msm:vehicle',
+      'msm:key_bind',
+      'msm:hud',
+      'msm:command',
+      'msm:creative_tab',
+      'msm:waterloggable',
+      'msm:weathering',
+      'msm:waxable',
+      'msm:item_inventory',
+      'msm:bundle',
+      ...VANILLA_PARITY_TYPES,
+    ]) {
+      expect(text, id).toContain(id);
+    }
+  });
+
+  it('names every vehicle mode, HUD source and command argument type of the targets', () => {
+    const text = systemPrompt('build');
+    for (const bundle of builtInTargets) {
+      const facts = bundle.target;
+      for (const type of Object.keys(facts.commands?.argumentTypes ?? {})) {
+        expect(text, type).toContain(`"${type}"`);
+      }
+    }
+    for (const word of ['"ground"', '"water"', '"amphibious"', '"air"', '"hover"']) {
+      expect(text, word).toContain(word);
+    }
+    for (const word of ['"player"', '"vehicle"', '"score"', '"data"', '"set"', 'rules.counter.']) {
+      expect(text, word).toContain(word);
+    }
+  });
+
+  it('states the D8 guidance and the limits of B454 and B457 in plain words', () => {
+    const text = systemPrompt('chat');
+    for (const words of [
+      // ADR 0091 D8: flows first, a fire key is a weapon, values on the HUD.
+      'Prefer the flows',
+      'never a key bind',
+      'not with show_action_bar',
+      'a button for every player',
+      'needs a game restart',
+      // B454: name clashes, raw macro text, selectors, level 2, registration order, icons.
+      'is not registered under that name',
+      'raw macro text',
+      'names or selectors',
+      'permission level 2 whatever',
+      'the order the game registers things',
+      "not the project's order",
+      'shows no picture',
+      'work after /reload',
+      // B457 and B415: the jar, vanilla packs and the eject.
+      'export.needs-jar',
+      'controls.needs-jar',
+      'vehicles.needs-jar',
+      'Java project export includes them',
+    ]) {
+      expect(text, words).toContain(words);
+    }
+    // Signs, commands and creative tabs are no longer listed as missing.
+    expect(text).not.toContain('Signs, hanging signs, boats and shelves are not available');
+    expect(text).not.toContain('custom commands and creative tabs; propose');
   });
 });
 

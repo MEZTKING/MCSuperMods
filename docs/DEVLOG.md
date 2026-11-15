@@ -5728,3 +5728,21 @@ Next: B426 pins `registered 7 vehicle type(s)`, `registered 2 key bind(s)`, `reg
 - B464: parity and the server check against this fixture (expected log lines in the brief's report).
 - Follow-ups: potted plant loot should use the plant's block item id; `missing-model` should accept `bundle_textures.closed`; the runtime's default item for `potted_plant` should match the plugin and eject (none).
 - After B455 and B458: add the scripts and the rule book here and the TNT check to the README.
+## 2026-11-15 — executor — B430 and B466 AI helper: vehicles, key binds, HUD and vanilla parity batch 1
+
+**What**
+- System prompt (`packages/ai/src/system-prompt.ts`): new paragraphs "Vehicles" and "Key binds and the HUD" (ADR 0091 D8: prefer the four vehicle flows, a fire key is a vehicle weapon and not a key bind, show values with HUD elements rather than the action bar, the HUD sources, the runtime keys, restarts and the vehicle limits) and "Vanilla block types", "Bags and bundles", "Commands and creative tabs" and a flows line (ADR 0101 D7: the twenty types with their fields and texture slots, the generated `_wall`/`_attached` blocks, waterlogging, weathering and waxing with their allowed types and limits, bags and bundles with their limits, the command and tab kinds, and B454/B457's limits in plain words: name clashes, raw macro text, names or selectors, level 2 functions, `as_listed` registration order, unknown icons, `/reload`, `export.needs-jar`). A Script API 1.5 line names B421's members with the coordinator's exact names. Two stale sentences fixed (signs and commands/tabs were listed as missing). Prompt size: chat 31,997 to 42,433 characters, build 32,778 to 43,214.
+- New exported pin lists `VEHICLE_PROMPT_TEMPLATES`, `CONTROLS_PROMPT_TEMPLATES`, `VANILLA_PARITY_PROMPT_TEMPLATES`, `NEW_FLOW_PROMPT_IDS` in `@msm/ai`, checked in `app/test/ai-rules.test.ts` against the entities, controls, blocks-items and scripting templates and the library's starters.
+- `kind_schema` allowances (`schema-summary.ts`): `msm:block` cases and lists up to 48 (all 38 types, about 17,200 characters, cap 20,000); `msm:vehicle`, `msm:key_bind`, `msm:command` depth 5 (fuel items and event action types). `msm:hud`, `msm:creative_tab` and `msm:item` (bags, bundles) are complete within the defaults; `ai-schema-summary.test.ts` pins all of it on both targets.
+- `target_facts` passes `commands` (B444; under 2 kB, pinned in `ai-tool-executor.test.ts`).
+- Scenarios in `app/test/ai-scenario.test.ts`: "a go-kart with a speed bar on screen" (Car flow as a one-seater, an `msm:hud` bar with source `vehicle`/`speed` while driving) and "a cottage with a bed and lanterns" (Bed and Lights flows, a hand-written carpet, a creative tab): both `run_checks` with zero errors, apply as one undo step and build the content jar.
+
+**Decisions**
+- Allowances only where the defaults cut a kind short; the new kinds that fit the defaults keep them and are pinned as complete.
+- The go-kart uses the Car flow rather than the `msm_vehicle_go_kart` template, whose model and pictures stay missing until added (the prompt says so).
+- The Script API 1.5 line is written from the coordinator's names; this branch predates B421, so the script typings do not have them yet.
+
+**Next**
+- ADR 0091 D8 names a scenario "a tank that fires shells"; the brief asked for the go-kart instead, so the close (B432) should decide whether the tank one is still wanted.
+- `kindSchemaSummary`'s `inlineType` recurses without a bound on unions and lists: `msm:item` at depth 5 with lists of 64 overflows the stack (not hit by any allowance in use).
+- B467: the plain-words limits in the prompt match the B454/B457 notes; keep the guide's wording in step.

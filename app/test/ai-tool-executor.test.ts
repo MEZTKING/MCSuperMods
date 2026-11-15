@@ -115,7 +115,9 @@ describe('createToolExecutor: read tools', () => {
     const { result, value } = await fixture.call('kind_schema', { kind: 'msm:block' });
     expect(result.isError).toBe(false);
     expect(value.schema).toContain('display_name');
-    expect(value.schema.length).toBeLessThanOrEqual(12_200);
+    // msm:block has an allowance for its 38 block types (schema-summary.ts).
+    expect(value.schema.length).toBeLessThanOrEqual(20_200);
+    expect(value.schema).toContain('case scaffolding:');
     const recipe = await fixture.call('kind_schema', { kind: 'minecraft:recipe' });
     expect(recipe.value.schema).toMatch(/crafting_shaped/);
     await expectError(fixture, 'kind_schema', { kind: 'nope:kind' }, 'unknown_kind');
@@ -246,6 +248,10 @@ describe('createToolExecutor: read tools', () => {
     expect(value.controls.runtimeKeys).toEqual(fixture.session.target.controls?.runtimeKeys);
     expect(value.controls.keyboardNamesByCode).toBeUndefined();
     expect(value.vehicles).toEqual(fixture.session.target.vehicles);
+    // The command facts (plugin API 1.17.0): vanilla's command names and the argument types.
+    expect(value.commands).toEqual(fixture.session.target.commands);
+    expect(value.commands.vanillaNames).toContain('give');
+    expect(JSON.stringify(value.commands).length).toBeLessThan(2_000);
     ({ value } = await fixture.call('script_api_typings'));
     expect(value.typings).toBe(fixture.session.scriptTypings);
     await fixture.call('create_texture', { namespace: 'demo', path: 'item/ruby', pattern: 'gem' });

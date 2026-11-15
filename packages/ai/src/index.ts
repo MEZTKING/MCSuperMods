@@ -90,12 +90,16 @@ export type {
 } from './sdk-types';
 export {
   type AiProjectContext,
+  CONTROLS_PROMPT_TEMPLATES,
+  NEW_FLOW_PROMPT_IDS,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
   RULES_PROMPT_PLAIN_STEPS,
   RULES_PROMPT_TEMPLATES,
   systemPrompt,
+  VANILLA_PARITY_PROMPT_TEMPLATES,
+  VEHICLE_PROMPT_TEMPLATES,
 } from './system-prompt';
 export {
   AI_TOOL_NAMES,

@@ -8,6 +8,11 @@
  * - `explain-problem.script.json`: chat mode, a `blocks-items.unknown-event` error sent as a
  *   problem context block, answered with an `update_element` fix.
  *
+ * - "a go-kart with a speed bar on screen" (ADR 0091 D8, B430): the Car flow through
+ *   `add_starter` and an `msm:hud` bar showing the vehicle's speed while driving.
+ * - "a cottage with a bed and lanterns" (ADR 0101 D7, B466): the Bed and Lights flows, a carpet
+ *   block written by hand and a creative tab holding the set.
+ *
  * The scripts are checked here, so stale tool inputs (a starter parameter, a kind's schema)
  * fail loudly.
  */
@@ -932,6 +937,333 @@ describe('AI helper scenario: the pet fox (build mode)', () => {
     const jar = await session.exportFabricJar({ [SEPARATE_RUNTIME_OPTION]: false });
     expect(jar.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
     expect(jar.location).toBeDefined();
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+  });
+});
+
+/** The errors `run_checks` reported in a run, as `<element>: <message>` lines. */
+function checkErrorsOf(
+  record: RunRecord,
+  conversation: ReturnType<typeof createConversation>,
+): { errors: string[]; count: number } {
+  const checkUse = conversation.messages
+    .flatMap((message) =>
+      message.role === 'assistant' && typeof message.content !== 'string' ? message.content : [],
+    )
+    .find((block) => block.type === 'tool_use' && block.name === 'run_checks');
+  const checkId = checkUse?.type === 'tool_use' ? checkUse.id : '';
+  const checks = JSON.parse(record.results.get(checkId)?.content ?? '{}') as {
+    counts?: { error: number };
+    elements?: { elementId: string; problems: { severity: string; message: string }[] }[];
+  };
+  return {
+    errors: (checks.elements ?? []).flatMap((group) =>
+      group.problems
+        .filter((problem) => problem.severity === 'error')
+        .map((problem) => `${group.elementId}: ${problem.message}`),
+    ),
+    count: checks.counts?.error ?? -1,
+  };
+}
+
+/** The created elements of a changeset, by id. */
+function createdOf(changeset: PendingChangeset): Map<string, Record<string, Json> | undefined> {
+  return new Map(
+    changeset.items
+      .filter((item) => item.op === 'create')
+      .map((item) => [String(item.elementId), item.after as Record<string, Json> | undefined]),
+  );
+}
+
+/** A plain one-item build script: plan, the proposals, run_checks, checkpoint and a summary. */
+function buildScript(
+  plan: ProposePlanInput,
+  proposals: { name: string; input: Record<string, Json> }[],
+  summary: string,
+): AiModelScript {
+  return aiModelScriptSchema.parse({
+    turns: [
+      { content: [{ type: 'tool_use', name: 'propose_plan', input: plan }] },
+      {
+        content: proposals.map((proposal) => ({
+          type: 'tool_use',
+          name: proposal.name,
+          input: proposal.input,
+        })),
+      },
+      { content: [{ type: 'tool_use', name: 'run_checks', input: { scope: 'all' } }] },
+      {
+        content: [
+          {
+            type: 'tool_use',
+            name: 'checkpoint',
+            input: {
+              completedItemIds: plan.items.map((item) => item.itemId),
+              summary: 'Every plan item is proposed and the checks report no errors.',
+            },
+          },
+        ],
+      },
+      { content: [{ type: 'text', text: summary }] },
+    ],
+  }) as AiModelScript;
+}
+
+/** The go-kart (ADR 0091 D8, brief B430): the Car flow and a speed bar while driving. */
+const KART_PROMPT = 'a go-kart with a speed bar on screen';
+
+const KART_HUD: Record<string, Json> = {
+  format: 1,
+  type: 'bar',
+  anchor: 'above_hotbar',
+  value: { source: 'vehicle', stat: 'speed' },
+  max: 12,
+  show: 'driving',
+  vehicle: 'karts:go_kart',
+  fill_color: '#e04020',
+};
+
+const kartScript = (): AiModelScript =>
+  buildScript(
+    {
+      title: 'Go-kart',
+      items: [
+        {
+          itemId: 'kart',
+          kind: 'msm:vehicle',
+          elementId: 'karts:go_kart',
+          summary: 'The Car flow as a one-seat go-kart with a horn and no boot.',
+        },
+        {
+          itemId: 'speed',
+          kind: 'msm:hud',
+          elementId: 'karts:speed_bar',
+          summary: 'A bar above the hotbar showing the kart speed while driving it.',
+          dependsOn: ['kart'],
+        },
+      ],
+    },
+    [
+      {
+        name: 'add_starter',
+        input: {
+          starterId: 'vehicle-car',
+          namespace: 'karts',
+          values: { car_name: 'Go Kart', seats: 1, speed: 12, boot: false, horn: true },
+        },
+      },
+      {
+        name: 'create_elements',
+        input: { elements: [{ id: 'karts:speed_bar', kind: 'msm:hud', data: KART_HUD }] },
+      },
+    ],
+    'The go-kart and its speed bar are ready to review. The texture is a placeholder to replace; vehicles and HUD elements need the Fabric mod jar and a game restart.',
+  );
+
+describe('AI helper scenario: the go-kart with a speed bar (build mode)', () => {
+  it('builds the Car flow and a HUD bar with no errors, applies in one step and exports', async () => {
+    const { session } = await openSession();
+    const before = session.snapshot.project;
+    const changeset = new PendingChangeset();
+    const client = new ScriptedModelClient(kartScript());
+    const conversation = createConversation('conversation-6', 'claude-opus-5-5');
+
+    const { result, record } = await run(session, changeset, client, conversation, {
+      mode: 'build',
+      text: KART_PROMPT,
+    });
+    expect(result.reason).toBe('end_turn');
+    expect(client.remaining).toBe(0);
+    expect(record.checkpoints).toBe(1);
+    expect(
+      [...record.results.entries()]
+        .filter(([, answer]) => answer.isError)
+        .map(([id, answer]) => `${id}: ${answer.content}`),
+    ).toEqual([]);
+
+    // The model was told about vehicles and the HUD.
+    const system = JSON.stringify(client.requests[0]?.system);
+    expect(system).toContain('msm:vehicle');
+    expect(system).toContain('not with show_action_bar');
+
+    // One seat, 12 blocks a second, a horn and no boot; the bar reads the kart's speed.
+    expect(changeset.items.filter((item) => item.conflict !== undefined)).toEqual([]);
+    const created = createdOf(changeset);
+    const kart = created.get('karts:go_kart');
+    if (kart === undefined) throw new Error('no go-kart');
+    expect((kart.seats as Json[]).length).toBe(1);
+    expect((kart.movement as Record<string, Json>).max_speed).toBe(0.6);
+    expect((kart.engine as Record<string, Json>).horn).toBeDefined();
+    expect(kart.storage).toBeUndefined();
+    expect(created.get('karts:speed_bar')).toEqual(KART_HUD);
+
+    const checks = checkErrorsOf(record, conversation);
+    expect(checks.errors).toEqual([]);
+    expect(checks.count).toBe(0);
+    expectAppendOnly(client);
+
+    // One undo step, no blocking problems, and the content jar holds both definitions.
+    const applied = await session.applyChangeset(changeset.items);
+    expect(applied.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+    await session.flushValidation();
+    expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    const built = await session.buildContentJar({ [SEPARATE_RUNTIME_OPTION]: true });
+    expect(built.report.ok, JSON.stringify(built.report.problems)).toBe(true);
+    if (built.data === undefined) throw new Error('no jar');
+    const entries = unzipSync(built.data);
+    const decode = (path: string): Json =>
+      JSON.parse(new TextDecoder().decode(entries[path])) as Json;
+    expect((decode('msm/karts/hud/speed_bar.json') as Record<string, Json>).value).toEqual({
+      source: 'vehicle',
+      stat: 'speed',
+    });
+    expect((decode('msm/karts/vehicle/go_kart.json') as Record<string, Json>).movement).toEqual(
+      kart.movement,
+    );
+    expect(session.undo()).toBe(true);
+    expect(session.snapshot.project).toEqual(before);
+  });
+});
+
+/** The cottage (ADR 0101 D7, brief B466): the Bed and Lights flows, a rug and a tab. */
+const COTTAGE_PROMPT = 'a cottage with a bed and lanterns';
+
+const COTTAGE_RUG: Record<string, Json> = {
+  format: 1,
+  type: 'carpet',
+  display_name: 'Cottage Rug',
+  sound_type: 'wool',
+  loot: 'self',
+  textures: { all: 'minecraft:block/green_wool' },
+  item: { creative_tab: 'cottage:cottage' },
+  components: { 'msm:breakable': { hardness: 0.1, resistance: 0.1 } },
+};
+
+const COTTAGE_TAB: Record<string, Json> = {
+  format: 1,
+  icon: 'cottage:cottage_bed',
+  display_name: 'Cottage',
+  order: 'by_name',
+};
+
+const cottageScript = (): AiModelScript =>
+  buildScript(
+    {
+      title: 'Cottage',
+      items: [
+        {
+          itemId: 'bed',
+          kind: 'msm:block',
+          elementId: 'cottage:cottage_bed',
+          summary: 'The Bed flow: a green bed that sets your spawn, with its recipe.',
+        },
+        {
+          itemId: 'lanterns',
+          kind: 'msm:block',
+          elementId: 'cottage:cottage_lantern',
+          summary: 'The Lights flow with only the lantern.',
+        },
+        {
+          itemId: 'rug',
+          kind: 'msm:block',
+          elementId: 'cottage:cottage_rug',
+          summary: 'A green carpet for the floor.',
+        },
+        {
+          itemId: 'tab',
+          kind: 'msm:creative_tab',
+          elementId: 'cottage:cottage',
+          summary: 'A creative tab with the bed as its icon.',
+          dependsOn: ['bed'],
+        },
+      ],
+    },
+    [
+      {
+        name: 'add_starter',
+        input: {
+          starterId: 'bed',
+          namespace: 'cottage',
+          values: { bed_name: 'Cottage', kind: 'bed', colour: 'green' },
+        },
+      },
+      {
+        name: 'add_starter',
+        input: {
+          starterId: 'lights',
+          namespace: 'cottage',
+          values: { light_name: 'Cottage', members: ['lantern'] },
+        },
+      },
+      {
+        name: 'create_elements',
+        input: {
+          elements: [
+            { id: 'cottage:cottage_rug', kind: 'msm:block', data: COTTAGE_RUG },
+            { id: 'cottage:cottage', kind: 'msm:creative_tab', data: COTTAGE_TAB },
+          ],
+        },
+      },
+    ],
+    'The cottage bed, lantern, rug and tab are ready to review. The pictures are placeholders to replace; new blocks and the tab need the Fabric mod jar.',
+  );
+
+describe('AI helper scenario: the cottage with a bed and lanterns (build mode)', () => {
+  it('builds the Bed and Lights flows, a carpet and a tab with no errors and exports', async () => {
+    const { session } = await openSession();
+    const before = session.snapshot.project;
+    const changeset = new PendingChangeset();
+    const client = new ScriptedModelClient(cottageScript());
+    const conversation = createConversation('conversation-7', 'claude-opus-5-5');
+
+    const { result, record } = await run(session, changeset, client, conversation, {
+      mode: 'build',
+      text: COTTAGE_PROMPT,
+    });
+    expect(result.reason).toBe('end_turn');
+    expect(client.remaining).toBe(0);
+    expect(record.checkpoints).toBe(1);
+    expect(
+      [...record.results.entries()]
+        .filter(([, answer]) => answer.isError)
+        .map(([id, answer]) => `${id}: ${answer.content}`),
+    ).toEqual([]);
+    expect(JSON.stringify(client.requests[0]?.system)).toContain('Vanilla block types');
+
+    // The flows made a bed and only the lantern; the second mod element was not proposed again.
+    const created = createdOf(changeset);
+    expect(created.get('cottage:cottage_bed')?.type).toBe('bed');
+    expect(created.get('cottage:cottage_lantern')?.type).toBe('lantern');
+    expect(created.has('cottage:cottage_torch')).toBe(false);
+    expect(created.has('cottage:cottage_chain')).toBe(false);
+    expect(created.get('cottage:cottage_rug')).toEqual(COTTAGE_RUG);
+    expect(created.get('cottage:cottage')).toEqual(COTTAGE_TAB);
+    expect([...created.values()].filter((data) => data?.mod_id !== undefined)).toHaveLength(1);
+
+    const checks = checkErrorsOf(record, conversation);
+    expect(checks.errors).toEqual([]);
+    expect(checks.count).toBe(0);
+    expectAppendOnly(client);
+
+    // One undo step, no blocking problems, and the content jar holds the tab and the bed.
+    const applied = await session.applyChangeset(changeset.items);
+    expect(applied.skipped).toEqual([]);
+    expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+    await session.flushValidation();
+    expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
+    const built = await session.buildContentJar({ [SEPARATE_RUNTIME_OPTION]: true });
+    expect(built.report.ok, JSON.stringify(built.report.problems)).toBe(true);
+    if (built.data === undefined) throw new Error('no jar');
+    const entries = unzipSync(built.data);
+    const decode = (path: string): Record<string, Json> =>
+      JSON.parse(new TextDecoder().decode(entries[path])) as Record<string, Json>;
+    expect(decode('msm/cottage/creative_tab/cottage.json').icon).toBe('cottage:cottage_bed');
+    const bedPath = Object.keys(entries).find((path) =>
+      path.endsWith('cottage/block/cottage_bed.json'),
+    );
+    expect(decode(bedPath ?? '').type).toBe('bed');
     expect(session.undo()).toBe(true);
     expect(session.snapshot.project).toEqual(before);
   });

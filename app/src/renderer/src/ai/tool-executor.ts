@@ -609,6 +609,8 @@ export function createToolExecutor(
         facts.controls = controls;
       }
       if (target.vehicles !== undefined) facts.vehicles = target.vehicles;
+      // The vanilla command names and the argument type map (plugin API 1.17.0, about 1 kB).
+      if (target.commands !== undefined) facts.commands = target.commands;
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
     },
 
