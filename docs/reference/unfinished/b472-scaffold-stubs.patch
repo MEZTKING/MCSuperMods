@@ -1,0 +1,1041 @@
+diff --git a/app/e2e/fluid-path.spec.ts b/app/e2e/fluid-path.spec.ts
+new file mode 100644
+index 0000000..092a633
+--- /dev/null
++++ b/app/e2e/fluid-path.spec.ts
+@@ -0,0 +1,9 @@
++/**
++ * The fluid path (ADR 0099): the Fluid Studio, the fluid flow and the Try it still and flowing pictures. Filled by B483; skipped until then.
++ */
++
++import { test } from 'playwright/test';
++
++test.skip('fluid path (B483)', () => {
++  // B483 fills this in.
++});
+diff --git a/app/e2e/trader-path.spec.ts b/app/e2e/trader-path.spec.ts
+new file mode 100644
+index 0000000..32c37fc
+--- /dev/null
++++ b/app/e2e/trader-path.spec.ts
+@@ -0,0 +1,9 @@
++/**
++ * The trader path (ADR 0098 D1, D2): the Mob Studio's trader section, the Profession Studio and the Very easy tile. Filled by B483; skipped until then.
++ */
++
++import { test } from 'playwright/test';
++
++test.skip('trader path (B483)', () => {
++  // B483 fills this in.
++});
+diff --git a/app/src/renderer/src/studios/blocks-items/FluidStudio.tsx b/app/src/renderer/src/studios/blocks-items/FluidStudio.tsx
+new file mode 100644
+index 0000000..42f6336
+--- /dev/null
++++ b/app/src/renderer/src/studios/blocks-items/FluidStudio.tsx
+@@ -0,0 +1,16 @@
++/**
++ * Fluid Studio (ADR 0099 D1, ADR 0101 D1) for `msm:fluid` element data. An empty component until B480 fills it in; the
++ * kind itself arrives with B473, so nothing opens it before then.
++ *
++ * @packageDocumentation
++ */
++
++import type { StudioProps } from '../types';
++
++/** The element kind the Fluid Studio edits. */
++export const FLUID_KIND = 'msm:fluid';
++
++/** The Fluid Studio (empty until B480). */
++export function FluidStudio(_props: StudioProps) {
++  return null;
++}
+diff --git a/app/src/renderer/src/studios/blocks-items/studios.tsx b/app/src/renderer/src/studios/blocks-items/studios.tsx
+index 6dfddaa..127116d 100644
+--- a/app/src/renderer/src/studios/blocks-items/studios.tsx
++++ b/app/src/renderer/src/studios/blocks-items/studios.tsx
+@@ -22,6 +22,7 @@ import { BIOME_ADDITION_KIND, LOOT_ADDITION_KIND } from './additions-model';
+ import { BlockStudio } from './BlockStudio';
+ import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, PARTICLE_KIND } from './blocks-items-model';
+ import { EffectStudio } from './EffectStudio';
++import { FLUID_KIND, FluidStudio } from './FluidStudio';
+ import { ItemStudio } from './ItemStudio';
+ import { PotionStudio } from './PotionStudio';
+ import { POTION_KIND } from './potion-model';
+@@ -100,4 +101,6 @@ export const studios: StudioEntry[] = [
+     kindId: CREATIVE_TAB_KIND,
+     component: LazyCreativeTabStudio,
+   },
++  // The Fluid Studio (ADR 0099 D1): an empty component until B480; the kind arrives with B473.
++  { id: 'msm.blocks-items.fluid', kindId: FLUID_KIND, component: FluidStudio },
+ ];
+diff --git a/app/src/renderer/src/studios/entities/ProfessionStudio.tsx b/app/src/renderer/src/studios/entities/ProfessionStudio.tsx
+new file mode 100644
+index 0000000..802b602
+--- /dev/null
++++ b/app/src/renderer/src/studios/entities/ProfessionStudio.tsx
+@@ -0,0 +1,16 @@
++/**
++ * Profession Studio (ADR 0098 D2, ADR 0101 D1) for `msm:villager_profession` element data. An empty component until
++ * B480 fills it in; the kind itself arrives with B473, so nothing opens it before then.
++ *
++ * @packageDocumentation
++ */
++
++import type { StudioProps } from '../types';
++
++/** The element kind the Profession Studio edits. */
++export const PROFESSION_KIND = 'msm:villager_profession';
++
++/** The Profession Studio (empty until B480). */
++export function ProfessionStudio(_props: StudioProps) {
++  return null;
++}
+diff --git a/app/src/renderer/src/studios/entities/studios.tsx b/app/src/renderer/src/studios/entities/studios.tsx
+index 974ca5b..662ee84 100644
+--- a/app/src/renderer/src/studios/entities/studios.tsx
++++ b/app/src/renderer/src/studios/entities/studios.tsx
+@@ -12,6 +12,7 @@ import { ENTITY_KIND } from '../blocks-items/blocks-items-model';
+ import type { StudioEntry, StudioProps } from '../types';
+ import { MOB_VERY_EASY_SECTIONS, RULES_SECTION_ID } from '../very-easy';
+ import { EntityStudio } from './EntityStudio';
++import { PROFESSION_KIND, ProfessionStudio } from './ProfessionStudio';
+ 
+ /** The Vehicle Studio (B419, ADR 0091 D1), a chunk of its own. */
+ const VehicleStudio = lazy(() => import('./vehicle/VehicleStudio'));
+@@ -54,4 +55,6 @@ export const studios: StudioEntry[] = [
+     component: LazyVehicleStudio,
+     veryEasy: VEHICLE_VERY_EASY_SECTIONS,
+   },
++  // The Profession Studio (ADR 0098 D2): an empty component until B480; the kind arrives with B473.
++  { id: 'msm.entities.profession', kindId: PROFESSION_KIND, component: ProfessionStudio },
+ ];
+diff --git a/engine-mod/parity/src/main/java/dev/mcsupermods/parity/SampleVillagersParityTest.java b/engine-mod/parity/src/main/java/dev/mcsupermods/parity/SampleVillagersParityTest.java
+new file mode 100644
+index 0000000..6f9cd36
+--- /dev/null
++++ b/engine-mod/parity/src/main/java/dev/mcsupermods/parity/SampleVillagersParityTest.java
+@@ -0,0 +1,6 @@
++package dev.mcsupermods.parity;
++
++/**
++ * Behaviour-parity GameTests for the sample villagers and fluids fixture (ADR 0098, ADR 0099); filled by B482.
++ */
++public class SampleVillagersParityTest {}
+diff --git a/engine-mod/parity/src/main/resources/fabric.mod.json b/engine-mod/parity/src/main/resources/fabric.mod.json
+index 0e6d1de..3bb97e3 100644
+--- a/engine-mod/parity/src/main/resources/fabric.mod.json
++++ b/engine-mod/parity/src/main/resources/fabric.mod.json
+@@ -3,7 +3,7 @@
+   "id": "msm_parity_tests",
+   "version": "${version}",
+   "name": "MSM parity GameTests",
+-  "description": "Behaviour-parity GameTests over the sample mods' public behaviour (vanilla and Fabric API only); run by tools/run-fabric-server --gametest (with --gametest-filter msm_parity_tests:sample_mod_*, sample_mob_*, sample_creatures_*, sample_machines_*, sample_portals_*, sample_particles_*, sample_rules_*, sample_vehicles_*, sample_vanilla_blocks_* or sample_script_*) against a content jar and an ejected jar (sample_script_*, sample_particles_script_*, sample_rules_script_* and sample_vanilla_blocks_script_* against content jars only; sample_vehicles_* too, as vehicles are not ejected).",
++  "description": "Behaviour-parity GameTests over the sample mods' public behaviour (vanilla and Fabric API only); run by tools/run-fabric-server --gametest (with --gametest-filter msm_parity_tests:sample_mod_*, sample_mob_*, sample_creatures_*, sample_machines_*, sample_portals_*, sample_particles_*, sample_rules_*, sample_vehicles_*, sample_vanilla_blocks_*, sample_villagers_* or sample_script_*) against a content jar and an ejected jar (sample_script_*, sample_particles_script_*, sample_rules_script_* and sample_vanilla_blocks_script_* against content jars only; sample_vehicles_* too, as vehicles are not ejected).",
+   "license": "MIT",
+   "environment": "*",
+   "entrypoints": {
+@@ -23,7 +23,8 @@
+       "dev.mcsupermods.parity.SampleRulesScriptParityTest",
+       "dev.mcsupermods.parity.SampleVehiclesParityTest",
+       "dev.mcsupermods.parity.SampleVanillaBlocksParityTest",
+-      "dev.mcsupermods.parity.SampleVanillaBlocksScriptParityTest"
++      "dev.mcsupermods.parity.SampleVanillaBlocksScriptParityTest",
++      "dev.mcsupermods.parity.SampleVillagersParityTest"
+     ]
+   },
+   "depends": {
+diff --git a/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmFluidClientGameTest.java b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmFluidClientGameTest.java
+new file mode 100644
+index 0000000..5c6025b
+--- /dev/null
++++ b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmFluidClientGameTest.java
+@@ -0,0 +1,16 @@
++package dev.mcsupermods.runtime.gametest;
++
++import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
++import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
++
++/**
++ * Client GameTest for project fluids (ADR 0099 D2): still and flowing pictures and the tint, on both versions; filled by
++ * B475.
++ */
++public class MsmFluidClientGameTest implements FabricClientGameTest {
++    /** Placeholder until B475: one client tick on the title screen. */
++    @Override
++    public void runTest(ClientGameTestContext context) {
++        context.waitTick();
++    }
++}
+diff --git a/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmFluidGameTest.java b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmFluidGameTest.java
+new file mode 100644
+index 0000000..87e0db0
+--- /dev/null
++++ b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmFluidGameTest.java
+@@ -0,0 +1,15 @@
++package dev.mcsupermods.runtime.gametest;
++
++import net.fabricmc.fabric.api.gametest.v1.GameTest;
++import net.minecraft.gametest.framework.GameTestHelper;
++
++/**
++ * GameTests for project fluids (ADR 0099 D1, D3); filled by B475.
++ */
++public class MsmFluidGameTest {
++    /** Placeholder so the class registers a test until B475 replaces it. */
++    @GameTest
++    public void placeholder(GameTestHelper helper) {
++        helper.succeed();
++    }
++}
+diff --git a/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmMobStorageGameTest.java b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmMobStorageGameTest.java
+new file mode 100644
+index 0000000..21a5a8a
+--- /dev/null
++++ b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmMobStorageGameTest.java
+@@ -0,0 +1,15 @@
++package dev.mcsupermods.runtime.gametest;
++
++import net.fabricmc.fabric.api.gametest.v1.GameTest;
++import net.minecraft.gametest.framework.GameTestHelper;
++
++/**
++ * GameTests for mount storage and shoulder pets (ADR 0098 D3, D4); filled by B479.
++ */
++public class MsmMobStorageGameTest {
++    /** Placeholder so the class registers a test until B479 replaces it. */
++    @GameTest
++    public void placeholder(GameTestHelper helper) {
++        helper.succeed();
++    }
++}
+diff --git a/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmProfessionGameTest.java b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmProfessionGameTest.java
+new file mode 100644
+index 0000000..8234a27
+--- /dev/null
++++ b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmProfessionGameTest.java
+@@ -0,0 +1,15 @@
++package dev.mcsupermods.runtime.gametest;
++
++import net.fabricmc.fabric.api.gametest.v1.GameTest;
++import net.minecraft.gametest.framework.GameTestHelper;
++
++/**
++ * GameTests for villager professions (ADR 0098 D2); filled by B474.
++ */
++public class MsmProfessionGameTest {
++    /** Placeholder so the class registers a test until B474 replaces it. */
++    @GameTest
++    public void placeholder(GameTestHelper helper) {
++        helper.succeed();
++    }
++}
+diff --git a/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmTraderGameTest.java b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmTraderGameTest.java
+new file mode 100644
+index 0000000..7979bf6
+--- /dev/null
++++ b/engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmTraderGameTest.java
+@@ -0,0 +1,15 @@
++package dev.mcsupermods.runtime.gametest;
++
++import net.fabricmc.fabric.api.gametest.v1.GameTest;
++import net.minecraft.gametest.framework.GameTestHelper;
++
++/**
++ * GameTests for project traders (ADR 0098 D1); filled by B474.
++ */
++public class MsmTraderGameTest {
++    /** Placeholder so the class registers a test until B474 replaces it. */
++    @GameTest
++    public void placeholder(GameTestHelper helper) {
++        helper.succeed();
++    }
++}
+diff --git a/engine-mod/src/gametest/resources/fabric.mod.json b/engine-mod/src/gametest/resources/fabric.mod.json
+index d940279..ef21b8f 100644
+--- a/engine-mod/src/gametest/resources/fabric.mod.json
++++ b/engine-mod/src/gametest/resources/fabric.mod.json
+@@ -55,14 +55,19 @@
+       "dev.mcsupermods.runtime.gametest.MsmCommandGameTest",
+       "dev.mcsupermods.runtime.gametest.MsmCreativeTabGameTest",
+       "dev.mcsupermods.runtime.gametest.MsmMixinEventGameTest",
+-      "dev.mcsupermods.runtime.gametest.MsmScriptApi16GameTest"
++      "dev.mcsupermods.runtime.gametest.MsmScriptApi16GameTest",
++      "dev.mcsupermods.runtime.gametest.MsmTraderGameTest",
++      "dev.mcsupermods.runtime.gametest.MsmProfessionGameTest",
++      "dev.mcsupermods.runtime.gametest.MsmMobStorageGameTest",
++      "dev.mcsupermods.runtime.gametest.MsmFluidGameTest"
+     ],
+     "fabric-client-gametest": [
+       "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
+       "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest",
+       "dev.mcsupermods.runtime.gametest.MsmControlsClientGameTest",
+       "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest",
+-      "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest"
++      "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest",
++      "dev.mcsupermods.runtime.gametest.MsmFluidClientGameTest"
+     ]
+   },
+   "depends": {
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/MsmRuntime.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/MsmRuntime.java
+index 82abf43..69ae3d5 100644
+--- a/engine-mod/src/main/java/dev/mcsupermods/runtime/MsmRuntime.java
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/MsmRuntime.java
+@@ -54,6 +54,8 @@ public final class MsmRuntime implements ModInitializer {
+         LOGGER.info("[{}] registered {} HUD element(s)", MOD_ID, report.hudElements().size());
+         LOGGER.info("[{}] registered {} command(s)", MOD_ID, report.commands().size());
+         LOGGER.info("[{}] registered {} creative tab(s)", MOD_ID, report.creativeTabs().size());
++        LOGGER.info("[{}] registered {} fluid(s)", MOD_ID, report.fluids().size());
++        LOGGER.info("[{}] registered {} villager profession(s)", MOD_ID, report.professions().size());
+         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
+         // exist only once the server runs.
+         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/client/MsmRuntimeClient.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/client/MsmRuntimeClient.java
+index 2451c1a..9064f21 100644
+--- a/engine-mod/src/main/java/dev/mcsupermods/runtime/client/MsmRuntimeClient.java
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/client/MsmRuntimeClient.java
+@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.client;
+ import dev.mcsupermods.runtime.MsmRuntime;
+ import dev.mcsupermods.runtime.client.controls.ControlsClient;
+ import dev.mcsupermods.runtime.client.dev.DevClient;
++import dev.mcsupermods.runtime.client.fluid.FluidClient;
+ import dev.mcsupermods.runtime.client.hud.HudClient;
+ import dev.mcsupermods.runtime.client.particle.MsmParticleProvider;
+ import dev.mcsupermods.runtime.client.vanilla.MsmVanillaRenderer;
+@@ -53,6 +54,8 @@ public final class MsmRuntimeClient implements ClientModInitializer {
+         ControlsClient.init();
+         HudClient.init();
+         DevClient.register();
++        // Project fluids (ADR 0099 D2).
++        FluidClient.init();
+     }
+ 
+     /**
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/client/fluid/FluidClient.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/client/fluid/FluidClient.java
+new file mode 100644
+index 0000000..bf72b32
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/client/fluid/FluidClient.java
+@@ -0,0 +1,12 @@
++package dev.mcsupermods.runtime.client.fluid;
++
++/**
++ * Client side of project fluids (ADR 0099 D2): the still and flowing pictures, the plain RGB tint and the optional
++ * overlay, registered with Fabric's fluid rendering API. A stub until B475; a dedicated server never loads this class.
++ */
++public final class FluidClient {
++    private FluidClient() {}
++
++    /** Registers the renderers of the project fluids; called from the client entrypoint. Does nothing until B475. */
++    public static void init() {}
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/DefinitionScanner.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/DefinitionScanner.java
+index b468423..a90e9b1 100644
+--- a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/DefinitionScanner.java
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/DefinitionScanner.java
+@@ -23,7 +23,8 @@ import net.minecraft.resources.Identifier;
+  */
+ public final class DefinitionScanner {
+     private static final List<String> KINDS = List.of("block", "item", "entity", "effect", "potion", "particle", "biome_addition", "loot_addition",
+-            KeyBindParser.KIND, HudParser.KIND, VehicleParser.KIND, CommandParser.KIND, CreativeTabParser.KIND);
++            KeyBindParser.KIND, HudParser.KIND, VehicleParser.KIND, CommandParser.KIND, CreativeTabParser.KIND, FluidParser.KIND,
++            ProfessionParser.KIND);
+ 
+     private DefinitionScanner() {}
+ 
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/FluidParser.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/FluidParser.java
+new file mode 100644
+index 0000000..87d2260
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/FluidParser.java
+@@ -0,0 +1,25 @@
++package dev.mcsupermods.runtime.loader;
++
++import dev.mcsupermods.runtime.registry.fluid.FluidDefinition;
++import java.util.List;
++import java.util.Map;
++import net.minecraft.resources.Identifier;
++
++/**
++ * Parses {@code msm/<namespace>/fluid/<path>.json} definitions (ADR 0099 D1, {@code ::msm::definition::Fluid}). A stub
++ * until B475: it reads no definition, so no fluid is registered and no error is reported.
++ */
++public final class FluidParser {
++    /** The scanner's kind folder. */
++    public static final String KIND = "fluid";
++
++    private FluidParser() {}
++
++    /**
++     * The fluid definitions among {@code definitions} that parse, by id in scan order; problems are added to
++     * {@code errors} and {@code warnings}, each starting with the file it concerns. Always empty until B475.
++     */
++    public static Map<Identifier, FluidDefinition> parseAll(List<RawDefinition> definitions, List<String> errors, List<String> warnings) {
++        return Map.of();
++    }
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/LoadReport.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/LoadReport.java
+index 3169769..23cbb20 100644
+--- a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/LoadReport.java
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/LoadReport.java
+@@ -13,7 +13,9 @@ import net.minecraft.resources.Identifier;
+  * {@code keyBinds} the key binds (ADR 0088 D3), {@code hudElements} the HUD elements (ADR 0089 D1) and {@code vehicles}
+  * the vehicle types (ADR 0090 D1), each added after the registrar by {@link #withKeyBinds}, {@link #withHudElements} and
+  * {@link #withVehicles}; {@code commands} the project commands (ADR 0096 D1) and {@code creativeTabs} the project creative
+- * tabs (ADR 0096 D2), added by {@link #withCommands} and {@link #withCreativeTabs}.
++ * tabs (ADR 0096 D2), added by {@link #withCommands} and {@link #withCreativeTabs}; {@code fluids} the project fluids (ADR 0099 D1)
++ * and {@code professions} the villager professions (ADR 0098 D2), both set by the registrar ({@link #withFluids},
++ * {@link #withProfessions}).
+  */
+ public record LoadReport(
+         int filesRead,
+@@ -32,53 +34,67 @@ public record LoadReport(
+         List<Identifier> vehicles,
+         List<Identifier> commands,
+         List<Identifier> creativeTabs,
++        List<Identifier> fluids,
++        List<Identifier> professions,
+         List<String> errors,
+         List<String> warnings) {
+     public static final LoadReport EMPTY = new LoadReport(0, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+             List.of(), List.of());
+ 
+-    /** A report without key binds, HUD elements, vehicles, commands or creative tabs (the scanner's and the registrar's). */
++    /** A report without key binds, HUD elements, vehicles, commands, creative tabs, fluids or professions (the scanner's and the registrar's). */
+     public LoadReport(int filesRead, List<RawDefinition> definitions, List<Identifier> blocks, List<Identifier> items, List<Identifier> entities,
+             List<Identifier> effects, List<Identifier> potions, List<Identifier> sounds, List<Identifier> particles, List<Identifier> biomeAdditions,
+             List<Identifier> lootAdditions, List<String> errors, List<String> warnings) {
+         this(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, List.of(), List.of(),
+-                List.of(), List.of(), List.of(), errors, warnings);
++                List.of(), List.of(), List.of(), List.of(), List.of(), errors, warnings);
+     }
+ 
+     /** This report plus warnings found later (after server start-up). */
+     public LoadReport withWarnings(List<String> more) {
+         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
+-                hudElements, vehicles, commands, creativeTabs, errors, concat(warnings, more));
++                hudElements, vehicles, commands, creativeTabs, fluids, professions, errors, concat(warnings, more));
+     }
+ 
+     /** This report with the key binds registered (ADR 0088 D3) and their errors and warnings added. */
+     public LoadReport withKeyBinds(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
+         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions,
+-                List.copyOf(ids), hudElements, vehicles, commands, creativeTabs, concat(errors, moreErrors), concat(warnings, moreWarnings));
++                List.copyOf(ids), hudElements, vehicles, commands, creativeTabs, fluids, professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
+     }
+ 
+     /** This report with the HUD elements registered (ADR 0089 D1) and their errors and warnings added. */
+     public LoadReport withHudElements(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
+         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
+-                List.copyOf(ids), vehicles, commands, creativeTabs, concat(errors, moreErrors), concat(warnings, moreWarnings));
++                List.copyOf(ids), vehicles, commands, creativeTabs, fluids, professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
+     }
+ 
+     /** This report with the vehicle types registered (ADR 0090 D1) and their errors and warnings added. */
+     public LoadReport withVehicles(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
+         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
+-                hudElements, List.copyOf(ids), commands, creativeTabs, concat(errors, moreErrors), concat(warnings, moreWarnings));
++                hudElements, List.copyOf(ids), commands, creativeTabs, fluids, professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
+     }
+ 
+     /** This report with the project commands registered (ADR 0096 D1) and their errors and warnings added. */
+     public LoadReport withCommands(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
+         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
+-                hudElements, vehicles, List.copyOf(ids), creativeTabs, concat(errors, moreErrors), concat(warnings, moreWarnings));
++                hudElements, vehicles, List.copyOf(ids), creativeTabs, fluids, professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
+     }
+ 
+     /** This report with the project creative tabs registered (ADR 0096 D2) and their errors and warnings added. */
+     public LoadReport withCreativeTabs(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
+         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
+-                hudElements, vehicles, commands, List.copyOf(ids), concat(errors, moreErrors), concat(warnings, moreWarnings));
++                hudElements, vehicles, commands, List.copyOf(ids), fluids, professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
++    }
++
++    /** This report with the project fluids registered (ADR 0099 D1) and their errors and warnings added. */
++    public LoadReport withFluids(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
++        return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
++                hudElements, vehicles, commands, creativeTabs, List.copyOf(ids), professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
++    }
++
++    /** This report with the villager professions registered (ADR 0098 D2) and their errors and warnings added. */
++    public LoadReport withProfessions(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
++        return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
++                hudElements, vehicles, commands, creativeTabs, fluids, List.copyOf(ids), concat(errors, moreErrors), concat(warnings, moreWarnings));
+     }
+ 
+     private static List<String> concat(List<String> first, List<String> second) {
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/ProfessionParser.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/ProfessionParser.java
+new file mode 100644
+index 0000000..31b3724
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/ProfessionParser.java
+@@ -0,0 +1,28 @@
++package dev.mcsupermods.runtime.loader;
++
++import java.util.List;
++import java.util.Map;
++import net.minecraft.resources.Identifier;
++
++/**
++ * Parses {@code msm/<namespace>/villager_profession/<path>.json} definitions (ADR 0098 D2,
++ * {@code ::msm::definition::VillagerProfession}). A stub until B474: it reads no definition, so no profession is
++ * registered and no error is reported.
++ */
++public final class ProfessionParser {
++    /** The scanner's kind folder. */
++    public static final String KIND = "villager_profession";
++
++    private ProfessionParser() {}
++
++    /** A villager profession definition v1; no fields until B474. */
++    public record Profession() {}
++
++    /**
++     * The profession definitions among {@code definitions} that parse, by id in scan order; problems are added to
++     * {@code errors} and {@code warnings}, each starting with the file it concerns. Always empty until B474.
++     */
++    public static Map<Identifier, Profession> parseAll(List<RawDefinition> definitions, List<String> errors, List<String> warnings) {
++        return Map.of();
++    }
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/StorageParser.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/StorageParser.java
+new file mode 100644
+index 0000000..b16e698
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/StorageParser.java
+@@ -0,0 +1,9 @@
++package dev.mcsupermods.runtime.loader;
++
++/**
++ * Parses the {@code msm:storage} component of an entity definition (ADR 0098 D3, {@code ::msm::component::Storage}). A
++ * stub until B479: no entity has mount storage yet.
++ */
++public final class StorageParser {
++    private StorageParser() {}
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/TraderParser.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/TraderParser.java
+new file mode 100644
+index 0000000..d3b3875
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/loader/TraderParser.java
+@@ -0,0 +1,9 @@
++package dev.mcsupermods.runtime.loader;
++
++/**
++ * Parses the {@code msm:trader} component of an entity definition (ADR 0098 D1, {@code ::msm::component::Trader}). A
++ * stub until B474: no entity has a trader yet.
++ */
++public final class TraderParser {
++    private TraderParser() {}
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/mixin/MsmMixinPlugin.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/mixin/MsmMixinPlugin.java
+new file mode 100644
+index 0000000..4d289c1
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/mixin/MsmMixinPlugin.java
+@@ -0,0 +1,43 @@
++package dev.mcsupermods.runtime.mixin;
++
++import java.util.List;
++import java.util.Set;
++import org.objectweb.asm.tree.ClassNode;
++import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
++import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
++
++/**
++ * Adds the Mixins that exist for one Minecraft version only to {@code msm_runtime.mixins.json} (ADR 0038 D2). The config
++ * lists the Mixins of every version; {@link #getMixins} adds the others from the {@link MixinVersions} seam. Mixin loads
++ * a listed class before it asks {@link #shouldApplyMixin}, so a class that exists on one version only cannot be listed in
++ * the file. Touches no Minecraft class: it runs before the game is loaded.
++ */
++public final class MsmMixinPlugin implements IMixinConfigPlugin {
++    @Override
++    public void onLoad(String mixinPackage) {}
++
++    @Override
++    public String getRefMapperConfig() {
++        return null;
++    }
++
++    @Override
++    public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
++        return true;
++    }
++
++    @Override
++    public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {}
++
++    @Override
++    public List<String> getMixins() {
++        // Relative to the config's package.
++        return MixinVersions.entityFluid() ? List.of("EntityFluidMixin") : null;
++    }
++
++    @Override
++    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
++
++    @Override
++    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/MsmRegistrar.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/MsmRegistrar.java
+index 616e79c..4c5a869 100644
+--- a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/MsmRegistrar.java
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/MsmRegistrar.java
+@@ -20,7 +20,9 @@ import dev.mcsupermods.runtime.loader.PotionDefinition;
+ import dev.mcsupermods.runtime.loader.RawDefinition;
+ import dev.mcsupermods.runtime.loader.types.PlantFields;
+ import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
++import dev.mcsupermods.runtime.registry.fluid.MsmFluids;
+ import dev.mcsupermods.runtime.registry.inventory.ItemInventories;
++import dev.mcsupermods.runtime.registry.mob.MsmProfessions;
+ import dev.mcsupermods.runtime.registry.portal.PortalLighting;
+ import dev.mcsupermods.runtime.registry.portal.PortalTravel;
+ import dev.mcsupermods.runtime.registry.types.BlockTypes;
+@@ -121,6 +123,8 @@ public final class MsmRegistrar {
+         // Particle types right after sound events (ADR 0080 D3): effects, leaves, portals and events name them.
+         List<Identifier> particles = MsmParticles.registerAll(scanned.definitions(), errors, warnings);
+         MsmRuntime.LOGGER.info("[{}] registered {} particle type(s)", MsmRuntime.MOD_ID, particles.size());
++        // Fluids after particles and before blocks (ADR 0099 D1): a stub until B475.
++        List<Identifier> fluids = MsmFluids.register(scanned.definitions(), errors, warnings);
+         // Effects first (ADR 0055 D3): items (consumables, death protection) resolve effect ids while registering.
+         for (RawDefinition raw : scanned.definitions()) {
+             if (!raw.kind().equals("effect")) {
+@@ -191,6 +195,8 @@ public final class MsmRegistrar {
+             }
+         }
+         registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
++        // Villager professions after the blocks their job sites name (ADR 0098 D2): a stub until B474.
++        List<Identifier> professions = MsmProfessions.register(scanned.definitions(), errors, warnings);
+         Weathering.checkAfterRegistration(errors); // ADR 0094 D8, D9: the next and into links, once every block exists
+         MsmRuntime.LOGGER.info("[{}] registered {} portal block(s)", MsmRuntime.MOD_ID, typeCounts.getOrDefault(BlockType.PORTAL, 0));
+         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
+@@ -228,7 +234,9 @@ public final class MsmRegistrar {
+         checkPortalActions(errors);
+         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
+                 List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, particles, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings))
+-                .withCreativeTabs(scanned.creativeTabs(), List.of(), List.of()); // registered before this pass (MsmCreativeTabs.register)
++                .withCreativeTabs(scanned.creativeTabs(), List.of(), List.of()) // registered before this pass (MsmCreativeTabs.register)
++                .withFluids(fluids, List.of(), List.of())
++                .withProfessions(professions, List.of(), List.of());
+     }
+ 
+     /**
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/FluidDefinition.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/FluidDefinition.java
+new file mode 100644
+index 0000000..c1afdf6
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/FluidDefinition.java
+@@ -0,0 +1,7 @@
++package dev.mcsupermods.runtime.registry.fluid;
++
++/**
++ * A fluid definition v1 (ADR 0099 D1, {@code ::msm::definition::Fluid}). No fields until B475, which fills the record
++ * and {@link dev.mcsupermods.runtime.loader.FluidParser} in together.
++ */
++public record FluidDefinition() {}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/MsmFluids.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/MsmFluids.java
+new file mode 100644
+index 0000000..13cb2ee
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/MsmFluids.java
+@@ -0,0 +1,25 @@
++package dev.mcsupermods.runtime.registry.fluid;
++
++import dev.mcsupermods.runtime.loader.FluidParser;
++import dev.mcsupermods.runtime.loader.RawDefinition;
++import java.util.List;
++import net.minecraft.resources.Identifier;
++
++/**
++ * Project fluids (ADR 0099 D1): one still and one flowing fluid per {@code fluid} definition on 26.3, one on 26.4 (the
++ * {@link MsmFluid} seam), each with a liquid block and a bucket. A stub until B475: it reads no definition and registers
++ * nothing. The registrar calls it after the particle types (a fluid may name them) and before the blocks (the liquid
++ * block and the bucket are registered with the fluid).
++ */
++public final class MsmFluids {
++    private MsmFluids() {}
++
++    /**
++     * Parses the scanned {@code fluid} definitions and registers their fluids; returns the ids registered. Errors and
++     * warnings are added to the lists.
++     */
++    public static List<Identifier> register(List<RawDefinition> definitions, List<String> errors, List<String> warnings) {
++        FluidParser.parseAll(definitions, errors, warnings);
++        return List.of();
++    }
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/MsmLiquidBlock.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/MsmLiquidBlock.java
+new file mode 100644
+index 0000000..2f5e5da
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/fluid/MsmLiquidBlock.java
+@@ -0,0 +1,9 @@
++package dev.mcsupermods.runtime.registry.fluid;
++
++/**
++ * The liquid block of a project fluid (ADR 0099 D1), vanilla's {@code LiquidBlock} with the fluid's own entity effects. A
++ * stub until B475: it extends nothing yet and nothing constructs it.
++ */
++public final class MsmLiquidBlock {
++    private MsmLiquidBlock() {}
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobDriver.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobDriver.java
+index 15a8bce..f6f246e 100644
+--- a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobDriver.java
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobDriver.java
+@@ -38,7 +38,7 @@ import net.minecraft.world.level.storage.ValueOutput;
+  * The behaviour every {@code msm/<ns>/entity/*.json} mob shares, whatever body class carries it (ADR 0070 D2, the
+  * pattern of {@code BlockBehaviourDriver}): events, triggers, sounds and the loot table here, each feature in one
+  * module ({@link MobGoals}, {@link MobMovement}, {@link MobRanged}, {@link MobTaming}, {@link MobBreeding},
+- * {@link MobRiding}, {@link MobVariants}, {@link MobBossBar}, {@link MobAnimations}). One driver per entity, built on
++ * {@link MobRiding}, {@link MobTrader}, {@link MobStorage}, {@link MobShoulder}, {@link MobVariants}, {@link MobBossBar}, {@link MobAnimations}). One driver per entity, built on
+  * first use from the definition of the entity's type: {@code defineSynchedData}, {@code createNavigation} and
+  * {@code registerGoals} run inside the vanilla constructors, before any field of the body is assigned, so the body
+  * keeps the driver in a field without initialiser and builds it lazily. Building touches nothing but the type.
+@@ -58,6 +58,9 @@ public final class MobDriver {
+     private final MobTaming taming;
+     private final MobBreeding breeding;
+     private final MobRiding riding;
++    private final MobTrader trader;
++    private final MobStorage storage;
++    private final MobShoulder shoulder;
+     private final MobVariants variants;
+     private final MobBossBar bossBar;
+     private final MobAnimations animations;
+@@ -73,6 +76,9 @@ public final class MobDriver {
+         this.taming = new MobTaming(mob, definition);
+         this.breeding = new MobBreeding(mob, definition);
+         this.riding = new MobRiding(mob, definition);
++        this.trader = new MobTrader(mob, definition);
++        this.storage = new MobStorage(mob, definition);
++        this.shoulder = new MobShoulder(mob, definition);
+         this.variants = new MobVariants(mob, definition);
+         this.bossBar = new MobBossBar(mob, definition);
+         this.animations = new MobAnimations(mob, definition);
+@@ -120,6 +126,18 @@ public final class MobDriver {
+         return riding;
+     }
+ 
++    public MobTrader trader() {
++        return trader;
++    }
++
++    public MobStorage storage() {
++        return storage;
++    }
++
++    public MobShoulder shoulder() {
++        return shoulder;
++    }
++
+     public MobVariants variants() {
+         return variants;
+     }
+@@ -220,6 +238,16 @@ public final class MobDriver {
+         if (result == null) {
+             result = riding.mobInteract(player, hand);
+         }
++        // Batch 2 (ADR 0098), stubs until B474 and B479: trading, mount storage, shoulder pets.
++        if (result == null) {
++            result = trader.mobInteract(player, hand);
++        }
++        if (result == null) {
++            result = storage.mobInteract(player, hand);
++        }
++        if (result == null) {
++            result = shoulder.mobInteract(player, hand);
++        }
+         if (result != null) {
+             return result;
+         }
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobShoulder.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobShoulder.java
+new file mode 100644
+index 0000000..77314fe
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobShoulder.java
+@@ -0,0 +1,25 @@
++package dev.mcsupermods.runtime.registry.mob;
++
++import dev.mcsupermods.runtime.loader.EntityDefinition;
++import dev.mcsupermods.runtime.registry.MsmMob;
++import net.minecraft.world.InteractionHand;
++import net.minecraft.world.InteractionResult;
++import net.minecraft.world.entity.player.Player;
++
++/**
++ * Shoulder pets (ADR 0098 D4, `msm:shoulder`): the pet perched on its owner's shoulder, a synched and saved flag that both sides place every tick. A stub until B479: every hook does nothing, so a mob behaves exactly as before.
++ */
++public final class MobShoulder {
++    private final MsmMob mob;
++    private final EntityDefinition definition;
++
++    MobShoulder(MsmMob mob, EntityDefinition definition) {
++        this.mob = mob;
++        this.definition = definition;
++    }
++
++    /** The right-click hook of {@link MobDriver#mobInteract}; null passes the click on, as every module does. */
++    InteractionResult mobInteract(Player player, InteractionHand hand) {
++        return null;
++    }
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobStorage.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobStorage.java
+new file mode 100644
+index 0000000..4e76d83
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobStorage.java
+@@ -0,0 +1,25 @@
++package dev.mcsupermods.runtime.registry.mob;
++
++import dev.mcsupermods.runtime.loader.EntityDefinition;
++import dev.mcsupermods.runtime.registry.MsmMob;
++import net.minecraft.world.InteractionHand;
++import net.minecraft.world.InteractionResult;
++import net.minecraft.world.entity.player.Player;
++
++/**
++ * Mount storage (ADR 0098 D3, `msm:storage`): a chest or inventory on a mob, opened by sneak-use or the inventory route, saved with the mob and dropped on death. A stub until B479: every hook does nothing, so a mob behaves exactly as before.
++ */
++public final class MobStorage {
++    private final MsmMob mob;
++    private final EntityDefinition definition;
++
++    MobStorage(MsmMob mob, EntityDefinition definition) {
++        this.mob = mob;
++        this.definition = definition;
++    }
++
++    /** The right-click hook of {@link MobDriver#mobInteract}; null passes the click on, as every module does. */
++    InteractionResult mobInteract(Player player, InteractionHand hand) {
++        return null;
++    }
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobTrader.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobTrader.java
+new file mode 100644
+index 0000000..67967f3
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MobTrader.java
+@@ -0,0 +1,25 @@
++package dev.mcsupermods.runtime.registry.mob;
++
++import dev.mcsupermods.runtime.loader.EntityDefinition;
++import dev.mcsupermods.runtime.registry.MsmMob;
++import net.minecraft.world.InteractionHand;
++import net.minecraft.world.InteractionResult;
++import net.minecraft.world.entity.player.Player;
++
++/**
++ * Trading (ADR 0098 D1, `msm:trader`): offers per level, the trade screen, experience, restocking and `on_trade`. A stub until B474: every hook does nothing, so a mob behaves exactly as before.
++ */
++public final class MobTrader {
++    private final MsmMob mob;
++    private final EntityDefinition definition;
++
++    MobTrader(MsmMob mob, EntityDefinition definition) {
++        this.mob = mob;
++        this.definition = definition;
++    }
++
++    /** The right-click hook of {@link MobDriver#mobInteract}; null passes the click on, as every module does. */
++    InteractionResult mobInteract(Player player, InteractionHand hand) {
++        return null;
++    }
++}
+diff --git a/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MsmProfessions.java b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MsmProfessions.java
+new file mode 100644
+index 0000000..1a3f3ca
+--- /dev/null
++++ b/engine-mod/src/main/java/dev/mcsupermods/runtime/registry/mob/MsmProfessions.java
+@@ -0,0 +1,26 @@
++package dev.mcsupermods.runtime.registry.mob;
++
++import dev.mcsupermods.runtime.loader.ProfessionParser;
++import dev.mcsupermods.runtime.loader.RawDefinition;
++import dev.mcsupermods.runtime.registry.PoiTypes;
++import java.util.List;
++import net.minecraft.resources.Identifier;
++
++/**
++ * Villager professions (ADR 0098 D2): one {@code VillagerProfession} per {@code villager_profession} definition, with
++ * its job-site point of interest registered through the {@link PoiTypes} seam. A stub until B474: it reads no
++ * definition and registers nothing. The registrar calls it after the blocks, which a job site names.
++ */
++public final class MsmProfessions {
++    private MsmProfessions() {}
++
++    /**
++     * Parses the scanned {@code villager_profession} definitions and registers their professions; returns the ids
++     * registered. Errors and warnings are added to the lists.
++     */
++    public static List<Identifier> register(List<RawDefinition> definitions, List<String> errors, List<String> warnings) {
++        ProfessionParser.parseAll(definitions, errors, warnings);
++        PoiTypes.init();
++        return List.of();
++    }
++}
+diff --git a/engine-mod/src/main/resources/msm_runtime.mixins.json b/engine-mod/src/main/resources/msm_runtime.mixins.json
+index 57572e5..e8477c1 100644
+--- a/engine-mod/src/main/resources/msm_runtime.mixins.json
++++ b/engine-mod/src/main/resources/msm_runtime.mixins.json
+@@ -2,6 +2,7 @@
+   "required": true,
+   "minVersion": "0.8",
+   "package": "dev.mcsupermods.runtime.mixin",
++  "plugin": "dev.mcsupermods.runtime.mixin.MsmMixinPlugin",
+   "compatibilityLevel": "JAVA_25",
+   "mixins": [
+     "BlockItemPlaceMixin",
+diff --git a/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/mixin/MixinVersions.java b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/mixin/MixinVersions.java
+new file mode 100644
+index 0000000..9801a36
+--- /dev/null
++++ b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/mixin/MixinVersions.java
+@@ -0,0 +1,14 @@
++package dev.mcsupermods.runtime.mixin;
++
++/**
++ * Version seam (ADR 0038 D2): which version-only Mixins this Minecraft version applies. Plain booleans, no Minecraft
++ * types, because {@link MsmMixinPlugin} asks before the game is loaded.
++ */
++final class MixinVersions {
++    private MixinVersions() {}
++
++    /** Whether {@code EntityFluidMixin} (ADR 0099 amendment) applies: 26.3 does not need it. */
++    static boolean entityFluid() {
++        return false;
++    }
++}
+diff --git a/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/PoiTypes.java b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/PoiTypes.java
+new file mode 100644
+index 0000000..7c5fb04
+--- /dev/null
++++ b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/PoiTypes.java
+@@ -0,0 +1,11 @@
++package dev.mcsupermods.runtime.registry;
++
++/**
++ * Version seam (ADR 0038 D2, ADR 0098 D2): registers the point of interest of a project job site. 26.3 uses Fabric's {@code PoiHelper}. A stub until B474.
++ */
++public final class PoiTypes {
++    private PoiTypes() {}
++
++    /** Prepares the version's registration route; does nothing until B474. */
++    public static void init() {}
++}
+diff --git a/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/fluid/MsmFlowingFluid.java b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/fluid/MsmFlowingFluid.java
+new file mode 100644
+index 0000000..7bb2dd2
+--- /dev/null
++++ b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/fluid/MsmFlowingFluid.java
+@@ -0,0 +1,10 @@
++package dev.mcsupermods.runtime.registry.fluid;
++
++/**
++ * Version seam (ADR 0038 D2, ADR 0099 D3): the flowing fluid of a project fluid on 26.3, registered as
++ * {@code <ns>:flowing_<path>}. It exists on 26.3 only; 26.4's single {@code MsmFluid} covers both states. Shared code
++ * never names it. A stub until B475.
++ */
++public final class MsmFlowingFluid {
++    private MsmFlowingFluid() {}
++}
+diff --git a/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/fluid/MsmFluid.java b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/fluid/MsmFluid.java
+new file mode 100644
+index 0000000..c8a16ce
+--- /dev/null
++++ b/engine-mod/src/mc/26.3/java/dev/mcsupermods/runtime/registry/fluid/MsmFluid.java
+@@ -0,0 +1,10 @@
++package dev.mcsupermods.runtime.registry.fluid;
++
++/**
++ * Version seam (ADR 0038 D2, ADR 0099 D3): the still (source) fluid of a project fluid. 26.3 registers two fluids per
++ * liquid, this one as {@code <id>} and {@link MsmFlowingFluid} as {@code <ns>:flowing_<path>}; 26.4 has one class,
++ * {@code MsmFluid}, for both. A stub until B475.
++ */
++public final class MsmFluid {
++    private MsmFluid() {}
++}
+diff --git a/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/mixin/EntityFluidMixin.java b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/mixin/EntityFluidMixin.java
+new file mode 100644
+index 0000000..f2d08d4
+--- /dev/null
++++ b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/mixin/EntityFluidMixin.java
+@@ -0,0 +1,18 @@
++package dev.mcsupermods.runtime.mixin;
++
++import net.minecraft.world.entity.Entity;
++import org.spongepowered.asm.mixin.Mixin;
++
++/**
++ * Project fluids on 26.4 (ADR 0099 amendment after B470): at the head of {@code Entity.isInWater} and
++ * {@code Entity.isInLava} the entity counts as in water or lava when its fluid height for that tag is above 0, so a
++ * water-like or lava-like project fluid lets entities swim and float, not only drown. A stub until B475: no injector
++ * yet, so nothing changes.
++ *
++ * <p>Why a Mixin (DESIGN section 10 "Mixin policy"): Fabric API has no event for an entity's fluid state, and 26.4's
++ * single {@code FlowingFluid} class (the {@code MsmFluid} seam) cannot change what {@code isInWater} answers. 26.4
++ * only: the class lives in {@code src/mc/26.4/java}, and {@link MsmMixinPlugin} adds it to the config on this
++ * version only (26.3 swims through the fluid tag alone).
++ */
++@Mixin(Entity.class)
++abstract class EntityFluidMixin {}
+diff --git a/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/mixin/MixinVersions.java b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/mixin/MixinVersions.java
+new file mode 100644
+index 0000000..9cb587b
+--- /dev/null
++++ b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/mixin/MixinVersions.java
+@@ -0,0 +1,14 @@
++package dev.mcsupermods.runtime.mixin;
++
++/**
++ * Version seam (ADR 0038 D2): which version-only Mixins this Minecraft version applies. Plain booleans, no Minecraft
++ * types, because {@link MsmMixinPlugin} asks before the game is loaded.
++ */
++final class MixinVersions {
++    private MixinVersions() {}
++
++    /** Whether {@code EntityFluidMixin} (ADR 0099 amendment) applies: 26.4 needs it. */
++    static boolean entityFluid() {
++        return true;
++    }
++}
+diff --git a/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/registry/PoiTypes.java b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/registry/PoiTypes.java
+new file mode 100644
+index 0000000..dfc0914
+--- /dev/null
++++ b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/registry/PoiTypes.java
+@@ -0,0 +1,11 @@
++package dev.mcsupermods.runtime.registry;
++
++/**
++ * Version seam (ADR 0038 D2, ADR 0098 D2): registers the point of interest of a project job site. 26.4 calls the private {@code PoiTypes.register(ResourceKey, Set, int, int)} by reflection (no Mixin). A stub until B474.
++ */
++public final class PoiTypes {
++    private PoiTypes() {}
++
++    /** Prepares the version's registration route; does nothing until B474. */
++    public static void init() {}
++}
+diff --git a/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/registry/fluid/MsmFluid.java b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/registry/fluid/MsmFluid.java
+new file mode 100644
+index 0000000..69dad12
+--- /dev/null
++++ b/engine-mod/src/mc/26.4/java/dev/mcsupermods/runtime/registry/fluid/MsmFluid.java
+@@ -0,0 +1,10 @@
++package dev.mcsupermods.runtime.registry.fluid;
++
++/**
++ * Version seam (ADR 0038 D2, ADR 0099 D3): the fluid of a project fluid. 26.4 registers one {@code FlowingFluid} per
++ * liquid, still and flowing together; 26.3 has two classes ({@code MsmFluid} and {@code MsmFlowingFluid}). A stub until
++ * B475.
++ */
++public final class MsmFluid {
++    private MsmFluid() {}
++}
+diff --git a/fixtures/sample-villagers-and-fluids/README.md b/fixtures/sample-villagers-and-fluids/README.md
+new file mode 100644
+index 0000000..1a57c77
+--- /dev/null
++++ b/fixtures/sample-villagers-and-fluids/README.md
+@@ -0,0 +1 @@
++# Sample villagers and fluids project

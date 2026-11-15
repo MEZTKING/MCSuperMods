@@ -1,0 +1,4483 @@
+diff --git a/docs/DEVLOG.md b/docs/DEVLOG.md
+index e43395a..769d8b4 100644
+--- a/docs/DEVLOG.md
++++ b/docs/DEVLOG.md
+@@ -6097,3 +6097,19 @@ Decisions
+ 
+ Next
+ - Main session: record the S14 answers in "Notes from implementation" and ADR 0099's findings, decide the 26.4 Mixin (an ADR 0099 amendment), then B472 and B473.
++
++## 2026-11-15 — executor — B473 format, plugin API and facts, batch 2
++
++What
++- MSM mcdoc (ADR 0098 D1–D4, ADR 0099 D1): entity components `msm:trader` (`trade_sets` 1..5 of `{trade_set, xp_to_next?}`, `levels?`, `restock? twice_a_day|never`, `trade_sound?`, `on_trade?`), `msm:storage` (`rows? 1..6`, `needs_chest?`, `open_sound?`, `close_sound?`) and `msm:shoulder_riding` (an empty struct, the perched pet of the amended D4); kinds `villager_profession` (`job_site`, `trade_sets? @5`, `work_sound?`, `requested_items?`, `secondary_job_blocks?`; element adds `display_name`, `textures {villager, zombie_villager}`) and `fluid` (`behaves_like? water|lava|none`, `flow? {tick_delay 1..100, slope_distance 1..8, drop_off 1..4, infinite}`, `light? 0..15`, `tint? 0..16777215`, `explosion_resistance?`, `on_entity_inside?`, `events?`; element adds `display_name`, `bucket_display_name`, `textures {still, flowing, overlay, bucket}`). Schema refs `msm:villager_profession`, `msm:fluid` and their `_definition` forms; `symbols.json` regenerated (509 types). 85 new conformance cases (prefixes `trader-`, `storage-`, `shoulder-`, `profession-`, `fluid-`).
++- Plugin API 1.18.0 (same section as B471, no bump): `EntityFacts.tradeSounds` (`TradeSoundFacts {yes, no, trading}`), `vanillaJobSites` (point of interest type to blocks), `vanillaTradeSets` (`VanillaTradeSetFacts {trades, villagerOnlyTrades, villagerOnly}`); `BlockFacts.fluidModel` and `fluidTags` (`FluidTagFacts {water, lava}`).
++- Both targets carry the facts: 26.3 `two_fluids`, water `[minecraft:water]`; 26.4 `one_fluid`, water `[minecraft:water, minecraft:swimmable]`; lava `[minecraft:lava]` on both; 21 point of interest types; 68 trade sets, villager-only on `cartographer/level_2`, `cartographer/level_4` and `fisherman/level_5`. Tests tie them to the vendored registries, and `all/test/villagers.test.ts` recounts the trade sets and checks the fluid and job site tags against the Loom-cached client jar's data files when it is present (skipped otherwise); the jar reader moved to `all/test/client-jar.ts`, shared with `model-templates.test.ts`.
++
++Decisions
++- `msm:shoulder_riding` has no fields: the ADR names none, and the cooldown (100 ticks) and offset stay the runtime's.
++- `vanillaTradeSets` carries counts besides the flag, so a validator can tell "fewer offers" from "none". The data does not explain B469's armourer level 5 (none of its trades has a `merchant_predicate`); left for B474.
++- `vanillaJobSites` block lists come from the jar's block tags and names, not the game's code; `straw_bed` in `home` and the exact states are (verify at implementation).
++- The runtime's corpus JUnit test (`ConformanceCorpusTest`) does not know the five new prefixes and fails on them until they are added to its `PENDING` list; engine-mod was out of this brief's scope (B472 runs there).
++
++Next
++- Add `trader-`, `storage-`, `shoulder-`, `profession-`, `fluid-` to `ConformanceCorpusTest.PENDING` (one line) before merging, then B474–B477 remove them as their parsers land.
+diff --git a/packages/plugin-api/CHANGELOG.md b/packages/plugin-api/CHANGELOG.md
+index b9db826..fca410d 100644
+--- a/packages/plugin-api/CHANGELOG.md
++++ b/packages/plugin-api/CHANGELOG.md
+@@ -4,14 +4,16 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every
+ 
+ ## 1.18.0 — 2026-11-15
+ 
+-Dimension type facts (ADR 0100 D5). `API_VERSION` is `1.18.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
++Dimension type, trader, profession and fluid facts (ADR 0100 D5, ADR 0098 D5, ADR 0099 D4). `API_VERSION` is `1.18.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+ 
+ - `WorldgenFacts.dimensionHeight?: DimensionHeightFacts` with `DimensionHeightFacts { minY: number; maxY: number; step: number }`: the lowest `min_y` of a dimension type, its highest block y (`min_y + height - 1` may not pass it) and the step `min_y` and `height` are multiples of. The worldgen validators `worldgen.dimension-height-multiple` and `worldgen.dimension-height-range` read it.
+ - `WorldgenFacts.environmentAttributes?: readonly string[]`: every namespaced id of the game's `environment_attribute` registry, sorted, from the vendored registries. The Dimension Type Studio shows only these, and `worldgen.dimension-attribute-unknown` reports any other key of a dimension type's `attributes`.
++- `EntityFacts` gains three optional fields (ADR 0098 D1, D2, D5): `tradeSounds?: TradeSoundFacts` with `TradeSoundFacts { yes: string; no: string; trading: string }` (vanilla's merchant sounds; `yes` is an `msm:trader`'s default `trade_sound`); `vanillaJobSites?: Readonly<Record<string, readonly string[]>>` (every vanilla block that already has a point of interest type, by point of interest type id, for the `entities.job-site-taken` refusal of a profession's `job_site`); `vanillaTradeSets?: Readonly<Record<string, VanillaTradeSetFacts>>` with `VanillaTradeSetFacts { trades: number; villagerOnlyTrades: number; villagerOnly: boolean }` (every vanilla trade set; `villagerOnly` marks sets with trades that carry a `merchant_predicate` on the villager's variant, which give a project trader no offer).
++- `BlockFacts` gains two optional fields (ADR 0099 D4): `fluidModel?: 'two_fluids' | 'one_fluid'` (whether the game registers a liquid as a source and a flowing fluid or as one fluid; informational, for lowering's `flowing_` tag ids and the Fluid Studio's wording) and `fluidTags?: FluidTagFacts` with `FluidTagFacts { water: readonly string[]; lava: readonly string[] }` (the vanilla fluid tags a project fluid joins by `behaves_like`).
+ 
+ ### Migration from 1.17.0
+ 
+-None. A plugin that reads `dimensionHeight` or `environmentAttributes` should declare `^1.18.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
++None. A plugin that reads `dimensionHeight`, `environmentAttributes`, the new entity facts or the fluid facts should declare `^1.18.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
+ 
+ ## 1.17.0 — 2026-11-15
+ 
+diff --git a/packages/plugin-api/src/index.ts b/packages/plugin-api/src/index.ts
+index f53573a..1467bf3 100644
+--- a/packages/plugin-api/src/index.ts
++++ b/packages/plugin-api/src/index.ts
+@@ -75,6 +75,7 @@ export type {
+   DimensionHeightFacts,
+   EntityFacts,
+   FabricFacts,
++  FluidTagFacts,
+   GeckolibFacts,
+   GeneratedFile,
+   ItemFacts,
+@@ -91,7 +92,9 @@ export type {
+   Target,
+   TargetChannel,
+   TargetFacts,
++  TradeSoundFacts,
+   VanillaToolStats,
++  VanillaTradeSetFacts,
+   VehicleFacts,
+   WorldgenFacts,
+ } from './target';
+diff --git a/packages/plugin-api/src/target.ts b/packages/plugin-api/src/target.ts
+index d659475..54f9191 100644
+--- a/packages/plugin-api/src/target.ts
++++ b/packages/plugin-api/src/target.ts
+@@ -317,6 +317,35 @@ export interface BlockFacts {
+    * to the runtime. Since 1.17.0 (ADR 0094 D2, D12).
+    */
+   defaultTorchParticle?: string;
++  /**
++   * How the game registers a liquid: `two_fluids`, a source fluid and a flowing one
++   * (`<namespace>:flowing_<path>` beside `<namespace>:<path>`), or `one_fluid`, a single fluid
++   * whose state says whether it is a source. Lowering writes the flowing id into a project
++   * fluid's tags only with `two_fluids`; the Fluid Studio words its notes by it. Informational:
++   * the runtime keeps its own seam. Optional: a target without it is treated as `one_fluid`.
++   * Since 1.18.0 (ADR 0099 D4).
++   */
++  fluidModel?: 'two_fluids' | 'one_fluid';
++  /**
++   * The namespaced fluid tag ids a project fluid joins by its `behaves_like`, so entities treat
++   * it as vanilla's liquid ({@link FluidTagFacts}). Optional: a target without it leaves a
++   * fluid in no tag. Since 1.18.0 (ADR 0099 D1, D4).
++   */
++  fluidTags?: FluidTagFacts;
++}
++
++/**
++ * The fluid tags of a target ({@link BlockFacts.fluidTags}), per `behaves_like` value; `none`
++ * joins no tag. Since 1.18.0 (ADR 0099 D4).
++ */
++export interface FluidTagFacts {
++  /**
++   * The tags of a water-like fluid (for example `minecraft:water`, and the tag the swimming pose
++   * follows where the game has one), each a vanilla fluid tag.
++   */
++  water: readonly string[];
++  /** The tags of a lava-like fluid (for example `minecraft:lava`). */
++  lava: readonly string[];
+ }
+ 
+ /**
+@@ -373,6 +402,58 @@ export interface EntityFacts {
+    * 1.11.0.
+    */
+   saddleTag: string;
++  /**
++   * The namespaced sound event ids vanilla's merchants play while trading
++   * ({@link TradeSoundFacts}); `yes` is the default `trade_sound` of an `msm:trader`. Optional:
++   * a target without them leaves the defaults to the runtime. Since 1.18.0 (ADR 0098 D1, D5).
++   */
++  tradeSounds?: TradeSoundFacts;
++  /**
++   * Every vanilla block that already has a point of interest type, by the namespaced point of
++   * interest type id (for example `minecraft:librarian` to `['minecraft:lectern']`, or
++   * `minecraft:home` to the beds): the job sites and the other points of interest (beds, bells,
++   * bee homes, portals). A villager profession's `job_site` may not be one of these blocks
++   * (`entities.job-site-taken`). The keys are the target's `point_of_interest_type` registry.
++   * Optional: a target without it skips the check. Since 1.18.0 (ADR 0098 D2, D5).
++   */
++  vanillaJobSites?: Readonly<Record<string, readonly string[]>>;
++  /**
++   * Every vanilla trade set, by namespaced id (for example `minecraft:mason/level_3` or
++   * `minecraft:wandering_trader/common`), with how many trades it can draw and how many of those
++   * only villagers can offer ({@link VanillaTradeSetFacts}). An `msm:trader` naming a set whose
++   * `villagerOnly` is true is warned that it gets fewer offers or none. Optional: a target
++   * without it skips the checks. Since 1.18.0 (ADR 0098 D1, D5, as amended after the spike).
++   */
++  vanillaTradeSets?: Readonly<Record<string, VanillaTradeSetFacts>>;
++}
++
++/**
++ * The sounds of vanilla's merchant screen ({@link EntityFacts.tradeSounds}), namespaced sound
++ * event ids. Since 1.18.0 (ADR 0098 D1).
++ */
++export interface TradeSoundFacts {
++  /** Played when a trade is made or an offer can be taken (for example `minecraft:entity.villager.yes`). */
++  yes: string;
++  /** Played when an offer cannot be taken or the trader refuses (for example `minecraft:entity.villager.no`). */
++  no: string;
++  /** The idle sound while a player has the screen open (for example `minecraft:entity.villager.trade`). */
++  trading: string;
++}
++
++/**
++ * One vanilla trade set ({@link EntityFacts.vanillaTradeSets}). Since 1.18.0 (ADR 0098 D1, as
++ * amended after the spike).
++ */
++export interface VanillaTradeSetFacts {
++  /** The number of distinct villager trades the set can draw from, its trade tags resolved. */
++  trades: number;
++  /**
++   * The number of those trades carrying a `merchant_predicate` on the villager's variant (a
++   * biome type): they give a mob that is not a villager no offer.
++   */
++  villagerOnlyTrades: number;
++  /** True when `villagerOnlyTrades` is above 0: a project trader gets fewer offers from the set. */
++  villagerOnly: boolean;
+ }
+ 
+ /**
+diff --git a/packages/plugin-api/test/types.test.ts b/packages/plugin-api/test/types.test.ts
+index fed6a96..34a00c7 100644
+--- a/packages/plugin-api/test/types.test.ts
++++ b/packages/plugin-api/test/types.test.ts
+@@ -18,6 +18,7 @@ import type {
+   ExporterInput,
+   ExporterOption,
+   FabricFacts,
++  FluidTagFacts,
+   GeckolibFacts,
+   GeneratedFile,
+   JavaProjectGenerator,
+@@ -41,8 +42,10 @@ import type {
+   Target,
+   TargetChannel,
+   TargetFacts,
++  TradeSoundFacts,
+   ValidationInput,
+   ValidationRegistry,
++  VanillaTradeSetFacts,
+   VehicleFacts,
+   WorldgenFacts,
+ } from '../src/index';
+@@ -561,6 +564,59 @@ describe('0.8.0 additions', () => {
+     expect(older.modelTemplates).toBeUndefined();
+   });
+ 
++  it('carries optional fluid facts on blocks (1.18.0)', () => {
++    expectTypeOf<BlockFacts['fluidModel']>().toEqualTypeOf<
++      'two_fluids' | 'one_fluid' | undefined
++    >();
++    expectTypeOf<BlockFacts['fluidTags']>().toEqualTypeOf<FluidTagFacts | undefined>();
++    expectTypeOf<FluidTagFacts['water']>().toEqualTypeOf<readonly string[]>();
++    expectTypeOf<FluidTagFacts['lava']>().toEqualTypeOf<readonly string[]>();
++    const facts: BlockFacts = {
++      setTypes: [],
++      woodTypes: [],
++      fluidModel: 'one_fluid',
++      fluidTags: { water: ['minecraft:water', 'minecraft:swimmable'], lava: ['minecraft:lava'] },
++    };
++    expect(facts.fluidTags?.water).toContain('minecraft:swimmable');
++    // @ts-expect-error: only the two liquid models exist.
++    const wrong: BlockFacts = { setTypes: [], woodTypes: [], fluidModel: 'three_fluids' };
++    expect(wrong.fluidModel).toBe('three_fluids');
++    // A 1.17.0-shaped block facts object without them stays assignable.
++    const older: BlockFacts = { setTypes: [], woodTypes: [] };
++    expect(older.fluidModel).toBeUndefined();
++    expect(older.fluidTags).toBeUndefined();
++  });
++
++  it('carries optional trade, job site and trade set facts on entities (1.18.0)', () => {
++    expectTypeOf<EntityFacts['tradeSounds']>().toEqualTypeOf<TradeSoundFacts | undefined>();
++    expectTypeOf<EntityFacts['vanillaJobSites']>().toEqualTypeOf<
++      Readonly<Record<string, readonly string[]>> | undefined
++    >();
++    expectTypeOf<EntityFacts['vanillaTradeSets']>().toEqualTypeOf<
++      Readonly<Record<string, VanillaTradeSetFacts>> | undefined
++    >();
++    expectTypeOf<VanillaTradeSetFacts['villagerOnly']>().toEqualTypeOf<boolean>();
++    const facts: EntityFacts = {
++      projectileItems: [],
++      saddleTag: 'minecraft:can_equip_saddle',
++      tradeSounds: {
++        yes: 'minecraft:entity.villager.yes',
++        no: 'minecraft:entity.villager.no',
++        trading: 'minecraft:entity.villager.trade',
++      },
++      vanillaJobSites: { 'minecraft:librarian': ['minecraft:lectern'] },
++      vanillaTradeSets: {
++        'minecraft:cartographer/level_2': { trades: 8, villagerOnlyTrades: 7, villagerOnly: true },
++      },
++    };
++    expect(facts.vanillaJobSites?.['minecraft:librarian']).toEqual(['minecraft:lectern']);
++    expect(facts.vanillaTradeSets?.['minecraft:cartographer/level_2']?.villagerOnly).toBe(true);
++    // A 1.17.0-shaped entity facts object without them stays assignable.
++    const older: EntityFacts = { projectileItems: [], saddleTag: 'minecraft:can_equip_saddle' };
++    expect(older.tradeSounds).toBeUndefined();
++    expect(testTarget.entities?.vanillaTradeSets).toBeUndefined();
++  });
++
+   it('carries optional command facts on a target (1.17.0)', () => {
+     expectTypeOf<TargetFacts['commands']>().toEqualTypeOf<CommandFacts | undefined>();
+     expectTypeOf<CommandFacts['vanillaNames']>().toEqualTypeOf<readonly string[]>();
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/expected-errors.json b/packages/schemas/mcdoc/msm/conformance/definition/expected-errors.json
+index fc1026a..a0fd279 100644
+--- a/packages/schemas/mcdoc/msm/conformance/definition/expected-errors.json
++++ b/packages/schemas/mcdoc/msm/conformance/definition/expected-errors.json
+@@ -1019,6 +1019,78 @@
+     "code": "schema.out-of-range",
+     "path": "/size/width"
+   },
++  "fluid-behaves-like-honey.json": {
++    "code": "schema.invalid-enum",
++    "path": "/behaves_like"
++  },
++  "fluid-display-name.json": {
++    "code": "schema.unknown-field",
++    "path": "/display_name"
++  },
++  "fluid-drop-off-0.json": {
++    "code": "schema.out-of-range",
++    "path": "/flow/drop_off"
++  },
++  "fluid-drop-off-5.json": {
++    "code": "schema.out-of-range",
++    "path": "/flow/drop_off"
++  },
++  "fluid-explosion-negative.json": {
++    "code": "schema.out-of-range",
++    "path": "/explosion_resistance"
++  },
++  "fluid-flow-viscosity.json": {
++    "code": "schema.unknown-field",
++    "path": "/flow/viscosity"
++  },
++  "fluid-infinite-string.json": {
++    "code": "schema.type-mismatch",
++    "path": "/flow/infinite"
++  },
++  "fluid-light-16.json": {
++    "code": "schema.out-of-range",
++    "path": "/light"
++  },
++  "fluid-mixing.json": {
++    "code": "schema.unknown-field",
++    "path": "/mixes_with"
++  },
++  "fluid-no-format.json": {
++    "code": "schema.missing-field",
++    "path": "/format"
++  },
++  "fluid-on-entity-inside-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/on_entity_inside"
++  },
++  "fluid-slope-distance-9.json": {
++    "code": "schema.out-of-range",
++    "path": "/flow/slope_distance"
++  },
++  "fluid-textures.json": {
++    "code": "schema.unknown-field",
++    "path": "/textures"
++  },
++  "fluid-tick-delay-0.json": {
++    "code": "schema.out-of-range",
++    "path": "/flow/tick_delay"
++  },
++  "fluid-tick-delay-101.json": {
++    "code": "schema.out-of-range",
++    "path": "/flow/tick_delay"
++  },
++  "fluid-tint-negative.json": {
++    "code": "schema.out-of-range",
++    "path": "/tint"
++  },
++  "fluid-tint-string.json": {
++    "code": "schema.type-mismatch",
++    "path": "/tint"
++  },
++  "fluid-tint-too-big.json": {
++    "code": "schema.out-of-range",
++    "path": "/tint"
++  },
+   "hud-anchor-middle.json": {
+     "code": "schema.invalid-enum",
+     "path": "/anchor"
+@@ -1743,6 +1815,130 @@
+     "code": "schema.unknown-field",
+     "path": "/colour"
+   },
++  "profession-display-name.json": {
++    "code": "schema.unknown-field",
++    "path": "/display_name"
++  },
++  "profession-format-2.json": {
++    "code": "schema.invalid-literal",
++    "path": "/format"
++  },
++  "profession-four-trade-sets.json": {
++    "code": "schema.invalid-length",
++    "path": "/trade_sets"
++  },
++  "profession-job-site-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/job_site"
++  },
++  "profession-no-format.json": {
++    "code": "schema.missing-field",
++    "path": "/format"
++  },
++  "profession-no-job-site.json": {
++    "code": "schema.missing-field",
++    "path": "/job_site"
++  },
++  "profession-poi-tickets.json": {
++    "code": "schema.unknown-field",
++    "path": "/max_tickets"
++  },
++  "profession-requested-items-string.json": {
++    "code": "schema.type-mismatch",
++    "path": "/requested_items"
++  },
++  "profession-six-trade-sets.json": {
++    "code": "schema.invalid-length",
++    "path": "/trade_sets"
++  },
++  "profession-textures.json": {
++    "code": "schema.unknown-field",
++    "path": "/textures"
++  },
++  "shoulder-cooldown.json": {
++    "code": "schema.unknown-field",
++    "path": "/components/msm:shoulder_riding/cooldown_ticks"
++  },
++  "shoulder-side.json": {
++    "code": "schema.unknown-field",
++    "path": "/components/msm:shoulder_riding/side"
++  },
++  "shoulder-true.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:shoulder_riding"
++  },
++  "storage-hoppers.json": {
++    "code": "schema.unknown-field",
++    "path": "/components/msm:storage/hoppers"
++  },
++  "storage-needs-chest-string.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:storage/needs_chest"
++  },
++  "storage-open-sound-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:storage/open_sound"
++  },
++  "storage-rows-0.json": {
++    "code": "schema.out-of-range",
++    "path": "/components/msm:storage/rows"
++  },
++  "storage-rows-7.json": {
++    "code": "schema.out-of-range",
++    "path": "/components/msm:storage/rows"
++  },
++  "storage-true.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:storage"
++  },
++  "trader-empty-trade-sets.json": {
++    "code": "schema.invalid-length",
++    "path": "/components/msm:trader/trade_sets"
++  },
++  "trader-gossip.json": {
++    "code": "schema.unknown-field",
++    "path": "/components/msm:trader/gossip"
++  },
++  "trader-level-no-trade-set.json": {
++    "code": "schema.missing-field",
++    "path": "/components/msm:trader/trade_sets/0/trade_set"
++  },
++  "trader-levels-string.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:trader/levels"
++  },
++  "trader-no-trade-sets.json": {
++    "code": "schema.missing-field",
++    "path": "/components/msm:trader/trade_sets"
++  },
++  "trader-restock-daily.json": {
++    "code": "schema.invalid-enum",
++    "path": "/components/msm:trader/restock"
++  },
++  "trader-six-levels.json": {
++    "code": "schema.invalid-length",
++    "path": "/components/msm:trader/trade_sets"
++  },
++  "trader-trade-set-string.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:trader/trade_sets/0"
++  },
++  "trader-trade-sound-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:trader/trade_sound"
++  },
++  "trader-true.json": {
++    "code": "schema.type-mismatch",
++    "path": "/components/msm:trader"
++  },
++  "trader-xp-fraction.json": {
++    "code": "schema.not-integer",
++    "path": "/components/msm:trader/trade_sets/0/xp_to_next"
++  },
++  "trader-xp-zero.json": {
++    "code": "schema.out-of-range",
++    "path": "/components/msm:trader/trade_sets/0/xp_to_next"
++  },
+   "trigger-block-entity-inside-cooldown-4.json": {
+     "code": "schema.out-of-range",
+     "path": "/components/msm:on_entity_inside/cooldown_ticks"
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-behaves-like-honey.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-behaves-like-honey.json
+new file mode 100644
+index 0000000..a8ff376
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-behaves-like-honey.json
+@@ -0,0 +1,4 @@
++{
++  "behaves_like": "honey",
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-display-name.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-display-name.json
+new file mode 100644
+index 0000000..5fdf703
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-display-name.json
+@@ -0,0 +1,4 @@
++{
++  "display_name": "Oil",
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-drop-off-0.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-drop-off-0.json
+new file mode 100644
+index 0000000..ae0b816
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-drop-off-0.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "drop_off": 0
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-drop-off-5.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-drop-off-5.json
+new file mode 100644
+index 0000000..e49ee57
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-drop-off-5.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "drop_off": 5
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-explosion-negative.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-explosion-negative.json
+new file mode 100644
+index 0000000..226bd3c
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-explosion-negative.json
+@@ -0,0 +1,4 @@
++{
++  "explosion_resistance": -1.0,
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-flow-viscosity.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-flow-viscosity.json
+new file mode 100644
+index 0000000..069b491
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-flow-viscosity.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "viscosity": 3
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-infinite-string.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-infinite-string.json
+new file mode 100644
+index 0000000..84c12e3
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-infinite-string.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "infinite": "yes"
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-light-16.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-light-16.json
+new file mode 100644
+index 0000000..af96c0a
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-light-16.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "light": 16
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-mixing.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-mixing.json
+new file mode 100644
+index 0000000..c80f0d4
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-mixing.json
+@@ -0,0 +1,6 @@
++{
++  "format": 1,
++  "mixes_with": {
++    "minecraft:water": "minecraft:obsidian"
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-no-format.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-no-format.json
+new file mode 100644
+index 0000000..37a05d8
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-no-format.json
+@@ -0,0 +1,3 @@
++{
++  "behaves_like": "water"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-on-entity-inside-number.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-on-entity-inside-number.json
+new file mode 100644
+index 0000000..8696683
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-on-entity-inside-number.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "on_entity_inside": 5
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-slope-distance-9.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-slope-distance-9.json
+new file mode 100644
+index 0000000..4f75d1b
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-slope-distance-9.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "slope_distance": 9
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-textures.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-textures.json
+new file mode 100644
+index 0000000..50f4042
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-textures.json
+@@ -0,0 +1,6 @@
++{
++  "format": 1,
++  "textures": {
++    "still": "mymod:block/oil_still"
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tick-delay-0.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tick-delay-0.json
+new file mode 100644
+index 0000000..5f23a6e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tick-delay-0.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "tick_delay": 0
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tick-delay-101.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tick-delay-101.json
+new file mode 100644
+index 0000000..7aea14e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tick-delay-101.json
+@@ -0,0 +1,6 @@
++{
++  "flow": {
++    "tick_delay": 101
++  },
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-negative.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-negative.json
+new file mode 100644
+index 0000000..1df18e9
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-negative.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "tint": -1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-string.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-string.json
+new file mode 100644
+index 0000000..b5963f9
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-string.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "tint": "#3366ff"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-too-big.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-too-big.json
+new file mode 100644
+index 0000000..7973583
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/fluid-tint-too-big.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "tint": 16777216
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-display-name.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-display-name.json
+new file mode 100644
+index 0000000..2321462
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-display-name.json
+@@ -0,0 +1,5 @@
++{
++  "display_name": "Potter",
++  "format": 1,
++  "job_site": "mymod:potter_wheel"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-format-2.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-format-2.json
+new file mode 100644
+index 0000000..41d8bd8
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-format-2.json
+@@ -0,0 +1,4 @@
++{
++  "format": 2,
++  "job_site": "mymod:potter_wheel"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-four-trade-sets.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-four-trade-sets.json
+new file mode 100644
+index 0000000..c1245e1
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-four-trade-sets.json
+@@ -0,0 +1,10 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "trade_sets": [
++    "mymod:potter/level_1",
++    "mymod:potter/level_2",
++    "mymod:potter/level_3",
++    "mymod:potter/level_4"
++  ]
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-job-site-number.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-job-site-number.json
+new file mode 100644
+index 0000000..428e864
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-job-site-number.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "job_site": 7
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-no-format.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-no-format.json
+new file mode 100644
+index 0000000..b3f1dc6
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-no-format.json
+@@ -0,0 +1,3 @@
++{
++  "job_site": "mymod:potter_wheel"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-no-job-site.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-no-job-site.json
+new file mode 100644
+index 0000000..00517d7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-no-job-site.json
+@@ -0,0 +1,3 @@
++{
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-poi-tickets.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-poi-tickets.json
+new file mode 100644
+index 0000000..a517563
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-poi-tickets.json
+@@ -0,0 +1,5 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "max_tickets": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-requested-items-string.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-requested-items-string.json
+new file mode 100644
+index 0000000..e5d4bad
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-requested-items-string.json
+@@ -0,0 +1,5 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "requested_items": "minecraft:clay_ball"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-six-trade-sets.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-six-trade-sets.json
+new file mode 100644
+index 0000000..c1efd43
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-six-trade-sets.json
+@@ -0,0 +1,12 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "trade_sets": [
++    "mymod:potter/level_1",
++    "mymod:potter/level_2",
++    "mymod:potter/level_3",
++    "mymod:potter/level_4",
++    "mymod:potter/level_5",
++    "mymod:potter/level_6"
++  ]
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-textures.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-textures.json
+new file mode 100644
+index 0000000..02aca9b
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/profession-textures.json
+@@ -0,0 +1,7 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "textures": {
++    "villager": "mymod:entity/potter"
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-cooldown.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-cooldown.json
+new file mode 100644
+index 0000000..129d9d3
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-cooldown.json
+@@ -0,0 +1,21 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": {
++      "cooldown_ticks": 40
++    },
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.5
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-side.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-side.json
+new file mode 100644
+index 0000000..be5191c
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-side.json
+@@ -0,0 +1,21 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": {
++      "side": "left"
++    },
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.5
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-true.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-true.json
+new file mode 100644
+index 0000000..7233fb8
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/shoulder-true.json
+@@ -0,0 +1,19 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": true,
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.5
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-hoppers.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-hoppers.json
+new file mode 100644
+index 0000000..8e963b2
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-hoppers.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "hoppers": true
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-needs-chest-string.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-needs-chest-string.json
+new file mode 100644
+index 0000000..92ef893
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-needs-chest-string.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "needs_chest": "chest"
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-open-sound-number.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-open-sound-number.json
+new file mode 100644
+index 0000000..e30cd4d
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-open-sound-number.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "open_sound": 1
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-rows-0.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-rows-0.json
+new file mode 100644
+index 0000000..079cc54
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-rows-0.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "rows": 0
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-rows-7.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-rows-7.json
+new file mode 100644
+index 0000000..2927035
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-rows-7.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "rows": 7
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-true.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-true.json
+new file mode 100644
+index 0000000..7cbe7d7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/storage-true.json
+@@ -0,0 +1,15 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": true
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-empty-trade-sets.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-empty-trade-sets.json
+new file mode 100644
+index 0000000..2181d6f
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-empty-trade-sets.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": []
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-gossip.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-gossip.json
+new file mode 100644
+index 0000000..bf5adb7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-gossip.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "gossip": true,
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-level-no-trade-set.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-level-no-trade-set.json
+new file mode 100644
+index 0000000..288e21e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-level-no-trade-set.json
+@@ -0,0 +1,21 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "xp_to_next": 10
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-levels-string.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-levels-string.json
+new file mode 100644
+index 0000000..708b26b
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-levels-string.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "levels": "yes",
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-no-trade-sets.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-no-trade-sets.json
+new file mode 100644
+index 0000000..e030f02
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-no-trade-sets.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "levels": true
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-restock-daily.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-restock-daily.json
+new file mode 100644
+index 0000000..3f6d961
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-restock-daily.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "restock": "daily",
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-six-levels.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-six-levels.json
+new file mode 100644
+index 0000000..527e43a
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-six-levels.json
+@@ -0,0 +1,36 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "mymod:merchant/level_1"
++        },
++        {
++          "trade_set": "mymod:merchant/level_2"
++        },
++        {
++          "trade_set": "mymod:merchant/level_3"
++        },
++        {
++          "trade_set": "mymod:merchant/level_4"
++        },
++        {
++          "trade_set": "mymod:merchant/level_5"
++        },
++        {
++          "trade_set": "mymod:merchant/level_6"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-trade-set-string.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-trade-set-string.json
+new file mode 100644
+index 0000000..d80ffe7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-trade-set-string.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": ["mymod:merchant/level_1"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-trade-sound-number.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-trade-sound-number.json
+new file mode 100644
+index 0000000..0a6949b
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-trade-sound-number.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ],
++      "trade_sound": 3
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-true.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-true.json
+new file mode 100644
+index 0000000..a9d719f
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-true.json
+@@ -0,0 +1,15 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": true
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-xp-fraction.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-xp-fraction.json
+new file mode 100644
+index 0000000..11e711d
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-xp-fraction.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "mymod:a",
++          "xp_to_next": 10.5
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-xp-zero.json b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-xp-zero.json
+new file mode 100644
+index 0000000..870e1c1
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/invalid/trader-xp-zero.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "mymod:a",
++          "xp_to_next": 0
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-bounds-high.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-bounds-high.json
+new file mode 100644
+index 0000000..ad5daa1
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-bounds-high.json
+@@ -0,0 +1,10 @@
++{
++  "flow": {
++    "drop_off": 4,
++    "slope_distance": 8,
++    "tick_delay": 100
++  },
++  "format": 1,
++  "light": 15,
++  "tint": 16777215
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-bounds-low.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-bounds-low.json
+new file mode 100644
+index 0000000..6079fcb
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-bounds-low.json
+@@ -0,0 +1,11 @@
++{
++  "explosion_resistance": 0.0,
++  "flow": {
++    "drop_off": 1,
++    "slope_distance": 1,
++    "tick_delay": 1
++  },
++  "format": 1,
++  "light": 0,
++  "tint": 0
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-lava-like.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-lava-like.json
+new file mode 100644
+index 0000000..d85e0c5
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-lava-like.json
+@@ -0,0 +1,11 @@
++{
++  "behaves_like": "lava",
++  "flow": {
++    "drop_off": 2,
++    "infinite": false,
++    "slope_distance": 2,
++    "tick_delay": 30
++  },
++  "format": 1,
++  "light": 15
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-minimal.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-minimal.json
+new file mode 100644
+index 0000000..00517d7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-minimal.json
+@@ -0,0 +1,3 @@
++{
++  "format": 1
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-none.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-none.json
+new file mode 100644
+index 0000000..832341b
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-none.json
+@@ -0,0 +1,5 @@
++{
++  "behaves_like": "none",
++  "format": 1,
++  "tint": 0
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-water-like.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-water-like.json
+new file mode 100644
+index 0000000..58a0e16
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/fluid-water-like.json
+@@ -0,0 +1,27 @@
++{
++  "behaves_like": "water",
++  "events": {
++    "mymod:glow": {
++      "actions": [
++        {
++          "amplifier": 0,
++          "effect": "minecraft:glowing",
++          "seconds": 5.0,
++          "target": "other",
++          "type": "apply_effect"
++        }
++      ]
++    }
++  },
++  "explosion_resistance": 100.0,
++  "flow": {
++    "drop_off": 1,
++    "infinite": true,
++    "slope_distance": 4,
++    "tick_delay": 5
++  },
++  "format": 1,
++  "light": 4,
++  "on_entity_inside": "mymod:glow",
++  "tint": 3381759
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-empty-lists.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-empty-lists.json
+new file mode 100644
+index 0000000..82130f7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-empty-lists.json
+@@ -0,0 +1,6 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "requested_items": [],
++  "secondary_job_blocks": []
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-full.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-full.json
+new file mode 100644
+index 0000000..8b3d77c
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-full.json
+@@ -0,0 +1,14 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "requested_items": ["minecraft:clay_ball", "mymod:glaze"],
++  "secondary_job_blocks": ["minecraft:clay", "mymod:kiln"],
++  "trade_sets": [
++    "mymod:potter/level_1",
++    "mymod:potter/level_2",
++    "mymod:potter/level_3",
++    "mymod:potter/level_4",
++    "mymod:potter/level_5"
++  ],
++  "work_sound": "minecraft:block.decorated_pot.insert"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-minimal.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-minimal.json
+new file mode 100644
+index 0000000..ac0ecc5
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-minimal.json
+@@ -0,0 +1,4 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-vanilla-sets.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-vanilla-sets.json
+new file mode 100644
+index 0000000..3ea12ab
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/profession-vanilla-sets.json
+@@ -0,0 +1,12 @@
++{
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "trade_sets": [
++    "minecraft:mason/level_1",
++    "minecraft:mason/level_2",
++    "minecraft:mason/level_3",
++    "minecraft:mason/level_4",
++    "minecraft:mason/level_5"
++  ],
++  "work_sound": "minecraft:entity.villager.work_mason"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/shoulder-pet.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/shoulder-pet.json
+new file mode 100644
+index 0000000..7e0113e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/shoulder-pet.json
+@@ -0,0 +1,19 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": {},
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.5
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/shoulder-with-trader.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/shoulder-with-trader.json
+new file mode 100644
+index 0000000..7ac015f
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/shoulder-with-trader.json
+@@ -0,0 +1,26 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": {},
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.6
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-full.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-full.json
+new file mode 100644
+index 0000000..9dc0992
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-full.json
+@@ -0,0 +1,27 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:rideable": {
++      "saddle": false
++    },
++    "msm:storage": {
++      "close_sound": "minecraft:block.barrel.close",
++      "needs_chest": true,
++      "open_sound": "minecraft:block.barrel.open",
++      "rows": 6
++    },
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-minimal.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-minimal.json
+new file mode 100644
+index 0000000..bf99a7c
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-minimal.json
+@@ -0,0 +1,15 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {}
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-one-row.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-one-row.json
+new file mode 100644
+index 0000000..5129830
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/storage-one-row.json
+@@ -0,0 +1,21 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "rows": 1
++    },
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-full.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-full.json
+new file mode 100644
+index 0000000..922fc7e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-full.json
+@@ -0,0 +1,53 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "levels": true,
++      "on_trade": "mymod:traded",
++      "restock": "never",
++      "trade_sets": [
++        {
++          "trade_set": "mymod:merchant/level_1",
++          "xp_to_next": 10
++        },
++        {
++          "trade_set": "mymod:merchant/level_2",
++          "xp_to_next": 70
++        },
++        {
++          "trade_set": "minecraft:mason/level_3",
++          "xp_to_next": 150
++        },
++        {
++          "trade_set": "mymod:merchant/level_4",
++          "xp_to_next": 250
++        },
++        {
++          "trade_set": "mymod:merchant/level_5"
++        }
++      ],
++      "trade_sound": "minecraft:entity.wandering_trader.yes"
++    }
++  },
++  "events": {
++    "mymod:traded": {
++      "actions": [
++        {
++          "pitch": 1.0,
++          "sound": "minecraft:entity.villager.celebrate",
++          "type": "play_sound",
++          "volume": 1.0
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-minimal.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-minimal.json
+new file mode 100644
+index 0000000..dbea2d5
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-minimal.json
+@@ -0,0 +1,21 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-monster.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-monster.json
+new file mode 100644
+index 0000000..59f7f5e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-monster.json
+@@ -0,0 +1,25 @@
++{
++  "base": "monster",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:armorer/level_1"
++        },
++        {
++          "trade_set": "minecraft:armorer/level_2"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-no-levels.json b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-no-levels.json
+new file mode 100644
+index 0000000..9ae77c4
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/definition/valid/trader-no-levels.json
+@@ -0,0 +1,23 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "levels": false,
++      "restock": "twice_a_day",
++      "trade_sets": [
++        {
++          "trade_set": "mymod:stall"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/expected-errors.json b/packages/schemas/mcdoc/msm/conformance/element/expected-errors.json
+index 0bd78f0..d7d844b 100644
+--- a/packages/schemas/mcdoc/msm/conformance/element/expected-errors.json
++++ b/packages/schemas/mcdoc/msm/conformance/element/expected-errors.json
+@@ -335,6 +335,22 @@
+     "code": "schema.out-of-range",
+     "path": "/sounds/ambient_interval_ticks"
+   },
++  "fluid-bucket-display-name-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/bucket_display_name"
++  },
++  "fluid-format-2.json": {
++    "code": "schema.invalid-literal",
++    "path": "/format"
++  },
++  "fluid-textures-side.json": {
++    "code": "schema.unknown-field",
++    "path": "/textures/side"
++  },
++  "fluid-textures-still-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/textures/still"
++  },
+   "item-compost-40.json": {
+     "code": "schema.invalid-enum",
+     "path": "/compost"
+@@ -459,6 +475,30 @@
+     "code": "schema.missing-field",
+     "path": "/strong/amplifier"
+   },
++  "profession-display-name-number.json": {
++    "code": "schema.type-mismatch",
++    "path": "/display_name"
++  },
++  "profession-no-job-site.json": {
++    "code": "schema.missing-field",
++    "path": "/job_site"
++  },
++  "profession-textures-witch.json": {
++    "code": "schema.unknown-field",
++    "path": "/textures/witch"
++  },
++  "shoulder-side.json": {
++    "code": "schema.unknown-field",
++    "path": "/components/msm:shoulder_riding/side"
++  },
++  "storage-rows-9.json": {
++    "code": "schema.out-of-range",
++    "path": "/components/msm:storage/rows"
++  },
++  "trader-restock-weekly.json": {
++    "code": "schema.invalid-enum",
++    "path": "/components/msm:trader/restock"
++  },
+   "waterlog-level.json": {
+     "code": "schema.unknown-field",
+     "path": "/components/msm:waterloggable/level"
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-bucket-display-name-number.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-bucket-display-name-number.json
+new file mode 100644
+index 0000000..a40d346
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-bucket-display-name-number.json
+@@ -0,0 +1,3 @@
++{
++  "bucket_display_name": 2
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-format-2.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-format-2.json
+new file mode 100644
+index 0000000..ecd9fe6
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-format-2.json
+@@ -0,0 +1,3 @@
++{
++  "format": 2
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-textures-side.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-textures-side.json
+new file mode 100644
+index 0000000..891f4df
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-textures-side.json
+@@ -0,0 +1,5 @@
++{
++  "textures": {
++    "side": "mymod:block/oil_side"
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-textures-still-number.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-textures-still-number.json
+new file mode 100644
+index 0000000..5516d0c
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/fluid-textures-still-number.json
+@@ -0,0 +1,5 @@
++{
++  "textures": {
++    "still": 4
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-display-name-number.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-display-name-number.json
+new file mode 100644
+index 0000000..ae21103
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-display-name-number.json
+@@ -0,0 +1,4 @@
++{
++  "display_name": 1,
++  "job_site": "mymod:potter_wheel"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-no-job-site.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-no-job-site.json
+new file mode 100644
+index 0000000..f4bf59a
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-no-job-site.json
+@@ -0,0 +1,3 @@
++{
++  "display_name": "Potter"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-textures-witch.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-textures-witch.json
+new file mode 100644
+index 0000000..7ee55a7
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/profession-textures-witch.json
+@@ -0,0 +1,6 @@
++{
++  "job_site": "mymod:potter_wheel",
++  "textures": {
++    "witch": "mymod:entity/witch"
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/shoulder-side.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/shoulder-side.json
+new file mode 100644
+index 0000000..6ae40b5
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/shoulder-side.json
+@@ -0,0 +1,21 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": {
++      "side": "right"
++    },
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.5
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/storage-rows-9.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/storage-rows-9.json
+new file mode 100644
+index 0000000..4d23248
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/storage-rows-9.json
+@@ -0,0 +1,17 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:storage": {
++      "rows": 9
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/invalid/trader-restock-weekly.json b/packages/schemas/mcdoc/msm/conformance/element/invalid/trader-restock-weekly.json
+new file mode 100644
+index 0000000..989e362
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/invalid/trader-restock-weekly.json
+@@ -0,0 +1,22 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "restock": "weekly",
++      "trade_sets": [
++        {
++          "trade_set": "minecraft:wandering_trader/common"
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/fluid-full.json b/packages/schemas/mcdoc/msm/conformance/element/valid/fluid-full.json
+new file mode 100644
+index 0000000..1f0c4ab
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/fluid-full.json
+@@ -0,0 +1,35 @@
++{
++  "behaves_like": "water",
++  "bucket_display_name": "Bucket of Oil",
++  "display_name": "Oil",
++  "events": {
++    "mymod:glow": {
++      "actions": [
++        {
++          "amplifier": 0,
++          "effect": "minecraft:glowing",
++          "seconds": 5.0,
++          "target": "other",
++          "type": "apply_effect"
++        }
++      ]
++    }
++  },
++  "explosion_resistance": 100.0,
++  "flow": {
++    "drop_off": 1,
++    "infinite": true,
++    "slope_distance": 4,
++    "tick_delay": 5
++  },
++  "format": 1,
++  "light": 4,
++  "on_entity_inside": "mymod:glow",
++  "textures": {
++    "bucket": "mymod:item/oil_bucket",
++    "flowing": "mymod:block/oil_flow",
++    "overlay": "mymod:block/oil_overlay",
++    "still": "mymod:block/oil_still"
++  },
++  "tint": 3381759
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/fluid-minimal.json b/packages/schemas/mcdoc/msm/conformance/element/valid/fluid-minimal.json
+new file mode 100644
+index 0000000..0967ef4
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/fluid-minimal.json
+@@ -0,0 +1 @@
++{}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/profession-full.json b/packages/schemas/mcdoc/msm/conformance/element/valid/profession-full.json
+new file mode 100644
+index 0000000..225f529
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/profession-full.json
+@@ -0,0 +1,19 @@
++{
++  "display_name": "Potter",
++  "format": 1,
++  "job_site": "mymod:potter_wheel",
++  "requested_items": ["minecraft:clay_ball", "mymod:glaze"],
++  "secondary_job_blocks": ["minecraft:clay", "mymod:kiln"],
++  "textures": {
++    "villager": "mymod:entity/villager/potter",
++    "zombie_villager": "mymod:entity/zombie_villager/potter"
++  },
++  "trade_sets": [
++    "mymod:potter/level_1",
++    "mymod:potter/level_2",
++    "mymod:potter/level_3",
++    "mymod:potter/level_4",
++    "mymod:potter/level_5"
++  ],
++  "work_sound": "minecraft:block.decorated_pot.insert"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/profession-minimal.json b/packages/schemas/mcdoc/msm/conformance/element/valid/profession-minimal.json
+new file mode 100644
+index 0000000..b3f1dc6
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/profession-minimal.json
+@@ -0,0 +1,3 @@
++{
++  "job_site": "mymod:potter_wheel"
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/shoulder-pet.json b/packages/schemas/mcdoc/msm/conformance/element/valid/shoulder-pet.json
+new file mode 100644
+index 0000000..7e0113e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/shoulder-pet.json
+@@ -0,0 +1,19 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:shoulder_riding": {},
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.5
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/storage-full.json b/packages/schemas/mcdoc/msm/conformance/element/valid/storage-full.json
+new file mode 100644
+index 0000000..9dc0992
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/storage-full.json
+@@ -0,0 +1,27 @@
++{
++  "base": "animal",
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:rideable": {
++      "saddle": false
++    },
++    "msm:storage": {
++      "close_sound": "minecraft:block.barrel.close",
++      "needs_chest": true,
++      "open_sound": "minecraft:block.barrel.open",
++      "rows": 6
++    },
++    "msm:tameable": {
++      "items": ["minecraft:sweet_berries"]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/conformance/element/valid/trader-full.json b/packages/schemas/mcdoc/msm/conformance/element/valid/trader-full.json
+new file mode 100644
+index 0000000..922fc7e
+--- /dev/null
++++ b/packages/schemas/mcdoc/msm/conformance/element/valid/trader-full.json
+@@ -0,0 +1,53 @@
++{
++  "category": "creature",
++  "components": {
++    "msm:animated_model": {
++      "model": "mymod:entity/critter",
++      "texture": "mymod:entity/critter"
++    },
++    "msm:trader": {
++      "levels": true,
++      "on_trade": "mymod:traded",
++      "restock": "never",
++      "trade_sets": [
++        {
++          "trade_set": "mymod:merchant/level_1",
++          "xp_to_next": 10
++        },
++        {
++          "trade_set": "mymod:merchant/level_2",
++          "xp_to_next": 70
++        },
++        {
++          "trade_set": "minecraft:mason/level_3",
++          "xp_to_next": 150
++        },
++        {
++          "trade_set": "mymod:merchant/level_4",
++          "xp_to_next": 250
++        },
++        {
++          "trade_set": "mymod:merchant/level_5"
++        }
++      ],
++      "trade_sound": "minecraft:entity.wandering_trader.yes"
++    }
++  },
++  "events": {
++    "mymod:traded": {
++      "actions": [
++        {
++          "pitch": 1.0,
++          "sound": "minecraft:entity.villager.celebrate",
++          "type": "play_sound",
++          "volume": 1.0
++        }
++      ]
++    }
++  },
++  "format": 1,
++  "size": {
++    "height": 0.9,
++    "width": 0.9
++  }
++}
+diff --git a/packages/schemas/mcdoc/msm/definition.mcdoc b/packages/schemas/mcdoc/msm/definition.mcdoc
+index c297603..100d784 100644
+--- a/packages/schemas/mcdoc/msm/definition.mcdoc
++++ b/packages/schemas/mcdoc/msm/definition.mcdoc
+@@ -1,12 +1,14 @@
+ // MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
+ // entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
+ // D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1),
+-// vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2). Lowering writes these to
++// vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2), villager professions
++// (ADR 0098 D2) and fluids (ADR 0099 D1). Lowering writes these to
+ // `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
+ // `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
+ // `msm/<ns>/loot_addition/<path>.json`, `msm/<ns>/particle/<path>.json`,
+ // `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json`, `msm/<ns>/vehicle/<path>.json`,
+-// `msm/<ns>/command/<path>.json` and `msm/<ns>/creative_tab/<path>.json`.
++// `msm/<ns>/command/<path>.json`, `msm/<ns>/creative_tab/<path>.json`,
++// `msm/<ns>/villager_profession/<path>.json` and `msm/<ns>/fluid/<path>.json`.
+ 
+ use super::action::Event
+ use super::action::ParticleSpec
+@@ -1875,6 +1877,78 @@ struct BossBar {
+ 	range?: float @ 8..256,
+ }
+ 
++/// How often a trader's offers refill (ADR 0098 D1).
++enum(string) TraderRestock {
++	/// Twice a day at the mob, as a vanilla villager at its job site, with no workstation needed.
++	TwiceADay = "twice_a_day",
++	/// Never: a used-up offer stays used up.
++	Never = "never",
++}
++
++/// One trading level of a trader (ADR 0098 D1): the trade set its offers are drawn from when the
++/// mob reaches the level.
++struct TradeLevel {
++	/// A trade set id, the project's (`<ns>:<path>`, an ADR 0060 `trade_set` element) or vanilla's
++	/// (`minecraft:armorer/level_1`). Vanilla sets whose trades only villagers of a biome type may
++	/// offer give a project mob fewer offers or none (a validator warning).
++	trade_set: #[id="trade_set"] string,
++	/// Trading XP needed to reach the next level, counted from the start; defaults to vanilla's
++	/// thresholds for the level. Ignored on the last level and without `levels`.
++	xp_to_next?: int @ 1..,
++}
++
++/// Makes the mob trade with players through vanilla's merchant screen (ADR 0098 D1), on any
++/// `base`. Using the mob with an empty hand, or with an item that does nothing else first (a
++/// lead, name tag, saddle, spawn egg or breeding food keeps its meaning), opens the screen.
++/// Offers are drawn per level from the level's trade set with vanilla's own rules and saved on the
++/// mob with its XP and level. Babies, angry or ridden mobs, and `monster` mobs at night do not
++/// trade. Runtimes older than the release that ships ADR 0098 ignore the component with a
++/// warning.
++struct Trader {
++	/// The trading levels, level 1 first, one to five.
++	trade_sets: [TradeLevel] @ 1..5,
++	/// Whether trading gives XP and unlocks the next level, as villagers do; defaults to true.
++	/// Without it only level 1's trade set is used.
++	levels?: boolean,
++	/// Defaults to `twice_a_day`.
++	restock?: TraderRestock,
++	/// Played when a trade is made; defaults to `minecraft:entity.villager.yes` (the target's
++	/// trade sound).
++	trade_sound?: #[id="sound_event"] string,
++	/// An event id declared in `events`, fired after each trade; self is the mob, `other` the
++	/// player.
++	on_trade?: string,
++}
++
++/// Gives the mob a chest-like store (ADR 0098 D3), as vanilla's donkeys and llamas carry: vanilla's
++/// chest screen opens when its rider presses the inventory key, or when its owner (for a
++/// `msm:tameable` mob) or anyone (otherwise) uses it while sneaking. Contents are saved on the mob
++/// and dropped when it dies. No hopper access. Runtimes older than the release that ships ADR
++/// 0098 ignore the component with a warning.
++struct Storage {
++	/// Rows of nine slots, one to six; defaults to 3.
++	rows?: int @ 1..6,
++	/// Whether the store needs a chest first: a chest used on the mob adds it with vanilla's
++	/// chest-equip sound, and the chest drops with the contents when the mob dies; defaults to
++	/// false.
++	needs_chest?: boolean,
++	/// Played when the store opens; defaults to vanilla's chest opening sound.
++	open_sound?: #[id="sound_event"] string,
++	/// Played when the store closes; defaults to vanilla's chest closing sound.
++	close_sound?: #[id="sound_event"] string,
++}
++
++/// Lets a small tamed pet sit on its owner's shoulder (ADR 0098 D4, as amended after the spike):
++/// needs `base` `animal`, `msm:tameable` and a hitbox no wider than 0.7 blocks (validator
++/// errors). A sitting-capable pet whose owner stands near and is not riding jumps up and is
++/// perched: it stays at the owner's shoulder (turned with the owner's body, lower while
++/// sneaking) with no gravity or pushing, drawn by its own renderer. It jumps down when the owner
++/// takes damage, sneaks, sleeps, rides, swims, flies with an elytra, changes dimension, leaves
++/// the game or dies, and does not come back for 100 ticks. One shoulder pet per player; a parrot
++/// keeps vanilla's own shoulder. Runtimes older than the release that ships ADR 0098 ignore the
++/// component with a warning.
++struct ShoulderRiding {}
++
+ /// Entity components other than `msm:animated_model`, shared with the element data.
+ struct EntityBehaviourComponents {
+ 	"msm:health"?: Health,
+@@ -1901,6 +1975,12 @@ struct EntityBehaviourComponents {
+ 	"msm:variants"?: Variants,
+ 	/// A boss bar (ADR 0071 D5).
+ 	"msm:boss_bar"?: BossBar,
++	/// Trading through vanilla's merchant screen (ADR 0098 D1).
++	"msm:trader"?: Trader,
++	/// A chest-like store (ADR 0098 D3).
++	"msm:storage"?: Storage,
++	/// Riding on the owner's shoulder (ADR 0098 D4); needs `base` `animal` and `msm:tameable`.
++	"msm:shoulder_riding"?: ShoulderRiding,
+ }
+ 
+ /// Runtime entity components; `msm:animated_model` is required.
+@@ -2358,3 +2438,87 @@ struct CreativeTab {
+ 	format: 1,
+ 	...CreativeTabCommon,
+ }
++
++/// Fields every villager profession definition and element share (ADR 0098 D2).
++struct VillagerProfessionCommon {
++	/// The job site: a project block. A vanilla villager without a job takes the profession at
++	/// it. A block that already has a point of interest type (a vanilla workstation, a bed, a
++	/// bell) is refused (a validator error, and the runtime refuses it too).
++	job_site: #[id="block"] string,
++	/// The trade sets of levels 1 to 5, exactly five; defaults to
++	/// `<ns>:<path>/level_1` to `<ns>:<path>/level_5`, which lowering creates with their tags when
++	/// absent. A missing set gives the villager no offers at that level.
++	trade_sets?: [#[id="trade_set"] string] @ 5,
++	/// Played while the villager works at its job site; absent means none.
++	work_sound?: #[id="sound_event"] string,
++	/// Items the villager picks up and keeps (as a farmer's seeds); defaults to none.
++	requested_items?: [#[id="item"] string],
++	/// Blocks near the job site the villager also works at (as a farmer's farmland); defaults to
++	/// none.
++	secondary_job_blocks?: [#[id="block"] string],
++}
++
++/// A villager profession definition, `msm/<ns>/villager_profession/<path>.json` (ADR 0098 D2): a
++/// job for vanilla villagers, with a point of interest type for every state of its job site.
++/// Runtimes older than the release that ships ADR 0098 ignore the `villager_profession` folder.
++struct VillagerProfession {
++	/// Definition format; this is version 1.
++	format: 1,
++	...VillagerProfessionCommon,
++}
++
++/// Which vanilla liquid a fluid behaves like for entities (ADR 0099 D1).
++enum(string) FluidBehaviour {
++	/// Joins the water fluid tags: entities swim, float, drown and are put out.
++	Water = "water",
++	/// Joins the lava fluid tag: entities are set on fire and hurt as in lava.
++	Lava = "lava",
++	/// Joins no tag: entities move through it as through air or, on targets with one-fluid liquids,
++	/// slowly and without fall damage.
++	None = "none",
++}
++
++/// How a fluid spreads (ADR 0099 D1); defaults follow `behaves_like`: water's 5, 4, 1 and
++/// infinite, lava's 30, 2, 2 and not infinite (`none` takes water's).
++struct FluidFlow {
++	/// Ticks between two flow steps, 1 to 100.
++	tick_delay?: int @ 1..100,
++	/// How far, in blocks, flowing fluid looks for a way down, 1 to 8.
++	slope_distance?: int @ 1..8,
++	/// Levels lost per block of spreading, 1 to 4: the larger, the shorter the flow.
++	drop_off?: int @ 1..4,
++	/// Whether two sources next to each other make a new source.
++	infinite?: boolean,
++}
++
++/// Fields every fluid definition and fluid element share (ADR 0099 D1).
++struct FluidCommon {
++	/// Defaults to `water`.
++	behaves_like?: FluidBehaviour,
++	/// Defaults per `behaves_like`.
++	flow?: FluidFlow,
++	/// Light level of the liquid block, 0 to 15; defaults to 0.
++	light?: int @ 0..15,
++	/// An RGB colour, 0 to 16777215, multiplied over the still, flowing and overlay textures;
++	/// absent means none.
++	tint?: int @ 0..16777215,
++	/// Explosion resistance of the liquid block; defaults to 100, as water's.
++	explosion_resistance?: float @ 0..,
++	/// An event id declared in `events`, fired on the server while an entity is in the fluid, at
++	/// most every 10 ticks for the same entity (ADR 0061).
++	on_entity_inside?: string,
++	/// Events that `on_entity_inside` refers to, by id.
++	events?: struct FluidEvents {
++		[string]: Event,
++	},
++}
++
++/// A fluid definition, `msm/<ns>/fluid/<path>.json` (ADR 0099 D1): the fluid (one registry entry,
++/// or a source and `<ns>:flowing_<path>` on targets that register two), its liquid block under
++/// the same id and its bucket item `<ns>:<path>_bucket`. Runtimes older than the release that
++/// ships ADR 0099 ignore the `fluid` folder.
++struct Fluid {
++	/// Definition format; this is version 1.
++	format: 1,
++	...FluidCommon,
++}
+diff --git a/packages/schemas/mcdoc/msm/element.mcdoc b/packages/schemas/mcdoc/msm/element.mcdoc
+index 00de312..233b807 100644
+--- a/packages/schemas/mcdoc/msm/element.mcdoc
++++ b/packages/schemas/mcdoc/msm/element.mcdoc
+@@ -1,7 +1,8 @@
+ // MSM element data for `msm:block` and `msm:item` (ADR 0025 D5; machine recipes ADR 0075 D8), `msm:entity` (ADR 0028 D3),
+ // `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3),
+ // `msm:particle` (ADR 0080 D1), `msm:key_bind` (ADR 0088 D3), `msm:hud` (ADR 0089 D1),
+-// `msm:vehicle` (ADR 0090 D2), `msm:command` and `msm:creative_tab` (ADR 0096 D1, D2):
++// `msm:vehicle` (ADR 0090 D2), `msm:command` and `msm:creative_tab` (ADR 0096 D1, D2),
++// `msm:villager_profession` (ADR 0098 D2) and `msm:fluid` (ADR 0099 D1):
+ // the runtime definition plus editor-only fields that lower to ordinary pack files.
+ 
+ use super::definition::BiomeAddition as DefinitionBiomeAddition
+@@ -11,6 +12,7 @@ use super::definition::BlockCommon
+ use super::definition::CommandCommon
+ use super::definition::CreativeTabCommon
+ use super::definition::EffectCommon
++use super::definition::FluidCommon
+ use super::definition::Breakable as DefinitionBreakable
+ use super::definition::Shape as DefinitionShape
+ use super::definition::EntityBehaviourComponents
+@@ -22,6 +24,7 @@ use super::definition::LootAddition as DefinitionLootAddition
+ use super::definition::ParticleCommon
+ use super::definition::Potion as DefinitionPotion
+ use super::definition::ToolTier
++use super::definition::VillagerProfessionCommon
+ use super::controls::HudCommon
+ use super::controls::KeyBindCommon
+ use super::vehicle::VehicleCommon
+@@ -815,3 +818,56 @@ struct CreativeTab {
+ 	/// `itemGroup.<ns>.<path>`).
+ 	display_name?: string,
+ }
++
++/// Pictures of a villager profession (ADR 0098 D2), drawn over the villager's and zombie
++/// villager's own textures as vanilla's profession layers are.
++struct ProfessionTextures {
++	/// Lowered to `assets/<ns>/textures/entity/villager/profession/<path>.png`.
++	villager?: #[id="texture"] string,
++	/// Lowered to `assets/<ns>/textures/entity/zombie_villager/profession/<path>.png`; defaults to
++	/// `villager`.
++	zombie_villager?: #[id="texture"] string,
++}
++
++/// `msm:villager_profession` element data (ADR 0098 D2): the definition with `format` optional,
++/// as lowering sets it, plus the language text and pictures lowering writes.
++struct VillagerProfession {
++	/// Definition format; lowering writes 1.
++	format?: 1,
++	...VillagerProfessionCommon,
++	/// The job's name over the trading screen, lowered to the language key
++	/// `entity.<ns>.villager.<path>`.
++	display_name?: string,
++	/// The profession's pictures; absent means villagers in it look jobless.
++	textures?: ProfessionTextures,
++}
++
++/// Pictures of a fluid (ADR 0099 D1). A texture may be animated with a `.png.mcmeta`, as
++/// vanilla water's are.
++struct FluidTextures {
++	/// The still surface.
++	still?: #[id="texture"] string,
++	/// The flowing surface.
++	flowing?: #[id="texture"] string,
++	/// Drawn on the sides of glass and leaves next to the fluid, as water's overlay; absent means
++	/// none.
++	overlay?: #[id="texture"] string,
++	/// The bucket item's picture.
++	bucket?: #[id="texture"] string,
++}
++
++/// `msm:fluid` element data (ADR 0099 D1): the definition with `format` optional, as lowering sets
++/// it, plus the language texts and pictures lowering writes.
++struct Fluid {
++	/// Definition format; lowering writes 1.
++	format?: 1,
++	...FluidCommon,
++	/// The fluid's name, lowered to the `block.<ns>.<path>` and `fluid.<ns>.<path>` language keys
++	/// (verify the fluid key at implementation).
++	display_name?: string,
++	/// The bucket's name, lowered to the `item.<ns>.<path>_bucket` language key; defaults to the
++	/// display name followed by " Bucket".
++	bucket_display_name?: string,
++	/// The still, flowing, overlay and bucket pictures.
++	textures?: FluidTextures,
++}
+diff --git a/packages/schemas/mcdoc/msm/symbols.json b/packages/schemas/mcdoc/msm/symbols.json
+index ad0c343..f97e897 100644
+--- a/packages/schemas/mcdoc/msm/symbols.json
++++ b/packages/schemas/mcdoc/msm/symbols.json
+@@ -5910,6 +5910,36 @@
+             "kind": "reference",
+             "path": "::msm::definition::BossBar"
+           }
++        },
++        {
++          "desc": "Trading through vanilla's merchant screen (ADR 0098 D1).",
++          "key": "msm:trader",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::Trader"
++          }
++        },
++        {
++          "desc": "A chest-like store (ADR 0098 D3).",
++          "key": "msm:storage",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::Storage"
++          }
++        },
++        {
++          "desc": "Riding on the owner's shoulder (ADR 0098 D4); needs `base` `animal` and `msm:tameable`.",
++          "key": "msm:shoulder_riding",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::ShoulderRiding"
++          }
+         }
+       ],
+       "kind": "struct"
+@@ -6419,6 +6449,218 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::definition::Fluid": {
++      "fields": [
++        {
++          "desc": "Definition format; this is version 1.",
++          "key": "format",
++          "kind": "pair",
++          "type": {
++            "kind": "literal",
++            "value": {
++              "kind": "int",
++              "value": 1
++            }
++          }
++        },
++        {
++          "kind": "spread",
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::FluidCommon"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::FluidBehaviour": {
++      "enumKind": "string",
++      "kind": "enum",
++      "values": [
++        {
++          "desc": "Joins the water fluid tags: entities swim, float, drown and are put out.",
++          "identifier": "Water",
++          "value": "water"
++        },
++        {
++          "desc": "Joins the lava fluid tag: entities are set on fire and hurt as in lava.",
++          "identifier": "Lava",
++          "value": "lava"
++        },
++        {
++          "desc": "Joins no tag: entities move through it as through air or, on targets with one-fluid liquids,\nslowly and without fall damage.",
++          "identifier": "None",
++          "value": "none"
++        }
++      ]
++    },
++    "::msm::definition::FluidCommon": {
++      "fields": [
++        {
++          "desc": "Defaults to `water`.",
++          "key": "behaves_like",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::FluidBehaviour"
++          }
++        },
++        {
++          "desc": "Defaults per `behaves_like`.",
++          "key": "flow",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::FluidFlow"
++          }
++        },
++        {
++          "desc": "Light level of the liquid block, 0 to 15; defaults to 0.",
++          "key": "light",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "max": 15,
++              "min": 0
++            }
++          }
++        },
++        {
++          "desc": "An RGB colour, 0 to 16777215, multiplied over the still, flowing and overlay textures;\nabsent means none.",
++          "key": "tint",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "max": 16777215,
++              "min": 0
++            }
++          }
++        },
++        {
++          "desc": "Explosion resistance of the liquid block; defaults to 100, as water's.",
++          "key": "explosion_resistance",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "float",
++            "valueRange": {
++              "kind": 0,
++              "min": 0
++            }
++          }
++        },
++        {
++          "desc": "An event id declared in `events`, fired on the server while an entity is in the fluid, at\nmost every 10 ticks for the same entity (ADR 0061).",
++          "key": "on_entity_inside",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "Events that `on_entity_inside` refers to, by id.",
++          "key": "events",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "fields": [
++              {
++                "key": {
++                  "kind": "string"
++                },
++                "kind": "pair",
++                "type": {
++                  "kind": "reference",
++                  "path": "::msm::action::Event"
++                }
++              }
++            ],
++            "kind": "struct"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::FluidEvents": {
++      "fields": [
++        {
++          "key": {
++            "kind": "string"
++          },
++          "kind": "pair",
++          "type": {
++            "kind": "reference",
++            "path": "::msm::action::Event"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::FluidFlow": {
++      "fields": [
++        {
++          "desc": "Ticks between two flow steps, 1 to 100.",
++          "key": "tick_delay",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "max": 100,
++              "min": 1
++            }
++          }
++        },
++        {
++          "desc": "How far, in blocks, flowing fluid looks for a way down, 1 to 8.",
++          "key": "slope_distance",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "max": 8,
++              "min": 1
++            }
++          }
++        },
++        {
++          "desc": "Levels lost per block of spreading, 1 to 4: the larger, the shorter the flow.",
++          "key": "drop_off",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "max": 4,
++              "min": 1
++            }
++          }
++        },
++        {
++          "desc": "Whether two sources next to each other make a new source.",
++          "key": "infinite",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "boolean"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
+     "::msm::definition::FollowGoal": {
+       "fields": [
+         {
+@@ -9895,6 +10137,10 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::definition::ShoulderRiding": {
++      "fields": [],
++      "kind": "struct"
++    },
+     "::msm::definition::SignFields": {
+       "fields": [
+         {
+@@ -10387,12 +10633,36 @@
+       ],
+       "kind": "struct"
+     },
+-    "::msm::definition::Strippable": {
++    "::msm::definition::Storage": {
+       "fields": [
+         {
+-          "desc": "The block the stripped block becomes.",
+-          "key": "into",
++          "desc": "Rows of nine slots, one to six; defaults to 3.",
++          "key": "rows",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "max": 6,
++              "min": 1
++            }
++          }
++        },
++        {
++          "desc": "Whether the store needs a chest first: a chest used on the mob adds it with vanilla's\nchest-equip sound, and the chest drops with the contents when the mob dies; defaults to\nfalse.",
++          "key": "needs_chest",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "boolean"
++          }
++        },
++        {
++          "desc": "Played when the store opens; defaults to vanilla's chest opening sound.",
++          "key": "open_sound",
+           "kind": "pair",
++          "optional": true,
+           "type": {
+             "attributes": [
+               {
+@@ -10401,43 +10671,89 @@
+                   "kind": "literal",
+                   "value": {
+                     "kind": "string",
+-                    "value": "block"
++                    "value": "sound_event"
+                   }
+                 }
+               }
+             ],
+             "kind": "string"
+           }
+-        }
+-      ],
+-      "kind": "struct"
+-    },
+-    "::msm::definition::TallPlantBonemeal": {
+-      "enumKind": "string",
+-      "kind": "enum",
+-      "values": [
+-        {
+-          "desc": "Nothing, as tall grass.",
+-          "identifier": "None",
+-          "value": "none"
+         },
+         {
+-          "desc": "Drops a copy of the plant, as tall flowers; the default.",
+-          "identifier": "DropCopy",
+-          "value": "drop_copy"
+-        }
+-      ]
+-    },
+-    "::msm::definition::TallPlantFields": {
+-      "fields": [
+-        {
+-          "desc": "What bone meal does; defaults to `drop_copy`.",
+-          "key": "bonemeal",
++          "desc": "Played when the store closes; defaults to vanilla's chest closing sound.",
++          "key": "close_sound",
+           "kind": "pair",
+           "optional": true,
+           "type": {
+-            "kind": "reference",
+-            "path": "::msm::definition::TallPlantBonemeal"
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "sound_event"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::Strippable": {
++      "fields": [
++        {
++          "desc": "The block the stripped block becomes.",
++          "key": "into",
++          "kind": "pair",
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "block"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::TallPlantBonemeal": {
++      "enumKind": "string",
++      "kind": "enum",
++      "values": [
++        {
++          "desc": "Nothing, as tall grass.",
++          "identifier": "None",
++          "value": "none"
++        },
++        {
++          "desc": "Drops a copy of the plant, as tall flowers; the default.",
++          "identifier": "DropCopy",
++          "value": "drop_copy"
++        }
++      ]
++    },
++    "::msm::definition::TallPlantFields": {
++      "fields": [
++        {
++          "desc": "What bone meal does; defaults to `drop_copy`.",
++          "key": "bonemeal",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::TallPlantBonemeal"
+           }
+         }
+       ],
+@@ -11067,6 +11383,131 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::definition::TradeLevel": {
++      "fields": [
++        {
++          "desc": "A trade set id, the project's (`<ns>:<path>`, an ADR 0060 `trade_set` element) or vanilla's\n(`minecraft:armorer/level_1`). Vanilla sets whose trades only villagers of a biome type may\noffer give a project mob fewer offers or none (a validator warning).",
++          "key": "trade_set",
++          "kind": "pair",
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "trade_set"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "Trading XP needed to reach the next level, counted from the start; defaults to vanilla's\nthresholds for the level. Ignored on the last level and without `levels`.",
++          "key": "xp_to_next",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "int",
++            "valueRange": {
++              "kind": 0,
++              "min": 1
++            }
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::Trader": {
++      "fields": [
++        {
++          "desc": "The trading levels, level 1 first, one to five.",
++          "key": "trade_sets",
++          "kind": "pair",
++          "type": {
++            "item": {
++              "kind": "reference",
++              "path": "::msm::definition::TradeLevel"
++            },
++            "kind": "list",
++            "lengthRange": {
++              "kind": 0,
++              "max": 5,
++              "min": 1
++            }
++          }
++        },
++        {
++          "desc": "Whether trading gives XP and unlocks the next level, as villagers do; defaults to true.\nWithout it only level 1's trade set is used.",
++          "key": "levels",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "boolean"
++          }
++        },
++        {
++          "desc": "Defaults to `twice_a_day`.",
++          "key": "restock",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::TraderRestock"
++          }
++        },
++        {
++          "desc": "Played when a trade is made; defaults to `minecraft:entity.villager.yes` (the target's\ntrade sound).",
++          "key": "trade_sound",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "sound_event"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "An event id declared in `events`, fired after each trade; self is the mob, `other` the\nplayer.",
++          "key": "on_trade",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "string"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::TraderRestock": {
++      "enumKind": "string",
++      "kind": "enum",
++      "values": [
++        {
++          "desc": "Twice a day at the mob, as a vanilla villager at its job site, with no workstation needed.",
++          "identifier": "TwiceADay",
++          "value": "twice_a_day"
++        },
++        {
++          "desc": "Never: a used-up offer stays used up.",
++          "identifier": "Never",
++          "value": "never"
++        }
++      ]
++    },
+     "::msm::definition::VanillaComponents": {
+       "fields": [
+         {
+@@ -11180,6 +11621,153 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::definition::VillagerProfession": {
++      "fields": [
++        {
++          "desc": "Definition format; this is version 1.",
++          "key": "format",
++          "kind": "pair",
++          "type": {
++            "kind": "literal",
++            "value": {
++              "kind": "int",
++              "value": 1
++            }
++          }
++        },
++        {
++          "kind": "spread",
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::VillagerProfessionCommon"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::definition::VillagerProfessionCommon": {
++      "fields": [
++        {
++          "desc": "The job site: a project block. A vanilla villager without a job takes the profession at\nit. A block that already has a point of interest type (a vanilla workstation, a bed, a\nbell) is refused (a validator error, and the runtime refuses it too).",
++          "key": "job_site",
++          "kind": "pair",
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "block"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "The trade sets of levels 1 to 5, exactly five; defaults to\n`<ns>:<path>/level_1` to `<ns>:<path>/level_5`, which lowering creates with their tags when\nabsent. A missing set gives the villager no offers at that level.",
++          "key": "trade_sets",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "item": {
++              "attributes": [
++                {
++                  "name": "id",
++                  "value": {
++                    "kind": "literal",
++                    "value": {
++                      "kind": "string",
++                      "value": "trade_set"
++                    }
++                  }
++                }
++              ],
++              "kind": "string"
++            },
++            "kind": "list",
++            "lengthRange": {
++              "kind": 0,
++              "max": 5,
++              "min": 5
++            }
++          }
++        },
++        {
++          "desc": "Played while the villager works at its job site; absent means none.",
++          "key": "work_sound",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "sound_event"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "Items the villager picks up and keeps (as a farmer's seeds); defaults to none.",
++          "key": "requested_items",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "item": {
++              "attributes": [
++                {
++                  "name": "id",
++                  "value": {
++                    "kind": "literal",
++                    "value": {
++                      "kind": "string",
++                      "value": "item"
++                    }
++                  }
++                }
++              ],
++              "kind": "string"
++            },
++            "kind": "list"
++          }
++        },
++        {
++          "desc": "Blocks near the job site the villager also works at (as a farmer's farmland); defaults to\nnone.",
++          "key": "secondary_job_blocks",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "item": {
++              "attributes": [
++                {
++                  "name": "id",
++                  "value": {
++                    "kind": "literal",
++                    "value": {
++                      "kind": "string",
++                      "value": "block"
++                    }
++                  }
++                }
++              ],
++              "kind": "string"
++            },
++            "kind": "list"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
+     "::msm::definition::VineFields": {
+       "fields": [
+         {
+@@ -12963,6 +13551,148 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::element::Fluid": {
++      "fields": [
++        {
++          "desc": "Definition format; lowering writes 1.",
++          "key": "format",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "literal",
++            "value": {
++              "kind": "int",
++              "value": 1
++            }
++          }
++        },
++        {
++          "kind": "spread",
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::FluidCommon"
++          }
++        },
++        {
++          "desc": "The fluid's name, lowered to the `block.<ns>.<path>` and `fluid.<ns>.<path>` language keys\n(verify the fluid key at implementation).",
++          "key": "display_name",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "The bucket's name, lowered to the `item.<ns>.<path>_bucket` language key; defaults to the\ndisplay name followed by \" Bucket\".",
++          "key": "bucket_display_name",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "The still, flowing, overlay and bucket pictures.",
++          "key": "textures",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::element::FluidTextures"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
++    "::msm::element::FluidTextures": {
++      "fields": [
++        {
++          "desc": "The still surface.",
++          "key": "still",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "texture"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "The flowing surface.",
++          "key": "flowing",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "texture"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "Drawn on the sides of glass and leaves next to the fluid, as water's overlay; absent means\nnone.",
++          "key": "overlay",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "texture"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "The bucket item's picture.",
++          "key": "bucket",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "texture"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
+     "::msm::element::Fuel": {
+       "fields": [
+         {
+@@ -14102,6 +14832,53 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::element::ProfessionTextures": {
++      "fields": [
++        {
++          "desc": "Lowered to `assets/<ns>/textures/entity/villager/profession/<path>.png`.",
++          "key": "villager",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "texture"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "Lowered to `assets/<ns>/textures/entity/zombie_villager/profession/<path>.png`; defaults to\n`villager`.",
++          "key": "zombie_villager",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "attributes": [
++              {
++                "name": "id",
++                "value": {
++                  "kind": "literal",
++                  "value": {
++                    "kind": "string",
++                    "value": "texture"
++                  }
++                }
++              }
++            ],
++            "kind": "string"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
+     "::msm::element::SaplingElementFields": {
+       "fields": [
+         {
+@@ -14828,6 +15605,50 @@
+       ],
+       "kind": "struct"
+     },
++    "::msm::element::VillagerProfession": {
++      "fields": [
++        {
++          "desc": "Definition format; lowering writes 1.",
++          "key": "format",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "literal",
++            "value": {
++              "kind": "int",
++              "value": 1
++            }
++          }
++        },
++        {
++          "kind": "spread",
++          "type": {
++            "kind": "reference",
++            "path": "::msm::definition::VillagerProfessionCommon"
++          }
++        },
++        {
++          "desc": "The job's name over the trading screen, lowered to the language key\n`entity.<ns>.villager.<path>`.",
++          "key": "display_name",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "string"
++          }
++        },
++        {
++          "desc": "The profession's pictures; absent means villagers in it look jobless.",
++          "key": "textures",
++          "kind": "pair",
++          "optional": true,
++          "type": {
++            "kind": "reference",
++            "path": "::msm::element::ProfessionTextures"
++          }
++        }
++      ],
++      "kind": "struct"
++    },
+     "::msm::element::WallElementFields": {
+       "fields": [
+         {
+@@ -22819,5 +23640,5 @@
+       }
+     }
+   },
+-  "ref": "msm-mcdoc:sha256:d8a4266a49ffacc4dd58276fa4f82d87c89cfcf83c49de60e64ebf630c0cabac"
++  "ref": "msm-mcdoc:sha256:25c1d970244837c268ae9d7e0b47b3c30457376f70cba955473cf013213b1114"
+ }
+diff --git a/packages/schemas/src/msm/symbols.ts b/packages/schemas/src/msm/symbols.ts
+index e391338..4f5529a 100644
+--- a/packages/schemas/src/msm/symbols.ts
++++ b/packages/schemas/src/msm/symbols.ts
+@@ -43,6 +43,12 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
+  *   the `msm:command` and `msm:creative_tab` kinds (the definition with `format` optional;
+  *   commands add `feedback_text`, tabs `display_name`) and the runtime definitions written to
+  *   `msm/<ns>/command/<path>.json` and `msm/<ns>/creative_tab/<path>.json` (ADR 0096 D1, D2).
++ * - `villagerProfession` / `villagerProfessionDefinition`, `fluid` / `fluidDefinition`: element
++ *   data of the `msm:villager_profession` and `msm:fluid` kinds (the definition with `format`
++ *   optional; professions add `display_name` and `textures`, fluids `display_name`,
++ *   `bucket_display_name` and `textures`) and the runtime definitions written to
++ *   `msm/<ns>/villager_profession/<path>.json` and `msm/<ns>/fluid/<path>.json` (ADR 0098 D2,
++ *   ADR 0099 D1).
+  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
+  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
+  *   definition exists and the conformance corpus has no rule book files.
+@@ -81,6 +87,10 @@ export const MSM_SCHEMA_REFS = {
+   commandDefinition: 'msm:command_definition',
+   creativeTab: 'msm:creative_tab',
+   creativeTabDefinition: 'msm:creative_tab_definition',
++  villagerProfession: 'msm:villager_profession',
++  villagerProfessionDefinition: 'msm:villager_profession_definition',
++  fluid: 'msm:fluid',
++  fluidDefinition: 'msm:fluid_definition',
+ } as const;
+ 
+ /** The mcdoc type path behind each MSM schema reference. */
+@@ -116,6 +126,10 @@ export const MSM_TYPE_PATHS = {
+   commandDefinition: '::msm::definition::Command',
+   creativeTab: '::msm::element::CreativeTab',
+   creativeTabDefinition: '::msm::definition::CreativeTab',
++  villagerProfession: '::msm::element::VillagerProfession',
++  villagerProfessionDefinition: '::msm::definition::VillagerProfession',
++  fluid: '::msm::element::Fluid',
++  fluidDefinition: '::msm::definition::Fluid',
+   action: '::msm::action::Action',
+ } as const;
+ 
+@@ -152,6 +166,10 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
+   [MSM_SCHEMA_REFS.commandDefinition]: MSM_TYPE_PATHS.commandDefinition,
+   [MSM_SCHEMA_REFS.creativeTab]: MSM_TYPE_PATHS.creativeTab,
+   [MSM_SCHEMA_REFS.creativeTabDefinition]: MSM_TYPE_PATHS.creativeTabDefinition,
++  [MSM_SCHEMA_REFS.villagerProfession]: MSM_TYPE_PATHS.villagerProfession,
++  [MSM_SCHEMA_REFS.villagerProfessionDefinition]: MSM_TYPE_PATHS.villagerProfessionDefinition,
++  [MSM_SCHEMA_REFS.fluid]: MSM_TYPE_PATHS.fluid,
++  [MSM_SCHEMA_REFS.fluidDefinition]: MSM_TYPE_PATHS.fluidDefinition,
+ });
+ 
+ let parsed: VanillaMcdocSymbols | undefined;
+diff --git a/packages/schemas/test/msm-conformance.test.ts b/packages/schemas/test/msm-conformance.test.ts
+index 78c4863..e3108e1 100644
+--- a/packages/schemas/test/msm-conformance.test.ts
++++ b/packages/schemas/test/msm-conformance.test.ts
+@@ -32,7 +32,10 @@ import {
+  * are ADR 0094's twenty block types (blocks), `waterlog-` and `weathering-` files blocks with
+  * ADR 0094's `msm:waterloggable`, `msm:weathering` and `msm:waxable`, `item-inventory-` and
+  * `bundle-` files items with ADR 0095's `msm:item_inventory` and `msm:bundle`, and `command-`
+- * and `creative-tab-` files ADR 0096's `msm:command` and `msm:creative_tab`.
++ * and `creative-tab-` files ADR 0096's `msm:command` and `msm:creative_tab`. `trader-`,
++ * `storage-` and `shoulder-` files are entities with ADR 0098's `msm:trader`, `msm:storage` and
++ * `msm:shoulder_riding`; `profession-` and `fluid-` files ADR 0098's `msm:villager_profession`
++ * and ADR 0099's `msm:fluid`.
+  * The longest matching file name prefix selects the schema;
+  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
+  * `validateJson` must report.
+@@ -45,11 +48,12 @@ type Group = 'definition' | 'element' | 'geometry' | 'animation' | 'machine-reci
+ const MACHINE_RECIPE = '::msm::recipe::MachineRecipe';
+ 
+ /**
+- * File name prefixes of block and item files besides `block-` and `item-` (ADRs 0061, 0074,
+- * 0075, 0077, 0080, 0094, 0095).
++ * File name prefixes of block, item and entity files besides `block-`, `item-` and `entity-`
++ * (ADRs 0061, 0074, 0075, 0077, 0080, 0094, 0095, 0098).
+  */
+ const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
+   item: ['bundle'],
++  entity: ['trader', 'storage', 'shoulder'],
+   block: [
+     'trigger-block',
+     'container',
+@@ -141,6 +145,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
+     bundle: MSM_SCHEMA_REFS.itemDefinition,
+     command: MSM_SCHEMA_REFS.commandDefinition,
+     'creative-tab': MSM_SCHEMA_REFS.creativeTabDefinition,
++    trader: MSM_SCHEMA_REFS.entityDefinition,
++    storage: MSM_SCHEMA_REFS.entityDefinition,
++    shoulder: MSM_SCHEMA_REFS.entityDefinition,
++    profession: MSM_SCHEMA_REFS.villagerProfessionDefinition,
++    fluid: MSM_SCHEMA_REFS.fluidDefinition,
+   },
+   element: {
+     block: MSM_SCHEMA_REFS.block,
+@@ -164,6 +173,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
+     bundle: MSM_SCHEMA_REFS.item,
+     command: MSM_SCHEMA_REFS.command,
+     'creative-tab': MSM_SCHEMA_REFS.creativeTab,
++    trader: MSM_SCHEMA_REFS.entity,
++    storage: MSM_SCHEMA_REFS.entity,
++    shoulder: MSM_SCHEMA_REFS.entity,
++    profession: MSM_SCHEMA_REFS.villagerProfession,
++    fluid: MSM_SCHEMA_REFS.fluid,
+   },
+   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
+   animation: { animation: MSM_SCHEMA_REFS.animation },
+@@ -420,8 +434,18 @@ describe('MSM conformance corpus coverage', () => {
+     ['element', 'bundle-', 1, 1],
+     ['element', 'command-', 2, 2],
+     ['element', 'creative-tab-', 2, 1],
++    ['definition', 'trader-', 4, 10],
++    ['definition', 'storage-', 3, 5],
++    ['definition', 'shoulder-', 2, 3],
++    ['definition', 'profession-', 4, 9],
++    ['definition', 'fluid-', 6, 18],
++    ['element', 'trader-', 1, 1],
++    ['element', 'storage-', 1, 1],
++    ['element', 'shoulder-', 1, 1],
++    ['element', 'profession-', 2, 3],
++    ['element', 'fluid-', 2, 4],
+   ] as const)(
+-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096)',
++    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096, 0098, 0099)',
+     (group, prefix, minValid, minInvalid) => {
+       const count = (kind: 'valid' | 'invalid') =>
+         files(group, kind).filter((name) => name.startsWith(prefix)).length;
+@@ -487,6 +511,10 @@ describe('MSM conformance corpus coverage', () => {
+     ['element', 'command', MSM_SCHEMA_REFS.command],
+     ['definition', 'creative-tab', MSM_SCHEMA_REFS.creativeTabDefinition],
+     ['element', 'creative-tab', MSM_SCHEMA_REFS.creativeTab],
++    ['definition', 'profession', MSM_SCHEMA_REFS.villagerProfessionDefinition],
++    ['element', 'profession', MSM_SCHEMA_REFS.villagerProfession],
++    ['definition', 'fluid', MSM_SCHEMA_REFS.fluidDefinition],
++    ['element', 'fluid', MSM_SCHEMA_REFS.fluid],
+   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
+     const declared = new Set<string>();
+     fieldPaths(index.resolveSchemaRef(ref), '', declared);
+diff --git a/packages/targets/all/test/client-jar.ts b/packages/targets/all/test/client-jar.ts
+new file mode 100644
+index 0000000..db963ee
+--- /dev/null
++++ b/packages/targets/all/test/client-jar.ts
+@@ -0,0 +1,114 @@
++import { existsSync } from 'node:fs';
++import { open } from 'node:fs/promises';
++import { homedir } from 'node:os';
++import { join } from 'node:path';
++import { inflateRawSync } from 'node:zlib';
++
++/**
++ * The client jar Fabric Loom caches for the engine-mod build (`<gradle user home>/caches/
++ * fabric-loom/<mc version>/minecraft-client.jar`); `MSM_CLIENT_JAR_<id>` (for example
++ * `MSM_CLIENT_JAR_MC_26_3`) names another copy. Tests that read it are skipped without a jar:
++ * MSM never bundles Mojang files.
++ */
++export function clientJarPath(id: string, mcVersion: string): string | undefined {
++  const override = process.env[`MSM_CLIENT_JAR_${id.toUpperCase().replace(/[-.]/g, '_')}`];
++  if (override !== undefined && override !== '') return existsSync(override) ? override : undefined;
++  const gradleHome = process.env.GRADLE_USER_HOME ?? join(homedir(), '.gradle');
++  const path = join(gradleHome, 'caches', 'fabric-loom', mcVersion, 'minecraft-client.jar');
++  return existsSync(path) ? path : undefined;
++}
++
++/** One entry of a zip file's central directory. */
++export interface ZipEntry {
++  name: string;
++  method: number;
++  compressedSize: number;
++  localHeaderOffset: number;
++}
++
++/** The entries of a zip file, read from its central directory (no zip64: under 65,535 entries). */
++export async function zipEntries(path: string): Promise<ZipEntry[]> {
++  const file = await open(path, 'r');
++  try {
++    const { size } = await file.stat();
++    const tailLength = Math.min(size, 22 + 0xffff);
++    const tail = Buffer.alloc(tailLength);
++    await file.read(tail, 0, tailLength, size - tailLength);
++    let end = -1;
++    for (let i = tailLength - 22; i >= 0; i--) {
++      if (tail.readUInt32LE(i) === 0x06054b50) {
++        end = i;
++        break;
++      }
++    }
++    if (end < 0) throw new Error(`${path}: no end of central directory`);
++    const count = tail.readUInt16LE(end + 10);
++    const directorySize = tail.readUInt32LE(end + 12);
++    const directoryOffset = tail.readUInt32LE(end + 16);
++    if (count === 0xffff || directoryOffset === 0xffffffff) {
++      throw new Error(`${path}: zip64 jars are not read by this test`);
++    }
++    const directory = Buffer.alloc(directorySize);
++    await file.read(directory, 0, directorySize, directoryOffset);
++    const entries: ZipEntry[] = [];
++    let at = 0;
++    for (let n = 0; n < count; n++) {
++      if (directory.readUInt32LE(at) !== 0x02014b50) throw new Error(`${path}: bad entry ${n}`);
++      const nameLength = directory.readUInt16LE(at + 28);
++      const extraLength = directory.readUInt16LE(at + 30);
++      const commentLength = directory.readUInt16LE(at + 32);
++      entries.push({
++        name: directory.toString('utf8', at + 46, at + 46 + nameLength),
++        method: directory.readUInt16LE(at + 10),
++        compressedSize: directory.readUInt32LE(at + 20),
++        localHeaderOffset: directory.readUInt32LE(at + 42),
++      });
++      at += 46 + nameLength + extraLength + commentLength;
++    }
++    return entries;
++  } finally {
++    await file.close();
++  }
++}
++
++/** The entry names of a zip file. */
++export async function zipEntryNames(path: string): Promise<string[]> {
++  return (await zipEntries(path)).map((entry) => entry.name);
++}
++
++/**
++ * The parsed entries whose names start with one of `prefixes` and end with `.json`, by name.
++ * Stored and deflated entries only. Used for the game's data files (trade sets, tags), never its
++ * assets.
++ */
++export async function zipJsonEntries(
++  path: string,
++  prefixes: readonly string[],
++): Promise<Map<string, unknown>> {
++  const wanted = (await zipEntries(path)).filter(
++    (entry) =>
++      prefixes.some((prefix) => entry.name.startsWith(prefix)) && entry.name.endsWith('.json'),
++  );
++  const file = await open(path, 'r');
++  const out = new Map<string, unknown>();
++  try {
++    for (const entry of wanted) {
++      const header = Buffer.alloc(30);
++      await file.read(header, 0, 30, entry.localHeaderOffset);
++      if (header.readUInt32LE(0) !== 0x04034b50)
++        throw new Error(`${path}: bad header ${entry.name}`);
++      const start =
++        entry.localHeaderOffset + 30 + header.readUInt16LE(26) + header.readUInt16LE(28);
++      const data = Buffer.alloc(entry.compressedSize);
++      await file.read(data, 0, entry.compressedSize, start);
++      let bytes: Buffer;
++      if (entry.method === 0) bytes = data;
++      else if (entry.method === 8) bytes = inflateRawSync(data);
++      else throw new Error(`${path}: ${entry.name} uses compression method ${entry.method}`);
++      out.set(entry.name, JSON.parse(bytes.toString('utf8')));
++    }
++  } finally {
++    await file.close();
++  }
++  return out;
++}
+diff --git a/packages/targets/all/test/model-templates.test.ts b/packages/targets/all/test/model-templates.test.ts
+index de8e37f..e3c2171 100644
+--- a/packages/targets/all/test/model-templates.test.ts
++++ b/packages/targets/all/test/model-templates.test.ts
+@@ -1,65 +1,13 @@
+-import { existsSync } from 'node:fs';
+-import { open } from 'node:fs/promises';
+-import { homedir } from 'node:os';
+-import { join } from 'node:path';
+ import { describe, expect, it } from 'vitest';
+ import { builtInTargets } from '../src/index';
++import { clientJarPath, zipEntryNames } from './client-jar';
+ 
+ /**
+  * `BlockFacts.modelTemplates` against the client jar's listing (ADR 0094 D10). The jar is the
+- * one Fabric Loom caches for the engine-mod build (`<gradle user home>/caches/fabric-loom/<mc
+- * version>/minecraft-client.jar`); `MSM_CLIENT_JAR_<id>` (for example `MSM_CLIENT_JAR_MC_26_3`)
+- * names another copy. Only the file names are read, never a file's contents. Without a jar the
+- * test is skipped: MSM never bundles Mojang files.
++ * one Fabric Loom caches for the engine-mod build (`clientJarPath`). Only the file names are
++ * read, never a file's contents. Without a jar the test is skipped: MSM never bundles Mojang
++ * files.
+  */
+-function clientJarPath(id: string, mcVersion: string): string | undefined {
+-  const override = process.env[`MSM_CLIENT_JAR_${id.toUpperCase().replace(/[-.]/g, '_')}`];
+-  if (override !== undefined && override !== '') return existsSync(override) ? override : undefined;
+-  const gradleHome = process.env.GRADLE_USER_HOME ?? join(homedir(), '.gradle');
+-  const path = join(gradleHome, 'caches', 'fabric-loom', mcVersion, 'minecraft-client.jar');
+-  return existsSync(path) ? path : undefined;
+-}
+-
+-/** The entry names of a zip file, read from its central directory (no zip64: under 65,535 entries). */
+-async function zipEntryNames(path: string): Promise<string[]> {
+-  const file = await open(path, 'r');
+-  try {
+-    const { size } = await file.stat();
+-    const tailLength = Math.min(size, 22 + 0xffff);
+-    const tail = Buffer.alloc(tailLength);
+-    await file.read(tail, 0, tailLength, size - tailLength);
+-    let end = -1;
+-    for (let i = tailLength - 22; i >= 0; i--) {
+-      if (tail.readUInt32LE(i) === 0x06054b50) {
+-        end = i;
+-        break;
+-      }
+-    }
+-    if (end < 0) throw new Error(`${path}: no end of central directory`);
+-    const count = tail.readUInt16LE(end + 10);
+-    const directorySize = tail.readUInt32LE(end + 12);
+-    const directoryOffset = tail.readUInt32LE(end + 16);
+-    if (count === 0xffff || directoryOffset === 0xffffffff) {
+-      throw new Error(`${path}: zip64 jars are not read by this test`);
+-    }
+-    const directory = Buffer.alloc(directorySize);
+-    await file.read(directory, 0, directorySize, directoryOffset);
+-    const names: string[] = [];
+-    let at = 0;
+-    for (let n = 0; n < count; n++) {
+-      if (directory.readUInt32LE(at) !== 0x02014b50) throw new Error(`${path}: bad entry ${n}`);
+-      const nameLength = directory.readUInt16LE(at + 28);
+-      const extraLength = directory.readUInt16LE(at + 30);
+-      const commentLength = directory.readUInt16LE(at + 32);
+-      names.push(directory.toString('utf8', at + 46, at + 46 + nameLength));
+-      at += 46 + nameLength + extraLength + commentLength;
+-    }
+-    return names;
+-  } finally {
+-    await file.close();
+-  }
+-}
+-
+ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle.target] as const))(
+   'model templates of %s',
+   (id, target) => {
+diff --git a/packages/targets/all/test/targets.test.ts b/packages/targets/all/test/targets.test.ts
+index 183285f..45f4601 100644
+--- a/packages/targets/all/test/targets.test.ts
++++ b/packages/targets/all/test/targets.test.ts
+@@ -614,6 +614,83 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
+       // The jar listing check is `model-templates.test.ts`.
+     });
+ 
++    it('lists trader, job site and trade set facts the vendored registries know (ADR 0098 D5)', async () => {
++      const registries = (await readVendoredJson(
++        bundle,
++        'mcmetaRegistries',
++        nodeReadFile,
++      )) as Record<string, string[]>;
++      const facts = target.entities;
++      const sounds = registries.sound_event ?? [];
++      // Trade sounds: vanilla villager sound events of this version.
++      expect(Object.keys(facts?.tradeSounds ?? {}).sort()).toEqual(['no', 'trading', 'yes']);
++      expect(facts?.tradeSounds?.yes).toBe('minecraft:entity.villager.yes');
++      for (const id of Object.values(facts?.tradeSounds ?? {})) {
++        expect(sounds, id).toContain(id.slice('minecraft:'.length));
++      }
++      // Job sites: one entry per point of interest type, each block registered, no block twice.
++      const sites = facts?.vanillaJobSites ?? {};
++      expect(Object.keys(sites)).toEqual(
++        (registries.point_of_interest_type ?? []).map((id) => `minecraft:${id}`).sort(),
++      );
++      const blocks = registries.block ?? [];
++      const seen = new Set<string>();
++      for (const [poi, list] of Object.entries(sites)) {
++        expect(list.length, poi).toBeGreaterThan(0);
++        for (const id of list) {
++          expect(id, poi).toMatch(/^minecraft:[a-z0-9_]+$/);
++          expect(blocks, id).toContain(id.slice('minecraft:'.length));
++          expect(seen.has(id), id).toBe(false);
++          seen.add(id);
++        }
++      }
++      // The acquirable job sites are the professions' point of interest types.
++      const professions = (registries.villager_profession ?? []).filter(
++        (id) => id !== 'none' && id !== 'nitwit',
++      );
++      for (const id of professions) expect(Object.keys(sites)).toContain(`minecraft:${id}`);
++      expect(registries['tag/point_of_interest_type']).toContain('acquirable_job_site');
++      // Trade sets: exactly the vendored registry, counts consistent with the flag.
++      const sets = facts?.vanillaTradeSets ?? {};
++      expect(Object.keys(sets)).toEqual(
++        (registries.trade_set ?? []).map((id) => `minecraft:${id}`).sort(),
++      );
++      for (const [id, set] of Object.entries(sets)) {
++        expect(set.trades, id).toBeGreaterThan(0);
++        expect(set.villagerOnlyTrades, id).toBeLessThanOrEqual(set.trades);
++        expect(set.villagerOnly, id).toBe(set.villagerOnlyTrades > 0);
++      }
++      // Every profession but the jobless ones has five level sets.
++      for (const id of professions) {
++        for (let level = 1; level <= 5; level++) {
++          expect(sets, `${id}/level_${level}`).toHaveProperty([`minecraft:${id}/level_${level}`]);
++        }
++      }
++    });
++
++    it('lists fluid facts the vendored registries know (ADR 0099 D4)', async () => {
++      const registries = (await readVendoredJson(
++        bundle,
++        'mcmetaRegistries',
++        nodeReadFile,
++      )) as Record<string, string[]>;
++      const facts = target.blocks;
++      const fluids = registries.fluid ?? [];
++      // Two fluids exactly when the flowing ids are registered.
++      expect(facts?.fluidModel).toBe(fluids.includes('flowing_water') ? 'two_fluids' : 'one_fluid');
++      expect(fluids.includes('flowing_lava')).toBe(facts?.fluidModel === 'two_fluids');
++      const tags = registries['tag/fluid'] ?? [];
++      expect(facts?.fluidTags?.water[0]).toBe('minecraft:water');
++      expect(facts?.fluidTags?.lava).toEqual(['minecraft:lava']);
++      for (const id of [...(facts?.fluidTags?.water ?? []), ...(facts?.fluidTags?.lava ?? [])]) {
++        expect(tags, id).toContain(id.slice('minecraft:'.length));
++      }
++      // The swimming pose's tag joins the water-like fluid's tags wherever the version has it.
++      expect(facts?.fluidTags?.water.includes('minecraft:swimmable')).toBe(
++        tags.includes('swimmable'),
++      );
++    });
++
+     it('lists command facts the vendored command tree and registries know (ADR 0096 D6)', async () => {
+       const commands = (await readVendoredJson(bundle, 'mcmetaCommands', nodeReadFile)) as {
+         children: Record<string, CommandNode>;
+diff --git a/packages/targets/all/test/villagers.test.ts b/packages/targets/all/test/villagers.test.ts
+new file mode 100644
+index 0000000..57e8b90
+--- /dev/null
++++ b/packages/targets/all/test/villagers.test.ts
+@@ -0,0 +1,115 @@
++import { describe, expect, it } from 'vitest';
++import { builtInTargets } from '../src/index';
++import { clientJarPath, zipJsonEntries } from './client-jar';
++
++/**
++ * `EntityFacts.vanillaTradeSets` and `BlockFacts.fluidTags` against the data files of the client
++ * jar Fabric Loom caches (ADR 0098 D5, ADR 0099 D4): the default data pack's trade sets, villager
++ * trades and their tags are read (data, not code or assets), the trades of each set counted with
++ * its trade tags resolved, and the trades with a `merchant_predicate` on the villager's variant
++ * counted apart. Skipped without a jar: MSM never bundles Mojang files.
++ */
++const DATA = 'data/minecraft/';
++
++type Json = Record<string, unknown>;
++
++/** `minecraft:x` or `x` to `x`. */
++const bare = (id: string): string => (id.startsWith('minecraft:') ? id.slice(10) : id);
++
++describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle.target] as const))(
++  'villager and fluid data of %s',
++  (id, target) => {
++    const jar = clientJarPath(id, target.mcVersion);
++
++    it.skipIf(jar === undefined)(
++      'counts the trades of every vanilla trade set',
++      async () => {
++        const files = await zipJsonEntries(
++          jar ?? '',
++          ['trade_set/', 'villager_trade/', 'tags/villager_trade/'].map((folder) => DATA + folder),
++        );
++        const file = (folder: string, name: string): Json => {
++          const value = files.get(`${DATA}${folder}/${name}.json`);
++          if (value === undefined) throw new Error(`${folder}/${name} is not in the jar`);
++          return value as Json;
++        };
++        /** Villager trade ids of a trade set's `trades` (an id, a `#` tag or a list of them). */
++        const expand = (ref: unknown, seen: Set<string>): string[] => {
++          if (Array.isArray(ref)) return ref.flatMap((entry) => expand(entry, seen));
++          const value = typeof ref === 'object' && ref !== null ? (ref as Json).id : ref;
++          if (typeof value !== 'string')
++            throw new Error(`unexpected trade reference ${String(ref)}`);
++          if (!value.startsWith('#')) return [bare(value)];
++          const tag = bare(value.slice(1));
++          if (seen.has(tag)) return [];
++          seen.add(tag);
++          return expand(file('tags/villager_trade', tag).values, seen);
++        };
++        const prefix = `${DATA}trade_set/`;
++        const ids = [...files.keys()]
++          .filter((name) => name.startsWith(prefix))
++          .map((name) => name.slice(prefix.length, -'.json'.length))
++          .sort();
++        const counted: Record<string, { trades: number; villagerOnlyTrades: number }> = {};
++        for (const set of ids) {
++          const trades = [...new Set(expand(file('trade_set', set).trades, new Set()))];
++          const villagerOnly = trades.filter((trade) =>
++            JSON.stringify(file('villager_trade', trade).merchant_predicate ?? null).includes(
++              'minecraft:villager/variant',
++            ),
++          );
++          counted[`minecraft:${set}`] = {
++            trades: trades.length,
++            villagerOnlyTrades: villagerOnly.length,
++          };
++        }
++        const facts = Object.fromEntries(
++          Object.entries(target.entities?.vanillaTradeSets ?? {}).map(([set, value]) => [
++            set,
++            { trades: value.trades, villagerOnlyTrades: value.villagerOnlyTrades },
++          ]),
++        );
++        expect(facts).toEqual(counted);
++      },
++      60_000,
++    );
++
++    it.skipIf(jar === undefined)(
++      'names fluid tags that hold vanilla water and lava',
++      async () => {
++        const files = await zipJsonEntries(jar ?? '', [`${DATA}tags/fluid/`]);
++        const members = (tag: string): string[] => {
++          const value = files.get(`${DATA}tags/fluid/${bare(tag)}.json`) as Json | undefined;
++          if (value === undefined) throw new Error(`${tag} is not in the jar`);
++          return (value.values as string[]).map(bare);
++        };
++        const two = target.blocks?.fluidModel === 'two_fluids';
++        for (const tag of target.blocks?.fluidTags?.water ?? []) {
++          expect(members(tag), tag).toContain('water');
++          // Two-fluid versions list the flowing fluid in the tag as well; lowering does the same.
++          expect(members(tag).includes('flowing_water'), tag).toBe(two);
++        }
++        for (const tag of target.blocks?.fluidTags?.lava ?? []) {
++          expect(members(tag), tag).toContain('lava');
++          expect(members(tag).includes('flowing_lava'), tag).toBe(two);
++        }
++      },
++      30_000,
++    );
++
++    it.skipIf(jar === undefined)(
++      'lists every acquirable job site as a point of interest type',
++      async () => {
++        const files = await zipJsonEntries(jar ?? '', [`${DATA}tags/point_of_interest_type/`]);
++        const tag = files.get(`${DATA}tags/point_of_interest_type/acquirable_job_site.json`) as
++          | Json
++          | undefined;
++        const values = (tag?.values as string[] | undefined) ?? [];
++        expect(values.length).toBeGreaterThan(0);
++        for (const poi of values) {
++          expect(Object.keys(target.entities?.vanillaJobSites ?? {}), poi).toContain(poi);
++        }
++      },
++    );
++  },
++);
+diff --git a/packages/targets/mc-26.3/CHANGES.md b/packages/targets/mc-26.3/CHANGES.md
+index 30f7bad..5203a96 100644
+--- a/packages/targets/mc-26.3/CHANGES.md
++++ b/packages/targets/mc-26.3/CHANGES.md
+@@ -64,6 +64,10 @@ Checked on 2026-11-04.
+ | `commands` (ADR 0096 D1, D6; plugin API 1.17.0) | `vanillaNames` the 94 root literals of the vendored `commands.json`, sorted; `argumentTypes` MSM's twelve names to Brigadier parsers: `integer` `brigadier:integer`, `number` `brigadier:double`, `word`/`text` `brigadier:string` `word`/`greedy`, `boolean` `brigadier:bool`, `player`/`players`/`entity` `minecraft:entity` (single players, multiple players, single entities), `position` `minecraft:vec3`, `block_position` `minecraft:block_pos`, `item` `minecraft:item_stack`, `block` `minecraft:block_state` | vendored `commands.json` (each parser and properties pair occurs on an argument node) and `registries.json` `command_argument_type`; 2026-11-15 |
+ | `worldgen.dimensionHeight` (ADR 0100 D5; plugin API 1.18.0) | `minY` -2032, `maxY` 2031 (the highest block: `min_y + height - 1`), `step` 16; the same as 26.4 | the vendored mcdoc `DimensionType`: `min_y` -2032 to 2031, `height` 16 to 4064, both `divisible_by` 16 (`test/target.test.ts`); 2026-11-15 |
+ | `worldgen.environmentAttributes` (ADR 0100 D5; plugin API 1.18.0) | the 51 ids of the `environment_attribute` registry, namespaced and sorted (no `visual/has_sky_occluder`); read by the Dimension Type Studio and `worldgen.dimension-attribute-unknown` | vendored `registries.json` (`test/target.test.ts`); 2026-11-15 |
++| `entities.tradeSounds` (ADR 0098 D1, D5; plugin API 1.18.0) | `yes` `minecraft:entity.villager.yes` (an `msm:trader`'s default `trade_sound`), `no` `minecraft:entity.villager.no`, `trading` `minecraft:entity.villager.trade` | vendored `registries.json` `sound_event` (`all/test/targets.test.ts`); 2026-11-15 |
++| `entities.vanillaJobSites` (ADR 0098 D2, D5; plugin API 1.18.0) | the 21 `point_of_interest_type` ids, each with its vanilla blocks: the 13 workstations (the leatherworker's four cauldrons), `home` the 16 beds of `#minecraft:beds` plus `straw_bed`, `meeting` the bell, `bee_nest`, `beehive`, `lightning_rod` the eight copper rods of `#minecraft:lightning_rods`, `lodestone`, `nether_portal`, `test_instance` `test_instance_block`; the states each type holds are the game's code (not read): the block lists, `straw_bed` above all, are (verify at implementation) | vendored `registries.json` (`point_of_interest_type`, `block`, `tag/point_of_interest_type`), the Loom-cached 26.3 client jar's block tags and `acquirable_job_site` (`all/test/targets.test.ts`, `all/test/villagers.test.ts`); 2026-11-15 |
++| `entities.vanillaTradeSets` (ADR 0098 D1, D5 as amended; plugin API 1.18.0) | the 68 `trade_set` ids with `trades` (distinct trades, tags resolved) and `villagerOnlyTrades` (trades with a `merchant_predicate` on `minecraft:villager/variant`); `villagerOnly` only on `cartographer/level_2` (7 of 8), `cartographer/level_4` (15 of 16) and `fisherman/level_5` (5 of 6); `wandering_trader/common` 78 trades. B469 saw armourer level 5 give a project mob no offers although none of its trades carries such a predicate: another cause (verify at implementation, B474) | the Loom-cached 26.3 client jar's `data/minecraft/trade_set`, `villager_trade`, `tags/villager_trade` (default data pack, no experiments; `all/test/villagers.test.ts`, skipped without the jar) and vendored `registries.json` `trade_set`; 2026-11-15 |
++| `blocks.fluidModel`, `blocks.fluidTags` (ADR 0099 D4; plugin API 1.18.0) | `two_fluids` (the `fluid` registry holds `flowing_water` and `flowing_lava`); `fluidTags` `water` `minecraft:water`, `lava` `minecraft:lava` (vanilla's tags list the flowing fluids too, so lowering adds `<ns>:flowing_<path>`); no `swimmable` tag | vendored `registries.json` (`fluid`, `tag/fluid`) and the Loom-cached 26.3 client jar's fluid tags (`all/test/targets.test.ts`, `all/test/villagers.test.ts`, `test/target.test.ts`); 2026-11-15 |
+ 
+ ## Vendored data
+ 
+diff --git a/packages/targets/mc-26.3/src/target.ts b/packages/targets/mc-26.3/src/target.ts
+index 6d58e49..9db1d42 100644
+--- a/packages/targets/mc-26.3/src/target.ts
++++ b/packages/targets/mc-26.3/src/target.ts
+@@ -659,6 +659,17 @@ export const target: Target = {
+       'minecraft:block/scaffolding_unstable',
+     ],
+     defaultTorchParticle: 'minecraft:flame',
++    // fluidModel, fluidTags (ADR 0099 D4; plugin API 1.18.0): 26.3 registers a liquid as two fluids
++    // (the vendored `registries.json` `fluid` list holds `flowing_water` and `flowing_lava`), so
++    // lowering adds `<ns>:flowing_<path>` to the tags too; the tags are the vendored `tag/fluid` names
++    // a water-like or lava-like project fluid joins. Verified 2026-11-15 against the vendored
++    // registries and the Loom-cached 26.3 client jar's fluid tags (`all/test/targets.test.ts`,
++    // `all/test/villagers.test.ts`).
++    fluidModel: 'two_fluids',
++    fluidTags: {
++      water: ['minecraft:water'],
++      lava: ['minecraft:lava'],
++    },
+   },
+   // entities (ADR 0070 D7, ADR 0071 D4): the vanilla items a ranged mob may fire and the tag the
+   // vanilla saddle equips. Verified 2026-11-14 with javap over the Loom-cached 26.3 merged jar: each
+@@ -685,6 +696,160 @@ export const target: Target = {
+       'minecraft:wind_charge',
+     ],
+     saddleTag: 'minecraft:can_equip_saddle',
++    // tradeSounds, vanillaJobSites, vanillaTradeSets (ADR 0098 D1, D2, D5; plugin API 1.18.0).
++    // tradeSounds: vanilla villager sound events, each in the vendored `registries.json`
++    // `sound_event` list. vanillaJobSites: one entry per vendored `point_of_interest_type` id, its
++    // blocks the vanilla blocks of that kind (beds from the jar's `#minecraft:beds` plus
++    // `straw_bed`, cauldrons from `#minecraft:cauldrons`, rods from `#minecraft:lightning_rods`);
++    // which states each point of interest type holds is the game's code and was not read: the
++    // block lists, `straw_bed` in `home` above all, are (verify at implementation) in a GameTest
++    // with `PoiTypes.hasPoi`. vanillaTradeSets: every vendored `trade_set` id with the number of
++    // distinct trades its trade tags resolve to and how many carry a `merchant_predicate` on
++    // `minecraft:villager/variant`, counted 2026-11-15 from the Loom-cached 26.3 client jar's
++    // `data/minecraft/trade_set`, `villager_trade` and `tags/villager_trade` (default data pack,
++    // no experiments; `all/test/villagers.test.ts` recounts them when the jar is cached).
++    tradeSounds: {
++      yes: 'minecraft:entity.villager.yes',
++      no: 'minecraft:entity.villager.no',
++      trading: 'minecraft:entity.villager.trade',
++    },
++    vanillaJobSites: {
++      'minecraft:armorer': ['minecraft:blast_furnace'],
++      'minecraft:bee_nest': ['minecraft:bee_nest'],
++      'minecraft:beehive': ['minecraft:beehive'],
++      'minecraft:butcher': ['minecraft:smoker'],
++      'minecraft:cartographer': ['minecraft:cartography_table'],
++      'minecraft:cleric': ['minecraft:brewing_stand'],
++      'minecraft:farmer': ['minecraft:composter'],
++      'minecraft:fisherman': ['minecraft:barrel'],
++      'minecraft:fletcher': ['minecraft:fletching_table'],
++      'minecraft:home': [
++        'minecraft:white_bed',
++        'minecraft:orange_bed',
++        'minecraft:magenta_bed',
++        'minecraft:light_blue_bed',
++        'minecraft:yellow_bed',
++        'minecraft:lime_bed',
++        'minecraft:pink_bed',
++        'minecraft:gray_bed',
++        'minecraft:light_gray_bed',
++        'minecraft:cyan_bed',
++        'minecraft:purple_bed',
++        'minecraft:blue_bed',
++        'minecraft:brown_bed',
++        'minecraft:green_bed',
++        'minecraft:red_bed',
++        'minecraft:black_bed',
++        'minecraft:straw_bed',
++      ],
++      'minecraft:leatherworker': [
++        'minecraft:cauldron',
++        'minecraft:water_cauldron',
++        'minecraft:lava_cauldron',
++        'minecraft:powder_snow_cauldron',
++      ],
++      'minecraft:librarian': ['minecraft:lectern'],
++      'minecraft:lightning_rod': [
++        'minecraft:lightning_rod',
++        'minecraft:exposed_lightning_rod',
++        'minecraft:weathered_lightning_rod',
++        'minecraft:oxidized_lightning_rod',
++        'minecraft:waxed_lightning_rod',
++        'minecraft:waxed_exposed_lightning_rod',
++        'minecraft:waxed_weathered_lightning_rod',
++        'minecraft:waxed_oxidized_lightning_rod',
++      ],
++      'minecraft:lodestone': ['minecraft:lodestone'],
++      'minecraft:mason': ['minecraft:stonecutter'],
++      'minecraft:meeting': ['minecraft:bell'],
++      'minecraft:nether_portal': ['minecraft:nether_portal'],
++      'minecraft:shepherd': ['minecraft:loom'],
++      'minecraft:test_instance': ['minecraft:test_instance_block'],
++      'minecraft:toolsmith': ['minecraft:smithing_table'],
++      'minecraft:weaponsmith': ['minecraft:grindstone'],
++    },
++    vanillaTradeSets: {
++      'minecraft:armorer/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_2': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_3': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_1': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_4': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cartographer/level_1': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cartographer/level_2': { trades: 8, villagerOnlyTrades: 7, villagerOnly: true },
++      'minecraft:cartographer/level_3': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cartographer/level_4': { trades: 16, villagerOnlyTrades: 15, villagerOnly: true },
++      'minecraft:cartographer/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_1': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_4': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_1': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_4': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_5': { trades: 6, villagerOnlyTrades: 5, villagerOnly: true },
++      'minecraft:fletcher/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_5': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_3': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_4': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_1': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_3': { trades: 7, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_4': { trades: 33, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_2': { trades: 37, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_3': { trades: 21, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_4': { trades: 22, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_3': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_4': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:wandering_trader/buying': {
++        trades: 6,
++        villagerOnlyTrades: 0,
++        villagerOnly: false,
++      },
++      'minecraft:wandering_trader/common': {
++        trades: 78,
++        villagerOnlyTrades: 0,
++        villagerOnly: false,
++      },
++      'minecraft:wandering_trader/uncommon': {
++        trades: 16,
++        villagerOnlyTrades: 0,
++        villagerOnly: false,
++      },
++      'minecraft:weaponsmith/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_3': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++    },
+   },
+   // particles (ADR 0080 D9; plugin API 1.14.0): the vanilla particle types that take options,
+   // and the resource pack folders of particle descriptions and pictures. Verified 2026-11-14: the
+diff --git a/packages/targets/mc-26.3/test/target.test.ts b/packages/targets/mc-26.3/test/target.test.ts
+index 7532d52..6f7411f 100644
+--- a/packages/targets/mc-26.3/test/target.test.ts
++++ b/packages/targets/mc-26.3/test/target.test.ts
+@@ -332,6 +332,50 @@ describe('target mc-26.3', () => {
+     }
+   });
+ 
++  it('lists the fluid model and tags of this version (ADR 0099 D4)', async () => {
++    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
++      string,
++      string[]
++    >;
++    // Two fluids per liquid: the flowing ids are registered and in the vanilla tags' members.
++    expect(target.blocks?.fluidModel).toBe('two_fluids');
++    expect(registries.fluid).toEqual(['empty', 'flowing_lava', 'flowing_water', 'lava', 'water']);
++    expect(target.blocks?.fluidTags).toEqual({
++      water: ['minecraft:water'],
++      lava: ['minecraft:lava'],
++    });
++    expect(registries['tag/fluid']).not.toContain('swimmable');
++  });
++
++  it('lists the trade sets and points of interest of this version (ADR 0098 D2, D5)', async () => {
++    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
++      string,
++      string[]
++    >;
++    const sets = target.entities?.vanillaTradeSets ?? {};
++    expect(Object.keys(sets)).toHaveLength(68);
++    expect(registries.point_of_interest_type).toHaveLength(21);
++    expect(Object.keys(target.entities?.vanillaJobSites ?? {})).toHaveLength(21);
++    // Only the cartographer's maps and banners and the fisherman's boats depend on the
++    // villager's biome type (B469 found them missing for a project trader).
++    const villagerOnly = Object.entries(sets)
++      .filter(([, facts]) => facts.villagerOnly)
++      .map(([id]) => id);
++    expect(villagerOnly).toEqual([
++      'minecraft:cartographer/level_2',
++      'minecraft:cartographer/level_4',
++      'minecraft:fisherman/level_5',
++    ]);
++    expect(sets['minecraft:wandering_trader/common']).toEqual({
++      trades: 78,
++      villagerOnlyTrades: 0,
++      villagerOnly: false,
++    });
++    expect(target.entities?.vanillaJobSites?.['minecraft:librarian']).toEqual([
++      'minecraft:lectern',
++    ]);
++  });
++
+   it('lists the feature decoration steps in the vendored mcdoc order', async () => {
+     const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
+       mcdoc: Record<string, { kind: string; values?: { value: unknown }[] }>;
+diff --git a/packages/targets/mc-26.4/CHANGES.md b/packages/targets/mc-26.4/CHANGES.md
+index 8623ff7..1e2ebdb 100644
+--- a/packages/targets/mc-26.4/CHANGES.md
++++ b/packages/targets/mc-26.4/CHANGES.md
+@@ -56,6 +56,10 @@ Checked on 2026-11-05.
+ | `commands` (ADR 0096 D1, D6; plugin API 1.17.0) | `vanillaNames` the 94 root literals of the vendored `commands.json`, sorted; `argumentTypes` MSM's twelve names to Brigadier parsers: `integer` `brigadier:integer`, `number` `brigadier:double`, `word`/`text` `brigadier:string` `word`/`greedy`, `boolean` `brigadier:bool`, `player`/`players`/`entity` `minecraft:entity` (single players, multiple players, single entities), `position` `minecraft:vec3`, `block_position` `minecraft:block_pos`, `item` `minecraft:item_stack`, `block` `minecraft:block_state` | vendored `commands.json` (each parser and properties pair occurs on an argument node) and `registries.json` `command_argument_type`; 2026-11-15 |
+ | `worldgen.dimensionHeight` (ADR 0100 D5; plugin API 1.18.0) | `minY` -2032, `maxY` 2031 (the highest block: `min_y + height - 1`), `step` 16; the same as 26.3 | the vendored mcdoc `DimensionType`: `min_y` -2032 to 2031, `height` 16 to 4064, both `divisible_by` 16 (`test/target.test.ts`); 2026-11-15 |
+ | `worldgen.environmentAttributes` (ADR 0100 D5; plugin API 1.18.0) | the 52 ids of the `environment_attribute` registry, namespaced and sorted (26.3's 51 plus `visual/has_sky_occluder`); read by the Dimension Type Studio and `worldgen.dimension-attribute-unknown` | vendored `registries.json` (`test/target.test.ts`); 2026-11-15 |
++| `entities.tradeSounds` (ADR 0098 D1, D5; plugin API 1.18.0) | `yes` `minecraft:entity.villager.yes` (an `msm:trader`'s default `trade_sound`), `no` `minecraft:entity.villager.no`, `trading` `minecraft:entity.villager.trade` | vendored `registries.json` `sound_event` (`all/test/targets.test.ts`); 2026-11-15 |
++| `entities.vanillaJobSites` (ADR 0098 D2, D5; plugin API 1.18.0) | the 21 `point_of_interest_type` ids, each with its vanilla blocks: the 13 workstations (the leatherworker's four cauldrons), `home` the 16 beds of `#minecraft:beds` plus `straw_bed`, `meeting` the bell, `bee_nest`, `beehive`, `lightning_rod` the eight copper rods of `#minecraft:lightning_rods`, `lodestone`, `nether_portal`, `test_instance` `test_instance_block`; the states each type holds are the game's code (not read): the block lists, `straw_bed` above all, are (verify at implementation) | vendored `registries.json` (`point_of_interest_type`, `block`, `tag/point_of_interest_type`), the Loom-cached 26.4-snapshot-7 client jar's block tags and `acquirable_job_site` (`all/test/targets.test.ts`, `all/test/villagers.test.ts`); 2026-11-15 |
++| `entities.vanillaTradeSets` (ADR 0098 D1, D5 as amended; plugin API 1.18.0) | the 68 `trade_set` ids with `trades` (distinct trades, tags resolved) and `villagerOnlyTrades` (trades with a `merchant_predicate` on `minecraft:villager/variant`); `villagerOnly` only on `cartographer/level_2` (7 of 8), `cartographer/level_4` (15 of 16) and `fisherman/level_5` (5 of 6); `wandering_trader/common` 80 trades. B469 saw armourer level 5 give a project mob no offers although none of its trades carries such a predicate: another cause (verify at implementation, B474) | the Loom-cached 26.4-snapshot-7 client jar's `data/minecraft/trade_set`, `villager_trade`, `tags/villager_trade` (default data pack, no experiments; `all/test/villagers.test.ts`, skipped without the jar) and vendored `registries.json` `trade_set`; 2026-11-15 |
++| `blocks.fluidModel`, `blocks.fluidTags` (ADR 0099 D4; plugin API 1.18.0) | `one_fluid` (the `fluid` registry is `empty`, `lava`, `water`); `fluidTags` `water` `minecraft:water` and `minecraft:swimmable` (the swimming pose, B470), `lava` `minecraft:lava` | vendored `registries.json` (`fluid`, `tag/fluid`) and the Loom-cached 26.4-snapshot-7 client jar's fluid tags (`all/test/targets.test.ts`, `all/test/villagers.test.ts`, `test/target.test.ts`); 2026-11-15 |
+ 
+ ## Vendored data
+ 
+diff --git a/packages/targets/mc-26.4/src/target.ts b/packages/targets/mc-26.4/src/target.ts
+index db97bb8..a2c11c3 100644
+--- a/packages/targets/mc-26.4/src/target.ts
++++ b/packages/targets/mc-26.4/src/target.ts
+@@ -665,6 +665,17 @@ export const target: Target = {
+       'minecraft:block/scaffolding_unstable',
+     ],
+     defaultTorchParticle: 'minecraft:flame',
++    // fluidModel, fluidTags (ADR 0099 D4; plugin API 1.18.0): 26.4 registers a liquid as one fluid
++    // (the vendored `registries.json` `fluid` list is `empty`, `lava`, `water`); the tags are the
++    // vendored `tag/fluid` names a water-like or lava-like project fluid joins, with `swimmable` (the
++    // swimming pose follows it on 26.4; B470). Verified 2026-11-15 against the vendored registries and
++    // the Loom-cached 26.4-snapshot-7 client jar's fluid tags (`all/test/targets.test.ts`,
++    // `all/test/villagers.test.ts`).
++    fluidModel: 'one_fluid',
++    fluidTags: {
++      water: ['minecraft:water', 'minecraft:swimmable'],
++      lava: ['minecraft:lava'],
++    },
+   },
+   // entities (ADR 0070 D7, ADR 0071 D4): the vanilla items a ranged mob may fire and the tag the
+   // vanilla saddle equips. Verified 2026-11-14 with javap over the Loom-cached 26.4-snapshot-7
+@@ -693,6 +704,161 @@ export const target: Target = {
+       'minecraft:ice_ball',
+     ],
+     saddleTag: 'minecraft:can_equip_saddle',
++    // tradeSounds, vanillaJobSites, vanillaTradeSets (ADR 0098 D1, D2, D5; plugin API 1.18.0).
++    // tradeSounds: vanilla villager sound events, each in the vendored `registries.json`
++    // `sound_event` list. vanillaJobSites: one entry per vendored `point_of_interest_type` id, its
++    // blocks the vanilla blocks of that kind (beds from the jar's `#minecraft:beds` plus
++    // `straw_bed`, cauldrons from `#minecraft:cauldrons`, rods from `#minecraft:lightning_rods`);
++    // which states each point of interest type holds is the game's code and was not read: the
++    // block lists, `straw_bed` in `home` above all, are (verify at implementation) in a GameTest
++    // with `PoiTypes.hasPoi`. vanillaTradeSets: every vendored `trade_set` id with the number of
++    // distinct trades its trade tags resolve to and how many carry a `merchant_predicate` on
++    // `minecraft:villager/variant`, counted 2026-11-15 from the Loom-cached 26.4-snapshot-7 client
++    // jar's
++    // `data/minecraft/trade_set`, `villager_trade` and `tags/villager_trade` (default data pack,
++    // no experiments; `all/test/villagers.test.ts` recounts them when the jar is cached).
++    tradeSounds: {
++      yes: 'minecraft:entity.villager.yes',
++      no: 'minecraft:entity.villager.no',
++      trading: 'minecraft:entity.villager.trade',
++    },
++    vanillaJobSites: {
++      'minecraft:armorer': ['minecraft:blast_furnace'],
++      'minecraft:bee_nest': ['minecraft:bee_nest'],
++      'minecraft:beehive': ['minecraft:beehive'],
++      'minecraft:butcher': ['minecraft:smoker'],
++      'minecraft:cartographer': ['minecraft:cartography_table'],
++      'minecraft:cleric': ['minecraft:brewing_stand'],
++      'minecraft:farmer': ['minecraft:composter'],
++      'minecraft:fisherman': ['minecraft:barrel'],
++      'minecraft:fletcher': ['minecraft:fletching_table'],
++      'minecraft:home': [
++        'minecraft:white_bed',
++        'minecraft:orange_bed',
++        'minecraft:magenta_bed',
++        'minecraft:light_blue_bed',
++        'minecraft:yellow_bed',
++        'minecraft:lime_bed',
++        'minecraft:pink_bed',
++        'minecraft:gray_bed',
++        'minecraft:light_gray_bed',
++        'minecraft:cyan_bed',
++        'minecraft:purple_bed',
++        'minecraft:blue_bed',
++        'minecraft:brown_bed',
++        'minecraft:green_bed',
++        'minecraft:red_bed',
++        'minecraft:black_bed',
++        'minecraft:straw_bed',
++      ],
++      'minecraft:leatherworker': [
++        'minecraft:cauldron',
++        'minecraft:water_cauldron',
++        'minecraft:lava_cauldron',
++        'minecraft:powder_snow_cauldron',
++      ],
++      'minecraft:librarian': ['minecraft:lectern'],
++      'minecraft:lightning_rod': [
++        'minecraft:lightning_rod',
++        'minecraft:exposed_lightning_rod',
++        'minecraft:weathered_lightning_rod',
++        'minecraft:oxidized_lightning_rod',
++        'minecraft:waxed_lightning_rod',
++        'minecraft:waxed_exposed_lightning_rod',
++        'minecraft:waxed_weathered_lightning_rod',
++        'minecraft:waxed_oxidized_lightning_rod',
++      ],
++      'minecraft:lodestone': ['minecraft:lodestone'],
++      'minecraft:mason': ['minecraft:stonecutter'],
++      'minecraft:meeting': ['minecraft:bell'],
++      'minecraft:nether_portal': ['minecraft:nether_portal'],
++      'minecraft:shepherd': ['minecraft:loom'],
++      'minecraft:test_instance': ['minecraft:test_instance_block'],
++      'minecraft:toolsmith': ['minecraft:smithing_table'],
++      'minecraft:weaponsmith': ['minecraft:grindstone'],
++    },
++    vanillaTradeSets: {
++      'minecraft:armorer/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_2': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_3': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:armorer/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_1': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_4': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:butcher/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cartographer/level_1': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cartographer/level_2': { trades: 8, villagerOnlyTrades: 7, villagerOnly: true },
++      'minecraft:cartographer/level_3': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cartographer/level_4': { trades: 16, villagerOnlyTrades: 15, villagerOnly: true },
++      'minecraft:cartographer/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_1': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_4': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:cleric/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:farmer/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_1': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_4': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fisherman/level_5': { trades: 6, villagerOnlyTrades: 5, villagerOnly: true },
++      'minecraft:fletcher/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:fletcher/level_5': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_3': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:leatherworker/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_2': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_3': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_4': { trades: 4, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:librarian/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_1': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_3': { trades: 7, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_4': { trades: 33, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:mason/level_5': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_2': { trades: 37, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_3': { trades: 21, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_4': { trades: 22, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:shepherd/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_1': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_3': { trades: 5, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_4': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:toolsmith/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:wandering_trader/buying': {
++        trades: 6,
++        villagerOnlyTrades: 0,
++        villagerOnly: false,
++      },
++      'minecraft:wandering_trader/common': {
++        trades: 80,
++        villagerOnlyTrades: 0,
++        villagerOnly: false,
++      },
++      'minecraft:wandering_trader/uncommon': {
++        trades: 16,
++        villagerOnlyTrades: 0,
++        villagerOnly: false,
++      },
++      'minecraft:weaponsmith/level_1': { trades: 3, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_2': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_3': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_4': { trades: 2, villagerOnlyTrades: 0, villagerOnly: false },
++      'minecraft:weaponsmith/level_5': { trades: 1, villagerOnlyTrades: 0, villagerOnly: false },
++    },
+   },
+   // particles (ADR 0080 D9; plugin API 1.14.0): the vanilla particle types that take options,
+   // and the resource pack folders of particle descriptions and pictures. Verified 2026-11-14: the
+diff --git a/packages/targets/mc-26.4/test/target.test.ts b/packages/targets/mc-26.4/test/target.test.ts
+index a051b6d..617353d 100644
+--- a/packages/targets/mc-26.4/test/target.test.ts
++++ b/packages/targets/mc-26.4/test/target.test.ts
+@@ -336,6 +336,50 @@ describe('target mc-26.4', () => {
+     }
+   });
+ 
++  it('lists the fluid model and tags of this version (ADR 0099 D4)', async () => {
++    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
++      string,
++      string[]
++    >;
++    // One fluid per liquid, and the swimming pose's own tag (B470).
++    expect(target.blocks?.fluidModel).toBe('one_fluid');
++    expect(registries.fluid).toEqual(['empty', 'lava', 'water']);
++    expect(target.blocks?.fluidTags).toEqual({
++      water: ['minecraft:water', 'minecraft:swimmable'],
++      lava: ['minecraft:lava'],
++    });
++    expect(registries['tag/fluid']).toContain('swimmable');
++  });
++
++  it('lists the trade sets and points of interest of this version (ADR 0098 D2, D5)', async () => {
++    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
++      string,
++      string[]
++    >;
++    const sets = target.entities?.vanillaTradeSets ?? {};
++    expect(Object.keys(sets)).toHaveLength(68);
++    expect(registries.point_of_interest_type).toHaveLength(21);
++    expect(Object.keys(target.entities?.vanillaJobSites ?? {})).toHaveLength(21);
++    // Only the cartographer's maps and banners and the fisherman's boats depend on the
++    // villager's biome type (B469 found them missing for a project trader).
++    const villagerOnly = Object.entries(sets)
++      .filter(([, facts]) => facts.villagerOnly)
++      .map(([id]) => id);
++    expect(villagerOnly).toEqual([
++      'minecraft:cartographer/level_2',
++      'minecraft:cartographer/level_4',
++      'minecraft:fisherman/level_5',
++    ]);
++    expect(sets['minecraft:wandering_trader/common']).toEqual({
++      trades: 80,
++      villagerOnlyTrades: 0,
++      villagerOnly: false,
++    });
++    expect(target.entities?.vanillaJobSites?.['minecraft:librarian']).toEqual([
++      'minecraft:lectern',
++    ]);
++  });
++
+   it('lists the feature decoration steps in the vendored mcdoc order', async () => {
+     const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
+       mcdoc: Record<string, { kind: string; values?: { value: unknown }[] }>;

@@ -6127,3 +6127,13 @@ Next
 
 **Next**
 - Fix `controls-path` in CI, fast-forward `main`, then Wave 10 (B472, B473) and on through B485 (`docs/HANDOFF.md` "Next").
+
+## 2026-11-15 — main session — Handover: work stopped part-way
+
+**What**
+- The project goes to another agent, so this session's three running jobs were stopped and nothing more is merged from here: the `controls-path` CI fix, B472 and B473. Their uncommitted changes are kept as patches in `docs/reference/unfinished/` (against b96a5de; all three apply to the current branch, B473 with `--exclude=docs/DEVLOG.md`), with a README on what each holds and what is left.
+- Root cause of the red `controls-path` test, found by the stopped job: the Rules section's edits go through the asynchronous `applyChangeset`, so an edit can land while `session.save()` writes the files, and the project stays unsaved. The patch makes `flushPendingEdits()` awaitable and has Save, the close request and Play wait for it.
+- `docs/HANDOFF.md` "State at handover" and "Next", and `AGENTS.md`, point to the patches.
+
+**Next**
+- Finish the `controls-path` patch first (CI green, then fast-forward `main`), then B472 and B473, then Wave 11.
