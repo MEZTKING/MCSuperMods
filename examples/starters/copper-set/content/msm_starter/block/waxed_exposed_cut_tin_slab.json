@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Exposed Cut Tin Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/exposed_cut_tin"
+    },
+    "type": "slab"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_exposed_cut_tin_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Exposed Cut Tin Slab: exposed cut tin slab under wax, which never ages. An axe scrapes the wax off and gives msm_starter:exposed_cut_tin_slab back."
+  }
+}

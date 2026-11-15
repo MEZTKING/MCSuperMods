@@ -98,12 +98,17 @@ const WIZARDS = [
   'stone-set',
   'crop',
   'tree',
+  'copper-set',
+  'lights',
+  'bed',
   'storage-crate',
   'machine',
   'food',
+  'cake',
   'weapon',
   'consumable',
   'totem',
+  'backpack',
   'status-effect',
   'potion',
   'particle',
@@ -129,6 +134,8 @@ const WIZARDS = [
   'vehicle-plane',
   'vehicle-boat',
   'scripted-item',
+  'custom-command',
+  'creative-tab',
 ];
 
 /** The Creator flows (ADR 0043 D1) and their groups. */
@@ -146,6 +153,13 @@ const FLOWS: Record<string, string> = {
   weapon: 'gear',
   consumable: 'food',
   totem: 'gear',
+  backpack: 'gear',
+  'copper-set': 'blocks',
+  lights: 'blocks',
+  bed: 'blocks',
+  cake: 'food',
+  'custom-command': 'scripts',
+  'creative-tab': 'scripts',
   'status-effect': 'magic',
   potion: 'magic',
   particle: 'magic',
@@ -221,6 +235,13 @@ describe('wizard starters', () => {
     expect(groups('vehicle-tank')).toEqual(['Vehicle', 'Driving', 'Cannon', 'Recipe']);
     expect(groups('vehicle-plane')).toEqual(['Vehicle', 'Driving', 'Recipe']);
     expect(groups('vehicle-boat')).toEqual(['Vehicle', 'Driving', 'Extras', 'Recipe']);
+    expect(groups('copper-set')).toEqual(['Metal', 'Pieces']);
+    expect(groups('lights')).toEqual(['Lights', 'Pictures']);
+    expect(groups('bed')).toEqual(['Bed']);
+    expect(groups('cake')).toEqual(['Cake', 'Food']);
+    expect(groups('backpack')).toEqual(['Bag', 'Recipes']);
+    expect(groups('custom-command')).toEqual(['Command', 'What it does']);
+    expect(groups('creative-tab')).toEqual(['Tab', 'First block']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {

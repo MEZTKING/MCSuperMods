@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "minecraft:glowstone_dust",
+      "N": "minecraft:iron_nugget"
+    },
+    "pattern": [
+      "N",
+      "#",
+      "N"
+    ],
+    "result": {
+      "id": "msm_starter:glow_chain"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_chain_from_glowstone_dust",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "glowstone dust between two iron nuggets makes a chain."
+  }
+}

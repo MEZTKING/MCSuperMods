@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_cut_tin"
+      },
+      "msm:weathering": {
+        "next": "msm_starter:exposed_cut_tin",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Cut Tin",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/cut_tin",
+    "sound_type": "copper"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cut_tin",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Cut metal: the block in four tiles. Mined with a stone pickaxe or better, as copper. Cut Tin: on random ticks it slowly ages into the exposed stage, msm_starter:exposed_cut_tin, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_starter:waxed_cut_tin."
+  }
+}

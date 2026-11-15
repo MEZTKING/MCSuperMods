@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_starter:tin_block",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_starter:waxed_tin_block"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_tin_block_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Block of Tin and a honeycomb in the crafting grid make waxed block of tin, as vanilla waxes copper."
+  }
+}

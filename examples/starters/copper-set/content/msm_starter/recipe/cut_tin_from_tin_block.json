@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_starter:tin_block"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_starter:cut_tin"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cut_tin_from_tin_block",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four blocks make four cut blocks."
+  }
+}

@@ -119,6 +119,8 @@ describe('Wood set flow (ADR 0069 D1)', () => {
       'demo:maple_trapdoor_from_planks': 'wooden_trapdoor',
       'demo:maple_button_from_planks': 'wooden_button',
       'demo:maple_pressure_plate_from_planks': 'wooden_pressure_plate',
+      'demo:maple_sign_from_planks': 'wooden_sign',
+      'demo:maple_hanging_sign_from_stripped_logs': 'hanging_sign',
     });
     expect(data(bundle, 'demo:maple_planks_from_logs').ingredients).toEqual(['#demo:maple_logs']);
     const logs = [

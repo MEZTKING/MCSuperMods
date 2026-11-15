@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_starter:exposed_tin_bars",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_starter:waxed_exposed_tin_bars"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_exposed_tin_bars_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Exposed Tin Bars and a honeycomb in the crafting grid make waxed exposed tin bars, as vanilla waxes copper."
+  }
+}

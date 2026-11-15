@@ -62,6 +62,7 @@ import blocksItemsPlugin, {
   blockStateFlag,
   blockTypeOf,
   bundleModelIds,
+  signGuiTexturePath,
 } from '@msm/plugin-blocks-items';
 import controlsPlugin from '@msm/plugin-controls';
 import dataPackPlugin from '@msm/plugin-datapack';
@@ -708,6 +709,9 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       members: ['planks', 'stairs', 'slab', 'door', 'sapling', 'leaves'],
     },
     { members: ['log', 'leaves', 'sapling', 'stripped_log', 'wood'], grows: true },
+    // ADR 0101 D2: no signs, or signs without hanging signs.
+    { wood_name: 'Larch', signs: false, hanging_signs: false },
+    { wood_name: 'Ash', hanging_signs: false, wood_type: 'birch' },
   ],
   'stone-set': [
     {
@@ -730,6 +734,14 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { stone_name: 'Basalt Rock', members: ['polished', 'stairs', 'wall'], tool_tier: 'any' },
     { members: ['stairs', 'pillar', 'button'] },
+    // ADR 0101 D2: a copper-like set that ages, every member, a picked picture.
+    {
+      stone_name: 'Old Brick',
+      ages: true,
+      aged_colour: '#507040',
+      members: ['block', 'stairs', 'slab', 'wall', 'polished', 'bricks', 'pillar', 'button'],
+      picture_bricks: pngDataUrl(16, 16),
+    },
   ],
   // ADR 0069 D1: seeds or the produce, every stage choice, wild patches, pictures.
   crop: [
@@ -759,6 +771,53 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       picture_produce: pngDataUrl(16, 16),
     },
     { crop_name: 'Corn', seeds_name: 'Corn' },
+    // ADR 0101 D2: what it grows on, and the bush with berries.
+    { crop_name: 'Soul Root', soil: 'soul_sand', villagers: false },
+    { crop_name: 'Dune Melon', soil: 'sand', wild: true },
+    {
+      crop_name: 'Blue Berry',
+      plant: 'berry_bush',
+      harvest_max: 4,
+      wild: true,
+      produce_compost: 'none',
+      picture_stage1: pngDataUrl(16, 16),
+    },
+  ],
+  // ADR 0101 D2: the vanilla parity flows of batch 1.
+  'copper-set': [
+    { metal_name: 'Bronze', colour: '#b07838', members: ['block', 'cut', 'stairs'], waxed: false },
+    { metal_name: 'Zinc', ingot: false, members: ['slab', 'door', 'trapdoor', 'bars'] },
+  ],
+  lights: [
+    {
+      light_name: 'Soul',
+      flame_colour: '#60c8e0',
+      particle: 'minecraft:soul_fire_flame',
+      ingredient: 'minecraft:blaze_powder',
+      members: ['lantern', 'candle'],
+    },
+    { light_name: 'Crystal', picture: pngDataUrl(16, 16), ingredient: 'none' },
+  ],
+  bed: [
+    { bed_name: 'Camp', kind: 'sleeping_bag', colour: 'green' },
+    { bed_name: 'Royal', colour: 'purple', recipe: false },
+  ],
+  cake: [
+    { cake_name: 'Apple Pie', style: 'pie', flavour: 'minecraft:apple', nutrition: 4 },
+    { cake_name: 'Choc Cake', flavour: 'minecraft:cocoa_beans', saturation: 0.4, recipe: false },
+  ],
+  backpack: [
+    { bag_name: 'Satchel', rows: 1, open: 'sneak_use', dye_recipe: true, dye: 'blue' },
+    { bag_name: 'Big Pack', rows: 6, recipe: false },
+  ],
+  'custom-command': [
+    { command_name: 'zoom', action: 'effect', effect: 'minecraft:speed', seconds: 60 },
+    { command_name: 'snack', action: 'item', item: 'minecraft:cookie', count: 8, who: 'operators' },
+    { command_name: 'hop', action: 'launch', message: '' },
+  ],
+  'creative-tab': [
+    { tab_name: 'Gems', icon: 'minecraft:emerald', order: 'by_name' },
+    { tab_name: 'Empty Tab', first_block: false },
   ],
   // ADR 0069 D1: vanilla logs and leaves, every tree shape, a tinted leaf, pictures.
   tree: [
@@ -964,6 +1023,13 @@ const MIRRORED_STARTERS = [
   'vehicle-tank',
   'vehicle-plane',
   'vehicle-boat',
+  'copper-set',
+  'lights',
+  'bed',
+  'cake',
+  'backpack',
+  'custom-command',
+  'creative-tab',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -1951,6 +2017,64 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         expect(jarFiles).toContain(`msm/demo/vehicle/${path}.json`);
         expect(jarFiles).toContain(`assets/demo/textures/entity/${path}.png`);
         expect(jarFiles).toContain(`assets/demo/textures/item/${path}.png`);
+      },
+    );
+
+    /**
+     * The vanilla parity flows of batch 1 (ADR 0101 D2) with untouched defaults, and the new
+     * answers of the Wood set (signs, on by default), Stone set (ageing) and Crop (soil, bush).
+     */
+    const parityCases = (
+      [
+        ['copper-set', {}],
+        ['lights', {}],
+        ['bed', {}],
+        ['cake', {}],
+        ['backpack', {}],
+        ['custom-command', {}],
+        ['creative-tab', {}],
+        ['wood-set', {}],
+        ['stone-set', { ages: true }],
+        ['crop', { plant: 'berry_bush' }],
+        ['crop', { soil: 'dirt' }],
+      ] as const
+    ).flatMap(([id, values]) => {
+      const starter = starters.find((entry) => entry.id === id);
+      return starter === undefined
+        ? []
+        : [[`${id} ${JSON.stringify(values)}`, starter, values as Record<string, Json>] as const];
+    });
+
+    it('offers the vanilla parity flows on every target with Fabric (ADR 0101 D2)', () => {
+      const ids = new Set(parityCases.map(([, starter]) => starter.id));
+      expect(ids.size).toBe(bundle.target.fabric === undefined ? 8 : 10);
+    });
+
+    it.each(parityCases)(
+      'vanilla parity flow %s gives zero problems, warnings included, and every sign has its writing screen picture (ADR 0101 D2)',
+      async (_label, starter, values) => {
+        const built = await buildProject('Parity Test', 'demo', [
+          buildEntry(starter, 'demo', 'Parity Test', bundle.target, values),
+        ]);
+        const { warnings } = await checkProject(bundle, context, built);
+        expect(warnings).toEqual([]);
+        // The app's `blocks-items.sign-gui-picture-missing` check, on the same project.
+        for (const namespace of built.project.namespaces) {
+          for (const element of namespace.elements) {
+            const type = (element.data as { type?: unknown }).type;
+            if (element.kind !== 'msm:block' || (type !== 'sign' && type !== 'hanging_sign')) {
+              continue;
+            }
+            const [, owner, ...rest] = signGuiTexturePath(bundle.target, element.id, type).split(
+              '/',
+            );
+            const path = rest.join('/');
+            const found = built.project.namespaces.some(
+              (entry) => entry.name === owner && entry.assets.some((asset) => asset.path === path),
+            );
+            expect(found, `${element.id} ${path}`).toBe(true);
+          }
+        }
       },
     );
 

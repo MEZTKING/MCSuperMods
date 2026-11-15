@@ -22,6 +22,17 @@
  * (vanilla 26.x has no `random_patch` feature; patches are placement counts and offsets) and an
  * `msm:biome_addition`; the crop's soil then becomes a project block tag of farmland and grass
  * blocks, so the wild plants survive where they grow.
+ *
+ * "Grows on" (ADR 0101 D2) sets the crop's `soil`: farmland (the default, vanilla's
+ * `#minecraft:supports_crops`), grass and dirt, sand, or soul sand and soul soil as nether wart
+ * (a block tag each).
+ *
+ * "What it is: Bush with berries" (ADR 0101 D2, ADR 0094 D2, D5) makes a `berry_bush` instead:
+ * four ages, harvested by using it at the last two (the bush goes back to its second age), its
+ * berries the bush's own block item (`<name>`, edible through the vanilla food components) and
+ * planted from them, as sweet berries; the bush `<name>_bush` slows and hurts what walks
+ * through it. Its pictures are MSM's own (`assets/vanilla-parity`); its wild patches grow on
+ * grass, where vanilla's bush rule lets it.
  */
 import type {
   BundleContext,
@@ -32,6 +43,7 @@ import type {
   StarterParameter,
 } from '@msm/plugin-api';
 import type { PlaceholderPattern, Rgb } from '../assets/png';
+import { berriesItemPng, berryBushPng } from '../assets/vanilla-parity/index';
 import {
   COLOURS,
   element,
@@ -61,6 +73,18 @@ const STAGES: readonly { value: string; label: string; textures: number; maxAge:
   { value: 'four', label: 'Four looks over eight stages, as potatoes', textures: 4, maxAge: 7 },
   { value: 'eight', label: 'Eight looks, one per stage, as wheat', textures: 8, maxAge: 7 },
   { value: 'short', label: 'Four looks over four stages, as beetroots', textures: 4, maxAge: 3 },
+];
+
+/** What a crop grows on: its `soil` tag, or none for farmland (vanilla's crop soil). */
+const SOILS: readonly { value: string; label: string; tag: string | undefined }[] = [
+  { value: 'farmland', label: 'Farmland, as wheat', tag: undefined },
+  { value: 'dirt', label: 'Grass and dirt', tag: '#minecraft:dirt' },
+  { value: 'sand', label: 'Sand', tag: '#minecraft:sand' },
+  {
+    value: 'soul_sand',
+    label: 'Soul sand and soul soil, as nether wart',
+    tag: '#minecraft:soul_fire_base_blocks',
+  },
 ];
 
 /** The compost chances of vanilla's composter, and none. */
@@ -120,6 +144,29 @@ export const CROP_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     default: 'Tomato',
     pattern: NAME_PATTERN,
     maxLength: NAME_MAX_LENGTH,
+  },
+  {
+    id: 'plant',
+    label: 'What it is',
+    description:
+      'A crop grows in stages where it is planted and is harvested by breaking it. A bush with berries is picked again and again by using it, as sweet berries.',
+    group: 'Crop',
+    type: 'choice',
+    default: 'crop',
+    choices: [
+      { value: 'crop', label: 'A crop' },
+      { value: 'berry_bush', label: 'Bush with berries' },
+    ],
+  },
+  {
+    id: 'soil',
+    label: 'Grows on',
+    description:
+      'The blocks a crop can be planted on (a bush with berries grows on grass and dirt, as sweet berries). Every crop still needs light to grow.',
+    group: 'Crop',
+    type: 'choice',
+    default: 'farmland',
+    choices: SOILS.map(({ value, label }) => ({ value, label })),
   },
   {
     id: 'colour',
@@ -299,6 +346,7 @@ const harvestCount = (max: number): JsonObject | number => (max <= 1 ? 1 : { min
 export function cropBundle(context: BundleContext): ContentBundle {
   const { namespace, projectName } = context;
   const values = readValues(CROP_PARAMETERS, context);
+  if (stringValue(values, 'plant') === 'berry_bush') return berryBushBundle(context);
   const name = nameForms(stringValue(values, 'crop_name'));
   const produceColour = rgbFromHex(stringValue(values, 'colour'), COLOURS.ruby);
   const plantColour = rgbFromHex(stringValue(values, 'plant_colour'), COLOURS.jade);
@@ -315,6 +363,7 @@ export function cropBundle(context: BundleContext): ContentBundle {
   const produceCompost = stringValue(values, 'produce_compost');
   const villagers = booleanValue(values, 'villagers');
   const wild = booleanValue(values, 'wild');
+  const soil = SOILS.find((entry) => entry.value === stringValue(values, 'soil'))?.tag;
 
   const block = rl(namespace, `${name.id}_crop`);
   const produce = rl(namespace, name.id);
@@ -370,6 +419,7 @@ export function cropBundle(context: BundleContext): ContentBundle {
   };
   if (!villagers) data.villager_plantable = false;
   if (wild) data.soil = `#${soilTag}`;
+  else if (soil !== undefined) data.soil = soil;
 
   const ageWords = `${stages.maxAge + 1} stages`;
   const harvestWords =
@@ -385,7 +435,7 @@ export function cropBundle(context: BundleContext): ContentBundle {
       block,
       KINDS.block,
       data,
-      `The ${name.lower} crop: it grows through ${ageWords} on farmland in the light, faster with bone meal, and is planted from ${fromSeeds ? `${seedsName.lower} (the block item, with its own id ${seeds})` : `the ${name.lower} itself (the block item has the id ${produce}, and the vanilla food components make it edible)`}. Fully grown it drops ${harvestWords}${fromSeeds ? ` and ${seedsName.lower}, more with Fortune` : ', more with Fortune'}; younger it drops only what planted it (the crop loot preset).${villagers ? ' Farmer villagers sow and harvest it on farmland.' : ''}${wild ? ' Its soil is the project tag of farmland and grass blocks, so the wild plants stay where they grow.' : ''}`,
+      `The ${name.lower} crop: it grows through ${ageWords} on ${(SOILS.find((entry) => entry.tag === soil)?.label ?? 'farmland').toLowerCase().replace(/, as .*$/, '')} in the light, faster with bone meal, and is planted from ${fromSeeds ? `${seedsName.lower} (the block item, with its own id ${seeds})` : `the ${name.lower} itself (the block item has the id ${produce}, and the vanilla food components make it edible)`}. Fully grown it drops ${harvestWords}${fromSeeds ? ` and ${seedsName.lower}, more with Fortune` : ', more with Fortune'}; younger it drops only what planted it (the crop loot preset).${villagers ? ' Farmer villagers sow and harvest it on farmland.' : ''}${wild ? ' Its soil is the project tag of farmland and grass blocks, so the wild plants stay where they grow.' : ''}`,
     ),
     element(
       plantedModel,
@@ -424,8 +474,13 @@ export function cropBundle(context: BundleContext): ContentBundle {
       element(
         soilTag,
         KINDS.tagBlock,
-        { values: ['minecraft:farmland', 'minecraft:grass_block'] },
-        `The blocks the ${name.lower} crop grows on: farmland, as every crop, and grass blocks, where the wild plants grow.`,
+        {
+          values:
+            soil === undefined
+              ? ['minecraft:farmland', 'minecraft:grass_block']
+              : [soil, 'minecraft:grass_block'],
+        },
+        `The blocks the ${name.lower} crop grows on: ${soil === undefined ? 'farmland, as every crop' : soil}, and grass blocks, where the wild plants grow.`,
       ),
       element(
         wildFeature,
@@ -522,5 +577,157 @@ export function cropBundle(context: BundleContext): ContentBundle {
       ),
     );
   }
+  return { elements, assets };
+}
+
+/**
+ * The "Bush with berries" answer: one `berry_bush` whose block item is the berry, edible
+ * through the vanilla food components, planted from itself; wild patches on grass at its last
+ * age when "Wild plants in the world" is on.
+ */
+function berryBushBundle(context: BundleContext): ContentBundle {
+  const { namespace, projectName } = context;
+  const values = readValues(CROP_PARAMETERS, context);
+  const name = nameForms(stringValue(values, 'crop_name'));
+  const produceColour = rgbFromHex(stringValue(values, 'colour'), COLOURS.ruby);
+  const plantColour = rgbFromHex(stringValue(values, 'plant_colour'), COLOURS.jade);
+  const nutrition = Math.round(numberValue(values, 'nutrition'));
+  const modifier = Math.round(numberValue(values, 'saturation') * 100) / 100;
+  const harvestMax = Math.round(numberValue(values, 'harvest_max'));
+  const compost = stringValue(values, 'produce_compost');
+  const wild = booleanValue(values, 'wild');
+  const bush = rl(namespace, `${name.id}_bush`);
+  const berry = rl(namespace, name.id);
+  const berryModel = rl(namespace, `item/${name.id}`);
+  const stageTextures = [0, 1, 2, 3].map((age) =>
+    rl(namespace, `block/${name.id}_bush_stage${age}`),
+  );
+  const item: JsonObject = {
+    id: berry,
+    creative_tab: 'minecraft:food_and_drinks',
+    components: {
+      'msm:components': {
+        'minecraft:consumable': {},
+        'minecraft:food': {
+          nutrition,
+          saturation: Math.round(nutrition * modifier * 2 * 100) / 100,
+        },
+      },
+    },
+  };
+  if (compost !== 'none') item.compost = compost;
+  const data: JsonObject = {
+    format: 1,
+    display_name: name.display,
+    type: 'berry_bush',
+    berry,
+    sound_type: 'grass',
+    textures: { stages: [...stageTextures] },
+    models: { item: berryModel },
+    item,
+    loot: 'self',
+    components: { 'msm:breakable': { hardness: 0, resistance: 0 } },
+  };
+  // More per harvest than vanilla's sweet berries: up to the chosen number when ripe, one more
+  // when full.
+  if (harvestMax > 1)
+    data.harvest = { full: [2, Math.min(64, harvestMax + 1)], ripe: [1, harvestMax] };
+  const elements: ContentBundleElement[] = [
+    packElement(namespace, `${projectName}: ${name.lower} bush`, PACK_NOTES),
+    modElement(namespace, projectName, `Adds ${name.plural}, picked from a bush.`),
+    element(
+      bush,
+      KINDS.block,
+      data,
+      `The ${name.lower} bush: planted from a ${name.lower} (its block item, with the id ${berry}), it grows through four ages on grass and dirt, faster with bone meal. Use it when it has berries to pick ${harvestMax > 1 ? `up to ${harvestMax + 1}` : 'two or three'}; it goes back to its second age and grows them again. It slows and pricks what walks through it, as a sweet berry bush, and bees grow it.`,
+    ),
+    element(
+      berryModel,
+      KINDS.model,
+      { parent: 'minecraft:item/generated', textures: { layer0: berryModel } },
+      `The flat item model of the ${name.lower}, drawn from textures/item/${name.id}.png. models.item on the bush points at it; without it the item would show the last age.`,
+    ),
+  ];
+  if (wild) {
+    const feature = rl(namespace, `wild_${name.id}_bush`);
+    const placed = rl(namespace, `wild_${name.id}_bush_placed`);
+    const addition = rl(namespace, `wild_${name.id}_bushes`);
+    const rarity = Math.round(numberValue(values, 'wild_rarity'));
+    const biome =
+      WILD_BIOMES.find((entry) => entry.tag === stringValue(values, 'wild_biomes')) ??
+      (WILD_BIOMES[0] as (typeof WILD_BIOMES)[number]);
+    elements.push(
+      element(
+        feature,
+        KINDS.feature,
+        { type: 'minecraft:simple_block', to_place: { id: bush, properties: { age: '3' } } },
+        `One ${name.lower} bush full of berries (age 3), as vanilla's sweet berry bush feature.`,
+      ),
+      element(
+        placed,
+        KINDS.placedFeature,
+        {
+          feature,
+          placement: [
+            { type: 'minecraft:rarity_filter', chance: rarity },
+            { type: 'minecraft:in_square' },
+            { type: 'minecraft:heightmap', heightmap: 'WORLD_SURFACE_WG' },
+            { type: 'minecraft:biome' },
+            { type: 'minecraft:count', count: 32 },
+            {
+              type: 'minecraft:offset',
+              x: { type: 'minecraft:trapezoid', max: 7, min: -7, plateau: 0 },
+              y: { type: 'minecraft:trapezoid', max: 3, min: -3, plateau: 0 },
+              z: { type: 'minecraft:trapezoid', max: 7, min: -7, plateau: 0 },
+            },
+            {
+              type: 'minecraft:block_predicate_filter',
+              predicate: {
+                type: 'minecraft:all_of',
+                predicates: [
+                  { type: 'minecraft:matching_block_tag', tag: 'minecraft:air' },
+                  {
+                    type: 'minecraft:matching_blocks',
+                    blocks: 'minecraft:grass_block',
+                    offset: [0, -1, 0],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        `A patch of wild ${name.lower} bushes, in the shape of vanilla's berry patches: one chunk in ${rarity} tries 32 spots around one surface point and plants where there is air above a grass block.`,
+      ),
+      element(
+        addition,
+        KINDS.biomeAddition,
+        {
+          format: 1,
+          biomes: [biome.tag],
+          features: [{ feature: placed, step: 'vegetal_decoration' }],
+        },
+        `A world addition: it adds the wild ${name.lower} bushes to ${biome.label.toLowerCase()} at the vegetal decoration step without replacing any vanilla file. Only newly generated chunks get them. It needs the Fabric mod jar export.`,
+      ),
+    );
+  }
+  const picked = (id: string, draw: () => Uint8Array, path: string): ContentBundleAsset => {
+    const value = imageValue(values, id);
+    const decoded = value === null ? null : decodePngDataUrl(value);
+    return {
+      namespace,
+      path: `textures/${path}.png`,
+      bytes: decoded !== null && decoded.width === decoded.height ? decoded.bytes : draw(),
+    };
+  };
+  const assets = stageTextures.map((textureId, age) =>
+    picked(
+      `picture_stage${age}`,
+      () => berryBushPng(age, plantColour, produceColour),
+      textureId.slice(namespace.length + 1),
+    ),
+  );
+  assets.push(
+    picked('picture_produce', () => berriesItemPng(produceColour, plantColour), `item/${name.id}`),
+  );
   return { elements, assets };
 }

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "msm_starter:tin_block"
+    ],
+    "result": {
+      "count": 9,
+      "id": "msm_starter:tin_ingot"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tin_ingot_from_tin_block",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block gives its nine ingots back."
+  }
+}

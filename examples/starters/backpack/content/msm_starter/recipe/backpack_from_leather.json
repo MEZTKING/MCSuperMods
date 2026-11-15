@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "equipment",
+    "key": {
+      "C": "minecraft:chest",
+      "L": "minecraft:leather",
+      "S": "minecraft:string"
+    },
+    "pattern": [
+      "LSL",
+      "LCL",
+      "LLL"
+    ],
+    "result": {
+      "id": "msm_starter:backpack"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:backpack_from_leather",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Seven leather round a chest, with string for the strap, make the bag."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "data": {
+    "ingredient": "msm_starter:tin_block",
+    "result": {
+      "count": 4,
+      "id": "msm_starter:cut_tin"
+    },
+    "type": "minecraft:stonecutting"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cut_tin_from_tin_block_stonecutting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The stonecutter turns one tin block into 4 cut tin."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "group": "hanging_sign",
+    "key": {
+      "#": "msm_starter:stripped_maple_log",
+      "X": "minecraft:iron_chain"
+    },
+    "pattern": [
+      "X X",
+      "###",
+      "###"
+    ],
+    "result": {
+      "count": 6,
+      "id": "msm_starter:maple_hanging_sign"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_hanging_sign_from_stripped_logs",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six stripped logs under two chains make six hanging signs."
+  }
+}

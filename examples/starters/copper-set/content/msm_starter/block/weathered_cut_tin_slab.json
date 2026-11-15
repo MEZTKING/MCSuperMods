@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_weathered_cut_tin_slab"
+      },
+      "msm:weathering": {
+        "next": "msm_starter:oxidized_cut_tin_slab",
+        "stage": "weathered"
+      }
+    },
+    "display_name": "Weathered Cut Tin Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/weathered_cut_tin"
+    },
+    "type": "slab"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:weathered_cut_tin_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Weathered Cut Tin Slab: on random ticks it slowly ages into the oxidised stage, msm_starter:oxidized_cut_tin_slab, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_starter:waxed_weathered_cut_tin_slab. An axe scrapes it back a stage."
+  }
+}

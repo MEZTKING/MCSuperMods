@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "resistance": 0.1
+      }
+    },
+    "display_name": "Glow Candle",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wool",
+    "textures": {
+      "candle": "msm_starter:block/glow_candle",
+      "item": "msm_starter:item/glow_candle",
+      "lit": "msm_starter:block/glow_candle_lit"
+    },
+    "type": "candle"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_candle",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The glow candle: up to four share a block, flint and steel lights them and each lit candle gives light 3. It holds water, which puts it out."
+  }
+}

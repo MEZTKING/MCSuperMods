@@ -1,0 +1,31 @@
+{
+  "data": {
+    "base_block": "msm_starter:waxed_weathered_cut_tin",
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Weathered Cut Tin Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/weathered_cut_tin"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_weathered_cut_tin_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Weathered Cut Tin Stairs: weathered cut tin stairs under wax, which never ages. An axe scrapes the wax off and gives msm_starter:weathered_cut_tin_stairs back."
+  }
+}

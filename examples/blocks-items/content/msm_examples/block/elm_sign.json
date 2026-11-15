@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Elm Sign",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks",
+      "max_stack_size": 16
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "all": "msm_examples:block/elm_planks",
+      "item": "msm_examples:item/elm_sign",
+      "sign": "msm_examples:gui/signs/elm_sign"
+    },
+    "type": "sign",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_sign",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A elm sign to write on, front and back, with dye, glow ink and wax as vanilla's. It stands on the ground in sixteen directions, and placed against a side it becomes the generated wall sign msm_examples:elm_sign_wall. Its board is drawn from the planks; the writing screen shows textures/gui/signs/elm_sign.png, which the flow saves. It stacks to 16 and sounds like oak.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Glow Torch",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "particle": "minecraft:flame",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "msm_starter:block/glow_torch"
+    },
+    "type": "torch"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_torch",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The glow torch: it stands on the top of a block, and placed against a side it becomes the generated wall torch msm_starter:glow_torch_wall. Both give light 14 and the flame particle, and pop off when their block goes."
+  }
+}

@@ -104,6 +104,7 @@ describe('Home tiles', () => {
       'looks: Make a painting',
       'looks: Make a sound or music',
       'looks: Paint a picture',
+      'more: Make your mod do something',
       'more: Make things happen',
       'more: Build with the AI helper',
     ]);
@@ -179,10 +180,10 @@ describe('Home tiles', () => {
   });
 
   /**
-   * The Very easy picks' flows (ADR 0101 D4) that B459 adds to the library; remove each id once
-   * the library has the flow, so the check below covers it.
+   * The Very easy picks' flows (ADR 0101 D4) not yet in the library; B459 added the last ones,
+   * so the check below covers every pick.
    */
-  const FLOWS_AWAITING_LIBRARY = new Set(['lights', 'bed', 'cake', 'copper-set', 'backpack']);
+  const FLOWS_AWAITING_LIBRARY = new Set<string>();
 
   it('every flow id a tile names is a Creator flow of the library', async () => {
     const { default: library } = await import('@msm/plugin-library');

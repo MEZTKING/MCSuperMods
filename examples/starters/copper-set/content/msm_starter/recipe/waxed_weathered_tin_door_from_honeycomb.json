@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_starter:weathered_tin_door",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_starter:waxed_weathered_tin_door"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_weathered_tin_door_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Weathered Tin Door and a honeycomb in the crafting grid make waxed weathered tin door, as vanilla waxes copper."
+  }
+}

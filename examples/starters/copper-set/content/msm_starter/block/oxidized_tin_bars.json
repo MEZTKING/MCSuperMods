@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_oxidized_tin_bars"
+      },
+      "msm:weathering": {
+        "stage": "oxidized"
+      }
+    },
+    "display_name": "Oxidised Tin Bars",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/oxidized_tin_bars"
+    },
+    "type": "pane"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:oxidized_tin_bars",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Oxidised Tin Bars: the last stage of the tin; it ages no further. Honeycomb waxes it into msm_starter:waxed_oxidized_tin_bars. An axe scrapes it back a stage."
+  }
+}

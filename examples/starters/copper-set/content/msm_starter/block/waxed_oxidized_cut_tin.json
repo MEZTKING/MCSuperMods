@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Oxidised Cut Tin",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/oxidized_cut_tin",
+    "sound_type": "copper"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_oxidized_cut_tin",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Oxidised Cut Tin: oxidised cut tin under wax, which never ages. An axe scrapes the wax off and gives msm_starter:oxidized_cut_tin back."
+  }
+}

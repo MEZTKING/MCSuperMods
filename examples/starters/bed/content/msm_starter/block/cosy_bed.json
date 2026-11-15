@@ -1,0 +1,30 @@
+{
+  "data": {
+    "colour": "red",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Cosy Bed",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "bed": "msm_starter:block/cosy_bed"
+    },
+    "type": "bed"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cosy_bed",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Cosy Bed: two blocks long, placed with the foot towards you. Sleep in it at night to skip to morning and set your spawn, as in any bed; it explodes in the Nether and the End. Breaking either half drops one. The picture is on every face, and the item shows the bed itself. Villagers do not use it."
+  }
+}

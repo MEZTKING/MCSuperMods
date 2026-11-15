@@ -5480,3 +5480,30 @@ Next
 
 **Next**
 - B457: the eject needs a `BlockWaxing` equivalent (the use callback and the maps). B462: the fixture follows the `weathering_*` test set. B463: the time-lapse uses the measured rates. Guide limits for B467 in the report.
+## 2026-11-15 — executor — B459 Creator flows (vanilla parity batch 1)
+
+**What**
+- Seven new Creator flows in `@msm/plugin-library` (ADR 0101 D2), each with wizard questions and MSM-drawn pictures:
+  - `copper-set` "Copper set" (group blocks): block, cut block, cut slab, cut stairs, door, trapdoor and bars (a "Pieces" set, all by default), each in copper's four stages (`msm:weathering`, ids as vanilla's: `tin_block`, `exposed_tin`, `cut_tin`, `oxidized_tin_door`), a waxed copy of every stage (`msm:waxable`, "Waxed copies", on), honeycomb crafting recipes, an optional ingot ("Make an ingot", on) with the block, door, trapdoor and bars recipes, and crafting and stonecutting of the cut pieces. Defaults: Tin, 56 blocks, 28 honeycomb recipes, 24 stage pictures and the ingot. The shared `ageFamily`, `stageId` and `waxedId` helpers are exported.
+  - `lights` "Lights" (blocks): torch (with its `_wall` companion), lantern, chain and candle of one look; flame colour, metal colour, torch particle, the recipe ingredient (glowstone dust by default; vanilla shapes with the ingredient in coal's place, so nothing clashes) and one optional picture for all four blocks.
+  - `bed` "Bed" (blocks): a bed, or a sleeping bag on the straw bed rule, in one of the sixteen dye colours (also its `colour`), with a recipe (two wool round a feather over planks; a bag: three wool over three leather).
+  - `cake` "Cake" (food): a cake or a pie with the slice food (2 and 0.1 by default), topping and filling colours and a flavour recipe (vanilla's cake shape with the flavour in the egg's place; a pie shapeless).
+  - `backpack` "Backpack" (gear): an item with `msm:item_inventory` (chest layout, 3 rows, right-click), stack 1, a recipe (leather round a chest, string strap) and an optional dyed bag through `minecraft:crafting_transmute` (off by default).
+  - `custom-command` "Custom command" (scripts): `/heal` by default, an event (heal, effect, item or launch, then a chime), every player or operators only (permission 2), a message back; no function, so no `commands.runs-as-player` info.
+  - `creative-tab` "Creative tab" (scripts): a tab "My Blocks" with a first block listed in it and shown as its icon; icon, order and first block are questions.
+- New answers: Wood set "Signs" and "Hanging signs" (both on by default; `maple_sign`, `maple_hanging_sign`, wood type from the gate's answer, recipes in vanilla's shapes with `minecraft:iron_chain`), and the flow writes both writing-screen pictures as project assets at `textures/gui/signs/<path>.png` and `textures/gui/hanging_signs/<path>.png`, so the app's `blocks-items.sign-gui-picture-missing` stays clear. Stone set "Make it a copper-like set that ages" (off) with "Colour it ages to": the stone, polished, bricks, stairs, slabs and pillar get the four stages and waxed copies; walls, buttons and plates do not age. Crop "What it is" (`crop` or `berry_bush`, "Bush with berries") and "Grows on" (farmland, grass and dirt, sand, soul sand and soul soil; the crop's `soil` tag).
+- Pictures: `packages/plugins/library/src/assets/vanilla-parity/` (`painter.ts`, `blocks.ts`, `items.ts`), MSM's own in ADR 0092's rules (hue-shifted ramps from `generateRamp`, clustered noise, light from the top left, outlines on items through the art generator's `renderSprite`); no Mojang picture is read or copied.
+- Tests: `packages/plugins/library/test/vanilla-parity-flows.test.ts` (28); library tests updated for the 57 starters; `packages/exporters/test/library.test.ts` gains the seven flows in the mirror and the wizard alternatives, new alternatives for the three changed flows, and "vanilla parity flow ... gives zero problems, warnings included, and every sign has its writing screen picture" for each new flow and each new answer on both targets. `app/test/components/Home.test.tsx`: `FLOWS_AWAITING_LIBRARY` is empty. Library 694 tests, exporters `library.test.ts` and `command-names.test.ts` green; app Home, picks and Creator tests green; lint and typecheck clean.
+- Goldens: `examples/starters/` gains the seven flows and changes `wood-set` (signs); `examples/blocks-items/` also changes (only added files): the Elm wood set example builds the Wood set flow, so its signs appear there too.
+
+**Decisions**
+- Copper ids follow vanilla copper (`tin_block` ages into `exposed_tin`), display names say "Oxidised"; waxed copies use their stage's pictures; only the unaffected stage has shape recipes (plus a honeycomb recipe for every waxed copy).
+- Recipes never reuse a vanilla shape with vanilla ingredients (lights, bed, cake, backpack), so no recipe clashes with vanilla's.
+- The sign board uses the planks picture, the hanging sign board the stripped log picture.
+- Command and creative tab flows are `hasFabric`; the creative tab's first block is on by default so the tab is not empty.
+- Added a Home tile "Make your mod do something" (group "Rules and help") opening the Custom command and Creative tab flows, since `Home.test.tsx` requires every Creator flow to be reachable from a tile (outside the owner list; see the report).
+
+**Next**
+- B461: `examples/blocks-items/` was regenerated here (eight added files of the Elm signs); regenerate it again after merging. Add `msm:command` and `msm:creative_tab` to `KIND_IDS` in `packages/plugins/library/test/content.test.ts` (this brief accepts them through `KINDS_AWAITING_EXAMPLES` there).
+- B465: e2e paths for the seven flows by their ids; the Home tile `home-tile-commands`.
+- B467: guide pages for the flows, the new answers and the new Home tile; limits: villagers do not use project beds, only the unaffected copper stage has shape recipes, a picked stone picture is used for all four stages.

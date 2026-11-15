@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_starter:exposed_cut_tin_slab",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_starter:waxed_exposed_cut_tin_slab"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_exposed_cut_tin_slab_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Exposed Cut Tin Slab and a honeycomb in the crafting grid make waxed exposed cut tin slab, as vanilla waxes copper."
+  }
+}

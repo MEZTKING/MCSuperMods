@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "minecraft:glowstone_dust",
+      "H": "minecraft:honeycomb",
+      "S": "minecraft:string"
+    },
+    "pattern": [
+      "S",
+      "#",
+      "H"
+    ],
+    "result": {
+      "id": "msm_starter:glow_candle"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_candle_from_glowstone_dust",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "String over glowstone dust over a honeycomb makes a candle."
+  }
+}

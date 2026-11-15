@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_weathered_tin_trapdoor"
+      },
+      "msm:weathering": {
+        "next": "msm_starter:oxidized_tin_trapdoor",
+        "stage": "weathered"
+      }
+    },
+    "display_name": "Weathered Tin Trapdoor",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "set_type": "copper",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_starter:block/weathered_tin_trapdoor"
+    },
+    "type": "trapdoor"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:weathered_tin_trapdoor",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Weathered Tin Trapdoor: on random ticks it slowly ages into the oxidised stage, msm_starter:oxidized_tin_trapdoor, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_starter:waxed_weathered_tin_trapdoor. An axe scrapes it back a stage."
+  }
+}

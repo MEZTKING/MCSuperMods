@@ -319,6 +319,13 @@ export const MAKE_TILES: readonly MakeTile[] = [
     action: { type: 'paint' },
   },
   {
+    id: 'commands',
+    label: 'Make your mod do something',
+    sentence: 'A command players type, or a creative tab of your own.',
+    group: 'more',
+    action: flows('custom-command', 'creative-tab'),
+  },
+  {
     id: 'rules',
     label: 'Make things happen',
     sentence: 'Rules: when something happens, do something. No code needed.',

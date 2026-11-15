@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "group": "bed",
+    "key": {
+      "F": "minecraft:feather",
+      "P": "#minecraft:planks",
+      "W": "minecraft:red_wool"
+    },
+    "pattern": [
+      "WFW",
+      "PPP"
+    ],
+    "result": {
+      "id": "msm_starter:cosy_bed"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cosy_bed_from_red_wool",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two red wool round a feather, over three planks of any wood, make the bed."
+  }
+}

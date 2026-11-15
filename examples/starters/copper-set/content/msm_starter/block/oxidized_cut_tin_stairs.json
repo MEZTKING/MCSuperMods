@@ -1,0 +1,37 @@
+{
+  "data": {
+    "base_block": "msm_starter:oxidized_cut_tin",
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_oxidized_cut_tin_stairs"
+      },
+      "msm:weathering": {
+        "stage": "oxidized"
+      }
+    },
+    "display_name": "Oxidised Cut Tin Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/oxidized_cut_tin"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:oxidized_cut_tin_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Oxidised Cut Tin Stairs: the last stage of the tin; it ages no further. Honeycomb waxes it into msm_starter:waxed_oxidized_cut_tin_stairs. An axe scrapes it back a stage."
+  }
+}

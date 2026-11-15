@@ -1,0 +1,38 @@
+{
+  "data": {
+    "base_block": "msm_starter:weathered_cut_tin",
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_weathered_cut_tin_stairs"
+      },
+      "msm:weathering": {
+        "next": "msm_starter:oxidized_cut_tin_stairs",
+        "stage": "weathered"
+      }
+    },
+    "display_name": "Weathered Cut Tin Stairs",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/weathered_cut_tin"
+    },
+    "type": "stairs"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:weathered_cut_tin_stairs",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Weathered Cut Tin Stairs: on random ticks it slowly ages into the oxidised stage, msm_starter:oxidized_cut_tin_stairs, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_starter:waxed_weathered_cut_tin_stairs. An axe scrapes it back a stage."
+  }
+}

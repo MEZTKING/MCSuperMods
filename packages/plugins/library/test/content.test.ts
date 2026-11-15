@@ -57,12 +57,17 @@ const STARTER_IDS = [
   'stone-set',
   'crop',
   'tree',
+  'copper-set',
+  'lights',
+  'bed',
   'storage-crate',
   'machine',
   'food',
+  'cake',
   'weapon',
   'consumable',
   'totem',
+  'backpack',
   'status-effect',
   'potion',
   'particle',
@@ -95,6 +100,8 @@ const STARTER_IDS = [
   'vehicle-boat',
   'scripted_ore',
   'scripted-item',
+  'custom-command',
+  'creative-tab',
 ];
 
 /**
@@ -206,6 +213,28 @@ const KIND_IDS = [
   'msm:creative_tab',
 ];
 
+/**
+ * Kinds the starters use before their per-kind example exists (B461 adds them to
+ * {@link KIND_IDS}): commands and creative tabs (ADR 0096), used by the B459 flows.
+ */
+const KINDS_AWAITING_EXAMPLES = ['msm:command', 'msm:creative_tab'];
+
+/**
+ * The flows whose pictures are drawn by MSM in the art rules of ADR 0092 rather than taken from
+ * the placeholder patterns (ADR 0101 D2, B459), and the sign pictures of the Wood set.
+ */
+const VANILLA_PARITY_FLOWS = new Set([
+  'copper-set',
+  'lights',
+  'bed',
+  'cake',
+  'backpack',
+  'custom-command',
+  'creative-tab',
+]);
+const isSignPicture = (path: string): boolean =>
+  /^textures\/(gui\/(hanging_)?signs\/|item\/[a-z0-9_]*sign\.png$)/.test(path);
+
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
   ...libraryStarters,
   ...libraryExamples,
@@ -315,7 +344,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the fifty starters in order', () => {
+  it('lists the fifty-seven starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -325,7 +354,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(46).fill('content'),
+      ...Array<string>(53).fill('content'),
     ]);
   });
 
@@ -905,7 +934,9 @@ describe('every starter and example', () => {
         }
       }
       expect(entry.requiresKinds, entry.id).toEqual([...used].sort());
-      for (const kind of used) expect(KIND_IDS, entry.id).toContain(kind);
+      for (const kind of used) {
+        expect([...KIND_IDS, ...KINDS_AWAITING_EXAMPLES], entry.id).toContain(kind);
+      }
     }
   });
 
@@ -974,6 +1005,7 @@ describe('every starter and example', () => {
     for (const entry of entries) {
       for (const asset of build(entry).assets) {
         expect(asset.path, entry.id).toMatch(/^textures\/[a-z0-9_/]+\/[a-z0-9_.-]+\.png$/);
+        if (VANILLA_PARITY_FLOWS.has(entry.id) || isSignPicture(asset.path)) continue;
         expect(PLACEHOLDERS.has(Buffer.from(asset.bytes).toString('hex')), asset.path).toBe(true);
       }
     }

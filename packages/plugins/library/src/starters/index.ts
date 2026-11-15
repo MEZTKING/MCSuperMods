@@ -14,10 +14,16 @@ import type {
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 import { hasFabric } from '../content/supports';
+import { BACKPACK_PARAMETERS, backpackBundle } from './backpack';
+import { BED_PARAMETERS, bedBundle } from './bed';
 import { BOSS_PARAMETERS, bossBundle } from './boss';
+import { CAKE_PARAMETERS, cakeBundle } from './cake';
 import { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
+import { COPPER_SET_PARAMETERS, copperSetBundle } from './copper-set';
+import { CREATIVE_TAB_PARAMETERS, creativeTabBundle } from './creative-tab';
 import { CROP_PARAMETERS, cropBundle } from './crop';
 import { customBiomeBundle } from './custom-biome';
+import { CUSTOM_COMMAND_PARAMETERS, customCommandBundle } from './custom-command';
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
@@ -31,6 +37,7 @@ import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 import { jigsawStructureBundle } from './jigsaw-structure';
+import { LIGHTS_PARAMETERS, lightsBundle } from './lights';
 import { MACHINE_PARAMETERS, machineBundle } from './machine';
 import { MOB_SKIN_PARAMETERS, mobSkinBundle } from './mob-skin';
 import { MOUNT_PARAMETERS, mountBundle } from './mount';
@@ -62,10 +69,24 @@ import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 import { worldgenPackBundle } from './worldgen-pack';
 
+export { BACKPACK_PARAMETERS, backpackBundle } from './backpack';
+export { BED_DYES, BED_PARAMETERS, bedBundle } from './bed';
 export { BOSS_PARAMETERS, bossBundle } from './boss';
+export { CAKE_PARAMETERS, cakeBundle } from './cake';
 export { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
+export {
+  AGE_STAGES,
+  ageFamily,
+  COPPER_SET_MEMBERS,
+  COPPER_SET_PARAMETERS,
+  copperSetBundle,
+  stageId,
+  waxedId,
+} from './copper-set';
+export { CREATIVE_TAB_PARAMETERS, creativeTabBundle } from './creative-tab';
 export { CROP_PARAMETERS, cropBundle } from './crop';
 export { customBiomeBundle, customBiomeContent, customBiomeIds } from './custom-biome';
+export { CUSTOM_COMMAND_PARAMETERS, customCommandBundle } from './custom-command';
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
@@ -84,6 +105,7 @@ export { functionStarterBundle } from './function-starter';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
 export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
+export { LIGHTS_MEMBERS, LIGHTS_PARAMETERS, lightsBundle } from './lights';
 export {
   MACHINE_PARAMETERS,
   MACHINE_RECIPES,
@@ -278,7 +300,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'wood-set',
     'Wood set',
-    'A whole new kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, leaves and a sapling that grows its own tree, with the vanilla recipes, tags, stripping, burning and composting, and if you choose the tree growing in the world. New blocks need the Fabric mod jar export.',
+    'A whole new kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, sign, hanging sign, leaves and a sapling that grows its own tree, with the vanilla recipes, tags, stripping, burning and composting, and if you choose the tree growing in the world. New blocks need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     woodSetBundle,
@@ -293,7 +315,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'stone-set',
     'Stone set',
-    'A new stone with its stairs, slab and wall, and if you choose a button, a pressure plate, polished stone, bricks and a pillar, with crafting and stonecutting recipes. New blocks need the Fabric mod jar export.',
+    'A new stone with its stairs, slab and wall, and if you choose a button, a pressure plate, polished stone, bricks and a pillar, with crafting and stonecutting recipes, and if you like ageing in four stages as copper does. New blocks need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     stoneSetBundle,
@@ -308,7 +330,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'crop',
     'Crop',
-    'A new crop that grows in stages on farmland: planted from its own seeds with a new food as its produce, or from the produce itself as carrots are, with its loot, composting, villager farming and, if you choose, wild patches in the world. New blocks need the Fabric mod jar export.',
+    'A new crop that grows in stages on farmland or the soil you pick: planted from its own seeds with a new food as its produce, or from the produce itself as carrots are, with its loot, composting, villager farming and, if you choose, wild patches in the world; or a bush with berries you pick again and again. New blocks need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     cropBundle,
@@ -318,7 +340,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         group: 'blocks',
         blurb: 'A crop to farm: its stages, seeds and produce, and wild patches if you like.',
       },
-      probeValues: [{ wild: true }],
+      probeValues: [{ wild: true }, { plant: 'berry_bush', wild: true }],
     },
   ),
   starter(
@@ -334,6 +356,45 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         group: 'blocks',
         blurb: 'A sapling and the tree it grows, with new or vanilla log and leaves.',
       },
+    },
+  ),
+  starter(
+    'copper-set',
+    'Copper set',
+    'A new metal that ages as copper does: a block, a cut block with its slab and stairs, a door, a trapdoor and bars, each in four stages that slowly turn the colour you pick, with waxed copies that stay as they are, honeycomb and axe rules, an ingot and the recipes. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    copperSetBundle,
+    {
+      parameters: COPPER_SET_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'Blocks that slowly turn green as copper, with waxed copies.',
+      },
+    },
+  ),
+  starter(
+    'lights',
+    'Lights',
+    'A torch with its wall torch, a lantern, a chain and a candle of one look: the colour of the flame, the metal, the torch particle and the recipes. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    lightsBundle,
+    {
+      parameters: LIGHTS_PARAMETERS,
+      creator: { group: 'blocks', blurb: 'Torches, lanterns, chains and candles of one look.' },
+    },
+  ),
+  starter(
+    'bed',
+    'Bed',
+    'A bed to sleep in and set your spawn, or a sleeping bag that follows the straw bed rule, in one of the sixteen dye colours, with its recipe. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    bedBundle,
+    {
+      parameters: BED_PARAMETERS,
+      creator: { group: 'blocks', blurb: 'A bed or a sleeping bag.' },
     },
   ),
   starter(
@@ -380,6 +441,18 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     },
   ),
   starter(
+    'cake',
+    'Cake',
+    'A cake or a pie eaten a slice at a time: what each of its seven slices restores, its colours and a recipe with the flavour you pick. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    cakeBundle,
+    {
+      parameters: CAKE_PARAMETERS,
+      creator: { group: 'food', blurb: 'A cake or pie eaten a slice at a time.' },
+    },
+  ),
+  starter(
     'weapon',
     'Weapon',
     'One new weapon: a sword, spear, mace, bow, crossbow or shield with its own name, colour and stats, a texture and model, and an optional recipe. New items need the Fabric mod jar export.',
@@ -423,6 +496,18 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         group: 'gear',
         blurb: 'A totem that saves its holder from death and gives effects.',
       },
+    },
+  ),
+  starter(
+    'backpack',
+    'Backpack',
+    'A bag that holds things: right-click it to open a screen of one to six rows, and what you put in stays in the bag, with its recipe and, if you choose, a dyed bag. Bags need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    backpackBundle,
+    {
+      parameters: BACKPACK_PARAMETERS,
+      creator: { group: 'gear', blurb: 'A bag that holds things, with rows of slots.' },
     },
   ),
   starter(
@@ -858,6 +943,32 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         group: 'scripts',
         blurb: 'An item whose use runs a script you can open and change.',
       },
+    },
+  ),
+  starter(
+    'custom-command',
+    'Custom command',
+    'A new command players type, such as /heal: who may use it, what it does (heal, an effect, an item or a launch) and the message it says back. Commands need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    customCommandBundle,
+    {
+      supports: hasFabric,
+      parameters: CUSTOM_COMMAND_PARAMETERS,
+      creator: { group: 'scripts', blurb: 'A command players type that does something.' },
+    },
+  ),
+  starter(
+    'creative-tab',
+    'Creative tab',
+    'A tab of your own in the creative inventory, with its title, icon and order, and a first block listed in it. Creative tabs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    creativeTabBundle,
+    {
+      supports: hasFabric,
+      parameters: CREATIVE_TAB_PARAMETERS,
+      creator: { group: 'scripts', blurb: 'Your own tab in the creative inventory.' },
     },
   ),
 ]);

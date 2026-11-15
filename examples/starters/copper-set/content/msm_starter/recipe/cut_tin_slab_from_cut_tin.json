@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_starter:cut_tin"
+    },
+    "pattern": [
+      "###"
+    ],
+    "result": {
+      "count": 6,
+      "id": "msm_starter:cut_tin_slab"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cut_tin_slab_from_cut_tin",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three cut blocks make six slabs."
+  }
+}

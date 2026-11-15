@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "requires_tool": false,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Glow Lantern",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "lantern",
+    "textures": {
+      "item": "msm_starter:item/glow_lantern",
+      "texture": "msm_starter:block/glow_lantern"
+    },
+    "type": "lantern"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_lantern",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The glow lantern: it stands on a block or, placed under one, hangs from it, and gives light 15. It holds water as vanilla's lantern does."
+  }
+}

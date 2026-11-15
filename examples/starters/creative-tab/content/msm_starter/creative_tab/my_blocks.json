@@ -1,0 +1,14 @@
+{
+  "data": {
+    "display_name": "My Blocks",
+    "format": 1,
+    "icon": "msm_starter:my_blocks_block"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:my_blocks",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The My Blocks tab of the creative inventory (on its second page, after vanilla's tabs), showing msm_starter:my_blocks_block. Items, block items and spawn eggs join it by naming msm_starter:my_blocks as their creative tab, in the order the project lists them."
+  }
+}

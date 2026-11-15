@@ -1,0 +1,29 @@
+{
+  "data": {
+    "event": "run",
+    "events": {
+      "run": {
+        "actions": [
+          {
+            "amount": 20,
+            "type": "heal"
+          },
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "feedback_text": "You feel better.",
+    "format": 1,
+    "name": "heal"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:heal",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The /heal command: typed by any player, it heals you by 20 half hearts and plays a chime, then says \"You feel better.\". It runs the event run, so no function or script is needed. Commands need the Fabric mod jar export."
+  }
+}

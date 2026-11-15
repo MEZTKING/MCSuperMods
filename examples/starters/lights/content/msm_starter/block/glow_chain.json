@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Glow Chain",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "metal",
+    "textures": {
+      "item": "msm_starter:item/glow_chain",
+      "texture": "msm_starter:block/glow_chain"
+    },
+    "type": "chain"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:glow_chain",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The glow chain: it runs along the axis of the face you place it against, to hang a lantern from."
+  }
+}

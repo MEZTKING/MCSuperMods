@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_starter:block/my_blocks_block"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:block/my_blocks_block",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube drawn from textures/block/my_blocks_block.png."
+  }
+}

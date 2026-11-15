@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Elm Hanging Sign",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks",
+      "max_stack_size": 16
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "all": "msm_examples:block/stripped_elm_log",
+      "hanging_gui": "msm_examples:gui/hanging_signs/elm_hanging_sign",
+      "item": "msm_examples:item/elm_hanging_sign"
+    },
+    "type": "hanging_sign",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:elm_hanging_sign",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A elm hanging sign: under a block it hangs on two chains (on one bar when the block above is too narrow), and placed against a side it becomes the generated wall hanging sign msm_examples:elm_hanging_sign_wall on a bracket. Its board is drawn from the stripped log; the writing screen shows textures/gui/hanging_signs/elm_hanging_sign.png, which the flow saves. It stacks to 16.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

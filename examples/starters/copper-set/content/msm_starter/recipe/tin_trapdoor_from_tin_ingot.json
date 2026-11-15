@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "redstone",
+    "key": {
+      "#": "msm_starter:tin_ingot"
+    },
+    "pattern": [
+      "##",
+      "##"
+    ],
+    "result": {
+      "id": "msm_starter:tin_trapdoor"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tin_trapdoor_from_tin_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four ingots make a trapdoor."
+  }
+}

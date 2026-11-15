@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_starter:waxed_cut_tin_slab"
+      },
+      "msm:weathering": {
+        "next": "msm_starter:exposed_cut_tin_slab",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Cut Tin Slab",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/cut_tin"
+    },
+    "type": "slab"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:cut_tin_slab",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A cut slab: two stack into a double slab, which drops two. Mined with a stone pickaxe or better, as copper. Cut Tin Slab: on random ticks it slowly ages into the exposed stage, msm_starter:exposed_cut_tin_slab, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_starter:waxed_cut_tin_slab."
+  }
+}

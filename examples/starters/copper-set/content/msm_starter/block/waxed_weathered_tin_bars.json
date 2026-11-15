@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Weathered Tin Bars",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "all": "msm_starter:block/weathered_tin_bars"
+    },
+    "type": "pane"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_weathered_tin_bars",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Weathered Tin Bars: weathered tin bars under wax, which never ages. An axe scrapes the wax off and gives msm_starter:weathered_tin_bars back."
+  }
+}

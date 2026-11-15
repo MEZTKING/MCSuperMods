@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "redstone",
+    "key": {
+      "#": "msm_starter:tin_ingot"
+    },
+    "pattern": [
+      "##",
+      "##",
+      "##"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_starter:tin_door"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tin_door_from_tin_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Six ingots make three doors."
+  }
+}

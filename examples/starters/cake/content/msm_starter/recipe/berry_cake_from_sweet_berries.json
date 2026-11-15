@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "F": "minecraft:sweet_berries",
+      "M": "minecraft:milk_bucket",
+      "S": "minecraft:sugar",
+      "W": "minecraft:wheat"
+    },
+    "pattern": [
+      "MMM",
+      "SFS",
+      "WWW"
+    ],
+    "result": {
+      "id": "msm_starter:berry_cake"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:berry_cake_from_sweet_berries",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Vanilla's cake shape with sweet berries in place of the egg: three milk buckets, sugar, sweet berries, sugar and three wheat. The buckets come back empty."
+  }
+}

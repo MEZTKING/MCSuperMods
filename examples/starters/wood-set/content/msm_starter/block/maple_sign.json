@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Maple Sign",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks",
+      "max_stack_size": 16
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "all": "msm_starter:block/maple_planks",
+      "item": "msm_starter:item/maple_sign",
+      "sign": "msm_starter:gui/signs/maple_sign"
+    },
+    "type": "sign",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:maple_sign",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A maple sign to write on, front and back, with dye, glow ink and wax as vanilla's. It stands on the ground in sixteen directions, and placed against a side it becomes the generated wall sign msm_starter:maple_sign_wall. Its board is drawn from the planks; the writing screen shows textures/gui/signs/maple_sign.png, which the flow saves. It stacks to 16 and sounds like oak."
+  }
+}

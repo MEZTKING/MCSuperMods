@@ -14,6 +14,12 @@
  * recipe cannot share its result's id). Every member is mined with a pickaxe of the chosen tier
  * and drops nothing to a weaker one, except the button, which drops by hand as vanilla's stone
  * button.
+ *
+ * "Make it a copper-like set that ages" (off by default; ADR 0101 D2) turns the members copper
+ * comes in (the stone, polished stone and bricks, stairs, slabs and the pillar) into copper's
+ * four stages with a waxed copy of each (`ageFamily` of the Copper set: `exposed_slate`,
+ * `weathered_slate_stairs`, `waxed_oxidized_slate`), drawn by MSM growing over in the aged
+ * colour; walls, buttons and pressure plates do not age, as copper has none.
  */
 import type {
   BundleContext,
@@ -25,6 +31,7 @@ import type {
   StarterParameter,
 } from '@msm/plugin-api';
 import type { PlaceholderPattern } from '../assets/png';
+import { type AgeStage, agedStonePng } from '../assets/vanilla-parity/index';
 import {
   COLOURS,
   element,
@@ -36,6 +43,8 @@ import {
   rl,
 } from '../content/bundle';
 import {
+  booleanValue,
+  decodePngDataUrl,
   hexFromRgb,
   imageValue,
   NAME_MAX_LENGTH,
@@ -46,6 +55,7 @@ import {
   setValue,
   stringValue,
 } from '../content/parameters';
+import { AGE_STAGES, ageFamily, stageId } from './copper-set';
 
 /** The members of a stone set. */
 export const STONE_SET_MEMBERS = Object.freeze([
@@ -85,12 +95,29 @@ const INGREDIENTS: readonly { value: string; label: string }[] = [
 ];
 
 /** The textures of a stone set: parameter id, label, pattern and texture path suffix. */
-const PICTURES: readonly { id: string; label: string; pattern: PlaceholderPattern }[] = [
-  { id: 'picture_stone', label: 'The stone', pattern: 'stone' },
-  { id: 'picture_polished', label: 'Polished stone', pattern: 'polished_stone' },
-  { id: 'picture_bricks', label: 'Bricks', pattern: 'bricks' },
-  { id: 'picture_pillar_side', label: 'Pillar side', pattern: 'pillar_side' },
-  { id: 'picture_pillar_top', label: 'Pillar end', pattern: 'pillar_top' },
+const PICTURES: readonly {
+  id: string;
+  label: string;
+  pattern: PlaceholderPattern;
+  aged: string;
+}[] = [
+  { id: 'picture_stone', label: 'The stone', pattern: 'stone', aged: 'stone' },
+  { id: 'picture_polished', label: 'Polished stone', pattern: 'polished_stone', aged: 'polished' },
+  { id: 'picture_bricks', label: 'Bricks', pattern: 'bricks', aged: 'bricks' },
+  { id: 'picture_pillar_side', label: 'Pillar side', pattern: 'pillar_side', aged: 'pillar' },
+  { id: 'picture_pillar_top', label: 'Pillar end', pattern: 'pillar_top', aged: 'pillar_top' },
+];
+
+/** Moss green, the default colour an ageing stone grows over in. */
+const MOSS: readonly [number, number, number] = [96, 126, 70];
+
+/** The block types of the set that age (the ones copper comes in). */
+const AGEING_TYPES: readonly (string | undefined)[] = [
+  undefined,
+  'block',
+  'stairs',
+  'slab',
+  'pillar',
 ];
 
 /** The largest picture side the flow accepts, in pixels. */
@@ -137,6 +164,23 @@ export const STONE_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     type: 'choice',
     default: 'minecraft:stone',
     choices: INGREDIENTS.map((entry) => ({ ...entry })),
+  },
+  {
+    id: 'ages',
+    label: 'Make it a copper-like set that ages',
+    description:
+      'The stone, its polished stone, bricks, stairs, slabs and pillar slowly age through four stages as copper does, each with a waxed copy that stays as it is. Walls, buttons and plates do not age.',
+    group: 'Stone',
+    type: 'boolean',
+    default: false,
+  },
+  {
+    id: 'aged_colour',
+    label: 'Colour it ages to',
+    description: 'What grows over the stone, a little more at each stage.',
+    group: 'Stone',
+    type: 'colour',
+    default: hexFromRgb(MOSS),
   },
   {
     id: 'members',
@@ -335,25 +379,77 @@ export function stoneSetBundle(context: BundleContext): ContentBundle {
     );
   }
 
-  elements.push(...stoneRecipes(namespace, s, name.lower, has, ingredient?.value ?? 'none'));
+  const ages = booleanValue(values, 'ages');
+  const family = ages ? agedElements(elements, Object.values(textureIds), name.lower) : elements;
+  family.push(...stoneRecipes(namespace, s, name.lower, has, ingredient?.value ?? 'none'));
 
-  return {
-    elements: [
-      packElement(namespace, `${projectName}: a ${name.lower} stone set`, PACK_NOTES),
-      modElement(namespace, projectName, `Adds a ${name.lower} stone set.`),
-      ...elements,
-    ],
-    assets: PICTURES.filter((picture) => used.has(picture.id)).map(
-      (picture): ContentBundleAsset =>
+  const agedColour = rgbFromHex(stringValue(values, 'aged_colour'), MOSS);
+  const assets: ContentBundleAsset[] = [];
+  for (const picture of PICTURES.filter((entry) => used.has(entry.id))) {
+    const textureId = textureIds[picture.id] as string;
+    if (!ages) {
+      assets.push(
         pictureTexture(
           namespace,
-          (textureIds[picture.id] as string).slice(namespace.length + 1),
+          textureId.slice(namespace.length + 1),
           imageValue(values, picture.id),
           picture.pattern,
           colour,
         ),
-    ),
+      );
+      continue;
+    }
+    // Aged: every stage has a picture; a picked picture is used for all four.
+    const picked = imageValue(values, picture.id);
+    const decoded = picked === null ? null : decodePngDataUrl(picked);
+    AGE_STAGES.forEach(({ prefix }, stage) => {
+      assets.push({
+        namespace,
+        path: `textures/${stageId(textureId, prefix).slice(namespace.length + 1)}.png`,
+        bytes:
+          decoded !== null && decoded.width === decoded.height
+            ? decoded.bytes
+            : agedStonePng(colour, agedColour, stage as AgeStage, picture.aged),
+      });
+    });
+  }
+  return {
+    elements: [
+      packElement(namespace, `${projectName}: a ${name.lower} stone set`, PACK_NOTES),
+      modElement(
+        namespace,
+        projectName,
+        `Adds a ${name.lower} stone set${ages ? ' that ages as copper does' : ''}.`,
+      ),
+      ...family,
+    ],
+    assets,
   };
+}
+
+/**
+ * The set with its ageing members in copper's four stages and their waxed copies: the blocks
+ * of {@link AGEING_TYPES}, and the cube models of those that have one, go through `ageFamily`;
+ * walls, buttons and plates stay as they are.
+ */
+function agedElements(
+  elements: readonly ContentBundleElement[],
+  textures: readonly string[],
+  noun: string,
+): ContentBundleElement[] {
+  const ageing = elements.filter(
+    (entry) =>
+      entry.kind === KINDS.block &&
+      AGEING_TYPES.includes((entry.data as JsonObject).type as string | undefined),
+  );
+  const modelIds = new Set(ageing.map((entry) => (entry.data as JsonObject).model));
+  const models = elements.filter((entry) => entry.kind === KINDS.model && modelIds.has(entry.id));
+  const rest = elements.filter((entry) => !ageing.includes(entry) && !models.includes(entry));
+  return [
+    ...rest,
+    ...models,
+    ...ageFamily({ blocks: ageing, models, textures, waxed: true, noun }),
+  ];
 }
 
 /** The crafting and stonecutting recipes of the set, in vanilla's shapes. */

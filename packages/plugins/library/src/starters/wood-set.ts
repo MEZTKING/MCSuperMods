@@ -30,6 +30,17 @@
  * vanilla recipes); the type tags (`wooden_fences`, `wooden_doors`, `leaves`, `saplings` and so
  * on) come from the block types' own lowering.
  *
+ * Signs (ADR 0101 D2, on by default): "Signs" adds `<w>_sign` (type `sign`, its board the
+ * planks picture, with the generated wall sign `<w>_sign_wall`) and "Hanging signs" adds
+ * `<w>_hanging_sign` (type `hanging_sign`, its board the stripped log picture, with
+ * `<w>_hanging_sign_wall`), both of the gate's `wood_type`, stacking to 16, in vanilla's recipe
+ * shapes (six planks over a stick make three; six stripped logs under two iron chains make six).
+ * Their writing screens read `textures/gui/signs/<path>.png` and
+ * `textures/gui/hanging_signs/<path>.png` (B440); lowering cannot copy pictures (B448), so the
+ * flow writes both pictures, drawn by MSM, as project assets at the texture ids `textures.sign`
+ * and `textures.hanging_gui` name, and the app's `blocks-items.sign-gui-picture-missing` warning
+ * stays clear.
+ *
  * Members that need others: the sapling, the tree and "Grows in the world" need the log and the
  * leaves (the tree is made of them); the recipes of stairs, slab, fence, gate, door, trapdoor,
  * button and plate need the planks; wood and stripped wood are crafted from their logs.
@@ -44,6 +55,12 @@ import type {
   StarterParameter,
 } from '@msm/plugin-api';
 import type { PlaceholderPattern, Rgb } from '../assets/png';
+import {
+  hangingSignGuiPng,
+  hangingSignItemPng,
+  signGuiPng,
+  signItemPng,
+} from '../assets/vanilla-parity/index';
 import {
   COLOURS,
   element,
@@ -218,13 +235,31 @@ export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   },
   {
     id: 'wood_type',
-    label: 'Fence gate sounds',
+    label: 'Fence gate and sign sounds',
     description:
-      'The vanilla wood whose fence gate sounds the gate makes when it opens and closes.',
+      'The vanilla wood whose fence gate sounds the gate makes when it opens and closes; the signs sound like that wood too.',
     group: 'Members',
     type: 'choice',
     default: 'oak',
     choices: WOOD_TYPES.map((entry) => ({ ...entry })),
+  },
+  {
+    id: 'signs',
+    label: 'Signs',
+    description:
+      'A sign to write on, standing on the ground or on a wall, crafted from the planks and a stick.',
+    group: 'Members',
+    type: 'boolean',
+    default: true,
+  },
+  {
+    id: 'hanging_signs',
+    label: 'Hanging signs',
+    description:
+      'A sign that hangs under a block on chains or from a wall bracket, crafted from stripped logs and chains.',
+    group: 'Members',
+    type: 'boolean',
+    default: true,
   },
   {
     id: 'leaf_tint',
@@ -303,6 +338,8 @@ interface WoodIds {
   megaTree: ResourceLocation;
   placed: ResourceLocation;
   addition: ResourceLocation;
+  sign: ResourceLocation;
+  hangingSign: ResourceLocation;
 }
 
 function woodIds(namespace: string, name: NameForms): WoodIds {
@@ -367,6 +404,8 @@ function woodIds(namespace: string, name: NameForms): WoodIds {
     megaTree: rl(namespace, `${w}_mega_tree`),
     placed: rl(namespace, `${w}_tree_placed`),
     addition: rl(namespace, `${w}_trees`),
+    sign: rl(namespace, `${w}_sign`),
+    hangingSign: rl(namespace, `${w}_hanging_sign`),
   };
 }
 
@@ -395,6 +434,14 @@ const DOOR_BREAKABLE: JsonObject = {
 const SMALL_BREAKABLE: JsonObject = {
   hardness: 0.5,
   resistance: 0.5,
+  tool: 'axe',
+  requires_tool: false,
+};
+
+/** Vanilla's signs: hardness and resistance 1, faster with an axe, dropped by hand. */
+const SIGN_BREAKABLE: JsonObject = {
+  hardness: 1,
+  resistance: 1,
   tool: 'axe',
   requires_tool: false,
 };
@@ -429,6 +476,8 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
   const hasSapling = hasTree && has('sapling');
   const grows = hasTree && booleanValue(values, 'grows');
   const logMembers = (['log', 'wood', 'stripped_log', 'stripped_wood'] as const).filter(has);
+  const signs = booleanValue(values, 'signs');
+  const hangingSigns = booleanValue(values, 'hanging_signs');
 
   const elements: ContentBundleElement[] = [];
   const used = new Set<string>();
@@ -684,6 +733,65 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
     );
   }
 
+  // Signs --------------------------------------------------------------------------------
+  // The writing screens read their own pictures (B440, B448): the flow writes them as project
+  // assets at the texture ids `textures.sign` and `textures.hanging_gui` name.
+  const extraAssets: ContentBundleAsset[] = [];
+  const addPicture = (path: string, bytes: Uint8Array): string => {
+    extraAssets.push({ namespace, path: `textures/${path}.png`, bytes });
+    return rl(namespace, path);
+  };
+  if (signs) {
+    const path = ids.sign.slice(namespace.length + 1);
+    elements.push(
+      element(
+        ids.sign,
+        KINDS.block,
+        {
+          format: 1,
+          display_name: `${name.display} Sign`,
+          type: 'sign',
+          wood_type: woodType,
+          sound_type: sound,
+          loot: 'self',
+          item: { creative_tab: 'minecraft:functional_blocks', max_stack_size: 16 },
+          textures: {
+            all: planksTexture(),
+            sign: addPicture(`gui/signs/${path}`, signGuiPng(woodColour)),
+            item: addPicture(`item/${path}`, signItemPng(woodColour)),
+          },
+          components: { 'msm:breakable': { ...SIGN_BREAKABLE } },
+        },
+        `A ${name.lower} sign to write on, front and back, with dye, glow ink and wax as vanilla's. It stands on the ground in sixteen directions, and placed against a side it becomes the generated wall sign ${ids.sign}_wall. Its board is drawn from the planks; the writing screen shows textures/gui/signs/${path}.png, which the flow saves. It stacks to 16 and sounds like ${woodType.replace('_', ' ')}.`,
+      ),
+    );
+  }
+  if (hangingSigns) {
+    const path = ids.hangingSign.slice(namespace.length + 1);
+    elements.push(
+      element(
+        ids.hangingSign,
+        KINDS.block,
+        {
+          format: 1,
+          display_name: `${name.display} Hanging Sign`,
+          type: 'hanging_sign',
+          wood_type: woodType,
+          sound_type: sound,
+          loot: 'self',
+          item: { creative_tab: 'minecraft:functional_blocks', max_stack_size: 16 },
+          textures: {
+            all: tex('picture_stripped_log'),
+            hanging_gui: addPicture(`gui/hanging_signs/${path}`, hangingSignGuiPng(woodColour)),
+            item: addPicture(`item/${path}`, hangingSignItemPng(woodColour)),
+          },
+          components: { 'msm:breakable': { ...SIGN_BREAKABLE } },
+        },
+        `A ${name.lower} hanging sign: under a block it hangs on two chains (on one bar when the block above is too narrow), and placed against a side it becomes the generated wall hanging sign ${ids.hangingSign}_wall on a bracket. Its board is drawn from the stripped log; the writing screen shows textures/gui/hanging_signs/${path}.png, which the flow saves. It stacks to 16.`,
+      ),
+    );
+  }
+
   // Leaves, sapling and the tree ---------------------------------------------------------
   if (has('leaves')) {
     const drops: JsonObject = {};
@@ -728,7 +836,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
   if (grows) elements.push(...growthElements(ids, values, shape, hasSapling));
 
   // Recipes ------------------------------------------------------------------------------
-  elements.push(...recipes(namespace, ids, has, logMembers.length > 0));
+  elements.push(...recipes(namespace, ids, has, logMembers.length > 0, signs, hangingSigns));
 
   // Tags ---------------------------------------------------------------------------------
   if (logMembers.length > 0) {
@@ -792,20 +900,23 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
       modElement(namespace, projectName, `Adds a ${name.lower} wood set: ${contents}.`),
       ...elements,
     ],
-    assets: PICTURES.filter((picture) => used.has(picture.id)).map(
-      (picture): ContentBundleAsset =>
-        pictureTexture(
-          namespace,
-          (ids.texture[picture.id] as string).slice(namespace.length + 1),
-          imageValue(values, picture.id),
-          picture.pattern,
-          picture.leafy
-            ? picture.id === 'picture_leaves' && tinted
-              ? TINTABLE_GREY
-              : leafColour
-            : woodColour,
-        ),
-    ),
+    assets: [
+      ...PICTURES.filter((picture) => used.has(picture.id)).map(
+        (picture): ContentBundleAsset =>
+          pictureTexture(
+            namespace,
+            (ids.texture[picture.id] as string).slice(namespace.length + 1),
+            imageValue(values, picture.id),
+            picture.pattern,
+            picture.leafy
+              ? picture.id === 'picture_leaves' && tinted
+                ? TINTABLE_GREY
+                : leafColour
+              : woodColour,
+          ),
+      ),
+      ...extraAssets,
+    ],
   };
 }
 
@@ -995,6 +1106,8 @@ function recipes(
   ids: WoodIds,
   has: (member: Member) => boolean,
   hasLogs: boolean,
+  signs: boolean,
+  hangingSigns: boolean,
 ): ContentBundleElement[] {
   const w = ids.name.id;
   const out: ContentBundleElement[] = [];
@@ -1057,7 +1170,41 @@ function recipes(
       'Four stripped logs make three stripped wood.',
     );
   }
+  if (hangingSigns && has('stripped_log')) {
+    out.push(
+      element(
+        rl(namespace, `${w}_hanging_sign_from_stripped_logs`),
+        KINDS.recipe,
+        {
+          type: 'minecraft:crafting_shaped',
+          category: 'misc',
+          group: 'hanging_sign',
+          key: { '#': ids.block.stripped_log, X: 'minecraft:iron_chain' },
+          pattern: ['X X', '###', '###'],
+          result: { count: 6, id: ids.hangingSign },
+        },
+        'Six stripped logs under two chains make six hanging signs.',
+      ),
+    );
+  }
   if (!has('planks')) return out;
+  if (signs) {
+    out.push(
+      element(
+        rl(namespace, `${w}_sign_from_planks`),
+        KINDS.recipe,
+        {
+          type: 'minecraft:crafting_shaped',
+          category: 'misc',
+          group: 'wooden_sign',
+          key: { '#': planks, X: 'minecraft:stick' },
+          pattern: ['###', '###', ' X '],
+          result: { count: 3, id: ids.sign },
+        },
+        'Six planks over a stick make three signs.',
+      ),
+    );
+  }
   const fromPlanks = (member: Member): string =>
     `${ids.block[member].slice(namespace.length + 1)}_from_planks`;
   if (has('stairs')) {

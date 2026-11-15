@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "resistance": 0.5
+      }
+    },
+    "display_name": "Berry Cake",
+    "food": {
+      "nutrition": 2,
+      "saturation": 0.1
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:food_and_drinks",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "sound_type": "wool",
+    "textures": {
+      "bottom": "msm_starter:block/berry_cake_bottom",
+      "inside": "msm_starter:block/berry_cake_inside",
+      "item": "msm_starter:item/berry_cake",
+      "side": "msm_starter:block/berry_cake_side",
+      "top": "msm_starter:block/berry_cake_top"
+    },
+    "type": "cake"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:berry_cake",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Berry Cake: place it, then use it to eat a slice when you are hungry (in creative, at any time). Each of its seven slices restores 2 hunger with a saturation of 0.1; a comparator next to it reads how much is left. A whole cake drops itself when broken, a cut one nothing. It takes no candles."
+  }
+}

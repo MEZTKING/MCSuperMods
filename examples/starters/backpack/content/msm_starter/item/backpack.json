@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:item_inventory": {
+        "close_sound": "minecraft:block.wool.place",
+        "layout": "chest",
+        "open": "use",
+        "open_sound": "minecraft:item.armor.equip_leather",
+        "rows": 3
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Backpack",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_starter:item/backpack"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:backpack",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Backpack: right-click with it in your hand to open a screen of 3 rows of nine slots. What you put in stays in the bag wherever it goes. It stacks to one and does not fit in itself, another bag or a shulker box."
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_starter:oxidized_cut_tin",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_starter:waxed_oxidized_cut_tin"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:waxed_oxidized_cut_tin_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Oxidised Cut Tin and a honeycomb in the crafting grid make waxed oxidised cut tin, as vanilla waxes copper."
+  }
+}
