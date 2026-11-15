@@ -157,6 +157,9 @@ const FLOW_SETS: readonly (readonly [string, Readonly<Record<string, Json>>])[] 
       leaf_tint: 'none',
       tree_shape: 'straight',
       grows: true,
+      // Signs (B459, on by default) belong to fixtures/sample-vanilla-blocks (B462).
+      signs: false,
+      hanging_signs: false,
     },
   ],
   [
