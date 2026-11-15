@@ -116,4 +116,13 @@ describe('PreviewPanel', () => {
     expect(screen.getByText('Preview unavailable: WebGL is disabled.')).toBeTruthy();
     expect(screen.queryByTestId('climate-map')).toBeNull();
   });
+
+  it('points a vehicle to the Vehicle Studio preview', () => {
+    renderPanel(
+      { id: 'demo:tank', kind: 'msm:vehicle', data: {} } as unknown as Element,
+      'vehicle',
+    );
+    expect(screen.getByTestId('preview-vehicle-note').textContent).toMatch(/Vehicle Studio/);
+    expect(screen.queryByText(/to preview it/)).toBeNull();
+  });
 });

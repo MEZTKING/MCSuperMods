@@ -210,7 +210,12 @@ export function PreviewPanel(props: PreviewPanelProps) {
         </div>
       ) : null}
       {subject === null ? (
-        armour === null && element?.kind !== 'minecraft:recipe' ? (
+        previewKind === 'vehicle' ? (
+          <p className="text-sm text-muted" data-testid="preview-vehicle-note">
+            Vehicles are shown in the Vehicle Studio's own Preview section, where the turret follows
+            the mouse and the wheels turn.
+          </p>
+        ) : armour === null && element?.kind !== 'minecraft:recipe' ? (
           <p className="text-sm text-muted">
             Select an item, block, armour look, recipe, model, blockstate, item definition,
             structure template, dimension, geo model, animation set or entity to preview it.
