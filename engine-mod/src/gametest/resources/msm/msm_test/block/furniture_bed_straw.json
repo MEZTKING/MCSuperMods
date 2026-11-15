@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.2,
+      "resistance": 0.2
+    }
+  },
+  "format": 1,
+  "rule": "straw_bed",
+  "sound_type": "wood",
+  "type": "bed"
+}

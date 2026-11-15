@@ -5349,3 +5349,22 @@ Next
 
 **Next**
 - B454: the same key conventions, argument names `[a-z0-9_]`, and whether `"`/`\` in `text` are escaped (then drop `commands.raw-text`). B460: Studios and ElementSidebar labels. B461: templates and examples, then empty `KINDS_AWAITING_EXAMPLES`.
+## 2026-11-15 — executor — B446 runtime: furniture, lights, signs and stems
+
+**What**
+- The ten furniture, light, sign and stem types of ADR 0094 (D1 to D6) in the runtime: `loader/types/FurnitureFields` (records `Bed` with `BedRule` and `BedColour`, `Torch`, `Sign`, `Stem`, `Plain`; each type closed at the top level, as the plant types), `registry/types/FurnitureTypes.create` and driver classes on vanilla's classes: `MsmBedBlock` (`BedBlock`, colour, `rule: straw_bed` follows `gameplay/straw_bed_rule`), `MsmLadderBlock`, `MsmTorchBlock`/`MsmWallTorchBlock` (the definition's particle; one with options is a warning and the flame is used), `MsmLanternBlock`, `MsmChainBlock`, `MsmRodBlock` (`EndRodBlock`), `MsmSignBlock`/`MsmWallSignBlock`, `MsmCeilingHangingSignBlock`/`MsmWallHangingSignBlock`, `MsmStemBlock`/`MsmAttachedStemBlock`, `MsmScaffoldingBlock` with its own distance rule and item `MsmScaffoldingBlock.PlacingItem`. Default light 14 (torch, rod) and 15 (lantern) unless `msm:light_emitter`.
+- `Companions` registers `<path>_wall` (torch, sign, hanging sign) and `<path>_attached` (stem) right after the element with a full copy of its properties and its events, adds signs and their wall forms to vanilla's `SIGN`/`HANGING_SIGN` block entity types, and makes the items: `StandingAndWallBlockItem` (torch; sign, stack 16), `HangingSignItem` (16), the scaffolding item, and a plain block item for beds (stack 1); the stack defaults give way to `item.max_stack_size`.
+- Signs build their own unregistered wood type `<ns>:<path>` with `WoodTypeBuilder.copyOf(<wood_type>).build(id, setType)`: the same source on 26.3 and 26.4, so no `WoodTypes` runtime seam was needed (the GameTest overlay `FurnitureSeamCheck` checks on each version that the sign and hanging sign sound as vanilla's sign of that wood).
+- `MsmRegistrar` (outside the owner files, small): the item comes from `Companions.blockItem` first; the companion gets the element's `msm:flammable`; a block id that is already registered is refused before the block is made (a made but unregistered block stops the registry freeze), which is how an element named like a generated companion is skipped.
+- 16 test definitions `furniture_*`, loot tables for the torch, the sign and their wall forms, test tags `climbable` (ladder, scaffolding), `beds`, `maintains_farmland` (stem); `MsmFurnitureGameTest` 11 tests (placeholder removed), `MsmSpikeGameTest` allows the deliberate `furniture_clash_wall.json` error; JUnit `FurnitureFieldsTest` 5. 571 GameTests per variant (26.3, `-Pmc=26.4`, `-PwithoutGeckolib`), 853 JUnit; parity build green.
+- `ConformanceCorpusTest.PENDING`: the ten `block-type-2-<furniture>` prefixes removed; the 28 furniture corpus cases (14 valid, 14 invalid) run.
+
+**Decisions**
+- A straw-rule bed keeps the bed's shape and `BedBlock`'s destroy behaviour (only the environment attribute changes), so it matches the bed model templates.
+- Scaffolding counts only blocks of its own element (as vanilla's counts only itself); one placed at distance 7 falls, one that loses support breaks and drops. Its `asItem` is looked up each time, because vanilla's scaffolding shape asks for the item while the state caches are built, before the runtime registers it.
+- A companion keeps its own default loot table (`<ns>:blocks/<path>_wall` or `_attached`) unless the element sets `loot_table`; an unknown stem fruit is not a runtime error (the stem grows to age 7 and stays).
+- Sign text on a dedicated server is not reached from these tests: the GameTest drives `SignBlockEntity.updateSignText` (the call the sign update packet makes) with a mock player, then saves and loads the block entity.
+
+**Next**
+- B448: companion loot tables at `blocks/<path>_wall` and `blocks/<path>_attached`; stems in `#minecraft:maintains_farmland`; ladders and scaffolding in `#minecraft:climbable`; beds in `#minecraft:beds`; a sign's `sound_type` is overridden by its wood type.
+- B449 adds waterlogging; these types keep vanilla's own. B462 and B463 use the states listed in the B446 report.

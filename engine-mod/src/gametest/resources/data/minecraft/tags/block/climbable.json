@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "msm_test:plant2_vine",
-    "msm_test:plant2_vine_still"
+    "msm_test:plant2_vine_still",
+    "msm_test:furniture_ladder",
+    "msm_test:furniture_scaffolding"
   ]
 }

@@ -1,0 +1,26 @@
+{
+  "colour": "red",
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.2,
+      "resistance": 0.2
+    },
+    "msm:on_interact": {
+      "event": "msm_test:furniture_used"
+    }
+  },
+  "events": {
+    "msm_test:furniture_used": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "bed"
+}

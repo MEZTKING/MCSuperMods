@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "rod"
+}

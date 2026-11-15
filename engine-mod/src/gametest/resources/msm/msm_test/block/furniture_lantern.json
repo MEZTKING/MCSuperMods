@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 3.5,
+      "resistance": 3.5
+    }
+  },
+  "format": 1,
+  "sound_type": "metal",
+  "type": "lantern"
+}

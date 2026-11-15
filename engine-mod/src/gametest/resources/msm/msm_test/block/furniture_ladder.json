@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.4,
+      "resistance": 0.4
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "type": "ladder"
+}

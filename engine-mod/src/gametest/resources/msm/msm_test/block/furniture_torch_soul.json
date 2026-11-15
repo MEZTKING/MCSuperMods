@@ -1,0 +1,15 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    },
+    "msm:light_emitter": {
+      "level": 10
+    }
+  },
+  "format": 1,
+  "particle": "minecraft:soul_fire_flame",
+  "sound_type": "wood",
+  "type": "torch"
+}

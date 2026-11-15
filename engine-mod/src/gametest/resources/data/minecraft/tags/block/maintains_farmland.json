@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
-    "msm_test:type_crop"
+    "msm_test:type_crop",
+    "msm_test:furniture_stem",
+    "msm_test:furniture_stem_attached"
   ]
 }

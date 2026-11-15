@@ -489,6 +489,12 @@ public final class MsmRegistrar {
         // The block item's own id (ADR 0068 D2), such as seeds planting a crop; default the block's id. A clash with a
         // registered item is a load error that skips the whole definition (nothing is registered).
         Optional<Identifier> itemId = def.item().map(settings -> settings.id().orElse(id));
+        if (BuiltInRegistries.BLOCK.containsKey(id)) {
+            // Checked before the block is made: a block made but not registered stops the registry freeze. The id may be
+            // the generated wall or attached form of a torch, sign or stem (ADR 0094 D3: the clashing element is skipped).
+            throw new DefinitionException("block id " + id + " is already registered (another mod's block or the generated wall or "
+                    + "attached form of a torch, sign or stem); the block is skipped");
+        }
         if (itemId.isPresent() && BuiltInRegistries.ITEM.containsKey(itemId.get())) {
             throw new DefinitionException("item id " + itemId.get() + " is already registered"
                     + (itemId.get().equals(id) ? "" : " (item.id)") + "; the block is skipped");
@@ -530,9 +536,10 @@ public final class MsmRegistrar {
                 .or(() -> Waterlogging.blockFor(id, def, blockProps))
                 .orElseGet(() -> BlockTypes.create(id, def, blockProps, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
         Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey, created);
-        Companions.registerAfter(raw, def, block, errors); // ADR 0094 D4: wall signs, wall torches, attached stems; a stub until B446
+        Companions.registerAfter(raw, def, block, errors); // ADR 0094 D3: wall signs, wall torches, attached stems
         BlockEntityHooks.afterBlockRegistered(raw, def, block, errors); // ADR 0074 D2, ADR 0075 D3
         BlockExtras.apply(block, c); // msm:flammable, msm:strippable (ADR 0067 D3, D4)
+        Companions.companionOf(block).ifPresent(companion -> BlockExtras.apply(companion, c)); // the companion burns alike
         if (block instanceof MsmPortalBlock portalBlock) {
             PortalLighting.add(portalBlock); // ADR 0077 D3: tried by the igniter callback in sorted id order
         }
@@ -553,8 +560,10 @@ public final class MsmRegistrar {
                 .rarity(rarity(settings.rarity()));
         // A door's item places both halves (ADR 0067 D4), as vanilla's door items; a keep-contents container's item
         // cannot go inside container items (ADR 0074 D6).
-        BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey,
-                def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, itemProps) : BlockEntityHooks.blockItem(block, itemProps));
+        // Torches, signs, hanging signs, scaffolding and beds have their own vanilla item classes (ADR 0094 D3, B446).
+        final Item.Properties blockItemProps = itemProps;
+        BlockItem item = Registry.register(BuiltInRegistries.ITEM, itemKey, Companions.blockItem(raw, def, block, itemProps).orElseGet(() ->
+                def.type() == BlockType.DOOR ? new DoubleHighBlockItem(block, blockItemProps) : BlockEntityHooks.blockItem(block, blockItemProps)));
         items.add(itemId.get());
         settings.creativeTab().ifPresent(tab -> addToTab(raw, tab, item));
     }
