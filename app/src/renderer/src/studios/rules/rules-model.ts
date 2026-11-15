@@ -445,16 +445,20 @@ export function offeredConditions(scope: RuleScope, options: OfferOptions): Cond
   );
 }
 
-/** The readings offered in `scope`; `plainOnly` inside `math`. */
+/**
+ * The readings offered in `scope`; `plainOnly` inside `math`. Readings in words (`facing`) are
+ * offered only with `text` (a text slot).
+ */
 export function offeredValues(
   scope: RuleScope,
-  options: OfferOptions & { plainOnly?: boolean },
+  options: OfferOptions & { plainOnly?: boolean; text?: boolean },
 ): ValueEntry[] {
   return VALUES.filter(
     (entry) =>
       (!options.veryEasy || entry.veryEasy) &&
       allows(scope, entry.needsActor) &&
-      (options.plainOnly !== true || entry.plain),
+      (options.plainOnly !== true || entry.plain) &&
+      (entry.words !== true || options.text === true),
   );
 }
 

@@ -25,13 +25,16 @@ export type ThingSort =
   /** A project vehicle (`msm:vehicle`); only the project has them. */
   | 'vehicle'
   /** A project HUD element (`msm:hud`); only the project has them. */
-  | 'hud';
+  | 'hud'
+  /** A project command (`msm:command`); only the project has them, shown as `/name`. */
+  | 'command';
 
 /** The sorts only the project has (no vanilla section, no registry). */
 export const PROJECT_ONLY_SORTS: ReadonlySet<ThingSort> = new Set<ThingSort>([
   'key',
   'vehicle',
   'hud',
+  'command',
 ]);
 
 /** Where a thing's picture comes from. */
@@ -95,6 +98,7 @@ export const THING_REGISTRIES: Readonly<Record<ThingSort, string>> = Object.free
   key: 'msm:key_bind',
   vehicle: 'msm:vehicle',
   hud: 'msm:hud',
+  command: 'msm:command',
 });
 
 /** The element kinds whose elements are things of each sort (for names and pictures). */
@@ -110,6 +114,7 @@ const PROJECT_KINDS: Readonly<Record<ThingSort, readonly string[]>> = Object.fre
   key: ['msm:key_bind'],
   vehicle: ['msm:vehicle'],
   hud: ['msm:hud'],
+  command: ['msm:command'],
 });
 
 /** Plain words for each sort, singular and plural. */
@@ -126,6 +131,7 @@ export const THING_WORDS: Readonly<Record<ThingSort, { one: string; many: string
     key: { one: 'a key', many: 'keys' },
     vehicle: { one: 'a vehicle', many: 'vehicles' },
     hud: { one: 'something to show on screen', many: 'things on screen' },
+    command: { one: 'a command', many: 'commands' },
   });
 
 type JsonObject = { [key: string]: Json };
@@ -171,12 +177,16 @@ function projectElements(project: Project): Map<string, Element> {
 
 /**
  * The `display_name` of an element's data, when it is a non-empty string; a key bind's own
- * `name` (the words in Controls) when it has no `display_name`.
+ * `name` (the words in Controls) when it has no `display_name`; a command is always `/name`.
  */
 function displayNameOf(element: Element | undefined): string | undefined {
   const data = asObject(element?.data);
   const name = data?.display_name;
   if (typeof name === 'string' && name.trim().length > 0) return name;
+  if (element?.kind === 'msm:command') {
+    const literal = data?.name;
+    return typeof literal === 'string' && literal.trim().length > 0 ? `/${literal}` : undefined;
+  }
   const keyName = element?.kind === 'msm:key_bind' ? data?.name : undefined;
   return typeof keyName === 'string' && keyName.trim().length > 0 ? keyName : undefined;
 }

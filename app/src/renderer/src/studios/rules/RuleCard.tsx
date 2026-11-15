@@ -73,6 +73,7 @@ const SUBJECT_SORTS: Readonly<Record<string, ThingSort>> = {
   effect: 'effect',
   key: 'key',
   vehicle: 'vehicle',
+  command: 'command',
 };
 
 /** Props of {@link RuleCard}. */

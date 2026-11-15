@@ -61,6 +61,14 @@ export interface SlotChipProps {
   absentWords?: string;
 }
 
+/** Whether `slot` is the mount of "ride": a player, a mob or the other one, never every player. */
+export const isMount = (ownerId: string, slot: SlotSpec): boolean =>
+  ownerId === 'ride' && slot.name === 'mount';
+
+/** Whether `slot` is the cause of "what caused it": a mob type, or a block. */
+export const isCause = (ownerId: string, slot: SlotSpec): boolean =>
+  ownerId === 'caused_by' && slot.name === 'cause';
+
 /** The chip of one slot. */
 export function SlotChip(props: SlotChipProps) {
   const { slot } = props;
@@ -90,7 +98,14 @@ export function SlotChip(props: SlotChipProps) {
 
   const sort = THING_SLOTS[slot.type];
   if (sort !== undefined) {
-    return <ThingChip {...common} sort={sort} slot={slot} />;
+    return (
+      <ThingChip
+        {...common}
+        sort={sort}
+        slot={slot}
+        {...(isCause(props.ownerId, slot) ? { blockLabel: 'A block' } : {})}
+      />
+    );
   }
   switch (slot.type) {
     case 'choice':
@@ -102,7 +117,11 @@ export function SlotChip(props: SlotChipProps) {
     case 'who':
       return (
         <ChipPopover {...common}>
-          <WhoMenu pointer={pointer} scope={props.scope} single={props.singleWho === true} />
+          <WhoMenu
+            pointer={pointer}
+            scope={props.scope}
+            single={props.singleWho === true || isMount(props.ownerId, slot)}
+          />
         </ChipPopover>
       );
     case 'place':
@@ -182,6 +201,8 @@ function ThingChip(props: {
   className: string;
   sort: ThingSort;
   slot: SlotSpec;
+  /** Offers a first tile with these words that picks "block" (what caused it). */
+  blockLabel?: string;
 }) {
   const env = useRulesEnv();
   const { book, change } = useBookEdit();
@@ -223,13 +244,21 @@ function ThingChip(props: {
           sections={sections}
           value={typeof value === 'string' ? value : undefined}
           pictures={env.pictures}
+          noneLabel={props.blockLabel}
           onCancel={() => setOpen(false)}
           onPick={(id) => {
             setOpen(false);
-            if (id === null) return;
+            const picked = id === null && props.blockLabel !== undefined ? 'block' : id;
+            if (picked === null) return;
             const object = asObject(raw);
             // A particle with options keeps them (ADR 0080's options objects).
-            change(setAt(book, props.pointer, object === undefined ? id : { ...object, type: id }));
+            change(
+              setAt(
+                book,
+                props.pointer,
+                object === undefined ? picked : { ...object, type: picked },
+              ),
+            );
           }}
         />
       )}

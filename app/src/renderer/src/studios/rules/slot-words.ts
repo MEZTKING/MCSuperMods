@@ -32,6 +32,7 @@ export const THING_SLOTS: Readonly<Partial<Record<SlotSpec['type'], ThingSort>>>
   dimension: 'dimension',
   key: 'key',
   vehicle: 'vehicle',
+  command: 'command',
 };
 
 /** Names of slots for screen readers ("Item: Ruby"). */
@@ -98,6 +99,8 @@ export function emptyWords(slot: SlotSpec): string {
       return 'pick one of your keys';
     case 'vehicle':
       return 'pick one of your vehicles';
+    case 'command':
+      return 'pick one of your commands';
     case 'hud':
       return 'pick what to show';
     case 'weapon':
@@ -149,6 +152,8 @@ function bareSlotWords(
   if (slot.type === 'counter') return counterWords(owner);
   const raw = owner[slot.name] ?? defaults[slot.name];
   if (raw === undefined) return undefined;
+  // "What caused it" can be a block (B458a).
+  if (slot.name === 'cause' && raw === 'block') return 'a block';
   switch (slot.type) {
     case 'item':
     case 'block':
@@ -160,6 +165,7 @@ function bareSlotWords(
     case 'key':
     case 'vehicle':
     case 'hud':
+    case 'command':
       return typeof raw === 'string' ? (context.names(raw) ?? raw) : undefined;
     case 'particle': {
       const id = typeof raw === 'string' ? raw : asObject(raw)?.type;

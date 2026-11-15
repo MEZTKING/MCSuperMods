@@ -5887,3 +5887,19 @@ Next: B421's horn listener can add a parity check (the horn's sound packet to ot
 **Next**
 - No unit test covers the starter model state across two vehicles (the e2e path does).
 - `packages/ai/src/system-prompt.ts:189` has a Biome warning (useless escape), not this brief's.
+## 2026-11-15 — executor — B458a Rules pickers for commands, riding and explosions
+
+**What**
+- Thing sort `command` (project `msm:command` elements only, tiles and chips read `/name`); the `command` slot type uses it, and `SUBJECT_SORTS` has `command`, so an empty trigger chip reads "pick one of your commands" (and the empty slot words too).
+- The `mount` of "Ride something" is a who menu without "every player" (or "players nearby"); the rider's own "who" keeps the full menu.
+- The `facing` reading is offered only in text slots: `offeredValues` takes `text: true` (the text editor passes it); number slots and sums no longer list it.
+- `caused_by`'s cause opens the mob picker with a first tile "A block" that stores `block`; the chip then reads "a block".
+- Tests: `app/test/components/rules-b458a-pickers.test.tsx` (4) and one in `app/test/rules-model.test.ts`.
+
+**Decisions**
+- The mount reuses `single` on the who menu rather than a new menu; the generic who picker is unchanged elsewhere.
+- "A block" uses the ThingPicker's existing `noneLabel` tile instead of a second popover.
+- Commands show `/name` from the element's `name` field in `displayNameOf`, so every picker and chip agrees.
+
+**Next**
+- The `is_riding` mount stays a mob picker (not part of this brief).

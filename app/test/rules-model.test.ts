@@ -236,6 +236,11 @@ describe('what the pickers offer', () => {
     expect(ids(offeredWho(used, { veryEasy: false, single: true }))).not.toContain('every_player');
     expect(ids(offeredValues(used, { veryEasy: false, plainOnly: true }))).not.toContain('math');
   });
+
+  it('offers the way it faces in text slots only (B458a)', () => {
+    expect(ids(offeredValues(used, { veryEasy: false }))).not.toContain('facing');
+    expect(ids(offeredValues(used, { veryEasy: false, text: true }))).toContain('facing');
+  });
 });
 
 describe('problems on the card', () => {

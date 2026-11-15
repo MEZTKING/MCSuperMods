@@ -415,7 +415,7 @@ export function TextEditor(props: {
     : typeof value === 'string'
       ? [value]
       : [];
-  const readings = offeredValues(props.scope, { veryEasy: env.mode.veryEasy });
+  const readings = offeredValues(props.scope, { veryEasy: env.mode.veryEasy, text: true });
   const firstReading = readings.find((entry) => entry.id !== 'math') ?? readings[0];
   return (
     <div className="flex flex-col gap-1.5" data-testid="rules-text-editor">

@@ -21,6 +21,7 @@ import {
   Package,
   PawPrint,
   Sparkles,
+  Terminal,
 } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import {
@@ -107,6 +108,7 @@ const SORT_ICONS: Readonly<Record<ThingSort, LucideIcon>> = {
   key: Keyboard,
   vehicle: Car,
   hud: Gauge,
+  command: Terminal,
 };
 
 /** Loads a thing's picture as a `data:` URL; `null` while loading or when there is none. */
