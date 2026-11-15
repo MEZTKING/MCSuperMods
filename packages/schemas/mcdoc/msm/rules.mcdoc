@@ -138,6 +138,22 @@ enum(string) Trigger {
 	PlayerChangedDimension = "player_changed_dimension",
 	/// Every few seconds, for each player.
 	PlayerEvery = "player_every",
+	/// A player presses a project key bind (ADR 0088 D6).
+	KeyPressed = "key_pressed",
+	/// A player lets go of a project key bind.
+	KeyReleased = "key_released",
+	/// Every few seconds while a player holds a project key bind.
+	KeyHeld = "key_held",
+	/// A player gets in a project vehicle (ADR 0090 D11).
+	VehicleMounted = "vehicle_mounted",
+	/// A player gets out of a project vehicle.
+	VehicleDismounted = "vehicle_dismounted",
+	/// A project vehicle fires one of its weapons.
+	VehicleFired = "vehicle_fired",
+	/// A project vehicle is destroyed.
+	VehicleDestroyed = "vehicle_destroyed",
+	/// Every few seconds while a project vehicle is driven.
+	VehicleEvery = "vehicle_every",
 	/// The world starts.
 	WorldStarted = "world_started",
 	/// Every few seconds.
@@ -257,6 +273,44 @@ dispatch msm:rule_trigger[player_every, world_every] to struct EveryTrigger {
 	options?: IntervalOptions,
 }
 
+/// A player presses a key bind.
+dispatch msm:rule_trigger[key_pressed] to struct KeyPressedTrigger {
+	/// The project key bind (an `msm:key_bind` id).
+	subject: string @ 1..,
+	options?: KeyCooldownOptions,
+}
+
+/// A player lets go of a key bind.
+dispatch msm:rule_trigger[key_released] to struct KeyReleasedTrigger {
+	/// The project key bind (an `msm:key_bind` id).
+	subject: string @ 1..,
+}
+
+/// While a player holds a key bind.
+dispatch msm:rule_trigger[key_held] to struct KeyHeldTrigger {
+	/// The project key bind (an `msm:key_bind` id).
+	subject: string @ 1..,
+	options?: KeyHeldOptions,
+}
+
+/// Vehicle triggers without options.
+dispatch msm:rule_trigger[
+	vehicle_mounted,
+	vehicle_dismounted,
+	vehicle_fired,
+	vehicle_destroyed,
+] to struct VehicleTrigger {
+	/// The project vehicle (an `msm:vehicle`, which is also an entity type).
+	subject: #[id="entity_type"] string,
+}
+
+/// Every few seconds while a vehicle is driven.
+dispatch msm:rule_trigger[vehicle_every] to struct VehicleEveryTrigger {
+	/// The project vehicle (an `msm:vehicle`, which is also an entity type).
+	subject: #[id="entity_type"] string,
+	options?: IntervalOptions,
+}
+
 /// Any block, or any block of one kind.
 dispatch msm:rule_trigger[any_block_used, any_block_broken] to struct AnyBlockTrigger {
 	/// The block, vanilla or project; absent means every block.
@@ -280,6 +334,18 @@ dispatch msm:rule_trigger[any_mob_hurt, any_mob_died, any_mob_used] to struct An
 struct CooldownOptions {
 	/// Seconds before the trigger fires again; defaults to 0.
 	cooldown_seconds?: double @ 0..3600,
+}
+
+/// Options of a key press: the key bind's own `cooldown_ticks` wins (ADR 0082 D3).
+struct KeyCooldownOptions {
+	/// Seconds before a press fires again, 0 to 60; defaults to 0.
+	cooldown_seconds?: double @ 0..60,
+}
+
+/// Options of a held key: the key bind's own `hold_interval_ticks` wins.
+struct KeyHeldOptions {
+	/// Seconds between two firings while the key is held, 0.05 to 60; defaults to 0.5.
+	interval_seconds?: double @ 0.05..60,
 }
 
 /// Options of a random tick.
@@ -347,6 +413,13 @@ enum(string) ValueKind {
 	PlayerCount = "player_count",
 	/// The time of day in ticks, 0 to 23999.
 	TimeOfDay = "time_of_day",
+	/// Seconds of driving left in the vehicle's fuel: the vehicle of a vehicle trigger, else the
+	/// one the player rides (0 without one).
+	VehicleFuel = "vehicle_fuel",
+	/// The damage the vehicle has taken (as `VehicleFuel` says which vehicle).
+	VehicleDamage = "vehicle_damage",
+	/// The rounds loaded in one of the vehicle's weapons (as `VehicleFuel` says which vehicle).
+	VehicleAmmo = "vehicle_ammo",
 	/// Two numbers added, taken away, multiplied or divided.
 	Math = "math",
 }
@@ -362,6 +435,9 @@ enum(string) PlainValueKind {
 	PlayerPosition = "player_position",
 	PlayerCount = "player_count",
 	TimeOfDay = "time_of_day",
+	VehicleFuel = "vehicle_fuel",
+	VehicleDamage = "vehicle_damage",
+	VehicleAmmo = "vehicle_ammo",
 }
 
 /// A value object, selected by `value`.
@@ -416,6 +492,12 @@ enum(string) Axis {
 dispatch msm:rule_value[player_position] to struct PlayerPositionValue {
 	/// Which part.
 	axis: Axis,
+}
+
+/// The rounds loaded in a vehicle's weapon.
+dispatch msm:rule_value[vehicle_ammo] to struct VehicleAmmoValue {
+	/// The weapon's `id` in the vehicle's `weapons`; defaults to the first weapon.
+	weapon?: string @ 1..,
 }
 
 /// An arithmetic operator.
@@ -666,6 +748,12 @@ enum(string) PlainStepKind {
 	ShowTitle = "show_title",
 	/// Shows text above the hotbar.
 	ShowActionBar = "show_action_bar",
+	/// Shows a HUD element.
+	ShowHud = "show_hud",
+	/// Hides a HUD element.
+	HideHud = "hide_hud",
+	/// Sets the number or text a HUD element shows.
+	SetHud = "set_hud",
 	/// Gives an effect.
 	GiveEffect = "give_effect",
 	/// Removes an effect.
@@ -746,6 +834,12 @@ enum(string) StepKind {
 	ShowTitle = "show_title",
 	/// Shows text above the hotbar.
 	ShowActionBar = "show_action_bar",
+	/// Shows a HUD element.
+	ShowHud = "show_hud",
+	/// Hides a HUD element.
+	HideHud = "hide_hud",
+	/// Sets the number or text a HUD element shows.
+	SetHud = "set_hud",
 	/// Gives an effect.
 	GiveEffect = "give_effect",
 	/// Removes an effect.
@@ -963,6 +1057,26 @@ dispatch msm:rule_step[launch] to struct LaunchStep {
 dispatch msm:rule_step[show_message, show_action_bar] to struct ShowTextStep {
 	/// The text.
 	text: TextSlot,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Shows or hides a HUD element (ADR 0089 D7).
+dispatch msm:rule_step[show_hud, hide_hud] to struct HudStep {
+	/// The project HUD element (an `msm:hud` id).
+	hud: string @ 1..,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Sets what a HUD element shows (ADR 0089 D7): `text` when given, else `value` (defaults to 0).
+dispatch msm:rule_step[set_hud] to struct SetHudStep {
+	/// The project HUD element (an `msm:hud` id).
+	hud: string @ 1..,
+	/// The number.
+	value?: NumberSlot,
+	/// Text instead of a number.
+	text?: TextSlot,
 	/// Defaults to `player`.
 	who?: Who,
 }

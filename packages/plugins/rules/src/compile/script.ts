@@ -1,7 +1,8 @@
 /**
  * The TypeScript generator of Rules (ADR 0082 D3): one script per book that needs one, written
- * against the Script API (`msm-runtime.d.ts`; 1.4 members from B370) so the content jar exporter
- * transpiles it to ES5 like any script (ADR 0031 D2).
+ * against the Script API (`msm-runtime.d.ts`; 1.4 members from B370; 1.5's key and vehicle
+ * events, HUD and `Vehicle` members from B421 for the B424 triggers, steps and values) so the
+ * content jar exporter transpiles it to ES5 like any script (ADR 0031 D2).
  *
  * The code is meant to be read: a header, small named helpers (only those used), one handler per
  * subject and trigger, one comment per rule with its sentence and a `// rule:<key>` marker at the
@@ -243,6 +244,46 @@ const HELPERS: readonly { name: string; uses?: readonly string[]; lines: readonl
     ],
   },
   {
+    name: 'riddenBy',
+    lines: [
+      '/** The project vehicle an entity rides, when it rides one (Script API 1.5). */',
+      'const riddenBy = (entity: Entity | undefined): Vehicle | undefined => {',
+      '  const ridden = entity === undefined ? undefined : entity.vehicle;',
+      '  return ridden === undefined ? undefined : ridden.asVehicle();',
+      '};',
+    ],
+  },
+  {
+    name: 'vehicleFuel',
+    lines: [
+      "/** Seconds of driving left in a vehicle's fuel; 0 without a vehicle. */",
+      'const vehicleFuel = (vehicle: Vehicle | undefined): number =>',
+      '  vehicle === undefined ? 0 : vehicle.fuel / 20;',
+    ],
+  },
+  {
+    name: 'vehicleDamage',
+    lines: [
+      '/** The damage a vehicle has taken; 0 without a vehicle. */',
+      'const vehicleDamage = (vehicle: Vehicle | undefined): number =>',
+      '  vehicle === undefined ? 0 : vehicle.damageTaken;',
+    ],
+  },
+  {
+    name: 'vehicleAmmo',
+    lines: [
+      "/** The rounds loaded in a vehicle's weapon; 0 without a vehicle or such a weapon. */",
+      'const vehicleAmmo = (vehicle: Vehicle | undefined, weapon: string | number): number => {',
+      '  if (vehicle === undefined) return 0;',
+      '  try {',
+      '    return vehicle.ammo(weapon);',
+      '  } catch (error) {',
+      '    return 0;',
+      '  }',
+      '};',
+    ],
+  },
+  {
     name: 'launch',
     lines: [
       '/** Pushes an entity as the `launch` action does. */',
@@ -305,6 +346,9 @@ const NEEDS_PLAYER = new Set([
   'show_message',
   'show_title',
   'show_action_bar',
+  'show_hud',
+  'hide_hud',
+  'set_hud',
 ]);
 
 /** Where a step list is: which actor variables exist and whether `player` is a loop's player. */
@@ -360,6 +404,11 @@ export class ScriptBuilder {
       );
     }
     if (trigger.actors.includes('other')) head.push('const other: Entity | undefined = e.other;');
+    if (trigger.subject === 'vehicle') {
+      head.push(
+        'const vehicle: Vehicle | undefined = e.entity !== undefined ? e.entity.asVehicle() : undefined;',
+      );
+    }
     this.handlers.push([
       `// ${commentText(title)}`,
       `msm.actions.define(${literal(handler)}, (e) => {`,
@@ -435,8 +484,43 @@ export class ScriptBuilder {
         );
         break;
       }
+      case 'key.pressed':
+      case 'key.released':
+        if (subject !== undefined) head.push(`if (e.key !== ${literal(subject)}) return;`);
+        head.push(
+          'const world = e.world;',
+          'const here = e.player.pos;',
+          'const player: Player | undefined = e.player;',
+        );
+        break;
+      case 'vehicle.mounted':
+      case 'vehicle.dismounted':
+      case 'vehicle.fired':
+      case 'vehicle.destroyed':
+        if (subject !== undefined) head.push(`if (e.vehicle.type !== ${literal(subject)}) return;`);
+        head.push(
+          'const world = e.world;',
+          'const here = e.vehicle.pos;',
+          'const vehicle: Vehicle | undefined = e.vehicle;',
+          'const player: Player | undefined = e.player;',
+        );
+        break;
       case 'player.tick':
         extra = `, { interval: ${Math.max(5, interval)} }`;
+        if (trigger.subject === 'vehicle') {
+          // Every N seconds while driven: the driver's tick, in a vehicle of the subject's type.
+          head.push(
+            `const driven = ${this.use('riddenBy')}(e.player);`,
+            `if (driven === undefined || driven.type !== ${literal(subject ?? '')}) return;`,
+            'const driver = driven.driver;',
+            'if (driver === undefined || driver.uuid !== e.player.uuid) return;',
+            'const world = e.world;',
+            'const here = driven.pos;',
+            'const vehicle: Vehicle | undefined = driven;',
+            'const player: Player | undefined = e.player;',
+          );
+          break;
+        }
         head.push(
           'const world = e.world;',
           'const here = e.player.pos;',
@@ -570,6 +654,14 @@ class RuleWriter {
         return 'msm.players().length';
       case 'time_of_day':
         return 'world.dayTime';
+      case 'vehicle_fuel':
+        return `${this.use('vehicleFuel')}(${this.vehicle()})`;
+      case 'vehicle_damage':
+        return `${this.use('vehicleDamage')}(${this.vehicle()})`;
+      case 'vehicle_ammo': {
+        const weapon = str(object, 'weapon');
+        return `${this.use('vehicleAmmo')}(${this.vehicle()}, ${weapon === undefined ? '0' : literal(weapon)})`;
+      }
       case 'math': {
         const a = this.number(object?.a, env);
         const b = this.number(object?.b, env);
@@ -580,6 +672,11 @@ class RuleWriter {
       default:
         return '0';
     }
+  }
+
+  /** The vehicle of a vehicle trigger, else the one the player rides. */
+  private vehicle(): string {
+    return this.trigger.subject === 'vehicle' ? 'vehicle' : `${this.use('riddenBy')}(player)`;
   }
 
   private playerReading(field: string, env: Env): string {
@@ -895,6 +992,18 @@ class RuleWriter {
           step.subtitle === undefined ? '' : `, { subtitle: ${this.text(step.subtitle, env)} }`;
         return [
           `${who('player')}.forEach((target) => target.showTitle(${this.text(step.title, env)}${subtitle}));`,
+        ];
+      }
+      case 'show_hud':
+      case 'hide_hud':
+        return [
+          `${who('player')}.forEach((target) => target.${id === 'show_hud' ? 'showHud' : 'hideHud'}(${literal(str(step, 'hud') ?? '')}));`,
+        ];
+      case 'set_hud': {
+        const value =
+          step.text !== undefined ? this.text(step.text, env) : this.number(step.value, env);
+        return [
+          `${who('player')}.forEach((target) => target.setHud(${literal(str(step, 'hud') ?? '')}, ${value}));`,
         ];
       }
       case 'give_effect': {

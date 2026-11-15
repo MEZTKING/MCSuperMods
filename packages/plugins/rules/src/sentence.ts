@@ -38,6 +38,9 @@ export function formatNumber(value: number): string {
   return String(Math.round(value * 100) / 100);
 }
 
+/** A key bind's own default `hold_interval_ticks` (10) in seconds, as "every" of a held key. */
+const KEY_HOLD_SECONDS = 0.5;
+
 const seconds = (value: number): string =>
   `${formatNumber(value)} ${value === 1 ? 'second' : 'seconds'}`;
 
@@ -77,6 +80,12 @@ export function valueSentence(value: Json | undefined, context: SentenceContext)
       return counterWords(object);
     case 'player_position':
       return `the player's ${str(object, 'axis') ?? 'x'} position`;
+    case 'vehicle_ammo': {
+      const weapon = str(object, 'weapon');
+      return weapon === undefined
+        ? "the vehicle's ammunition"
+        : `the vehicle's ammunition for the weapon "${weapon}"`;
+    }
     case 'math': {
       const op = { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' }[
         str(object, 'op') ?? '+'
@@ -183,7 +192,12 @@ function valueWords(
     case 'effect':
     case 'function':
     case 'dimension':
+    case 'key':
+    case 'vehicle':
+    case 'hud':
       return typeof raw === 'string' ? nameOf(context, raw) : '';
+    case 'weapon':
+      return typeof raw === 'string' ? `the weapon "${raw}"` : '';
     case 'particle': {
       const id = typeof raw === 'string' ? raw : str(asObject(raw), 'type');
       return id === undefined ? 'particles' : nameOf(context, id);
@@ -294,7 +308,9 @@ export function whenSentence(when: JsonObject | undefined, names: RuleNames): st
         return `any ${trigger.subject === 'none' ? 'thing' : trigger.subject}`;
       return nameOf(context, subject);
     }
-    if (name === 'interval_seconds') return seconds(num(options, name) ?? 1);
+    if (name === 'interval_seconds') {
+      return seconds(num(options, name) ?? (trigger.id === 'key_held' ? KEY_HOLD_SECONDS : 1));
+    }
     return slotWords(slots.get(name), name, options, context);
   });
 }

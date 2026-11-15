@@ -109,8 +109,8 @@ describe('Key bind Studio', () => {
     expect((screen.getByTestId('key-bind-display-name') as HTMLInputElement).value).toBe('Dash');
     expect((screen.getByTestId('key-bind-when-select') as HTMLSelectElement).value).toBe('on_foot');
     expect(screen.getByTestId('key-bind-cooldown-words').textContent).toBe('1 second');
-    // No Rules trigger names a key bind yet (B424), so there is no Rules section.
-    expect(screen.queryByTestId('rules-slot')).toBeNull();
+    // The Rules triggers for key binds (B424) make the Rules section appear.
+    expect(screen.getByTestId('rules-slot')).toBeTruthy();
     expect((screen.getByTestId('key-bind-on-press') as HTMLSelectElement).value).toBe(
       'demo:dash_press',
     );

@@ -57,6 +57,8 @@ export const TRIGGER_GROUP_LABELS: Readonly<Record<TriggerGroup, string>> = {
   mobs: 'Mobs',
   effects: 'Effects',
   players: 'Players',
+  keys: 'Keys',
+  vehicles: 'Vehicles',
   world: 'The world',
   any: 'Any block, item or mob',
 };

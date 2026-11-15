@@ -1,0 +1,39 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:tank",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:tank_rules_vehicle_every": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:tank",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "on_tick"
+      ],
+      "value": {
+        "event": "demo:tank_rules_vehicle_every",
+        "interval": 40
+      }
+    }
+  ],
+  "problems": []
+}

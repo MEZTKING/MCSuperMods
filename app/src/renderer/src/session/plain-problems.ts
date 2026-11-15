@@ -100,6 +100,10 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'rules.script-path-clash': entry(
     (t) => `${t} clashes with another rule book's hidden file. Rename one of the books.`,
   ),
+  'rules.unknown-hud': step(
+    (t) =>
+      `A step in ${t} shows something on screen that is not in your mod any more. Pick another one.`,
+  ),
   'rules.needs-jar': entry(() => 'Rules only work in the Fabric mod jar. Share my mod makes one.'),
   'rules.not-in-eject': entry(
     (t) => `A rule in ${t} needs code, so it does nothing in the Java project.`,

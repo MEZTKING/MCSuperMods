@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { ElementKindRegistry, lowerProjectAsync, registerPlugin } from '../../../core/src/index';
 import blocksItems from '../../blocks-items/src/index';
 import rules, { copyRuleBookAsScript, ruleEventId } from '../src/index';
-import { book, element } from './support';
+import { book, element, PROJECT as SUPPORT_PROJECT } from './support';
 
 const BLOCK = element('msm:block', 'demo:ruby_block', {
   components: { 'msm:on_interact': { event: 'demo:ruby_block_use' } },
@@ -317,5 +317,44 @@ describe('copyRuleBookAsScript', () => {
       reason: 'Fix the problems in this rule book first.',
     });
     expect(copyRuleBookAsScript('demo:missing', [BLOCK], target)).toMatchObject({ ok: false });
+  });
+});
+
+describe('copy as my own script, key binds and vehicles (B424)', () => {
+  const facts = builtInTargets[0]?.target;
+  const CHIME = { sound: 'minecraft:block.note_block.chime', step: 'play_sound' };
+
+  it('points the key bind, the weapons and on_tick at the copied events, with the options in force', () => {
+    if (facts === undefined) return;
+    const keys = book([
+      {
+        do: [CHIME],
+        key: 'press',
+        when: { options: { cooldown_seconds: 2 }, subject: 'demo:dash', trigger: 'key_pressed' },
+      },
+      { do: [CHIME], key: 'fire', when: { subject: 'demo:tank', trigger: 'vehicle_fired' } },
+      {
+        do: [CHIME],
+        key: 'drive',
+        when: { options: { interval_seconds: 3 }, subject: 'demo:tank', trigger: 'vehicle_every' },
+      },
+    ]);
+    const copy = copyRuleBookAsScript('demo:rules', [...SUPPORT_PROJECT, keys], facts);
+    if (!copy.ok) throw new Error(copy.reason);
+    expect(copy.scriptLines).toBeNull();
+    const dash = copy.subjects.find((subject) => subject.elementId === 'demo:dash')?.data ?? {};
+    expect(dash['msm:on_press']).toBe('demo:dash_script_key_pressed');
+    expect(dash.cooldown_ticks).toBe(40);
+    const tank = copy.subjects.find((subject) => subject.elementId === 'demo:tank')?.data ?? {};
+    expect((tank.weapons as JsonObject[]).map((weapon) => weapon.on_fire)).toEqual([
+      'demo:tank_script_vehicle_fired',
+      'demo:tank_script_vehicle_fired',
+    ]);
+    expect(tank.on_tick).toEqual({ event: 'demo:tank_script_vehicle_every', interval: 60 });
+    expect(Object.keys(tank.events as JsonObject).sort()).toEqual([
+      'demo:tank_script_vehicle_every',
+      'demo:tank_script_vehicle_fired',
+    ]);
+    expect(ruleEventId('demo:tank', 'vehicle_fired')).toBe('demo:tank_rules_vehicle_fired');
   });
 });

@@ -37,6 +37,8 @@ describe('@msm/plugin-rules', () => {
       'msm:effect',
       'msm:entity',
       'msm:item',
+      'msm:key_bind',
+      'msm:vehicle',
     ]);
     expect(plugin.contributes.validators?.map((validator) => validator.id)).toEqual([
       'msm.rules.book',
@@ -50,6 +52,7 @@ describe('@msm/plugin-rules', () => {
     for (const code of RULES_PROBLEM_CODES) expect(code).toMatch(/^rules\.[a-z-]+$/);
     expect(RULES_PROBLEM_CODES).toContain('rules.duplicate-key');
     expect(RULES_PROBLEM_CODES).toContain('rules.unknown-step');
-    expect(RULES_PROBLEM_CODES).toHaveLength(22);
+    expect(RULES_PROBLEM_CODES).toContain('rules.unknown-hud');
+    expect(RULES_PROBLEM_CODES).toHaveLength(23);
   });
 });

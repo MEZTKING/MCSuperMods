@@ -44,6 +44,8 @@ const THING_WORDS: Readonly<Record<string, string>> = {
   'msm:item': 'item',
   'msm:entity': 'mob',
   'msm:effect': 'effect',
+  'msm:key_bind': 'key',
+  'msm:vehicle': 'vehicle',
 };
 
 /** What the Rules section says about a kind of thing. */

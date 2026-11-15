@@ -48,9 +48,9 @@ describe('the catalogue', () => {
     expect(sorted(CATALOGUE_IDS.who)).toEqual(sorted([...enumValues('WhoName'), 'players_nearby']));
   });
 
-  it('counts 43 triggers, 36 steps, 16 conditions and 9 values', () => {
+  it('counts 51 triggers, 39 steps, 16 conditions and 12 values', () => {
     expect([TRIGGERS.length, STEPS.length, CONDITIONS.length, VALUES.length]).toEqual([
-      43, 36, 16, 9,
+      51, 39, 16, 12,
     ]);
   });
 
@@ -84,9 +84,23 @@ describe('the catalogue', () => {
   });
 
   it('says where each definition trigger puts its event, and which script event the others use', () => {
+    // The key and vehicle triggers have both: plain rules go into the definition's event, the
+    // others listen to the Script API 1.5 event (B424); a held key has no such event.
+    const both = TRIGGERS.filter(
+      (trigger) => trigger.definition !== undefined && trigger.scriptEvent !== undefined,
+    ).map((trigger) => [trigger.id, trigger.scriptEvent]);
+    expect(Object.fromEntries(both)).toEqual({
+      key_pressed: 'key.pressed',
+      key_released: 'key.released',
+      vehicle_mounted: 'vehicle.mounted',
+      vehicle_dismounted: 'vehicle.dismounted',
+      vehicle_fired: 'vehicle.fired',
+      vehicle_destroyed: 'vehicle.destroyed',
+      vehicle_every: 'player.tick',
+    });
     for (const trigger of TRIGGERS) {
       const definition = trigger.definition !== undefined;
-      expect(definition !== (trigger.scriptEvent !== undefined), trigger.id).toBe(true);
+      expect(definition || trigger.scriptEvent !== undefined, trigger.id).toBe(true);
       expect(trigger.subjectKinds.length > 0, trigger.id).toBe(definition);
       expect(trigger.subjectOptional, trigger.id).toBe(trigger.id.startsWith('any_'));
       for (const target of Object.keys(trigger.actionTargets)) {
@@ -126,6 +140,10 @@ describe('the catalogue', () => {
       play_sound: 'play_sound',
       spawn_particles: 'spawn_particle',
       play_animation: 'play_animation',
+      show_hud: 'show_hud',
+      hide_hud: 'hide_hud',
+      set_hud: 'set_hud',
+      explode: 'explode',
     });
   });
 

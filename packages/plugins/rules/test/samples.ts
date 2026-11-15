@@ -64,6 +64,14 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
   player_chatted: { options: { message_contains: 'Hello' } },
   player_changed_dimension: {},
   player_every: { options: { interval_seconds: 2 } },
+  key_pressed: { options: { cooldown_seconds: 1.5 }, subject: 'demo:dash' },
+  key_released: { subject: 'demo:dash' },
+  key_held: { options: { interval_seconds: 0.25 }, subject: 'demo:dash' },
+  vehicle_mounted: { subject: 'demo:tank' },
+  vehicle_dismounted: { subject: 'demo:tank' },
+  vehicle_fired: { subject: 'demo:tank' },
+  vehicle_destroyed: { subject: 'demo:tank' },
+  vehicle_every: { options: { interval_seconds: 2 }, subject: 'demo:tank' },
   world_started: {},
   world_every: { options: { interval_seconds: 10 } },
   any_block_used: { subject: 'minecraft:stone' },
@@ -114,6 +122,21 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
   show_action_bar: {
     trigger: 'block_used',
     steps: [{ step: 'show_action_bar', text: ['Ready'] }],
+  },
+  show_hud: { trigger: 'key_pressed', steps: [{ hud: 'demo:mana', step: 'show_hud' }] },
+  hide_hud: {
+    trigger: 'vehicle_dismounted',
+    steps: [{ hud: 'demo:mana', step: 'hide_hud', who: 'player' }],
+  },
+  set_hud: {
+    trigger: 'vehicle_fired',
+    steps: [
+      {
+        hud: 'demo:mana',
+        step: 'set_hud',
+        value: { value: 'vehicle_ammo', weapon: 'cannon' },
+      },
+    ],
   },
   give_effect: {
     trigger: 'item_used',
@@ -279,6 +302,9 @@ const VALUE_SAMPLES: Record<string, JsonObject> = {
   player_position: { axis: 'y', value: 'player_position' },
   player_count: { value: 'player_count' },
   time_of_day: { value: 'time_of_day' },
+  vehicle_fuel: { value: 'vehicle_fuel' },
+  vehicle_damage: { value: 'vehicle_damage' },
+  vehicle_ammo: { value: 'vehicle_ammo' },
   math: {
     a: { counter: 'clicks', scope: 'player', value: 'counter' },
     b: 2,
@@ -309,6 +335,89 @@ const need = <T>(table: Record<string, T>, id: string): T => {
   if (value === undefined) throw new Error(`no sample for ${id}`);
   return value;
 };
+
+/**
+ * Rules on the key and vehicle triggers that are not plain, so they become listeners of the
+ * Script API 1.5 events (or, for a held key, a `run_script` handler) beside a plain rule (B424).
+ */
+const LISTENER_SAMPLES: readonly Sample[] = [
+  {
+    name: 'listener-key_pressed',
+    rules: [
+      {
+        do: [
+          { amount: 1, counter: 'clicks', scope: 'player', step: 'add_to_counter' },
+          {
+            hud: 'demo:mana',
+            step: 'set_hud',
+            text: ['Dashes: ', { counter: 'clicks', scope: 'player', value: 'counter' }],
+          },
+        ],
+        key: 'sample',
+        when: { subject: 'demo:dash', trigger: 'key_pressed' },
+      },
+    ],
+    counters: COUNTERS,
+  },
+  {
+    name: 'listener-key_held',
+    rules: [
+      {
+        do: [{ seconds: 1, step: 'wait' }, CHIME],
+        key: 'sample',
+        when: { subject: 'demo:dash', trigger: 'key_held' },
+      },
+    ],
+  },
+  {
+    name: 'listener-vehicle_mounted',
+    rules: [
+      {
+        do: [{ step: 'show_message', text: ['Fuel: ', { value: 'vehicle_fuel' }] }],
+        key: 'sample',
+        when: { subject: 'demo:tank', trigger: 'vehicle_mounted' },
+      },
+    ],
+  },
+  {
+    name: 'listener-vehicle_every',
+    rules: [
+      {
+        do: [{ hud: 'demo:mana', step: 'show_hud' }],
+        key: 'sample',
+        when: { options: { interval_seconds: 1 }, subject: 'demo:tank', trigger: 'vehicle_every' },
+      },
+      {
+        do: [{ step: 'show_action_bar', text: ['Low on fuel'] }],
+        key: 'low',
+        only_if: {
+          conditions: [
+            {
+              compare: 'less_than',
+              condition: 'counter',
+              counter: 'goal',
+              number: { value: 'vehicle_fuel' },
+              scope: 'world',
+            },
+          ],
+          match: 'all',
+        },
+        when: { subject: 'demo:tank', trigger: 'vehicle_every' },
+      },
+    ],
+    counters: COUNTERS,
+  },
+  {
+    name: 'listener-vehicle_destroyed',
+    rules: [
+      {
+        do: [{ power: 3, step: 'explode', where: 'above_here' }],
+        key: 'sample',
+        when: { subject: 'demo:tank', trigger: 'vehicle_destroyed' },
+      },
+    ],
+  },
+];
 
 /** Every sample, named `<section>-<id>`. */
 export const SAMPLES: readonly Sample[] = Object.freeze([
@@ -364,4 +473,5 @@ export const SAMPLES: readonly Sample[] = Object.freeze([
       rules: [rule(when(sample.trigger), [{ amount: 4, step: 'heal', who: sample.who }])],
     };
   }),
+  ...LISTENER_SAMPLES,
 ]);

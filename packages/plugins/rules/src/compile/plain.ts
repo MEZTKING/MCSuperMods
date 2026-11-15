@@ -15,10 +15,13 @@
  * | `play_sound` | `play_sound` | `where` is here |
  * | `spawn_particles` | `spawn_particle` | `where` is here |
  * | `play_animation` | `play_animation` | the trigger has the mob (mob triggers) |
+ * | `explode` | `explode` | `where` is here; `power` a number; Rules' `break_blocks` (default true) is the action's `breaks_blocks` (default false), so it is always written (B409) |
+ * | `show_hud`, `hide_hud` | `show_hud`, `hide_hud` | `who` is the player and the trigger has one (the action's viewer is the event's player) |
+ * | `set_hud` | `set_hud` | as `show_hud`; `text` only plain strings, else `value` a number |
  */
 import type { Json, JsonObject } from '@msm/plugin-api';
-import { asArray, asObject, conditionList, num, stepList, str } from '../book';
-import { stepById, type TriggerEntry } from '../catalogue';
+import { asArray, asObject, bool, conditionList, num, stepList, str } from '../book';
+import { MAX_EXPLOSION_POWER, stepById, type TriggerEntry } from '../catalogue';
 
 /** Whether `rule` has conditions that hold it back. */
 export const hasConditions = (rule: JsonObject): boolean =>
@@ -42,6 +45,10 @@ function blockOffset(where: Json | undefined): [number, number, number] | undefi
 }
 
 const atHere = (step: JsonObject): boolean => step.where === undefined || step.where === 'here';
+
+/** Whether a step's `who` (default the player) is the trigger's player, the HUD actions' viewer. */
+const forThePlayer = (step: JsonObject, trigger: TriggerEntry): boolean =>
+  (step.who ?? 'player') === 'player' && trigger.actors.includes('player');
 
 /** The action target of `who` on `trigger`, or undefined when it has none. */
 function targetOf(step: JsonObject, trigger: TriggerEntry, fallback: string): string | undefined {
@@ -148,6 +155,33 @@ export function plainAction(step: JsonObject, trigger: TriggerEntry): JsonObject
         ...(spread === undefined ? {} : { spread }),
         ...(speed === undefined ? {} : { speed }),
       };
+    }
+    case 'explode': {
+      const power = step.power;
+      if (typeof power !== 'number' || !atHere(step)) return undefined;
+      return {
+        type: 'explode',
+        power: Math.min(MAX_EXPLOSION_POWER, Math.max(0, power)),
+        ...(bool(step, 'fire') === true ? { fire: true } : {}),
+        breaks_blocks: bool(step, 'break_blocks') !== false,
+      };
+    }
+    case 'show_hud':
+    case 'hide_hud': {
+      const hud = str(step, 'hud');
+      if (hud === undefined || !forThePlayer(step, trigger)) return undefined;
+      return { type: id, hud };
+    }
+    case 'set_hud': {
+      const hud = str(step, 'hud');
+      if (hud === undefined || !forThePlayer(step, trigger)) return undefined;
+      if (step.text !== undefined) {
+        const pieces = asArray(step.text);
+        if (!pieces.every((piece) => typeof piece === 'string')) return undefined;
+        return { type: 'set_hud', hud, value: pieces.join('') };
+      }
+      const value = step.value ?? 0;
+      return typeof value === 'number' ? { type: 'set_hud', hud, value } : undefined;
     }
     case 'play_animation': {
       const animation = str(step, 'animation');

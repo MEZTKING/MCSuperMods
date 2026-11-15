@@ -35,7 +35,24 @@ const rule = (key: string, extra: Record<string, Json> = {}): Json => ({
 
 describe('msm.rules.book validator', () => {
   it('reads books and scripts', () => {
-    expect(rulesBookValidator.kinds).toEqual(['msm:rules', 'msm:script']);
+    expect(rulesBookValidator.kinds).toEqual(['msm:rules', 'msm:script', 'msm:hud']);
+  });
+
+  it('reports HUD steps naming no HUD element of the project (B424)', async () => {
+    const nested = {
+      conditions: [{ condition: 'player_sneaking' }],
+      do: [{ hud: 'demo:nothing', step: 'hide_hud' }],
+      match: 'all',
+      step: 'if',
+    };
+    const hud = book([
+      rule('a', { do: [{ hud: 'demo:mana', step: 'show_hud' }, nested] }),
+      rule('b', { do: [{ hud: 'demo:gone', step: 'set_hud', value: 1 }] }),
+    ]);
+    expect(summary(await validate([hud]))).toEqual([
+      ['error', RULES_VALIDATOR_CODES.unknownHud, 'demo:rules', '/rules/0/do/1/do/0/hud'],
+      ['error', RULES_VALIDATOR_CODES.unknownHud, 'demo:rules', '/rules/1/do/0/hud'],
+    ]);
   });
 
   it('passes a good book', async () => {

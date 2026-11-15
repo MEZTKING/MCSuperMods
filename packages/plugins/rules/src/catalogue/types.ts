@@ -22,7 +22,15 @@ export type SlotType =
   | 'counter'
   | 'place'
   | 'who'
-  | 'choice';
+  | 'choice'
+  /** A project key bind (`msm:key_bind`). */
+  | 'key'
+  /** A project vehicle (`msm:vehicle`). */
+  | 'vehicle'
+  /** A project HUD element (`msm:hud`). */
+  | 'hud'
+  /** A weapon of the vehicle, by its `id` in the vehicle's `weapons`. */
+  | 'weapon';
 
 /** One blank of a sentence: the field it edits and how. */
 export interface SlotSpec {
@@ -60,6 +68,8 @@ export type TriggerGroup =
   | 'mobs'
   | 'effects'
   | 'players'
+  | 'keys'
+  | 'vehicles'
   | 'world'
   | 'any';
 
@@ -69,14 +79,20 @@ export type SubjectSort =
   | 'item'
   | 'mob'
   | 'effect'
+  /** A project key bind (ADR 0088 D6). */
+  | 'key'
+  /** A project vehicle (ADR 0090 D11). */
+  | 'vehicle'
   /** No subject: player and world triggers. */
   | 'none';
 
 /**
  * Where a definition trigger's event id goes in the subject's element data: a component whose
  * `event` field names it (`msm:on_interact`), or a string field of a component or of the data
- * itself (`msm:redstone`'s `on_powered`, a portal's `on_travel`), or an `{ event }` object
- * field of a component (`msm:throwable`'s `on_hit_entity`).
+ * itself (`msm:redstone`'s `on_powered`, a portal's `on_travel`, a key bind's `msm:on_press`),
+ * or an `{ event }` object field of a component or of the data itself (`msm:throwable`'s
+ * `on_hit_entity`, a vehicle's `on_tick`), or a string field of every entry of a list of the
+ * data (each of a vehicle's `weapons` has its `on_fire`).
  */
 export interface TriggerComponent {
   /** The component key, or absent for a top-level field of the element data. */
@@ -85,6 +101,11 @@ export interface TriggerComponent {
   readonly field?: string;
   /** Whether `field` holds an `{ event }` object rather than the id string. */
   readonly fieldIsObject?: boolean;
+  /**
+   * A list field of the data (`weapons`): `field` is a string field of each of its entries, and
+   * the generated event goes into every entry. With `required`, the list must not be empty.
+   */
+  readonly list?: string;
   /**
    * The component must exist already (it carries required settings of its own, such as a
    * container's layout); the compiler reports `rules.needs-component` otherwise.
@@ -106,6 +127,8 @@ export interface TriggerOptionMapping {
   readonly convert: 'ticks' | 'copy';
   /** The smallest value the component accepts, after conversion. */
   readonly min?: number;
+  /** The largest value the component accepts, after conversion. */
+  readonly max?: number;
 }
 
 /** A catalogue entry: id, words and Very easy visibility. */
@@ -136,9 +159,17 @@ export interface TriggerEntry extends CatalogueEntry {
   readonly subjectKinds: readonly string[];
   /** Definition triggers: where the event goes. Absent for script-only triggers. */
   readonly definition?: TriggerComponent;
-  /** Trigger options and their component fields (definition triggers). */
+  /**
+   * Trigger options and their component fields (definition triggers); without a `component`,
+   * fields of the data itself (a key bind's `cooldown_ticks`) or of the `fieldIsObject` object
+   * (a vehicle's `on_tick.interval`).
+   */
   readonly options: readonly TriggerOptionMapping[];
-  /** Script-only triggers: the Script API event (`block.break`). */
+  /**
+   * Script-only triggers: the Script API event (`block.break`). A definition trigger with one
+   * too (the key and vehicle triggers, Script API 1.5) compiles its plain rules to the
+   * definition's event and the rest to a listener of this event, which runs after it (B421).
+   */
   readonly scriptEvent?: string;
   /** The actors the trigger has; pickers hide the others. */
   readonly actors: readonly Actor[];

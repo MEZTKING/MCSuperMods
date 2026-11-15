@@ -9,6 +9,11 @@
  *   `<book namespace>:rules/<book path>/<subject path>/<trigger>`. A hand-made event already on
  *   the trigger runs first through `trigger_event`. Trigger options: the subject's own component
  *   values win, else the first rule's (R16).
+ * - Definition triggers with a Script API event of their own (the key and vehicle triggers of
+ *   ADR 0088 D6 and ADR 0090 D11, Script API 1.5): a book's part that is not plain becomes an
+ *   `msm.events.on` listener of that event filtered to the subject, which runs after the
+ *   definition's event; the plain parts still go into the event. A held key has no such event
+ *   and uses `run_script`.
  * - Script-only triggers: `msm.events.on` handlers in the script, one per trigger and subject.
  */
 import type {
@@ -20,7 +25,16 @@ import type {
   ResourceLocation,
   TargetFacts,
 } from '@msm/plugin-api';
-import { asObject, bookCounters, bookRules, pointer, ruleEnabled, stepList, str } from '../book';
+import {
+  asArray,
+  asObject,
+  bookCounters,
+  bookRules,
+  pointer,
+  ruleEnabled,
+  stepList,
+  str,
+} from '../book';
 import { type TriggerEntry, triggerById } from '../catalogue';
 import { ruleSentence, whenSentence } from '../sentence';
 import { checkRule, Reporter } from './check';
@@ -89,33 +103,58 @@ const hasLightPortal = (owner: JsonObject): boolean =>
     ),
   );
 
-/** The hand-made event already on the trigger, if any. */
-function handMadeEvent(data: JsonObject, trigger: TriggerEntry): string | undefined {
+/**
+ * The distinct hand-made events already on the trigger: none or one, except for a list trigger
+ * (a vehicle's `weapons`), whose entries may each name their own.
+ */
+export function handMadeEvents(data: JsonObject, trigger: TriggerEntry): string[] {
   const definition = trigger.definition;
-  if (definition === undefined) return undefined;
-  if (definition.component === undefined) return str(data, definition.field ?? '');
+  if (definition === undefined) return [];
+  const one = (value: string | undefined): string[] => (value === undefined ? [] : [value]);
+  if (definition.list !== undefined) {
+    const ids = asArray(data[definition.list]).map((entry) =>
+      str(asObject(entry), definition.field ?? ''),
+    );
+    return [...new Set(ids.filter((id): id is string => id !== undefined))];
+  }
+  if (definition.component === undefined) {
+    if (definition.fieldIsObject === true)
+      return one(str(asObject(data[definition.field ?? '']), 'event'));
+    return one(str(data, definition.field ?? ''));
+  }
   const component = asObject(asObject(data.components)?.[definition.component]);
-  if (definition.field === undefined) return str(component, 'event');
+  if (definition.field === undefined) return one(str(component, 'event'));
   if (definition.fieldIsObject === true)
-    return str(asObject(component?.[definition.field]), 'event');
-  return str(component, definition.field);
+    return one(str(asObject(component?.[definition.field]), 'event'));
+  return one(str(component, definition.field));
 }
 
 /** Converts a rule's trigger options to component fields (R16: the subject's own values win). */
-function optionFields(trigger: TriggerEntry, options: JsonObject | undefined): JsonObject {
+export function optionFields(trigger: TriggerEntry, options: JsonObject | undefined): JsonObject {
   const fields: JsonObject = {};
   for (const mapping of trigger.options) {
     const value = options?.[mapping.option];
     if (value === undefined) continue;
     if (mapping.convert === 'ticks') {
       if (typeof value !== 'number') continue;
-      fields[mapping.field] = Math.max(mapping.min ?? 0, Math.round(value * 20));
+      const ticks = Math.max(mapping.min ?? 0, Math.round(value * 20));
+      fields[mapping.field] = mapping.max === undefined ? ticks : Math.min(mapping.max, ticks);
     } else {
       fields[mapping.field] = value;
     }
   }
   return fields;
 }
+
+/** "blocks", "items", "mobs", "effects", "key binds", "vehicles". */
+const SUBJECT_PLURALS: Readonly<Record<string, string>> = {
+  block: 'blocks',
+  item: 'items',
+  mob: 'mobs',
+  effect: 'effects',
+  key: 'key binds',
+  vehicle: 'vehicles',
+};
 
 /**
  * Compiles one rule book (an `msm:rules` element) against the project's elements and a target.
@@ -211,6 +250,19 @@ export function compileRuleBooks(
         });
         if (rules.length === 0) continue;
       }
+      if (!isPlain && trigger.scriptEvent !== undefined) {
+        // A trigger with a Script API event of its own (the key and vehicle triggers): the
+        // book's part becomes a listener of that event, which runs after the definition's
+        // event, and the definition is left alone for it (B421).
+        const groupKey = `${trigger.id}|${subject.id}`;
+        let listener = part.pass.scriptGroups.get(groupKey);
+        if (listener === undefined) {
+          listener = { trigger, subject: subject.id, rules: [] };
+          part.pass.scriptGroups.set(groupKey, listener);
+        }
+        listener.rules.push(...rules);
+        continue;
+      }
       parts.push({ pass: part.pass, rules, plain, isPlain });
     }
     const first = parts[0];
@@ -222,12 +274,21 @@ export function compileRuleBooks(
       pointer: `/rules/${first.rules[0]?.index ?? 0}`,
     };
     const existingEvents = asObject(subjectData.events) ?? {};
-    const handMade = handMadeEvent(subjectData, trigger);
-    if (existingEvents[eventId] !== undefined || handMade === eventId) {
+    const handMadeAll = handMadeEvents(subjectData, trigger);
+    const handMade = handMadeAll[0];
+    if (existingEvents[eventId] !== undefined || handMadeAll.includes(eventId)) {
       first.pass.reporter.error(
         CODES.eventIdClash,
         pointer(origin.pointer, 'when', 'subject'),
         `"${subject.id}" already has an event "${eventId}"; rename that event so Rules can use the id.`,
+      );
+      continue;
+    }
+    if (handMadeAll.length > 1) {
+      first.pass.reporter.error(
+        CODES.eventIdClash,
+        pointer(origin.pointer, 'when', 'subject'),
+        `The ${trigger.definition?.list ?? 'parts'} of "${subject.id}" already run different events of their own; give them one shared event so Rules can add to it.`,
       );
       continue;
     }
@@ -336,8 +397,8 @@ function collectRules(
         CODES.unknownSubject,
         pointer(base, 'when', 'subject'),
         subjectId === undefined
-          ? `"${trigger.label}" needs one of your ${trigger.subject === 'mob' ? 'mobs' : `${trigger.subject}s`}.`
-          : `"${subjectId}" is not one of your ${trigger.subject === 'mob' ? 'mobs' : `${trigger.subject}s`}.`,
+          ? `"${trigger.label}" needs one of your ${SUBJECT_PLURALS[trigger.subject] ?? 'things'}.`
+          : `"${subjectId}" is not one of your ${SUBJECT_PLURALS[trigger.subject] ?? 'things'}.`,
       );
       continue;
     }
@@ -401,6 +462,18 @@ function subjectFits(
     );
     return false;
   }
+  if (
+    definition.list !== undefined &&
+    definition.required === true &&
+    asArray(data[definition.list]).length === 0
+  ) {
+    reporter.error(
+      CODES.needsComponent,
+      pointer(path, 'subject'),
+      `"${trigger.label}" needs ${subject.id} to have ${definition.list} first.`,
+    );
+    return false;
+  }
   if (definition.needs !== undefined && components[definition.needs] === undefined) {
     reporter.error(
       CODES.needsComponent,
@@ -439,8 +512,36 @@ class SubjectPatches {
   ): void {
     const definition = trigger.definition;
     if (definition === undefined) return;
+    const field = definition.field ?? '';
+    if (definition.list !== undefined) {
+      // Every entry of the list (each weapon) names the event.
+      const list = asArray(this.data[definition.list]).map((entry) => {
+        const object = asObject(entry);
+        return object === undefined ? entry : { ...object, [field]: eventId };
+      });
+      this.fields.set(definition.list, { value: list, origin });
+      return;
+    }
     if (definition.component === undefined) {
-      this.fields.set(definition.field ?? '', { value: eventId, origin });
+      const fields = optionFields(trigger, options);
+      if (definition.fieldIsObject === true) {
+        // An `{ event, ...options }` object of the data (a vehicle's `on_tick`).
+        const existing = asObject(this.data[field]) ?? {};
+        const value: JsonObject = { ...existing };
+        for (const [name, option] of Object.entries(fields)) {
+          if (value[name] === undefined) value[name] = option;
+        }
+        value.event = eventId;
+        this.fields.set(field, { value, origin });
+        return;
+      }
+      // A field of the data (a key bind's `msm:on_press`); options are fields of the data too.
+      this.fields.set(field, { value: eventId, origin });
+      for (const [name, option] of Object.entries(fields)) {
+        if (this.data[name] === undefined && !this.fields.has(name)) {
+          this.fields.set(name, { value: option, origin });
+        }
+      }
       return;
     }
     const key = definition.component;

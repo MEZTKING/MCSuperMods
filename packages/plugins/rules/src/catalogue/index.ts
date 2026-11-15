@@ -17,7 +17,15 @@ import { PLACES, VALUES, WHO } from './values';
 
 export { CONDITIONS } from './conditions';
 export { STEPS } from './steps';
-export { BLOCK_KIND, EFFECT_KIND, ENTITY_KIND, ITEM_KIND, TRIGGERS } from './triggers';
+export {
+  BLOCK_KIND,
+  EFFECT_KIND,
+  ENTITY_KIND,
+  ITEM_KIND,
+  KEY_BIND_KIND,
+  TRIGGERS,
+  VEHICLE_KIND,
+} from './triggers';
 export type * from './types';
 export { PLACES, VALUES, WHO } from './values';
 
@@ -64,6 +72,8 @@ export const MAX_REPEAT = 100;
 export const MAX_RADIUS = 64;
 /** The largest explosion power the Script API takes (Script API 1.4, B370). */
 export const MAX_EXPLOSION_POWER = 10;
+/** The element kind of HUD elements, which the HUD steps name (ADR 0089 D7). */
+export const HUD_KIND = 'msm:hud';
 /** The most items one "Drop an item" step drops (Script API 1.4 `World.dropItem`). */
 export const MAX_DROP_COUNT = 64;
 /** The longest weather a step sets, in seconds (Script API 1.4 `World.setWeather`). */

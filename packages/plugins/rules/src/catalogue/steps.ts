@@ -1,12 +1,15 @@
 /**
  * The steps of format 1 (ADR 0082 D5), grouped as the Do picker shows them. `action` marks the
  * "(A)" steps: they compile to that format action (`action.mcdoc`) when their target matches the
- * trigger and their numbers are plain; every other step compiles to script.
+ * trigger and their numbers are plain; every other step compiles to script. The HUD steps and
+ * the plain explosion are ADR 0089 D7 and ADR 0090 D6 (B424).
  */
 import type { SlotSpec, StepEntry, StepGroup } from './types';
 
 const WHO: SlotSpec = { name: 'who', type: 'who', optional: true };
 const WHERE: SlotSpec = { name: 'where', type: 'place', optional: true };
+/** A project HUD element (ADR 0089 D7). */
+const HUD: SlotSpec = { name: 'hud', type: 'hud' };
 
 interface Spec {
   id: string;
@@ -186,6 +189,38 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     defaultWho: 'player',
   }),
   step({
+    id: 'show_hud',
+    label: 'Show on screen',
+    sentence: 'show {hud} to {who}',
+    group: 'players',
+    slots: [HUD, WHO],
+    action: 'show_hud',
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'hide_hud',
+    label: 'Hide from the screen',
+    sentence: 'hide {hud} from {who}',
+    group: 'players',
+    slots: [HUD, WHO],
+    action: 'hide_hud',
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'set_hud',
+    label: 'Show a number on screen',
+    sentence: 'set {hud} to {value} {text} for {who}',
+    group: 'players',
+    slots: [
+      HUD,
+      { name: 'value', type: 'number', optional: true },
+      { name: 'text', type: 'text', optional: true },
+      WHO,
+    ],
+    action: 'set_hud',
+    defaultWho: 'player',
+  }),
+  step({
     id: 'give_effect',
     label: 'Give an effect',
     sentence: 'give {who} {effect} {level} for {seconds}',
@@ -275,6 +310,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
         ],
       },
     ],
+    action: 'explode',
   }),
   step({
     id: 'set_weather',

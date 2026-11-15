@@ -18,11 +18,15 @@ export const BLOCK_KIND = 'msm:block';
 export const ITEM_KIND = 'msm:item';
 export const ENTITY_KIND = 'msm:entity';
 export const EFFECT_KIND = 'msm:effect';
+export const KEY_BIND_KIND = 'msm:key_bind';
+export const VEHICLE_KIND = 'msm:vehicle';
 
 const SUBJECT_BLOCK: SlotSpec = { name: 'subject', type: 'block' };
 const SUBJECT_ITEM: SlotSpec = { name: 'subject', type: 'item' };
 const SUBJECT_MOB: SlotSpec = { name: 'subject', type: 'mob' };
 const SUBJECT_EFFECT: SlotSpec = { name: 'subject', type: 'effect' };
+const SUBJECT_KEY: SlotSpec = { name: 'subject', type: 'key' };
+const SUBJECT_VEHICLE: SlotSpec = { name: 'subject', type: 'vehicle' };
 
 const COOLDOWN: SlotSpec = {
   name: 'cooldown_seconds',
@@ -40,6 +44,9 @@ const INTERVAL: SlotSpec = {
   max: 3600,
 };
 const EFFECT_INTERVAL: SlotSpec = { ...INTERVAL, min: 0.05 };
+/** A key bind's `cooldown_ticks` and `hold_interval_ticks` go up to 1200 ticks (a minute). */
+const KEY_COOLDOWN: SlotSpec = { ...COOLDOWN, max: 60 };
+const KEY_INTERVAL: SlotSpec = { ...INTERVAL, min: 0.05, max: 60 };
 const HAND: SlotSpec = {
   name: 'hand',
   type: 'choice',
@@ -57,17 +64,19 @@ const MESSAGE: SlotSpec = {
   prefix: 'with a message containing',
 };
 
-const cooldown = (min = 0): TriggerOptionMapping => ({
+const cooldown = (min = 0, max?: number): TriggerOptionMapping => ({
   option: 'cooldown_seconds',
   field: 'cooldown_ticks',
   convert: 'ticks',
   min,
+  ...(max === undefined ? {} : { max }),
 });
-const interval = (min: number): TriggerOptionMapping => ({
+const interval = (min: number, field = 'interval_ticks', max?: number): TriggerOptionMapping => ({
   option: 'interval_seconds',
-  field: 'interval_ticks',
+  field,
   convert: 'ticks',
   min,
+  ...(max === undefined ? {} : { max }),
 });
 const chance: TriggerOptionMapping = { option: 'chance', field: 'chance', convert: 'copy' };
 const hand: TriggerOptionMapping = { option: 'hand', field: 'hand', convert: 'copy' };
@@ -142,6 +151,35 @@ const effect = (spec: Omit<Spec, 'subject' | 'subjectKinds' | 'group' | 'actors'
 
 const player = (spec: Omit<Spec, 'group' | 'actors'>): TriggerEntry =>
   trigger({ ...spec, group: 'players', actors: ['player'] });
+
+/**
+ * A key bind trigger (ADR 0088 D6): the event goes in the key bind's own top-level field; the
+ * presser is the player, `self` and `other` (`EventContext.forItem`), and "here" is the player.
+ * Script books listen to the Script API 1.5 key events where there is one.
+ */
+const key = (spec: Omit<Spec, 'subject' | 'subjectKinds' | 'group' | 'actors'>): TriggerEntry =>
+  trigger({
+    ...spec,
+    group: 'keys',
+    subject: 'key',
+    subjectKinds: [KEY_BIND_KIND],
+    actors: ['player'],
+    actionTargets: { player: 'self' },
+  });
+
+/**
+ * A vehicle trigger (ADR 0090 D11): the vehicle is the event's entity and "here", the player is
+ * `self` and `other` (`EventContext.forEntity(level, vehicle, player)`), so actions reach the
+ * player only. Script books listen to the Script API 1.5 vehicle events.
+ */
+const vehicle = (spec: Omit<Spec, 'subject' | 'subjectKinds' | 'group'>): TriggerEntry =>
+  trigger({
+    ...spec,
+    group: 'vehicles',
+    subject: 'vehicle',
+    subjectKinds: [VEHICLE_KIND],
+    actionTargets: { player: 'self' },
+  });
 
 /** A stepper, placer, traveller or entity inside: the player when it is one, any entity as other. */
 const ACTOR_ENTITY = { other: 'other' } as const;
@@ -493,6 +531,85 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     sentence: 'Every {interval_seconds} for each player',
     slots: [INTERVAL],
     scriptEvent: 'player.tick',
+  }),
+  key({
+    id: 'key_pressed',
+    label: 'A player presses the key',
+    sentence: 'When a player presses {subject}',
+    slots: [SUBJECT_KEY, KEY_COOLDOWN],
+    definition: { field: 'msm:on_press' },
+    options: [cooldown(0, 1200)],
+    scriptEvent: 'key.pressed',
+    actorLabels: { player: 'the player who pressed it' },
+  }),
+  key({
+    id: 'key_released',
+    label: 'A player lets go of the key',
+    sentence: 'When a player lets go of {subject}',
+    slots: [SUBJECT_KEY],
+    definition: { field: 'msm:on_release' },
+    scriptEvent: 'key.released',
+    actorLabels: { player: 'the player who let go' },
+  }),
+  key({
+    id: 'key_held',
+    label: 'While a player holds the key',
+    sentence: 'Every {interval_seconds} while a player holds {subject}',
+    slots: [KEY_INTERVAL, SUBJECT_KEY],
+    definition: { field: 'msm:while_held' },
+    options: [interval(1, 'hold_interval_ticks', 1200)],
+    actorLabels: { player: 'the player holding it' },
+  }),
+  vehicle({
+    id: 'vehicle_mounted',
+    label: 'Someone gets in the vehicle',
+    sentence: 'When someone gets in {subject}',
+    slots: [SUBJECT_VEHICLE],
+    definition: { field: 'on_mount' },
+    scriptEvent: 'vehicle.mounted',
+    actors: ['player'],
+    actorLabels: { player: 'the player who got in' },
+  }),
+  vehicle({
+    id: 'vehicle_dismounted',
+    label: 'Someone gets out of the vehicle',
+    sentence: 'When someone gets out of {subject}',
+    slots: [SUBJECT_VEHICLE],
+    definition: { field: 'on_dismount' },
+    scriptEvent: 'vehicle.dismounted',
+    actors: ['player'],
+    actorLabels: { player: 'the player who got out' },
+  }),
+  vehicle({
+    id: 'vehicle_fired',
+    label: 'The vehicle fires',
+    sentence: 'When {subject} fires',
+    slots: [SUBJECT_VEHICLE],
+    definition: { list: 'weapons', field: 'on_fire', required: true },
+    scriptEvent: 'vehicle.fired',
+    actors: ['player'],
+    actorLabels: { player: 'the player who fired' },
+  }),
+  vehicle({
+    id: 'vehicle_destroyed',
+    label: 'The vehicle is destroyed',
+    sentence: 'When {subject} is destroyed',
+    slots: [SUBJECT_VEHICLE],
+    definition: { field: 'on_destroy' },
+    scriptEvent: 'vehicle.destroyed',
+    actors: ['player'],
+    actorLabels: { player: 'the player who destroyed it' },
+  }),
+  vehicle({
+    id: 'vehicle_every',
+    label: 'Every few seconds while the vehicle is driven',
+    sentence: 'Every {interval_seconds} while {subject} is driven',
+    slots: [INTERVAL, SUBJECT_VEHICLE],
+    definition: { field: 'on_tick', fieldIsObject: true },
+    options: [interval(5, 'interval')],
+    scriptEvent: 'player.tick',
+    actors: ['player'],
+    actorLabels: { player: 'the driver' },
   }),
   trigger({
     id: 'world_started',

@@ -98,6 +98,14 @@ const TRIGGERS = [
   'any_mob_hurt',
   'any_mob_died',
   'any_mob_used',
+  'key_pressed',
+  'key_released',
+  'key_held',
+  'vehicle_mounted',
+  'vehicle_dismounted',
+  'vehicle_fired',
+  'vehicle_destroyed',
+  'vehicle_every',
 ];
 
 /** Triggers with no subject at all (script-only player and world triggers). */
@@ -131,6 +139,9 @@ const STEPS: Record<string, Json> = {
     step: 'show_message',
     text: ['You clicked ', { counter: 'clicks', scope: 'player', value: 'counter' }, ' times'],
   },
+  show_hud: { hud: 'mymod:mana', step: 'show_hud' },
+  hide_hud: { hud: 'mymod:mana', step: 'hide_hud', who: 'every_player' },
+  set_hud: { hud: 'mymod:mana', step: 'set_hud', value: { value: 'vehicle_fuel' } },
   show_title: {
     step: 'show_title',
     subtitle: ['Well done'],
@@ -238,6 +249,9 @@ const VALUES: Record<string, Json> = {
   player_position: { axis: 'y', value: 'player_position' },
   player_count: { value: 'player_count' },
   time_of_day: { value: 'time_of_day' },
+  vehicle_fuel: { value: 'vehicle_fuel' },
+  vehicle_damage: { value: 'vehicle_damage' },
+  vehicle_ammo: { value: 'vehicle_ammo', weapon: 'cannon' },
   math: { a: { max: 3, min: 1, value: 'random' }, b: 2, op: '+', value: 'math' },
 };
 
@@ -314,7 +328,11 @@ describe('rule book triggers (ADR 0082 D4)', () => {
           ? 'mymod:guard'
           : trigger.startsWith('effect')
             ? 'mymod:glow'
-            : 'mymod:ruby_block';
+            : trigger.startsWith('key')
+              ? 'mymod:dash'
+              : trigger.startsWith('vehicle')
+                ? 'mymod:tank'
+                : 'mymod:ruby_block';
     const when = (withSubject: boolean): Json => ({
       ...(withSubject ? { subject } : {}),
       trigger,
@@ -333,6 +351,18 @@ describe('rule book triggers (ADR 0082 D4)', () => {
       expect(errors(book(true))).toEqual([]);
       expect(errors(book(false))).toContain('/rules/0/when/subject schema.missing-field');
     }
+  });
+
+  it('keeps key options within what a key bind takes (B424)', () => {
+    const keyBook = (trigger: string, options: Json): Json => ({
+      format: 1,
+      rules: [{ do: [], key: 'r', when: { options, subject: 'mymod:dash', trigger } }],
+    });
+    expect(errors(keyBook('key_pressed', { cooldown_seconds: 60 }))).toEqual([]);
+    expect(errors(keyBook('key_pressed', { cooldown_seconds: 61 }))).not.toEqual([]);
+    expect(errors(keyBook('key_held', { interval_seconds: 0.05 }))).toEqual([]);
+    expect(errors(keyBook('key_held', { interval_seconds: 61 }))).not.toEqual([]);
+    expect(errors(keyBook('key_released', { cooldown_seconds: 1 }))).not.toEqual([]);
   });
 
   it('rejects an unknown trigger', () => {

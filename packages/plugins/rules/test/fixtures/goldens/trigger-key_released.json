@@ -1,0 +1,36 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:dash",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:dash_rules_key_released": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:dash",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "msm:on_release"
+      ],
+      "value": "demo:dash_rules_key_released"
+    }
+  ],
+  "problems": []
+}

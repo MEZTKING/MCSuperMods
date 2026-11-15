@@ -12,18 +12,24 @@ const rule = (key: string, body: () => void): void => {
   }
 };
 
+/** Whether someone of the trigger has died or left since the rule started. */
+const gone = (entity: Entity | undefined): boolean => entity !== undefined && !entity.isAlive;
+
 /** Runs `body` at a place when there is one. */
 const withPos = (pos: Pos | undefined, body: (pos: Pos) => void): void => {
   if (pos !== undefined) body(pos);
 };
 
-// Plain Block: a player uses the block.
-msm.actions.define("demo:rules/rules/plain_block/block_used", (e) => {
+// Dash: while a player holds the key.
+msm.actions.define("demo:rules/rules/dash/key_held", (e) => {
   const world = e.world;
   const here = e.block !== undefined ? e.block.pos.offset(0.5, 0.5, 0.5) : e.pos;
   const player: Player | undefined = e.player;
-  // When a player uses Plain Block, make an explosion of power 2 here.
+  // Every 0.5 seconds while a player holds Dash, wait 1 second and play Chime here.
   rule("sample", () => { // rule:sample
-    withPos(here, (at) => world.explode(at, 2, { fire: true, breaksBlocks: true })); // rule:sample
+    msm.schedule(20, () => { // rule:sample
+      if (gone(player)) return; // rule:sample
+      withPos(here, (at) => world.playSound("minecraft:block.note_block.chime", at)); // rule:sample
+    }); // rule:sample
   }); // rule:sample
 });

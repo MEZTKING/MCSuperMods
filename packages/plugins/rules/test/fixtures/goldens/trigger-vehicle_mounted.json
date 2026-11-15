@@ -1,0 +1,36 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:tank",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:tank_rules_vehicle_mounted": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:tank",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "on_mount"
+      ],
+      "value": "demo:tank_rules_vehicle_mounted"
+    }
+  ],
+  "problems": []
+}

@@ -86,6 +86,26 @@ export const VALUES: readonly ValueEntry[] = Object.freeze([
     label: 'The time of day',
     sentence: 'the time of day',
   }),
+  // The vehicle of a vehicle trigger, else the one the player rides (ADR 0089 D7, Script API 1.5).
+  value({
+    id: 'vehicle_fuel',
+    label: "The vehicle's fuel",
+    sentence: "the vehicle's fuel in seconds",
+    needsActor: 'player',
+  }),
+  value({
+    id: 'vehicle_damage',
+    label: "The vehicle's damage",
+    sentence: "the vehicle's damage",
+    needsActor: 'player',
+  }),
+  value({
+    id: 'vehicle_ammo',
+    label: "The vehicle's ammunition",
+    sentence: "the vehicle's ammunition {weapon}",
+    slots: [{ name: 'weapon', type: 'weapon', optional: true, prefix: 'for' }],
+    needsActor: 'player',
+  }),
   value({
     id: 'math',
     label: 'Sums',

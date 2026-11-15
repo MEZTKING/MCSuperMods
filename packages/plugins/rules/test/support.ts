@@ -93,6 +93,26 @@ export const PROJECT: readonly Element[] = Object.freeze([
     category: 'beneficial',
     color: 16777215,
   }),
+  element('msm:key_bind', 'demo:dash', {
+    format: 1,
+    display_name: 'Dash',
+    default_key: 'key.keyboard.z',
+  }),
+  element('msm:vehicle', 'demo:tank', {
+    format: 1,
+    display_name: 'Tank',
+    model: { geometry: 'demo:entity/tank', texture: 'demo:entity/tank' },
+    movement: { mode: 'ground' },
+    weapons: [
+      { id: 'cannon', projectile: 'minecraft:fire_charge' },
+      { id: 'gun', key: 'second', projectile: 'minecraft:arrow' },
+    ],
+  }),
+  element('msm:hud', 'demo:mana', {
+    format: 1,
+    type: 'bar',
+    value: { source: 'set' },
+  }),
 ]);
 
 /** Ids the registry index treats as project ids. */
@@ -109,11 +129,11 @@ export const PROJECT_IDS: Readonly<Record<string, readonly string[]>> = {
     'demo:dart',
     'demo:helmet',
   ],
-  entity_type: ['demo:guard'],
+  entity_type: ['demo:guard', 'demo:tank'],
   mob_effect: ['demo:glow'],
   function: ['demo:reward'],
   model: ['demo:entity/guard'],
-  texture: ['demo:entity/guard'],
+  texture: ['demo:entity/guard', 'demo:entity/tank'],
   particle_type: ['demo:spark'],
 };
 
@@ -178,6 +198,9 @@ const SCHEMA_OF_KIND: Record<string, string> = {
   'msm:item': MSM_SCHEMA_REFS.item,
   'msm:entity': MSM_SCHEMA_REFS.entity,
   'msm:effect': MSM_SCHEMA_REFS.effect,
+  'msm:key_bind': MSM_SCHEMA_REFS.keyBind,
+  'msm:vehicle': MSM_SCHEMA_REFS.vehicle,
+  'msm:hud': MSM_SCHEMA_REFS.hud,
   'msm:rules': MSM_SCHEMA_REFS.rules,
 };
 

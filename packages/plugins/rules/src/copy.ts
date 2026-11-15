@@ -89,12 +89,19 @@ function patched(data: Json, patches: readonly ElementPatch[]): JsonObject {
   return out;
 }
 
-/** The event id a definition trigger names in `data`, if any. */
+/** The event id a definition trigger names in `data`, if any (a list's first entry's). */
 function eventAt(data: JsonObject, trigger: TriggerEntry): string | undefined {
   const definition = trigger.definition;
   if (definition === undefined) return undefined;
   const read = (value: Json | undefined) => (typeof value === 'string' ? value : undefined);
-  if (definition.component === undefined) return read(data[definition.field ?? '']);
+  if (definition.list !== undefined) {
+    const entries = Array.isArray(data[definition.list]) ? (data[definition.list] as Json[]) : [];
+    return read(asObject(entries[0])?.[definition.field ?? '']);
+  }
+  if (definition.component === undefined) {
+    const field = data[definition.field ?? ''];
+    return definition.fieldIsObject === true ? read(asObject(field)?.event) : read(field);
+  }
   const component = asObject(asObject(data.components)?.[definition.component]);
   if (definition.field === undefined) return read(component?.event);
   if (definition.fieldIsObject === true)
@@ -114,8 +121,39 @@ function pointTrigger(
 ): void {
   const definition = trigger.definition;
   if (definition === undefined) return;
+  const field = definition.field ?? '';
+  if (definition.list !== undefined) {
+    // Every entry of the list (each of a vehicle's weapons) names the event.
+    const entries = Array.isArray(data[definition.list]) ? (data[definition.list] as Json[]) : [];
+    data[definition.list] = entries.map((entry) => {
+      const object = asObject(entry);
+      return object === undefined ? structuredClone(entry) : { ...object, [field]: eventId };
+    });
+    return;
+  }
   if (definition.component === undefined) {
-    data[definition.field ?? ''] = eventId;
+    // A field of the data itself; the option fields in force go beside it (a key bind's
+    // `cooldown_ticks`) or into its object (a vehicle's `on_tick.interval`).
+    if (definition.fieldIsObject === true) {
+      const inForce = asObject(expanded[field]) ?? {};
+      const object = { ...(asObject(data[field]) ?? {}) };
+      for (const mapping of trigger.options) {
+        const value = inForce[mapping.field];
+        if (object[mapping.field] === undefined && value !== undefined) {
+          object[mapping.field] = structuredClone(value);
+        }
+      }
+      object.event = eventId;
+      data[field] = object;
+      return;
+    }
+    for (const mapping of trigger.options) {
+      const value = expanded[mapping.field];
+      if (data[mapping.field] === undefined && value !== undefined) {
+        data[mapping.field] = structuredClone(value);
+      }
+    }
+    data[field] = eventId;
     return;
   }
   const components = { ...(asObject(data.components) ?? {}) };

@@ -16925,6 +16925,33 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::HudStep": {
+      "fields": [
+        {
+          "desc": "The project HUD element (an `msm:hud` id).",
+          "key": "hud",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::IfStep": {
       "fields": [
         {
@@ -17138,6 +17165,113 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::IntervalOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::KeyCooldownOptions": {
+      "fields": [
+        {
+          "desc": "Seconds before a press fires again, 0 to 60; defaults to 0.",
+          "key": "cooldown_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 60,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::KeyHeldOptions": {
+      "fields": [
+        {
+          "desc": "Seconds between two firings while the key is held, 0.05 to 60; defaults to 0.5.",
+          "key": "interval_seconds",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double",
+            "valueRange": {
+              "kind": 0,
+              "max": 60,
+              "min": 0.05
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::KeyHeldTrigger": {
+      "fields": [
+        {
+          "desc": "The project key bind (an `msm:key_bind` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::KeyHeldOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::KeyPressedTrigger": {
+      "fields": [
+        {
+          "desc": "The project key bind (an `msm:key_bind` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::KeyCooldownOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::KeyReleasedTrigger": {
+      "fields": [
+        {
+          "desc": "The project key bind (an `msm:key_bind` id).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
           }
         }
       ],
@@ -17859,6 +17993,21 @@
           "value": "show_action_bar"
         },
         {
+          "desc": "Shows a HUD element.",
+          "identifier": "ShowHud",
+          "value": "show_hud"
+        },
+        {
+          "desc": "Hides a HUD element.",
+          "identifier": "HideHud",
+          "value": "hide_hud"
+        },
+        {
+          "desc": "Sets the number or text a HUD element shows.",
+          "identifier": "SetHud",
+          "value": "set_hud"
+        },
+        {
           "desc": "Gives an effect.",
           "identifier": "GiveEffect",
           "value": "give_effect"
@@ -18027,6 +18176,18 @@
         {
           "identifier": "TimeOfDay",
           "value": "time_of_day"
+        },
+        {
+          "identifier": "VehicleFuel",
+          "value": "vehicle_fuel"
+        },
+        {
+          "identifier": "VehicleDamage",
+          "value": "vehicle_damage"
+        },
+        {
+          "identifier": "VehicleAmmo",
+          "value": "vehicle_ammo"
         }
       ]
     },
@@ -18552,6 +18713,53 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::SetHudStep": {
+      "fields": [
+        {
+          "desc": "The project HUD element (an `msm:hud` id).",
+          "key": "hud",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The number.",
+          "key": "value",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "Text instead of a number.",
+          "key": "text",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::TextSlot"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::SetWeatherStep": {
       "fields": [
         {
@@ -18936,6 +19144,21 @@
           "desc": "Shows text above the hotbar.",
           "identifier": "ShowActionBar",
           "value": "show_action_bar"
+        },
+        {
+          "desc": "Shows a HUD element.",
+          "identifier": "ShowHud",
+          "value": "show_hud"
+        },
+        {
+          "desc": "Hides a HUD element.",
+          "identifier": "HideHud",
+          "value": "hide_hud"
+        },
+        {
+          "desc": "Sets the number or text a HUD element shows.",
+          "identifier": "SetHud",
+          "value": "set_hud"
         },
         {
           "desc": "Gives an effect.",
@@ -19323,6 +19546,46 @@
           "value": "player_every"
         },
         {
+          "desc": "A player presses a project key bind (ADR 0088 D6).",
+          "identifier": "KeyPressed",
+          "value": "key_pressed"
+        },
+        {
+          "desc": "A player lets go of a project key bind.",
+          "identifier": "KeyReleased",
+          "value": "key_released"
+        },
+        {
+          "desc": "Every few seconds while a player holds a project key bind.",
+          "identifier": "KeyHeld",
+          "value": "key_held"
+        },
+        {
+          "desc": "A player gets in a project vehicle (ADR 0090 D11).",
+          "identifier": "VehicleMounted",
+          "value": "vehicle_mounted"
+        },
+        {
+          "desc": "A player gets out of a project vehicle.",
+          "identifier": "VehicleDismounted",
+          "value": "vehicle_dismounted"
+        },
+        {
+          "desc": "A project vehicle fires one of its weapons.",
+          "identifier": "VehicleFired",
+          "value": "vehicle_fired"
+        },
+        {
+          "desc": "A project vehicle is destroyed.",
+          "identifier": "VehicleDestroyed",
+          "value": "vehicle_destroyed"
+        },
+        {
+          "desc": "Every few seconds while a project vehicle is driven.",
+          "identifier": "VehicleEvery",
+          "value": "vehicle_every"
+        },
+        {
           "desc": "The world starts.",
           "identifier": "WorldStarted",
           "value": "world_started"
@@ -19436,11 +19699,103 @@
           "value": "time_of_day"
         },
         {
+          "desc": "Seconds of driving left in the vehicle's fuel: the vehicle of a vehicle trigger, else the\none the player rides (0 without one).",
+          "identifier": "VehicleFuel",
+          "value": "vehicle_fuel"
+        },
+        {
+          "desc": "The damage the vehicle has taken (as `VehicleFuel` says which vehicle).",
+          "identifier": "VehicleDamage",
+          "value": "vehicle_damage"
+        },
+        {
+          "desc": "The rounds loaded in one of the vehicle's weapons (as `VehicleFuel` says which vehicle).",
+          "identifier": "VehicleAmmo",
+          "value": "vehicle_ammo"
+        },
+        {
           "desc": "Two numbers added, taken away, multiplied or divided.",
           "identifier": "Math",
           "value": "math"
         }
       ]
+    },
+    "::msm::rules::VehicleAmmoValue": {
+      "fields": [
+        {
+          "desc": "The weapon's `id` in the vehicle's `weapons`; defaults to the first weapon.",
+          "key": "weapon",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::VehicleEveryTrigger": {
+      "fields": [
+        {
+          "desc": "The project vehicle (an `msm:vehicle`, which is also an entity type).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "options",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::IntervalOptions"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::VehicleTrigger": {
+      "fields": [
+        {
+          "desc": "The project vehicle (an `msm:vehicle`, which is also an entity type).",
+          "key": "subject",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::rules::WaitStep": {
       "fields": [
@@ -21770,6 +22125,10 @@
         "kind": "reference",
         "path": "::msm::rules::HealthStep"
       },
+      "hide_hud": {
+        "kind": "reference",
+        "path": "::msm::rules::HudStep"
+      },
       "hurt": {
         "kind": "reference",
         "path": "::msm::rules::HealthStep"
@@ -21822,6 +22181,10 @@
         "kind": "reference",
         "path": "::msm::rules::SetGameModeStep"
       },
+      "set_hud": {
+        "kind": "reference",
+        "path": "::msm::rules::SetHudStep"
+      },
       "set_weather": {
         "kind": "reference",
         "path": "::msm::rules::SetWeatherStep"
@@ -21833,6 +22196,10 @@
       "show_boss_bar": {
         "kind": "reference",
         "path": "::msm::rules::ShowBossBarStep"
+      },
+      "show_hud": {
+        "kind": "reference",
+        "path": "::msm::rules::HudStep"
       },
       "show_message": {
         "kind": "reference",
@@ -21964,6 +22331,18 @@
         "kind": "reference",
         "path": "::msm::rules::ItemWornTrigger"
       },
+      "key_held": {
+        "kind": "reference",
+        "path": "::msm::rules::KeyHeldTrigger"
+      },
+      "key_pressed": {
+        "kind": "reference",
+        "path": "::msm::rules::KeyPressedTrigger"
+      },
+      "key_released": {
+        "kind": "reference",
+        "path": "::msm::rules::KeyReleasedTrigger"
+      },
       "machine_finished": {
         "kind": "reference",
         "path": "::msm::rules::BlockTrigger"
@@ -22016,6 +22395,26 @@
         "kind": "reference",
         "path": "::msm::rules::ItemTrigger"
       },
+      "vehicle_destroyed": {
+        "kind": "reference",
+        "path": "::msm::rules::VehicleTrigger"
+      },
+      "vehicle_dismounted": {
+        "kind": "reference",
+        "path": "::msm::rules::VehicleTrigger"
+      },
+      "vehicle_every": {
+        "kind": "reference",
+        "path": "::msm::rules::VehicleEveryTrigger"
+      },
+      "vehicle_fired": {
+        "kind": "reference",
+        "path": "::msm::rules::VehicleTrigger"
+      },
+      "vehicle_mounted": {
+        "kind": "reference",
+        "path": "::msm::rules::VehicleTrigger"
+      },
       "world_every": {
         "kind": "reference",
         "path": "::msm::rules::EveryTrigger"
@@ -22037,8 +22436,12 @@
       "random": {
         "kind": "reference",
         "path": "::msm::rules::RandomValue"
+      },
+      "vehicle_ammo": {
+        "kind": "reference",
+        "path": "::msm::rules::VehicleAmmoValue"
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:374d7dc0439676e316970a2b733094ce2dcf8c3c1555c87ce59a8109268c1fb7"
+  "ref": "msm-mcdoc:sha256:f617f656637f9fad449e0da2a777977c1d5529bbe0771f2cf2686ebc28cf1023"
 }

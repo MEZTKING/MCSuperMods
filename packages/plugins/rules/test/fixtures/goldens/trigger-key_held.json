@@ -1,0 +1,47 @@
+{
+  "patches": [
+    {
+      "elementId": "demo:dash",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "events"
+      ],
+      "value": {
+        "demo:dash_rules_key_held": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "elementId": "demo:dash",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "msm:while_held"
+      ],
+      "value": "demo:dash_rules_key_held"
+    },
+    {
+      "elementId": "demo:dash",
+      "origin": {
+        "elementId": "demo:rules",
+        "pointer": "/rules/0"
+      },
+      "path": [
+        "hold_interval_ticks"
+      ],
+      "value": 5
+    }
+  ],
+  "problems": []
+}

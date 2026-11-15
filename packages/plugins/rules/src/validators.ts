@@ -15,12 +15,15 @@
  *   block, item or mob the target and the project do not have, so the rule would never run.
  * - `rules.script-path-clash` (warning): an `msm:script` element lowers to the same file as a
  *   book's generated script (`msm/<ns>/script/rules/<book path>.ts`).
+ * - `rules.unknown-hud` (error): a "Show on screen", "Hide from the screen" or "Show a number on
+ *   screen" step names no `msm:hud` element of the project (the controls validators check
+ *   the HUD actions of events, not rule books; B413).
  *
  * Every problem carries the book's id and an RFC 6901 pointer into it.
  */
 import type { Element, Json, JsonObject, Problem, ProjectValidator } from '@msm/plugin-api';
-import { asArray, asObject, bookRules, pointer, str } from './book';
-import { triggerById } from './catalogue';
+import { asArray, asObject, bookRules, pointer, stepList, str } from './book';
+import { HUD_KIND, triggerById } from './catalogue';
 import { RULES_COMPILE_CODES } from './compile';
 import { RULES_KIND } from './kinds';
 
@@ -31,6 +34,7 @@ export const RULES_VALIDATOR_CODES = Object.freeze({
   duplicateCounter: 'rules.duplicate-counter',
   undeclaredCounter: 'rules.undeclared-counter',
   scriptPathClash: 'rules.script-path-clash',
+  unknownHud: 'rules.unknown-hud',
 });
 
 /**
@@ -45,6 +49,25 @@ export const RULES_PROBLEM_CODES: readonly string[] = Object.freeze(
 );
 
 const NAME = /^[a-z0-9_]{1,32}$/;
+const HUD_STEPS = new Set(['show_hud', 'hide_hud', 'set_hud']);
+
+/** Every HUD step of a step list, nested ones included, with the pointer to its `hud`. */
+function hudUses(
+  owner: JsonObject,
+  field: string,
+  path: string,
+  out: { hud: string; path: string }[],
+): void {
+  for (const { step, index } of stepList(owner, field)) {
+    const at = pointer(path, field, index);
+    const hud = str(step, 'hud');
+    if (HUD_STEPS.has(str(step, 'step') ?? '') && hud !== undefined) {
+      out.push({ hud, path: pointer(at, 'hud') });
+    }
+    hudUses(step, 'do', at, out);
+    hudUses(step, 'else', at, out);
+  }
+}
 const SCRIPT_KIND = 'msm:script';
 
 /** The registry an `any_` trigger's subject belongs to. */
@@ -80,6 +103,7 @@ function checkBook(
   book: Element,
   has: (registry: string, id: string) => boolean,
   scriptIds: ReadonlySet<string>,
+  hudIds: ReadonlySet<string>,
 ): Problem[] {
   const problems: Problem[] = [];
   const elementId = book.id;
@@ -154,6 +178,17 @@ function checkBook(
       );
     }
 
+    const huds: { hud: string; path: string }[] = [];
+    hudUses(rule, 'do', base, huds);
+    for (const use of huds) {
+      if (hudIds.has(use.hud)) continue;
+      error(
+        RULES_VALIDATOR_CODES.unknownHud,
+        use.path,
+        `"${use.hud}" is not one of your HUD elements; make it first (a bar or a number on screen) or pick another.`,
+      );
+    }
+
     const when = asObject(rule.when);
     const trigger = triggerById(str(when, 'trigger') ?? '');
     const subject = str(when, 'subject');
@@ -181,14 +216,15 @@ function checkBook(
 
 export const rulesBookValidator: ProjectValidator = {
   id: 'msm.rules.book',
-  kinds: [RULES_KIND, SCRIPT_KIND],
+  kinds: [RULES_KIND, SCRIPT_KIND, HUD_KIND],
   validate: ({ elements, registry }) => {
-    const scriptIds = new Set(
-      elements.filter((element) => element.kind === SCRIPT_KIND).map((element) => element.id),
-    );
+    const idsOf = (kind: string): Set<string> =>
+      new Set(elements.filter((element) => element.kind === kind).map((element) => element.id));
+    const scriptIds = idsOf(SCRIPT_KIND);
+    const hudIds = idsOf(HUD_KIND);
     return elements
       .filter((element) => element.kind === RULES_KIND)
-      .flatMap((book) => checkBook(book, (name, id) => registry.has(name, id), scriptIds));
+      .flatMap((book) => checkBook(book, (name, id) => registry.has(name, id), scriptIds, hudIds));
   },
 };
 

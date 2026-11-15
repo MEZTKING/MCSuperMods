@@ -7,7 +7,13 @@
 import type { Json, JsonObject, TargetFacts } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { compileRuleBook, RULES_COMPILE_CODES, ruleEventId, ruleHandlerId } from '../src/compile';
+import {
+  compileRuleBook,
+  compileRuleBooks,
+  RULES_COMPILE_CODES,
+  ruleEventId,
+  ruleHandlerId,
+} from '../src/compile';
 import { applyPatches, blockingProblems, book, element, indexesFor, PROJECT } from './support';
 
 const target = (builtInTargets[0]?.target ?? {}) as TargetFacts;
@@ -35,6 +41,9 @@ const patched = (rules: Json[]) => {
   const result = compile(rules);
   return { result, elements: applyPatches(PROJECT, result.patches) };
 };
+
+const asActions = (data: JsonObject, eventId: string): Json =>
+  ((data.events as JsonObject | undefined)?.[eventId] as JsonObject | undefined)?.actions ?? null;
 
 const dataOf = (elements: readonly { id: string; data: Json }[], id: string): JsonObject =>
   (elements.find((entry) => entry.id === id)?.data ?? {}) as JsonObject;
@@ -425,6 +434,173 @@ describe('compileRuleBook', () => {
       expect(result.script).toBeNull();
       expect(result.problems.map((problem) => problem.code)).toEqual([
         RULES_COMPILE_CODES.noScripts,
+      ]);
+    });
+  });
+
+  describe('keys and vehicles (B424)', () => {
+    const TANK = 'demo:tank';
+    const DASH = 'demo:dash';
+    /** The project with `data` merged into the tank and the dash key. */
+    const withData = (data: JsonObject) =>
+      PROJECT.map((entry) =>
+        entry.id === TANK || entry.id === DASH
+          ? { ...entry, data: { ...(entry.data as JsonObject), ...data } }
+          : entry,
+      );
+
+    it('compiles plain key rules into the key bind, its own cooldown winning, clamped to a minute', () => {
+      const { result, elements } = patched([
+        rule('a', { options: { cooldown_seconds: 90 }, subject: DASH, trigger: 'key_pressed' }, [
+          { hud: 'demo:mana', step: 'show_hud' },
+          { power: 2, step: 'explode' },
+        ]),
+        rule('b', { options: { interval_seconds: 0.1 }, subject: DASH, trigger: 'key_held' }, [
+          CHIME,
+        ]),
+      ]);
+      expect(result.problems).toEqual([]);
+      expect(result.script).toBeNull();
+      const data = dataOf(elements, DASH);
+      expect(data['msm:on_press']).toBe(ruleEventId(DASH, 'key_pressed'));
+      expect(data['msm:while_held']).toBe(ruleEventId(DASH, 'key_held'));
+      expect(data.cooldown_ticks).toBe(1200);
+      expect(data.hold_interval_ticks).toBe(2);
+      expect(asActions(data, ruleEventId(DASH, 'key_pressed'))).toEqual([
+        { hud: 'demo:mana', type: 'show_hud' },
+        { breaks_blocks: true, power: 2, type: 'explode' },
+      ]);
+      const own = compile(
+        [
+          rule('a', { options: { cooldown_seconds: 5 }, subject: DASH, trigger: 'key_pressed' }, [
+            CHIME,
+          ]),
+        ],
+        [],
+        withData({ cooldown_ticks: 7 }),
+      );
+      expect(own.patches.map((patch) => patch.path.join('/'))).toEqual(['events', 'msm:on_press']);
+    });
+
+    it('writes an explosion that keeps blocks as the action default, and one elsewhere as script', () => {
+      const plain = compile([
+        rule('a', { subject: TANK, trigger: 'vehicle_destroyed' }, [
+          { break_blocks: false, power: 4, step: 'explode' },
+        ]),
+      ]);
+      expect(plain.script).toBeNull();
+      expect(plain.patches[0]?.value).toEqual({
+        [ruleEventId(TANK, 'vehicle_destroyed')]: {
+          actions: [{ breaks_blocks: false, power: 4, type: 'explode' }],
+        },
+      });
+      const script = compile([
+        rule('a', { subject: TANK, trigger: 'vehicle_destroyed' }, [
+          { power: 4, step: 'explode', where: 'player' },
+        ]),
+      ]);
+      expect(script.patches).toEqual([]);
+      expect((script.script ?? []).join('\n')).toContain('msm.events.on("vehicle.destroyed"');
+    });
+
+    it('puts a plain book in the event and a scripted book in a listener after it', () => {
+      const plainBook = book(
+        [rule('a', { subject: TANK, trigger: 'vehicle_mounted' }, [CHIME])],
+        [],
+        'demo:a',
+      );
+      const scriptBook = book(
+        [rule('b', { subject: TANK, trigger: 'vehicle_mounted' }, [GIVE], { only_if: SNEAKING })],
+        [],
+        'demo:b',
+      );
+      const projectWithOwn = withData({
+        events: { 'demo:honk': { actions: [] } },
+        on_mount: 'demo:honk',
+      });
+      const result = compileRuleBooks([plainBook, scriptBook], projectWithOwn, target);
+      expect(result.problems).toEqual([]);
+      const events = result.patches.find(
+        (patch) => patch.path.join('/') === `events/${ruleEventId(TANK, 'vehicle_mounted')}`,
+      );
+      expect(events?.value).toEqual({
+        actions: [
+          { event: 'demo:honk', type: 'trigger_event' },
+          { sound: 'minecraft:block.note_block.chime', type: 'play_sound' },
+        ],
+      });
+      expect(result.scripts.has('demo:a' as never)).toBe(false);
+      const text = (result.scripts.get('demo:b' as never) ?? []).join('\n');
+      expect(text).toContain('msm.events.on("vehicle.mounted", (e) => {');
+      expect(text).toContain('if (e.vehicle.type !== "demo:tank") return;');
+      expect(text).not.toContain('run_script');
+    });
+
+    it('needs weapons for "fires", and one shared event of the weapons', () => {
+      const none = compile(
+        [rule('a', { subject: TANK, trigger: 'vehicle_fired' }, [CHIME])],
+        [],
+        withData({ weapons: [] }),
+      );
+      expect(none.problems.map((problem) => problem.code)).toEqual([
+        RULES_COMPILE_CODES.needsComponent,
+      ]);
+      const split = compile(
+        [rule('a', { subject: TANK, trigger: 'vehicle_fired' }, [CHIME])],
+        [],
+        withData({
+          events: { 'demo:x': { actions: [] }, 'demo:y': { actions: [] } },
+          weapons: [
+            { id: 'cannon', on_fire: 'demo:x', projectile: 'minecraft:fire_charge' },
+            { id: 'gun', on_fire: 'demo:y', projectile: 'minecraft:arrow' },
+          ],
+        }),
+      );
+      expect(split.problems.map((problem) => problem.code)).toEqual([
+        RULES_COMPILE_CODES.eventIdClash,
+      ]);
+      const shared = compile(
+        [rule('a', { subject: TANK, trigger: 'vehicle_fired' }, [CHIME])],
+        [],
+        withData({
+          events: { 'demo:x': { actions: [] } },
+          weapons: [
+            { id: 'cannon', on_fire: 'demo:x', projectile: 'minecraft:fire_charge' },
+            { id: 'gun', projectile: 'minecraft:arrow' },
+          ],
+        }),
+      );
+      expect(shared.problems).toEqual([]);
+      const weapons = shared.patches.find((patch) => patch.path.join('/') === 'weapons');
+      expect(((weapons?.value ?? []) as JsonObject[]).map((weapon) => weapon.on_fire)).toEqual([
+        ruleEventId(TANK, 'vehicle_fired'),
+        ruleEventId(TANK, 'vehicle_fired'),
+      ]);
+    });
+
+    it('reads the trigger vehicle on vehicle triggers and the ridden one elsewhere', () => {
+      const fuel = { step: 'show_message', text: [{ value: 'vehicle_fuel' }] };
+      const onVehicle = (
+        compile([rule('a', { subject: TANK, trigger: 'vehicle_mounted' }, [fuel])]).script ?? []
+      ).join('\n');
+      expect(onVehicle).toContain('vehicleFuel(vehicle)');
+      const onFoot = (compile([rule('a', { trigger: 'player_joined' }, [fuel])]).script ?? []).join(
+        '\n',
+      );
+      expect(onFoot).toContain('vehicleFuel(riddenBy(player))');
+      const nobody = compile([
+        rule('a', { trigger: 'world_every' }, [
+          { seconds: 1, step: 'set_weather', weather: 'clear' },
+          {
+            amount: { value: 'vehicle_damage' },
+            counter: 'hits',
+            scope: 'world',
+            step: 'set_counter',
+          },
+        ]),
+      ]);
+      expect(nobody.problems.map((problem) => problem.code)).toEqual([
+        RULES_COMPILE_CODES.noSuchActor,
       ]);
     });
   });
