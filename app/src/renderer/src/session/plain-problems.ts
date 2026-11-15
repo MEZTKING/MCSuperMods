@@ -308,6 +308,28 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'blocks-items.machine-recipes-without-machine': entry(
     (t) => `${t} has machine recipes but no machine to use them.`,
   ),
+  'blocks-items.weathering-next-unknown': entry(
+    (t) => `${t} ages into a block that is not in your mod any more. Pick another one.`,
+  ),
+  'blocks-items.weathering-cycle': entry(
+    (t) => `${t} ages in a circle and would never stop. Let the last stage stop ageing.`,
+  ),
+  'blocks-items.weathering-stage-order': entry(
+    (t) => `${t} skips or repeats a stage when it ages, so it ages unevenly.`,
+  ),
+  'blocks-items.waxable-not-weathering': entry(
+    (t) => `${t} can be waxed, but it does not age. Make it age or turn waxing off.`,
+  ),
+  'blocks-items.waxable-target-unknown': entry(
+    (t) => `${t} turns into a waxed block that is not in your mod any more. Pick another one.`,
+  ),
+  'blocks-items.waxed-block-invalid': entry(
+    (t) =>
+      `The waxed block of ${t} still ages, or is shared with another block. Give it its own waxed block that does not age.`,
+  ),
+  'blocks-items.max-stack-size': entry(
+    (t) => `${t} holds things inside, so it can only stack to 1. Set its stack size to 1.`,
+  ),
 
   // Mobs -----------------------------------------------------------------------------------
   'entities.unknown-event': entry((t) => `${t} runs something that is not in your mod any more.`),

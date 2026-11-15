@@ -40,6 +40,12 @@ export const LOOT_ADDITION_KIND = 'msm:loot_addition';
 /** `format` is written by lowering, so the form hides it. */
 const HIDDEN = ['/format'];
 
+/**
+ * Custom blocks. Besides the earlier components, a block may take `msm:waterloggable` (ADR 0094
+ * D7: the `waterlogged` variants in its block state), `msm:weathering` and `msm:waxable` (D8, D9:
+ * ageing stages and the waxed copy, ids written in full by lowering); the default block takes
+ * none of them.
+ */
 export const blockKind: ElementKind = {
   id: BLOCK_KIND,
   schema: MSM_SCHEMA_REFS.block,
@@ -56,6 +62,12 @@ export const blockKind: ElementKind = {
   lower: lowerBlock,
 };
 
+/**
+ * Custom items. Besides the earlier components, an item may take `msm:item_inventory` (a bag,
+ * ADR 0095 D1) or `msm:bundle` (D4, with the element-only `bundle_textures` lowered to the
+ * bundle's item model definition); either one makes the item stack to 1. The default item takes
+ * neither.
+ */
 export const itemKind: ElementKind = {
   id: ITEM_KIND,
   schema: MSM_SCHEMA_REFS.item,

@@ -1,0 +1,27 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:item_inventory": {
+          "layout": "hopper"
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/seed_pouch.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/seed_pouch",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/seed_pouch.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

@@ -1,7 +1,8 @@
 /**
  * `@msm/plugin-blocks-items`: built-in MSM plugin contributing custom blocks, custom items and
  * the mod metadata (ADR 0025 D8), custom mob effects (ADR 0055) and additions to vanilla
- * content (ADR 0060), potions (ADR 0063), portal blocks (ADR 0077) and particle types (ADR 0080):
+ * content (ADR 0060), potions (ADR 0063), portal blocks (ADR 0077), particle types (ADR 0080),
+ * waterlogging and weathering (ADR 0094 D7 to D9) and item inventories and bundles (ADR 0095):
  * the `msm:block`, `msm:item`, `msm:effect`, `msm:mod`, `msm:biome_addition`,
  * `msm:loot_addition`, `msm:potion` and `msm:particle` kinds, their
  * lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
@@ -13,14 +14,35 @@ import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
 import { containerValidators } from './validators-containers';
 import { furnitureValidators } from './validators-furniture';
+import { inventoryValidators } from './validators-inventory';
 import { particleValidators } from './validators-particles';
 import { plants2Validators } from './validators-plants-2';
 import { portalValidators } from './validators-portals';
 import { blockTypeValidators } from './validators-types';
+import { weatheringValidators } from './validators-weathering';
 
 export * from './kinds';
 export * from './lowering';
 export { blockItemId, blockItemIdOf } from './lowering/block-item';
+export {
+  BUNDLE_HAS_SELECTED_ITEM,
+  BUNDLE_OPEN_BACK_PARENT,
+  BUNDLE_OPEN_FRONT_PARENT,
+  BUNDLE_SELECTED_ITEM_MODEL,
+  BUNDLE_TEXTURES_FIELD,
+  bundleItemFiles,
+  bundleModelIds,
+} from './lowering/bundle';
+export {
+  BUNDLE_COMPONENT,
+  bagLayoutOf,
+  DEFAULT_BAG_ROWS,
+  ITEM_INVENTORY_COMPONENT,
+  ITEM_INVENTORY_LAYOUTS,
+  isBundle,
+  itemInventoryOf,
+  lowerItemInventoryInPlace,
+} from './lowering/item-inventory';
 export {
   BLOCK_TYPE_LOWERINGS,
   BLOCK_TYPE_MODEL_SLOTS,
@@ -65,6 +87,28 @@ export {
   PORTAL_MODEL_PARENTS,
   portalTextureOf,
 } from './lowering/types/portal';
+export {
+  hasWaterloggable,
+  isWaterloggable,
+  lowerWaterloggingInPlace,
+  WATERLOGGABLE_BLOCK_TYPES,
+  WATERLOGGABLE_COMPONENT,
+  WATERLOGGED_PROPERTY,
+  withWaterloggedVariants,
+} from './lowering/waterlog';
+export {
+  fullBlockId,
+  lowerWeatheringInPlace,
+  nextWeatheringStage,
+  WAXABLE_COMPONENT,
+  WEATHERING_BLOCK_TYPES,
+  WEATHERING_COMPONENT,
+  WEATHERING_STAGES,
+  type WeatheringFields,
+  type WeatheringStage,
+  waxableInto,
+  weatheringOf,
+} from './lowering/weathering';
 export { blocksItemsTemplates, modIdFromNamespace } from './templates';
 export {
   BLOCKS_ITEMS_PROBLEM_CODES,
@@ -91,6 +135,11 @@ export {
 } from './validators-containers';
 export { FURNITURE_PROBLEM_CODES, furnitureValidators } from './validators-furniture';
 export {
+  INVENTORY_CONFLICT_COMPONENTS,
+  INVENTORY_PROBLEM_CODES,
+  inventoryValidators,
+} from './validators-inventory';
+export {
   AMBIENT_PARTICLES_COMPONENT,
   PARTICLE_DESCRIPTION_KIND,
   PARTICLE_PROBLEM_CODES,
@@ -115,6 +164,7 @@ export {
   SHAPED_BLOCK_TYPES,
   SHAPED_ONLY_COMPONENTS,
 } from './validators-types';
+export { WEATHERING_PROBLEM_CODES, weatheringValidators } from './validators-weathering';
 
 export default definePlugin({
   id: 'msm.blocks-items',
@@ -130,6 +180,8 @@ export default definePlugin({
       ...particleValidators,
       ...plants2Validators,
       ...furnitureValidators,
+      ...weatheringValidators,
+      ...inventoryValidators,
     ],
   },
 });

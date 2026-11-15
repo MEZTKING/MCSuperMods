@@ -1,0 +1,517 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        },
+        "msm:waxable": {
+          "into": "example:waxed_tin"
+        },
+        "msm:weathering": {
+          "next": "example:exposed_tin",
+          "stage": "unaffected"
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        },
+        "msm:waxable": {
+          "into": "example:waxed_exposed_tin"
+        },
+        "msm:weathering": {
+          "next": "example:weathered_tin",
+          "stage": "exposed"
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/exposed_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/exposed_tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/exposed_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/exposed_tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/exposed_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:exposed_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/exposed_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/exposed_tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        },
+        "msm:waxable": {
+          "into": "example:waxed_weathered_tin"
+        },
+        "msm:weathering": {
+          "next": "example:oxidized_tin",
+          "stage": "weathered"
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/weathered_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/weathered_tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/weathered_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/weathered_tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/weathered_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:weathered_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/weathered_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/weathered_tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        },
+        "msm:waxable": {
+          "into": "example:waxed_oxidized_tin"
+        },
+        "msm:weathering": {
+          "stage": "oxidized"
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/oxidized_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/oxidized_tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/oxidized_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/oxidized_tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/oxidized_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:oxidized_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/oxidized_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/oxidized_tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/waxed_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/waxed_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/waxed_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:waxed_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/waxed_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/waxed_tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/waxed_exposed_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/exposed_tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/waxed_exposed_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/exposed_tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/waxed_exposed_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:waxed_exposed_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/waxed_exposed_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/waxed_exposed_tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/waxed_weathered_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/weathered_tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/waxed_weathered_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/weathered_tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/waxed_weathered_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:waxed_weathered_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/waxed_weathered_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/waxed_weathered_tin.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 3,
+          "resistance": 6
+        }
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/waxed_oxidized_tin.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/oxidized_tin"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/waxed_oxidized_tin.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/oxidized_tin",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/waxed_oxidized_tin.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:waxed_oxidized_tin",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/waxed_oxidized_tin",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/waxed_oxidized_tin.json",
+    "schema": "resource:loot_table"
+  }
+]

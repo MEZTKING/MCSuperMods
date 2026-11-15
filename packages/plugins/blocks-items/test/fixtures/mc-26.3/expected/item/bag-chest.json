@@ -1,0 +1,51 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:item_inventory": {
+          "close_sound": "minecraft:item.armor.equip_leather",
+          "layout": "chest",
+          "on_open": "example:opened",
+          "open": "sneak_use",
+          "open_sound": "minecraft:item.armor.equip_leather",
+          "rows": 2
+        }
+      },
+      "events": {
+        "example:opened": {
+          "actions": [
+            {
+              "function": "example:ruby/shimmer",
+              "type": "run_function"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/satchel.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/satchel",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/satchel.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.satchel": "Satchel"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

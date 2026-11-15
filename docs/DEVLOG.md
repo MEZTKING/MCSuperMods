@@ -5279,3 +5279,18 @@ Next
 
 **Next**
 - B446 removes the remaining ten `block-type-2-*` furniture prefixes and adds its blocks to the same `climbable.json` test tag. B447 writes the tags, the potted loot tables and the berry bush and layers models.
+
+## 2026-11-15 — executor — B451 plugin: waterlogging, weathering, item inventories, bundles
+
+**What**
+- Lowering (`packages/plugins/blocks-items/src/lowering/`): `waterlog.ts` writes every block state variant twice, `waterlogged=false` and `waterlogged=true` with the same model, for `msm:waterloggable` on `block`, `pillar`, `horizontal` and `directional` (not with `msm:container` or `msm:machine`, limit Q8); `weathering.ts` writes `next` of `msm:weathering` and `into` of `msm:waxable` as full ids in the definition (nothing else: ageing, waxing and scraping are runtime); `item-inventory.ts` forces `max_stack_size: 1` for a bag or bundle and drops a non-chest bag's `rows`; `bundle.ts` turns the element-only `bundle_textures` into item models (`<ns>:item/<path>`, `_open_back`, `_open_front`, the open pictures parented on vanilla's `minecraft:item/template_bundle_open_back`/`_front`) and the item model definition in vanilla's bundle shape (`minecraft:display_context` select, `minecraft:bundle/has_selected_item`, `minecraft:bundle/selected_item`). Called from `block.ts` and `item.ts`; `bundle_textures` is an item editor field.
+- Validators: `validators-weathering.ts` (`weathering-next-unknown`, `weathering-cycle`, `weathering-stage-order` (warning), `waxable-not-weathering`, `waxable-target-unknown`, `waxed-block-invalid`; and `component-not-for-type`, `component-conflict` for the waterlogged container) and `validators-inventory.ts` (`max-stack-size`; and `component-conflict` with the Item Studio's list, the passthrough `container`/`bundle_contents`/`max_stack_size`, `container-layout-fields` (warning) for rows outside the chest, `container-event-unknown` for `on_open`/`on_close`). Plain words for the seven new codes in the app.
+- Tests: goldens for a waterlogged block, a waterlogged horizontal block, a dry waterlogged container, the four-stage tin set with waxed copies, weathering stairs with bare ids, two bags and two bundles on both targets (validated against their schemas); one test per code and zero problems from every plugin validator for valid cases on both targets. Blocks-items 608 tests, exporters and library green.
+
+**Decisions**
+- Code names are kebab-case as every other: the brief's `max_stack_size` is `blocks-items.max-stack-size`. Two cases the brief did not name got one extra code, `blocks-items.waxed-block-invalid`: a waxed copy that has `msm:weathering` (it would age) and one waxed block shared by two blocks (the reverse map needs one). Existing codes were reused where their words fit (`component-conflict`, `container-layout-fields`, `container-event-unknown`).
+- A vanilla block is a valid `next` or `into`; stage order is checked only against project weathering blocks. Bag `rows` outside the chest is a warning, as lowering drops them.
+- A bundle's closed picture wins over `model`; without `open_back` the closed model stands behind the selected item.
+
+**Next**
+- B449/B450 read the definitions as lowered (full ids; `max_stack_size` 1; no `rows` outside the chest). B457 uses `WEATHERING_STAGES`, `fullBlockId` and `bundleItemFiles` paths. The app's `EVENT_FIELDS` in `blocks-items-model.ts` and the generated-model clash check for bundle item models are follow-ups.

@@ -1,0 +1,69 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:bundle": {}
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/sack.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/template_bundle_open_front",
+      "textures": {
+        "layer0": "example:item/sack_open_front"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/sack_open_front.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "cases": [
+          {
+            "model": {
+              "on_false": {
+                "model": "example:item/sack",
+                "type": "minecraft:model"
+              },
+              "on_true": {
+                "models": [
+                  {
+                    "model": "example:item/sack",
+                    "type": "minecraft:model"
+                  },
+                  {
+                    "type": "minecraft:bundle/selected_item"
+                  },
+                  {
+                    "model": "example:item/sack_open_front",
+                    "type": "minecraft:model"
+                  }
+                ],
+                "type": "minecraft:composite"
+              },
+              "property": "minecraft:bundle/has_selected_item",
+              "type": "minecraft:condition"
+            },
+            "when": "gui"
+          }
+        ],
+        "fallback": {
+          "model": "example:item/sack",
+          "type": "minecraft:model"
+        },
+        "property": "minecraft:display_context",
+        "type": "minecraft:select"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/sack.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

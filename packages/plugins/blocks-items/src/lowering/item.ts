@@ -4,7 +4,9 @@
 import type { Element, JsonObject, OutputFile, Target, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { DEFINITION_FORMAT } from './block';
+import { BUNDLE_TEXTURES_FIELD, bundleItemFiles } from './bundle';
 import { lowerFuelAndCompostInPlace } from './fuel';
+import { isBundle, lowerItemInventoryInPlace } from './item-inventory';
 import {
   BlocksItemsLoweringError,
   definitionPath,
@@ -22,7 +24,7 @@ import {
 } from './shared';
 import { weaponItemTags } from './weapons';
 
-const ITEM_EDITOR_FIELDS = ['model', 'display_name'] as const;
+const ITEM_EDITOR_FIELDS = ['model', 'display_name', BUNDLE_TEXTURES_FIELD] as const;
 
 function itemData(element: Element): JsonObject {
   if (!isRecord(element.data)) {
@@ -37,7 +39,9 @@ function itemData(element: Element): JsonObject {
  * including `msm:armor` and a custom `msm:tool` material with its attack overrides (ADR 0042),
  * and `msm:consumable`, `msm:ranged_weapon`, `msm:shield`, `msm:death_protection` and the
  * vanilla passthrough `msm:components` (ADR 0044): the runtime derives the vanilla components
- * from them. The element-only `fuel` and `compost` (ADR 0060 D4) become `minecraft:cooking_fuel`
+ * from them. A bag (`msm:item_inventory`) or a bundle (`msm:bundle`) stacks to 1 (ADR 0095 D1,
+ * D4): `max_stack_size` is written as 1, and a bag's `rows` are dropped unless its layout is the
+ * chest; the bundle's element-only `bundle_textures` are left out. The element-only `fuel` and `compost` (ADR 0060 D4) become `minecraft:cooking_fuel`
  * and `minecraft:compostable` inside `msm:components`, the compost provider taken from `target`.
  *
  * @throws {@link BlocksItemsLoweringError} If the data is not an object, or `compost` has no
@@ -50,6 +54,7 @@ export function itemDefinition(
   const definition = structuredClone(itemData(element));
   for (const field of ITEM_EDITOR_FIELDS) delete definition[field];
   lowerFuelAndCompostInPlace(definition, target, element.id);
+  lowerItemInventoryInPlace(definition);
   definition.format = DEFINITION_FORMAT;
   return definition;
 }
@@ -81,7 +86,8 @@ function itemTagFile(target: Target, tag: string, id: string): OutputFile {
 /**
  * Lowers an `msm:item` element: the runtime definition `msm/<ns>/item/<path>.json` (layer
  * `msm`), with `model` the item model definition, with `display_name` the
- * `item.<ns>.<path>` key of `en_us` (`merge: 'object'`), and for a spear, mace, bow, crossbow
+ * `item.<ns>.<path>` key of `en_us` (`merge: 'object'`), for a bundle the models and item model
+ * definition of {@link bundleItemFiles} in place of the plain one (ADR 0095 D4), and for a spear, mace, bow, crossbow
  * or shield the vanilla enchanting item tags of {@link weaponItemTags} (layer `datapack`,
  * `merge: 'tag'`; ADR 0044 D3).
  *
@@ -103,7 +109,10 @@ export function lowerItem(element: Element, target: Target): OutputFile[] {
   ];
   const model = nonEmptyString(data.model);
   const pull = rangedPullOf(data);
-  if (model !== undefined) {
+  const bundle = isBundle(data) ? bundleItemFiles(target, namespace, path, data) : undefined;
+  if (bundle !== undefined) {
+    files.push(...bundle);
+  } else if (model !== undefined) {
     files.push(
       pull === null
         ? itemDefinitionFile(target, namespace, path, model)

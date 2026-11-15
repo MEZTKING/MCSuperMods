@@ -1,0 +1,77 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:waterloggable": {}
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/coral_shelf.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/coral_shelf_front",
+        "side": "example:block/coral_shelf_side",
+        "top": "example:block/coral_shelf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/coral_shelf.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,waterlogged=false": {
+          "model": "example:block/coral_shelf",
+          "y": 90
+        },
+        "facing=east,waterlogged=true": {
+          "model": "example:block/coral_shelf",
+          "y": 90
+        },
+        "facing=north,waterlogged=false": {
+          "model": "example:block/coral_shelf"
+        },
+        "facing=north,waterlogged=true": {
+          "model": "example:block/coral_shelf"
+        },
+        "facing=south,waterlogged=false": {
+          "model": "example:block/coral_shelf",
+          "y": 180
+        },
+        "facing=south,waterlogged=true": {
+          "model": "example:block/coral_shelf",
+          "y": 180
+        },
+        "facing=west,waterlogged=false": {
+          "model": "example:block/coral_shelf",
+          "y": 270
+        },
+        "facing=west,waterlogged=true": {
+          "model": "example:block/coral_shelf",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/coral_shelf.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/coral_shelf",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/coral_shelf.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

@@ -1,0 +1,75 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:light_emitter": {
+          "level": 12
+        },
+        "msm:waterloggable": {}
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/wet_lamp.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "waterlogged=false": {
+          "model": "example:block/wet_lamp"
+        },
+        "waterlogged=true": {
+          "model": "example:block/wet_lamp"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/wet_lamp.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/wet_lamp",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/wet_lamp.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.wet_lamp": "Wet Lamp"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:wet_lamp",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/wet_lamp",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/wet_lamp.json",
+    "schema": "resource:loot_table"
+  }
+]

@@ -31,6 +31,8 @@ import {
   keepsContents,
   plantLootTable,
 } from './types/loot-presets';
+import { lowerWaterloggingInPlace } from './waterlog';
+import { lowerWeatheringInPlace } from './weathering';
 
 /**
  * The element data fields that exist only in the editor: the appearance (`model`, and per type
@@ -88,7 +90,8 @@ function readEditorFields(data: JsonObject): BlockEditorFields {
 /**
  * The runtime block definition: the element data without `model`, `display_name`, `loot`, the
  * `tool` and `min_tier` of `msm:breakable` and the `preset` of `msm:shape`, whose boxes it
- * writes instead (ADR 0059 D2). A tool or tier sets `requires_tool: true`
+ * writes instead (ADR 0059 D2); `next` of `msm:weathering` and `into` of `msm:waxable` are
+ * written as full ids (ADR 0094 D8, D9). A tool or tier sets `requires_tool: true`
  * unless the element sets `requires_tool` itself; a `loot` id becomes `loot_table` unless one
  * is set; `format` is always the format this plugin writes. The block item's element-only
  * `fuel` and `compost` (ADR 0060 D4) become vanilla components in its `msm:components`.
@@ -118,6 +121,7 @@ export function blockDefinition(
     }
     const shape = components[SHAPE_COMPONENT];
     if (isRecord(shape)) lowerShapeInPlace(shape);
+    lowerWeatheringInPlace(components);
   }
   if (isRecord(definition.item)) lowerFuelAndCompostInPlace(definition.item, target, element.id);
   if (
@@ -157,7 +161,8 @@ export function dropsItselfLootTable(id: string, namespace: string, path: string
  * 2. the appearance of the block's type (ADR 0067 D5, D7): the models generated from
  *    `textures`, the block state definition (a single variant of `model` for a plain block)
  *    and, with a block item, its item model definition at the block item id (ADR 0068 D2;
- *    layer `resourcepack`);
+ *    layer `resourcepack`); a waterloggable block (ADR 0094 D7) has every variant twice,
+ *    `waterlogged=false` and `waterlogged=true` with the same model;
  * 3. with `display_name`: the `block.<ns>.<path>` key of `en_us` (`merge: 'object'`), and the
  *    `item.<ns>.<path>` key of a block item with its own id;
  * 4. with `tool`: `minecraft:mineable/<tool>`, and with `min_tier`: the needs-tier tag
@@ -194,6 +199,7 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
     },
     ...lowerBlockAppearance(type, target, context),
   ];
+  lowerWaterloggingInPlace(files, type, data, target, namespace, path);
   if (fields.displayName !== undefined) {
     files.push(
       langFile(target, namespace, descriptionKey('block', namespace, path), fields.displayName),
