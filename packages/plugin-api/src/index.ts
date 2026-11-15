@@ -65,6 +65,8 @@ export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
   BiomeAttributeFacts,
   BlockFacts,
+  CommandArgumentFacts,
+  CommandFacts,
   ControlFacts,
   DataFolderKey,
   DefinitionInput,

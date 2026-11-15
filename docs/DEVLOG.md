@@ -5172,3 +5172,19 @@ Decisions
 Next
 - The right-hand preview panel could show the vehicle as well (`PreviewPanel`, outside B419).
 - B427: e2e over the test ids in the B419 notes; B431: labels for the guide.
+
+## 2026-11-15 — executor — B444 plugin API 1.17.0: block type and command facts
+
+What
+- Plugin API 1.17.0 (on top of B442's `vanillaFeatureOrder`, no new bump): `BlockFacts` gains optional `bedRules`, `dyeColours`, `stemTags`, `modelTemplates` and `defaultTorchParticle` (ADR 0094 D12); `TargetFacts.commands?: CommandFacts` (`vanillaNames`, `argumentTypes` of `CommandArgumentFacts { parser, properties? }`; ADR 0096 D6). Exported from the package index; type tests and the changelog section updated.
+- Both targets carry the facts, identical on 26.3 and 26.4-snapshot-7: bed rules `bed` and `straw_bed` to `minecraft:gameplay/bed_rule` and `straw_bed_rule`; the sixteen dye colours of the vendored mcdoc enum `DyeColor`; stem tags `minecraft:supports_melon_stem` and `supports_melon_stem_fruit` (the pumpkin pair exists too); `minecraft:flame` for torches; 67 model ids for the twenty block types (the 14 sign templates of B440 included); 94 vanilla command literals and the twelve argument type mappings. Rows in both `CHANGES.md` files.
+- Tests: `targets/all/test/targets.test.ts` ties every value to each target's vendored registries, mcdoc and command tree (each parser and properties pair occurs on an argument node); new `targets/all/test/model-templates.test.ts` reads the Loom-cached client jar's central directory (file names only) and checks every model id, skipped without the jar (`MSM_CLIENT_JAR_MC_26_3` and `_MC_26_4` name another copy); new `exporters/test/command-names.test.ts` builds every built-in plugin's `msm:command` default, templates, starters and examples on both targets and refuses a vanilla name or alias (no command exists yet, so today it checks nothing but its own sample).
+
+Decisions
+- `argumentTypes` is a map from MSM's names to the game's parser and fixed properties, as the brief asks, not ADR 0096 D6's sketched string list: `player`, `players` and `entity` share one parser and differ only in properties.
+- `stemTags` holds the melon stem's pair only (ADR 0094 D2's default); the pumpkin pair is recorded in `CHANGES.md` and asserted present.
+- The AI `target_facts` tool already passes `blocks` whole, so the new block facts reach it (the model list is 67 short ids); `commands` is not passed yet (the tool lives in the app, outside this brief): B466 may add it, about 1 kB.
+- The command name test lives in the exporters package, the only package below the app that may import every plugin and the targets.
+
+Next
+- B447, B448: name parents only from `blocks.modelTemplates` (add a model there and to the targets tests first if a lowering needs another). B456: `commands.name-clash` against `vanillaNames`, argument parsers from `argumentTypes`. B454: the Java side's twelve parsers should match `argumentTypes`.

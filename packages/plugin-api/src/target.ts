@@ -260,6 +260,75 @@ export interface BlockFacts {
    * skips the checks that need them. Since 1.13.0 (ADR 0077 D7).
    */
   portal?: { ambientSound: string; travelSound: string; triggerSound: string; particle: string };
+  /**
+   * The environment attribute a bed block's `rule` follows, by MSM rule name: `bed` and
+   * `straw_bed`, each mapped to the namespaced `environment_attribute` id that decides sleeping,
+   * spawn setting and exploding per dimension (for example `minecraft:gameplay/bed_rule`).
+   * Optional: a target without them skips the checks that need them. Since 1.17.0 (ADR 0094 D2,
+   * D12).
+   */
+  bedRules?: Readonly<Record<string, string>>;
+  /**
+   * The sixteen dye colour names in the game's order (`white` first, `black` last), the values
+   * a bed's `colour` takes and the colours a sign's text may be dyed. Optional. Since 1.17.0
+   * (ADR 0094 D2, D12).
+   */
+  dyeColours?: readonly string[];
+  /**
+   * The namespaced block tag ids a `stem` block uses by default: `soil`, the blocks the stem
+   * grows on, and `fruitSoil`, the blocks its fruit may grow onto (vanilla's melon stem's tags).
+   * Optional: a target without them leaves the defaults to the runtime. Since 1.17.0 (ADR 0094
+   * D2, D12).
+   */
+  stemTags?: { soil: string; fruitSoil: string };
+  /**
+   * The namespaced vanilla block model ids the block type lowerings name as `parent` (for
+   * example `minecraft:block/template_torch`), each present in the target's client jar. The
+   * user's own client jar supplies them; MSM never bundles them. Optional: a target without them
+   * skips the checks that need them. Since 1.17.0 (ADR 0094 D10, D12).
+   */
+  modelTemplates?: readonly string[];
+  /**
+   * The namespaced particle type id a `torch` block shows when it names none (an option-less
+   * particle type such as `minecraft:flame`). Optional: a target without it leaves the default
+   * to the runtime. Since 1.17.0 (ADR 0094 D2, D12).
+   */
+  defaultTorchParticle?: string;
+}
+
+/**
+ * How one MSM command argument type reads in the game's command tree: the Brigadier parser id
+ * and the parser's properties, as the vendored command tree writes an argument node. Since
+ * 1.17.0 (ADR 0096 D1, D6).
+ */
+export interface CommandArgumentFacts {
+  /** The namespaced parser id (for example `brigadier:integer` or `minecraft:entity`). */
+  parser: string;
+  /**
+   * The parser's fixed properties (for example `{ type: 'word' }` for a one-word string, or
+   * `{ amount: 'single', type: 'players' }` for one player). Absent when the parser takes none.
+   * Range limits (`min`, `max`) are the command's own and never appear here.
+   */
+  properties?: Readonly<Record<string, string>>;
+}
+
+/**
+ * Command facts of a target: the vanilla command names a project command may not take, and how
+ * MSM's argument types map to the game's parsers. Since 1.17.0 (ADR 0096 D6).
+ */
+export interface CommandFacts {
+  /**
+   * Every literal at the root of the game's command tree, sorted (for example `give`, `tp`,
+   * `xp`), including the aliases that are their own literals. A project command's `name` or
+   * alias must not be one of them.
+   */
+  vanillaNames: readonly string[];
+  /**
+   * MSM's twelve argument type names (`integer`, `number`, `word`, `text`, `boolean`, `player`,
+   * `players`, `entity`, `position`, `block_position`, `item`, `block`), each mapped to the
+   * game's parser and properties.
+   */
+  argumentTypes: Readonly<Record<string, CommandArgumentFacts>>;
 }
 
 /**
@@ -793,6 +862,12 @@ export interface TargetFacts {
    * the checks that need them. Since 1.16.0 (ADR 0090 D13).
    */
   vehicles?: VehicleFacts;
+  /**
+   * Command facts: the vanilla command names and the parsers behind MSM's argument types.
+   * Optional: a target without them skips the checks that need them, and an external plugin
+   * reading them must handle their absence. Since 1.17.0 (ADR 0096 D6).
+   */
+  commands?: CommandFacts;
 }
 
 /**

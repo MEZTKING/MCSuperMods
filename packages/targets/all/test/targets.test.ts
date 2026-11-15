@@ -137,6 +137,14 @@ const FAMILY_ITEM_TAGS = [
 /** Block tags with no item counterpart: lowering writes only the block tag for these. */
 const BLOCK_ONLY_FAMILY_TAGS = ['pressure_plates', 'stone_pressure_plates'];
 
+/** A node of the vendored Brigadier command tree. */
+interface CommandNode {
+  type?: string;
+  parser?: string;
+  properties?: Record<string, unknown>;
+  children?: Record<string, CommandNode>;
+}
+
 const nodeReadFile = async (url: URL): Promise<Uint8Array> => readFile(url);
 
 describe('builtInTargets', () => {
@@ -526,6 +534,141 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       // Copied by `targetFacts` with the other data fields.
       expect(targetFacts(target.id)?.controls).toEqual(target.controls);
       expect(targetFacts(target.id)?.vehicles).toEqual(target.vehicles);
+    });
+
+    it('lists bed, dye, stem and torch block facts the vendored data knows (ADR 0094 D2, D12)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const facts = target.blocks;
+      // Bed rules: the two MSM rule names, each an environment attribute of this version.
+      expect(Object.keys(facts?.bedRules ?? {})).toEqual(['bed', 'straw_bed']);
+      for (const id of Object.values(facts?.bedRules ?? {})) {
+        expect(id).toMatch(/^minecraft:gameplay\/[a-z_]+$/);
+        expect(registries.environment_attribute, id).toContain(id.slice('minecraft:'.length));
+      }
+      // Dye colours: the vendored mcdoc enum's values, in its order.
+      const symbols = parseVanillaMcdocSymbols(
+        await readVendoredJson(bundle, 'vanillaMcdocSymbols', nodeReadFile),
+      );
+      const index = createSchemaIndex(symbols, { mcVersion: target.mcVersion });
+      const dye = index.resolve('::java::util::color::DyeColor') as {
+        kind: string;
+        values?: { value: unknown }[];
+      };
+      expect(dye.kind).toBe('enum');
+      expect(facts?.dyeColours).toEqual((dye.values ?? []).map((entry) => entry.value));
+      expect(facts?.dyeColours).toHaveLength(16);
+      // Stem tags: the melon stem's two block tags (B440); the pumpkin stem's exist as well.
+      expect(facts?.stemTags).toEqual({
+        soil: 'minecraft:supports_melon_stem',
+        fruitSoil: 'minecraft:supports_melon_stem_fruit',
+      });
+      const blockTags = registries['tag/block'] ?? [];
+      for (const tag of [
+        facts?.stemTags?.soil ?? '',
+        facts?.stemTags?.fruitSoil ?? '',
+        'minecraft:supports_pumpkin_stem',
+        'minecraft:supports_pumpkin_stem_fruit',
+      ]) {
+        expect(blockTags, tag).toContain(tag.slice('minecraft:'.length));
+      }
+      // The torch particle: a registered particle type that takes no options.
+      const particle = facts?.defaultTorchParticle ?? '';
+      expect(particle).toBe('minecraft:flame');
+      expect(registries.particle_type, particle).toContain(particle.slice('minecraft:'.length));
+      expect(target.particles?.withOptions ?? []).not.toContain(particle);
+    });
+
+    it('lists the block model templates the block type lowerings name (ADR 0094 D10)', () => {
+      const templates = target.blocks?.modelTemplates ?? [];
+      expect(new Set(templates).size).toBe(templates.length);
+      for (const id of templates) expect(id).toMatch(/^minecraft:block\/[a-z0-9_]+$/);
+      // The fourteen sign templates of B440's S1 answer.
+      const signs = [
+        ...[0, 1, 2, 3].map((r) => `template_sign_rot_${r}`),
+        'template_wall_sign',
+        ...[0, 1, 2, 3].map((r) => `template_hanging_sign_rot_${r}`),
+        ...[0, 1, 2, 3].map((r) => `template_attached_hanging_sign_rot_${r}`),
+        'template_wall_hanging_sign',
+      ];
+      expect(signs).toHaveLength(14);
+      for (const name of signs) expect(templates).toContain(`minecraft:block/${name}`);
+      for (const name of [
+        'template_bed_head',
+        'template_bed_foot',
+        'template_torch',
+        'template_torch_wall',
+        'template_lantern',
+        'template_hanging_lantern',
+        'template_chain',
+        'template_candle',
+        'template_four_candles',
+        'stem_growth7',
+        'stem_fruit',
+      ]) {
+        expect(templates).toContain(`minecraft:block/${name}`);
+      }
+      // The jar listing check is `model-templates.test.ts`.
+    });
+
+    it('lists command facts the vendored command tree and registries know (ADR 0096 D6)', async () => {
+      const commands = (await readVendoredJson(bundle, 'mcmetaCommands', nodeReadFile)) as {
+        children: Record<string, CommandNode>;
+      };
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const facts = target.commands;
+      expect(facts?.vanillaNames).toEqual(Object.keys(commands.children).sort());
+      for (const name of ['give', 'tp', 'teleport', 'xp', 'function', 'trigger']) {
+        expect(facts?.vanillaNames).toContain(name);
+      }
+      expect(Object.keys(facts?.argumentTypes ?? {})).toEqual([
+        'integer',
+        'number',
+        'word',
+        'text',
+        'boolean',
+        'player',
+        'players',
+        'entity',
+        'position',
+        'block_position',
+        'item',
+        'block',
+      ]);
+      // Every parser and its properties occur together on an argument node of the tree, and
+      // every parser is a registered command argument type.
+      const seen = new Set<string>();
+      const walk = (node: CommandNode): void => {
+        if (node.type === 'argument' && node.parser !== undefined) {
+          const fixed = Object.entries(node.properties ?? {})
+            .filter(([key]) => key !== 'min' && key !== 'max')
+            .sort(([a], [b]) => a.localeCompare(b));
+          seen.add(`${node.parser} ${JSON.stringify(Object.fromEntries(fixed))}`);
+        }
+        for (const child of Object.values(node.children ?? {})) walk(child);
+      };
+      walk(commands as CommandNode);
+      const argumentTypes = registries.command_argument_type ?? [];
+      for (const [name, argument] of Object.entries(facts?.argumentTypes ?? {})) {
+        const properties = Object.fromEntries(
+          Object.entries(argument.properties ?? {}).sort(([a], [b]) => a.localeCompare(b)),
+        );
+        expect(seen, name).toContain(`${argument.parser} ${JSON.stringify(properties)}`);
+        const registryId = argument.parser.startsWith('minecraft:')
+          ? argument.parser.slice('minecraft:'.length)
+          : argument.parser;
+        expect(argumentTypes, name).toContain(registryId);
+      }
+      // Copied by `targetFacts` with the other data fields.
+      expect(targetFacts(target.id)?.commands).toEqual(target.commands);
+      expect(targetFacts(target.id)?.blocks?.modelTemplates).toEqual(target.blocks?.modelTemplates);
     });
 
     it('loads its vanilla-mcdoc export through @msm/schemas', async () => {

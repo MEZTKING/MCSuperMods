@@ -1,6 +1,8 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type {
   BlockFacts,
+  CommandArgumentFacts,
+  CommandFacts,
   ControlFacts,
   DataFolderKey,
   DefinitionInput,
@@ -512,6 +514,52 @@ describe('0.8.0 additions', () => {
     expect(worldgen.vanillaFeatureOrder?.underground_ores?.[1]).toBe('minecraft:ore_gravel');
     // A 1.16.0-shaped target without the order stays assignable.
     expect(testTarget.worldgen.vanillaFeatureOrder).toBeUndefined();
+  });
+
+  it('carries optional bed, dye, stem, model template and torch facts on blocks (1.17.0)', () => {
+    expectTypeOf<BlockFacts['bedRules']>().toEqualTypeOf<
+      Readonly<Record<string, string>> | undefined
+    >();
+    expectTypeOf<BlockFacts['dyeColours']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<BlockFacts['stemTags']>().toEqualTypeOf<
+      { soil: string; fruitSoil: string } | undefined
+    >();
+    expectTypeOf<BlockFacts['modelTemplates']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<BlockFacts['defaultTorchParticle']>().toEqualTypeOf<string | undefined>();
+    const facts: BlockFacts = {
+      setTypes: ['wood'],
+      woodTypes: ['oak'],
+      bedRules: { bed: 'minecraft:gameplay/bed_rule' },
+      dyeColours: ['white', 'black'],
+      stemTags: { soil: 'minecraft:soil_tag', fruitSoil: 'minecraft:fruit_tag' },
+      modelTemplates: ['minecraft:block/template_torch'],
+      defaultTorchParticle: 'minecraft:flame',
+    };
+    expect(facts.bedRules?.bed).toBe('minecraft:gameplay/bed_rule');
+    // A 1.16.0-shaped block facts object without them stays assignable.
+    const older: BlockFacts = { setTypes: [], woodTypes: [] };
+    expect(older.modelTemplates).toBeUndefined();
+  });
+
+  it('carries optional command facts on a target (1.17.0)', () => {
+    expectTypeOf<TargetFacts['commands']>().toEqualTypeOf<CommandFacts | undefined>();
+    expectTypeOf<CommandFacts['vanillaNames']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<CommandFacts['argumentTypes']>().toEqualTypeOf<
+      Readonly<Record<string, CommandArgumentFacts>>
+    >();
+    expectTypeOf<CommandArgumentFacts['properties']>().toEqualTypeOf<
+      Readonly<Record<string, string>> | undefined
+    >();
+    const commands: CommandFacts = {
+      vanillaNames: ['give', 'tp'],
+      argumentTypes: {
+        integer: { parser: 'brigadier:integer' },
+        player: { parser: 'minecraft:entity', properties: { amount: 'single', type: 'players' } },
+      },
+    };
+    expect(commands.argumentTypes.player?.properties?.type).toBe('players');
+    // A 1.16.0-shaped target without command facts stays assignable.
+    expect(testTarget.commands).toBeUndefined();
   });
 
   it('types project expanders and element patches (1.15.0)', async () => {

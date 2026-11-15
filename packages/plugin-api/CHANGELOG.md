@@ -4,13 +4,16 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every 
 
 ## 1.17.0 — 2026-11-15
 
-Vanilla's feature order (ADR 0097 D1). `API_VERSION` is `1.17.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+Vanilla's feature order, block type facts and command facts (ADR 0097 D1, ADR 0094 D12, ADR 0096 D6). `API_VERSION` is `1.17.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
 - `WorldgenFacts.vanillaFeatureOrder?: Readonly<Record<string, readonly string[]>>`: per decoration step name (a `featureSteps` entry), the namespaced ids of the vanilla placed features that step runs, in the order the game's feature sorter puts them. Ids only, vendored per target by `tools/sync-feature-order`. The worldgen validators warn when a project biome lists two of them against this order (`worldgen.vanilla-feature-order`), and the blocks-items validators when a biome addition adds one (`blocks-items.addition-vanilla-feature`).
 
+- `BlockFacts` gains five optional fields: `bedRules?: Readonly<Record<string, string>>` (a bed's MSM rule name, `bed` or `straw_bed`, to the namespaced environment attribute id that rules it), `dyeColours?: readonly string[]` (the sixteen dye colour names in the game's order), `stemTags?: { soil: string; fruitSoil: string }` (the default block tags a stem grows on and its fruit grows onto), `modelTemplates?: readonly string[]` (the namespaced vanilla block model ids the block type lowerings name as parents) and `defaultTorchParticle?: string` (the particle type a torch shows when it names none).
+- `TargetFacts.commands?: CommandFacts` with `CommandFacts { vanillaNames: readonly string[]; argumentTypes: Readonly<Record<string, CommandArgumentFacts>> }` and `CommandArgumentFacts { parser: string; properties?: Readonly<Record<string, string>> }`: every vanilla root command literal (for the clash check of project commands), and the game's parser and fixed properties behind each of MSM's twelve command argument types (`integer`, `number`, `word`, `text`, `boolean`, `player`, `players`, `entity`, `position`, `block_position`, `item`, `block`).
+
 ### Migration from 1.16.0
 
-None. A plugin that reads `vanillaFeatureOrder` should declare `^1.17.0` and treat an absent value as "no order to check against"; plugins written earlier ignore it.
+None. A plugin that reads `vanillaFeatureOrder`, the new block facts or `commands` should declare `^1.17.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
 
 ## 1.16.0 — 2026-11-15
 
