@@ -25,6 +25,17 @@ Facts (plan F32, F33): Fabric's `BiomeModificationContextImpl.GenerationSettings
 - The worldgen and blocks-items validators read a target fact through the public plugin API; no plugin hard-codes vanilla ids.
 - W-D1 to W-D4 are closed by B442; the audit's section 4.2 points here.
 
+## Findings at close (B468)
+
+Recorded 2026-11-15 at the close of vanilla parity 2 batch 1 (B468) from the code on main at 78adc90, B442 (1b3b709) and its follow-ups (c9030fa). Unreleased.
+
+- **D1 as built.** `tools/sync-feature-order` reads mcmeta's **summary** tag (`data/worldgen/biome/data.min.json` and `data/tag/worldgen/biome/data.min.json` of `<version>-summary`, the tag `sync-mcmeta` already reads) rather than the 67 biome files of the data branch; the same data. It reads the biomes in `#is_overworld`, `#is_nether`, `#is_end` order, then the rest by id (alphabetical order does not reproduce the measured order), numbers (step, feature) pairs by first appearance, walks each biome's consecutive features depth first and reverses the post-order; ties are broken by that reversed walk, not by plain first appearance as D1 worded it. Only ids are written: `packages/targets/mc-26.3/vendor/worldgen/feature-order.json` (212 features, 8.2 kB) and `mc-26.4/…` (238 features, 9.2 kB). The 26.3 overworld part equals `feature_indices.txt` (171 entries) index for index, which the tool's test checks. Plugin API 1.17.0 `WorldgenFacts.vanillaFeatureOrder?`, keyed by step name (the target's `FEATURE_STEPS`); a target without it skips the checks.
+- **D2 as built.** `worldgen.vanilla-feature-order` (warning) reports two vanilla features of one step listed against vanilla's order and also loops that project biomes close with vanilla's order through a project feature.
+- **D3 as built.** `blocks-items.addition-vanilla-feature` (warning) with the World addition Studio's **Make my own copy** (one undo step: a project placed feature in the addition's namespace, `_copy` when the id is taken, copying `feature` and `placement` from the user's vanilla cache). The vanilla asset cache now extracts `data/minecraft/worldgen/placed_feature/*.json` (`PREVIEW_ASSET_PATTERNS`, `ASSET_CACHE_SCHEMA_VERSION` 3, so older caches re-extract); without the file the copy names the configured feature by id with no placement and says so. The `msm:biome_addition` default became a sheep spawn on plains, so a new addition starts without the warning.
+- **D4 as built.** `blocks-items.duplicate-biome-feature` knows the step: the same step "does nothing there", another step "generates twice, once in each step".
+- **D5 as built.** Guide notes in `worldgen.md` (vanilla's order; added features move vanilla's decoration seeds) and `adding-to-vanilla.md` (own placed features, Make my own copy, the duplicate wording). The coverage audit's section 4.2 marks W-D1 to W-D4 done.
+- **Open follow-ups.** None from B442.
+
 ## Status
 
-Proposed (2026-11-14). Defaults the user may veto: warnings rather than errors (D2, D3, D4); the quick fix that copies a vanilla placed feature (D3); mcmeta's data branch as the source (D1).
+Accepted with findings at close B468 (2026-11-15), with the defaults below; the user may still veto them. Vetoable defaults as built: warnings rather than errors (D2, D3, D4); the quick fix "Make my own copy" that copies a vanilla placed feature from the user's own game (D3); mcmeta's summary tag as the source (D1).
