@@ -4,6 +4,15 @@
  */
 
 export {
+  COMMAND_DEFINITION_FORMAT,
+  COMMAND_LANG_SCHEMA,
+  COMMAND_LANGUAGE,
+  commandDefinition,
+  commandFeedbackKey,
+  commandPath,
+  lowerCommand,
+} from './command';
+export {
   isRecord,
   ScriptingLoweringError,
   scriptPath,

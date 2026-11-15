@@ -17,6 +17,7 @@ import plugin, {
   blockItemId,
   blocksItemsKinds,
   blocksItemsTemplates,
+  CREATIVE_TAB_KIND,
   MOD_ID_PATTERN,
   machineOf,
   modIdFromNamespace,
@@ -174,8 +175,9 @@ describe('blocks-items templates', () => {
   });
 
   it('covers every kind with a title, description and category', () => {
+    // Creative tab templates come with the command templates (plan B461), not from this plugin.
     expect(new Set(blocksItemsTemplates.map((t) => t.kind))).toEqual(
-      new Set(blocksItemsKinds.map((kind) => kind.id)),
+      new Set(blocksItemsKinds.map((kind) => kind.id).filter((id) => id !== CREATIVE_TAB_KIND)),
     );
     for (const template of blocksItemsTemplates) {
       expect(template.title, template.id).not.toBe('');

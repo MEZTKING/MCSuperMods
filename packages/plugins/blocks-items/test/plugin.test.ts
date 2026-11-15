@@ -51,6 +51,7 @@ const KIND_IDS = [
   'msm:loot_addition',
   'msm:potion',
   'msm:particle',
+  'msm:creative_tab',
 ];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
@@ -79,7 +80,7 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the eight kinds with their schemas, folders and registries', () => {
+  it('contributes the nine kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
@@ -91,10 +92,11 @@ describe('@msm/plugin-blocks-items', () => {
       [MSM_SCHEMA_REFS.lootAddition, 'loot_addition', undefined],
       [MSM_SCHEMA_REFS.potion, 'potion', 'potion'],
       [MSM_SCHEMA_REFS.particle, 'particle', 'particle_type'],
+      [MSM_SCHEMA_REFS.creativeTab, 'creative_tab', 'creative_mode_tab'],
     ]);
   });
 
-  it('contributes its templates, the twenty-two validators and the eight type validators', () => {
+  it('contributes its templates, the twenty-three validators and the eight type validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       blocksItemsTemplates.map((t) => t.id),
     );
@@ -121,6 +123,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.potion-effect',
       'msm.blocks-items.potion-brewing',
       'msm.blocks-items.potion-id',
+      'msm.blocks-items.creative-tab-references',
       'msm.blocks-items.type-components',
       'msm.blocks-items.type-appearance',
       'msm.blocks-items.type-facts',
@@ -140,8 +143,9 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.waterlog-weathering-types',
       'msm.blocks-items.weathering',
       'msm.blocks-items.item-inventory',
+      'msm.blocks-items.creative-tab-icon',
     ]);
-    expect(blocksItemsValidators).toHaveLength(22);
+    expect(blocksItemsValidators).toHaveLength(23);
   });
 
   it('rejects unsafe ids and non-object data', () => {

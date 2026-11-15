@@ -1,0 +1,42 @@
+[
+  {
+    "contents": {
+      "arguments": [
+        {
+          "name": "at",
+          "type": "position"
+        },
+        {
+          "name": "corner",
+          "type": "block_position"
+        },
+        {
+          "name": "with",
+          "type": "block"
+        },
+        {
+          "name": "reward",
+          "optional": true,
+          "type": "item"
+        }
+      ],
+      "event": "built",
+      "events": {
+        "built": {
+          "actions": [
+            {
+              "state": "minecraft:stone",
+              "type": "set_block_state"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "name": "build"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/command/build.json",
+    "schema": "msm:command_definition"
+  }
+]

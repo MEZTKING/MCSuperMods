@@ -2,6 +2,7 @@ import { API_VERSION, type ElementKind, type Json } from '@msm/plugin-api';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
+  commandKind,
   lowerScript,
   SCRIPTING_PROBLEM_CODES,
   ScriptingLoweringError,
@@ -29,8 +30,8 @@ describe('@msm/plugin-scripting', () => {
   });
 
   it('contributes msm:script with its schema and folder, without registry or preview', () => {
-    expect(kinds().map((kind) => kind.id)).toEqual(['msm:script']);
-    expect(scriptingKinds).toEqual([scriptKind]);
+    expect(kinds().map((kind) => kind.id)).toEqual(['msm:script', 'msm:command']);
+    expect(scriptingKinds).toEqual([scriptKind, commandKind]);
     expect([
       scriptKind.schema,
       scriptKind.folder,
@@ -64,9 +65,12 @@ describe('@msm/plugin-scripting', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
       scriptingTemplates.map((t) => t.id),
     );
-    expect(plugin.contributes.validators?.map((v) => v.id)).toEqual(
-      scriptingValidators.map((v) => v.id),
-    );
+    expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
+      ...scriptingValidators.map((v) => v.id),
+      'msm.scripting.command-names',
+      'msm.scripting.command-arguments',
+      'msm.scripting.command-actions',
+    ]);
     expect(SCRIPTING_PROBLEM_CODES).toEqual([
       'scripting.unknown-handler',
       'scripting.duplicate-handler',

@@ -1,0 +1,67 @@
+[
+  {
+    "contents": {
+      "aliases": [
+        "mt"
+      ],
+      "arguments": [
+        {
+          "max": 64,
+          "min": 1,
+          "name": "count",
+          "type": "integer"
+        },
+        {
+          "max": 2.5,
+          "min": 0,
+          "name": "speed",
+          "type": "number"
+        },
+        {
+          "name": "mode",
+          "type": "word"
+        },
+        {
+          "name": "loud",
+          "type": "boolean"
+        },
+        {
+          "name": "who",
+          "type": "player"
+        },
+        {
+          "name": "crowd",
+          "type": "players"
+        },
+        {
+          "name": "thing",
+          "optional": true,
+          "type": "entity"
+        },
+        {
+          "name": "message",
+          "optional": true,
+          "type": "text"
+        }
+      ],
+      "feedback": "demo.tools.done",
+      "format": 1,
+      "function": "demo:admin/tools",
+      "name": "mytools",
+      "permission": 2
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/command/admin/tools.json",
+    "schema": "msm:command_definition"
+  },
+  {
+    "contents": {
+      "demo.tools.done": "Tools handed out."
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

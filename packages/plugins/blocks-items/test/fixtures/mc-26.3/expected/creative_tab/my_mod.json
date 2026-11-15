@@ -1,0 +1,21 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "icon": "minecraft:diamond"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/creative_tab/my_mod.json",
+    "schema": "msm:creative_tab_definition"
+  },
+  {
+    "contents": {
+      "itemGroup.demo.my_mod": "My mod"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

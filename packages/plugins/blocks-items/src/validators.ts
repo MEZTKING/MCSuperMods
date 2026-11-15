@@ -110,6 +110,7 @@ import {
   MOD_KIND,
   POTION_KIND,
 } from './kinds';
+import { CREATIVE_TAB_KIND } from './kinds/creative-tab';
 import { blockItemId } from './lowering/block-item';
 import { rangedPullOf } from './lowering/item';
 import { isRecord } from './lowering/paths';
@@ -165,6 +166,7 @@ export const BLOCKS_ITEMS_PROBLEM_CODES = Object.freeze([
   'blocks-items.potion-duplicate-brewing',
   'blocks-items.potion-id-collision',
   'blocks-items.potion-needs-jar',
+  'blocks-items.creative-tab-unknown',
 ] as const);
 
 /** The code of the app-side texture warning (ADR 0059 D4). */
@@ -1292,6 +1294,48 @@ function potionIdCollisions(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+/** The `creative_tab` fields of an item, a block's item and an entity's spawn egg. */
+function creativeTabReferences(element: Element): { tab: string; path: string }[] {
+  const data = dataOf(element);
+  let holder: JsonObject | undefined;
+  let path: string;
+  if (element.kind === ITEM_KIND) {
+    holder = data;
+    path = pointer('creative_tab');
+  } else if (element.kind === BLOCK_KIND) {
+    holder = record(data.item);
+    path = pointer('item', 'creative_tab');
+  } else if (element.kind === ENTITY_KIND) {
+    holder = record(data.spawn_egg);
+    path = pointer('spawn_egg', 'creative_tab');
+  } else {
+    return [];
+  }
+  const tab = holder?.creative_tab;
+  return typeof tab === 'string' && tab.length > 0 ? [{ tab, path }] : [];
+}
+
+function unknownCreativeTabs(elements: readonly Element[]): Problem[] {
+  const tabs = new Set<string>(
+    elements.filter((element) => element.kind === CREATIVE_TAB_KIND).map((element) => element.id),
+  );
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    for (const { tab, path } of creativeTabReferences(element)) {
+      const id = namespaced(tab);
+      if (id.startsWith('minecraft:') || tabs.has(id)) continue;
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.creative-tab-unknown',
+        elementId: element.id,
+        path,
+        message: `No creative tab "${tab}" is made in this project, so the game lists this in no tab. Make the tab, or pick another one.`,
+      });
+    }
+  }
+  return problems;
+}
+
 const DEFINITION_KINDS = [BLOCK_KIND, ITEM_KIND] as const;
 const EVENT_KINDS = [BLOCK_KIND, ITEM_KIND, EFFECT_KIND] as const;
 
@@ -1411,5 +1455,10 @@ export const blocksItemsValidators: readonly ProjectValidator[] = Object.freeze(
     id: 'msm.blocks-items.potion-id',
     kinds: [POTION_KIND],
     validate: ({ elements }) => potionIdCollisions(elements),
+  },
+  {
+    id: 'msm.blocks-items.creative-tab-references',
+    kinds: [BLOCK_KIND, ITEM_KIND, ENTITY_KIND, CREATIVE_TAB_KIND],
+    validate: ({ elements }) => unknownCreativeTabs(elements),
   },
 ] satisfies ProjectValidator[]);

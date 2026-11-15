@@ -1,13 +1,15 @@
 /**
  * `@msm/plugin-scripting`: built-in MSM plugin for runtime scripts (ADRs 0031, 0032): the
- * `msm:script` kind and its lowering to `msm/<ns>/script/<path>.ts`, the `scripting.*` project
- * validators, the "New element" templates, and the script API description with its typings
- * generator.
+ * `msm:script` kind and its lowering to `msm/<ns>/script/<path>.ts`, the `msm:command` kind
+ * (ADR 0096 D1) and its lowering to `msm/<ns>/command/<path>.json`, the `scripting.*` and
+ * `commands.*` project validators, the "New element" templates, and the script API description
+ * with its typings generator.
  */
 import { definePlugin } from '@msm/plugin-api';
 import { scriptingKinds } from './kinds';
 import { scriptingTemplates } from './templates';
 import { scriptingValidators } from './validators';
+import { commandValidators } from './validators-commands';
 
 export * from './api/index';
 export * from './kinds';
@@ -20,6 +22,14 @@ export {
   SCRIPTING_PROBLEM_CODES,
   scriptingValidators,
 } from './validators';
+export {
+  COMMAND_NAME_PATTERN,
+  COMMAND_PROBLEM_CODES,
+  type CommandLiteral,
+  commandLiterals,
+  commandValidators,
+  RANGED_ARGUMENT_TYPES,
+} from './validators-commands';
 
 export default definePlugin({
   id: 'msm.scripting',
@@ -27,6 +37,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...scriptingKinds],
     elementTemplates: [...scriptingTemplates],
-    validators: [...scriptingValidators],
+    validators: [...scriptingValidators, ...commandValidators],
   },
 });

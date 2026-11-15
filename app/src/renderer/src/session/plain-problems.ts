@@ -491,6 +491,41 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) => `${t} is left out of the Java project, which has no part to run it.`,
   ),
 
+  // Commands and creative tabs (ADR 0096) ----------------------------------------------------
+  'commands.bad-name': entry(
+    (t) => `${t} has a name with letters it cannot use. Use small letters, digits and _ only.`,
+  ),
+  'commands.name-clash': entry(
+    (t) => `${t} has a name that Minecraft or another of your commands already uses. Pick another.`,
+  ),
+  'commands.optional-not-last': entry(
+    (t) => `${t} has a word you must type after one you may leave out. Put the optional ones last.`,
+  ),
+  'commands.text-not-last': entry(
+    (t) => `${t} has a "rest of the line" text that is not last. Move it to the end.`,
+  ),
+  'commands.range-not-number': entry(
+    (t) => `${t} has a lowest or highest value on something that is not a number.`,
+  ),
+  'commands.min-above-max': entry((t) => `${t} has a lowest value above its highest value.`),
+  'commands.function-and-event': entry(
+    (t) => `${t} runs both a function and an event. Keep one of them.`,
+  ),
+  'commands.unknown-event': entry((t) => `${t} runs an event that is not there any more.`),
+  'commands.nothing-to-run': entry((t) => `${t} does nothing yet. Give it something to do.`),
+  'commands.runs-as-player': entry(
+    (t) => `Every player can use ${t}, and what it runs has operator rights.`,
+  ),
+  'commands.raw-text': entry(
+    (t) => `${t} passes typed text on as it is, so a " typed by a player can break it.`,
+  ),
+  'blocks-items.creative-tab-unknown': entry(
+    (t) => `${t} goes in a creative tab that is not in your mod. Make the tab or pick another.`,
+  ),
+  'blocks-items.creative-tab-icon-unknown': entry(
+    (t) => `The creative tab ${t} shows a picture of something that does not exist. Pick another.`,
+  ),
+
   // Play and Share my mod ------------------------------------------------------------------
   'export.no-fabric-target': entry(
     () => 'This mod is for a Minecraft without Fabric, so it cannot be played or shared as a mod.',

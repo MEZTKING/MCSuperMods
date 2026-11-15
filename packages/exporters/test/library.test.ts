@@ -1709,10 +1709,10 @@ function typeCheck(script: string): string[] {
 }
 
 /**
- * Kinds registered before their per-kind example exists; empty since the particle examples
- * (ADR 0081 D5, B354). A new kind may wait here only until its library brief lands.
+ * Kinds registered before their per-kind example exists. A new kind may wait here only until
+ * its library brief lands: commands and creative tabs (ADR 0096, B456) until B461.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = ['msm:command', 'msm:creative_tab'];
 
 // Tests --------------------------------------------------------------------------------------
 

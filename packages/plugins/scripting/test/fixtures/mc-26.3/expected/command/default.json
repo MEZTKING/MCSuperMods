@@ -1,0 +1,33 @@
+[
+  {
+    "contents": {
+      "event": "greet",
+      "events": {
+        "greet": {
+          "actions": [
+            {
+              "sound": "minecraft:block.note_block.chime",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "feedback": "command.demo.hello.feedback",
+      "format": 1,
+      "name": "hello"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/command/hello.json",
+    "schema": "msm:command_definition"
+  },
+  {
+    "contents": {
+      "command.demo.hello.feedback": "Hello!"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

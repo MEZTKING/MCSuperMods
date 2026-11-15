@@ -11,6 +11,7 @@ import {
   BLOCK_TYPE_PROBLEM_CODES,
   BLOCKS_ITEMS_PROBLEM_CODES,
   CONTAINER_PROBLEM_CODES,
+  CREATIVE_TAB_PROBLEM_CODES,
   FURNITURE_PROBLEM_CODES,
   INVENTORY_PROBLEM_CODES,
   PARTICLE_PROBLEM_CODES,
@@ -21,6 +22,7 @@ import {
 import { CONTROLS_PROBLEM_CODES } from '@msm/plugin-controls';
 import { ENTITIES_PROBLEM_CODES, VEHICLE_PROBLEM_CODES } from '@msm/plugin-entities';
 import { RULES_PROBLEM_CODES } from '@msm/plugin-rules';
+import { COMMAND_PROBLEM_CODES } from '@msm/plugin-scripting';
 import { describe, expect, it } from 'vitest';
 import {
   missingPictureOf,
@@ -52,6 +54,8 @@ const BEGINNER_CODES: readonly string[] = [
   ...INVENTORY_PROBLEM_CODES,
   ...PLANT2_PROBLEM_CODES,
   ...FURNITURE_PROBLEM_CODES,
+  ...CREATIVE_TAB_PROBLEM_CODES,
+  ...COMMAND_PROBLEM_CODES,
   ...ENTITIES_PROBLEM_CODES,
   ...VEHICLE_PROBLEM_CODES,
   ...CONTROLS_PROBLEM_CODES,

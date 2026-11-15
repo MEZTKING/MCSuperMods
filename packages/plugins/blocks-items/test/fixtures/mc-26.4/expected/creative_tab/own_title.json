@@ -1,0 +1,22 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "icon": "minecraft:iron_pickaxe",
+      "title": "example.tab.tools"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/example/creative_tab/tools.json",
+    "schema": "msm:creative_tab_definition"
+  },
+  {
+    "contents": {
+      "example.tab.tools": "Tools"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

@@ -5333,3 +5333,19 @@ Decisions
 
 Next
 - B416 sends and receives `HudPayload`; B417 reads `HeldKeys.isHeld(player, RuntimeKey.FIRE.id())` or a `KeyBinds.KeyListener`; B418 reads `RuntimeKeys.isFireDown()` and the others; B421 adds the script events `key.pressed` and `key.released` through `KeyBinds.addListener`.
+
+## 2026-11-15 — executor — B456 command and creative tab kinds
+
+**What**
+- `@msm/plugin-scripting`: kind `msm:command` (folder `command`, no registry; default `/hello`, an event that plays a chime and says "Hello!"), lowered by `lowering/command.ts` to `msm/<ns>/command/<path>.json` and, with `feedback_text`, the key `feedback` names (default `command.<ns>.<path>.feedback`, `/` written as `.`; lowering sets `feedback` to it when the element names none) in `en_us`. Validators in `validators-commands.ts` (`msm.scripting.command-names`, `-arguments`, `-actions`), codes `COMMAND_PROBLEM_CODES`: `commands.bad-name`, `name-clash` (vanilla names from `TargetFacts.commands`, skipped without them; other project commands; repeats; for names and aliases), `optional-not-last`, `text-not-last`, `range-not-number`, `min-above-max`, `function-and-event`, `unknown-event`, `nothing-to-run` (error, a warning when a script subscribes to `command` and names it), `runs-as-player` (info), `raw-text` (info: a `text` argument passed to a function, S8's raw macro text).
+- `@msm/plugin-blocks-items`: kind `msm:creative_tab` (`kinds/creative-tab.ts`, folder `creative_tab`, registry `creative_mode_tab`; default a diamond icon called "My mod"), lowered by `lowering/creative-tab.ts` to `msm/<ns>/creative_tab/<path>.json` and, with `display_name`, the title key (`title`, else `itemGroup.<ns>.<path>`). `blocks-items.creative-tab-unknown` (warning, in `validators.ts`, validator `msm.blocks-items.creative-tab-references`): an item, block item or spawn egg naming a non-`minecraft` tab no project tab makes. `blocks-items.creative-tab-icon-unknown` (warning, `validators-creative-tabs.ts`, `msm.blocks-items.creative-tab-icon`): an icon that is no project item (items, block items, spawn eggs, vehicles; `projectItemIds`) or vanilla item.
+- Plain words for the thirteen new codes in `app/src/renderer/src/session/plain-problems.ts`; its test now lists `COMMAND_PROBLEM_CODES` and `CREATIVE_TAB_PROBLEM_CODES`.
+- Tests: `scripting/test/commands.test.ts` (3 goldens per target, one test per code on both targets, the default with zero problems), `blocks-items/test/creative-tabs.test.ts` (4 goldens per target plus the kind default golden of `lowering.golden.test.ts`, a project joining project tabs with zero schema and validator problems, one test per code); `packages/exporters/test/command-names.test.ts` now checks the kind default and passes.
+
+**Decisions**
+- The command check of B443's list became separate codes (bad names, `text` last, min/max on numbers, both `function` and `event`) plus `unknown-event` and `min-above-max`, which the runtime would otherwise refuse at load.
+- Both tab codes overlap `schema.unknown-id` for project ids, as `berry-unknown` does; vanilla tab ids are left to the schema.
+- Creative tab templates and both kinds' examples wait for B461: the blocks-items template coverage test skips `msm:creative_tab` and the library test's `KINDS_AWAITING_EXAMPLES` lists both kinds.
+
+**Next**
+- B454: the same key conventions, argument names `[a-z0-9_]`, and whether `"`/`\` in `text` are escaped (then drop `commands.raw-text`). B460: Studios and ElementSidebar labels. B461: templates and examples, then empty `KINDS_AWAITING_EXAMPLES`.

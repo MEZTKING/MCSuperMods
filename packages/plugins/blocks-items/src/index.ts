@@ -4,8 +4,8 @@
  * content (ADR 0060), potions (ADR 0063), portal blocks (ADR 0077), particle types (ADR 0080),
  * waterlogging and weathering (ADR 0094 D7 to D9) and item inventories and bundles (ADR 0095):
  * the `msm:block`, `msm:item`, `msm:effect`, `msm:mod`, `msm:biome_addition`,
- * `msm:loot_addition`, `msm:potion` and `msm:particle` kinds, their
- * lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
+ * `msm:loot_addition`, `msm:potion`, `msm:particle` and `msm:creative_tab` (ADR 0096) kinds,
+ * their lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
  * project validators and the "New element" templates.
  */
 import { definePlugin } from '@msm/plugin-api';
@@ -13,6 +13,7 @@ import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
 import { containerValidators } from './validators-containers';
+import { creativeTabValidators } from './validators-creative-tabs';
 import { furnitureValidators } from './validators-furniture';
 import { inventoryValidators } from './validators-inventory';
 import { particleValidators } from './validators-particles';
@@ -22,6 +23,7 @@ import { blockTypeValidators } from './validators-types';
 import { weatheringValidators } from './validators-weathering';
 
 export * from './kinds';
+export * from './kinds/creative-tab';
 export * from './lowering';
 export { blockItemId, blockItemIdOf } from './lowering/block-item';
 export {
@@ -145,6 +147,11 @@ export {
   containerValidators,
   MAX_MACHINE_TICKS,
 } from './validators-containers';
+export {
+  CREATIVE_TAB_PROBLEM_CODES,
+  creativeTabValidators,
+  projectItemIds,
+} from './validators-creative-tabs';
 export { FURNITURE_PROBLEM_CODES, furnitureValidators } from './validators-furniture';
 export {
   INVENTORY_CONFLICT_COMPONENTS,
@@ -195,6 +202,7 @@ export default definePlugin({
       ...furnitureValidators,
       ...weatheringValidators,
       ...inventoryValidators,
+      ...creativeTabValidators,
     ],
   },
 });
