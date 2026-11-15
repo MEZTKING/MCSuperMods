@@ -5597,3 +5597,19 @@ Next
 
 **Next**
 - B455: `ItemRef.contents` reads `minecraft:container` (bags) or `minecraft:bundle_contents` (bundles). B457: the eject needs the guard as written here (four menus, `BagGuard`, the death hook). B462 and B463: follow `item/bag_*`. `engine-mod/CLAUDE.md` should list `registry/inventory/` at the next status update.
+## 2026-11-15 — executor — B465 e2e paths (vanilla parity batch 1)
+
+**What**
+- `app/e2e/vanilla-blocks-path.spec.ts`: a new install in Very easy, a new mod by name; "Make a block" shows the picks in plain words and runs the Lights and Copper set flows with their defaults (Things to fix: nothing to fix, no tips; My things lists both sets). In Advanced a simple block becomes a sign in the Block Studio: wood type (oak filled in by the type change, then cherry), board, writing screen and item pictures typed, the `_wall` companion named; the writing screen picture is copied to `textures/gui/signs/<path>.png` byte for byte. The copper block's Weathering section shows its next stage and waxed copy. Back in Very easy: nothing to fix, no tips.
+- `app/e2e/backpack-path.spec.ts`: "Make an item" shows "A bag that holds things" and runs the Backpack flow with its defaults (nothing to fix, no tips); the Item Studio's Inventory section shows the bag (chest, 3 rows, right-click), four rows and sneak-use are saved; a bundle from the "Quiver-like bundle" template shows its three pictures. Back in Very easy: nothing to fix, no tips.
+- `app/e2e/commands-path.spec.ts`: "Make your mod do something" runs the Custom command and Creative tab flows with their defaults (nothing to fix, no tips); a command from the "Help command" template is renamed in the Command Studio, gets two values (a whole number 1 to 64, an optional player; preview `/gift_box <amount> [who]`), a new event with a Heal action picked under "What it does" and a message back; the saved file holds all of it. Back in Very easy: nothing to fix, no tips.
+- Runs: each of the three passes alone under `xvfb-run -a` (4 to 6 s each); the full e2e suite took 10 min 11 s: 55 passed, 2 skipped (the B427 placeholders), 1 failed (`launchers-path`, `install-target` not visible after opening the install menu; it passes alone in 7 s, so it looks flaky under the full run).
+
+**Decisions**
+- No Rules command trigger step: the Rules catalogue has no trigger for commands, so the path asserts the Command Studio shows no Rules section.
+- No sign text is typed: the words on a sign are written by players in the game's own sign screen and the format has no text field; "typed" is the sign's fields (wood type and pictures).
+- "Zero problems" is asserted as Things to fix showing nothing to fix and no Tips (warnings and info included), on every set of defaults and again after the Studio edits.
+
+**Next**
+- My things lists no card for a command (`msm:command` is not in `THING_KINDS` in `app/src/renderer/src/components/home/things.ts`), so a command made in Very easy cannot be found there; a lone creative tab neither. Orchestrator call (ADR 0083 D2 card kinds); the commands path asserts only the tab's card for now.
+- `launchers-path` was flaky in the full run; worth a look if it repeats in CI.
