@@ -32,6 +32,7 @@ const PLUGIN_FOLDERS: Readonly<Record<string, string>> = {
   'msm.entities': 'entities',
   'msm.scripting': 'scripting',
   'msm.rules': 'rules',
+  'msm.controls': 'controls',
 };
 
 /** Imports a workspace module by its path from the repository root. */

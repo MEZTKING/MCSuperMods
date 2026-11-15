@@ -82,6 +82,7 @@ export const TRIGGER_SPECS: readonly TriggerSpec[] = Object.freeze([
   spec('block', c('msm:machine', 'on_start'), false, 'the machine starts a recipe'),
   spec('block', c('msm:machine', 'on_finish'), false, 'the machine makes an output'),
   spec('block', ['on_travel'], false, 'something travels through the portal'),
+  spec('block', ['on_eat'], false, 'a player eats a slice of the cake'),
   // Items (ADR 0025, 0056, 0061).
   spec('item', c('msm:on_use'), true, 'a player uses the item', {
     cooldown: { field: 'cooldown_ticks', default: 0 },
@@ -109,6 +110,8 @@ export const TRIGGER_SPECS: readonly TriggerSpec[] = Object.freeze([
   spec('item', c('msm:while_worn'), false, 'the item is worn', {
     interval: { field: 'interval_ticks', default: 20 },
   }),
+  spec('item', c('msm:item_inventory', 'on_open'), false, 'a player opens the bag'),
+  spec('item', c('msm:item_inventory', 'on_close'), false, 'a player closes the bag'),
   // Mobs (ADR 0028, 0061, 0070, 0071).
   spec('entity', c('msm:attack', 'on_attack'), false, 'the mob hits something'),
   spec('entity', c('msm:on_hurt'), false, 'the mob is hurt'),
