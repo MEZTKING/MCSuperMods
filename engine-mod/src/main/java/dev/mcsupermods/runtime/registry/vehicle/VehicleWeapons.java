@@ -201,7 +201,7 @@ public final class VehicleWeapons {
         weapon.ammo().ifPresent(a -> setAmmo(index, ammo(index) - a.perShot()));
         vehicle.setReadyAt(index, level.getGameTime() + weapon.cooldownTicks());
         weapon.sound().flatMap(BuiltInRegistries.SOUND_EVENT::getOptional).ifPresent(sound ->
-                level.playSound(null, start.x, start.y, start.z, sound, SoundSource.NEUTRAL, 1, 1));
+                level.playSound(shooter, start.x, start.y, start.z, sound, SoundSource.NEUTRAL, 1, 1));
         if (weapon.recoil() > 0) {
             Vec3 back = new Vec3(-direction.x, 0, -direction.z);
             if (back.lengthSqr() > 1e-8) {

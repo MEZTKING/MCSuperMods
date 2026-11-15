@@ -1,0 +1,19 @@
+{
+  "animations": {
+    "animation.vh_body.moving": {
+      "animation_length": 0.5,
+      "bones": {
+        "hull": { "position": { "0.0": [0, 0, 0], "0.25": [0, 0.25, 0], "0.5": [0, 0, 0] } }
+      },
+      "loop": true
+    },
+    "idle": {
+      "animation_length": 2.0,
+      "bones": {
+        "turret": { "position": { "0.0": [0, 0, 0], "1.0": [0, 0.5, 0], "2.0": [0, 0, 0] } }
+      },
+      "loop": true
+    }
+  },
+  "format_version": "1.8.0"
+}

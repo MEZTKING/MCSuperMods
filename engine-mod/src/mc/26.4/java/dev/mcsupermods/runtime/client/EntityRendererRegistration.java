@@ -7,8 +7,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
 /**
- * Version seam (ADR 0038 D2): registers an entity renderer provider for a type. Public for {@code client.vehicle}
- * (B412's placeholder, B418's renderer).
+ * Version seam (ADR 0038 D2): registers an entity renderer provider for a type. Public for {@code client.vehicle}:
+ * {@code VehicleClient} registers {@code MsmVehicleRenderer} for every vehicle type here.
  *
  * <p>26.4: entity renderer providers are the built-in client registry
  * {@code BuiltInClientRegistries.ENTITY_RENDERER}, and {@code EntityRenderers.register} takes it as the first

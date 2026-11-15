@@ -20,27 +20,27 @@
         },
         {
           "cubes": [
-            { "origin": [-1, 12, 6], "size": [2, 2, 12], "uv": [48, 32] }
+            { "origin": [-1, 12, -18], "size": [2, 2, 12], "uv": [48, 32] }
           ],
           "name": "barrel",
           "parent": "turret",
-          "pivot": [0, 13, 6]
+          "pivot": [0, 13, -6]
         },
         {
           "cubes": [
-            { "origin": [-12, 0, -10], "size": [2, 4, 4], "uv": [0, 50] }
+            { "origin": [-12, 0, 6], "size": [2, 4, 4], "uv": [0, 50] }
           ],
           "name": "wheel_left",
           "parent": "hull",
-          "pivot": [-11, 2, -8]
+          "pivot": [-11, 2, 8]
         },
         {
           "cubes": [
-            { "origin": [10, 0, -10], "size": [2, 4, 4], "uv": [12, 50] }
+            { "origin": [10, 0, 6], "size": [2, 4, 4], "uv": [12, 50] }
           ],
           "name": "wheel_right",
           "parent": "hull",
-          "pivot": [11, 2, -8]
+          "pivot": [11, 2, 8]
         },
         {
           "cubes": [

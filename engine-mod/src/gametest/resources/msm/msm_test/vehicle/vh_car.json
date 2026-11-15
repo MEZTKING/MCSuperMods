@@ -1,0 +1,36 @@
+{
+  "camera": {
+    "distance": 6
+  },
+  "engine": {
+    "sound": "minecraft:entity.minecart.riding"
+  },
+  "exhaust": {
+    "every_ticks": 2,
+    "offset": [0, 0.4, -0.9],
+    "particle": "minecraft:smoke"
+  },
+  "format": 1,
+  "model": {
+    "animations": "msm_test:entity/vh_body",
+    "geometry": "msm_test:entity/vh_body",
+    "paints": [
+      {
+        "dye": "minecraft:red_dye",
+        "id": "red",
+        "texture": "msm_test:entity/vh_paint"
+      }
+    ],
+    "texture": "msm_test:entity/golem"
+  },
+  "movement": {
+    "mode": "ground"
+  },
+  "parts": {
+    "rotors": ["rotor"],
+    "steering": ["wheel_left", "wheel_right"],
+    "wheel_radius": 0.125,
+    "wheels": ["wheel_left", "wheel_right"]
+  },
+  "size": [1.5, 0.75]
+}
