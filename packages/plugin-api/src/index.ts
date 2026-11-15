@@ -65,6 +65,7 @@ export type { Problem, ProblemReporter, ProblemSeverity } from './problems';
 export type {
   BiomeAttributeFacts,
   BlockFacts,
+  ControlFacts,
   DataFolderKey,
   DefinitionInput,
   DevFacts,
@@ -83,10 +84,12 @@ export type {
   ParticleFacts,
   RangedPullFacts,
   ResourceFolderKey,
+  RuntimeKeyFacts,
   Target,
   TargetChannel,
   TargetFacts,
   VanillaToolStats,
+  VehicleFacts,
   WorldgenFacts,
 } from './target';
 export { API_VERSION } from './version';

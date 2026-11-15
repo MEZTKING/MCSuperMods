@@ -341,6 +341,10 @@ describe('loadExternalPlugins', () => {
     expect('javaProject' in facts).toBe(false);
     expect(() => structuredClone(facts)).not.toThrow();
     expect(toTargetFacts(withHooks)).toBe(facts);
+    // Data fields are copied, the 1.16.0 control and vehicle facts included.
+    expect(facts.controls).toEqual(target.controls);
+    expect(facts.vehicles).toEqual(target.vehicles);
+    expect(facts.controls?.runtimeKeys.second).toBe('key.keyboard.v');
   });
 });
 

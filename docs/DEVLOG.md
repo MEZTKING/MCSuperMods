@@ -5002,3 +5002,21 @@ Decisions
 
 Next
 - Show the user the eight ADRs' vetoable defaults; then run B440 (spike, second engine-mod executor beside vehicles' B406) and B442 (worldgen order); B441 after vehicles' B408.
+
+## 2026-11-15 — executor — B410 plugin API 1.16.0 and target facts
+
+What
+- Plugin API 1.16.0 (additive; `API_VERSION`, package version, CHANGELOG section): `TargetFacts.controls?: ControlFacts` (`keyNames`, `unboundKey`, `vanillaKeys`, `vanillaCombinations`, `keyboardNamesByCode`, `mouseNamesByCode`, `runtimeKeys: RuntimeKeyFacts` with `fire`, `second`, `horn`, `descend`) and `TargetFacts.vehicles?: VehicleFacts` (`modes`, `maxSpeed`), with type tests. Built-ins keep `^1.0.0`.
+- Targets: `controls` on mc-26.3 and mc-26.4 in a new `src/controls.ts` per target, generated from B406's dumps in `docs/reference/vanilla-keys/` (vanilla controls per target: 26.3 `key.socialInteractions`, 26.4 `key.otherPlayers`); `vehicles` with the five modes of ADR 0090 D3 and `maxSpeed` 3. Each target's test compares every list with its dump; `@msm/targets` tests that no runtime key default is a vanilla plain binding on either target, and that `targetFacts` carries both new fields. `CHANGES.md` rows on both targets.
+- Runtime key defaults: fire R, second V, horn H, descend Left Alt. G (the plan's default for the second weapon) is vanilla `key.quickActions`.
+- App: `toTargetFacts` (external plugins) copies `controls` and `vehicles`; the AI helper's `target_facts` gives `controls` without the two code tables, and `vehicles`. Tests for both.
+- `packages/core/test/registry.test.ts` expects `API_VERSION` 1.16.0.
+- Checks: plugin-api 84, mc-26.3 193, `@msm/targets` 42, core 206, the two app test files (41) green; mc-26.4 103 of 104 (the failing `migrate.test.ts` sample worldgen case fails on the base commit too: the fixture no longer has `minecraft:block_match` since 184d9bb); `pnpm lint` (with check-deps) and `pnpm typecheck` green.
+
+Decisions
+- `key.debug.*` controls on another key than the debug modifier (F3) are F3 combinations: listed in `vanillaCombinations` and not counted as clashes (B406 did not measure whether they also take the key alone). H (F3+H) and V (F3+V) are therefore free.
+- Code tables are arrays indexed by code; a dumped name the game cannot parse back (`key.keyboard.130`, `key.mouse.0`, 9, 10: not in `keyNames`) is the unbound name. Codes 1 to 3 keep the dump's digit names (HID error codes; no keyboard sends them).
+- `modes` keep the ADR's order (ground, water, amphibious, air, hover) rather than sorted, for Studio menus.
+
+Next
+- B411 reads `runtimeKeys` for its `RuntimeKeys` defaults; B413 validates against `keyNames`, `vanillaKeys` and `vanillaCombinations`; B414 against `vehicles`; B420 maps `KeyboardEvent.code` to a HID usage id and then `keyboardNamesByCode`.

@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import type {
   BlockFacts,
+  ControlFacts,
   DataFolderKey,
   DefinitionInput,
   DevFacts,
@@ -33,11 +34,13 @@ import type {
   ProjectExpander,
   ProjectValidator,
   ResourceFolderKey,
+  RuntimeKeyFacts,
   Target,
   TargetChannel,
   TargetFacts,
   ValidationInput,
   ValidationRegistry,
+  VehicleFacts,
   WorldgenFacts,
 } from '../src/index';
 import { testTarget } from './target-fixture';
@@ -458,6 +461,41 @@ describe('0.8.0 additions', () => {
     expect(facts.gameRules.keepInventory).toBe('keep_inventory');
     // A 1.14.0-shaped target without dev facts stays assignable.
     expect(testTarget.dev).toBeUndefined();
+  });
+
+  it('carries optional control and vehicle facts on a target (1.16.0)', () => {
+    expectTypeOf<TargetFacts['controls']>().toEqualTypeOf<ControlFacts | undefined>();
+    expectTypeOf<TargetFacts['vehicles']>().toEqualTypeOf<VehicleFacts | undefined>();
+    expectTypeOf<ControlFacts['runtimeKeys']>().toEqualTypeOf<RuntimeKeyFacts>();
+    expectTypeOf<ControlFacts['vanillaKeys']>().toEqualTypeOf<Readonly<Record<string, string>>>();
+    expectTypeOf<ControlFacts['keyboardNamesByCode']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<VehicleFacts['maxSpeed']>().toEqualTypeOf<number>();
+    const controls: ControlFacts = {
+      keyNames: ['key.keyboard.a', 'key.keyboard.r', 'key.keyboard.unknown', 'key.mouse.left'],
+      unboundKey: 'key.keyboard.unknown',
+      vanillaKeys: { 'key.left': 'key.keyboard.a', 'key.debug.reloadChunk': 'key.keyboard.a' },
+      vanillaCombinations: ['key.debug.reloadChunk'],
+      keyboardNamesByCode: [
+        'key.keyboard.unknown',
+        'key.keyboard.unknown',
+        'key.keyboard.unknown',
+        'key.keyboard.unknown',
+        'key.keyboard.a',
+      ],
+      mouseNamesByCode: ['key.mouse.0', 'key.mouse.left'],
+      runtimeKeys: {
+        fire: 'key.keyboard.r',
+        second: 'key.keyboard.v',
+        horn: 'key.keyboard.h',
+        descend: 'key.keyboard.left.alt',
+      },
+    };
+    const vehicles: VehicleFacts = { modes: ['ground', 'air'], maxSpeed: 3 };
+    expect(controls.keyboardNamesByCode[4]).toBe('key.keyboard.a');
+    expect(vehicles.maxSpeed).toBe(3);
+    // A 1.15.0-shaped target without control or vehicle facts stays assignable.
+    expect(testTarget.controls).toBeUndefined();
+    expect(testTarget.vehicles).toBeUndefined();
   });
 
   it('types project expanders and element patches (1.15.0)', async () => {

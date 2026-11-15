@@ -3,6 +3,7 @@
  */
 
 import type { Target } from '@msm/plugin-api';
+import { controls } from './controls';
 import { javaProjectGenerator } from './java-project/index';
 
 export const target: Target = {
@@ -589,6 +590,18 @@ export const target: Target = {
       'worldgen/world_preset',
       'zombie_nautilus_variant',
     ],
+  },
+  // controls (ADR 0088 D9; plugin API 1.16.0): key names, vanilla's default bindings, the
+  // keyboard and mouse code tables and the runtime's vehicle keys, from B406's client dump
+  // (`./controls.ts`).
+  controls,
+  // vehicles (ADR 0090 D3, D4, D13; plugin API 1.16.0): the five movement modes in the ADR's
+  // order, and the speed cap in blocks a tick. B406 (2026-11-14) measured vanilla's move-vehicle
+  // check on this version: 0.5 to 5 blocks a tick pass, 8 and more are sometimes refused, so the
+  // cap of 3 holds with room for a packet carrying two steps.
+  vehicles: {
+    modes: ['ground', 'water', 'amphibious', 'air', 'hover'],
+    maxSpeed: 3,
   },
   // Verified 2026-11-05 against maven.fabricmc.net and the FabricMC example mod's 26.3
   // branch (ADR 0027).

@@ -242,6 +242,10 @@ describe('createToolExecutor: read tools', () => {
     expect(value.packFormats).toEqual(fixture.session.target.packFormats);
     expect(value.registries).toContain('item');
     expect(value.mcdocRef).toBeUndefined();
+    // Control facts without the code tables, and the vehicle facts (plugin API 1.16.0).
+    expect(value.controls.runtimeKeys).toEqual(fixture.session.target.controls?.runtimeKeys);
+    expect(value.controls.keyboardNamesByCode).toBeUndefined();
+    expect(value.vehicles).toEqual(fixture.session.target.vehicles);
     ({ value } = await fixture.call('script_api_typings'));
     expect(value.typings).toBe(fixture.session.scriptTypings);
     await fixture.call('create_texture', { namespace: 'demo', path: 'item/ruby', pattern: 'gem' });

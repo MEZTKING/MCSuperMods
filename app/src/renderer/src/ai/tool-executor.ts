@@ -598,6 +598,17 @@ export function createToolExecutor(
       if (target.entities !== undefined) facts.entities = target.entities;
       if (target.particles !== undefined) facts.particles = target.particles;
       if (target.dev !== undefined) facts.dev = target.dev;
+      if (target.controls !== undefined) {
+        // The keyboard and mouse code tables (412 names) are for the Key bind Studio's capture,
+        // not the model: leave them out to keep the answer small.
+        const {
+          keyboardNamesByCode: _keyboard,
+          mouseNamesByCode: _mouse,
+          ...controls
+        } = target.controls;
+        facts.controls = controls;
+      }
+      if (target.vehicles !== undefined) facts.vehicles = target.vehicles;
       return { value: JSON.parse(JSON.stringify(facts)) as unknown };
     },
 

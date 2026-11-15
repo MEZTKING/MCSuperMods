@@ -491,6 +491,43 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       }
     });
 
+    it('has runtime key defaults that are no vanilla plain binding (ADR 0088 D5, D9)', () => {
+      const facts = target.controls;
+      expect(facts).toBeDefined();
+      if (facts === undefined) return;
+      // `key.debug.*` controls on another key than the debug modifier are F3 combinations: they
+      // are listed in `vanillaCombinations` and are not plain bindings, so they do not clash
+      // (decision B410; B406 did not measure whether they also take the key alone).
+      const combinations = new Set(facts.vanillaCombinations);
+      for (const control of combinations) {
+        expect(control, control).toMatch(/^key\.debug\./);
+        expect(facts.vanillaKeys[control], control).not.toBe(
+          facts.vanillaKeys['key.debug.modifier'],
+        );
+      }
+      for (const [name, key] of Object.entries(facts.runtimeKeys)) {
+        expect(facts.keyNames, name).toContain(key);
+        expect(key, name).not.toBe(facts.unboundKey);
+        for (const [control, bound] of Object.entries(facts.vanillaKeys)) {
+          if (combinations.has(control)) continue;
+          expect(bound, `${name} clashes with ${control}`).not.toBe(key);
+        }
+      }
+      for (const name of [...facts.keyboardNamesByCode, ...facts.mouseNamesByCode]) {
+        expect(facts.keyNames, name).toContain(name);
+      }
+      for (const key of Object.values(facts.vanillaKeys))
+        expect(facts.keyNames, key).toContain(key);
+    });
+
+    it('lists vehicle facts (ADR 0090 D13)', () => {
+      expect(target.vehicles?.modes).toEqual(['ground', 'water', 'amphibious', 'air', 'hover']);
+      expect(target.vehicles?.maxSpeed).toBe(3);
+      // Copied by `targetFacts` with the other data fields.
+      expect(targetFacts(target.id)?.controls).toEqual(target.controls);
+      expect(targetFacts(target.id)?.vehicles).toEqual(target.vehicles);
+    });
+
     it('loads its vanilla-mcdoc export through @msm/schemas', async () => {
       const raw = await readVendoredJson(bundle, 'vanillaMcdocSymbols', nodeReadFile);
       const symbols = parseVanillaMcdocSymbols(raw);

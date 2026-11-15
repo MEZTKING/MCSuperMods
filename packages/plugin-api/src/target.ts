@@ -336,6 +336,81 @@ export interface DevFacts {
 }
 
 /**
+ * The default keys of the runtime's own controls (ADR 0088 D5): the key mappings the runtime
+ * registers in its "MSM Vehicles" category when a project has at least one vehicle. Each value
+ * is a name from {@link ControlFacts.keyNames}. Since 1.16.0 (ADR 0088 D9).
+ */
+export interface RuntimeKeyFacts {
+  /** The vehicle's main weapon (a weapon with `key` `fire`). */
+  fire: string;
+  /** The vehicle's second weapon (a weapon with `key` `second`). */
+  second: string;
+  /** The vehicle's horn. */
+  horn: string;
+  /** Going down in a flying or hovering vehicle. */
+  descend: string;
+}
+
+/**
+ * Control facts of a target: the key names the game knows and the defaults of its own
+ * controls, for key bind definitions, the vehicle keys and the Key bind Studio. Dumped from the
+ * running client, never typed from memory. Since 1.16.0 (ADR 0088 D9).
+ */
+export interface ControlFacts {
+  /**
+   * Every valid key name (the game's input constant names), sorted: keyboard keys such as
+   * `key.keyboard.r` and `key.keyboard.left.alt`, mouse buttons such as `key.mouse.left` and
+   * `key.mouse.4`, and {@link ControlFacts.unboundKey}.
+   */
+  keyNames: readonly string[];
+  /** The name of "no key" (an unbound control), for example `key.keyboard.unknown`. */
+  unboundKey: string;
+  /**
+   * Each vanilla control (its translation key, such as `key.jump`) to its default key name.
+   * A control whose default is {@link ControlFacts.unboundKey} has no key. The control names
+   * differ between targets when the game renames a control.
+   */
+  vanillaKeys: Readonly<Record<string, string>>;
+  /**
+   * The vanilla controls of {@link ControlFacts.vanillaKeys} that are pressed together with a
+   * modifier key (the debug key combinations), sorted. Their key pressed alone does something
+   * else, so a default key equal to one of theirs is not a clash.
+   */
+  vanillaCombinations: readonly string[];
+  /**
+   * The key name of each keyboard code, indexed by code from 0 up. Codes are USB HID usage ids
+   * (SDL scancodes: 4 is the A key), not the codes of a browser's `KeyboardEvent.keyCode`; a host
+   * maps a `KeyboardEvent.code` to its usage id and looks the name up here. Unknown codes name
+   * {@link ControlFacts.unboundKey}.
+   */
+  keyboardNamesByCode: readonly string[];
+  /**
+   * The key name of each mouse button code, indexed by code from 0 up. Buttons start at 1 (the
+   * left button); 0 is not a button.
+   */
+  mouseNamesByCode: readonly string[];
+  /** The default keys of the runtime's own vehicle controls. */
+  runtimeKeys: RuntimeKeyFacts;
+}
+
+/**
+ * Vehicle facts of a target: what the `msm:vehicle` format and its validators check against.
+ * Since 1.16.0 (ADR 0090 D13).
+ */
+export interface VehicleFacts {
+  /**
+   * The movement modes a vehicle may use (ADR 0090 D3), such as `ground` or `air`, in the order
+   * a host shows them.
+   */
+  modes: readonly string[];
+  /**
+   * The highest `max_speed` a vehicle may have, in blocks a tick (ADR 0090 D4): the driver's
+   * client moves the vehicle and the server accepts moves up to about this speed.
+   */
+  maxSpeed: number;
+}
+
+/**
  * Item facts of a target: names the definition format checks against the game's own
  * constants. Since 1.1.0 (ADR 0042 D4).
  */
@@ -696,6 +771,18 @@ export interface TargetFacts {
    * (ADR 0084 D10).
    */
   dev?: DevFacts;
+  /**
+   * Control facts: the key names, vanilla's default bindings, the keyboard and mouse code
+   * tables and the runtime's own vehicle keys. Optional: a target without them skips the checks
+   * that need them, and an external plugin reading them must handle their absence. Since 1.16.0
+   * (ADR 0088 D9).
+   */
+  controls?: ControlFacts;
+  /**
+   * Vehicle facts: the movement modes and the speed cap. Optional: a target without them skips
+   * the checks that need them. Since 1.16.0 (ADR 0090 D13).
+   */
+  vehicles?: VehicleFacts;
 }
 
 /**

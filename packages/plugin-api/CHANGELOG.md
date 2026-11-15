@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.16.0 — 2026-11-15
+
+Control and vehicle facts (ADR 0088 D9, ADR 0090 D13). `API_VERSION` is `1.16.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `TargetFacts.controls?: ControlFacts` with `ControlFacts { keyNames: readonly string[]; unboundKey: string; vanillaKeys: Readonly<Record<string, string>>; vanillaCombinations: readonly string[]; keyboardNamesByCode: readonly string[]; mouseNamesByCode: readonly string[]; runtimeKeys: RuntimeKeyFacts }` and `RuntimeKeyFacts { fire; second; horn; descend }`: the valid key names, the name of "no key", each vanilla control's default key, the vanilla controls pressed with a modifier (the debug combinations, which clash with no plain key), the key name of each keyboard code (USB HID usage ids) and mouse button code, and the default keys of the runtime's own vehicle controls.
+- `TargetFacts.vehicles?: VehicleFacts` with `VehicleFacts { modes: readonly string[]; maxSpeed: number }`: the movement modes a vehicle may use and the highest `max_speed`, in blocks a tick.
+
+### Migration from 1.15.0
+
+None. A plugin that reads `controls` or `vehicles` should declare `^1.16.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
+
 ## 1.15.0 — 2026-11-14
 
 Project expanders and test-in-game facts (ADR 0082 D9, ADR 0084 D10). `API_VERSION` is `1.15.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

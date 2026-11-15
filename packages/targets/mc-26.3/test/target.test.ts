@@ -538,4 +538,92 @@ describe('target mc-26.3', () => {
       expect(Object.keys(registries), folder).toContain(folder);
     }
   });
+
+  it('lists the control facts of the B406 client dump (ADR 0088 D9)', async () => {
+    const dump = (await readJson(
+      '../../../../docs/reference/vanilla-keys/vanilla-keys-26.3.json',
+    )) as {
+      minecraft: string;
+      keyNames: string[];
+      unboundName: string;
+      vanillaKeys: Record<string, string>;
+      keyboardNamesByCode0to400: Record<string, string>;
+      mouseNamesByCode0to10: Record<string, string>;
+    };
+    expect(dump.minecraft).toBe('26.3');
+    const facts = target.controls;
+    expect(facts).toBeDefined();
+    if (facts === undefined) return;
+    expect(facts.keyNames).toEqual(dump.keyNames);
+    expect(facts.unboundKey).toBe(dump.unboundName);
+    expect(facts.vanillaKeys).toEqual(dump.vanillaKeys);
+    expect(Object.keys(facts.vanillaKeys)).toHaveLength(62);
+    // 26.3 `key.socialInteractions` is 26.4 `key.otherPlayers` (B406).
+    expect(facts.vanillaKeys['key.socialInteractions']).toBe('key.keyboard.p');
+    expect(facts.vanillaKeys['key.otherPlayers']).toBeUndefined();
+    // Code tables: the dump, with names the game cannot parse back shown as unbound.
+    const valid = new Set(facts.keyNames);
+    expect(facts.keyboardNamesByCode).toHaveLength(401);
+    facts.keyboardNamesByCode.forEach((name, code) => {
+      const dumped = dump.keyboardNamesByCode0to400[String(code)];
+      expect(name, String(code)).toBe(
+        dumped !== undefined && valid.has(dumped) ? dumped : facts.unboundKey,
+      );
+    });
+    expect(facts.keyboardNamesByCode[4]).toBe('key.keyboard.a');
+    expect(facts.keyboardNamesByCode[21]).toBe('key.keyboard.r');
+    expect(facts.keyboardNamesByCode[226]).toBe('key.keyboard.left.alt');
+    expect(facts.mouseNamesByCode).toHaveLength(11);
+    facts.mouseNamesByCode.forEach((name, code) => {
+      const dumped = dump.mouseNamesByCode0to10[String(code)];
+      expect(name, String(code)).toBe(
+        dumped !== undefined && valid.has(dumped) ? dumped : facts.unboundKey,
+      );
+    });
+    expect(facts.mouseNamesByCode[1]).toBe('key.mouse.left');
+    // The debug combinations: every `key.debug.*` control not on the modifier's own key (F3).
+    const modifier = facts.vanillaKeys['key.debug.modifier'];
+    expect(modifier).toBe('key.keyboard.f3');
+    expect(facts.vanillaCombinations).toEqual(
+      Object.keys(facts.vanillaKeys)
+        .filter(
+          (control) => control.startsWith('key.debug.') && facts.vanillaKeys[control] !== modifier,
+        )
+        .sort(),
+    );
+  });
+
+  it('sets runtime keys no vanilla control uses as a plain key (ADR 0088 D5)', () => {
+    const facts = target.controls;
+    expect(facts?.runtimeKeys).toEqual({
+      fire: 'key.keyboard.r',
+      second: 'key.keyboard.v',
+      horn: 'key.keyboard.h',
+      descend: 'key.keyboard.left.alt',
+    });
+    if (facts === undefined) return;
+    // Debug combinations (F3 plus a key) are not plain bindings and do not clash (decision B410).
+    const combinations = new Set(facts.vanillaCombinations);
+    const plain = Object.entries(facts.vanillaKeys).filter(
+      ([control, key]) => !combinations.has(control) && key !== facts.unboundKey,
+    );
+    const defaults = Object.values(facts.runtimeKeys);
+    expect(new Set(defaults).size).toBe(defaults.length);
+    for (const key of defaults) {
+      expect(facts.keyNames, key).toContain(key);
+      expect(
+        plain.filter(([, bound]) => bound === key).map(([control]) => control),
+        key,
+      ).toEqual([]);
+    }
+    // The second weapon is not G: G is `key.quickActions` (B406).
+    expect(facts.vanillaKeys['key.quickActions']).toBe('key.keyboard.g');
+  });
+
+  it('sets the vehicle facts of ADR 0090 D3 and D4', () => {
+    expect(target.vehicles).toEqual({
+      modes: ['ground', 'water', 'amphibious', 'air', 'hover'],
+      maxSpeed: 3,
+    });
+  });
 });
