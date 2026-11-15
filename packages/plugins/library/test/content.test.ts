@@ -973,7 +973,8 @@ describe('every starter and example', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('builds the same bundle every time', () => {
+  // Builds every starter and example twice (about 1 s here, 5.5 s on a busy CI runner).
+  it('builds the same bundle every time', { timeout: 30_000 }, () => {
     for (const entry of entries) expect(build(entry), entry.id).toEqual(build(entry));
   });
 
