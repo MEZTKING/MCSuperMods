@@ -106,6 +106,8 @@ test('commands: the flows with defaults, a command in its Studio, nothing to fix
   // My things shows the tab through its first block. A command is not a card kind of My things
   // (`components/home/things.ts` `THING_KINDS`), so the command is not listed there (B465 report).
   await expect(home.getByTestId('my-things')).toContainText('My Blocks');
+  // Commands are My things cards too (orchestrator, after B465).
+  await expect(home.getByTestId('my-things')).toContainText('heal');
 
   // Advanced: a command made in the Command Studio. -------------------------------------------
   await window.getByTestId('toolbar-mode-advanced').click();

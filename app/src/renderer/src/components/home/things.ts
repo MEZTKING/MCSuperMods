@@ -21,7 +21,12 @@ export const THING_KINDS: readonly { kind: string; word: string; sort: ThingSort
   { kind: 'msm:entity', word: 'Mob', sort: 'mob' },
   { kind: 'msm:effect', word: 'Effect', sort: 'effect' },
   { kind: 'msm:potion', word: 'Potion', sort: 'item' },
+  { kind: 'msm:vehicle', word: 'Vehicle', sort: 'mob' },
   { kind: RULES_KIND, word: 'Rules', sort: 'function' },
+  { kind: 'msm:command', word: 'Command', sort: 'function' },
+  { kind: 'msm:key_bind', word: 'Key', sort: 'function' },
+  { kind: 'msm:hud', word: 'On screen', sort: 'function' },
+  { kind: 'msm:creative_tab', word: 'Creative tab', sort: 'item' },
 ];
 
 const KIND_ORDER = new Map(THING_KINDS.map((entry, index) => [entry.kind, index]));
