@@ -99,16 +99,16 @@ const fixtures = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'patt
  * `test/fixtures/patterns/` that pin every pattern. Change only with intent.
  */
 const PINNED: Partial<Record<PlaceholderPattern, string>> = {
-  plain: '686adcd9ce1a6a5db33762b08424a13d6991cffca309a11c5bcf24f1d7883bd3',
-  ore: '1ac06b1c99f1e7dc187b47b4851ad9700f5fc8711417bf63ff07d47b14a89215',
-  gem: '875d1b156d354c2310f5167f3fa6803eea063b38adc7b35d501a1882e5482c28',
-  disc: 'a8c7d397e6b78ba544c7657e79cb03363ace66f202c081bf5619edb3acfb0b95',
-  egg: '249b1b90e8fba88bfd0018b3e38633b244d57185834bdafba9a6259cd532e724',
-  sword: '5612e754418698361acac031cae58f83c4a577130d3bc02d7bf6391a2fa75c8d',
+  plain: '6bc22d8ccec3102a5be69397828579cd2753c1f4e7f3a4335df442d0ea417c8f',
+  ore: 'bc6ac337263a32a1244c49fa923e042201ef9464ddbe8e6fdf1e07480eabec67',
+  gem: '083efdde077af97bc70bba30eedb5c413d29c28477a19e02df63c971097e2b1e',
+  disc: 'a15bdd73ec8dbd893a493b1c01245a64b5170bf07cfc0f83488f43aeb3cbd498',
+  egg: '79db1fb4c8e7f4f32fe19bd7eb42e71c45a35deaa7f1ea5e0f4af18367c07910',
+  sword: 'c9c59a1b4dfd6b12180122068aa505440265dd297026f37cc26051b5ac65f1d4',
 };
 
 /** SHA-256 of the entity skin in the default colour. */
-const PINNED_SKIN = '224f2f4715ddc13cad76f34fd7555f720a9149052645c23f4c28c102c2ff4fd5';
+const PINNED_SKIN = '35baa277bd5fc7c730e17dba8b72897f084bbc529df8fc28b982721544525249';
 
 describe('placeholder textures', () => {
   it('has seventy patterns', () => {
@@ -417,5 +417,52 @@ describe('placeholder textures', () => {
 
   it('rejects pixel buffers of the wrong size', () => {
     expect(() => encodePng(new Uint8Array(3), 1, 1)).toThrow(/Expected 4 RGBA bytes/);
+  });
+});
+
+describe('encodePng compression (B468a)', () => {
+  /** A deterministic picture: a few colours in runs, with noise that defeats long matches. */
+  function noisy(width: number, height: number, seed: number): Uint8Array {
+    const rgba = new Uint8Array(width * height * 4);
+    let state = seed;
+    for (let index = 0; index < rgba.length; index += 1) {
+      state = (Math.imul(state, 1103515245) + 12345) >>> 0;
+      rgba[index] = index % 4 === 3 ? 255 : (state >>> 16) % 6;
+    }
+    return rgba;
+  }
+
+  const flat = (width: number, height: number): Uint8Array => {
+    const rgba = new Uint8Array(width * height * 4);
+    for (let index = 0; index < rgba.length; index += 4) rgba.set([36, 84, 196, 255], index);
+    return rgba;
+  };
+
+  it.each([
+    ['flat 16x16', 16, 16, flat(16, 16)],
+    ['flat 1x1', 1, 1, flat(1, 1)],
+    ['noisy 16x16', 16, 16, noisy(16, 16, 7)],
+    // Over 32 KiB of raw rows, so matches reach across the whole deflate window.
+    ['noisy 128x96', 128, 96, noisy(128, 96, 11)],
+    ['flat 300x200', 300, 200, flat(300, 200)],
+  ])('round-trips %s to the same pixels', (_name, width, height, rgba) => {
+    const decoded = decode(encodePng(rgba, width, height));
+    expect({ width: decoded.width, height: decoded.height }).toEqual({ width, height });
+    expect(decoded.rgba).toEqual(rgba);
+  });
+
+  it('round-trips every placeholder skin and pattern size through zlib', () => {
+    for (const pattern of PLACEHOLDER_PATTERNS) {
+      const { width, height } = placeholderSize(pattern);
+      const pixels = placeholderPixels(pattern);
+      expect(decode(encodePng(pixels, width, height)).rgba).toEqual(pixels);
+    }
+  });
+
+  it('makes a flat-colour 16x16 picture far smaller than stored blocks did', () => {
+    // Stored blocks: 8 signature + 25 IHDR + 12 + (2 + 5 + 16 * 65 + 4) IDAT + 12 IEND = 1108.
+    const stored = 1108;
+    const size = encodePng(flat(16, 16), 16, 16).length;
+    expect(size).toBeLessThan(stored / 4);
   });
 });

@@ -44,6 +44,17 @@ const IMAGE: StarterParameter & { type: 'image' } = {
 const png = (width: number, height: number): Uint8Array =>
   encodePng(new Uint8Array(width * height * 4).fill(128), width, height);
 
+/** A PNG of varied pixels that compresses poorly, for the byte limit (encodePng deflates). */
+const noisyPng = (width: number, height: number): Uint8Array => {
+  const rgba = new Uint8Array(width * height * 4);
+  let state = 1;
+  for (let index = 0; index < rgba.length; index += 1) {
+    state = (Math.imul(state, 1103515245) + 12345) >>> 0;
+    rgba[index] = state >>> 24;
+  }
+  return encodePng(rgba, width, height);
+};
+
 /** A picked file holding `bytes`. */
 const fileOf = (bytes: Uint8Array, name = 'picture.png', type = 'image/png'): File =>
   new File([new Uint8Array(bytes)], name, { type });
@@ -72,7 +83,7 @@ describe('image parameters in the wizard model (ADR 0044 D7)', () => {
     expect(checkPngBytes(IMAGE, new Uint8Array(40))).toBe('Choose a PNG image.');
     expect(checkPngBytes(IMAGE, png(16, 16))).toBeNull();
     expect(checkPngBytes(IMAGE, png(33, 8))).toBe('Choose an image of at most 32 by 32 pixels.');
-    expect(checkPngBytes({ ...IMAGE, maxSize: 64 }, png(40, 40))).toBe(
+    expect(checkPngBytes({ ...IMAGE, maxSize: 64 }, noisyPng(40, 40))).toBe(
       'Choose an image of at most 4 KB.',
     );
     const { maxBytes: _bytes, maxSize: _size, ...unlimited } = IMAGE;

@@ -6097,3 +6097,18 @@ Decisions
 
 Next
 - Main session: record the S14 answers in "Notes from implementation" and ADR 0099's findings, decide the 26.4 Mixin (an ADR 0099 amendment), then B472 and B473.
+
+## 2026-11-15 — executor — B468a Turn into rules events, compressed PNGs
+
+What
+- "Turn into rules" (`app/src/renderer/src/studios/rules/turn-into-rules.ts`): `eventAt` now reads the hand-made event with the rules compiler's own `handMadeEvents` (exported by `@msm/plugin-rules`), so it finds events in a list field (a vehicle's `weapons[].on_fire`) and in a top-level `{ event }` object (a vehicle's `on_tick`) as well as the component and plain-field forms. `releaseTrigger` takes the reference away in those two forms too: the field of every list entry, or the object's `event` with its option fields moved onto the rule (`on_tick.interval` 40 becomes `interval_seconds: 2`), the object removed when left empty. The option move is shared with the component case (`takeOptions`). Two new tests in `app/test/turn-into-rules.test.ts`.
+- `encodePng` (`packages/plugins/library/src/assets/png.ts`) writes one fixed-Huffman deflate block with greedy LZ77 matches (hash chains, 32 KiB window, 128 tries) instead of stored blocks, with the same zlib header (`78 01`) and Adler-32. No dependency; integer maths only, so the bytes are stable. A flat 16x16 picture is 78 bytes (was 1108); the 70 placeholder patterns total 11,403 bytes (was 111,690); the 64x64 skin 284 (was 16,516). The 598 PNGs in `examples/`, `fixtures/sample-*` and the library's test fixtures went from 2,461,737 to 121,542 bytes.
+- Goldens regenerated with `UPDATE_GOLDENS=1` (library and exporters): only `.png` files and the content-jar and Java-eject SHA-256 pins (`packages/exporters/test/fixtures/mc-26.*/*.sha256`, which hash archives holding those PNGs) changed. The pinned pattern and skin hashes in `png.test.ts` were updated. New round-trip tests (flat, noisy, a picture over the 32 KiB window, every pattern size) decode through Node's `inflateSync`.
+- Tests that leaned on stored blocks: `art.test.ts` checked a length over 1000 bytes (now checks the inflated rows against `generateArt`); `app/test/components/wizard-image.test.tsx` needed a PNG over 4 KB (now a noisy one); `sample-vehicles.golden.test.ts`'s `compactPng` (fflate level 9) is now as small as the library's output for one picture, so its check is "no larger" and its comment says why it stays (the fixture's bytes).
+
+Decisions
+- A list trigger is offered only when every entry names the same event: the rules compiler writes the generated event into every entry, so a hand-made event on some weapons only would not round-trip.
+- Fixed Huffman codes rather than dynamic ones: small, enough for placeholder pictures, and no new dependency (fflate stays a dev dependency of `@msm/exporters` only). Filter type stays none, as the in-repo PNG readers (`pixelsOf` in the exporters tests, the library tests) expect.
+
+Next
+- Main session: review and merge `b468a`. Turbo caches `test` per package without its workspace dependencies (`dependsOn: []`), so a library change replays the exporters' cached run; run `turbo run test --force` (or the exporters package directly) after library asset changes.

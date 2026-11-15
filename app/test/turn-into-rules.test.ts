@@ -177,6 +177,53 @@ describe('planTurnIntoRules', () => {
     expect(plan.ruleIndexes).toEqual([1]);
   });
 
+  it('finds an event held in every entry of a list field (a vehicle’s weapons)', () => {
+    const SOUND: Json = { sound: 'minecraft:entity.blaze.shoot', type: 'play_sound' };
+    const vehicle = (weapons: Json[]): Element =>
+      element('demo:cart', 'msm:vehicle', {
+        events: { 'demo:cart_fire': { actions: [SOUND] } },
+        format: 1,
+        weapons,
+      });
+    const subject = vehicle([
+      { name: 'left', on_fire: 'demo:cart_fire' },
+      { name: 'right', on_fire: 'demo:cart_fire' },
+    ]);
+    const plan = planTurnIntoRules(project(subject), subject, 'demo:cart_fire');
+    if (!plan.ok) throw new Error(plan.reason);
+    const after = plan.items[0]?.after as Record<string, Json>;
+    expect(after.events).toBeUndefined();
+    expect(after.weapons).toEqual([{ name: 'left' }, { name: 'right' }]);
+    const book = plan.items[1]?.after as { rules: { when: Json }[] };
+    expect(book.rules[0]?.when).toEqual({ subject: 'demo:cart', trigger: 'vehicle_fired' });
+    // Not when only some weapons run it: the rule's event would go into every weapon.
+    const some = vehicle([{ name: 'left', on_fire: 'demo:cart_fire' }, { name: 'right' }]);
+    expect(planTurnIntoRules(project(some), some, 'demo:cart_fire').ok).toBe(false);
+  });
+
+  it('finds an event held in an { event } object field of the data (a vehicle’s on_tick)', () => {
+    const subject = element('demo:cart', 'msm:vehicle', {
+      events: {
+        'demo:cart_tick': {
+          actions: [{ sound: 'minecraft:entity.minecart.riding', type: 'play_sound' }],
+        },
+      },
+      format: 1,
+      on_tick: { event: 'demo:cart_tick', interval: 40 },
+    });
+    const plan = planTurnIntoRules(project(subject), subject, 'demo:cart_tick');
+    if (!plan.ok) throw new Error(plan.reason);
+    const after = plan.items[0]?.after as Record<string, Json>;
+    expect(after.events).toBeUndefined();
+    expect(after.on_tick).toBeUndefined();
+    const book = plan.items[1]?.after as { rules: { when: Json }[] };
+    expect(book.rules[0]?.when).toEqual({
+      options: { interval_seconds: 2 },
+      subject: 'demo:cart',
+      trigger: 'vehicle_every',
+    });
+  });
+
   it('is not offered when the rules could not do exactly what the event does', () => {
     const script = block({
       events: { 'demo:ruby_block_use': { actions: [{ handler: 'demo:h', type: 'run_script' }] } },

@@ -3,6 +3,7 @@
  * made in code; no Minecraft texture is read or stored.
  */
 import { createHash } from 'node:crypto';
+import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { type ArtImage, packRgb, rgbToOklab, rgbToOklch } from '../src/art/colour';
 import { ART_RECIPES, type ArtRecipe, generateArt, generateArtPng } from '../src/art/generator';
@@ -247,7 +248,17 @@ describe('generator recipes', () => {
 
   it('pins one recipe so accidental changes show', () => {
     const png = generateArtPng('sword', { colour: ruby, seed: 0 });
-    expect(png.length).toBeGreaterThan(1000);
+    // The PNG is compressed (B468a), so check its pixels rather than its length: the IDAT
+    // after the signature and IHDR inflates to the recipe's rows (filter byte, then RGBA).
+    const idat = Buffer.from(png.subarray(33));
+    expect(idat.toString('latin1', 4, 8)).toBe('IDAT');
+    const raw = inflateSync(idat.subarray(8, 8 + idat.readUInt32BE(0)));
+    const image = generateArt('sword', { colour: ruby, seed: 0 });
+    const rows = Array.from({ length: image.height }, (_, y) => [
+      0,
+      ...image.data.subarray(y * image.width * 4, (y + 1) * image.width * 4),
+    ]);
+    expect([...raw]).toEqual(rows.flat());
     expect(sha256(png)).toBe(sha256(generateArtPng('sword', { colour: ruby, seed: 0 })));
   });
 

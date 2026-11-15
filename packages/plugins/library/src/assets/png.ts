@@ -4,9 +4,9 @@
  * for entity models.
  *
  * Every pixel comes from integer maths: no randomness, no Minecraft texture is read or
- * copied, and the work is original (CC0). The PNG encoder is self-contained and writes
- * stored (uncompressed) deflate blocks, so the bytes are identical on every machine, which
- * lets tests and the `examples/` mirror pin them. Ported from
+ * copied, and the work is original (CC0). The PNG encoder is self-contained and compresses
+ * with its own fixed-Huffman deflate (integer maths, no zlib), so the bytes are identical on
+ * every machine, which lets tests and the `examples/` mirror pin them. Ported from
  * `fixtures/sample-resourcepack/tools/make-textures.mjs`, without Node APIs so it also runs
  * in the renderer.
  *
@@ -2101,24 +2101,150 @@ function chunk(type: string, data: readonly number[]): number[] {
   return [...u32(data.length), ...body, ...u32(crc32(body))];
 }
 
-/** A zlib stream of stored deflate blocks (each at most 65535 bytes). */
-function zlibStored(raw: Uint8Array): number[] {
-  const out: number[] = [0x78, 0x01];
-  for (let offset = 0; ; offset += 65535) {
-    const block = raw.subarray(offset, offset + 65535);
-    const last = offset + 65535 >= raw.length ? 1 : 0;
-    out.push(last, block.length & 0xff, block.length >>> 8);
-    out.push(~block.length & 0xff, (~block.length >>> 8) & 0xff);
-    for (const byte of block) out.push(byte);
-    if (last === 1) break;
+/** Writes bits least significant first, as deflate packs them (RFC 1951 3.1.1). */
+class BitWriter {
+  readonly bytes: number[] = [];
+  private bit = 0;
+  private count = 0;
+
+  /** Appends the low `length` bits of `value`, least significant first. */
+  write(value: number, length: number): void {
+    for (let index = 0; index < length; index += 1) {
+      this.bit |= ((value >>> index) & 1) << this.count;
+      this.count += 1;
+      if (this.count === 8) {
+        this.bytes.push(this.bit);
+        this.bit = 0;
+        this.count = 0;
+      }
+    }
   }
-  out.push(...u32(adler32(raw)));
-  return out;
+
+  /** Appends a Huffman code, most significant bit first (RFC 1951 3.1.1). */
+  code(value: number, length: number): void {
+    for (let index = length - 1; index >= 0; index -= 1) this.write((value >>> index) & 1, 1);
+  }
+
+  /** Pads the last byte with zero bits. */
+  flush(): number[] {
+    if (this.count > 0) this.bytes.push(this.bit);
+    this.bit = 0;
+    this.count = 0;
+    return this.bytes;
+  }
+}
+
+/** Base match lengths of length codes 257 to 285, and their extra bits (RFC 1951 3.2.5). */
+const LENGTH_BASE = [
+  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131,
+  163, 195, 227, 258,
+];
+const LENGTH_EXTRA = [
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
+];
+/** Base distances of distance codes 0 to 29, and their extra bits. */
+const DISTANCE_BASE = [
+  1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049,
+  3073, 4097, 6145, 8193, 12289, 16385, 24577,
+];
+const DISTANCE_EXTRA = [
+  0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
+];
+
+/** The largest code whose base is at most `value`. */
+function codeFor(bases: readonly number[], value: number): number {
+  let code = 0;
+  while (code + 1 < bases.length && (bases[code + 1] as number) <= value) code += 1;
+  return code;
+}
+
+/** Writes literal/length symbol `symbol` with the fixed Huffman code (RFC 1951 3.2.6). */
+function fixedLiteral(out: BitWriter, symbol: number): void {
+  if (symbol < 144) out.code(0x30 + symbol, 8);
+  else if (symbol < 256) out.code(0x190 + symbol - 144, 9);
+  else if (symbol < 280) out.code(symbol - 256, 7);
+  else out.code(0xc0 + symbol - 280, 8);
+}
+
+const WINDOW = 32768;
+const MIN_MATCH = 3;
+const MAX_MATCH = 258;
+/** How many earlier positions with the same three bytes a match search tries. */
+const MAX_CHAIN = 128;
+const HASH_SIZE = 1 << 15;
+
+/**
+ * One final deflate block with the fixed Huffman codes and greedy LZ77 matches (hash chains
+ * over a 32 KiB window). Integer maths only, so the bytes are the same on every machine.
+ */
+function deflateFixed(raw: Uint8Array): number[] {
+  const out = new BitWriter();
+  out.write(1, 1); // BFINAL
+  out.write(1, 2); // BTYPE 01: fixed Huffman codes
+  const head = new Int32Array(HASH_SIZE).fill(-1);
+  const prev = new Int32Array(raw.length).fill(-1);
+  const hashAt = (at: number): number =>
+    (((raw[at] as number) << 10) ^ ((raw[at + 1] as number) << 5) ^ (raw[at + 2] as number)) &
+    (HASH_SIZE - 1);
+  const insert = (at: number): void => {
+    if (at + MIN_MATCH > raw.length) return;
+    const hash = hashAt(at);
+    prev[at] = head[hash] as number;
+    head[hash] = at;
+  };
+  let at = 0;
+  while (at < raw.length) {
+    let bestLength = 0;
+    let bestDistance = 0;
+    if (at + MIN_MATCH <= raw.length) {
+      const limit = Math.min(MAX_MATCH, raw.length - at);
+      let candidate = head[hashAt(at)] as number;
+      for (let tries = 0; candidate >= 0 && tries < MAX_CHAIN; tries += 1) {
+        const distance = at - candidate;
+        if (distance > WINDOW) break;
+        let length = 0;
+        while (length < limit && raw[candidate + length] === raw[at + length]) length += 1;
+        if (length > bestLength) {
+          bestLength = length;
+          bestDistance = distance;
+          if (length === limit) break;
+        }
+        candidate = prev[candidate] as number;
+      }
+    }
+    if (bestLength >= MIN_MATCH) {
+      const lengthCode = codeFor(LENGTH_BASE, bestLength);
+      fixedLiteral(out, 257 + lengthCode);
+      out.write(
+        bestLength - (LENGTH_BASE[lengthCode] as number),
+        LENGTH_EXTRA[lengthCode] as number,
+      );
+      const distanceCode = codeFor(DISTANCE_BASE, bestDistance);
+      out.code(distanceCode, 5);
+      out.write(
+        bestDistance - (DISTANCE_BASE[distanceCode] as number),
+        DISTANCE_EXTRA[distanceCode] as number,
+      );
+      for (let index = 0; index < bestLength; index += 1) insert(at + index);
+      at += bestLength;
+    } else {
+      fixedLiteral(out, raw[at] as number);
+      insert(at);
+      at += 1;
+    }
+  }
+  fixedLiteral(out, 256); // end of block
+  return out.flush();
+}
+
+/** A zlib stream (RFC 1950) holding one fixed-Huffman deflate block and the Adler-32. */
+function zlibDeflate(raw: Uint8Array): number[] {
+  return [0x78, 0x01, ...deflateFixed(raw), ...u32(adler32(raw))];
 }
 
 /**
- * Encodes RGBA pixels as an 8-bit RGBA PNG with stored deflate blocks (no compression), so
- * the output is byte-stable.
+ * Encodes RGBA pixels as an 8-bit RGBA PNG, compressed with a fixed-Huffman deflate whose
+ * output is byte-stable.
  *
  * @param rgba - Row-major pixels, 4 bytes each; length `width * height * 4`.
  * @param width - Image width in pixels.
@@ -2146,7 +2272,7 @@ export function encodePng(rgba: Uint8Array, width: number, height: number): Uint
     0x1a,
     0x0a,
     ...chunk('IHDR', ihdr),
-    ...chunk('IDAT', zlibStored(raw)),
+    ...chunk('IDAT', zlibDeflate(raw)),
     ...chunk('IEND', []),
   ]);
 }

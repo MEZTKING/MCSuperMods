@@ -28,6 +28,7 @@ import {
 } from '@msm/core';
 import type { TargetFacts } from '@msm/plugin-api';
 import rulesPlugin, {
+  handMadeEvents,
   plainActions,
   RULES_KIND,
   ruleEventId,
@@ -292,22 +293,23 @@ function fitsSlots(step: JsonObject): boolean {
   });
 }
 
-/** Where a trigger keeps its event id in a thing's data, and its value there. */
+/**
+ * The hand-made event `trigger` runs on a thing, read with the compiler's own
+ * {@link handMadeEvents}: a component's `event`, a string or `{ event }` field of a component
+ * or of the data itself, or a field of every entry of a list (a vehicle's `weapons`). For a
+ * list, only when every entry names the same event, since the rule's event goes into every
+ * entry.
+ */
 function eventAt(data: JsonObject, trigger: TriggerEntry): string | undefined {
-  const definition = trigger.definition;
-  if (definition === undefined) return undefined;
-  if (definition.component === undefined) {
-    const value = data[definition.field ?? ''];
-    return typeof value === 'string' ? value : undefined;
+  const events = handMadeEvents(data, trigger);
+  if (events.length !== 1) return undefined;
+  const list = trigger.definition?.list;
+  if (list !== undefined) {
+    const field = trigger.definition?.field ?? '';
+    const entries = asArray(data[list]);
+    if (entries.some((entry) => asObject(entry)?.[field] !== events[0])) return undefined;
   }
-  const component = asObject(asObject(data.components)?.[definition.component]);
-  const value =
-    definition.field === undefined
-      ? component?.event
-      : definition.fieldIsObject === true
-        ? asObject(component?.[definition.field])?.event
-        : component?.[definition.field];
-  return typeof value === 'string' ? value : undefined;
+  return events[0];
 }
 
 /** The slot of a trigger option, for its range. */
@@ -316,43 +318,75 @@ function optionSlot(trigger: TriggerEntry, option: string) {
 }
 
 /**
+ * Takes `trigger`'s option fields off `holder` (a component or a top-level `{ event }` object)
+ * and returns them as rule options, in seconds where the trigger counts ticks. A value the
+ * rule could not hold exactly stays on `holder` (the compiler keeps the subject's own values).
+ */
+function takeOptions(holder: JsonObject, trigger: TriggerEntry): JsonObject | undefined {
+  let options: JsonObject | undefined;
+  for (const mapping of trigger.options) {
+    const value = holder[mapping.field];
+    if (value === undefined) continue;
+    const optionValue: Json =
+      mapping.convert === 'ticks' && typeof value === 'number' ? value / 20 : value;
+    const slot = optionSlot(trigger, mapping.option);
+    if (typeof optionValue === 'number' && slot !== undefined) {
+      if (slot.min !== undefined && optionValue < slot.min) continue;
+      if (slot.max !== undefined && optionValue > slot.max) continue;
+    }
+    // The compiler turns seconds back into the same ticks (times 20, rounded).
+    if (
+      mapping.convert === 'ticks' &&
+      typeof value === 'number' &&
+      Math.round((optionValue as number) * 20) !== value
+    ) {
+      continue;
+    }
+    options = { ...(options ?? {}), [mapping.option]: optionValue };
+    delete holder[mapping.field];
+  }
+  return options;
+}
+
+/**
  * `data` with `trigger`'s reference to its event taken away: the component's `event` (and the
- * option fields that move to the rule) or the trigger's field. A component left empty is
- * removed unless the trigger needs it to exist. Returns the rule's `options`.
+ * option fields that move to the rule), the trigger's field, the `event` of a top-level
+ * `{ event }` object (and its option fields), or the field of every entry of a list. A
+ * component or object left empty is removed unless the trigger needs it to exist. Returns the
+ * rule's `options`.
  */
 function releaseTrigger(data: JsonObject, trigger: TriggerEntry): JsonObject | undefined {
   const definition = trigger.definition;
   if (definition === undefined) return undefined;
-  if (definition.component === undefined) {
-    delete data[definition.field ?? ''];
+  if (definition.list !== undefined) {
+    const field = definition.field ?? '';
+    data[definition.list] = asArray(data[definition.list]).map((entry) => {
+      const object = asObject(entry);
+      if (object === undefined) return entry;
+      const { [field]: _event, ...rest } = object;
+      return rest;
+    });
     return undefined;
+  }
+  if (definition.component === undefined) {
+    const field = definition.field ?? '';
+    if (definition.fieldIsObject !== true) {
+      delete data[field];
+      return undefined;
+    }
+    const object = { ...(asObject(data[field]) ?? {}) };
+    delete object.event;
+    const options = takeOptions(object, trigger);
+    if (Object.keys(object).length === 0) delete data[field];
+    else data[field] = object;
+    return options;
   }
   const components = { ...(asObject(data.components) ?? {}) };
   const component = { ...(asObject(components[definition.component]) ?? {}) };
   let options: JsonObject | undefined;
   if (definition.field === undefined) {
     delete component.event;
-    for (const mapping of trigger.options) {
-      const value = component[mapping.field];
-      if (value === undefined) continue;
-      const optionValue: Json =
-        mapping.convert === 'ticks' && typeof value === 'number' ? value / 20 : value;
-      const slot = optionSlot(trigger, mapping.option);
-      if (typeof optionValue === 'number' && slot !== undefined) {
-        if (slot.min !== undefined && optionValue < slot.min) continue;
-        if (slot.max !== undefined && optionValue > slot.max) continue;
-      }
-      // The compiler turns seconds back into the same ticks (times 20, rounded).
-      if (
-        mapping.convert === 'ticks' &&
-        typeof value === 'number' &&
-        Math.round((optionValue as number) * 20) !== value
-      ) {
-        continue;
-      }
-      options = { ...(options ?? {}), [mapping.option]: optionValue };
-      delete component[mapping.field];
-    }
+    options = takeOptions(component, trigger);
   } else if (definition.fieldIsObject === true) {
     const field = { ...(asObject(component[definition.field]) ?? {}) };
     delete field.event;

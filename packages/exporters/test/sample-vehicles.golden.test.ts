@@ -345,9 +345,10 @@ function pngChunk(type: string, data: Uint8Array): Uint8Array {
 }
 
 /**
- * The same picture with its pixels deflated: the library's `encodePng` stores them uncompressed
- * (a 256 by 256 texture is 262 kB; B422 follow-up), which would make the fixture large. The
- * pixels are unchanged; fflate's output is deterministic.
+ * The same picture with its pixels deflated by fflate at level 9. The library's `encodePng`
+ * stored them uncompressed when the fixture was made (B422 follow-up); it deflates them itself
+ * since B468a, and this keeps the fixture's bytes as they were. The pixels are unchanged;
+ * fflate's output is deterministic.
  */
 function compactPng(png: Uint8Array): Uint8Array {
   const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
@@ -1339,7 +1340,8 @@ describe('sample vehicles project', () => {
     ] as const) {
       const original = fromFlow(bundle, path);
       const compact = compactPng(original);
-      expect(compact.length).toBeLessThan(original.length);
+      // No larger than the library's own fixed-Huffman deflate (B468a).
+      expect(compact.length).toBeLessThanOrEqual(original.length);
       expect(Buffer.from(pixelsOf(compact)).equals(Buffer.from(pixelsOf(original))), path).toBe(
         true,
       );
