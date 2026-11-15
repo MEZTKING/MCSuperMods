@@ -1,0 +1,13 @@
+{
+  "anchor": "bottom_left",
+  "empty_icon": "msm_test:hud/heart_empty",
+  "format": 1,
+  "half_icon": "msm_test:hud/heart_half",
+  "icon": "msm_test:hud/heart",
+  "starts_hidden": true,
+  "type": "icons",
+  "value": {
+    "source": "player",
+    "stat": "health"
+  }
+}

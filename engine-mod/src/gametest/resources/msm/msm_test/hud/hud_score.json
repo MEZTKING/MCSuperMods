@@ -1,0 +1,9 @@
+{
+  "anchor": "left",
+  "format": 1,
+  "type": "text",
+  "value": {
+    "objective": "msm_hud_score",
+    "source": "score"
+  }
+}

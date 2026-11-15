@@ -1,0 +1,16 @@
+{
+  "anchor": "top_right",
+  "format": 1,
+  "max": {
+    "holder": "#cap",
+    "objective": "msm_hud_max",
+    "source": "score"
+  },
+  "type": "bar",
+  "value": {
+    "key": "siege",
+    "namespace": "msm_test",
+    "scope": "world",
+    "source": "data"
+  }
+}

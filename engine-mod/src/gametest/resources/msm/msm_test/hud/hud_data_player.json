@@ -1,0 +1,13 @@
+{
+  "anchor": "top_left",
+  "format": 1,
+  "max": 100,
+  "text": "Mana {value}/{max}",
+  "type": "text",
+  "value": {
+    "key": "mana",
+    "namespace": "msm_test",
+    "scope": "player",
+    "source": "data"
+  }
+}

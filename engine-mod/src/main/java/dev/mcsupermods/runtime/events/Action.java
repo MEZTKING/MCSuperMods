@@ -8,6 +8,7 @@ import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -39,7 +40,10 @@ public sealed interface Action {
         DAMAGE("damage", Damage.CODEC),
         HEAL("heal", Heal.CODEC),
         LIGHT_PORTAL("light_portal", LightPortal.CODEC),
-        EXPLODE("explode", Explode.CODEC);
+        EXPLODE("explode", Explode.CODEC),
+        SHOW_HUD("show_hud", ShowHud.CODEC),
+        HIDE_HUD("hide_hud", HideHud.CODEC),
+        SET_HUD("set_hud", SetHud.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -333,6 +337,73 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.EXPLODE;
+        }
+    }
+
+    /**
+     * Shows a HUD element to the event's player (ADR 0089 D6), also one with {@code starts_hidden}; without a player it
+     * does nothing and logs once. Closed: an unknown key is an error.
+     */
+    record ShowHud(Identifier hud) implements Action {
+        /**
+         * A HUD element id ({@code msm:hud}, ADR 0089 D6), shared by the three HUD actions: a non-empty valid id. Whether
+         * the element exists is checked at start ({@code HudServer}, a warning) and when the action runs (one error per
+         * id).
+         */
+        static final Codec<Identifier> HUD_ID = Codec.STRING.comapFlatMap(s -> {
+            Identifier id = s.isEmpty() ? null : Identifier.tryParse(s);
+            return id == null ? DataResult.error(() -> "invalid HUD element id '" + s + "'") : DataResult.success(id);
+        }, Identifier::toString);
+
+        static final MapCodec<ShowHud> CODEC = MsmCodecs.closedMap(RecordCodecBuilder.mapCodec(i -> i.group(
+                required("hud", HUD_ID).forGetter(ShowHud::hud)).apply(i, ShowHud::new)), List.of("type", "hud"));
+
+        @Override
+        public Type type() {
+            return Type.SHOW_HUD;
+        }
+    }
+
+    /**
+     * Hides a HUD element from the event's player until it is shown again (ADR 0089 D6); without a player it does
+     * nothing and logs once. Closed: an unknown key is an error.
+     */
+    record HideHud(Identifier hud) implements Action {
+        static final MapCodec<HideHud> CODEC = MsmCodecs.closedMap(RecordCodecBuilder.mapCodec(i -> i.group(
+                required("hud", ShowHud.HUD_ID).forGetter(HideHud::hud)).apply(i, HideHud::new)), List.of("type", "hud"));
+
+        @Override
+        public Type type() {
+            return Type.HIDE_HUD;
+        }
+    }
+
+    /**
+     * Sets what a HUD element shows to the event's player (ADR 0089 D6): a number, or a text of at most
+     * {@value #MAX_HUD_TEXT} characters. For an element of a synced source, the next computed value that differs
+     * replaces it; a {@code player} source is always read on the client. Without a player it does nothing and logs once.
+     * Closed: an unknown key is an error.
+     *
+     * @param value a number (left) or a text (right)
+     */
+    record SetHud(Identifier hud, Either<Double, String> value) implements Action {
+        /** The longest text value ({@code HudPayload.MAX_TEXT}). */
+        public static final int MAX_HUD_TEXT = 256;
+
+        private static final Codec<Double> NUMBER = Codec.DOUBLE.validate(d -> Double.isFinite(d)
+                ? DataResult.success(d)
+                : DataResult.error(() -> "not a finite number: " + d));
+        private static final Codec<String> TEXT = Codec.STRING.validate(t -> t.length() <= MAX_HUD_TEXT
+                ? DataResult.success(t)
+                : DataResult.error(() -> "text of " + t.length() + " characters (at most " + MAX_HUD_TEXT + ")"));
+        static final MapCodec<SetHud> CODEC = MsmCodecs.closedMap(RecordCodecBuilder.mapCodec(i -> i.group(
+                required("hud", ShowHud.HUD_ID).forGetter(SetHud::hud),
+                required("value", Codec.either(NUMBER, TEXT)).forGetter(SetHud::value)).apply(i, SetHud::new)),
+                List.of("type", "hud", "value"));
+
+        @Override
+        public Type type() {
+            return Type.SET_HUD;
         }
     }
 }

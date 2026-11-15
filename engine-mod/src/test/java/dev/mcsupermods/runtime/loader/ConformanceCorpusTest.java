@@ -37,12 +37,12 @@ class ConformanceCorpusTest {
      * B314, {@code machine-} by B316, {@code portal-} by B334, {@code particle-} by B350, {@code action-particle-} and
      * {@code ambient-particles-} by B352. Machine recipe files have their own corpus ({@link MachineRecipeCodecTest}).
      * The vehicles and client batch's format (B409): {@code key-bind-} decoded by B411 ({@code KeyBindParser}),
-     * {@code hud-} and {@code action-hud-} until B416 ({@code HudParser}, the HUD actions); each removes its
-     * prefixes here and adds its kinds to {@link #KINDS}. B412 decoded {@code vehicle-} ({@code VehicleParser}) and
-     * {@code action-explode-}; {@code vehicle-tank} uses the HUD actions and waits for B416 too.
+     * {@code hud-} and {@code action-hud-} by B416 ({@code HudParser}, the HUD actions), {@code vehicle-} by B412
+     * ({@code VehicleParser}, with {@code action-explode-}); B416 also decoded {@code vehicle-tank}, which uses the HUD
+     * actions.
      */
     private static final List<String> PENDING =
-            List.of("hud-", "action-hud-", "vehicle-tank",
+            List.of(
                     "waterlog-",
                     "weathering-",
                     "item-inventory-",
@@ -102,7 +102,12 @@ class ConformanceCorpusTest {
             new Kind("action-explode-", DefinitionParser::parseBlock),
             new Kind("action-explode-item-", DefinitionParser::parseItem),
             new Kind("action-explode-entity-", DefinitionParser::parseEntity),
-            new Kind("action-explode-effect-", DefinitionParser::parseEffect))
+            new Kind("action-explode-effect-", DefinitionParser::parseEffect),
+            new Kind("hud-", HudParser::parse),
+            new Kind("action-hud-", DefinitionParser::parseBlock),
+            new Kind("action-hud-item-", DefinitionParser::parseItem),
+            new Kind("action-hud-entity-", DefinitionParser::parseEntity),
+            new Kind("action-hud-effect-", DefinitionParser::parseEffect))
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

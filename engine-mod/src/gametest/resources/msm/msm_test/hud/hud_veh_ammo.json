@@ -1,0 +1,12 @@
+{
+  "anchor": "right",
+  "format": 1,
+  "order": 1,
+  "show": "in_vehicle",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "ammo",
+    "weapon": "cannon"
+  }
+}

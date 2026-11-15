@@ -1,0 +1,11 @@
+{
+  "anchor": "top",
+  "color": "#ffff00",
+  "format": 1,
+  "shadow": false,
+  "text": "HUD {value}",
+  "type": "text",
+  "value": {
+    "source": "set"
+  }
+}

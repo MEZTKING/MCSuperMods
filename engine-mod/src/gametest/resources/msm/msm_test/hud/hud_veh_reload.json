@@ -1,0 +1,12 @@
+{
+  "anchor": "right",
+  "format": 1,
+  "order": 2,
+  "show": "in_vehicle",
+  "text": "Reload {value}",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "reload"
+  }
+}

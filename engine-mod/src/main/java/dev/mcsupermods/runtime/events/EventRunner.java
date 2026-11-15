@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.events;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.dev.EventOverlay;
+import dev.mcsupermods.runtime.hud.HudServer;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.List;
@@ -111,6 +112,9 @@ public final class EventRunner {
                 case Action.Heal a -> heal(a, ctx);
                 case Action.LightPortal a -> lightPortal(a, ctx);
                 case Action.Explode a -> Explosions.explode(a, ctx);
+                case Action.ShowHud a -> HudServer.action(owner, a, ctx);
+                case Action.HideHud a -> HudServer.action(owner, a, ctx);
+                case Action.SetHud a -> HudServer.action(owner, a, ctx);
             }
         }
     }

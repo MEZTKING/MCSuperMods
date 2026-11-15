@@ -5443,3 +5443,22 @@ Next
 
 **Next**
 - B452 and the app's `dataRegistryIds` should count bundle models (`bundleModelIds`) like the library test does; draw real sign pictures when the placeholder set has a 24 by 26 pattern.
+
+## 2026-11-15 — executor — B416 Runtime: HUD
+
+**What**
+- HUD elements in the runtime (ADR 0089 D1 to D6). `loader/HudDefinition` (closed Codecs; `HudValue` by `source` data, score, vehicle, player, set; `max` a number or a value; colours `#rrggbb` decode to RGB, anything else is an error) and `HudParser` (format check; `vehicle` without an `in_vehicle` or `driving` show is ignored with a warning; `icons` without `icon` warns; `parseAll` sorts by id as a string). Actions `show_hud`, `hide_hud`, `set_hud` (closed; `value` a finite number or a text of at most 256 characters) in `events/Action.java`, run through `HudServer.action` from `EventRunner`.
+- `hud/`: `HudServer` (definitions in index order, the id list's hash, `show`, `hide`, `set` for actions, scripts and Rules, a start-up warning for HUD actions naming an unregistered element, one error per unknown id at run time, one log per owner for actions without a player), `HudValues` (the server's values: script data of the player or world, scores of `@s` or a fixed holder, vehicle fuel, health, ammunition, reload `readyAt - gameTime`, speed from how far the vehicle moved), `HudSync` (every 5 ticks, plus at the end of a tick in which an action changed something; only changes; 64 entries a payload; a clear is an entry with no number, text or visibility; a server-computed `max` has its own slot `count + index`; respawn and dimension change resend everything; leaving forgets), `HudState` (a viewer's slots; payloads of another hash are ignored with one warning).
+- Client: `client/hud/HudClient` (the `hud_v1` receiver, cleared on join and leave; the layer `msm_runtime:hud` before chat, registered when there are HUD elements or vehicle types), `MsmHudLayer` (visibility, `player` stats read on the client, text templates with a translation and `{value}`/`{max}`, bars with colours or sprites, icon rows), `HudLayout` (pure layout, fills and number text), `VehicleDashboard` (health, fuel, one row per weapon with ammunition and a reload bar, in the `bottom_right` stack). Seams `client/HudRegistration` for 26.3 (`HudElement` lambda, `RenderPipelines.GUI_TEXTURED`) and 26.4 (`HudElement` object, `GuiPipeline.TEXTURED`).
+- `fixtures/hud-layout/golden.json` and its README (the anchor table, constants, 19 elements on 10 screens, bar fills, icon rows, number texts), written by `HudLayoutGoldenTest` with `UPDATE_GOLDENS=1`. `EventOverlay` lists `hud` as needing a restart.
+- Tests: JUnit `HudParserTest` 7, `HudLayoutTest` 6, `HudLayoutGoldenTest` 1, the corpus now decodes `hud-`, `action-hud-` and `vehicle-tank` (917 JUnit in all); `MsmHudGameTest` 10 (583 GameTests per variant, all green on 26.3, 26.4 and without GeckoLib); the HUD half of `MsmControlsClientGameTest` (a colour bar, a sprite bar and a text found inside their boxes, the GUI size rule, the tank's dashboard half full) passes on both versions; screenshot `scratchpad/shots/64-hud.png`. `./gradlew -p parity build` green.
+
+**Decisions**
+- Server-computed `max` values use their own payload slots (`count + index`) rather than a new payload field; `hud_v1` is unchanged.
+- An entry with no number, text or visibility clears a value (a vehicle stat on foot, removed script data).
+- `player` stats on the client: air on the scale of health (0 to 20), x, y and z as block coordinates. A `max` read from a value is 20 until it has a number. Numbers show with at most two decimals.
+- Layout constants: margin 2, gap 2, `above_hotbar` stack ending 52 GUI pixels above the bottom; every anchor stacks. The dashboard sits in `bottom_right` below project elements. Vanilla hides HUD layers with F1; nothing more is hidden.
+- Dashboard labels use `Component.translatableWithFallback` (`hud.msm_runtime.health`, `fuel`), so the runtime's lang file (B411's) is untouched.
+
+**Next**
+- B420 and B429: read `fixtures/hud-layout/golden.json` (README has every rule). B421: `HudServer.show/hide/set` for `Player.showHud/hideHud/setHud`. B424: Rules steps are the three actions. B432: `engine-mod/CLAUDE.md` should list `hud/`, `client/hud/` and the seam. The golden folder is not a declared Gradle test input (`build.gradle.kts` was not this brief's).

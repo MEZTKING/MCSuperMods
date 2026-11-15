@@ -1,6 +1,14 @@
 package dev.mcsupermods.runtime.gametest;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import dev.mcsupermods.runtime.client.controls.ControlsClient;
+import dev.mcsupermods.runtime.client.hud.HudClient;
+import dev.mcsupermods.runtime.client.hud.HudLayout;
+import dev.mcsupermods.runtime.client.hud.MsmHudLayer;
+import dev.mcsupermods.runtime.client.hud.VehicleDashboard;
+import dev.mcsupermods.runtime.hud.HudServer;
+import dev.mcsupermods.runtime.registry.vehicle.MsmVehicle;
+import java.nio.file.Path;
 import dev.mcsupermods.runtime.client.controls.ProjectKeyMappings;
 import dev.mcsupermods.runtime.client.controls.RuntimeKeys;
 import dev.mcsupermods.runtime.controls.HeldKeys;
@@ -16,12 +24,17 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerConnection;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext;
+import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotComparisonOptions;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 
 /**
  * Client GameTest for project key binds and HUD elements against a dedicated server (ADR 0091 D7). The key half (B411,
@@ -36,7 +49,12 @@ import net.minecraft.server.level.ServerPlayer;
  *   <li>holds {@code kb_basic} and opens the chat screen: the client sends the release at once.</li>
  * </ul>
  *
- * <p>The HUD half is B416's.
+ * <p>The HUD half (B416, ADR 0089 D3 to D5), on the same connection: the server sets {@code msm_test:hud_client_bar} (a
+ * magenta bar, top left), {@code hud_client_sprite} (a bar of the green test sprite below it) and {@code hud_client_text}
+ * (yellow text without a shadow, at the top centre, clear of the toasts); the client receives the values, the layer places the three where {@link HudLayout} says
+ * on the GUI's scaled size (which is the window over the GUI scale, rounded up), and the screenshot has each one inside
+ * its box. Then the player gets into {@code msm_test:vh_tank} with half its health gone: the dashboard's rows appear in
+ * the {@code bottom_right} stack, the health bar half filled. The screenshot {@code msm_hud} shows all of it.
  */
 public class MsmControlsClientGameTest implements FabricClientGameTest {
     private static Identifier id(String path) {
@@ -69,6 +87,7 @@ public class MsmControlsClientGameTest implements FabricClientGameTest {
                     aTapSendsPressAndRelease(context, server, recorder);
                     runtimeKeyIsHeldOnTheServer(context, server);
                     aScreenReleasesHeldKeys(context, server);
+                    hud(context, server);
                 } finally {
                     EventRunner.removeListener(recorder);
                 }
@@ -140,6 +159,99 @@ public class MsmControlsClientGameTest implements FabricClientGameTest {
         context.setScreen(() -> null);
         context.waitTicks(2);
         check(!context.computeOnClient(mc -> ControlsClient.sentDown(id("kb_basic"))), "kb_basic still sent down");
+    }
+
+    private static HudLayout.Placed placed(ClientGameTestContext context, String id) {
+        return context.computeOnClient(mc -> MsmHudLayer.last().stream().filter(p -> p.box().id().equals(id)).findFirst().orElse(null));
+    }
+
+    private static NativeImage solid(int w, int h, int argb) {
+        NativeImage image = new NativeImage(w, h, false);
+        image.fillRect(0, 0, w, h, argb);
+        return image;
+    }
+
+    /** Asserts that a {@code w} by {@code h} block of {@code argb} lies inside the GUI box {@code p} (in screen pixels). */
+    private static void found(ClientGameTestContext context, HudLayout.Placed p, int scale, int w, int h, int argb, String name) {
+        try (NativeImage template = solid(w, h, argb)) {
+            context.assertScreenshotContains(TestScreenshotComparisonOptions.of(template)
+                    .withRegion(p.x() * scale, p.y() * scale, p.box().width() * scale, p.box().height() * scale)
+                    .saveWithFileName("msm_hud_" + name));
+        }
+    }
+
+    /** The HUD half: a bar, a sprite bar, a text and the vehicle dashboard, placed by {@link HudLayout}. */
+    private static void hud(ClientGameTestContext context, TestDedicatedServerContext server) {
+        check(context.computeOnClient(mc -> HudClient.layerRegistered()), "the HUD layer is not registered");
+        int textSlot = HudServer.index(id("hud_client_text")).orElseThrow();
+        server.runOnServer(s -> {
+            ServerPlayer p = player(s);
+            HudServer.set(p, id("hud_client_bar"), 20);
+            HudServer.set(p, id("hud_client_sprite"), 20);
+            HudServer.set(p, id("hud_client_text"), "OK");
+        });
+        context.waitFor(mc -> "OK".equals(HudClient.state().value(textSlot)), 100);
+        // The join toasts cover the top right; the screenshots are of the HUD.
+        context.runOnClient(mc -> mc.gui.toastManager().clear());
+        context.waitTicks(3);
+        int scale = context.computeOnClient(mc -> mc.getWindow().getGuiScale());
+        int[] size = context.computeOnClient(mc -> new int[] {mc.getWindow().getWidth(), mc.getWindow().getHeight(),
+                mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight()});
+        check(HudLayout.guiSize(size[0], scale) == size[2] && HudLayout.guiSize(size[1], scale) == size[3],
+                "GUI size " + size[2] + "x" + size[3] + " is not the window " + size[0] + "x" + size[1] + " over " + scale + ", rounded up");
+        HudLayout.Placed bar = placed(context, "msm_test:hud_client_bar");
+        HudLayout.Placed sprite = placed(context, "msm_test:hud_client_sprite");
+        HudLayout.Placed text = placed(context, "msm_test:hud_client_text");
+        check(bar != null && sprite != null && text != null, "not drawn: " + context.computeOnClient(mc -> MsmHudLayer.last()));
+        List<HudLayout.Placed> expected = HudLayout.place(size[2], size[3], List.of(bar.box(), sprite.box(), text.box()));
+        check(bar.x() == HudLayout.MARGIN && bar.y() == HudLayout.MARGIN, "the bar is not at the top left: " + bar);
+        check(expected.get(1).y() == sprite.y() && sprite.y() == bar.y() + 6 + HudLayout.GAP, "the sprite bar is not below the bar: " + sprite);
+        check(text.x() == Math.floorDiv(size[2] - text.box().width(), 2) && text.y() == HudLayout.MARGIN, "the text is not at the top: " + text);
+        context.takeScreenshot("msm_hud_elements");
+        found(context, bar, scale, 8, 3, 0xffff00ff, "bar");
+        found(context, sprite, scale, 8, 3, 0xff00ff00, "sprite");
+        found(context, text, scale, 2, 2, 0xffffff00, "text");
+
+        server.runOnServer(s -> {
+            ServerPlayer p = player(s);
+            @SuppressWarnings("unchecked")
+            EntityType<MsmVehicle> type = (EntityType<MsmVehicle>) BuiltInRegistries.ENTITY_TYPE.getValue(id("vh_tank"));
+            MsmVehicle tank = type.create(p.level(), EntitySpawnReason.COMMAND);
+            tank.snapTo(p.getX(), p.getY(), p.getZ(), p.getYRot(), 0);
+            tank.setDamage(15);
+            p.level().addFreshEntity(tank);
+            p.startRiding(tank);
+        });
+        context.waitFor(mc -> mc.player.getVehicle() instanceof MsmVehicle, 100);
+        context.waitFor(mc -> MsmHudLayer.last().stream().anyMatch(p -> p.box().id().startsWith("msm_runtime:dashboard/")), 100);
+        context.waitTicks(5);
+        HudLayout.Placed health = context.computeOnClient(mc -> {
+            List<HudLayout.Placed> rows = MsmHudLayer.last().stream().filter(p -> p.box().id().startsWith("msm_runtime:dashboard/")).toList();
+            return rows.getLast(); // the top row
+        });
+        int rows = context.computeOnClient(mc -> (int) MsmHudLayer.last().stream().filter(p -> p.box().id().startsWith("msm_runtime:dashboard/"))
+                .count());
+        check(rows == 2, "the tank's dashboard has health and one weapon, not " + rows + " rows");
+        check(health.x() + health.box().width() == size[2] - HudLayout.MARGIN, "the dashboard is not at the right edge: " + health);
+        // Half the health: the bar's right half shows the back colour.
+        int barX = health.x() + health.box().width() - VehicleDashboard.BAR_WIDTH;
+        HudLayout.Placed backHalf = new HudLayout.Placed(new HudLayout.Box("back", health.box().anchor(), 0, 0, 0,
+                VehicleDashboard.BAR_WIDTH / 2, HudLayout.TEXT_HEIGHT), barX + VehicleDashboard.BAR_WIDTH / 2, health.y());
+        found(context, backHalf, scale, 6, 4, VehicleDashboard.BACK_COLOR, "dashboard_back");
+        HudLayout.Placed filledHalf = new HudLayout.Placed(backHalf.box(), barX, health.y());
+        found(context, filledHalf, scale, 6, 4, VehicleDashboard.HEALTH_COLOR, "dashboard_health");
+        context.runOnClient(mc -> mc.gui.toastManager().clear());
+        context.waitTicks(2);
+        Path shot = context.takeScreenshot("msm_hud");
+        check(shot.toFile().isFile(), "no HUD screenshot at " + shot);
+        server.runOnServer(s -> {
+            ServerPlayer p = player(s);
+            if (p.getVehicle() != null) {
+                Entity vehicle = p.getVehicle();
+                p.stopRiding();
+                vehicle.discard();
+            }
+        });
     }
 
     /** The key bind events of the connected player, as {@code <key bind path> <event path>}. */

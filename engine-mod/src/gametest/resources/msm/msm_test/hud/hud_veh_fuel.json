@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "max": 250,
+  "show": "in_vehicle",
+  "type": "bar",
+  "value": {
+    "source": "vehicle",
+    "stat": "fuel"
+  },
+  "vehicle": "msm_test:vh_kart"
+}

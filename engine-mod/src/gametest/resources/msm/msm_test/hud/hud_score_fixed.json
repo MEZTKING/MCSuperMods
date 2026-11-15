@@ -1,0 +1,11 @@
+{
+  "anchor": "left",
+  "format": 1,
+  "order": 1,
+  "type": "text",
+  "value": {
+    "holder": "#global",
+    "objective": "msm_hud_score",
+    "source": "score"
+  }
+}

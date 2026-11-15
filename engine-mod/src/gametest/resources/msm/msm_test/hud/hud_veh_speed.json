@@ -1,0 +1,12 @@
+{
+  "anchor": "right",
+  "format": 1,
+  "order": 3,
+  "show": "in_vehicle",
+  "text": "{value} b/s",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "speed"
+  }
+}

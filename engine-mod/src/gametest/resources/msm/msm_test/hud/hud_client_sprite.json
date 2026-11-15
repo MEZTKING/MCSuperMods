@@ -1,0 +1,15 @@
+{
+  "anchor": "top_left",
+  "back_sprite": "msm_test:hud/blue",
+  "format": 1,
+  "order": 1,
+  "size": [
+    40,
+    6
+  ],
+  "sprite": "msm_test:hud/green",
+  "type": "bar",
+  "value": {
+    "source": "set"
+  }
+}

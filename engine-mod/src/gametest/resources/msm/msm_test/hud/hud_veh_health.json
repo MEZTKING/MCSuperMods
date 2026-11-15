@@ -1,0 +1,10 @@
+{
+  "anchor": "right",
+  "format": 1,
+  "show": "driving",
+  "type": "text",
+  "value": {
+    "source": "vehicle",
+    "stat": "health"
+  }
+}

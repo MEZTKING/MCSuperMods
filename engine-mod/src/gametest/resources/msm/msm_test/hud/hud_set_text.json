@@ -1,0 +1,9 @@
+{
+  "anchor": "top",
+  "format": 1,
+  "text": "Status: {value}",
+  "type": "text",
+  "value": {
+    "source": "set"
+  }
+}
