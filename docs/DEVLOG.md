@@ -6020,3 +6020,15 @@ Next
 **Next**
 - `templates-and-examples.md` still lacks the Vehicles and Controls template rows (B431 did not add them); the counts now follow the root status line.
 - B468 closes batch 1; B484 adds the batch 2 guide lines (traders, professions, mount storage, fluids, dimension types) and the Try it page lines come with B463.
+
+## 2026-11-15 — executor — B467a Try it guide, batch 1
+
+**What**
+- `docs/guide/try-it.md`: the Water and Explode tools, the "Time and commands" panel and the T and / key in the tools section and Keys table; new sections "Signs, beds and the new blocks", "Climbing and water", "Bags" and "The chat box" before "Mobs, particles and portals"; new Limits rows (commands and explosions logged, no support checks, ageing and waxing, signs and bags, other rule parts) and the water, ladder and light lines corrected.
+
+**Decisions**
+- Labels checked against `tryit/blocks2/`, `tick/tools.ts` and the sim sources (Water, Explode, Time-lapse a day, Chat, Line 1 to 4, Colour, Glowing, Wax it, Done, Mock-up). The sneak-to-descend and hold-Space climbing keys were written from the climb numbers, not from a UI label.
+- Climbing and weathering share one section so the in-page anchors stay few.
+
+**Next**
+- The docs site build was not run here; anchors added (`#climbing-and-water`) resolve by heading. B484 adds the batch 2 lines.

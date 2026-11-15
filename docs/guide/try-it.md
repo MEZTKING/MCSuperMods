@@ -42,6 +42,7 @@ Click the picture first, so it takes the keys. Every mouse action also has a key
 | P | Power the block you point at |
 | Z | Pause the clock, or start it again |
 | N | Move the paused clock on by one twentieth of a second |
+| T or / | Open the chat box (/ starts a command) |
 | F6 | Open Try it |
 
 The same list is under **Keys** beside the picture.
@@ -60,8 +61,11 @@ When you change a block in its Studio, Try it picks the change up a moment later
 
 Beside the picture:
 
-- **Grow** (or G) moves the crop or sapling you point at up one stage ("<Name> grew to stage N of M", then "<Name> is fully grown"). A sapling never becomes a tree here.
+- **Grow** (or G) moves the crop, sapling, berry bush, pod or stem you point at up one stage ("<Name> grew to stage N of M", then "<Name> is fully grown"). A sapling never becomes a tree here.
 - **Power** (or P) turns the `powered` picture of the block you point at on or off, or its `lit` picture when it has no `powered` one ("<Name> is now powered"). It changes that block's own picture only: nothing travels to other blocks.
+- **Water** puts water into the block you point at, or takes it out, when that block can hold water ([Waterlogging](#climbing-and-water)).
+- **Explode** sets off an explosion at the block you point at. It breaks the blocks within 2.5 blocks. Your place and explosion rules hear it when they have no condition, or only "caused by".
+- **Time and commands**, a small panel beside the picture, has **Time-lapse a day**, **Chat** and the list of your project's commands. **Time-lapse a day** lets one whole in-game day of ageing go by at once, so blocks that weather change stage ([Climbing and water](#climbing-and-water)). The panel also says how many blocks here can age.
 - **Clear the area** removes every block and mob and says "You cleared the area."
 - The **Clock**: **Pause** and **Go on**, **Step** (one twentieth of a second while paused) and **Speed** (from a quarter of normal speed to 8 times).
 - **Smaller picture (faster)** draws at half the size. It is on by default when your computer draws without a graphics card.
@@ -86,6 +90,41 @@ What the area stands on. Choose it in the first-run card (**Start on:**) or with
 - **From my world**: an area copied from one of your own saves. Pick a world from the list (its picture, name, game folder and when it was last played; worlds that cannot be read are greyed out with the reason), then the centre: **The world spawn**, or **Here:** with a block X and Z. The area is 48 by 48 around the centre and 32 high, from 8 blocks below the ground there. Your save is only read, never changed, and a world that is open in Minecraft can still be read. What was left out (chests' contents, signs, mobs, chunks not generated yet) is listed in **What happened**.
 
 Minecraft's blocks in a ground are props (see [Limits](#limits)). With your Minecraft folder set up they show their real pictures; without it they are plain coloured cubes, and the panel says so with a **Set it up** link. Water and lava are always drawn as plain see-through blocks.
+
+## Signs, beds and the new blocks
+
+The block types added with the vanilla parity batch ([Block types, families and plants](block-types-and-plants.md)) work in Try it like this:
+
+- **Cakes.** Each use eats one slice, until the cake is gone. **Candles** are lit by hand, and sea pickles and layers stack as you place more of them on the same block.
+- **Berry bushes.** Using one picks the berries.
+- **Tall plants and beds** are placed as two halves, and you can lie in a bed.
+- **Vines, cocoa pods and stems.** A stem grows its fruit next to it, one stage at a time with **Grow**.
+- **Torches and signs on walls**, **hanging signs** (sneak while placing for the attached look), **lanterns**, **chains** and **rods** place and turn as their type says.
+- **Scaffolding** places in rows and columns, at most six blocks out from its support.
+- **Signs.** Using a sign opens the sign writing screen, marked **Mock-up**: **Line 1** to **Line 4**, **Colour**, **Glowing**, **Wax it** and **Done**. **Done** writes the text onto the sign, and a plaque shows how it reads. It is a mock-up of the game's own screen.
+
+## Climbing and water
+
+- You climb **ladders**, **vines**, **scaffolding** and every block in `#minecraft:climbable`: walk into one and hold Space to go up, sneak to hold on.
+- **Waterlogging.** Placing a block that can hold water into water gives a waterlogged block, the **Water** tool puts water into such a block or takes it out, and breaking leaves still leaves the water.
+- **Weathering.** A block that ages changes stage on its random ticks, which is slow (about half an hour of real time for a stage), or at once with **Time-lapse a day**. A block at a lower stage within 4 blocks stops it. Waxed blocks never age.
+
+## Bags
+
+An item with an inventory opens a mock-up bag screen when you use it: rows of slots, or the hopper shape (one row of five) or the dispenser shape (three by three). The bag's own hotbar slot is locked while it is open. A bag that **opens only while you sneak** says so when you use it without sneaking. Items do not move in the preview. Bundles are said out loud in **What happened**; they are not opened.
+
+## The chat box
+
+Press **T**, or **/** to start a command, or use **Chat** in the **Time and commands** panel. The player is named Player and counts as an operator.
+
+Your project's commands are checked the way the game checks them, with its messages and the `<--[HERE]` pointer where a line goes wrong. A command that reads runs in the game's order:
+
+1. its function (only in Minecraft),
+2. the command's event,
+3. scripts that listen for it (only in Minecraft),
+4. the feedback.
+
+A Rules command trigger runs its own event first, then says the event it calls, for example "Ran /greet's event "wave" too.". Commands are logged in **What happened**, not shown in the area.
 
 ## Mobs, particles and portals
 
@@ -133,13 +172,17 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | What | In plain words |
 |---|---|
 | **A pass here is not a pass in the game** | Try it is our own approximation. Always check in Minecraft with **Play** before you share a mod. |
-| **Walking is approximate** | Walking, jumping and flying feel close, not identical. There is no sprinting, no water, no ladders, no ice and no slime. |
+| **Walking is approximate** | Walking, jumping and flying feel close, not identical. There is no sprinting, no flowing water, no ice and no slime. Ladders, vines and scaffolding can be climbed. |
 | **Mobs only wander** | No attacks, targets, taming, breeding, riding or boss fights. A hit removes a mob; there is no health or death. |
-| **No commands or functions** | Nothing runs commands or functions. |
+| **Commands and explosions are logged** | The chat box checks your commands and runs their events, but the result is a line in **What happened**, not something in the area. Functions and scripts that listen for a command run only in the game. An explosion breaks blocks; its damage, pushing, drops, fire, sound and smoke are only in the game. |
 | **Vehicles and keys are rough** | Vehicles drive by our own simulation and fire nothing you can see; keys and on-screen elements follow the rules above, with the exceptions listed there. |
 | **Plain rules only, no scripts** | Your events and plain rules run (see **What happened**). Rules with conditions, repeats or waits, and your scripts, do not run in Try it yet: **What happened** names them with "Only in Minecraft". Use **Play**. |
 | **No redstone** | **Power** changes one block's own picture; nothing travels along dust, and powering a block runs nothing. |
-| **No light, shadows or liquids** | A glowing block looks the same lit or unlit around it. Water and lava in a ground are drawn as plain see-through blocks: they do not flow, and you walk through them as through air. |
+| **No light, shadows or liquids** | A glowing block looks the same lit or unlit around it: light is not drawn, its level is only said. Water and lava in a ground are drawn as plain see-through blocks. Water does not flow, and you walk through it as through air. |
+| **Nothing checks support** | Torches, vines and pods can float, and you cannot stand on scaffolding, which does not fall when what holds it is broken. |
+| **Ageing and waxing** | Doors age half by half. Honeycomb waxing and axe scraping are only in the game. |
+| **Signs and bags** | Glowing ink is drawn as a box. Bundles are not opened, and bags move no items. |
+| **Other rule parts** | Rule conditions and steps Try it does not know run only in the game. Local `^` coordinates count from the feet. |
 | **No survival** | No health, hunger, damage, armour, mining speed, tool wear, drops or loot. Blocks break at once and drop nothing. |
 | **Growth only with Grow** | Crops and saplings grow only when you use **Grow**. Saplings never become trees, leaves never fall and crops plant on anything. |
 | **Minecraft's blocks are props** | They are drawn and solid, nothing more: chests do not open and pistons do not move. |
