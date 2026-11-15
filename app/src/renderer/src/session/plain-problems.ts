@@ -330,6 +330,32 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'blocks-items.max-stack-size': entry(
     (t) => `${t} holds things inside, so it can only stack to 1. Set its stack size to 1.`,
   ),
+  'blocks-items.berry-unknown': entry(
+    (t) => `${t} gives a berry that is not an item in your mod or in Minecraft. Pick another item.`,
+  ),
+  'blocks-items.potted-plant-unknown': entry(
+    (t) => `${t} holds a plant that is not in your mod or in Minecraft. Pick another plant.`,
+  ),
+  'blocks-items.potted-plant-not-plant': entry(
+    (t) =>
+      `${t} holds something that cannot go in a pot, or a plant Minecraft already has a pot for. Pick a small plant of your own.`,
+  ),
+  'blocks-items.light-fixed-by-state': entry(
+    (t) =>
+      `${t} sets its own light from how many there are or whether it is lit, so its light setting is not used.`,
+  ),
+  'blocks-items.generated-block-clash': entry(
+    (t) =>
+      `${t} makes a second block (its wall or attached part) whose name is already taken. Rename one of them.`,
+  ),
+  'blocks-items.stem-fruit-unknown': entry(
+    (t) =>
+      `${t} grows a fruit that is not a block in your mod or in Minecraft. Pick another block.`,
+  ),
+  'blocks-items.torch-particle-not-simple': entry(
+    (t) =>
+      `${t} uses a particle that needs extra settings, which a torch cannot give. Pick a simple particle.`,
+  ),
 
   // Mobs -----------------------------------------------------------------------------------
   'entities.unknown-event': entry((t) => `${t} runs something that is not in your mod any more.`),
