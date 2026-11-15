@@ -6073,3 +6073,15 @@ Next
 **Next**
 - The user: in-game checks of the moon and nether-like types and the flow's always night (sun and star angles, sky light at night).
 - B473 adds to plugin API 1.18.0 on top of this; B483 shows the sky colour in Try it (`skySwatch` in `dimension-type-model.ts` is the helper to reuse).
+## 2026-11-15 — executor — B469 spike: traders, professions, mount storage and shoulders
+
+What
+- Answered S11–S13 of `docs/PLAN-vanilla-parity-2.md` by observation on 26.3 and 26.4-snapshot-7: throwaway GameTests (5, GameTest server) and one client GameTest on a dedicated server (`createServer()`/`connect()`, headless Mesa EGL) over a runtime `mob` body implementing `Merchant`, a rideable `animal` body implementing `HasCustomInventoryScreen`, a small tamed `animal` body on the player's shoulder (as a passenger and as a perched follower), two job site blocks with POI types (one in `#minecraft:acquirable_job_site`, one not), two professions with project trade sets and red/blue profession textures. Spike code deleted afterwards; `./gradlew build` green on both versions. Results, logs, screenshots and a copy of the spike source are in the scratchpad (`b469/`); the findings are in the B469 report for the plan's "Notes from implementation".
+
+Decisions
+- S11: `VillagerTrade.getOffer` needs `LootContextParamSets.VILLAGER_TRADE` with ORIGIN, THIS_ENTITY and ADDITIONAL_COST_COMPONENT_ALLOWED (all required; each left out throws), random from the trade set's `random_sequence`. A `PathfinderMob` implementing `Merchant` opens vanilla's merchant screen from a real right click, with offers, the XP bar, the level name and out-of-stock crosses; level-ups and restocks reach the open screen through `sendMerchantOffers`. Vanilla trades with a `merchant_predicate` on `minecraft:villager/variant` return null for a non-villager (armourer level 5 gives a project mob no offers at all).
+- S12, go for ADR 0098 D2 on both versions: Fabric `PoiHelper` on 26.3, reflection into the private `PoiTypes.register(ResourceKey, Set, int, int)` on 26.4 (no Mixin, reserve B487 not needed). A vanilla villager takes the job only when the POI is in `#minecraft:acquirable_job_site`. Textures: `<ns>:textures/entity/villager/profession/<path>.png` and `zombie_villager/profession/`. Registering a POI on a state that already has one throws only after it has replaced the vanilla mapping, so the runtime must check `PoiTypes.hasPoi` for every state first.
+- S13: the inventory key opens `openCustomInventoryScreen` for any ridden mob implementing `HasCustomInventoryScreen`, on both versions. `Entity.startRiding` refuses a player as vehicle on the server (`EntityType.canSerialize`), even forced; go for D4 as a perched follower (synched flag, position from the owner every tick on both sides), not a passenger.
+
+Next
+- The main session copies the report's notes into the plan and ADR 0098 (D4 mechanism change); Wave 10 (B472, B473) may start.
