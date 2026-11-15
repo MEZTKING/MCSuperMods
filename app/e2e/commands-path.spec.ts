@@ -163,8 +163,8 @@ test('commands: the flows with defaults, a command in its Studio, nothing to fix
   await expect(studio.getByTestId('command-event')).toHaveValue(EVENT_ID);
   await studio.getByTestId('command-feedback').fill('Here you are!');
 
-  // No Rules section: the Rules catalogue has no trigger for commands.
-  await expect(studio.getByTestId('rules-section')).toHaveCount(0);
+  // A Rules section: the Rules catalogue has a trigger for commands (B458).
+  await expect(studio.getByTestId('rules-section')).toBeVisible();
   await expect(window.locator('footer').getByText(/^0 error\(s\)/)).toBeVisible();
 
   await window.getByTestId('toolbar-save').click();
