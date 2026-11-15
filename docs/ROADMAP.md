@@ -774,6 +774,33 @@ User requests of 2026-11-14: "would it be possible to make things like tanks", t
 - [ ] Wave 7: B430 AI helper, B431 guide, B432 close. Reserve: B433 server-moved vehicles.
 - [ ] The user checks in game (`fixtures/sample-vehicles/README.md` on 26.3 and 26.4, singleplayer and a dedicated server with two players).
 
+### Add-on after 1.0 — Vanilla parity 2 (in planning)
+
+The user's rule of 2026-11-14, "anything that can be made in vanilla java should be possible through this app", applied to the gaps the research report (`popular-mods.md` section 3: ranks 4, 5, 7, 11, 13, 15, 16) and the coverage audit (sections 1.3, 3 and 4.2) left after the vehicles plan. Design (Proposed): [ADR 0094](adr/0094-remaining-vanilla-block-types-waterlogging-and-weathering.md) (twenty block types: bed, cake, berry bush, tall plant, ladder, torch, lantern, chain, sign, hanging sign, potted plant, candle, sea pickle, vine, carpet, layers, rod, stem, cocoa, scaffolding; crop soil; `msm:waterloggable`; weathering and waxing), [ADR 0095](adr/0095-item-inventories.md) (bags and bundles), [ADR 0096](adr/0096-commands-creative-tabs-and-script-and-rules-gaps.md) (`msm:command`, `msm:creative_tab`, the runtime's first two Mixins for `block.place` and explosions, Script API 1.6, Rules facing, placing, explosion, command and riding cards), [ADR 0097](adr/0097-vanilla-feature-order-as-a-target-fact.md) (vanilla's feature order as a target fact: W-D1 to W-D4; Fabric's `addFeature` skips same-step duplicates), [ADR 0098](adr/0098-traders-professions-mount-storage-and-shoulder-pets.md) (trader mobs, villager professions and job sites, mount storage, shoulder pets), [ADR 0099](adr/0099-custom-fluids.md) (fluids, behind a version seam), [ADR 0100](adr/0100-dimension-types-and-skies.md) (dimension type and sky editing) and [ADR 0101](adr/0101-vanilla-parity-2-flows-studios-try-it-and-tests.md) (Studios, flows, templates, Try it, tests). Plan: [`PLAN-vanilla-parity-2.md`](PLAN-vanilla-parity-2.md) (facts F1–F36, open facts S1–S14, limits Q1–Q31, briefs B440–B487; B434–B439 left free). Nothing starts before the user has seen the vetoable defaults; nothing after Wave 0 before the spike B440 has reported, nothing after Wave 9 before B469 and B470 have.
+
+Batch 1, Vanilla blocks and everyday parity:
+
+- [ ] Wave 0: B440 spike (block types, Mixins, commands, bags), B441 scaffold and stubs, B442 worldgen feature order (W-D1 to W-D4).
+- [ ] Wave 1: B443 format, B444 plugin API 1.17.0 and target facts.
+- [ ] Wave 2: B445 runtime plants and food types, B446 runtime furniture, lights, signs and stems, B447 and B448 lowering.
+- [ ] Wave 3: B449 waterlogging, weathering and waxing, B450 item inventories and bundles, B451 plugin components, B452 Block Studio, B453 Item Studio inventory.
+- [ ] Wave 4: B454 commands and creative tabs, B455 Mixins and Script API 1.6, B456 command and creative tab kinds.
+- [ ] Wave 5: B457 exporters and eject, B458 Rules, B459 Creator flows, B460 Command and Creative tab Studios and Very easy picks, B461 templates and examples.
+- [ ] Wave 6: B462 `fixtures/sample-vanilla-blocks`, B463 Try it (after the Try it plan's close).
+- [ ] Wave 7: B464 parity, CI and client GameTests, B465 e2e.
+- [ ] Wave 8: B466 AI helper, B467 guide, B468 close of batch 1.
+- [ ] The user checks in game (`fixtures/sample-vanilla-blocks/README.md` on 26.3 and 26.4, singleplayer and a dedicated server).
+
+Batch 2, Villagers, fluids and skies:
+
+- [ ] Wave 9: B469 spike (traders, professions, storage, shoulders), B470 spike (fluids), B471 Dimension Type Studio and flow answer.
+- [ ] Wave 10: B472 scaffold and stubs, B473 format, plugin API 1.18.0 and facts.
+- [ ] Wave 11: B474 traders and professions, B475 fluids, B476 entities plugin, B477 fluid kind, B478 exporters.
+- [ ] Wave 12: B479 mount storage and shoulder pets, B480 Studios and the Very easy tile "Make a trader", B481 flows, templates and examples.
+- [ ] Wave 13: B482 fixture, parity, CI and client GameTests, B483 e2e and Try it.
+- [ ] Wave 14: B484 AI helper and guide, B485 close. Reserves: B486 fluids on 26.3 only, B487 POI types by Mixin on 26.4.
+- [ ] The user checks in game (`fixtures/sample-villagers-and-fluids/README.md`).
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.

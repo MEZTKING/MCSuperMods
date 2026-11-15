@@ -154,6 +154,8 @@ Size: S = under a week of executor briefs, M = one wave, L = a phase. Ordered by
 | B14 | **Custom particles and richer particle options** (dust colour, block and item particles from actions and scripts; own particle types with sprite sets). Closed 2026-11-14: ADRs 0080–0081 (B346 a5c8ea6, B347 cd8b0f6, B348 e240f10, B349 527fc71, B350 446b22e, B351 44c4cd8, B352 d8e79c5, B353 fac3f3d, B354 e4c1410, B355 21f10b7, B356 e208754, B357 b20c870, B358 cf4086d, B359 3191499, B360 4ac1c3d); limits K1–K16 in ADR 0080's findings. Deferred: options of our own on project types, trails and other shapes, entity-attached and held-item particles (B15), light from particles (ADR 0080 D12) | M | Needs client providers (L3) and a client test route (L16): both done |
 | B15 | **Client side for power users**: key binds that fire server events, HUD text and bars driven by synced values, scripts in the eject (B142). In planning 2026-11-14 with vehicles: ADRs 0088–0091 and `docs/PLAN-vehicles-and-client.md` (key binds, HUD, `msm:vehicle`); scripts in the eject, custom screens, block entity renderers, the portal overlay and particle trails stay for a later client batch (ADR 0088 D11) | L | First networking channel and first client script surface; security review of the sandbox on the client |
 
+Vanilla parity 2 (planned 2026-11-14, `docs/PLAN-vanilla-parity-2.md`, ADRs 0094–0101, Proposed) covers what B2, B9, B12 and B13 deferred and research ranks 4, 5, 7, 11, 13, 15 and 16: the remaining block types, waterlogging, weathering, item inventories, commands, creative tabs, place and explosion events, trader mobs, professions, fluids, mount storage, shoulder pets and dimension type editing.
+
 Flows that are data only and can be slotted in at any time (S each): armour trim pattern, banner pattern, glider, mob variant skin, goat horn.
 
 ## 4. Worldgen accuracy against the reference pack
@@ -174,6 +176,8 @@ Audit of 2026-11-14 (executor, branch `wgaudit`) of what MSM generates against t
 | W-A8 | The structure `.nbt` importer refused palette entries that were not `{ Name, Properties }`. Vanilla's own templates use that form (the pack's `nbt.py`), but newer writers and tools may use the other two. The writer still emits `Name`/`Properties` only. | The importer reads all three forms. | structures `codec.test.ts` "reads all three palette entry forms of the reference pack (region.state)" |
 
 ### 4.2 Decision needed (orchestrator)
+
+Planned 2026-11-14 in [ADR 0097](adr/0097-vanilla-feature-order-as-a-target-fact.md) (brief B442 of `PLAN-vanilla-parity-2.md`): W-D1 and W-D2 as a target fact `vanillaFeatureOrder` with warnings; W-D3 checked: Fabric's `addFeature` (biome API 20.1.1 and 20.1.6) skips a placed feature the step already has, so a same-step duplicate does nothing (a warning with that wording, not an error) and a different-step duplicate generates twice; W-D4 as guide notes.
 
 | # | Finding | Proposal |
 |---|---|---|

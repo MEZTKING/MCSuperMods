@@ -1,0 +1,443 @@
+# Plan: Vanilla parity 2
+
+Working plan for the user's rule of 2026-11-14, "anything that can be made in vanilla java should be possible through this app", applied to the gaps the research report (`popular-mods.md`, 2026-11-14, section 3) and the coverage audit (`docs/COVERAGE-AUDIT.md`, sections 1.3, 3 and 4.2) left after the vehicles plan. Written 2026-11-14 by the orchestrator at 39529ca. Decisions live in [ADR 0094](adr/0094-remaining-vanilla-block-types-waterlogging-and-weathering.md) (block types, waterlogging, weathering), [ADR 0095](adr/0095-item-inventories.md) (item inventories), [ADR 0096](adr/0096-commands-creative-tabs-and-script-and-rules-gaps.md) (commands, creative tabs, place and explosion events, Script API 1.6, Rules), [ADR 0097](adr/0097-vanilla-feature-order-as-a-target-fact.md) (worldgen W-D1 to W-D4), [ADR 0098](adr/0098-traders-professions-mount-storage-and-shoulder-pets.md) (traders, professions, mount storage, shoulder pets), [ADR 0099](adr/0099-custom-fluids.md) (fluids), [ADR 0100](adr/0100-dimension-types-and-skies.md) (dimension types and skies) and [ADR 0101](adr/0101-vanilla-parity-2-flows-studios-try-it-and-tests.md) (flows, Studios, Try it, tests), all Proposed. This file holds the fact table, the open facts, the limits, the rules for every brief, the two batches in fifteen waves (briefs B440–B487), the overlaps with work running in parallel and an empty "Notes from implementation". It is deleted at the close of batch 2 (history goes to `DEVLOG.md`, facts and limits into the ADRs' findings).
+
+Nothing here starts before the user has seen the eight ADRs' vetoable defaults. In batch 1 nothing after Wave 0 starts before B440 has reported; in batch 2 nothing after Wave 9 starts before B469 and B470 have reported.
+
+## In plain words
+
+- **Batch 1, "Vanilla blocks and everyday parity".** Beds and sleeping bags, cakes and pies you eat slice by slice, berry bushes, tall flowers, ladders, torches, lanterns, chains, candles, signs and hanging signs you can write on, plants in flower pots, vines, rugs, snow-like layers, end-rod-like rods, melon-like stems, cocoa-like pods and scaffolding. Any plain block can hold water like a slab. Copper-like blocks that age over time, which honeycomb waxes and an axe scrapes. Backpacks and pouches that open from your hand, and bundles. Your mod's own `/commands` and its own creative tab. Scripts and Rules learn "When a player places a block", "When something explodes" (with "keep the blocks safe"), what a mob is riding, dropped items nearby, and which way something faces. The worldgen checks learn vanilla's feature order.
+- **Batch 2, "Villagers, fluids and skies".** Mobs that trade with you through the villager trading screen, new jobs for vanilla villagers with their own workstation, pack animals that carry a chest, pets that ride on your shoulder, your own liquids with buckets, and dimensions with their own sky colour, fog, fixed time and rules.
+- **What it is not.** No candle cakes on your cakes, no lightning scraping your copper, no fluid mixing or pipes, no villager gossip or discounts, no gravity changes per dimension. Batch 2 is not in ejected Java projects yet.
+- **Build first:** batch 1 (block types are the most-requested vanilla gap and the lowest risk), batch 2 after its two spikes.
+
+## Fact table
+
+Checked 2026-11-14 at 39529ca with `javap` (JDK 25, `/root/jdk/jdk-25.0.5+8`, no `-c` on Mojang classes) over the Loom-cached jars `minecraft-merged-deobf-26.3.jar` and `minecraft-merged-deobf-26.4-snapshot-7.jar` (`/root/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged-deobf/<v>/`), the Fabric API module jars in `/root/.gradle/caches/modules-2/files-2.1/net.fabricmc.fabric-api/` (versions from the `fabric-api-0.165.2+26.3.pom` and `0.165.4+26.4.pom`), the jar listings (class and data file names only), the vendored `registries.json` of both targets and this repository. "Same" means identical signatures on both versions. Only signatures were read, except F32 (Fabric's own code, Apache 2.0).
+
+| # | Fact | 26.3 | 26.4-snapshot-7 | Source |
+|---|---|---|---|---|
+| F1 | Beds: `AbstractBedBlock(Properties)` public abstract (`PART`, `OCCUPIED`, `FACING`; abstract `getBedEnvironmentAttribute()`, `destroyOnUse`, `destroyOnLeave`; `getBedRule(Level, BlockPos)`); `BedBlock(DyeColor, Properties)` public; `StrawBedBlock(Properties)` public; no bed block entity class; models `template_bed_head`, `template_bed_foot` and per-colour `*_bed_head`/`_foot`; environment attributes `gameplay/bed_rule`, `gameplay/straw_bed_rule`; tags `beds`, `villagers_can_sleep_on_bed`; the bed item is a plain `BlockItem` (no `BedItem` class) | same | same | jars |
+| F2 | `CakeBlock(Properties)` protected: `BITES`, `MAX_BITES`, `FULL_CAKE_SIGNAL`, protected static `eat(LevelAccessor, BlockPos, BlockState, Player)`, `useItemOn`, `useWithoutItem`, comparator output; `CandleCakeBlock(Block candle, Properties)` protected | same | same | jars |
+| F3 | `SweetBerryBushBlock(Properties)` public, `VegetationBlock`, `BonemealableBlock`: `AGE`, `MAX_AGE`, `entityInside`, `getCloneItemStack`, `useItemOn`, `useWithoutItem`, `randomTick` | same | same | jars |
+| F4 | `DoublePlantBlock(Properties)` public: `HALF`, static `placeAt`, `copyWaterloggedFrom`, `preventDropFromBottomPart`; `TallFlowerBlock(Properties)` public, bonemealable; `DoubleHighBlockItem(Block, Item.Properties)` | same | same | jars |
+| F5 | `LadderBlock(Properties)` protected: `FACING`, `WATERLOGGED`, `SHAPES` | same | same | jars |
+| F6 | `TorchBlock(SimpleParticleType, Properties)` protected, `WallTorchBlock(SimpleParticleType, Properties)` protected (`FACING`), `BaseTorchBlock`; `StandingAndWallBlockItem(Block, Block, Direction, Item.Properties)`; project particle types are `SimpleParticleType`s (ADR 0080 D1) | same | same | jars |
+| F7 | `LanternBlock(Properties)` public (`HANGING`, `WATERLOGGED`); `ChainBlock(Properties)` public (a `RotatedPillarBlock`, `WATERLOGGED`) | same | same | jars |
+| F8 | Signs: `SignBlock(WoodType, Properties)` protected abstract (`BaseEntityBlock`, `WATERLOGGED`, `openTextEdit`, `type()`), `StandingSignBlock` (`ROTATION`), `WallSignBlock` (`FACING`), `CeilingHangingSignBlock` (`ROTATION`, `ATTACHED`), `WallHangingSignBlock` (`FACING`), all with public `(WoodType, Properties)`; items `StandingAndWallBlockItem` and `HangingSignItem(Block, Block, Item.Properties)`; `SignBlockEntity`, `HangingSignBlockEntity`; Fabric `FabricBlockEntityType.addValidBlock(Block)` (object builder 24.1.13 and 25.0.8); client `StandingSignRenderer`, `HangingSignRenderer`, `SignEditScreen(SignBlockEntity, SignTextSlot, boolean)` with the same constructors | same | same | jars |
+| F9 | `WoodType` record: `(String, BlockSetType)` on both; six-argument constructor | `(…, SoundType, SoundType, SoundEvent, SoundEvent)`; `values()`; `WoodTypeBuilder.soundType`, `register` and `build` | `(…, ResourceKey<BlockSoundSet>, ResourceKey<BlockSoundSet>, SoundEvent, SoundEvent)`; no `values()`; `WoodTypeBuilder.blockSoundSet`, `build` only | jars: **differs, seam** |
+| F10 | `FlowerPotBlock(Block potted, Properties)` public: `getPotted()`, `opposite(BlockState)`, `useItemOn`, `useWithoutItem` | same | same | jars |
+| F11 | `SimpleWaterloggedBlock` (extends `BucketPickup`, `LiquidBlockContainer`): default `placeLiquid`, `pickupBlock`, `getPickupSound`; default `canPlaceLiquid` | takes a `Fluid` | takes a `FluidState` | jars: **never override** |
+| F12 | Weathering: `WeatheringCopper extends ChangeOverTimeBlock<WeatheringCopper.WeatherState>` with static `NEXT_BY_BLOCK`, `PREVIOUS_BY_BLOCK` (suppliers of vanilla block maps), `getNext`, `getPrevious`, `getFirst`; `ChangeOverTimeBlock<T>`: `getNext(BlockState)`, `getChanceModifier()`, `getAge()`, default `changeOverTime(BlockState, ServerLevel, BlockPos, RandomSource)`, default `getNextState`, `SCAN_DISTANCE`; `WeatherState` `UNAFFECTED`, `EXPOSED`, `WEATHERED`, `OXIDIZED`; `WeatheringCopperFullBlock(WeatherState, Properties)` public; `HoneycombItem`; Fabric `OxidizableBlocksRegistry` (`registerNextStage`, `registerWaxable`) | present (content registries 15.0.7) | **no Fabric registry** (no `fabric-content-registries-v0` in 0.165.4) | jars, poms |
+| F13 | Other block classes: `CandleBlock(Properties)` public (`CANDLES` 1..4, `LIT`, `WATERLOGGED`, `LIGHT_EMISSION`); `SeaPickleBlock(Properties)` protected (`PICKLES`, `WATERLOGGED`, bonemealable); `VineBlock(Properties)` public (`UP`, `NORTH`, `EAST`, `SOUTH`, `WEST`); `ScaffoldingBlock(Properties)` protected (`DISTANCE`, `BOTTOM`, `WATERLOGGED`) with `ScaffoldingBlockItem(Block, Item.Properties)`; `CarpetBlock(Properties)` public; `SnowLayerBlock(Properties)` protected; `StemBlock(ResourceKey<Block> fruit, ResourceKey<Block> attachedStem, ResourceKey<Item> seed, TagKey<Block>, TagKey<Block>, Properties)` protected; `AttachedStemBlock(ResourceKey<Block>, ResourceKey<Block>, ResourceKey<Item>, TagKey<Block>, Properties)` protected; `CocoaBlock(Properties)` public; `NetherWartBlock(Properties)` protected; `MultifaceBlock(Properties)` public; `RodBlock` and `EndRodBlock` protected | same | same, except `AmethystClusterBlock` moves under `AbstractCrystalClusterBlock` (not used) | jars |
+| F14 | Item class changes | `PlaceOnWaterBlockItem`; `SolidBucketItem(Block, SoundEvent, …)` | `PlaceOnFluidBlockItem`; `SolidBucketItem(Block, Holder<SoundEvent>, …)`; new `IceBallItem` | jars: never used here |
+| F15 | `BlockItem.place(BlockPlaceContext)` public, `placeBlock(BlockPlaceContext, BlockState)` protected, `updateCustomBlockEntityTag` static | same | same | jars |
+| F16 | `ServerExplosion` public constructor `(ServerLevel, Entity, DamageSource, ExplosionDamageCalculator, Vec3, float, boolean, Explosion.BlockInteraction)`; public `int explode()`; private `calculateExplodedPositions()`, `hurtEntities()`, `interactWithBlocks(List<BlockPos>)`, `createFire(List<BlockPos>)`; getters for centre, radius, sources, interaction. **No placement or explosion event in any Fabric API module** of either build (every module jar's `api` classes searched) | same | same | jars |
+| F17 | Fabric `CommandRegistrationCallback.EVENT`: `register(CommandDispatcher<CommandSourceStack>, CommandBuildContext, Commands.CommandSelection)`; `ClientCommandRegistrationCallback` exists (not used) | command API 3.1.2 | 3.1.4, same | jars |
+| F18 | Fabric `FabricCreativeModeTab.builder()` returns `CreativeModeTab.Builder`; `CreativeModeTabEvents.modifyOutputEvent(ResourceKey)`, `MODIFY_OUTPUT_ALL`; vanilla `creative_mode_tab` registry has 14 entries | creative tab API 5.0.22 | 5.0.26, same | jars, registries |
+| F19 | Item inventories: `ItemContainerContents` (`MAX_SIZE`, `EMPTY`, `fromItems`, `copyInto`, `copyOne`); `ChestMenu(MenuType, int, Inventory, Container, int)` public, `threeRows`, `sixRows`; `ShulkerBoxMenu(int, Inventory, Container)` public; `AbstractContainerMenu.clicked(int, int, ContainerInput, Player)`, `stillValid`, `removed`, `quickMoveStack`; `BundleItem(Item.Properties)` public; vanilla `menu` registry 25 entries | same | same; `menu` has 26 (adds `jukebox`) | jars, registries |
+| F20 | `Merchant` interface (`setTradingPlayer`, `getOffers`, `overrideOffers`, `notifyTrade`, `notifyTradeUpdated`, `getVillagerXp`, `overrideXp`, `showProgressBar`, `getNotifyTradeSound`, default `canRestock`, default `openTradingScreen(Player, Component, int)`, `isClientSide`, `stillValid`); `MerchantMenu(int, Inventory, Merchant)` public; `MerchantOffer` constructors with `ItemCost`, `CODEC`, `STREAM_CODEC`; `MerchantOffers` | same | same | jars |
+| F21 | `TradeSet(HolderSet<VillagerTrade>, Holder<ContextIntProvider>, boolean, Optional<Identifier>)` record with `calculateNumberOfTrades(LootContext)`; `VillagerTrade.getOffer(LootContext)` public, `CODEC`; `TradeSets` keys (wandering trader buying, common, uncommon; 13 professions times 5 levels) | same | same | jars |
+| F22 | `VillagerProfession` record, public constructor `(Component, Predicate<Holder<PoiType>> held, Predicate<Holder<PoiType>> acquirable, ImmutableSet<Item>, ImmutableSet<Block>, SoundEvent, Int2ObjectMap<ResourceKey<TradeSet>>)`; `ALL_ACQUIRABLE_JOBS`; vanilla registry 15 professions | same | same | jars, registries |
+| F23 | `PoiType(Set<BlockState>, int, int)` public record; `PoiTypes.forState`, `hasPoi`; the state map and registration are private (ADR 0077); Fabric `PoiHelper.register(Identifier, int, int, Block...)` | constants `ResourceKey<PoiType>`; `PoiHelper` in object builder 24.1.13 | constants `Holder<PoiType>`; `bootstrap` returns a holder; **no `PoiHelper`** in 25.0.8 | jars: **differs, seam** |
+| F24 | `AbstractVillager(EntityType, Level)` public abstract (`Merchant`, `InventoryCarrier`): protected `addOffersFromTradeSet(ServerLevel, MerchantOffers, ResourceKey<TradeSet>)`, abstract `rewardTradeXp`, `updateTrades`, `stopTrading` | same | same | jars |
+| F25 | `HasCustomInventoryScreen.openCustomInventoryScreen(Player)`; `AbstractChestedHorse` (`hasChest`, `setChest`, `getInventoryColumns`) | `playChestEquipsSound` protected | public; new `canShearEquipment` | jars |
+| F26 | Shoulders: `ShoulderRidingEntity extends TamableAnimal` (`setEntityOnShoulder(ServerPlayer)`, `canSitOnShoulder`); `Player` stores `Optional<Parrot.Variant>` left and right (`setShoulderParrotLeft`, …) and `ParrotOnShoulderLayer` draws parrots only; `Entity.startRiding(Entity, boolean, boolean)`, `getPassengers()` (final), `getVehicle()`, `getVehicleAttachmentPoint(Entity)`, `getPassengerRidingPosition(Entity)` | same | same | jars |
+| F27 | Fluids, 26.3: `Fluid()` protected; abstract `Item getBucket()`; `FlowingFluid` has `FALLING`, `LEVEL`, abstract `getFlowing()`, `getSource()`, `getFlowing(int, boolean)`, `getSource(boolean)`, `canConvertToSource`, `getSlopeFindDistance`, `getDropOff`, `getTickDelay`; `canBeReplacedWith(…, Fluid, Direction)`; `fluid` registry: `empty`, `water`, `flowing_water`, `lava`, `flowing_lava` | yes | — | jars, registries |
+| F28 | Fluids, 26.4: `Fluid(Fluid.Properties)` protected; `Properties.of()`, `bucketItem(ResourceKey<Item>)`, `soundEvent`, `dripParticle`, `explosionResistance`, `randomTicking`, `drag`, `fogType`, `fallDistanceMultiplier`; `ResourceKey<Item> getBucket()`; `FlowingFluid(Fluid.Properties)` with `SOURCE` (no `FALLING`), `getFlowing(int)`, `getSource()`, `isSource`, `isFalling`; `canBeReplacedWith(…, FluidState, Direction)`; `fluid` registry: `empty`, `water`, `lava` (one fluid per liquid) | — | yes | jars, registries: **differs, seam** |
+| F29 | Fluids, both: `LiquidBlock(FlowingFluid, Properties)` protected (`LEVEL`); `BucketItem(Fluid, Item.Properties)` public; Fabric client `FluidRenderingRegistry.register(Fluid, Fluid, FluidModel.Unbaked[, FluidRenderHandler])`, `setBlockTransparency`; `FluidModel.Unbaked(Material, Material, Material, BlockTintSource)`; `FluidModel` carries a `ChunkSectionLayer` | rendering fluids 6.0.6 | 6.0.10, same | jars |
+| F30 | Fabric `EntityFluidInteractionRegistry.register(TagKey<Fluid>, FluidBehavior)`, `FluidBehavior` (swim, drown, boats, sprint) | present | **absent** | jars |
+| F31 | `DimensionType` record (sky light, ceiling, end flashes, ender dragon fight, coordinate scale, min y, height, logical height, infiniburn, ambient light, monster settings, `Skybox` `NONE`/`OVERWORLD`/`END`, cardinal lighting, environment attribute map, timelines, default clock); `environment_attribute` registry: 51 ids (`visual/sky_color`, `fog_color`, `cloud_color`, `cloud_height`, `sun_angle`, `moon_angle`, `star_brightness`, `gameplay/bed_rule`, `fast_lava`, …) | 51 | 52 (adds `visual/has_sky_occluder`) | jars, registries |
+| F32 | Fabric biome API `addFeature(step, key)`: returns without change when the step's holder set already contains the feature; otherwise sets the step to `HolderSet` `plus` the feature (appended at the end) | biome API 20.1.1 | 20.1.6, same | `javap -c` of Fabric's `BiomeModificationContextImpl$GenerationSettingsContextImpl` |
+| F33 | Vanilla feature order sources: the reference pack's `docs/reference/vanilla-worldgen/tools/feature_indices.txt` (171 entries, measured on 26.3); vanilla biome files `data/minecraft/worldgen/biome/*.json` (per-step lists, data) | yes | biome files only | repository, jar listing |
+| F34 | Fabric API module versions used: command 3.1.2 / 3.1.4, creative tab 5.0.22 / 5.0.26, object builder 24.1.13 / 25.0.8, rendering fluids 6.0.6 / 6.0.10, transfer 8.0.26 / 8.0.31 (not used), content registries 15.0.7 / absent, biome 20.1.1 / 20.1.6, events interaction 5.3.10 / 5.3.15 | | | poms |
+| F35 | State at 39529ca: plugin API 1.15.0 (vehicles plan takes 1.16.0), Script API 1.4 (vehicles take 1.5), 97 kinds, 440 GameTests per variant, `app.asar` 27.7 of 32 MB, renderer 15.1 MiB of the 18 MiB budget (B407 route b), no Mixin in `msm_runtime`, `UseBlockCallback` for stripping in `registry/BlockExtras`, the `Flammability` seam's reflection route on 26.4 | — | — | HANDOFF, DEVLOG, code |
+| F36 | Vendored registries: `villager_profession` 15, `point_of_interest_type` 21, `villager_type` 7, `command_argument_type` 62, `block_entity_type` 49 | same | same | `packages/targets/mc-*/vendor/mcmeta/registries.json` |
+
+Open facts the spikes answer (each answer goes into "Notes from implementation", then into the ADR's findings):
+
+- **B440 (batch 1):** S1 whether a sign or hanging sign of an unregistered project `WoodType` is drawn with its own texture by the renderer and the edit screen on both versions, and from which paths (`entity/signs/…`, `entity/signs/hanging/…`, `gui/hanging_signs/…`); S2 whether `WoodType` can be built on 26.4 without registration and on 26.3 with or without `WoodTypeBuilder.register`; S3 whether `new FlowerPotBlock(plant, …)` lets vanilla's empty pot take and give back the plant; S4 which vanilla classes give vanilla content for project blocks (berry harvest drop and pick item, candles on a cake, cocoa support, scaffolding distance and its item, nether wart soil, a stem with a project fruit, a bed's respawn and villagers sleeping, sea pickle light); S5 whether vanilla's default `changeOverTime` ages a project `ChangeOverTimeBlock` at copper's rate and counts mixed neighbours; S6 whether climbing needs only `#minecraft:climbable` for project ladders, vines and scaffolding; S7 Mixins: a `msm_runtime.mixins.json` with one head injection into `BlockItem.place` and `ServerExplosion.explode` builds, applies and runs on both versions, a dedicated server and the GameTest server (no refmap problem with Mojang names); S8 whether `CommandRegistrationCallback` fires again on `/reload` and the client's command tree updates, and how function macros receive arguments; S9 a creative tab registered through Fabric shows its items in order; S10 every duplication route of a bag menu (number keys, off-hand swap, drop, death, creative pick, a second player, closing by disconnect).
+- **B469 (batch 2):** S11 the loot context parameters `VillagerTrade.getOffer` needs, and whether a `PathfinderMob` implementing `Merchant` opens vanilla's merchant screen with offers, XP bar and restock; S12 POI and profession registration on both versions (26.3 Fabric `PoiHelper`; 26.4 reflection or a Mixin), a vanilla villager taking the job at a project block and trading from the profession's trade sets, and the profession texture paths; S13 whether the inventory key opens `HasCustomInventoryScreen` for a ridden project mob, and how a project mob riding a player sits, turns and dismounts on a dedicated server.
+- **B470 (batch 2):** S14 the fluid questions of ADR 0099 D3 on both versions.
+
+## Limits
+
+| # | Limit | Why | What users see | Mitigation |
+|---|---|---|---|---|
+| Q1 | **Signs may borrow a vanilla wood's look.** | S1: the client may only draw registered wood types. | If so, a sign's board is oak-like (or the chosen wood's); only its item picture is the project's own. | ADR 0094 D6b; decided at B440. |
+| Q2 | **New block types are fixed at start.** | Registry freeze (audit L1). | A new type or companion needs Restart in Play. | Play's restart reasons. |
+| Q3 | **Companion ids are reserved.** | Torches, signs and stems register `<path>_wall` or `<path>_attached`. | An element with that id is refused. | Validator error. |
+| Q4 | **No candle cakes on project cakes.** | Vanilla's candle cake pairs vanilla cakes only. | Candles cannot be put on a project cake. | Guide note. |
+| Q5 | **Project plants go into vanilla's empty pot only.** | A pot's plant is fixed per block. | No pots of other materials. | Follow-up. |
+| Q6 | **Lightning and copper golems do not scrape or wax project copper.** | Vanilla keeps those maps for vanilla blocks. | Only axes and honeycomb change the stage. | Guide note. |
+| Q7 | **Weathering only on the listed types.** | One subclass per type (ADR 0094 D8). | No weathering buttons, plates or fences. | Follow-up. |
+| Q8 | **Containers and machines are not waterloggable.** | Their class is not the waterlogged one. | No underwater chests of your own. | Follow-up if S-notes allow. |
+| Q9 | **Scaffolding only if B440 allows.** | Vanilla's distance may count vanilla scaffolding only. | The type may be missing. | Recorded at B440. |
+| Q10 | **No glow lichen, kelp, cave vines, bamboo, sugar cane, cactus or dripleaf types.** | Out of this batch's scope. | Use the existing types. | Later batch. |
+| Q11 | **Beds use the sixteen dye colours and vanilla's bed rules.** | `BedBlock` takes a `DyeColor`; rules are environment attributes. | Beds explode in the Nether as vanilla's do unless the dimension type says otherwise (ADR 0100). | Dimension Type Studio's Rules. |
+| Q12 | **Project layers do not pile up in snowfall.** | Vanilla snows its own snow. | Layers are placed by hand or by features. | None. |
+| Q13 | **Bags open from the hand only; hoppers do not reach them.** | ADR 0095 D3. | No "open bag in inventory" click. | None. |
+| Q14 | **A creative pick of a bag copies its last saved contents.** | As vanilla shulker boxes. | Expected. | None. |
+| Q15 | **Bundles have vanilla's capacity.** | `BundleItem` is fixed. | Use a bag for more. | None. |
+| Q16 | **Commands with permission 0 are for everyone; no client commands or custom argument types.** | ADR 0096 D1, D7. | Info line on such commands. | Guide note. |
+| Q17 | **`block.place` sees players only.** | Head of `BlockItem.place` with a server player. | Dispensers and endermen placing are not seen. | Guide note. |
+| Q18 | **Explosions can be stopped or made safe, not resized.** | ADR 0096 D3. | No bigger or smaller explosions from the event. | The `explode` action (vehicles batch) makes new ones. |
+| Q19 | **The two events are not ejected.** | Scripts are not ejected (audit L10). | `export.not-in-eject` for scripts using them. | B142. |
+| Q20 | **Worldgen order problems are warnings.** | A project-only dimension never meets vanilla lists (ADR 0097 D2). | A warned biome may still crash a world shared with vanilla biomes. | The warning text says when. |
+| Q21 | **Traders have no gossip, reputation, discounts or workstation restocking.** | Vanilla brain code. | Prices stay as the trade says. | Follow-up. |
+| Q22 | **Professions on 26.4 depend on reflection or a Mixin.** | No Fabric POI helper on 26.4 (F23). | If B469 fails on 26.4, professions are 26.3 only (reserve B487 decides). | Reserve B487. |
+| Q23 | **Mount storage has no hopper access; the inventory key needs S13.** | ADR 0098 D3. | Sneak-use opens it either way. | None. |
+| Q24 | **One shoulder pet, `animal` base only, carried as a passenger.** | Vanilla's shoulder store is parrots only (F26). | A pet on the shoulder may show passenger quirks (B469 records them). | Dropped if B469 fails. |
+| Q25 | **Fluids: no mixing, cauldrons, bottles, pipes, boats or custom buoyancy.** | ADR 0099 D5. | Water-like behaviour by tag only. | Follow-up. |
+| Q26 | **Fluids on 26.4 depend on the spike.** | The largest API change (F27, F28). | Possibly 26.3 only (reserve B486). | `export.not-on-target`. |
+| Q27 | **No gravity or sky textures per dimension.** | Vanilla has none in data. | Rules effects instead. | Guide note. |
+| Q28 | **Batch 2 is not ejected.** | ADR 0098 D5, ADR 0099 D4. | `export.not-in-eject`. | Follow-up. |
+| Q29 | **Try it: fluids do not flow; commands and explosions are logged, not shown.** | Our own simulation (ADR 0085). | Pictures and log lines. | Play. |
+| Q30 | **Runtime features are not in vanilla packs.** | They need the Fabric mod jar (ADR 0066). | Info on vanilla pack exports. | None. |
+| Q31 | **Looks are in-game checks beyond screenshots.** | CI screenshots prove drawing, not feel (audit L16). | A look bug can reach the user first. | Fixture READMEs. |
+
+## Rules for every brief
+
+- Read root `CLAUDE.md`, the scoped `CLAUDE.md` of the area, the latest `docs/DEVLOG.md` entry, the ADRs the brief names, this plan's "Notes from implementation" and, for files shared with the vehicles or Try it plans, their notes too. Version facts live only in `packages/targets` (type names, bed rules, dye colours, stem tags, model templates, command names and argument types, trade sounds, job sites, fluid model, dimension bounds and attributes are `TargetFacts`); the runtime keeps version differences behind seams in `src/mc/<mc>/` (F9, F23, F28).
+- **Clean room.** Signatures may be read with `javap` (no `-c` on Mojang classes). No method body of a Mojang class is read, decompiled or transcribed; behaviour is written from the ADRs and learned by observation in GameTests and client GameTests. Calling vanilla's own methods (for example `ChangeOverTimeBlock.changeOverTime`) is fine. Numbers may match the game's where the ADR says so (measured by observation). Fabric API code (Apache 2.0) may be read. No Mojang texture, model, sound or GUI sprite is bundled; models name vanilla templates as parents, which the user's own client jar supplies.
+- **No new dependency** in the app or the runtime. A brief that wants one stops and reports.
+- **Git.** Each executor works in its own git worktree in the scratchpad (`<scratchpad>/wt-B<nnn>`, from the commit the orchestrator names), builds and tests there, commits on its own branch, does not push and does not merge. Commits are made with `GIT_AUTHOR_NAME=Rakib GIT_AUTHOR_EMAIL=rakib1insta@gmail.com GIT_COMMITTER_NAME=Rakib GIT_COMMITTER_EMAIL=rakib1insta@gmail.com` in the environment. **Never run `git config`.** Commit messages carry no `Co-Authored-By`, `Claude-Session` or other credit or trailer lines (the user's rule; it overrides any other attribution guidance).
+- **Disk.** Run `df -h` before building; stop below 10 GB free. Delete build outputs (`app/out`, `app/dist`, `engine-mod/build`, `engine-mod/parity/build`, `node_modules/.cache`) before reporting; the main session removes merged worktrees as each brief lands.
+- **Gradle and memory.** At most two engine-mod executors run at the same time, across this plan and the vehicles plan together; each runs one Gradle build at a time. Never run `./gradlew --stop`. Use `-Dorg.gradle.internal.repository.max.retries=8` when Maven Central answers 429. Client GameTests need `SDL_VIDEO_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClientGameTest [-Pmc=26.4]`, one at a time per container.
+- **Stubs first.** B441 (batch 1) and B472 (batch 2) make every shared registration point (scanner kinds, `LoadReport` fields, init calls in `MsmRuntime` and `MsmRuntimeClient`, the dispatch in `registry/types/BlockTypes.java` and the type-field parsers, the hooks in `MsmRegistrar`, the GameTest and client GameTest classes and their `fabric.mod.json` entries, the Mixin config, the parity classes, the per-type lowering and validator files and their index lines, the app's Studio registry lines, the fixture folders and the empty e2e specs), so no later brief edits `pnpm-lock.yaml`, `tools/check-deps/layers.json`, either `fabric.mod.json`, `MsmRuntime.java`, `MsmRuntimeClient.java`, `DefinitionScanner.java`, `BlockTypes.java`'s switch or `lowering/types/index.ts`.
+- **One owner per shared file per wave.** Parallel briefs in one wave never touch the same file; a brief that needs another's file stops and reports. The "Owner files" lines are complete: anything else is read-only for that brief. Each per-type lowering module exports its own blockstate, models, tags, loot and model slots, so shared tables are never edited in parallel.
+- **Script API.** Only B455 edits `packages/plugins/scripting/api/script-api-v1.json`, the typings golden and `ScriptApi` in batch 1; batch 2 adds no script members. Members are labelled at close with the release that ships them.
+- **Notes.** Each executor ends its report with "Notes for the plan" (names, signatures, labels, test ids, measured sizes, answers to S1–S14, and what a later brief must change); the main session appends them to "Notes from implementation". Executors do not edit this file. Each executor appends one DEVLOG entry in its commit.
+- **Exit criteria** always include `pnpm lint`, `pnpm typecheck` and the touched packages' tests; app briefs also `pnpm build` and `node tools/check-size/index.ts` (report `app.asar`, the renderer and the new chunks; stop and report above 31 MB asar or 17.5 MiB renderer); engine-mod briefs `JAVA_HOME=/root/jdk/jdk-25.0.5+8 ./gradlew build`, `-Pmc=26.4` and `-PwithoutGeckolib`, and the client GameTests on both versions when client code changed; mcdoc changes `node tools/build-msm-mcdoc/index.ts --check`; `node tools/check-deps/index.ts`.
+- **Try it.** Every runtime and plugin brief ends with one "Try it" line in its report: what the sim must learn (for B463 or B483) or the limit line for the guide.
+- **Plain words.** Labels are British English, no emojis, no ids in Very easy; they go into the notes for the guide briefs (B467, B484).
+- **Models.** Executors run on Opus (`claude-opus-5-5`) at medium effort; B440, B469, B470, B474 and B475 at high effort; Sonnet (`claude-sonnet-5-5`) for B441, B457, B461, B467, B472 and B478. A stuck brief is rerun on Opus at high effort.
+
+## Overlaps with work running in parallel
+
+- **Vehicles and the client side** (`docs/PLAN-vehicles-and-client.md`, B406–B433): that plan's B408 owns the same shared runtime files (`MsmRuntime.java`, `MsmRuntimeClient.java`, `DefinitionScanner.java`, both `fabric.mod.json`); B441 starts only after B408 is merged, or rebases on it and keeps to its own lines. Plugin API: vehicles take 1.16.0, batch 1 takes 1.17.0, batch 2 1.18.0; Script API: vehicles 1.5, batch 1 1.6. If vehicles land later, the numbers swap at merge (the brief that merges second renumbers). Rules catalogue files: B458 runs after vehicles' B424 or in a different wave from it. Vehicles' storage (ADR 0090 D9) and mount storage (ADR 0098 D3) share `registry/mob/MobStorage`: whichever lands first owns it, the other reuses it. `Entity.vehicle` in Script API 1.6 returns vehicles' entities too; vehicles' `ScriptVehicle` keeps its own members. The engine-mod limit of two executors counts both plans.
+- **B406** (the vehicles engine-mod spike, running now) and **B399** (Try it's sim test and e2e, running now): B440 is the second engine-mod executor at most; B463 and B483 start only after the Try it plan's close (B403) is merged; until then they wait or move into the Try it plan, as ADR 0091 D6 did for vehicles.
+- **Try it** owns `packages/sim/` and `app/src/renderer/src/tryit/` until its close.
+- **ADR numbers:** this plan uses 0094–0101.
+
+## Waves
+
+### Batch 1: Vanilla blocks and everyday parity
+
+| Wave | Briefs (parallel) | Depends on |
+|---|---|---|
+| 0 | B440 spike; B441 scaffold and stubs; B442 worldgen feature order | none; B441 merged after B440 reports (and after vehicles' B408) |
+| 1 | B443 format; B444 plugin API 1.17.0 and target facts | B440, B441; B442 (B444) |
+| 2 | B445 runtime: plants and food types; B446 runtime: furniture, lights, signs, stems; B447 lowering: plants and food; B448 lowering: furniture, lights, signs, stems | B443, B444 |
+| 3 | B449 runtime: waterlogging, weathering, waxing; B450 runtime: item inventories and bundles; B451 plugin: waterlogging, weathering, inventories, bundles; B452 app: Block Studio; B453 app: Item Studio inventory | B445, B446 (B449); B443 (B450, B451); B447, B448 (B452) |
+| 4 | B454 runtime: commands and creative tabs; B455 runtime: Mixins and Script API 1.6; B456 plugins: command and creative tab kinds | B443, B444 |
+| 5 | B457 exporters; B458 Rules; B459 Creator flows; B460 app: Command and Creative tab Studios, Very easy; B461 templates and examples | B454–B456 and waves 2–3 |
+| 6 | B462 fixture `sample-vanilla-blocks`; B463 Try it (batch 1) | waves 2–5; Try it closed (B463) |
+| 7 | B464 parity, CI, client GameTests; B465 e2e | B462 (B464); B459, B460 (B465) |
+| 8 | B466 AI helper; B467 guide; then B468 close of batch 1 | all of batch 1 |
+
+### Batch 2: Villagers, fluids and skies
+
+| Wave | Briefs (parallel) | Depends on |
+|---|---|---|
+| 9 | B469 spike: traders, professions, storage, shoulders; B470 spike: fluids; B471 Dimension Type Studio and flow | B468 (batch 1 closed) or the orchestrator's go to overlap |
+| 10 | B472 scaffold and stubs 2; B473 format, plugin API 1.18.0 and facts | B469, B470 |
+| 11 | B474 runtime: traders and professions; B475 runtime: fluids; B476 entities plugin; B477 blocks-items plugin: fluids; B478 exporters | B472, B473 |
+| 12 | B479 runtime: mount storage and shoulder pets; B480 app: Studios and the Very easy tile; B481 flows, templates, examples | B474, B476 (B479); B476, B477 (B480, B481) |
+| 13 | B482 fixture, parity, CI, client GameTests; B483 e2e and Try it (batch 2) | waves 11–12 |
+| 14 | B484 AI helper and guide; then B485 close of batch 2 | all |
+| reserve | B486 fluids on 26.3 only (on B470 no-go for 26.4); B487 POI types by Mixin on 26.4 (if B469's reflection route fails) | B470; B469 |
+
+The order follows value under the user's rule, beginner appeal and risk: block types first (rank 5, everyday blocks every beginner expects, low risk), item inventories (rank 4) and the small script and Rules gaps (rank 13) beside them, worldgen order at once (independent, small). Batch 2 holds what needs a spike: traders and professions (rank 7, a 26.4 seam), fluids (rank 11, the largest API difference), mount storage and shoulder pets (rank 15) and dimension types (rank 16, no runtime, so it starts in Wave 9 beside the spikes).
+
+## Briefs
+
+### B440 Spike: block types, Mixins, commands and bags in the real game (wave 0; Opus, high effort; one session)
+
+- **Owner files:** new `engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/spike2/` (throwaway: a sign and hanging sign on a project `WoodType`, a potted plant, a berry bush, a cake, a cocoa pod, scaffolding, a stem and fruit, a bed, a weathering block, a bag menu, a command, a creative tab), a throwaway `engine-mod/src/gametest/resources/msm_runtime_spike.mixins.json` with the two head injections, temporary entries in `engine-mod/src/gametest/resources/fabric.mod.json` (removed before the report; B441 owns that file afterwards), `src/mc/<mc>/gametest/.../SpikeWoodTypes.java` for F9. Nothing in `src/main`.
+- **Scope:** answer S1–S10 by observation on both versions, in GameTests (dedicated GameTest server) and client GameTests (singleplayer and `createServer()`/`connect()`): screenshots of a written sign, a hanging sign and both edit screens with a red test texture, named per version; harvest the bush and pick-block it; put a candle on the cake; place cocoa on a non-jungle log; build scaffolding towers of the project block and count distance; sleep in the bed at night (spawn set, villager sleeping); age a weathering block next to vanilla copper with a forced random tick count; climb each climbable; place a block and fire TNT with the Mixins applied, confirm `Mixin apply failed` is absent; run `/reload` and check the command and its client tree; open a bag and try every route of S10.
+- **Exit criteria:** a report with S1–S10 answered per version with evidence (log lines, counts, screenshot names); a go or no-go for ADR 0094 D6 (own sign look) or D6b (borrowed look), for `scaffolding` (D1) and for the Mixin route (ADR 0096 D3); the measured berry harvest counts; a list of every vanilla member that named vanilla content (S4) with the override the drivers need; the spike code deleted (the report keeps the snippets that worked); `./gradlew build` green on both versions after deletion.
+
+### B441 Scaffold and stubs, batch 1 (wave 0; Sonnet; merged after B440 reports)
+
+- **Owner files:** `engine-mod/src/main/java/dev/mcsupermods/runtime/MsmRuntime.java` (init calls `registry.MsmCreativeTabs.register(report)` before blocks, `commands.MsmCommands.init(report)`), `loader/DefinitionScanner.java` (kinds `command`, `creative_tab`), `loader/LoadReport.java` (log lines `registered N command(s)`, `N creative tab(s)`), `registry/types/BlockTypes.java` (switch entries for the twenty types calling `PlantTypes.create` and `FurnitureTypes.create`, stubs that throw "not yet"), new stubs `registry/types/PlantTypes.java`, `FurnitureTypes.java`, `Companions.java`, `loader/types/PlantFields.java`, `FurnitureFields.java` and their call sites in the block definition parser, hooks in `registry/MsmRegistrar.java` (`Weathering.blockFor(...)`, `Waterlogging.blockFor(...)`, `ItemInventories.itemFor(...)`, `Companions.registerAfter(...)`, `MsmCreativeTabs.resolve(...)`, each a stub returning "nothing"), `scripting/CommandEvents.java` (stub), `src/main/resources/msm_runtime.mixins.json` (empty `mixins` list) and its entry in `src/main/resources/fabric.mod.json`; GameTest stubs `MsmPlantTypes2GameTest`, `MsmFurnitureGameTest`, `MsmWeatheringGameTest`, `MsmItemInventoryGameTest`, `MsmCommandGameTest`, `MsmCreativeTabGameTest`, `MsmMixinEventGameTest`, `MsmScriptApi16GameTest` and the client stub `MsmVanillaBlocksClientGameTest`, each with one passing placeholder, registered in `engine-mod/src/gametest/resources/fabric.mod.json`; `engine-mod/parity/src/.../SampleVanillaBlocksParityTest.java` (empty, registered); `packages/plugins/blocks-items/src/lowering/types/index.ts` (dispatch lines for the twenty types) with empty per-type modules `cake.ts`, `berry-bush.ts`, `tall-plant.ts`, `potted-plant.ts`, `vine.ts`, `sea-pickle.ts`, `carpet.ts`, `layers.ts`, `cocoa.ts`, `candle.ts`, `bed.ts`, `ladder.ts`, `torch.ts`, `lantern.ts`, `chain.ts`, `rod.ts`, `sign.ts`, `hanging-sign.ts`, `stem.ts`, `scaffolding.ts`; empty `validators-plants-2.ts` and `validators-furniture.ts` and their lines in the plugin's validator list; `fixtures/sample-vanilla-blocks/README.md` (title only); `app/e2e/vanilla-blocks-path.spec.ts`, `backpack-path.spec.ts`, `commands-path.spec.ts` (skipped placeholders); the Studio registry lines for `CommandStudio` and `CreativeTabStudio` pointing at empty components.
+- **Scope:** wiring only; no behaviour. Rebase on vehicles' B408 if it is merged first.
+- **Exit criteria:** lint, typecheck, tests green; `./gradlew build` on both versions and `-PwithoutGeckolib` green with the two new log lines showing 0 and the empty Mixin config loading; `./gradlew -p parity build` green.
+
+### B442 Worldgen: vanilla feature order (wave 0; Opus)
+
+- **Owner files:** new `tools/sync-feature-order/` (script, README, test), `packages/targets/mc-26.3/vendor/worldgen/feature-order.json`, `packages/targets/mc-26.4/vendor/worldgen/feature-order.json`, `packages/targets/mc-26.3/src/target.ts` and `mc-26.4/src/target.ts` (the `vanillaFeatureOrder` fact only) and their tests, `packages/plugin-api/src/target.ts`, `version.ts`, `package.json` (1.17.0) and the plugin API changelog section, `packages/plugins/worldgen/src/validators.ts` (the `worldgen.vanilla-feature-order` rule) and its tests, `packages/plugins/blocks-items/src/validators.ts` (`addition-vanilla-feature`, the step-aware `duplicate-biome-feature`) and its tests, the quick fix "Make my own copy" in `app/src/renderer/src/studios/blocks-items/AdditionStudios.tsx`, `docs/guide/worldgen.md` and `adding-to-vanilla.md` (the notes of ADR 0097 D5), `docs/COVERAGE-AUDIT.md` section 4.2 (W-D1 to W-D4 marked done).
+- **Scope:** ADR 0097 D1–D6. The tool reads the vanilla biome files of mcmeta's data branch at each target's pinned version (or, if that branch lacks a version, the cached client jar's `data/minecraft/worldgen/biome/`; ids only); its 26.3 output reproduces `docs/reference/vanilla-worldgen/tools/feature_indices.txt` (a test).
+- **Exit criteria:** the tool's test; targets tests with the fact present on both; worldgen and blocks-items validator tests with a swapped vanilla pair, a vanilla feature in an addition, a same-step duplicate (warning "does nothing") and a different-step duplicate; the Temperate forest template and every worldgen golden still free of the new warning; app test for the quick fix; plugin API tests; `check-deps` green.
+- **Try it:** none (worldgen is not simulated).
+
+### B443 Format: block types, components, item inventories, commands, creative tabs (wave 1; Opus)
+
+- **Owner files:** `packages/schemas/mcdoc/msm/definition.mcdoc` and `element.mcdoc` (the twenty types and their fields, the crop `soil` field, `msm:waterloggable`, `msm:weathering`, `msm:waxable`, `msm:item_inventory`, `msm:bundle`, the `command` and `creative_tab` definitions and elements), `symbols.json` (regenerated), conformance corpus files `packages/schemas/mcdoc/msm/conformance/definition/block-type-2-*`, `waterlog-*`, `weathering-*`, `item-inventory-*`, `bundle-*`, `command-*`, `creative-tab-*` (valid and invalid).
+- **Scope:** ADR 0094 D2, D3, D7–D9; ADR 0095 D1, D4; ADR 0096 D1, D2; closed structs with defaults in doc comments.
+- **Exit criteria:** `node tools/build-msm-mcdoc/index.ts --check` green; schemas tests green with at least 60 new corpus cases; the runtime's corpus JUnit test still green (unknown fields are refused until their parsers land: the brief adds the cases to the runtime's skip list by prefix and says so in its notes).
+
+### B444 Plugin API 1.17.0 and target facts (wave 1; Opus; after B442)
+
+- **Owner files:** `packages/plugin-api/src/target.ts` and its tests (on top of B442's 1.17.0), `packages/targets/mc-26.3/src/target.ts`, `mc-26.4/src/target.ts` and the targets' tests, the plugin API changelog section.
+- **Scope:** `BlockFacts.bedRules`, `dyeColours`, `stemTags`, `modelTemplates` (every vanilla block model template a lowering module names, checked against the client jar listing by a test in the targets package that reads the cached jar when present and skips otherwise) and `defaultTorchParticle`; `TargetFacts.commands` (`vanillaNames` from the vendored `commands.json`, `argumentTypes` mapping MSM's twelve argument names to vanilla's); additive, built-ins keep `^1.0.0`.
+- **Exit criteria:** plugin API and targets tests green; a test that no MSM command literal default in templates is a vanilla name on either target; `check-deps` green.
+
+### B445 Runtime: plants and food types (wave 2; Opus)
+
+- **Owner files:** `engine-mod/src/main/java/dev/mcsupermods/runtime/registry/types/PlantTypes.java` and new driver classes `MsmCakeBlock`, `MsmBerryBushBlock`, `MsmTallPlantBlock`, `MsmPottedPlantBlock`, `MsmVineBlock`, `MsmSeaPickleBlock`, `MsmCarpetBlock`, `MsmLayersBlock`, `MsmCocoaBlock`, `MsmCandleBlock`; `registry/types/MsmCropBlock.java` (the `soil` field); `loader/types/PlantFields.java`; test definitions under `engine-mod/src/gametest/resources/msm/msm_test/block/plant2_*`; `MsmPlantTypes2GameTest`; JUnit `PlantFieldsTest`.
+- **Scope:** ADR 0094 D1, D2, D4, D5 for `cake`, `berry_bush`, `tall_plant`, `potted_plant`, `vine`, `sea_pickle`, `carpet`, `layers`, `cocoa`, `candle` and the crop soil, with B440's overrides for vanilla content.
+- **Exit criteria:** engine-mod rules above; GameTests for every type: placement and survival rules, growth and bonemeal, harvest counts, eating slices and the comparator, refusing candles on a project cake, the pot taking and giving back the plant, vines spreading and climbing, pickles and candles counting, lighting candles, layers stacking, cocoa ageing on its support, soil-checked crops; log line counts unchanged except the block count.
+- **Try it:** list the states and uses B463 needs.
+
+### B446 Runtime: furniture, lights, signs and stems (wave 2; Opus)
+
+- **Owner files:** `registry/types/FurnitureTypes.java`, `Companions.java` and new driver classes `MsmBedBlock`, `MsmLadderBlock`, `MsmTorchBlock`, `MsmWallTorchBlock`, `MsmLanternBlock`, `MsmChainBlock`, `MsmRodBlock`, `MsmSignBlock`, `MsmWallSignBlock`, `MsmCeilingHangingSignBlock`, `MsmWallHangingSignBlock`, `MsmStemBlock`, `MsmAttachedStemBlock`, `MsmScaffoldingBlock` (only on B440's go); `loader/types/FurnitureFields.java`; the seam `src/mc/26.3/java/.../registry/WoodTypes.java` and `src/mc/26.4/java/.../registry/WoodTypes.java`; test definitions `.../block/furniture_*`; `MsmFurnitureGameTest`; JUnit `FurnitureFieldsTest`.
+- **Scope:** ADR 0094 D1–D6 for `bed`, `ladder`, `torch`, `lantern`, `chain`, `rod`, `sign`, `hanging_sign`, `stem`, `scaffolding`; companions registered right after their element with the element's properties and the right items (`StandingAndWallBlockItem`, `HangingSignItem`, `ScaffoldingBlockItem`); signs added to the vanilla block entity types; D6 or D6b as B440 decided.
+- **Exit criteria:** engine-mod rules; GameTests: bed placement (two halves), sleeping and spawn setting, exploding where the rule says; ladder and scaffolding climbing; torch and wall torch placement with the item and their particles; lantern hanging; chain axis; sign text set by a mock player and saved; hanging sign attachment; stem growing a project fruit and attaching; companions dropping the item; the seam GameTest on both versions.
+- **Try it:** list the states and uses B463 needs.
+
+### B447 Lowering: plants and food (wave 2; Opus)
+
+- **Owner files:** `packages/plugins/blocks-items/src/lowering/types/cake.ts`, `berry-bush.ts`, `tall-plant.ts`, `potted-plant.ts`, `vine.ts`, `sea-pickle.ts`, `carpet.ts`, `layers.ts`, `cocoa.ts`, `candle.ts`, `crop.ts` (soil), `validators-plants-2.ts`, and their tests and goldens.
+- **Scope:** ADR 0094 D10, D11 for these types: definition, blockstates, models on vanilla templates (`BlockFacts.modelTemplates`), item model definitions, tags, loot presets, editor-only textures; validators `berry-unknown`, `potted-plant-unknown`, `potted-plant-not-plant`, `light-fixed-by-state`.
+- **Exit criteria:** a lowering golden per type; a test per validator code; tag names checked against both targets' vendored registries; every type's defaults validate with zero problems on both targets.
+
+### B448 Lowering: furniture, lights, signs and stems (wave 2; Opus)
+
+- **Owner files:** `lowering/types/bed.ts`, `ladder.ts`, `torch.ts`, `lantern.ts`, `chain.ts`, `rod.ts`, `sign.ts`, `hanging-sign.ts`, `stem.ts`, `scaffolding.ts`, `validators-furniture.ts`, and their tests and goldens; `blockGeneratedModelIds` and a new `blockGeneratedBlockIds` (companions) in `lowering/types/models.ts` only through new exported helpers in `lowering/types/companions.ts` (index wiring was done by B441).
+- **Scope:** ADR 0094 D3, D6 (the sign texture paths per B440), D10, D11: companions' blockstates and loot, sign textures and the hanging sign GUI picture, validators `generated-block-clash`, `stem-fruit-unknown`, `torch-particle-not-simple`.
+- **Exit criteria:** as B447; registry views (app, library test) list the companions through `blockGeneratedBlockIds`.
+
+### B449 Runtime: waterlogging, weathering and waxing (wave 3; Opus; after B445, B446)
+
+- **Owner files:** `registry/types/MsmWaterloggedBlock.java`, new `registry/weathering/` (`Weathering`, `Waxing`, `MsmWeatheringBlock`, `MsmWeatheringSlabBlock`, `MsmWeatheringStairBlock`, `MsmWeatheringDoorBlock`, `MsmWeatheringTrapDoorBlock`, `MsmWeatheringPaneBlock`, `MsmWeatheringChainBlock`, `MsmWeatheringLanternBlock`), `registry/Waterlogging.java` (replacing B441's stub), `registry/BlockExtras.java` (honeycomb and axe uses beside stripping), test definitions `.../block/weathering_*`, `.../block/waterlog_*`, `MsmWeatheringGameTest`, JUnit `WeatheringMapsTest`.
+- **Scope:** ADR 0094 D7–D9.
+- **Exit criteria:** engine-mod rules; GameTests: placing in water and bucket use, water flowing out when broken, the stages advancing under forced random ticks at a rate within vanilla copper's measured in the same test, mixed neighbours, waxing, unwaxing, scraping with the axe damaged, creative use, the cycle and unknown-target load errors.
+- **Try it:** the weathering time-lapse step and the waterlogged look for B463.
+
+### B450 Runtime: item inventories and bundles (wave 3; Opus; after B443)
+
+- **Owner files:** new `registry/inventory/` (`ItemInventories`, `MsmInventoryItem`, `MsmItemChestMenu`, `MsmItemHopperMenu`, `MsmItemDispenserMenu`, `BagGuard`, `MsmBundleItem`), `loader/ItemInventoryParser.java`, test definitions `.../item/bag_*`, `MsmItemInventoryGameTest`, JUnit `ItemInventoryParserTest`.
+- **Scope:** ADR 0095 D1–D4; every hole B440 found (S10) is closed and has a GameTest.
+- **Exit criteria:** engine-mod rules; GameTests: opening with use and sneak-use, saving on close, contents on the stack after a restart of the test level, refusing bags and shulker boxes inside, the locked slot (click, number key, off hand), closing when the stack leaves the hand, death with the menu open, two players, the three layouts and the bundle's insert and take-out.
+- **Try it:** the bag mock-up screen for B463.
+
+### B451 Plugin: waterlogging, weathering, item inventories, bundles (wave 3; Opus; after B443)
+
+- **Owner files:** `packages/plugins/blocks-items/src/kinds/index.ts` (the five components), new `lowering/waterlog.ts`, `lowering/weathering.ts`, `lowering/item-inventory.ts`, `lowering/bundle.ts` and their calls in `lowering/block.ts` and `lowering/item.ts`, new `validators-weathering.ts` and `validators-inventory.ts` and their lines in the validator list, tests and goldens.
+- **Scope:** ADR 0094 D7–D9, D11 (`weathering-next-unknown`, `weathering-cycle`, `weathering-stage-order`, `waxable-not-weathering`, `waxable-target-unknown`); ADR 0095 D1, D4 (`component-conflict`, `max_stack_size`); the waterlogged variants in blockstates of the `MsmBlock` types.
+- **Exit criteria:** lowering goldens for a waterlogged block, a four-stage set with waxed copies, a bag and a bundle; a test per validator code; zero problems for valid cases on both targets.
+
+### B452 App: Block Studio for the new types (wave 3; Opus; after B447, B448)
+
+- **Owner files:** `app/src/renderer/src/studios/blocks-items/BlockTypeSection.tsx`, `PlantSection.tsx`, `BlockTypePreview.tsx`, `TexturesSection.tsx`, new `WeatheringSection.tsx` and `WaterloggingSwitch.tsx`, tests.
+- **Scope:** ADR 0101 D1 for blocks: the type picker in two groups with pictures, each type's fields, the companion shown as part of the element, the Weathering section with "Make the next stage" and "Make a waxed copy" (each an undoable element create), the Waterlogging switch; previews for the new types where the preview can draw them (cross, cube parts) and a picture otherwise.
+- **Exit criteria:** app rules; unit tests for each type's fields, the weathering chain builder (four stages, waxed copies, undo as one step) and the companion display.
+
+### B453 App: Item Studio inventory section (wave 3; Sonnet)
+
+- **Owner files:** `app/src/renderer/src/studios/blocks-items/ItemStudio.tsx` (one section line), new `ItemInventorySection.tsx`, tests.
+- **Scope:** ADR 0101 D1 for items: "A bag that holds things" (layout picture, rows, open with right-click or sneak right-click, sounds) or "Works like a bundle" (three pictures).
+- **Exit criteria:** app rules; unit tests for the section and its conflict hints.
+
+### B454 Runtime: commands and creative tabs (wave 4; Opus)
+
+- **Owner files:** new `engine-mod/src/main/java/dev/mcsupermods/runtime/commands/` (`MsmCommands`, `CommandBuilder`, `CommandArguments`), `loader/CommandParser.java`, `loader/CreativeTabParser.java`, `registry/MsmCreativeTabs.java` (replacing B441's stub), test definitions `.../command/*`, `.../creative_tab/*`, `MsmCommandGameTest`, `MsmCreativeTabGameTest`, JUnit `CommandParserTest`, `CreativeTabParserTest`.
+- **Scope:** ADR 0096 D1, D2; the `command` script event fired through `scripting/CommandEvents` (B455 implements its body; this brief calls it).
+- **Exit criteria:** engine-mod rules; GameTests: each argument type parsed and passed as macros to a function, the event action list with `self`, permission refusal, aliases, a clash with a vanilla command as a load error, re-registration after `/reload` (as S8 found), a creative tab with ordered items, an unknown tab still warning; log lines.
+- **Try it:** the chat box for B463.
+
+### B455 Runtime: Mixins and Script API 1.6 (wave 4; Opus)
+
+- **Owner files:** new `engine-mod/src/main/java/dev/mcsupermods/runtime/mixin/BlockItemPlaceMixin.java` and `ServerExplosionMixin.java`, `src/main/resources/msm_runtime.mixins.json` (the two entries), `scripting/` (`ScriptApi`, `ScriptEvents`, `ScriptEntity`, `ScriptWorld`, `ItemRef`, new `DroppedItemHandle`, `CommandEvents` body, `ScriptBridges`), `packages/plugins/scripting/api/script-api-v1.json`, the typings golden (`UPDATE_GOLDENS=1`), `MsmMixinEventGameTest`, `MsmScriptApi16GameTest`.
+- **Scope:** ADR 0096 D3, D4, ADR 0095 D5; each Mixin has its justification comment (DESIGN §10).
+- **Exit criteria:** engine-mod rules; `ScriptApiContractTest` green; GameTests for each member and event: a cancelled placement leaves the block unplaced and the slot resynced, `keepBlocks` keeps every block while an entity is hurt, `cancel` stops TNT and a creeper, `vehicle` and `passengers` with a ridden mob, `ride` and `dismount`, `itemsNear` with `remove` and `setItem`, `ItemRef.contents` of a bag; the CI server check log has no `Mixin apply failed`; scripting plugin tests green.
+- **Try it:** the place and explosion triggers for B463.
+
+### B456 Plugins: command and creative tab kinds (wave 4; Opus)
+
+- **Owner files:** `packages/plugins/scripting/src/kinds/` (the `msm:command` kind), new `packages/plugins/scripting/src/lowering/command.ts`, `validators-commands.ts`; `packages/plugins/blocks-items/src/kinds/creative-tab.ts` and its line in the plugin's kind list (the only edit to `kinds/index.ts` in this wave), new `lowering/creative-tab.ts`, `validators-creative-tabs.ts`; the `creative_tab` reference check in `packages/plugins/blocks-items/src/validators.ts`; tests and goldens.
+- **Scope:** ADR 0096 D1, D2, D6: lowering to definitions and lang; validators `commands.name-clash` (vanilla names from `TargetFacts.commands`, other project commands), `commands.optional-not-last`, `commands.nothing-to-run`, `commands.runs-as-player` (info), `blocks-items.creative-tab-unknown` (a project tab that does not exist), `blocks-items.creative-tab-icon-unknown`.
+- **Exit criteria:** plugin tests with a golden per kind and a test per code; zero problems for valid cases on both targets.
+
+### B457 Exporters: vanilla packs and the eject (wave 5; Sonnet for vanilla packs, then Opus for the generator in the same brief)
+
+- **Owner files:** `packages/exporters/src/vanilla-packs/mod-only.ts` (command and creative tab ids; companion ids), the info codes for vanilla pack exports, `packages/exporters/src/java-project/**` (the twenty types, companions, waterlogging, weathering, waxing as a generated `BlockWaxing`, item inventories and bundles, commands as a generated `ModCommands`, creative tabs), tests, the ejected-build fixture list in `.github/workflows/ci.yml` only if a new fixture must build (agreed with B464).
+- **Scope:** ADR 0094 D13, ADR 0095 D6, ADR 0096 D6, ADR 0101 D8.
+- **Exit criteria:** exporter tests: a recipe making a project torch is left out of the vanilla data pack with `export.mod-only-reference`; the eject of `fixtures/sample-vanilla-blocks` (after B462, or a test project now) generates and builds with JDK 25 on 26.3; `export.not-in-eject` only for scripts using the two events.
+
+### B458 Rules: facing, placing, explosions, commands, riding (wave 5; Opus; after B455)
+
+- **Owner files:** `packages/plugins/rules/src/catalogue/*`, `compile/*`, `templates/*` additions, goldens, `packages/schemas/mcdoc/msm/rules.mcdoc` (new trigger, step, condition, place and value ids), the Rules plugin tests.
+- **Scope:** ADR 0096 D5; Very easy wording below; compilation to plain events where possible (the command's `event`), to the script otherwise.
+- **Exit criteria:** rules goldens for every new card; a book using each compiles; `build-msm-mcdoc --check` green; runs after vehicles' B424 or in a wave without it.
+
+### B459 Creator flows (wave 5; Opus)
+
+- **Owner files:** `packages/plugins/library/src/starters/copper-set.ts`, `lights.ts`, `bed.ts`, `cake.ts`, `backpack.ts`, `custom-command.ts`, `creative-tab.ts`, the new answers in `crop.ts`, `wood-set.ts` and `stone-set.ts`, their lines in `starters/index.ts`, MSM-made textures under `packages/plugins/library/src/assets/vanilla-parity/`, tests, `examples/` goldens for the starters (`UPDATE_GOLDENS=1`).
+- **Scope:** ADR 0101 D2 (batch 1): every flow's untouched defaults give zero problems on both targets; the Wood set's sign answers on by default; textures are MSM's own (drawn as the Minecraft-style art rules of ADR 0092 say, no Mojang pictures).
+- **Exit criteria:** library tests (each flow and each new answer with defaults, zero problems, both targets); the goldens.
+
+### B460 App: Command and Creative tab Studios, Very easy picks (wave 5; Opus)
+
+- **Owner files:** new `app/src/renderer/src/studios/scripting/CommandStudio.tsx`, `app/src/renderer/src/studios/blocks-items/CreativeTabStudio.tsx` (the components B441 registered), the Very easy pick lists in `app/src/renderer/src/studios/very-easy.ts` and the "Make a block" and "Make an item" pickers they feed, tests.
+- **Scope:** ADR 0101 D1 (commands, tabs) and D4.
+- **Exit criteria:** app rules; unit tests for the argument rows, the chat line preview, the tab's drag ordering and the Very easy picks (no ids shown).
+
+### B461 Templates and examples (wave 5; Sonnet)
+
+- **Owner files:** `packages/plugins/blocks-items/src/templates/` (the block and item templates of ADR 0101 D3), `packages/plugins/scripting/src/templates/` (the command and tab templates), `packages/plugins/library/src/examples/` (Cottage furniture, Orchard and pie, Copper roof, Adventurer's satchel, Server helper) and their index lines, `examples/` goldens.
+- **Exit criteria:** each template creates with zero problems on both targets; library tests; the template and example counts reported for the close.
+
+### B462 Fixture `sample-vanilla-blocks` (wave 6; Opus)
+
+- **Owner files:** `fixtures/sample-vanilla-blocks/**` (one of each new type, a waterlogged lamp, a four-stage copper set with waxed copies, a satchel, a pouch, a bundle, two commands, a creative tab, scripts using every Script API 1.6 member, a Rules book with each new card; goldens for both targets; README with the in-game checklist: each block's look and use, signs written and edited, beds slept in, copper ageing over a few in-game days, waxing and scraping, bags and their dupe routes, commands from chat, the tab in creative, TNT with "keep the blocks safe", on 26.3 and 26.4, singleplayer and a dedicated server).
+- **Exit criteria:** zero problems on both targets; goldens checked by the exporters' test.
+
+### B463 Try it, batch 1 (wave 6; Opus; after the Try it plan's close)
+
+- **Owner files:** new `packages/sim/src/blocks/types2/**`, `packages/sim/src/blocks/weathering.ts`, `packages/sim/src/items/bags.ts`, `packages/sim/src/commands/**`, new `app/src/renderer/src/tryit/blocks2/**`, the lines that register them in the sim and the Try it view (agreed with the Try it owner at the time).
+- **Scope:** ADR 0101 D5 for batch 1 (states, uses, climbable, waterlogged look, a weathering step in the time-lapse, sign text, the bag mock-up, the chat box, the two triggers); Q29.
+- **Exit criteria:** sim tests; app tests; the `tryit-path` e2e extended or a new step; size within budget.
+
+### B464 Parity, CI and client GameTests (wave 7; Opus; after B462)
+
+- **Owner files:** `engine-mod/parity/src/.../SampleVanillaBlocksParityTest.java`, `MsmVanillaBlocksClientGameTest` (signs with text, beds, torches and lanterns, a bundle tooltip; screenshots in the artefact, `assertScreenshotContains` for the sign text colour), `.github/workflows/ci.yml` (export, server check pinning the new log lines and forbidding `NoClassDefFoundError` and `Mixin apply failed`, parity on both versions' content jars and the ejected jar).
+- **Exit criteria:** parity green on both versions locally; a negative run fails; CI green on the branch.
+
+### B465 e2e paths (wave 7; Opus; after B459, B460)
+
+- **Owner files:** `app/e2e/vanilla-blocks-path.spec.ts`, `backpack-path.spec.ts`, `commands-path.spec.ts`.
+- **Exit criteria:** all pass under `xvfb-run -a`: the Lights and Copper set flows with defaults, a sign typed in the Studio, the Backpack flow, a command in its Studio and a Rules command trigger, a Very easy block pick; the full e2e run time reported.
+
+### B466 AI helper, batch 1 (wave 8; Opus)
+
+- **Owner files:** `app/src/renderer/src/ai/schema-summary.ts` allowances, the system prompt paragraphs in `packages/ai/src/system-prompt.ts`, `app/test/ai-rules.test.ts` pins, a scripted build scenario "a cottage with a bed and lanterns".
+- **Exit criteria:** ADR 0101 D7; AI tests green.
+
+### B467 Guide, changelog, status lines, batch 1 (wave 8; Sonnet)
+
+- **Owner files:** `docs/guide/block-types-and-plants.md`, `blocks-and-items.md`, new `commands-and-tabs.md`, lines in `rules.md`, `scripting.md`, `very-easy.md`, `try-it.md`, `worldgen.md` (beside B442's notes), `docs/site/.vitepress/config.ts`, `docs/guide/README.md`, `CHANGELOG.md` `[Unreleased]`, status lines in root and scoped `CLAUDE.md` files (within their line limits).
+- **Exit criteria:** labels match the shipped UI (from the notes); every limit Q1–Q20 and Q29–Q31 in plain words on the right page.
+
+### B468 Close of batch 1 (wave 8; main session)
+
+- ADRs 0094–0097 accepted with findings (S1–S10 and every "verify at implementation" answer), DESIGN §8, §10, §11, §12 updated (types, Mixins and the policy's first use, Script API 1.6), coverage audit section 1.3 and section 3 lines updated, ROADMAP ticks and a milestone row with counts from the clean run (kinds, templates, GameTests, parity), HANDOFF, DEVLOG. ADR 0101 stays Proposed until batch 2's close.
+
+### B469 Spike: traders, professions, mount storage and shoulders (wave 9; Opus, high effort; one session)
+
+- **Owner files:** new `engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/spike3/` (throwaway), temporary entries in the GameTest `fabric.mod.json`, `src/mc/<mc>/gametest/.../SpikePoi.java`.
+- **Scope:** S11–S13 on both versions: a project mob implementing `Merchant` opened by a mock and a real client player (client GameTest on `createServer()`), offers drawn from a vanilla trade set and from a project one with the loot context `getOffer` needs, XP and level-up, restock; a POI and profession registered (Fabric `PoiHelper` on 26.3; reflection into the private registration on 26.4, else a Mixin prototype), a vanilla villager taking the job at the project block and trading from the profession's sets, the profession texture drawn (screenshot); the inventory key while riding a project mob; a project mob riding a player at a shoulder offset (position, turning, sneaking, damage, dimension change, disconnect) on a dedicated server.
+- **Exit criteria:** a report with S11–S13 per version with evidence; go or no-go for ADR 0098 D2 on 26.4 (reflection, Mixin or reserve B487) and for D4 (shoulder pets); spike code deleted; `./gradlew build` green on both versions.
+
+### B470 Spike: fluids (wave 9; Opus, high effort; one session)
+
+- **Owner files:** new `engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/spike4/` and `src/mc/<mc>/gametest/.../SpikeFluid.java` (throwaway).
+- **Scope:** S14 on both versions: a water-like and a lava-like fluid registered with block and bucket; flow, sources, draining, bucket fill and empty, dispensers; client drawing through `FluidRenderingRegistry` (screenshots, `assertScreenshotContains` for the tint); swimming, drowning and putting out fire through the fluid tag; fog; a dedicated server with a joined client.
+- **Exit criteria:** a report per version; go or no-go for 26.3 and for 26.4 separately (no-go on 26.4 starts reserve B486); spike code deleted; builds green.
+
+### B471 Dimension Type Studio, flow answer and validators (wave 9; Opus)
+
+- **Owner files:** new `app/src/renderer/src/studios/worldgen/DimensionTypeStudio.tsx` and its sections and its line in `app/src/renderer/src/studios/worldgen/studios.tsx`, `packages/plugins/worldgen/src/validators.ts` (the `dimension-*` rules) and tests, `packages/plugins/library/src/starters/dimension.ts` (the new answer) and its golden, worldgen templates "Moon dimension type" and "Nether-like dimension type", `packages/plugin-api/src/target.ts` (`WorldgenFacts.dimensionHeight`, `environmentAttributes`; plugin API 1.18.0) and both targets' facts and tests.
+- **Scope:** ADR 0100 D1–D5.
+- **Exit criteria:** app rules (chunk size reported); validator tests; the flow with the answer on and off gives zero problems on both targets; templates validate; the vanilla data pack of a project using a project dimension type loads on a vanilla server in the existing CI check (one new case).
+- **Try it:** the sky colour in the view (B483).
+
+### B472 Scaffold and stubs, batch 2 (wave 10; Sonnet)
+
+- **Owner files:** `MsmRuntime.java` (init calls `registry.fluid.MsmFluids.register(report)` after particles and before blocks, `registry.mob.MsmProfessions.register(report)` after blocks), `MsmRuntimeClient.java` (`client.fluid.FluidClient.init()`), `DefinitionScanner.java` (kinds `fluid`, `villager_profession`), `LoadReport.java` (log lines `registered N fluid(s)`, `N villager profession(s)`), stubs for every class named, the mob driver hooks for `MobTrader`, `MobStorage`, `MobShoulder` in `registry/mob/MobDriver.java` (stubs), GameTest stubs `MsmTraderGameTest`, `MsmProfessionGameTest`, `MsmMobStorageGameTest`, `MsmFluidGameTest`, client stub `MsmFluidClientGameTest`, the parity class `SampleVillagersParityTest`, `fixtures/sample-villagers-and-fluids/README.md`, `app/e2e/trader-path.spec.ts` and `fluid-path.spec.ts` placeholders, Studio registry lines for `ProfessionStudio` and `FluidStudio`.
+- **Exit criteria:** as B441 with the two new log lines at 0.
+
+### B473 Format, plugin API 1.18.0 and facts, batch 2 (wave 10; Opus; after B471)
+
+- **Owner files:** `definition.mcdoc`, `element.mcdoc` (`msm:trader`, `msm:storage`, `msm:shoulder_riding`, the `villager_profession` and `fluid` kinds), `symbols.json`, corpus files `trader-*`, `storage-*`, `shoulder-*`, `profession-*`, `fluid-*`; `packages/plugin-api/src/target.ts` (on top of B471: `EntityFacts.tradeSounds`, `vanillaJobSites`, `vanillaTradeSets`, `BlockFacts.fluidModel`, `fluidTags`), both targets' facts and tests, the changelog.
+- **Scope:** ADR 0098 D1–D5, ADR 0099 D1, D4.
+- **Exit criteria:** `build-msm-mcdoc --check`; schemas tests with at least 40 new cases; plugin API and targets tests.
+
+### B474 Runtime: traders and professions (wave 11; Opus, high effort)
+
+- **Owner files:** `registry/mob/MobTrader.java`, `registry/mob/MsmProfessions.java`, the seam `src/mc/26.3/java/.../registry/PoiTypes.java` and `src/mc/26.4/java/.../registry/PoiTypes.java`, `loader/TraderParser.java`, `loader/ProfessionParser.java`, test definitions `.../entity/trader_*`, `.../villager_profession/*`, `MsmTraderGameTest`, `MsmProfessionGameTest`, JUnit tests for the parsers.
+- **Scope:** ADR 0098 D1, D2 with B469's routes.
+- **Exit criteria:** engine-mod rules; GameTests: opening the menu, offers per level, a trade paying and rewarding XP, level-up, restock twice a day, saving offers, babies and angry mobs refusing, `on_trade`; a villager taking the job, trading from the profession's sets, losing the job when the block breaks, both versions through the seam; log lines.
+- **Try it:** the merchant mock-up for B483.
+
+### B475 Runtime: fluids (wave 11; Opus, high effort)
+
+- **Owner files:** new `registry/fluid/` (`MsmFluids`, `FluidDefinition`, `MsmLiquidBlock`), the seam `src/mc/26.3/java/.../fluid/MsmFluid.java` and `src/mc/26.4/java/.../fluid/MsmFluid.java`, `loader/FluidParser.java`, `client/fluid/FluidClient.java`, test definitions `.../fluid/*`, `MsmFluidGameTest`, `MsmFluidClientGameTest`, JUnit `FluidParserTest`.
+- **Scope:** ADR 0099 D1–D3 with B470's answers; on a 26.4 no-go, this brief does 26.3 and B486 gates 26.4.
+- **Exit criteria:** engine-mod rules with client GameTests; GameTests: flow distance and delay per definition, infinite sources, draining, buckets and dispensers, entity in it (swim, drown, burn by `behaves_like`), `on_entity_inside`, light; the client GameTest draws still and flowing fluid on both versions (or 26.3 only).
+- **Try it:** still and flowing pictures for B483; Q29.
+
+### B476 Entities plugin: trader, profession, storage, shoulder (wave 11; Opus)
+
+- **Owner files:** `packages/plugins/entities/src/kinds/index.ts` (the components and the profession kind), new `kinds/profession.ts`, `lowering/trader.ts`, `lowering/profession.ts` (trade sets and tags, the job site POI tag entry, textures, lang), `lowering/storage.ts`, `lowering/shoulder.ts`, `validators-villagers.ts`, `templates/villagers/*`, tests and goldens.
+- **Scope:** ADR 0098 D1–D5: validators `entities.trade-set-unknown`, `entities.trader-monster` (info), `entities.job-site-taken`, `entities.job-site-unknown`, `entities.shoulder-too-wide`, `entities.shoulder-needs-tameable`, `entities.storage-rows`.
+- **Exit criteria:** plugin tests with goldens for a trader, a profession, a pack mule and a shoulder pet; a test per validator code; templates with zero problems on both targets.
+
+### B477 Blocks-items plugin: fluids (wave 11; Opus)
+
+- **Owner files:** new `packages/plugins/blocks-items/src/kinds/fluid.ts` and its line in the kind list, `lowering/fluid.ts` (definition, liquid block states and particle-only models, bucket item model, textures and `.mcmeta`, lang, the fluid tag), `validators-fluids.ts` (`generated-item-clash`, `fluid-flow-range`, `fluid-texture-missing`), fluid templates, tests and goldens.
+- **Exit criteria:** goldens for a water-like and a lava-like fluid; validator tests; templates with zero problems on both targets (or 26.3 only per B470).
+
+### B478 Exporters, batch 2 (wave 11; Sonnet)
+
+- **Owner files:** `packages/exporters/src/vanilla-packs/mod-only.ts` (fluid, bucket and profession ids; the acquirable job site tag entry as `required: false`), the eject's `export.not-in-eject` list for batch 2's features, tests.
+- **Exit criteria:** exporter tests: a trade set naming a project item is left out of vanilla packs; a project's acquirable job site tag stays valid on a vanilla server (the existing CI check); the eject warns once per element.
+
+### B479 Runtime: mount storage and shoulder pets (wave 12; Opus)
+
+- **Owner files:** `registry/mob/MobStorage.java` (or reuse of vehicles' if it landed first: then only the mob hook), `registry/mob/MobShoulder.java` with its goal in `goals/`, `loader/StorageParser.java`, test definitions `.../entity/storage_*`, `shoulder_*`, `MsmMobStorageGameTest` (storage and shoulder cases).
+- **Scope:** ADR 0098 D3, D4 with B469's answers (D4 only on its go).
+- **Exit criteria:** engine-mod rules; GameTests: opening by sneak-use and by the inventory route found in B469, chest adding with `needs_chest`, contents saved and dropped on death; the pet jumping on, leaving on damage, sneak and dimension change, one per player.
+- **Try it:** a limit line (storage and shoulders are not simulated).
+
+### B480 App: Mob Studio sections, Profession and Fluid Studios, the Very easy tile (wave 12; Opus)
+
+- **Owner files:** `app/src/renderer/src/studios/entities/` new `TraderSection.tsx` (the trade editor writing ADR 0060 elements), `StorageSection.tsx`, `ShoulderSection.tsx` and their lines in the Mob Studio, new `ProfessionStudio.tsx`, `app/src/renderer/src/studios/blocks-items/FluidStudio.tsx`, the Very easy tile **Make a trader** in `app/src/renderer/src/components/home/tiles.ts`, tests.
+- **Exit criteria:** app rules; unit tests for the trade editor (price, product, uses, XP, level), the fluid preview and the tile (no ids).
+
+### B481 Flows, templates and examples, batch 2 (wave 12; Opus)
+
+- **Owner files:** `packages/plugins/library/src/starters/wandering-merchant.ts`, `village-job.ts`, `fluid.ts`, the new answers in `mount.ts` and `pet.ts`, `starters/index.ts` lines, MSM-made assets, `packages/plugins/library/src/examples/` (Roadside merchant, Village blacksmith job, Oil well), `examples/` goldens.
+- **Exit criteria:** library tests (defaults give zero problems on both targets, fluids per B470's go); goldens.
+
+### B482 Fixture, parity, CI and client GameTests, batch 2 (wave 13; Opus)
+
+- **Owner files:** `fixtures/sample-villagers-and-fluids/**` (a trader, a profession and job site, a pack mule, a shoulder pet, two fluids, a project dimension type; goldens; README with the in-game checklist), `SampleVillagersParityTest`, `MsmFluidClientGameTest` additions (a villager in the project profession), `.github/workflows/ci.yml` (export, server check log lines, parity on both versions).
+- **Exit criteria:** zero problems on both targets; parity green locally on both versions; CI green on the branch.
+
+### B483 e2e and Try it, batch 2 (wave 13; Opus; Try it part after the Try it plan's close)
+
+- **Owner files:** `app/e2e/trader-path.spec.ts`, `fluid-path.spec.ts`; new `packages/sim/src/traders/**`, `packages/sim/src/fluids/**`, `app/src/renderer/src/tryit/traders/**`, the sky colour in the Try it view's sky module (agreed with its owner).
+- **Exit criteria:** e2e under `xvfb-run -a` (Wandering merchant flow with defaults, a trade added in the Studio, the Fluid flow, the Dimension flow's sky answer, the Very easy tile); sim and app tests; Q29 in the guide notes.
+
+### B484 AI helper and guide, batch 2 (wave 14; Sonnet for the guide, Opus for the AI part)
+
+- **Owner files:** AI allowances, prompt paragraphs and pins (as B466) with the scenario "a merchant who sells copper"; `docs/guide/villagers-and-traders.md`, `fluids.md`, lines in `entities-and-models.md`, `mob-behaviours.md`, `worldgen.md` (dimension types), `very-easy.md`, `try-it.md`, the site config and index, `CHANGELOG.md`, status lines.
+- **Exit criteria:** AI tests green; labels match the UI; limits Q21–Q31 in plain words.
+
+### B485 Close of batch 2 (wave 14; main session)
+
+- ADRs 0098–0101 accepted with findings (S11–S14), DESIGN §8, §9, §10, §11 updated, coverage audit lines (B9 professions, B13 dimension types, fluids, mount inventories) updated, ROADMAP ticks and milestone row, HANDOFF, DEVLOG; this plan deleted (facts and limits into the ADRs' findings).
+
+### B486 Reserve: fluids on 26.3 only (only on B470's no-go for 26.4)
+
+- **Owner files:** the 26.4 fluid seam (a stub that registers nothing and logs one line), `packages/targets/mc-26.4/src/target.ts` (`BlockFacts.fluidModel` absent), the `export.not-on-target` check for `msm:fluid` in `packages/exporters`, the guide line.
+- **Exit criteria:** a 26.4 export of a project with a fluid warns and leaves it out; 26.3 unaffected.
+
+### B487 Reserve: POI types by Mixin on 26.4 (only if B469's reflection route fails)
+
+- **Owner files:** `engine-mod/src/mc/26.4/java/.../mixin/PoiTypesAccessor.java` (an accessor Mixin in a 26.4-only Mixin config), the 26.4 `PoiTypes` seam.
+- **Exit criteria:** the profession GameTests green on 26.4; the Mixin's justification comment; `Mixin apply failed` absent in the CI server check.
+
+## Very easy wording
+
+- "Make a block" gains pictures: **Lights** ("Torches, lanterns, chains and candles"), **Bed** ("A bed or sleeping bag"), **Cake** ("Eat it a slice at a time"), **Sign** ("Write on it"), **Bush with berries**, **Ages like copper**. "Make an item" gains **A bag that holds things** ("Opens when you right-click it").
+- Rules: "When a player places a block" (then "Which block?"), "Stop the placing"; "When something explodes", "Stop the explosion", "Keep the blocks safe"; "When a player types the command /…" (then "What is the command called?" and "What does the player type after it?"); "is facing" and "the way it faces" (north, east, south, west, up, down); "in front of here"; "is riding".
+- Batch 2: the tile **Make a trader** — "A mob that trades with you." Then "What does it sell?" (pick an item, then "For how many emeralds?"), "What does it look like?" (the mob pictures), "What is it called?".
+- Things to fix, in plain words for each new code (B447, B448, B451, B456, B458, B476, B477 write them; B467 and B484 check them).
+
+## Notes from implementation
+
+(Empty. The main session appends each executor's "Notes for the plan" here.)

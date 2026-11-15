@@ -4987,3 +4987,18 @@ Decisions
 
 Next
 - Wave 1: B409 (format) and B410 (plugin API 1.16.0 and target facts).
+## 2026-11-15 — orchestrator — Vanilla parity 2 planned
+
+What
+- Planned the next vanilla-parity work for the user's rule "anything that can be made in vanilla java should be possible through this app", from the research report's missing-features ranking (ranks 4, 5, 7, 11, 13, 15, 16) and the coverage audit (sections 1.3, 3 and 4.2): ADRs 0094 (twenty block types, waterlogging, weathering and waxing), 0095 (bags and bundles), 0096 (commands, creative tabs, `block.place` and explosion events through the runtime's first Mixins, Script API 1.6, Rules cards), 0097 (vanilla's feature order as a target fact, W-D1 to W-D4), 0098 (trader mobs, villager professions and job sites, mount storage, shoulder pets), 0099 (fluids), 0100 (dimension type and sky editing) and 0101 (Studios, flows, templates, Try it, tests), all Proposed; `docs/PLAN-vanilla-parity-2.md` with facts F1–F36 (javap over the Loom-cached 26.3 and 26.4-snapshot-7 jars and the Fabric API module jars), open facts S1–S14 for three spikes, limits Q1–Q31, rules for every brief (including "never run `git config`"), two batches in fifteen waves and briefs B440–B487 (B434–B439 left free). ROADMAP has an "in planning" section, HANDOFF "Next" and the coverage audit (section 3 and 4.2) point at the plan.
+
+Decisions
+- Two batches. Batch 1 "Vanilla blocks and everyday parity" first (block types are the most-requested vanilla gap, beginner-facing and low risk; bags, commands, tabs, the two events and the worldgen order beside them). Batch 2 "Villagers, fluids and skies" after its spikes (traders and professions need a 26.4 POI seam; fluids are the largest API difference yet).
+- New block types are `type` values on `msm:block` (ADR 0067's pattern); torches, signs, hanging signs and stems register a generated companion block. Weathering runs vanilla's own `ChangeOverTimeBlock.changeOverTime` on small per-type subclasses, because vanilla keeps its maps for vanilla blocks and 26.4's Fabric API has no `OxidizableBlocksRegistry`.
+- Found: Fabric's `addFeature` skips a placed feature the biome's step already has (biome API 20.1.1 and 20.1.6), so W-D3's same-step duplicate is a "does nothing" warning, not the error the audit proposed.
+- Found: on 26.4 a liquid is one fluid with a `SOURCE` property built from `Fluid.Properties` (26.3: separate source and flowing fluids), so fluids get a full version seam and a 26.3-only reserve; 26.4 also lacks Fabric's `PoiHelper` and fluid behaviour registry.
+- Found: beds are plain blocks in 26.x (no bed block entity; template bed models), so beds need no client code; signs keep vanilla's block entities, and whether a project wood type draws its own sign texture is the first spike question (fallback: the chosen vanilla wood's look).
+- The first Mixins (DESIGN §10 policy): `BlockItem.place` and `ServerExplosion.explode`, identical on both versions; no Fabric event exists for either.
+
+Next
+- Show the user the eight ADRs' vetoable defaults; then run B440 (spike, second engine-mod executor beside vehicles' B406) and B442 (worldgen order); B441 after vehicles' B408.
