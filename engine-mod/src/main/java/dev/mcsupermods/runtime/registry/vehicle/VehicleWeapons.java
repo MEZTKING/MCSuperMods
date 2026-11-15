@@ -36,9 +36,10 @@ import net.minecraft.world.phys.Vec3;
  *       damage, a vanilla projectile item, or a project {@code msm:throwable}, whose hit events run, such as a shell's
  *       {@code on_hit_block} with {@code explode}) starts at the muzzle ({@link #muzzle}) with the shooter as owner, so kills
  *       and advancements credit the player, and flies along the aim at {@code speed} with {@code inaccuracy}. Then
- *       {@code per_shot} rounds go, the cooldown starts, the {@code sound} plays (from the server, to everyone), the
- *       vehicle is pushed back by {@code recoil} blocks a tick and {@code on_fire} fires (self the vehicle, player the
- *       shooter). Arrows of a weapon without {@code ammo} can be picked up in creative only (no free arrows).</li>
+ *       {@code per_shot} rounds go, the cooldown starts, the {@code sound} plays (from the server, to everyone near but the
+ *       shooter, whose client plays it at once: B418's {@code VehicleInput}), the vehicle is pushed back by
+ *       {@code recoil} blocks a tick, {@code on_fire} fires (self the vehicle, player the shooter) and then
+ *       {@link VehicleEvents} hears the shot. Arrows of a weapon without {@code ammo} can be picked up in creative only (no free arrows).</li>
  *   <li><b>Aim.</b> A muzzle whose {@code bone} is the turret's {@code pitch_bone} aims along the turret's yaw and pitch, one
  *       on the turret's {@code bone} along its yaw, any other along the hull (its yaw and pitch).</li>
  *   <li><b>Loading.</b> Using a weapon's {@code ammo.item} on the vehicle (seated or not) loads as many as fit from the
@@ -210,6 +211,7 @@ public final class VehicleWeapons {
             }
         }
         weapon.onFire().ifPresent(event -> vehicle.fire(level, event, shooter));
+        VehicleEvents.fired(level, vehicle, index, shooter);
         return true;
     }
 

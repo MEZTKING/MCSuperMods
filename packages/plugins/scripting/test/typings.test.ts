@@ -40,6 +40,12 @@ describe('script API v1', () => {
       'player.changeDimension',
       'player.chat',
       'entity.damaged',
+      'key.pressed',
+      'key.released',
+      'vehicle.mounted',
+      'vehicle.dismounted',
+      'vehicle.fired',
+      'vehicle.destroyed',
     ]);
   });
 

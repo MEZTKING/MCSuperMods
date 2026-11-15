@@ -16,6 +16,7 @@
         }
       ]
     },
+    "horn": "minecraft:block.note_block.bell",
     "start_sound": "minecraft:block.piston.extend"
   },
   "events": {

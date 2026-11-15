@@ -1,5 +1,18 @@
 package dev.mcsupermods.runtime.gametest;
 
+import com.mojang.authlib.GameProfile;
+import dev.mcsupermods.runtime.controls.KeyBinds;
+import dev.mcsupermods.runtime.net.KeyPayload;
+import dev.mcsupermods.runtime.registry.vehicle.VehicleHorn;
+import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.UUID;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.CommonListenerCookie;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventContext;
@@ -27,6 +40,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -54,7 +68,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
  * fuel, two seats, camera 8, health 10 with iron repair, red and blue paint, every trigger, ramming, explode events),
  * {@code vh_boat} (water, two rows of storage), {@code vh_tank} (turret, ammunition, {@code immune_to},
  * {@code explodes} 2), {@code vh_heli} (hover, no pick-up), {@code vh_plane} (air), {@code vh_amphi} (amphibious, names
- * overridden), {@code vh_raft} (ground that floats). Players act through {@code Player.interactOn},
+ * overridden), {@code vh_raft} (ground that floats). The horn ({@code vh_kart}'s {@code engine.horn}, B421) is heard by
+ * a listening player ({@code Ears}). Players act through {@code Player.interactOn},
  * {@code Player.attack} and {@code ItemStack.use}, the calls the server's packets make. On the server a vehicle without a
  * driver moves itself; a driven one is moved by its driver's client (ADR 0090 D4), which a GameTest has not got, so the
  * driven tests read the server's part (fuel, triggers, seats) and drive the physics step directly.
@@ -823,6 +838,127 @@ public class MsmVehicleGameTest {
         helper.assertValueEqual(pig.getHealth(), full, "explode at other without one hurt the pig");
         EventRunner.fire(entry.id(), entry.definition().events(), id("blast_other"), EventContext.forEntity(level, kart, null, pig));
         helper.assertTrue(pig.getHealth() < full || !pig.isAlive(), "explode at other did not hurt the pig");
+        helper.succeed();
+    }
+
+    // The horn (ADR 0090 D2 engine.horn, ADR 0088 D5; B421)
+
+    /**
+     * A spectator player that records the sound packets it is sent, as in {@code MsmSoundGameTest}: a plain
+     * {@code ServerPlayer} on a {@code Connection} inside a Netty {@code EmbeddedChannel}, whose outbound queue holds the
+     * packets unencoded. Only sounds played within a block of {@code source} count, since other tests run next to this
+     * one. Remove it with {@link #close}.
+     */
+    private static final class Ears implements AutoCloseable {
+        private final ServerPlayer player;
+        private final EmbeddedChannel channel;
+        private final MinecraftServer server;
+        private final Entity source;
+
+        Ears(GameTestHelper helper, Vec3 at, Entity source) {
+            this.source = source;
+            server = helper.getLevel().getServer();
+            GameProfile profile = new GameProfile(UUID.randomUUID(), "msm-ears");
+            CommonListenerCookie cookie = CommonListenerCookie.createInitial(profile, false);
+            player = new ServerPlayer(server, helper.getLevel(), profile, cookie.clientInformation());
+            Connection connection = new Connection(PacketFlow.SERVERBOUND);
+            channel = new EmbeddedChannel(connection);
+            server.getPlayerList().placeNewPlayer(connection, player, cookie);
+            player.setGameMode(GameType.SPECTATOR);
+            player.snapTo(helper.absoluteVec(at));
+            heard();
+        }
+
+        /** The sound events played at the source since the last call, in order. */
+        List<Identifier> heard() {
+            channel.flushOutbound();
+            List<Identifier> out = new ArrayList<>();
+            for (Object message = channel.readOutbound(); message != null; message = channel.readOutbound()) {
+                if (message instanceof Packet<?> packet) {
+                    collect(packet, out);
+                }
+            }
+            return out;
+        }
+
+        private void collect(Packet<?> packet, List<Identifier> out) {
+            switch (packet) {
+                case ClientboundSoundPacket p -> {
+                    if (source.position().distanceTo(new Vec3(p.getX(), p.getY(), p.getZ())) < 1) {
+                        out.add(p.getSound().value().location());
+                    }
+                }
+                case ClientboundBundlePacket b -> b.subPackets().forEach(p -> collect(p, out));
+                default -> {}
+            }
+        }
+
+        @Override
+        public void close() {
+            server.getPlayerList().remove(player);
+            channel.close();
+        }
+    }
+
+    private static final Identifier BELL = Identifier.withDefaultNamespace("block.note_block.bell");
+
+    private static void horn(ServerPlayer player, boolean pressed) {
+        KeyBinds.receive(player, new KeyPayload(KeyBinds.RuntimeKey.HORN.id(), pressed));
+    }
+
+    private static long bells(List<Identifier> heard) {
+        return heard.stream().filter(BELL::equals).count();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void theDriversHornSoundsForEveryoneNearWithACooldown(GameTestHelper helper) {
+        floor(helper);
+        MsmVehicle kart = spawn(helper, "vh_kart", MID);
+        ServerPlayer driver = player(helper, MID);
+        helper.assertTrue(driver.startRiding(kart), "the driver gets in");
+        Ears ears = new Ears(helper, MID.add(4, 1, 0), kart);
+        horn(driver, true);
+        horn(driver, false);
+        helper.assertValueEqual(bells(ears.heard()), 1L, "the horn sounds once per press");
+        horn(driver, true);
+        horn(driver, false);
+        helper.assertValueEqual(bells(ears.heard()), 0L, "a press within the cooldown is silent");
+        helper.runAfterDelay(VehicleHorn.COOLDOWN_TICKS, () -> {
+            horn(driver, true);
+            helper.assertValueEqual(bells(ears.heard()), 1L, "after the cooldown it sounds again");
+            helper.runAfterDelay(VehicleHorn.COOLDOWN_TICKS + 1, () -> {
+                helper.assertValueEqual(bells(ears.heard()), 0L, "holding the key sounds it once");
+                horn(driver, false);
+                ears.close();
+                remove(helper, driver);
+                helper.succeed();
+            });
+        });
+    }
+
+    @GameTest
+    public void onlyTheDriverOfAVehicleWithAHornSoundsIt(GameTestHelper helper) {
+        floor(helper);
+        MsmVehicle kart = spawn(helper, "vh_kart", MID);
+        MsmVehicle tank = spawn(helper, "vh_tank", new Vec3(1.5, 1, 1.5));
+        ServerPlayer tankDriver = player(helper, MID);
+        ServerPlayer kartDriver = player(helper, MID);
+        ServerPlayer rider = player(helper, MID);
+        ServerPlayer walker = player(helper, MID);
+        helper.assertTrue(tankDriver.startRiding(tank), "the tank's driver gets in");
+        helper.assertTrue(kartDriver.startRiding(kart) && rider.startRiding(kart), "two get into the kart");
+        Ears ears = new Ears(helper, MID.add(2, 1, 0), kart);
+        for (ServerPlayer player : List.of(tankDriver, rider, walker)) {
+            horn(player, true);
+            horn(player, false);
+        }
+        helper.assertValueEqual(bells(ears.heard()), 0L, "no horn on the tank, none for the kart's passenger, none on foot");
+        helper.assertFalse(VehicleHorn.sound(helper.getLevel(), tank), "a vehicle without engine.horn");
+        horn(kartDriver, true);
+        horn(kartDriver, false);
+        helper.assertValueEqual(bells(ears.heard()), 1L, "the kart's driver sounds it");
+        ears.close();
+        remove(helper, tankDriver, kartDriver, rider, walker);
         helper.succeed();
     }
 }

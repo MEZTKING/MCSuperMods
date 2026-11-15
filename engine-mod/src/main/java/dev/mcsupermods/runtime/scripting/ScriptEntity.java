@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.scripting;
 import dev.mcsupermods.runtime.events.AnimationTarget;
 import dev.mcsupermods.runtime.events.Motion;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
+import dev.mcsupermods.runtime.registry.vehicle.MsmVehicle;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
@@ -32,6 +33,8 @@ import org.mozilla.javascript.Scriptable;
  * (0 or false) when it is not in a server level. Script API 1.1 (ADR 0065 D2, D5 to D7): equipment of living
  * entities (nothing on others), typed damage with an attacker, raycasts from the eyes, teleport to another dimension.
  * Script API 1.4 (ADR 0082 D5): {@code remove()} discards a non-player entity without drops or death events.
+ * Script API 1.5 (ADR 0089 D8): {@code vehicle} (what the entity rides, any kind), {@code passengers} (in seat order),
+ * {@code isVehicle} and {@code asVehicle()} (a project vehicle, {@link ScriptVehicle}).
  */
 final class ScriptEntity {
     private ScriptEntity() {}
@@ -164,7 +167,12 @@ final class ScriptEntity {
             })
             .method("raycast", 1, 2, Entity.class, (api, e, args) -> e.level() instanceof ServerLevel l
                     ? ScriptRaycast.cast(api, l, e.getEyePosition(), e.getLookAngle(), args, 0, e)
-                    : null);
+                    : null)
+            // Script API 1.5 (ADR 0089 D8, ADR 0090 D11): riding.
+            .live("vehicle", Entity.class, (api, e) -> e.getVehicle() == null ? null : api.entity(e.getVehicle()))
+            .live("passengers", Entity.class, (api, e) -> api.array(e.getPassengers().stream().map(api::entity).toArray()))
+            .constant("isVehicle", Entity.class, (api, e) -> e instanceof MsmVehicle)
+            .method("asVehicle", 0, 0, Entity.class, (api, e, args) -> e instanceof MsmVehicle ? api.entity(e) : null);
 
     /** A loaded dimension by id, or null; an invalid id is a script type error. */
     static ServerLevel world(MinecraftServer server, String dimension) {

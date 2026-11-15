@@ -3,7 +3,9 @@
  * breaking blocks with drops and removing entities. The description changes only by additions to
  * the one of the previous Script API version (`test/fixtures/previous/script-api-v1-1.7.0.json`): exactly the members
  * below, with the parameter counts the runtime's `ScriptApi` installs (B370), each documented with
- * the Since line; scripts that use them type-check.
+ * the Since line; scripts that use them type-check. The 1.4 description as its Script API version had it is
+ * `test/fixtures/previous/script-api-v1-1.8.0.json`; later additions (1.5, ADR 0089 D8) are pinned in
+ * `script-api-1-5.test.ts`.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -11,7 +13,6 @@ import {
   generateTypings,
   MSM_RUNTIME_TYPINGS,
   parseScriptApi,
-  SCRIPT_API,
   type ScriptApi,
   type ScriptApiMember,
 } from '../src/index';
@@ -20,6 +21,13 @@ import { typeCheck } from './support';
 const PREVIOUS: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.7.0.json', import.meta.url), 'utf8'),
+  ),
+);
+
+/** The 1.4 description as its Script API version had it, before the 1.5 additions. */
+const API_1_4: ScriptApi = parseScriptApi(
+  JSON.parse(
+    readFileSync(new URL('./fixtures/previous/script-api-v1-1.8.0.json', import.meta.url), 'utf8'),
   ),
 );
 
@@ -47,25 +55,25 @@ function signatureCounts(member: ScriptApiMember | undefined): string[] {
 
 function member(path: string): ScriptApiMember | undefined {
   const [type, name] = path.split('.');
-  return SCRIPT_API.types[type ?? '']?.members[name ?? ''];
+  return API_1_4.types[type ?? '']?.members[name ?? ''];
 }
 
 describe('script API 1.4 is additive', () => {
   it('keeps every type, member, global, event, function and alias of the previous Script API version', () => {
-    expect(SCRIPT_API.version).toBe(1);
-    expect(Object.keys(SCRIPT_API.types)).toEqual(Object.keys(PREVIOUS.types));
+    expect(API_1_4.version).toBe(1);
+    expect(Object.keys(API_1_4.types)).toEqual(Object.keys(PREVIOUS.types));
     for (const [name, type] of Object.entries(PREVIOUS.types)) {
-      const now = SCRIPT_API.types[name];
+      const now = API_1_4.types[name];
       expect(now?.extends, name).toBe(type.extends);
       expect(now?.doc, name).toBe(type.doc);
       for (const [key, old] of Object.entries(type.members)) {
         expect(now?.members[key], `${name}.${key}`).toEqual(old);
       }
     }
-    expect(SCRIPT_API.globals).toEqual(PREVIOUS.globals);
-    expect(SCRIPT_API.events).toEqual(PREVIOUS.events);
-    expect(SCRIPT_API.functions).toEqual(PREVIOUS.functions);
-    expect(SCRIPT_API.aliases).toEqual(PREVIOUS.aliases);
+    expect(API_1_4.globals).toEqual(PREVIOUS.globals);
+    expect(API_1_4.events).toEqual(PREVIOUS.events);
+    expect(API_1_4.functions).toEqual(PREVIOUS.functions);
+    expect(API_1_4.aliases).toEqual(PREVIOUS.aliases);
   });
 
   it('keeps every previous line of the typings', () => {
@@ -77,7 +85,7 @@ describe('script API 1.4 is additive', () => {
 
 describe('script API 1.4 members (the list B370 installs)', () => {
   it('adds exactly these members', () => {
-    const added = Object.entries(SCRIPT_API.types).flatMap(([name, type]) =>
+    const added = Object.entries(API_1_4.types).flatMap(([name, type]) =>
       Object.keys(type.members)
         .filter((key) => PREVIOUS.types[name]?.members[key] === undefined)
         .map((key) => `${name}.${key}`),

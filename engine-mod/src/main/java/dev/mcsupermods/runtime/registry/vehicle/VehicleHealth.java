@@ -29,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
  * the item (vanilla's rule for vehicles). Using a {@code repair} item takes its {@code amount} of damage away.
  *
  * <p>Destroyed: {@code on_destroy} fires (the vehicle is still there; the player is who destroyed it, when a player did),
- * passengers get out, the vehicle is removed, an explosion of {@code health.explodes} power happens at its place (it
+ * {@link VehicleEvents} hears it (still with its passengers), passengers get out, the vehicle is removed, an explosion of {@code health.explodes} power happens at its place (it
  * hurts entities and breaks no blocks, as the {@code explode} action's default), and then the storage's contents and the
  * vehicle's item drop. The item drops unless the gamerule {@code entity_drops} is off, a creative player broke it, or
  * the destroying damage was an explosion or fire (ADR 0090 D9).
@@ -119,6 +119,7 @@ public final class VehicleHealth {
         }
         Player player = source.getEntity() instanceof Player p ? p : null;
         vehicle.definition().onDestroy().ifPresent(event -> vehicle.fire(level, event, player));
+        VehicleEvents.destroyed(level, vehicle, player);
         if (vehicle.isRemoved()) {
             return; // an on_destroy action removed it
         }

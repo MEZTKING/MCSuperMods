@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
  * {@code i}-th passenger, the first drives. {@code offset} is in blocks from the vehicle's position, x right and z
  * forwards, turned with the hull; the default seat sits on top of the hitbox at its centre. Getting in fires
  * {@code on_mount}, plays {@code engine.start_sound} for the driver and adds the {@code camera.distance} modifier;
- * getting out fires {@code on_dismount} and removes it. The player gets out beside the seat's side of the hull (then the
+ * getting out fires {@code on_dismount} and removes it; {@link VehicleEvents} hears both after the definition's event. The player gets out beside the seat's side of the hull (then the
  * other side, the front and the back), on a spot vanilla's {@link DismountHelper} accepts.
  */
 public final class VehicleSeats {
@@ -144,6 +144,7 @@ public final class VehicleSeats {
                     .ifPresent(sound -> level.playSound(null, vehicle.getX(), vehicle.getY(), vehicle.getZ(), sound, SoundSource.NEUTRAL, 1, 1));
         }
         definition().onMount().ifPresent(event -> vehicle.fire(level, event, player));
+        VehicleEvents.mounted(level, vehicle, player);
     }
 
     /** After vanilla removed {@code passenger}: the camera modifier goes and {@code on_dismount} fires. */
@@ -156,5 +157,6 @@ public final class VehicleSeats {
             camera.removeModifier(CAMERA_MODIFIER);
         }
         definition().onDismount().ifPresent(event -> vehicle.fire(level, event, player));
+        VehicleEvents.dismounted(level, vehicle, player);
     }
 }

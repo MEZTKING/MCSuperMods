@@ -233,6 +233,12 @@ interface Entity {
   /** Returns this entity as a player, or `undefined` when it is not one. */
   asPlayer(): Player | undefined;
   /**
+   * Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.
+   *
+   * Since runtime 1.5.1.
+   */
+  asVehicle(): Vehicle | undefined;
+  /**
    * Deals generic damage to the entity.
    *
    * @param amount - The damage in half hearts.
@@ -281,6 +287,12 @@ interface Entity {
   readonly isAlive: boolean;
   /** Whether the entity is a player. */
   readonly isPlayer: boolean;
+  /**
+   * Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly isVehicle: boolean;
   /** Kills the entity. */
   kill(): void;
   /** The direction the entity looks, as a vector of length 1. */
@@ -289,6 +301,12 @@ interface Entity {
   readonly maxHealth: number;
   /** The entity's display name as plain text. */
   readonly name: string;
+  /**
+   * The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly passengers: Entity[];
   /**
    * Triggers a GeckoLib animation on an MSM entity; does nothing on other entities.
    *
@@ -363,6 +381,12 @@ interface Entity {
   readonly type: string;
   /** The entity's UUID as text. */
   readonly uuid: string;
+  /**
+   * What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly vehicle: Entity | undefined;
   /** The entity's motion in blocks per tick (x, y, z). */
   readonly velocity: Pos;
   /** The world the entity is in. */
@@ -617,6 +641,46 @@ interface ItemUseEvent extends GameEvent {
   readonly player: Player;
 }
 
+/**
+ * A player pressed a project key bind.
+ *
+ * Since runtime 1.5.1.
+ */
+interface KeyPressedEvent extends GameEvent {
+  /**
+   * The key bind's id, for example `mypack:dash`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly key: string;
+  /**
+   * The player who pressed the key.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player;
+}
+
+/**
+ * A player let go of a project key bind.
+ *
+ * Since runtime 1.5.1.
+ */
+interface KeyReleasedEvent extends GameEvent {
+  /**
+   * The key bind's id, for example `mypack:dash`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly key: string;
+  /**
+   * The player who let go of the key.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player;
+}
+
 /** The MSM runtime API, available to every script. */
 interface Msm {
   /** Named handlers that definition events call through the `run_script` action. */
@@ -750,6 +814,42 @@ interface MsmEvents {
    * Since runtime 1.5.1.
    */
   on(name: "entity.damaged", handler: (e: EntityDamagedEvent) => void): void;
+  /**
+   * Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "key.pressed", handler: (e: KeyPressedEvent) => void): void;
+  /**
+   * Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "key.released", handler: (e: KeyReleasedEvent) => void): void;
+  /**
+   * Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "vehicle.mounted", handler: (e: VehicleMountedEvent) => void): void;
+  /**
+   * Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "vehicle.dismounted", handler: (e: VehicleDismountedEvent) => void): void;
+  /**
+   * Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "vehicle.fired", handler: (e: VehicleFiredEvent) => void): void;
+  /**
+   * Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "vehicle.destroyed", handler: (e: VehicleDestroyedEvent) => void): void;
 }
 
 /** Writes to the server log as `[msm_runtime] <script id>: <message>`. */
@@ -821,6 +921,14 @@ interface Player extends Entity {
   /** The item id in the player's main hand, or `undefined` when it is empty. */
   readonly heldItem: string | undefined;
   /**
+   * Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud("mypack:mana")`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param id - The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`.
+   */
+  hideHud(id: string): boolean;
+  /**
    * The player's inventory, for example `player.inventory.count("minecraft:diamond")`.
    *
    * Since runtime 1.5.1.
@@ -860,6 +968,15 @@ interface Player extends Entity {
    */
   setGameMode(mode: GameMode): boolean;
   /**
+   * Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud("mypack:mana", 7)`. Any other value is a `TypeError`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param id - The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`.
+   * @param value - A number (for a bar, icons or a number) or a text (cut to 256 characters).
+   */
+  setHud(id: string, value: number | string): boolean;
+  /**
    * Sets the player's experience level, for example `player.setXpLevels(30)`.
    *
    * Since runtime 1.5.1.
@@ -875,6 +992,14 @@ interface Player extends Entity {
    * @param text - The text as plain text.
    */
   showActionBar(text: string): void;
+  /**
+   * Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud("mypack:mana")`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param id - The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`.
+   */
+  showHud(id: string): boolean;
   /**
    * Shows a title in the middle of the player's screen, for example `player.showTitle("Wave 3", { subtitle: "Get ready" })`.
    *
@@ -1079,6 +1204,151 @@ interface ServerTickEvent extends GameEvent {
   readonly tick: number;
 }
 
+/**
+ * A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on("vehicle.mounted", (e) => e.vehicle.setFuel(1200))`.
+ *
+ * Since runtime 1.5.1.
+ */
+interface Vehicle extends Entity {
+  /**
+   * Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo("cannon")`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param weapon - The weapon's `id` in the vehicle's definition, or its index from 0.
+   */
+  ammo(weapon: string | number): number;
+  /**
+   * The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly damageTaken: number;
+  /**
+   * The player in the first seat, who drives, or `undefined`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly driver: Player | undefined;
+  /**
+   * Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly fuel: number;
+  /**
+   * Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param weapon - The weapon's `id` in the vehicle's definition, or its index from 0.
+   * @param rounds - The rounds, rounded down.
+   */
+  setAmmo(weapon: string | number, rounds: number): void;
+  /**
+   * Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param amount - The damage; below 0 counts as 0.
+   */
+  setDamageTaken(amount: number): void;
+  /**
+   * Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param ticks - Ticks of driving.
+   */
+  setFuel(ticks: number): void;
+}
+
+/**
+ * A project vehicle is being destroyed.
+ *
+ * Since runtime 1.5.1.
+ */
+interface VehicleDestroyedEvent extends GameEvent {
+  /**
+   * The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player | undefined;
+  /**
+   * The vehicle, still in the world with its riders.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly vehicle: Vehicle;
+}
+
+/**
+ * A player got out of a project vehicle.
+ *
+ * Since runtime 1.5.1.
+ */
+interface VehicleDismountedEvent extends GameEvent {
+  /**
+   * The player who got out.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player;
+  /**
+   * The vehicle.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly vehicle: Vehicle;
+}
+
+/**
+ * A project vehicle's weapon fired one shot.
+ *
+ * Since runtime 1.5.1.
+ */
+interface VehicleFiredEvent extends GameEvent {
+  /**
+   * The player who fired.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player;
+  /**
+   * The vehicle.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly vehicle: Vehicle;
+  /**
+   * The weapon's `id` in the vehicle's definition.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly weapon: string;
+}
+
+/**
+ * A player got into a project vehicle.
+ *
+ * Since runtime 1.5.1.
+ */
+interface VehicleMountedEvent extends GameEvent {
+  /**
+   * The player who got in; `e.vehicle.driver` tells whether they drive.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player;
+  /**
+   * The vehicle.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly vehicle: Vehicle;
+}
+
 /** One loaded dimension of the server. */
 interface World {
   /**
@@ -1248,6 +1518,8 @@ declare module "msm:runtime" {
   export type ItemRef = globalThis.ItemRef;
   export type ItemSpec = globalThis.ItemSpec;
   export type ItemUseEvent = globalThis.ItemUseEvent;
+  export type KeyPressedEvent = globalThis.KeyPressedEvent;
+  export type KeyReleasedEvent = globalThis.KeyReleasedEvent;
   export type Msm = globalThis.Msm;
   export type MsmActions = globalThis.MsmActions;
   export type MsmBossBars = globalThis.MsmBossBars;
@@ -1266,5 +1538,10 @@ declare module "msm:runtime" {
   export type RaycastOptions = globalThis.RaycastOptions;
   export type ServerStartedEvent = globalThis.ServerStartedEvent;
   export type ServerTickEvent = globalThis.ServerTickEvent;
+  export type Vehicle = globalThis.Vehicle;
+  export type VehicleDestroyedEvent = globalThis.VehicleDestroyedEvent;
+  export type VehicleDismountedEvent = globalThis.VehicleDismountedEvent;
+  export type VehicleFiredEvent = globalThis.VehicleFiredEvent;
+  export type VehicleMountedEvent = globalThis.VehicleMountedEvent;
   export type World = globalThis.World;
 }

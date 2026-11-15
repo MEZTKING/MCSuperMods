@@ -9,8 +9,8 @@ import net.minecraft.world.entity.player.Player;
 /**
  * The driver's input (ADR 0090 D4). On the driver's own client it comes from the local player's movement keys through
  * {@link #clientInput}, which the client entrypoint sets ({@code client.vehicle.VehicleClient}), so this common class
- * never names a client class; the "Vehicle: descend" key (ADR 0088 D5) comes through {@link #descend} (B418 connects
- * B411's runtime key). On the server the movement keys are vanilla's {@link ServerPlayer#getLastClientInput()}, used for
+ * never names a client class; the "Vehicle: descend" key (ADR 0088 D5) comes through {@link #descend}, which
+ * {@code client.controls.ControlsClient} connects to the runtime key (B411). On the server the movement keys are vanilla's {@link ServerPlayer#getLastClientInput()}, used for
  * fuel and the synched steering and throttle only, never for position.
  */
 public final class VehicleDriver {
@@ -18,7 +18,7 @@ public final class VehicleDriver {
 
     /** The local driver's movement keys; {@link Input#EMPTY} until the client entrypoint replaces it. */
     public static volatile Function<Player, Input> clientInput = player -> Input.EMPTY;
-    /** Whether the local driver holds "Vehicle: descend"; false until B418 connects the runtime key. */
+    /** Whether the local driver holds "Vehicle: descend"; false until {@code ControlsClient} connects the runtime key. */
     public static volatile BooleanSupplier descend = () -> false;
 
     /** The physics input of {@code driver} on the side that moves the vehicle (the driver's client, or a test). */

@@ -1,5 +1,8 @@
 package dev.mcsupermods.runtime.scripting;
 
+import dev.mcsupermods.runtime.controls.KeyBinds;
+import dev.mcsupermods.runtime.registry.vehicle.MsmVehicle;
+import dev.mcsupermods.runtime.registry.vehicle.VehicleEvents;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
@@ -22,6 +25,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundCooldownPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,7 +51,8 @@ import net.minecraft.world.phys.BlockHitResult;
  * every such refusal the player's client is resynchronised (ADR 0058 D3): the inventory always, for
  * {@code block.interact} also the six neighbours of the placement position, for {@code item.use} also the used stack's
  * cooldown, for {@code block.break} also a block entity's data. A call no script cancelled sends nothing extra;
- * {@code entity.hurt} needs no resync.
+ * {@code entity.hurt} needs no resync. Script API 1.5 (ADR 0089 D8): the key events come from a
+ * {@link KeyBinds.KeyListener} and the vehicle events from a {@link VehicleEvents.Listener}, both added here.
  */
 public final class ScriptBridges {
     private ScriptBridges() {}
@@ -82,6 +87,8 @@ public final class ScriptBridges {
         ServerEntityLevelChangeEvents.AFTER_ENTITY_CHANGE_LEVEL.register((from, to, origin, destination) -> EntityHandle.moved(from, to));
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register(ScriptBridges::allowChat);
         ServerLivingEntityEvents.AFTER_DAMAGE.register(ScriptBridges::afterDamage);
+        KeyBinds.addListener(KEYS);
+        VehicleEvents.addListener(VEHICLES);
     }
 
     /** The running host when it belongs to {@code server}. */
@@ -347,6 +354,71 @@ public final class ScriptBridges {
         }
         return !host.fire(ScriptEvents.PLAYER_CHAT_EVENT,
                 new ScriptEvents.PlayerChat(sender.level(), sender, message.signedContent()));
+    }
+
+    // ---- script API 1.5 events (ADR 0089 D8) -------------------------------------------------------------
+
+    /**
+     * {@code key.pressed} and {@code key.released} (ADR 0088 D6): a project key bind's press that fired (after its
+     * {@code when}, cooldown and {@code msm:on_press}) and its release (after {@code msm:on_release}). The runtime's own
+     * vehicle keys are not reported: they have no key bind definition.
+     */
+    static final KeyBinds.KeyListener KEYS = new KeyBinds.KeyListener() {
+        @Override
+        public void pressed(ServerPlayer player, Identifier key) {
+            key(ScriptEvents.KEY_PRESSED_EVENT, player, key);
+        }
+
+        @Override
+        public void released(ServerPlayer player, Identifier key) {
+            key(ScriptEvents.KEY_RELEASED_EVENT, player, key);
+        }
+    };
+
+    private static void key(String event, ServerPlayer player, Identifier key) {
+        ScriptHost host = host(player.level());
+        if (host != null && host.handles(event) && KeyBinds.definition(key).isPresent()) {
+            host.fire(event, new ScriptEvents.Key(player.level(), player, key));
+        }
+    }
+
+    /**
+     * The vehicle events (ADR 0090 D11), after the definition's {@code on_mount}, {@code on_dismount}, {@code on_fire}
+     * and {@code on_destroy}. A destroyed vehicle reports {@code vehicle.destroyed} while its passengers are still
+     * seated, then {@code vehicle.dismounted} for each of them.
+     */
+    static final VehicleEvents.Listener VEHICLES = new VehicleEvents.Listener() {
+        @Override
+        public void mounted(ServerLevel level, MsmVehicle vehicle, Player player) {
+            vehicle(ScriptEvents.VEHICLE_MOUNTED_EVENT, level, vehicle, player, null);
+        }
+
+        @Override
+        public void dismounted(ServerLevel level, MsmVehicle vehicle, Player player) {
+            vehicle(ScriptEvents.VEHICLE_DISMOUNTED_EVENT, level, vehicle, player, null);
+        }
+
+        @Override
+        public void fired(ServerLevel level, MsmVehicle vehicle, int index, Player shooter) {
+            vehicle(ScriptEvents.VEHICLE_FIRED_EVENT, level, vehicle, shooter, vehicle.definition().weapons().get(index).id());
+        }
+
+        @Override
+        public void destroyed(ServerLevel level, MsmVehicle vehicle, Player player) {
+            ScriptHost host = host(level);
+            if (host != null && host.handles(ScriptEvents.VEHICLE_DESTROYED_EVENT)) {
+                host.fire(ScriptEvents.VEHICLE_DESTROYED_EVENT, new ScriptEvents.VehicleEvent(level, vehicle,
+                        player instanceof ServerPlayer sp ? sp : null, null));
+            }
+        }
+    };
+
+    /** A vehicle event with a player; nothing when the player is not a server player (never on a server). */
+    private static void vehicle(String event, ServerLevel level, MsmVehicle vehicle, Player player, String weapon) {
+        ScriptHost host = host(level);
+        if (host != null && host.handles(event) && player instanceof ServerPlayer sp) {
+            host.fire(event, new ScriptEvents.VehicleEvent(level, vehicle, sp, weapon));
+        }
     }
 
     /**

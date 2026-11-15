@@ -49,7 +49,8 @@ public final class MsmVehicles {
     /**
      * Parses the scanned {@code vehicle} definitions, registers their entity types and items, and returns {@code report}
      * with the vehicle types registered and any errors and warnings; called once from {@code MsmRuntime.onInitialize},
-     * after the registrar and before the key binds and HUD elements (which may name a vehicle).
+     * after the registrar and before the key binds and HUD elements (which may name a vehicle). Also adds the horn's key
+     * listener ({@link VehicleHorn}).
      */
     public static LoadReport register(LoadReport report) {
         List<String> errors = new ArrayList<>();
@@ -83,6 +84,7 @@ public final class MsmVehicles {
                 }
             });
         }
+        VehicleHorn.register();
         return report.withVehicles(registered, errors, warnings);
     }
 

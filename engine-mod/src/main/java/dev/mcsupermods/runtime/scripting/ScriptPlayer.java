@@ -1,5 +1,6 @@
 package dev.mcsupermods.runtime.scripting;
 
+import dev.mcsupermods.runtime.hud.HudServer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
@@ -7,6 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
@@ -20,7 +22,9 @@ import org.mozilla.javascript.Scriptable;
  * {@code Player extends Entity} (ADR 0032 D2, ADR 0065 D1 to D4) over a {@link ServerPlayer}. XP and food writes
  * change the server state, and vanilla's {@code ServerPlayer.doTick} sends them on the player's next tick (it compares
  * with the last values sent); the game mode is sent at once by {@code ServerPlayer.setGameMode}; titles and the action
- * bar are packets sent at once.
+ * bar are packets sent at once. Script API 1.5 (ADR 0089 D8): {@code showHud}, {@code hideHud} and {@code setHud}
+ * go through {@link HudServer} as the {@code show_hud}, {@code hide_hud} and {@code set_hud} actions do; they return
+ * {@code false} for an id that is not a HUD element of this game (logged once) or a number that is not finite.
  */
 final class ScriptPlayer {
     private ScriptPlayer() {}
@@ -116,7 +120,26 @@ final class ScriptPlayer {
                     p.connection.send(new ClientboundClearTitlesPacket(false));
                 }
                 return null;
+            })
+            // Script API 1.5 (ADR 0089 D8): the player's HUD elements.
+            .method("showHud", 1, 1, ServerPlayer.class, (api, p, args) -> HudServer.show(p, hudId(args)))
+            .method("hideHud", 1, 1, ServerPlayer.class, (api, p, args) -> HudServer.hide(p, hudId(args)))
+            .method("setHud", 2, 2, ServerPlayer.class, (api, p, args) -> {
+                Identifier id = hudId(args);
+                Object value = args[1];
+                if (value instanceof Number n) {
+                    return HudServer.set(p, id, n.doubleValue());
+                }
+                if (value instanceof CharSequence text) {
+                    return HudServer.set(p, id, text.toString());
+                }
+                throw ScriptRuntime.typeError("value is not a number or a string");
             });
+
+    /** The HUD element id of a {@code showHud}, {@code hideHud} or {@code setHud} call; an invalid id is a TypeError. */
+    private static Identifier hudId(Object[] args) {
+        return ScriptValues.id(ScriptValues.string(args, 0, "HUD element id"), "HUD element id");
+    }
 
     private static int intArg(Object[] args, int i, String what) {
         double d = ScriptValues.number(args, i, what);

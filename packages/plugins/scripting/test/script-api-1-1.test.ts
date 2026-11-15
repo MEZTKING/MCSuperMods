@@ -4,7 +4,7 @@
  * runtime's `ScriptApi` must install (B248), and type-checks scripts that use them. The exact list
  * of 1.1 additions compares the 1.1 description as its Script API version had it
  * (`test/fixtures/previous/script-api-v1-1.5.0.json`), so later additions (1.2, ADR 0076 D5) are
- * pinned in their own test file.
+ * pinned in their own test file (1.5, ADR 0089 D8, in `script-api-1-5.test.ts`).
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -208,7 +208,8 @@ describe('script API 1.1 members (the list B248 installs)', () => {
     const on = events?.kind === 'namespace' ? events.members : undefined;
     const tick = counts(on, 'on');
     expect(tick.filter((count) => count === '2..3')).toHaveLength(1);
-    expect(tick.filter((count) => count === '2..2')).toHaveLength(14);
+    // 14 in 1.1; the six events of 1.5 (ADR 0089 D8) add six more two-parameter overloads.
+    expect(tick.filter((count) => count === '2..2')).toHaveLength(20);
   });
 
   it('describes the new events', () => {

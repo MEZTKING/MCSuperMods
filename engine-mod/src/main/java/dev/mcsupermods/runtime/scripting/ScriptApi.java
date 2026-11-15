@@ -1,6 +1,7 @@
 package dev.mcsupermods.runtime.scripting;
 
 import com.google.gson.JsonElement;
+import dev.mcsupermods.runtime.registry.vehicle.MsmVehicle;
 import com.mojang.serialization.JsonOps;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -17,7 +18,8 @@ import org.mozilla.javascript.ScriptableObject;
 
 /**
  * The script API v1 (ADR 0032 D2, with the 1.1 additions of ADR 0065, the 1.2 containers of ADR 0076 D5, the 1.3
- * particle options of ADR 0080 D5 and the 1.4 weather, time, explosion, drop and removal members of ADR 0082 D5), built from Java: the {@code msm} tree each script receives and the object types
+ * particle options of ADR 0080 D5 and the 1.4 weather, time, explosion, drop and removal members of ADR 0082 D5 and the 1.5 HUD, key and vehicle members
+ * and events of ADR 0089 D8), built from Java: the {@code msm} tree each script receives and the object types
  * of the event objects. One instance per {@link ScriptHost} load (it holds the shared, sealed standard-object scope);
  * {@link #describe()} returns the installed member tree, which the JUnit {@code ScriptApiContractTest} compares with
  * {@code packages/plugins/scripting/api/script-api-v1.json}.
@@ -61,7 +63,8 @@ public final class ScriptApi {
             ScriptEvents.PLAYER_JOIN, ScriptEvents.SERVER_STARTED, ScriptEvents.SERVER_TICK, ScriptEvents.ACTION,
             ScriptInventory.TYPE, ScriptBossBars.TYPE, ScriptRaycast.TYPE, ScriptEvents.PLAYER_TICK, ScriptEvents.PLAYER_RESPAWN,
             ScriptEvents.PLAYER_LEAVE, ScriptEvents.PLAYER_CHANGE_DIMENSION, ScriptEvents.PLAYER_CHAT, ScriptEvents.ENTITY_DAMAGED,
-            ScriptContainer.TYPE);
+            ScriptContainer.TYPE, ScriptVehicle.TYPE, ScriptEvents.KEY_PRESSED, ScriptEvents.KEY_RELEASED, ScriptEvents.VEHICLE_MOUNTED,
+            ScriptEvents.VEHICLE_DISMOUNTED, ScriptEvents.VEHICLE_FIRED, ScriptEvents.VEHICLE_DESTROYED);
 
     private final ScriptHost host;
     private final ScriptableObject scope;
@@ -90,9 +93,15 @@ public final class ScriptApi {
         return new HostObject(this, ScriptWorld.TYPE, level);
     }
 
-    /** An entity; players get the {@code Player} type, other entities follow a dimension change ({@link EntityHandle}). */
+    /**
+     * An entity; players get the {@code Player} type, project vehicles the {@code Vehicle} type (Script API 1.5), and
+     * every non-player follows a dimension change ({@link EntityHandle}).
+     */
     Scriptable entity(Entity entity) {
-        return entity instanceof ServerPlayer p ? player(p) : new HostObject(this, ScriptEntity.TYPE, new EntityHandle(entity));
+        if (entity instanceof ServerPlayer p) {
+            return player(p);
+        }
+        return new HostObject(this, entity instanceof MsmVehicle ? ScriptVehicle.TYPE : ScriptEntity.TYPE, new EntityHandle(entity));
     }
 
     Scriptable player(ServerPlayer player) {

@@ -12,7 +12,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 
 /**
- * The event objects of ADR 0032 D2 and ADR 0065 D8: one data class per event, a {@link ScriptType} per event type over
+ * The event objects of ADR 0032 D2, ADR 0065 D8 and ADR 0089 D8: one data class per event, a {@link ScriptType} per event type over
  * {@code GameEvent} ({@code world}), and the event table ({@link #EVENTS}: name, type, cancellable, Fabric API source).
  */
 public final class ScriptEvents {
@@ -214,6 +214,35 @@ public final class ScriptEvents {
         }
     }
 
+    /** {@code key.pressed} and {@code key.released} (Script API 1.5, ADR 0088 D6): the player and the key bind's id. */
+    public static final class Key extends Data {
+        final ServerPlayer player;
+        final Identifier key;
+
+        Key(ServerLevel level, ServerPlayer player, Identifier key) {
+            super(level);
+            this.player = player;
+            this.key = key;
+        }
+    }
+
+    /**
+     * The vehicle events of Script API 1.5 (ADR 0090 D11): the vehicle, the player (who got in or out, shot, or
+     * destroyed it; null for a vehicle destroyed without a player) and, for {@code vehicle.fired}, the weapon's id.
+     */
+    public static final class VehicleEvent extends Data {
+        final Entity vehicle;
+        final ServerPlayer player;
+        final String weapon;
+
+        VehicleEvent(ServerLevel level, Entity vehicle, ServerPlayer player, String weapon) {
+            super(level);
+            this.vehicle = vehicle;
+            this.player = player;
+            this.weapon = weapon;
+        }
+    }
+
     static String hand(InteractionHand hand) {
         return hand == InteractionHand.OFF_HAND ? "off" : "main";
     }
@@ -304,6 +333,33 @@ public final class ScriptEvents {
             .constant("direct", EntityDamaged.class, (api, e) -> e.direct == null ? null : api.entity(e.direct))
             .constant("source", EntityDamaged.class, (api, e) -> e.source);
 
+    // Script API 1.5 (ADR 0089 D8)
+
+    static final ScriptType KEY_PRESSED = event("KeyPressedEvent")
+            .constant("player", Key.class, (api, e) -> api.player(e.player))
+            .constant("key", Key.class, (api, e) -> e.key.toString());
+
+    static final ScriptType KEY_RELEASED = event("KeyReleasedEvent")
+            .constant("player", Key.class, (api, e) -> api.player(e.player))
+            .constant("key", Key.class, (api, e) -> e.key.toString());
+
+    static final ScriptType VEHICLE_MOUNTED = event("VehicleMountedEvent")
+            .constant("vehicle", VehicleEvent.class, (api, e) -> api.entity(e.vehicle))
+            .constant("player", VehicleEvent.class, (api, e) -> api.player(e.player));
+
+    static final ScriptType VEHICLE_DISMOUNTED = event("VehicleDismountedEvent")
+            .constant("vehicle", VehicleEvent.class, (api, e) -> api.entity(e.vehicle))
+            .constant("player", VehicleEvent.class, (api, e) -> api.player(e.player));
+
+    static final ScriptType VEHICLE_FIRED = event("VehicleFiredEvent")
+            .constant("vehicle", VehicleEvent.class, (api, e) -> api.entity(e.vehicle))
+            .constant("player", VehicleEvent.class, (api, e) -> api.player(e.player))
+            .constant("weapon", VehicleEvent.class, (api, e) -> e.weapon);
+
+    static final ScriptType VEHICLE_DESTROYED = event("VehicleDestroyedEvent")
+            .constant("vehicle", VehicleEvent.class, (api, e) -> api.entity(e.vehicle))
+            .constant("player", VehicleEvent.class, (api, e) -> e.player == null ? null : api.player(e.player));
+
     /** One row of the event table of ADR 0032 D2. */
     public record Spec(String name, ScriptType type, boolean cancellable, String source) {}
 
@@ -322,8 +378,19 @@ public final class ScriptEvents {
     public static final String PLAYER_CHANGE_DIMENSION_EVENT = "player.changeDimension";
     public static final String PLAYER_CHAT_EVENT = "player.chat";
     public static final String ENTITY_DAMAGED_EVENT = "entity.damaged";
+    public static final String KEY_PRESSED_EVENT = "key.pressed";
+    public static final String KEY_RELEASED_EVENT = "key.released";
+    public static final String VEHICLE_MOUNTED_EVENT = "vehicle.mounted";
+    public static final String VEHICLE_DISMOUNTED_EVENT = "vehicle.dismounted";
+    public static final String VEHICLE_FIRED_EVENT = "vehicle.fired";
+    public static final String VEHICLE_DESTROYED_EVENT = "vehicle.destroyed";
 
-    /** The events scripts can handle, by name, in the order of ADR 0032 D2 and then ADR 0065 D8. */
+    /**
+     * The events scripts can handle, by name, in the order of ADR 0032 D2, then ADR 0065 D8, then ADR 0089 D8 (Script
+     * API 1.5). The 1.5 events come from the runtime's own listeners, not from Fabric callbacks: {@code source} names
+     * the listener method ({@link dev.mcsupermods.runtime.controls.KeyBinds.KeyListener},
+     * {@link dev.mcsupermods.runtime.registry.vehicle.VehicleEvents.Listener}).
+     */
     public static final Map<String, Spec> EVENTS = table(List.of(
             new Spec(BLOCK_INTERACT_EVENT, BLOCK_INTERACT, true, "UseBlockCallback"),
             new Spec(BLOCK_BREAK_EVENT, BLOCK_BREAK, true, "PlayerBlockBreakEvents.BEFORE"),
@@ -340,7 +407,13 @@ public final class ScriptEvents {
             new Spec(PLAYER_CHANGE_DIMENSION_EVENT, PLAYER_CHANGE_DIMENSION, false,
                     "ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL"),
             new Spec(PLAYER_CHAT_EVENT, PLAYER_CHAT, true, "ServerMessageEvents.ALLOW_CHAT_MESSAGE"),
-            new Spec(ENTITY_DAMAGED_EVENT, ENTITY_DAMAGED, false, "ServerLivingEntityEvents.AFTER_DAMAGE")));
+            new Spec(ENTITY_DAMAGED_EVENT, ENTITY_DAMAGED, false, "ServerLivingEntityEvents.AFTER_DAMAGE"),
+            new Spec(KEY_PRESSED_EVENT, KEY_PRESSED, false, "KeyBinds.KeyListener.pressed"),
+            new Spec(KEY_RELEASED_EVENT, KEY_RELEASED, false, "KeyBinds.KeyListener.released"),
+            new Spec(VEHICLE_MOUNTED_EVENT, VEHICLE_MOUNTED, false, "VehicleEvents.Listener.mounted"),
+            new Spec(VEHICLE_DISMOUNTED_EVENT, VEHICLE_DISMOUNTED, false, "VehicleEvents.Listener.dismounted"),
+            new Spec(VEHICLE_FIRED_EVENT, VEHICLE_FIRED, false, "VehicleEvents.Listener.fired"),
+            new Spec(VEHICLE_DESTROYED_EVENT, VEHICLE_DESTROYED, false, "VehicleEvents.Listener.destroyed")));
 
     private static Map<String, Spec> table(List<Spec> specs) {
         Map<String, Spec> map = new LinkedHashMap<>();
