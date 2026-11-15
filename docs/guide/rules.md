@@ -38,9 +38,11 @@ A rule's **key** (a to z, 0 to 9 and `_`, at most 32 characters, different in ea
 | Effects | The effect starts, ends, or every few seconds while it lasts |
 | Players | A player joins, leaves, respawns, chats or changes dimension; Every few seconds for each player |
 | The world | The world starts; Every few seconds |
+| Keys | A player presses a key; A player lets go of a key; A player holds a key (every half second by default) |
+| Vehicles | Someone gets in the vehicle; Someone gets out; The vehicle fires; The vehicle is destroyed; Every few seconds while the vehicle is driven |
 | Anything | A player uses or breaks any block; A player uses any item; Any mob is hurt or dies; A player uses any mob. Pick a vanilla thing or one of yours, or leave it empty for all of them |
 
-Some things have no moment: crafting, picking up, eating, sleeping, advancements, keys and the screen. They are not offered.
+Some things have no moment: crafting, picking up, eating, sleeping and advancements. They are not offered.
 
 Moments with "every few seconds" take a number of seconds; some take a cooldown in seconds or a chance. These options belong to the thing's moment, not to one rule, so **two rules on the same block and moment share them**: change "every 2 seconds" on one and the other changes too. The cards show the shared value.
 
@@ -50,6 +52,7 @@ Moments with "every few seconds" take a number of seconds; some take a cooldown 
 |---|---|
 | Players | Give an item; Take an item away; Heal; Hurt; Feed; Give experience; Set the game mode; Teleport; Launch; Show a chat message; Show a title; Show text above the hotbar; Give an effect; Remove an effect |
 | World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Make an explosion; Set the weather; Run a function; Run a command; Light a portal |
+| On screen | Show on screen; Hide from the screen; Show a number on screen |
 | Sounds and particles | Play a sound; Spawn particles; Play an animation |
 | Mobs | Remove the mob; Show a boss bar |
 | Logic | If ... otherwise ...; Repeat; For each player; Wait; Stop the normal action |
@@ -62,6 +65,18 @@ Numbers can be fixed or **readings**: a random number, a counter, the player's h
 **The time of day** counts game ticks: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. **Weather** is the server's, so "It is raining" is never true in the Nether or the End.
 
 **Stop the normal action** cancels what the game would have done, and works only on "A player chats", "A player uses any block", "A player breaks any block", "A player uses any item", "Any mob is hurt" and "A player uses any mob".
+
+## Vehicles, keys and the screen
+
+Rules for keys sit on a key of your own ([Keys and the screen](keys-and-hud.md)) and rules for vehicles on a vehicle of yours ([Vehicles](vehicles.md)). In the Studio of a key or vehicle, the Rules section appears once a rule has something to say there.
+
+- **A player presses a key** (the key is chosen with **Press the key you want**), **A player lets go of a key** and **A player holds a key**. A press can have a cooldown in seconds; a held key repeats every half second unless you change it (0.05 to 60 seconds).
+- **Someone gets in the vehicle**, **Someone gets out**, **The vehicle fires** (every weapon; only offered for a vehicle with a weapon) and **The vehicle is destroyed**, and **Every few seconds while the vehicle is driven**.
+- **Show on screen** and **Hide from the screen** pick one of your on-screen elements. **Show a number on screen** sets a number or a text, as a bar or as text, and **Make a new on-screen number** makes the element for you (named like `number`, `number_2`) in the same undo step as the rule. A counter shows through an element that reads saved data; it shows only what a step sets.
+- **Make an explosion** is now a plain step: it breaks blocks by default here, unlike the action in the Events editor.
+- Readings for a vehicle: its fuel (in seconds of driving left), its damage and its ammunition (for the first weapon, or pick **The first weapon**; a missing weapon is marked "(not on this vehicle)").
+
+Plain rules go into the key's or vehicle's own events. A rule with logic becomes a script that listens to the Script API 1.5 events. Script rules on vehicles reload without a restart; plain ones need one (a new vehicle or key always does). A rule on a vehicle that does not exist, a weapon that is not there or an on-screen element that is missing shows a problem in the Rule book.
 
 ## Counters
 

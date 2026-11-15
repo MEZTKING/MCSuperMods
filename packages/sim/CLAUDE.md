@@ -15,6 +15,8 @@ It turns a project's lowered files into a small world (48 by 48 by 32 blocks) th
 - `src/tick/`: `SimClock`, `BlockTimers` (buttons, plates), the Grow and Power tools (B391).
 - `src/entities/`: `buildEntityCatalogue`, `EntityWorld` (spawn, wander, hit; at most 24) (B393).
 - `src/grounds/`: what the area starts with (B405, ADR 0087 D1): `GroundBlocks` (a palette of state strings and one index per cell, the shape of the world reader's `WorldArea`), `flatGround`, `quickWorld` (shapes, layers, water, trees, seed; pure and seeded) and `QUICK_PRESETS`; `LocalWorldSource.loadGround` copies one into the world.
+- `src/vehicles/`: `physics.ts` (the twin of the runtime's `VehiclePhysics`, pinned to `fixtures/vehicle-physics/golden.json`), `catalogue.ts`, `VehicleWorld` (place, get in and out, drive, fuel, damage, pick-up) (B428).
+- `src/controls/`: `KeyBindEngine`, `SimHud`, `dashboardRows` (B429).
 - `src/local-source.ts`: `LocalWorldSource`, the one `WorldSource` the app's `tryit/` view uses: owns the world, catalogues, player, mobs and timers; `act`, `tick`, `pointedAt`, `setFiles` (keeps the world), the 200-line log (B390).
 - `src/index.ts`: the public exports (one line per module, sorted).
 - `test/`: Vitest tests, run with `pnpm --filter @msm/sim test`; `test/lower-fixture.ts` lowers a fixture project for tests.

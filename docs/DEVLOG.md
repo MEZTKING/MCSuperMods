@@ -5903,3 +5903,20 @@ Next: B421's horn listener can add a parity check (the horn's sound packet to ot
 
 **Next**
 - The `is_riding` mount stays a mob picker (not part of this brief).
+
+## 2026-11-15 — executor — B431 guide, changelog, status lines
+
+**What**
+- New guide pages `docs/guide/vehicles.md` (Creator flows, Very easy tile, the Vehicle Studio section by section, driving, the four runtime keys, the horn, picking up, and all of limits V1 to V16 plus the weapon, shot-speed and own-shell limits) and `docs/guide/keys-and-hud.md` (Key bind Studio, clashes including G as "Quick actions" in 26.3, the vehicle keys, HUD Studio, showing elements from events, Rules and scripts, V5, V6, V11, V12 and V17 and the HUD limits).
+- Lines in `rules.md` (Keys and Vehicles moments, On screen steps, a section "Vehicles, keys and the screen"), `very-easy.md` (the Make a vehicle tile and the vehicle page), `playing-and-testing.md` (a Restart needed reason), `scripting.md` (a Script API 1.5 section) and `try-it.md` (Vehicles and Keys and the screen, one limits row), plus index lines in `guide/README.md`, sidebar entries in `site/.vitepress/config.ts` and the page list in `docs/CLAUDE.md`.
+- `CHANGELOG.md` `[Unreleased]`: eight Added lines. Status lines in root and the scoped `CLAUDE.md` files (`engine-mod`, `packages/plugins` with Rules at 56 triggers, 44 steps, 19 conditions, 13 values, 7 places, `packages/sim` contents, `app`, `packages/schemas`, `packages/exporters`); all appended to existing status lines, so line counts hold (root 70, engine-mod 55, plugins 55).
+- The docs site builds (`vitepress build`, run in the worktree with the main checkout's `node_modules` linked in for the build only). Every in-page and cross-page anchor in the touched pages resolves; DESIGN.md has 19 H2 headings.
+
+**Decisions**
+- The tank-shell damaging the tank, the horn heard after the round trip and `Entity.health` reading 0 on vehicles are stated as limits where they apply (vehicles page and scripting).
+- I did not list individual problem codes; the guide points at Things to fix in plain words, which the app writes.
+- Rules wording for the B458 pickers is limited to the labels in the notes ("Make a new on-screen number", "The first weapon"); the new counts come from the brief.
+
+**Next**
+- B432 closes: check the Rules page against B458's final picker labels and update library counts in the root status line.
+- The `rules.md` "Do" table does not list B458's extra steps or places beyond those in the notes.

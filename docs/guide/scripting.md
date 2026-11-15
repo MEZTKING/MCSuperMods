@@ -188,6 +188,17 @@ Every trigger of a block, item or mob can run a script this way, including the t
 
 A [status effect](effects-and-throwables.md) runs a script every few seconds while it is active: in the Effect Studio, choose **New event** next to **While active**, add a `run_script` action to that event and pick the handler. The handler's `e.entity` and `e.other` are both the holder, so `e.entity.effectLevel("<namespace>:<effect name>")` gives the effect's level (0 when the holder no longer has it) and `e.entity.removeEffect("minecraft:poison")` cures poison. The example **Script: scripted effect** (Help → Examples…) is an antidote that works this way. In a throwable's **On hit entity** event, `e.player` is the thrower and `e.other` the mob or player hit.
 
+## Vehicles, keys and the screen from scripts
+
+Script API 1.5 (runtime 1.5.1 or later; each member says "Since runtime 1.5.1") is additive.
+
+- **Screen.** `player.showHud(id)`, `player.hideHud(id)` and `player.setHud(id, number | string)` show, hide and set an element ([Keys and the screen](keys-and-hud.md)). They return `false` for an id the project does not have.
+- **Entities.** `entity.vehicle` (what it rides), `entity.passengers`, `entity.isVehicle` and `entity.asVehicle()`.
+- **Vehicle** (extends the entity): `fuel` and `setFuel(ticks)`, `damageTaken` and `setDamageTaken(n)` (at or above the maximum the vehicle is destroyed with its normal events), `ammo(weapon)` and `setAmmo(weapon, n)` (a weapon id or index; an unknown one is a `RangeError`) and `driver`.
+- **Events.** `key.pressed` and `key.released` (`player`, `key`; keys of your project only, not the vehicle keys R, V, H and Left Alt), `vehicle.mounted`, `vehicle.dismounted`, `vehicle.fired` and `vehicle.destroyed`. A script handler runs after the definition's own event; `vehicle.destroyed` comes before each `vehicle.dismounted`.
+
+Limits: `entity.health` and `maxHealth` read 0 on a vehicle, and `entity.kill()` on a vehicle skips its `on_destroy` event; use `setDamageTaken`.
+
 ## Saved data
 
 Ordinary variables are lost on `/reload` and when the world closes. To keep something, save it: `msm.storage` holds data for the whole world and `entity.data` (so also `player.data`) holds data for one entity. Both have `get(key)`, `set(key, value)`, `remove(key)`, `has(key)` and `keys()`.

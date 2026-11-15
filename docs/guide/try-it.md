@@ -93,6 +93,29 @@ Minecraft's blocks in a ground are props (see [Limits](#limits)). With your Mine
 - **Particles.** A block's **Ambient particles** play near it (within 32 blocks of you), and your own particles look as in the Particle Studio. Minecraft's particles are small dots (dust in its colour). Particles pass through blocks. At most 500 are shown at once.
 - **Portals.** A portal block shows its picture and particles, but does not take you anywhere, and is placed as a plain block, without a frame ("<Name> is lit in its frame and takes you to another dimension; the preview places it as a plain block").
 
+## Vehicles
+
+Your vehicles are in the hotbar after your mobs. Use a vehicle item to place it where the floor allows its `places_on` (ground, water or anywhere) and a free box. Then:
+
+| Keys | What they do |
+|---|---|
+| C or right click on it | Get in (always the driver's seat) |
+| Shift | Get out |
+| W A S D | Drive |
+| Space and Left Alt | Climb and descend (hovering vehicles) |
+| X or left click | Hit it (1 damage) |
+| Shift + X | Pick it up |
+
+A panel **Vehicle** shows **Speed**, **Health** and **Fuel**, with **Get in**, **Get out**, **Fill the tank** and **Repair** for the game's fuel and repair items, which are rarely in the hotbar. Driving follows the same numbers as the game's physics (a test pins both against one file). The camera sits in the driver's seat, or at the vehicle's third-person distance. A surface vehicle without a turret turns your look with it.
+
+What only the game does is said once per vehicle type in **What happened**: weapons and firing, storage, paints, explosions, immunity, ram damage, engine and horn sounds, the dashboard, and vehicles being solid. Firing is logged, not shown.
+
+## Keys and the screen
+
+A key of your own does its events when you press it in Try it: the key bind's **When it works**, cooldown and repeat interval apply. The list under **Keys** adds "<Name> (your key)". A key on one of Try it's own keys (Z, X, C and so on) wins, and a line says so. Presses are ignored while a screen is open, and a refused press writes a "skipped" line saying why. The game's R, V and H in a vehicle say "Only in Minecraft".
+
+Your on-screen elements are drawn over the picture at the game's automatic GUI scale, laid out by the same rules as the HUD Studio. **Set by rules** values, the player's x, y and z, and a vehicle's fuel, health and speed are real. The player's health, food and air show 20, armour and level 0, and a vehicle's ammunition and reload, scores and saved data are said once and show only what a step sets. The vehicle dashboard shows weapons always ready.
+
 ## What happened
 
 **What happened** lists the newest lines first: what you placed, broke, spawned and hit, what grew or was powered, and what was refused. Lines in the warning colour start with **Only in Minecraft:**. They name something your project has that Try it does not run, for example:
@@ -113,6 +136,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Walking is approximate** | Walking, jumping and flying feel close, not identical. There is no sprinting, no water, no ladders, no ice and no slime. |
 | **Mobs only wander** | No attacks, targets, taming, breeding, riding or boss fights. A hit removes a mob; there is no health or death. |
 | **No commands or functions** | Nothing runs commands or functions. |
+| **Vehicles and keys are rough** | Vehicles drive by our own simulation and fire nothing you can see; keys and on-screen elements follow the rules above, with the exceptions listed there. |
 | **No scripts or rules yet** | Your events, rules and scripts do not run in Try it yet; a later version runs plain rules first. Use **Play**. |
 | **No redstone** | **Power** changes one block's own picture; nothing travels along dust, and powering a block runs nothing. |
 | **No light, shadows or liquids** | A glowing block looks the same lit or unlit around it. Water and lava in a ground are drawn as plain see-through blocks: they do not flow, and you walk through them as through air. |

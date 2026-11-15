@@ -37,6 +37,7 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | | **Make food** | Something to eat or drink |
 | | **Make a plant or tree** | A crop to grow, a tree, or a whole set of wood |
 | | **Make a recipe** | Ready-made crafting, smelting and stonecutting recipes to change |
+| Vehicles | **Make a vehicle** | Cars, tanks, planes and boats you can drive. It asks **What kind?** (Car, Tank, Plane, Boat) and **What is it called?**, then opens the vehicle with **Try it** and **Play** offered |
 | Creatures | **Make a mob** | A new creature, a flying or swimming one, or a boss |
 | | **Make a pet or animal** | A pet to tame, a farm animal or something to ride |
 | Magic | **Make a potion or effect** | A potion to brew or a new effect |
@@ -54,6 +55,8 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | | **Build with the AI helper** | Say what you want and let the AI helper build it |
 
 Most tiles open the [Creator](creator.md) on the right question page, or on its list of pages when a tile offers several. **Make a recipe**, **Make a building**, **Make a world or biome** and **Change how Minecraft looks** also offer ready-made content: they open a short list, where a question page opens the Creator and a ready-made choice is added to your mod at once (one step, so **Undo** takes it back). **Make things happen** opens your [rule book](rules.md); the first time it makes one. A tile whose pages do not exist for your Minecraft version is not shown.
+
+A vehicle opens on a short page, not the full Studio: **How fast**, **Needs fuel** (with **What fuel?**), **Has a cannon** (for a Tank), **How many seats** and **Colour**. In **Make things happen** the Rules offer **A player presses a key** (**Press the key you want**), **A player lets go of a key**, **A player holds a key**, **Someone gets in the vehicle**, **Someone gets out**, **The vehicle fires**, **The vehicle is destroyed** and **Show a number on screen** (**As a bar or as text?**, **Where on screen?** with a picture of nine spots and "above the hotbar"). See [Vehicles](vehicles.md), [Keys and the screen](keys-and-hud.md) and [Rules](rules.md#vehicles-keys-and-the-screen). The keys, vehicles and on-screen elements you make show under **My things**, and Things to fix explains problems in plain words.
 
 In the Creator, **Pick for me** fills in every question with random answers that work; change any of them before you press **Create**.
 

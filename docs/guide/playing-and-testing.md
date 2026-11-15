@@ -59,6 +59,7 @@ Some changes can only be read when Minecraft starts. When Reload finds one, the 
 - "You changed the block X. Changes to blocks are only read when Minecraft starts." Changing more than what a thing does when something happens (its numbers, its model settings) is not an event change. A rule that gives a thing a **new** trigger (the first rule on "A player breaks the block") counts, because the trigger is part of the thing; later edits to rules on that trigger reload.
 - "You renamed the block X. New names are only read when Minecraft starts."
 - "You removed X. Minecraft keeps it until it starts again." Removing a file cannot be done to a running game.
+- "You added a new vehicle, key or on-screen element." Vehicles, keys of your own and on-screen elements are read when Minecraft starts, so a new one always needs a restart. Their values and events reload, and so do script rules on them.
 - "You added or removed a sound. Sounds are only read when Minecraft starts."
 - "Your mod's details changed" or "Your mod's id changed", from the mod's own settings.
 - "MCSuperMods has a new version of its runtime" or "The Fabric API version changed".
