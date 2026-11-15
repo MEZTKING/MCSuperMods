@@ -5580,3 +5580,20 @@ Next
 
 **Next**
 - B427/B431 may want test ids for the HUD picker (it uses the label "<action> hud element").
+
+## 2026-11-15 — executor — B450 runtime: item inventories and bundles
+
+**What**
+- Components `msm:item_inventory` (closed: `layout` chest, hopper or dispenser, `rows` 1..6, `open` use or sneak_use, `open_sound`, `close_sound`, `on_open`, `on_close`) and `msm:bundle {}` in `loader/ItemInventoryParser` (records `Bag`, `Bundle`, `Inventory`; one `MapCodec` group added to `ItemComponents` as its 16th field, plus the two `KEYS`, `withInventory` and the event references). `ItemInventoryParser.check` runs last in `DefinitionParser.parseItem`: bag and bundle together is an error (neither applied); either with `msm:tool`, `msm:ranged_weapon`, `msm:armor`, `msm:shield`, `msm:throwable`, `msm:food` or `msm:consumable` is an error (the bag or bundle is dropped, the rest stays); `rows` on a hopper or dispenser bag and `max_stack_size` above 1 are warnings.
+- `registry/inventory/`: `ItemInventories.itemFor` (replaces B441's stub; stack 1 and an empty `container` or `bundle_contents` component; unknown sounds logged), `MsmInventoryItem` (an `MsmItem`; opens on use or sneaking use, then `msm:on_use` fires; never fits inside container items), `MsmBundleItem` (vanilla `BundleItem` with the item triggers), `BagGuard` (the D3 guard and the open, write and close logic), menus `MsmItemShulkerMenu` (27 slots), `MsmItemChestMenu` (other rows), `MsmItemHopperMenu`, `MsmItemDispenserMenu`, each overriding only `clicked`, `quickMoveStack`, `stillValid` and `removed`. `MsmItem`'s four shared trigger helpers are now public so the bundle class in another package can call them.
+- Tests: `MsmItemInventoryGameTest` 15 (registration and warnings, the six menus, use and sneak use, `on_open`/`on_use`/`on_close`, writing at once and on close, a save and load through `ItemStack.CODEC`, bags and shulker boxes refused in every layout by cursor, drag, number key and shift-click, the locked slot on nine routes, the creative pick, the off-hand bag, scrolling, a command replacing the stack, dropping, death, leaving, two players, the bundle's insert and take-out) on eight definitions `item/bag_*`; JUnit `ItemInventoryParserTest` 9; `ConformanceCorpusTest` decodes `item-inventory-` and `bundle-` (16 cases). 616 GameTests per variant, green on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib`; 999 JUnit; `./gradlew -p parity build` green.
+
+**Decisions**
+- The menu is refused any click once it is no longer valid, not only closed at the next tick, so a packet arriving in the same tick as a drop cannot change an orphaned stack.
+- Vanilla's drop splits the stack and leaves the emptied original in the slot: `stillValid` also needs the stack to be non-empty (found by the GameTest; the B440 spike's identity check alone kept the menu open).
+- Vanilla keeps a dead player's menu open; one `ServerLivingEntityEvents.AFTER_DEATH` hook, registered with the first bag, closes a bag menu at death so the last write, the sound and `on_close` happen before the respawn. Leaving closes the menu in vanilla already (measured: `on_close` fires).
+- Default sounds are the barrel's, as containers (ADR 0074 D7). Stored stacks beyond a bag's slots (a definition changed to fewer rows) are kept in the stack, not lost.
+- `ItemRef.contents` is left for B455 (ADR 0095 D5; B455 owns `ItemRef`).
+
+**Next**
+- B455: `ItemRef.contents` reads `minecraft:container` (bags) or `minecraft:bundle_contents` (bundles). B457: the eject needs the guard as written here (four menus, `BagGuard`, the death hook). B462 and B463: follow `item/bag_*`. `engine-mod/CLAUDE.md` should list `registry/inventory/` at the next status update.

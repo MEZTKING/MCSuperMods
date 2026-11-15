@@ -15,6 +15,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.mcsupermods.runtime.loader.ItemInventoryParser;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,14 +42,15 @@ public record ItemComponents(
         Optional<OnUseOnBlock> onUseOnBlock,
         Optional<WhileHeld> whileHeld,
         Optional<WhileWorn> whileWorn,
-        Map<Identifier, JsonElement> vanilla) {
+        Map<Identifier, JsonElement> vanilla,
+        ItemInventoryParser.Inventory inventory) {
 
     public static final List<String> KEYS = List.of("msm:food", "msm:tool", "msm:durability", "msm:on_use", "msm:armor",
             "msm:consumable", "msm:ranged_weapon", "msm:shield", "msm:death_protection", "msm:throwable", "msm:on_hit", "msm:on_use_on_block",
-            "msm:while_held", "msm:while_worn", "msm:components");
+            "msm:while_held", "msm:while_worn", "msm:components", "msm:item_inventory", "msm:bundle");
     public static final ItemComponents NONE = new ItemComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Map.of());
+            Optional.empty(), Optional.empty(), Optional.empty(), Map.of(), ItemInventoryParser.Inventory.NONE);
 
     /**
      * {@code msm:components} (ADR 0044 D1): vanilla data component ids to their vanilla JSON, kept as JSON here
@@ -81,7 +83,9 @@ public record ItemComponents(
             optional("msm:on_use_on_block", OnUseOnBlock.CODEC).forGetter(ItemComponents::onUseOnBlock),
             optional("msm:while_held", WhileHeld.CODEC).forGetter(ItemComponents::whileHeld),
             optional("msm:while_worn", WhileWorn.CODEC).forGetter(ItemComponents::whileWorn),
-            optional("msm:components", VANILLA_CODEC, Map.of()).forGetter(ItemComponents::vanilla)).apply(i, ItemComponents::new));
+            optional("msm:components", VANILLA_CODEC, Map.of()).forGetter(ItemComponents::vanilla),
+            // msm:item_inventory and msm:bundle (ADR 0095), one group of two keys: the record builder takes 16 fields.
+            ItemInventoryParser.MAP_CODEC.forGetter(ItemComponents::inventory)).apply(i, ItemComponents::new));
 
     /**
      * The mutually exclusive components present ({@code msm:armor}, {@code msm:tool}, {@code msm:ranged_weapon},
@@ -107,7 +111,7 @@ public record ItemComponents(
     /** These components without the mutually exclusive ones (used when more than one is present). */
     public ItemComponents withoutExclusive() {
         return new ItemComponents(food, Optional.empty(), durability, onUse, Optional.empty(), consumable, Optional.empty(),
-                Optional.empty(), deathProtection, throwable, onHit, onUseOnBlock, whileHeld, whileWorn, vanilla);
+                Optional.empty(), deathProtection, throwable, onHit, onUseOnBlock, whileHeld, whileWorn, vanilla, inventory);
     }
 
     /**
@@ -146,13 +150,19 @@ public record ItemComponents(
         boolean dropTool = tool.isPresent() && tool.get().type() == ToolType.MACE;
         return new ItemComponents(Optional.empty(), dropTool ? Optional.empty() : tool, durability, onUse, Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), deathProtection, Optional.empty(), onHit, onUseOnBlock, whileHeld,
-                whileWorn, vanilla);
+                whileWorn, vanilla, inventory);
     }
 
     /** These components without {@code msm:while_worn} (used when there is no {@code msm:armor} to wear; ADR 0061 D1). */
     public ItemComponents withoutWhileWorn() {
         return new ItemComponents(food, tool, durability, onUse, armor, consumable, rangedWeapon, shield, deathProtection, throwable,
-                onHit, onUseOnBlock, whileHeld, Optional.empty(), vanilla);
+                onHit, onUseOnBlock, whileHeld, Optional.empty(), vanilla, inventory);
+    }
+
+    /** These components with other {@code msm:item_inventory} and {@code msm:bundle} components (ADR 0095). */
+    public ItemComponents withInventory(ItemInventoryParser.Inventory other) {
+        return new ItemComponents(food, tool, durability, onUse, armor, consumable, rangedWeapon, shield, deathProtection, throwable,
+                onHit, onUseOnBlock, whileHeld, whileWorn, vanilla, other);
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -166,7 +176,7 @@ public record ItemComponents(
                 onUseOnBlock.map(c -> new String[] {"msm:on_use_on_block", c.event().toString()}),
                 whileHeld.map(c -> new String[] {"msm:while_held", c.event().toString()}),
                 whileWorn.map(c -> new String[] {"msm:while_worn", c.event().toString()})).flatMap(Optional::stream);
-        return Stream.concat(Stream.concat(use, thrown), triggers);
+        return Stream.concat(Stream.concat(Stream.concat(use, thrown), triggers), inventory.eventReferences());
     }
 
     /** Whether {@code inventoryTick} has work: {@code msm:while_held} or {@code msm:while_worn}. */

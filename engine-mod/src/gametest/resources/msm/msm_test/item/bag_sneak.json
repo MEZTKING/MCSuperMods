@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "open": "sneak_use"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

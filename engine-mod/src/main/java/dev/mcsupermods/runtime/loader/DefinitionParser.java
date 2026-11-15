@@ -137,8 +137,9 @@ public final class DefinitionParser {
     public static ParseResult<ItemDefinition> parseItem(JsonElement json) {
         ParseResult<ItemDefinition> result = parse(json, ItemDefinition.KEYS, ItemComponents.KEYS, ItemDefinition.CODEC,
                 def -> new Refs(def.events(), def.components().eventReferences(), List.of()));
-        return dropWhileWornWithoutArmor(
-                dropThrowableConflicts(dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents))));
+        return ItemInventoryParser.check(dropWhileWornWithoutArmor(
+                dropThrowableConflicts(dropExclusiveTogether(dropPlayAnimation(result, ItemDefinition::events, ItemDefinition::withEvents)))),
+                json);
     }
 
     /**

@@ -60,7 +60,7 @@ public class MsmItem extends Item {
      * {@code MsmCrossbowItem}, {@code MsmMaceItem}): on cooldown the use fails; otherwise the event fires, the cooldown
      * starts and the vanilla use ({@code vanillaUse}) follows, a {@code PASS} turning into {@code SUCCESS}.
      */
-    static InteractionResult useWithEvent(Identifier id, ItemDefinition definition, Level level, Player player, InteractionHand hand,
+    public static InteractionResult useWithEvent(Identifier id, ItemDefinition definition, Level level, Player player, InteractionHand hand,
             Supplier<InteractionResult> vanillaUse) {
         Optional<ItemComponents.OnUse> onUse = definition.components().onUse();
         if (onUse.isEmpty()) {
@@ -103,7 +103,7 @@ public class MsmItem extends Item {
      * ({@code LivingEntity.stabAttack}), but {@code postHurtEnemy} only for a player's hit, so a mob holding the item
      * would never fire. Server side only.
      */
-    static void hurtEnemyWithEvent(Identifier id, ItemDefinition definition, LivingEntity target, LivingEntity attacker) {
+    public static void hurtEnemyWithEvent(Identifier id, ItemDefinition definition, LivingEntity target, LivingEntity attacker) {
         Optional<ItemComponents.OnHit> onHit = definition.components().onHit();
         if (onHit.isPresent() && attacker.level() instanceof ServerLevel server) {
             EventRunner.fire(id, definition.events(), onHit.get().event(), EventContext.forItemHit(server, attacker, target));
@@ -116,7 +116,7 @@ public class MsmItem extends Item {
      * {@code PASS} turning into {@code SUCCESS}, so the click is consumed and {@code use} (and {@code msm:on_use})
      * does not run for it. Without a player (a dispenser) vanilla runs alone.
      */
-    static InteractionResult useOnWithEvent(Identifier id, ItemDefinition definition, UseOnContext context,
+    public static InteractionResult useOnWithEvent(Identifier id, ItemDefinition definition, UseOnContext context,
             Supplier<InteractionResult> vanillaUseOn) {
         Optional<ItemComponents.OnUseOnBlock> onUseOn = definition.components().onUseOnBlock();
         Player player = context.getPlayer();
@@ -146,7 +146,7 @@ public class MsmItem extends Item {
      * {@code null} slot (a backpack slot) never fires. A firing happens when {@code (game time + entity id)} is a
      * multiple of the interval, which staggers holders, and only within the shared {@link TickLimiter}.
      */
-    static void inventoryTickWithEvent(Identifier id, ItemDefinition definition, ServerLevel level, Entity owner, EquipmentSlot slot) {
+    public static void inventoryTickWithEvent(Identifier id, ItemDefinition definition, ServerLevel level, Entity owner, EquipmentSlot slot) {
         ItemComponents c = definition.components();
         if (slot == null || !c.ticksInInventory()) {
             return;

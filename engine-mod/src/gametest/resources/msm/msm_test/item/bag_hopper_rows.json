@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "layout": "hopper",
+      "rows": 2
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}

@@ -1,0 +1,39 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "on_close": "msm_test:bag_closed",
+      "on_open": "msm_test:bag_opened"
+    },
+    "msm:on_use": {
+      "event": "msm_test:bag_used"
+    }
+  },
+  "events": {
+    "msm_test:bag_closed": {
+      "actions": [
+        {
+          "sound": "minecraft:block.note_block.bell",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "msm_test:bag_opened": {
+      "actions": [
+        {
+          "sound": "minecraft:block.note_block.bell",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "msm_test:bag_used": {
+      "actions": [
+        {
+          "sound": "minecraft:block.note_block.bell",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}
