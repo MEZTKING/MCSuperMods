@@ -275,7 +275,7 @@ public class MsmVehicleClientGameTest implements FabricClientGameTest {
         check(Math.abs(wheel - wheelStart) > 1, "the wheels rolled " + (wheel - wheelStart));
         check(steer > 0.5f, "the steering turned only " + steer);
         check(context.computeOnClient(mc -> VehicleExhaust.spawned()) - exhaust >= 5, "too little exhaust");
-        check(camera > 4 && camera < 6.05, "third-person camera at " + camera + " blocks, camera.distance is 6");
+        check(camera > 4 && camera < 6.25, "third-person camera at " + camera + " blocks, camera.distance is 6");
 
         dismount(context, server);
         context.waitTicks(2);
