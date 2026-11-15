@@ -20,6 +20,7 @@ import { ExtraDropsStudio, WorldAdditionStudio } from './AdditionStudios';
 import { BIOME_ADDITION_KIND, LOOT_ADDITION_KIND } from './additions-model';
 import { BlockStudio } from './BlockStudio';
 import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, PARTICLE_KIND } from './blocks-items-model';
+import { CREATIVE_TAB_KIND, CreativeTabStudio } from './CreativeTabStudio';
 import { EffectStudio } from './EffectStudio';
 import { ItemStudio } from './ItemStudio';
 import { PotionStudio } from './PotionStudio';
@@ -75,4 +76,6 @@ export const studios: StudioEntry[] = [
   },
   { id: 'msm.blocks-items.loot-addition', kindId: LOOT_ADDITION_KIND, component: ExtraDropsStudio },
   { id: 'msm.blocks-items.particle', kindId: PARTICLE_KIND, component: LazyParticleStudio },
+  // The Creative Tab Studio (ADR 0096 D2): an empty component until B460; the kind arrives with B456.
+  { id: 'msm.blocks-items.creative-tab', kindId: CREATIVE_TAB_KIND, component: CreativeTabStudio },
 ];

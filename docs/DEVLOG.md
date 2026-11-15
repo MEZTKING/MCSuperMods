@@ -5188,3 +5188,17 @@ Decisions
 
 Next
 - B447, B448: name parents only from `blocks.modelTemplates` (add a model there and to the targets tests first if a lowering needs another). B456: `commands.name-clash` against `vanillaNames`, argument parsers from `argumentTypes`. B454: the Java side's twelve parsers should match `argumentTypes`.
+## 2026-11-15 — executor — B441 scaffold and stubs, batch 1
+
+**What**
+- Wiring only, no behaviour. Runtime: twenty `BlockType` constants (`cake` to `candle`, `bed` to `scaffolding`) dispatching to stubs `PlantTypes` and `FurnitureTypes` (they throw "not yet implemented", reported as a load error for the file), field stubs `loader/types/PlantFields` and `FurnitureFields`, `registry/types/Companions.registerAfter`, `registry/weathering/Weathering.blockFor`, `registry/Waterlogging.blockFor`, `registry/inventory/ItemInventories.itemFor`, `registry/MsmCreativeTabs` (`register`, `resolve`), `commands/MsmCommands.init`, `loader/CommandParser` and `CreativeTabParser`, `scripting/CommandEvents`; scanner kinds `command` and `creative_tab`; `LoadReport` gains `commands` and `creativeTabs`; log lines `registered N command(s)` and `N creative tab(s)`; the empty Mixin config `msm_runtime.mixins.json` and its `mixins` entry; eight GameTest stubs, the client stub `MsmVanillaBlocksClientGameTest`, the parity stub `SampleVanillaBlocksParityTest` (all registered); 518 GameTests per variant.
+- Plugin and app: twenty empty lowering modules and their dispatch lines in `lowering/types/index.ts`, empty `validators-plants-2.ts` and `validators-furniture.ts` in the plugin's validator list, `fixtures/sample-vanilla-blocks/README.md`, three skipped e2e specs, empty `CommandStudio` and `CreativeTabStudio` registered in the area `studios.tsx` files.
+
+**Decisions**
+- `BlockType.Fields` gains a `non-sealed` `Extension` interface so the records of `PlantFields` and `FurnitureFields` (another package) need no change to `BlockType`; the enum constants take their field lists from `PlantFields.fields(id)` and `FurnitureFields.fields(id)` and the codec from `.codec(id)`.
+- `MsmCreativeTabs.register` runs before `MsmRegistrar.registerAll` on the scanned report; the registrar re-attaches `creativeTabs` to its result.
+- Existing tests that assumed `ladder` is unknown and that `portal` is the last type were updated. The app's Type picker excludes the twenty new types (`NEW_BLOCK_TYPES`) until B452; the `Record<BlockTypeName, ...>` tables got labels and empty texture slots so the app typechecks.
+
+**Next**
+- `packages/exporters/test/library.test.ts` "one per-kind example for every registered kind" fails on the base 9c311be (vehicles have no example until B423, merged later); it is not caused by this brief.
+- B443 (format), B445/B446 (runtime), B447/B448 (lowering) fill the stubs; B452 replaces `NEW_BLOCK_TYPES` filtering in the picker.

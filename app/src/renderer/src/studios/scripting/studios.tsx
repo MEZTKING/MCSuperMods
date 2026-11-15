@@ -1,11 +1,13 @@
 /**
  * The scripting Studios (B137b), discovered by `studios/studio-registry.ts`: the Script Studio
- * for `msm:script` (TypeScript in Monaco, ADR 0032 D5).
+ * for `msm:script` (TypeScript in Monaco, ADR 0032 D5), and the Command Studio for
+ * `msm:command` (ADR 0096 D1).
  *
  * @packageDocumentation
  */
 
 import type { StudioEntry } from '../types';
+import { COMMAND_KIND, CommandStudio } from './CommandStudio';
 import { ScriptStudio } from './ScriptStudio';
 import { SCRIPT_KIND, scriptLinesOf } from './script-model';
 
@@ -21,4 +23,6 @@ export const studios: StudioEntry[] = [
     component: ScriptStudio,
     handlesFocus: true,
   },
+  // The Command Studio (ADR 0096 D1): an empty component until B460; the kind arrives with B456.
+  { id: 'msm.scripting.command', kindId: COMMAND_KIND, component: CommandStudio },
 ];

@@ -1180,14 +1180,17 @@ describe('block types', () => {
       const written = files.map((file) => modelId(file.path)).filter((id) => id !== undefined);
       expect(blockGeneratedModelIds(sample.id, sample.data), sample.name).toEqual(written);
     }
-    expect(blockGeneratedModelIds('demo:x', { format: 1, type: 'ladder' })).toEqual([]);
+    expect(blockGeneratedModelIds('demo:x', { format: 1, type: 'teleporter' })).toEqual([]);
     expect(blockGeneratedModelIds('demo:x', null)).toEqual([]);
   });
 
   it('rejects an unknown type', () => {
     expect(() =>
-      blockKind.lower(element(blockKind.id, 'example:x', { format: 1, type: 'ladder' }), target),
-    ).toThrow(/unknown block type "ladder"/);
+      blockKind.lower(
+        element(blockKind.id, 'example:x', { format: 1, type: 'teleporter' }),
+        target,
+      ),
+    ).toThrow(/unknown block type "teleporter"/);
   });
 
   it('gives the block item id', () => {

@@ -124,6 +124,10 @@ public final class BlockTypes {
             case SAPLING -> new MsmSaplingBlock(id, definition, props);
             case LEAVES -> leaves(id, definition, props, warn);
             case PORTAL -> new MsmPortalBlock(id, definition, props);
+            case CAKE, BERRY_BUSH, TALL_PLANT, POTTED_PLANT, VINE, SEA_PICKLE, CARPET, LAYERS, COCOA, CANDLE ->
+                    PlantTypes.create(id, definition, props, warn);
+            case BED, LADDER, TORCH, LANTERN, CHAIN, ROD, SIGN, HANGING_SIGN, STEM, SCAFFOLDING ->
+                    FurnitureTypes.create(id, definition, props, warn);
             case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL -> MsmBlock.create(id, definition, props);
         };
     }

@@ -47,13 +47,22 @@
       "dev.mcsupermods.runtime.gametest.MsmHudGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVehicleGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVehicleWeaponGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmScriptApi15GameTest"
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi15GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPlantTypes2GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmFurnitureGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmWeatheringGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmItemInventoryGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmCommandGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmCreativeTabGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMixinEventGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi16GameTest"
     ],
     "fabric-client-gametest": [
       "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmControlsClientGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest"
     ]
   },
   "depends": {

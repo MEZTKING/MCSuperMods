@@ -43,15 +43,26 @@ import type { Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { blockItemIdOf } from '../block-item';
 import { assetPath, BlocksItemsLoweringError, isRecord, splitResourceLocation } from '../paths';
 import { BLOCK_STATE_SCHEMA, itemDefinitionFile, nonEmptyString, vanillaTagFile } from '../shared';
+import { bedType } from './bed';
+import { berryBushType } from './berry-bush';
 import { blockType } from './block';
 import { withStateProperty } from './blockstates';
 import { buttonType } from './button';
+import { cakeType } from './cake';
+import { candleType } from './candle';
+import { carpetType } from './carpet';
+import { chainType } from './chain';
+import { cocoaType } from './cocoa';
 import { cropType } from './crop';
 import { directionalType } from './directional';
 import { doorType } from './door';
 import { fenceType } from './fence';
 import { fenceGateType } from './fence-gate';
+import { hangingSignType } from './hanging-sign';
 import { horizontalType } from './horizontal';
+import { ladderType } from './ladder';
+import { lanternType } from './lantern';
+import { layersType } from './layers';
 import { leavesType } from './leaves';
 import {
   blockModelId,
@@ -67,11 +78,20 @@ import {
 import { paneType } from './pane';
 import { pillarType } from './pillar';
 import { portalType } from './portal';
+import { pottedPlantType } from './potted-plant';
 import { pressurePlateType } from './pressure-plate';
+import { rodType } from './rod';
 import { saplingType } from './sapling';
+import { scaffoldingType } from './scaffolding';
+import { seaPickleType } from './sea-pickle';
+import { signType } from './sign';
 import { slabType } from './slab';
 import { stairsType } from './stairs';
+import { stemType } from './stem';
+import { tallPlantType } from './tall-plant';
+import { torchType } from './torch';
 import { trapdoorType } from './trapdoor';
+import { vineType } from './vine';
 import { wallType } from './wall';
 
 export type { ModelSpec, SlotModels, TypeContext, TypeLowering } from './models';
@@ -104,6 +124,26 @@ export const BLOCK_TYPES = Object.freeze([
   'sapling',
   'leaves',
   'portal',
+  'cake',
+  'berry_bush',
+  'tall_plant',
+  'potted_plant',
+  'vine',
+  'sea_pickle',
+  'carpet',
+  'layers',
+  'cocoa',
+  'candle',
+  'bed',
+  'ladder',
+  'torch',
+  'lantern',
+  'chain',
+  'rod',
+  'sign',
+  'hanging_sign',
+  'stem',
+  'scaffolding',
 ] as const);
 
 /** A block type name. */
@@ -129,6 +169,26 @@ export const BLOCK_TYPE_LOWERINGS: Readonly<Record<BlockTypeName, TypeLowering>>
   sapling: saplingType,
   leaves: leavesType,
   portal: portalType,
+  cake: cakeType,
+  berry_bush: berryBushType,
+  tall_plant: tallPlantType,
+  potted_plant: pottedPlantType,
+  vine: vineType,
+  sea_pickle: seaPickleType,
+  carpet: carpetType,
+  layers: layersType,
+  cocoa: cocoaType,
+  candle: candleType,
+  bed: bedType,
+  ladder: ladderType,
+  torch: torchType,
+  lantern: lanternType,
+  chain: chainType,
+  rod: rodType,
+  sign: signType,
+  hanging_sign: hangingSignType,
+  stem: stemType,
+  scaffolding: scaffoldingType,
 });
 
 /** The slot that names the block item's model on every type. */

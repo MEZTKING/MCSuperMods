@@ -19,9 +19,12 @@ import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
+import dev.mcsupermods.runtime.registry.inventory.ItemInventories;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.registry.portal.PortalTravel;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
+import dev.mcsupermods.runtime.registry.types.Companions;
+import dev.mcsupermods.runtime.registry.weathering.Weathering;
 import dev.mcsupermods.runtime.registry.types.MsmPortalBlock;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -221,7 +224,8 @@ public final class MsmRegistrar {
                 lootAdditions.size());
         checkPortalActions(errors);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
-                List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, particles, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings));
+                List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, particles, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings))
+                .withCreativeTabs(scanned.creativeTabs(), List.of(), List.of()); // registered before this pass (MsmCreativeTabs.register)
     }
 
     /**
@@ -510,8 +514,13 @@ public final class MsmRegistrar {
         } else if (portal) {
             props = props.noLootTable(); // ADR 0077 D1: a portal drops nothing unless loot_table is given
         }
-        Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey,
-                BlockTypes.create(id, def, props, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
+        // Weathering (ADR 0094 D8) and waterlogging (D7) classes first; both are stubs that answer empty until B449.
+        final BlockBehaviour.Properties blockProps = props;
+        Block created = Weathering.blockFor(id, def, blockProps)
+                .or(() -> Waterlogging.blockFor(id, def, blockProps))
+                .orElseGet(() -> BlockTypes.create(id, def, blockProps, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
+        Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey, created);
+        Companions.registerAfter(raw, def, block, errors); // ADR 0094 D4: wall signs, wall torches, attached stems; a stub until B446
         BlockEntityHooks.afterBlockRegistered(raw, def, block, errors); // ADR 0074 D2, ADR 0075 D3
         BlockExtras.apply(block, c); // msm:flammable, msm:strippable (ADR 0067 D3, D4)
         if (block instanceof MsmPortalBlock portalBlock) {
@@ -655,7 +664,9 @@ public final class MsmRegistrar {
         } else if (c.tool().isPresent() && c.tool().get().type() == ItemComponents.ToolType.MACE) {
             item = new MsmMaceItem(id, def, props);
         } else {
-            item = new MsmItem(id, def, props);
+            // Bags and bundles (ADR 0095) first; a stub that answers empty until B450.
+            Optional<Item> bag = ItemInventories.itemFor(id, def, props);
+            item = bag.isPresent() ? bag.get() : new MsmItem(id, def, props);
         }
         Item registered = Registry.register(BuiltInRegistries.ITEM, key, item);
         def.creativeTab().ifPresent(tab -> addToTab(raw, tab, registered));
@@ -1002,7 +1013,8 @@ public final class MsmRegistrar {
     static void addToTab(RawDefinition raw, Identifier tab, Item item) {
         TABS.add(new LateCheck(raw.describe(), "creative_tab", tab));
         // Tabs are resolved by key when the tab is built; an unknown key never fires (checked after start-up).
-        CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, tab))
+        // A project tab (ADR 0096 D2) resolves to its registered id; any other id is used as written.
+        CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, MsmCreativeTabs.resolve(tab).orElse(tab)))
                 .register(output -> output.accept(item));
     }
 

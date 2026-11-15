@@ -23,7 +23,7 @@ import net.minecraft.resources.Identifier;
  */
 public final class DefinitionScanner {
     private static final List<String> KINDS = List.of("block", "item", "entity", "effect", "potion", "particle", "biome_addition", "loot_addition",
-            KeyBindParser.KIND, HudParser.KIND, VehicleParser.KIND);
+            KeyBindParser.KIND, HudParser.KIND, VehicleParser.KIND, CommandParser.KIND, CreativeTabParser.KIND);
 
     private DefinitionScanner() {}
 

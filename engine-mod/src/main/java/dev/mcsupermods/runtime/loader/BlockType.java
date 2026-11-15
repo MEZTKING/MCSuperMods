@@ -16,6 +16,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.mcsupermods.runtime.loader.types.FurnitureFields;
+import dev.mcsupermods.runtime.loader.types.PlantFields;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -47,7 +49,29 @@ public enum BlockType {
     CROP("crop", List.of("max_age", "stage_heights", "soil", "bonemeal_growth")),
     SAPLING("sapling", List.of("tree", "mega_tree", "flower_tree", "soil")),
     LEAVES("leaves", List.of("tint", "particle_chance", "falling_particle")),
-    PORTAL("portal", List.of("frame", "frame_block", "igniter", "destination", "return_to", "travel", "sounds", "particles", "on_travel"));
+    PORTAL("portal", List.of("frame", "frame_block", "igniter", "destination", "return_to", "travel", "sounds", "particles", "on_travel")),
+    // The ten plant and food types and the ten furniture, light and sign types of batch 1 (ADR 0094 D1). Their own fields
+    // and codecs live in loader/types/PlantFields and FurnitureFields (empty until B445 and B446).
+    CAKE("cake", PlantFields.fields("cake")),
+    BERRY_BUSH("berry_bush", PlantFields.fields("berry_bush")),
+    TALL_PLANT("tall_plant", PlantFields.fields("tall_plant")),
+    POTTED_PLANT("potted_plant", PlantFields.fields("potted_plant")),
+    VINE("vine", PlantFields.fields("vine")),
+    SEA_PICKLE("sea_pickle", PlantFields.fields("sea_pickle")),
+    CARPET("carpet", PlantFields.fields("carpet")),
+    LAYERS("layers", PlantFields.fields("layers")),
+    COCOA("cocoa", PlantFields.fields("cocoa")),
+    CANDLE("candle", PlantFields.fields("candle")),
+    BED("bed", FurnitureFields.fields("bed")),
+    LADDER("ladder", FurnitureFields.fields("ladder")),
+    TORCH("torch", FurnitureFields.fields("torch")),
+    LANTERN("lantern", FurnitureFields.fields("lantern")),
+    CHAIN("chain", FurnitureFields.fields("chain")),
+    ROD("rod", FurnitureFields.fields("rod")),
+    SIGN("sign", FurnitureFields.fields("sign")),
+    HANGING_SIGN("hanging_sign", FurnitureFields.fields("hanging_sign")),
+    STEM("stem", FurnitureFields.fields("stem")),
+    SCAFFOLDING("scaffolding", FurnitureFields.fields("scaffolding"));
 
     /**
      * Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3;
@@ -113,7 +137,13 @@ public enum BlockType {
     }
 
     /** The per-type fields of one definition; {@link None} for a type without fields of its own. */
-    public sealed interface Fields permits None, Stairs, FenceGate, Opening, Button, PressurePlate, Crop, Sapling, Leaves, Portal {}
+    public sealed interface Fields permits None, Stairs, FenceGate, Opening, Button, PressurePlate, Crop, Sapling, Leaves, Portal, Extension {}
+
+    /**
+     * The per-type fields of the plant, food, furniture, light and sign types (ADR 0094), implemented by the records of
+     * {@link PlantFields} and {@link FurnitureFields} so that adding a record needs no change here.
+     */
+    public non-sealed interface Extension extends Fields {}
 
     /** A type with no fields of its own. */
     public record None() implements Fields {
@@ -499,6 +529,8 @@ public enum BlockType {
             case SAPLING -> Sapling.CODEC;
             case LEAVES -> Leaves.CODEC;
             case PORTAL -> Portal.CODEC;
+            case CAKE, BERRY_BUSH, TALL_PLANT, POTTED_PLANT, VINE, SEA_PICKLE, CARPET, LAYERS, COCOA, CANDLE -> PlantFields.codec(id);
+            case BED, LADDER, TORCH, LANTERN, CHAIN, ROD, SIGN, HANGING_SIGN, STEM, SCAFFOLDING -> FurnitureFields.codec(id);
             case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, WALL, FENCE, PANE -> MapCodec.unit(None.INSTANCE);
         };
         return (MapCodec<Fields>) codec;

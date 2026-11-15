@@ -187,8 +187,9 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 );
 
 describe('portal type', () => {
-  it('is the last block type, with the slots ns and ew', () => {
-    expect(BLOCK_TYPES.at(-1)).toBe('portal');
+  it('is the last of the original block types, with the slots ns and ew', () => {
+    // The twenty types of ADR 0094 D1 follow it (B441).
+    expect(BLOCK_TYPES.indexOf('portal')).toBe(17);
     expect(BLOCK_TYPE_MODEL_SLOTS.portal).toEqual(['ns', 'ew', 'item']);
     expect(TYPE_BLOCK_TAGS).toContain('portals');
   });

@@ -12,7 +12,9 @@ import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
 import { containerValidators } from './validators-containers';
+import { furnitureValidators } from './validators-furniture';
 import { particleValidators } from './validators-particles';
+import { plants2Validators } from './validators-plants-2';
 import { portalValidators } from './validators-portals';
 import { blockTypeValidators } from './validators-types';
 
@@ -87,6 +89,7 @@ export {
   containerValidators,
   MAX_MACHINE_TICKS,
 } from './validators-containers';
+export { FURNITURE_PROBLEM_CODES, furnitureValidators } from './validators-furniture';
 export {
   AMBIENT_PARTICLES_COMPONENT,
   PARTICLE_DESCRIPTION_KIND,
@@ -94,6 +97,7 @@ export {
   particleValidators,
   SPAWN_PARTICLE_ACTION,
 } from './validators-particles';
+export { PLANT2_PROBLEM_CODES, plants2Validators } from './validators-plants-2';
 export {
   DEFAULT_PORTAL_IGNITER,
   DEFAULT_PORTAL_RETURN_TO,
@@ -124,6 +128,8 @@ export default definePlugin({
       ...containerValidators,
       ...portalValidators,
       ...particleValidators,
+      ...plants2Validators,
+      ...furnitureValidators,
     ],
   },
 });

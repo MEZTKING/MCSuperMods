@@ -35,11 +35,42 @@ type JsonObject = { [key: string]: Json };
 export type { BlockTypeName };
 
 /**
+ * The twenty types of ADR 0094 D1 (plants and food, furniture and lights). B441 only made the runtime and lowering accept
+ * them; the Type picker does not offer them until B452 adds its two groups.
+ */
+export const NEW_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
+  'cake',
+  'berry_bush',
+  'tall_plant',
+  'potted_plant',
+  'vine',
+  'sea_pickle',
+  'carpet',
+  'layers',
+  'cocoa',
+  'candle',
+  'bed',
+  'ladder',
+  'torch',
+  'lantern',
+  'chain',
+  'rod',
+  'sign',
+  'hanging_sign',
+  'stem',
+  'scaffolding',
+]);
+
+/**
  * The building types the Type picker offers (ADR 0067 D1), in the format's order, with
  * `portal` (ADR 0077 D1; its fields in the Portal section, ADR 0078 D1) last.
  */
 export const BUILDING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze(
-  BLOCK_TYPES.filter((type) => !['crop', 'sapling', 'leaves'].includes(type)),
+  BLOCK_TYPES.filter(
+    (type) =>
+      !['crop', 'sapling', 'leaves'].includes(type) &&
+      !(NEW_BLOCK_TYPES as readonly string[]).includes(type),
+  ),
 );
 
 /** The plant types (ADR 0068 D1); their own fields come with the plant sections (B272). */
@@ -69,6 +100,26 @@ export const BLOCK_TYPE_LABELS: Readonly<Record<BlockTypeName, string>> = Object
   sapling: 'Sapling',
   leaves: 'Leaves',
   portal: 'Portal',
+  cake: 'Cake',
+  berry_bush: 'Berry bush',
+  tall_plant: 'Tall plant',
+  potted_plant: 'Potted plant',
+  vine: 'Vine',
+  sea_pickle: 'Sea pickle',
+  carpet: 'Carpet',
+  layers: 'Layers',
+  cocoa: 'Cocoa',
+  candle: 'Candle',
+  bed: 'Bed',
+  ladder: 'Ladder',
+  torch: 'Torch',
+  lantern: 'Lantern',
+  chain: 'Chain',
+  rod: 'Rod',
+  sign: 'Sign',
+  hanging_sign: 'Hanging sign',
+  stem: 'Stem',
+  scaffolding: 'Scaffolding',
 });
 
 /** The vanilla set types in words (ADR 0067 D2); unknown names show as written. */
@@ -244,6 +295,26 @@ export const TEXTURE_SLOTS: Readonly<Record<BlockTypeName, readonly TextureSlot[
     sapling: [{ key: 'sapling', label: 'Sapling (also the item)' }],
     leaves: [{ key: 'all', label: 'Leaves (every face)' }],
     portal: [{ key: 'portal', label: 'Portal surface' }],
+    cake: [],
+    berry_bush: [],
+    tall_plant: [],
+    potted_plant: [],
+    vine: [],
+    sea_pickle: [],
+    carpet: [],
+    layers: [],
+    cocoa: [],
+    candle: [],
+    bed: [],
+    ladder: [],
+    torch: [],
+    lantern: [],
+    chain: [],
+    rod: [],
+    sign: [],
+    hanging_sign: [],
+    stem: [],
+    scaffolding: [],
   },
 );
 

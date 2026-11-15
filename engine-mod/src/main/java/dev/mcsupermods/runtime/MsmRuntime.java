@@ -1,5 +1,6 @@
 package dev.mcsupermods.runtime;
 
+import dev.mcsupermods.runtime.commands.MsmCommands;
 import dev.mcsupermods.runtime.controls.KeyBinds;
 import dev.mcsupermods.runtime.dev.DevMode;
 import dev.mcsupermods.runtime.hud.HudServer;
@@ -7,6 +8,7 @@ import dev.mcsupermods.runtime.loader.DefinitionScanner;
 import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.net.MsmNetworking;
 import dev.mcsupermods.runtime.registry.BlockExtras;
+import dev.mcsupermods.runtime.registry.MsmCreativeTabs;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import dev.mcsupermods.runtime.registry.portal.PortalIndexAttachment;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
@@ -31,6 +33,8 @@ public final class MsmRuntime implements ModInitializer {
     @Override
     public void onInitialize() {
         LoadReport scanned = DefinitionScanner.scanAllMods();
+        // Project creative tabs first (ADR 0096 D2): block and item definitions name them in creative_tab.
+        scanned = MsmCreativeTabs.register(scanned);
         report = MsmRegistrar.registerAll(scanned);
         LOGGER.info("[{}] registered {} block(s) and {} item(s) from {} definition file(s); {} error(s), {} warning(s)",
                 MOD_ID, report.blocks().size(), report.items().size(), report.filesRead(), report.errors().size(),
@@ -43,9 +47,13 @@ public final class MsmRuntime implements ModInitializer {
         report = MsmVehicles.register(report);
         report = KeyBinds.init(report);
         report = HudServer.init(report);
+        // Project commands (ADR 0096 D1) after the registry content they may name.
+        report = MsmCommands.init(report);
         LOGGER.info("[{}] registered {} vehicle type(s)", MOD_ID, report.vehicles().size());
         LOGGER.info("[{}] registered {} key bind(s)", MOD_ID, report.keyBinds().size());
         LOGGER.info("[{}] registered {} HUD element(s)", MOD_ID, report.hudElements().size());
+        LOGGER.info("[{}] registered {} command(s)", MOD_ID, report.commands().size());
+        LOGGER.info("[{}] registered {} creative tab(s)", MOD_ID, report.creativeTabs().size());
         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
         // exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
