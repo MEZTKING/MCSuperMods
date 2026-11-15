@@ -1,0 +1,56 @@
+[
+  {
+    "contents": {
+      "category": "abilities/moves",
+      "cooldown_ticks": 40,
+      "default_key": "key.mouse.4",
+      "events": {
+        "example:dash_held": {
+          "actions": [
+            {
+              "hud": "example:charge",
+              "type": "set_hud",
+              "value": 1
+            }
+          ]
+        },
+        "example:dash_press": {
+          "actions": [
+            {
+              "strength": 1,
+              "type": "launch"
+            }
+          ]
+        },
+        "example:dash_release": {
+          "actions": [
+            {
+              "sound": "minecraft:entity.breeze.wind_burst",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "hold_interval_ticks": 5,
+      "msm:on_press": "example:dash_press",
+      "msm:on_release": "example:dash_release",
+      "msm:while_held": "example:dash_held",
+      "vehicle": "demo:tank",
+      "when": "driving"
+    },
+    "layer": "msm",
+    "path": "msm/example/key_bind/abilities/dash.json",
+    "schema": "msm:key_bind_definition"
+  },
+  {
+    "contents": {
+      "key.category.example.abilities.moves": "Moves",
+      "key.example.abilities.dash": "Dash"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

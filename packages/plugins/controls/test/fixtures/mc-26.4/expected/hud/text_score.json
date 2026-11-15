@@ -1,0 +1,21 @@
+[
+  {
+    "contents": {
+      "anchor": "top",
+      "color": "#ffe060",
+      "format": 1,
+      "shadow": false,
+      "starts_hidden": true,
+      "text": "Points: {value}",
+      "type": "text",
+      "value": {
+        "holder": "@s",
+        "objective": "points",
+        "source": "score"
+      }
+    },
+    "layer": "msm",
+    "path": "msm/example/hud/points.json",
+    "schema": "msm:hud_definition"
+  }
+]

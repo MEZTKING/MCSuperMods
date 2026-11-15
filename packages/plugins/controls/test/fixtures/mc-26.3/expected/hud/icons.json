@@ -1,0 +1,23 @@
+[
+  {
+    "contents": {
+      "empty_icon": "demo:hud/heart",
+      "format": 1,
+      "half_icon": "demo:hud/heart",
+      "icon": "demo:hud/heart",
+      "max": 10,
+      "per_icon": 1,
+      "show": "always",
+      "type": "icons",
+      "value": {
+        "key": "lives",
+        "namespace": "example",
+        "scope": "player",
+        "source": "data"
+      }
+    },
+    "layer": "msm",
+    "path": "msm/example/hud/lives.json",
+    "schema": "msm:hud_definition"
+  }
+]

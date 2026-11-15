@@ -1,0 +1,32 @@
+[
+  {
+    "contents": {
+      "anchor": "bottom_right",
+      "back_sprite": "demo:hud/mana",
+      "format": 1,
+      "max": {
+        "source": "set"
+      },
+      "offset": [
+        -8,
+        -8
+      ],
+      "order": 2,
+      "show": "in_vehicle",
+      "size": [
+        60,
+        6
+      ],
+      "sprite": "demo:hud/mana",
+      "type": "bar",
+      "value": {
+        "source": "vehicle",
+        "stat": "fuel"
+      },
+      "vehicle": "demo:tank"
+    },
+    "layer": "msm",
+    "path": "msm/example/hud/hud/fuel.json",
+    "schema": "msm:hud_definition"
+  }
+]

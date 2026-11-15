@@ -5074,3 +5074,22 @@ Decisions
 Next
 - App: plain words for the 15 codes in `plain-problems.ts` (and its test), the vehicle's own id in the `item` registry of `schema-context.ts`, the Vehicle Studio (B419) and preview kind `vehicle`.
 - B422 and B423 may reuse the starter shapes (copied into the library, which cannot import this plugin).
+
+## 2026-11-15 — executor — B413 controls plugin: `msm:key_bind` and `msm:hud`
+
+What
+- `@msm/plugin-controls` gains its two kinds (ADR 0088 D3, ADR 0089 D1): `msm:key_bind` (folder `key_bind`, default `{ format: 1, default_key: 'key.keyboard.j' }`) and `msm:hud` (folder `hud`, default a bar of `{ source: 'set' }`), no registry, `/format` hidden.
+- Lowering: `msm/<ns>/key_bind/<path>.json` (schema `msm:key_bind_definition`) without the element-only `display_name` and `category_name`, which become `en_us` keys (`merge: 'object'`): the name under `name` or `key.<ns>.<path>`, the group under `key.category.<ns>.<category>` (default `keys`; `/` written as `.` in both, vanilla's description id rule); `msm/<ns>/hud/<path>.json` (schema `msm:hud_definition`). Helpers `keyBindNameKey`, `keyCategoryKey`, `hudSpritePath` (`assets/<ns>/textures/gui/sprites/<name>.png`) and `HUD_SPRITE_FIELDS` for the Studios.
+- Validators (16 codes, `CONTROLS_PROBLEM_CODES`): `msm.controls.key-binds` (`unknown-key`, `vanilla-key-clash`, `runtime-key-clash`, `duplicate-key`, `bad-category`, `name-conflict`, `unknown-event`, `key-runs-function`, `vehicle-without-when`, `unknown-vehicle`), `msm.controls.hud` (`vehicle-without-show`, `unknown-vehicle`, `icons-need-icon`, `bad-color`, `field-not-for-type`, `unknown-objective`) and `msm.controls.hud-references` (`unknown-hud`). Target fact checks skip without `target.controls`.
+- Six templates in "Controls and HUD" (ADR 0091 D3): Dash key (Z), Ability key with cooldown (K), Mana bar, Stamina bar, Coordinates text, Score counter.
+- Tests: lowering goldens per kind on both targets (7 samples), a test per code, templates on both targets, plugin contributions (59 tests). `pnpm lint` and `pnpm typecheck` green; `pnpm test` green except one app test outside this brief's files: `app/test/project-session.test.ts` pins the plugin list of a new project, which now ends with `msm.controls` (the plugin contributes kinds).
+
+Decisions
+- No source of format 1 is text-only (`data` and `set` hold either), so ADR 0089 D9's "bar or icons with a text-only source" became `controls.field-not-for-type` (fields another type reads, such as `text` on a bar); `max` counts for bars and icons only.
+- Added beyond the ADRs: `name-conflict` (the export's lang merge would fail), `unknown-event`, `unknown-hud` (the actions' `hud` has no id attribute). `unknown-vehicle` reports a known entity type that is not a project `msm:vehicle`; an id nobody knows stays the schema's `unknown-id`.
+- The Score counter template alone gives the info `controls.unknown-objective` (no project file creates `points`); with a load function creating it, all six templates together give no problems. Coordinates text shows Y only (one value per element).
+- `controls.needs-jar` (vanilla packs) is B415's.
+- The HUD validator re-runs on HUD and vehicle changes only (not on function edits), so the app's validator-routing test keeps `minecraft:function` to its fake plugin.
+
+Next
+- B411: default name key `key.<ns>.<path>` with `/` as `.`; B420: Studios use `hudSpritePath` and the exported codes; B424, B430, B431 read the plan notes.

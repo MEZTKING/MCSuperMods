@@ -1,0 +1,21 @@
+[
+  {
+    "contents": {
+      "default_key": "key.keyboard.unknown",
+      "format": 1,
+      "name": "example.controls.horn"
+    },
+    "layer": "msm",
+    "path": "msm/example/key_bind/horn.json",
+    "schema": "msm:key_bind_definition"
+  },
+  {
+    "contents": {
+      "example.controls.horn": "Horn"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

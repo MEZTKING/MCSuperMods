@@ -1,0 +1,14 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "bar",
+      "value": {
+        "source": "set"
+      }
+    },
+    "layer": "msm",
+    "path": "msm/demo/hud/sample.json",
+    "schema": "msm:hud_definition"
+  }
+]
