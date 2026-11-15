@@ -38,7 +38,8 @@ import org.mozilla.javascript.Scriptable;
  * {@code World} (ADR 0032 D2) over a {@link ServerLevel}; {@code getContainer} (script API 1.2, ADR 0076 D5) gives a
  * {@link ScriptContainer}; {@code spawnParticle} takes particle options objects, {@code motion} and {@code force} (script
  * API 1.3, ADR 0080 D5); script API 1.4 (ADR 0082 D5) adds {@code dayTime}, {@code isRaining}, {@code isThundering},
- * {@code breakBlock}, {@code dropItem}, {@code explode} and {@code setWeather}. Weather is the server's
+ * {@code breakBlock}, {@code dropItem}, {@code explode} and {@code setWeather}; script API 1.6 (ADR 0096 D4) adds
+ * {@code itemsNear} ({@link DroppedItemHandle}). Weather is the server's
  * ({@code MinecraftServer.getWeatherData()}), shown only in dimensions with an open sky. Commands and functions run as the server with permission
  * level 2 (as {@code run_function} actions do) and suppressed output, at the world spawn point with no {@code @s}, or
  * at the optional {@code at} position (ADR 0058 D2). {@code Entity.runCommand} and {@code Entity.runFunction} share
@@ -134,6 +135,13 @@ final class ScriptWorld {
                 List<LivingEntity> found = l.getEntitiesOfClass(LivingEntity.class, AABB.ofSize(at, radius * 2, radius * 2, radius * 2),
                         e -> e.position().distanceToSqr(at) <= radius * radius);
                 return api.array(found.stream().map(api::entity).toArray());
+            })
+            .method("itemsNear", 2, 2, ServerLevel.class, (api, l, args) -> {
+                Vec3 at = ScriptPos.arg(args, 0, "pos").vec();
+                double radius = Math.max(0, ScriptValues.number(args, 1, "radius"));
+                List<ItemEntity> found = l.getEntitiesOfClass(ItemEntity.class, AABB.ofSize(at, radius * 2, radius * 2, radius * 2),
+                        e -> e.isAlive() && e.position().distanceToSqr(at) <= radius * radius);
+                return api.array(found.stream().map(api::droppedItem).toArray());
             })
             .method("raycast", 3, 4, ServerLevel.class, (api, l, args) -> ScriptRaycast.cast(api, l,
                     ScriptPos.arg(args, 0, "from").vec(), ScriptPos.arg(args, 1, "direction").vec(), args, 2, null))

@@ -34,7 +34,8 @@ import org.mozilla.javascript.Scriptable;
  * entities (nothing on others), typed damage with an attacker, raycasts from the eyes, teleport to another dimension.
  * Script API 1.4 (ADR 0082 D5): {@code remove()} discards a non-player entity without drops or death events.
  * Script API 1.5 (ADR 0089 D8): {@code vehicle} (what the entity rides, any kind), {@code passengers} (in seat order),
- * {@code isVehicle} and {@code asVehicle()} (a project vehicle, {@link ScriptVehicle}).
+ * {@code isVehicle} and {@code asVehicle()} (a project vehicle, {@link ScriptVehicle}). Script API 1.6 (ADR 0096 D4):
+ * {@code ride(entity)} and {@code dismount()} ({@link #ride}).
  */
 final class ScriptEntity {
     private ScriptEntity() {}
@@ -172,7 +173,35 @@ final class ScriptEntity {
             .live("vehicle", Entity.class, (api, e) -> e.getVehicle() == null ? null : api.entity(e.getVehicle()))
             .live("passengers", Entity.class, (api, e) -> api.array(e.getPassengers().stream().map(api::entity).toArray()))
             .constant("isVehicle", Entity.class, (api, e) -> e instanceof MsmVehicle)
-            .method("asVehicle", 0, 0, Entity.class, (api, e, args) -> e instanceof MsmVehicle ? api.entity(e) : null);
+            .method("asVehicle", 0, 0, Entity.class, (api, e, args) -> e instanceof MsmVehicle ? api.entity(e) : null)
+            // Script API 1.6 (ADR 0096 D4): getting on and off.
+            .method("ride", 1, 1, Entity.class, (api, e, args) -> ride(e, ScriptValues.entity(args[0], "entity")))
+            .method("dismount", 0, 0, Entity.class, (api, e, args) -> {
+                if (!e.isPassenger()) {
+                    return false;
+                }
+                e.stopRiding();
+                return true;
+            });
+
+    /**
+     * {@code Entity.ride(vehicle)}: gets on as the entity itself would ({@code Entity.startRiding} without forcing), so a
+     * full vehicle, a mob that takes no riders, an entity that is sneaking or that got off moments ago (vanilla's
+     * boarding cooldown) answer false. Refused outright (false): riding itself, riding something that rides it
+     * (directly or further up), riding in another world, a removed entity, and riding a player (vanilla's {@code /ride}
+     * refuses players as mounts too; ADR 0096 D4 names players riding players). An entity that already rides something
+     * else gets off it and on {@code vehicle} (measured). True when it now rides {@code vehicle}.
+     */
+    static boolean ride(Entity e, Entity vehicle) {
+        if (vehicle == e || e.isRemoved() || vehicle.isRemoved() || e.level() != vehicle.level()
+                || vehicle instanceof Player || e.hasIndirectPassenger(vehicle)) {
+            return false;
+        }
+        if (e.getVehicle() == vehicle) {
+            return true;
+        }
+        return e.startRiding(vehicle) && e.getVehicle() == vehicle;
+    }
 
     /** A loaded dimension by id, or null; an invalid id is a script type error. */
     static ServerLevel world(MinecraftServer server, String dimension) {

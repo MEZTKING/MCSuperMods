@@ -208,8 +208,9 @@ describe('script API 1.1 members (the list B248 installs)', () => {
     const on = events?.kind === 'namespace' ? events.members : undefined;
     const tick = counts(on, 'on');
     expect(tick.filter((count) => count === '2..3')).toHaveLength(1);
-    // 14 in 1.1; the six events of 1.5 (ADR 0089 D8) add six more two-parameter overloads.
-    expect(tick.filter((count) => count === '2..2')).toHaveLength(20);
+    // 14 in 1.1; the six events of 1.5 (ADR 0089 D8) and the three of 1.6 (ADR 0096 D4) add nine
+    // more two-parameter overloads.
+    expect(tick.filter((count) => count === '2..2')).toHaveLength(23);
   });
 
   it('describes the new events', () => {

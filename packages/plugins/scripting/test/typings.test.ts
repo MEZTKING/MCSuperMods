@@ -46,6 +46,9 @@ describe('script API v1', () => {
       'vehicle.dismounted',
       'vehicle.fired',
       'vehicle.destroyed',
+      'block.place',
+      'world.explosion',
+      'command',
     ]);
   });
 

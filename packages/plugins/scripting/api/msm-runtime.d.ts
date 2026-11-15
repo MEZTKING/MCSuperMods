@@ -42,6 +42,44 @@ interface BlockInteractEvent extends GameEvent {
   readonly player: Player;
 }
 
+/**
+ * A player is about to place a block from a block item.
+ *
+ * Since runtime 1.5.1.
+ */
+interface BlockPlaceEvent extends GameEvent {
+  /**
+   * The id of the block the item places, for example `minecraft:oak_planks`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly block: string;
+  /**
+   * Cancels the event: the block is not placed, the item is not used up and the player's screen is corrected.
+   *
+   * Since runtime 1.5.1.
+   */
+  cancel(): void;
+  /**
+   * The item being placed, as held before the placement.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly item: ItemRef;
+  /**
+   * The player placing it.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly player: Player;
+  /**
+   * Where the block would go (the clicked block itself when it can be replaced, such as grass, else the block next to the clicked face).
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly pos: Pos;
+}
+
 /** A block in the world at the time of the event. */
 interface BlockRef {
   /** The block id, for example `minecraft:stone`. */
@@ -135,6 +173,38 @@ type BossBarColor = "pink" | "blue" | "red" | "green" | "yellow" | "purple" | "w
 type BossBarStyle = "progress" | "notched_6" | "notched_10" | "notched_12" | "notched_20";
 
 /**
+ * A project command ran.
+ *
+ * Since runtime 1.5.1.
+ */
+interface CommandEvent extends GameEvent {
+  /**
+   * The values typed, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a player or entity as its UUID, players as an array of names, a position or block position as `[x, y, z]`, an item or block as its id; an optional argument that was not typed is missing. A new object for each event.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly args: Record<string, unknown>;
+  /**
+   * The command's id in the project, for example `mypack:greet`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly id: string;
+  /**
+   * The command's name, as typed without the slash, for example `greet`; also when one of its other names was typed.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly name: string;
+  /**
+   * Who ran it: the player (see `asPlayer()`) or the entity of an `execute as`, or `undefined` for the server console or a command block.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly source: Entity | undefined;
+}
+
+/**
  * The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add("minecraft:coal")`. Using it after the block is removed or replaced is a script error.
  *
  * Since runtime 1.5.1.
@@ -212,6 +282,52 @@ interface DataStore {
   set(key: string, value: unknown): void;
 }
 
+/**
+ * An item lying in the world, as `World.itemsNear` finds it. Once it is gone (picked up, merged into another stack, despawned or removed) `remove()` and `setItem()` do nothing.
+ *
+ * Since runtime 1.5.1.
+ */
+interface DroppedItem {
+  /**
+   * How long it has been lying there in ticks (20 a second); vanilla removes an item at 6000 (five minutes).
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly age: number;
+  /**
+   * A copy of the stack it holds now.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly item: ItemRef;
+  /**
+   * The UUID of the entity that dropped or threw it, or `undefined` when nothing did or that entity is not in the world (a player who has left).
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly owner: string | undefined;
+  /**
+   * Where it is now, exactly.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly pos: Pos;
+  /**
+   * Removes the item from the world at once; it drops nothing else.
+   *
+   * Since runtime 1.5.1.
+   */
+  remove(): void;
+  /**
+   * Replaces the stack it holds; for example `d.setItem({ id: "minecraft:diamond", count: 3 })`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param item - The new stack; a count over the item's stack size holds the stack size.
+   */
+  setItem(item: ItemSpec): void;
+}
+
 /** A living entity, wrapped for scripts; check `isAlive` before using one held across ticks. */
 interface Entity {
   /**
@@ -255,6 +371,12 @@ interface Entity {
   damage(amount: number, options: { type?: string; attacker?: Entity; direct?: Entity }): void;
   /** Data saved on this entity for the script's namespace, at most 16 KiB per namespace; a player keeps it on respawn. */
   readonly data: DataStore;
+  /**
+   * Makes this entity get off what it rides; returns `false` when it rides nothing. For example `if (player.vehicle) player.dismount()`.
+   *
+   * Since runtime 1.5.1.
+   */
+  dismount(): boolean;
   /**
    * Returns the level of the mob effect (the amplifier plus 1), or 0 when the entity does not have it.
    *
@@ -337,6 +459,14 @@ interface Entity {
    * @param id - The effect id, for example `minecraft:speed` or one of your own.
    */
   removeEffect(id: string): boolean;
+  /**
+   * Makes this entity get on another, as it would by itself: returns `true` when it now rides `vehicle`, `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, or for a short while after getting off something, vanilla's boarding cooldown). Riding itself, riding something that rides it, riding into another world and riding a player are refused (`false`), as with vanilla's `/ride`. An entity that rides something else gets off it first; for example `zombie.ride(chicken)`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param vehicle - What to get on: a mob, a boat, a minecart, a project vehicle or any other entity.
+   */
+  ride(vehicle: Entity): boolean;
   /**
    * Runs a command as and at this entity (`@s` is the entity, `~ ~ ~` is its position, in its facing) with permission level 2 and no output; returns the command's result count, or 0 when the entity is not in a server level.
    *
@@ -482,6 +612,50 @@ interface EntityInteractEvent extends GameEvent {
  */
 type EquipmentSlot = "mainhand" | "offhand" | "head" | "chest" | "legs" | "feet";
 
+/**
+ * Something is about to explode.
+ *
+ * Since runtime 1.5.1.
+ */
+interface ExplosionEvent extends GameEvent {
+  /**
+   * Cancels the event: nothing breaks and nothing is hurt or pushed. The bang and the smoke may still be seen and heard.
+   *
+   * Since runtime 1.5.1.
+   */
+  cancel(): void;
+  /**
+   * The type id of `source`, for example `minecraft:tnt` or `minecraft:creeper`, or `"block"` when there is no source.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly cause: string;
+  /**
+   * Keeps every block safe: entities are still hurt and pushed, but no block breaks, drops or catches fire. `cancel()` wins when both are called.
+   *
+   * Since runtime 1.5.1.
+   */
+  keepBlocks(): void;
+  /**
+   * The centre of the explosion, exactly.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly pos: Pos;
+  /**
+   * The explosion's power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly radius: number;
+  /**
+   * The entity that exploded (the primed TNT, the creeper, the fireball, the wind charge), or `undefined` for a block such as a bed or respawn anchor, or `World.explode`.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly source: Entity | undefined;
+}
+
 /** What every event object has. */
 interface GameEvent {
   /** The world (dimension) the event happened in. */
@@ -576,6 +750,12 @@ type InventorySlot = number | EquipmentSlot;
 
 /** An item stack, copied at the time it was read: changing the game later does not change it. */
 interface ItemRef {
+  /**
+   * The items this item holds, as copies: a bag's or other container item's contents (shulker boxes too) in slot order, then a bundle's in the bundle's order; empty slots are left out, and an item that holds nothing gives an empty array. Read-only: change a bag by giving the player a new stack.
+   *
+   * Since runtime 1.5.1.
+   */
+  readonly contents: ItemRef[];
   /** The number of items in the stack. */
   readonly count: number;
   /**
@@ -850,6 +1030,24 @@ interface MsmEvents {
    * Since runtime 1.5.1.
    */
   on(name: "vehicle.destroyed", handler: (e: VehicleDestroyedEvent) => void): void;
+  /**
+   * Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "block.place", handler: (e: BlockPlaceEvent) => void): void;
+  /**
+   * Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "world.explosion", handler: (e: ExplosionEvent) => void): void;
+  /**
+   * Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.1.
+   */
+  on(name: "command", handler: (e: CommandEvent) => void): void;
 }
 
 /** Writes to the server log as `[msm_runtime] <script id>: <message>`. */
@@ -1416,6 +1614,14 @@ interface World {
    */
   readonly isThundering: boolean;
   /**
+   * Returns the items lying on the ground (dropped, thrown or spilled) within a radius of a position; `entitiesNear` keeps returning living entities only. For example `for (const d of world.itemsNear(e.pos, 4)) if (d.item.id === "minecraft:rotten_flesh") d.remove();`.
+   *
+   * Since runtime 1.5.1.
+   *
+   * @param radius - The radius in blocks.
+   */
+  itemsNear(pos: Pos, radius: number): DroppedItem[];
+  /**
    * Plays a sound event at a position for nearby players. The id can be a vanilla sound event or a project sound key (for example `mymod:block.chime`) once the project declares it in `sounds.json`.
    *
    * @param id - The sound event id, for example `minecraft:block.note_block.bell`.
@@ -1499,18 +1705,22 @@ declare module "msm:runtime" {
   export type ActionEvent = globalThis.ActionEvent;
   export type BlockBreakEvent = globalThis.BlockBreakEvent;
   export type BlockInteractEvent = globalThis.BlockInteractEvent;
+  export type BlockPlaceEvent = globalThis.BlockPlaceEvent;
   export type BlockRef = globalThis.BlockRef;
   export type BossBar = globalThis.BossBar;
   export type BossBarColor = globalThis.BossBarColor;
   export type BossBarStyle = globalThis.BossBarStyle;
+  export type CommandEvent = globalThis.CommandEvent;
   export type Container = globalThis.Container;
   export type DataStore = globalThis.DataStore;
+  export type DroppedItem = globalThis.DroppedItem;
   export type Entity = globalThis.Entity;
   export type EntityDamagedEvent = globalThis.EntityDamagedEvent;
   export type EntityDeathEvent = globalThis.EntityDeathEvent;
   export type EntityHurtEvent = globalThis.EntityHurtEvent;
   export type EntityInteractEvent = globalThis.EntityInteractEvent;
   export type EquipmentSlot = globalThis.EquipmentSlot;
+  export type ExplosionEvent = globalThis.ExplosionEvent;
   export type GameEvent = globalThis.GameEvent;
   export type GameMode = globalThis.GameMode;
   export type Inventory = globalThis.Inventory;

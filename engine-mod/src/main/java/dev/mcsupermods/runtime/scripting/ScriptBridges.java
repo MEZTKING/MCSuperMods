@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
@@ -35,11 +36,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Fabric API events to script events (ADR 0031 D4, ADR 0032 D2), server side only. Lifecycle: the host lives from
@@ -52,7 +56,9 @@ import net.minecraft.world.phys.BlockHitResult;
  * {@code block.interact} also the six neighbours of the placement position, for {@code item.use} also the used stack's
  * cooldown, for {@code block.break} also a block entity's data. A call no script cancelled sends nothing extra;
  * {@code entity.hurt} needs no resync. Script API 1.5 (ADR 0089 D8): the key events come from a
- * {@link KeyBinds.KeyListener} and the vehicle events from a {@link VehicleEvents.Listener}, both added here.
+ * {@link KeyBinds.KeyListener} and the vehicle events from a {@link VehicleEvents.Listener}, both added here. Script
+ * API 1.6 (ADR 0096 D3): {@code block.place} and {@code world.explosion} have no Fabric API event; the Mixins
+ * {@code BlockItemPlaceMixin} and {@code ServerExplosionMixin} call {@link #placing} and {@link #exploding}.
  */
 public final class ScriptBridges {
     private ScriptBridges() {}
@@ -354,6 +360,75 @@ public final class ScriptBridges {
         }
         return !host.fire(ScriptEvents.PLAYER_CHAT_EVENT,
                 new ScriptEvents.PlayerChat(sender.level(), sender, message.signedContent()));
+    }
+
+    // ---- script API 1.6 events (ADR 0096 D3) -------------------------------------------------------------
+
+    /**
+     * {@code block.place}, from the head of {@code BlockItem.place} ({@code BlockItemPlaceMixin}): only on the server,
+     * only for a {@link ServerPlayer} (not dispensers, endermen or commands; ADR 0096 Q17), only when the placement
+     * position takes the block ({@code BlockPlaceContext.canPlace()}). Returns whether a script cancelled it; the caller
+     * then returns {@code FAIL}. A cancel resyncs the player's inventory and the placement position with its six
+     * neighbours ({@link #resyncPlaced}), and a main-hand cancel refuses the rest of that click as {@code block.interact}
+     * does ({@link ScriptHost#mainHandCancelled}).
+     */
+    public static boolean placing(BlockItem item, BlockPlaceContext context) {
+        Level level = context.getLevel();
+        if (level.isClientSide() || !(context.getPlayer() instanceof ServerPlayer player) || !context.canPlace()) {
+            return false;
+        }
+        ScriptHost host = host(level);
+        if (host == null || !host.handles(ScriptEvents.BLOCK_PLACE_EVENT)) {
+            return false;
+        }
+        ServerLevel sl = (ServerLevel) level;
+        BlockPos pos = context.getClickedPos();
+        boolean cancelled = host.fire(ScriptEvents.BLOCK_PLACE_EVENT, new ScriptEvents.BlockPlace(sl, ScriptPos.of(pos),
+                BuiltInRegistries.BLOCK.getKey(item.getBlock()).toString(), new ItemRef(context.getItemInHand()), player));
+        if (cancelled) {
+            resyncPlaced(player, sl, pos);
+            if (context.getHand() == InteractionHand.MAIN_HAND) {
+                host.mainHandCancelled(player);
+            }
+        }
+        return cancelled;
+    }
+
+    /**
+     * After a cancelled {@code block.place}: the inventory (the held stack's count), then block updates for the
+     * placement position and its six neighbours (the second block of a door, bed or tall plant).
+     */
+    static void resyncPlaced(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        if (!resyncs(player)) {
+            return;
+        }
+        player.inventoryMenu.sendAllDataToRemote();
+        player.connection.send(new ClientboundBlockUpdatePacket(level, pos));
+        for (Direction d : Direction.values()) {
+            player.connection.send(new ClientboundBlockUpdatePacket(level, pos.relative(d)));
+        }
+    }
+
+    /** What {@link #exploding} decided. */
+    public enum ExplosionOutcome { EXPLODE, CANCEL, KEEP_BLOCKS }
+
+    /**
+     * {@code world.explosion}, from the head of {@code ServerExplosion.explode} ({@code ServerExplosionMixin}): the
+     * centre, the radius, the direct source entity (the primed TNT, the creeper, the wind charge; none for a bed, a
+     * respawn anchor or {@code World.explode}) and the cause (that entity's type id, else {@code "block"}).
+     * {@code cancel()} wins over {@code keepBlocks()}.
+     */
+    public static ExplosionOutcome exploding(ServerLevel level, Vec3 center, float radius, Entity source) {
+        ScriptHost host = host(level);
+        if (host == null || !host.handles(ScriptEvents.EXPLOSION_EVENT)) {
+            return ExplosionOutcome.EXPLODE;
+        }
+        String cause = source == null ? "block" : BuiltInRegistries.ENTITY_TYPE.getKey(source.getType()).toString();
+        ScriptEvents.Explosion event = new ScriptEvents.Explosion(level, center, radius, source, cause);
+        if (host.fire(ScriptEvents.EXPLOSION_EVENT, event)) {
+            return ExplosionOutcome.CANCEL;
+        }
+        return event.keepBlocks() ? ExplosionOutcome.KEEP_BLOCKS : ExplosionOutcome.EXPLODE;
     }
 
     // ---- script API 1.5 events (ADR 0089 D8) -------------------------------------------------------------

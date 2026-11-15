@@ -326,6 +326,22 @@
             }
           ],
           "doc": "Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather(\"thunder\", 60)`. Another kind is a `TypeError`.\n\nSince runtime 1.5.1."
+        },
+        "itemsNear": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos"
+            },
+            {
+              "name": "radius",
+              "type": "number",
+              "doc": "The radius in blocks."
+            }
+          ],
+          "doc": "Returns the items lying on the ground (dropped, thrown or spilled) within a radius of a position; `entitiesNear` keeps returning living entities only. For example `for (const d of world.itemsNear(e.pos, 4)) if (d.item.id === \"minecraft:rotten_flesh\") d.remove();`.\n\nSince runtime 1.5.1.",
+          "returns": "DroppedItem[]"
         }
       }
     },
@@ -688,6 +704,24 @@
           "params": [],
           "doc": "Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.\n\nSince runtime 1.5.1.",
           "returns": "Vehicle | undefined"
+        },
+        "ride": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "vehicle",
+              "type": "Entity",
+              "doc": "What to get on: a mob, a boat, a minecart, a project vehicle or any other entity."
+            }
+          ],
+          "doc": "Makes this entity get on another, as it would by itself: returns `true` when it now rides `vehicle`, `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, or for a short while after getting off something, vanilla's boarding cooldown). Riding itself, riding something that rides it, riding into another world and riding a player are refused (`false`), as with vanilla's `/ride`. An entity that rides something else gets off it first; for example `zombie.ride(chicken)`.\n\nSince runtime 1.5.1.",
+          "returns": "boolean"
+        },
+        "dismount": {
+          "kind": "method",
+          "params": [],
+          "doc": "Makes this entity get off what it rides; returns `false` when it rides nothing. For example `if (player.vehicle) player.dismount()`.\n\nSince runtime 1.5.1.",
+          "returns": "boolean"
         }
       }
     },
@@ -994,6 +1028,11 @@
           ],
           "doc": "Returns a copy of a data component's value as JSON (the form `/give` and data packs use), or `undefined` when the item does not have it; for example `item.getComponent(\"minecraft:damage\")` is a number. At most 64 KiB of JSON is returned.\n\nSince runtime 1.5.1.",
           "returns": "unknown"
+        },
+        "contents": {
+          "kind": "property",
+          "type": "ItemRef[]",
+          "doc": "The items this item holds, as copies: a bag's or other container item's contents (shulker boxes too) in slot order, then a bundle's in the bundle's order; empty slots are left out, and an item that holds nothing gives an empty array. Read-only: change a bag by giving the player a new stack.\n\nSince runtime 1.5.1."
         }
       }
     },
@@ -1867,6 +1906,140 @@
         }
       },
       "extends": "GameEvent"
+    },
+    "DroppedItem": {
+      "doc": "An item lying in the world, as `World.itemsNear` finds it. Once it is gone (picked up, merged into another stack, despawned or removed) `remove()` and `setItem()` do nothing.\n\nSince runtime 1.5.1.",
+      "members": {
+        "item": {
+          "kind": "property",
+          "type": "ItemRef",
+          "doc": "A copy of the stack it holds now.\n\nSince runtime 1.5.1."
+        },
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "Where it is now, exactly.\n\nSince runtime 1.5.1."
+        },
+        "age": {
+          "kind": "property",
+          "type": "number",
+          "doc": "How long it has been lying there in ticks (20 a second); vanilla removes an item at 6000 (five minutes).\n\nSince runtime 1.5.1."
+        },
+        "owner": {
+          "kind": "property",
+          "type": "string | undefined",
+          "doc": "The UUID of the entity that dropped or threw it, or `undefined` when nothing did or that entity is not in the world (a player who has left).\n\nSince runtime 1.5.1."
+        },
+        "remove": {
+          "kind": "method",
+          "params": [],
+          "doc": "Removes the item from the world at once; it drops nothing else.\n\nSince runtime 1.5.1."
+        },
+        "setItem": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The new stack; a count over the item's stack size holds the stack size."
+            }
+          ],
+          "doc": "Replaces the stack it holds; for example `d.setItem({ id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.5.1."
+        }
+      }
+    },
+    "BlockPlaceEvent": {
+      "doc": "A player is about to place a block from a block item.\n\nSince runtime 1.5.1.",
+      "members": {
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "Where the block would go (the clicked block itself when it can be replaced, such as grass, else the block next to the clicked face).\n\nSince runtime 1.5.1."
+        },
+        "block": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The id of the block the item places, for example `minecraft:oak_planks`.\n\nSince runtime 1.5.1."
+        },
+        "item": {
+          "kind": "property",
+          "type": "ItemRef",
+          "doc": "The item being placed, as held before the placement.\n\nSince runtime 1.5.1."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player placing it.\n\nSince runtime 1.5.1."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the block is not placed, the item is not used up and the player's screen is corrected.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "ExplosionEvent": {
+      "doc": "Something is about to explode.\n\nSince runtime 1.5.1.",
+      "members": {
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The centre of the explosion, exactly.\n\nSince runtime 1.5.1."
+        },
+        "radius": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The explosion's power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor.\n\nSince runtime 1.5.1."
+        },
+        "source": {
+          "kind": "property",
+          "type": "Entity | undefined",
+          "doc": "The entity that exploded (the primed TNT, the creeper, the fireball, the wind charge), or `undefined` for a block such as a bed or respawn anchor, or `World.explode`.\n\nSince runtime 1.5.1."
+        },
+        "cause": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The type id of `source`, for example `minecraft:tnt` or `minecraft:creeper`, or `\"block\"` when there is no source.\n\nSince runtime 1.5.1."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: nothing breaks and nothing is hurt or pushed. The bang and the smoke may still be seen and heard.\n\nSince runtime 1.5.1."
+        },
+        "keepBlocks": {
+          "kind": "method",
+          "params": [],
+          "doc": "Keeps every block safe: entities are still hurt and pushed, but no block breaks, drops or catches fire. `cancel()` wins when both are called.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "CommandEvent": {
+      "doc": "A project command ran.\n\nSince runtime 1.5.1.",
+      "members": {
+        "id": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The command's id in the project, for example `mypack:greet`.\n\nSince runtime 1.5.1."
+        },
+        "name": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The command's name, as typed without the slash, for example `greet`; also when one of its other names was typed.\n\nSince runtime 1.5.1."
+        },
+        "source": {
+          "kind": "property",
+          "type": "Entity | undefined",
+          "doc": "Who ran it: the player (see `asPlayer()`) or the entity of an `execute as`, or `undefined` for the server console or a command block.\n\nSince runtime 1.5.1."
+        },
+        "args": {
+          "kind": "property",
+          "type": "Record<string, unknown>",
+          "doc": "The values typed, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a player or entity as its UUID, players as an array of names, a position or block position as `[x, y, z]`, an item or block as its id; an optional argument that was not typed is missing. A new object for each event.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
     }
   },
   "globals": {
@@ -2198,6 +2371,45 @@
                     }
                   ],
                   "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"block.place\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: BlockPlaceEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"world.explosion\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: ExplosionEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"command\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: CommandEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back. Several handlers run in registration order.\n\nSince runtime 1.5.1."
                 }
               ],
               "doc": "Registers a handler for a game event."
@@ -2428,6 +2640,24 @@
       "cancellable": false,
       "source": "VehicleEvents.Listener.destroyed",
       "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each).\n\nSince runtime 1.5.1."
+    },
+    "block.place": {
+      "type": "BlockPlaceEvent",
+      "cancellable": true,
+      "source": "BlockItemPlaceMixin",
+      "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it.\n\nSince runtime 1.5.1."
+    },
+    "world.explosion": {
+      "type": "ExplosionEvent",
+      "cancellable": true,
+      "source": "ServerExplosionMixin",
+      "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`.\n\nSince runtime 1.5.1."
+    },
+    "command": {
+      "type": "CommandEvent",
+      "cancellable": false,
+      "source": "MsmCommands.run",
+      "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back.\n\nSince runtime 1.5.1."
     }
   },
   "functions": {

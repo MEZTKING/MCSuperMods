@@ -193,7 +193,7 @@ public final class MsmCommands {
                 EventRunner.fire(cmd.id(), def.events(), eventId, context(source));
             }
         });
-        CommandEvents.fire(cmd.id().toString(), args.toString());
+        CommandEvents.fire(cmd.id(), def.name(), source, args);
         def.feedback().ifPresent(key -> source.sendSuccess(() -> Component.translatable(key), false));
         return 1;
     }

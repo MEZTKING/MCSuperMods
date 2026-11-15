@@ -1,5 +1,6 @@
 package dev.mcsupermods.runtime.scripting;
 
+import com.google.gson.JsonObject;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,9 +11,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * The event objects of ADR 0032 D2, ADR 0065 D8 and ADR 0089 D8: one data class per event, a {@link ScriptType} per event type over
+ * The event objects of ADR 0032 D2, ADR 0065 D8, ADR 0089 D8 and ADR 0096 D3/D4: one data class per event, a {@link ScriptType} per event type over
  * {@code GameEvent} ({@code world}), and the event table ({@link #EVENTS}: name, type, cancellable, Fabric API source).
  */
 public final class ScriptEvents {
@@ -243,6 +245,68 @@ public final class ScriptEvents {
         }
     }
 
+    /**
+     * {@code block.place} (Script API 1.6, ADR 0096 D3): a player is about to place a block from a block item; the
+     * placement position, the item's block id and a copy of the stack.
+     */
+    public static final class BlockPlace extends Data {
+        final ScriptPos pos;
+        final String block;
+        final ItemRef item;
+        final ServerPlayer player;
+
+        BlockPlace(ServerLevel level, ScriptPos pos, String block, ItemRef item, ServerPlayer player) {
+            super(level);
+            this.pos = pos;
+            this.block = block;
+            this.item = item;
+            this.player = player;
+        }
+    }
+
+    /**
+     * {@code world.explosion} (Script API 1.6, ADR 0096 D3): an explosion about to happen; {@code cancel()} stops it
+     * and {@code keepBlocks()} lets it hurt and push entities but break no block.
+     */
+    public static final class Explosion extends Data {
+        final Vec3 pos;
+        final float radius;
+        final Entity source;
+        final String cause;
+        boolean keepBlocks;
+
+        Explosion(ServerLevel level, Vec3 pos, float radius, Entity source, String cause) {
+            super(level);
+            this.pos = pos;
+            this.radius = radius;
+            this.source = source;
+            this.cause = cause;
+        }
+
+        public boolean keepBlocks() {
+            return keepBlocks;
+        }
+    }
+
+    /**
+     * {@code command} (Script API 1.6, ADR 0096 D1, D4): a project command ran; its definition id, its name, the source
+     * entity (null for the console or a command block) and the arguments as JSON.
+     */
+    public static final class Command extends Data {
+        final String id;
+        final String name;
+        final Entity source;
+        final JsonObject args;
+
+        Command(ServerLevel level, String id, String name, Entity source, JsonObject args) {
+            super(level);
+            this.id = id;
+            this.name = name;
+            this.source = source;
+            this.args = args;
+        }
+    }
+
     static String hand(InteractionHand hand) {
         return hand == InteractionHand.OFF_HAND ? "off" : "main";
     }
@@ -360,6 +424,30 @@ public final class ScriptEvents {
             .constant("vehicle", VehicleEvent.class, (api, e) -> api.entity(e.vehicle))
             .constant("player", VehicleEvent.class, (api, e) -> e.player == null ? null : api.player(e.player));
 
+    // Script API 1.6 (ADR 0096 D3, D4)
+
+    static final ScriptType BLOCK_PLACE = cancellable(event("BlockPlaceEvent")
+            .constant("pos", BlockPlace.class, (api, e) -> api.pos(e.pos))
+            .constant("block", BlockPlace.class, (api, e) -> e.block)
+            .constant("item", BlockPlace.class, (api, e) -> api.item(e.item))
+            .constant("player", BlockPlace.class, (api, e) -> api.player(e.player)));
+
+    static final ScriptType EXPLOSION = cancellable(event("ExplosionEvent")
+            .constant("pos", Explosion.class, (api, e) -> api.pos(ScriptPos.of(e.pos)))
+            .constant("radius", Explosion.class, (api, e) -> (double) e.radius)
+            .constant("source", Explosion.class, (api, e) -> e.source == null ? null : api.entity(e.source))
+            .constant("cause", Explosion.class, (api, e) -> e.cause)
+            .method("keepBlocks", 0, 0, Explosion.class, (api, e, args) -> {
+                e.keepBlocks = true;
+                return null;
+            }));
+
+    static final ScriptType COMMAND = event("CommandEvent")
+            .constant("id", Command.class, (api, e) -> e.id)
+            .constant("name", Command.class, (api, e) -> e.name)
+            .constant("source", Command.class, (api, e) -> e.source == null ? null : api.entity(e.source))
+            .constant("args", Command.class, (api, e) -> api.json(e.args));
+
     /** One row of the event table of ADR 0032 D2. */
     public record Spec(String name, ScriptType type, boolean cancellable, String source) {}
 
@@ -384,12 +472,17 @@ public final class ScriptEvents {
     public static final String VEHICLE_DISMOUNTED_EVENT = "vehicle.dismounted";
     public static final String VEHICLE_FIRED_EVENT = "vehicle.fired";
     public static final String VEHICLE_DESTROYED_EVENT = "vehicle.destroyed";
+    public static final String BLOCK_PLACE_EVENT = "block.place";
+    public static final String EXPLOSION_EVENT = "world.explosion";
+    public static final String COMMAND_EVENT = "command";
 
     /**
      * The events scripts can handle, by name, in the order of ADR 0032 D2, then ADR 0065 D8, then ADR 0089 D8 (Script
-     * API 1.5). The 1.5 events come from the runtime's own listeners, not from Fabric callbacks: {@code source} names
-     * the listener method ({@link dev.mcsupermods.runtime.controls.KeyBinds.KeyListener},
-     * {@link dev.mcsupermods.runtime.registry.vehicle.VehicleEvents.Listener}).
+     * API 1.5), then ADR 0096 D4 (Script API 1.6). The 1.5 and 1.6 events come from the runtime's own listeners, not
+     * from Fabric callbacks: {@code source} names the listener method
+     * ({@link dev.mcsupermods.runtime.controls.KeyBinds.KeyListener},
+     * {@link dev.mcsupermods.runtime.registry.vehicle.VehicleEvents.Listener}, {@code MsmCommands.run}) or the Mixin
+     * ({@code BlockItemPlaceMixin}, {@code ServerExplosionMixin}; no Fabric API event exists for either).
      */
     public static final Map<String, Spec> EVENTS = table(List.of(
             new Spec(BLOCK_INTERACT_EVENT, BLOCK_INTERACT, true, "UseBlockCallback"),
@@ -413,7 +506,10 @@ public final class ScriptEvents {
             new Spec(VEHICLE_MOUNTED_EVENT, VEHICLE_MOUNTED, false, "VehicleEvents.Listener.mounted"),
             new Spec(VEHICLE_DISMOUNTED_EVENT, VEHICLE_DISMOUNTED, false, "VehicleEvents.Listener.dismounted"),
             new Spec(VEHICLE_FIRED_EVENT, VEHICLE_FIRED, false, "VehicleEvents.Listener.fired"),
-            new Spec(VEHICLE_DESTROYED_EVENT, VEHICLE_DESTROYED, false, "VehicleEvents.Listener.destroyed")));
+            new Spec(VEHICLE_DESTROYED_EVENT, VEHICLE_DESTROYED, false, "VehicleEvents.Listener.destroyed"),
+            new Spec(BLOCK_PLACE_EVENT, BLOCK_PLACE, true, "BlockItemPlaceMixin"),
+            new Spec(EXPLOSION_EVENT, EXPLOSION, true, "ServerExplosionMixin"),
+            new Spec(COMMAND_EVENT, COMMAND, false, "MsmCommands.run")));
 
     private static Map<String, Spec> table(List<Spec> specs) {
         Map<String, Spec> map = new LinkedHashMap<>();

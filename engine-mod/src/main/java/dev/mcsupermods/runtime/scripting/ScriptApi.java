@@ -12,14 +12,16 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 /**
  * The script API v1 (ADR 0032 D2, with the 1.1 additions of ADR 0065, the 1.2 containers of ADR 0076 D5, the 1.3
- * particle options of ADR 0080 D5 and the 1.4 weather, time, explosion, drop and removal members of ADR 0082 D5 and the 1.5 HUD, key and vehicle members
- * and events of ADR 0089 D8), built from Java: the {@code msm} tree each script receives and the object types
+ * particle options of ADR 0080 D5 and the 1.4 weather, time, explosion, drop and removal members of ADR 0082 D5, the 1.5 HUD, key and vehicle members
+ * and events of ADR 0089 D8, and the 1.6 riding, dropped item and contents members and the place, explosion and command
+ * events of ADR 0096 D4 and ADR 0095 D5), built from Java: the {@code msm} tree each script receives and the object types
  * of the event objects. One instance per {@link ScriptHost} load (it holds the shared, sealed standard-object scope);
  * {@link #describe()} returns the installed member tree, which the JUnit {@code ScriptApiContractTest} compares with
  * {@code packages/plugins/scripting/api/script-api-v1.json}.
@@ -64,7 +66,8 @@ public final class ScriptApi {
             ScriptInventory.TYPE, ScriptBossBars.TYPE, ScriptRaycast.TYPE, ScriptEvents.PLAYER_TICK, ScriptEvents.PLAYER_RESPAWN,
             ScriptEvents.PLAYER_LEAVE, ScriptEvents.PLAYER_CHANGE_DIMENSION, ScriptEvents.PLAYER_CHAT, ScriptEvents.ENTITY_DAMAGED,
             ScriptContainer.TYPE, ScriptVehicle.TYPE, ScriptEvents.KEY_PRESSED, ScriptEvents.KEY_RELEASED, ScriptEvents.VEHICLE_MOUNTED,
-            ScriptEvents.VEHICLE_DISMOUNTED, ScriptEvents.VEHICLE_FIRED, ScriptEvents.VEHICLE_DESTROYED);
+            ScriptEvents.VEHICLE_DISMOUNTED, ScriptEvents.VEHICLE_FIRED, ScriptEvents.VEHICLE_DESTROYED, DroppedItemHandle.TYPE,
+            ScriptEvents.BLOCK_PLACE, ScriptEvents.EXPLOSION, ScriptEvents.COMMAND);
 
     private final ScriptHost host;
     private final ScriptableObject scope;
@@ -102,6 +105,16 @@ public final class ScriptApi {
             return player(p);
         }
         return new HostObject(this, entity instanceof MsmVehicle ? ScriptVehicle.TYPE : ScriptEntity.TYPE, new EntityHandle(entity));
+    }
+
+    /** A dropped item (Script API 1.6), following the item entity across a dimension change. */
+    Scriptable droppedItem(ItemEntity item) {
+        return new HostObject(this, DroppedItemHandle.TYPE, new DroppedItemHandle(item));
+    }
+
+    /** A fresh script value for a JSON value (an object becomes a new plain script object). */
+    Object json(JsonElement json) {
+        return ScriptJson.toScript(Context.getCurrentContext(), scope, json);
     }
 
     Scriptable player(ServerPlayer player) {
