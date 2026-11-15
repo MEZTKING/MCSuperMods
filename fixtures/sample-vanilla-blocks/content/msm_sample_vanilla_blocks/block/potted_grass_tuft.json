@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Potted Grass Tuft",
+    "format": 1,
+    "item": false,
+    "loot": "self",
+    "plant": "minecraft:short_grass",
+    "textures": {
+      "plant": "msm_sample_vanilla_blocks:block/grass_tuft"
+    },
+    "type": "potted_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:potted_grass_tuft",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "data": {
+    "components": {
+      "msm:item_inventory": {
+        "close_sound": "minecraft:item.armor.equip_leather",
+        "layout": "chest",
+        "on_close": "msm_sample_vanilla_blocks:satchel_closed",
+        "on_open": "msm_sample_vanilla_blocks:satchel_opened",
+        "open": "sneak_use",
+        "open_sound": "minecraft:item.armor.equip_leather",
+        "rows": 2
+      }
+    },
+    "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+    "display_name": "Satchel",
+    "events": {
+      "msm_sample_vanilla_blocks:satchel_closed": {
+        "actions": [
+          {
+            "sound": "minecraft:block.note_block.bass",
+            "type": "play_sound"
+          }
+        ]
+      },
+      "msm_sample_vanilla_blocks:satchel_opened": {
+        "actions": [
+          {
+            "sound": "minecraft:block.note_block.bell",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_sample_vanilla_blocks:item/satchel"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:satchel",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

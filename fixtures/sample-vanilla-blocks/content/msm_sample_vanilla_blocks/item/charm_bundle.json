@@ -1,0 +1,22 @@
+{
+  "data": {
+    "bundle_textures": {
+      "open_back": "msm_sample_vanilla_blocks:item/charm_bundle_open_back",
+      "open_front": "msm_sample_vanilla_blocks:item/charm_bundle_open_front"
+    },
+    "components": {
+      "msm:bundle": {}
+    },
+    "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+    "display_name": "Charm Bundle",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_sample_vanilla_blocks:item/charm_bundle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:charm_bundle",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

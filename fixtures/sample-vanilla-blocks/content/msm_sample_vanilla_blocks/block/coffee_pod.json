@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Coffee Pod",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+      "id": "msm_sample_vanilla_blocks:coffee_beans"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "stages": [
+        "msm_sample_vanilla_blocks:block/coffee_pod_small",
+        "msm_sample_vanilla_blocks:block/coffee_pod_medium",
+        "msm_sample_vanilla_blocks:block/coffee_pod_ripe"
+      ]
+    },
+    "type": "cocoa"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:coffee_pod",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

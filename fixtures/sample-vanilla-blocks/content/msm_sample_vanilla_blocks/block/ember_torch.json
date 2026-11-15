@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Ember Torch",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "particle": "minecraft:soul_fire_flame",
+    "sound_type": "wood",
+    "textures": {
+      "texture": "msm_sample_vanilla_blocks:block/ember_torch"
+    },
+    "type": "torch"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:ember_torch",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

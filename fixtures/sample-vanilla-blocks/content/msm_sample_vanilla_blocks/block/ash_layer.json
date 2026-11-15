@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "resistance": 0.1,
+        "tool": "shovel"
+      }
+    },
+    "display_name": "Ash",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "sound_type": "sand",
+    "textures": {
+      "texture": "msm_sample_vanilla_blocks:block/ash"
+    },
+    "type": "layers"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:ash_layer",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

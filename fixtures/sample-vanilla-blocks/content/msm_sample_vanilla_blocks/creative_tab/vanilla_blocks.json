@@ -1,0 +1,14 @@
+{
+  "data": {
+    "display_name": "Vanilla Blocks",
+    "format": 1,
+    "icon": "msm_sample_vanilla_blocks:paper_lantern",
+    "order": "as_listed"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:vanilla_blocks",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

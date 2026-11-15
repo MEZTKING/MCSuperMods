@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Tall Bluebell",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "bottom": "msm_sample_vanilla_blocks:block/tall_bluebell_bottom",
+      "top": "msm_sample_vanilla_blocks:block/tall_bluebell_top"
+    },
+    "type": "tall_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:tall_bluebell",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

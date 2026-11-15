@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Gourd",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_vanilla_blocks:block/gourd",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:gourd",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

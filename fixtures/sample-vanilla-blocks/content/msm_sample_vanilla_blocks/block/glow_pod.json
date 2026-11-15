@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Glow Pod",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "sound_type": "slime_block",
+    "textures": {
+      "texture": "msm_sample_vanilla_blocks:block/glow_pod"
+    },
+    "type": "sea_pickle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:glow_pod",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

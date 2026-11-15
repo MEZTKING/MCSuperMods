@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Gourd Stem",
+    "format": 1,
+    "fruit": "msm_sample_vanilla_blocks:gourd",
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+      "id": "msm_sample_vanilla_blocks:gourd_seeds"
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "attached": "msm_sample_vanilla_blocks:block/attached_gourd_stem",
+      "stem": "msm_sample_vanilla_blocks:block/gourd_stem"
+    },
+    "type": "stem"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:gourd_stem",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

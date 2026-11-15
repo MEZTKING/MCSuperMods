@@ -1,0 +1,14 @@
+{
+  "data": {
+    "lines": [
+      "# /kit <who> <count>: gives tallow candles; $(who) and $(count) are what was typed.",
+      "$give $(who) msm_sample_vanilla_blocks:tallow_candle $(count)"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:give_kit",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

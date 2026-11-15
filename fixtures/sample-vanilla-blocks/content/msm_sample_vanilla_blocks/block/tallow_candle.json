@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "resistance": 0.1
+      }
+    },
+    "display_name": "Tallow Candle",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "sound_type": "wool",
+    "textures": {
+      "candle": "msm_sample_vanilla_blocks:block/tallow_candle",
+      "item": "msm_sample_vanilla_blocks:item/tallow_candle",
+      "lit": "msm_sample_vanilla_blocks:block/tallow_candle_lit"
+    },
+    "type": "candle"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:tallow_candle",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

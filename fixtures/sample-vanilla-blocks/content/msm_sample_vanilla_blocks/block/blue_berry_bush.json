@@ -1,0 +1,44 @@
+{
+  "data": {
+    "berry": "msm_sample_vanilla_blocks:blue_berries",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Blue Berry Bush",
+    "format": 1,
+    "harvest": {
+      "full": [
+        2,
+        3
+      ],
+      "ripe": [
+        1,
+        2
+      ]
+    },
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+      "id": "msm_sample_vanilla_blocks:blue_berries"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "stages": [
+        "msm_sample_vanilla_blocks:block/blue_berry_bush_stage0",
+        "msm_sample_vanilla_blocks:block/blue_berry_bush_stage1",
+        "msm_sample_vanilla_blocks:block/blue_berry_bush_stage2",
+        "msm_sample_vanilla_blocks:block/blue_berry_bush_stage3"
+      ]
+    },
+    "type": "berry_bush"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:blue_berry_bush",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

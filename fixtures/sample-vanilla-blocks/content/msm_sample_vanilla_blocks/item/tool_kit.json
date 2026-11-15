@@ -1,0 +1,20 @@
+{
+  "data": {
+    "components": {
+      "msm:item_inventory": {
+        "layout": "dispenser"
+      }
+    },
+    "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+    "display_name": "Tool Kit",
+    "format": 1,
+    "max_stack_size": 1,
+    "model": "msm_sample_vanilla_blocks:item/tool_kit"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:tool_kit",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Cedar Hanging Sign",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+      "max_stack_size": 16
+    },
+    "loot": "self",
+    "textures": {
+      "all": "msm_sample_vanilla_blocks:block/stripped_cedar_log",
+      "hanging_gui": "msm_sample_vanilla_blocks:gui/hanging_signs/cedar_hanging_sign",
+      "item": "msm_sample_vanilla_blocks:item/cedar_hanging_sign"
+    },
+    "type": "hanging_sign",
+    "wood_type": "spruce"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:cedar_hanging_sign",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "resistance": 0.5
+      }
+    },
+    "display_name": "Honey Cake",
+    "events": {
+      "msm_sample_vanilla_blocks:honey_cake_eaten": {
+        "actions": [
+          {
+            "sound": "minecraft:entity.player.burp",
+            "type": "play_sound"
+          }
+        ]
+      }
+    },
+    "food": {
+      "nutrition": 3,
+      "saturation": 0.3
+    },
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "on_eat": "msm_sample_vanilla_blocks:honey_cake_eaten",
+    "sound_type": "wool",
+    "textures": {
+      "bottom": "msm_sample_vanilla_blocks:block/honey_cake_bottom",
+      "inside": "msm_sample_vanilla_blocks:block/honey_cake_inner",
+      "item": "msm_sample_vanilla_blocks:item/honey_cake",
+      "side": "msm_sample_vanilla_blocks:block/honey_cake_side",
+      "top": "msm_sample_vanilla_blocks:block/honey_cake_top"
+    },
+    "type": "cake"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:honey_cake",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

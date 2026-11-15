@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Paper Lantern",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks"
+    },
+    "loot": "self",
+    "sound_type": "lantern",
+    "textures": {
+      "item": "msm_sample_vanilla_blocks:item/paper_lantern",
+      "texture": "msm_sample_vanilla_blocks:block/paper_lantern"
+    },
+    "type": "lantern"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:paper_lantern",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

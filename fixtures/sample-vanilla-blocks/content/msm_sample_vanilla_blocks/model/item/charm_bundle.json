@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_sample_vanilla_blocks:item/charm_bundle"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:item/charm_bundle",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "data": {
+    "aliases": [
+      "hiya"
+    ],
+    "event": "wave",
+    "events": {
+      "wave": {
+        "actions": [
+          {
+            "sound": "minecraft:block.note_block.chime",
+            "type": "play_sound"
+          },
+          {
+            "effect": "minecraft:glowing",
+            "seconds": 5,
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "feedback_text": "Hello from the vanilla blocks sample!",
+    "format": 1,
+    "name": "greet"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:greet",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}

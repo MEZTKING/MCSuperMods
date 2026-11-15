@@ -1,0 +1,30 @@
+{
+  "data": {
+    "colour": "light_blue",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Cosy Bed",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_vanilla_blocks:vanilla_blocks",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "bed": "msm_sample_vanilla_blocks:block/cosy_bed",
+      "item": "msm_sample_vanilla_blocks:item/cosy_bed"
+    },
+    "type": "bed"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_vanilla_blocks:cosy_bed",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-15T00:00:00.000Z"
+  }
+}
