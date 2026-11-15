@@ -5106,3 +5106,17 @@ Decisions
 
 Next
 - Nothing open from B442.
+
+## 2026-11-15 — executor — B415 exporters, vehicle and controls follow-ups
+
+**What**
+- Exporters: new code `export.not-in-eject`; the Java eject warns once per key bind, HUD element and vehicle (it no longer says "unknown definition folder" for them). Vehicle item and entity ids reach `modOnlyIdsOf` through the session's `dataRegistryIds` (`entity_type` was already there; the vehicle's item, under the vehicle's own id, is new), so `mod-only.ts` needed no code change.
+- App: `controls.needs-jar` and `vehicles.needs-jar` infos on vanilla pack exports (`withControlsNeedJar`, `withVehicleNeedsJar` in `project-session.ts`, one each); plain words for the 15 vehicle codes, the 16 controls codes, the two `needs-jar` codes and `export.not-in-eject`; `plain-problems.test.ts` now covers them; each vehicle's id is in the `item` registry.
+- Tests: `packages/exporters/test/controls-vehicles.test.ts` (recipe making a vehicle item left out with `export.mod-only-reference`; eject warns three times and builds), `app/test/needs-jar-infos.test.ts`, a vehicle case in `schema-context-registry.test.ts`.
+
+**Decisions**
+- The `*.needs-jar` infos live in the session (the exporters cannot import plugins), like `rules.needs-jar`.
+- `export.not-in-eject` is an exporter code, distinct from the Rules session's `rules.not-in-eject`.
+
+**Next**
+- `packages/exporters/test/library.test.ts` "one per-kind example for every registered kind" fails on the base commit too (the new kinds have no example yet; B422).

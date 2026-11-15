@@ -2673,8 +2673,9 @@ export class ProjectSession {
       pack === 'data' ? withPotionNeedsJar(report, project) : report,
       project,
     );
-    if (!warned.ok) return { report: warned, fileName };
-    return { report: warned, fileName, data: sink.finish() };
+    const noted = withVehicleNeedsJar(withControlsNeedJar(warned, project), project);
+    if (!noted.ok) return { report: noted, fileName };
+    return { report: noted, fileName, data: sink.finish() };
   }
 
   /**
@@ -3649,6 +3650,56 @@ export function withPotionNeedsJar(report: ExportReport, project: Project): Expo
 export function withRulesNeedJar(report: ExportReport, project: Project): ExportReport {
   const note = rulesNeedJarProblem(project);
   return note === undefined ? report : { ...report, problems: [...report.problems, note] };
+}
+
+/** The code of the info about key binds and HUD elements in a vanilla pack (ADR 0088 D10). */
+export const CONTROLS_NEEDS_JAR_CODE = 'controls.needs-jar';
+
+/** The code of the info about vehicles in a vanilla pack (ADR 0090 D14). */
+export const VEHICLES_NEEDS_JAR_CODE = 'vehicles.needs-jar';
+
+/**
+ * `report` with the `controls.needs-jar` info (ADR 0088 D10) added once when `project` has key
+ * binds or HUD elements: vanilla packs carry none, as they need the Fabric mod jar.
+ *
+ * @param report - A vanilla pack export report.
+ * @param project - The exported project.
+ */
+export function withControlsNeedJar(report: ExportReport, project: Project): ExportReport {
+  const first = project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .find((element) => element.kind === 'msm:key_bind' || element.kind === 'msm:hud');
+  if (first === undefined) return report;
+  const problem: Problem = {
+    severity: 'info',
+    code: CONTROLS_NEEDS_JAR_CODE,
+    elementId: first.id,
+    message:
+      'Key binds and HUD elements are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to use them.',
+  };
+  return { ...report, problems: [...report.problems, problem] };
+}
+
+/**
+ * `report` with the `vehicles.needs-jar` info (ADR 0090 D14) added once when `project` has
+ * vehicles: vanilla packs carry none, and data files naming a vehicle's item are left out.
+ *
+ * @param report - A vanilla pack export report.
+ * @param project - The exported project.
+ */
+export function withVehicleNeedsJar(report: ExportReport, project: Project): ExportReport {
+  const first = project.namespaces
+    .flatMap((namespace) => namespace.elements)
+    .find((element) => element.kind === 'msm:vehicle');
+  if (first === undefined) return report;
+  const problem: Problem = {
+    severity: 'info',
+    code: VEHICLES_NEEDS_JAR_CODE,
+    elementId: first.id,
+    message:
+      'Vehicles are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to use them.',
+  };
+  return { ...report, problems: [...report.problems, problem] };
 }
 
 /** The code of the app-reported missing particle picture warning (ADR 0081 D1). */

@@ -73,6 +73,13 @@ export const JAVA_PROJECT_MOD_JSON = `src/main/resources/${FABRIC_MOD_JSON_FILE}
 // biome-ignore lint/suspicious/noTemplateCurlyInString: Gradle's placeholder, not a template
 const VERSION_PLACEHOLDER = '${version}';
 
+/** Definition folders the eject leaves out, with a warning each (`export.not-in-eject`). */
+const NOT_IN_EJECT_KINDS: Readonly<Record<string, { label: string; reason: string }>> = {
+  key_bind: { label: 'key bind', reason: "it needs the runtime's client code" },
+  hud: { label: 'HUD element', reason: "it needs the runtime's client code" },
+  vehicle: { label: 'vehicle', reason: "it needs the runtime's vehicle code" },
+};
+
 const DEFINITION_PATTERN = /^msm\/([^/]+)\/([^/]+)\/(.+)\.json$/;
 const SOUNDS_JSON_PATTERN = /^assets\/([^/]+)\/sounds\.json$/;
 const SOUND_KEY_PATTERN = /^[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*$/;
@@ -299,7 +306,8 @@ async function loadWrapper(
  * and per definition event with `run_script` actions; `export.java-generation-failed` is also a
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
- * `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
+ * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
+ * (ADR 0088 D10, ADR 0090 D14); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
  * with GeckoLib (ADR 0072 D8).
  *
  * @param options - Where the Gradle wrapper comes from.
@@ -369,6 +377,16 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         const match = DEFINITION_PATTERN.exec(file.path);
         if (match === null) continue;
         const kind = match[2];
+        const leftOut = NOT_IN_EJECT_KINDS[kind as string];
+        if (leftOut !== undefined) {
+          problems.report({
+            severity: 'warning',
+            code: ExportProblemCodes.notInEject,
+            file: file.path,
+            message: `${match[1]}:${match[3]} is a ${leftOut.label}, which the Java project does not include (${leftOut.reason}). Export the Fabric mod jar to use it.`,
+          });
+          continue;
+        }
         if (
           kind !== 'block' &&
           kind !== 'item' &&

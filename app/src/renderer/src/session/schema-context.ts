@@ -176,7 +176,9 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * when its data has `"item": false` (`blockItemIdOf`, the single source; {@link blockHasItem}).
  * An `msm:entity` element (registry `entity_type`) also registers its spawn egg
  * `<id>_spawn_egg` in `item` unless `spawn_egg` is `false` ({@link entityHasSpawnEgg}); `msm:geo_model` and `msm:animation` ids land in their own
- * plain registries, which no vanilla schema reads. An `msm:potion` element (registry `potion`)
+ * plain registries, which no vanilla schema reads. An `msm:vehicle` element (registry
+ * `entity_type`) also registers its item under its own id in `item` (ADR 0090 D2; B415).
+ * Ids of both are mod-only for vanilla data packs (ADR 0066, 0090 D14). An `msm:potion` element (registry `potion`)
  * also registers its `long_` and `strong_` versions ({@link potionRegistryIds}, ADR 0063 D9).
  * An `msm:block` machine (`msm:machine` on a type that takes it) also registers its id as a
  * `recipe_type` and a `recipe_serializer` (ADR 0075 D2; {@link isMachineBlock}), as the
@@ -211,6 +213,7 @@ export function dataRegistryIds(
         if (element.kind === ENTITY_KIND && entityHasSpawnEgg(element.data)) {
           add(ITEM_REGISTRY, spawnEggId(element.id));
         }
+        if (element.kind === VEHICLE_KIND) add(ITEM_REGISTRY, element.id);
         if (element.kind === POTION_KIND) {
           for (const id of potionRegistryIds(element)) add(registered, id);
         }
@@ -241,6 +244,7 @@ const ITEM_REGISTRY = 'item';
 const BLOCK_KIND = 'msm:block';
 const ENTITY_KIND = 'msm:entity';
 const POTION_KIND = 'msm:potion';
+const VEHICLE_KIND = 'msm:vehicle';
 const RECIPE_TYPE_REGISTRY = 'recipe_type';
 const RECIPE_SERIALIZER_REGISTRY = 'recipe_serializer';
 

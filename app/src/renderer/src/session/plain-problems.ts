@@ -372,6 +372,77 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'schema.missing-discriminator': entry((t) => `${t} is missing what kind of thing it is.`),
   'schema.unknown-dispatch-key': entry((t) => `${t} is a kind of thing Minecraft does not know.`),
 
+  // Vehicles ---------------------------------------------------------------------------------
+  'vehicles.unknown-mode': entry((t) => `${t} moves in a way this Minecraft does not have.`),
+  'vehicles.too-fast': entry(
+    (t) => `${t} is too fast for the game, which would pull it back. Lower its top speed.`,
+  ),
+  'vehicles.takeoff-too-fast': entry(
+    (t) => `${t} needs more speed to take off than it can reach, so it never leaves the ground.`,
+  ),
+  'vehicles.unknown-geometry': entry((t) => `${t} uses a shape (model) that is not in your mod.`),
+  'vehicles.unknown-bone': entry((t) => `${t} names a part of its shape that does not exist.`),
+  'vehicles.unknown-animations': entry(
+    (t) => `${t} uses a set of movements that is not in your mod.`,
+  ),
+  'vehicles.vanilla-renderer-subset': entry(
+    (t) => `${t} uses animation tricks that the plain drawing of vehicles cannot play.`,
+  ),
+  'vehicles.unknown-projectile': entry((t) => `${t} fires something that does not exist.`),
+  'vehicles.duplicate-weapon-id': entry((t) => `Two weapons of ${t} have the same name.`),
+  'vehicles.unknown-seat-weapon': entry(
+    (t) => `A seat of ${t} fires a weapon the vehicle does not have.`,
+  ),
+  'vehicles.turret-seat-missing': entry(
+    (t) => `The turret of ${t} is aimed from a seat that is not there, so nobody aims it.`,
+  ),
+  'vehicles.duplicate-paint-id': entry((t) => `Two paints of ${t} have the same name.`),
+  'vehicles.item-used-twice': entry((t) => `${t} uses one item for two different jobs.`),
+  'vehicles.item-picture-missing': entry((t) => `The item of ${t} has no picture to show.`),
+  'vehicles.unknown-event': entry((t) => `${t} runs something that is not in your mod any more.`),
+  'vehicles.needs-jar': entry(
+    () => 'Vehicles only work in the Fabric mod jar. Share my mod makes one.',
+  ),
+
+  // Key binds and HUD ------------------------------------------------------------------------
+  'controls.unknown-key': entry((t) => `${t} uses a key that Minecraft does not know.`),
+  'controls.vanilla-key-clash': entry(
+    (t) => `${t} uses a key that already does something in Minecraft.`,
+  ),
+  'controls.runtime-key-clash': entry((t) => `${t} uses a key that your vehicles already use.`),
+  'controls.duplicate-key': entry((t) => `${t} uses the same key as another key bind.`),
+  'controls.bad-category': entry(
+    (t) => `${t} has a group name Minecraft cannot use. Use small letters, numbers and _ only.`,
+  ),
+  'controls.name-conflict': entry(
+    (t) => `${t} shares a name with another key bind but shows different words.`,
+  ),
+  'controls.unknown-event': entry((t) => `${t} runs something that is not in your mod any more.`),
+  'controls.key-runs-function': entry(
+    (t) => `${t} runs a function, which needs permission to work in a server.`,
+  ),
+  'controls.vehicle-without-when': entry(
+    (t) => `${t} names a vehicle but is not set to work only in it.`,
+  ),
+  'controls.vehicle-without-show': entry(
+    (t) => `${t} names a vehicle but is not set to show only in it.`,
+  ),
+  'controls.unknown-vehicle': entry((t) => `${t} names a vehicle that is not in your mod.`),
+  'controls.icons-need-icon': entry((t) => `${t} shows a row of icons but has no icon picked.`),
+  'controls.bad-color': entry((t) => `${t} has a colour Minecraft cannot read.`),
+  'controls.field-not-for-type': entry((t) => `${t} has a setting its kind of display ignores.`),
+  'controls.unknown-objective': entry(
+    (t) => `${t} shows a score that nothing in your mod creates yet.`,
+  ),
+  'controls.unknown-hud': entry((t) => `${t} changes a display that is not in your mod.`),
+  'controls.needs-jar': entry(
+    () =>
+      'Key binds and the screen display only work in the Fabric mod jar. Share my mod makes one.',
+  ),
+  'export.not-in-eject': entry(
+    (t) => `${t} is left out of the Java project, which has no part to run it.`,
+  ),
+
   // Play and Share my mod ------------------------------------------------------------------
   'export.no-fabric-target': entry(
     () => 'This mod is for a Minecraft without Fabric, so it cannot be played or shared as a mod.',

@@ -96,6 +96,12 @@ export const ExportProblemCodes = {
    * `gradlew` and the wrapper jar. Info; the export goes ahead.
    */
   gradleWrapperMissing: 'export.gradle-wrapper-missing',
+  /**
+   * Java project (ADR 0088 D10, ADR 0090 D14): a key bind, HUD element or vehicle is left out
+   * of the eject, which has no client code or vehicle runtime. One warning per element; the
+   * export goes ahead.
+   */
+  notInEject: 'export.not-in-eject',
   /** The exporter threw while packaging. Some files may already have been written. */
   failed: 'export.failed',
   /**

@@ -172,6 +172,17 @@ describe('dataRegistryIds', () => {
     expect(Object.keys(ids)).not.toContain('model');
   });
 
+  it('counts a vehicle under entity_type and its item, with its own id, under item', () => {
+    const msm = project([
+      { id: 'demo:buggy', kind: 'msm:vehicle' },
+      { id: 'demo:ruby', kind: 'msm:item' },
+    ]);
+    const ids = dataRegistryIds(msm);
+    expect(ids.entity_type).toEqual(['demo:buggy']);
+    expect(ids.item).toEqual(['demo:buggy', 'demo:ruby']);
+    expect(projectRegistryIds(msm).item).toEqual(['demo:buggy', 'demo:ruby']);
+  });
+
   it('counts the generated spawn egg model when the egg has a texture', () => {
     const msm = project([
       {

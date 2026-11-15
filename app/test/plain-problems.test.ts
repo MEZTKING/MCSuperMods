@@ -14,7 +14,8 @@ import {
   PARTICLE_PROBLEM_CODES,
   PORTAL_PROBLEM_CODES,
 } from '@msm/plugin-blocks-items';
-import { ENTITIES_PROBLEM_CODES } from '@msm/plugin-entities';
+import { CONTROLS_PROBLEM_CODES } from '@msm/plugin-controls';
+import { ENTITIES_PROBLEM_CODES, VEHICLE_PROBLEM_CODES } from '@msm/plugin-entities';
 import { RULES_PROBLEM_CODES } from '@msm/plugin-rules';
 import { describe, expect, it } from 'vitest';
 import {
@@ -27,7 +28,11 @@ import {
   removeAtPointer,
   stepPointerOf,
 } from '../src/renderer/src/session/plain-problems';
-import { PARTICLE_TEXTURE_MISSING_CODE } from '../src/renderer/src/session/project-session';
+import {
+  CONTROLS_NEEDS_JAR_CODE,
+  PARTICLE_TEXTURE_MISSING_CODE,
+  VEHICLES_NEEDS_JAR_CODE,
+} from '../src/renderer/src/session/project-session';
 import { RulesSessionProblemCodes } from '../src/renderer/src/session/rules-view';
 
 /** The codes a beginner can meet in Very easy, from the plugins' and the session's lists. */
@@ -40,6 +45,11 @@ const BEGINNER_CODES: readonly string[] = [
   ...PARTICLE_PROBLEM_CODES,
   ...CONTAINER_PROBLEM_CODES,
   ...ENTITIES_PROBLEM_CODES,
+  ...VEHICLE_PROBLEM_CODES,
+  ...CONTROLS_PROBLEM_CODES,
+  CONTROLS_NEEDS_JAR_CODE,
+  VEHICLES_NEEDS_JAR_CODE,
+  ExportProblemCodes.notInEject,
   PARTICLE_TEXTURE_MISSING_CODE,
   // What blocks Play and Share my mod.
   ExportProblemCodes.noFabricTarget,
