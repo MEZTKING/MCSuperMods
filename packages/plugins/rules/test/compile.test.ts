@@ -605,6 +605,118 @@ describe('compileRuleBook', () => {
     });
   });
 
+  describe('placing, explosions, commands, riding and facing (B458)', () => {
+    const codes = (rules: Json[]) => compile(rules).problems.map((problem) => problem.code);
+
+    it("puts plain command rules into the command's own event", () => {
+      const { result, elements } = patched([
+        rule('greet', { subject: 'demo:hello', trigger: 'command_used' }, [GIVE]),
+      ]);
+      expect(result.problems).toEqual([]);
+      expect(result.script).toBeNull();
+      const data = dataOf(elements, 'demo:hello');
+      const eventId = ruleEventId('demo:hello', 'command_used');
+      expect(data.event).toBe(eventId);
+      expect(asActions(data, eventId)).toEqual([
+        { count: 2, item: 'demo:ruby', type: 'give_item' },
+      ]);
+    });
+
+    it("keeps the command's event for rules that are not plain (run_script)", () => {
+      const { result, elements } = patched([
+        rule('greet', { subject: 'demo:hello', trigger: 'command_used' }, [GIVE], {
+          only_if: SNEAKING,
+        }),
+      ]);
+      expect(result.problems).toEqual([]);
+      const data = dataOf(elements, 'demo:hello');
+      expect(asActions(data, ruleEventId('demo:hello', 'command_used'))).toEqual([
+        { handler: ruleHandlerId('demo:rules', 'demo:hello', 'command_used'), type: 'run_script' },
+      ]);
+      expect(result.script?.join('\n')).toContain('msm.actions.define(');
+    });
+
+    it('sends every rule of a command that runs a function to the command event', () => {
+      const result = compile([
+        rule('warp', { subject: 'demo:warp', trigger: 'command_used' }, [GIVE]),
+      ]);
+      expect(result.problems).toEqual([]);
+      expect(result.patches).toEqual([]);
+      const script = result.script?.join('\n') ?? '';
+      expect(script).toContain('msm.events.on("command", (e) => {');
+      expect(script).toContain('if (e.id !== "demo:warp") return;');
+    });
+
+    it('reports stops and "caused by" on other triggers', () => {
+      expect(
+        codes([rule('a', { trigger: 'any_block_broken' }, [{ step: 'stop_placing' }])]),
+      ).toEqual([RULES_COMPILE_CODES.notForTrigger]);
+      expect(
+        codes([rule('a', { trigger: 'any_block_placed' }, [{ step: 'keep_blocks_safe' }])]),
+      ).toEqual([RULES_COMPILE_CODES.notForTrigger]);
+      expect(
+        codes([
+          rule('a', { trigger: 'world_every' }, [{ step: 'stop_normal_action' }], {
+            only_if: { conditions: [{ cause: 'block', condition: 'caused_by' }], match: 'all' },
+          }),
+        ]),
+      ).toEqual([RULES_COMPILE_CODES.notForTrigger, RULES_COMPILE_CODES.cannotStop]);
+      // "Stop the normal action" also stops an explosion and a placing.
+      expect(
+        codes([rule('a', { trigger: 'explosion' }, [{ step: 'stop_normal_action' }])]),
+      ).toEqual([]);
+    });
+
+    it('keeps the way something faces out of numbers', () => {
+      expect(
+        codes([
+          rule('a', { subject: 'demo:plain_block', trigger: 'block_used' }, [
+            { amount: { value: 'facing' }, step: 'heal' },
+          ]),
+        ]),
+      ).toEqual([RULES_COMPILE_CODES.notANumber]);
+      expect(
+        codes([
+          rule('a', { subject: 'demo:plain_block', trigger: 'block_used' }, [
+            { step: 'show_message', text: [{ of: 'mob', value: 'facing' }] },
+          ]),
+        ]),
+      ).toEqual([RULES_COMPILE_CODES.noSuchActor]);
+    });
+
+    it('needs a place for the block here and one thing to ride', () => {
+      expect(
+        codes([
+          rule('a', { trigger: 'world_every' }, [{ step: 'stop_normal_action' }], {
+            only_if: { conditions: [{ condition: 'is_facing', direction: 'up' }], match: 'all' },
+          }),
+        ]).includes(RULES_COMPILE_CODES.noSuchPlace),
+      ).toBe(true);
+      expect(
+        codes([
+          rule('a', { subject: 'demo:guard', trigger: 'mob_used' }, [
+            { mount: 'every_player', step: 'ride' },
+          ]),
+        ]),
+      ).toContain(RULES_COMPILE_CODES.noSuchActor);
+      expect(
+        codes([
+          rule('a', { trigger: 'explosion' }, [CHIME], {
+            only_if: { conditions: [{ condition: 'is_riding', who: 'player' }], match: 'all' },
+          }),
+        ]),
+      ).toEqual([RULES_COMPILE_CODES.noSuchActor]);
+    });
+
+    it('looks at riders every quarter second for getting on and off', () => {
+      const script = (
+        compile([rule('a', { trigger: 'player_dismounted' }, [{ step: 'dismount' }])]).script ?? []
+      ).join('\n');
+      expect(script).toContain('rideChange("player_dismounted", e.player, false)');
+      expect(script).toContain('}, { interval: 5 });');
+    });
+  });
+
   describe('script safety', () => {
     it('writes book text only inside string literals', () => {
       const script = (

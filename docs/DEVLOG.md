@@ -5845,3 +5845,29 @@ Next: B421's horn listener can add a parity check (the horn's sound packet to ot
 - Orchestrator: decide the `/kit` macro fix (runtime and eject, or the fixture), then make the kit test strict; consider sending 3003 to the waxing player too (or predicting on the client).
 - After B455/B458 land in the fixture: Script API 1.6 scripts and the "keep the blocks safe" card can join this parity class (the TNT test is ready to compare).
 - First CI run on the branch confirms the new steps.
+
+## 2026-11-15 — executor — B458 Rules: facing, placing, explosions, commands, riding
+
+**What**
+- Rules catalogue (ADR 0096 D5): 56 triggers, 44 steps, 19 conditions, 13 values, 7 places (was 51/39/16/12/6).
+  - Triggers: `player_mounted` "A player gets on something", `player_dismounted` "A player gets off something", `command_used` "A player types the command" (subject a project `msm:command`), `explosion` "Something explodes" (cancellable), `any_block_placed` "A player places a block" (cancellable; any block or one kind).
+  - Steps: `ride` "Ride something" (`mount`: player, mob or other), `dismount` "Get off", `stop_placing` "Stop the placing", `stop_explosion` "Stop the explosion", `keep_blocks_safe` "Keep the blocks safe".
+  - Conditions: `is_riding` (`who`, optional `mount` entity type), `is_facing` (`of` here, player, mob or other; `direction` north to down), `caused_by` (`cause` an entity type or `"block"`).
+  - Value `facing` "The way it faces" (words, text slots only); place `in_front_of_here` "In front of here".
+- Compilation: `command_used` puts plain rules into the command's own `event` (self and other the source), and rules that are not plain go through `run_script` in that event, so the command always has its event; a command with a `function` (which cannot also run an event) sends every rule to a listener of the Script API 1.6 `command` event filtered by `e.id`. `explosion` listens to `world.explosion` (other is `e.source`), `any_block_placed` to `block.place`. Getting on and off has no Script API event: the script looks at each player's `vehicle` every 5 ticks (`rideChange`). Facing reads a block's `facing` property, else its `axis` (x east, y up, z south), and an entity's horizontal direction from `look`.
+- New codes `rules.not-for-trigger` (a limited step or condition on another trigger) and `rules.not-a-number` (`facing` in a number slot), with plain words; `RULES_PROBLEM_CODES` 25. New catalogue fields: `StepEntry.triggers`, `ConditionEntry.triggers`, `ValueEntry.words`, `TriggerComponent.bridge` and `unusableWith`, slot and subject type `command`.
+- `rules.mcdoc` (493 types; `--check` green), the AI prompt id lists and two prompt sentences, `RulesSection` `THING_WORDS` `msm:command`, the Command Studio test (the Rules section now shows). Commands are named `/name` in the generated scripts' comments.
+- Tests: rules plugin 365 (goldens for every new card plus `listener-command_used`, `-explosion`, `-conveyor`; seven compile cases), schemas rules 157, ai 94, app Rules and AI 283; lint and typecheck clean.
+
+**Decisions**
+- The brief's mount triggers and `ride`/`dismount` steps go beyond ADR 0096 D5 (which lists the stops and "is riding"); they use only Script API 1.6 members, and the triggers poll because there is no mount event. Mobs getting on things have no trigger (a player trigger's "other" is what was ridden, so `mob_is` on other filters it).
+- `caused_by` comes from ADR 0096 D3's Rules wording. `stop_normal_action` also works on the two new cancellable triggers.
+- No command argument value: the ADR lists none; rules cannot read what was typed yet.
+- No new Rules templates (pinned by the library and exporters tests; B461).
+
+**Next**
+- App (B424a or later): pickers for the `command` slot and subject sort (`SUBJECT_SORTS`), a `mount` picker without "every player", `facing` offered only in text slots, the `of` and `direction` choices.
+- B461: templates "No creeper damage" (`explosion`, `caused_by` creeper, `keep_blocks_safe`) and "No TNT here" (`any_block_placed` TNT, `stop_placing`).
+- B462: a rule book with a conveyor (`is_facing`, `in_front_of_here`), a command rule and an explosion rule.
+- B463: the sim needs the five new triggers, the stops and facing.
+- B467 limits: getting on and off is seen up to a quarter second late, and only for players; entity facing is horizontal only; a command run from the console runs no script rule of a command with a function; `packages/plugins/CLAUDE.md` counts.

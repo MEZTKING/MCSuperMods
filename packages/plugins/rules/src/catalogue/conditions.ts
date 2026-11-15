@@ -17,6 +17,22 @@ const COMPARE: SlotSpec = {
 };
 const NUMBER: SlotSpec = { name: 'number', type: 'number' };
 
+/** The six ways a block or someone can face (ADR 0096 D5). */
+export const DIRECTIONS = Object.freeze(['north', 'east', 'south', 'west', 'up', 'down'] as const);
+
+/** Whose facing: the block here (its `facing` or `axis`), the player, the mob or the other one. */
+export const FACING_OF: SlotSpec = {
+  name: 'of',
+  type: 'choice',
+  optional: true,
+  choices: [
+    { value: 'here', label: 'the block here' },
+    { value: 'player', label: 'the player' },
+    { value: 'mob', label: 'the mob' },
+    { value: 'other', label: 'the other one' },
+  ],
+};
+
 const condition = (
   entry: Omit<ConditionEntry, 'veryEasy' | 'slots'> & { slots?: readonly SlotSpec[] },
 ): ConditionEntry =>
@@ -142,6 +158,39 @@ export const CONDITIONS: readonly ConditionEntry[] = Object.freeze([
       { name: 'who', type: 'who', optional: true },
       { name: 'mob', type: 'mob' },
     ],
+  }),
+  // Riding and facing (ADR 0096 D5, Script API 1.6 `Entity.vehicle`).
+  condition({
+    id: 'is_riding',
+    label: 'Someone is riding',
+    sentence: '{who} is riding {mount}',
+    notSentence: '{who} is not riding {mount}',
+    slots: [
+      { name: 'who', type: 'who', optional: true },
+      { name: 'mount', type: 'mob', optional: true },
+    ],
+  }),
+  condition({
+    id: 'is_facing',
+    label: 'Something is facing a way',
+    sentence: '{of} is facing {direction}',
+    notSentence: '{of} is not facing {direction}',
+    slots: [
+      FACING_OF,
+      {
+        name: 'direction',
+        type: 'choice',
+        choices: DIRECTIONS.map((value) => ({ value, label: value })),
+      },
+    ],
+  }),
+  condition({
+    id: 'caused_by',
+    label: 'What caused it',
+    sentence: 'it was caused by {cause}',
+    notSentence: 'it was not caused by {cause}',
+    slots: [{ name: 'cause', type: 'mob' }],
+    triggers: ['explosion'],
   }),
   condition({
     id: 'dimension_is',

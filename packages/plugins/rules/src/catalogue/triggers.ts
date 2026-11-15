@@ -20,6 +20,7 @@ export const ENTITY_KIND = 'msm:entity';
 export const EFFECT_KIND = 'msm:effect';
 export const KEY_BIND_KIND = 'msm:key_bind';
 export const VEHICLE_KIND = 'msm:vehicle';
+export const COMMAND_KIND = 'msm:command';
 
 const SUBJECT_BLOCK: SlotSpec = { name: 'subject', type: 'block' };
 const SUBJECT_ITEM: SlotSpec = { name: 'subject', type: 'item' };
@@ -27,6 +28,7 @@ const SUBJECT_MOB: SlotSpec = { name: 'subject', type: 'mob' };
 const SUBJECT_EFFECT: SlotSpec = { name: 'subject', type: 'effect' };
 const SUBJECT_KEY: SlotSpec = { name: 'subject', type: 'key' };
 const SUBJECT_VEHICLE: SlotSpec = { name: 'subject', type: 'vehicle' };
+const SUBJECT_COMMAND: SlotSpec = { name: 'subject', type: 'command' };
 
 const COOLDOWN: SlotSpec = {
   name: 'cooldown_seconds',
@@ -532,6 +534,46 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     slots: [INTERVAL],
     scriptEvent: 'player.tick',
   }),
+  // Getting on and off (B458): no Script API event, so the script looks at each player's
+  // `vehicle` (Script API 1.6) every quarter of a second; "other" is what they got on or off.
+  trigger({
+    id: 'player_mounted',
+    label: 'A player gets on something',
+    sentence: 'When a player gets on something',
+    group: 'players',
+    slots: [],
+    scriptEvent: 'player.tick',
+    actors: ['player', 'other'],
+    actorLabels: { other: 'what they got on' },
+  }),
+  trigger({
+    id: 'player_dismounted',
+    label: 'A player gets off something',
+    sentence: 'When a player gets off something',
+    group: 'players',
+    slots: [],
+    scriptEvent: 'player.tick',
+    actors: ['player', 'other'],
+    actorLabels: { other: 'what they got off' },
+  }),
+  // A project command (ADR 0096 D1, D5): plain rules go into the command's own `event`, whose
+  // self and other are the source (B454), the rest through `run_script`; a command that runs a
+  // function cannot also run an event, so its rules listen to the Script API 1.6 `command`
+  // event instead.
+  trigger({
+    id: 'command_used',
+    label: 'A player types the command',
+    sentence: 'When a player types the command {subject}',
+    group: 'players',
+    slots: [SUBJECT_COMMAND],
+    subject: 'command',
+    subjectKinds: [COMMAND_KIND],
+    definition: { field: 'event', bridge: true, unusableWith: 'function' },
+    scriptEvent: 'command',
+    actors: ['player'],
+    actorLabels: { player: 'the player who typed it' },
+    actionTargets: { player: 'self' },
+  }),
   key({
     id: 'key_pressed',
     label: 'A player presses the key',
@@ -631,6 +673,18 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     actors: [],
     hasPlace: false,
   }),
+  // Every ServerExplosion (ADR 0096 D3): TNT, creepers, fireballs, beds, `World.explode`.
+  trigger({
+    id: 'explosion',
+    label: 'Something explodes',
+    sentence: 'When something explodes',
+    group: 'world',
+    slots: [],
+    scriptEvent: 'world.explosion',
+    actors: ['other'],
+    actorLabels: { other: 'what exploded' },
+    cancellable: true,
+  }),
   trigger({
     id: 'any_block_used',
     label: 'A player uses any block',
@@ -653,6 +707,20 @@ export const TRIGGERS: readonly TriggerEntry[] = Object.freeze([
     subject: 'block',
     subjectOptional: true,
     scriptEvent: 'block.break',
+    actors: ['player'],
+    hereIsBlock: true,
+    cancellable: true,
+  }),
+  // Placing by a player (ADR 0096 D3); dispensers, endermen and commands are not seen.
+  trigger({
+    id: 'any_block_placed',
+    label: 'A player places a block',
+    sentence: 'When a player places {subject}',
+    group: 'any',
+    slots: [{ ...SUBJECT_BLOCK, optional: true }],
+    subject: 'block',
+    subjectOptional: true,
+    scriptEvent: 'block.place',
     actors: ['player'],
     hereIsBlock: true,
     cancellable: true,

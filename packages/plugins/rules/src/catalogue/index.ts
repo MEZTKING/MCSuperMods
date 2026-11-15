@@ -19,6 +19,7 @@ export { CONDITIONS } from './conditions';
 export { STEPS } from './steps';
 export {
   BLOCK_KIND,
+  COMMAND_KIND,
   EFFECT_KIND,
   ENTITY_KIND,
   ITEM_KIND,

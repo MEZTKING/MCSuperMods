@@ -30,7 +30,9 @@ export type SlotType =
   /** A project HUD element (`msm:hud`). */
   | 'hud'
   /** A weapon of the vehicle, by its `id` in the vehicle's `weapons`. */
-  | 'weapon';
+  | 'weapon'
+  /** A project command (`msm:command`, ADR 0096 D1). */
+  | 'command';
 
 /** One blank of a sentence: the field it edits and how. */
 export interface SlotSpec {
@@ -83,6 +85,8 @@ export type SubjectSort =
   | 'key'
   /** A project vehicle (ADR 0090 D11). */
   | 'vehicle'
+  /** A project command (ADR 0096 D5). */
+  | 'command'
   /** No subject: player and world triggers. */
   | 'none';
 
@@ -115,6 +119,19 @@ export interface TriggerComponent {
   readonly needs?: string;
   /** The block `type` the subject must have (`portal` for `on_travel`). */
   readonly blockType?: string;
+  /**
+   * With a `scriptEvent`: rules that are not plain still go into the definition's event through
+   * `run_script` (as for triggers without a script event), so the subject always runs the
+   * event; the script event is used only when the subject has `unusableWith` (B458: a
+   * command's `event`, which must be there for a command without a function).
+   */
+  readonly bridge?: boolean;
+  /**
+   * A field of the data that rules out the event (a command with a `function` cannot also run
+   * an `event`, ADR 0096 D1): when the subject has it, every rule of the trigger listens to the
+   * trigger's `scriptEvent` instead and the definition is left alone.
+   */
+  readonly unusableWith?: string;
 }
 
 /** How one trigger option maps onto the trigger component (ADR 0082 D3, R16). */
@@ -209,6 +226,11 @@ export interface StepEntry extends CatalogueEntry {
   readonly needsActor?: Actor;
   /** The default `who` when the field is absent. */
   readonly defaultWho?: string;
+  /**
+   * The only triggers the step works on ("Stop the placing" on placing a block); absent means
+   * every trigger. Elsewhere the compiler reports `rules.not-for-trigger`.
+   */
+  readonly triggers?: readonly string[];
 }
 
 /** A condition (ADR 0082 D5). */
@@ -217,14 +239,21 @@ export interface ConditionEntry extends CatalogueEntry {
   readonly notSentence: string;
   /** The actor the condition reads. */
   readonly needsActor?: Actor;
+  /** The only triggers the condition works on ("caused by" on an explosion); absent means all. */
+  readonly triggers?: readonly string[];
 }
 
 /** A value reading (ADR 0082 D2, D5). */
 export interface ValueEntry extends CatalogueEntry {
   /** The actor the reading needs. */
   readonly needsActor?: Actor;
-  /** Whether it may appear inside `math` (every reading but `math`). */
+  /** Whether it may appear inside `math` (every reading but `math` and the word readings). */
   readonly plain: boolean;
+  /**
+   * A reading in words, not a number ("the way it faces", B458): it fills text slots only; in a
+   * number slot the compiler reports `rules.not-a-number`.
+   */
+  readonly words?: boolean;
 }
 
 /** A named place or a place object (ADR 0082 D5). */

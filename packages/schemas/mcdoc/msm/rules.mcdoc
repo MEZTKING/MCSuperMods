@@ -138,6 +138,12 @@ enum(string) Trigger {
 	PlayerChangedDimension = "player_changed_dimension",
 	/// Every few seconds, for each player.
 	PlayerEvery = "player_every",
+	/// A player gets on something: a mob, a boat, a minecart or a vehicle (B458).
+	PlayerMounted = "player_mounted",
+	/// A player gets off what they rode.
+	PlayerDismounted = "player_dismounted",
+	/// A player (or the source of an `execute as`) types a project command (ADR 0096 D5).
+	CommandUsed = "command_used",
 	/// A player presses a project key bind (ADR 0088 D6).
 	KeyPressed = "key_pressed",
 	/// A player lets go of a project key bind.
@@ -158,10 +164,14 @@ enum(string) Trigger {
 	WorldStarted = "world_started",
 	/// Every few seconds.
 	WorldEvery = "world_every",
+	/// Something explodes: TNT, a creeper, a fireball, a bed, a respawn anchor (ADR 0096 D3).
+	Explosion = "explosion",
 	/// A player uses any block, or any block of one kind.
 	AnyBlockUsed = "any_block_used",
 	/// A player breaks any block, or any block of one kind.
 	AnyBlockBroken = "any_block_broken",
+	/// A player places any block, or any block of one kind (ADR 0096 D3).
+	AnyBlockPlaced = "any_block_placed",
 	/// A player uses any item, or any item of one kind.
 	AnyItemUsed = "any_item_used",
 	/// Any mob, or any mob of one kind, is hurt.
@@ -311,8 +321,14 @@ dispatch msm:rule_trigger[vehicle_every] to struct VehicleEveryTrigger {
 	options?: IntervalOptions,
 }
 
+/// A player types a project command.
+dispatch msm:rule_trigger[command_used] to struct CommandUsedTrigger {
+	/// The project command (an `msm:command` id).
+	subject: string @ 1..,
+}
+
 /// Any block, or any block of one kind.
-dispatch msm:rule_trigger[any_block_used, any_block_broken] to struct AnyBlockTrigger {
+dispatch msm:rule_trigger[any_block_used, any_block_broken, any_block_placed] to struct AnyBlockTrigger {
 	/// The block, vanilla or project; absent means every block.
 	subject?: #[id="block"] string,
 }
@@ -420,6 +436,10 @@ enum(string) ValueKind {
 	VehicleDamage = "vehicle_damage",
 	/// The rounds loaded in one of the vehicle's weapons (as `VehicleFuel` says which vehicle).
 	VehicleAmmo = "vehicle_ammo",
+	/// The way the block here, the player, the mob or the other one faces, in words (north,
+	/// east, south, west, up or down; ADR 0096 D5). Text slots only: the plugin refuses it in a
+	/// number.
+	Facing = "facing",
 	/// Two numbers added, taken away, multiplied or divided.
 	Math = "math",
 }
@@ -494,6 +514,25 @@ dispatch msm:rule_value[player_position] to struct PlayerPositionValue {
 	axis: Axis,
 }
 
+/// Whose facing: a block's `facing` property, else its `axis` (x as east, y as up, z as south);
+/// an entity's from where it looks (north, east, south or west).
+enum(string) FacingOf {
+	/// The block here.
+	Here = "here",
+	/// The player.
+	Player = "player",
+	/// The mob.
+	Mob = "mob",
+	/// The other one.
+	Other = "other",
+}
+
+/// The way something faces.
+dispatch msm:rule_value[facing] to struct FacingValue {
+	/// Defaults to `here`.
+	of?: FacingOf,
+}
+
 /// The rounds loaded in a vehicle's weapon.
 dispatch msm:rule_value[vehicle_ammo] to struct VehicleAmmoValue {
 	/// The weapon's `id` in the vehicle's `weapons`; defaults to the first weapon.
@@ -532,6 +571,8 @@ enum(string) PlaceName {
 	Here = "here",
 	/// One block above here.
 	AboveHere = "above_here",
+	/// One block along the facing (or axis) of the block here; nowhere when it faces no way.
+	InFrontOfHere = "in_front_of_here",
 	/// At the player.
 	Player = "player",
 	/// At the mob.
@@ -629,6 +670,12 @@ enum(string) ConditionKind {
 	BlockIs = "block_is",
 	/// An entity is a given kind of mob.
 	MobIs = "mob_is",
+	/// Someone rides something, or something of a kind (ADR 0096 D5).
+	IsRiding = "is_riding",
+	/// The block here, the player, the mob or the other one faces a way.
+	IsFacing = "is_facing",
+	/// What made an explosion (only on `explosion`).
+	CausedBy = "caused_by",
 	/// The dimension is a given one.
 	DimensionIs = "dimension_is",
 	/// A counter compared with a number or another counter.
@@ -689,6 +736,38 @@ dispatch msm:rule_condition[block_is] to struct BlockIsCondition {
 	block: #[id="block"] string,
 	/// Defaults to `here`.
 	where?: Place,
+}
+
+/// Someone rides something.
+dispatch msm:rule_condition[is_riding] to struct IsRidingCondition {
+	/// What is ridden, by entity type; absent means anything.
+	mount?: #[id="entity_type"] string,
+	/// Defaults to `player`.
+	who?: WhoName,
+}
+
+/// A way to face.
+enum(string) Direction {
+	North = "north",
+	East = "east",
+	South = "south",
+	West = "west",
+	Up = "up",
+	Down = "down",
+}
+
+/// Something faces a way.
+dispatch msm:rule_condition[is_facing] to struct IsFacingCondition {
+	/// The way.
+	direction: Direction,
+	/// Defaults to `here`.
+	of?: FacingOf,
+}
+
+/// What made an explosion: the type of the entity that exploded (`minecraft:tnt`,
+/// `minecraft:creeper`), or `block` for a bed, a respawn anchor or `World.explode`.
+dispatch msm:rule_condition[caused_by] to struct CausedByCondition {
+	cause: ("block" | #[id="entity_type"] string),
 }
 
 /// An entity is a kind of mob.
@@ -784,12 +863,22 @@ enum(string) PlainStepKind {
 	PlayAnimation = "play_animation",
 	/// Removes the mob.
 	RemoveMob = "remove_mob",
+	/// Makes someone ride the player, the mob or the other one (B458).
+	Ride = "ride",
+	/// Makes someone get off what they ride.
+	Dismount = "dismount",
 	/// Shows, updates or hides a boss bar.
 	ShowBossBar = "show_boss_bar",
 	/// Waits before the next step.
 	Wait = "wait",
 	/// Stops the normal action (cancellable script triggers only).
 	StopNormalAction = "stop_normal_action",
+	/// Stops a block from being placed (only on `any_block_placed`).
+	StopPlacing = "stop_placing",
+	/// Stops an explosion (only on `explosion`).
+	StopExplosion = "stop_explosion",
+	/// Keeps every block safe from an explosion (only on `explosion`).
+	KeepBlocksSafe = "keep_blocks_safe",
 	/// Sets a counter.
 	SetCounter = "set_counter",
 	/// Adds to a counter.
@@ -870,12 +959,22 @@ enum(string) StepKind {
 	PlayAnimation = "play_animation",
 	/// Removes the mob.
 	RemoveMob = "remove_mob",
+	/// Makes someone ride the player, the mob or the other one (B458).
+	Ride = "ride",
+	/// Makes someone get off what they ride.
+	Dismount = "dismount",
 	/// Shows, updates or hides a boss bar.
 	ShowBossBar = "show_boss_bar",
 	/// Waits before the next step.
 	Wait = "wait",
 	/// Stops the normal action (cancellable script triggers only).
 	StopNormalAction = "stop_normal_action",
+	/// Stops a block from being placed (only on `any_block_placed`).
+	StopPlacing = "stop_placing",
+	/// Stops an explosion (only on `explosion`).
+	StopExplosion = "stop_explosion",
+	/// Keeps every block safe from an explosion (only on `explosion`).
+	KeepBlocksSafe = "keep_blocks_safe",
 	/// Sets a counter.
 	SetCounter = "set_counter",
 	/// Adds to a counter.
@@ -1231,6 +1330,30 @@ dispatch msm:rule_step[play_animation] to struct PlayAnimationStep {
 /// Removes a mob from the world without drops.
 dispatch msm:rule_step[remove_mob] to struct RemoveMobStep {
 	/// Defaults to `mob`.
+	who?: Who,
+}
+
+/// One thing to ride.
+enum(string) Mount {
+	/// The player of the trigger.
+	Player = "player",
+	/// The mob of the trigger.
+	Mob = "mob",
+	/// The other one of the trigger.
+	Other = "other",
+}
+
+/// Makes someone ride something (Script API 1.6 `Entity.ride`); nothing rides a player.
+dispatch msm:rule_step[ride] to struct RideStep {
+	/// What to ride.
+	mount: Mount,
+	/// Defaults to `player`.
+	who?: Who,
+}
+
+/// Makes someone get off what they ride.
+dispatch msm:rule_step[dismount] to struct DismountStep {
+	/// Defaults to `player`.
 	who?: Who,
 }
 

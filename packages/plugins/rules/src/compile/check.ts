@@ -14,6 +14,7 @@ import {
   type SlotSpec,
   stepById,
   type TriggerEntry,
+  triggerById,
   valueById,
   whoById,
 } from '../catalogue';
@@ -64,6 +65,8 @@ const SCOPE_ACTOR: Record<string, Actor | undefined> = {
 };
 
 const KEY = /^[a-z0-9_]{1,32}$/;
+
+const triggerLabel = (id: string): string => triggerById(id)?.label ?? id;
 
 /** Checks one rule; true when it has no error. */
 export function checkRule(
@@ -158,6 +161,8 @@ class RuleChecker {
         `"${this.trigger.label}" cannot be stopped; "Stop the normal action" works only when a player uses or breaks a block, uses an item or a mob, hurts a mob, or chats.`,
       );
     }
+    if (entry.triggers !== undefined) this.onlyFor(entry.triggers, entry.label, path);
+    if (id === 'ride') this.single(step.mount, pointer(path, 'mount'));
     this.slots(entry.slots, step, path, scope, entry.defaultWho);
     if (id === 'if') {
       this.conditions(step, path, scope);
@@ -190,9 +195,11 @@ class RuleChecker {
       return;
     }
     if (entry.needsActor !== undefined) this.actor(entry.needsActor, scope, path);
+    if (entry.triggers !== undefined) this.onlyFor(entry.triggers, entry.label, path);
     const defaultWho = id === 'mob_is' ? 'other' : undefined;
-    if (id === 'mob_is') {
-      const who = condition.who ?? 'other';
+    if (id === 'is_facing') this.facingOf(condition.of, pointer(path, 'of'), scope);
+    if (id === 'mob_is' || id === 'is_riding') {
+      const who = condition.who ?? defaultWho ?? 'player';
       if (who === 'every_player') {
         this.reporter.error(
           CODES.noSuchActor,
@@ -203,6 +210,33 @@ class RuleChecker {
       }
     }
     this.slots(entry.slots, condition, path, scope, defaultWho);
+  }
+
+  /** A step or condition made for some triggers only (B458). */
+  private onlyFor(triggers: readonly string[], label: string, path: string): void {
+    if (triggers.includes(this.trigger.id)) return;
+    this.reporter.error(
+      CODES.notForTrigger,
+      path,
+      `"${label}" works only with ${triggers.map((id) => `"${triggerLabel(id)}"`).join(' or ')}, not with "${this.trigger.label}".`,
+    );
+  }
+
+  /** "Ride" needs one thing to ride: the player, the mob or the other one. */
+  private single(value: Json | undefined, path: string): void {
+    if (value === undefined || value === 'player' || value === 'mob' || value === 'other') return;
+    this.reporter.error(
+      CODES.noSuchActor,
+      path,
+      'Pick one thing to ride: the player, the mob or the other one.',
+    );
+  }
+
+  /** Whose facing: "here" needs a place, the others an actor. */
+  private facingOf(value: Json | undefined, path: string, scope: Scope): void {
+    const of = typeof value === 'string' ? value : 'here';
+    if (of === 'here') this.here(scope, path);
+    else if (of === 'player' || of === 'mob' || of === 'other') this.actor(of, scope, path);
   }
 
   private slots(
@@ -219,11 +253,11 @@ class RuleChecker {
         case 'number':
         case 'seconds':
         case 'percent':
-          if (value !== undefined) this.value(value, at, scope);
+          if (value !== undefined) this.value(value, at, scope, false);
           break;
         case 'text':
           for (const [index, piece] of asArray(value).entries()) {
-            if (typeof piece !== 'string') this.value(piece, pointer(at, index), scope);
+            if (typeof piece !== 'string') this.value(piece, pointer(at, index), scope, true);
           }
           break;
         case 'counter': {
@@ -243,7 +277,7 @@ class RuleChecker {
     }
   }
 
-  private value(value: Json, path: string, scope: Scope): void {
+  private value(value: Json, path: string, scope: Scope, inText: boolean): void {
     if (typeof value === 'number') return;
     const object = asObject(value);
     const kind = str(object, 'value') ?? '';
@@ -257,6 +291,15 @@ class RuleChecker {
       return;
     }
     if (entry.needsActor !== undefined) this.actor(entry.needsActor, scope, path);
+    if (entry.words === true && !inText) {
+      this.reporter.error(
+        CODES.notANumber,
+        path,
+        `"${entry.label}" gives words, not a number; use it in a message or pick a number.`,
+      );
+      return;
+    }
+    if (kind === 'facing') this.facingOf(object.of, pointer(path, 'of'), scope);
     if (kind === 'counter') {
       const actor = SCOPE_ACTOR[str(object, 'scope') ?? 'world'];
       if (actor !== undefined) this.actor(actor, scope, pointer(path, 'scope'));
@@ -264,7 +307,7 @@ class RuleChecker {
     if (kind === 'math') {
       for (const side of ['a', 'b']) {
         const part = object[side];
-        if (part !== undefined) this.value(part, pointer(path, side), scope);
+        if (part !== undefined) this.value(part, pointer(path, side), scope, false);
       }
     }
   }

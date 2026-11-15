@@ -73,6 +73,13 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'rules.cannot-stop': step(
     (t) => `A rule in ${t} tries to stop something that cannot be stopped.`,
   ),
+  'rules.not-for-trigger': step(
+    (t) =>
+      `A rule in ${t} uses a step or a check that only works with another "When" (such as "Stop the placing" when a player places a block).`,
+  ),
+  'rules.not-a-number': step(
+    (t) => `A step in ${t} uses "the way it faces" where a number is needed. Use it in a message.`,
+  ),
   'rules.needs-plain': step(
     (t) => `"Light a portal" in ${t} only works in a rule without "if", "repeat" or counters.`,
   ),

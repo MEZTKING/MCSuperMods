@@ -48,10 +48,14 @@ describe('the catalogue', () => {
     expect(sorted(CATALOGUE_IDS.who)).toEqual(sorted([...enumValues('WhoName'), 'players_nearby']));
   });
 
-  it('counts 51 triggers, 39 steps, 16 conditions and 12 values', () => {
-    expect([TRIGGERS.length, STEPS.length, CONDITIONS.length, VALUES.length]).toEqual([
-      51, 39, 16, 12,
-    ]);
+  it('counts 56 triggers, 44 steps, 19 conditions, 13 values and 7 places', () => {
+    expect([
+      TRIGGERS.length,
+      STEPS.length,
+      CONDITIONS.length,
+      VALUES.length,
+      PLACES.length,
+    ]).toEqual([56, 44, 19, 13, 7]);
   });
 
   const all: [string, readonly CatalogueEntry[]][] = [
@@ -90,6 +94,7 @@ describe('the catalogue', () => {
       (trigger) => trigger.definition !== undefined && trigger.scriptEvent !== undefined,
     ).map((trigger) => [trigger.id, trigger.scriptEvent]);
     expect(Object.fromEntries(both)).toEqual({
+      command_used: 'command',
       key_pressed: 'key.pressed',
       key_released: 'key.released',
       vehicle_mounted: 'vehicle.mounted',
@@ -115,8 +120,10 @@ describe('the catalogue', () => {
   it('marks the cancellable script events of ADR 0082 D5', () => {
     expect(TRIGGERS.filter((trigger) => trigger.cancellable).map((trigger) => trigger.id)).toEqual([
       'player_chatted',
+      'explosion',
       'any_block_used',
       'any_block_broken',
+      'any_block_placed',
       'any_item_used',
       'any_mob_hurt',
       'any_mob_used',
@@ -145,6 +152,23 @@ describe('the catalogue', () => {
       set_hud: 'set_hud',
       explode: 'explode',
     });
+  });
+
+  it('limits the placing and explosion stops and "caused by" to their triggers (B458)', () => {
+    const limited = [...STEPS, ...CONDITIONS].flatMap((entry) =>
+      entry.triggers === undefined ? [] : [[entry.id, entry.triggers]],
+    );
+    expect(Object.fromEntries(limited)).toEqual({
+      stop_placing: ['any_block_placed'],
+      stop_explosion: ['explosion'],
+      keep_blocks_safe: ['explosion'],
+      caused_by: ['explosion'],
+    });
+    const ids = new Set(TRIGGERS.map((trigger) => trigger.id));
+    for (const [, triggers] of limited) for (const id of triggers ?? []) expect(ids).toContain(id);
+    expect(VALUES.filter((value) => value.words === true).map((value) => value.id)).toEqual([
+      'facing',
+    ]);
   });
 
   it('is frozen', () => {

@@ -69,6 +69,13 @@ export const RULES_COMPILE_CODES = Object.freeze({
   badKey: 'rules.bad-key',
   /** The book needs a script and the target has no script runtime (no Fabric). */
   noScripts: 'rules.no-scripts',
+  /**
+   * A step or condition made for other triggers ("Stop the placing" outside "When a player
+   * places a block", "caused by" outside "When something explodes"; B458).
+   */
+  notForTrigger: 'rules.not-for-trigger',
+  /** A reading in words ("the way it faces") where a number is needed (B458). */
+  notANumber: 'rules.not-a-number',
 });
 
 /** One of {@link RULES_COMPILE_CODES}. */

@@ -1,6 +1,7 @@
 /**
  * Value readings (ADR 0082 D2, D5), places and "who" (ADR 0082 D5) of format 1.
  */
+import { FACING_OF } from './conditions';
 import type { PlaceEntry, SlotSpec, ValueEntry, WhoEntry } from './types';
 
 const value = (
@@ -106,6 +107,15 @@ export const VALUES: readonly ValueEntry[] = Object.freeze([
     slots: [{ name: 'weapon', type: 'weapon', optional: true, prefix: 'for' }],
     needsActor: 'player',
   }),
+  // The way the block here, the player, the mob or the other one faces, in words (ADR 0096 D5).
+  value({
+    id: 'facing',
+    label: 'The way it faces',
+    sentence: 'the way {of} faces',
+    slots: [FACING_OF],
+    plain: false,
+    words: true,
+  }),
   value({
     id: 'math',
     label: 'Sums',
@@ -144,6 +154,13 @@ const place = (
 export const PLACES: readonly PlaceEntry[] = Object.freeze([
   place({ id: 'here', label: 'Here', sentence: 'here', needsHere: true }),
   place({ id: 'above_here', label: 'Above here', sentence: 'above here', needsHere: true }),
+  // One block along the facing (or axis) of the block here (ADR 0096 D5).
+  place({
+    id: 'in_front_of_here',
+    label: 'In front of here',
+    sentence: 'in front of here',
+    needsHere: true,
+  }),
   place({
     id: 'player',
     label: 'At the player',

@@ -22,6 +22,7 @@ interface Spec {
   needsActor?: StepEntry['needsActor'];
   defaultWho?: string;
   veryEasy?: boolean;
+  triggers?: readonly string[];
 }
 
 const step = (spec: Spec): StepEntry =>
@@ -36,6 +37,7 @@ const step = (spec: Spec): StepEntry =>
     logic: spec.logic ?? false,
     ...(spec.needsActor === undefined ? {} : { needsActor: spec.needsActor }),
     ...(spec.defaultWho === undefined ? {} : { defaultWho: spec.defaultWho }),
+    ...(spec.triggers === undefined ? {} : { triggers: Object.freeze([...spec.triggers]) }),
   });
 
 const COUNT: SlotSpec = { name: 'count', type: 'number', optional: true, min: 1, whole: true };
@@ -403,6 +405,23 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     slots: [WHO],
     defaultWho: 'mob',
   }),
+  // Riding (Script API 1.6 `Entity.ride` and `dismount`, B458); nothing rides a player.
+  step({
+    id: 'ride',
+    label: 'Ride something',
+    sentence: 'make {who} ride {mount}',
+    group: 'mobs',
+    slots: [WHO, { name: 'mount', type: 'who' }],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'dismount',
+    label: 'Get off',
+    sentence: 'make {who} get off what they ride',
+    group: 'mobs',
+    slots: [WHO],
+    defaultWho: 'player',
+  }),
   step({
     id: 'show_boss_bar',
     label: 'Show a boss bar',
@@ -473,6 +492,31 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     sentence: 'stop the normal action',
     group: 'logic',
     slots: [],
+  }),
+  // The placing and explosion events' own stops (ADR 0096 D3, D5).
+  step({
+    id: 'stop_placing',
+    label: 'Stop the placing',
+    sentence: 'stop the placing',
+    group: 'logic',
+    slots: [],
+    triggers: ['any_block_placed'],
+  }),
+  step({
+    id: 'stop_explosion',
+    label: 'Stop the explosion',
+    sentence: 'stop the explosion',
+    group: 'logic',
+    slots: [],
+    triggers: ['explosion'],
+  }),
+  step({
+    id: 'keep_blocks_safe',
+    label: 'Keep the blocks safe',
+    sentence: 'keep the blocks safe',
+    group: 'logic',
+    slots: [],
+    triggers: ['explosion'],
   }),
   // Counters
   step({

@@ -206,8 +206,8 @@ describe('Command Studio', () => {
     expect((screen.getByTestId('command-runs') as HTMLSelectElement).value).toBe('event');
     expect((screen.getByTestId('command-feedback') as HTMLInputElement).value).toBe('Gems given.');
     expect(within(studio).getByTestId('msm-events')).toBeTruthy();
-    // No Rules trigger for commands in the catalogue yet: the section stays out.
-    expect(screen.queryByTestId('rules-slot')).toBeNull();
+    // The Rules trigger for commands (B458) makes the Rules section appear.
+    expect(screen.getByTestId('rules-slot')).toBeTruthy();
   });
 
   it('reorders arguments as one undo step each and updates the preview', async () => {

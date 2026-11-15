@@ -106,6 +106,11 @@ const TRIGGERS = [
   'vehicle_fired',
   'vehicle_destroyed',
   'vehicle_every',
+  'player_mounted',
+  'player_dismounted',
+  'command_used',
+  'explosion',
+  'any_block_placed',
 ];
 
 /** Triggers with no subject at all (script-only player and world triggers). */
@@ -118,6 +123,9 @@ const NO_SUBJECT = new Set([
   'player_every',
   'world_started',
   'world_every',
+  'player_mounted',
+  'player_dismounted',
+  'explosion',
 ]);
 
 /** One valid case of every step of ADR 0082 D5 (logic steps included). */
@@ -205,6 +213,11 @@ const STEPS: Record<string, Json> = {
     step: 'if',
     do: [{ item: 'minecraft:torch', step: 'give_item' }],
   },
+  stop_placing: { step: 'stop_placing' },
+  stop_explosion: { step: 'stop_explosion' },
+  keep_blocks_safe: { step: 'keep_blocks_safe' },
+  ride: { mount: 'mob', step: 'ride', who: 'other' },
+  dismount: { step: 'dismount' },
   repeat: { do: [{ amount: 1, step: 'heal' }], step: 'repeat', times: 3 },
   for_each_player: {
     do: [{ step: 'show_message', text: ['Boo'] }],
@@ -229,6 +242,9 @@ const CONDITIONS: Record<string, Json> = {
   is_thundering: { condition: 'is_thundering', not: true },
   block_is: { block: 'minecraft:grass_block', condition: 'block_is', where: 'above_here' },
   mob_is: { condition: 'mob_is', mob: 'minecraft:zombie' },
+  is_riding: { condition: 'is_riding', mount: 'minecraft:horse', who: 'player' },
+  is_facing: { condition: 'is_facing', direction: 'up', of: 'here' },
+  caused_by: { cause: 'block', condition: 'caused_by' },
   dimension_is: { condition: 'dimension_is', dimension: 'minecraft:the_nether' },
   counter: {
     compare: 'more_than',
@@ -252,6 +268,7 @@ const VALUES: Record<string, Json> = {
   vehicle_fuel: { value: 'vehicle_fuel' },
   vehicle_damage: { value: 'vehicle_damage' },
   vehicle_ammo: { value: 'vehicle_ammo', weapon: 'cannon' },
+  facing: { of: 'player', value: 'facing' },
   math: { a: { max: 3, min: 1, value: 'random' }, b: 2, op: '+', value: 'math' },
 };
 
@@ -363,6 +380,34 @@ describe('rule book triggers (ADR 0082 D4)', () => {
     expect(errors(keyBook('key_held', { interval_seconds: 0.05 }))).toEqual([]);
     expect(errors(keyBook('key_held', { interval_seconds: 61 }))).not.toEqual([]);
     expect(errors(keyBook('key_released', { cooldown_seconds: 1 }))).not.toEqual([]);
+  });
+
+  it('checks the B458 conditions and steps', () => {
+    const conditionBook = (condition: Json): Json => ({
+      format: 1,
+      rules: [
+        {
+          do: [],
+          key: 'r',
+          only_if: { conditions: [condition], match: 'all' },
+          when: { trigger: 'explosion' },
+        },
+      ],
+    });
+    expect(errors(conditionBook({ cause: 'minecraft:creeper', condition: 'caused_by' }))).toEqual(
+      [],
+    );
+    expect(errors(conditionBook({ condition: 'caused_by' }))).not.toEqual([]);
+    expect(errors(conditionBook({ condition: 'is_facing', direction: 'sideways' }))).not.toEqual(
+      [],
+    );
+    expect(errors(conditionBook({ condition: 'is_facing' }))).not.toEqual([]);
+    const stepBook = (step: Json): Json => ({
+      format: 1,
+      rules: [{ do: [step], key: 'r', when: { trigger: 'player_mounted' } }],
+    });
+    expect(errors(stepBook({ step: 'ride' }))).not.toEqual([]);
+    expect(errors(stepBook({ mount: 'every_player', step: 'ride' }))).not.toEqual([]);
   });
 
   it('rejects an unknown trigger', () => {
@@ -539,7 +584,7 @@ describe('rule book steps (ADR 0082 D5)', () => {
 
   it('checks places and who', () => {
     const step = (where: Json): Json => ({ block: 'minecraft:stone', step: 'place_block', where });
-    for (const where of ['here', 'above_here', 'player', 'mob']) {
+    for (const where of ['here', 'above_here', 'in_front_of_here', 'player', 'mob']) {
       expect(errors(bookWith([step(where)]))).toEqual([]);
     }
     expect(errors(bookWith([step({ place: 'player_looking' })]))).toEqual([]);

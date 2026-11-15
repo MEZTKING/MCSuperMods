@@ -15969,6 +15969,42 @@
         }
       ]
     },
+    "::msm::rules::CausedByCondition": {
+      "fields": [
+        {
+          "key": "cause",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "block"
+                }
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "entity_type"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::ChanceCondition": {
       "fields": [
         {
@@ -16022,6 +16058,23 @@
           "key": "message_contains",
           "kind": "pair",
           "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::CommandUsedTrigger": {
+      "fields": [
+        {
+          "desc": "The project command (an `msm:command` id).",
+          "key": "subject",
+          "kind": "pair",
           "type": {
             "kind": "string",
             "lengthRange": {
@@ -16168,6 +16221,21 @@
           "desc": "An entity is a given kind of mob.",
           "identifier": "MobIs",
           "value": "mob_is"
+        },
+        {
+          "desc": "Someone rides something, or something of a kind (ADR 0096 D5).",
+          "identifier": "IsRiding",
+          "value": "is_riding"
+        },
+        {
+          "desc": "The block here, the player, the mob or the other one faces a way.",
+          "identifier": "IsFacing",
+          "value": "is_facing"
+        },
+        {
+          "desc": "What made an explosion (only on `explosion`).",
+          "identifier": "CausedBy",
+          "value": "caused_by"
         },
         {
           "desc": "The dimension is a given one.",
@@ -16420,6 +16488,51 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::Direction": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "North",
+          "value": "north"
+        },
+        {
+          "identifier": "East",
+          "value": "east"
+        },
+        {
+          "identifier": "South",
+          "value": "south"
+        },
+        {
+          "identifier": "West",
+          "value": "west"
+        },
+        {
+          "identifier": "Up",
+          "value": "up"
+        },
+        {
+          "identifier": "Down",
+          "value": "down"
+        }
+      ]
+    },
+    "::msm::rules::DismountStep": {
+      "fields": [
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::DropItemStep": {
       "fields": [
         {
@@ -16607,6 +16720,47 @@
           "optional": true,
           "type": {
             "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::FacingOf": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The block here.",
+          "identifier": "Here",
+          "value": "here"
+        },
+        {
+          "desc": "The player.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "The mob.",
+          "identifier": "Mob",
+          "value": "mob"
+        },
+        {
+          "desc": "The other one.",
+          "identifier": "Other",
+          "value": "other"
+        }
+      ]
+    },
+    "::msm::rules::FacingValue": {
+      "fields": [
+        {
+          "desc": "Defaults to `here`.",
+          "key": "of",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::FacingOf"
           }
         }
       ],
@@ -17038,6 +17192,66 @@
               "max": 3600,
               "min": 0.25
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::IsFacingCondition": {
+      "fields": [
+        {
+          "desc": "The way.",
+          "key": "direction",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Direction"
+          }
+        },
+        {
+          "desc": "Defaults to `here`.",
+          "key": "of",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::FacingOf"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::IsRidingCondition": {
+      "fields": [
+        {
+          "desc": "What is ridden, by entity type; absent means anything.",
+          "key": "mount",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "entity_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::WhoName"
           }
         }
       ],
@@ -17601,6 +17815,27 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::Mount": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The player of the trigger.",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "The mob of the trigger.",
+          "identifier": "Mob",
+          "value": "mob"
+        },
+        {
+          "desc": "The other one of the trigger.",
+          "identifier": "Other",
+          "value": "other"
+        }
+      ]
+    },
     "::msm::rules::NearbyPlayers": {
       "fields": [
         {
@@ -17905,6 +18140,11 @@
           "value": "above_here"
         },
         {
+          "desc": "One block along the facing (or axis) of the block here; nowhere when it faces no way.",
+          "identifier": "InFrontOfHere",
+          "value": "in_front_of_here"
+        },
+        {
           "desc": "At the player.",
           "identifier": "Player",
           "value": "player"
@@ -18083,6 +18323,16 @@
           "value": "remove_mob"
         },
         {
+          "desc": "Makes someone ride the player, the mob or the other one (B458).",
+          "identifier": "Ride",
+          "value": "ride"
+        },
+        {
+          "desc": "Makes someone get off what they ride.",
+          "identifier": "Dismount",
+          "value": "dismount"
+        },
+        {
           "desc": "Shows, updates or hides a boss bar.",
           "identifier": "ShowBossBar",
           "value": "show_boss_bar"
@@ -18096,6 +18346,21 @@
           "desc": "Stops the normal action (cancellable script triggers only).",
           "identifier": "StopNormalAction",
           "value": "stop_normal_action"
+        },
+        {
+          "desc": "Stops a block from being placed (only on `any_block_placed`).",
+          "identifier": "StopPlacing",
+          "value": "stop_placing"
+        },
+        {
+          "desc": "Stops an explosion (only on `explosion`).",
+          "identifier": "StopExplosion",
+          "value": "stop_explosion"
+        },
+        {
+          "desc": "Keeps every block safe from an explosion (only on `explosion`).",
+          "identifier": "KeepBlocksSafe",
+          "value": "keep_blocks_safe"
         },
         {
           "desc": "Sets a counter.",
@@ -18532,6 +18797,30 @@
               "kind": 0,
               "max": 50
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::RideStep": {
+      "fields": [
+        {
+          "desc": "What to ride.",
+          "key": "mount",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Mount"
+          }
+        },
+        {
+          "desc": "Defaults to `player`.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
           }
         }
       ],
@@ -19236,6 +19525,16 @@
           "value": "remove_mob"
         },
         {
+          "desc": "Makes someone ride the player, the mob or the other one (B458).",
+          "identifier": "Ride",
+          "value": "ride"
+        },
+        {
+          "desc": "Makes someone get off what they ride.",
+          "identifier": "Dismount",
+          "value": "dismount"
+        },
+        {
           "desc": "Shows, updates or hides a boss bar.",
           "identifier": "ShowBossBar",
           "value": "show_boss_bar"
@@ -19249,6 +19548,21 @@
           "desc": "Stops the normal action (cancellable script triggers only).",
           "identifier": "StopNormalAction",
           "value": "stop_normal_action"
+        },
+        {
+          "desc": "Stops a block from being placed (only on `any_block_placed`).",
+          "identifier": "StopPlacing",
+          "value": "stop_placing"
+        },
+        {
+          "desc": "Stops an explosion (only on `explosion`).",
+          "identifier": "StopExplosion",
+          "value": "stop_explosion"
+        },
+        {
+          "desc": "Keeps every block safe from an explosion (only on `explosion`).",
+          "identifier": "KeepBlocksSafe",
+          "value": "keep_blocks_safe"
         },
         {
           "desc": "Sets a counter.",
@@ -19546,6 +19860,21 @@
           "value": "player_every"
         },
         {
+          "desc": "A player gets on something: a mob, a boat, a minecart or a vehicle (B458).",
+          "identifier": "PlayerMounted",
+          "value": "player_mounted"
+        },
+        {
+          "desc": "A player gets off what they rode.",
+          "identifier": "PlayerDismounted",
+          "value": "player_dismounted"
+        },
+        {
+          "desc": "A player (or the source of an `execute as`) types a project command (ADR 0096 D5).",
+          "identifier": "CommandUsed",
+          "value": "command_used"
+        },
+        {
           "desc": "A player presses a project key bind (ADR 0088 D6).",
           "identifier": "KeyPressed",
           "value": "key_pressed"
@@ -19596,6 +19925,11 @@
           "value": "world_every"
         },
         {
+          "desc": "Something explodes: TNT, a creeper, a fireball, a bed, a respawn anchor (ADR 0096 D3).",
+          "identifier": "Explosion",
+          "value": "explosion"
+        },
+        {
           "desc": "A player uses any block, or any block of one kind.",
           "identifier": "AnyBlockUsed",
           "value": "any_block_used"
@@ -19604,6 +19938,11 @@
           "desc": "A player breaks any block, or any block of one kind.",
           "identifier": "AnyBlockBroken",
           "value": "any_block_broken"
+        },
+        {
+          "desc": "A player places any block, or any block of one kind (ADR 0096 D3).",
+          "identifier": "AnyBlockPlaced",
+          "value": "any_block_placed"
         },
         {
           "desc": "A player uses any item, or any item of one kind.",
@@ -19712,6 +20051,11 @@
           "desc": "The rounds loaded in one of the vehicle's weapons (as `VehicleFuel` says which vehicle).",
           "identifier": "VehicleAmmo",
           "value": "vehicle_ammo"
+        },
+        {
+          "desc": "The way the block here, the player, the mob or the other one faces, in words (north,\neast, south, west, up or down; ADR 0096 D5). Text slots only: the plugin refuses it in a\nnumber.",
+          "identifier": "Facing",
+          "value": "facing"
         },
         {
           "desc": "Two numbers added, taken away, multiplied or divided.",
@@ -22027,6 +22371,10 @@
         "kind": "reference",
         "path": "::msm::rules::BlockIsCondition"
       },
+      "caused_by": {
+        "kind": "reference",
+        "path": "::msm::rules::CausedByCondition"
+      },
       "chance": {
         "kind": "reference",
         "path": "::msm::rules::ChanceCondition"
@@ -22038,6 +22386,14 @@
       "dimension_is": {
         "kind": "reference",
         "path": "::msm::rules::DimensionIsCondition"
+      },
+      "is_facing": {
+        "kind": "reference",
+        "path": "::msm::rules::IsFacingCondition"
+      },
+      "is_riding": {
+        "kind": "reference",
+        "path": "::msm::rules::IsRidingCondition"
       },
       "mob_is": {
         "kind": "reference",
@@ -22096,6 +22452,10 @@
       "add_to_counter": {
         "kind": "reference",
         "path": "::msm::rules::CounterStep"
+      },
+      "dismount": {
+        "kind": "reference",
+        "path": "::msm::rules::DismountStep"
       },
       "drop_item": {
         "kind": "reference",
@@ -22164,6 +22524,10 @@
       "remove_mob": {
         "kind": "reference",
         "path": "::msm::rules::RemoveMobStep"
+      },
+      "ride": {
+        "kind": "reference",
+        "path": "::msm::rules::RideStep"
       },
       "run_command": {
         "kind": "reference",
@@ -22239,6 +22603,10 @@
         "kind": "reference",
         "path": "::msm::rules::AnyBlockTrigger"
       },
+      "any_block_placed": {
+        "kind": "reference",
+        "path": "::msm::rules::AnyBlockTrigger"
+      },
       "any_block_used": {
         "kind": "reference",
         "path": "::msm::rules::AnyBlockTrigger"
@@ -22290,6 +22658,10 @@
       "block_used": {
         "kind": "reference",
         "path": "::msm::rules::BlockTrigger"
+      },
+      "command_used": {
+        "kind": "reference",
+        "path": "::msm::rules::CommandUsedTrigger"
       },
       "container_closed": {
         "kind": "reference",
@@ -22425,6 +22797,10 @@
         "kind": "reference",
         "path": "::msm::rules::CounterValue"
       },
+      "facing": {
+        "kind": "reference",
+        "path": "::msm::rules::FacingValue"
+      },
       "math": {
         "kind": "reference",
         "path": "::msm::rules::MathValue"
@@ -22443,5 +22819,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:f617f656637f9fad449e0da2a777977c1d5529bbe0771f2cf2686ebc28cf1023"
+  "ref": "msm-mcdoc:sha256:d8a4266a49ffacc4dd58276fa4f82d87c89cfcf83c49de60e64ebf630c0cabac"
 }

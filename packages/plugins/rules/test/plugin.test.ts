@@ -34,6 +34,7 @@ describe('@msm/plugin-rules', () => {
     expect(RULES_EXPANDER_KINDS).toEqual([
       'msm:rules',
       'msm:block',
+      'msm:command',
       'msm:effect',
       'msm:entity',
       'msm:item',
@@ -53,6 +54,8 @@ describe('@msm/plugin-rules', () => {
     expect(RULES_PROBLEM_CODES).toContain('rules.duplicate-key');
     expect(RULES_PROBLEM_CODES).toContain('rules.unknown-step');
     expect(RULES_PROBLEM_CODES).toContain('rules.unknown-hud');
-    expect(RULES_PROBLEM_CODES).toHaveLength(23);
+    expect(RULES_PROBLEM_CODES).toContain('rules.not-for-trigger');
+    expect(RULES_PROBLEM_CODES).toContain('rules.not-a-number');
+    expect(RULES_PROBLEM_CODES).toHaveLength(25);
   });
 });

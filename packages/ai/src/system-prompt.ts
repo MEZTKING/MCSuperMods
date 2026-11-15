@@ -51,6 +51,9 @@ export const RULES_PROMPT_IDS = Object.freeze({
     'player_chatted',
     'player_changed_dimension',
     'player_every',
+    'player_mounted',
+    'player_dismounted',
+    'command_used',
     'key_pressed',
     'key_released',
     'key_held',
@@ -61,8 +64,10 @@ export const RULES_PROMPT_IDS = Object.freeze({
     'vehicle_every',
     'world_started',
     'world_every',
+    'explosion',
     'any_block_used',
     'any_block_broken',
+    'any_block_placed',
     'any_item_used',
     'any_mob_hurt',
     'any_mob_died',
@@ -99,12 +104,17 @@ export const RULES_PROMPT_IDS = Object.freeze({
     'spawn_particles',
     'play_animation',
     'remove_mob',
+    'ride',
+    'dismount',
     'show_boss_bar',
     'if',
     'repeat',
     'for_each_player',
     'wait',
     'stop_normal_action',
+    'stop_placing',
+    'stop_explosion',
+    'keep_blocks_safe',
     'set_counter',
     'add_to_counter',
     'take_from_counter',
@@ -124,6 +134,9 @@ export const RULES_PROMPT_IDS = Object.freeze({
     'is_thundering',
     'block_is',
     'mob_is',
+    'is_riding',
+    'is_facing',
+    'caused_by',
     'dimension_is',
     'counter',
   ]),
@@ -139,9 +152,18 @@ export const RULES_PROMPT_IDS = Object.freeze({
     'vehicle_fuel',
     'vehicle_damage',
     'vehicle_ammo',
+    'facing',
     'math',
   ]),
-  places: Object.freeze(['here', 'above_here', 'player', 'mob', 'player_looking', 'offset']),
+  places: Object.freeze([
+    'here',
+    'above_here',
+    'in_front_of_here',
+    'player',
+    'mob',
+    'player_looking',
+    'offset',
+  ]),
   who: Object.freeze(['player', 'mob', 'other', 'every_player', 'players_nearby']),
 });
 
@@ -167,8 +189,10 @@ export const RULES_PROMPT_PLAIN_STEPS = Object.freeze([
 /** The cancellable triggers, where `stop_normal_action` works. */
 export const RULES_PROMPT_CANCELLABLE = Object.freeze([
   'player_chatted',
+  'explosion',
   'any_block_used',
   'any_block_broken',
+  'any_block_placed',
   'any_item_used',
   'any_mob_hurt',
   'any_mob_used',
@@ -186,7 +210,7 @@ export const RULES_PROMPT_TEMPLATES = Object.freeze([
 
 const list = (ids: readonly string[]): string => ids.join(', ');
 
-const RULES = `- Rules: prefer a rule book for behaviour. A rule book is an "msm:rules" element, behaviour without code that reads as sentences in MSM's Rule book: { "format": 1, "counters": [{ "name", "scope": "player" | "mob" | "world", "start" }], "rules": [{ "key" (a to z, 0 to 9 and _, at most 32 characters, unique in the book), "name", "enabled", "when": { "trigger", "subject", "options" }, "only_if": { "match": "all" | "any", "conditions": [{ "condition", "not", ... }] }, "do": [{ "step", ... }] }] }. When the user asks for something to happen (a block used, broken or stepped on, an item used, a mob hurt or dying, a player joining, every few seconds), write a rule book rather than a script, and rather than hand-made events whenever it needs logic (a condition, a chance, a counter, a repeat or a wait). Write a script only for what the catalogue below cannot do. Put new rules in the project's book, "<namespace>:rules", creating it when there is none. Never add the trigger component or the event a rule needs to its subject yourself, and never write the event "<subject id>_rules_<trigger>" or a "<namespace>:rules/..." script by hand: MSM compiles the books when it checks and exports, and a hand-made event on the same trigger runs first. Catalogue ids (use no others): triggers ${list(RULES_PROMPT_IDS.triggers)}; steps ${list(RULES_PROMPT_IDS.steps)}; conditions ${list(RULES_PROMPT_IDS.conditions)}; values ${list(RULES_PROMPT_IDS.values)} (a number field takes a number or { "value": <id>, ... }, "math" at most two deep; a text field takes a list of strings and values); places ${list(RULES_PROMPT_IDS.places)} (a name, or { "place": "player_looking" | "offset", ... }); who ${list(RULES_PROMPT_IDS.who)}. Block, container, machine and portal triggers need a project block as subject (containers and machines with their component), item and thrown triggers a project item, mob triggers a project mob, effect triggers a project effect, key triggers a project key bind and vehicle triggers a project vehicle (\"vehicle_fired\" needs a weapon); "any_" triggers take a vanilla or project id, or no subject for every one; player and world triggers have none. A trigger has only its own actors (a random tick has no player), trigger options are in seconds ("interval_seconds", "cooldown_seconds") and are shared by every rule on one subject and trigger, and stop_normal_action works only on ${list(RULES_PROMPT_CANCELLABLE)}. Plain or script: a rule on a project subject with no "only_if" whose every step is ${list(RULES_PROMPT_PLAIN_STEPS)}, with plain numbers and an actor the trigger has, is plain and becomes events on the subject; any other rule (and every rule sharing its subject and trigger) compiles to a generated script, which the user can read and take over with "Copy as my own script". Limits: steps nest at most 3 levels deep, a rule has at most 50 steps, repeat runs at most 100 times, a radius is at most 64 blocks, explosion power 0 to 10 and drop_item at most 64. Tell the user plainly: a rule that gives a thing a new trigger needs a game restart, while changes to rules on a trigger it already has reload; rules need the Fabric mod jar, and vanilla packs carry none ("rules.needs-jar"); rules that need a script are left out of the Java project export ("rules.not-in-eject"), while plain rules are in it as events. Key binds and HUD elements need the jar too ("controls.needs-jar"), as do vehicles ("vehicles.needs-jar"); all three are left out of the Java project export ("export.not-in-eject"). Prefer the Rules templates (${list(RULES_PROMPT_TEMPLATES)}) and read template_data or kind_schema for "msm:rules" before writing a book; run_checks compiles the books, and their problems are "rules." codes that point at the rule and step.`;
+const RULES = `- Rules: prefer a rule book for behaviour. A rule book is an "msm:rules" element, behaviour without code that reads as sentences in MSM's Rule book: { "format": 1, "counters": [{ "name", "scope": "player" | "mob" | "world", "start" }], "rules": [{ "key" (a to z, 0 to 9 and _, at most 32 characters, unique in the book), "name", "enabled", "when": { "trigger", "subject", "options" }, "only_if": { "match": "all" | "any", "conditions": [{ "condition", "not", ... }] }, "do": [{ "step", ... }] }] }. When the user asks for something to happen (a block used, broken or stepped on, an item used, a mob hurt or dying, a player joining, every few seconds), write a rule book rather than a script, and rather than hand-made events whenever it needs logic (a condition, a chance, a counter, a repeat or a wait). Write a script only for what the catalogue below cannot do. Put new rules in the project's book, "<namespace>:rules", creating it when there is none. Never add the trigger component or the event a rule needs to its subject yourself, and never write the event "<subject id>_rules_<trigger>" or a "<namespace>:rules/..." script by hand: MSM compiles the books when it checks and exports, and a hand-made event on the same trigger runs first. Catalogue ids (use no others): triggers ${list(RULES_PROMPT_IDS.triggers)}; steps ${list(RULES_PROMPT_IDS.steps)}; conditions ${list(RULES_PROMPT_IDS.conditions)}; values ${list(RULES_PROMPT_IDS.values)} (a number field takes a number or { "value": <id>, ... }, "math" at most two deep; a text field takes a list of strings and values); places ${list(RULES_PROMPT_IDS.places)} (a name, or { "place": "player_looking" | "offset", ... }); who ${list(RULES_PROMPT_IDS.who)}. Block, container, machine and portal triggers need a project block as subject (containers and machines with their component), item and thrown triggers a project item, mob triggers a project mob, effect triggers a project effect, key triggers a project key bind and vehicle triggers a project vehicle ("vehicle_fired" needs a weapon), "command_used" a project command ("msm:command"; one that runs a function gets its rules as a script); "any_" triggers take a vanilla or project id, or no subject for every one; player and world triggers have none. A trigger has only its own actors (a random tick has no player), trigger options are in seconds ("interval_seconds", "cooldown_seconds") and are shared by every rule on one subject and trigger, and stop_normal_action works only on ${list(RULES_PROMPT_CANCELLABLE)}; stop_placing works only on "any_block_placed", stop_explosion, keep_blocks_safe and the condition caused_by (a mob id or "block") only on "explosion"; the value "facing" is words (north to down) for text fields and is_facing, never a number. Plain or script: a rule on a project subject with no "only_if" whose every step is ${list(RULES_PROMPT_PLAIN_STEPS)}, with plain numbers and an actor the trigger has, is plain and becomes events on the subject; any other rule (and every rule sharing its subject and trigger) compiles to a generated script, which the user can read and take over with "Copy as my own script". Limits: steps nest at most 3 levels deep, a rule has at most 50 steps, repeat runs at most 100 times, a radius is at most 64 blocks, explosion power 0 to 10 and drop_item at most 64. Tell the user plainly: a rule that gives a thing a new trigger needs a game restart, while changes to rules on a trigger it already has reload; rules need the Fabric mod jar, and vanilla packs carry none ("rules.needs-jar"); rules that need a script are left out of the Java project export ("rules.not-in-eject"), while plain rules are in it as events. Key binds and HUD elements need the jar too ("controls.needs-jar"), as do vehicles ("vehicles.needs-jar"); all three are left out of the Java project export ("export.not-in-eject"). Prefer the Rules templates (${list(RULES_PROMPT_TEMPLATES)}) and read template_data or kind_schema for "msm:rules" before writing a book; run_checks compiles the books, and their problems are "rules." codes that point at the rule and step.`;
 
 /**
  * The vehicle, key bind and HUD templates and the vehicle flows the prompt names (ADR 0091 D8).

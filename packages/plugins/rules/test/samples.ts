@@ -64,6 +64,9 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
   player_chatted: { options: { message_contains: 'Hello' } },
   player_changed_dimension: {},
   player_every: { options: { interval_seconds: 2 } },
+  player_mounted: {},
+  player_dismounted: {},
+  command_used: { subject: 'demo:hello' },
   key_pressed: { options: { cooldown_seconds: 1.5 }, subject: 'demo:dash' },
   key_released: { subject: 'demo:dash' },
   key_held: { options: { interval_seconds: 0.25 }, subject: 'demo:dash' },
@@ -74,8 +77,10 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
   vehicle_every: { options: { interval_seconds: 2 }, subject: 'demo:tank' },
   world_started: {},
   world_every: { options: { interval_seconds: 10 } },
+  explosion: {},
   any_block_used: { subject: 'minecraft:stone' },
   any_block_broken: { subject: 'minecraft:stone' },
+  any_block_placed: { subject: 'minecraft:tnt' },
   any_item_used: { subject: 'minecraft:stick' },
   any_mob_hurt: { subject: 'minecraft:zombie' },
   any_mob_died: {},
@@ -244,6 +249,14 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
     trigger: 'mob_every',
     steps: [CHIME, { seconds: 2, step: 'wait' }, { animation: 'wave', step: 'play_animation' }],
   },
+  stop_placing: {
+    trigger: 'any_block_placed',
+    steps: [{ step: 'stop_placing' }, { step: 'show_message', text: ['Not here.'] }],
+  },
+  stop_explosion: { trigger: 'explosion', steps: [{ step: 'stop_explosion' }] },
+  keep_blocks_safe: { trigger: 'explosion', steps: [{ step: 'keep_blocks_safe' }, CHIME] },
+  ride: { trigger: 'mob_used', steps: [{ mount: 'mob', step: 'ride' }] },
+  dismount: { trigger: 'player_mounted', steps: [{ step: 'dismount' }] },
   stop_normal_action: {
     trigger: 'any_block_broken',
     steps: [{ step: 'stop_normal_action' }, { step: 'show_message', text: ['This stone stays.'] }],
@@ -263,7 +276,10 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
 };
 
 /** The trigger and condition of each condition's sample. */
-const CONDITION_SAMPLES: Record<string, { trigger: string; condition: JsonObject }> = {
+const CONDITION_SAMPLES: Record<
+  string,
+  { trigger: string; condition: JsonObject; steps?: Json[] }
+> = {
   player_sneaking: { trigger: 'block_used', condition: {} },
   player_in_creative: { trigger: 'block_used', condition: { not: true } },
   player_holding: { trigger: 'block_used', condition: { hand: 'either', item: 'demo:wand' } },
@@ -281,6 +297,13 @@ const CONDITION_SAMPLES: Record<string, { trigger: string; condition: JsonObject
     condition: { block: 'minecraft:grass_block', where: { offset: [0, -1, 0], place: 'offset' } },
   },
   mob_is: { trigger: 'item_hit_mob', condition: { mob: 'minecraft:zombie' } },
+  is_riding: { trigger: 'player_every', condition: { mount: 'minecraft:horse' } },
+  is_facing: { trigger: 'block_used', condition: { direction: 'north' } },
+  caused_by: {
+    trigger: 'explosion',
+    condition: { cause: 'minecraft:creeper' },
+    steps: [{ step: 'keep_blocks_safe' }],
+  },
   dimension_is: { trigger: 'block_used', condition: { dimension: 'minecraft:the_nether' } },
   counter: {
     trigger: 'block_used',
@@ -305,6 +328,7 @@ const VALUE_SAMPLES: Record<string, JsonObject> = {
   vehicle_fuel: { value: 'vehicle_fuel' },
   vehicle_damage: { value: 'vehicle_damage' },
   vehicle_ammo: { value: 'vehicle_ammo' },
+  facing: { of: 'here', value: 'facing' },
   math: {
     a: { counter: 'clicks', scope: 'player', value: 'counter' },
     b: 2,
@@ -316,6 +340,7 @@ const VALUE_SAMPLES: Record<string, JsonObject> = {
 const PLACE_SAMPLES: Record<string, { trigger: string; where: Json }> = {
   here: { trigger: 'block_used', where: 'here' },
   above_here: { trigger: 'block_used', where: 'above_here' },
+  in_front_of_here: { trigger: 'block_used', where: 'in_front_of_here' },
   player: { trigger: 'block_used', where: 'player' },
   mob: { trigger: 'mob_used', where: 'mob' },
   player_looking: { trigger: 'item_used', where: { distance: 10, place: 'player_looking' } },
@@ -417,6 +442,61 @@ const LISTENER_SAMPLES: readonly Sample[] = [
       },
     ],
   },
+  // B458: a command's rules that are not plain go through `run_script` in its event; a command
+  // that runs a function listens to the Script API 1.6 `command` event.
+  {
+    name: 'listener-command_used',
+    rules: [
+      {
+        do: [{ step: 'show_message', text: ['You face ', { of: 'player', value: 'facing' }] }],
+        key: 'sample',
+        when: { subject: 'demo:hello', trigger: 'command_used' },
+      },
+      {
+        do: [CHIME],
+        key: 'warp',
+        when: { subject: 'demo:warp', trigger: 'command_used' },
+      },
+    ],
+  },
+  {
+    name: 'listener-explosion',
+    rules: [
+      {
+        do: [{ step: 'keep_blocks_safe' }],
+        key: 'sample',
+        only_if: {
+          conditions: [{ cause: 'minecraft:creeper', condition: 'caused_by' }],
+          match: 'all',
+        },
+        when: { trigger: 'explosion' },
+      },
+      {
+        do: [{ step: 'stop_explosion' }],
+        key: 'beds',
+        only_if: { conditions: [{ cause: 'block', condition: 'caused_by' }], match: 'all' },
+        when: { trigger: 'explosion' },
+      },
+    ],
+  },
+  {
+    name: 'listener-conveyor',
+    rules: [
+      {
+        do: [{ step: 'teleport', to: 'in_front_of_here' }],
+        key: 'sample',
+        only_if: {
+          conditions: [{ condition: 'is_facing', direction: 'east', of: 'here' }],
+          match: 'all',
+        },
+        when: {
+          options: { cooldown_seconds: 0.5 },
+          subject: 'demo:plain_block',
+          trigger: 'block_stepped_on',
+        },
+      },
+    ],
+  },
 ];
 
 /** Every sample, named `<section>-<id>`. */
@@ -438,7 +518,7 @@ export const SAMPLES: readonly Sample[] = Object.freeze([
     return {
       name: `condition-${condition.id}`,
       rules: [
-        rule(when(sample.trigger), [GIVE], {
+        rule(when(sample.trigger), sample.steps ?? [GIVE], {
           conditions: [{ ...sample.condition, condition: condition.id }],
           match: 'all',
         }),

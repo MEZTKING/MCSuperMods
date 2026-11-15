@@ -113,6 +113,13 @@ export const PROJECT: readonly Element[] = Object.freeze([
     type: 'bar',
     value: { source: 'set' },
   }),
+  // Commands (ADR 0096 D1, B458): one with nothing to run yet, one that runs a function.
+  element('msm:command', 'demo:hello', { name: 'hello', permission: 0 }),
+  element('msm:command', 'demo:warp', {
+    name: 'warp',
+    permission: 2,
+    function: 'demo:reward',
+  }),
 ]);
 
 /** Ids the registry index treats as project ids. */
@@ -201,6 +208,7 @@ const SCHEMA_OF_KIND: Record<string, string> = {
   'msm:key_bind': MSM_SCHEMA_REFS.keyBind,
   'msm:vehicle': MSM_SCHEMA_REFS.vehicle,
   'msm:hud': MSM_SCHEMA_REFS.hud,
+  'msm:command': MSM_SCHEMA_REFS.command,
   'msm:rules': MSM_SCHEMA_REFS.rules,
 };
 

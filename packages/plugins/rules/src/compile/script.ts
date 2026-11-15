@@ -1,7 +1,9 @@
 /**
  * The TypeScript generator of Rules (ADR 0082 D3): one script per book that needs one, written
  * against the Script API (`msm-runtime.d.ts`; 1.4 members from B370; 1.5's key and vehicle
- * events, HUD and `Vehicle` members from B421 for the B424 triggers, steps and values) so the
+ * events, HUD and `Vehicle` members from B421 for the B424 triggers, steps and values; 1.6's
+ * `block.place`, `world.explosion` and `command` events and `Entity.vehicle`, `ride` and
+ * `dismount` from B455 for the B458 triggers, steps and conditions) so the
  * content jar exporter transpiles it to ES5 like any script (ADR 0031 D2).
  *
  * The code is meant to be read: a header, small named helpers (only those used), one handler per
@@ -284,6 +286,86 @@ const HELPERS: readonly { name: string; uses?: readonly string[]; lines: readonl
     ],
   },
   {
+    name: 'rideChange',
+    lines: [
+      '/** What each player rode at the last look, by trigger and player (Script API 1.6). */',
+      'const ridingBefore: { [key: string]: Entity | undefined } = {};',
+      '/** What a player got on (`on`) or off since the last look for `slot`, else undefined. */',
+      'const rideChange = (slot: string, player: Player, on: boolean): Entity | undefined => {',
+      '  const key = slot + " " + player.uuid;',
+      '  const before = ridingBefore[key];',
+      '  const now = player.vehicle;',
+      '  if (now === undefined) delete ridingBefore[key];',
+      '  else ridingBefore[key] = now;',
+      '  const was = before === undefined ? "" : before.uuid;',
+      '  const is = now === undefined ? "" : now.uuid;',
+      '  if (was === is) return undefined;',
+      '  return on ? now : before;',
+      '};',
+    ],
+  },
+  {
+    name: 'riding',
+    lines: [
+      '/** Whether an entity rides something, or something of a type (Script API 1.6). */',
+      'const riding = (entity: Entity | undefined, type: string | undefined): boolean => {',
+      '  const ridden = entity === undefined ? undefined : entity.vehicle;',
+      '  return ridden !== undefined && (type === undefined || ridden.type === type);',
+      '};',
+    ],
+  },
+  {
+    name: 'entityFacing',
+    lines: [
+      '/** The way an entity faces, north, east, south or west, from where it looks; "" without one. */',
+      'const entityFacing = (entity: Entity | undefined): string => {',
+      '  if (entity === undefined) return "";',
+      '  const look = entity.look;',
+      '  if (Math.abs(look.x) > Math.abs(look.z)) return look.x > 0 ? "east" : "west";',
+      '  return look.z > 0 ? "south" : "north";',
+      '};',
+    ],
+  },
+  {
+    name: 'blockFacing',
+    uses: ['blockPos'],
+    lines: [
+      '/**',
+      ' * The way the block at a place faces: its `facing`, else its `axis` (x is east, y up and',
+      ' * z south); "" when it has neither.',
+      ' */',
+      'const blockFacing = (world: World, pos: Pos | undefined): string => {',
+      '  if (pos === undefined) return "";',
+      '  const state = world.getBlock(blockPos(pos));',
+      '  const facing = /[[,]facing=([a-z]+)/.exec(state);',
+      '  if (facing !== null) return String(facing[1]);',
+      '  const axis = /[[,]axis=([xyz])/.exec(state);',
+      '  if (axis === null) return "";',
+      '  return axis[1] === "x" ? "east" : axis[1] === "y" ? "up" : "south";',
+      '};',
+    ],
+  },
+  {
+    name: 'inFront',
+    uses: ['blockFacing'],
+    lines: [
+      '/** One block along each way a block can face. */',
+      'const FACING_STEPS: { [facing: string]: [number, number, number] } = {',
+      '  north: [0, 0, -1],',
+      '  east: [1, 0, 0],',
+      '  south: [0, 0, 1],',
+      '  west: [-1, 0, 0],',
+      '  up: [0, 1, 0],',
+      '  down: [0, -1, 0],',
+      '};',
+      '/** One block along the facing of the block at a place; undefined when it faces no way. */',
+      'const inFront = (world: World, pos: Pos): Pos | undefined => {',
+      '  const step = FACING_STEPS[blockFacing(world, pos)];',
+      '  return step === undefined ? undefined : pos.offset(step[0], step[1], step[2]);',
+      '};',
+    ],
+  },
+  {
     name: 'launch',
     lines: [
       '/** Pushes an entity as the `launch` action does. */',
@@ -505,8 +587,46 @@ export class ScriptBuilder {
           'const player: Player | undefined = e.player;',
         );
         break;
+      case 'block.place':
+        if (subject !== undefined) head.push(`if (e.block !== ${literal(subject)}) return;`);
+        head.push(
+          'const world = e.world;',
+          'const here = e.pos.offset(0.5, 0.5, 0.5);',
+          'const player: Player | undefined = e.player;',
+        );
+        break;
+      case 'world.explosion':
+        head.push(
+          'const world = e.world;',
+          'const here = e.pos;',
+          'const other: Entity | undefined = e.source;',
+        );
+        break;
+      case 'command':
+        // A command that runs a function (B458): no place without a source entity.
+        if (subject !== undefined) head.push(`if (e.id !== ${literal(subject)}) return;`);
+        head.push(
+          'const source = e.source;',
+          'if (source === undefined) return;',
+          'const world = e.world;',
+          'const here = source.pos;',
+          'const player: Player | undefined = source.asPlayer();',
+        );
+        break;
       case 'player.tick':
         extra = `, { interval: ${Math.max(5, interval)} }`;
+        if (trigger.id === 'player_mounted' || trigger.id === 'player_dismounted') {
+          // Getting on or off: a look at the player's vehicle every quarter of a second.
+          extra = ', { interval: 5 }';
+          head.push(
+            `const other: Entity | undefined = ${this.use('rideChange')}(${literal(trigger.id)}, e.player, ${trigger.id === 'player_mounted'});`,
+            'if (other === undefined) return;',
+            'const world = e.world;',
+            'const here = e.player.pos;',
+            'const player: Player | undefined = e.player;',
+          );
+          break;
+        }
         if (trigger.subject === 'vehicle') {
           // Every N seconds while driven: the driver's tick, in a vehicle of the subject's type.
           head.push(
@@ -555,9 +675,13 @@ export class ScriptBuilder {
     this.use('rule');
     const helpers: string[] = [];
     const needed = new Set(this.used);
-    for (const helper of HELPERS) {
-      if (needed.has(helper.name))
-        for (const dependency of helper.uses ?? []) needed.add(dependency);
+    // Dependencies of dependencies too (`inFront` uses `blockFacing`, which uses `blockPos`).
+    for (let size = -1; size !== needed.size; ) {
+      size = needed.size;
+      for (const helper of HELPERS) {
+        if (needed.has(helper.name))
+          for (const dependency of helper.uses ?? []) needed.add(dependency);
+      }
     }
     for (const helper of HELPERS) {
       if (needed.has(helper.name)) helpers.push(...helper.lines, '');
@@ -662,6 +786,9 @@ class RuleWriter {
         const weapon = str(object, 'weapon');
         return `${this.use('vehicleAmmo')}(${this.vehicle()}, ${weapon === undefined ? '0' : literal(weapon)})`;
       }
+      case 'facing':
+        // A reading in words: the checker keeps it out of numbers (B458).
+        return '0';
       case 'math': {
         const a = this.number(object?.a, env);
         const b = this.number(object?.b, env);
@@ -707,12 +834,21 @@ class RuleWriter {
   }
 
   text(value: Json | undefined, env: Env): string {
-    const pieces = asArray(value).map((piece) =>
-      typeof piece === 'string'
-        ? literal(piece)
-        : `${this.use('text')}(${this.number(piece, env)})`,
-    );
+    const pieces = asArray(value).map((piece) => {
+      if (typeof piece === 'string') return literal(piece);
+      const object = asObject(piece);
+      if (str(object, 'value') === 'facing') return this.facing(object?.of);
+      return `${this.use('text')}(${this.number(piece, env)})`;
+    });
     return pieces.length === 0 ? '""' : pieces.join(' + ');
+  }
+
+  /** The way the block here, the player, the mob or the other one faces, as a string. */
+  private facing(of: Json | undefined): string {
+    if (of === 'player' || of === 'mob' || of === 'other') {
+      return `${this.use('entityFacing')}(${of})`;
+    }
+    return `${this.use('blockFacing')}(world, here)`;
   }
 
   // Places and who
@@ -721,6 +857,7 @@ class RuleWriter {
     const where = value ?? 'here';
     if (where === 'here') return 'here';
     if (where === 'above_here') return 'here.offset(0, 1, 0)';
+    if (where === 'in_front_of_here') return `${this.use('inFront')}(world, here)`;
     if (where === 'player') return `${this.use('posOf')}(player)`;
     if (where === 'mob') return `${this.use('posOf')}(mob)`;
     const object = asObject(where);
@@ -815,6 +952,19 @@ class RuleWriter {
       case 'mob_is': {
         const who = str(condition, 'who') ?? 'other';
         return `${this.use('isType')}(${who === 'player' || who === 'mob' ? who : 'other'}, ${literal(str(condition, 'mob') ?? '')})`;
+      }
+      case 'is_riding': {
+        const who = str(condition, 'who') ?? 'player';
+        const mount = str(condition, 'mount');
+        return `${this.use('riding')}(${who === 'mob' || who === 'other' ? who : 'player'}, ${mount === undefined ? 'undefined' : literal(mount)})`;
+      }
+      case 'is_facing':
+        return `${this.facing(condition.of)} === ${literal(str(condition, 'direction') ?? 'north')}`;
+      case 'caused_by': {
+        const cause = str(condition, 'cause') ?? 'block';
+        return cause === 'block'
+          ? 'other === undefined'
+          : `${this.use('isType')}(other, ${literal(cause)})`;
       }
       case 'dimension_is':
         return `world.dimension === ${literal(str(condition, 'dimension') ?? '')}`;
@@ -1117,7 +1267,20 @@ class RuleWriter {
         ];
       }
       case 'stop_normal_action':
+      case 'stop_placing':
+      case 'stop_explosion':
         return ['e.cancel();'];
+      case 'keep_blocks_safe':
+        // Script API 1.6: entities are still hurt and pushed, no block breaks.
+        return ['e.keepBlocks();'];
+      case 'ride':
+        // Script API 1.6 `Entity.ride`: refused for a player as the mount and during the
+        // boarding cooldown; nothing rides itself.
+        return [
+          `${this.who(step.mount, 'mob', false)}.forEach((mount) => ${who('player')}.forEach((target) => { if (target.uuid !== mount.uuid) target.ride(mount); }));`,
+        ];
+      case 'dismount':
+        return [`${who('player')}.forEach((target) => { target.dismount(); });`];
       case 'set_counter':
       case 'add_to_counter':
       case 'take_from_counter': {

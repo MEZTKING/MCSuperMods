@@ -65,6 +65,14 @@ const counterWords = (object: JsonObject): string => {
   return `${owner} ${name.replace(/_/g, ' ')}`;
 };
 
+/** Whose facing a `facing` value or an "is facing" condition reads. */
+const FACING_WORDS: Record<string, string> = {
+  here: 'the block here',
+  player: 'the player',
+  mob: 'the mob',
+  other: 'the other one',
+};
+
 /** The words of a number slot: a number or a reading. */
 export function valueSentence(value: Json | undefined, context: SentenceContext): string {
   if (typeof value === 'number') return formatNumber(value);
@@ -86,6 +94,8 @@ export function valueSentence(value: Json | undefined, context: SentenceContext)
         ? "the vehicle's ammunition"
         : `the vehicle's ammunition for the weapon "${weapon}"`;
     }
+    case 'facing':
+      return `the way ${FACING_WORDS[str(object, 'of') ?? 'here'] ?? 'the block here'} faces`;
     case 'math': {
       const op = { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' }[
         str(object, 'op') ?? '+'
@@ -195,6 +205,7 @@ function valueWords(
     case 'key':
     case 'vehicle':
     case 'hud':
+    case 'command':
       return typeof raw === 'string' ? nameOf(context, raw) : '';
     case 'weapon':
       return typeof raw === 'string' ? `the weapon "${raw}"` : '';
@@ -242,10 +253,17 @@ export function conditionSentence(condition: JsonObject, context: SentenceContex
   if (entry === undefined) return `an unknown condition (${id})`;
   const negated = bool(condition, 'not') === true;
   const slots = new Map(entry.slots.map((slot) => [slot.name, slot]));
-  const defaults: Record<string, Json> = { where: 'here', who: 'other', count: 1 };
-  return fill(negated ? entry.notSentence : entry.sentence, (name) =>
-    slotWords(slots.get(name), name, condition, context, defaults),
-  );
+  const defaults: Record<string, Json> = {
+    where: 'here',
+    who: id === 'is_riding' ? 'player' : 'other',
+    count: 1,
+    of: 'here',
+  };
+  return fill(negated ? entry.notSentence : entry.sentence, (name) => {
+    if (name === 'mount' && condition.mount === undefined) return 'something';
+    if (name === 'cause' && condition.cause === 'block') return 'a block';
+    return slotWords(slots.get(name), name, condition, context, defaults);
+  });
 }
 
 /** The words of one step, logic steps with their nested steps. */

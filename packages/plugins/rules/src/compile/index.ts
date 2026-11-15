@@ -13,7 +13,9 @@
  *   ADR 0088 D6 and ADR 0090 D11, Script API 1.5): a book's part that is not plain becomes an
  *   `msm.events.on` listener of that event filtered to the subject, which runs after the
  *   definition's event; the plain parts still go into the event. A held key has no such event
- *   and uses `run_script`.
+ *   and uses `run_script`. The command trigger (B458) keeps `run_script` for its rules that are
+ *   not plain, so the command always has its `event`; a command with a `function` cannot have
+ *   one, and all its rules listen to the Script API 1.6 `command` event instead.
  * - Script-only triggers: `msm.events.on` handlers in the script, one per trigger and subject.
  */
 import type {
@@ -35,7 +37,7 @@ import {
   stepList,
   str,
 } from '../book';
-import { type TriggerEntry, triggerById } from '../catalogue';
+import { COMMAND_KIND, type TriggerEntry, triggerById } from '../catalogue';
 import { ruleSentence, whenSentence } from '../sentence';
 import { checkRule, Reporter } from './check';
 import { plainActions } from './plain';
@@ -78,8 +80,12 @@ export function namesFromElements(
 ): (id: string) => string | undefined {
   const names = new Map<string, string>();
   for (const element of elements) {
-    const name = str(asObject(element.data), 'display_name');
+    const data = asObject(element.data);
+    const name = str(data, 'display_name');
     if (name !== undefined && name.trim().length > 0) names.set(element.id, name);
+    // A command is named as it is typed: "/hello" (B458).
+    const literal = element.kind === COMMAND_KIND ? str(data, 'name') : undefined;
+    if (literal !== undefined && literal.length > 0) names.set(element.id, `/${literal}`);
   }
   return (id) => names.get(id);
 }
@@ -146,7 +152,16 @@ export function optionFields(trigger: TriggerEntry, options: JsonObject | undefi
   return fields;
 }
 
-/** "blocks", "items", "mobs", "effects", "key binds", "vehicles". */
+/**
+ * Whether the subject has a field that rules out the trigger's event (`unusableWith`: a
+ * command's `function`, ADR 0096 D1).
+ */
+function eventUnusable(subject: Element, trigger: TriggerEntry): boolean {
+  const field = trigger.definition?.unusableWith;
+  return field !== undefined && asObject(subject.data)?.[field] !== undefined;
+}
+
+/** "blocks", "items", "mobs", "effects", "key binds", "vehicles", "commands". */
 const SUBJECT_PLURALS: Readonly<Record<string, string>> = {
   block: 'blocks',
   item: 'items',
@@ -154,6 +169,7 @@ const SUBJECT_PLURALS: Readonly<Record<string, string>> = {
   effect: 'effects',
   key: 'key binds',
   vehicle: 'vehicles',
+  command: 'commands',
 };
 
 /**
@@ -237,8 +253,13 @@ export function compileRuleBooks(
     for (const part of group.parts) {
       const plain = part.rules.map((compiled) => plainActions(compiled.rule, trigger));
       const isPlain = plain.every((actions) => actions !== undefined);
+      // The subject cannot run the trigger's event (a command with a function, B458), or the
+      // rules are not plain and the trigger has a script event that is not only a fallback.
+      const toListener =
+        trigger.scriptEvent !== undefined &&
+        (eventUnusable(subject, trigger) || (!isPlain && trigger.definition?.bridge !== true));
       let rules = part.rules;
-      if (!isPlain) {
+      if (!isPlain || toListener) {
         rules = part.rules.filter((compiled) => {
           if (!hasLightPortal(compiled.rule)) return true;
           part.pass.reporter.error(
@@ -250,10 +271,11 @@ export function compileRuleBooks(
         });
         if (rules.length === 0) continue;
       }
-      if (!isPlain && trigger.scriptEvent !== undefined) {
+      if (toListener) {
         // A trigger with a Script API event of its own (the key and vehicle triggers): the
         // book's part becomes a listener of that event, which runs after the definition's
-        // event, and the definition is left alone for it (B421).
+        // event, and the definition is left alone for it (B421). A command with a function
+        // sends every rule here (B458).
         const groupKey = `${trigger.id}|${subject.id}`;
         let listener = part.pass.scriptGroups.get(groupKey);
         if (listener === undefined) {
