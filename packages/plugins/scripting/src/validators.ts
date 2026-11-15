@@ -29,6 +29,7 @@ export const RUN_SCRIPT_OWNER_KINDS: readonly string[] = Object.freeze([
   'msm:block',
   'msm:item',
   'msm:entity',
+  'msm:command',
 ]);
 
 /** RFC 6901 escaping of one reference token. */
