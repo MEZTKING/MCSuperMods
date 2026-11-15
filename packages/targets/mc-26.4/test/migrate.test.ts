@@ -89,8 +89,8 @@ describe('migrateFrom (mc-26.3 → this target)', () => {
     const project = await loadSample();
     expect(project.targets).toEqual([PREVIOUS_ID]);
     expect(project.namespaces.flatMap((ns) => ns.elements).length).toBeGreaterThan(10);
-    // The sample uses rule tests (minecraft:block_match …), whose registry only moved.
-    expect(JSON.stringify(project)).toContain('minecraft:block_match');
+    // The sample uses rule tests (minecraft:tag_match …), whose registry only moved.
+    expect(JSON.stringify(project)).toContain('minecraft:tag_match');
     const report = target.migrateFrom?.(previous, project);
     expect(report).toEqual({ changes: [], problems: [] });
   });
