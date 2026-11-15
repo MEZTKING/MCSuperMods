@@ -13,6 +13,7 @@ import {
   blockItemIdOf,
   blockStateFlag,
   blockTypeOf,
+  bundleModelIds,
   potionVariantIds,
 } from '@msm/plugin-blocks-items';
 import {
@@ -335,6 +336,13 @@ function soundEventKeys(data: unknown): string[] {
   return Object.keys(data).filter((key) => key !== '');
 }
 
+/** True when an item element's data carries bundle pictures. */
+function isBundleTextures(data: unknown): data is { bundle_textures: Record<string, unknown> } {
+  if (typeof data !== 'object' || data === null) return false;
+  const pictures = (data as { bundle_textures?: unknown }).bundle_textures;
+  return typeof pictures === 'object' && pictures !== null && !Array.isArray(pictures);
+}
+
 /**
  * The ids a project defines, per registry: `model` (model elements, the item models of
  * entity spawn eggs with a texture and the models lowering generates for `msm:block` elements,
@@ -365,6 +373,14 @@ export function projectRegistryIds(
       if (element.kind === 'minecraft:model') model.push(element.id);
       if (element.kind === BLOCK_KIND)
         model.push(...blockGeneratedModelIds(element.id, element.data));
+      if (element.kind === 'msm:item' && isBundleTextures(element.data)) {
+        // The models a bundle's pictures generate (ADR 0095 D4, B451).
+        const colon = element.id.indexOf(':');
+        const ids = bundleModelIds(element.id.slice(0, colon), element.id.slice(colon + 1));
+        for (const slot of Object.keys(element.data.bundle_textures) as (keyof typeof ids)[]) {
+          if (ids[slot] !== undefined) model.push(ids[slot]);
+        }
+      }
       if (element.kind === ENTITY_KIND) {
         const eggModel = spawnEggModelId(element.id, element.data);
         if (eggModel !== undefined) model.push(eggModel);

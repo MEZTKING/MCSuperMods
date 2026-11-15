@@ -70,4 +70,34 @@ describe('registry view: generated block type models', () => {
     );
     expect(unknown).toEqual([]);
   }, 60_000);
+
+  it('counts the models a bundle generates from its pictures', () => {
+    const ids = projectRegistryIds({
+      formatVersion: 1,
+      name: 'Bundles',
+      targets: [],
+      plugins: [],
+      settings: {},
+      namespaces: [
+        {
+          name: 'demo',
+          assets: [],
+          elements: [
+            {
+              id: 'demo:pouch',
+              kind: 'msm:item',
+              data: {
+                format: 1,
+                components: { 'msm:bundle': {} },
+                bundle_textures: { closed: 'demo:item/pouch', open_front: 'demo:item/pouch_front' },
+              },
+            } as unknown as Element,
+          ],
+        },
+      ],
+    } as unknown as Project);
+    expect(ids.model).toContain('demo:item/pouch');
+    expect(ids.model).toContain('demo:item/pouch_open_front');
+    expect(ids.model).not.toContain('demo:item/pouch_open_back');
+  });
 });
