@@ -6085,3 +6085,15 @@ Decisions
 
 Next
 - The main session copies the report's notes into the plan and ADR 0098 (D4 mechanism change); Wave 10 (B472, B473) may start.
+## 2026-11-15 — executor — B470 spike: fluids in the real game
+
+What
+- Answered S14 of `docs/PLAN-vanilla-parity-2.md` (ADR 0099 D3) by observation on 26.3 and 26.4-snapshot-7: throwaway GameTests (30, on the GameTest server, in a 23 by 23 walled pool structure) and one client GameTest (singleplayer, then `createServer()`/`connect()` on a dedicated server, headless Mesa EGL) over five directly registered test fluids with their `LiquidBlock` and `BucketItem`: a water-like and a lava-like fluid that apply their own entity effects, the same two without effects (tag only), and a fluid in no tag; vanilla water and lava as controls. Measured flow, falling, draining, infinite sources, bucket fill and empty (mock player and the use key on the dedicated server), dispensers, drawing through `FluidRenderingRegistry` (screenshots and `assertScreenshotContains` for the tint), swimming, drowning, putting out fire, lava burning, fall damage, fog and mixing. A spike Mixin on `Entity.isInWater`/`isInLava` was tried on 26.4. Spike code deleted afterwards; `./gradlew build` green on both versions (663 GameTests each). Results, screenshots, logs and a copy of the spike source are in the scratchpad (`b470/`), the findings in the B470 report for the plan's "Notes from implementation".
+
+Decisions
+- Go for 26.3: vanilla's `FlowingFluid` (source and flowing classes), `LiquidBlock`, `BucketItem` and `FluidRenderingRegistry` do everything with our numbers; `#minecraft:water` gives swimming, drowning, buoyancy, fog and no fall damage; putting out fire and lava burning come from the fluid's own `entityInside` (`InsideBlockEffectType.EXTINGUISH`, `LAVA_IGNITE` and `lavaHurt`), not from the tag.
+- Go for 26.4 only with one Mixin (a head injection into `Entity.isInWater` and `isInLava` answering from the fluid tag height): without it a project fluid in `#minecraft:water` drowns entities but is never "in water", so players move as in lava, items sink and nothing floats. Fog on 26.4 comes from `Fluid.Properties.fogType`, the swimming pose from `#minecraft:swimmable`. If the Mixin is refused, 26.4 is a no-go and reserve B486 applies.
+- Mixing is not absent as ADR 0099 D5 says: on 26.3 a lava-like fluid in `#minecraft:lava` makes obsidian and cobblestone with any water by vanilla's rule; on 26.4 only vanilla lava does.
+
+Next
+- Main session: record the S14 answers in "Notes from implementation" and ADR 0099's findings, decide the 26.4 Mixin (an ADR 0099 amendment), then B472 and B473.
