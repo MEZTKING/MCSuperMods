@@ -10,6 +10,8 @@ import dev.mcsupermods.runtime.loader.DefinitionParser;
 import dev.mcsupermods.runtime.loader.EffectDefinition;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.loader.ItemDefinition;
+import dev.mcsupermods.runtime.loader.KeyBindDefinition;
+import dev.mcsupermods.runtime.loader.KeyBindParser;
 import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import java.io.IOException;
@@ -44,7 +46,7 @@ import net.minecraft.resources.Identifier;
  */
 public final class EventOverlay {
     /** Definition kinds with {@code events} (a subset of {@code DefinitionScanner}'s kinds). */
-    public static final List<String> KINDS_WITH_EVENTS = List.of("block", "item", "entity", "effect");
+    public static final List<String> KINDS_WITH_EVENTS = List.of("block", "item", "entity", "effect", "key_bind");
     /**
      * Definition kinds an overlay cannot change: they have no events, or (vehicles, ADR 0090 plan limit V5) their events
      * live with a type fixed at start. An overlay for one needs a restart. Keep in step with {@code DefinitionScanner}.
@@ -218,6 +220,7 @@ public final class EventOverlay {
             case "item" -> entry(kind, id, jar.json(), merged, DefinitionParser::parseItem, ItemDefinition::events);
             case "entity" -> entry(kind, id, jar.json(), merged, DefinitionParser::parseEntity, EntityDefinition::events);
             case "effect" -> entry(kind, id, jar.json(), merged, DefinitionParser::parseEffect, EffectDefinition::events);
+            case "key_bind" -> entry(kind, id, jar.json(), merged, KeyBindParser::parse, KeyBindDefinition::events);
             default -> "unknown kind '" + kind + "'";
         };
     }

@@ -1,0 +1,13 @@
+{
+  "category": "vehicle_tests",
+  "default_key": "key.keyboard.m",
+  "events": {
+    "msm_test:pressed": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "msm:on_press": "msm_test:pressed",
+  "vehicle": "msm_test:vh_kart",
+  "when": "driving"
+}

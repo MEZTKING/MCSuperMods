@@ -36,13 +36,13 @@ class ConformanceCorpusTest {
      * Prefixes whose schema reached the corpus before the runtime's Codec. {@code container-} was decoded by
      * B314, {@code machine-} by B316, {@code portal-} by B334, {@code particle-} by B350, {@code action-particle-} and
      * {@code ambient-particles-} by B352. Machine recipe files have their own corpus ({@link MachineRecipeCodecTest}).
-     * The vehicles and client batch's format (B409): {@code key-bind-} until B411's {@code KeyBindParser},
+     * The vehicles and client batch's format (B409): {@code key-bind-} decoded by B411 ({@code KeyBindParser}),
      * {@code hud-} and {@code action-hud-} until B416 ({@code HudParser}, the HUD actions); each removes its
      * prefixes here and adds its kinds to {@link #KINDS}. B412 decoded {@code vehicle-} ({@code VehicleParser}) and
      * {@code action-explode-}; {@code vehicle-tank} uses the HUD actions and waits for B416 too.
      */
     private static final List<String> PENDING =
-            List.of("key-bind-", "hud-", "action-hud-", "vehicle-tank",
+            List.of("hud-", "action-hud-", "vehicle-tank",
                     // B445 decodes the plant and food types; the furniture, light, sign and stem types stay for B446,
                     // which removes these ten prefixes.
                     "block-type-2-bed", "block-type-2-chain", "block-type-2-hanging-sign", "block-type-2-ladder",
@@ -103,6 +103,7 @@ class ConformanceCorpusTest {
             new Kind("action-particle-", DefinitionParser::parseBlock),
             new Kind("ambient-particles-", DefinitionParser::parseBlock),
             new Kind("vehicle-", VehicleParser::parse),
+            new Kind("key-bind-", KeyBindParser::parse),
             new Kind("action-explode-", DefinitionParser::parseBlock),
             new Kind("action-explode-item-", DefinitionParser::parseItem),
             new Kind("action-explode-entity-", DefinitionParser::parseEntity),

@@ -1,0 +1,25 @@
+{
+  "default_key": "key.keyboard.z",
+  "events": {
+    "msm_test:pressed": {
+      "actions": [
+        {
+          "function": "msm_test:key_pressed",
+          "type": "run_function"
+        }
+      ]
+    },
+    "msm_test:released": {
+      "actions": [
+        {
+          "function": "msm_test:key_released",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "msm:on_press": "msm_test:pressed",
+  "msm:on_release": "msm_test:released",
+  "name": "key.msm_test.function_key"
+}

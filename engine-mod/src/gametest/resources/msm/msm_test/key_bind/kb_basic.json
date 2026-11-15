@@ -1,0 +1,19 @@
+{
+  "default_key": "key.keyboard.k",
+  "events": {
+    "msm_test:held": {
+      "actions": []
+    },
+    "msm_test:pressed": {
+      "actions": []
+    },
+    "msm_test:released": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "hold_interval_ticks": 4,
+  "msm:on_press": "msm_test:pressed",
+  "msm:on_release": "msm_test:released",
+  "msm:while_held": "msm_test:held"
+}

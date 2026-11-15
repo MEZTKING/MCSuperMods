@@ -1,0 +1,11 @@
+{
+  "default_key": "key.keyboard.u",
+  "events": {
+    "msm_test:pressed": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "msm:on_press": "msm_test:pressed",
+  "when": "on_foot"
+}

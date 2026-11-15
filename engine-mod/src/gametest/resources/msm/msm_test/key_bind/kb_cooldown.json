@@ -1,0 +1,11 @@
+{
+  "cooldown_ticks": 10,
+  "default_key": "key.keyboard.j",
+  "events": {
+    "msm_test:pressed": {
+      "actions": []
+    }
+  },
+  "format": 1,
+  "msm:on_press": "msm_test:pressed"
+}
