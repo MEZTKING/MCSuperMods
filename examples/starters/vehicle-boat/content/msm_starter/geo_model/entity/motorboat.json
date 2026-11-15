@@ -1,0 +1,98 @@
+{
+  "data": {
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+      {
+        "bones": [
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -11,
+                  0,
+                  -20
+                ],
+                "size": [
+                  22,
+                  8,
+                  40
+                ],
+                "uv": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "origin": [
+                  -9,
+                  8,
+                  -10
+                ],
+                "size": [
+                  18,
+                  6,
+                  2
+                ],
+                "uv": [
+                  0,
+                  48
+                ]
+              }
+            ],
+            "name": "hull",
+            "pivot": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -3,
+                  -2,
+                  20
+                ],
+                "size": [
+                  6,
+                  6,
+                  1
+                ],
+                "uv": [
+                  40,
+                  48
+                ]
+              }
+            ],
+            "name": "propeller",
+            "pivot": [
+              0,
+              1,
+              21
+            ]
+          }
+        ],
+        "description": {
+          "identifier": "geometry.entity.motorboat",
+          "texture_height": 128,
+          "texture_width": 128,
+          "visible_bounds_height": 1.5,
+          "visible_bounds_offset": [
+            0,
+            0.75,
+            0
+          ],
+          "visible_bounds_width": 3
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:entity/motorboat",
+  "kind": "msm:geo_model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The boxed model of the motorboat, drawn for MSM, with the bones hull and propeller. Replace it with your own Blockbench model; keep the bone names the vehicle uses."
+  }
+}

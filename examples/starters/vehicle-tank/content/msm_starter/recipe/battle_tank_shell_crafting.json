@@ -1,0 +1,21 @@
+{
+  "data": {
+    "category": "equipment",
+    "ingredients": [
+      "minecraft:gunpowder",
+      "minecraft:iron_ingot"
+    ],
+    "result": {
+      "count": 4,
+      "id": "msm_starter:battle_tank_shell"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:battle_tank_shell_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Gunpowder and an iron ingot anywhere in the crafting grid make four battle tank shells."
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "data": {
+    "camera": {
+      "distance": 8
+    },
+    "display_name": "Battle Tank",
+    "engine": {
+      "sound": "minecraft:entity.minecart.riding",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "format": 1,
+    "health": {
+      "explodes": 2,
+      "immune_to": [
+        "#minecraft:is_fire"
+      ],
+      "max": 120,
+      "repair": [
+        {
+          "amount": 20,
+          "item": "minecraft:iron_ingot"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_starter:item/battle_tank"
+    },
+    "model": {
+      "geometry": "msm_starter:entity/battle_tank",
+      "texture": "msm_starter:entity/battle_tank"
+    },
+    "movement": {
+      "acceleration": 0.01,
+      "grip": 1,
+      "max_speed": 0.25,
+      "mode": "ground",
+      "step_height": 1,
+      "turn_rate": 3,
+      "turns_in_place": true
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          1.6,
+          0
+        ]
+      }
+    ],
+    "size": [
+      3,
+      1.6
+    ],
+    "turret": {
+      "bone": "turret",
+      "pitch_bone": "barrel",
+      "pitch_limit": [
+        -20,
+        10
+      ],
+      "turn_rate": 4
+    },
+    "weapons": [
+      {
+        "cooldown_ticks": 60,
+        "id": "cannon",
+        "inaccuracy": 0.5,
+        "key": "fire",
+        "muzzle": {
+          "bone": "barrel",
+          "offset": [
+            0,
+            1.3,
+            2.5
+          ]
+        },
+        "projectile": "msm_starter:battle_tank_shell",
+        "recoil": 0.1,
+        "sound": "minecraft:entity.generic.explode",
+        "speed": 2.5
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:battle_tank",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A slow, tough tank: movement.mode ground at up to 0.25 blocks a tick, and turns_in_place lets it spin without moving. It has one seat; the first drives. It needs no fuel. The turret bone follows where the driver looks (turret, the barrel within pitch_limit), and the weapon cannon fires the battle tank shell (msm_starter:battle_tank_shell) with the Vehicle: fire key (R by default, changeable in Controls) every 60 ticks. It never runs out (no ammo). It takes 120 damage before it is destroyed (and explodes, power 2), iron ingots repair it and fire does not hurt it (immune_to #minecraft:is_fire). Its model is msm_starter:entity/battle_tank, an MSM-made boxed geo model, with the texture textures/entity/battle_tank.png; the item shows through the item model msm_starter:item/battle_tank. Place it from its item, get in with use, drive with the movement keys and pick it up again by hitting it while sneaking. Vehicles need the Fabric mod jar export."
+  }
+}

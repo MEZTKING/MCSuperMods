@@ -1,0 +1,67 @@
+{
+  "data": {
+    "camera": {
+      "distance": 5
+    },
+    "display_name": "Motorboat",
+    "engine": {
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.minecart.riding"
+    },
+    "format": 1,
+    "health": {
+      "max": 30,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "#minecraft:planks"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_starter:item/motorboat",
+      "places_on": "water"
+    },
+    "model": {
+      "geometry": "msm_starter:entity/motorboat",
+      "texture": "msm_starter:entity/motorboat"
+    },
+    "movement": {
+      "max_speed": 0.4,
+      "mode": "water",
+      "turn_rate": 4
+    },
+    "parts": {
+      "propellers": [
+        "propeller"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          0.3,
+          -0.6
+        ]
+      },
+      {
+        "offset": [
+          0,
+          0.3,
+          0.2
+        ]
+      }
+    ],
+    "size": [
+      1.6,
+      0.7
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:motorboat",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A boat: movement.mode water keeps it on the water surface at up to 0.4 blocks a tick; on land it barely moves. item.places_on water places it on water only. It has two seats; the first drives. It needs no fuel. It hums like an engine while it moves, and engine.horn is the sound the Vehicle: horn key (H) plays. Any planks repair it (health.repair, the tag #minecraft:planks); the propeller named in parts spins. Its model is msm_starter:entity/motorboat, an MSM-made boxed geo model, with the texture textures/entity/motorboat.png; the item shows through the item model msm_starter:item/motorboat. Place it from its item, get in with use, drive with the movement keys and pick it up again by hitting it while sneaking. Vehicles need the Fabric mod jar export."
+  }
+}

@@ -862,6 +862,22 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { throwable_name: 'Spark Star', style: 'ball', on_hit: 'burst', burst_damage: 0 },
   ],
+  'vehicle-car': [
+    { car_name: 'Desert Buggy', colour: '#d8a040', seats: 4, needs_fuel: true, fuel: 'blaze_rod' },
+    { car_name: 'Go Kart', seats: 1, horn: false, boot: false, paints: true, speed: 30 },
+  ],
+  'vehicle-tank': [
+    { tank_name: 'Iron Crawler', seats: 2, needs_shells: true, needs_fuel: true },
+    { tank_name: 'Scout Tank', cannon: false, speed: 12, recipe: false },
+  ],
+  'vehicle-plane': [
+    { plane_name: 'Sky Hopper', seats: 1, needs_fuel: false, speed: 50 },
+    { plane_name: 'Glider', fuel: 'dried_kelp_block', paints: true },
+  ],
+  'vehicle-boat': [
+    { boat_name: 'Party Raft', seats: 4, sound: 'paddle', horn: false },
+    { boat_name: 'River Boat', seats: 3, needs_fuel: true, fuel: 'coal', speed: 20 },
+  ],
   'scripted-item': [
     { item_name: 'Storm Rod', behaviour: 'lightning', lightning_distance: 16 },
     { item_name: 'Cloud Feather', behaviour: 'launch', launch_height: 12, cooldown_seconds: 5 },
@@ -941,6 +957,10 @@ const MIRRORED_STARTERS = [
   'potion',
   'mob-skin',
   'goat-horn',
+  'vehicle-car',
+  'vehicle-tank',
+  'vehicle-plane',
+  'vehicle-boat',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -1083,7 +1103,8 @@ const NON_DATA_KINDS = new Set([
  * texture also gets the generated item model `<ns>:item/<path>_spawn_egg` (as lowering
  * writes it). A machine block (`msm:machine` on a type that takes it) also registers its id as
  * a `recipe_type` and a `recipe_serializer` (ADR 0075 D2). An `msm:potion` with `long` or `strong` also registers `<ns>:long_<path>` and
- * `<ns>:strong_<path>` (ADR 0063 D9). `msm:script` has no registry, so script ids register
+ * `<ns>:strong_<path>` (ADR 0063 D9). An `msm:vehicle` registers its item under its own id
+ * (ADR 0090 D2). `msm:script` has no registry, so script ids register
  * nothing.
  */
 /** Whether `msm:block` data makes a machine (the app's `isMachineBlock`). */
@@ -1130,6 +1151,8 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
           }
         }
       }
+      // A vehicle registers its item under its own id, as the app's registry view does (B415).
+      if (element.kind === 'msm:vehicle') add('item', element.id);
       if (
         name === 'potion' &&
         typeof element.data === 'object' &&
@@ -1860,6 +1883,35 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         for (const path of [...resourceFiles, ...dataFiles]) {
           expect(path.startsWith('msm/') || path.includes('/script/'), path).toBe(false);
         }
+      },
+    );
+
+    const vehicleFlows = starters.filter((starter) => starter.id.startsWith('vehicle-'));
+
+    it('offers the four vehicle flows on every target with Fabric (ADR 0091 D2)', () => {
+      expect(vehicleFlows.map((starter) => starter.id)).toEqual(
+        bundle.target.fabric === undefined
+          ? []
+          : ['vehicle-car', 'vehicle-tank', 'vehicle-plane', 'vehicle-boat'],
+      );
+    });
+
+    it.each(vehicleFlows.map((starter) => [starter.id, starter] as const))(
+      'vehicle flow %s with untouched defaults gives zero problems, warnings included (ADR 0091 D2)',
+      async (_starterId, starter) => {
+        const built = await buildProject('Vehicle Test', 'demo', [
+          buildEntry(starter, 'demo', 'Vehicle Test', bundle.target),
+        ]);
+        const { warnings, jarFiles } = await checkProject(bundle, context, built);
+        expect(warnings).toEqual([]);
+        const vehicle = built.project.namespaces
+          .flatMap((namespace) => namespace.elements)
+          .find((element) => element.kind === 'msm:vehicle');
+        expect(vehicle).toBeDefined();
+        const path = (vehicle?.id ?? '').split(':')[1] ?? '';
+        expect(jarFiles).toContain(`msm/demo/vehicle/${path}.json`);
+        expect(jarFiles).toContain(`assets/demo/textures/entity/${path}.png`);
+        expect(jarFiles).toContain(`assets/demo/textures/item/${path}.png`);
       },
     );
 

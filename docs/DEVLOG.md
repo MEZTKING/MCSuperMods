@@ -5247,3 +5247,20 @@ Next
 - `block-item.ts` and `block.ts` still give a `potted_plant` a block item unless `"item": false`, which also turns `self` loot off; they should treat it as a portal is treated and still write the pot-and-plant table (outside this brief's files).
 - `component-not-for-type` and `type-needs-appearance` in `validators-types.ts` learn the new types in a later brief (ADR 0094 D11).
 - B452 fills the texture slots: the model slot names are listed in each module's header.
+## 2026-11-15 — executor — B422 Creator flows and the Very easy tile
+
+What
+- Four vehicle Creator flows in the library (ADR 0091 D2): `vehicle-car` (Car), `vehicle-tank` (Tank), `vehicle-plane` (Plane) and `vehicle-boat` (Boat), in `packages/plugins/library/src/starters/vehicle-*.ts` with shared helpers in `starters/vehicle-flow.ts`. Each makes one `msm:vehicle`, its `msm:geo_model`, a texture painted from the model's own boxes in the picked colour, optional dye paints, an item picture through an item model, an optional shaped recipe, the pack and the mod; the Tank's cannon fires the tank's own shell (an `msm:item` with `msm:throwable` whose hit events `explode`, power 1.5, breaking no blocks), loaded with shells when "Needs shells" is on. Questions: name, Colour, Extra paints, How fast (blocks a second), How many seats, Needs fuel / What fuel?, plus Has a horn and Has a boot (Car), Has a cannon and Needs shells (Tank), Sounds like (Boat), Crafting recipe.
+- MSM-made models and pictures in `packages/plugins/library/src/assets/vehicles/`: the car and biplane boxes (the entities plugin's starter shapes, repeated because the library imports no plugin), the tank and motorboat from `content/vehicle-models.ts`, `vehicleTexturePng` (wheels, tracks and propellers dark, the car's cabin glass, the barrel steel) and 16 by 16 side-view item pictures of each vehicle and the shell. Nothing is Mojang's.
+- Home: one tile "Make a vehicle" ("Cars, tanks, planes and boats you can drive.") under a new "Vehicles" heading after Creatures (`tiles.ts`, `VEHICLE_FLOW_IDS`, a car icon in `MakeTiles.tsx`); it opens the Creator's picker with just the four cards, each flow asking the name first.
+- Tests: `library/test/vehicle-flows.test.ts` (ids, answers, bones named exist in the model, speed within the cap, tank shell and ammunition, pictures); the library's counts (50 starters, 38 Creator flows); `packages/exporters/test/library.test.ts` gains a zero-problems test with warnings included for each flow's untouched defaults on both targets, wizard alternatives and the `examples/starters/vehicle-*` mirror, and its registry helper now puts a vehicle's id in `item` as the app does (B415); `app/test/components/home-vehicle-tile.test.tsx` (the tile, the picker, and each flow made from its defaults in a real session with no problems). Checked: library 645, exporters 1368, app 2115 tests, `pnpm lint`, `pnpm typecheck`; `dist:dir` and check-size: renderer 15.5 of 18 MB, app.asar 28.2 of 32 MB.
+
+Decisions
+- The flows use the Creator group `mobs` because `CreatorGroup` has no vehicles group and `@msm/plugin-api` belongs to another brief this wave; the Creator picker under the tile therefore shows the heading "Mobs" above the four cards.
+- The "What kind?" picker is the Creator's own flow picker filtered to the four flows (the route every multi-flow tile uses), not a new picture dialog, so `App.tsx` is unchanged.
+- "Extra paints" defaults to off: each paint is another uncompressed texture (a 256 by 256 tank or plane texture is 262 kB), so the goldens stay at 0.7 MB; on, it adds red, blue and yellow paints switched with dyes.
+- Speeds are asked in blocks a second and clamped to each flow's range (always below `TargetFacts.vehicles.maxSpeed`); the plane's take-off speed is half its top speed.
+
+Next
+- A `vehicles` Creator group in the plugin API (and a "Vehicles" Creator heading), then move the four flows to it.
+- B427: e2e through `home-tile-vehicle` and `creator-flow-vehicle-tank`; B431: the flow labels for the guide.

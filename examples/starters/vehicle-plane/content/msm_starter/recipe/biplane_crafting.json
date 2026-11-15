@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "F": "minecraft:furnace",
+      "I": "minecraft:iron_ingot",
+      "P": "minecraft:oak_planks"
+    },
+    "pattern": [
+      "PPP",
+      "IFI",
+      "PPP"
+    ],
+    "result": {
+      "id": "msm_starter:biplane"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:biplane_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three oak planks above and three below two iron ingots around a furnace make one biplane. The vehicle's item has the vehicle's own id."
+  }
+}

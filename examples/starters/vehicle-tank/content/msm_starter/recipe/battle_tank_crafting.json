@@ -1,0 +1,26 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "B": "minecraft:iron_block",
+      "F": "minecraft:furnace",
+      "I": "minecraft:iron_ingot"
+    },
+    "pattern": [
+      "III",
+      "IFI",
+      "BBB"
+    ],
+    "result": {
+      "id": "msm_starter:battle_tank"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:battle_tank_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Five iron ingots around a furnace over three iron blocks make one battle tank. The vehicle's item has the vehicle's own id."
+  }
+}

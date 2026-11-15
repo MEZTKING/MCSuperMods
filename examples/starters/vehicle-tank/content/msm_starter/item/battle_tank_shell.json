@@ -1,0 +1,48 @@
+{
+  "data": {
+    "components": {
+      "msm:throwable": {
+        "after_throw": "consume",
+        "gravity": 0.03,
+        "on_hit_block": {
+          "event": "msm_starter:battle_tank_shell_hit_block"
+        },
+        "on_hit_entity": {
+          "event": "msm_starter:battle_tank_shell_hit"
+        },
+        "sound": "minecraft:entity.snowball.throw",
+        "speed": 1.5
+      }
+    },
+    "creative_tab": "minecraft:combat",
+    "display_name": "Battle Tank Shell",
+    "events": {
+      "msm_starter:battle_tank_shell_hit": {
+        "actions": [
+          {
+            "power": 1.5,
+            "type": "explode"
+          }
+        ]
+      },
+      "msm_starter:battle_tank_shell_hit_block": {
+        "actions": [
+          {
+            "power": 1.5,
+            "type": "explode"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "max_stack_size": 16,
+    "model": "msm_starter:item/battle_tank_shell"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:battle_tank_shell",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The battle tank's shell. msm:throwable makes it a projectile, so the tank's cannon can fire it (and a player can throw it by hand). Its hit events msm_starter:battle_tank_shell_hit and msm_starter:battle_tank_shell_hit_block run explode where it lands: power 1.5, breaking no blocks (breaks_blocks false is the default)."
+  }
+}

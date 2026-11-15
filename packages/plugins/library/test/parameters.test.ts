@@ -124,6 +124,10 @@ const WIZARDS = [
   'flying-mob',
   'water-mob',
   'boss',
+  'vehicle-car',
+  'vehicle-tank',
+  'vehicle-plane',
+  'vehicle-boat',
   'scripted-item',
 ];
 
@@ -162,6 +166,10 @@ const FLOWS: Record<string, string> = {
   'flying-mob': 'mobs',
   'water-mob': 'mobs',
   boss: 'mobs',
+  'vehicle-car': 'mobs',
+  'vehicle-tank': 'mobs',
+  'vehicle-plane': 'mobs',
+  'vehicle-boat': 'mobs',
   'scripted-item': 'scripts',
 };
 
@@ -209,6 +217,10 @@ describe('wizard starters', () => {
     expect(groups('tree')).toEqual(['Tree', 'Blocks', 'World', 'Pictures']);
     expect(groups('storage-crate')).toEqual(['Crate', 'Recipe', 'Pictures']);
     expect(groups('machine')).toEqual(['Machine', 'Recipes', 'Crafting', 'Pictures']);
+    expect(groups('vehicle-car')).toEqual(['Vehicle', 'Driving', 'Extras', 'Recipe']);
+    expect(groups('vehicle-tank')).toEqual(['Vehicle', 'Driving', 'Cannon', 'Recipe']);
+    expect(groups('vehicle-plane')).toEqual(['Vehicle', 'Driving', 'Recipe']);
+    expect(groups('vehicle-boat')).toEqual(['Vehicle', 'Driving', 'Extras', 'Recipe']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {

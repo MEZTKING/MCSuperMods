@@ -7,8 +7,16 @@ import type { ContentBundle, ExampleProject, Json, ProjectStarter } from '@msm/p
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { PARTICLE_FRAMES, PARTICLE_PATTERNS } from '../src/assets/png';
+import {
+  shellItemPng,
+  VEHICLE_FLOW_SHAPES,
+  vehicleFlowGeometry,
+  vehicleItemPng,
+  vehicleTexturePng,
+} from '../src/assets/vehicles/index';
 import { COLOURS } from '../src/content/bundle';
 import { SKIN_ANIMALS, SKIN_SHADES, shade } from '../src/content/mob-skins';
+import { rgbFromHex } from '../src/content/parameters';
 import { DEFAULT_PARTICLE_COLOUR } from '../src/content/particle';
 import { vehicleModelTextureSize } from '../src/content/vehicle-models';
 import {
@@ -33,6 +41,7 @@ import {
   starterExamples,
   vehicleBehaviourExamples,
 } from '../src/index';
+import { VEHICLE_PAINTS } from '../src/starters/vehicle-flow';
 import { TINTABLE_GREY } from '../src/starters/wood-set';
 
 const STARTER_IDS = [
@@ -80,6 +89,10 @@ const STARTER_IDS = [
   'flying-mob',
   'water-mob',
   'boss',
+  'vehicle-car',
+  'vehicle-tank',
+  'vehicle-plane',
+  'vehicle-boat',
   'scripted_ore',
   'scripted-item',
 ];
@@ -208,6 +221,17 @@ const build = (
   return bundle;
 };
 
+/** The colours the vehicle flows paint with by default: the library's, the paints', the flows'. */
+function vehicleFlowColours() {
+  const defaults = libraryStarters
+    .filter((starter) => starter.id.startsWith('vehicle-'))
+    .flatMap((starter) => starter.parameters ?? [])
+    .flatMap((parameter) =>
+      parameter.type === 'colour' ? [rgbFromHex(parameter.default, COLOURS.ruby)] : [],
+    );
+  return [...Object.values(COLOURS), ...VEHICLE_PAINTS.map((paint) => paint.colour), ...defaults];
+}
+
 /**
  * Every placeholder the library may produce: each pattern, the entity skin, the mob variant
  * skins and the painting placeholder of every size up to 4 by 4 in each library colour.
@@ -268,6 +292,15 @@ const PLACEHOLDERS = new Set([
       ).toString('hex'),
     ),
   ),
+  // Vehicle flow pictures (ADR 0091 D2): each flow's texture, paints, item and shell picture in
+  // each library colour, the paint colours and the flows' default colours.
+  ...vehicleFlowColours().flatMap((colour) => [
+    ...VEHICLE_FLOW_SHAPES.flatMap((shape) => [
+      Buffer.from(vehicleTexturePng(vehicleFlowGeometry(shape, 'x'), colour)).toString('hex'),
+      Buffer.from(vehicleItemPng(shape, colour)).toString('hex'),
+    ]),
+    Buffer.from(shellItemPng(colour)).toString('hex'),
+  ]),
   // Particle frames (ADR 0081 D3): every frame of each particle pattern, in each colour and the
   // Particle flow's default gold.
   ...PARTICLE_PATTERNS.flatMap((pattern) =>
@@ -280,7 +313,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the forty-six starters in order', () => {
+  it('lists the fifty starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -290,7 +323,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(42).fill('content'),
+      ...Array<string>(46).fill('content'),
     ]);
   });
 

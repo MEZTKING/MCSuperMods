@@ -1,0 +1,87 @@
+{
+  "data": {
+    "camera": {
+      "distance": 5
+    },
+    "display_name": "Racing Car",
+    "engine": {
+      "horn": "minecraft:item.goat_horn.sound.0",
+      "sound": "minecraft:entity.minecart.riding",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "exhaust": {
+      "every_ticks": 4,
+      "offset": [
+        0,
+        0.3,
+        -1.3
+      ],
+      "particle": "minecraft:smoke"
+    },
+    "format": 1,
+    "health": {
+      "max": 40,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "minecraft:iron_ingot"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_starter:item/racing_car"
+    },
+    "model": {
+      "geometry": "msm_starter:entity/racing_car",
+      "texture": "msm_starter:entity/racing_car"
+    },
+    "movement": {
+      "max_speed": 0.45,
+      "mode": "ground",
+      "step_height": 1
+    },
+    "parts": {
+      "steering": [
+        "wheel_front_left",
+        "wheel_front_right"
+      ],
+      "wheel_radius": 0.25,
+      "wheels": [
+        "wheel_front_left",
+        "wheel_front_right",
+        "wheel_back_left",
+        "wheel_back_right"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          -0.35,
+          0.35,
+          0.1
+        ]
+      },
+      {
+        "offset": [
+          0.35,
+          0.35,
+          0.1
+        ]
+      }
+    ],
+    "size": [
+      1.6,
+      1.3
+    ],
+    "storage": {
+      "rows": 1
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:racing_car",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A car: movement.mode ground drives it on the movement keys at up to 0.45 blocks a tick (9 blocks a second) and climbs full blocks (step_height 1); it must move to turn. It has two seats; the first drives. It needs no fuel. engine.horn is the sound the Vehicle: horn key (H) plays. storage holds one row of items, opened with the inventory key from a seat or by sneaking and using it. Iron ingots repair it (health.repair); the wheels named in parts spin and the front ones steer, and smoke puffs from the exhaust. Its model is msm_starter:entity/racing_car, an MSM-made boxed geo model, with the texture textures/entity/racing_car.png; the item shows through the item model msm_starter:item/racing_car. Place it from its item, get in with use, drive with the movement keys and pick it up again by hitting it while sneaking. Vehicles need the Fabric mod jar export."
+  }
+}

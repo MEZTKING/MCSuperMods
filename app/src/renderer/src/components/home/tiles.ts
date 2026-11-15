@@ -1,8 +1,8 @@
 /**
- * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8) under their headings, and what each
- * opens: "Surprise me", Creator flows by flow id (the library's starters with `creator`), other
- * library starters by id, the Rule book, the picture painter or the AI helper. A tile whose
- * flows and starters are all unavailable on the project's target is hidden.
+ * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4) under their headings,
+ * and what each opens: "Surprise me", Creator flows by flow id (the library's starters with
+ * `creator`), other library starters by id, the Rule book, the picture painter or the AI helper.
+ * A tile whose flows and starters are all unavailable on the project's target is hidden.
  * Pure: no DOM, so it runs in Node tests.
  *
  * @packageDocumentation
@@ -34,6 +34,7 @@ export const TILE_GROUPS = [
   { id: 'start', title: 'Start here' },
   { id: 'blocks', title: 'Blocks and items' },
   { id: 'creatures', title: 'Creatures' },
+  { id: 'vehicles', title: 'Vehicles' },
   { id: 'magic', title: 'Magic' },
   { id: 'worlds', title: 'Worlds' },
   { id: 'looks', title: 'Looks and sounds' },
@@ -62,6 +63,14 @@ const choices = (flowIds: string[], starterIds: string[]): MakeTileAction => ({
   flowIds,
   starterIds,
 });
+
+/**
+ * The vehicle flows "Make a vehicle" offers (ADR 0091 D4), in the order of its "What kind?"
+ * picker: Car, Tank, Plane and Boat. The Creator opens on its flow picker with just these four
+ * cards (`creator-flow-<id>`); each flow asks the name first and makes the vehicle with its
+ * defaults when nothing else is changed.
+ */
+export const VEHICLE_FLOW_IDS = ['vehicle-car', 'vehicle-tank', 'vehicle-plane', 'vehicle-boat'];
 
 /** The tiles, in the order Home shows them (ADR 0083 D2, ADR 0086 D8). */
 export const MAKE_TILES: readonly MakeTile[] = [
@@ -141,6 +150,13 @@ export const MAKE_TILES: readonly MakeTile[] = [
     sentence: 'A pet to tame, a farm animal or something to ride.',
     group: 'creatures',
     action: flows('pet', 'farm-animal', 'mount'),
+  },
+  {
+    id: 'vehicle',
+    label: 'Make a vehicle',
+    sentence: 'Cars, tanks, planes and boats you can drive.',
+    group: 'vehicles',
+    action: flows(...VEHICLE_FLOW_IDS),
   },
   {
     id: 'potion',

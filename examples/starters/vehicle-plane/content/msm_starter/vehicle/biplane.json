@@ -1,0 +1,86 @@
+{
+  "data": {
+    "camera": {
+      "distance": 10
+    },
+    "display_name": "Biplane",
+    "engine": {
+      "fuel": {
+        "items": [
+          {
+            "item": "minecraft:coal",
+            "ticks": 1200
+          },
+          {
+            "item": "minecraft:charcoal",
+            "ticks": 1200
+          }
+        ]
+      },
+      "sound": "minecraft:item.elytra.flying",
+      "start_sound": "minecraft:block.piston.extend"
+    },
+    "format": 1,
+    "health": {
+      "max": 40,
+      "repair": [
+        {
+          "amount": 10,
+          "item": "minecraft:iron_ingot"
+        }
+      ]
+    },
+    "item": {
+      "model": "msm_starter:item/biplane"
+    },
+    "model": {
+      "geometry": "msm_starter:entity/biplane",
+      "texture": "msm_starter:entity/biplane"
+    },
+    "movement": {
+      "acceleration": 0.02,
+      "lift_speed": 0.15,
+      "max_speed": 1,
+      "mode": "air",
+      "takeoff_speed": 0.5,
+      "turn_rate": 3
+    },
+    "parts": {
+      "propellers": [
+        "propeller"
+      ],
+      "wheel_radius": 0.19,
+      "wheels": [
+        "wheel_front_left",
+        "wheel_front_right"
+      ]
+    },
+    "seats": [
+      {
+        "offset": [
+          0,
+          0.6,
+          -0.5
+        ]
+      },
+      {
+        "offset": [
+          0,
+          0.6,
+          0.5
+        ]
+      }
+    ],
+    "size": [
+      2.5,
+      1.2
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:biplane",
+  "kind": "msm:vehicle",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A plane: movement.mode air. Forwards opens the throttle up to 1 blocks a tick and back closes it; the nose follows the driver's view, and below takeoff_speed (0.5) it sinks, so it rolls along the ground until it is fast enough to lift off. It has two seats, the pilot behind the passenger. It burns fuel while driven: use coal or charcoal on it to fill it up (engine.fuel); without fuel it does not move. Iron ingots repair it (health.repair); the propeller and wheels named in parts spin. Its model is msm_starter:entity/biplane, an MSM-made boxed geo model, with the texture textures/entity/biplane.png; the item shows through the item model msm_starter:item/biplane. Place it from its item, get in with use, drive with the movement keys and pick it up again by hitting it while sneaking. Vehicles need the Fabric mod jar export."
+  }
+}

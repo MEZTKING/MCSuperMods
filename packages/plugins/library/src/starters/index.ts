@@ -52,6 +52,10 @@ import { STORAGE_CRATE_PARAMETERS, storageCrateBundle } from './storage-crate';
 import { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 import { TOTEM_PARAMETERS, totemBundle } from './totem';
 import { TREE_PARAMETERS, treeBundle } from './tree';
+import { VEHICLE_BOAT_PARAMETERS, vehicleBoatBundle } from './vehicle-boat';
+import { VEHICLE_CAR_PARAMETERS, vehicleCarBundle } from './vehicle-car';
+import { VEHICLE_PLANE_PARAMETERS, vehiclePlaneBundle } from './vehicle-plane';
+import { VEHICLE_TANK_PARAMETERS, vehicleTankBundle } from './vehicle-tank';
 import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 import { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
@@ -124,6 +128,15 @@ export {
 export { THROWABLE_PARAMETERS, throwableBundle } from './throwable';
 export { TOTEM_PARAMETERS, totemBundle } from './totem';
 export { TREE_PARAMETERS, treeBundle } from './tree';
+export { VEHICLE_BOAT_PARAMETERS, vehicleBoatBundle } from './vehicle-boat';
+export { VEHICLE_CAR_PARAMETERS, vehicleCarBundle } from './vehicle-car';
+export { VEHICLE_PLANE_PARAMETERS, vehiclePlaneBundle } from './vehicle-plane';
+export {
+  TANK_SHELL_CAPACITY,
+  TANK_SHELL_POWER,
+  VEHICLE_TANK_PARAMETERS,
+  vehicleTankBundle,
+} from './vehicle-tank';
 export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 export { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
@@ -766,6 +779,62 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       parameters: BOSS_PARAMETERS,
       creator: { group: 'mobs', blurb: 'A boss with a boss bar, big attacks and rich drops.' },
       probeValues: [{ attacks: 'both', preset: 'quadruped' }, { attacks: 'ranged' }],
+    },
+  ),
+  starter(
+    'vehicle-car',
+    'Car',
+    'A car to drive on the ground, with one to four seats, a horn, a boot, exhaust smoke and, if you choose, fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. Vehicles need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    vehicleCarBundle,
+    {
+      supports: hasFabric,
+      parameters: VEHICLE_CAR_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A car to drive, with seats, a horn and a boot.' },
+      probeValues: [{ needs_fuel: true, recipe: false, paints: true }],
+    },
+  ),
+  starter(
+    'vehicle-tank',
+    'Tank',
+    'A slow, tough tank that turns on the spot, with a turret that follows your view and a cannon firing exploding shells, which can need loading: its boxed model, texture in your colour, paints, item picture, the shell and crafting recipes. Vehicles need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    vehicleTankBundle,
+    {
+      supports: hasFabric,
+      parameters: VEHICLE_TANK_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A tank with a turret and a cannon that fires shells.' },
+      probeValues: [{ cannon: false, recipe: false }],
+    },
+  ),
+  starter(
+    'vehicle-plane',
+    'Plane',
+    'A biplane that takes off when it is fast enough and flies where you look, with one or two seats and fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. Vehicles need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    vehiclePlaneBundle,
+    {
+      supports: hasFabric,
+      parameters: VEHICLE_PLANE_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A plane that takes off and flies where you look.' },
+      probeValues: [{ needs_fuel: false, recipe: false }],
+    },
+  ),
+  starter(
+    'vehicle-boat',
+    'Boat',
+    'A motorboat that floats on water, with two to four seats, an engine or paddle sound, a horn and, if you choose, fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. Vehicles need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    vehicleBoatBundle,
+    {
+      supports: hasFabric,
+      parameters: VEHICLE_BOAT_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A boat for two to four that you steer on water.' },
+      probeValues: [{ needs_fuel: true, recipe: false }],
     },
   ),
   starter(

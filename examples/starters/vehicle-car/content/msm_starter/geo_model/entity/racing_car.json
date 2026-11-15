@@ -1,0 +1,186 @@
+{
+  "data": {
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+      {
+        "bones": [
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -12,
+                  3,
+                  -20
+                ],
+                "size": [
+                  24,
+                  10,
+                  40
+                ],
+                "uv": [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "name": "body",
+            "pivot": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -10,
+                  13,
+                  -6
+                ],
+                "size": [
+                  20,
+                  8,
+                  18
+                ],
+                "uv": [
+                  0,
+                  50
+                ]
+              }
+            ],
+            "name": "cabin",
+            "pivot": [
+              0,
+              13,
+              0
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  12,
+                  0,
+                  -17
+                ],
+                "size": [
+                  4,
+                  8,
+                  8
+                ],
+                "uv": [
+                  76,
+                  50
+                ]
+              }
+            ],
+            "name": "wheel_front_left",
+            "pivot": [
+              12,
+              4,
+              -13
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -16,
+                  0,
+                  -17
+                ],
+                "size": [
+                  4,
+                  8,
+                  8
+                ],
+                "uv": [
+                  100,
+                  50
+                ]
+              }
+            ],
+            "name": "wheel_front_right",
+            "pivot": [
+              -12,
+              4,
+              -13
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  12,
+                  0,
+                  9
+                ],
+                "size": [
+                  4,
+                  8,
+                  8
+                ],
+                "uv": [
+                  0,
+                  76
+                ]
+              }
+            ],
+            "name": "wheel_back_left",
+            "pivot": [
+              12,
+              4,
+              13
+            ]
+          },
+          {
+            "cubes": [
+              {
+                "origin": [
+                  -16,
+                  0,
+                  9
+                ],
+                "size": [
+                  4,
+                  8,
+                  8
+                ],
+                "uv": [
+                  24,
+                  76
+                ]
+              }
+            ],
+            "name": "wheel_back_right",
+            "pivot": [
+              -12,
+              4,
+              13
+            ]
+          }
+        ],
+        "description": {
+          "identifier": "geometry.entity.racing_car",
+          "texture_height": 128,
+          "texture_width": 128,
+          "visible_bounds_height": 2,
+          "visible_bounds_offset": [
+            0,
+            1,
+            0
+          ],
+          "visible_bounds_width": 3
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:entity/racing_car",
+  "kind": "msm:geo_model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The boxed model of the racing car, drawn for MSM, with the bones body, cabin, wheel_front_left, wheel_front_right, wheel_back_left and wheel_back_right. Replace it with your own Blockbench model; keep the bone names the vehicle uses."
+  }
+}

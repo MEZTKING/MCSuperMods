@@ -1,0 +1,15 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_starter:item/racing_car"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:item/racing_car",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The flat item model of the racing car's item (item.model), drawn from textures/item/racing_car.png."
+  }
+}

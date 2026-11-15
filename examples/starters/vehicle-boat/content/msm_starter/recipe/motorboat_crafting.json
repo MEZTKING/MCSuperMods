@@ -1,0 +1,25 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "B": "minecraft:oak_boat",
+      "F": "minecraft:furnace",
+      "I": "minecraft:iron_ingot"
+    },
+    "pattern": [
+      " F ",
+      "IBI"
+    ],
+    "result": {
+      "id": "msm_starter:motorboat"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:motorboat_crafting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A furnace over an oak boat between two iron ingots make one motorboat. The vehicle's item has the vehicle's own id."
+  }
+}

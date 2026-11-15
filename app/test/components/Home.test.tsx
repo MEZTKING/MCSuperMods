@@ -79,7 +79,7 @@ function homeProps(overrides: Partial<HomeProps> = {}): HomeProps {
 }
 
 describe('Home tiles', () => {
-  it('lists the tiles in order under their headings (ADR 0083 D2, ADR 0086 D8)', () => {
+  it('lists the tiles in order under their headings (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4)', () => {
     expect(MAKE_TILES.map((tile) => `${tile.group}: ${tile.label}`)).toEqual([
       'start: Surprise me',
       'blocks: Make a block',
@@ -92,6 +92,7 @@ describe('Home tiles', () => {
       'blocks: Make a recipe',
       'creatures: Make a mob',
       'creatures: Make a pet or animal',
+      'vehicles: Make a vehicle',
       'magic: Make a potion or effect',
       'magic: Make sparkles',
       'magic: Make a magic wand',
@@ -197,6 +198,7 @@ describe('Home tiles', () => {
       'home-group-start',
       'home-group-blocks',
       'home-group-creatures',
+      'home-group-vehicles',
       'home-group-magic',
       'home-group-worlds',
       'home-group-looks',
