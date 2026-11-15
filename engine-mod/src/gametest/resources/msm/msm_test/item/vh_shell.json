@@ -1,0 +1,23 @@
+{
+  "components": {
+    "msm:throwable": {
+      "damage": 4,
+      "on_hit_block": {
+        "event": "msm_test:vh_shell_burst"
+      }
+    }
+  },
+  "events": {
+    "msm_test:vh_shell_burst": {
+      "actions": [
+        {
+          "breaks_blocks": true,
+          "power": 2,
+          "type": "explode"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 16
+}

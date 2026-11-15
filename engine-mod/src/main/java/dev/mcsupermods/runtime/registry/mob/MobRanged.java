@@ -1,6 +1,5 @@
 package dev.mcsupermods.runtime.registry.mob;
 
-import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.components.EntityComponents;
 import dev.mcsupermods.runtime.components.Goal;
 import dev.mcsupermods.runtime.events.EventContext;
@@ -8,11 +7,8 @@ import dev.mcsupermods.runtime.events.EventRunner;
 import dev.mcsupermods.runtime.goals.MsmRangedAttackGoal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.registry.MsmMob;
-import dev.mcsupermods.runtime.registry.MsmThrowableItem;
-import dev.mcsupermods.runtime.registry.MsmThrownItem;
+import dev.mcsupermods.runtime.registry.projectile.Projectiles.Kind;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -25,14 +21,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileItem;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Ranged attacks, ADR 0070 D4 and D5 ({@code msm:ranged_attack}). Every body implements {@code RangedAttackMob} and
@@ -41,20 +30,21 @@ import net.minecraft.world.phys.Vec3;
  * <p>A shot, aimed at a third of the target's height (as a skeleton aims), raised by the projectile's fall ({@link #drop}):
  * arrows ({@code ArrowItem}: arrow, tipped and spectral arrow) through {@code ProjectileUtil.getMobArrow} with a bow
  * as the weapon and {@code damage} as the base damage; a project item with {@code msm:throwable} as
- * {@link MsmThrownItem} with the mob as thrower (so its damage, gravity and hit events apply; the mob never runs out,
+ * {@code MsmThrownItem} with the mob as thrower (so its damage, gravity and hit events apply; the mob never runs out,
  * so the thrown copy never drops or returns); any other {@code ProjectileItem} through {@code asProjectile} and the
  * item's own {@code shoot}. Then the {@code sound}, the {@code shoot} animation of {@code msm:animated_model} through
  * {@link MobAnimations} (it plays once the name is triggerable) and {@code on_shoot} ({@code self} the mob,
- * {@code other} the target). An item that is none of these shoots nothing and logs one error per item id.
+ * {@code other} the target). An item that is none of these shoots nothing and logs one error per item id. The projectile
+ * is made and launched by {@link dev.mcsupermods.runtime.registry.projectile.Projectiles}, shared with vehicle weapons.
  */
 public final class MobRanged {
-    /** What a {@code projectile} id shoots. */
+    /**
+     * What a {@code projectile} id shoots: the names of {@link dev.mcsupermods.runtime.registry.projectile.Projectiles.Kind},
+     * kept for the mob GameTests ({@link #kind}).
+     */
     public enum Projectiles {
         ARROW, THROWABLE, ITEM, NONE
     }
-
-    /** Projectile ids already reported as not shootable, so each is logged once. */
-    private static final Set<Identifier> REPORTED = ConcurrentHashMap.newKeySet();
 
     private final MsmMob mob;
     private final EntityDefinition definition;
@@ -64,18 +54,9 @@ public final class MobRanged {
         this.definition = definition;
     }
 
-    /** How {@code id} is shot: an arrow, a project throwable, another vanilla projectile item, or nothing. */
+    /** How {@code id} is shot: an arrow, a project throwable, another vanilla projectile item, or nothing ({@code Projectiles.kind}). */
     public static Projectiles kind(Identifier id) {
-        Optional<Item> item = BuiltInRegistries.ITEM.getOptional(id);
-        if (item.isEmpty() || item.get() == Items.AIR) {
-            return Projectiles.NONE;
-        }
-        return switch (item.get()) {
-            case ArrowItem _ -> Projectiles.ARROW;
-            case MsmThrowableItem _ -> Projectiles.THROWABLE; // before ProjectileItem, which it also is
-            case ProjectileItem _ -> Projectiles.ITEM;
-            default -> Projectiles.NONE;
-        };
+        return Projectiles.valueOf(dev.mcsupermods.runtime.registry.projectile.Projectiles.kind(id).name());
     }
 
     /**
@@ -133,44 +114,17 @@ public final class MobRanged {
         }
         EntityComponents.RangedAttack attack = component.get();
         Identifier id = attack.projectile();
-        Projectiles kind = kind(id);
-        if (kind == Projectiles.NONE) {
-            if (REPORTED.add(id)) {
-                MsmRuntime.LOGGER.error("[{}] {}: msm:ranged_attack projectile {} is neither an arrow, a vanilla projectile item nor an "
-                        + "item with msm:throwable; the mob shoots nothing", MsmRuntime.MOD_ID, mob.definitionId(), id);
-            }
+        Kind kind = dev.mcsupermods.runtime.registry.projectile.Projectiles.kind(id);
+        if (kind == Kind.NONE) {
+            dev.mcsupermods.runtime.registry.projectile.Projectiles.reportOnce(id, mob.definitionId(), "msm:ranged_attack", "the mob shoots nothing");
             return;
         }
-        Item item = BuiltInRegistries.ITEM.getValue(id);
-        ItemStack stack = new ItemStack(item);
-        Projectile projectile = switch (kind) {
-            case ARROW -> {
-                AbstractArrow arrow = ProjectileUtil.getMobArrow(self, stack, power, new ItemStack(Items.BOW));
-                arrow.setBaseDamage(attack.damage());
-                yield arrow;
-            }
-            case THROWABLE -> {
-                MsmThrownItem thrown = new MsmThrownItem(level, self, stack.copy());
-                thrown.setCarriesItem(false);
-                yield thrown;
-            }
-            default -> {
-                Projectile p = ((ProjectileItem) item).asProjectile(level, new Vec3(self.getX(), self.getEyeY() - 0.1, self.getZ()), stack,
-                        self.getDirection());
-                p.setOwner(self);
-                yield p;
-            }
-        };
+        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(id));
+        Projectile projectile = dev.mcsupermods.runtime.registry.projectile.Projectiles.forMob(level, self, kind, stack, power, attack.damage());
         double dx = target.getX() - self.getX();
         double dz = target.getZ() - self.getZ();
         double dy = target.getY(1.0 / 3.0) - projectile.getY() + drop(Math.sqrt(dx * dx + dz * dz), attack.speed(), projectile.getGravity());
-        if (kind == Projectiles.ITEM) {
-            ProjectileItem projectileItem = (ProjectileItem) item;
-            Projectile.spawnProjectile(projectile, level, stack,
-                    p -> projectileItem.shoot(p, dx, dy, dz, attack.speed(), attack.inaccuracy()));
-        } else {
-            Projectile.spawnProjectileUsingShoot(projectile, level, stack, dx, dy, dz, attack.speed(), attack.inaccuracy());
-        }
+        dev.mcsupermods.runtime.registry.projectile.Projectiles.launch(level, projectile, kind, stack, dx, dy, dz, attack.speed(), attack.inaccuracy());
 
         BuiltInRegistries.SOUND_EVENT.getOptional(attack.sound()).ifPresent(sound ->
                 self.playSound(sound, 1.0f, 1.0f / (self.getRandom().nextFloat() * 0.4f + 0.8f)));
