@@ -135,6 +135,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.light-portal',
       'msm.blocks-items.particles',
       'msm.blocks-items.particle-references',
+      'msm.blocks-items.plants-2',
     ]);
     expect(blocksItemsValidators).toHaveLength(22);
   });

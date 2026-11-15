@@ -1,0 +1,77 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "candle"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/tallow_candle.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "candles=1,lit=false": {
+          "model": "example:block/tallow_one"
+        },
+        "candles=1,lit=true": {
+          "model": "example:block/tallow_one_lit"
+        },
+        "candles=2,lit=false": {
+          "model": "example:block/tallow_two"
+        },
+        "candles=2,lit=true": {
+          "model": "example:block/tallow_two"
+        },
+        "candles=3,lit=false": {
+          "model": "example:block/tallow_three"
+        },
+        "candles=3,lit=true": {
+          "model": "example:block/tallow_three"
+        },
+        "candles=4,lit=false": {
+          "model": "example:block/tallow_four"
+        },
+        "candles=4,lit=true": {
+          "model": "example:block/tallow_four"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/tallow_candle.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/tallow_one",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tallow_candle.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:tallow_candle"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/candles.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:tallow_candle"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/candles.json",
+    "schema": "tag:item"
+  }
+]

@@ -5228,3 +5228,22 @@ Decisions
 
 Next
 - B417 fills `VehicleWeapons` and `VehicleTurret`; B418 the renderer, `VehicleDriver.descend` and the client GameTest; B416 reads the synched data for the dashboard and removes `vehicle-tank` from the corpus test's pending list.
+## 2026-11-15 — executor — B447 lowering of the plant and food types
+
+**What**
+- `@msm/plugin-blocks-items` lowers `cake`, `berry_bush`, `tall_plant`, `potted_plant`, `vine`, `sea_pickle`, `carpet`, `layers`, `cocoa` and `candle` (ADR 0094 D10): the type fields reach the runtime definition unchanged, blockstates in vanilla's shape (cake `bites`, bush and pod `age` (pod by `facing`), plant `half`, the vine multipart, pickles by `pickles` and `waterlogged` with four turns each, `layers`, `candles` by `lit`), block models parented on `BlockFacts.modelTemplates` only, item model definitions, tags and the type's `self` loot: bush harvests in the sweet berry bush shape with `berry` and `harvest`, tall plants from the lower half, pot and plant, candles, pickles and layers by count, cocoa three at age 2, a cake only when whole.
+- Tags: `candles` (block and item), `climbable` (vine), `flower_pots` (potted plant), `bee_growables` (berry bush); every tag checked on both targets' vendored registries.
+- Validators `msm.blocks-items.plants-2`: `berry-unknown`, `potted-plant-unknown` (errors), `potted-plant-not-plant`, `light-fixed-by-state` (warnings).
+- `minecraft:block/cube_all` added to both targets' `modelTemplates` (eight layers are a full block, as vanilla's snow block); the cached-jar test checks it.
+- Tests: `plants-2.golden.test.ts` (15 goldens per target, tags, template parents, each type's defaults lowered and validated with zero schema and validator problems on both targets), `validators-plants-2.test.ts` (one test per code on both targets); `plugin.test.ts` lists the new validator id.
+
+**Decisions**
+- A potted plant without `textures.plant` uses `<plant ns>:block/<plant path>` (vanilla's own picture; the conventional id for a project plant), as lowering sees one element only.
+- A crop's `soil` changes no tags: lowering cannot see a project tag's members and the Crop starter's wild soil tag holds farmland; a crop that never grows on farmland sets `villager_plantable: false`.
+- `potted-plant-not-plant` also warns when vanilla already pots the plant (`minecraft:potted_<path>` exists): the pot's content map keeps one potted block per plant.
+- Vines drop themselves with `self` (vanilla needs shears; not in ADR 0094 D10's list); a cake's `self` drops only a whole cake (vanilla's drops nothing).
+
+**Next**
+- `block-item.ts` and `block.ts` still give a `potted_plant` a block item unless `"item": false`, which also turns `self` loot off; they should treat it as a portal is treated and still write the pot-and-plant table (outside this brief's files).
+- `component-not-for-type` and `type-needs-appearance` in `validators-types.ts` learn the new types in a later brief (ADR 0094 D11).
+- B452 fills the texture slots: the model slot names are listed in each module's header.

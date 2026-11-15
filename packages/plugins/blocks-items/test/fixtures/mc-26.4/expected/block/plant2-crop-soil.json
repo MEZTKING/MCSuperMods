@@ -1,0 +1,159 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "max_age": 3,
+      "soil": "#minecraft:soul_fire_base_blocks",
+      "type": "crop"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/soul_wart.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/soul_wart_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/soul_wart_stage0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/crop",
+      "textures": {
+        "crop": "example:block/soul_wart_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/soul_wart_stage1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "example:block/soul_wart_stage0"
+        },
+        "age=1": {
+          "model": "example:block/soul_wart_stage0"
+        },
+        "age=2": {
+          "model": "example:block/soul_wart_stage1"
+        },
+        "age=3": {
+          "model": "example:block/soul_wart_stage1"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/soul_wart.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/soul_wart_stage1"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/soul_wart.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/soul_wart",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/soul_wart.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:soul_wart"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/crops.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:soul_wart"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:soul_wart"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/maintains_farmland.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "example:soul_wart",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "blocks": "example:soul_wart",
+            "state": {
+              "age": "3"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "modifier": {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:binomial_with_bonus_count",
+                "parameters": {
+                  "extra": 3,
+                  "probability": 0.5714286
+                },
+                "type": "minecraft:apply_bonus"
+              },
+              "name": "example:soul_wart",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/soul_wart",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/soul_wart.json",
+    "schema": "resource:loot_table"
+  }
+]

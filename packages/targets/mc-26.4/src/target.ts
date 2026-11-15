@@ -577,6 +577,8 @@ export const target: Target = {
       'minecraft:block/snow_height10',
       'minecraft:block/snow_height12',
       'minecraft:block/snow_height14',
+      // layers: eight layers are a full block, as vanilla's snow block (B447)
+      'minecraft:block/cube_all',
       // rod
       'minecraft:block/end_rod',
       // stem

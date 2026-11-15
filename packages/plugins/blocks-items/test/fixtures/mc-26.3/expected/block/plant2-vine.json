@@ -1,0 +1,206 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "spreads": false,
+      "type": "vine"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ivy.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/vine",
+      "textures": {
+        "particle": "example:block/ivy",
+        "vine": "example:block/ivy"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ivy.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "example:block/ivy"
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy"
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "up": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/ivy",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ivy.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/ivy"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/ivy.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/ivy",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ivy.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:ivy"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ivy",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ivy",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ivy.json",
+    "schema": "resource:loot_table"
+  }
+]

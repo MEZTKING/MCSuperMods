@@ -1,0 +1,52 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "cake"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/moss_cake.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "bites=0": {
+          "model": "example:block/moss_cake"
+        },
+        "bites=1": {
+          "model": "example:block/moss_cake_slice"
+        },
+        "bites=2": {
+          "model": "example:block/moss_cake"
+        },
+        "bites=3": {
+          "model": "example:block/moss_cake"
+        },
+        "bites=4": {
+          "model": "example:block/moss_cake"
+        },
+        "bites=5": {
+          "model": "example:block/moss_cake"
+        },
+        "bites=6": {
+          "model": "example:block/moss_cake"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/moss_cake.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/moss_cake",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/moss_cake.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

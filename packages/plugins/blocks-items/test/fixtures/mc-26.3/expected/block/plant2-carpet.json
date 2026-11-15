@@ -1,0 +1,69 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "carpet"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/moss_rug.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/carpet",
+      "textures": {
+        "wool": "example:block/moss_rug"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/moss_rug.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/moss_rug"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/moss_rug.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/moss_rug",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/moss_rug.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:moss_rug",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/moss_rug",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/moss_rug.json",
+    "schema": "resource:loot_table"
+  }
+]

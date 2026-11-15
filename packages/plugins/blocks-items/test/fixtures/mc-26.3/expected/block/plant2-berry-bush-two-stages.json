@@ -1,0 +1,171 @@
+[
+  {
+    "contents": {
+      "berry": "minecraft:sweet_berries",
+      "format": 1,
+      "hurts": false,
+      "type": "berry_bush"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/thorn_bush.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/thorn_bush_young"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/thorn_bush_stage0.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/thorn_bush_ripe"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/thorn_bush_stage1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "age=0": {
+          "model": "example:block/thorn_bush_stage0"
+        },
+        "age=1": {
+          "model": "example:block/thorn_bush_stage0"
+        },
+        "age=2": {
+          "model": "example:block/thorn_bush_stage1"
+        },
+        "age=3": {
+          "model": "example:block/thorn_bush_stage1"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/thorn_bush.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/thorn_bush_ripe"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/thorn_bush.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/thorn_bush",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/thorn_bush.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:thorn_bush"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "condition": {
+            "blocks": "example:thorn_bush",
+            "state": {
+              "age": "3"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "minecraft:sweet_berries",
+              "type": "minecraft:item"
+            }
+          ],
+          "modifier": [
+            {
+              "count": {
+                "max": 3,
+                "min": 2,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:uniform_bonus_count",
+              "parameters": {
+                "bonusMultiplier": 1
+              },
+              "type": "minecraft:apply_bonus"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "blocks": "example:thorn_bush",
+            "state": {
+              "age": "2"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "minecraft:sweet_berries",
+              "type": "minecraft:item"
+            }
+          ],
+          "modifier": [
+            {
+              "count": {
+                "max": 2,
+                "min": 1,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:uniform_bonus_count",
+              "parameters": {
+                "bonusMultiplier": 1
+              },
+              "type": "minecraft:apply_bonus"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/thorn_bush",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/thorn_bush.json",
+    "schema": "resource:loot_table"
+  }
+]

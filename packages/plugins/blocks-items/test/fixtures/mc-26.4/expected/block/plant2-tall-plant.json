@@ -1,0 +1,109 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "tall_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/tall_bluebell.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/tall_bluebell_bottom"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tall_bluebell_bottom.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/tall_bluebell_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tall_bluebell_top.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "half=lower": {
+          "model": "example:block/tall_bluebell_bottom"
+        },
+        "half=upper": {
+          "model": "example:block/tall_bluebell_top"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/tall_bluebell.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/tall_bluebell_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/tall_bluebell.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/tall_bluebell",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tall_bluebell.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.tall_bluebell": "Tall Bluebell"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "condition": {
+                "blocks": "example:tall_bluebell",
+                "state": {
+                  "half": "lower"
+                },
+                "type": "minecraft:match_block"
+              },
+              "name": "example:tall_bluebell",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/tall_bluebell",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/tall_bluebell.json",
+    "schema": "resource:loot_table"
+  }
+]

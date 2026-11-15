@@ -1,0 +1,92 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "plant": "example:ruby_sprout",
+      "type": "potted_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/potted_ruby_sapling.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/flower_pot_cross",
+      "textures": {
+        "plant": "example:block/ruby_sprout_small"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/potted_ruby_sapling.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/potted_ruby_sapling"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/potted_ruby_sapling.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/potted_ruby_sapling",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/potted_ruby_sapling.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:potted_ruby_sapling"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:flower_pot",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_sprout",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/potted_ruby_sapling",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/potted_ruby_sapling.json",
+    "schema": "resource:loot_table"
+  }
+]

@@ -1,0 +1,321 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "sea_pickle"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/glow_pod.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/sea_pickle",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_one.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/dead_sea_pickle",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_dead_one.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/two_sea_pickles",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_two.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/two_dead_sea_pickles",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_dead_two.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/three_sea_pickles",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_three.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/three_dead_sea_pickles",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_dead_three.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/four_sea_pickles",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_four.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/four_dead_sea_pickles",
+      "textures": {
+        "all": "example:block/glow_pod",
+        "particle": "example:block/glow_pod"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_pod_dead_four.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "pickles=1,waterlogged=false": [
+          {
+            "model": "example:block/glow_pod_dead_one"
+          },
+          {
+            "model": "example:block/glow_pod_dead_one",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_dead_one",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_dead_one",
+            "y": 270
+          }
+        ],
+        "pickles=1,waterlogged=true": [
+          {
+            "model": "example:block/glow_pod_one"
+          },
+          {
+            "model": "example:block/glow_pod_one",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_one",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_one",
+            "y": 270
+          }
+        ],
+        "pickles=2,waterlogged=false": [
+          {
+            "model": "example:block/glow_pod_dead_two"
+          },
+          {
+            "model": "example:block/glow_pod_dead_two",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_dead_two",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_dead_two",
+            "y": 270
+          }
+        ],
+        "pickles=2,waterlogged=true": [
+          {
+            "model": "example:block/glow_pod_two"
+          },
+          {
+            "model": "example:block/glow_pod_two",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_two",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_two",
+            "y": 270
+          }
+        ],
+        "pickles=3,waterlogged=false": [
+          {
+            "model": "example:block/glow_pod_dead_three"
+          },
+          {
+            "model": "example:block/glow_pod_dead_three",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_dead_three",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_dead_three",
+            "y": 270
+          }
+        ],
+        "pickles=3,waterlogged=true": [
+          {
+            "model": "example:block/glow_pod_three"
+          },
+          {
+            "model": "example:block/glow_pod_three",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_three",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_three",
+            "y": 270
+          }
+        ],
+        "pickles=4,waterlogged=false": [
+          {
+            "model": "example:block/glow_pod_dead_four"
+          },
+          {
+            "model": "example:block/glow_pod_dead_four",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_dead_four",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_dead_four",
+            "y": 270
+          }
+        ],
+        "pickles=4,waterlogged=true": [
+          {
+            "model": "example:block/glow_pod_four"
+          },
+          {
+            "model": "example:block/glow_pod_four",
+            "y": 90
+          },
+          {
+            "model": "example:block/glow_pod_four",
+            "y": 180
+          },
+          {
+            "model": "example:block/glow_pod_four",
+            "y": 270
+          }
+        ]
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_pod.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/glow_pod_one",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/glow_pod.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "example:glow_pod",
+                    "state": {
+                      "pickles": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:glow_pod",
+                    "state": {
+                      "pickles": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 3,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:glow_pod",
+                    "state": {
+                      "pickles": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 4,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "example:glow_pod",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/glow_pod",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/glow_pod.json",
+    "schema": "resource:loot_table"
+  }
+]

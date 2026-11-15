@@ -1,0 +1,218 @@
+[
+  {
+    "contents": {
+      "food": {
+        "nutrition": 3,
+        "saturation": 0.2
+      },
+      "format": 1,
+      "item": {
+        "max_stack_size": 1
+      },
+      "type": "cake"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/berry_cake.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice1",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "inside": "example:block/berry_cake_inner",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake_slice1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice2",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "inside": "example:block/berry_cake_inner",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake_slice2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice3",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "inside": "example:block/berry_cake_inner",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake_slice3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice4",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "inside": "example:block/berry_cake_inner",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake_slice4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice5",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "inside": "example:block/berry_cake_inner",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake_slice5.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cake_slice6",
+      "textures": {
+        "bottom": "example:block/berry_cake_bottom",
+        "inside": "example:block/berry_cake_inner",
+        "particle": "example:block/berry_cake_side",
+        "side": "example:block/berry_cake_side",
+        "top": "example:block/berry_cake_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/berry_cake_slice6.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "bites=0": {
+          "model": "example:block/berry_cake"
+        },
+        "bites=1": {
+          "model": "example:block/berry_cake_slice1"
+        },
+        "bites=2": {
+          "model": "example:block/berry_cake_slice2"
+        },
+        "bites=3": {
+          "model": "example:block/berry_cake_slice3"
+        },
+        "bites=4": {
+          "model": "example:block/berry_cake_slice4"
+        },
+        "bites=5": {
+          "model": "example:block/berry_cake_slice5"
+        },
+        "bites=6": {
+          "model": "example:block/berry_cake_slice6"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/berry_cake.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/berry_cake"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/berry_cake.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/berry_cake",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/berry_cake.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.berry_cake": "Berry Cake"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "terms": [
+              {
+                "blocks": "example:berry_cake",
+                "state": {
+                  "bites": "0"
+                },
+                "type": "minecraft:match_block"
+              },
+              {
+                "type": "minecraft:survives_explosion"
+              }
+            ],
+            "type": "minecraft:all_of"
+          },
+          "entries": [
+            {
+              "name": "example:berry_cake",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/berry_cake",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/berry_cake.json",
+    "schema": "resource:loot_table"
+  }
+]

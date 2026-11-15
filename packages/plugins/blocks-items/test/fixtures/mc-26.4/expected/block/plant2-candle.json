@@ -1,0 +1,242 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "candle"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/wax_candle.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_candle",
+      "textures": {
+        "all": "example:block/wax_candle",
+        "particle": "example:block/wax_candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_one_candle.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_candle",
+      "textures": {
+        "all": "example:block/wax_candle_lit",
+        "particle": "example:block/wax_candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_one_candle_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_two_candles",
+      "textures": {
+        "all": "example:block/wax_candle",
+        "particle": "example:block/wax_candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_two_candles.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_two_candles",
+      "textures": {
+        "all": "example:block/wax_candle_lit",
+        "particle": "example:block/wax_candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_two_candles_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_three_candles",
+      "textures": {
+        "all": "example:block/wax_candle",
+        "particle": "example:block/wax_candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_three_candles.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_three_candles",
+      "textures": {
+        "all": "example:block/wax_candle_lit",
+        "particle": "example:block/wax_candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_three_candles_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_four_candles",
+      "textures": {
+        "all": "example:block/wax_candle",
+        "particle": "example:block/wax_candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_four_candles.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_four_candles",
+      "textures": {
+        "all": "example:block/wax_candle_lit",
+        "particle": "example:block/wax_candle_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wax_candle_four_candles_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "candles=1,lit=false": {
+          "model": "example:block/wax_candle_one_candle"
+        },
+        "candles=1,lit=true": {
+          "model": "example:block/wax_candle_one_candle_lit"
+        },
+        "candles=2,lit=false": {
+          "model": "example:block/wax_candle_two_candles"
+        },
+        "candles=2,lit=true": {
+          "model": "example:block/wax_candle_two_candles_lit"
+        },
+        "candles=3,lit=false": {
+          "model": "example:block/wax_candle_three_candles"
+        },
+        "candles=3,lit=true": {
+          "model": "example:block/wax_candle_three_candles_lit"
+        },
+        "candles=4,lit=false": {
+          "model": "example:block/wax_candle_four_candles"
+        },
+        "candles=4,lit=true": {
+          "model": "example:block/wax_candle_four_candles_lit"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/wax_candle.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/wax_candle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/wax_candle.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/wax_candle",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/wax_candle.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:wax_candle"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/candles.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:wax_candle"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/candles.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "example:wax_candle",
+                    "state": {
+                      "candles": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:wax_candle",
+                    "state": {
+                      "candles": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 3,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:wax_candle",
+                    "state": {
+                      "candles": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 4,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "example:wax_candle",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/wax_candle",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/wax_candle.json",
+    "schema": "resource:loot_table"
+  }
+]

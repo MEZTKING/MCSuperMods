@@ -1,0 +1,261 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "type": "layers"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/ash_layer.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height2",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height4",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height6",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height6.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height8",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height8.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height10",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height10.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height12",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height12.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/snow_height14",
+      "textures": {
+        "particle": "example:block/ash",
+        "texture": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_height14.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cube_all",
+      "textures": {
+        "all": "example:block/ash"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/ash_layer_block.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "layers=1": {
+          "model": "example:block/ash_layer_height2"
+        },
+        "layers=2": {
+          "model": "example:block/ash_layer_height4"
+        },
+        "layers=3": {
+          "model": "example:block/ash_layer_height6"
+        },
+        "layers=4": {
+          "model": "example:block/ash_layer_height8"
+        },
+        "layers=5": {
+          "model": "example:block/ash_layer_height10"
+        },
+        "layers=6": {
+          "model": "example:block/ash_layer_height12"
+        },
+        "layers=7": {
+          "model": "example:block/ash_layer_height14"
+        },
+        "layers=8": {
+          "model": "example:block/ash_layer_block"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/ash_layer.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/ash_layer_height2",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/ash_layer.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.ash_layer": "Ash"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "2"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "3"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 3,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "4"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 4,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "5"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 5,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "6"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 6,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "7"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 7,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "condition": {
+                    "blocks": "example:ash_layer",
+                    "state": {
+                      "layers": "8"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 8,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "example:ash_layer",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/ash_layer",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/ash_layer.json",
+    "schema": "resource:loot_table"
+  }
+]

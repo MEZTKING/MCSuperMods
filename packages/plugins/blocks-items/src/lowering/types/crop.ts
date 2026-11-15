@@ -12,6 +12,12 @@
  * Tags: block `crops`, `bee_growables`, `maintains_farmland`; item `villager_plantable_seeds`
  * unless `villager_plantable` is `false`. The `crop` loot preset is in `loot-presets.ts`.
  *
+ * `soil` (ADR 0094 D2: a block tag; default `#minecraft:supports_crops`, so nether-wart-like
+ * crops grow on soul sand) goes to the definition unchanged, where the runtime reads it. The
+ * tags stay the same with any soil: lowering cannot see a project tag's members, and a project
+ * soil tag usually still holds farmland (the Crop starter's wild crops), so a crop that never
+ * grows on farmland opts out of villager planting with `villager_plantable: false`.
+ *
  * Model slots: `stage0` (required), optional `stage1` to `stage15`: the stage models in order.
  * The leading run of filled slots is used; a gap ends it.
  */
