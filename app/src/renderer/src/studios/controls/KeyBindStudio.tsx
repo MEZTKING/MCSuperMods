@@ -33,6 +33,7 @@ import {
   KEY_WHEN_CHOICES,
   KEY_WHEN_LABELS,
   keyGroups,
+  projectHudIds,
   projectVehicles,
   ticksWords,
   withCategory,
@@ -336,6 +337,7 @@ export default function KeyBindStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         portals={projectPortals(project)}
+        huds={projectHudIds(project)}
         triggers={
           <div className="flex flex-col gap-2" data-testid="key-bind-triggers">
             <div className="flex flex-wrap items-end gap-2">

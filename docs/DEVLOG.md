@@ -5566,3 +5566,17 @@ Next
 - Plugin API: declare `JavaProjectInput.commands` and `creativeTabs` (orchestrator).
 - App: add `commandLiteralsOf` to `modOnlyIdsOf` and the `needsJarNotes` infos in `project-session.ts`.
 - B462/B464: add the `sample-vanilla-blocks` eject to CI's ejected builds; check in game the command macro values against B454's runtime and the bag guard against B450's.
+## 2026-11-15 — executor — B420a events editor HUD and explode actions, HUD picture warning
+
+**What**
+- The shared events editor (blocks, items, mobs, effects, vehicles, key binds) now lists "Explode" (power with TNT as 4, "Sets fires", "Breaks blocks", "Where" self or other), "Show a HUD element", "Hide a HUD element" and "Set a HUD element's value". The three HUD actions have a picker over the project's `msm:hud` elements (sorted; a note when there are none; a text field when an editor passes no list). `newAction` takes the HUD ids and starts on the first. Two new field types in the action table: `hud` and `bool`.
+- New app-side warning `controls.hud-picture-missing` (`session/hud-pictures.ts`, wired into the session next to the sign and particle picture warnings): one per project sprite or icon a HUD element names that the project has no file for; `minecraft:` pictures are never reported; the pointer is the field. The controls plugin did not report it (its validators leave missing sprites to the host). `missingSprites` moved into `hud-pictures.ts` (re-exported from `controls-model.ts`) because `project-session.ts` is in the Node tsconfig project and cannot import Studio code; `hud-pictures.ts` is added to `tsconfig.node.json`.
+- Plain words for the code in `session/plain-problems.ts`, and the code in the plain-problems test list.
+- Tests: `app/test/components/studios/blocks-items/hud-explode-actions.test.tsx` (labels, valid data on both targets, picker, warning).
+
+**Decisions**
+- `set_hud` offers a number only; a text value stays in Raw JSON (like `launch`'s `add`).
+- The six Studios that already pass `portals` also pass `huds`.
+
+**Next**
+- B427/B431 may want test ids for the HUD picker (it uses the label "<action> hud element").

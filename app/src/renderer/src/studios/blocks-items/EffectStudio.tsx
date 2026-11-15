@@ -24,6 +24,7 @@ import { pngDataUrl } from '../../components/AssetList';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
+import { projectHudIds } from '../controls/controls-model';
 import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -525,6 +526,7 @@ export function EffectStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         portals={projectPortals(project)}
+        huds={projectHudIds(project)}
         effects={projectEffects(project)}
       />
     </section>

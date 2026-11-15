@@ -56,9 +56,20 @@ export interface ActionField {
    * `offset`: three integers; `event`: an event of the same element; `animation`: an
    * animation name offered by the host (the entity's animation set); `handler`: a script
    * handler id (`msm.actions.define`), offered from the project's scripts or typed; `choice`:
-   * one of {@link choices}.
+   * one of {@link choices}; `hud`: one of the project's `msm:hud` elements; `bool`: a tick box.
    */
-  type: 'id' | 'text' | 'int' | 'float' | 'offset' | 'event' | 'animation' | 'handler' | 'choice';
+  type:
+    | 'id'
+    | 'text'
+    | 'int'
+    | 'float'
+    | 'offset'
+    | 'event'
+    | 'animation'
+    | 'handler'
+    | 'choice'
+    | 'hud'
+    | 'bool';
   /** The registry suggestions come from, for `id` fields. */
   registry?: string;
   /** The values a `choice` field offers. */
@@ -80,6 +91,9 @@ export const EFFECT_TARGETS: readonly string[] = Object.freeze(['self', 'other']
 
 /** Where a `launch` action pushes (`LaunchDirection` in `action.mcdoc`, ADR 0052). */
 export const LAUNCH_DIRECTIONS: readonly string[] = Object.freeze(['look', 'horizontal', 'up']);
+
+/** Where an `explode` action makes its explosion (`ExplodeAt` in `action.mcdoc`, ADR 0090 D6). */
+export const EXPLODE_AT: readonly string[] = Object.freeze(['self', 'other']);
 
 /** One action type of format v1. */
 export interface ActionSpec {
@@ -244,6 +258,49 @@ export const ACTIONS: readonly ActionSpec[] = Object.freeze([
       },
     ],
   },
+  {
+    // ADR 0090 D6: power 0 to 10 (TNT is 4); fire and block damage are off unless ticked.
+    type: 'explode',
+    label: 'Explode',
+    fields: [
+      { key: 'power', label: 'Power (TNT is 4)', type: 'float', required: true, initialValue: 4 },
+      { key: 'fire', label: 'Sets fires', type: 'bool', required: false, defaultValue: false },
+      {
+        key: 'breaks_blocks',
+        label: 'Breaks blocks',
+        type: 'bool',
+        required: false,
+        defaultValue: false,
+      },
+      {
+        key: 'at',
+        label: 'Where',
+        type: 'choice',
+        choices: EXPLODE_AT,
+        required: false,
+        defaultValue: 'self',
+      },
+    ],
+  },
+  {
+    // ADR 0089 D6: the HUD actions act on the event's player. A text value is left to Raw JSON.
+    type: 'show_hud',
+    label: 'Show a HUD element',
+    fields: [{ key: 'hud', label: 'HUD element', type: 'hud', required: true }],
+  },
+  {
+    type: 'hide_hud',
+    label: 'Hide a HUD element',
+    fields: [{ key: 'hud', label: 'HUD element', type: 'hud', required: true }],
+  },
+  {
+    type: 'set_hud',
+    label: "Set a HUD element's value",
+    fields: [
+      { key: 'hud', label: 'HUD element', type: 'hud', required: true },
+      { key: 'value', label: 'Value', type: 'float', required: true, initialValue: 0 },
+    ],
+  },
 ] satisfies ActionSpec[]);
 
 /** `play_animation` (ADR 0028), which only entity events may use. */
@@ -277,17 +334,26 @@ export function actionSpec(
 
 /**
  * A new action of `type`: the type and its required fields (ids empty for the user to fill;
- * a `trigger_event` takes the first of `events` other than `ownEvent`). Optional fields stay
+ * a `trigger_event` takes the first of `events` other than `ownEvent`, a HUD action the first of `huds`). Optional fields stay
  * absent, so the runtime defaults apply.
  */
-export function newAction(type: string, events: readonly string[], ownEvent?: string): JsonObject {
+export function newAction(
+  type: string,
+  events: readonly string[],
+  ownEvent?: string,
+  huds: readonly string[] = [],
+): JsonObject {
   const spec = actionSpec(type);
   const action: JsonObject = { type };
   for (const field of spec?.fields ?? []) {
     if (!field.required) continue;
     action[field.key] =
       field.initialValue ??
-      (field.type === 'event' ? (events.find((name) => name !== ownEvent) ?? '') : '');
+      (field.type === 'event'
+        ? (events.find((name) => name !== ownEvent) ?? '')
+        : field.type === 'hud'
+          ? (huds[0] ?? '')
+          : '');
   }
   return action;
 }

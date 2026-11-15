@@ -38,6 +38,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { buttonClass } from '../../components/ui/Button';
 import { typingKey } from '../../forms/context';
+import { projectHudIds } from '../controls/controls-model';
 import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -899,6 +900,7 @@ export function BlockStudio(props: StudioProps) {
         handlers={projectHandlers(project)}
         effects={projectEffects(project)}
         portals={projectPortals(project)}
+        huds={projectHudIds(project)}
         triggers={
           <TriggersSection
             kind={element.kind}

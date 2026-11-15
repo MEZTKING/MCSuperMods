@@ -24,6 +24,7 @@ import { ENTITIES_PROBLEM_CODES, VEHICLE_PROBLEM_CODES } from '@msm/plugin-entit
 import { RULES_PROBLEM_CODES } from '@msm/plugin-rules';
 import { COMMAND_PROBLEM_CODES } from '@msm/plugin-scripting';
 import { describe, expect, it } from 'vitest';
+import { HUD_PICTURE_MISSING_CODE } from '../src/renderer/src/session/hud-pictures';
 import {
   missingPictureOf,
   PLAIN_FIX_LABELS,
@@ -65,6 +66,7 @@ const BEGINNER_CODES: readonly string[] = [
   ExportProblemCodes.notInEject,
   PARTICLE_TEXTURE_MISSING_CODE,
   SIGN_GUI_PICTURE_MISSING_CODE,
+  HUD_PICTURE_MISSING_CODE,
   // What blocks Play and Share my mod.
   ExportProblemCodes.noFabricTarget,
   ExportProblemCodes.runtimeMissing,

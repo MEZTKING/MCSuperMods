@@ -18,6 +18,7 @@ import { eventNames, pathSetter } from '../../blocks-items/blocks-items-model';
 import { EventsEditor } from '../../blocks-items/EventsEditor';
 import { ProblemsAt } from '../../blocks-items/parts';
 import { projectPortals } from '../../blocks-items/portal-model';
+import { projectHudIds } from '../../controls/controls-model';
 import { RulesSlot } from '../../RulesSlot';
 import { projectHandlers } from '../../scripting/script-model';
 import type { StudioProps } from '../../types';
@@ -138,6 +139,7 @@ export default function VehicleStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         portals={projectPortals(project)}
+        huds={projectHudIds(project)}
         triggers={<VehicleTriggers {...section} />}
       />
     </section>

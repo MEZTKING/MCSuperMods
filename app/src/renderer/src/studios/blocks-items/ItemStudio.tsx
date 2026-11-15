@@ -13,6 +13,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { typingKey } from '../../forms/context';
+import { projectHudIds } from '../controls/controls-model';
 import { RulesSlot } from '../RulesSlot';
 import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
@@ -479,6 +480,7 @@ export function ItemStudio(props: StudioProps) {
         onChange={onChange}
         handlers={projectHandlers(project)}
         portals={projectPortals(project)}
+        huds={projectHudIds(project)}
         effects={projectEffects(project)}
         triggers={
           <TriggersSection

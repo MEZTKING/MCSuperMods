@@ -486,6 +486,10 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'controls.unknown-objective': entry(
     (t) => `${t} shows a score that nothing in your mod creates yet.`,
   ),
+  'controls.hud-picture-missing': entry(
+    (t) =>
+      `${t} uses a picture your mod does not have, so nothing is drawn. Add that picture or pick another.`,
+  ),
   'controls.unknown-hud': entry((t) => `${t} changes a display that is not in your mod.`),
   'controls.needs-jar': entry(
     () =>

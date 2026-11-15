@@ -9,13 +9,10 @@
  */
 
 import type { Element, Json, JsonObject, Project } from '@msm/core';
-import type { TargetFacts } from '@msm/plugin-api';
 import {
   DEFAULT_KEY_CATEGORY,
   HUD_KIND,
-  HUD_SPRITE_FIELDS,
   HUD_TYPE_FIELDS,
-  hudSpritePath,
   KEY_BIND_KIND,
   VEHICLE_KIND,
 } from '@msm/plugin-controls';
@@ -411,42 +408,18 @@ export function previewShows(data: Json | undefined, inVehicle: boolean): boolea
   return inVehicle || !isVehicleCondition(asObject(data).show);
 }
 
-/** A sprite a HUD element names that the project has no picture for. */
-export interface MissingSprite {
-  field: string;
-  sprite: string;
-  /** The picture's asset path (`assets/<ns>/textures/gui/sprites/<name>.png`). */
-  path: string;
-}
-
-/**
- * The project's own sprites (not `minecraft:` or without a namespace) that `data` names and the
- * project has no picture for; the game draws nothing in their place.
- */
-export function missingSprites(
-  project: Project,
-  target: Pick<TargetFacts, 'folders'>,
-  data: Json | undefined,
-): MissingSprite[] {
-  const object = asObject(data);
-  const out: MissingSprite[] = [];
-  for (const field of HUD_SPRITE_FIELDS) {
-    const sprite = textOf(object[field]);
-    if (sprite === undefined || !sprite.includes(':') || sprite.startsWith('minecraft:')) continue;
-    const path = hudSpritePath(target, sprite);
-    if (path === undefined) continue;
-    const [, owner, ...rest] = path.split('/');
-    const inner = rest.join('/');
-    const found = project.namespaces.some(
-      (entry) => entry.name === owner && entry.assets.some((asset) => asset.path === inner),
-    );
-    if (!found) out.push({ field, sprite, path });
-  }
-  return out;
-}
+export { type MissingSprite, missingSprites } from '../../session/hud-pictures';
 
 /** Every HUD element of the project. */
 export const projectHuds = (project: Project): Element[] => elementsOfKind(project, HUD_KIND);
 
 /** Whether `value` is an object (a `max` given as another value). */
 export const isValueObject = isObject;
+
+/** The ids of the project's HUD elements, sorted: what the HUD actions offer. */
+export const projectHudIds = (project: Project | null | undefined): string[] =>
+  project === null || project === undefined
+    ? []
+    : projectHuds(project)
+        .map((element) => element.id as string)
+        .sort();

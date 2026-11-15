@@ -280,6 +280,11 @@ export interface EventsEditorProps {
    */
   portals?: readonly string[] | undefined;
   /**
+   * The project's HUD element ids (`projectHudIds`), which the HUD actions offer in a picker;
+   * without them the element is a text field.
+   */
+  huds?: readonly string[] | undefined;
+  /**
    * The project and the target, for the "From rules" list and "Turn into rules" (ADR 0082 D7
    * (c)); without them neither is shown.
    */
@@ -405,6 +410,7 @@ function ActionFieldEditor(props: {
   animations: readonly string[];
   handlers: readonly string[];
   portals: readonly string[] | undefined;
+  huds: readonly string[] | undefined;
   suggest(registry: string, prefix: string): string[];
   set(key: string, value: Json | undefined, coalesce?: string): void;
 }) {
@@ -519,6 +525,16 @@ function ActionFieldEditor(props: {
       );
     case 'handler':
       return <HandlerField label={label} value={value} handlers={props.handlers} set={set} />;
+    case 'hud':
+      return <HudPicker label={label} value={value} huds={props.huds} set={set} />;
+    case 'bool':
+      return (
+        <CheckField
+          label={field.label}
+          checked={value === true}
+          onChange={(checked) => set(field.key, checked ? true : undefined)}
+        />
+      );
     case 'choice':
       return (
         <SelectField
@@ -532,6 +548,49 @@ function ActionFieldEditor(props: {
         />
       );
   }
+}
+
+/** Shown under a HUD action when the project has no HUD element yet. */
+export const NO_HUDS_NOTE = 'No HUD elements yet: add one in the HUD Studio.';
+
+/** The HUD element a HUD action names: one of the project's, or typed when the list is unknown. */
+function HudPicker(props: {
+  label: string;
+  value: Json | undefined;
+  huds: readonly string[] | undefined;
+  set(key: string, value: Json | undefined): void;
+}) {
+  const current = typeof props.value === 'string' ? props.value : '';
+  if (props.huds === undefined) {
+    return (
+      <div className="flex min-w-48 flex-col gap-0.5 text-xs">
+        <span className="text-muted" aria-hidden>
+          {props.label}
+        </span>
+        <IdInput
+          value={current}
+          label={props.label}
+          placeholder="mymod:fuel"
+          className="font-mono"
+          onCommit={(text) => props.set('hud', text.trim())}
+        />
+      </div>
+    );
+  }
+  const choices =
+    current !== '' && !props.huds.includes(current) ? [current, ...props.huds] : props.huds;
+  return (
+    <>
+      <SelectField
+        label={props.label}
+        value={current === '' ? undefined : current}
+        choices={choices}
+        emptyLabel="(choose a HUD element)"
+        onChange={(next) => props.set('hud', next ?? '')}
+      />
+      {props.huds.length === 0 && <span className="text-muted text-xs">{NO_HUDS_NOTE}</span>}
+    </>
+  );
 }
 
 /** Shown under "Light a portal" when the project has no portal block yet. */
@@ -611,6 +670,7 @@ function EventEditor(props: {
   animations: readonly string[];
   handlers: readonly string[];
   portals: readonly string[] | undefined;
+  huds: readonly string[] | undefined;
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   onChange: EventsEditorProps['onChange'];
@@ -621,7 +681,7 @@ function EventEditor(props: {
   const create = (type: string) =>
     type === LIGHT_PORTAL_ACTION
       ? newLightPortalAction(props.portals ?? [])
-      : newAction(type, events, name);
+      : newAction(type, events, name, props.huds);
   const [error, setError] = useState<string | null>(null);
   const [addType, setAddType] = useState<string>(props.actions[0]?.type ?? 'play_sound');
   const eventPointer = pointerOf(['events', name]);
@@ -720,6 +780,7 @@ function EventEditor(props: {
                     animations={props.animations}
                     handlers={props.handlers}
                     portals={props.portals}
+                    huds={props.huds}
                     suggest={props.suggest}
                     set={set}
                   />
@@ -811,6 +872,7 @@ export function EventsEditor({
   triggers,
   effects = [],
   portals,
+  huds,
   project,
   target,
 }: EventsEditorProps) {
@@ -874,6 +936,7 @@ export function EventsEditor({
             animations={animations}
             handlers={handlers}
             portals={portals}
+            huds={huds}
             problems={problems}
             suggest={suggestIds}
             onChange={onChange}

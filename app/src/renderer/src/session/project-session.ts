@@ -129,6 +129,7 @@ import {
   PACK_MCMETA_KIND,
   presentSingletonKinds,
 } from './element-defaults';
+import { hudPictureProblems } from './hud-pictures';
 import {
   collectImporters,
   importerFor,
@@ -3573,6 +3574,7 @@ export class ProjectSession {
           ...this.#textureProblems,
           ...particleTextureProblems(project, this.#currentTarget()),
           ...signGuiPictureProblems(project, this.#currentTarget()),
+          ...hudPictureProblems(project, this.#currentTarget()),
         ],
       };
     }
