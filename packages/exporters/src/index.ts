@@ -87,6 +87,8 @@ export {
   vanillaPacksExporter,
 } from './vanilla-packs/index';
 export {
+  COMMAND_LITERALS,
+  commandLiteralsOf,
   FATAL_DATA_FOLDERS,
   MOD_ONLY_FUNCTION,
   MOD_ONLY_REFERENCE,
@@ -94,6 +96,8 @@ export {
   modOnlyFunctionMessage,
   modOnlyIdsOf,
   modOnlyReferenceMessage,
+  NEEDS_JAR,
+  needsJarNotes,
   RUNTIME_REGISTRIES,
   type VanillaSafeResult,
   vanillaSafeDataFiles,

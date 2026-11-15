@@ -41,11 +41,13 @@
  * @packageDocumentation
  */
 
-import type { GeneratedFile, JavaProjectGenerator, JavaProjectInput } from '@msm/plugin-api';
+import type { GeneratedFile, JavaProjectGenerator } from '@msm/plugin-api';
 import { generateBlocks } from './blocks';
 import { generateClient } from './client';
+import { generateCommands } from './commands';
 import { BLOCK_ENTITY_CLASS_NAMES, generateBlockEntities } from './containers';
-import type { GenerationContext } from './context';
+import type { GenerationContext, GeneratorInput } from './context';
+import { generateCreativeTabs, projectTabIds } from './creative-tabs';
 import { generateEffects } from './effects';
 import { generateEntities } from './entities';
 import { generateItems } from './items';
@@ -64,6 +66,7 @@ import { rangedAttackGoalJava } from './templates/ranged-attack-goal-java';
 import { throwableItemJava } from './templates/throwable-item-java';
 import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
 import { tickLimiterJava } from './templates/tick-limiter-java';
+import { DRIVER_CLASSES } from './templates/vanilla-blocks-java';
 import { vanillaComponentsJava } from './templates/vanilla-components-java';
 import { generateWorldgen } from './worldgen';
 
@@ -80,7 +83,7 @@ export interface JavaEntrypoints {
  * naming the definition when one cannot be generated (an unknown component, action or goal,
  * an undeclared event).
  */
-export function generateJavaProject(input: JavaProjectInput): {
+export function generateJavaProject(input: GeneratorInput): {
   files: GeneratedFile[];
   entrypoints: JavaEntrypoints;
 } {
@@ -88,6 +91,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     input,
     javaRoot: `src/main/java/${input.javaPackage.replaceAll('.', '/')}`,
     files: [],
+    projectTabs: projectTabIds(input.creativeTabs),
     usesActions: false,
     usesApplyEffect: false,
     usesLaunch: false,
@@ -117,6 +121,10 @@ export function generateJavaProject(input: JavaProjectInput): {
     'client.entity.GeoModelBase',
     'effect.MobEffectBase',
     ...BLOCK_ENTITY_CLASS_NAMES,
+    // The shared classes of ADR 0094 and 0095 (imported next to the project's own block and item classes).
+    ...Object.values(DRIVER_CLASSES).map((name) => `block.${name}`),
+    'item.BagItem',
+    'item.BagMenus',
   );
   if (throwables) classNames.reserve('item.ThrowableItem', 'entity.ThrownItemEntity');
   // A block named portal would share the shared class's simple name (ADR 0077 D9).
@@ -124,6 +132,9 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (portals) classNames.reserve('block.PortalBlock');
   checkLightPortals(input);
   const registrations: string[] = [];
+  // Creative tabs before everything that names them (ADR 0096 D2).
+  const tabs = generateCreativeTabs(context);
+  if (tabs !== undefined) registrations.push(tabs);
   // Sound events first (ADR 0057 D5): effects, items, events and entities name them.
   const sounds = generateSounds(context);
   if (sounds !== undefined) registrations.push(sounds);
@@ -164,6 +175,9 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (worldgen !== undefined) registrations.push(worldgen);
   const loot = generateLoot(context);
   if (loot !== undefined) registrations.push(loot);
+  // Commands last: they run functions and events at run time (ADR 0096 D1).
+  const commands = generateCommands(context);
+  if (commands !== undefined) registrations.push(commands);
   const main = generateMod(
     context,
     registrations,
@@ -230,7 +244,7 @@ export function generateJavaProject(input: JavaProjectInput): {
  * The path of the thrown item entity type id in the mod's namespace: `thrown_item`, or
  * `thrown_item_<n>` when a project entity already has `<mod id>:thrown_item`.
  */
-function thrownItemPath(input: JavaProjectInput): string {
+function thrownItemPath(input: GeneratorInput): string {
   const taken = new Set(
     input.entities
       .map((entity) => splitId(entity.id))

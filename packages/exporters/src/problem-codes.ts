@@ -97,9 +97,11 @@ export const ExportProblemCodes = {
    */
   gradleWrapperMissing: 'export.gradle-wrapper-missing',
   /**
-   * Java project (ADR 0088 D10, ADR 0090 D14): a key bind, HUD element or vehicle is left out
-   * of the eject, which has no client code or vehicle runtime. One warning per element; the
-   * export goes ahead.
+   * Java project (ADR 0088 D10, ADR 0090 D14, ADR 0096 D6): a key bind, HUD element or vehicle
+   * is left out of the eject, which has no client code or vehicle runtime; a script that listens
+   * to the block placement or explosion event (`block.place`, `world.explosion`) needs the
+   * runtime's Mixins, which are not ejected either. One warning per element and per such event of
+   * a script; the export goes ahead.
    */
   notInEject: 'export.not-in-eject',
   /** The exporter threw while packaging. Some files may already have been written. */
@@ -114,6 +116,12 @@ export const ExportProblemCodes = {
    * provides are kept; the game skips them. One warning per element.
    */
   modOnlyFunction: 'export.mod-only-function',
+  /**
+   * Vanilla packs (ADR 0096 D1, D2): a command or creative tab works only in the Fabric mod jar (a
+   * data pack cannot add either), so a vanilla pack export leaves it out. Info, one per element;
+   * made by `needsJarNotes` for the host to add to a vanilla pack export's report.
+   */
+  needsJar: 'export.needs-jar',
 } as const;
 
 /** Any problem code reported by `@msm/exporters` itself (schema problems keep `schema.*`). */

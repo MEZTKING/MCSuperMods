@@ -80,6 +80,25 @@ const NOT_IN_EJECT_KINDS: Readonly<Record<string, { label: string; reason: strin
   vehicle: { label: 'vehicle', reason: "it needs the runtime's vehicle code" },
 };
 
+/**
+ * The script events that need the runtime's Mixins (ADR 0096 D3, D6): a script subscribing to one
+ * also gets `export.not-in-eject`, because the eject has neither scripts nor the Mixins.
+ */
+const MIXIN_EVENTS: Readonly<Record<string, string>> = {
+  'block.place': 'block placement',
+  'world.explosion': 'explosion',
+};
+
+/** `msm.events.on("<event>"` (any quote) in a script's text. */
+const MIXIN_EVENT_PATTERN = /\.on\(\s*["'`](block\.place|world\.explosion)["'`]/g;
+
+/** The Mixin events a script's text subscribes to, sorted. */
+export function mixinEventsOf(text: string): string[] {
+  return [
+    ...new Set([...text.matchAll(MIXIN_EVENT_PATTERN)].map((match) => match[1] as string)),
+  ].sort();
+}
+
 const DEFINITION_PATTERN = /^msm\/([^/]+)\/([^/]+)\/(.+)\.json$/;
 const SOUNDS_JSON_PATTERN = /^assets\/([^/]+)\/sounds\.json$/;
 const SOUND_KEY_PATTERN = /^[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*$/;
@@ -307,7 +326,9 @@ async function loadWrapper(
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
  * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
- * (ADR 0088 D10, ADR 0090 D14); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
+ * (ADR 0088 D10, ADR 0090 D14), and per script and Mixin event it listens to (`block.place`,
+ * `world.explosion`; ADR 0096 D6); command and creative tab definitions go to the generator
+ * (ADR 0096 D6); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
  * with GeckoLib (ADR 0072 D8).
  *
  * @param options - Where the Gradle wrapper comes from.
@@ -346,6 +367,8 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const particles: DefinitionInput[] = [];
       const biomeAdditions: DefinitionInput[] = [];
       const lootAdditions: DefinitionInput[] = [];
+      const commands: DefinitionInput[] = [];
+      const creativeTabs: DefinitionInput[] = [];
       const scripts: string[] = [];
       const resources: OutputFile[] = [];
       let provided: OutputFile | undefined;
@@ -372,6 +395,20 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
             file: file.path,
             message: `Script ${id} is not ejected; the Java project does without it (see its README).`,
           });
+          const text =
+            file.contents instanceof Uint8Array
+              ? utf8.decode(file.contents)
+              : typeof file.contents === 'string'
+                ? file.contents
+                : '';
+          for (const event of mixinEventsOf(text)) {
+            problems.report({
+              severity: 'warning',
+              code: ExportProblemCodes.notInEject,
+              file: file.path,
+              message: `Script ${id} listens to the ${MIXIN_EVENTS[event] ?? event} event (${event}), which only the Fabric mod jar has (the runtime's Mixins are not ejected, ADR 0096 D6). Export the Fabric mod jar to use it.`,
+            });
+          }
           continue;
         }
         const match = DEFINITION_PATTERN.exec(file.path);
@@ -395,7 +432,9 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           kind !== 'potion' &&
           kind !== 'particle' &&
           kind !== 'biome_addition' &&
-          kind !== 'loot_addition'
+          kind !== 'loot_addition' &&
+          kind !== 'command' &&
+          kind !== 'creative_tab'
         ) {
           problems.report({
             severity: 'warning',
@@ -436,6 +475,8 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         else if (kind === 'particle') particles.push(entry);
         else if (kind === 'biome_addition') biomeAdditions.push(entry);
         else if (kind === 'loot_addition') lootAdditions.push(entry);
+        else if (kind === 'command') commands.push(entry);
+        else if (kind === 'creative_tab') creativeTabs.push(entry);
         else entities.push(entry);
       }
       const soundEvents = collectSoundEvents(resources, problems);
@@ -493,9 +534,16 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const javaPackage = javaPackageFor(modId);
       const modClassName = modClassNameFor(modId);
 
+      // Commands and creative tabs (ADR 0096 D6) go to generators that read them; the plugin API's
+      // JavaProjectInput does not declare them yet, so they are passed as extra fields.
+      const parity = {
+        ...(commands.length > 0 ? { commands } : {}),
+        ...(creativeTabs.length > 0 ? { creativeTabs } : {}),
+      };
       let generated: GeneratedFile[];
       try {
         generated = generator.generate({
+          ...parity,
           modId,
           javaPackage,
           modClassName,

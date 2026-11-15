@@ -900,7 +900,10 @@ export function generateEntities(
       body.push(
         `public static final ${spawnEggItem} ${field}_SPAWN_EGG = registerSpawnEgg(${javaString(`${spec.input.id}_spawn_egg`)}, ${field});`,
       );
-      register.push(tabLine(file, spec.spawnEgg.creativeTab, `${field}_SPAWN_EGG`));
+      // A project tab lists its own members (ModCreativeTabs, ADR 0096 D2).
+      if (!context.projectTabs.has(spec.spawnEgg.creativeTab)) {
+        register.push(tabLine(file, spec.spawnEgg.creativeTab, `${field}_SPAWN_EGG`));
+      }
     }
     if (spec.spawn !== undefined) register.push(...spawnLines(file, spec, field));
   }

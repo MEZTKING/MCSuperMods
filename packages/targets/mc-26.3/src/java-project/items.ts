@@ -47,6 +47,7 @@ import {
 } from './java';
 import { className, constantName, NameTable, splitId } from './names';
 import { checkFormat, type Reader, readDefinition } from './read';
+import { bagItemJava, bagMenusJava } from './templates/bag-item-java';
 
 const ITEM_KEYS = ['format', 'max_stack_size', 'rarity', 'creative_tab', 'components', 'events'];
 const ITEM_COMPONENTS = [
@@ -65,6 +66,8 @@ const ITEM_COMPONENTS = [
   'msm:while_held',
   'msm:while_worn',
   'msm:components',
+  'msm:item_inventory',
+  'msm:bundle',
 ];
 
 /** `msm:while_held` hands (`HeldHand`) and the slot test of each, as `MsmItem.inventoryTickWithEvent`. */
@@ -266,6 +269,70 @@ interface ItemSpec {
   readonly vanilla: string | undefined;
   /** The item triggers of ADR 0061 D1. */
   readonly triggers: ItemTriggers;
+  /** `msm:item_inventory` (ADR 0095 D1). */
+  readonly bag: BagSpec | undefined;
+  /** `msm:bundle` (ADR 0095 D4). */
+  readonly bundle: boolean;
+}
+
+/** A parsed `msm:item_inventory`, with the runtime's defaults. */
+interface BagSpec {
+  /** A `BagItem.Layout` constant. */
+  readonly layout: string;
+  readonly rows: number;
+  readonly sneakUse: boolean;
+  readonly openSound: string | undefined;
+  readonly closeSound: string | undefined;
+  /** Event methods. */
+  readonly onOpen: string | undefined;
+  readonly onClose: string | undefined;
+}
+
+const BAG_LAYOUTS = ['chest', 'hopper', 'dispenser'] as const;
+
+/** Components a bag or bundle cannot have (ADR 0095 D1; the validators' `component-conflict`). */
+const INVENTORY_CONFLICTS = [
+  'msm:tool',
+  'msm:ranged_weapon',
+  'msm:armor',
+  'msm:shield',
+  'msm:throwable',
+  'msm:food',
+  'msm:consumable',
+];
+
+function inventoryConflicts(component: Reader, components: Reader | undefined, name: string): void {
+  const conflicts = INVENTORY_CONFLICTS.filter((other) => components?.has(other) === true);
+  if (conflicts.length > 0) {
+    component.fail(
+      `${name} and ${conflicts.join(', ')} on one item cannot be ejected (blocks-items.component-conflict)`,
+    );
+  }
+}
+
+function readBag(bag: Reader, events: Events): BagSpec {
+  bag.onlyKeys(
+    ['layout', 'rows', 'open', 'open_sound', 'close_sound', 'on_open', 'on_close'],
+    'msm:item_inventory field',
+  );
+  const layout = bag.enumConstant('layout', BAG_LAYOUTS, 'chest');
+  const rows = bag.integer('rows', 3);
+  if (rows < 1 || rows > 6) bag.fail('rows must be 1 to 6');
+  const open = bag.string('open', 'use');
+  if (open !== 'use' && open !== 'sneak_use') bag.fail(`open '${open}' is not use or sneak_use`);
+  const event = (key: string): string | undefined => {
+    const id = bag.optionalString(key);
+    return id === undefined ? undefined : eventMethod(bag, events, id);
+  };
+  return {
+    layout,
+    rows: layout === 'CHEST' ? rows : 3,
+    sneakUse: open === 'sneak_use',
+    openSound: bag.optionalString('open_sound'),
+    closeSound: bag.optionalString('close_sound'),
+    onOpen: event('on_open'),
+    onClose: event('on_close'),
+  };
 }
 
 /** The item triggers of ADR 0061 D1, each with its event method. */
@@ -426,6 +493,23 @@ function readItem(input: DefinitionInput): ItemSpec {
     throwable: throwable === undefined ? undefined : readThrowable(throwable, events),
     vanilla: vanilla === undefined ? undefined : JSON.stringify(vanilla.value),
     triggers: readTriggers(components, events),
+    bag: (() => {
+      const bag = components?.object('msm:item_inventory');
+      if (bag === undefined) return undefined;
+      if (components?.has('msm:bundle') === true) {
+        bag.fail(
+          'msm:item_inventory and msm:bundle on one item cannot be ejected (the runtime applies neither)',
+        );
+      }
+      inventoryConflicts(bag, components, 'msm:item_inventory');
+      return readBag(bag, events);
+    })(),
+    bundle: (() => {
+      const bundle = components?.object('msm:bundle');
+      bundle?.onlyKeys([], 'msm:bundle field');
+      if (bundle !== undefined) inventoryConflicts(bundle, components, 'msm:bundle');
+      return bundle !== undefined;
+    })(),
   };
 }
 
@@ -1043,6 +1127,7 @@ export function generateItems(
   const methods: string[] = [];
   const tabs: string[] = [];
   const dispensers: string[] = [];
+  let usesBags = false;
   for (const spec of specs) {
     const { path } = splitId(spec.input.id);
     const id = spec.input.id;
@@ -1068,14 +1153,29 @@ export function generateItems(
           `${dispenser}.registerProjectileBehavior(${field}); // dispensable: thrown through ProjectileItem`,
         );
       }
+    } else if (spec.bag !== undefined) {
+      // ADR 0095 D1, D6: every bag is a subclass of the shared item/BagItem with its settings.
+      usesBags = true;
+      const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
+      writeItemClass(context, spec, name, `${packageOf(context, 'item')}.BagItem`);
+      type = file.use(`${packageOf(context, 'item')}.${name}`);
     } else if (
       spec.onUse !== undefined ||
       rangedChanges(spec.ranged) ||
       hasTriggers(spec.triggers)
     ) {
       const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
-      writeItemClass(context, spec, name, base ?? 'net.minecraft.world.item.Item');
+      writeItemClass(
+        context,
+        spec,
+        name,
+        spec.bundle
+          ? 'net.minecraft.world.item.BundleItem'
+          : (base ?? 'net.minecraft.world.item.Item'),
+      );
       type = file.use(`${packageOf(context, 'item')}.${name}`);
+    } else if (spec.bundle) {
+      type = file.use('net.minecraft.world.item.BundleItem');
     } else {
       type = base === undefined ? itemType : file.use(base);
     }
@@ -1103,6 +1203,17 @@ export function generateItems(
       if (spec.input.definition.max_stack_size !== undefined && spec.maxStackSize !== 1) {
         props.push(
           `        // max_stack_size ${spec.maxStackSize} ignored: tools, armour and items with durability stack to 1.`,
+        );
+      }
+    } else if (spec.bag !== undefined || spec.bundle) {
+      props.push(
+        `        .stacksTo(1) // ${spec.bag !== undefined ? 'msm:item_inventory' : 'msm:bundle'}: one per stack (ADR 0095 D1, D4)`,
+      );
+      if (spec.bundle) {
+        const dataComponents = file.use('net.minecraft.core.component.DataComponents');
+        const bundleContents = file.use('net.minecraft.world.item.component.BundleContents');
+        props.push(
+          `        .component(${dataComponents}.BUNDLE_CONTENTS, ${bundleContents}.EMPTY) // as vanilla's bundle`,
         );
       }
     } else {
@@ -1243,7 +1354,10 @@ export function generateItems(
       `public static final ${type} ${field} = ${registry}.register(${builtIn}.ITEM, ${field}_KEY, new ${type}(${open}`,
       ...props,
     );
-    if (spec.creativeTab !== undefined) tabs.push(tabLine(file, spec.creativeTab, field));
+    // A project tab lists its own members (ModCreativeTabs, ADR 0096 D2).
+    if (spec.creativeTab !== undefined && !context.projectTabs.has(spec.creativeTab)) {
+      tabs.push(tabLine(file, spec.creativeTab, field));
+    }
   }
   const shared = helperMethods(file, helpers);
   const logger: string[] = [];
@@ -1270,6 +1384,18 @@ export function generateItems(
     '}',
   ];
   context.files.push({ path: classPath(context, '', 'ModItems'), contents: file.render(lines) });
+  if (usesBags) {
+    context.files.push(
+      {
+        path: classPath(context, 'item', 'BagItem'),
+        contents: bagItemJava(packageOf(context, 'item')),
+      },
+      {
+        path: classPath(context, 'item', 'BagMenus'),
+        contents: bagMenusJava(packageOf(context, 'item')),
+      },
+    );
+  }
   return 'ModItems';
 }
 
@@ -1299,7 +1425,12 @@ function writeItemClass(
   const superType = file.use(base);
   const itemType = file.use('net.minecraft.world.item.Item');
   const members: string[] = [];
-  const hasEvents = spec.onUse !== undefined || hasTriggers(spec.triggers);
+  const bag = spec.bag;
+  const hasEvents =
+    spec.onUse !== undefined ||
+    hasTriggers(spec.triggers) ||
+    bag?.onOpen !== undefined ||
+    bag?.onClose !== undefined;
   if (hasEvents) {
     members.push(`private static final String OWNER = ${javaString(spec.input.id)};`, '');
   }
@@ -1311,11 +1442,33 @@ function writeItemClass(
       '',
     );
   }
+  let superArgs = '';
+  if (bag !== undefined) {
+    const sound = (id: string | undefined): string =>
+      id === undefined ? 'null' : identifierExpression(file, id);
+    superArgs = `, ${superType}.Layout.${bag.layout}, ${javaInt(bag.rows)}, ${String(bag.sneakUse)}, ${sound(bag.openSound)}, ${sound(bag.closeSound)}`;
+  }
   members.push(
     `public ${name}(${itemType}.Properties properties) {`,
-    '    super(properties);',
+    `    super(properties${superArgs});`,
     '}',
   );
+  for (const [method, event, when] of [
+    ['onOpened', bag?.onOpen, 'opens'],
+    ['onClosed', bag?.onClose, 'closes'],
+  ] as const) {
+    if (event === undefined) continue;
+    const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+    const serverPlayer = file.use('net.minecraft.server.level.ServerPlayer');
+    members.push(
+      '',
+      `/** msm:item_inventory on_${when === 'opens' ? 'open' : 'close'}: the bag ${when}; self and other are the player. */`,
+      '@Override',
+      `protected void ${method}(${serverLevel} level, ${serverPlayer} player) {`,
+      `    ${fireCall(event, withOther(spec, 'level, player.blockPosition(), player.position(), player, null', 'player'))}`,
+      '}',
+    );
+  }
   if (spec.onUse !== undefined) {
     const onUse = spec.onUse;
     const interactionResult = file.use('net.minecraft.world.InteractionResult');

@@ -48,6 +48,16 @@ import type { JavaFile } from './java';
 import { identifierExpression, javaFloat, javaInt, javaString } from './java';
 import { PORTAL_FIELDS, type PortalInfo, readPortal } from './portals';
 import type { Reader } from './read';
+import {
+  isParityType,
+  PARITY_FIELDS,
+  type ParitySpec,
+  type ParityType,
+  parityArguments,
+  parityClass,
+  readParity,
+  VANILLA_PARITY_TYPES,
+} from './vanilla-types';
 
 /** The block types this generator writes (ADR 0067 D1). */
 export const BUILDING_TYPES = [
@@ -74,8 +84,8 @@ export type BuildingType = (typeof BUILDING_TYPES)[number];
 
 export type PlantType = (typeof PLANT_TYPES)[number];
 
-/** Every block type (ADR 0067 D1, ADR 0068, ADR 0077). */
-export type BlockTypeName = BuildingType | PlantType | 'portal';
+/** Every block type (ADR 0067 D1, ADR 0068, ADR 0077, ADR 0094). */
+export type BlockTypeName = BuildingType | PlantType | 'portal' | ParityType;
 
 /** The types that keep a fixed or rotating shape and their own `powered` state (ADR 0067 D3). */
 const SHAPED_TYPES: readonly BlockTypeName[] = ['block', 'pillar', 'horizontal', 'directional'];
@@ -103,6 +113,7 @@ const TYPE_FIELDS: Readonly<Record<string, readonly string[]>> = {
   sapling: ['tree', 'mega_tree', 'flower_tree', 'soil'],
   leaves: ['tint', 'particle_chance', 'falling_particle'],
   portal: PORTAL_FIELDS,
+  ...PARITY_FIELDS,
 };
 
 /** MSM set type names (`BlockType.SetType`) to the 26.3 `BlockSetType` constant (`BlockSetTypes`). */
@@ -194,6 +205,8 @@ export interface TypeSpec {
   readonly leaves?: LeavesSpec;
   /** `portal`: the portal's fields (ADR 0077 D1). */
   readonly portal?: PortalInfo;
+  /** The ADR 0094 types: their fields (`vanilla-types.ts`). */
+  readonly parity?: ParitySpec;
 }
 
 /** The top-level keys a definition of `type` may have besides the shared ones. */
@@ -209,7 +222,12 @@ export function typeKeys(reader: Reader): string[] {
  */
 export function readType(reader: Reader, components: Reader | undefined): TypeSpec {
   const raw = reader.string('type', 'block');
-  const all: readonly string[] = [...BUILDING_TYPES, ...PLANT_TYPES, 'portal'];
+  const all: readonly string[] = [
+    ...BUILDING_TYPES,
+    ...PLANT_TYPES,
+    'portal',
+    ...VANILLA_PARITY_TYPES,
+  ];
   if (!all.includes(raw)) {
     reader.fail(`type '${raw}' is not one of ${all.join(', ')}`);
   }
@@ -223,6 +241,7 @@ export function readType(reader: Reader, components: Reader | undefined): TypeSp
       }
     }
   }
+  if (isParityType(type)) return { type, parity: readParity(reader, type) };
   switch (type) {
     case 'stairs': {
       const base = reader.string('base_block', 'minecraft:stone');
@@ -403,8 +422,16 @@ export interface FamilyClass {
   readonly protectedConstructor: boolean;
 }
 
-/** The vanilla class per type (ADR 0067 D4; constructors checked with `javap`, 26.3). */
-export function familyClass(spec: TypeSpec): FamilyClass {
+/**
+ * The vanilla class per type (ADR 0067 D4; constructors checked with `javap`, 26.3); for the ADR
+ * 0094 types vanilla's or a shared class of the mod's `block.type` package.
+ *
+ * @param javaPackage - The mod's package.
+ */
+export function familyClass(spec: TypeSpec, javaPackage = ''): FamilyClass {
+  if (spec.parity !== undefined) {
+    return { fqcn: parityClass(spec.parity.type, javaPackage), protectedConstructor: false };
+  }
   const block = (name: string, protectedConstructor = false): FamilyClass => ({
     fqcn: `net.minecraft.world.level.block.${name}`,
     protectedConstructor,
@@ -451,6 +478,9 @@ export function familyClass(spec: TypeSpec): FamilyClass {
     case 'portal':
       // Always a generated subclass of the project's portal/PortalBlock (which extends Block).
       return block('Block', true);
+    default:
+      // The ADR 0094 types are answered above from their fields.
+      throw new Error(`block type '${spec.type}' has no fields read`);
   }
 }
 
@@ -460,8 +490,23 @@ export function familyClass(spec: TypeSpec): FamilyClass {
  * chance, falling particle and no ambient sound); the stairs' base state is passed separately.
  *
  * @param modPackage - The mod's package, where `ModBlocks.fallingParticle` lives.
+ * @param ids - The block's id and its item id (else the block's), for the ADR 0094 types.
  */
-export function constructorArguments(file: JavaFile, spec: TypeSpec, modPackage: string): string[] {
+export function constructorArguments(
+  file: JavaFile,
+  spec: TypeSpec,
+  modPackage: string,
+  ids?: { readonly blockId: string; readonly seedId: string },
+): string[] {
+  if (spec.parity !== undefined) {
+    return parityArguments(
+      file,
+      spec.parity,
+      ids?.blockId ?? '',
+      ids?.seedId ?? ids?.blockId ?? '',
+      file.use(`${modPackage}.ModBlocks`),
+    );
+  }
   const noAmbientSound = (): string =>
     `${file.use('net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer')}.noAmbientSound()`;
   switch (spec.type) {

@@ -8,8 +8,11 @@
  * dimension types, timelines)
  * names an id or `#tag` it does not know, or names a file of its own registries that is not
  * there. Mod-only ids are the ids MSM runtime kinds register (blocks and their items, items,
- * effects, potions and their versions, entities and their spawn eggs, particle types) plus
- * project tags that hold nothing else.
+ * effects, potions and their versions, entities and their spawn eggs, particle types, creative
+ * tabs; the twenty block types of ADR 0094 with their companion blocks, bags and bundles are
+ * blocks and items like any other) plus project tags that hold nothing else. Project command
+ * literals (ADR 0096 D1) are mod-only too: a vanilla server cannot parse a function that runs
+ * one, so such functions are kept with `export.mod-only-function`.
  * For the vanilla data pack, files that name one are left out (one warning per element), tag
  * entries that name one become `{ "id": ..., "required": false }`, and functions that name
  * one are kept with a warning (the game skips only that function; function tag entries naming
@@ -32,6 +35,48 @@ import type {
 } from '@msm/plugin-api';
 import { ExportProblemCodes } from '../problem-codes';
 
+/** A command or creative tab a vanilla pack export leaves out (info). */
+export const NEEDS_JAR = ExportProblemCodes.needsJar;
+
+/**
+ * The infos of a vanilla pack export of a project with commands or creative tabs (ADR 0096 D1,
+ * D2): one {@link NEEDS_JAR} per `msm:command` and `msm:creative_tab` element, as the host adds
+ * `controls.needs-jar` for key binds. Pure; the elements' order is kept.
+ *
+ * @param elements - The project's elements (id, kind and data).
+ */
+export function needsJarNotes(
+  elements: readonly {
+    readonly id: ResourceLocation;
+    readonly kind: string;
+    readonly data: Json;
+  }[],
+): Problem[] {
+  const out: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind === 'msm:command') {
+      const name =
+        isObject(element.data) && typeof element.data.name === 'string'
+          ? element.data.name
+          : element.id;
+      out.push({
+        severity: 'info',
+        code: NEEDS_JAR,
+        elementId: element.id,
+        message: `The command /${name} works only in the Fabric mod jar: a vanilla data pack cannot add commands, so the vanilla packs leave it out.`,
+      });
+    } else if (element.kind === 'msm:creative_tab') {
+      out.push({
+        severity: 'info',
+        code: NEEDS_JAR,
+        elementId: element.id,
+        message: `The creative tab ${element.id} works only in the Fabric mod jar: vanilla packs cannot add creative tabs, so they leave it out.`,
+      });
+    }
+  }
+  return out;
+}
+
 /** A data pack file left out because it names something only the mod jar provides. */
 export const MOD_ONLY_REFERENCE = ExportProblemCodes.modOnlyReference;
 
@@ -40,7 +85,9 @@ export const MOD_ONLY_FUNCTION = ExportProblemCodes.modOnlyFunction;
 
 /**
  * The registries MSM runtime kinds register ids in (ADR 0066 D2); `particle_type` since
- * ADR 0080 D10 (`msm:particle`).
+ * ADR 0080 D10 (`msm:particle`), `creative_mode_tab` since ADR 0096 D2 (`msm:creative_tab`).
+ * Companion blocks (`<id>_wall`, `<id>_attached`, ADR 0094 D3) are in `block` as the host's
+ * registry ids list them.
  */
 export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
   'block',
@@ -49,7 +96,30 @@ export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
   'potion',
   'entity_type',
   'particle_type',
+  'creative_mode_tab',
 ]);
+
+/**
+ * The pseudo-registry of project command literals (names and aliases, ADR 0096 D1) in
+ * {@link ModOnlyIds}: not an id registry, so only function text is checked against it.
+ */
+export const COMMAND_LITERALS = 'command';
+
+/** The literals (name and aliases) of `msm:command` elements, sorted, for {@link modOnlyIdsOf}. */
+export function commandLiteralsOf(
+  elements: readonly { readonly kind: string; readonly data: Json }[],
+): string[] {
+  const out = new Set<string>();
+  for (const element of elements) {
+    if (element.kind !== 'msm:command' || !isObject(element.data)) continue;
+    const { name, aliases } = element.data;
+    if (typeof name === 'string' && name !== '') out.add(name);
+    if (Array.isArray(aliases)) {
+      for (const alias of aliases) if (typeof alias === 'string' && alias !== '') out.add(alias);
+    }
+  }
+  return [...out].sort();
+}
 
 /**
  * Data folders where one unknown id or `#tag` makes the game reject the whole data pack
@@ -104,8 +174,12 @@ export type ModOnlyIds = ReadonlyMap<string, ReadonlySet<string>>;
  *
  * @param registryIds - The project's registry ids, per registry.
  */
-export function modOnlyIdsOf(registryIds: Readonly<Record<string, readonly string[]>>): ModOnlyIds {
+export function modOnlyIdsOf(
+  registryIds: Readonly<Record<string, readonly string[]>>,
+  commands: readonly string[] = [],
+): ModOnlyIds {
   const out = new Map<string, Set<string>>();
+  if (commands.length > 0) out.set(COMMAND_LITERALS, new Set(commands));
   for (const registry of RUNTIME_REGISTRIES) {
     const ids = registryIds[registry] ?? [];
     if (ids.length > 0) out.set(registry, new Set(ids));
@@ -356,6 +430,23 @@ function firstFunctionHit(text: string, set: ModOnlySet): string | undefined {
   return undefined;
 }
 
+/** A command word: the line's first, or the one after `run` (an `execute ... run`). */
+const COMMAND_WORD = /(?:^\$?|\brun\s+)([a-z0-9_]+)(?=\s|$)/g;
+
+/** The first project command literal a function's text runs, skipping comment lines. */
+function firstCommandHit(text: string, literals: ReadonlySet<string>): string | undefined {
+  if (literals.size === 0) return undefined;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (line === '' || line.startsWith('#')) continue;
+    for (const match of line.matchAll(COMMAND_WORD)) {
+      const word = match[1] as string;
+      if (literals.has(word)) return `/${word}`;
+    }
+  }
+  return undefined;
+}
+
 /** Groups paths by element (the path itself when no element made it), in path order. */
 function byElement(
   hits: ReadonlyMap<string, string>,
@@ -421,6 +512,8 @@ export function vanillaSafeDataFiles(
   elementOf: (path: string) => ResourceLocation | undefined = () => undefined,
 ): VanillaSafeResult {
   if ([...modOnly.values()].every((ids) => ids.size === 0)) return { files, problems: [] };
+  const literals = modOnly.get(COMMAND_LITERALS) ?? new Set<string>();
+  const registryIds = new Map([...modOnly].filter(([registry]) => registry !== COMMAND_LITERALS));
   const fatalFolders = new Map(FATAL_DATA_FOLDERS.map((key) => [folders[key], key]));
   const refFolders: DataRefFolders = {
     lootTable: folders.loot_table,
@@ -468,7 +561,7 @@ export function vanillaSafeDataFiles(
     });
   }
 
-  const set = new ModOnlySet(modOnly);
+  const set = new ModOnlySet(registryIds);
   const dropped = new Map<string, string>();
   let changed = true;
   while (changed) {
@@ -490,7 +583,7 @@ export function vanillaSafeDataFiles(
       file.contents instanceof Uint8Array
         ? utf8Decoder.decode(file.contents)
         : String(file.contents);
-    const hit = firstFunctionHit(text, set);
+    const hit = firstFunctionHit(text, set) ?? firstCommandHit(text, literals);
     if (hit !== undefined) flagged.set(file.path, hit);
   }
   // The game drops a flagged function, and a function tag with a plain entry naming it is

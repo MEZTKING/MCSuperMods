@@ -103,6 +103,29 @@ import {
 } from './portals';
 import { blockItemId, checkFormat, type Reader, readDefinition } from './read';
 import { blockStrippingJava } from './templates/block-stripping-java';
+import { DRIVER_CLASSES, driverClassJava } from './templates/vanilla-blocks-java';
+import {
+  companionExpression,
+  companionSuffix,
+  hasDriverClass,
+  lightFromState,
+  parityItem,
+  parityProperties,
+  VANILLA_BLOCK_CLASS_NAMES,
+} from './vanilla-types';
+import {
+  blockWaxingJava,
+  readWaterloggable,
+  readWaxable,
+  readWeathering,
+  WEATHER_TICK,
+  type WeatheringSpec,
+  waterloggedPlacement,
+  waterlogMembers,
+  waxingLines,
+  weatheringInterface,
+  weatheringMembers,
+} from './weathering';
 
 /** The block sound types (`::msm::definition::SoundType`), each a `SoundType` constant. */
 export const SOUND_TYPES = [
@@ -168,6 +191,9 @@ const BLOCK_COMPONENTS = [
   'msm:container',
   'msm:machine',
   'msm:ambient_particles',
+  'msm:waterloggable',
+  'msm:weathering',
+  'msm:waxable',
 ];
 
 /** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
@@ -236,6 +262,16 @@ interface BlockSpec {
   readonly onTravel: string | undefined;
   /** `msm:ambient_particles` (ADR 0080 D6). */
   readonly ambient: AmbientInfo | undefined;
+  /** `msm:waterloggable` (ADR 0094 D7). */
+  readonly waterlogged: boolean;
+  /** `msm:weathering` (ADR 0094 D8). */
+  readonly weathering: WeatheringSpec | undefined;
+  /** `msm:waxable` `into` (ADR 0094 D9). */
+  readonly waxInto: string | undefined;
+  /** Method of a cake's `on_eat` event (ADR 0094 D2). */
+  readonly onEat: string | undefined;
+  /** Whether the definition sets `item.max_stack_size` (beds and signs default to 1 and 16). */
+  readonly stackSet: boolean;
 }
 
 /**
@@ -299,8 +335,9 @@ function readBlock(input: DefinitionInput): BlockSpec {
 
   let item: BlockSpec['item'];
   const rawItem = input.definition.item;
-  // A portal has no item unless the definition gives it one (ADR 0077 D1).
-  if (rawItem === false || (rawItem === undefined && type.portal !== undefined)) item = undefined;
+  // A portal or potted plant has no item unless the definition gives it one (ADR 0077 D1, ADR 0094 D2).
+  const itemless = type.portal !== undefined || type.type === 'potted_plant';
+  if (rawItem === false || (rawItem === undefined && itemless)) item = undefined;
   else if (rawItem === true) reader.fail('item must be an object or false');
   else {
     const settings = reader.object('item');
@@ -371,6 +408,12 @@ function readBlock(input: DefinitionInput): BlockSpec {
   strippable?.onlyKeys(['into'], 'msm:strippable field');
   const into = strippable?.requiredString('into');
   const ambient = components?.object('msm:ambient_particles');
+  // A container or machine holds no water and does not age (the runtime drops both with a warning).
+  const entityBlock = containerComponent !== undefined || machineComponent !== undefined;
+  const waterlogComponent = entityBlock ? undefined : components?.object('msm:waterloggable');
+  const weatheringComponent = entityBlock ? undefined : components?.object('msm:weathering');
+  const waxableComponent = entityBlock ? undefined : components?.object('msm:waxable');
+  const onEat = type.parity?.cake?.onEat;
   if (into !== undefined && !/^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(into)) {
     strippable?.fail(`into '${into}' is not a block id`);
   }
@@ -459,6 +502,19 @@ function readBlock(input: DefinitionInput): BlockSpec {
             `on_travel names event ${type.portal.onTravel}, which is not declared in events`,
           )),
     ambient: ambient === undefined ? undefined : readAmbient(ambient),
+    waterlogged:
+      waterlogComponent === undefined ? false : readWaterloggable(waterlogComponent, type.type),
+    weathering:
+      weatheringComponent === undefined
+        ? undefined
+        : readWeathering(weatheringComponent, type.type),
+    waxInto: waxableComponent === undefined ? undefined : readWaxable(waxableComponent),
+    onEat: onEat === undefined ? undefined : eventMethod(reader, events, onEat),
+    stackSet:
+      typeof rawItem === 'object' &&
+      rawItem !== null &&
+      !Array.isArray(rawItem) &&
+      Object.hasOwn(rawItem, 'max_stack_size'),
   };
 }
 
@@ -482,7 +538,10 @@ function needsClass(spec: BlockSpec): boolean {
     spec.onEntityInside !== undefined ||
     spec.container !== undefined ||
     spec.machine !== undefined ||
-    spec.ambient !== undefined
+    spec.ambient !== undefined ||
+    spec.waterlogged ||
+    spec.weathering !== undefined ||
+    spec.onEat !== undefined
   );
 }
 
@@ -499,7 +558,10 @@ function tracksPower(spec: BlockSpec): boolean {
 function registrationOrder(specs: readonly BlockSpec[]): BlockSpec[] {
   const ids = new Set(specs.map((spec) => spec.input.id));
   const namespaces = new Set(specs.map((spec) => splitId(spec.input.id).namespace));
-  const out = specs.filter((spec) => spec.type.type !== 'stairs');
+  const potted = specs.filter((spec) => spec.type.type === 'potted_plant');
+  const out = specs.filter(
+    (spec) => spec.type.type !== 'stairs' && spec.type.type !== 'potted_plant',
+  );
   const written = new Set(out.map((spec) => spec.input.id));
   let left = specs.filter((spec) => spec.type.type === 'stairs');
   for (const spec of left) {
@@ -523,6 +585,8 @@ function registrationOrder(specs: readonly BlockSpec[]): BlockSpec[] {
     }
     left = left.filter((spec) => !ready.includes(spec));
   }
+  // Potted plants after every other block: vanilla's pot takes the registered plant (ADR 0094 D2, B445).
+  out.push(...potted);
   return out;
 }
 
@@ -582,6 +646,12 @@ export function generateBlocks(
   let usesFallingParticle = false;
   const leafTints: LeafTintEntry[] = [];
   const treeChecks: string[] = [];
+  const waxing: string[] = [];
+  const projectBlocks = new Set(specs.map((spec) => spec.input.id));
+  const pkg = context.input.javaPackage;
+  let usesTorchParticle = false;
+  let usesWoodType = false;
+  let usesPottedPlant = false;
   const nearPlane = (): string => {
     usesNearPlane = true;
     return 'ModBlocks::nearPlaneIntersectsOutline';
@@ -602,8 +672,10 @@ export function generateBlocks(
     if (needsClass(spec)) {
       // A container or machine block's block entity class is its class name plus Entity (ADR 0074 D9).
       const hasEntity = spec.container !== undefined || spec.machine !== undefined;
+      // A class named as a vanilla block class (a block "chain") would hide it in its own imports.
+      const plain = className(path, 'Block');
       const name = classNames.take(
-        className(path, 'Block'),
+        VANILLA_BLOCK_CLASS_NAMES.has(plain) ? `Mod${plain}` : plain,
         (n) => (hasEntity ? [`block.${n}`, `block.${n}Entity`] : [`block.${n}`]),
         '',
       );
@@ -619,9 +691,16 @@ export function generateBlocks(
       if (hasEntity)
         blockEntities.push({ blockId: spec.input.id, field, entityClass: `${name}Entity` });
     } else {
-      type = file.use(familyClass(spec.type).fqcn);
-      args = constructorArguments(file, spec.type, context.input.javaPackage);
+      type = file.use(familyClass(spec.type, pkg).fqcn);
+      args = constructorArguments(file, spec.type, pkg, {
+        blockId: spec.input.id,
+        seedId: spec.itemId,
+      });
     }
+    const parity = spec.type.parity;
+    if (parity?.type === 'torch') usesTorchParticle = true;
+    if (parity?.type === 'sign' || parity?.type === 'hanging_sign') usesWoodType = true;
+    if (parity?.type === 'potted_plant') usesPottedPlant = true;
     if (spec.type.type === 'stairs') {
       const base = spec.type.baseBlock ?? 'minecraft:stone';
       const baseField = fieldOf.get(base);
@@ -639,12 +718,15 @@ export function generateBlocks(
     ];
     if (spec.machine !== undefined) {
       props.push(machineLightLine(type, spec.machine, spec.light ?? 0));
-    } else if (spec.light !== undefined) {
+    } else if (spec.light !== undefined && !lightFromState(spec.type.type)) {
       props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
     }
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
     if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
     props.push(...typeProperties(file, spec.type, nearPlane));
+    if (parity !== undefined) {
+      props.push(...parityProperties(file, parity, spec.light !== undefined, pkg));
+    }
     if (spec.flammable !== undefined && spec.type.type !== 'leaves') {
       props.push(
         '        .ignitedByLava() // msm:flammable: lava sets it alight, as vanilla planks and logs',
@@ -671,6 +753,56 @@ export function generateBlocks(
       `public static final ${type} ${field} = ${registry}.register(${builtIn}.BLOCK, ${field}_KEY, new ${type}(${open}`,
       ...props.slice(1),
     );
+    // ADR 0094 D3: the companion right after its element, with the element's properties.
+    const suffix = parity === undefined ? undefined : companionSuffix(parity.type);
+    let companion: string | undefined;
+    if (parity !== undefined && suffix !== undefined) {
+      companion = fields.take(constantName(`${path}${suffix}`), (name) => [name, `${name}_KEY`]);
+      const companionId = `${spec.input.id}${suffix}`;
+      if (projectBlocks.has(companionId)) {
+        spec.reader.fail(
+          `the generated block ${companionId} (its ${suffix.slice(1)} form) is also a block of the project (blocks-items.generated-block-clash; the runtime skips the element)`,
+        );
+      }
+      const expression = companionExpression(
+        file,
+        parity,
+        field,
+        spec.input.id,
+        spec.itemId,
+        'ModBlocks',
+        `${properties}.ofFullCopy(${field}).setId(${companion}_KEY)`,
+      );
+      const companionType = file.use(
+        `net.minecraft.world.level.block.${
+          parity.type === 'torch'
+            ? 'WallTorchBlock'
+            : parity.type === 'sign'
+              ? 'WallSignBlock'
+              : parity.type === 'hanging_sign'
+                ? 'WallHangingSignBlock'
+                : 'AttachedStemBlock'
+        }`,
+      );
+      body.push(
+        `/** {@code ${companionId}}: the ${suffix === '_wall' ? 'wall' : 'attached'} form of {@code ${spec.input.id}} (ADR 0094 D3), no item of its own. */`,
+        `public static final ${resourceKey}<${blockType}> ${companion}_KEY = ${resourceKey}.create(${registries}.BLOCK, ${identifierExpression(file, companionId)});`,
+        `public static final ${companionType} ${companion} = ${registry}.register(${builtIn}.BLOCK, ${companion}_KEY, ${expression});`,
+      );
+      if (parity.type === 'sign' || parity.type === 'hanging_sign') {
+        const entityTypes = file.use('net.minecraft.world.level.block.entity.BlockEntityTypes');
+        const sign = parity.type === 'sign' ? 'SIGN' : 'HANGING_SIGN';
+        extras.push(
+          `${entityTypes}.${sign}.addValidBlock(${field}); // ${parity.type.replace('_', ' ')}: vanilla's sign block entity`,
+          `${entityTypes}.${sign}.addValidBlock(${companion});`,
+        );
+      }
+    }
+    if (spec.waxInto !== undefined || spec.weathering !== undefined) {
+      waxing.push(
+        ...waxingLines(file, field, spec.input.id, spec.weathering, spec.waxInto, projectBlocks),
+      );
+    }
     const leaves = spec.type.leaves;
     if (leaves?.tint !== undefined) leafTints.push({ field, tint: leaves.tint });
     else if (leaves?.fallingParticle !== undefined) usesFallingParticle = true;
@@ -689,6 +821,11 @@ export function generateBlocks(
       extras.push(
         `${flammable}.getDefaultInstance().add(${field}, ${javaInt(spec.flammable.burnOdds)}, ${javaInt(spec.flammable.igniteOdds)}); // msm:flammable`,
       );
+      if (companion !== undefined) {
+        extras.push(
+          `${flammable}.getDefaultInstance().add(${companion}, ${javaInt(spec.flammable.burnOdds)}, ${javaInt(spec.flammable.igniteOdds)}); // the ${suffix === '_wall' ? 'wall' : 'attached'} form burns alike`,
+        );
+      }
     }
     if (spec.type.portal !== undefined) extras.push(portalRegisterLine(file, context, field));
     if (spec.strippable !== undefined) {
@@ -699,15 +836,27 @@ export function generateBlocks(
     if (spec.item !== undefined) {
       const item = file.use('net.minecraft.world.item.Item');
       // A keep-contents container's item cannot go inside container items, as a shulker box (ADR 0074 D6).
-      const blockItem = file.use(
-        spec.type.type === 'door'
-          ? 'net.minecraft.world.item.DoubleHighBlockItem'
-          : spec.container?.keepContents === true
-            ? `${packageOf(context, 'block')}.ContainerBlockItem`
-            : 'net.minecraft.world.item.BlockItem',
-      );
+      const ownItem = parity === undefined ? undefined : parityItem(parity.type, pkg);
+      const blockItem =
+        ownItem !== undefined
+          ? [
+              file.use(ownItem.fqcn),
+              ...(ownItem.nested === undefined ? [] : [ownItem.nested]),
+            ].join('.')
+          : file.use(
+              spec.type.type === 'door'
+                ? 'net.minecraft.world.item.DoubleHighBlockItem'
+                : spec.container?.keepContents === true
+                  ? `${packageOf(context, 'block')}.ContainerBlockItem`
+                  : 'net.minecraft.world.item.BlockItem',
+            );
       const rarity = file.use('net.minecraft.world.item.Rarity');
       const { vanilla } = spec.item;
+      const itemArgs = (ownItem?.args(file, field, companion) ?? [field]).join(', ');
+      const stack =
+        spec.stackSet || ownItem?.defaultStack === undefined
+          ? spec.item.maxStackSize
+          : ownItem.defaultStack;
       // An item with its own id (ADR 0068 D2) is named item.<namespace>.<path> of that id.
       const ownId = spec.itemId !== spec.input.id;
       const itemKey = ownId
@@ -725,10 +874,10 @@ export function generateBlocks(
       if (vanilla === undefined) {
         body.push(
           `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${itemKey};`,
-          `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, new ${item}.Properties()`,
+          `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${itemArgs}, new ${item}.Properties()`,
           `        .setId(${field}_ITEM_KEY)`,
           `        ${prefix} // ${named}`,
-          `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
+          `        .stacksTo(${javaInt(stack)})`,
           `        .rarity(${rarity}.${spec.item.rarity})));`,
         );
       } else {
@@ -739,14 +888,15 @@ export function generateBlocks(
           `/** The msm:components of the block item {@code ${spec.itemId}}: vanilla data components as JSON. */`,
           `private static final String ${field}_ITEM_COMPONENTS = ${javaString(vanilla)};`,
           `public static final ${resourceKey}<${item}> ${field}_ITEM_KEY = ${itemKey};`,
-          `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${field}, ${helper}.apply(new ${item}.Properties()`,
+          `public static final ${blockItem} ${field}_ITEM = ${registry}.register(${builtIn}.ITEM, ${field}_ITEM_KEY, new ${blockItem}(${itemArgs}, ${helper}.apply(new ${item}.Properties()`,
           `        .setId(${field}_ITEM_KEY)`,
           `        ${prefix}, ${javaString(spec.itemId)}, ${field}_ITEM_COMPONENTS) // ${named.replace(/, as .*$/, '')}; msm:components first, the fields below win`,
-          `        .stacksTo(${javaInt(spec.item.maxStackSize)})`,
+          `        .stacksTo(${javaInt(stack)})`,
           `        .rarity(${rarity}.${spec.item.rarity})));`,
         );
       }
-      if (spec.item.creativeTab !== undefined)
+      // A project tab lists its own members (ModCreativeTabs, ADR 0096 D2).
+      if (spec.item.creativeTab !== undefined && !context.projectTabs.has(spec.item.creativeTab))
         tabs.push(tabLine(file, spec.item.creativeTab, `${field}_ITEM`));
     }
   }
@@ -760,6 +910,27 @@ export function generateBlocks(
     context.files.push({
       path: classPath(context, '', 'BlockStripping'),
       contents: blockStrippingJava(context.input.javaPackage),
+    });
+  }
+  // Waxing and scraping after stripping, so an axe strips first (ADR 0094 D9, B449).
+  if (specs.some((spec) => spec.weathering !== undefined || spec.waxInto !== undefined)) {
+    extras.push(...waxing, 'BlockWaxing.register();');
+    context.files.push({
+      path: classPath(context, '', 'BlockWaxing'),
+      contents: blockWaxingJava(pkg),
+    });
+  }
+  const drivers = new Set(
+    specs.flatMap((spec) =>
+      spec.type.parity !== undefined && hasDriverClass(spec.type.parity.type)
+        ? [spec.type.parity.type]
+        : [],
+    ),
+  );
+  for (const driver of [...drivers].sort()) {
+    context.files.push({
+      path: classPath(context, 'block.type', DRIVER_CLASSES[driver] as string),
+      contents: driverClassJava(driver, packageOf(context, 'block.type')) as string,
     });
   }
   const helpers: string[] = [];
@@ -810,6 +981,73 @@ export function generateBlocks(
       '        return particle;',
       '    }',
       '    throw new IllegalStateException("falling_particle " + id + " is not a particle type without options");',
+      '}',
+    );
+  }
+  if (usesTorchParticle) {
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const simpleParticle = file.use('net.minecraft.core.particles.SimpleParticleType');
+    const particleTypes = file.use('net.minecraft.core.particles.ParticleTypes');
+    const logger = file.use('org.slf4j.LoggerFactory');
+    helpers.push(
+      '',
+      '/**',
+      " * A torch's flame (ADR 0094 D2): a registered particle type without options (vanilla or the mod's own); anything",
+      ' * else logs a warning and the torch uses minecraft:flame, as the runtime.',
+      ' */',
+      `public static ${simpleParticle} torchParticle(${identifier} id) {`,
+      `    if (${builtIn}.PARTICLE_TYPE.getValue(id) instanceof ${simpleParticle} particle) {`,
+      '        return particle;',
+      '    }',
+      `    ${logger}.getLogger(${javaString(context.input.modId)}).warn("particle {} is not a particle type without options; the torch uses minecraft:flame", id);`,
+      `    return ${particleTypes}.FLAME;`,
+      '}',
+    );
+  }
+  if (usesWoodType) {
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const woodType = file.use('net.minecraft.world.level.block.state.properties.WoodType');
+    const builder = file.use(
+      'net.fabricmc.fabric.api.object.builder.v1.block.type.WoodTypeBuilder',
+    );
+    helpers.push(
+      '',
+      '/**',
+      " * A sign's own wood type (ADR 0094 D6): named by the sign's id, with the sounds and block set type of {@code base};",
+      ' * not registered. The client draws the sign from its block models and the edit screen picture at',
+      ' * textures/gui/signs/<path>.png (hanging signs: gui/hanging_signs/).',
+      ' */',
+      `public static ${woodType} woodType(${identifier} id, ${woodType} base) {`,
+      `    return ${builder}.copyOf(base).build(id, base.setType());`,
+      '}',
+    );
+  }
+  if (usesPottedPlant) {
+    const identifier = file.use('net.minecraft.resources.Identifier');
+    const flowerPot = file.use('net.minecraft.world.level.block.FlowerPotBlock');
+    const doublePlant = file.use('net.minecraft.world.level.block.DoublePlantBlock');
+    const blocks = file.use('net.minecraft.world.level.block.Blocks');
+    helpers.push(
+      '',
+      '/**',
+      " * A potted plant's plant (ADR 0094 D2), registered before it: it must exist, not be two blocks high and not be",
+      ' * potted already (vanilla keeps one potted block per plant). Anything else stops the start-up, where the runtime',
+      ' * skips the potted plant with a load error.',
+      ' */',
+      `public static ${blockType} pottedPlant(${identifier} id) {`,
+      `    ${blockType} plant = ${builtIn}.BLOCK.getValue(id);`,
+      `    if (!${builtIn}.BLOCK.containsKey(id) || plant == ${blocks}.AIR) {`,
+      '        throw new IllegalStateException("plant " + id + " is not a registered block");',
+      '    }',
+      `    if (plant instanceof ${doublePlant}) {`,
+      '        throw new IllegalStateException("plant " + id + " is two blocks high and cannot be potted");',
+      '    }',
+      `    for (${blockType} block : ${builtIn}.BLOCK) {`,
+      `        if (block instanceof ${flowerPot} pot && pot.getPotted() == plant) {`,
+      '            throw new IllegalStateException("plant " + id + " is already potted by " + BuiltInRegistries.BLOCK.getKey(block));',
+      '        }',
+      '    }',
+      '    return plant;',
       '}',
     );
   }
@@ -969,8 +1207,11 @@ function writeBlockClass(
   const power = tracksPower(spec);
   const ts = spec.type;
   const superClass = file.use(
-    ts.portal === undefined ? familyClass(ts).fqcn : `${packageOf(context, 'portal')}.PortalBlock`,
+    ts.portal === undefined
+      ? familyClass(ts, context.input.javaPackage).fqcn
+      : `${packageOf(context, 'portal')}.PortalBlock`,
   );
+  const water = spec.waterlogged;
   const facing = isFacing(ts);
   const open = spec.container !== undefined;
   const lit = spec.machine !== undefined;
@@ -1006,6 +1247,19 @@ function writeBlockClass(
       open
         ? `public static final ${booleanProperty} OPEN = ${blockStateProperties}.OPEN;`
         : `public static final ${booleanProperty} LIT = ${blockStateProperties}.LIT;`,
+    );
+  }
+  if (water) {
+    const booleanProperty = file.use(
+      'net.minecraft.world.level.block.state.properties.BooleanProperty',
+    );
+    const blockStateProperties = file.use(
+      'net.minecraft.world.level.block.state.properties.BlockStateProperties',
+    );
+    if (members.length > 0) members.push('');
+    members.push(
+      '/** msm:waterloggable: holds water. */',
+      `public static final ${booleanProperty} WATERLOGGED = ${blockStateProperties}.WATERLOGGED;`,
     );
   }
   if (facing) {
@@ -1098,15 +1352,20 @@ function writeBlockClass(
       '    super(base, properties);',
     );
   } else {
-    const args = [...constructorArguments(file, ts, context.input.javaPackage), 'properties'].join(
-      ', ',
-    );
+    const args = [
+      ...constructorArguments(file, ts, context.input.javaPackage, {
+        blockId: spec.input.id,
+        seedId: spec.itemId,
+      }),
+      'properties',
+    ].join(', ');
     members.push('', `public ${name}(${properties} properties) {`, `    super(${args});`);
   }
   const falseDefaults = [
     ...(power ? ['.setValue(POWERED, false)'] : []),
     ...(open ? ['.setValue(OPEN, false)'] : []),
     ...(lit ? ['.setValue(LIT, false)'] : []),
+    ...(water ? ['.setValue(WATERLOGGED, false)'] : []),
   ].join('');
   if (facing) {
     const direction = file.use('net.minecraft.core.Direction');
@@ -1125,7 +1384,7 @@ function writeBlockClass(
     members.push(...portalTravelMembers(file, ts.portal.onTravel, spec.onTravel));
   }
 
-  if (power || facing || open || lit) {
+  if (power || facing || open || lit || water) {
     const stateDefinition = file.use('net.minecraft.world.level.block.state.StateDefinition');
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     const added = [
@@ -1133,6 +1392,7 @@ function writeBlockClass(
       ...(power ? ['POWERED'] : []),
       ...(open ? ['OPEN'] : []),
       ...(lit ? ['LIT'] : []),
+      ...(water ? ['WATERLOGGED'] : []),
     ].join(', ');
     members.push(
       '',
@@ -1143,7 +1403,8 @@ function writeBlockClass(
       '}',
     );
   }
-  if (facing) members.push(...facingMembers(file, ts));
+  if (facing) members.push(...facingMembers(file, ts, water));
+  if (water) members.push(...waterlogMembers(file, !facing));
   const blockState = () => file.use('net.minecraft.world.level.block.state.BlockState');
   const level = () => file.use('net.minecraft.world.level.Level');
   const blockPos = () => file.use('net.minecraft.core.BlockPos');
@@ -1214,7 +1475,52 @@ function writeBlockClass(
     );
   }
   const keepContents = spec.container?.keepContents === true;
-  members.push(...triggerMembers(context, file, spec, keepContents));
+  const triggers = triggerMembers(context, file, spec, keepContents);
+  if (spec.weathering !== undefined && spec.onRandomTick !== undefined) {
+    // One randomTick: the block ages (vanilla's changeOverTime) where super's tick would run.
+    const at = triggers.indexOf('    super.randomTick(state, level, pos, random);');
+    if (at >= 0) triggers[at] = `    ${WEATHER_TICK}`;
+  }
+  members.push(...triggers);
+  if (spec.weathering !== undefined) {
+    members.push(
+      ...weatheringMembers(
+        file,
+        spec.weathering,
+        spec.onRandomTick !== undefined,
+        ts.type === 'door',
+        file.use(`${context.input.javaPackage}.BlockWaxing`),
+      ),
+    );
+  }
+  if (spec.onEat !== undefined) {
+    const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+    const blockPos = file.use('net.minecraft.core.BlockPos');
+    const playerType = file.use('net.minecraft.world.entity.player.Player');
+    const vec = file.use('net.minecraft.world.phys.Vec3');
+    members.push(
+      '',
+      "/** The cake's on_eat: a slice was eaten; self and other are the player. */",
+      '@Override',
+      `protected void onEaten(${serverLevel} level, ${blockPos} pos, ${playerType} player) {`,
+      `    ${fireCall(spec.onEat, `level, pos.immutable(), ${vec}.atCenterOf(pos), player, null`)}`,
+      '}',
+    );
+  }
+  if (
+    spec.onRandomTick !== undefined &&
+    (ts.type === 'berry_bush' || ts.type === 'cocoa' || ts.type === 'stem')
+  ) {
+    const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+    members.push(
+      '',
+      '/** Vanilla stops at the last age; msm:on_random_tick fires at every state. */',
+      '@Override',
+      `protected boolean isRandomlyTicking(${blockState} state) {`,
+      '    return true;',
+      '}',
+    );
+  }
   let entity: BlockEntityMembers | undefined;
   if (hasEntity) {
     const parts = {
@@ -1318,9 +1624,14 @@ function writeBlockClass(
   }
   members.push(...eventMethods(file, spec.events, spec.kind, actions));
 
+  const interfaces = [
+    ...(entity?.interfaces ?? []),
+    ...(water ? [file.use('net.minecraft.world.level.block.SimpleWaterloggedBlock')] : []),
+    ...(spec.weathering !== undefined ? [weatheringInterface(file)] : []),
+  ];
   const lines = [
     `/** The block {@code ${spec.input.id}}. */`,
-    `public class ${name} extends ${superClass}${entity === undefined ? '' : ` implements ${entity.interfaces.join(', ')}`} {`,
+    `public class ${name} extends ${superClass}${interfaces.length === 0 ? '' : ` implements ${interfaces.join(', ')}`} {`,
     ...indent(trimBlank(members)),
     '}',
   ];
@@ -1328,7 +1639,7 @@ function writeBlockClass(
 }
 
 /** Placement towards the placer, `rotate` and `mirror` of the facing types (`MsmBlock`, ADR 0067 D4). */
-function facingMembers(file: JavaFile, ts: TypeSpec): string[] {
+function facingMembers(file: JavaFile, ts: TypeSpec, waterlogged = false): string[] {
   const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
   const placeContext = file.use('net.minecraft.world.item.context.BlockPlaceContext');
   const rotation = file.use('net.minecraft.world.level.block.Rotation');
@@ -1342,7 +1653,9 @@ function facingMembers(file: JavaFile, ts: TypeSpec): string[] {
     '/** Faces the placer. */',
     '@Override',
     `public ${blockState} getStateForPlacement(${placeContext} context) {`,
-    `    return defaultBlockState().setValue(FACING, ${towards});`,
+    waterlogged
+      ? `    return ${waterloggedPlacement(file, `defaultBlockState().setValue(FACING, ${towards})`)};`
+      : `    return defaultBlockState().setValue(FACING, ${towards});`,
     '}',
     '',
     '@Override',
