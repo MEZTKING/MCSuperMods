@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:weathering": {
+      "next": 4,
+      "stage": "exposed"
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby cocoa",
+  "format": 1,
+  "textures": {
+    "stages": ["mymod:block/pod_stage0", "mymod:block/pod_stage1", "mymod:block/pod_stage2"]
+  },
+  "type": "cocoa"
+}

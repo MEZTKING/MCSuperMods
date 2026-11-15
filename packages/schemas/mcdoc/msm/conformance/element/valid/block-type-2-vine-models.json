@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby vine",
+  "format": 1,
+  "models": {
+    "vine": "mymod:block/ruby_vine"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_vine"
+  },
+  "type": "vine"
+}

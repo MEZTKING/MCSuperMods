@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby sign",
+  "format": 1,
+  "models": {
+    "wall": "mymod:block/ruby_wall_sign"
+  },
+  "type": "sign",
+  "wood_type": "oak"
+}

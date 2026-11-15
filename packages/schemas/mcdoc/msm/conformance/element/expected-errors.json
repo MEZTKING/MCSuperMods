@@ -35,6 +35,90 @@
     "code": "schema.out-of-range",
     "path": "/components/msm:shape/boxes/0/4"
   },
+  "block-type-2-bed-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-berry-bush-five-stages.json": {
+    "code": "schema.invalid-length",
+    "path": "/textures/stages"
+  },
+  "block-type-2-berry-bush-textures-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "block-type-2-cake-textures-front.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/front"
+  },
+  "block-type-2-candle-textures-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "block-type-2-carpet-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-chain-textures-end.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/end"
+  },
+  "block-type-2-cocoa-textures-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "block-type-2-hanging-sign-textures-sign.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/sign"
+  },
+  "block-type-2-ladder-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-lantern-textures-lit.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/lit"
+  },
+  "block-type-2-layers-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-potted-plant-textures-pot.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/pot"
+  },
+  "block-type-2-rod-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-scaffolding-textures-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "block-type-2-sea-pickle-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-sign-textures-hanging-gui.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/hanging_gui"
+  },
+  "block-type-2-stem-textures-fruit.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/fruit"
+  },
+  "block-type-2-tall-plant-textures-all.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/all"
+  },
+  "block-type-2-torch-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-2-vine-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
   "block-type-absent-models.json": {
     "code": "schema.unknown-field",
     "path": "/models/all"
@@ -159,9 +243,25 @@
     "code": "schema.unknown-field",
     "path": "/wooden"
   },
+  "bundle-textures-selected.json": {
+    "code": "schema.unknown-field",
+    "path": "/bundle_textures/selected"
+  },
+  "command-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "command-permission-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/permission"
+  },
   "container-rows-7.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:container/rows"
+  },
+  "creative-tab-no-icon.json": {
+    "code": "schema.missing-field",
+    "path": "/icon"
   },
   "effect-bad-category.json": {
     "code": "schema.invalid-enum",
@@ -250,6 +350,10 @@
   "item-fuel-too-short.json": {
     "code": "schema.out-of-range",
     "path": "/fuel/burn_seconds"
+  },
+  "item-inventory-rows-9.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:item_inventory/rows"
   },
   "item-missing-format.json": {
     "code": "schema.missing-field",
@@ -354,5 +458,13 @@
   "potion-strong-no-amplifier.json": {
     "code": "schema.missing-field",
     "path": "/strong/amplifier"
+  },
+  "waterlog-level.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:waterloggable/level"
+  },
+  "weathering-stage-new.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:weathering/stage"
   }
 }

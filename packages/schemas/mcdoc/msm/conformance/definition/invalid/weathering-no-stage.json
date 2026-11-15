@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:weathering": {
+      "next": "mymod:exposed_tin"
+    }
+  },
+  "format": 1
+}

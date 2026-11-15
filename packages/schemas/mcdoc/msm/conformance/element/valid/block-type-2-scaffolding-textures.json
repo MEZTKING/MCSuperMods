@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby scaffolding",
+  "format": 1,
+  "textures": {
+    "bottom": "mymod:block/bamboo_frame_bottom",
+    "side": "mymod:block/bamboo_frame_side",
+    "top": "mymod:block/bamboo_frame_top"
+  },
+  "type": "scaffolding"
+}

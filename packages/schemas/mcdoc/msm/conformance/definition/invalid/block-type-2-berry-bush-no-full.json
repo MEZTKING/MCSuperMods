@@ -1,0 +1,8 @@
+{
+  "berry": "mymod:blueberries",
+  "format": 1,
+  "harvest": {
+    "ripe": [1, 2]
+  },
+  "type": "berry_bush"
+}

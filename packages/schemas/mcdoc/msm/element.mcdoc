@@ -1,13 +1,15 @@
 // MSM element data for `msm:block` and `msm:item` (ADR 0025 D5; machine recipes ADR 0075 D8), `msm:entity` (ADR 0028 D3),
 // `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3),
 // `msm:particle` (ADR 0080 D1), `msm:key_bind` (ADR 0088 D3), `msm:hud` (ADR 0089 D1),
-// `msm:vehicle` (ADR 0090 D2):
+// `msm:vehicle` (ADR 0090 D2), `msm:command` and `msm:creative_tab` (ADR 0096 D1, D2):
 // the runtime definition plus editor-only fields that lower to ordinary pack files.
 
 use super::definition::BiomeAddition as DefinitionBiomeAddition
 use super::definition::BlockBehaviourComponents
 use super::definition::BlockItem as DefinitionBlockItem
 use super::definition::BlockCommon
+use super::definition::CommandCommon
+use super::definition::CreativeTabCommon
 use super::definition::EffectCommon
 use super::definition::Breakable as DefinitionBreakable
 use super::definition::Shape as DefinitionShape
@@ -382,6 +384,206 @@ dispatch msm:block_type_element[portal] to struct PortalElementFields {
 	textures?: PortalTextures,
 }
 
+/// Textures of a single picture with the block item's own picture (ADR 0094 D10): `lantern`
+/// and `chain`, whose items vanilla draws from a separate sprite.
+struct ItemPictureTextures {
+	/// One texture for the block's model.
+	all?: #[id="texture"] string,
+	/// The texture, as vanilla's templates name it.
+	texture?: #[id="texture"] string,
+	/// The block item's picture; defaults to the block texture.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `bed` (ADR 0094 D10), drawn on vanilla's `template_bed_head` and
+/// `template_bed_foot` models.
+struct BedTextures {
+	/// The bed picture in vanilla's bed layout (the template's texture slot: verify at
+	/// implementation).
+	bed?: #[id="texture"] string,
+	/// The block item's picture; defaults to the item model of vanilla's bed shape.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `cake` (ADR 0094 D10), as vanilla's cake and slice models name them.
+struct CakeTextures {
+	top?: #[id="texture"] string,
+	bottom?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+	/// The cut face of a sliced cake.
+	inside?: #[id="texture"] string,
+	/// The block item's picture; defaults to the cake model.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `berry_bush` or `cocoa` (ADR 0094 D10): one per age, from age 0 (a bush has
+/// four ages, a pod three); fewer textures than ages are repeated.
+struct AgeTextures {
+	stages?: [#[id="texture"] string] @ 1..4,
+}
+
+/// Textures of a `tall_plant` (ADR 0094 D10), drawn as crosses.
+struct TallPlantTextures {
+	/// The upper half; also the item's picture.
+	top?: #[id="texture"] string,
+	/// The lower half.
+	bottom?: #[id="texture"] string,
+}
+
+/// Textures of a `sign` (ADR 0094 D6, D10).
+struct SignTextures {
+	/// The board and post, on vanilla's `template_sign_rot_*` and `template_wall_sign` models
+	/// (also the breaking particles).
+	all?: #[id="texture"] string,
+	/// The edit screen's picture (24 by 26 pixels), lowered to
+	/// `assets/<ns>/textures/gui/signs/<path>.png`; defaults to `all`.
+	sign?: #[id="texture"] string,
+	/// The item's picture; defaults to `all`.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `hanging_sign` (ADR 0094 D6, D10).
+struct HangingSignTextures {
+	/// The board and chains, on vanilla's hanging sign templates (also the breaking particles).
+	all?: #[id="texture"] string,
+	/// The edit screen's picture (16 by 16 pixels), lowered to
+	/// `assets/<ns>/textures/gui/hanging_signs/<path>.png`; defaults to `all`.
+	hanging_gui?: #[id="texture"] string,
+	/// The item's picture; defaults to `all`.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `potted_plant` (ADR 0094 D10), drawn on vanilla's `flower_pot_cross` model.
+struct PottedPlantTextures {
+	/// The plant in the pot; defaults to the `plant` block's own texture when it is a project
+	/// block.
+	plant?: #[id="texture"] string,
+}
+
+/// Textures of a `candle` (ADR 0094 D10), on vanilla's candle templates for one to four
+/// candles.
+struct CandleTextures {
+	/// The unlit candle.
+	candle?: #[id="texture"] string,
+	/// The lit candle; defaults to `candle`.
+	lit?: #[id="texture"] string,
+	/// The block item's picture; defaults to `candle`.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `stem` (ADR 0094 D10).
+struct StemTextures {
+	/// The growing stem, tinted by age as vanilla's.
+	stem?: #[id="texture"] string,
+	/// The bent stem attached to a fruit.
+	attached?: #[id="texture"] string,
+}
+
+/// Textures of `scaffolding` (ADR 0094 D10), as vanilla's scaffolding models name them.
+struct ScaffoldingTextures {
+	top?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+	/// The bottom of the stable model; the unstable model shows it on its sides too.
+	bottom?: #[id="texture"] string,
+}
+
+/// Element fields of a `ladder`, `torch`, `carpet`, `layers`, `rod`, `sea_pickle` or `vine`
+/// (ADR 0094 D10): one picture, on vanilla's template for the type.
+dispatch msm:block_type_element[ladder, torch, carpet, layers, rod, sea_pickle, vine] to struct VanillaSingleTextureElementFields {
+	/// Textures of the generated models.
+	textures?: SingleTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `lantern` or `chain`.
+dispatch msm:block_type_element[lantern, chain] to struct ItemPictureElementFields {
+	/// Textures of the generated models.
+	textures?: ItemPictureTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `bed`.
+dispatch msm:block_type_element[bed] to struct BedElementFields {
+	/// Textures of the generated models.
+	textures?: BedTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `cake`.
+dispatch msm:block_type_element[cake] to struct CakeElementFields {
+	/// Textures of the generated models.
+	textures?: CakeTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `berry_bush` or `cocoa`.
+dispatch msm:block_type_element[berry_bush, cocoa] to struct AgeElementFields {
+	/// Textures of the generated age models.
+	textures?: AgeTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `tall_plant`.
+dispatch msm:block_type_element[tall_plant] to struct TallPlantElementFields {
+	/// Textures of the generated models.
+	textures?: TallPlantTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `sign`.
+dispatch msm:block_type_element[sign] to struct SignElementFields {
+	/// Textures of the generated models and the edit screen.
+	textures?: SignTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `hanging_sign`.
+dispatch msm:block_type_element[hanging_sign] to struct HangingSignElementFields {
+	/// Textures of the generated models and the edit screen.
+	textures?: HangingSignTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `potted_plant`.
+dispatch msm:block_type_element[potted_plant] to struct PottedPlantElementFields {
+	/// Textures of the generated model.
+	textures?: PottedPlantTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `candle`.
+dispatch msm:block_type_element[candle] to struct CandleElementFields {
+	/// Textures of the generated models.
+	textures?: CandleTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `stem`.
+dispatch msm:block_type_element[stem] to struct StemElementFields {
+	/// Textures of the generated models.
+	textures?: StemTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of `scaffolding`.
+dispatch msm:block_type_element[scaffolding] to struct ScaffoldingElementFields {
+	/// Textures of the generated models.
+	textures?: ScaffoldingTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
 /// `msm:block` element data.
 struct Block {
 	...BlockCommon,
@@ -419,6 +621,20 @@ struct Item {
 	fuel?: Fuel,
 	/// Makes the item compostable; lowered into `msm:components`.
 	compost?: CompostChance,
+	/// Pictures of an `msm:bundle` (ADR 0095 D4), lowered to the item model definition in
+	/// vanilla's bundle shape; only with `msm:bundle`.
+	bundle_textures?: BundleTextures,
+}
+
+/// Pictures of a bundle (ADR 0095 D4); the selected item is drawn by vanilla's own selected
+/// item model.
+struct BundleTextures {
+	/// The closed bundle, shown in slots and in the hand.
+	closed?: #[id="texture"] string,
+	/// The back of the open bundle, drawn behind the selected item.
+	open_back?: #[id="texture"] string,
+	/// The front of the open bundle, drawn in front of the selected item.
+	open_front?: #[id="texture"] string,
 }
 
 /// `msm:animated_model` in element data: the definition's fields, with `model` and `animations`
@@ -576,4 +792,26 @@ struct Vehicle {
 	display_name?: string,
 	/// The item's display name, lowered to the `item.<ns>.<path>` language key.
 	item_display_name?: string,
+}
+
+/// `msm:command` element data (ADR 0096 D1): the definition with `format` optional, as lowering
+/// sets it, plus the language text lowering writes.
+struct Command {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...CommandCommon,
+	/// The text shown to the source on success, lowered to the language key `feedback` names
+	/// (default `command.<ns>.<path>.feedback`).
+	feedback_text?: string,
+}
+
+/// `msm:creative_tab` element data (ADR 0096 D2): the definition with `format` optional, as
+/// lowering sets it, plus the language text lowering writes.
+struct CreativeTab {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...CreativeTabCommon,
+	/// The tab's title, lowered to the language key `title` names (default
+	/// `itemGroup.<ns>.<path>`).
+	display_name?: string,
 }

@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "textures": {
+    "side": "mymod:block/x"
+  },
+  "type": "layers"
+}

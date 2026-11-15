@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "textures": {
+    "sign": "mymod:block/x"
+  },
+  "type": "hanging_sign",
+  "wood_type": "cherry"
+}

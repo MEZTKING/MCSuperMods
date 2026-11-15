@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "layout": "dispenser",
+      "open": "use"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

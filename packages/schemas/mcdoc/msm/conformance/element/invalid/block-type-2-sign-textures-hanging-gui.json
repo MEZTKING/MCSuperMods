@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "textures": {
+    "hanging_gui": "mymod:block/x"
+  },
+  "type": "sign",
+  "wood_type": "oak"
+}

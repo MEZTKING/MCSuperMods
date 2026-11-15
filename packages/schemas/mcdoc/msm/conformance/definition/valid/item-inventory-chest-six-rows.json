@@ -1,0 +1,25 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "close_sound": "minecraft:item.armor.equip_leather",
+      "layout": "chest",
+      "on_close": "mymod:go",
+      "on_open": "mymod:go",
+      "open": "sneak_use",
+      "open_sound": "minecraft:item.armor.equip_leather",
+      "rows": 6
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "function": "mymod:go",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

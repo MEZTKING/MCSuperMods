@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby potted plant",
+  "format": 1,
+  "plant": "mymod:ruby_sapling",
+  "textures": {
+    "plant": "mymod:block/ruby_sapling"
+  },
+  "type": "potted_plant"
+}

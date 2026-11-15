@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "fruit": "mymod:gourd",
+  "fruit_soil": "#mymod:gourd_fruit_soil",
+  "soil": "#mymod:gourd_soil",
+  "type": "stem"
+}

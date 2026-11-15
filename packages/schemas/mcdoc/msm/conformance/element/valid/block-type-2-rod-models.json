@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby rod",
+  "format": 1,
+  "models": {
+    "rod": "mymod:block/ruby_rod"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_rod"
+  },
+  "type": "rod"
+}

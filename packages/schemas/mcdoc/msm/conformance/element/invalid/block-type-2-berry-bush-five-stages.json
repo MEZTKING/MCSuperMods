@@ -1,0 +1,14 @@
+{
+  "berry": "mymod:blueberries",
+  "format": 1,
+  "textures": {
+    "stages": [
+      "mymod:block/s0",
+      "mymod:block/s1",
+      "mymod:block/s2",
+      "mymod:block/s3",
+      "mymod:block/s4"
+    ]
+  },
+  "type": "berry_bush"
+}

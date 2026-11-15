@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby sea pickle",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby_sea_pickle"
+  },
+  "type": "sea_pickle"
+}

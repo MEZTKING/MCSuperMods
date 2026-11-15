@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "open": "click"
+    }
+  },
+  "format": 1
+}

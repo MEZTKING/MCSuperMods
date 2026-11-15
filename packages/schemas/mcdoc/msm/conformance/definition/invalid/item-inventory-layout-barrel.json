@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "layout": "barrel"
+    }
+  },
+  "format": 1
+}

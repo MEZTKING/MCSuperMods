@@ -1,0 +1,11 @@
+{
+  "base_block": "mymod:exposed_tin",
+  "components": {
+    "msm:weathering": {
+      "next": "mymod:weathered_tin_stairs",
+      "stage": "exposed"
+    }
+  },
+  "format": 1,
+  "type": "stairs"
+}

@@ -259,6 +259,118 @@
     "code": "schema.out-of-range",
     "path": "/components/msm:on_step/cooldown_ticks"
   },
+  "block-type-2-bed-colour-teal.json": {
+    "code": "schema.invalid-enum",
+    "path": "/colour"
+  },
+  "block-type-2-bed-rule-hammock.json": {
+    "code": "schema.invalid-enum",
+    "path": "/rule"
+  },
+  "block-type-2-berry-bush-no-berry.json": {
+    "code": "schema.missing-field",
+    "path": "/berry"
+  },
+  "block-type-2-berry-bush-no-full.json": {
+    "code": "schema.missing-field",
+    "path": "/harvest/full"
+  },
+  "block-type-2-berry-bush-ripe-one.json": {
+    "code": "schema.invalid-length",
+    "path": "/harvest/ripe"
+  },
+  "block-type-2-cake-candles.json": {
+    "code": "schema.unknown-field",
+    "path": "/candles"
+  },
+  "block-type-2-cake-no-saturation.json": {
+    "code": "schema.missing-field",
+    "path": "/food/saturation"
+  },
+  "block-type-2-cake-nutrition-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/food/nutrition"
+  },
+  "block-type-2-candle-candles.json": {
+    "code": "schema.unknown-field",
+    "path": "/candles"
+  },
+  "block-type-2-carpet-colour.json": {
+    "code": "schema.unknown-field",
+    "path": "/colour"
+  },
+  "block-type-2-chain-axis.json": {
+    "code": "schema.unknown-field",
+    "path": "/axis"
+  },
+  "block-type-2-cocoa-support-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/support"
+  },
+  "block-type-2-hanging-sign-no-wood-type.json": {
+    "code": "schema.missing-field",
+    "path": "/wood_type"
+  },
+  "block-type-2-ladder-facing.json": {
+    "code": "schema.unknown-field",
+    "path": "/facing"
+  },
+  "block-type-2-lantern-hanging.json": {
+    "code": "schema.unknown-field",
+    "path": "/hanging"
+  },
+  "block-type-2-layers-layers.json": {
+    "code": "schema.unknown-field",
+    "path": "/layers"
+  },
+  "block-type-2-potted-plant-no-plant.json": {
+    "code": "schema.missing-field",
+    "path": "/plant"
+  },
+  "block-type-2-rod-particle.json": {
+    "code": "schema.unknown-field",
+    "path": "/particle"
+  },
+  "block-type-2-scaffolding-distance.json": {
+    "code": "schema.unknown-field",
+    "path": "/distance"
+  },
+  "block-type-2-sea-pickle-pickles.json": {
+    "code": "schema.unknown-field",
+    "path": "/pickles"
+  },
+  "block-type-2-sign-no-wood-type.json": {
+    "code": "schema.missing-field",
+    "path": "/wood_type"
+  },
+  "block-type-2-sign-wood-type-ruby.json": {
+    "code": "schema.invalid-enum",
+    "path": "/wood_type"
+  },
+  "block-type-2-stem-no-fruit.json": {
+    "code": "schema.missing-field",
+    "path": "/fruit"
+  },
+  "block-type-2-stem-soil-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/soil"
+  },
+  "block-type-2-tall-plant-bonemeal-grow.json": {
+    "code": "schema.invalid-enum",
+    "path": "/bonemeal"
+  },
+  "block-type-2-torch-particle-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/particle"
+  },
+  "block-type-2-torch-wood-type.json": {
+    "code": "schema.unknown-field",
+    "path": "/wood_type"
+  },
+  "block-type-2-vine-spreads-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/spreads"
+  },
   "block-type-absent-base-block.json": {
     "code": "schema.unknown-field",
     "path": "/base_block"
@@ -447,6 +559,58 @@
     "code": "schema.invalid-enum",
     "path": "/events/mymod:x/actions/0/type"
   },
+  "bundle-capacity.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:bundle/capacity"
+  },
+  "bundle-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:bundle"
+  },
+  "command-argument-no-type.json": {
+    "code": "schema.missing-field",
+    "path": "/arguments/0/type"
+  },
+  "command-argument-string.json": {
+    "code": "schema.invalid-enum",
+    "path": "/arguments/0/type"
+  },
+  "command-argument-suggestions.json": {
+    "code": "schema.unknown-field",
+    "path": "/arguments/0/suggestions"
+  },
+  "command-description.json": {
+    "code": "schema.unknown-field",
+    "path": "/description"
+  },
+  "command-empty-name.json": {
+    "code": "schema.invalid-length",
+    "path": "/name"
+  },
+  "command-feedback-text.json": {
+    "code": "schema.unknown-field",
+    "path": "/feedback_text"
+  },
+  "command-five-aliases.json": {
+    "code": "schema.invalid-length",
+    "path": "/aliases"
+  },
+  "command-nine-arguments.json": {
+    "code": "schema.invalid-length",
+    "path": "/arguments"
+  },
+  "command-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "command-no-name.json": {
+    "code": "schema.missing-field",
+    "path": "/name"
+  },
+  "command-permission-5.json": {
+    "code": "schema.out-of-range",
+    "path": "/permission"
+  },
   "container-close-sound-number.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:container/close_sound"
@@ -510,6 +674,26 @@
   "container-unknown-key.json": {
     "code": "schema.unknown-field",
     "path": "/components/msm:container/slots"
+  },
+  "creative-tab-display-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "creative-tab-icon-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/icon"
+  },
+  "creative-tab-items.json": {
+    "code": "schema.unknown-field",
+    "path": "/items"
+  },
+  "creative-tab-no-icon.json": {
+    "code": "schema.missing-field",
+    "path": "/icon"
+  },
+  "creative-tab-order-random.json": {
+    "code": "schema.invalid-enum",
+    "path": "/order"
   },
   "effect-bad-category.json": {
     "code": "schema.invalid-enum",
@@ -1010,6 +1194,34 @@
   "item-heal-bad-target.json": {
     "code": "schema.invalid-enum",
     "path": "/events/mymod:x/actions/0/target"
+  },
+  "item-inventory-hoppers.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:item_inventory/hoppers"
+  },
+  "item-inventory-layout-barrel.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:item_inventory/layout"
+  },
+  "item-inventory-open-click.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:item_inventory/open"
+  },
+  "item-inventory-rows-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:item_inventory/rows"
+  },
+  "item-inventory-rows-7.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:item_inventory/rows"
+  },
+  "item-inventory-rows-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:item_inventory/rows"
+  },
+  "item-inventory-size.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:item_inventory/size"
   },
   "item-launch-too-strong.json": {
     "code": "schema.out-of-range",
@@ -1738,5 +1950,37 @@
   "vehicle-weapons-9.json": {
     "code": "schema.invalid-length",
     "path": "/weapons"
+  },
+  "waterlog-boolean.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:waterloggable"
+  },
+  "waterlog-source.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:waterloggable/source"
+  },
+  "weathering-chance.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:weathering/chance"
+  },
+  "weathering-next-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:weathering/next"
+  },
+  "weathering-no-stage.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:weathering/stage"
+  },
+  "weathering-stage-rusty.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:weathering/stage"
+  },
+  "weathering-waxable-item.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:waxable/item"
+  },
+  "weathering-waxable-no-into.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:waxable/into"
   }
 }

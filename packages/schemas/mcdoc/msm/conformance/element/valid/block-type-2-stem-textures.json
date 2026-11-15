@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby stem",
+  "format": 1,
+  "fruit": "mymod:gourd",
+  "textures": {
+    "attached": "mymod:block/attached_gourd_stem",
+    "stem": "mymod:block/gourd_stem"
+  },
+  "type": "stem"
+}

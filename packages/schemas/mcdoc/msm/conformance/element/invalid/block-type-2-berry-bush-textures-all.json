@@ -1,0 +1,8 @@
+{
+  "berry": "mymod:blueberries",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/x"
+  },
+  "type": "berry_bush"
+}

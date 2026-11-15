@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_oxidized_tin"
+    },
+    "msm:weathering": {
+      "stage": "oxidized"
+    }
+  },
+  "format": 1
+}

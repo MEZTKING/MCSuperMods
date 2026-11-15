@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby ladder",
+  "format": 1,
+  "models": {
+    "ladder": "mymod:block/ruby_ladder"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_ladder"
+  },
+  "type": "ladder"
+}

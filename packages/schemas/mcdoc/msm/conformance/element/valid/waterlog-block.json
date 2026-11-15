@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:waterloggable": {}
+  },
+  "display_name": "Wet glass",
+  "format": 1,
+  "loot": "self",
+  "model": "mymod:block/wet_glass"
+}

@@ -1,0 +1,9 @@
+{
+  "berry": "mymod:blueberries",
+  "display_name": "Ruby berry bush",
+  "format": 1,
+  "models": {
+    "age0": "mymod:block/blueberry_bush_stage0"
+  },
+  "type": "berry_bush"
+}

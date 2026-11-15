@@ -1,0 +1,8 @@
+{
+  "food": {
+    "nutrition": 0,
+    "saturation": 0.1
+  },
+  "format": 1,
+  "type": "cake"
+}

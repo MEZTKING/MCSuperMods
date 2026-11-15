@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby cocoa",
+  "format": 1,
+  "models": {
+    "age2": "mymod:block/pod_stage2"
+  },
+  "type": "cocoa"
+}

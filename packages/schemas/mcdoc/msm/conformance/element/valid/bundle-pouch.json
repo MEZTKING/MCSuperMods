@@ -1,0 +1,13 @@
+{
+  "bundle_textures": {
+    "closed": "mymod:item/pouch",
+    "open_back": "mymod:item/pouch_open_back",
+    "open_front": "mymod:item/pouch_open_front"
+  },
+  "components": {
+    "msm:bundle": {}
+  },
+  "display_name": "Pouch",
+  "format": 1,
+  "max_stack_size": 1
+}

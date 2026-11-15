@@ -1,0 +1,10 @@
+{
+  "display_name": "Ruby candle",
+  "format": 1,
+  "textures": {
+    "candle": "mymod:block/ruby_candle",
+    "item": "mymod:item/ruby_candle",
+    "lit": "mymod:block/ruby_candle_lit"
+  },
+  "type": "candle"
+}

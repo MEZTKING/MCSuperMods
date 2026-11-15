@@ -42,7 +42,14 @@ class ConformanceCorpusTest {
      * prefixes here and adds its kinds to {@link #KINDS}.
      */
     private static final List<String> PENDING =
-            List.of("key-bind-", "hud-", "vehicle-", "action-explode-", "action-hud-");
+            List.of("key-bind-", "hud-", "vehicle-", "action-explode-", "action-hud-",
+                    "block-type-2-",
+                    "waterlog-",
+                    "weathering-",
+                    "item-inventory-",
+                    "bundle-",
+                    "command-",
+                    "creative-tab-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);

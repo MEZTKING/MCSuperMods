@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby layers",
+  "format": 1,
+  "models": {
+    "height2": "mymod:block/ruby_layers"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_layers"
+  },
+  "type": "layers"
+}

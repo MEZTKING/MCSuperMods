@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby bed",
+  "format": 1,
+  "textures": {
+    "bed": "mymod:block/ruby_bed",
+    "item": "mymod:item/ruby_bed"
+  },
+  "type": "bed"
+}

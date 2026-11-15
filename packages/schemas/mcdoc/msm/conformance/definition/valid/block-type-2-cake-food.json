@@ -1,0 +1,19 @@
+{
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "function": "mymod:go",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "food": {
+    "nutrition": 3,
+    "saturation": 0.2
+  },
+  "format": 1,
+  "on_eat": "mymod:go",
+  "type": "cake"
+}

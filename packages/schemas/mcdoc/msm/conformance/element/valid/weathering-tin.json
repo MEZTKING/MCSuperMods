@@ -1,0 +1,15 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_tin"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_tin",
+      "stage": "unaffected"
+    }
+  },
+  "display_name": "Tin",
+  "format": 1,
+  "loot": "self",
+  "model": "mymod:block/tin"
+}

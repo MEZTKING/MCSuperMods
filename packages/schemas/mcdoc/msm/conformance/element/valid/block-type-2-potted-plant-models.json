@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby potted plant",
+  "format": 1,
+  "models": {
+    "potted": "mymod:block/potted_ruby_sapling"
+  },
+  "plant": "mymod:ruby_sapling",
+  "type": "potted_plant"
+}

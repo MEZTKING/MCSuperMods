@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby lantern",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby_lantern",
+    "item": "mymod:item/ruby_lantern"
+  },
+  "type": "lantern"
+}

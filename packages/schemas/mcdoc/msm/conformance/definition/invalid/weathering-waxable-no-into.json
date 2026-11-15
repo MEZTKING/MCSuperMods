@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:waxable": {},
+    "msm:weathering": {
+      "stage": "exposed"
+    }
+  },
+  "format": 1
+}

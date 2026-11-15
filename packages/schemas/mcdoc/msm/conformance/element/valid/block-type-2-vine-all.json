@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby vine",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby_vine"
+  },
+  "type": "vine"
+}

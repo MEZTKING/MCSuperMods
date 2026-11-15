@@ -1,0 +1,12 @@
+{
+  "display_name": "Ruby cake",
+  "format": 1,
+  "textures": {
+    "bottom": "mymod:block/cake_bottom",
+    "inside": "mymod:block/cake_inner",
+    "item": "mymod:item/cake",
+    "side": "mymod:block/cake_side",
+    "top": "mymod:block/cake_top"
+  },
+  "type": "cake"
+}

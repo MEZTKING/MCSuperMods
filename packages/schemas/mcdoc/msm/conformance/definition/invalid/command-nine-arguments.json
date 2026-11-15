@@ -1,0 +1,42 @@
+{
+  "arguments": [
+    {
+      "name": "a0",
+      "type": "word"
+    },
+    {
+      "name": "a1",
+      "type": "word"
+    },
+    {
+      "name": "a2",
+      "type": "word"
+    },
+    {
+      "name": "a3",
+      "type": "word"
+    },
+    {
+      "name": "a4",
+      "type": "word"
+    },
+    {
+      "name": "a5",
+      "type": "word"
+    },
+    {
+      "name": "a6",
+      "type": "word"
+    },
+    {
+      "name": "a7",
+      "type": "word"
+    },
+    {
+      "name": "a8",
+      "type": "word"
+    }
+  ],
+  "format": 1,
+  "name": "many"
+}

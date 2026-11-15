@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:item_inventory": {
+      "hoppers": true
+    }
+  },
+  "format": 1
+}

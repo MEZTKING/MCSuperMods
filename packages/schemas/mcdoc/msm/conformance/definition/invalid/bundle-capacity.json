@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:bundle": {
+      "capacity": 64
+    }
+  },
+  "format": 1
+}

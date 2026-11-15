@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_tin",
+      "item": "minecraft:honeycomb"
+    },
+    "msm:weathering": {
+      "stage": "exposed"
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,9 @@
+{
+  "display_name": "Ruby bed",
+  "format": 1,
+  "models": {
+    "foot": "mymod:block/ruby_bed_foot",
+    "head": "mymod:block/ruby_bed_head"
+  },
+  "type": "bed"
+}

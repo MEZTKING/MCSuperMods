@@ -1,0 +1,11 @@
+{
+  "arguments": [
+    {
+      "name": "what",
+      "suggestions": ["a"],
+      "type": "word"
+    }
+  ],
+  "format": 1,
+  "name": "say_it"
+}

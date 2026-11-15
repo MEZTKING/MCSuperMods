@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby cake",
+  "format": 1,
+  "models": {
+    "slice1": "mymod:block/cake_slice1"
+  },
+  "type": "cake"
+}

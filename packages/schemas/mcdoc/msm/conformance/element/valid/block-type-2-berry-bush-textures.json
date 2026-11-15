@@ -1,0 +1,14 @@
+{
+  "berry": "mymod:blueberries",
+  "display_name": "Ruby berry bush",
+  "format": 1,
+  "textures": {
+    "stages": [
+      "mymod:block/blueberry_bush_stage0",
+      "mymod:block/blueberry_bush_stage1",
+      "mymod:block/blueberry_bush_stage2",
+      "mymod:block/blueberry_bush_stage3"
+    ]
+  },
+  "type": "berry_bush"
+}

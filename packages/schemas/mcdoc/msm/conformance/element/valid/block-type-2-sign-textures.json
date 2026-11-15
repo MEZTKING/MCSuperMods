@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby sign",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/ruby_planks",
+    "item": "mymod:item/ruby_sign",
+    "sign": "mymod:gui/ruby_sign"
+  },
+  "type": "sign",
+  "wood_type": "oak"
+}

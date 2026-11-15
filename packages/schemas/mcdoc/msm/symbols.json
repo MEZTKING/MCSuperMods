@@ -2988,6 +2988,138 @@
         }
       ]
     },
+    "::msm::definition::BedFields": {
+      "fields": [
+        {
+          "desc": "The bed rule attribute the bed follows; defaults to `bed`.",
+          "key": "rule",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BedRule"
+          }
+        },
+        {
+          "desc": "The `BedBlock` colour, read only by vanilla code that asks for a bed's colour; defaults\nto `white`.",
+          "key": "colour",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::DyeColour"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BedRule": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "`gameplay/bed_rule`, as vanilla's beds; the default.",
+          "identifier": "Bed",
+          "value": "bed"
+        },
+        {
+          "desc": "`gameplay/straw_bed_rule`, as vanilla's straw bed.",
+          "identifier": "StrawBed",
+          "value": "straw_bed"
+        }
+      ]
+    },
+    "::msm::definition::BerryBushFields": {
+      "fields": [
+        {
+          "desc": "The berry item harvested and planted; usually the element's own block item id (ADR 0068\nD2).",
+          "key": "berry",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Harvest counts; defaults to `ripe` `[1, 2]` and `full` `[2, 3]`, as sweet berries.",
+          "key": "harvest",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::BerryHarvest"
+          }
+        },
+        {
+          "desc": "Whether the bush slows entities inside it and hurts those that move, as vanilla's;\ndefaults to true.",
+          "key": "hurts",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BerryHarvest": {
+      "fields": [
+        {
+          "desc": "At age 2 (ripe); vanilla's sweet berries drop 1 to 2.",
+          "key": "ripe",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "max": 64,
+                "min": 0
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "At age 3 (full); vanilla's sweet berries drop 2 to 3.",
+          "key": "full",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "int",
+              "valueRange": {
+                "kind": 0,
+                "max": 64,
+                "min": 0
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 2
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::BiomeAddition": {
       "kind": "union",
       "members": [
@@ -3470,6 +3602,36 @@
             "kind": "reference",
             "path": "::msm::definition::AmbientParticles"
           }
+        },
+        {
+          "desc": "Holds water (ADR 0094 D7).",
+          "key": "msm:waterloggable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Waterloggable"
+          }
+        },
+        {
+          "desc": "Ages as copper does (ADR 0094 D8).",
+          "key": "msm:weathering",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Weathering"
+          }
+        },
+        {
+          "desc": "Can be waxed with honeycomb (ADR 0094 D9); needs `msm:weathering`.",
+          "key": "msm:waxable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Waxable"
+          }
         }
       ],
       "kind": "struct"
@@ -3869,6 +4031,106 @@
           "desc": "A portal block that fills a lit frame and takes entities to another dimension and back,\nas the Nether portal does (ADR 0077 D1). Runtimes older than the release that ships ADR\n0077 reject the value.",
           "identifier": "Portal",
           "value": "portal"
+        },
+        {
+          "desc": "A bed of two blocks, head and foot, that players sleep in (ADR 0094 D1). Sleeping, setting\nthe spawn and exploding follow the dimension's bed rule attribute. Villagers do not sleep\nin or claim it. The types from `bed` to `scaffolding` are ADR 0094's; runtimes older than\nthe release that ships ADR 0094 reject them.",
+          "identifier": "Bed",
+          "value": "bed"
+        },
+        {
+          "desc": "A cake of seven slices eaten one at a time; comparators read the slices left.",
+          "identifier": "Cake",
+          "value": "cake"
+        },
+        {
+          "desc": "A bush that grows through four ages and is harvested for its berries, as the sweet berry\nbush.",
+          "identifier": "BerryBush",
+          "value": "berry_bush"
+        },
+        {
+          "desc": "A plant two blocks high, as tall flowers and tall grass.",
+          "identifier": "TallPlant",
+          "value": "tall_plant"
+        },
+        {
+          "desc": "A ladder on a wall that entities climb (through `#minecraft:climbable`).",
+          "identifier": "Ladder",
+          "value": "ladder"
+        },
+        {
+          "desc": "A torch that stands on the ground or hangs on a wall (the wall block is the generated\n`<path>_wall`), showing `particle`; light 14 by default.",
+          "identifier": "Torch",
+          "value": "torch"
+        },
+        {
+          "desc": "A lantern that stands or hangs; light 15 by default.",
+          "identifier": "Lantern",
+          "value": "lantern"
+        },
+        {
+          "desc": "A chain along one axis.",
+          "identifier": "Chain",
+          "value": "chain"
+        },
+        {
+          "desc": "A sign standing on the ground or on a wall (the wall block is the generated\n`<path>_wall`), edited in vanilla's sign screen.",
+          "identifier": "Sign",
+          "value": "sign"
+        },
+        {
+          "desc": "A hanging sign under a block or on a wall (the wall block is the generated\n`<path>_wall`), edited in vanilla's hanging sign screen.",
+          "identifier": "HangingSign",
+          "value": "hanging_sign"
+        },
+        {
+          "desc": "A plant in vanilla's flower pot.",
+          "identifier": "PottedPlant",
+          "value": "potted_plant"
+        },
+        {
+          "desc": "One to four candles lit by flint and steel; light 3 per lit candle.",
+          "identifier": "Candle",
+          "value": "candle"
+        },
+        {
+          "desc": "One to four sea pickles; light 6 to 15 by count when in water, none when dry.",
+          "identifier": "SeaPickle",
+          "value": "sea_pickle"
+        },
+        {
+          "desc": "A vine on the sides and under blocks that entities climb and that spreads.",
+          "identifier": "Vine",
+          "value": "vine"
+        },
+        {
+          "desc": "A thin carpet on top of a block.",
+          "identifier": "Carpet",
+          "value": "carpet"
+        },
+        {
+          "desc": "One to eight layers, as snow layers.",
+          "identifier": "Layers",
+          "value": "layers"
+        },
+        {
+          "desc": "A thin rod facing one of six directions, as the end rod; light 14 by default.",
+          "identifier": "Rod",
+          "value": "rod"
+        },
+        {
+          "desc": "A stem that grows through eight ages and then grows `fruit` beside it, as melon and\npumpkin stems (the attached stem is the generated `<path>_attached`).",
+          "identifier": "Stem",
+          "value": "stem"
+        },
+        {
+          "desc": "A pod on the side of a log that grows through three ages, as cocoa.",
+          "identifier": "Cocoa",
+          "value": "cocoa"
+        },
+        {
+          "desc": "Scaffolding that stands up to six blocks from its support, climbed and descended as\nvanilla's.",
+          "identifier": "Scaffolding",
+          "value": "scaffolding"
         }
       ]
     },
@@ -4161,6 +4423,10 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Bundle": {
+      "fields": [],
+      "kind": "struct"
+    },
     "::msm::definition::ButtonFields": {
       "fields": [
         {
@@ -4183,6 +4449,61 @@
               "kind": 0,
               "max": 200,
               "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CakeFields": {
+      "fields": [
+        {
+          "desc": "What a slice gives; defaults to vanilla's slice, nutrition 2 and saturation 0.1.",
+          "key": "food",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CakeFood"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired after a slice is eaten; self and `other` are the\nplayer.",
+          "key": "on_eat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CakeFood": {
+      "fields": [
+        {
+          "desc": "Hunger points restored, 1 to 20.",
+          "key": "nutrition",
+          "kind": "pair",
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 20,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Saturation modifier, 0 to 2.",
+          "key": "saturation",
+          "kind": "pair",
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 2,
+              "min": 0
             }
           }
         }
@@ -4212,6 +4533,334 @@
           "optional": true,
           "type": {
             "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CocoaFields": {
+      "fields": [
+        {
+          "desc": "The blocks the pod can hang on; defaults to `#minecraft:supports_cocoa` (B440).",
+          "key": "support",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "block"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Command": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CommandCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CommandArgument": {
+      "fields": [
+        {
+          "desc": "The argument's name, lower case `[a-z0-9_]` (checked by the validators), unique in the\ncommand.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The kind of value.",
+          "key": "type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CommandArgumentType"
+          }
+        },
+        {
+          "desc": "Lowest value of an `integer` or `number`; absent means none. Only on those types.",
+          "key": "min",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double"
+          }
+        },
+        {
+          "desc": "Highest value of an `integer` or `number`; absent means none. Only on those types.",
+          "key": "max",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "double"
+          }
+        },
+        {
+          "desc": "Whether the argument may be left out; defaults to false. Optional arguments come only at\nthe end (checked by the validators).",
+          "key": "optional",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CommandArgumentType": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "A whole number; `min` and `max` bound it.",
+          "identifier": "Integer",
+          "value": "integer"
+        },
+        {
+          "desc": "A decimal number; `min` and `max` bound it.",
+          "identifier": "Number",
+          "value": "number"
+        },
+        {
+          "desc": "One word without spaces.",
+          "identifier": "Word",
+          "value": "word"
+        },
+        {
+          "desc": "The rest of the line; only as the last argument.",
+          "identifier": "Text",
+          "value": "text"
+        },
+        {
+          "identifier": "Boolean",
+          "value": "boolean"
+        },
+        {
+          "desc": "One player (a name or a selector).",
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "desc": "One or more players.",
+          "identifier": "Players",
+          "value": "players"
+        },
+        {
+          "desc": "One entity.",
+          "identifier": "Entity",
+          "value": "entity"
+        },
+        {
+          "desc": "A position, as `~ ~1 ~`.",
+          "identifier": "Position",
+          "value": "position"
+        },
+        {
+          "desc": "A block position.",
+          "identifier": "BlockPosition",
+          "value": "block_position"
+        },
+        {
+          "desc": "An item id.",
+          "identifier": "Item",
+          "value": "item"
+        },
+        {
+          "desc": "A block id.",
+          "identifier": "Block",
+          "value": "block"
+        }
+      ]
+    },
+    "::msm::definition::CommandCommon": {
+      "fields": [
+        {
+          "desc": "The command's literal, lower case `[a-z0-9_]` without the slash; a name a vanilla command\nor another project command has is refused (checked by the validators against the\ntarget's command names).",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Other literals that run the same command, 0 to 4, with the same rules as `name`.",
+          "key": "aliases",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "string",
+              "lengthRange": {
+                "kind": 0,
+                "max": 64,
+                "min": 1
+              }
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 4,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The permission level a source needs, 0 to 4; defaults to 0 (every player). 2 is\noperators, as vanilla's cheat commands.",
+          "key": "permission",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 4,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The arguments in order, 0 to 8; defaults to none.",
+          "key": "arguments",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::CommandArgument"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "A function run as and at the source with permission level 2, receiving the arguments as\nmacro values. Without `function` and `event` the command needs a script that subscribes to\nit (a validator warning; an error without one).",
+          "key": "function",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "function"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired when the command runs; self and `other` are the\nsource entity, absent for the console and command blocks.",
+          "key": "event",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "A language key shown to the source when the command succeeds; absent shows nothing.",
+          "key": "feedback",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Events that `event` refers to, by id.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CommandEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
           }
         }
       ],
@@ -4534,6 +5183,90 @@
         }
       ]
     },
+    "::msm::definition::CreativeTab": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CreativeTabCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CreativeTabCommon": {
+      "fields": [
+        {
+          "desc": "The item whose picture the tab shows.",
+          "key": "icon",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The language key of the tab's title; defaults to `itemGroup.<ns>.<path>`.",
+          "key": "title",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The order of the items; defaults to `as_listed`.",
+          "key": "order",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CreativeTabOrder"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CreativeTabOrder": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "The order the items are registered in; the default.",
+          "identifier": "AsListed",
+          "value": "as_listed"
+        },
+        {
+          "desc": "By display name.",
+          "identifier": "ByName",
+          "value": "by_name"
+        }
+      ]
+    },
     "::msm::definition::CropFields": {
       "fields": [
         {
@@ -4655,6 +5388,76 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::DyeColour": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "White",
+          "value": "white"
+        },
+        {
+          "identifier": "Orange",
+          "value": "orange"
+        },
+        {
+          "identifier": "Magenta",
+          "value": "magenta"
+        },
+        {
+          "identifier": "LightBlue",
+          "value": "light_blue"
+        },
+        {
+          "identifier": "Yellow",
+          "value": "yellow"
+        },
+        {
+          "identifier": "Lime",
+          "value": "lime"
+        },
+        {
+          "identifier": "Pink",
+          "value": "pink"
+        },
+        {
+          "identifier": "Gray",
+          "value": "gray"
+        },
+        {
+          "identifier": "LightGray",
+          "value": "light_gray"
+        },
+        {
+          "identifier": "Cyan",
+          "value": "cyan"
+        },
+        {
+          "identifier": "Purple",
+          "value": "purple"
+        },
+        {
+          "identifier": "Blue",
+          "value": "blue"
+        },
+        {
+          "identifier": "Brown",
+          "value": "brown"
+        },
+        {
+          "identifier": "Green",
+          "value": "green"
+        },
+        {
+          "identifier": "Red",
+          "value": "red"
+        },
+        {
+          "identifier": "Black",
+          "value": "black"
+        }
+      ]
     },
     "::msm::definition::Effect": {
       "fields": [
@@ -6219,6 +7022,26 @@
             "kind": "reference",
             "path": "::msm::definition::VanillaComponents"
           }
+        },
+        {
+          "desc": "A bag with its own slots (ADR 0095 D1).",
+          "key": "msm:item_inventory",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ItemInventory"
+          }
+        },
+        {
+          "desc": "A bundle (ADR 0095 D4).",
+          "key": "msm:bundle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Bundle"
+          }
         }
       ],
       "kind": "struct"
@@ -6237,6 +7060,142 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::ItemInventory": {
+      "fields": [
+        {
+          "desc": "The screen; defaults to `chest`.",
+          "key": "layout",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ItemInventoryLayout"
+          }
+        },
+        {
+          "desc": "Rows of nine with the `chest` layout, 1 to 6; defaults to 3 (27 slots). Only with `chest`\n(the validators check it).",
+          "key": "rows",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 6,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How the bag opens; defaults to `use`.",
+          "key": "open",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ItemInventoryOpen"
+          }
+        },
+        {
+          "desc": "Sound played when the bag opens; defaults to the target's container sound (a barrel's).",
+          "key": "open_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Sound played when the bag closes; defaults to the target's container sound (a barrel's).",
+          "key": "close_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired when the bag opens; self and `other` are the\nplayer.",
+          "key": "on_open",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired when the bag closes; self and `other` are the\nplayer.",
+          "key": "on_close",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::ItemInventoryLayout": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "`rows` rows of nine; 3 rows open vanilla's shulker box screen. The default.",
+          "identifier": "Chest",
+          "value": "chest"
+        },
+        {
+          "desc": "Five slots, as a hopper.",
+          "identifier": "Hopper",
+          "value": "hopper"
+        },
+        {
+          "desc": "Three by three slots, as a dispenser.",
+          "identifier": "Dispenser",
+          "value": "dispenser"
+        }
+      ]
+    },
+    "::msm::definition::ItemInventoryOpen": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Using the item, in the air or on a block; the default.",
+          "identifier": "Use",
+          "value": "use"
+        },
+        {
+          "desc": "Using the item while sneaking.",
+          "identifier": "SneakUse",
+          "value": "sneak_use"
+        }
+      ]
     },
     "::msm::definition::KeyBind": {
       "fields": [
@@ -8190,6 +9149,31 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::PottedPlantFields": {
+      "fields": [
+        {
+          "desc": "The plant inside: a project `sapling`, `berry_bush` or cross-model `block`, or a vanilla\nplant that vanilla does not pot. Tall plants cannot be potted.",
+          "key": "plant",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::PressurePlateFields": {
       "fields": [
         {
@@ -8911,6 +9895,20 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::SignFields": {
+      "fields": [
+        {
+          "desc": "The vanilla wood type whose sounds the sign copies.",
+          "key": "wood_type",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::WoodType"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::SoundType": {
       "enumKind": "string",
       "kind": "enum",
@@ -9298,6 +10296,97 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::StemFields": {
+      "fields": [
+        {
+          "desc": "The fruit block: a project `block` or `horizontal` block.",
+          "key": "fruit",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The blocks the stem can be planted on; defaults to the target's melon stem tag,\n`#minecraft:supports_melon_stem`.",
+          "key": "soil",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "block"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The blocks the fruit can grow on; defaults to the target's melon fruit tag,\n`#minecraft:supports_melon_stem_fruit`.",
+          "key": "fruit_soil",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "block"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "required"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Strippable": {
       "fields": [
         {
@@ -9318,6 +10407,37 @@
               }
             ],
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::TallPlantBonemeal": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Nothing, as tall grass.",
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "desc": "Drops a copy of the plant, as tall flowers; the default.",
+          "identifier": "DropCopy",
+          "value": "drop_copy"
+        }
+      ]
+    },
+    "::msm::definition::TallPlantFields": {
+      "fields": [
+        {
+          "desc": "What bone meal does; defaults to `drop_copy`.",
+          "key": "bonemeal",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::TallPlantBonemeal"
           }
         }
       ],
@@ -9921,6 +11041,32 @@
         }
       ]
     },
+    "::msm::definition::TorchFields": {
+      "fields": [
+        {
+          "desc": "The flame particle, a particle type without options (a vanilla or project particle);\ndefaults to the target's torch particle, `minecraft:flame`.",
+          "key": "particle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "particle_type"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::VanillaComponents": {
       "fields": [
         {
@@ -9956,6 +11102,10 @@
           }
         }
       ],
+      "kind": "struct"
+    },
+    "::msm::definition::VanillaTypeFields": {
+      "fields": [],
       "kind": "struct"
     },
     "::msm::definition::VariantChoice": {
@@ -10030,6 +11180,20 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::VineFields": {
+      "fields": [
+        {
+          "desc": "Whether the vine spreads on random ticks, as vanilla's; defaults to true.",
+          "key": "spreads",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::WanderGoal": {
       "fields": [
         {
@@ -10056,6 +11220,92 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::Waterloggable": {
+      "fields": [],
+      "kind": "struct"
+    },
+    "::msm::definition::Waxable": {
+      "fields": [
+        {
+          "desc": "The waxed block: a block of the same type without `msm:weathering`.",
+          "key": "into",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Weathering": {
+      "fields": [
+        {
+          "desc": "The block of the next stage, of the same type; absent at the last stage (the block then\nnever ages).",
+          "key": "next",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "This block's stage; the unaffected stage ages 0.75 times as fast as the others, as\nvanilla's copper.",
+          "key": "stage",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::WeatheringStage"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::WeatheringStage": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Unaffected",
+          "value": "unaffected"
+        },
+        {
+          "identifier": "Exposed",
+          "value": "exposed"
+        },
+        {
+          "identifier": "Weathered",
+          "value": "weathered"
+        },
+        {
+          "identifier": "Oxidized",
+          "value": "oxidized"
+        }
+      ]
     },
     "::msm::definition::WhileHeld": {
       "fields": [
@@ -10176,6 +11426,64 @@
           "value": "bamboo"
         }
       ]
+    },
+    "::msm::element::AgeElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated age models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::AgeTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::AgeTextures": {
+      "fields": [
+        {
+          "key": "stages",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "texture"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 4,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::element::AnimatedModel": {
       "fields": [
@@ -10300,6 +11608,78 @@
           "kind": "pair",
           "optional": true,
           "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::BedElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BedTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::BedTextures": {
+      "fields": [
+        {
+          "desc": "The bed picture in vanilla's bed layout (the template's texture slot: verify at\nimplementation).",
+          "key": "bed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The block item's picture; defaults to the item model of vanilla's bed shape.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
             "kind": "string"
           }
         }
@@ -10661,6 +12041,333 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::BundleTextures": {
+      "fields": [
+        {
+          "desc": "The closed bundle, shown in slots and in the hand.",
+          "key": "closed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The back of the open bundle, drawn behind the selected item.",
+          "key": "open_back",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The front of the open bundle, drawn in front of the selected item.",
+          "key": "open_front",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::CakeElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::CakeTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::CakeTextures": {
+      "fields": [
+        {
+          "key": "top",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "bottom",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "side",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The cut face of a sliced cake.",
+          "key": "inside",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The block item's picture; defaults to the cake model.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::CandleElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::CandleTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::CandleTextures": {
+      "fields": [
+        {
+          "desc": "The unlit candle.",
+          "key": "candle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The lit candle; defaults to `candle`.",
+          "key": "lit",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The block item's picture; defaults to `candle`.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::Command": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CommandCommon"
+          }
+        },
+        {
+          "desc": "The text shown to the source on success, lowered to the language key `feedback` names\n(default `command.<ns>.<path>.feedback`).",
+          "key": "feedback_text",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::CompostChance": {
       "enumKind": "string",
       "kind": "enum",
@@ -10711,6 +12418,40 @@
               "max": 64,
               "min": 0
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::CreativeTab": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::CreativeTabCommon"
+          }
+        },
+        {
+          "desc": "The tab's title, lowered to the language key `title` names (default\n`itemGroup.<ns>.<path>`).",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -11239,6 +12980,99 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::HangingSignElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models and the edit screen.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::HangingSignTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::HangingSignTextures": {
+      "fields": [
+        {
+          "desc": "The board and chains, on vanilla's hanging sign templates (also the breaking particles).",
+          "key": "all",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The edit screen's picture (16 by 16 pixels), lowered to\n`assets/<ns>/textures/gui/hanging_signs/<path>.png`; defaults to `all`.",
+          "key": "hanging_gui",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The item's picture; defaults to `all`.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Hud": {
       "fields": [
         {
@@ -11321,6 +13155,109 @@
           "type": {
             "kind": "reference",
             "path": "::msm::element::CompostChance"
+          }
+        },
+        {
+          "desc": "Pictures of an `msm:bundle` (ADR 0095 D4), lowered to the item model definition in\nvanilla's bundle shape; only with `msm:bundle`.",
+          "key": "bundle_textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BundleTextures"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::ItemPictureElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::ItemPictureTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::ItemPictureTextures": {
+      "fields": [
+        {
+          "desc": "One texture for the block's model.",
+          "key": "all",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The texture, as vanilla's templates name it.",
+          "key": "texture",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The block item's picture; defaults to the block texture.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
           }
         }
       ],
@@ -12114,6 +14051,57 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::PottedPlantElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated model.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::PottedPlantTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::PottedPlantTextures": {
+      "fields": [
+        {
+          "desc": "The plant in the pot; defaults to the `plant` block's own texture when it is a project\nblock.",
+          "key": "plant",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::SaplingElementFields": {
       "fields": [
         {
@@ -12144,6 +14132,97 @@
         {
           "desc": "The sapling, drawn as a cross and as the item.",
           "key": "sapling",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::ScaffoldingElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::ScaffoldingTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::ScaffoldingTextures": {
+      "fields": [
+        {
+          "key": "top",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "key": "side",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The bottom of the stable model; the unstable model shows it on its sides too.",
+          "key": "bottom",
           "kind": "pair",
           "optional": true,
           "type": {
@@ -12220,6 +14299,99 @@
           "value": "custom"
         }
       ]
+    },
+    "::msm::element::SignElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models and the edit screen.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::SignTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::SignTextures": {
+      "fields": [
+        {
+          "desc": "The board and post, on vanilla's `template_sign_rot_*` and `template_wall_sign` models\n(also the breaking particles).",
+          "key": "all",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The edit screen's picture (24 by 26 pixels), lowered to\n`assets/<ns>/textures/gui/signs/<path>.png`; defaults to `all`.",
+          "key": "sign",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The item's picture; defaults to `all`.",
+          "key": "item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::element::SingleTextureElementFields": {
       "fields": [
@@ -12439,6 +14611,175 @@
           "optional": true,
           "type": {
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::StemElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::StemTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::StemTextures": {
+      "fields": [
+        {
+          "desc": "The growing stem, tinted by age as vanilla's.",
+          "key": "stem",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The bent stem attached to a fruit.",
+          "key": "attached",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::TallPlantElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::TallPlantTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::TallPlantTextures": {
+      "fields": [
+        {
+          "desc": "The upper half; also the item's picture.",
+          "key": "top",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The lower half.",
+          "key": "bottom",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::VanillaSingleTextureElementFields": {
+      "fields": [
+        {
+          "desc": "Textures of the generated models.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::SingleTextures"
+          }
+        },
+        {
+          "desc": "The type's own models, used instead of `textures`.",
+          "key": "models",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BlockModels"
           }
         }
       ],
@@ -18971,6 +21312,14 @@
         "kind": "reference",
         "path": "::msm::definition::NoTypeFields"
       },
+      "bed": {
+        "kind": "reference",
+        "path": "::msm::definition::BedFields"
+      },
+      "berry_bush": {
+        "kind": "reference",
+        "path": "::msm::definition::BerryBushFields"
+      },
       "block": {
         "kind": "reference",
         "path": "::msm::definition::NoTypeFields"
@@ -18978,6 +21327,26 @@
       "button": {
         "kind": "reference",
         "path": "::msm::definition::ButtonFields"
+      },
+      "cake": {
+        "kind": "reference",
+        "path": "::msm::definition::CakeFields"
+      },
+      "candle": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "carpet": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "chain": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "cocoa": {
+        "kind": "reference",
+        "path": "::msm::definition::CocoaFields"
       },
       "crop": {
         "kind": "reference",
@@ -18999,9 +21368,25 @@
         "kind": "reference",
         "path": "::msm::definition::FenceGateFields"
       },
+      "hanging_sign": {
+        "kind": "reference",
+        "path": "::msm::definition::SignFields"
+      },
       "horizontal": {
         "kind": "reference",
         "path": "::msm::definition::NoTypeFields"
+      },
+      "ladder": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "lantern": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "layers": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
       },
       "leaves": {
         "kind": "reference",
@@ -19019,13 +21404,33 @@
         "kind": "reference",
         "path": "::msm::definition::PortalFields"
       },
+      "potted_plant": {
+        "kind": "reference",
+        "path": "::msm::definition::PottedPlantFields"
+      },
       "pressure_plate": {
         "kind": "reference",
         "path": "::msm::definition::PressurePlateFields"
       },
+      "rod": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
       "sapling": {
         "kind": "reference",
         "path": "::msm::definition::SaplingFields"
+      },
+      "scaffolding": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "sea_pickle": {
+        "kind": "reference",
+        "path": "::msm::definition::VanillaTypeFields"
+      },
+      "sign": {
+        "kind": "reference",
+        "path": "::msm::definition::SignFields"
       },
       "slab": {
         "kind": "reference",
@@ -19035,9 +21440,25 @@
         "kind": "reference",
         "path": "::msm::definition::StairsFields"
       },
+      "stem": {
+        "kind": "reference",
+        "path": "::msm::definition::StemFields"
+      },
+      "tall_plant": {
+        "kind": "reference",
+        "path": "::msm::definition::TallPlantFields"
+      },
+      "torch": {
+        "kind": "reference",
+        "path": "::msm::definition::TorchFields"
+      },
       "trapdoor": {
         "kind": "reference",
         "path": "::msm::definition::OpeningFields"
+      },
+      "vine": {
+        "kind": "reference",
+        "path": "::msm::definition::VineFields"
       },
       "wall": {
         "kind": "reference",
@@ -19049,6 +21470,14 @@
         "kind": "reference",
         "path": "::msm::element::BlockElementFields"
       },
+      "bed": {
+        "kind": "reference",
+        "path": "::msm::element::BedElementFields"
+      },
+      "berry_bush": {
+        "kind": "reference",
+        "path": "::msm::element::AgeElementFields"
+      },
       "block": {
         "kind": "reference",
         "path": "::msm::element::BlockElementFields"
@@ -19056,6 +21485,26 @@
       "button": {
         "kind": "reference",
         "path": "::msm::element::SingleTextureElementFields"
+      },
+      "cake": {
+        "kind": "reference",
+        "path": "::msm::element::CakeElementFields"
+      },
+      "candle": {
+        "kind": "reference",
+        "path": "::msm::element::CandleElementFields"
+      },
+      "carpet": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
+      },
+      "chain": {
+        "kind": "reference",
+        "path": "::msm::element::ItemPictureElementFields"
+      },
+      "cocoa": {
+        "kind": "reference",
+        "path": "::msm::element::AgeElementFields"
       },
       "crop": {
         "kind": "reference",
@@ -19077,9 +21526,25 @@
         "kind": "reference",
         "path": "::msm::element::SingleTextureElementFields"
       },
+      "hanging_sign": {
+        "kind": "reference",
+        "path": "::msm::element::HangingSignElementFields"
+      },
       "horizontal": {
         "kind": "reference",
         "path": "::msm::element::FacingElementFields"
+      },
+      "ladder": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
+      },
+      "lantern": {
+        "kind": "reference",
+        "path": "::msm::element::ItemPictureElementFields"
+      },
+      "layers": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
       },
       "leaves": {
         "kind": "reference",
@@ -19097,13 +21562,33 @@
         "kind": "reference",
         "path": "::msm::element::PortalElementFields"
       },
+      "potted_plant": {
+        "kind": "reference",
+        "path": "::msm::element::PottedPlantElementFields"
+      },
       "pressure_plate": {
         "kind": "reference",
         "path": "::msm::element::SingleTextureElementFields"
       },
+      "rod": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
+      },
       "sapling": {
         "kind": "reference",
         "path": "::msm::element::SaplingElementFields"
+      },
+      "scaffolding": {
+        "kind": "reference",
+        "path": "::msm::element::ScaffoldingElementFields"
+      },
+      "sea_pickle": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
+      },
+      "sign": {
+        "kind": "reference",
+        "path": "::msm::element::SignElementFields"
       },
       "slab": {
         "kind": "reference",
@@ -19113,9 +21598,25 @@
         "kind": "reference",
         "path": "::msm::element::SlabElementFields"
       },
+      "stem": {
+        "kind": "reference",
+        "path": "::msm::element::StemElementFields"
+      },
+      "tall_plant": {
+        "kind": "reference",
+        "path": "::msm::element::TallPlantElementFields"
+      },
+      "torch": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
+      },
       "trapdoor": {
         "kind": "reference",
         "path": "::msm::element::SingleTextureElementFields"
+      },
+      "vine": {
+        "kind": "reference",
+        "path": "::msm::element::VanillaSingleTextureElementFields"
       },
       "wall": {
         "kind": "reference",
@@ -19539,5 +22040,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:07107f9baa1439c975db385f4c2cd3170ecc8d77309a2340c18789ff50aea441"
+  "ref": "msm-mcdoc:sha256:9a230530ec10363436b3db2e18cb1beb127ca91aff9913898e677066a68a6ec7"
 }

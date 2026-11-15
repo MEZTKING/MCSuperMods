@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby scaffolding",
+  "format": 1,
+  "models": {
+    "unstable": "mymod:block/bamboo_frame_unstable"
+  },
+  "type": "scaffolding"
+}

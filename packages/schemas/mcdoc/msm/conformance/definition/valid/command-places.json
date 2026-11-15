@@ -1,0 +1,35 @@
+{
+  "arguments": [
+    {
+      "name": "where",
+      "type": "position"
+    },
+    {
+      "name": "at",
+      "type": "block_position"
+    },
+    {
+      "name": "thing",
+      "type": "item"
+    },
+    {
+      "name": "stone",
+      "optional": true,
+      "type": "block"
+    }
+  ],
+  "event": "mymod:go",
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "function": "mymod:go",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "name": "mark",
+  "permission": 0
+}

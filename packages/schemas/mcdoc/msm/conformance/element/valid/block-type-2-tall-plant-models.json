@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby tall plant",
+  "format": 1,
+  "models": {
+    "upper": "mymod:block/reed_top"
+  },
+  "type": "tall_plant"
+}

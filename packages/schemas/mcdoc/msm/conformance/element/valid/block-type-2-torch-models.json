@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby torch",
+  "format": 1,
+  "models": {
+    "torch": "mymod:block/ruby_torch"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_torch"
+  },
+  "type": "torch"
+}

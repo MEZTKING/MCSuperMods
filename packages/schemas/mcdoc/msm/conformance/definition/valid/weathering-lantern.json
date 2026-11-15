@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:weathering": {
+      "next": "mymod:oxidized_tin_lantern",
+      "stage": "weathered"
+    }
+  },
+  "format": 1,
+  "type": "lantern"
+}

@@ -1,0 +1,6 @@
+{
+  "display_name": "Gems",
+  "icon": "mymod:ruby",
+  "order": "by_name",
+  "title": "itemGroup.mymod.gems"
+}

@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "plant": "mymod:ruby_sapling",
+  "textures": {
+    "pot": "mymod:block/x"
+  },
+  "type": "potted_plant"
+}

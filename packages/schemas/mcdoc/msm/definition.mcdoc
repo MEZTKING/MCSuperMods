@@ -1,11 +1,12 @@
 // MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
 // entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
-// D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1)
-// and vehicles (ADR 0090 D2). Lowering writes these to
+// D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1),
+// vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2). Lowering writes these to
 // `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
 // `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
 // `msm/<ns>/loot_addition/<path>.json`, `msm/<ns>/particle/<path>.json`,
-// `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json` and `msm/<ns>/vehicle/<path>.json`.
+// `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json`, `msm/<ns>/vehicle/<path>.json`,
+// `msm/<ns>/command/<path>.json` and `msm/<ns>/creative_tab/<path>.json`.
 
 use super::action::Event
 use super::action::ParticleSpec
@@ -229,6 +230,51 @@ struct BlockBehaviourComponents {
 	"msm:container"?: Container,
 	"msm:machine"?: Machine,
 	"msm:ambient_particles"?: AmbientParticles,
+	/// Holds water (ADR 0094 D7).
+	"msm:waterloggable"?: Waterloggable,
+	/// Ages as copper does (ADR 0094 D8).
+	"msm:weathering"?: Weathering,
+	/// Can be waxed with honeycomb (ADR 0094 D9); needs `msm:weathering`.
+	"msm:waxable"?: Waxable,
+}
+
+/// Lets the block hold water as vanilla's waterloggable blocks (ADR 0094 D7): it gains the
+/// `waterlogged` property, fills from a bucket and from flowing water and gives a water source
+/// back. Only on the types `block`, `pillar`, `horizontal` and `directional` (the validators
+/// check it; `ladder`, `lantern`, `chain`, `sign`, `hanging_sign`, `candle`, `sea_pickle` and
+/// `scaffolding` are waterloggable by themselves). Runtimes older than the release that ships ADR
+/// 0094 reject the component.
+struct Waterloggable {}
+
+/// A weathering stage, as copper's.
+enum(string) WeatheringStage {
+	Unaffected = "unaffected",
+	Exposed = "exposed",
+	Weathered = "weathered",
+	Oxidized = "oxidized",
+}
+
+/// Makes the block age into `next` on random ticks as vanilla's copper does (ADR 0094 D8), by
+/// vanilla's own chance and neighbour rule: a neighbour at a lower stage, project or vanilla,
+/// stops the ageing. Only on the types `block`, `pillar`, `horizontal`, `directional`, `slab`,
+/// `stairs`, `door`, `trapdoor`, `pane`, `chain` and `lantern`. Shared block state properties are
+/// copied. Runtimes older than the release that ships ADR 0094 reject the component.
+struct Weathering {
+	/// The block of the next stage, of the same type; absent at the last stage (the block then
+	/// never ages).
+	next?: #[id="block"] string,
+	/// This block's stage; the unaffected stage ages 0.75 times as fast as the others, as
+	/// vanilla's copper.
+	stage: WeatheringStage,
+}
+
+/// Makes a weathering block waxable (ADR 0094 D9): using `minecraft:honeycomb` on it turns it
+/// into `into`, which no longer ages; an axe turns the waxed block back. An axe on a weathering
+/// block without wax scrapes it one stage back. Only with `msm:weathering`. Runtimes older than
+/// the release that ships ADR 0094 reject the component.
+struct Waxable {
+	/// The waxed block: a block of the same type without `msm:weathering`.
+	into: #[id="block"] string,
 }
 
 /// Particles a block shows by itself, as a torch shows its flame (ADR 0080 D6), drawn by the
@@ -458,6 +504,55 @@ enum(string) BlockType {
 	/// as the Nether portal does (ADR 0077 D1). Runtimes older than the release that ships ADR
 	/// 0077 reject the value.
 	Portal = "portal",
+	/// A bed of two blocks, head and foot, that players sleep in (ADR 0094 D1). Sleeping, setting
+	/// the spawn and exploding follow the dimension's bed rule attribute. Villagers do not sleep
+	/// in or claim it. The types from `bed` to `scaffolding` are ADR 0094's; runtimes older than
+	/// the release that ships ADR 0094 reject them.
+	Bed = "bed",
+	/// A cake of seven slices eaten one at a time; comparators read the slices left.
+	Cake = "cake",
+	/// A bush that grows through four ages and is harvested for its berries, as the sweet berry
+	/// bush.
+	BerryBush = "berry_bush",
+	/// A plant two blocks high, as tall flowers and tall grass.
+	TallPlant = "tall_plant",
+	/// A ladder on a wall that entities climb (through `#minecraft:climbable`).
+	Ladder = "ladder",
+	/// A torch that stands on the ground or hangs on a wall (the wall block is the generated
+	/// `<path>_wall`), showing `particle`; light 14 by default.
+	Torch = "torch",
+	/// A lantern that stands or hangs; light 15 by default.
+	Lantern = "lantern",
+	/// A chain along one axis.
+	Chain = "chain",
+	/// A sign standing on the ground or on a wall (the wall block is the generated
+	/// `<path>_wall`), edited in vanilla's sign screen.
+	Sign = "sign",
+	/// A hanging sign under a block or on a wall (the wall block is the generated
+	/// `<path>_wall`), edited in vanilla's hanging sign screen.
+	HangingSign = "hanging_sign",
+	/// A plant in vanilla's flower pot.
+	PottedPlant = "potted_plant",
+	/// One to four candles lit by flint and steel; light 3 per lit candle.
+	Candle = "candle",
+	/// One to four sea pickles; light 6 to 15 by count when in water, none when dry.
+	SeaPickle = "sea_pickle",
+	/// A vine on the sides and under blocks that entities climb and that spreads.
+	Vine = "vine",
+	/// A thin carpet on top of a block.
+	Carpet = "carpet",
+	/// One to eight layers, as snow layers.
+	Layers = "layers",
+	/// A thin rod facing one of six directions, as the end rod; light 14 by default.
+	Rod = "rod",
+	/// A stem that grows through eight ages and then grows `fruit` beside it, as melon and
+	/// pumpkin stems (the attached stem is the generated `<path>_attached`).
+	Stem = "stem",
+	/// A pod on the side of a log that grows through three ages, as cocoa.
+	Cocoa = "cocoa",
+	/// Scaffolding that stands up to six blocks from its support, climbed and descended as
+	/// vanilla's.
+	Scaffolding = "scaffolding",
 }
 
 /// A vanilla block set type (ADR 0067 D2): sounds, whether hands open the block (not `iron`),
@@ -671,6 +766,150 @@ dispatch msm:block_type[portal] to struct PortalFields {
 	/// An event id declared in `events`, run after arrival at the exit position with the
 	/// traveller as `self` and `other`.
 	on_travel?: string,
+}
+
+/// A vanilla dye colour.
+enum(string) DyeColour {
+	White = "white",
+	Orange = "orange",
+	Magenta = "magenta",
+	LightBlue = "light_blue",
+	Yellow = "yellow",
+	Lime = "lime",
+	Pink = "pink",
+	Gray = "gray",
+	LightGray = "light_gray",
+	Cyan = "cyan",
+	Purple = "purple",
+	Blue = "blue",
+	Brown = "brown",
+	Green = "green",
+	Red = "red",
+	Black = "black",
+}
+
+/// The environment attribute that decides whether a bed can be slept in, sets the spawn or
+/// explodes in a dimension (ADR 0094 D2).
+enum(string) BedRule {
+	/// `gameplay/bed_rule`, as vanilla's beds; the default.
+	Bed = "bed",
+	/// `gameplay/straw_bed_rule`, as vanilla's straw bed.
+	StrawBed = "straw_bed",
+}
+
+/// A type of ADR 0094 with no fields of its own: it behaves as its vanilla class. `ladder`,
+/// `lantern`, `chain`, `candle`, `sea_pickle` and `scaffolding` keep vanilla's own waterlogging.
+dispatch msm:block_type[ladder, lantern, chain, candle, sea_pickle, carpet, layers, rod, scaffolding] to struct VanillaTypeFields {}
+
+/// A bed (ADR 0094 D2). The item places the foot towards the player and the head beyond it;
+/// the head drops the item.
+dispatch msm:block_type[bed] to struct BedFields {
+	/// The bed rule attribute the bed follows; defaults to `bed`.
+	rule?: BedRule,
+	/// The `BedBlock` colour, read only by vanilla code that asks for a bed's colour; defaults
+	/// to `white`.
+	colour?: DyeColour,
+}
+
+/// What eating one slice of a cake gives.
+struct CakeFood {
+	/// Hunger points restored, 1 to 20.
+	nutrition: int @ 1..20,
+	/// Saturation modifier, 0 to 2.
+	saturation: float @ 0..2,
+}
+
+/// A cake (ADR 0094 D2, D5): seven slices (vanilla's `bites`), eaten by using it with a
+/// hungry player or in creative. A project cake takes no candles.
+dispatch msm:block_type[cake] to struct CakeFields {
+	/// What a slice gives; defaults to vanilla's slice, nutrition 2 and saturation 0.1.
+	food?: CakeFood,
+	/// An event id declared in `events`, fired after a slice is eaten; self and `other` are the
+	/// player.
+	on_eat?: string,
+}
+
+/// How many berries a harvest drops, each as `[min, max]` inclusive.
+struct BerryHarvest {
+	/// At age 2 (ripe); vanilla's sweet berries drop 1 to 2.
+	ripe: [int @ 0..64] @ 2,
+	/// At age 3 (full); vanilla's sweet berries drop 2 to 3.
+	full: [int @ 0..64] @ 2,
+}
+
+/// A berry bush (ADR 0094 D2, D5): four ages; using it at age 2 or 3 drops `berry` and sets
+/// it back to age 1. Pick block gives `berry`.
+dispatch msm:block_type[berry_bush] to struct BerryBushFields {
+	/// The berry item harvested and planted; usually the element's own block item id (ADR 0068
+	/// D2).
+	berry: #[id="item"] string,
+	/// Harvest counts; defaults to `ripe` `[1, 2]` and `full` `[2, 3]`, as sweet berries.
+	harvest?: BerryHarvest,
+	/// Whether the bush slows entities inside it and hurts those that move, as vanilla's;
+	/// defaults to true.
+	hurts?: boolean,
+}
+
+/// What bone meal does to a tall plant.
+enum(string) TallPlantBonemeal {
+	/// Nothing, as tall grass.
+	None = "none",
+	/// Drops a copy of the plant, as tall flowers; the default.
+	DropCopy = "drop_copy",
+}
+
+/// A plant two blocks high (ADR 0094 D2). The lower half drops the item.
+dispatch msm:block_type[tall_plant] to struct TallPlantFields {
+	/// What bone meal does; defaults to `drop_copy`.
+	bonemeal?: TallPlantBonemeal,
+}
+
+/// A torch (ADR 0094 D2, D3).
+dispatch msm:block_type[torch] to struct TorchFields {
+	/// The flame particle, a particle type without options (a vanilla or project particle);
+	/// defaults to the target's torch particle, `minecraft:flame`.
+	particle?: #[id="particle_type"] string,
+}
+
+/// A sign or hanging sign (ADR 0094 D2, D6). The element makes a wood type of its own, named by
+/// the element's id, with the sounds of `wood_type`; vanilla's sign screen, text, dyes, glow ink
+/// and waxing work unchanged. The item stacks to 16, as vanilla's signs.
+dispatch msm:block_type[sign, hanging_sign] to struct SignFields {
+	/// The vanilla wood type whose sounds the sign copies.
+	wood_type: WoodType,
+}
+
+/// A plant in vanilla's flower pot (ADR 0094 D2). The block has no item of its own; breaking it
+/// drops the pot and the plant.
+dispatch msm:block_type[potted_plant] to struct PottedPlantFields {
+	/// The plant inside: a project `sapling`, `berry_bush` or cross-model `block`, or a vanilla
+	/// plant that vanilla does not pot. Tall plants cannot be potted.
+	plant: #[id="block"] string,
+}
+
+/// A stem (ADR 0094 D2, D3): grows through ages 0 to 7 on `soil`, then grows `fruit` on a
+/// neighbouring block of `fruit_soil` and turns into the generated `<path>_attached`.
+dispatch msm:block_type[stem] to struct StemFields {
+	/// The fruit block: a project `block` or `horizontal` block.
+	fruit: #[id="block"] string,
+	/// The blocks the stem can be planted on; defaults to the target's melon stem tag,
+	/// `#minecraft:supports_melon_stem`.
+	soil?: #[id(registry="block", tags="required")] string,
+	/// The blocks the fruit can grow on; defaults to the target's melon fruit tag,
+	/// `#minecraft:supports_melon_stem_fruit`.
+	fruit_soil?: #[id(registry="block", tags="required")] string,
+}
+
+/// A vine (ADR 0094 D2).
+dispatch msm:block_type[vine] to struct VineFields {
+	/// Whether the vine spreads on random ticks, as vanilla's; defaults to true.
+	spreads?: boolean,
+}
+
+/// A cocoa-like pod (ADR 0094 D2, D5).
+dispatch msm:block_type[cocoa] to struct CocoaFields {
+	/// The blocks the pod can hang on; defaults to `#minecraft:supports_cocoa` (B440).
+	support?: #[id(registry="block", tags="required")] string,
 }
 
 /// Runtime block components.
@@ -971,6 +1210,59 @@ struct WhileWorn {
 	interval_ticks?: int @ 5..,
 }
 
+/// The vanilla screen an item inventory opens (ADR 0095 D1, D2).
+enum(string) ItemInventoryLayout {
+	/// `rows` rows of nine; 3 rows open vanilla's shulker box screen. The default.
+	Chest = "chest",
+	/// Five slots, as a hopper.
+	Hopper = "hopper",
+	/// Three by three slots, as a dispenser.
+	Dispenser = "dispenser",
+}
+
+/// How a player opens an item inventory.
+enum(string) ItemInventoryOpen {
+	/// Using the item, in the air or on a block; the default.
+	Use = "use",
+	/// Using the item while sneaking.
+	SneakUse = "sneak_use",
+}
+
+/// Makes the item a bag that opens a vanilla screen of its own slots (ADR 0095 D1 to D3), as a
+/// backpack. The contents live in the stack's `minecraft:container` component, so they survive
+/// dropping, chests, death and restarts, and vanilla's tooltip lists them. The item stacks to 1
+/// (a larger `max_stack_size` is a validator error) and fits in no container item: shulker
+/// boxes, bundles and other bags refuse it, and its own slot is locked while it is open. Not
+/// together with `msm:tool`, `msm:armor`, `msm:food`, `msm:consumable`, `msm:ranged_weapon`,
+/// `msm:shield`, `msm:throwable` or `msm:bundle` (checked by the validators); `msm:on_use` still
+/// fires after the screen opens. Hoppers do not reach the contents. Runtimes older than the
+/// release that ships ADR 0095 reject the component.
+struct ItemInventory {
+	/// The screen; defaults to `chest`.
+	layout?: ItemInventoryLayout,
+	/// Rows of nine with the `chest` layout, 1 to 6; defaults to 3 (27 slots). Only with `chest`
+	/// (the validators check it).
+	rows?: int @ 1..6,
+	/// How the bag opens; defaults to `use`.
+	open?: ItemInventoryOpen,
+	/// Sound played when the bag opens; defaults to the target's container sound (a barrel's).
+	open_sound?: #[id="sound_event"] string,
+	/// Sound played when the bag closes; defaults to the target's container sound (a barrel's).
+	close_sound?: #[id="sound_event"] string,
+	/// An event id declared in `events`, fired when the bag opens; self and `other` are the
+	/// player.
+	on_open?: string,
+	/// An event id declared in `events`, fired when the bag closes; self and `other` are the
+	/// player.
+	on_close?: string,
+}
+
+/// Makes the item a bundle with vanilla's capacity, insert and take-out clicks, fullness bar,
+/// tooltip and selected-item display (ADR 0095 D4). The item stacks to 1. Not together with
+/// `msm:item_inventory`, tools, weapons, armour, food or consumables (checked by the
+/// validators). Runtimes older than the release that ships ADR 0095 reject the component.
+struct Bundle {}
+
 /// Runtime item components.
 struct ItemComponents {
 	"msm:food"?: Food,
@@ -1005,6 +1297,10 @@ struct ItemComponents {
 	/// against the target's own component schemas. MSM's own components win: a vanilla
 	/// component that an MSM component also sets is an error (checked by the validators).
 	"msm:components"?: VanillaComponents,
+	/// A bag with its own slots (ADR 0095 D1).
+	"msm:item_inventory"?: ItemInventory,
+	/// A bundle (ADR 0095 D4).
+	"msm:bundle"?: Bundle,
 }
 
 /// Fields every item definition and item element share.
@@ -1951,4 +2247,114 @@ struct Vehicle {
 	/// Definition format; this is version 1.
 	format: 1,
 	...VehicleCommon,
+}
+
+/// The kind of a command argument (ADR 0096 D1), each a vanilla Brigadier argument type.
+enum(string) CommandArgumentType {
+	/// A whole number; `min` and `max` bound it.
+	Integer = "integer",
+	/// A decimal number; `min` and `max` bound it.
+	Number = "number",
+	/// One word without spaces.
+	Word = "word",
+	/// The rest of the line; only as the last argument.
+	Text = "text",
+	Boolean = "boolean",
+	/// One player (a name or a selector).
+	Player = "player",
+	/// One or more players.
+	Players = "players",
+	/// One entity.
+	Entity = "entity",
+	/// A position, as `~ ~1 ~`.
+	Position = "position",
+	/// A block position.
+	BlockPosition = "block_position",
+	/// An item id.
+	Item = "item",
+	/// A block id.
+	Block = "block",
+}
+
+/// One argument of a command (ADR 0096 D1). A function receives it as the macro value
+/// `$(name)`; a script's `command` event in `args.<name>`.
+struct CommandArgument {
+	/// The argument's name, lower case `[a-z0-9_]` (checked by the validators), unique in the
+	/// command.
+	name: string @ 1..32,
+	/// The kind of value.
+	type: CommandArgumentType,
+	/// Lowest value of an `integer` or `number`; absent means none. Only on those types.
+	min?: double,
+	/// Highest value of an `integer` or `number`; absent means none. Only on those types.
+	max?: double,
+	/// Whether the argument may be left out; defaults to false. Optional arguments come only at
+	/// the end (checked by the validators).
+	optional?: boolean,
+}
+
+/// Fields every command definition and command element share (ADR 0096 D1).
+struct CommandCommon {
+	/// The command's literal, lower case `[a-z0-9_]` without the slash; a name a vanilla command
+	/// or another project command has is refused (checked by the validators against the
+	/// target's command names).
+	name: string @ 1..64,
+	/// Other literals that run the same command, 0 to 4, with the same rules as `name`.
+	aliases?: [string @ 1..64] @ 0..4,
+	/// The permission level a source needs, 0 to 4; defaults to 0 (every player). 2 is
+	/// operators, as vanilla's cheat commands.
+	permission?: int @ 0..4,
+	/// The arguments in order, 0 to 8; defaults to none.
+	arguments?: [CommandArgument] @ 0..8,
+	/// A function run as and at the source with permission level 2, receiving the arguments as
+	/// macro values. Without `function` and `event` the command needs a script that subscribes to
+	/// it (a validator warning; an error without one).
+	function?: #[id="function"] string,
+	/// An event id declared in `events`, fired when the command runs; self and `other` are the
+	/// source entity, absent for the console and command blocks.
+	event?: string,
+	/// A language key shown to the source when the command succeeds; absent shows nothing.
+	feedback?: string,
+	/// Events that `event` refers to, by id.
+	events?: struct CommandEvents {
+		[string]: Event,
+	},
+}
+
+/// A command definition, `msm/<ns>/command/<path>.json` (ADR 0096 D1): a server command
+/// registered at start and again on every `/reload`. Runtimes older than the release that ships
+/// ADR 0096 ignore the `command` folder.
+struct Command {
+	/// Definition format; this is version 1.
+	format: 1,
+	...CommandCommon,
+}
+
+/// The order of the items in a creative tab.
+enum(string) CreativeTabOrder {
+	/// The order the items are registered in; the default.
+	AsListed = "as_listed",
+	/// By display name.
+	ByName = "by_name",
+}
+
+/// Fields every creative tab definition and element share (ADR 0096 D2).
+struct CreativeTabCommon {
+	/// The item whose picture the tab shows.
+	icon: #[id="item"] string,
+	/// The language key of the tab's title; defaults to `itemGroup.<ns>.<path>`.
+	title?: string,
+	/// The order of the items; defaults to `as_listed`.
+	order?: CreativeTabOrder,
+}
+
+/// A creative tab definition, `msm/<ns>/creative_tab/<path>.json` (ADR 0096 D2): a tab in the
+/// creative inventory (Fabric's further pages), registered before blocks and items. Items and
+/// blocks join it by naming its id in their `creative_tab` field. Runtimes older than the
+/// release that ships ADR 0096 ignore the `creative_tab` folder, so its ids are unknown tabs
+/// there.
+struct CreativeTab {
+	/// Definition format; this is version 1.
+	format: 1,
+	...CreativeTabCommon,
 }

@@ -1,0 +1,58 @@
+{
+  "aliases": ["present", "give_gift"],
+  "arguments": [
+    {
+      "max": 64,
+      "min": 1,
+      "name": "count",
+      "type": "integer"
+    },
+    {
+      "max": 4,
+      "min": 0.5,
+      "name": "scale",
+      "type": "number"
+    },
+    {
+      "name": "mode",
+      "type": "word"
+    },
+    {
+      "name": "loud",
+      "type": "boolean"
+    },
+    {
+      "name": "who",
+      "type": "player"
+    },
+    {
+      "name": "crowd",
+      "type": "players"
+    },
+    {
+      "name": "target",
+      "type": "entity"
+    },
+    {
+      "name": "note",
+      "optional": true,
+      "type": "text"
+    }
+  ],
+  "event": "mymod:go",
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "function": "mymod:go",
+          "type": "run_function"
+        }
+      ]
+    }
+  },
+  "feedback": "command.mymod.gift.feedback",
+  "format": 1,
+  "function": "mymod:gift",
+  "name": "gift",
+  "permission": 2
+}

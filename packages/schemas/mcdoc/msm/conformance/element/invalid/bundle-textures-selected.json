@@ -1,0 +1,9 @@
+{
+  "bundle_textures": {
+    "selected": "mymod:item/pouch"
+  },
+  "components": {
+    "msm:bundle": {}
+  },
+  "format": 1
+}

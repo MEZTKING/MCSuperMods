@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_tin_door"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_tin_door",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "set_type": "copper",
+  "type": "door"
+}

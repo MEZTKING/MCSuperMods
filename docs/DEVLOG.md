@@ -5142,3 +5142,17 @@ Next
 **Decisions:** The exporters library test now registers `@msm/plugin-controls` (it was missing, so `msm:key_bind` and `msm:hud` were not even registered there). A vehicle's item uses `item.model` with an explicit `minecraft:model` element, because a texture-only item reports `schema.unknown-id` for its generated model. The tank fires vanilla fire charges instead of a custom shell item, and the dash example has no Rules book (the Rules key/HUD cards are B424), so the stamina bar is emptied by `set_hud`. Root CLAUDE.md counts left alone: no test pins them and "134 examples" counts differently from `libraryExamples`.
 
 **Next:** B424 can add the cooldown-counter Rules book to the dash example; B425 builds the sample vehicles fixture.
+## 2026-11-15 — executor — B443 format: block types, components, item inventories, commands, creative tabs
+
+What
+- MSM mcdoc (`packages/schemas/mcdoc/msm/definition.mcdoc`, `element.mcdoc`): the twenty block types of ADR 0094 D1 on `msm:block_type` (closed per type, defaults in doc comments: `bed` `rule`/`colour`, `cake` `food`/`on_eat`, `berry_bush` `berry`/`harvest`/`hurts`, `tall_plant` `bonemeal`, `torch` `particle`, `sign` and `hanging_sign` `wood_type`, `potted_plant` `plant`, `stem` `fruit`/`soil`/`fruit_soil`, `vine` `spreads`, `cocoa` `support`; the rest no fields) and their element texture slots on `msm:block_type_element`; block components `msm:waterloggable`, `msm:weathering`, `msm:waxable`; item components `msm:item_inventory`, `msm:bundle` and the element field `bundle_textures`; `::msm::definition::Command` / `CreativeTab` and their elements. Schema refs `msm:command`, `msm:creative_tab` and their `_definition` variants. `symbols.json` regenerated: 473 exported types (was 415).
+- Conformance corpus: 192 new cases (definition 55 valid and 61 invalid, element 48 valid and 28 invalid) under the prefixes `block-type-2-`, `waterlog-`, `weathering-`, `item-inventory-`, `bundle-`, `command-`, `creative-tab-`; the schemas test learns the prefixes, the 38 block types and the new field-coverage checks. The runtime's `ConformanceCorpusTest.PENDING` skips the seven prefixes until their parsers land. Checked: build-msm-mcdoc `--check`, schemas tests (1569), runtime corpus test (536), `pnpm lint`, `pnpm typecheck`.
+
+Decisions
+- The crop `soil` field (ADR 0094 D2) already existed (ADR 0068, default `#minecraft:supports_crops`); unchanged.
+- `cocoa` gains an optional `support` block tag (default `#minecraft:supports_cocoa`, B440), since ADR 0094 D5 has cocoa check its tag field.
+- Element texture slots per new type are this brief's choice (signs `all`/`sign`/`item`, hanging signs `all`/`hanging_gui`/`item`; the bed template's slot name is "verify at implementation"); bundle pictures are the item element's `bundle_textures` (`closed`, `open_back`, `open_front`).
+- Commands carry `events` like other definitions, so `event` names one of them; elements add `feedback_text` (commands) and `display_name` (tabs) for the language keys; a tab's `title` defaults to `itemGroup.<ns>.<path>`.
+
+Next
+- B445/B446 (runtime types), B449 (waterlogging, weathering, waxing), B450 (bags, bundles) and B454 (commands, tabs) remove their prefixes from `PENDING` and add their kinds; B447/B448/B451/B456 lower and validate the per-type rules the format cannot express (allowed types per component, stack size 1, argument order).

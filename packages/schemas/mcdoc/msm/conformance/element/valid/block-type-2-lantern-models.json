@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby lantern",
+  "format": 1,
+  "models": {
+    "hanging": "mymod:block/ruby_lantern_hanging"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_lantern"
+  },
+  "type": "lantern"
+}

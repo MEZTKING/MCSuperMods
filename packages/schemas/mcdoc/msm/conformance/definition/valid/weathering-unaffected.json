@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_tin"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_tin",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,10 @@
+{
+  "arguments": [
+    {
+      "name": "what",
+      "type": "string"
+    }
+  ],
+  "format": 1,
+  "name": "say_it"
+}

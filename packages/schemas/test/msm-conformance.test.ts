@@ -28,7 +28,11 @@ import {
  * `key-bind-`, `hud-` and `vehicle-` files are ADR 0088's `msm:key_bind`, ADR 0089's `msm:hud`
  * and ADR 0090's `msm:vehicle`; `action-explode-` and `action-hud-` files are blocks with the
  * `explode` (ADR 0090 D6) and HUD actions (ADR 0089 D6), and `action-explode-item-`,
- * `action-hud-entity-` and the like items, entities and effects with them.
+ * `action-hud-entity-` and the like items, entities and effects with them. `block-type-2-` files
+ * are ADR 0094's twenty block types (blocks), `waterlog-` and `weathering-` files blocks with
+ * ADR 0094's `msm:waterloggable`, `msm:weathering` and `msm:waxable`, `item-inventory-` and
+ * `bundle-` files items with ADR 0095's `msm:item_inventory` and `msm:bundle`, and `command-`
+ * and `creative-tab-` files ADR 0096's `msm:command` and `msm:creative_tab`.
  * The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
@@ -40,8 +44,12 @@ type Group = 'definition' | 'element' | 'geometry' | 'animation' | 'machine-reci
 /** The machine recipe file of ADR 0075 D2, checked by its type path (no schema reference yet). */
 const MACHINE_RECIPE = '::msm::recipe::MachineRecipe';
 
-/** File name prefixes of block files besides `block-` (ADRs 0061, 0074, 0075, 0077, 0080). */
+/**
+ * File name prefixes of block and item files besides `block-` and `item-` (ADRs 0061, 0074,
+ * 0075, 0077, 0080, 0094, 0095).
+ */
 const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
+  item: ['bundle'],
   block: [
     'trigger-block',
     'container',
@@ -51,6 +59,8 @@ const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
     'ambient-particles',
     'action-explode',
     'action-hud',
+    'waterlog',
+    'weathering',
   ],
 };
 
@@ -126,6 +136,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     hud: MSM_SCHEMA_REFS.hudDefinition,
     vehicle: MSM_SCHEMA_REFS.vehicleDefinition,
     ...NEW_ACTION_PREFIXES,
+    waterlog: MSM_SCHEMA_REFS.blockDefinition,
+    weathering: MSM_SCHEMA_REFS.blockDefinition,
+    bundle: MSM_SCHEMA_REFS.itemDefinition,
+    command: MSM_SCHEMA_REFS.commandDefinition,
+    'creative-tab': MSM_SCHEMA_REFS.creativeTabDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -144,6 +159,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     portal: MSM_SCHEMA_REFS.block,
     particle: MSM_SCHEMA_REFS.particle,
     'ambient-particles': MSM_SCHEMA_REFS.block,
+    waterlog: MSM_SCHEMA_REFS.block,
+    weathering: MSM_SCHEMA_REFS.block,
+    bundle: MSM_SCHEMA_REFS.item,
+    command: MSM_SCHEMA_REFS.command,
+    'creative-tab': MSM_SCHEMA_REFS.creativeTab,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -386,8 +406,22 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'vehicle-', 8, 35],
     ['definition', 'action-explode-', 4, 5],
     ['definition', 'action-hud-', 5, 6],
+    ['definition', 'block-type-2-', 30, 28],
+    ['element', 'block-type-2-', 40, 20],
+    ['definition', 'waterlog-', 4, 2],
+    ['definition', 'weathering-', 5, 6],
+    ['definition', 'item-inventory-', 5, 7],
+    ['definition', 'bundle-', 2, 2],
+    ['definition', 'command-', 5, 10],
+    ['definition', 'creative-tab-', 3, 4],
+    ['element', 'waterlog-', 1, 1],
+    ['element', 'weathering-', 1, 1],
+    ['element', 'item-inventory-', 1, 1],
+    ['element', 'bundle-', 1, 1],
+    ['element', 'command-', 2, 2],
+    ['element', 'creative-tab-', 2, 1],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -449,6 +483,10 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'key-bind', MSM_SCHEMA_REFS.keyBindDefinition],
     ['definition', 'hud', MSM_SCHEMA_REFS.hudDefinition],
     ['definition', 'vehicle', MSM_SCHEMA_REFS.vehicleDefinition],
+    ['definition', 'command', MSM_SCHEMA_REFS.commandDefinition],
+    ['element', 'command', MSM_SCHEMA_REFS.command],
+    ['definition', 'creative-tab', MSM_SCHEMA_REFS.creativeTabDefinition],
+    ['element', 'creative-tab', MSM_SCHEMA_REFS.creativeTab],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);
@@ -459,26 +497,49 @@ describe('MSM conformance corpus coverage', () => {
     expect(missing).toEqual([]);
   });
 
-  describe('ADR 0067, ADR 0068 and ADR 0077 block types', () => {
-    /** The 17 block types of ADR 0067 D1 and ADR 0068 D1, and ADR 0077's `portal`. */
+  describe('ADR 0067, ADR 0068, ADR 0077 and ADR 0094 block types', () => {
+    /**
+     * The 17 block types of ADR 0067 D1 and ADR 0068 D1, ADR 0077's `portal` and the twenty of
+     * ADR 0094 D1, in name order.
+     */
     const TYPES = [
+      'bed',
+      'berry_bush',
       'block',
       'button',
+      'cake',
+      'candle',
+      'carpet',
+      'chain',
+      'cocoa',
       'crop',
       'directional',
       'door',
       'fence',
       'fence_gate',
+      'hanging_sign',
       'horizontal',
+      'ladder',
+      'lantern',
+      'layers',
       'leaves',
       'pane',
       'pillar',
       'portal',
+      'potted_plant',
       'pressure_plate',
+      'rod',
       'sapling',
+      'scaffolding',
+      'sea_pickle',
+      'sign',
       'slab',
       'stairs',
+      'stem',
+      'tall_plant',
+      'torch',
       'trapdoor',
+      'vine',
       'wall',
     ];
 

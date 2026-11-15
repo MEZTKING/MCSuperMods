@@ -1,0 +1,8 @@
+{
+  "display_name": "Ruby candle",
+  "format": 1,
+  "models": {
+    "one_candle": "mymod:block/ruby_candle_one"
+  },
+  "type": "candle"
+}

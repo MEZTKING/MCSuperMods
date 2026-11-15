@@ -39,6 +39,10 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `vehicle` / `vehicleDefinition`: element data of the `msm:vehicle` kind (the definition with
  *   `format` optional, plus `display_name` and `item_display_name`) and the runtime definition
  *   written to `msm/<ns>/vehicle/<path>.json` (ADR 0090 D2).
+ * - `command` / `commandDefinition`, `creativeTab` / `creativeTabDefinition`: element data of
+ *   the `msm:command` and `msm:creative_tab` kinds (the definition with `format` optional;
+ *   commands add `feedback_text`, tabs `display_name`) and the runtime definitions written to
+ *   `msm/<ns>/command/<path>.json` and `msm/<ns>/creative_tab/<path>.json` (ADR 0096 D1, D2).
  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
  *   definition exists and the conformance corpus has no rule book files.
@@ -73,6 +77,10 @@ export const MSM_SCHEMA_REFS = {
   hudDefinition: 'msm:hud_definition',
   vehicle: 'msm:vehicle',
   vehicleDefinition: 'msm:vehicle_definition',
+  command: 'msm:command',
+  commandDefinition: 'msm:command_definition',
+  creativeTab: 'msm:creative_tab',
+  creativeTabDefinition: 'msm:creative_tab_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -104,6 +112,10 @@ export const MSM_TYPE_PATHS = {
   hudDefinition: '::msm::definition::Hud',
   vehicle: '::msm::element::Vehicle',
   vehicleDefinition: '::msm::definition::Vehicle',
+  command: '::msm::element::Command',
+  commandDefinition: '::msm::definition::Command',
+  creativeTab: '::msm::element::CreativeTab',
+  creativeTabDefinition: '::msm::definition::CreativeTab',
   action: '::msm::action::Action',
 } as const;
 
@@ -136,6 +148,10 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.hudDefinition]: MSM_TYPE_PATHS.hudDefinition,
   [MSM_SCHEMA_REFS.vehicle]: MSM_TYPE_PATHS.vehicle,
   [MSM_SCHEMA_REFS.vehicleDefinition]: MSM_TYPE_PATHS.vehicleDefinition,
+  [MSM_SCHEMA_REFS.command]: MSM_TYPE_PATHS.command,
+  [MSM_SCHEMA_REFS.commandDefinition]: MSM_TYPE_PATHS.commandDefinition,
+  [MSM_SCHEMA_REFS.creativeTab]: MSM_TYPE_PATHS.creativeTab,
+  [MSM_SCHEMA_REFS.creativeTabDefinition]: MSM_TYPE_PATHS.creativeTabDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

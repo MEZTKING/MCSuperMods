@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "textures": {
+    "lit": "mymod:block/x"
+  },
+  "type": "lantern"
+}

@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby carpet",
+  "format": 1,
+  "models": {
+    "carpet": "mymod:block/ruby_carpet"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_carpet"
+  },
+  "type": "carpet"
+}

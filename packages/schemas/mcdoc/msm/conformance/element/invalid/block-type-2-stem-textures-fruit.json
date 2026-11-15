@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "fruit": "mymod:gourd",
+  "textures": {
+    "fruit": "mymod:block/x"
+  },
+  "type": "stem"
+}

@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby hanging sign",
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/stripped_ruby_log",
+    "hanging_gui": "mymod:gui/ruby_hanging_sign",
+    "item": "mymod:item/ruby_hanging_sign"
+  },
+  "type": "hanging_sign",
+  "wood_type": "cherry"
+}

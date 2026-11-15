@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "textures": {
+    "front": "mymod:block/x"
+  },
+  "type": "cake"
+}

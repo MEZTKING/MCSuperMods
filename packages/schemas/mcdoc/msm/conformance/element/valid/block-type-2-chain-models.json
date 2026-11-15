@@ -1,0 +1,11 @@
+{
+  "display_name": "Ruby chain",
+  "format": 1,
+  "models": {
+    "chain": "mymod:block/ruby_chain"
+  },
+  "textures": {
+    "texture": "mymod:block/ruby_chain"
+  },
+  "type": "chain"
+}
