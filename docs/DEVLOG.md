@@ -5264,3 +5264,18 @@ Decisions
 Next
 - A `vehicles` Creator group in the plugin API (and a "Vehicles" Creator heading), then move the four flows to it.
 - B427: e2e through `home-tile-vehicle` and `creator-flow-vehicle-tank`; B431: the flow labels for the guide.
+## 2026-11-15 — executor — B445 runtime: plants and food types
+
+**What**
+- The ten plant and food types of ADR 0094 (D1, D2, D4, D5) in the runtime: `loader/types/PlantFields` (records `Cake`/`CakeFood`, `BerryBush`/`BerryHarvest`/`CountRange`, `TallPlant`, `PottedPlant`, `Vine`, `Cocoa`, `Plain`; each type closed at the top level, as `portal`), `registry/types/PlantTypes.create` and driver classes `MsmCakeBlock`, `MsmBerryBushBlock`, `MsmTallPlantBlock`, `MsmPottedPlantBlock`, `MsmVineBlock`, `MsmSeaPickleBlock`, `MsmCarpetBlock`, `MsmLayersBlock`, `MsmCocoaBlock`, `MsmCandleBlock` on vanilla's classes, with B440's overrides: own cake eating (`food`, `on_eat`) and no candle cakes, own berry harvest (`berry`, `harvest`) and pick item, `hurts: false`, tall plant `bonemeal: none`, cocoa `support`, sea pickle light by state (6/9/12/15 in water, 0 dry) and own bone meal spreading, candle light 3 per lit candle, vines that do not spread with `spreads: false`.
+- `MsmRegistrar` registers potted plants after the other blocks, with the stairs (the pot needs the registered plant; `potted_x` sorts before `x`); a plant that is already potted (vanilla's poppy), unregistered or two blocks high is a load error that skips the pot.
+- 19 test definitions `plant2_*`, test tags `#minecraft:climbable` and `#minecraft:candles`; `MsmPlantTypes2GameTest` 16 tests; JUnit `PlantFieldsTest` 5. 533 GameTests per variant (26.3, 26.4, `-PwithoutGeckolib`), 740 JUnit; parity build green.
+- `ConformanceCorpusTest.PENDING`: `block-type-2-` narrowed to the ten furniture prefixes, so the 31 plant corpus cases (17 valid, 14 invalid) now run.
+
+**Decisions**
+- Project layers never melt (snow's melting in block light is not kept; limit Q12).
+- The crop `soil` field already existed (ADR 0068); `MsmCropBlock` is unchanged. Vanilla's crop light rules stay, so a nether-wart-like crop needs light 9 to grow.
+- Tall plants use a plain `BlockItem`: `DoublePlantBlock.setPlacedBy` places the upper half.
+
+**Next**
+- B446 removes the remaining ten `block-type-2-*` furniture prefixes and adds its blocks to the same `climbable.json` test tag. B447 writes the tags, the potted loot tables and the berry bush and layers models.

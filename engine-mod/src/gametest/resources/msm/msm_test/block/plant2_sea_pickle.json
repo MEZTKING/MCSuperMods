@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:light_emitter": {
+      "level": 1
+    }
+  },
+  "format": 1,
+  "sound_type": "slime_block",
+  "type": "sea_pickle"
+}

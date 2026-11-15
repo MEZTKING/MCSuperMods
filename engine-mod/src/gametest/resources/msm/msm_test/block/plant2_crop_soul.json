@@ -1,0 +1,20 @@
+{
+  "bonemeal_growth": {
+    "max": 1,
+    "min": 1
+  },
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "item": {
+    "id": "msm_test:plant2_soul_seeds"
+  },
+  "max_age": 3,
+  "soil": "#minecraft:soul_speed_blocks",
+  "sound_type": "grass",
+  "type": "crop"
+}

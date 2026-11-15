@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.2,
+      "resistance": 3.0
+    }
+  },
+  "format": 1,
+  "sound_type": "wood",
+  "support": "#minecraft:logs",
+  "type": "cocoa"
+}

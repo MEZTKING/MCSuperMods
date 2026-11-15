@@ -43,7 +43,11 @@ class ConformanceCorpusTest {
      */
     private static final List<String> PENDING =
             List.of("key-bind-", "hud-", "action-hud-", "vehicle-tank",
-                    "block-type-2-",
+                    // B445 decodes the plant and food types; the furniture, light, sign and stem types stay for B446,
+                    // which removes these ten prefixes.
+                    "block-type-2-bed", "block-type-2-chain", "block-type-2-hanging-sign", "block-type-2-ladder",
+                    "block-type-2-lantern", "block-type-2-rod", "block-type-2-scaffolding", "block-type-2-sign",
+                    "block-type-2-stem", "block-type-2-torch",
                     "waterlog-",
                     "weathering-",
                     "item-inventory-",

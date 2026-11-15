@@ -1,0 +1,39 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.5,
+      "resistance": 0.5
+    },
+    "msm:on_interact": {
+      "event": "msm_test:cake_used"
+    }
+  },
+  "events": {
+    "msm_test:ate": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    },
+    "msm_test:cake_used": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "food": {
+    "nutrition": 3,
+    "saturation": 0.5
+  },
+  "format": 1,
+  "on_eat": "msm_test:ate",
+  "sound_type": "wool",
+  "type": "cake"
+}

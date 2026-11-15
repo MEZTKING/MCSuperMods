@@ -1,0 +1,25 @@
+{
+  "berry": "msm_test:plant2_berries",
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "harvest": {
+    "full": [
+      5,
+      5
+    ],
+    "ripe": [
+      3,
+      3
+    ]
+  },
+  "item": {
+    "id": "msm_test:plant2_berries"
+  },
+  "sound_type": "grass",
+  "type": "berry_bush"
+}

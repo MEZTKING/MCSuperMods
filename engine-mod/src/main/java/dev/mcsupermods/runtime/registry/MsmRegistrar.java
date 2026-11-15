@@ -18,6 +18,7 @@ import dev.mcsupermods.runtime.loader.MsmRarity;
 import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
+import dev.mcsupermods.runtime.loader.types.PlantFields;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
 import dev.mcsupermods.runtime.registry.inventory.ItemInventories;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
@@ -166,7 +167,8 @@ public final class MsmRegistrar {
         }
         MsmRuntime.LOGGER.info("[{}] registered {} potion(s)", MsmRuntime.MOD_ID, potions.size());
         // Blocks first, so a block's item exists before any item definition could collide with it. Stairs come after
-        // every other block, in dependency order, because a stair copies its registered base block (ADR 0067 D4).
+        // every other block, in dependency order, because a stair copies its registered base block (ADR 0067 D4); potted
+        // plants with them, because vanilla's pot takes the registered plant block (ADR 0094 D2, B445).
         List<Map.Entry<RawDefinition, BlockDefinition>> stairs = new ArrayList<>();
         Map<BlockType, Integer> typeCounts = new EnumMap<>(BlockType.class);
         for (RawDefinition raw : scanned.definitions()) {
@@ -179,7 +181,7 @@ public final class MsmRegistrar {
                 continue;
             }
             BlockDefinition def = parsed.definition().get();
-            if (def.type() == BlockType.STAIRS) {
+            if (def.type() == BlockType.STAIRS || def.type() == BlockType.POTTED_PLANT) {
                 stairs.add(Map.entry(raw, def));
                 continue;
             }
@@ -438,9 +440,10 @@ public final class MsmRegistrar {
     }
 
     /**
-     * Stairs after every other block (ADR 0067 D4): rounds over the pending stairs, registering each whose base is in the
-     * block registry, until a round registers none. A base that never appears (unknown, a block of a mod that registers
-     * after {@code msm_runtime}, a failed definition or a cycle of stairs) is a load error that skips the stairs.
+     * Stairs and potted plants after every other block (ADR 0067 D4, ADR 0094 D2): rounds over the pending blocks,
+     * registering each whose base block or plant is in the block registry, until a round registers none. One that never
+     * appears (unknown, a block of a mod that registers after {@code msm_runtime}, a failed definition or a cycle of
+     * stairs) is a load error that skips the block.
      */
     private static void registerStairs(List<Map.Entry<RawDefinition, BlockDefinition>> pending, List<Identifier> blocks,
             List<Identifier> items, List<String> errors, List<String> warnings, Map<BlockType, Integer> typeCounts) {
@@ -450,27 +453,34 @@ public final class MsmRegistrar {
             progress = false;
             for (var it = left.iterator(); it.hasNext(); ) {
                 var entry = it.next();
-                Identifier base = ((BlockType.Stairs) entry.getValue().typeFields()).baseBlock();
+                Identifier base = dependency(entry.getValue());
                 if (!BuiltInRegistries.BLOCK.containsKey(base)) {
                     continue;
                 }
                 it.remove();
                 progress = true;
-                if (tryRegisterBlock(entry.getKey(), entry.getValue(), BuiltInRegistries.BLOCK.getValue(base).defaultBlockState(), items,
-                        errors, warnings)) {
+                BlockState stairsBase = entry.getValue().type() == BlockType.STAIRS
+                        ? BuiltInRegistries.BLOCK.getValue(base).defaultBlockState() : null;
+                if (tryRegisterBlock(entry.getKey(), entry.getValue(), stairsBase, items, errors, warnings)) {
                     blocks.add(entry.getKey().id());
-                    typeCounts.merge(BlockType.STAIRS, 1, Integer::sum);
+                    typeCounts.merge(entry.getValue().type(), 1, Integer::sum);
                 }
             }
         }
         for (var entry : left) {
-            Identifier base = ((BlockType.Stairs) entry.getValue().typeFields()).baseBlock();
-            String message = entry.getKey().describe() + ": base_block " + base
+            Identifier base = dependency(entry.getValue());
+            String message = entry.getKey().describe() + (entry.getValue().type() == BlockType.STAIRS ? ": base_block " : ": plant ") + base
                     + " is not a registered block (unknown, failed, part of a cycle of stairs, or from a mod that registers after "
-                    + MsmRuntime.MOD_ID + "); the stairs are skipped";
+                    + MsmRuntime.MOD_ID + "); the " + (entry.getValue().type() == BlockType.STAIRS ? "stairs are" : "potted plant is")
+                    + " skipped";
             errors.add(message);
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
         }
+    }
+
+    /** The block a deferred definition needs first: a stair's {@code base_block}, a potted plant's {@code plant}. */
+    private static Identifier dependency(BlockDefinition def) {
+        return def.typeFields() instanceof PlantFields.PottedPlant potted ? potted.plant() : ((BlockType.Stairs) def.typeFields()).baseBlock();
     }
 
     private static void registerBlock(RawDefinition raw, BlockDefinition def, BlockState stairsBase, List<Identifier> items,

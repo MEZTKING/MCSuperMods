@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "item": false,
+  "plant": "msm_test:type_sapling",
+  "type": "potted_plant"
+}

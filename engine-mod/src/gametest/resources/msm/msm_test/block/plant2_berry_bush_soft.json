@@ -1,0 +1,13 @@
+{
+  "berry": "minecraft:apple",
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "hurts": false,
+  "sound_type": "grass",
+  "type": "berry_bush"
+}
