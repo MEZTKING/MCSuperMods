@@ -37,6 +37,7 @@ export const CREATOR_GROUPS: readonly { group: CreatorGroup; title: string }[] =
   { group: 'blocks', title: 'Blocks' },
   { group: 'food', title: 'Food' },
   { group: 'mobs', title: 'Mobs' },
+  { group: 'vehicles', title: 'Vehicles' },
   { group: 'magic', title: 'Magic' },
   { group: 'scripts', title: 'Scripts' },
   { group: 'worlds', title: 'Worlds' },

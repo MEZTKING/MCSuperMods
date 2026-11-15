@@ -166,10 +166,10 @@ const FLOWS: Record<string, string> = {
   'flying-mob': 'mobs',
   'water-mob': 'mobs',
   boss: 'mobs',
-  'vehicle-car': 'mobs',
-  'vehicle-tank': 'mobs',
-  'vehicle-plane': 'mobs',
-  'vehicle-boat': 'mobs',
+  'vehicle-car': 'vehicles',
+  'vehicle-tank': 'vehicles',
+  'vehicle-plane': 'vehicles',
+  'vehicle-boat': 'vehicles',
   'scripted-item': 'scripts',
 };
 

@@ -791,7 +791,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       supports: hasFabric,
       parameters: VEHICLE_CAR_PARAMETERS,
-      creator: { group: 'mobs', blurb: 'A car to drive, with seats, a horn and a boot.' },
+      creator: { group: 'vehicles', blurb: 'A car to drive, with seats, a horn and a boot.' },
       probeValues: [{ needs_fuel: true, recipe: false, paints: true }],
     },
   ),
@@ -805,7 +805,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       supports: hasFabric,
       parameters: VEHICLE_TANK_PARAMETERS,
-      creator: { group: 'mobs', blurb: 'A tank with a turret and a cannon that fires shells.' },
+      creator: { group: 'vehicles', blurb: 'A tank with a turret and a cannon that fires shells.' },
       probeValues: [{ cannon: false, recipe: false }],
     },
   ),
@@ -819,7 +819,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       supports: hasFabric,
       parameters: VEHICLE_PLANE_PARAMETERS,
-      creator: { group: 'mobs', blurb: 'A plane that takes off and flies where you look.' },
+      creator: { group: 'vehicles', blurb: 'A plane that takes off and flies where you look.' },
       probeValues: [{ needs_fuel: false, recipe: false }],
     },
   ),
@@ -833,7 +833,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       supports: hasFabric,
       parameters: VEHICLE_BOAT_PARAMETERS,
-      creator: { group: 'mobs', blurb: 'A boat for two to four that you steer on water.' },
+      creator: { group: 'vehicles', blurb: 'A boat for two to four that you steer on water.' },
       probeValues: [{ needs_fuel: true, recipe: false }],
     },
   ),

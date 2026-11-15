@@ -62,7 +62,7 @@ describe('vehicle flows (ADR 0091 D2)', () => {
   it('are four Creator flows that need the Fabric mod jar', () => {
     for (const id of FLOWS) {
       const entry = libraryStarters.find((starter) => starter.id === id);
-      expect(entry?.creator?.group, id).toBe('mobs');
+      expect(entry?.creator?.group, id).toBe('vehicles');
       expect(entry?.layers, id).toEqual(['resourcepack', 'datapack', 'msm']);
       expect(entry?.supports?.(target), id).toBe(true);
       const { fabric: _fabric, ...withoutFabric } = target;
