@@ -41,3 +41,11 @@ Facts (plan F27–F30): the fluid API differs between the two targets more than 
 ## Status
 
 Proposed (2026-11-14). Nothing after B470 starts before its go. Defaults the user may veto: `behaves_like: water` by default through the vanilla fluid tag (D1); water's flow numbers by default (D1); a 26.3-only fallback if 26.4 fails the spike (D3); no eject for fluids yet (D4).
+
+## Amendment after the spike (B470, 2026-11-15)
+
+- **D3 answered: go on both versions.** 26.3 registers two fluids per liquid (`<id>` and `<ns>:flowing_<path>`); 26.4 one `FlowingFluid(Fluid.Properties)`. Flow, falling, draining, infinite sources, buckets, dispensers (vanilla's water bucket behaviour object, registered after vanilla's bootstrap), drawing through `FluidRenderingRegistry` with our textures and a plain RGB tint, and dedicated-server sync behave the same on both. Reserve B486 is not needed.
+- **26.4 needs one Mixin** (accepted under ADR 0096's Mixin rules): `EntityFluidMixin` injects at the head of `Entity.isInWater` and `isInLava` and returns true when the entity's fluid height for that tag is above 0. Without it a water-like project fluid drowns entities but nobody swims or floats in it. The server's `isUnderWater` may need its own injection (verify at implementation). 26.4 copies `drag`, `fallDistanceMultiplier` and `fogType` from vanilla water or lava by `behaves_like`; fog on 26.4 comes from `fogType`, on 26.3 from the tag.
+- **D1 corrected:** putting out fire and lava burning come from the fluid's own `entityInside` effects (`EXTINGUISH`; `LAVA_IGNITE` and `Entity::lavaHurt`), not from the tag; with them the damage numbers match vanilla. Swimming needs `#minecraft:swimmable` on 26.4. `behaves_like: none` is air-like on 26.3 and slow with no fall damage on 26.4 (a limit).
+- **D4:** `fluidModel` is `two_fluids` on 26.3 and `one_fluid` on 26.4; `fluidTags` adds `swimmable` on 26.4; lowering writes the `flowing_` id into tags on 26.3 only.
+- **D5 corrected:** on 26.3 a lava-like project fluid mixes with water by vanilla's rule (obsidian or cobblestone); on 26.4 only vanilla lava does. Recorded as a limit that differs per version.
