@@ -64,6 +64,7 @@ const BEGINNER_CODES: readonly string[] = [
   CONTROLS_NEEDS_JAR_CODE,
   VEHICLES_NEEDS_JAR_CODE,
   ExportProblemCodes.notInEject,
+  ExportProblemCodes.needsJar,
   PARTICLE_TEXTURE_MISSING_CODE,
   SIGN_GUI_PICTURE_MISSING_CODE,
   HUD_PICTURE_MISSING_CODE,

@@ -51,6 +51,7 @@ import {
 } from '@msm/core';
 import {
   combinedFileNames,
+  commandLiteralsOf,
   contentJarFileName,
   createFabricContentJarExporter,
   createJavaProjectExporter,
@@ -66,6 +67,7 @@ import {
   MOD_ONLY_FUNCTION,
   MOD_ONLY_REFERENCE,
   modOnlyIdsOf,
+  needsJarNotes,
   packFileName,
   resourcePackExporter,
   runExport,
@@ -2675,7 +2677,10 @@ export class ProjectSession {
       pack === 'data' ? withPotionNeedsJar(report, project) : report,
       project,
     );
-    const noted = withVehicleNeedsJar(withControlsNeedJar(warned, project), project);
+    const noted = withCommandsNeedJar(
+      withVehicleNeedsJar(withControlsNeedJar(warned, project), project),
+      project,
+    );
     if (!noted.ok) return { report: noted, fileName };
     return { report: noted, fileName, data: sink.finish() };
   }
@@ -2692,7 +2697,11 @@ export class ProjectSession {
     lowered: Project,
     target: Target,
   ): Promise<Exporter> {
-    const modOnly = modOnlyIdsOf(dataRegistryIds(project, this.registry));
+    // B457a: project command names and aliases are mod-only literals, so a function running one is kept.
+    const modOnly = modOnlyIdsOf(
+      dataRegistryIds(project, this.registry),
+      commandLiteralsOf(projectElements(project)),
+    );
     if (modOnly.size === 0) return exporter;
     const owners = new Map<string, ResourceLocation>();
     for (const element of projectElements(lowered)) {
@@ -3682,6 +3691,18 @@ export function withControlsNeedJar(report: ExportReport, project: Project): Exp
       'Key binds and HUD elements are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to use them.',
   };
   return { ...report, problems: [...report.problems, problem] };
+}
+
+/**
+ * `report` with the `export.needs-jar` infos (ADR 0096 D2; B457a) of `needsJarNotes`: one per
+ * command and creative tab of `project`, which vanilla packs cannot carry.
+ *
+ * @param report - A vanilla pack export report.
+ * @param project - The exported project.
+ */
+export function withCommandsNeedJar(report: ExportReport, project: Project): ExportReport {
+  const notes = needsJarNotes(projectElements(project));
+  return notes.length === 0 ? report : { ...report, problems: [...report.problems, ...notes] };
 }
 
 /**

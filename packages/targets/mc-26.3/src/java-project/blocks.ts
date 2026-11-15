@@ -171,6 +171,21 @@ export const SOUND_TYPES = [
   'sculk',
 ] as const;
 
+/**
+ * A sign's or hanging sign's sound line (B457a): the sounds of its `wood_type`, as the runtime gives them
+ * (`WoodTypeBuilder.copyOf(base)` copies the base wood type's sounds), not the definition's `sound_type`.
+ * The wall forms copy the properties, so they follow.
+ */
+function signSoundLine(
+  file: JavaFile,
+  parity: { readonly type: string; readonly woodType?: string } | undefined,
+): string | undefined {
+  if (parity?.type !== 'sign' && parity?.type !== 'hanging_sign') return undefined;
+  const woodType = file.use('net.minecraft.world.level.block.state.properties.WoodType');
+  const accessor = parity.type === 'sign' ? 'soundType' : 'hangingSignSoundType';
+  return `        .sound(${woodType}.${parity.woodType ?? 'OAK'}.${accessor}())`;
+}
+
 /** Item rarities, each a `Rarity` constant. */
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic'] as const;
 
@@ -714,7 +729,7 @@ export function generateBlocks(
       `${properties}.of()`,
       `        .setId(${field}_KEY)`,
       `        .strength(${javaFloat(spec.hardness)}, ${javaFloat(spec.resistance)})`,
-      `        .sound(${soundType}.${spec.soundType})`,
+      signSoundLine(file, parity) ?? `        .sound(${soundType}.${spec.soundType})`,
     ];
     if (spec.machine !== undefined) {
       props.push(machineLightLine(type, spec.machine, spec.light ?? 0));

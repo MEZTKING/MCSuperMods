@@ -5613,3 +5613,8 @@ Next
 **Next**
 - My things lists no card for a command (`msm:command` is not in `THING_KINDS` in `app/src/renderer/src/components/home/things.ts`), so a command made in Very easy cannot be found there; a lone creative tab neither. Orchestrator call (ADR 0083 D2 card kinds); the commands path asserts only the tab's card for now.
 - `launchers-path` was flaky in the full run; worth a look if it repeats in CI.
+## 2026-11-15 — executor — B457a sign sounds in the eject and the app wiring of command notes
+
+What: The 26.3 eject now gives a sign or hanging sign (and, by `ofFullCopy`, its wall form) the sounds of its `wood_type` (`WoodType.<X>.soundType()`, `hangingSignSoundType()` for hanging signs), as the runtime does, instead of the definition's `sound_type`; asserted in `packages/exporters/test/vanilla-parity.test.ts`. No Java golden changed. The ejected parity project built with JDK 25 (`./gradlew build`). In the app session, `modOnlyIdsOf` now gets `commandLiteralsOf(elements)` (a vanilla function running a project command keeps `export.mod-only-function`), vanilla pack reports add `needsJarNotes` through `withCommandsNeedJar`, and `export.needs-jar` has plain words; tests in `session-vanilla-pack-safety.test.ts` and `plain-problems.test.ts`.
+Decisions: The sound is read from the base vanilla wood type constant, not the built one, so the helper that builds the wood type is not called twice. Command notes are added in the same place as the other needs-jar infos.
+Next: B464 (sign sound parity in CI against the runtime); declare `JavaProjectInput.commands?`/`creativeTabs?` at the B468 close.

@@ -495,6 +495,9 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     () =>
       'Key binds and the screen display only work in the Fabric mod jar. Share my mod makes one.',
   ),
+  'export.needs-jar': entry(
+    (t) => `${t} only works in the Fabric mod jar. Share my mod makes one.`,
+  ),
   'export.not-in-eject': entry(
     (t) => `${t} is left out of the Java project, which has no part to run it.`,
   ),

@@ -5,7 +5,12 @@
  * rule itself is unit-tested in `packages/exporters/test/mod-only.test.ts`.
  */
 import { createMemoryFileSystem, type Problem } from '@msm/core';
-import { MOD_ONLY_FUNCTION, MOD_ONLY_REFERENCE, modOnlyReferenceMessage } from '@msm/exporters';
+import {
+  ExportProblemCodes,
+  MOD_ONLY_FUNCTION,
+  MOD_ONLY_REFERENCE,
+  modOnlyReferenceMessage,
+} from '@msm/exporters';
 import type { Json, ResourceLocation } from '@msm/plugin-api';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
@@ -94,6 +99,33 @@ describe('ProjectSession: vanilla data pack safety (ADR 0066)', () => {
       values: ['minecraft:diamond'],
     });
     expect(result.files).not.toContain('data/demo/recipe/ruby_from_diamond.json');
+  }, 60_000);
+
+  it('keeps a function running a project command with a warning and notes the command (B457a)', async () => {
+    const { session } = await modSession([
+      {
+        id: 'demo:wave',
+        kind: 'msm:command',
+        data: { format: 1, name: 'wave', aliases: ['hi'], function: 'demo:wave_fn' },
+      },
+      { id: 'demo:wave_fn', kind: 'minecraft:function', data: { lines: ['say hello'] } },
+      {
+        id: 'demo:use_wave',
+        kind: 'minecraft:function',
+        data: { lines: ['execute as @a run wave'] },
+      },
+      { id: 'demo:use_hi', kind: 'minecraft:function', data: { lines: ['hi'] } },
+    ]);
+    const result = await session.exportPack('data', 'zip');
+    expect(modOnly(result.problems).map((problem) => [problem.code, problem.elementId])).toEqual([
+      [MOD_ONLY_FUNCTION, 'demo:use_hi'],
+      [MOD_ONLY_FUNCTION, 'demo:use_wave'],
+    ]);
+    expect(
+      result.problems
+        .filter((problem) => problem.code === ExportProblemCodes.needsJar)
+        .map((problem) => [problem.severity, problem.elementId]),
+    ).toEqual([['info', 'demo:wave']]);
   }, 60_000);
 
   it('does the same in both packs, warning once', async () => {

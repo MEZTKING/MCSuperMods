@@ -423,6 +423,9 @@ describe('the vanilla parity types in the Java project', () => {
       expect(blocks).toContain('new StandingAndWallBlockItem(LAMP, LAMP_WALL, Direction.DOWN');
       expect(blocks).toContain('new HangingSignItem(HANGING_BOARD, HANGING_BOARD_WALL');
       expect(blocks).toContain('BlockEntityTypes.SIGN.addValidBlock(BOARD_WALL);');
+      // B457a: a sign sounds like its wood_type (the runtime's rule), not its sound_type.
+      expect(blocks).toContain('.sound(WoodType.CHERRY.soundType())');
+      expect(blocks).toContain('.sound(WoodType.BAMBOO.hangingSignSoundType())');
       expect(blocks).toContain('new AttachedStemBlock(');
       expect(blocks).toContain('new ModScaffoldingBlock.PlacingItem(SCAFFOLD');
       expect(blocks).toContain(
