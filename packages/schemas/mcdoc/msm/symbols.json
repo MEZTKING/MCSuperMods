@@ -20155,7 +20155,7 @@
           }
         },
         {
-          "desc": "Power of the explosion when destroyed, 0 to 8 (TNT is 4); absent means none.",
+          "desc": "Power of the explosion when destroyed, 0 to 8 (TNT is 4); absent means none. It hurts\nentities and breaks no blocks (as the `explode` action's default); the storage's contents\nand the item drop after it.",
           "key": "explodes",
           "kind": "pair",
           "optional": true,
@@ -20261,7 +20261,7 @@
           }
         },
         {
-          "desc": "Defaults: `water` for the `water` mode, `any` for `amphibious`, `ground` for the others\n(verify at implementation).",
+          "desc": "Defaults: `water` for the `water` mode, `any` for `amphibious` and `hover` (it holds its\nheight over water), `ground` for `ground` and `air`.",
           "key": "places_on",
           "kind": "pair",
           "optional": true,
@@ -20417,7 +20417,7 @@
           }
         },
         {
-          "desc": "Speed gained per tick at full throttle; defaults to 0.02 for `ground` (the other modes'\ndefaults are `VehiclePhysics` constants: verify at implementation).",
+          "desc": "Speed gained per tick at full throttle. Defaults: `ground` and `amphibious` 0.02, `water`\n0.015, `air` 0.03, `hover` 0.04.",
           "key": "acceleration",
           "kind": "pair",
           "optional": true,
@@ -20431,7 +20431,7 @@
           }
         },
         {
-          "desc": "Speed lost per tick when braking (back while moving forwards); defaults to a\n`VehiclePhysics` constant (verify at implementation).",
+          "desc": "Speed lost per tick when braking (back while moving forwards; for `air`, the airspeed lost\nper tick when the throttle is lowered). Defaults: `ground` and `amphibious` 0.04, `water`\nand `air` 0.03, `hover` 0.06.",
           "key": "braking",
           "kind": "pair",
           "optional": true,
@@ -20445,7 +20445,7 @@
           }
         },
         {
-          "desc": "Degrees per tick at full steering. Defaults: `ground` and `amphibious` 5, `water` 4,\n`air` 3, `hover` 5 (verify at implementation).",
+          "desc": "Degrees per tick at full steering. Defaults: `ground` and `amphibious` 5, `water` 4,\n`air` 3, `hover` 8 (a hovering vehicle turns to the driver's view).",
           "key": "turn_rate",
           "kind": "pair",
           "optional": true,
@@ -20468,7 +20468,7 @@
           }
         },
         {
-          "desc": "Height in blocks it drives up without jumping, 0 to 2; defaults to 1 on the ground (a\ncar climbs a block).",
+          "desc": "Height in blocks it drives up without jumping, 0 to 2. Defaults: `ground` and `amphibious`\n1 (a car climbs a block), `air` 0.5, `water` and `hover` 0.",
           "key": "step_height",
           "kind": "pair",
           "optional": true,
@@ -22040,5 +22040,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:9a230530ec10363436b3db2e18cb1beb127ca91aff9913898e677066a68a6ec7"
+  "ref": "msm-mcdoc:sha256:374d7dc0439676e316970a2b733094ce2dcf8c3c1555c87ce59a8109268c1fb7"
 }

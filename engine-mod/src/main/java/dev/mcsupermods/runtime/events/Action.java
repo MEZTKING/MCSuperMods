@@ -38,7 +38,8 @@ public sealed interface Action {
         LAUNCH("launch", Launch.CODEC),
         DAMAGE("damage", Damage.CODEC),
         HEAL("heal", Heal.CODEC),
-        LIGHT_PORTAL("light_portal", LightPortal.CODEC);
+        LIGHT_PORTAL("light_portal", LightPortal.CODEC),
+        EXPLODE("explode", Explode.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -299,6 +300,39 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.LIGHT_PORTAL;
+        }
+    }
+
+    /** Where an {@code explode} action makes its explosion ({@code ExplodeAt}, ADR 0090 D6). */
+    enum ExplodeAt {
+        /** The event's own position ({@link EventContext#origin()}). */
+        SELF,
+        /** The other entity of the event ({@link EventContext#other()}); nothing happens without one. */
+        OTHER;
+
+        public String serialName() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static final Codec<ExplodeAt> CODEC = MsmCodecs.named("explode position", values(), ExplodeAt::serialName);
+    }
+
+    /**
+     * Makes an explosion (ADR 0090 D6) of {@code power} (0 to {@value Explosions#MAX_POWER}; TNT is 4), setting fires with
+     * {@code fire} and breaking blocks only with {@code breaks_blocks}, at the event's position or the other entity
+     * ({@link Explosions#explode(Explode, EventContext)}). Closed: an unknown key is an error.
+     */
+    record Explode(float power, boolean fire, boolean breaksBlocks, ExplodeAt at) implements Action {
+        static final MapCodec<Explode> CODEC = MsmCodecs.closedMap(RecordCodecBuilder.mapCodec(i -> i.group(
+                required("power", floatRange(0, Explosions.MAX_POWER)).forGetter(Explode::power),
+                optional("fire", Codec.BOOL, false).forGetter(Explode::fire),
+                optional("breaks_blocks", Codec.BOOL, false).forGetter(Explode::breaksBlocks),
+                optional("at", ExplodeAt.CODEC, ExplodeAt.SELF).forGetter(Explode::at)).apply(i, Explode::new)),
+                List.of("type", "power", "fire", "breaks_blocks", "at"));
+
+        @Override
+        public Type type() {
+            return Type.EXPLODE;
         }
     }
 }

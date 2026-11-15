@@ -110,6 +110,7 @@ public final class EventRunner {
                 case Action.Damage a -> damage(a, ctx);
                 case Action.Heal a -> heal(a, ctx);
                 case Action.LightPortal a -> lightPortal(a, ctx);
+                case Action.Explode a -> Explosions.explode(a, ctx);
             }
         }
     }

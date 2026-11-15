@@ -1,0 +1,54 @@
+{
+  "events": {
+    "msm_test:boom": {
+      "actions": [
+        {
+          "sound": "minecraft:ui.button.click",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "health": {
+    "explodes": 2,
+    "immune_to": ["#minecraft:is_fire", "minecraft:cactus"],
+    "max": 30
+  },
+  "model": {
+    "geometry": "msm_test:entity/vh_body",
+    "paints": [
+      {
+        "dye": "minecraft:yellow_dye",
+        "id": "desert",
+        "texture": "msm_test:entity/golem"
+      }
+    ],
+    "texture": "msm_test:entity/golem"
+  },
+  "movement": {
+    "max_speed": 0.2,
+    "mode": "ground",
+    "turns_in_place": true
+  },
+  "on_destroy": "msm_test:boom",
+  "size": [2, 1],
+  "turret": {
+    "bone": "turret",
+    "pitch_bone": "barrel"
+  },
+  "weapons": [
+    {
+      "ammo": {
+        "capacity": 10,
+        "item": "minecraft:iron_nugget"
+      },
+      "id": "cannon",
+      "muzzle": {
+        "bone": "barrel",
+        "offset": [0, 0.8, 1.2]
+      },
+      "projectile": "minecraft:snowball"
+    }
+  ]
+}

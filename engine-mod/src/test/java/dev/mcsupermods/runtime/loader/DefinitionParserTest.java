@@ -154,11 +154,11 @@ class DefinitionParserTest {
                 {"format": 1,
                  "components": {"msm:on_interact": {"event": "x:good"}},
                  "events": {
-                   "x:bad": {"actions": [{"type": "explode", "power": 4}]},
+                   "x:bad": {"actions": [{"type": "detonate", "power": 4}]},
                    "x:good": {"actions": [{"type": "give_item", "item": "minecraft:apple"}]}}}""");
         BlockDefinition def = r.definition().orElseThrow();
         assertEquals(1, r.errors().size());
-        assertTrue(r.errors().getFirst().contains("explode"), r.errors().toString());
+        assertTrue(r.errors().getFirst().contains("detonate"), r.errors().toString());
         assertTrue(def.events().contains(Identifier.parse("x:good")));
         assertFalse(def.events().contains(Identifier.parse("x:bad")));
     }

@@ -37,12 +37,12 @@ class ConformanceCorpusTest {
      * B314, {@code machine-} by B316, {@code portal-} by B334, {@code particle-} by B350, {@code action-particle-} and
      * {@code ambient-particles-} by B352. Machine recipe files have their own corpus ({@link MachineRecipeCodecTest}).
      * The vehicles and client batch's format (B409): {@code key-bind-} until B411's {@code KeyBindParser},
-     * {@code vehicle-} and {@code action-explode-} until B412 ({@code VehicleParser}, the {@code explode} action),
      * {@code hud-} and {@code action-hud-} until B416 ({@code HudParser}, the HUD actions); each removes its
-     * prefixes here and adds its kinds to {@link #KINDS}.
+     * prefixes here and adds its kinds to {@link #KINDS}. B412 decoded {@code vehicle-} ({@code VehicleParser}) and
+     * {@code action-explode-}; {@code vehicle-tank} uses the HUD actions and waits for B416 too.
      */
     private static final List<String> PENDING =
-            List.of("key-bind-", "hud-", "vehicle-", "action-explode-", "action-hud-",
+            List.of("key-bind-", "hud-", "action-hud-", "vehicle-tank",
                     "block-type-2-",
                     "waterlog-",
                     "weathering-",
@@ -97,7 +97,12 @@ class ConformanceCorpusTest {
             new Kind("portal-entity-", DefinitionParser::parseEntity),
             new Kind("portal-effect-", DefinitionParser::parseEffect),
             new Kind("action-particle-", DefinitionParser::parseBlock),
-            new Kind("ambient-particles-", DefinitionParser::parseBlock))
+            new Kind("ambient-particles-", DefinitionParser::parseBlock),
+            new Kind("vehicle-", VehicleParser::parse),
+            new Kind("action-explode-", DefinitionParser::parseBlock),
+            new Kind("action-explode-item-", DefinitionParser::parseItem),
+            new Kind("action-explode-entity-", DefinitionParser::parseEntity),
+            new Kind("action-explode-effect-", DefinitionParser::parseEffect))
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

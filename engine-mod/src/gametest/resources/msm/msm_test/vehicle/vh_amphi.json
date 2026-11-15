@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "item": {
+    "name": "item.msm_test.vh_amphi_custom"
+  },
+  "model": {
+    "geometry": "msm_test:entity/vh_body",
+    "texture": "msm_test:entity/golem"
+  },
+  "movement": {
+    "mode": "amphibious"
+  },
+  "name": "entity.msm_test.vh_amphi_custom"
+}

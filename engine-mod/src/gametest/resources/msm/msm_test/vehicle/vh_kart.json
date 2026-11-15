@@ -1,0 +1,143 @@
+{
+  "camera": {
+    "distance": 8
+  },
+  "engine": {
+    "fuel": {
+      "capacity": 250,
+      "items": [
+        {
+          "item": "minecraft:coal",
+          "ticks": 100
+        },
+        {
+          "item": "#minecraft:logs",
+          "ticks": 20
+        }
+      ]
+    },
+    "start_sound": "minecraft:block.piston.extend"
+  },
+  "events": {
+    "msm_test:blast": {
+      "actions": [
+        {
+          "breaks_blocks": true,
+          "power": 3,
+          "type": "explode"
+        }
+      ]
+    },
+    "msm_test:blast_other": {
+      "actions": [
+        {
+          "at": "other",
+          "power": 2,
+          "type": "explode"
+        }
+      ]
+    },
+    "msm_test:driving": {
+      "actions": [
+        {
+          "sound": "minecraft:ui.button.click",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "msm_test:in": {
+      "actions": [
+        {
+          "sound": "minecraft:ui.button.click",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "msm_test:out": {
+      "actions": [
+        {
+          "sound": "minecraft:ui.button.click",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "msm_test:placed": {
+      "actions": [
+        {
+          "sound": "minecraft:ui.button.click",
+          "type": "play_sound"
+        }
+      ]
+    },
+    "msm_test:puff": {
+      "actions": [
+        {
+          "power": 3,
+          "type": "explode"
+        }
+      ]
+    },
+    "msm_test:wrecked": {
+      "actions": [
+        {
+          "sound": "minecraft:ui.button.click",
+          "type": "play_sound"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "health": {
+    "max": 10,
+    "repair": [
+      {
+        "amount": 4,
+        "item": "minecraft:iron_ingot"
+      }
+    ]
+  },
+  "model": {
+    "geometry": "msm_test:entity/vh_body",
+    "paints": [
+      {
+        "dye": "minecraft:red_dye",
+        "id": "red",
+        "texture": "msm_test:entity/golem"
+      },
+      {
+        "dye": "minecraft:blue_dye",
+        "id": "blue",
+        "texture": "msm_test:entity/golem"
+      }
+    ],
+    "texture": "msm_test:entity/golem"
+  },
+  "movement": {
+    "mode": "ground"
+  },
+  "on_destroy": "msm_test:wrecked",
+  "on_dismount": "msm_test:out",
+  "on_mount": "msm_test:in",
+  "on_place": "msm_test:placed",
+  "on_tick": {
+    "event": "msm_test:driving",
+    "interval": 5
+  },
+  "parts": {
+    "wheel_radius": 0.25,
+    "wheels": ["wheel_left", "wheel_right"]
+  },
+  "ram_damage": {
+    "damage": 3,
+    "min_speed": 0.1
+  },
+  "seats": [
+    {
+      "offset": [0, 0.5, 0.2]
+    },
+    {
+      "offset": [0, 0.5, -0.6]
+    }
+  ],
+  "size": [1.5, 0.75]
+}

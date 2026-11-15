@@ -65,19 +65,20 @@ struct VehicleMovement {
 	max_speed?: float @ 0.01..3,
 	/// Top speed in reverse as a share of `max_speed`; defaults to 0.4.
 	reverse_factor?: float @ 0..1,
-	/// Speed gained per tick at full throttle; defaults to 0.02 for `ground` (the other modes'
-	/// defaults are `VehiclePhysics` constants: verify at implementation).
+	/// Speed gained per tick at full throttle. Defaults: `ground` and `amphibious` 0.02, `water`
+	/// 0.015, `air` 0.03, `hover` 0.04.
 	acceleration?: float @ 0.001..1,
-	/// Speed lost per tick when braking (back while moving forwards); defaults to a
-	/// `VehiclePhysics` constant (verify at implementation).
+	/// Speed lost per tick when braking (back while moving forwards; for `air`, the airspeed lost
+	/// per tick when the throttle is lowered). Defaults: `ground` and `amphibious` 0.04, `water`
+	/// and `air` 0.03, `hover` 0.06.
 	braking?: float @ 0.001..1,
 	/// Degrees per tick at full steering. Defaults: `ground` and `amphibious` 5, `water` 4,
-	/// `air` 3, `hover` 5 (verify at implementation).
+	/// `air` 3, `hover` 8 (a hovering vehicle turns to the driver's view).
 	turn_rate?: float @ 0.5..30,
 	/// Turns standing still, as a tank; defaults to false (cars must move to turn).
 	turns_in_place?: boolean,
-	/// Height in blocks it drives up without jumping, 0 to 2; defaults to 1 on the ground (a
-	/// car climbs a block).
+	/// Height in blocks it drives up without jumping, 0 to 2. Defaults: `ground` and `amphibious`
+	/// 1 (a car climbs a block), `air` 0.5, `water` and `hover` 0.
 	step_height?: float @ 0..2,
 	/// `ground`: 1 holds the line, low values drift; defaults to 0.8.
 	grip?: float @ 0..1,
@@ -136,14 +137,17 @@ struct VehicleRepair {
 }
 
 /// Health (ADR 0090 D9): damage counts up in vanilla's vehicle damage counter; at `max` the
-/// vehicle is destroyed (passengers dismounted, storage and the item dropped). Damage does not
-/// heal by itself.
+/// vehicle is destroyed (passengers dismounted, storage and the item dropped; no item when a
+/// creative player broke it, the destroying damage was an explosion or fire, or the gamerule
+/// `entity_drops` is off). Damage does not heal by itself.
 struct VehicleHealth {
 	/// Damage it takes before it is destroyed, 1 to 1024; defaults to 40.
 	max?: float @ 1..1024,
 	/// Items that repair it.
 	repair?: [VehicleRepair],
-	/// Power of the explosion when destroyed, 0 to 8 (TNT is 4); absent means none.
+	/// Power of the explosion when destroyed, 0 to 8 (TNT is 4); absent means none. It hurts
+	/// entities and breaks no blocks (as the `explode` action's default); the storage's contents
+	/// and the item drop after it.
 	explodes?: float @ 0..8,
 	/// Damage types or `#` damage type tags it ignores; defaults to none.
 	immune_to?: [#[id(registry="damage_type", tags="allowed")] string],
@@ -270,8 +274,8 @@ struct VehicleItem {
 	/// The item picture used when there is no `model`; `ns:item/x` is
 	/// `assets/ns/textures/item/x.png`.
 	texture?: #[id="texture"] string,
-	/// Defaults: `water` for the `water` mode, `any` for `amphibious`, `ground` for the others
-	/// (verify at implementation).
+	/// Defaults: `water` for the `water` mode, `any` for `amphibious` and `hover` (it holds its
+	/// height over water), `ground` for `ground` and `air`.
 	places_on?: VehiclePlacesOn,
 }
 

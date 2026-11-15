@@ -45,8 +45,11 @@ import net.minecraft.resources.Identifier;
 public final class EventOverlay {
     /** Definition kinds with {@code events} (a subset of {@code DefinitionScanner}'s kinds). */
     public static final List<String> KINDS_WITH_EVENTS = List.of("block", "item", "entity", "effect");
-    /** Definition kinds without events: an overlay for one needs a restart. Keep in step with {@code DefinitionScanner}. */
-    public static final List<String> KINDS_WITHOUT_EVENTS = List.of("potion", "particle", "biome_addition", "loot_addition");
+    /**
+     * Definition kinds an overlay cannot change: they have no events, or (vehicles, ADR 0090 plan limit V5) their events
+     * live with a type fixed at start. An overlay for one needs a restart. Keep in step with {@code DefinitionScanner}.
+     */
+    public static final List<String> KINDS_WITHOUT_EVENTS = List.of("potion", "particle", "biome_addition", "loot_addition", "vehicle");
 
     /** One applied overlay: {@code original} is the installed definition's events, matched at fire time. */
     record Entry(String kind, Identifier id, Events original, Events replacement) {}
@@ -131,7 +134,8 @@ public final class EventOverlay {
                 continue;
             }
             if (KINDS_WITHOUT_EVENTS.contains(kind)) {
-                errors.add(name + ": a " + kind + " has no events; changes to it need a restart");
+                errors.add(name + (kind.equals("vehicle") ? ": a vehicle type is fixed at start" : ": a " + kind + " has no events")
+                        + "; changes to it need a restart");
                 continue;
             }
             if (!KINDS_WITH_EVENTS.contains(kind)) {

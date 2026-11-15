@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "model": {
+    "geometry": "msm_test:entity/vh_body",
+    "texture": "msm_test:entity/golem"
+  },
+  "movement": {
+    "mode": "water"
+  },
+  "storage": {
+    "rows": 2
+  }
+}

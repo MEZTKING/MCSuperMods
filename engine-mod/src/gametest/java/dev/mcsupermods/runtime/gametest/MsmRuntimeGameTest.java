@@ -153,7 +153,7 @@ public class MsmRuntimeGameTest {
     public void unknownActionDropsTheEventButRegistersTheBlock(GameTestHelper helper) {
         helper.assertTrue(block("partly_broken") instanceof MsmBlock, "partly_broken not registered");
         List<String> errors = MsmRuntime.report().errors();
-        helper.assertTrue(errors.stream().anyMatch(e -> e.contains("partly_broken.json") && e.contains("explode")
+        helper.assertTrue(errors.stream().anyMatch(e -> e.contains("partly_broken.json") && e.contains("detonate")
                 && e.contains("msm_runtime_gametest")), "no error for the unknown action type: " + errors);
         List<String> warnings = MsmRuntime.report().warnings();
         helper.assertTrue(warnings.stream().anyMatch(w -> w.contains("partly_broken.json") && w.contains("future_key")),

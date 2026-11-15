@@ -1,0 +1,64 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "bones": [
+        {
+          "cubes": [
+            { "origin": [-10, 2, -12], "size": [20, 8, 24], "uv": [0, 0] }
+          ],
+          "name": "hull",
+          "pivot": [0, 0, 0]
+        },
+        {
+          "cubes": [
+            { "origin": [-6, 10, -6], "size": [12, 6, 12], "uv": [0, 32] }
+          ],
+          "name": "turret",
+          "parent": "hull",
+          "pivot": [0, 10, 0]
+        },
+        {
+          "cubes": [
+            { "origin": [-1, 12, 6], "size": [2, 2, 12], "uv": [48, 32] }
+          ],
+          "name": "barrel",
+          "parent": "turret",
+          "pivot": [0, 13, 6]
+        },
+        {
+          "cubes": [
+            { "origin": [-12, 0, -10], "size": [2, 4, 4], "uv": [0, 50] }
+          ],
+          "name": "wheel_left",
+          "parent": "hull",
+          "pivot": [-11, 2, -8]
+        },
+        {
+          "cubes": [
+            { "origin": [10, 0, -10], "size": [2, 4, 4], "uv": [12, 50] }
+          ],
+          "name": "wheel_right",
+          "parent": "hull",
+          "pivot": [11, 2, -8]
+        },
+        {
+          "cubes": [
+            { "origin": [-12, 17, -1], "size": [24, 1, 2], "uv": [24, 50] }
+          ],
+          "name": "rotor",
+          "parent": "hull",
+          "pivot": [0, 17, 0]
+        }
+      ],
+      "description": {
+        "identifier": "geometry.msm_test.vh_body",
+        "texture_height": 64,
+        "texture_width": 64,
+        "visible_bounds_height": 2,
+        "visible_bounds_offset": [0, 1, 0],
+        "visible_bounds_width": 3
+      }
+    }
+  ]
+}

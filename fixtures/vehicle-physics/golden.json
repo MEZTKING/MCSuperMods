@@ -1,0 +1,2064 @@
+{
+  "cases": [
+    {
+      "movement": {
+        "mode": "ground"
+      },
+      "name": "ground: accelerate, steer, coast, brake and reverse",
+      "resolved": {
+        "acceleration": 0.02,
+        "braking": 0.04,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.4,
+        "mode": "ground",
+        "reverse_factor": 0.4,
+        "step_height": 1,
+        "takeoff_speed": 0.2,
+        "turn_rate": 5,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0.3,
+        "yaw": 0
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.32,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0,
+            "vy": -0.0392,
+            "vz": 0.32,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.34,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0,
+            "vy": -0.077616,
+            "vz": 0.34,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.36,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0,
+            "vy": -0.115264,
+            "vz": 0.36,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.38,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0,
+            "vy": -0.152158,
+            "vz": 0.38,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.399696,
+            "steering": 1,
+            "throttle": 1,
+            "vx": -0.02789,
+            "vy": -0.188315,
+            "vz": 0.398782,
+            "yaw": 5
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.399574,
+            "steering": 1,
+            "throttle": 1,
+            "vx": -0.061151,
+            "vy": -0.223749,
+            "vz": 0.394956,
+            "yaw": 10
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": true,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.379452,
+            "steering": -1,
+            "throttle": 0,
+            "vx": -0.038003,
+            "vy": -0.258474,
+            "vz": 0.377577,
+            "yaw": 5
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.36048,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.032404,
+            "vy": -0.292504,
+            "vz": 0.359022,
+            "yaw": 5
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.32048,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.028129,
+            "vy": -0.325854,
+            "vz": 0.319243,
+            "yaw": 5
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.28048,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.024485,
+            "vy": -0.358537,
+            "vz": 0.279409,
+            "yaw": 5
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.240297,
+            "steering": 1,
+            "throttle": 0,
+            "vx": -0.037607,
+            "vy": -0.390567,
+            "vz": 0.237373,
+            "yaw": 10
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.200072,
+            "steering": 1,
+            "throttle": 0,
+            "vx": -0.047605,
+            "vy": -0.421955,
+            "vz": 0.194374,
+            "yaw": 15
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.159933,
+            "steering": 1,
+            "throttle": 0,
+            "vx": -0.049146,
+            "vy": -0.452716,
+            "vz": 0.152227,
+            "yaw": 19.001797
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "acceleration": 0.01,
+        "max_speed": 0.2,
+        "mode": "ground",
+        "turn_rate": 3,
+        "turns_in_place": true
+      },
+      "name": "ground: a tank turns in place only with its engine",
+      "resolved": {
+        "acceleration": 0.01,
+        "braking": 0.04,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.2,
+        "mode": "ground",
+        "reverse_factor": 0.4,
+        "step_height": 1,
+        "takeoff_speed": 0.1,
+        "turn_rate": 3,
+        "turns_in_place": true
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0,
+        "yaw": 180
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0,
+            "steering": 1,
+            "throttle": 0,
+            "vx": 0,
+            "vy": -0.0392,
+            "vz": 0,
+            "yaw": 183
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0,
+            "steering": 1,
+            "throttle": 0,
+            "vx": 0,
+            "vy": -0.077616,
+            "vz": 0,
+            "yaw": 186
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0,
+            "steering": 1,
+            "throttle": 0,
+            "vx": 0,
+            "vy": -0.115264,
+            "vz": 0,
+            "yaw": 186
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0,
+            "steering": 0,
+            "throttle": 0,
+            "vx": 0,
+            "vy": -0.152158,
+            "vz": 0,
+            "yaw": 186
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "grip": 0.2,
+        "mode": "ground",
+        "turn_rate": 10
+      },
+      "name": "ground: low grip drifts",
+      "resolved": {
+        "acceleration": 0.02,
+        "braking": 0.04,
+        "floats": false,
+        "grip": 0.2,
+        "lift_speed": 0.15,
+        "max_speed": 0.4,
+        "mode": "ground",
+        "reverse_factor": 0.4,
+        "step_height": 1,
+        "takeoff_speed": 0.2,
+        "turn_rate": 10,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0.4,
+        "yaw": 0
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": true,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.395138,
+            "steering": -1,
+            "throttle": 1,
+            "vx": 0.013892,
+            "vy": -0.0392,
+            "vz": 0.398785,
+            "yaw": -10
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": true,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.387419,
+            "steering": -1,
+            "throttle": 1,
+            "vx": 0.03915,
+            "vy": -0.077616,
+            "vz": 0.398033,
+            "yaw": -20
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": true,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.381337,
+            "steering": -1,
+            "throttle": 1,
+            "vx": 0.074763,
+            "vy": -0.115264,
+            "vz": 0.397166,
+            "yaw": -30
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "mode": "ground"
+      },
+      "name": "ground: falls, sinks in deep water, wades through shallow water",
+      "resolved": {
+        "acceleration": 0.02,
+        "braking": 0.04,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.4,
+        "mode": "ground",
+        "reverse_factor": 0.4,
+        "step_height": 1,
+        "takeoff_speed": 0.2,
+        "turn_rate": 5,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0.1,
+        "vy": 0,
+        "vz": 0.2,
+        "yaw": -30
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.218741,
+            "steering": 0,
+            "throttle": 0,
+            "vx": 0.098,
+            "vy": -0.0392,
+            "vz": 0.196,
+            "yaw": -30
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.214366,
+            "steering": 0,
+            "throttle": 0,
+            "vx": 0.09604,
+            "vy": -0.077616,
+            "vz": 0.19208,
+            "yaw": -30
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.8
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.171493,
+            "steering": 0,
+            "throttle": 0,
+            "vx": 0.076832,
+            "vy": -0.078093,
+            "vz": 0.153664,
+            "yaw": -30
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 1.5
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.137194,
+            "steering": 0,
+            "throttle": 0,
+            "vx": 0.061466,
+            "vy": -0.078474,
+            "vz": 0.122931,
+            "yaw": -30
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0.3
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.157194,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0.077171,
+            "vy": -0.116105,
+            "vz": 0.136958,
+            "yaw": -30
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "floats": true,
+        "mode": "ground"
+      },
+      "name": "ground: floats drives at a tenth on water",
+      "resolved": {
+        "acceleration": 0.02,
+        "braking": 0.04,
+        "floats": true,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.4,
+        "mode": "ground",
+        "reverse_factor": 0.4,
+        "step_height": 1,
+        "takeoff_speed": 0.2,
+        "turn_rate": 5,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": -0.2,
+        "vz": 0,
+        "yaw": 90
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.6
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.002,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.002,
+            "vy": -0.114,
+            "vz": 0,
+            "yaw": 90
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.6
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.004,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.004,
+            "vy": -0.0495,
+            "vz": 0,
+            "yaw": 90
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.6
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.006,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.006,
+            "vy": -0.001125,
+            "vz": 0,
+            "yaw": 90
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "mode": "water"
+      },
+      "name": "water: bobs up, turns standing still, drifts, crawls on land",
+      "resolved": {
+        "acceleration": 0.015,
+        "braking": 0.03,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.35,
+        "mode": "water",
+        "reverse_factor": 0.4,
+        "step_height": 0,
+        "takeoff_speed": 0.175,
+        "turn_rate": 4,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": -0.1,
+        "vz": 0,
+        "yaw": 45
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.5
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0,
+            "steering": 0,
+            "throttle": 0,
+            "vx": 0,
+            "vy": -0.0465,
+            "vz": 0,
+            "yaw": 45
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.3
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0,
+            "steering": 1,
+            "throttle": 0,
+            "vx": 0,
+            "vy": -0.021375,
+            "vz": 0,
+            "yaw": 46.2
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.15
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.015,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.010826,
+            "vy": -0.013781,
+            "vz": 0.010382,
+            "yaw": 46.2
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.12
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.029996,
+            "steering": 1,
+            "throttle": 1,
+            "vx": -0.021803,
+            "vy": -0.010336,
+            "vz": 0.020604,
+            "yaw": 47.4
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.1
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": true,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.044984,
+            "steering": 1,
+            "throttle": 1,
+            "vx": -0.033162,
+            "vy": -0.009252,
+            "vz": 0.030407,
+            "yaw": 48.6
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.12
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.014984,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.010862,
+            "vy": -0.006939,
+            "vz": 0.010337,
+            "yaw": 48.6
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.016484,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.012289,
+            "vy": -0.046,
+            "vz": 0.010987,
+            "yaw": 48.6
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.017984,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.013475,
+            "vy": -0.08428,
+            "vz": 0.01191,
+            "yaw": 48.6
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "mode": "amphibious",
+        "reverse_factor": 0.5
+      },
+      "name": "amphibious: ground on land, water on water",
+      "resolved": {
+        "acceleration": 0.02,
+        "braking": 0.04,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.4,
+        "mode": "amphibious",
+        "reverse_factor": 0.5,
+        "step_height": 1,
+        "takeoff_speed": 0.2,
+        "turn_rate": 5,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0.2,
+        "yaw": 0
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.22,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0,
+            "vy": -0.0392,
+            "vz": 0.22,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.24,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0,
+            "vy": -0.077616,
+            "vz": 0.24,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.4
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": true,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.259357,
+            "steering": -1,
+            "throttle": 1,
+            "vx": 0.007931,
+            "vy": -0.037212,
+            "vz": 0.259654,
+            "yaw": -5
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0.2
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.279357,
+            "steering": 0,
+            "throttle": 1,
+            "vx": 0.01481,
+            "vy": -0.021909,
+            "vz": 0.279128,
+            "yaw": -5
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "acceleration": 0.05,
+        "mode": "air"
+      },
+      "name": "air: rolls, lifts its nose at takeoff speed, follows the view, stalls without thrust",
+      "resolved": {
+        "acceleration": 0.05,
+        "braking": 0.03,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 1.2,
+        "mode": "air",
+        "reverse_factor": 0.4,
+        "step_height": 0.5,
+        "takeoff_speed": 0.6,
+        "turn_rate": 3,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0.5,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0.55,
+        "yaw": 0
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": -20,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": -3,
+            "speed": 0.6,
+            "steering": 0,
+            "throttle": 0.55,
+            "vx": 0,
+            "vy": -0.008598,
+            "vz": 0.599178,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": -20,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": -6,
+            "speed": 0.647907,
+            "steering": 0,
+            "throttle": 0.6,
+            "vx": 0,
+            "vy": 0.027725,
+            "vz": 0.644357,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": -20,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": -9,
+            "speed": 0.693725,
+            "steering": 0,
+            "throttle": 0.65,
+            "vx": 0,
+            "vy": 0.068523,
+            "vz": 0.685185,
+            "yaw": 0
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": -20,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -12,
+            "speed": 0.737468,
+            "steering": 1,
+            "throttle": 0.7,
+            "vx": -0.037753,
+            "vy": 0.122111,
+            "vz": 0.720364,
+            "yaw": 3
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": -20,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -15,
+            "speed": 0.780978,
+            "steering": 1,
+            "throttle": 0.75,
+            "vx": -0.078853,
+            "vy": 0.178238,
+            "vz": 0.750234,
+            "yaw": 6
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": -20,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -18,
+            "speed": 0.824793,
+            "steering": 1,
+            "throttle": 0.8,
+            "vx": -0.122711,
+            "vy": 0.23704,
+            "vz": 0.774768,
+            "yaw": 9
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -15,
+            "speed": 0.869282,
+            "steering": 1,
+            "throttle": 0.75,
+            "vx": -0.174576,
+            "vy": 0.212081,
+            "vz": 0.821314,
+            "yaw": 12
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -12,
+            "speed": 0.84,
+            "steering": 1,
+            "throttle": 0.7,
+            "vx": -0.212657,
+            "vy": 0.165013,
+            "vz": 0.793647,
+            "yaw": 15
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -9,
+            "speed": 0.807997,
+            "steering": 1,
+            "throttle": 0.7,
+            "vx": -0.246611,
+            "vy": 0.119026,
+            "vz": 0.75899,
+            "yaw": 18
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -6,
+            "speed": 0.776844,
+            "steering": 1,
+            "throttle": 0.7,
+            "vx": -0.276871,
+            "vy": 0.075448,
+            "vz": 0.721273,
+            "yaw": 21
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 30
+          },
+          "state": {
+            "pitch": -3,
+            "speed": 0.746242,
+            "steering": 1,
+            "throttle": 0.7,
+            "vx": -0.303108,
+            "vy": 0.034502,
+            "vz": 0.680792,
+            "yaw": 24
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "max_speed": 2,
+        "mode": "air",
+        "takeoff_speed": 1
+      },
+      "name": "air: below takeoff speed the nose stays down on the ground",
+      "resolved": {
+        "acceleration": 0.03,
+        "braking": 0.03,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 2,
+        "mode": "air",
+        "reverse_factor": 0.4,
+        "step_height": 0.5,
+        "takeoff_speed": 1,
+        "turn_rate": 3,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0.2,
+        "vx": 0,
+        "vy": 0,
+        "vz": -0.2,
+        "yaw": 180
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 10,
+            "view_yaw": 170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.23,
+            "steering": -0.23,
+            "throttle": 0.25,
+            "vx": -0.00277,
+            "vy": -0.04,
+            "vz": -0.229983,
+            "yaw": 179.31
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": true,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 10,
+            "view_yaw": 170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.26,
+            "steering": -0.26,
+            "throttle": 0.3,
+            "vx": -0.00667,
+            "vy": -0.04,
+            "vz": -0.259914,
+            "yaw": 178.53
+          }
+        }
+      ]
+    },
+    {
+      "movement": {
+        "mode": "hover"
+      },
+      "name": "hover: moves with the view, climbs, descends, holds, sinks without power, floats",
+      "resolved": {
+        "acceleration": 0.04,
+        "braking": 0.06,
+        "floats": false,
+        "grip": 0.8,
+        "lift_speed": 0.15,
+        "max_speed": 0.5,
+        "mode": "hover",
+        "reverse_factor": 0.4,
+        "step_height": 0,
+        "takeoff_speed": 0.25,
+        "turn_rate": 8,
+        "turns_in_place": false
+      },
+      "start": {
+        "pitch": 0,
+        "speed": 0,
+        "steering": 0,
+        "throttle": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0,
+        "yaw": 10
+      },
+      "steps": [
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 20
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.04,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.012361,
+            "vy": 0,
+            "vz": 0.038042,
+            "yaw": 18
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 20
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.079975,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.026155,
+            "vy": 0,
+            "vz": 0.075588,
+            "yaw": 20
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": true,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 20
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.119975,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.03995,
+            "vy": 0,
+            "vz": 0.113134,
+            "yaw": 20
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": true,
+            "view_pitch": 0,
+            "view_yaw": 20
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.110662,
+            "steering": 1,
+            "throttle": 1,
+            "vx": -0.07332,
+            "vy": 0.04,
+            "vz": 0.091078,
+            "yaw": 20
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": true,
+            "up": true,
+            "view_pitch": 0,
+            "view_yaw": 20
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.10135,
+            "steering": 1,
+            "throttle": 1,
+            "vx": -0.10669,
+            "vy": 0.08,
+            "vz": 0.069022,
+            "yaw": 20
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": true,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": -170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.071798,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.081388,
+            "vy": 0.04,
+            "vz": 0.038041,
+            "yaw": 28
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": true,
+            "down": true,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": -170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.039093,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.053168,
+            "vy": 0,
+            "vz": 0.009693,
+            "yaw": 36
+          }
+        },
+        {
+          "env": {
+            "engine": true,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": -170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.01141,
+            "steering": 0,
+            "throttle": 1,
+            "vx": -0.013816,
+            "vy": 0,
+            "vz": 0.002519,
+            "yaw": 44
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": -170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.010269,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.012435,
+            "vy": -0.01,
+            "vz": 0.002267,
+            "yaw": 44
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": false,
+            "water_depth": 0
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": -170
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.009242,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.011191,
+            "vy": -0.02,
+            "vz": 0.00204,
+            "yaw": 44
+          }
+        },
+        {
+          "env": {
+            "engine": false,
+            "on_ground": false,
+            "water_depth": 0.6
+          },
+          "input": {
+            "back": false,
+            "down": false,
+            "forward": false,
+            "left": false,
+            "right": false,
+            "up": false,
+            "view_pitch": 0,
+            "view_yaw": 0
+          },
+          "state": {
+            "pitch": 0,
+            "speed": 0.008318,
+            "steering": 0,
+            "throttle": 0,
+            "vx": -0.010072,
+            "vy": 0.021,
+            "vz": 0.001836,
+            "yaw": 44
+          }
+        }
+      ]
+    }
+  ],
+  "format": 1
+}

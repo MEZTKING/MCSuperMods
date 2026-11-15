@@ -77,6 +77,8 @@ val conformanceCorpus = layout.projectDirectory.dir("../packages/schemas/mcdoc/m
 val scriptApi = layout.projectDirectory.file("../packages/plugins/scripting/api/script-api-v1.json")
 // The particle look golden (ADR 0081 D6 (a)) is shared with the app's preview; the runtime reads it in place.
 val particleLook = layout.projectDirectory.dir("../fixtures/particle-look")
+// The vehicle physics golden (ADR 0090 D3) is shared with Try it's simulation; the runtime reads and writes it in place.
+val vehiclePhysics = layout.projectDirectory.dir("../fixtures/vehicle-physics")
 
 tasks.test {
     useJUnitPlatform()
@@ -86,6 +88,8 @@ tasks.test {
     systemProperty("msm.script.api", scriptApi.asFile.absolutePath)
     inputs.dir(particleLook).withPropertyName("particleLook")
     systemProperty("msm.particle.look", particleLook.asFile.absolutePath)
+    inputs.dir(vehiclePhysics).withPropertyName("vehiclePhysics")
+    systemProperty("msm.vehicle.physics", vehiclePhysics.asFile.absolutePath)
     testLogging {
         events("failed")
         showStandardStreams = false
