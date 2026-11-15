@@ -1,0 +1,6 @@
+$data modify storage msm_test:cmd_out i set value "$(i)"
+$data modify storage msm_test:cmd_out n set value "$(n)"
+$data modify storage msm_test:cmd_out w set value "$(w)"
+$data modify storage msm_test:cmd_out b set value "$(b)"
+$data modify storage msm_test:cmd_out p set value "$(p)"
+$data modify storage msm_test:cmd_out e set value "$(e)"

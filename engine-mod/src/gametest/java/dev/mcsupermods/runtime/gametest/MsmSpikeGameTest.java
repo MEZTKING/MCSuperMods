@@ -39,7 +39,9 @@ public class MsmSpikeGameTest {
                         || e.contains("waterlog_slab.json") || e.contains("msm_test:weathering_") // MsmWeatheringGameTest (B449)
                         || e.contains("machine_both.json") || e.contains("machine_slab.json") || e.contains("/portal_bad_")
                         || e.contains("/particle_bad_") || e.contains("msm/minecraft/particle/flame.json")
-                        || e.contains("mx_tame_on_mob.json") || e.contains("furniture_clash_wall.json") || e.contains("needs the mod 'geckolib'")),
+                        || e.contains("mx_tame_on_mob.json") || e.contains("furniture_clash_wall.json") || e.contains("needs the mod 'geckolib'")
+                        || e.contains("command/cmd_broken.json") || e.contains("command msm_test:cmd_zdup:") // MsmCommandGameTest (B454)
+                        || e.contains("creative_tab/tab_broken.json")), // MsmCreativeTabGameTest (B454)
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");
         Block block = BuiltInRegistries.BLOCK.getValue(ORE);

@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.events.Events;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
+import dev.mcsupermods.runtime.loader.CommandParser;
 import dev.mcsupermods.runtime.loader.DefinitionParser;
 import dev.mcsupermods.runtime.loader.EffectDefinition;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
@@ -46,12 +47,13 @@ import net.minecraft.resources.Identifier;
  */
 public final class EventOverlay {
     /** Definition kinds with {@code events} (a subset of {@code DefinitionScanner}'s kinds). */
-    public static final List<String> KINDS_WITH_EVENTS = List.of("block", "item", "entity", "effect", "key_bind");
+    public static final List<String> KINDS_WITH_EVENTS = List.of("block", "item", "entity", "effect", "key_bind", "command");
     /**
      * Definition kinds an overlay cannot change: they have no events, or (vehicles, ADR 0090 plan limit V5) their events
      * live with a type fixed at start; HUD elements (ADR 0089 D3) are indexed by both sides at start. An overlay for one needs a restart. Keep in step with {@code DefinitionScanner}.
      */
-    public static final List<String> KINDS_WITHOUT_EVENTS = List.of("potion", "particle", "biome_addition", "loot_addition", "vehicle", "hud");
+    public static final List<String> KINDS_WITHOUT_EVENTS = List.of("potion", "particle", "biome_addition", "loot_addition", "vehicle", "hud",
+            "creative_tab");
 
     /** One applied overlay: {@code original} is the installed definition's events, matched at fire time. */
     record Entry(String kind, Identifier id, Events original, Events replacement) {}
@@ -222,6 +224,8 @@ public final class EventOverlay {
             case "entity" -> entry(kind, id, jar.json(), merged, DefinitionParser::parseEntity, EntityDefinition::events);
             case "effect" -> entry(kind, id, jar.json(), merged, DefinitionParser::parseEffect, EffectDefinition::events);
             case "key_bind" -> entry(kind, id, jar.json(), merged, KeyBindParser::parse, KeyBindDefinition::events);
+            // B454: a command's events swap like a key bind's; its literals, arguments and permission need a restart.
+            case "command" -> entry(kind, id, jar.json(), merged, CommandParser::parse, CommandParser.Command::events);
             default -> "unknown kind '" + kind + "'";
         };
     }

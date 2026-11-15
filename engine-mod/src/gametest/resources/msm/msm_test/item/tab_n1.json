@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:components": {
+      "minecraft:custom_name": "Cherry"
+    }
+  },
+  "creative_tab": "msm_test:tab_named",
+  "format": 1
+}

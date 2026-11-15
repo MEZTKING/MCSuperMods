@@ -1,0 +1,6 @@
+$data modify storage msm_test:cmd_out ps set value "$(ps)"
+$data modify storage msm_test:cmd_out pos set value "$(pos)"
+$data modify storage msm_test:cmd_out bp set value "$(bp)"
+$data modify storage msm_test:cmd_out it set value "$(it)"
+$data modify storage msm_test:cmd_out bl set value "$(bl)"
+$data modify storage msm_test:cmd_out t set value "$(t)"

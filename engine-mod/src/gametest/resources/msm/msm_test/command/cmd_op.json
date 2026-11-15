@@ -1,0 +1,8 @@
+{
+  "aliases": ["msm_op_alias", "msm_op_other"],
+  "feedback": "command.msm_test.cmd_op.feedback",
+  "format": 1,
+  "function": "msm_test:cmd/op",
+  "name": "msm_op",
+  "permission": 2
+}

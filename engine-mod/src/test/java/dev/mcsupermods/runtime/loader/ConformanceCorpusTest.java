@@ -39,12 +39,9 @@ class ConformanceCorpusTest {
      * The vehicles and client batch's format (B409): {@code key-bind-} decoded by B411 ({@code KeyBindParser}),
      * {@code hud-} and {@code action-hud-} by B416 ({@code HudParser}, the HUD actions), {@code vehicle-} by B412
      * ({@code VehicleParser}, with {@code action-explode-}); B416 also decoded {@code vehicle-tank}, which uses the HUD
-     * actions.
+     * actions. {@code command-} and {@code creative-tab-} decoded by B454 ({@code CommandParser}, {@code CreativeTabParser}).
      */
-    private static final List<String> PENDING =
-            List.of(
-                    "command-",
-                    "creative-tab-");
+    private static final List<String> PENDING = List.of();
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -107,7 +104,9 @@ class ConformanceCorpusTest {
             new Kind("action-hud-", DefinitionParser::parseBlock),
             new Kind("action-hud-item-", DefinitionParser::parseItem),
             new Kind("action-hud-entity-", DefinitionParser::parseEntity),
-            new Kind("action-hud-effect-", DefinitionParser::parseEffect))
+            new Kind("action-hud-effect-", DefinitionParser::parseEffect),
+            new Kind("command-", CommandParser::parse), // B454
+            new Kind("creative-tab-", CreativeTabParser::parse)) // B454
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

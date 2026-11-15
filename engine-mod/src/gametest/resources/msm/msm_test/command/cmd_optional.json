@@ -1,0 +1,16 @@
+{
+  "arguments": [
+    {
+      "name": "a",
+      "type": "word"
+    },
+    {
+      "name": "b",
+      "optional": true,
+      "type": "integer"
+    }
+  ],
+  "format": 1,
+  "function": "msm_test:cmd/optional",
+  "name": "msm_optional"
+}

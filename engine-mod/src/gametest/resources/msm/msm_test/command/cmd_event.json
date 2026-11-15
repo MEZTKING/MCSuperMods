@@ -1,0 +1,38 @@
+{
+  "event": "msm_test:go",
+  "events": {
+    "msm_test:go": {
+      "actions": [
+        {
+          "effect": "minecraft:glowing",
+          "seconds": 10,
+          "type": "apply_effect"
+        },
+        {
+          "item": "minecraft:diamond",
+          "type": "give_item"
+        },
+        {
+          "function": "msm_test:cmd/tag_self",
+          "type": "run_function"
+        },
+        {
+          "event": "msm_test:then",
+          "type": "trigger_event"
+        }
+      ]
+    },
+    "msm_test:then": {
+      "actions": [
+        {
+          "effect": "minecraft:slowness",
+          "seconds": 10,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "name": "msm_event"
+}

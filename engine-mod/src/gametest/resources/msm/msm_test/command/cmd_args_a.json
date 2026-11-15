@@ -1,0 +1,34 @@
+{
+  "arguments": [
+    {
+      "max": 64,
+      "min": 1,
+      "name": "i",
+      "type": "integer"
+    },
+    {
+      "name": "n",
+      "type": "number"
+    },
+    {
+      "name": "w",
+      "type": "word"
+    },
+    {
+      "name": "b",
+      "type": "boolean"
+    },
+    {
+      "name": "p",
+      "type": "player"
+    },
+    {
+      "name": "e",
+      "type": "entity"
+    }
+  ],
+  "format": 1,
+  "function": "msm_test:cmd/args_a",
+  "name": "msm_args_a",
+  "permission": 0
+}

@@ -1,0 +1,31 @@
+{
+  "arguments": [
+    {
+      "name": "ps",
+      "type": "players"
+    },
+    {
+      "name": "pos",
+      "type": "position"
+    },
+    {
+      "name": "bp",
+      "type": "block_position"
+    },
+    {
+      "name": "it",
+      "type": "item"
+    },
+    {
+      "name": "bl",
+      "type": "block"
+    },
+    {
+      "name": "t",
+      "type": "text"
+    }
+  ],
+  "format": 1,
+  "function": "msm_test:cmd/args_b",
+  "name": "msm_args_b"
+}

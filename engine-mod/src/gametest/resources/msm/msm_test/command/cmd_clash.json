@@ -1,0 +1,6 @@
+{
+  "aliases": ["msm_clash_ok"],
+  "format": 1,
+  "function": "msm_test:cmd/op",
+  "name": "give"
+}

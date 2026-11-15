@@ -1,0 +1,5 @@
+{
+  "format": 1,
+  "function": "msm_test:cmd/op",
+  "name": "msm_op_alias"
+}

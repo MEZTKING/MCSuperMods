@@ -1,0 +1,11 @@
+{
+  "arguments": [
+    {
+      "name": "pos",
+      "type": "block_position"
+    }
+  ],
+  "format": 1,
+  "function": "msm_test:cmd/race",
+  "name": "msm_race"
+}

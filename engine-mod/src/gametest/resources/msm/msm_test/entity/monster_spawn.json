@@ -27,6 +27,6 @@
     "weight": 9
   },
   "spawn_egg": {
-    "creative_tab": "minecraft:combat"
+    "creative_tab": "msm_test:tab_listed"
   }
 }
