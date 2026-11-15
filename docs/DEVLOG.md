@@ -5120,3 +5120,17 @@ Next
 
 **Next**
 - `packages/exporters/test/library.test.ts` "one per-kind example for every registered kind" fails on the base commit too (the new kinds have no example yet; B422).
+## 2026-11-15 — executor — B440 spike: block types, Mixins, commands and bags in the real game
+
+What
+- Answered S1–S10 of `docs/PLAN-vanilla-parity-2.md` by observation on 26.3 and 26.4-snapshot-7: throwaway GameTests (14, on the GameTest server) and one client GameTest (singleplayer, then `createServer()`/`connect()`, headless Mesa EGL) over directly registered blocks of the vanilla classes (signs and hanging signs on a registered and an unregistered project `WoodType`, potted plant, berry bush, cake, cocoa, scaffolding, nether wart, stem, bed, sea pickle, candles, vines, ladders, tall flower, layers, torch, weathering blocks), a bag item with three write-back modes, a command, a creative tab and two head-injection Mixins. Spike code deleted afterwards; `./gradlew build` green on both versions. Results, screenshots and a copy of the spike source are in the scratchpad (`b440/`), the findings in the B440 report for the plan's "Notes from implementation".
+
+Decisions
+- Go for ADR 0094 D6 (signs with their own look, no client code, no registration): in 26.x signs are block models, so the board is the project's own blockstate and models on vanilla's `template_*sign*` parents; the edit screens read `<ns>:textures/gui/signs/<path>.png` and `<ns>:textures/gui/hanging_signs/<path>.png` of the wood type's name. Same on both versions, registered or not. D6b is not needed.
+- Go for `scaffolding` (D1) with overrides, no Mixin: vanilla's distance counts only vanilla scaffolding and the item's extending only works on vanilla scaffolding, so the driver needs its own distance and item.
+- Go for the Mixin route (ADR 0096 D3): both head injections apply and run on the GameTest server, singleplayer and a dedicated server on both versions, no refmap, `compatibilityLevel` `JAVA_25`; cancel and keep-blocks behave as the ADR says.
+- Measured vanilla berry harvests: 1–2 at age 2 and 2–3 at age 3 (the fixed loot table `minecraft:harvest/sweet_berry_bush`, which gives sweet berries for any bush and the age-3 bonus only to vanilla's bush).
+- Bags: the ADR 0095 D3 guard (locked slot, same-stack `stillValid`, write on every change) closed every route tried; the naive write-at-close menus duplicated on most routes.
+
+Next
+- The main session copies the report's "Notes for the plan" into the plan; B441 and Wave 1 may start (B441 still after vehicles' B408).
