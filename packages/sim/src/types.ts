@@ -238,6 +238,20 @@ export type PlayerAction =
       readonly item?: string;
     }
   | {
+      /**
+       * Use (right-click) a vehicle by its id (B428): a fuel or repair item is used on it,
+       * otherwise the player gets in.
+       */
+      readonly type: 'useVehicle';
+      readonly vehicle: number;
+      readonly item?: string;
+    }
+  | {
+      /** Hit (left-click) a vehicle by its id (B428); sneaking picks it up. */
+      readonly type: 'hitVehicle';
+      readonly vehicle: number;
+    }
+  | {
       /** "Clear the area": every block, mob, timer and effect goes (ADR 0085 D13). */
       readonly type: 'clear';
     }

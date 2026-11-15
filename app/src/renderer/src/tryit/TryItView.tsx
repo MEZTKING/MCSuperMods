@@ -29,11 +29,12 @@ import {
   type GroundBlocks,
   type GroundKind,
   type PointedAt,
+  pick as pickBlock,
   type QuickWorldOptions,
   SIM_TOOLS,
   type SimLogLine,
 } from '@msm/sim';
-import { Box, Egg, Hand, Pause, Play, StepForward, X } from 'lucide-react';
+import { Box, Car, Egg, Hand, Pause, Play, StepForward, X } from 'lucide-react';
 import {
   type KeyboardEvent,
   type MouseEvent,
@@ -87,6 +88,10 @@ import { TryItScene } from './render/TryItScene';
 import { type LoweringSession, ruleBooksOf, SessionFiles, TryItArea } from './session-source';
 import { StateReadout, type TryItReadout } from './state-readout';
 import { useTryItStore } from './tryit-store';
+import { driverCamera } from './vehicles/camera';
+import { VEHICLE_KEYS, vehicleKey } from './vehicles/keys';
+import { vehicleThings } from './vehicles/things';
+import { VehiclePanel } from './vehicles/VehiclePanel';
 import { WhatHappened } from './WhatHappened';
 
 /** The strip's words (ADR 0085 D7); it cannot be closed. */
@@ -255,6 +260,7 @@ function ThingIcon(props: {
       />
     );
   }
+  if (props.thing.kind === 'vehicle') return <Car size={20} aria-hidden />;
   return props.thing.kind === 'egg' ? (
     <Egg size={20} aria-hidden data-testid="tryit-egg-icon" />
   ) : (
@@ -273,7 +279,7 @@ function readoutPointed(
   state: (pos: { x: number; y: number; z: number }) => BlockState | null,
 ): TryItReadout['pointed'] {
   if (pointed === null) return undefined;
-  if (pointed.kind === 'entity') return undefined;
+  if (pointed.kind === 'entity' || pointed.kind === 'vehicle') return undefined;
   if (pointed.block.pos.y < 0) return { kind: 'floor' };
   const found = state(pointed.block.pos);
   return found === null ? undefined : { kind: 'block', state: found };
@@ -399,7 +405,10 @@ export default function TryItView(props: TryItViewProps) {
     () =>
       area === null || folders === null
         ? []
-        : projectThings(area.source.catalogue, area.source.mobs, area.files, folders),
+        : [
+            ...projectThings(area.source.catalogue, area.source.mobs, area.files, folders),
+            ...vehicleThings(area.source.vehicles.types, area.files, folders),
+          ],
     // The catalogues change with the files.
     [area, folders, area?.files],
   );
@@ -416,7 +425,10 @@ export default function TryItView(props: TryItViewProps) {
   );
   const held1 = slots[selected] ?? null;
   const blockIds = useMemo(
-    () => slots.filter((thing) => thing !== null && thing.kind !== 'egg').map((t) => t?.id ?? ''),
+    () =>
+      slots
+        .filter((thing) => thing !== null && (thing.kind === 'block' || thing.kind === 'prop'))
+        .map((t) => t?.id ?? ''),
     [slots],
   );
 
@@ -460,6 +472,7 @@ export default function TryItView(props: TryItViewProps) {
       case 'break': {
         const at = pointed();
         if (at?.kind === 'entity') area.act({ type: 'hit', entity: at.entity.id });
+        else if (at?.kind === 'vehicle') area.act({ type: 'hitVehicle', vehicle: at.vehicle.id });
         else if (at?.kind === 'block' && at.block.pos.y >= 0) {
           area.act({ type: 'break', pos: at.block.pos });
         }
@@ -469,6 +482,14 @@ export default function TryItView(props: TryItViewProps) {
         const at = pointed();
         if (at === null) {
           log('Nothing is in reach: point at a block or the floor.');
+          return;
+        }
+        if (at.kind === 'vehicle') {
+          area.act({
+            type: 'useVehicle',
+            vehicle: at.vehicle.id,
+            ...(held1 === null ? {} : { item: held1.id }),
+          });
           return;
         }
         if (at.kind === 'entity') {
@@ -514,6 +535,7 @@ export default function TryItView(props: TryItViewProps) {
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (area !== null && vehicleKey(event, true, area.source.vehicles)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target !== event.currentTarget) return;
     if (MOVEMENT_CODES.has(event.code)) {
@@ -538,6 +560,7 @@ export default function TryItView(props: TryItViewProps) {
   };
 
   const onKeyUp = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (area !== null && vehicleKey(event, false, area.source.vehicles)) return;
     held.current.delete(event.code);
   };
 
@@ -771,11 +794,25 @@ export default function TryItView(props: TryItViewProps) {
             ) : (
               <TryItScene
                 grid={area.source.world}
-                camera={() => ({
-                  eye: area.source.player.eyePosition(area.clock.alpha),
-                  yaw: look.current.yaw,
-                  pitch: look.current.pitch,
-                })}
+                camera={() =>
+                  driverCamera(
+                    area.source.vehicles,
+                    area.clock.alpha,
+                    look.current,
+                    (origin, direction, distance) =>
+                      pickBlock(
+                        (x, y, z) => area.source.world.get({ x, y, z }),
+                        area.source.catalogue,
+                        origin,
+                        direction,
+                        distance,
+                      )?.distance ?? distance,
+                  ) ?? {
+                    eye: area.source.player.eyePosition(area.clock.alpha),
+                    yaw: look.current.yaw,
+                    pitch: look.current.pitch,
+                  }
+                }
                 picked={() => {
                   const at = pointed();
                   if (at?.kind !== 'block') return null;
@@ -794,9 +831,17 @@ export default function TryItView(props: TryItViewProps) {
                 readProjectAsset={props.readProjectAsset}
                 particles={area.particles}
                 mobs={area.mobField}
+                vehicles={{
+                  snapshots: () => area.source.vehicles.snapshots(),
+                  kind: (type) => area.source.vehicles.types.get(type),
+                  log: area.source.log,
+                }}
                 partialTick={() => area.clock.alpha}
                 smaller={smaller}
                 onFrame={(elapsed) => {
+                  // The look turns with a surface vehicle's hull, as a passenger's does.
+                  const turn = area.source.vehicles.takeLookTurn();
+                  if (turn !== 0) look.current = turnLook(look.current, turn, 0);
                   sendMove();
                   area.clock.advance(elapsed);
                 }}
@@ -923,7 +968,7 @@ export default function TryItView(props: TryItViewProps) {
                     autoFocus
                     aria-label="Find"
                     data-testid="tryit-picker-filter"
-                    placeholder="Find a block or a spawn egg"
+                    placeholder="Find a block, a spawn egg or a vehicle"
                     className="flex-1 rounded border border-border bg-bg px-2 py-1"
                     value={filter}
                     onChange={(event) => setFilter(event.target.value)}
@@ -942,7 +987,7 @@ export default function TryItView(props: TryItViewProps) {
                   </button>
                 </div>
                 <div className="min-h-0 flex-1 overflow-auto">
-                  <h3 className="font-medium">Your blocks and spawn eggs</h3>
+                  <h3 className="font-medium">Your blocks, spawn eggs and vehicles</h3>
                   {things.filter(matches).length === 0 && (
                     <p className="text-muted">Nothing found. Make a block or a mob first.</p>
                   )}
@@ -1147,6 +1192,33 @@ export default function TryItView(props: TryItViewProps) {
             />
             Smaller picture (faster)
           </label>
+          {area !== null && (
+            <VehiclePanel
+              vehicles={area.source.vehicles}
+              pointed={(() => {
+                const at = pointed();
+                return at?.kind === 'vehicle' ? at.vehicle.id : null;
+              })()}
+              onGetIn={(id) => {
+                area.source.vehicles.getIn(id);
+                rerender();
+                wrapperRef.current?.focus({ preventScroll: true });
+              }}
+              onGetOut={() => {
+                area.source.vehicles.getOut();
+                rerender();
+                wrapperRef.current?.focus({ preventScroll: true });
+              }}
+              onFillTank={(id) => {
+                area.source.vehicles.fillTank(id);
+                rerender();
+              }}
+              onRepair={(id) => {
+                area.source.vehicles.repairFully(id);
+                rerender();
+              }}
+            />
+          )}
           <section aria-label={YOUR_ITEMS_TITLE} className="flex flex-col gap-1">
             <h3 className="font-medium">{YOUR_ITEMS_TITLE}</h3>
             {inventory.length === 0 ? (
@@ -1187,7 +1259,12 @@ export default function TryItView(props: TryItViewProps) {
           <details data-testid="tryit-keys" open>
             <summary className="cursor-pointer font-medium">Keys</summary>
             <dl className="grid grid-cols-[auto_1fr] gap-x-2 text-xs">
-              {TRYIT_KEYS.map((entry) => (
+              {[
+                ...TRYIT_KEYS,
+                ...(area !== null && area.source.vehicles.types.ids().length > 0
+                  ? VEHICLE_KEYS
+                  : []),
+              ].map((entry) => (
                 <div key={entry.keys} className="contents">
                   <dt className="font-mono">{entry.keys}</dt>
                   <dd>{entry.does}</dd>

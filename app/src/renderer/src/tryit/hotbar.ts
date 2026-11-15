@@ -16,8 +16,8 @@ export interface TryItThing {
   readonly id: string;
   /** Its name in plain words. */
   readonly name: string;
-  /** A project block, a spawn egg, or a vanilla block placed for looks only. */
-  readonly kind: 'block' | 'egg' | 'prop';
+  /** A project block, a spawn egg, a vehicle's item (B428), or a vanilla block for looks only. */
+  readonly kind: 'block' | 'egg' | 'vehicle' | 'prop';
   /** The texture id the slot shows (`<ns>:block/ruby`), when one was found. */
   readonly texture?: string;
 }

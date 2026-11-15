@@ -35,6 +35,7 @@ import { mat4 } from 'gl-matrix';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import { normaliseId } from '../../preview/model-chain';
+import { type VehicleDrawSource, VehiclePass } from '../vehicles/vehicle-pass';
 import {
   boxInFrustum,
   type CameraPose,
@@ -73,6 +74,8 @@ export interface TryItFrameStats {
   /** Mobs drawn (with their model or as a box) and their name plates. */
   mobs: number;
   mobPlates: number;
+  /** Vehicles drawn (B428). */
+  vehicles: number;
 }
 
 /** What the resources found, for notes beside the view. */
@@ -115,6 +118,11 @@ export interface TryItCanvasProps {
    * snapshots by the owner on each simulation tick. `null` or absent draws none.
    */
   mobs?: MobField | null;
+  /**
+   * The vehicles to draw (B428): read every frame from the simulation's `VehicleWorld`, drawn
+   * with their geo models after the mobs (`vehicles/vehicle-pass.ts`). `null` or absent: none.
+   */
+  vehicles?: VehicleDrawSource | null;
   /**
    * How far the simulation is between its last tick and the next, 0..1 (`SimClock.alpha`), for
    * drawing mobs and particles between ticks. Default 0.
@@ -295,6 +303,7 @@ interface Scene {
   portalPass: PortalPass | null;
   particlePass: ParticlePass | null;
   mobPass: MobPass | null;
+  vehiclePass: VehiclePass | null;
   portalIndex: PortalIndex;
   /** Milliseconds drawn so far, for the portal pictures' frames. */
   animationMs: number;
@@ -322,6 +331,7 @@ function createScene(): Scene | null {
     portalPass: null,
     particlePass: null,
     mobPass: null,
+    vehiclePass: null,
     portalIndex: new PortalIndex(),
     animationMs: 0,
   };
@@ -332,6 +342,7 @@ function disposeScene(scene: Scene | null): void {
   scene.portalPass?.dispose();
   scene.particlePass?.dispose();
   scene.mobPass?.dispose();
+  scene.vehiclePass?.dispose();
   scene.batch?.dispose();
   scene.portalIndex.dispose();
   scene.gl.getExtension('WEBGL_lose_context')?.loseContext();
@@ -369,6 +380,7 @@ interface FrameExtras {
   isPortal: (id: string) => boolean;
   particles: ParticleField | null;
   mobs: MobField | null;
+  vehicles: VehicleDrawSource | null;
   partialTick: number;
   /** Milliseconds since the last frame. */
   elapsedMs: number;
@@ -407,6 +419,42 @@ function drawMobs(
     nowMs: scene.animationMs,
     elapsedMs: extras.elapsedMs,
   });
+}
+
+/** Draws the vehicles after the mobs (B428); returns how many. */
+function drawVehicles(scene: Scene, projection: mat4, view: mat4, extras: FrameExtras): number {
+  const vehicles = extras.vehicles;
+  if (vehicles === null) return 0;
+  const list = vehicles.snapshots();
+  if (list.length === 0) return 0;
+  if (scene.batch === null) scene.batch = new QuadBatch(scene.gl);
+  const { props } = extras;
+  const source = {
+    files: props.files,
+    folders: props.folders,
+    vanilla: props.vanilla,
+    ...(props.readProjectAsset === undefined ? {} : { readProjectAsset: props.readProjectAsset }),
+  };
+  if (scene.vehiclePass === null) scene.vehiclePass = new VehiclePass(scene.batch, source);
+  else scene.vehiclePass.setSource(source);
+  const drawn = scene.vehiclePass.draw(
+    {
+      snapshots: () => list,
+      kind: (type) => vehicles.kind(type),
+      ...(vehicles.log === undefined ? {} : { log: vehicles.log }),
+    },
+    {
+      projection,
+      view,
+      clip: scene.clip,
+      planes: scene.planes,
+      alpha: extras.partialTick,
+      nowMs: scene.animationMs,
+      elapsedMs: extras.elapsedMs,
+    },
+  );
+  resetGlForDeepslate(scene.gl);
+  return drawn.models + drawn.boxes;
 }
 
 /** Draws the portal and particle passes after the blocks; returns what they drew. */
@@ -473,7 +521,7 @@ function drawFrame(
   extras: FrameExtras,
 ): Omit<TryItFrameStats, 'rebuildMs'> {
   const { gl, renderer, internals } = scene;
-  const none = { meshes: 0, particles: 0, portals: 0, mobs: 0, mobPlates: 0 };
+  const none = { meshes: 0, particles: 0, portals: 0, mobs: 0, mobPlates: 0, vehicles: 0 };
   if (renderer === null) return none;
   resetGlForDeepslate(gl);
   gl.clearColor(SKY[0], SKY[1], SKY[2], 1);
@@ -545,6 +593,7 @@ function drawFrame(
   // Mobs first, keeping the depth buffer, then the see-through passes; the geo renderer leaves
   // face culling off, so deepslate's state is put back whatever drew.
   const mobs = drawMobs(scene, internals.projMatrix, view, pose, extras);
+  const vehicles = drawVehicles(scene, internals.projMatrix, view, extras);
   const drawn = drawExtras(scene, view, pose, extras);
   if (extras.mobs !== null && extras.mobs.size > 0) resetGlForDeepslate(gl);
   return {
@@ -552,6 +601,7 @@ function drawFrame(
     ...drawn,
     mobs: mobs.models + mobs.boxes,
     mobPlates: mobs.plates,
+    vehicles,
   };
 }
 
@@ -759,6 +809,7 @@ export default function TryItCanvas(props: TryItCanvasProps) {
             isPortal: extrasRef.current.isPortal,
             particles: current.particles ?? null,
             mobs: current.mobs ?? null,
+            vehicles: current.vehicles ?? null,
             partialTick: read(current.partialTick ?? 0),
             elapsedMs: elapsed,
             props: current,

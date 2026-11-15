@@ -394,6 +394,20 @@ export class TriggerEngine {
     this.fire(owner, T.death, ctx, `${owner.displayName} died`);
   }
 
+  /**
+   * Runs an event of an owner the definitions do not bind, a vehicle's `on_place` and the rest
+   * (B428): one trigger line, `<sentence>, so its event "<id>" ran.`, then the actions in `ctx`.
+   */
+  fireOwned(owner: EventOwner, eventId: string, ctx: EventContext, sentence: string): void {
+    this.options.trace.add({
+      kind: 'trigger',
+      text: `${sentence}, so its event "${eventId}" ran.`,
+      origin: { ...owner.origin, eventId },
+      depth: 1,
+    });
+    runEvent(this.host, { owner, ctx }, eventId);
+  }
+
   // Ticks.
 
   /**

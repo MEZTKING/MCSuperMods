@@ -25,6 +25,12 @@
  *     block was placed), then the island is in, something is drawn, and "Clear the area" brings
  *     the island back.
  *
+ * A third test (B428) drives a go-kart: a copy of `fixtures/sample-mob` gains the Go-kart
+ * template's vehicle with its starter geometry and a texture; its item places it, C gets in, W
+ * drives (the clock running) and D steers, Shift gets out, X hits it and Shift with X picks it
+ * up, and "What happened" says what only the game does. With `MSM_TRYIT_VEHICLE_SHOT=<file.png>`
+ * it saves a picture of the drive (launch at device scale 2 by the same switch).
+ *
  * A second test (B399) adds a project rule to a copy of `fixtures/sample-rules`: "when the Chime
  * Block is used, play a sound, give a Ruby and run a function". Using the block in Try it shows
  * the rule's sentence and its actions in "What happened", the Ruby in "Your items", the sound's
@@ -40,8 +46,10 @@
 import { copyFileSync, cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { vehicleGeometry } from '@msm/plugin-entities';
 import { expect, type Locator, type Page, test } from 'playwright/test';
 import { appDir, type LaunchedApp, launchApp } from './fixtures';
+import { gradientPng } from './png';
 
 const NAMESPACE = 'msm_sample_mob';
 const BLOCK_ID = `${NAMESPACE}:ruby_block`;
@@ -51,7 +59,8 @@ const EGG_ID = `${NAMESPACE}:glow_golem_spawn_egg`;
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 const SHOT = process.env.MSM_TRYIT_SHOT;
 const GROUND_SHOTS = process.env.MSM_TRYIT_GROUND_SHOTS;
-const SHARP = SHOT !== undefined || GROUND_SHOTS !== undefined;
+const VEHICLE_SHOT = process.env.MSM_TRYIT_VEHICLE_SHOT;
+const SHARP = SHOT !== undefined || GROUND_SHOTS !== undefined || VEHICLE_SHOT !== undefined;
 
 let base: string | undefined;
 const launches: LaunchedApp[] = [];
@@ -584,4 +593,167 @@ test('Try it: a rule gives an item and plays a sound, and run_function is only i
   await expect(ruby).toHaveAttribute('data-item', `${RULES_NAMESPACE}:ruby`);
   await expect(ruby).toHaveAttribute('data-count', '1');
   await expect(window.getByTestId('tryit-caption').first()).toBeVisible();
+});
+
+const KART_ID = `${NAMESPACE}:go_kart`;
+
+/** The sample mob project with the Go-kart template's vehicle, its starter geometry and texture. */
+function makeKartProject(projectDir: string): void {
+  cpSync(join(appDir, '..', 'fixtures', 'sample-mob'), projectDir, { recursive: true });
+  const meta = { createdAt: '2026-11-15T00:00:00.000Z' };
+  const geometry = vehicleGeometry('go_kart', 'go_kart');
+  writeElement(projectDir, 'geo_model', 'entity/go_kart', {
+    data: geometry,
+    formatVersion: 1,
+    id: `${NAMESPACE}:entity/go_kart`,
+    kind: 'msm:geo_model',
+    meta,
+  });
+  const wheels = ['wheel_front_left', 'wheel_front_right', 'wheel_back_left', 'wheel_back_right'];
+  writeElement(projectDir, 'vehicle', 'go_kart', {
+    data: {
+      camera: { distance: 4 },
+      display_name: 'Go-kart',
+      engine: {
+        horn: 'minecraft:item.goat_horn.sound.0',
+        sound: 'minecraft:entity.minecart.riding',
+      },
+      format: 1,
+      health: { max: 20 },
+      model: { geometry: `${NAMESPACE}:entity/go_kart`, texture: `${NAMESPACE}:entity/go_kart` },
+      movement: {
+        acceleration: 0.03,
+        grip: 0.9,
+        max_speed: 0.5,
+        mode: 'ground',
+        step_height: 0.5,
+        turn_rate: 6,
+      },
+      parts: { steering: wheels.slice(0, 2), wheel_radius: 0.19, wheels },
+      seats: [{ offset: [0, 0.2, -0.1] }],
+      size: [1.2, 0.6],
+    },
+    formatVersion: 1,
+    id: KART_ID,
+    kind: 'msm:vehicle',
+    meta,
+  });
+  const description = (
+    geometry['minecraft:geometry'] as { description: { texture_width: number } }[]
+  )[0]?.description;
+  const textures = join(projectDir, 'assets', NAMESPACE, 'textures', 'entity');
+  mkdirSync(textures, { recursive: true });
+  writeFileSync(
+    join(textures, 'go_kart.png'),
+    gradientPng(
+      description?.texture_width ?? 64,
+      description?.texture_width ?? 64,
+      [236, 72, 52, 255],
+      [52, 40, 64, 255],
+    ),
+  );
+}
+
+test('Try it: place the go-kart, get in, drive and steer, get out, hit it and pick it up', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-vehicle-'));
+  const folders = {
+    projectDir: join(base, NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  makeKartProject(folders.projectDir);
+  const launched = await launchApp({
+    reuse: folders,
+    args:
+      VEHICLE_SHOT === undefined ? WEBGL_ARGS : [...WEBGL_ARGS, '--force-device-scale-factor=2'],
+  });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  if (VEHICLE_SHOT !== undefined) {
+    await launched.app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0]?.setSize(1440, 900),
+    );
+  }
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${KART_ID}`)).toBeVisible();
+  const { view, canvas, state } = await openTryIt(window);
+  await window.getByTestId('tryit-card-close').click();
+  const vehicle = window.getByTestId('tryit-vehicle-state');
+
+  // The kart's item is in the hotbar after the egg; it places the kart where the pointer is.
+  const slot = window.locator(`[data-testid^="tryit-slot-"][data-thing="${KART_ID}"]`);
+  await expect(slot).toHaveCount(1);
+  const digit = (await slot.getAttribute('data-testid'))?.replace('tryit-slot-', '') ?? '1';
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown', `Digit${digit}`);
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await press(canvas, 'KeyC');
+  await expect(vehicle).toHaveAttribute('data-vehicles', '1');
+  await expect(vehicle).toHaveAttribute('data-pointed', KART_ID);
+  await expect(window.getByTestId('tryit-vehicle')).toBeVisible();
+
+  // C gets in. With the clock paused, each N is one tick: W drives forwards, D steers right,
+  // S brakes to a stop, so the drive is the same on every machine.
+  await press(canvas, 'KeyC');
+  await expect(vehicle).toHaveAttribute('data-riding', KART_ID);
+  await expect(window.getByTestId('tryit-vehicle-get-out')).toBeVisible();
+  await press(canvas, 'KeyZ');
+  await expect(state).toHaveAttribute('data-paused', 'true');
+  const steps = async (count: number): Promise<void> => {
+    for (let i = 0; i < count; i += 1) await press(canvas, 'KeyN');
+  };
+  const number = async (name: string): Promise<number> => Number(await vehicle.getAttribute(name));
+  await canvas.focus();
+  await window.keyboard.down('KeyW');
+  await steps(20);
+  expect(await number('data-speed')).toBeGreaterThan(0.4);
+  await window.keyboard.down('KeyD');
+  await steps(5);
+  await window.keyboard.up('KeyD');
+  expect(await number('data-yaw')).toBeGreaterThan(20);
+  const position = await vehicle.getAttribute('data-position');
+  expect(Number(position?.split(' ')[2])).toBeGreaterThan(28);
+  await expect.poll(() => pictureColours(view), { timeout: 10_000 }).toBeGreaterThan(1);
+  if (VEHICLE_SHOT !== undefined) {
+    // Look up along the road, drive a few ticks with the clock running, then the picture.
+    await press(canvas, 'ArrowUp', 'ArrowUp', 'ArrowUp', 'KeyZ');
+    await window.waitForTimeout(250);
+    await press(canvas, 'KeyZ');
+    await window.waitForTimeout(500);
+    await view.screenshot({ path: VEHICLE_SHOT });
+    await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  }
+  await window.keyboard.up('KeyW');
+  await window.keyboard.down('KeyS');
+  for (let i = 0; i < 30 && (await number('data-speed')) > 0; i += 1) await steps(1);
+  await window.keyboard.up('KeyS');
+  expect(await number('data-speed')).toBeLessThanOrEqual(0);
+  await steps(1);
+
+  // Shift gets out beside the kart.
+  await window.keyboard.down('ShiftLeft');
+  await steps(1);
+  await window.keyboard.up('ShiftLeft');
+  await steps(1);
+  await expect(vehicle).toHaveAttribute('data-riding', '');
+  const log = window.getByTestId('tryit-log');
+  await expect(log).toContainText('You got into Go-kart');
+  await expect(log).toContainText('You got out of Go-kart.');
+  await expect(
+    log
+      .getByTestId('tryit-log-only')
+      .filter({ hasText: "Go-kart's engine sound plays only in the game" }),
+  ).toHaveCount(1);
+
+  // The kart is on the left: a quarter turn points at it. X hits it, Shift with X picks it up.
+  await press(canvas, ...Array<string>(6).fill('ArrowLeft'));
+  await expect(vehicle).toHaveAttribute('data-pointed', KART_ID);
+  await press(canvas, 'KeyX');
+  await expect(window.getByTestId('tryit-vehicle-health')).toHaveText('19 of 20');
+  await window.keyboard.down('ShiftLeft');
+  await steps(1);
+  await press(canvas, 'KeyX');
+  await window.keyboard.up('ShiftLeft');
+  await expect(vehicle).toHaveAttribute('data-vehicles', '0');
+  await expect(log).toContainText('You picked up Go-kart.');
 });

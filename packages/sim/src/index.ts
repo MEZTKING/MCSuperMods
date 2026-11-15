@@ -11,4 +11,5 @@ export * from './local-source.js';
 export * from './player/index.js';
 export * from './tick/index.js';
 export * from './types.js';
+export * from './vehicles/index.js';
 export * from './world/index.js';

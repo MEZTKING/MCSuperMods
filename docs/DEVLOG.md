@@ -5368,3 +5368,21 @@ Next
 **Next**
 - B448: companion loot tables at `blocks/<path>_wall` and `blocks/<path>_attached`; stems in `#minecraft:maintains_farmland`; ladders and scaffolding in `#minecraft:climbable`; beds in `#minecraft:beds`; a sign's `sound_type` is overridden by its wood type.
 - B449 adds waterlogging; these types keep vanilla's own. B462 and B463 use the states listed in the B446 report.
+
+## 2026-11-15 — executor — B428 Try it: vehicles
+
+**What**
+- `packages/sim/src/vehicles/`: `physics.ts`, the TypeScript twin of the runtime's `VehiclePhysics` (`resolveMovement`, `stepVehicle`, `MODE_DEFAULTS`, `VEHICLE_PHYSICS_CONSTANTS`); `catalogue.ts` (`buildVehicleCatalogue`: every `msm/<ns>/vehicle/<path>.json` with the runtime's defaults, its name, events and what only the game does); `vehicle-world.ts` (`VehicleWorld`: place from the item with `places_on` and a free hitbox, get in and out, drive with the movement keys, collision and step height through the player's `moveWithStep`, water depth and floating, fuel, damage, repair, pick-up, `on_place`/`on_mount`/`on_dismount`/`on_destroy`/`on_tick`, exhaust particles, start sound, turret aim). `fixtures/vehicle-physics/golden.json` passes: all 10 cases, 64 steps, within 1e-5 (yaw modulo 360).
+- Wiring: `LocalWorldSource.vehicles` (vehicles tick before the player; a seated player is carried and Shift gets out), actions `useVehicle` and `hitVehicle`, `PointedAt` kind `vehicle`, `TriggerEngine.fireOwned` for vehicle events.
+- `app/src/renderer/src/tryit/vehicles/`: `vehicle-pass.ts` (geo model through the geo renderer, posed by `preview/geo/vehicle-pose.ts` over the `idle`/`moving` animations; a box without a model), `camera.ts` (the driver's seat view, third person at `camera.distance` pulled in by blocks), `things.ts` (vehicle items in the hotbar), `keys.ts` (Left Alt descends), `VehiclePanel.tsx` (speed, health, fuel; Get in/Get out, Fill the tank, Repair; hidden readout `tryit-vehicle-state`). Registering lines in `TryItView.tsx`, `TryItCanvas.tsx` (`vehicles` prop) and `hotbar.ts` (kind `vehicle`).
+- "Only in Minecraft", once per vehicle type when placed: weapons, storage, paints, the explosion, immunity, ram damage, engine and horn sounds, the on-screen dashboard and being solid; dyes and ammunition used on it; events' actions as every event says them (`explode`).
+- Tests: sim 490 (golden 11, vehicle world 16 new), app 2133 (vehicles 9 new), `tryit-path` e2e gains the go-kart test (place, get in, W and D by clock steps, S brakes, Shift out, hit, Shift+X pick-up); all three tests green. Sizes: renderer 15.5 of 18 MB, app.asar 28.2 of 32 MB, `TryItView` chunk 218.3 kB (the sim inside it), `TryItCanvas` 31.6 kB. Screenshot `scratchpad/shots/61-tryit-vehicle.png` (device scale 2).
+
+**Decisions**
+- A hit does 1 damage (an empty hand's); held items are said as the game's. "Fill the tank" and "Repair" in the panel stand in for the game's fuel and repair items, which are rarely in Try it's hotbar; `#` tags never match in the preview.
+- The seated eye is 1.02 above the seat (a standing eye less the player's riding offset of 0.6); the camera is drawn between ticks from the vehicle, not the teleported player.
+- The look turns with a surface vehicle without a turret (`takeLookTurn`), as the game's `turnWithHull`.
+- Vehicles live in `LocalWorldSource` (one `WorldSource`), so the few lines in `local-source.ts`, `types.ts` and `triggers.ts` are the registering lines.
+
+**Next**
+- B429 reads `VehicleSnapshot` (fuel, damage, speed) for the HUD's `vehicle` source; B417 lets the sim draw shots once weapons exist; B431 takes the labels and keys in the report.

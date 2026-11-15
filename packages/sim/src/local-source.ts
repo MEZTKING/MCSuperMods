@@ -11,6 +11,10 @@
  * 3. the timers run with the player's and the mobs' boxes (buttons let go, plates press);
  * 4. the tick triggers (B396): steps, entities inside blocks, mobs' timers, random ticks.
  *
+ * Vehicles (B428, `vehicles/`): the vehicles tick before the player; while the player sits in
+ * one, the vehicle carries them and their keys drive it (Shift gets out), so the player does not
+ * walk that tick. A vehicle's item places it; a right click or hit on a vehicle goes to it.
+ *
  * The view's own per-tick work (ambient particles, the particle field) follows the tick.
  * Triggers and actions (B396, `events/`) fire where `use`, `interact`, `place`, `break`, `hit`,
  * the Power tool and the tick make their changes; their effects (particles, sounds, chips,
@@ -62,6 +66,8 @@ import type {
   WorldListener,
   WorldSource,
 } from './types.js';
+import { buildVehicleCatalogue } from './vehicles/catalogue.js';
+import { type VehicleHit, VehicleWorld } from './vehicles/vehicle-world.js';
 import { SimWorld, sameState, type WorldChange } from './world/sim-world.js';
 
 /** What the local source reads from a target: folder names and the block names of the version. */
@@ -94,6 +100,7 @@ export const LOG_LIMIT = 200;
 export type PointedAt =
   | { readonly kind: 'block'; readonly block: PickResult }
   | { readonly kind: 'entity'; readonly entity: EntityHit; readonly block: PickResult | null }
+  | { readonly kind: 'vehicle'; readonly vehicle: VehicleHit; readonly block: PickResult | null }
   | null;
 
 /** A screen the player has open (B398). */
@@ -169,6 +176,8 @@ export class LocalWorldSource implements WorldSource {
   readonly player: PlayerController;
   /** The mobs. */
   readonly entities: EntityWorld;
+  /** The vehicles (B428). */
+  readonly vehicles: VehicleWorld;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -233,6 +242,20 @@ export class LocalWorldSource implements WorldSource {
       options.seed === undefined ? {} : { seed: options.seed },
     );
     this.timers = new BlockTimers(this.world, this.blockCatalogue);
+    this.vehicles = new VehicleWorld(
+      {
+        world: this.world,
+        shapes: this.shapes,
+        player: this.player,
+        log: this.log,
+        isWater: (state) =>
+          state.name === 'minecraft:water' || state.properties.waterlogged === 'true',
+        fire: (owner, eventId, ctx, sentence) =>
+          this.triggers.fireOwned(owner, eventId, ctx, sentence),
+        effect: (effect) => this.emit({ type: 'effect', effect }),
+      },
+      buildVehicleCatalogue(this.files, this.target, (text, origin) => this.log.info(text, origin)),
+    );
     this.unsubscribeWorld = this.world.onChange((change: WorldChange) =>
       this.emit({ type: 'blockChanged', pos: change.pos, state: change.state }),
     );
@@ -306,6 +329,7 @@ export class LocalWorldSource implements WorldSource {
   /** Empties the area and fills it with the current ground. */
   private fillGround(): GroundLoadResult {
     this.screenNow = null;
+    this.vehicles.clear();
     this.timers.clear();
     this.entities.clear();
     this.world.clear();
@@ -488,6 +512,12 @@ export class LocalWorldSource implements WorldSource {
       case 'interact':
         this.interact(action.entity);
         return;
+      case 'useVehicle':
+        this.vehicles.use(action.vehicle, action.item);
+        return;
+      case 'hitVehicle':
+        this.vehicles.hit(action.vehicle, this.player.sneaking);
+        return;
       case 'tool': {
         const before = this.world.get(action.pos);
         applyTool(this.world, this.blockCatalogue, this.log, action.tool, action.pos);
@@ -503,11 +533,14 @@ export class LocalWorldSource implements WorldSource {
   /** Runs one tick; see the module comment. */
   tick(): void {
     this.ticks += 1;
-    this.player.step(this.input);
+    const wasRiding = this.vehicles.riding !== null;
+    const gotOut = this.vehicles.tick(this.input);
+    if (!wasRiding) this.player.step(this.input);
+    else if (gotOut) this.input = { ...this.input, sneak: false };
     if (this.input.toggleFly) this.input = { ...this.input, toggleFly: false };
     const snapshots = this.entities.step();
     this.emit({ type: 'entities', entities: snapshots });
-    this.timers.tick([this.player.box, ...this.entities.boxes()]);
+    this.timers.tick([this.player.box, ...this.entities.boxes(), ...this.vehicles.boxes()]);
     this.triggers.tick();
   }
 
@@ -531,6 +564,14 @@ export class LocalWorldSource implements WorldSource {
           ? blockHit
           : floorHit;
     const entity = this.entities.pick(eye, direction, REACH);
+    const vehicle = this.vehicles.pick(eye, direction, REACH);
+    if (
+      vehicle !== null &&
+      (block === null || vehicle.distance < block.distance) &&
+      (entity === null || vehicle.distance < entity.distance)
+    ) {
+      return { kind: 'vehicle', vehicle, block };
+    }
     if (entity !== null && (block === null || entity.distance < block.distance)) {
       return { kind: 'entity', entity, block };
     }
@@ -586,6 +627,9 @@ export class LocalWorldSource implements WorldSource {
       });
     }
     this.entities.setCatalogue(this.entityCatalogue, this.shapes);
+    this.vehicles.setCatalogue(
+      buildVehicleCatalogue(files, target, (text, origin) => this.log.info(text, origin)),
+    );
     this.timers.setCatalogue(this.blockCatalogue);
     this.triggers.setDefinitions(readEventDefinitions(files, target));
     const open = this.screenNow;
@@ -609,6 +653,7 @@ export class LocalWorldSource implements WorldSource {
       return;
     }
     this.screenNow = null;
+    this.vehicles.clear();
     this.timers.clear();
     this.entities.clear();
     this.world.clear();
@@ -660,6 +705,10 @@ export class LocalWorldSource implements WorldSource {
       z: action.pos.z + action.hit.z,
     };
     if (this.triggers.itemUsedOn(item, action.pos, point).fired) return;
+    if (this.vehicles.isVehicleItem(item)) {
+      this.vehicles.place(item, action, this.player.yaw);
+      return;
+    }
     if (this.entityCatalogue.entityForEgg(item) !== undefined) {
       const spawned = this.entities.spawnFromEgg(item, { pos: action.pos, face: action.face });
       if (spawned.spawned) this.triggers.mobSpawned(spawned.entity.id);
