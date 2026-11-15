@@ -60,6 +60,7 @@ Some changes can only be read when Minecraft starts. When Reload finds one, the 
 - "You renamed the block X. New names are only read when Minecraft starts."
 - "You removed X. Minecraft keeps it until it starts again." Removing a file cannot be done to a running game.
 - "You added a new vehicle, key or on-screen element." Vehicles, keys of your own and on-screen elements are read when Minecraft starts, so a new one always needs a restart. Their values and events reload, and so do script rules on them.
+- A new block type, a torch's or sign's wall form, a new command or a new creative tab. They are read when Minecraft starts, so each says "You added a new …" and needs a restart. The events of a command that already exists reload, and so do script rules on it; a creative tab never reloads ([Block types](block-types-and-plants.md#more-plants-food-furniture-and-lights), [Commands and creative tabs](commands-and-tabs.md)).
 - "You added or removed a sound. Sounds are only read when Minecraft starts."
 - "Your mod's details changed" or "Your mod's id changed", from the mod's own settings.
 - "MCSuperMods has a new version of its runtime" or "The Fabric API version changed".

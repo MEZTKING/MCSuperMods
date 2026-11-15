@@ -23,7 +23,8 @@ Selecting a block opens the Block Studio. Empty fields use the game's defaults. 
 - **Drops**: **Drops itself** makes a loot table that drops the block's own item; **Loot table** points at a loot table of your own or a vanilla one; **None** makes no loot table.
 - **Block item**: **Has a block item** lets players hold and place the block, with **Stack size**, **Rarity** (the colour of its name) and **Creative tab**, and **Fuel and compost** for the item (see [Fuel and compost](#fuel-and-compost)). Untick it for a block that only commands or events place; such a block cannot drop itself. Ticking it again brings back the stack size, rarity and creative tab you had before, as long as you have not left the block since; otherwise it gives the default block item (stack of 64, common, no creative tab).
 - **Behaviour**: what starts the block's events. **On interact** runs an event when a player right-clicks the block. **On step** runs one when something walks onto it, at most once per **Step cooldown (ticks)** (20 ticks are one second). **Redstone signal emitted** makes the block a constant redstone source (0 to 15), and **On powered** and **On unpowered** run events when a redstone signal next to it switches on or off.
-- **Type**: makes the block a log, slab, stairs, wall, fence, gate, door, trapdoor, button, pressure plate, pane, crop, sapling or leaves, with **Textures** and **Models** sections (see [Block types, families and plants](block-types-and-plants.md)).
+- **Type**: makes the block a log, slab, stairs, wall, fence, gate, door, trapdoor, button, pressure plate, pane, crop, sapling or leaves, or one of the twenty furniture, light, food and plant types (bed, cake, torch, sign, berry bush and the rest), with **Textures** and **Models** sections. It also holds the **Can stand in water** switch. See [Block types, families and plants](block-types-and-plants.md).
+- **Ages over time, like copper**: the stage, the next stage and a waxed copy, with buttons that make the blocks ([Weathering and waxing](block-types-and-plants.md#weathering-and-waxing)).
 - **Inventory**: **Holds items** makes the block a container (**Storage**: a chest, hopper, dispenser or a holder without a window) or a machine (**Machine**: an input, a fuel and an output slot with recipes of your own), for the types `block`, `pillar`, `horizontal` and `directional`. See [Containers and machines](containers-and-machines.md).
 - **Shape**: the block's outline and collision, and whether you can see and walk through it (see [Block shapes](#block-shapes)). Family types have vanilla's own shape and hide this section.
 - **Ambient particles**: **Show particles around the block** makes the block give off a particle by itself, with a chance, a count, a place and a velocity, optionally only in some block states (every type except portals; see [Particles](particles.md#ambient-particles)).
@@ -38,10 +39,11 @@ Selecting an item opens the Item Studio, with **Advanced (all fields)** and **Ra
 - **Tool and durability**: tick **Tool** and choose a **Tool type** (pickaxe, axe, shovel, hoe, sword, spear or mace) and **Tool tier**. Tick **Durability** and set **Uses** for an item that wears out.
 - **Behaviour**: **On use** runs an event when a player uses the item (right-click), at most once per **Use cooldown (ticks)**.
 - **Throwable**: tick **Throwable** to make the item something players throw, like a snowball or a throwing knife, with its damage, speed, gravity and what happens after the throw and on a hit. See [Throwables in the Item Studio](effects-and-throwables.md#throwables-in-the-item-studio).
+- **Inventory**: **This item is** **Nothing**, **A bag that holds things** or **Works like a bundle** (see [Bags and bundles](#bags-and-bundles)).
 - **Fuel and compost**: **Burns in a furnace** with its **Burn time (seconds)**, and a **Compost chance** (see [Fuel and compost](#fuel-and-compost)).
 - **Events**: as for blocks, with the item's **Triggers**: on a hit, on use on a block, while held and while worn (see [Triggers](#triggers)).
 
-Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
+Status effects have a Studio of their own, the **Effect Studio** ([Status effects and throwables](effects-and-throwables.md#the-effect-studio)). Bags and bundles have the **Inventory** section; armour, custom tool materials, weapons, consumables and totems have no section of their own in the Item Studio yet: edit them in **Advanced (all fields)** or **Raw JSON**, or let the [Creator](creator.md) make them (see [Armour](#armour) and the sections after it).
 
 ## Events and actions
 
@@ -217,6 +219,25 @@ An item can be only one of armour, tool, ranged weapon and shield. The Creator's
 The effects can be the project's own [status effects](effects-and-throwables.md) as well as vanilla ones.
 
 **In the game**: eat or drink the item and watch the effects appear; for a totem, hold it in survival and take fatal damage (`/damage @s 100`).
+
+## Bags and bundles
+
+An item can hold other items. There are two kinds, chosen in the Item Studio's **Inventory** section with **This item is**:
+
+- **A bag that holds things** opens a window like a chest, a hopper or a dispenser when a player uses it, and keeps what is inside the item, so a backpack goes into a chest with its contents. Choose the **Layout** (**Chest (rows of 9)**, **Hopper (5 slots)** or **Dispenser (3 by 3)**), **Rows (1 to 6)** (for the chest layout only), a **picture** for the slots, **Open it with** (**Right-click** or **Sneak and right-click**), an **Open sound** and a **Close sound** (the barrel's by default) and the events **When it is opened** and **When it is closed**, where `self` and `other` are the player.
+- **Works like a bundle** is vanilla's bundle: click items onto it to put them in and right-click to take them out, and it shows its open and closed pictures (**Closed bundle**, **Open bundle, back** and **Open bundle, front**). Bundles keep vanilla's capacity; use a bag when you need more.
+
+A bag or bundle always stacks to one. The Creator's **Backpack** flow (group **Gear**) makes a bag: **Name**, **Colour**, **Rows (1 to 6)** (3 by default), **Open it with**, **Crafting recipe** (leather round a chest, a string strap) and an optional dyed copy through a transmute recipe (**Dye recipe**, **Dye**). In Very easy mode the **Make an item** tile offers **A bag that holds things** ("Opens when you right-click it").
+
+The rules, in plain words:
+
+- **Bags never go into other bags, shulker boxes or bundles**, and shulker boxes and bags never go into a bag; a bundle may. The bag's own slot is locked while it is open, and the bag closes if it leaves the hand's slot (dropped, moved or when the player dies).
+- **Bags open from the hand only.** There is no "open the bag from the inventory" click, and hoppers do not reach inside a bag.
+- **A bag cannot also be** a tool, weapon, bow, armour, shield, throwable, food or consumable, and cannot also be a bundle. Problems says so; the Studio shows the same conflicts as hints.
+- **A creative pick of a bag copies its last saved contents**, as a creative pick of a shulker box does.
+- **Not in vanilla packs.** Bags need the Fabric mod jar like every item that does something ([Vanilla packs](block-types-and-plants.md#vanilla-packs)).
+
+The Problems panel reports a stack size above one (`max-stack-size`: "holds things inside, so it can only stack to 1. Set its stack size to 1."), the conflicts above and an unknown sound or event.
 
 ## Vanilla components
 

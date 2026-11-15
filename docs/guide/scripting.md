@@ -83,6 +83,9 @@ Every event object `e` has `e.world`, the dimension it happened in. Through it a
 | `player.changeDimension` | After a player moves to another dimension | `player`, `from`, `to` (dimension ids; `world` is the new one) | No |
 | `player.chat` | Before a player's chat message is sent | `player`, `message` | Yes |
 | `entity.damaged` | After a living entity took damage | `entity`, `amount` (after armour), `attacker`, `direct`, `source` | No |
+| `block.place` | Before a player places a block from a block item (Script API 1.6) | `pos`, `block` (the id the item places), `item`, `player` | Yes |
+| `world.explosion` | Before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `world.explode` (Script API 1.6) | `pos`, `radius`, `source`, `cause` | Yes |
+| `command` | After one of your [commands](commands-and-tabs.md) ran (Script API 1.6) | `id`, `name`, `source`, `args` | No |
 
 The last six events need runtime 1.5.1 or later, and `entity.hurt` gains `source` (the damage type id, for example `minecraft:fall`) and `direct` (what hit: an arrow rather than its shooter). `entity.hurt` runs before the damage and can cancel it; `entity.damaged` runs after it with the final amount. Neither can change the amount.
 
@@ -199,6 +202,32 @@ Script API 1.5 (runtime 1.5.1 or later; each member says "Since runtime 1.5.1") 
 
 Limits: `entity.health` and `maxHealth` read 0 on a vehicle, and `entity.kill()` on a vehicle skips its `on_destroy` event; use `setDamageTaken`.
 
+## Script API 1.6
+
+Script API 1.6 (runtime 1.5.1 or later; each member says "Since runtime 1.5.1") is additive. It adds placing, explosions, commands, riding, items on the ground and bag contents.
+
+- **Events.**
+  - `block.place`: `e.pos` (where the block would go), `e.block` (the id the item places), `e.item` and `e.player`. `e.cancel()` stops the placing: the block is not placed, the item is not used up and the player's screen is corrected.
+  - `world.explosion`: `e.pos`, `e.radius` (the power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor), `e.source` (the entity that exploded, or `undefined` for a block) and `e.cause` (its type id, or `"block"`). `e.cancel()` stops it, and `e.keepBlocks()` lets it hurt and push but not break, drop or burn blocks; `cancel()` wins when both are called. It fires for every explosion, including your own `world.explode`. It cannot change the size.
+  - `command`: `e.id` (`mypack:greet`), `e.name` (the command's own name, even when one of its other names was typed), `e.source` (the player, the entity of an `execute as`, or `undefined` for the console or a command block) and `e.args`, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a `player` or `entity` as its UUID (look the player up with `msm.players()`), `players` as an array of names, a position or block position as `[x, y, z]` (build a position from it with `{ x, y, z } as Pos`), and an item or block as its id. An optional argument that was not typed is missing. It runs after the command's function and event and before its message back.
+- **Entities.** `entity.ride(vehicle)` makes an entity get on another and returns `true`, or `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, the short cooldown after getting off something). `entity.dismount()` gets off what it rides and returns `false` when it rides nothing. Nothing can ride a player, and riding itself or into another world is refused.
+- **Items on the ground.** `world.itemsNear(pos, radius)` returns `DroppedItem` objects with `item` (a copy of the stack), `pos`, `age` (ticks; vanilla removes an item at 6000), `owner` (the UUID of whoever dropped it, or `undefined`), `remove()` and `setItem(spec)`. `entitiesNear` still returns living entities only.
+- **Bag contents.** `item.contents` is the list of items a bag, a shulker box or a bundle holds, as copies, in slot order. It is read-only: change a bag by giving the player a new stack.
+
+```ts
+msm.events.on("block.place", (e) => {
+  if (e.block === "minecraft:tnt") {
+    e.cancel();
+    e.player.sendMessage("No TNT here.");
+  }
+});
+msm.events.on("world.explosion", (e) => {
+  if (e.cause === "minecraft:creeper") e.keepBlocks();
+});
+```
+
+Limits: `block.place` sees players only, so a dispenser, an enderman or a command placing a block is not seen, and it can fire for a placing that then fails. A cancelled explosion may still show its smoke and sound. `ride` follows the boarding cooldown and nothing rides a player. `DroppedItem.owner` is `undefined` once the thrower is not loaded. `ItemRef.contents` is read-only. A script that listens for `block.place` or `world.explosion` is not in the [Java project](eject.md): the export says `export.not-in-eject`.
+
 ## Saved data
 
 Ordinary variables are lost on `/reload` and when the world closes. To keep something, save it: `msm.storage` holds data for the whole world and `entity.data` (so also `player.data`) holds data for one entity. Both have `get(key)`, `set(key, value)`, `remove(key)`, `has(key)` and `keys()`.
@@ -274,11 +303,10 @@ What that means in practice:
 
 These are planned for later, so nobody waits for them in this release:
 
-- **A block placed event** (`block.place`): the game has no place event a script can listen to without changing Minecraft's code. Blocks of your project have the **On place** trigger, which can run a script through `run_script` ([Triggers](blocks-and-items.md#triggers)).
+- **Placing by dispensers, endermen and commands** is not seen by `block.place` (it sees players), and an explosion cannot be made bigger or smaller by `world.explosion`.
 - **Changing the amount of damage**: `entity.hurt` can cancel damage but not make it larger or smaller, and `entity.damaged` only reports the final amount.
-- **Commands of your own** (`/mycommand`): use functions, or an item or block that runs a script.
-- **Creative tabs of your own**: your items go into the vanilla tabs.
-- Dropped items and projectiles in `entitiesNear`, and anything on the player's screen beyond titles, the action bar and boss bars (scripts run on the server).
+- **Commands and creative tabs of your own** are elements, not script calls: see [Commands and creative tabs](commands-and-tabs.md). Scripts listen to the `command` event.
+- Projectiles in `entitiesNear` (dropped items have `world.itemsNear`), and anything on the player's screen beyond titles, the action bar and boss bars (scripts run on the server).
 
 ## The in-game check
 

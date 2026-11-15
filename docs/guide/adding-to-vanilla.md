@@ -131,7 +131,7 @@ A resource pack can add a font: pictures that text shows as characters, for icon
 
 These are planned for later, so nobody waits for them in this release:
 
-- flammable blocks (fire spreading to your blocks) and block pairs: stripping a log with an axe, waxing, or copper that oxidises;
+- ageing or waxing of vanilla's own blocks: your blocks can age like copper and be waxed ([Weathering and waxing](block-types-and-plants.md#weathering-and-waxing)), but vanilla copper cannot be made to age into a block of yours, and lightning and copper golems do not change a project block;
 - fuel or compost values on vanilla items, and compost chances other than the five vanilla ones;
 - removing vanilla features or spawns from biomes, cave carvers, new villager professions;
 - a trigger when an item is crafted (`on_crafted`);

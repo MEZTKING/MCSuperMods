@@ -40,6 +40,7 @@ A rule's **key** (a to z, 0 to 9 and `_`, at most 32 characters, different in ea
 | The world | The world starts; Every few seconds |
 | Keys | A player presses a key; A player lets go of a key; A player holds a key (every half second by default) |
 | Vehicles | Someone gets in the vehicle; Someone gets out; The vehicle fires; The vehicle is destroyed; Every few seconds while the vehicle is driven |
+| Placing, explosions, commands, riding | A player places a block; Something explodes; A player types the command (one of your [commands](commands-and-tabs.md)); A player gets on something; A player gets off something |
 | Anything | A player uses or breaks any block; A player uses any item; Any mob is hurt or dies; A player uses any mob. Pick a vanilla thing or one of yours, or leave it empty for all of them |
 
 Some things have no moment: crafting, picking up, eating, sleeping and advancements. They are not offered.
@@ -55,10 +56,11 @@ Moments with "every few seconds" take a number of seconds; some take a cooldown 
 | On screen | Show on screen; Hide from the screen; Show a number on screen |
 | Sounds and particles | Play a sound; Spawn particles; Play an animation |
 | Mobs | Remove the mob; Show a boss bar |
-| Logic | If ... otherwise ...; Repeat; For each player; Wait; Stop the normal action |
+| Riding | Ride something; Get off |
+| Logic | If ... otherwise ...; Repeat; For each player; Wait; Stop the normal action; Stop the placing; Stop the explosion; Keep the blocks safe |
 | Counters | Set a counter; Add to a counter; Take from a counter |
 
-Places are "Here", "Above here", "At the player", "At the mob", "Where the player looks" and "Offset". Who is "The player", "The mob", "The other one", "Every player" or "Every player nearby". A moment offers only what exists there: a random tick has no player, so there is no "The player".
+Places are "Here", "Above here", "In front of here" (one block along the way the block faces), "At the player", "At the mob", "Where the player looks" and "Offset". Who is "The player", "The mob", "The other one", "Every player" or "Every player nearby". A moment offers only what exists there: a random tick has no player, so there is no "The player".
 
 Numbers can be fixed or **readings**: a random number, a counter, the player's health, food, level or position, the number of players, the time of day, or a sum. Text can mix words and readings ("You have used the lucky block" and a counter).
 
@@ -77,6 +79,23 @@ Rules for keys sit on a key of your own ([Keys and the screen](keys-and-hud.md))
 - Readings for a vehicle: its fuel (in seconds of driving left), its damage and its ammunition (for the first weapon, or pick **The first weapon**; a missing weapon is marked "(not on this vehicle)").
 
 Plain rules go into the key's or vehicle's own events. A rule with logic becomes a script that listens to the Script API 1.5 events. Script rules on vehicles reload without a restart; plain ones need one (a new vehicle or key always does). A rule on a vehicle that does not exist, a weapon that is not there or an on-screen element that is missing shows a problem in the Rule book.
+
+## Placing, explosions, commands and riding
+
+Script API 1.6 gave rules five more moments (runtime 1.5.1 or later). They are in the table under **Placing, explosions, commands, riding**.
+
+- **A player places a block** (then **Which block?**, or leave it empty for any block). **Stop the placing** cancels it, so the block is not placed and the player keeps it; it is offered only for this moment. For example: when a player places TNT, stop the placing and show "No TNT here". Only placing by a player is seen: dispensers, endermen and commands that place blocks are not, and the moment can fire for a placing that then fails (the block did not fit).
+- **Something explodes** covers every explosion: TNT, creepers, fireballs, wind charges, a bed or respawn anchor in the wrong dimension and **Make an explosion**. **Stop the explosion** cancels it. **Keep the blocks safe** lets the explosion hurt and push but not break blocks or start fires; when both steps are given, stopping wins. The check **What caused it** ("it was caused by") picks a mob type, with **A block** first in the picker for explosions that come from a block (a bed or an anchor). Rules cannot make an explosion bigger or smaller; **Make an explosion** makes a new one. A stopped explosion may still show its smoke and sound.
+- **A player types the command** picks one of your commands, shown as `/name` in the picker ([Commands and creative tabs](commands-and-tabs.md)). "The player" is whoever typed it. For a command that runs a function the rules listen to the Script API's `command` event, and they do not run when the console or a command block runs it. Rules cannot read what was typed after the command yet.
+- **A player gets on something** and **A player gets off something**; "The other one" is what they got on or off. Getting on and off is noticed up to a quarter of a second late, and only for players. Mobs getting on things have no moment.
+- **Ride something** (who rides what) and **Get off**. The vanilla boarding rules apply (a cooldown, a free seat) and nothing can ride a player. The picker for what is ridden does not offer "every player" or "players nearby".
+- **Someone is riding** checks who is riding, and optionally what. **Something is facing a way** checks the block here, the player, the mob or the other one against north, east, south, west, up or down. A block is read by the way it points, else by its axis (x is east, y up, z south). A player or a mob is read by the way it looks, flat on the ground: **entity facing is horizontal only**, so up and down fit only blocks.
+- **The way it faces** is a reading that gives a word ("north"), so it is offered in text and not where a number is needed (Problems says: "uses 'the way it faces' where a number is needed. Use it in a message.").
+- **In front of here** is a place one block along the way the block here faces. A conveyor block that moves the player to the block in front is the sample's example; in a row of conveyors the player is moved into the next one at once, so a long row carries them along.
+
+The Try it preview ([Try it](try-it.md)) lists an explosion or a command as a line in **What happened** and does not show a blast or run a function; check them in the game.
+
+Problems reports a step or check that belongs to another moment: "uses a step or a check that only works with another 'When' (such as 'Stop the placing' when a player places a block)".
 
 ## Counters
 
@@ -125,6 +144,7 @@ A hand-made event whose actions can all be written as steps has **Turn into rule
 - **A new moment needs a restart.** The first rule that gives a block, say, "A player breaks the block" changes the block itself, so Minecraft must start again to read it. Editing rules on a moment the thing already has reloads in the running game. See [Playing and testing](playing-and-testing.md).
 - **Rules need the Fabric mod jar.** Vanilla packs carry no rules. Exporting a resource or data pack says: "Rules are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to play with your rules."
 - **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." To change that code by hand, use **Copy as my own script** in the rule book (Advanced mode, see above); the script still needs porting to Java by hand for the eject.
+- **Placing and explosion rules are scripts.** They listen to the two Script API 1.6 events, so they are not in the Java project either (`export.not-in-eject`). A plain rule on a command is part of the command's event and is.
 - **Pictures and sounds.** Pictures of Minecraft's own things need your Minecraft files (Settings, Game locations). Minecraft's sounds cannot be played in the editor; you see their names. Sounds of your own project play.
 - **Time limits.** One script call may run for two seconds; a very long repeat or a long chain of waits is stopped.
 

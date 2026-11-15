@@ -142,7 +142,7 @@ Functions are lists of commands the game runs. This starter sets up the usual wi
    - stand on a gold block: you run faster;
    - `/function my_functions:greet` says hello; `/function #my_functions:all` runs every function in your tag.
 
-The [templates list](templates-and-examples.md#all-templates) has 169 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 118 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
+The [templates list](templates-and-examples.md#all-templates) has 241 element templates to start from: recipes, loot tables, advancements, predicates, enchantments, dialogs and more. The other starters, and the 118 commented examples under **Help → Examples…**, are described in [Templates, starters and examples](templates-and-examples.md).
 
 ## Easy and Advanced mode
 

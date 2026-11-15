@@ -6001,3 +6001,22 @@ Next
 **Next**
 - No `fixtures/sim-parity` scenarios for the twenty types (the parity GameTest is engine-mod's; a later brief adds them).
 - Doors age half by half in the preview; scaffolding above a broken one does not fall; light levels are said, not drawn.
+## 2026-11-15 — executor — B467 guide, changelog, status lines, batch 1
+
+**What**
+- New guide page `docs/guide/commands-and-tabs.md` (Custom command and Creative tab flows, the Command Studio and Creative Tab Studio section by section, how a command runs with macro values, creative tab order, vanilla packs, the in-game check and the limits). Sidebar entry, index row and the page list in `docs/CLAUDE.md`.
+- `block-types-and-plants.md`: the twenty new types in one table with the Studio's own labels, companions, the sign writing screen picture, the new Creator flows, waterlogging, weathering and waxing, and "The limits of the new types" (villagers and project beds, layers never melting, plants already potted, candle cakes, scaffolding not joining vanilla's, sign sounds, rod particles, waxed blocks, containers holding no water, listed weathering types only, restart, vanilla packs, in-game looks).
+- `blocks-and-items.md` (Inventory section of the Item Studio, a "Bags and bundles" section with the bag rules), `rules.md` (a "Placing, explosions, commands and riding" section with the B458 labels and limits; table rows), `scripting.md` (a "Script API 1.6" section, three event rows, "Not possible yet" corrected), `very-easy.md` (the picks and their sentences, the new tile, the new rule words, plain-word examples for Things to fix), `creator.md` (seven flow rows and a section), `templates-and-examples.md` (counts 241 / 57 / 161, 25 block and item templates, 3 scripting templates, 7 starters, 7 examples), `playing-and-testing.md` (restart reasons), `adding-to-vanilla.md` (one bullet) and `README.md`.
+- `CHANGELOG.md` `[Unreleased]`: eight Added lines. Status lines in root, `engine-mod`, `packages/plugin-api` (1.17.0 additions), `packages/targets` (facts) and `packages/plugins`, appended to existing lines (root 70, engine-mod 55, plugins 55, plugin-api 47, targets 49).
+- Checks: the docs site builds with dead links failing (`vitepress build`, with the main checkout's `node_modules` linked in for the build only and removed after); every in-page and cross-page anchor in `docs/guide/` resolves; DESIGN.md still has 19 H2 headings; no emojis.
+
+**Decisions**
+- Labels come from the shipped code where the notes were silent: the catalogue's `label` fields for the Rules cards (for example "Something is facing a way", "Someone is riding", "What caused it"), `BLOCK_TYPE_LABELS`, the Item Studio's layout words and the Creative Tab Studio's order words ("In the order the mod adds them", "By name, A to Z").
+- `as_listed` is described as registration order (block items, items, spawn eggs; B454 correction), not the project's order, and the Studio's list is called a guide.
+- `try-it.md` is untouched (B463 is running); the commands, rules and block pages say that Try it lists explosions and commands in What happened instead of showing them (Q29).
+- Q20 (worldgen order problems are warnings) was already in `worldgen.md` from B442; no change there.
+- The plain-word texts for the new Things to fix codes in `plain-problems.ts` were read and match the notes; no change needed.
+
+**Next**
+- `templates-and-examples.md` still lacks the Vehicles and Controls template rows (B431 did not add them); the counts now follow the root status line.
+- B468 closes batch 1; B484 adds the batch 2 guide lines (traders, professions, mount storage, fluids, dimension types) and the Try it page lines come with B463.

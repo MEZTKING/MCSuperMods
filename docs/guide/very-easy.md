@@ -58,6 +58,10 @@ Most tiles open the [Creator](creator.md) on the right question page, or on its 
 
 A vehicle opens on a short page, not the full Studio: **How fast**, **Needs fuel** (with **What fuel?**), **Has a cannon** (for a Tank), **How many seats** and **Colour**. In **Make things happen** the Rules offer **A player presses a key** (**Press the key you want**), **A player lets go of a key**, **A player holds a key**, **Someone gets in the vehicle**, **Someone gets out**, **The vehicle fires**, **The vehicle is destroyed** and **Show a number on screen** (**As a bar or as text?**, **Where on screen?** with a picture of nine spots and "above the hotbar"). See [Vehicles](vehicles.md), [Keys and the screen](keys-and-hud.md) and [Rules](rules.md#vehicles-keys-and-the-screen). The keys, vehicles and on-screen elements you make show under **My things**, and Things to fix explains problems in plain words.
 
+Two tiles show a short list of **pictures** when they open the Creator, so you can pick by looking. **Make a block** offers **Lights** ("Torches, lanterns, chains and candles."), **Bed** ("A bed or sleeping bag."), **Cake** ("Eat it a slice at a time."), **Sign** ("Write on it. Comes with a whole set of wood."), **Bush with berries** ("A plant to grow and pick.") and **Ages like copper** ("Blocks that slowly turn green, and stay as they are when waxed."). **Make an item** offers **A bag that holds things** ("Opens when you right-click it."). The pick opens the Creator on the right flow, and the flow's card shows the pick's words ([Block types, families and plants](block-types-and-plants.md), [Bags and bundles](blocks-and-items.md#bags-and-bundles), [The Creator](creator.md)). **Make your mod do something** opens the Custom command and Creative tab flows ([Commands and creative tabs](commands-and-tabs.md)); a command or tab you make shows under **My things** as **Command** or **Creative tab**.
+
+In **Make things happen** the Rules also offer, in the same plain words, **A player places a block** (**Which block?**) with **Stop the placing**; **Something explodes** with **Stop the explosion** and **Keep the blocks safe**; **A player types the command** (then pick the command, shown as `/name`); **A player gets on something** and **A player gets off something** with **Ride something** and **Get off**; and the checks **Someone is riding** and **Something is facing a way** (north, east, south, west, up or down), with **The way it faces** for messages and **In front of here** for a place ([Rules](rules.md#placing-explosions-commands-and-riding)).
+
 In the Creator, **Pick for me** fills in every question with random answers that work; change any of them before you press **Create**.
 
 ## Surprise me
@@ -94,6 +98,16 @@ When something stops your mod from playing, **Things to fix (N)** lists it in pl
 
 - **Show me**, which opens the thing at the right place;
 - **Fix it**, where one click can fix it, for example **Paint the picture** to open the painter on the missing picture or **Remove this step** for a rule step.
+
+The newest things are explained in the same plain way, for example:
+
+- a block that ages into one that is gone: "<name> ages into a block that is not in your mod any more. Pick another one.";
+- a sign with no writing screen picture: "<name> has no picture for the screen you write on. Pick the sign's picture again in its Textures.";
+- a bag that stacks above one: "<name> holds things inside, so it can only stack to 1. Set its stack size to 1.";
+- a berry bush or a potted plant that points at something missing: "<name> gives a berry that is not an item in your mod or in Minecraft. Pick another item.";
+- a command with a name that Minecraft or another of your commands already uses: "<name> has a name that Minecraft or another of your commands already uses. Pick another.";
+- a creative tab whose icon does not exist: "The creative tab <name> shows a picture of something that does not exist. Pick another.";
+- a rule step from another moment: "A rule in <name> uses a step or a check that only works with another "When" (such as "Stop the placing" when a player places a block).".
 
 If there is nothing to fix it says "Everything is ready to play." Less serious notes are folded under **Tips**. A problem MCSuperMods has no words for yet reads "Something in <thing> needs fixing", with **Show details** for the original message.
 

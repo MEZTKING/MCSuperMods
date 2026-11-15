@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (199) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (46) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (150) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (241) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (57) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (161) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting and rules plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -307,6 +307,28 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Portal to the Nether | `msm_block_portal_nether` | `msm:block` | A portal in a frame of crying obsidian, lit with flint and steel, that leads to the Nether and back, eight to one as the Nether portal, with ember-orange dust. Category Portals. Needs the Fabric mod jar. |
 | Portal to the End | `msm_block_portal_end` | `msm:block` | A portal in a frame of end stone bricks that leads to the End and back; travellers land on the ground near the same place, and the way back is a portal you build in the End. Category Portals. |
 | Trigger-lit portal | `msm_block_portal_trigger_lit` | `msm:block` | A portal to the Nether in a frame of quartz blocks that no item lights: light it from an event with the **Light a portal** action. Category Portals. |
+| Sleeping bag | `msm_block_sleeping_bag` | `msm:block` | A bed of two halves that you sleep in and that sets your spawn, following the straw bed rule: it works by day too. Category **Blocks: furniture and lights**. Villagers do not use project beds. |
+| Pie | `msm_block_pie` | `msm:block` | A cake-like block eaten slice by slice (seven bites), with the cake sounds; a comparator reads what is left. |
+| Rope ladder | `msm_block_rope_ladder` | `msm:block` | A ladder that climbs on a wall and turns to the wall you place it against. |
+| Torch | `msm_block_torch` | `msm:block` | A torch for the floor and, as its own wall form, for walls, giving light 14 and flame particles. |
+| Lantern | `msm_block_lantern` | `msm:block` | A lantern that stands on a block or hangs from one, giving light 15. |
+| Chain | `msm_block_chain` | `msm:block` | A thin chain that places along the face you aim at and holds up lanterns. |
+| Candle | `msm_block_candle` | `msm:block` | A candle you stack up to four in one block, light with flint and steel and put out with a click, giving light 3 for each lit one. |
+| Wooden sign | `msm_block_wooden_sign` | `msm:block` | A sign you write on, standing on the floor in sixteen turns and, as its own wall form, on walls. Both sides take text, dye, glow ink and wax. |
+| Hanging sign | `msm_block_hanging_sign` | `msm:block` | A sign that hangs from a block or a chain, or sticks out from a wall, with text on both sides. |
+| Rug | `msm_block_rug` | `msm:block` | A rug one sixteenth of a block high that sits on the floor. |
+| Glow rod | `msm_block_glow_rod` | `msm:block` | A slim rod that points in six directions and shines at light 14, as an end rod. |
+| Scaffold | `msm_block_scaffold` | `msm:block` | A scaffolding you build up in a column and out in a row up to six blocks, that you climb and that falls when its support goes. |
+| Waterlogged lamp | `msm_block_waterlogged_lamp` | `msm:block` | A glowing block that holds water and keeps its light under it. Only plain, pillar, facing and directional blocks can hold water. |
+| Berry bush | `msm_block_berry_bush` | `msm:block` | A prickly bush with four ages that gives vanilla sweet berries when ripe and hurts what walks through it. Category **Blocks: plants**. |
+| Tall flower | `msm_block_tall_flower` | `msm:block` | A flower two blocks high that drops one flower from the lower half and can be copied with bone meal. |
+| Potted plant | `msm_block_potted_sapling` | `msm:block` | A flower pot holding a plant, which drops the pot and the plant; it needs no item of its own. |
+| Glow pod (sea pickle-like) | `msm_block_sea_pickle` | `msm:block` | A cluster of one to four pods that glows brighter with each pod, 6, 9, 12 and 15 in water and not at all dry. |
+| Vine | `msm_block_vine` | `msm:block` | A vine that clings to the sides of blocks, grows down, spreads slowly and is climbable. |
+| Snow-like layers | `msm_block_snow_layers` | `msm:block` | A block of eight layers built up one at a time. It never melts. |
+| Melon-like stem | `msm_block_melon_stem` | `msm:block` | A stem of eight ages on farmland that grows vanilla melons beside it; the bent stem is its own companion block. |
+| Cocoa-like pod | `msm_block_cocoa_pod` | `msm:block` | A pod that grows through three ages on the side of a jungle log and drops more when ripe. |
+| Copper-like block | `msm_block_copper_block` | `msm:block` | The first of four copper stages: it ages to vanilla exposed copper in time and honeycomb waxes it. Category **Copper**; for the whole set copy the Copper roof example. |
 
 #### Items
 
@@ -325,6 +347,9 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Throwable item | `msm_item_throwable` | `msm:item` | Thrown like a snowball: it flies as its own picture, deals a heart of damage and slows the mob it hits. |
 | Fuel item | `msm_item_fuel` | `msm:item` | A lump that burns in a furnace for 40 seconds (half a piece of coal) and can be composted, shown with the charcoal model. |
 | Life-steal sword (item triggers) | `msm_item_life_steal_sword` | `msm:item` | An iron sword that heals its holder by one heart on every hit and shows hearts while held. Shows the item triggers **On hit** and **While held**. |
+| Satchel | `msm_item_satchel` | `msm:item` | A bag that holds 27 stacks, as a chest: sneak and use it to open it. Its contents stay in the bag, and a bag cannot go inside another bag. |
+| Pouch | `msm_item_pouch` | `msm:item` | A small bag of five slots, as a hopper: use it to open it. |
+| Quiver-like bundle | `msm_item_quiver_bundle` | `msm:item` | An item that holds a mix of items, as a bundle, with open and closed pictures. |
 
 Armour, custom tool materials, weapons, consumables and totems are explained in [Blocks and items](blocks-and-items.md#armour), throwables in [Status effects and throwables](effects-and-throwables.md#throwables-in-the-item-studio).
 
@@ -411,6 +436,9 @@ Scripts (`msm:script`) are TypeScript that the `msm_runtime` mod runs in the gam
 | Action handler script | `msm_script_action_handler` | `msm:script` | A named handler for the "Run script" (`run_script`) action, using the script's own id as the handler id. |
 | Full set bonus | `msm_script_full_set_bonus` | `msm:script` | Gives a bonus to players wearing a whole armour set: every second, a player in full golden armour gets Speed and Haste. Uses the player.tick event and entity equipment (runtime 1.5.1 or later). Change the item ids to your own armour. |
 | Boss bar countdown | `msm_script_boss_bar_countdown` | `msm:script` | Shows a countdown to every player as a boss bar: using an echo shard starts 30 seconds, the bar empties and turns red near the end, and a title says when time is up. Uses msm.bossBars and titles (runtime 1.5.1 or later). |
+| Help command | `msm_command_help` | `msm:command` | A command every player can use, typed as `/helpme` (or `/tips`): a chime and an answer in chat, from an event of its own. Category **Commands** ([Commands and creative tabs](commands-and-tabs.md)). |
+| Hop command | `msm_command_hop` | `msm:command` | `/hop` throws the player a few blocks up and lets them float down gently. |
+| Creative tab | `msm_creative_tab` | `msm:creative_tab` | A tab of its own in the creative inventory with a crafting table as its icon. Category **Creative tabs**. |
 #### Rules
 
 Rule books (`msm:rules`) give things behaviour with no code (see [Rules](rules.md)). They become events and scripts that the `msm_runtime` mod runs, so they work only in the **Fabric mod jar** export; rules with logic are not in the Java project export. The templates use only vanilla things: change the block, item or mob to your own.
@@ -453,6 +481,13 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Crop (Creator: Blocks) | `crop` | resource, data, mod | A crop that grows in stages on farmland, planted from its own seeds or from its produce, with loot, composting, villager farming and, if you choose, wild patches. |
 | Storage crate (Creator: Blocks) | `storage-crate` | resource, data, mod | A crate with a chest window of 1, 3 or 6 rows, keeping its contents when broken if you choose, in a wood or stone look, with a crafting recipe and a closed and open front picture. |
 | Machine (Creator: Blocks) | `machine` | resource, data, mod | A grinder-like machine with a power, a speed, up to three recipes of its own and the vanilla recipe types you choose, a crafting recipe and front, working-front, side and top pictures. |
+| Copper set (Creator: Blocks) | `copper-set` | resource, data, mod | A metal that ages and can be waxed: block, cut block, slab, stairs, door, trapdoor and bars in four stages with waxed copies, honeycomb recipes and an ingot (Tin by default). |
+| Lights (Creator: Blocks) | `lights` | resource, data, mod | A torch with its wall form, a lantern, a chain and a candle of one look, with recipes. |
+| Bed (Creator: Blocks) | `bed` | resource, data, mod | A bed or a sleeping bag in one of sixteen colours, with a recipe. |
+| Cake (Creator: Food) | `cake` | resource, data, mod | A cake or a pie eaten a slice at a time, with a flavour recipe. |
+| Backpack (Creator: Gear) | `backpack` | resource, data, mod | A bag that holds one to six rows of items, with a recipe and an optional dyed copy. |
+| Custom command (Creator: Scripts) | `custom-command` | resource, mod | A command such as `/heal` that heals, gives an effect or an item or launches the player. |
+| Creative tab (Creator: Scripts) | `creative-tab` | resource, mod | A creative tab of your own with a first block in it. |
 | Portal (Creator: Worlds) | `portal` | resource, data, mod | A portal block that players light in a frame and walk through to a new dimension, the Nether or the End and back, with its frame block, igniter, scale, colour, particles and sounds; a new dimension also gets a travel function for vanilla packs. Needs the Fabric mod jar. |
 | Tree (Creator: Blocks) | `tree` | resource, data, mod | A sapling that grows a tree of its own, from a new log and leaves or vanilla ones, in the shape you pick, and if you choose growing in the world. |
 | Food (Creator: Food) | `food` | resource, data, mod | A new food with its own name, colour, hunger and saturation, a texture and model, and an optional recipe. |
@@ -555,11 +590,11 @@ The **Popular ideas** category holds sixteen complete little mods of the kinds p
 - **Pull charm**, **Returning boomerang**, **Rocket boots**, **Orchard tree**, **Spell scrolls** and **Coordinates bar** add their behaviour with [Rules](rules.md); **Paper glider** is the vanilla `glider` component passed through `msm:components`.
 - **Go-kart**, **Mini tank** and **Patchwork biplane** are interim vehicles: rideable mobs with no AI and a short script for picking up, firing or fuel, until MSM has a vehicle kind. A script cannot ask what a player rides, so they count a vehicle right under the player as theirs.
 
-Two wishes from the research are simplified: the Orchard tree's pie is eaten whole (a pie eaten one slice at a time needs a block type with bites), and the Coordinates bar shows your position and the time but not the direction you face (Rules have no reading of where a player looks).
+Two wishes from the research are simplified: the Orchard tree's pie is eaten whole (the **Cake** flow and the Orchard and pie example make a pie eaten a slice at a time), and the Coordinates bar shows your position and the time but not the direction you face (Rules have no reading of where a player looks).
 
 ### All examples
 
-There is one example for each of the 97 element kinds, thirty-three more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), sixteen **Popular ideas** (below), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 102 element kinds, thirty-three more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), sixteen **Popular ideas** (below), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -692,6 +727,13 @@ There is one example for each of the 97 element kinds, thirty-three more behavio
 | Script: boss fight bar | `example_msm_boss_fight_bar` | Scripts | `msm:script` | A script that summons a ravager boss with a nether star and shows its health on a boss bar to every player, with a title and a reward when it falls. |
 | Rules: a lucky block | `example_msm_rules` | Rules | `msm:rules` | A lucky block and a lucky coin made with rules, no code: breaking the block is a gamble between a few coins and a silverfish, a counter keeps score, and spending a coin gives Luck. |
 | Rules: a guard mob | `example_msm_rules_guard_mob` | Rules | `msm:rules` | A guard made with rules, no code: every five seconds it lights up each player within 12 blocks and warns them, and it calls out when hurt. |
+| Command: /welcome | `example_msm_command` | Commands | `msm:command` | A server command anyone can type, `/welcome` (or `/hi`), that plays a chime and answers in chat, with no function. |
+| Creative tab: Curios | `example_msm_creative_tab` | Items | `msm:creative_tab` | A tab of its own in the creative inventory with a curio block in it, listed by name. |
+| Cottage furniture and lights | `example_msm_cottage_furniture` | Blocks | `msm:block` | A straw bed, a lantern, a torch, a standing and a hanging sign, a potted plant, a rug and a cupboard that holds items. |
+| Orchard and pie | `example_msm_orchard_pie` | Blocks | `msm:block` | A berry bush that ripens in four stages, a tall flower two blocks high and a pie eaten slice by slice, crafted from the berries. |
+| Copper roof | `example_msm_copper_roof` | Blocks | `msm:block` | Roof stairs and slabs that age through four stages like copper, with waxed copies that keep their colour. |
+| Adventurer's satchel | `example_msm_adventurers_satchel` | Items | `msm:item` | A satchel that holds two rows of items, a roll that works like a bundle and a creative tab for them, with recipes. |
+| Server helper | `example_msm_server_helper` | Commands | `msm:command` | `/helpme` for everyone, `/hub` to jump to a lobby and `/boost` with a number for operators, with a rule book that points new players at `/helpme`. |
 | Glowshard: a whole first mod | `example_popular_glowshard` | Popular ideas | `msm:item` | A glowing ore that generates in caves and drops shards, a block of glowshard, a sword, pickaxe, axe, shovel and hoe, a full suit of armour, an armour trim material and an advancement tab: the beginner route in one project. Inspired by: ore, tool and armour progression. |
 | Ember drake | `example_popular_ember_drake` | Popular ideas | `msm:entity` | A drake hatched from its spawn egg, tamed with raw meat, saddled and flown by its owner, that shoots fireballs at monsters and at anything that hurts it. Inspired by: dragon mounts and pets. |
 | Cottage furniture | `example_popular_cottage_furniture` | Popular ideas | `msm:block` | A table, a stool and a lamp with shapes of their own, and a wooden crate that holds items, all crafted from planks. You cannot sit on the stool: MSM has no seats yet. Inspired by: furniture and decoration. |
