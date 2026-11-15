@@ -795,7 +795,7 @@ Batch 1, Vanilla blocks and everyday parity:
 
 Batch 2, Villagers, fluids and skies:
 
-- [ ] Wave 9: B469 spike (traders, professions, storage, shoulders), B470 spike (fluids), B471 Dimension Type Studio and flow answer (next, after the user has seen ADRs 0098–0100's vetoable defaults).
+- [x] Wave 9: B469 spike (traders, professions, storage, shoulders: go; professions on 26.4 by reflection; shoulder pets perch, ADR 0098 amended), B470 spike (fluids: go; one 26.4 Mixin, ADR 0099 amended; reserves B486 and B487 not needed), B471 Dimension Type Studio and flow answer (merged 2026-11-15; the user has still to see ADRs 0098–0100's vetoable defaults).
 - [ ] Wave 10: B472 scaffold and stubs, B473 format, plugin API 1.18.0 and facts.
 - [ ] Wave 11: B474 traders and professions, B475 fluids, B476 entities plugin, B477 fluid kind, B478 exporters.
 - [ ] Wave 12: B479 mount storage and shoulder pets, B480 Studios and the Very easy tile "Make a trader", B481 flows, templates and examples.

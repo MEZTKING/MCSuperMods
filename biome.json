@@ -16,6 +16,7 @@
       "!fixtures/**/*.json",
       "!pnpm-lock.yaml",
       "!engine-mod",
+      "!docs/reference/spikes",
       "!**/*.md"
     ]
   },

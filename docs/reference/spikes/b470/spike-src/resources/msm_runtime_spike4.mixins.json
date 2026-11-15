@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.mcsupermods.runtime.gametest.spike4.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "SpikeEntityFluidMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

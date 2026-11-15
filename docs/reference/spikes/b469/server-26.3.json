@@ -1,0 +1,358 @@
+{
+  "S11.draw.minecraft:armorer/level_5.projectMob": {
+    "added": 0,
+    "ms": 0,
+    "offers": [],
+    "dropped": [
+      "minecraft:armorer/5/emerald_chainmail_boots_swamp -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_leggings_taiga -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_boots_jungle -\u003e null",
+      "minecraft:armorer/5/iron_block_emerald_non_taiga -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_helmet_swamp -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_chestplate_savanna -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_boots_plains -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_leggings_plains -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_helmet_jungle -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_helmet_snow -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_chestplate_desert -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_leggings_desert -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_boots_snow -\u003e null",
+      "minecraft:armorer/5/diamond_block_emerald_taiga -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_helmet_savanna -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_chestplate_taiga -\u003e null"
+    ]
+  },
+  "S11.draw.minecraft:armorer/level_5.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "16 minecraft:emerald + 3 minecraft:diamond -\u003e 1 minecraft:diamond_leggings {minecraft:enchantments\u003d\u003eItemEnchantments{enchantments\u003d{Reference{ResourceKey[minecraft:enchantment / minecraft:protection]\u003dEnchantment Protection}\u003d\u003e1}}} uses 0/3 xp 30",
+      "12 minecraft:emerald + 2 minecraft:diamond -\u003e 1 minecraft:diamond_boots {minecraft:enchantments\u003d\u003eItemEnchantments{enchantments\u003d{Reference{ResourceKey[minecraft:enchantment / minecraft:protection]\u003dEnchantment Protection}\u003d\u003e1}}} uses 0/3 xp 30"
+    ],
+    "dropped": [
+      "minecraft:armorer/5/emerald_and_diamond_diamond_leggings_taiga -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_chestplate_taiga -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_boots_swamp -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_boots_jungle -\u003e null",
+      "minecraft:armorer/5/diamond_block_emerald_taiga -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_helmet_jungle -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_helmet_savanna -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_chestplate_savanna -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_helmet_snow -\u003e null",
+      "minecraft:armorer/5/emerald_chainmail_helmet_swamp -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_leggings_desert -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_boots_snow -\u003e null",
+      "minecraft:armorer/5/emerald_and_diamond_diamond_chestplate_desert -\u003e null"
+    ]
+  },
+  "S11.draw.minecraft:cartographer/level_2.projectMob": {
+    "added": 1,
+    "ms": 0,
+    "offers": [
+      "11 minecraft:glass_pane -\u003e 1 minecraft:emerald uses 0/12 xp 10"
+    ],
+    "dropped": [
+      "minecraft:cartographer/2/emerald_and_compass_village_taiga_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_explorer_swamp_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_savanna_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_snowy_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_desert_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_explorer_jungle_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_plains_map -\u003e null"
+    ]
+  },
+  "S11.draw.minecraft:cartographer/level_2.villager": {
+    "added": 1,
+    "ms": 0,
+    "offers": [
+      "11 minecraft:glass_pane -\u003e 1 minecraft:emerald uses 0/12 xp 10"
+    ],
+    "dropped": [
+      "minecraft:cartographer/2/emerald_and_compass_village_plains_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_desert_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_snowy_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_explorer_jungle_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_explorer_swamp_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_savanna_map -\u003e null",
+      "minecraft:cartographer/2/emerald_and_compass_village_taiga_map -\u003e null"
+    ]
+  },
+  "S11.draw.minecraft:farmer/level_1.projectMob": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "1 minecraft:emerald -\u003e 6 minecraft:bread uses 0/16 xp 1",
+      "26 minecraft:potato -\u003e 1 minecraft:emerald uses 0/16 xp 2"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:farmer/level_1.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "26 minecraft:potato -\u003e 1 minecraft:emerald uses 0/16 xp 2",
+      "15 minecraft:beetroot -\u003e 1 minecraft:emerald uses 0/16 xp 2"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:fletcher/level_5.projectMob": {
+    "added": 2,
+    "ms": 3,
+    "offers": [
+      "11 minecraft:emerald -\u003e 1 minecraft:crossbow {minecraft:enchantments\u003d\u003eItemEnchantments{enchantments\u003d{Reference{ResourceKey[minecraft:enchantment / minecraft:unbreaking]\u003dEnchantment Unbreaking}\u003d\u003e1}}} uses 0/3 xp 15",
+      "2 minecraft:emerald + 5 minecraft:arrow -\u003e 5 minecraft:tipped_arrow {minecraft:potion_contents\u003d\u003ePotionContents[potion\u003dOptional[Reference{ResourceKey[minecraft:potion / minecraft:long_turtle_master]\u003dnet.minecraft.world.item.alchemy.Potion@fec2be3}], customColor\u003dOptional.empty, customEffects\u003d[], customName\u003dOptional.empty]} uses 0/12 xp 30"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:fletcher/level_5.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "2 minecraft:emerald + 5 minecraft:arrow -\u003e 5 minecraft:tipped_arrow {minecraft:potion_contents\u003d\u003ePotionContents[potion\u003dOptional[Reference{ResourceKey[minecraft:potion / minecraft:long_slowness]\u003dnet.minecraft.world.item.alchemy.Potion@1042c0d6}], customColor\u003dOptional.empty, customEffects\u003d[], customName\u003dOptional.empty]} uses 0/12 xp 30",
+      "22 minecraft:emerald -\u003e 1 minecraft:crossbow {minecraft:enchantments\u003d\u003eItemEnchantments{enchantments\u003d{Reference{ResourceKey[minecraft:enchantment / minecraft:unbreaking]\u003dEnchantment Unbreaking}\u003d\u003e3}}} uses 0/3 xp 15"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:librarian/level_1.projectMob": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "9 minecraft:emerald -\u003e 1 minecraft:bookshelf uses 0/12 xp 1",
+      "24 minecraft:paper -\u003e 1 minecraft:emerald uses 0/16 xp 2"
+    ],
+    "dropped": [
+      "minecraft:librarian/1/emerald_and_book_plains_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_snow_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_taiga_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_swamp_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_savanna_enchanted_book -\u003e null"
+    ]
+  },
+  "S11.draw.minecraft:librarian/level_1.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "9 minecraft:emerald -\u003e 1 minecraft:bookshelf uses 0/12 xp 1",
+      "24 minecraft:paper -\u003e 1 minecraft:emerald uses 0/16 xp 2"
+    ],
+    "dropped": [
+      "minecraft:librarian/1/emerald_and_book_swamp_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_snow_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_taiga_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_savanna_enchanted_book -\u003e null",
+      "minecraft:librarian/1/emerald_and_book_desert_enchanted_book -\u003e null"
+    ]
+  },
+  "S11.draw.minecraft:wandering_trader/buying.projectMob": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "1 minecraft:fermented_spider_eye -\u003e 3 minecraft:emerald uses 0/2 xp 1",
+      "1 minecraft:milk_bucket -\u003e 2 minecraft:emerald uses 0/2 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:wandering_trader/buying.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "1 minecraft:water_bucket -\u003e 2 minecraft:emerald uses 0/2 xp 1",
+      "1 minecraft:hay_block -\u003e 1 minecraft:emerald uses 0/2 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:wandering_trader/common.projectMob": {
+    "added": 5,
+    "ms": 0,
+    "offers": [
+      "2 minecraft:emerald -\u003e 1 minecraft:golden_dandelion uses 0/12 xp 1",
+      "1 minecraft:emerald -\u003e 3 minecraft:shelf_mushroom uses 0/12 xp 1",
+      "5 minecraft:emerald -\u003e 1 minecraft:acacia_sapling uses 0/8 xp 1",
+      "1 minecraft:emerald -\u003e 3 minecraft:green_dye uses 0/12 xp 1",
+      "5 minecraft:emerald -\u003e 1 minecraft:pale_oak_sapling uses 0/8 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.minecraft:wandering_trader/common.villager": {
+    "added": 5,
+    "ms": 0,
+    "offers": [
+      "1 minecraft:emerald -\u003e 3 minecraft:pink_dye uses 0/12 xp 1",
+      "5 minecraft:emerald -\u003e 1 minecraft:mangrove_propagule uses 0/8 xp 1",
+      "3 minecraft:emerald -\u003e 1 minecraft:pufferfish_bucket uses 0/4 xp 1",
+      "5 minecraft:emerald -\u003e 1 minecraft:oak_sapling uses 0/8 xp 1",
+      "1 minecraft:emerald -\u003e 2 minecraft:rooted_dirt uses 0/5 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.msm_spike3:spike_job/level_1.projectMob": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "4 minecraft:stick -\u003e 1 minecraft:emerald uses 0/16 xp 2",
+      "1 minecraft:emerald -\u003e 8 minecraft:torch uses 0/12 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.msm_spike3:spike_job/level_1.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "4 minecraft:stick -\u003e 1 minecraft:emerald uses 0/16 xp 2",
+      "1 minecraft:emerald -\u003e 8 minecraft:torch uses 0/12 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.msm_spike3:spike_job/level_3.projectMob": {
+    "added": -1,
+    "ms": 0,
+    "offers": [],
+    "dropped": [
+      "missing trade set msm_spike3:spike_job/level_3"
+    ]
+  },
+  "S11.draw.msm_spike3:spike_job/level_3.villager": {
+    "added": -1,
+    "ms": 0,
+    "offers": [],
+    "dropped": [
+      "missing trade set msm_spike3:spike_job/level_3"
+    ]
+  },
+  "S11.draw.msm_spike3:trader/level_1.projectMob": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "1 minecraft:emerald -\u003e 3 minecraft:apple uses 0/4 xp 1",
+      "1 minecraft:dirt -\u003e 1 minecraft:emerald uses 0/2 xp 10"
+    ],
+    "dropped": []
+  },
+  "S11.draw.msm_spike3:trader/level_1.villager": {
+    "added": 2,
+    "ms": 0,
+    "offers": [
+      "1 minecraft:dirt -\u003e 1 minecraft:emerald uses 0/2 xp 10",
+      "1 minecraft:emerald -\u003e 3 minecraft:apple uses 0/4 xp 1"
+    ],
+    "dropped": []
+  },
+  "S11.draw.msm_spike3:trader/level_2.projectMob": {
+    "added": 1,
+    "ms": 0,
+    "offers": [
+      "2 minecraft:emerald -\u003e 1 minecraft:diamond uses 0/3 xp 5"
+    ],
+    "dropped": []
+  },
+  "S11.draw.msm_spike3:trader/level_2.villager": {
+    "added": 1,
+    "ms": 0,
+    "offers": [
+      "2 minecraft:emerald -\u003e 1 minecraft:diamond uses 0/3 xp 5"
+    ],
+    "dropped": []
+  },
+  "S11.init": [
+    "poi route: fabric PoiHelper.register(Identifier, int, int, Block...)",
+    "poi registered: PoiType[matchingStates\u003d[Block{msm_spike3:spike_job_site}], maxTickets\u003d1, validRange\u003d1] key msm_spike3:spike_job_site",
+    "poi (untagged) registered: PoiType[matchingStates\u003d[Block{msm_spike3:spike_job_site_untagged}], maxTickets\u003d1, validRange\u003d1]",
+    "poi on composter (duplicate) threw: IllegalStateException root java.lang.IllegalStateException: Block{minecraft:composter}[level\u003d0] is defined in more than one PoI type",
+    "profession registered: msm_spike3:spike_job",
+    "profession registered: msm_spike3:spike_job_untagged",
+    "entities: entity.msm_spike3.trader entity.msm_spike3.mule entity.msm_spike3.pet"
+  ],
+  "S11.mock.afterClose": "tradingPlayer null menu InventoryMenu",
+  "S11.mock.afterRestock": "outOfStock false 1 minecraft:dirt -\u003e 1 minecraft:emerald uses 0/2 xp 10",
+  "S11.mock.afterTrade1": "trader level 2 xp 10 offers [1 minecraft:dirt -\u003e 1 minecraft:emerald uses 1/2 xp 10, 1 minecraft:emerald -\u003e 3 minecraft:apple uses 0/4 xp 1, 2 minecraft:emerald -\u003e 1 minecraft:diamond uses 0/3 xp 5] player emeralds 1 orbs 2",
+  "S11.mock.afterTrade2": "outOfStock true 1 minecraft:dirt -\u003e 1 minecraft:emerald uses 2/2 xp 10 needsRestock true",
+  "S11.mock.events": [
+    "mobInteract server by test-mock-player hand MAIN_HAND",
+    "addOffers level 1 -\u003e 2",
+    "setTradingPlayer test-mock-player",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTrade 1 minecraft:emerald uses 1/2 xp now 10",
+    "addOffers level 2 -\u003e 1",
+    "levelled up to 2",
+    "resent offers level 2 xp 10",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTradeUpdated 1 minecraft:emerald",
+    "notifyTrade 1 minecraft:emerald uses 2/2 xp now 20",
+    "notifyTradeUpdated 0 minecraft:air",
+    "notifyTradeUpdated 0 minecraft:air",
+    "notifyTradeUpdated 0 minecraft:air",
+    "restocked",
+    "resent offers level 2 xp 20",
+    "setTradingPlayer null"
+  ],
+  "S11.mock.interactResult": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+  "S11.mock.menu": "net.minecraft.world.inventory.MerchantMenu",
+  "S11.mock.menuState": "offers 2 showProgressBar false level 0 xp 0 canRestock false",
+  "S11.mock.offersBefore": [
+    "1 minecraft:dirt -\u003e 1 minecraft:emerald uses 0/2 xp 10",
+    "1 minecraft:emerald -\u003e 3 minecraft:apple uses 0/4 xp 1"
+  ],
+  "S11.mock.resultSlot": "1 minecraft:emerald",
+  "S11.mock.resultSlot2": "1 minecraft:emerald",
+  "S11.mock.resultSlotWhenOut": "0 minecraft:air",
+  "S11.paramSet.allowed": [
+    "minecraft:additional_cost_component_allowed",
+    "minecraft:origin",
+    "minecraft:this_entity"
+  ],
+  "S11.paramSet.required": [
+    "minecraft:additional_cost_component_allowed",
+    "minecraft:origin",
+    "minecraft:this_entity"
+  ],
+  "S11.save.keys": "[AbsorptionAmount, Air, Brain, CanPickUpLoot, DeathTime, FallFlying, Fire, Health, HurtTime, Invulnerable, LeftHanded, Motion, Offers, OnGround, PersistenceRequired, PortalCooldown, Pos, Rotation, TraderLevel, UUID, Xp, attributes, current_impulse_context_reset_grace_time, fall_distance]",
+  "S11.save.loaded": "level 2 xp 20 offers [1 minecraft:dirt -\u003e 1 minecraft:emerald uses 0/2 xp 10, 1 minecraft:emerald -\u003e 3 minecraft:apple uses 0/4 xp 1, 2 minecraft:emerald -\u003e 1 minecraft:diamond uses 0/3 xp 5]",
+  "S11.save.offersTag": "{Recipes:[{buy:{count:1,id:\"minecraft:dirt\"},maxUses:2,priceMultiplier:0.05f,sell:{count:1,id:\"minecraft:emerald\"},xp:10},{buy:{count:1,id:\"minecraft:emerald\"},priceMultiplier:0.05f,sell:{count:3,id:\"minecraft:apple\"}},{buy:{count:2,id:\"minecraft:emerald\"},maxUses:3,priceMultiplier:0.05f,sell:{count:1,id:\"minecraft:diamond\"},xp:5}]}",
+  "S11.without.additional_cost_component_allowed": "java.lang.IllegalArgumentException: Missing required parameters: [\u003cparameter minecraft:additional_cost_component_allowed\u003e]",
+  "S11.without.origin": "java.lang.IllegalArgumentException: Missing required parameters: [\u003cparameter minecraft:origin\u003e]",
+  "S11.without.this_entity": "java.lang.IllegalArgumentException: Missing required parameters: [\u003cparameter minecraft:this_entity\u003e]",
+  "S12.direct.name": "Spike Worker / Spike Worker",
+  "S12.direct.offers": [
+    "4 minecraft:stick -\u003e 1 minecraft:emerald uses 0/16 xp 2",
+    "1 minecraft:emerald -\u003e 8 minecraft:torch uses 0/12 xp 1"
+  ],
+  "S12.direct.open": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] MerchantMenu",
+  "S12.forState.composter": "ResourceKey[minecraft:point_of_interest_type / msm_spike3:spike_dup_composter]",
+  "S12.forState.site": "ResourceKey[minecraft:point_of_interest_type / msm_spike3:spike_job_site] acquirableTag\u003dtrue allAcquirable\u003dtrue",
+  "S12.forState.untagged": "ResourceKey[minecraft:point_of_interest_type / msm_spike3:spike_job_site_untagged] acquirableTag\u003dfalse",
+  "S12.init": [
+    "poi route: fabric PoiHelper.register(Identifier, int, int, Block...)",
+    "poi registered: PoiType[matchingStates\u003d[Block{msm_spike3:spike_job_site}], maxTickets\u003d1, validRange\u003d1] key msm_spike3:spike_job_site",
+    "poi (untagged) registered: PoiType[matchingStates\u003d[Block{msm_spike3:spike_job_site_untagged}], maxTickets\u003d1, validRange\u003d1]",
+    "poi on composter (duplicate) threw: IllegalStateException root java.lang.IllegalStateException: Block{minecraft:composter}[level\u003d0] is defined in more than one PoI type",
+    "profession registered: msm_spike3:spike_job",
+    "profession registered: msm_spike3:spike_job_untagged",
+    "entities: entity.msm_spike3.trader entity.msm_spike3.mule entity.msm_spike3.pet"
+  ],
+  "S12.job.absSitePos": "10345410, 8, 2484820",
+  "S12.job.jobSiteMemory": "Optional[ResourceKey[minecraft:dimension / minecraft:overworld] BlockPos{x\u003d10345410, y\u003d8, z\u003d2484820}]",
+  "S12.job.offers": [
+    "4 minecraft:stick -\u003e 1 minecraft:emerald uses 0/16 xp 2",
+    "1 minecraft:emerald -\u003e 8 minecraft:torch uses 0/12 xp 1"
+  ],
+  "S12.job.profAfter600WithUntaggedOnly": "minecraft:none",
+  "S12.job.sitePoiInManager": "ResourceKey[minecraft:point_of_interest_type / msm_spike3:spike_job_site]",
+  "S12.job.takenAtTick": 626,
+  "S12.job.trace": [
+    "t\u003d0 pos\u003d-1, 2, -1 prof\u003dminecraft:none jobSite\u003d- potential\u003d-",
+    "t\u003d100 pos\u003d0, 2, -6 prof\u003dminecraft:none jobSite\u003d- potential\u003d-",
+    "t\u003d200 pos\u003d-2, 2, -7 prof\u003dminecraft:none jobSite\u003d- potential\u003d-",
+    "t\u003d300 pos\u003d-7, 2, -2 prof\u003dminecraft:none jobSite\u003d- potential\u003d-",
+    "t\u003d400 pos\u003d-7, 2, -2 prof\u003dminecraft:none jobSite\u003d- potential\u003d-",
+    "t\u003d500 pos\u003d-1, 2, 0 prof\u003dminecraft:none jobSite\u003d- potential\u003d-",
+    "t\u003d600 pos\u003d0, 2, 0 prof\u003dminecraft:none jobSite\u003d- potential\u003d-"
+  ],
+  "S12.job.untaggedPoiInManager": "ResourceKey[minecraft:point_of_interest_type / msm_spike3:spike_job_site_untagged]",
+  "S12.job.villagerData": "VillagerData[type\u003dReference{ResourceKey[minecraft:villager_type / minecraft:plains]\u003dnet.minecraft.world.entity.npc.villager.VillagerType@4cb18267}, profession\u003dReference{ResourceKey[minecraft:villager_profession / msm_spike3:spike_job]\u003dVillagerProfession[name\u003dtranslation{key\u003d\u0027entity.msm_spike3.villager.spike_job\u0027, args\u003d[]}, heldJobSite\u003ddev.mcsupermods.runtime.gametest.spike3.Spike3Mod$$Lambda/0x000000004cdb51a8@22f16513, acquirableJobSite\u003ddev.mcsupermods.runtime.gametest.spike3.Spike3Mod$$Lambda/0x000000004cdb5408@7364a5b9, requestedItems\u003d[minecraft:wheat], secondaryPoi\u003d[], workSound\u003dSoundEvent[location\u003dminecraft:entity.villager.work_librarian, fixedRange\u003dOptional.empty], tradeSetsByLevel\u003d{2\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_2], 4\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_4], 1\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_1], 3\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_3], 5\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_5]}]}, level\u003d1]",
+  "S12.profession": "VillagerProfession[name\u003dtranslation{key\u003d\u0027entity.msm_spike3.villager.spike_job\u0027, args\u003d[]}, heldJobSite\u003ddev.mcsupermods.runtime.gametest.spike3.Spike3Mod$$Lambda/0x000000004cdb51a8@22f16513, acquirableJobSite\u003ddev.mcsupermods.runtime.gametest.spike3.Spike3Mod$$Lambda/0x000000004cdb5408@7364a5b9, requestedItems\u003d[minecraft:wheat], secondaryPoi\u003d[], workSound\u003dSoundEvent[location\u003dminecraft:entity.villager.work_librarian, fixedRange\u003dOptional.empty], tradeSetsByLevel\u003d{2\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_2], 4\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_4], 1\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_1], 3\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_3], 5\u003d\u003eResourceKey[minecraft:trade_set / msm_spike3:spike_job/level_5]}]",
+  "S12.registry.dupComposter": "PoiType[matchingStates\u003d[Block{minecraft:composter}[level\u003d5], Block{minecraft:composter}[level\u003d1], Block{minecraft:composter}[level\u003d4], Block{minecraft:composter}[level\u003d6], Block{minecraft:composter}[level\u003d7], Block{minecraft:composter}[level\u003d3], Block{minecraft:composter}[level\u003d0], Block{minecraft:composter}[level\u003d2], Block{minecraft:composter}[level\u003d8]], maxTickets\u003d1, validRange\u003d1]"
+}

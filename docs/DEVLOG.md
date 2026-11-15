@@ -6112,3 +6112,18 @@ Decisions
 
 Next
 - Main session: review and merge `b468a`. Turbo caches `test` per package without its workspace dependencies (`dependsOn: []`), so a library change replays the exporters' cached run; run `turbo run test --force` (or the exporters package directly) after library asset changes.
+
+## 2026-11-15 — main session — Handover documents for any agent
+
+**What**
+- `AGENTS.md` at the root: the entry for any agent or tool (read order, the rules that must be kept, how briefs are worked without sub-agents, commands, where things are written down). The root `CLAUDE.md` points to it.
+- `docs/HANDOFF.md` brought up to date after Wave 9 of batch 2: new sections "State at handover" (branches, the one red CI test `controls-path`, work that was running, decisions taken this morning) and "Working without Claude Code" (what "brief", "executor" and "the GitHub MCP" mean in plain tools, `gh` commands, paths that no longer exist); "Where things stand" and "Next" rewritten for Wave 10 onwards.
+- `docs/reference/spikes/` keeps the B469 and B470 spike code and measurements (MSM's own code and observations only: no vanilla files, `javap` listings or game screenshots), with a README; Biome skips the folder.
+- `tools/devlog-merge.py`: keeps both sides when two branches appended DEVLOG entries (it was a session-only script before).
+- ROADMAP: Wave 9 ticked.
+
+**Decisions**
+- The `CLAUDE.md` files stay the rule books for every tool; `AGENTS.md` only points to them and states the few rules that must never be missed (commit identity without credit lines, `main` only after green CI, no Mojang material, no releases without the user).
+
+**Next**
+- Fix `controls-path` in CI, fast-forward `main`, then Wave 10 (B472, B473) and on through B485 (`docs/HANDOFF.md` "Next").

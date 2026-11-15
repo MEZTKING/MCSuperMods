@@ -60,7 +60,7 @@ Read only the one for the area you work in, plus docs/DESIGN.md sections it link
 
 ## Every session
 
-- Main sessions: read `docs/HANDOFF.md` first. Everyone: read the latest `docs/DEVLOG.md` entry.
+- Main sessions: read `docs/HANDOFF.md` first (any other agent or tool: `AGENTS.md` first). Everyone: read the latest `docs/DEVLOG.md` entry.
 - Append an entry at the end: `## YYYY-MM-DD — <agent> — <topic>`, then What / Decisions / Next.
 
 ## Commands

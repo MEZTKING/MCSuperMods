@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "msm_spike4:spike_water",
+    {
+      "id": "msm_spike4:flowing_spike_water",
+      "required": false
+    }
+  ]
+}

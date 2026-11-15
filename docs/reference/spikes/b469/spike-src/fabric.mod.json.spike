@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests",
+  "description": "GameTests for msm_runtime; ships msm/msm_spike/ (blocks, items) and msm/msm_test/ (blocks, items, entities with GeckoLib assets, scripts) definitions like a content jar would.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.mcsupermods.runtime.gametest.MsmSpikeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmRuntimeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmEntityGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobBaseGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmGearGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmEffectGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmThrowableGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmSoundGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmShapeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmAdditionGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmTriggerGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPotionGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmBlockTypeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmRedstoneTypeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPlantGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobMovementGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobRangedGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobTamingGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobBreedingGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobRidingGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobVariantGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobBossBarGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmContainerGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMachineGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMachineRecipeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmContainerScriptGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPortalFrameGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPortalBlockGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPortalTravelGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmParticleGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmParticleSpawnGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmDevModeGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi14GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmSimParityGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmKeyBindGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmHudGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVehicleGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVehicleWeaponGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi15GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPlantTypes2GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmFurnitureGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmWeatheringGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmItemInventoryGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmCommandGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmCreativeTabGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMixinEventGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi16GameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.Spike3GameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike3.Spike3ClientGameTest"
+    ],
+    "main": [
+      "dev.mcsupermods.runtime.gametest.spike3.Spike3Mod"
+    ]
+  },
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

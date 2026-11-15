@@ -1,0 +1,8 @@
+{
+  "block.msm_spike3.spike_job_site": "Spike Job Site",
+  "entity.msm_spike3.mule": "Spike Mule",
+  "entity.msm_spike3.pet": "Spike Pet",
+  "entity.msm_spike3.trader": "Spike Trader",
+  "entity.msm_spike3.villager.spike_job": "Spike Worker",
+  "entity.msm_spike3.villager.spike_job_untagged": "Spike Untagged"
+}

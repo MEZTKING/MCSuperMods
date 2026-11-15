@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "msm_spike4:block/spike_lava_bare"
+    }
+  }
+}

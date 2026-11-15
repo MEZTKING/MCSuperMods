@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "msm_spike4:spike_lava",
+    {
+      "id": "msm_spike4:flowing_spike_lava",
+      "required": false
+    },
+    "msm_spike4:spike_lava_bare",
+    {
+      "id": "msm_spike4:flowing_spike_lava_bare",
+      "required": false
+    }
+  ]
+}

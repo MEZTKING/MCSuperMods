@@ -1,0 +1,12 @@
+{
+  "block.msm_spike4.spike_lava": "Spike lava",
+  "block.msm_spike4.spike_lava_bare": "Spike lava bare",
+  "block.msm_spike4.spike_plain": "Spike plain",
+  "block.msm_spike4.spike_water": "Spike water",
+  "block.msm_spike4.spike_water_bare": "Spike water bare",
+  "item.msm_spike4.spike_lava_bare_bucket": "Spike lava bare bucket",
+  "item.msm_spike4.spike_lava_bucket": "Spike lava bucket",
+  "item.msm_spike4.spike_plain_bucket": "Spike plain bucket",
+  "item.msm_spike4.spike_water_bare_bucket": "Spike water bare bucket",
+  "item.msm_spike4.spike_water_bucket": "Spike water bucket"
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "msm_spike4:item/spike_water_bucket"
+  }
+}
