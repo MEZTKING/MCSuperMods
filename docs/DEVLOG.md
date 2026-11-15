@@ -5871,3 +5871,19 @@ Next: B421's horn listener can add a parity check (the horn's sound packet to ot
 - B462: a rule book with a conveyor (`is_facing`, `in_front_of_here`), a command rule and an explosion rule.
 - B463: the sim needs the five new triggers, the stops and facing.
 - B467 limits: getting on and off is seen up to a quarter second late, and only for players; entity facing is horizontal only; a command run from the console runs no script rule of a command with a function; `packages/plugins/CLAUDE.md` counts.
+
+## 2026-11-15 — executor — B427 e2e paths: vehicles and controls
+
+**What**
+- `app/e2e/vehicles-path.spec.ts` (was a skipped placeholder): a new install in Very easy; Home's "Make a vehicle" runs the Tank and Car flows with their defaults (nothing to fix, no tips; My things lists Battle Tank and Racing Car); the tank's card opens the Vehicle Studio, whose Basics change the speed (5 to 7 blocks a second) and the seats (3); in Advanced the seat plan shows the third seat, "Add a weapon" adds a second weapon, a Go-kart from its template gets "Make a starter model" (shape picked, geo model and texture made) and an item picture; a Coordinates HUD element from its template; the tank's Rules section adds a rule, "Someone gets in the vehicle" is picked from the When chip and "Show on screen" gets the HUD element from the HUD menu; the Rule book Studio adds the same trigger for the car through the vehicle ThingPicker. Zero errors, the saved files are checked, and Very easy's Things to fix is still clean.
+- `app/e2e/controls-path.spec.ts` (was a skipped placeholder): a Dash key from its template; "Press a key" takes J; a Mana bar from its template, its HUD preview drawing one item (the element being edited, 81 by 5); the key's Rules section adds "A player presses the key" with "Show a number on screen", the mana bar from the HUD menu and the value 25; zero errors and warnings, the saved key, HUD and rule checked, and Things to fix clean in Very easy.
+- Two app bugs the paths found, fixed: (1) My things opened a vehicle set's first item (the tank's shell, in the Item Studio) instead of the vehicle, because `msm:item` came before `msm:vehicle` in `THING_KINDS` (`components/home/things.ts`; the vehicle now comes first; test in `Home.test.tsx`); (2) the Vehicle Studio's "Make a starter model" kept the shape, colour and status of the vehicle opened before (`ModelSection.tsx`: `StarterModel` keyed by the vehicle id).
+
+**Decisions**
+- The key pressed is J, not G: G is "Quick actions" in 26.3, so it gives the clash warning, which Things to fix counts as a tip.
+- A ground vehicle suggests the car shape; the path picks the Go-kart shape itself.
+- The vehicle rule shows a HUD element (`show_hud`), so the path makes one from the Coordinates template; "Make a new on-screen number" is offered only for "Show a number on screen".
+
+**Next**
+- No unit test covers the starter model state across two vehicles (the e2e path does).
+- `packages/ai/src/system-prompt.ts:189` has a Biome warning (useless escape), not this brief's.

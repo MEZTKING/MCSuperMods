@@ -204,7 +204,8 @@ export function ModelSection(props: VehicleSectionProps) {
         Vehicles are drawn by MSM’s own renderer on every version, without GeckoLib. An animation
         set may have “idle” and “moving”.
       </p>
-      <StarterModel {...props} />
+      {/* Keyed by the vehicle: the shape, colour and status start again for another vehicle. */}
+      <StarterModel key={props.elementId} {...props} />
       <fieldset className="flex flex-col gap-1 text-xs" data-testid="vehicle-paints">
         <legend className="text-muted">Paints (a dye switches to another texture)</legend>
         {paints.length === 0 && <p className="text-muted">No paints.</p>}

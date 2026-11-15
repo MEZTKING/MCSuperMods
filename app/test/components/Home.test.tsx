@@ -274,6 +274,20 @@ describe('My things', () => {
     expect(thingCards(null)).toEqual([]);
   });
 
+  it('opens a vehicle set at its vehicle, not at its items', () => {
+    const tank = { flowId: 'vehicle-tank', setId: 'set-2', values: { tank_name: 'Battle Tank' } };
+    const cards = thingCards(
+      project([
+        element('ruby:battle_tank_shell', 'msm:item', {}, tank),
+        element('ruby:battle_tank', 'msm:vehicle', { display_name: 'Battle Tank' }, tank),
+      ]),
+      { 'vehicle-tank': 'Tank' },
+    );
+    expect(cards.map((card) => [card.name, card.what, card.main.id])).toEqual([
+      ['Battle Tank', 'Tank', 'ruby:battle_tank'],
+    ]);
+  });
+
   it('opens a card and offers Edit in Creator, Rename, Duplicate and Delete', async () => {
     const p = homeProps();
     render(<Home {...p} />);

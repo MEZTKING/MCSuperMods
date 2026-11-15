@@ -14,14 +14,18 @@ import { displayNameOf } from '../../session/plain-problems';
 import { creatorSets } from '../ElementSidebar';
 import type { ThingSort } from '../thing-picker/thing-sources';
 
-/** The kinds that are cards, in the order a set picks its main element, with words and icon. */
+/**
+ * The kinds that are cards, in the order a set picks its main element, with words and icon. A
+ * vehicle comes first: a vehicle flow's set also holds items (the tank's shell), and its card
+ * opens the Vehicle Studio.
+ */
 export const THING_KINDS: readonly { kind: string; word: string; sort: ThingSort }[] = [
+  { kind: 'msm:vehicle', word: 'Vehicle', sort: 'mob' },
   { kind: 'msm:block', word: 'Block', sort: 'block' },
   { kind: 'msm:item', word: 'Item', sort: 'item' },
   { kind: 'msm:entity', word: 'Mob', sort: 'mob' },
   { kind: 'msm:effect', word: 'Effect', sort: 'effect' },
   { kind: 'msm:potion', word: 'Potion', sort: 'item' },
-  { kind: 'msm:vehicle', word: 'Vehicle', sort: 'mob' },
   { kind: RULES_KIND, word: 'Rules', sort: 'function' },
   { kind: 'msm:command', word: 'Command', sort: 'function' },
   { kind: 'msm:key_bind', word: 'Key', sort: 'function' },
