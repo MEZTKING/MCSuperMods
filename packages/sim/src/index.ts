@@ -13,6 +13,7 @@ export * from './grounds/index.js';
 export * from './items/bags.js';
 export * from './local-source.js';
 export * from './player/index.js';
+export * from './script/index.js';
 export * from './tick/index.js';
 export * from './traders/index.js';
 export * from './types.js';

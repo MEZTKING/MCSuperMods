@@ -13,6 +13,9 @@
  *   captions of `effects.ts` (`chip`, `sound`) and the mob field (`animation`). Portal blocks
  *   hum near the player. Every log line becomes a "What happened" entry with the kind of the
  *   trace entry that wrote it ({@link WhatHappenedEntry}).
+ * - Scripts (B400): with {@link TryItAreaOptions.scripts} the area runs the project's scripts in
+ *   the script worker (`script-worker.ts`): each time the lowered scripts change, they are
+ *   transpiled by the session's scripting service in main (ADR 0031 D2) and loaded again.
  *
  * Part of the lazy Try it chunk.
  */
@@ -20,6 +23,7 @@
 import { type Json, type Project, stableStringify } from '@msm/core';
 import type { JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import {
+  type CompiledScript,
   type GroundBlocks,
   type GroundKind,
   type GroundLoadResult,
@@ -27,11 +31,15 @@ import {
   type PlayerAction,
   type RuleBookInfo,
   ruleBooksFrom,
+  type ScriptApiDescription,
+  type ScriptProblem,
+  type ScriptRunner,
   SimClock,
   type SimEffect,
   type SimFiles,
   type SimLogLine,
   type SimOrigin,
+  scriptSources,
   type TraceKind,
   type WorldEvent,
 } from '@msm/sim';
@@ -39,6 +47,7 @@ import { AmbientParticles } from './ambient';
 import { PortalHums, type ReadProjectAsset, type SoundOut, TryItEffects } from './effects';
 import { MobField } from './render/mobs';
 import { ParticleField } from './render/particles';
+import { createWorkerRunner } from './script-worker';
 
 /** How long after an edit the project is lowered again. */
 export const LOWER_DEBOUNCE_MS = 300;
@@ -225,6 +234,25 @@ export interface TryItAreaOptions {
   readonly audio?: SoundOut | null;
   /** The project's rule books (B396), so plain rules are named by key. */
   readonly ruleBooks?: readonly RuleBookInfo[];
+  /** Runs the project's scripts (B400); without it they are said to run only in the game. */
+  readonly scripts?: TryItScripts;
+}
+
+/** What one transpile gives (the scripting service's `ScriptTranspileOutcome`). */
+export type TranspileOutcome =
+  | { readonly js: string }
+  | { readonly problems: readonly { readonly message: string; readonly line?: number }[] };
+
+/** How an area runs scripts (B400). */
+export interface TryItScripts {
+  /** The session's scripting service: TypeScript to ES5 in main (ADR 0031 D2). */
+  transpile(source: string, name: string): Promise<TranspileOutcome>;
+  /** The Script API description (`SCRIPT_API` of `@msm/plugin-scripting`). */
+  readonly api: ScriptApiDescription;
+  /** `msm.version`. */
+  readonly version?: string;
+  /** Where they run; default the Web Worker of `script-worker.ts`. */
+  readonly runner?: () => ScriptRunner;
 }
 
 /**
@@ -251,6 +279,11 @@ export class TryItArea {
   private versionCount = 0;
   private readonly stop: () => void;
   private groundText = 'Grid';
+  private readonly scripts: TryItScripts | undefined;
+  /** The lowered scripts last loaded (ids and sources), so an edit elsewhere reloads nothing. */
+  private scriptKey = '';
+  private scriptGeneration = 0;
+  private disposed = false;
   private loadingGround = false;
   private changedSinceGround = false;
 
@@ -266,7 +299,19 @@ export class TryItArea {
         ? {}
         : { vanillaBlockstates: options.vanillaBlockstates }),
       ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
+      ...(options.scripts === undefined
+        ? {}
+        : {
+            scripts: {
+              runner: (options.scripts.runner ?? createWorkerRunner)(),
+              api: options.scripts.api,
+              ...(options.scripts.version === undefined
+                ? {}
+                : { version: options.scripts.version }),
+            },
+          }),
     });
+    this.scripts = options.scripts;
     for (const line of this.source.lines) this.addEntry(line, undefined);
     const log = this.source.log;
     this.particles = new ParticleField({ files: options.files, target: options.target, log });
@@ -294,6 +339,45 @@ export class TryItArea {
       ...(hum === undefined ? {} : { defaultSound: hum }),
     });
     this.stop = this.source.subscribe((event) => this.onEvent(event));
+    void this.loadScripts(options.files);
+  }
+
+  /**
+   * Transpiles and loads the lowered scripts when they changed (B400). Resolves once they are
+   * loaded (or nothing changed); a later edit wins over an earlier one still transpiling.
+   */
+  loadScripts(files: SimFiles = this.filesNow): Promise<void> {
+    const scripts = this.scripts;
+    if (scripts === undefined) return Promise.resolve();
+    const sources = scriptSources(files);
+    const key = sources.map((one) => `${one.id}\n${one.source}`).join('\u0000');
+    if (key === this.scriptKey) return Promise.resolve();
+    this.scriptKey = key;
+    const generation = ++this.scriptGeneration;
+    return Promise.all(
+      sources.map(async (one): Promise<CompiledScript | ScriptProblem> => {
+        const book = one.book === undefined ? {} : { book: one.book };
+        try {
+          const outcome = await scripts.transpile(one.source, one.path);
+          if ('js' in outcome) return { id: one.id, path: one.path, js: outcome.js, ...book };
+          const first = outcome.problems[0];
+          const message =
+            first === undefined
+              ? 'it could not be transpiled'
+              : `${first.line === undefined ? '' : `line ${first.line}: `}${first.message}`;
+          return { id: one.id, path: one.path, message, ...book };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          return { id: one.id, path: one.path, message, ...book };
+        }
+      }),
+    ).then((results) => {
+      if (this.disposed || generation !== this.scriptGeneration) return;
+      const compiled = results.filter((one): one is CompiledScript => 'js' in one);
+      const problems = results.filter((one): one is ScriptProblem => 'message' in one);
+      this.source.loadScripts(compiled, problems);
+      this.changed();
+    });
   }
 
   /** The current files. */
@@ -379,6 +463,7 @@ export class TryItArea {
     this.ambient.setFiles(files);
     this.effects.setFiles(files);
     this.hums.setFiles(files);
+    void this.loadScripts(files);
     this.mobField.setCatalogue(this.source.mobs);
     this.mobField.update(this.source.entities.snapshots());
     this.changed();
@@ -443,6 +528,7 @@ export class TryItArea {
 
   /** Stops everything; the area is not used afterwards. */
   dispose(): void {
+    this.disposed = true;
     this.stop();
     this.ambient.dispose();
     this.hums.dispose();

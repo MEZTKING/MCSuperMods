@@ -1062,3 +1062,89 @@ test('Try it: signs with text, a bed, lanterns, a bag screen, the chat box and a
   );
   await expect(state).toHaveAttribute('data-blocks', '0');
 });
+
+const SCRIPT_NAMESPACE = 'msm_sample_script';
+
+test('Try it: the sample script runs in the script worker, and an endless loop is stopped', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-scripts-'));
+  const folders = {
+    projectDir: join(base, SCRIPT_NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  cpSync(join(appDir, '..', 'fixtures', 'sample-script'), folders.projectDir, { recursive: true });
+  // A copy only: one more script, which loops for ever on "spin".
+  writeFileSync(
+    join(folders.projectDir, 'content', SCRIPT_NAMESPACE, 'script', 'spin.json'),
+    `${JSON.stringify(
+      {
+        data: {
+          lines: [
+            'import { msm } from "msm:runtime";',
+            '',
+            'msm.events.on("player.chat", (e) => {',
+            '  if (e.message !== "spin") return;',
+            '  for (;;) {}',
+            '});',
+          ],
+        },
+        formatVersion: 1,
+        id: `${SCRIPT_NAMESPACE}:spin`,
+        kind: 'msm:script',
+        meta: { createdAt: '2026-11-21T00:00:00.000Z' },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  const launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${SCRIPT_NAMESPACE}:spark_ore`)).toBeVisible();
+  const { canvas, state } = await openTryIt(window);
+  await window.getByTestId('tryit-card-close').click();
+  const log = window.getByTestId('tryit-log');
+
+  // The scripts load in the worker under the app's Content Security Policy: player.join greets.
+  await expect(log).toContainText(
+    `The script ${SCRIPT_NAMESPACE}:on_player_join says to you: "MSM Sample Script is loaded. Use the spark ore."`,
+    { timeout: 20_000 },
+  );
+
+  // Using the spark ore runs block.interact, the ore's event and its run_script handler.
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await hold(window, `${SCRIPT_NAMESPACE}:spark_ore`);
+  await canvas.focus();
+  await press(canvas, 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+  await press(canvas, 'KeyC');
+  await expect(log).toContainText(
+    `The script ${SCRIPT_NAMESPACE}:spark_handler gave you 1 Spark Gem.`,
+  );
+  const only = log.getByTestId('tryit-log-only').filter({
+    hasText: `World.runCommand, used by the script ${SCRIPT_NAMESPACE}:on_block_interact`,
+  });
+  await expect(only).toHaveCount(1);
+  await expect(only).toHaveAttribute('data-kind', 'onlyInMinecraft');
+
+  // "spin" loops for ever: after 2 seconds the worker is stopped and the scripts start again.
+  await press(canvas, 'KeyT');
+  const input = window.getByTestId('tryit-chat-input');
+  await expect(input).toBeFocused();
+  await input.fill('spin');
+  await input.press('Enter');
+  await expect(log).toContainText(
+    'The player.chat handlers ran for more than 2 seconds (an endless loop?), so the preview stopped the scripts and started them again',
+    { timeout: 15_000 },
+  );
+  // The scripts answer again.
+  await input.fill('!help');
+  await input.press('Enter');
+  await expect(log).toContainText(
+    `The script ${SCRIPT_NAMESPACE}:on_player_chat says to you: "Sample commands: !help`,
+    { timeout: 10_000 },
+  );
+});

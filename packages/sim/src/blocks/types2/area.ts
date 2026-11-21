@@ -11,6 +11,7 @@
  */
 
 import type { CommandsTarget } from '../../commands/catalogue.js';
+import type { CommandValue } from '../../commands/parse.js';
 import { type ChatLine, CommandRunner } from '../../commands/run.js';
 import { SimRandom } from '../../entities/wander.js';
 import { type EventContext, PLAYER } from '../../events/actions.js';
@@ -67,6 +68,17 @@ export interface Types2Host {
   readonly closeOtherScreens: () => void;
   readonly seed: number;
   readonly ruleName: RuleNamer;
+  /**
+   * The area's scripts take the `command` event (B400): when this returns true, the command's
+   * listeners ran as scripts and are not read from the script text.
+   */
+  readonly commandUsed?: (
+    id: string,
+    sentence: string,
+    used: { readonly name: string; readonly args: Readonly<Record<string, CommandValue>> },
+  ) => boolean;
+  /** A line that is not a command was said in the chat (B400 `player.chat`). */
+  readonly chatSaid?: (text: string) => void;
 }
 
 /** The trigger spec ids fired here. */
@@ -110,9 +122,11 @@ export class Types2Area {
       knowsBlock: (id) => this.knows(id, false),
       fire: (owner, eventId, ctx, sentence) =>
         host.triggers().fireOwned(owner, eventId, ctx, sentence),
-      listeners: (id, sentence) => {
+      listeners: (id, sentence, used) => {
+        if (host.commandUsed?.(id, sentence, used) === true) return;
         this.events.commandRan(id, sentence);
       },
+      said: (text) => host.chatSaid?.(text),
     });
     host.player.setClimbable((x, y, z) => this.climbable(host.world.get({ x, y, z })));
     host.world.onChange((change) => {
@@ -420,8 +434,13 @@ export class Types2Area {
    * The Explode tool at `pos`: an explosion with no source (as a bed or respawn anchor), so the
    * explosion rules see the cause "a block". A stopped explosion breaks nothing; one with the
    * blocks kept safe breaks nothing; otherwise the blocks within {@link EXPLOSION_RADIUS} go.
+   * With `decided` (the area's scripts answered `world.explosion`, B400) the script text is not
+   * read.
    */
-  explode(pos: BlockPos): BlockChange[] {
+  explode(
+    pos: BlockPos,
+    decided?: { readonly cancelled: boolean; readonly keepBlocks: boolean },
+  ): BlockChange[] {
     const world = this.host.world;
     const catalogue = this.host.catalogue();
     const state = world.get(pos);
@@ -433,7 +452,7 @@ export class Types2Area {
       'explosion:blast',
       `an explosion's blast: damage, pushing, drops, fire, sound and smoke (the preview only breaks the blocks within ${EXPLOSION_RADIUS} blocks)`,
     );
-    const result = this.events.exploding('block', sentence);
+    const result = decided ?? this.events.exploding('block', sentence);
     if (result.cancelled) {
       this.host.log.info('The explosion was stopped; nothing broke.');
       return [];

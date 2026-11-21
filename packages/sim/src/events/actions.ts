@@ -11,7 +11,8 @@
  * | `apply_effect`, `damage`, `heal` | a log line and a chip; what they do is said once |
  * | `launch` | pushes the player or the mob by its vector, with a chip |
  * | `show_hud`, `hide_hud`, `set_hud` | the player's HUD in the area (B429), drawn by the view |
- * | `light_portal`, `run_function`, `run_script`, `explode` | "Only in Minecraft" |
+ * | `light_portal`, `run_function`, `explode` | "Only in Minecraft" |
+ * | `run_script` | the handler in the area's scripts when they run (B400), else "Only in Minecraft" |
  *
  * Whom an action affects follows the runtime's `self` and `other` (`EffectTarget`): `self` is
  * the event's player, else its mob; `other` is the other entity of the event.
@@ -193,6 +194,16 @@ export interface ActionHost {
   mentioned(kind: 'effect', id: string): void;
   /** The player's HUD (B429); without it the HUD actions are "Only in Minecraft". */
   readonly hud?: ActionHud;
+  /** The area's scripts (B400); without them `run_script` is "Only in Minecraft". */
+  readonly scripts?: ActionScripts;
+}
+
+/** What `run_script` asks of the area's scripts (B400, `script/bridge.ts`). */
+export interface ActionScripts {
+  /** Whether a script defines the handler. */
+  defines(handler: string): boolean;
+  /** Runs the handler for this firing of `eventId`. */
+  run(handler: string, firing: Firing, eventId: string): void;
 }
 
 const isRecord = (value: Json | undefined): value is JsonObject =>
@@ -551,6 +562,26 @@ function runAction(
       return [add('onlyInMinecraft', `run function ${str(action.function) ?? ''}`)];
     case 'run_script': {
       const handler = str(action.handler) ?? '';
+      const scripts = host.scripts;
+      if (scripts !== undefined) {
+        if (!scripts.defines(handler)) {
+          return [add('skipped', `No script defines the action handler ${handler}; nothing ran.`)];
+        }
+        // The line first: what the handler does follows it (at once in process, later from the
+        // worker).
+        const made =
+          refs.length === 0
+            ? [add('action', `Ran the script action ${handler}.`)]
+            : refs.map((ref) =>
+                add(
+                  'action',
+                  `Rule ${ref.name === undefined ? `"${ref.key}"` : `"${ref.name}"`} ran as a script.`,
+                  { ...origin, ruleKey: ref.key, ruleBook: ref.book },
+                ),
+              );
+        scripts.run(handler, firing, origin.eventId ?? '');
+        return made;
+      }
       if (refs.length === 0) {
         return [add('onlyInMinecraft', `run script action ${handler}`)];
       }

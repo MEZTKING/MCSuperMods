@@ -38,6 +38,7 @@ import {
   type ActionHost,
   type ActionHud,
   type ActionNames,
+  type ActionScripts,
   type Actor,
   type EventContext,
   PLAYER,
@@ -87,6 +88,11 @@ export interface TriggerEngineOptions {
   readonly ruleBooks?: readonly RuleBookInfo[];
   /** The player's HUD for the HUD actions (B429). */
   readonly hud?: ActionHud;
+  /**
+   * The area's scripts (B400): `run_script` runs their handlers, and scripts are not said to run
+   * only in the game.
+   */
+  readonly scripts?: ActionScripts;
 }
 
 /** What a use of a block or item did, so the caller knows whether the click was taken. */
@@ -175,6 +181,7 @@ export class TriggerEngine {
         if (owner !== undefined) this.sayUnhandled(owner);
       },
       ...(options.hud === undefined ? {} : { hud: options.hud }),
+      ...(options.scripts === undefined ? {} : { scripts: options.scripts }),
     };
     options.world.onChange((change) => this.track(change.pos, change.state));
     this.sayScripts();
@@ -729,6 +736,8 @@ export class TriggerEngine {
 
   /** Says once per script that its Script API events come only from the game (slice 4, L5). */
   private sayScripts(): void {
+    // The area runs its scripts (B400): the bridge says what they do instead.
+    if (this.options.scripts !== undefined) return;
     for (const script of this.definitions.listeners) {
       const what =
         script.book !== undefined && script.ruleKeys.length > 0

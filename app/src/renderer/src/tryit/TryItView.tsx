@@ -27,6 +27,7 @@
  */
 
 import type { Project, ResourceLocation } from '@msm/core';
+import { SCRIPT_API } from '@msm/plugin-scripting';
 import {
   type BlockState,
   blockIdOf,
@@ -96,7 +97,14 @@ import {
 import { MockScreen } from './MockScreen';
 import { projectSkies } from './render/sky';
 import { TryItScene } from './render/TryItScene';
-import { type LoweringSession, ruleBooksOf, SessionFiles, TryItArea } from './session-source';
+import {
+  type LoweringSession,
+  ruleBooksOf,
+  SessionFiles,
+  type TranspileOutcome,
+  TryItArea,
+  type TryItScripts,
+} from './session-source';
 import { StateReadout, type TryItReadout } from './state-readout';
 import { MerchantScreen } from './traders/MerchantScreen';
 import { useTryItStore } from './tryit-store';
@@ -163,8 +171,30 @@ export interface TryItViewProps {
    * `window.msm.tryItWorlds`; `null` turns the choice off.
    */
   worlds?: TryItWorldsPlatform | null;
+  /**
+   * The scripting service that transpiles scripts for the area (B400). Default: the preload's
+   * `window.msm.scripting`; `null` leaves scripts to the game (they are said out loud).
+   */
+  scripting?: ScriptTranspiler | null;
   /** Test hook: overrides WebGL detection. */
   webgl?: boolean;
+}
+
+/** The part of the scripting service Try it uses (ADR 0031 D2). */
+export interface ScriptTranspiler {
+  transpile(source: string, name: string): Promise<TranspileOutcome>;
+}
+
+/** The preload's scripting service, when there is one. */
+function defaultScripting(): ScriptTranspiler | null {
+  const bridge = (globalThis as { msm?: { scripting?: ScriptTranspiler } }).msm;
+  return bridge?.scripting ?? null;
+}
+
+/** How an area runs scripts with `scripting`, or `undefined` without it. */
+function areaScripts(scripting: ScriptTranspiler | null): TryItScripts | undefined {
+  if (scripting === null) return undefined;
+  return { transpile: (source, name) => scripting.transpile(source, name), api: SCRIPT_API };
 }
 
 /** The preload's world reader, when there is one. */
@@ -335,10 +365,12 @@ export default function TryItView(props: TryItViewProps) {
   // The sky (B483): MSM's own (''), or a project dimension's id whose own type gives the colour.
   const [skyChoice, setSkyChoice] = useState('');
   const worlds = props.worlds === undefined ? defaultWorlds() : props.worlds;
+  const scripting = props.scripting === undefined ? defaultScripting() : props.scripting;
 
   // Lower the project while the view is shown; the first files make the area.
   const filesRef = useRef<SessionFiles | null>(null);
   useEffect(() => {
+    const scriptsFor = areaScripts(scripting);
     const files = new SessionFiles(session, {
       onFiles: ({ files: next, target }) => {
         const store = useTryItStore.getState();
@@ -355,6 +387,7 @@ export default function TryItView(props: TryItViewProps) {
               readProjectAsset: props.readProjectAsset,
               audio: audioOut(),
               ruleBooks,
+              ...(scriptsFor === undefined ? {} : { scripts: scriptsFor }),
             }),
             root,
           );

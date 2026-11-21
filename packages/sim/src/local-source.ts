@@ -39,6 +39,18 @@
  * Batch 2 (B483): {@link LocalWorldSource.traders} opens a trader mob's merchant screen (a
  * mock-up) before its `msm:on_interact`, and {@link LocalWorldSource.fluids} pours a project
  * fluid from its bucket (drawn, not flowing) and fires its `on_entity_inside`.
+ *
+ * Scripts (B400, `script/`): with {@link LocalSourceOptions.scripts} the project's scripts run
+ * through a {@link ScriptBridge} ({@link LocalWorldSource.scripts}; the app loads them with
+ * {@link LocalWorldSource.loadScripts} once they are transpiled). Their Script API events fire
+ * where the simulation does the thing: `block.interact` first on a right click on a block,
+ * `block.break` before breaking, `block.place` before a held block is placed, `entity.interact`
+ * before a mob's own use, `item.use` before a held item's use in the air, `world.explosion`
+ * before the Explode tool breaks blocks (the six wait for the scripts' answer and stop when one
+ * cancels), and `entity.death` after a hit, `command` after a project command, `player.chat`
+ * after a chat line, `server.tick` and `player.tick` each tick, `server.started` and
+ * `player.join` after the first load. `run_script` actions call their handlers. The place,
+ * explosion and command rules B463 read from the script text are then the scripts' own answer.
  */
 
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
@@ -46,7 +58,7 @@ import { useBlock } from './blocks/interact.js';
 import { breakBlock, placeBlock } from './blocks/placement.js';
 import { type ScreenSpec, screensFromFiles } from './blocks/screens.js';
 import { Types2Area } from './blocks/types2/area.js';
-import { EXPLODE_TOOL } from './blocks/types2/tools.js';
+import { EXPLODE_TOOL, EXPLOSION_RADIUS } from './blocks/types2/tools.js';
 import { TIME_LAPSE_TICKS } from './blocks/weathering.js';
 import type { CommandsTarget } from './commands/catalogue.js';
 import type { ChatLine } from './commands/run.js';
@@ -54,7 +66,7 @@ import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
 import type { EntityHit } from './entities/spawn.js';
-import { PLAYER, type SimInventory } from './events/actions.js';
+import { type Firing, PLAYER, type SimInventory } from './events/actions.js';
 import { type RuleBookInfo, readEventDefinitions } from './events/definitions.js';
 import { SimTrace, type TraceEntry } from './events/trace.js';
 import { type ChanceMode, TriggerEngine } from './events/triggers.js';
@@ -70,7 +82,21 @@ import {
 import type { BlockLookup } from './player/collide.js';
 import { REACH } from './player/constants.js';
 import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/controller.js';
-import { lookDirection, type PickResult, pick } from './player/pick.js';
+import { adjacentPos, lookDirection, type PickResult, pick } from './player/pick.js';
+import type { ScriptApiDescription } from './script/api.js';
+import {
+  ScriptBridge as Bridge,
+  blockValue,
+  itemValue,
+  mobValue,
+  PLAYER_VALUE,
+  posValue,
+  type ScriptBridge,
+  type ScriptDecision,
+} from './script/bridge.js';
+import type { EncodedValue } from './script/protocol.js';
+import type { ScriptRunner } from './script/runner.js';
+import type { CompiledScript, ScriptProblem } from './script/sources.js';
 import { BlockTimers } from './tick/timers.js';
 import { applyTool } from './tick/tools.js';
 import { TraderArea } from './traders/area.js';
@@ -92,7 +118,7 @@ import type {
 } from './types.js';
 import { buildVehicleCatalogue } from './vehicles/catalogue.js';
 import { type VehicleHit, VehicleWorld } from './vehicles/vehicle-world.js';
-import { SimWorld, sameState, type WorldChange } from './world/sim-world.js';
+import { SimWorld, sameState, stateKey, type WorldChange } from './world/sim-world.js';
 
 /**
  * What the local source reads from a target: folder names, the block names of the version and,
@@ -118,6 +144,18 @@ export interface LocalSourceOptions {
   readonly chance?: ChanceMode;
   /** The project's rule books, to name the rule behind each plain action (B396). */
   readonly ruleBooks?: readonly RuleBookInfo[];
+  /** Runs the project's scripts (B400); without it scripts are said to run only in the game. */
+  readonly scripts?: LocalSourceScripts;
+}
+
+/** How the local source runs scripts (B400). */
+export interface LocalSourceScripts {
+  /** Where they run: the app's worker, or in process. */
+  readonly runner: ScriptRunner;
+  /** The Script API description (`script-api-v1.json`). */
+  readonly api: ScriptApiDescription;
+  /** `msm.version`. */
+  readonly version?: string;
 }
 
 /** The most log lines the source keeps. */
@@ -213,6 +251,8 @@ export class LocalWorldSource implements WorldSource {
   readonly fluids: FluidArea;
   /** Trader mobs and the merchant screen (B483). */
   readonly traders: TraderArea;
+  /** The area's scripts (B400), or `null` when they run only in the game. */
+  readonly scripts: ScriptBridge | null;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -227,6 +267,8 @@ export class LocalWorldSource implements WorldSource {
   private readonly logLimit: number;
   private readonly said = new Set<string>();
   private input: PlayerInput = IDLE_INPUT;
+  /** The item in hand as the last click had it (scripts' `Player.heldItem`). */
+  private heldNow: string | undefined;
   private screens: Map<string, ScreenSpec>;
   private screenNow: OpenScreen | null = null;
   private ticks = 0;
@@ -295,6 +337,32 @@ export class LocalWorldSource implements WorldSource {
       this.emit({ type: 'blockChanged', pos: change.pos, state: change.state }),
     );
     this.traceNow = new SimTrace(this.log, () => this.ticks);
+    this.scripts =
+      options.scripts === undefined
+        ? null
+        : new Bridge(
+            {
+              world: this.world,
+              catalogue: () => this.blockCatalogue,
+              player: this.player,
+              entities: this.entities,
+              inventory: () => this.triggers.inventory,
+              trace: this.traceNow,
+              effect: (effect) => this.emit({ type: 'effect', effect }),
+              now: () => this.ticks,
+              itemName: (id) => this.triggers.nameOfItem(id),
+              heldItem: () => this.heldNow,
+            },
+            {
+              runner: options.scripts.runner,
+              api: options.scripts.api,
+              seed: options.seed ?? 1,
+              ...(options.scripts.version === undefined
+                ? {}
+                : { version: options.scripts.version }),
+            },
+          );
+    const bridge = this.scripts;
     this.controls = new SimControls(this.files, this.target, {
       now: () => this.ticks,
       player: this.player,
@@ -321,6 +389,16 @@ export class LocalWorldSource implements WorldSource {
       ...(options.chance === undefined ? {} : { chance: options.chance }),
       ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
       hud: this.controls.hudActions,
+      ...(bridge === null
+        ? {}
+        : {
+            scripts: {
+              defines: (handler: string) => bridge.defines(handler),
+              run: (handler: string, firing: Firing, eventId: string) => {
+                bridge.runAction(handler, this.actionData(firing, eventId));
+              },
+            },
+          }),
     });
     this.parity2 = new Types2Area(this.files, this.target, {
       world: this.world,
@@ -333,6 +411,20 @@ export class LocalWorldSource implements WorldSource {
       closeOtherScreens: () => this.closeScreen(),
       seed: options.seed ?? 1,
       ruleName: (book, key) => this.ruleNameOf(book, key),
+      ...(bridge === null
+        ? {}
+        : {
+            commandUsed: (id, _sentence, used) => {
+              bridge.fire('command', {
+                id,
+                name: used.name,
+                source: PLAYER_VALUE,
+                args: commandArgs(used.args),
+              });
+              return true;
+            },
+            chatSaid: (text) => bridge.fire('player.chat', { player: PLAYER_VALUE, message: text }),
+          }),
     });
     this.fluids = new FluidArea(this.files, this.target, {
       world: this.world,
@@ -421,6 +513,7 @@ export class LocalWorldSource implements WorldSource {
 
   /** Empties the area and fills it with the current ground. */
   private fillGround(): GroundLoadResult {
+    this.scripts?.resync();
     this.screenNow = null;
     this.vehicles.clear();
     this.timers.clear();
@@ -593,21 +686,37 @@ export class LocalWorldSource implements WorldSource {
         };
         return;
       case 'place':
-        this.place(action.pos, action.face, action.hit, action.block);
+        this.placeHeld(action.pos, action.face, action.hit, action.block);
         return;
-      case 'break':
-        // `msm:on_break` fires before the block goes (`playerWillDestroy`).
-        if (this.screenNow !== null && samePos(this.screenNow.pos, action.pos)) this.closeScreen();
-        if (this.world.get(action.pos) !== null) this.triggers.blockBreaking(action.pos);
-        breakBlock(this.world, this.blockCatalogue, action.pos);
+      case 'break': {
+        const target = this.world.get(action.pos);
+        if (target === null || this.scripts === null) {
+          this.breakNow(action.pos);
+          return;
+        }
+        // `block.break` (`PlayerBlockBreakEvents.BEFORE`) may keep the block.
+        this.scripts.ask(
+          'block.break',
+          { block: blockValue(action.pos, stateKey(target)), player: PLAYER_VALUE },
+          (decision) => {
+            if (decision.cancelled) {
+              this.log.info(`A script stopped the breaking of ${this.nameOf(target.name)}.`);
+              return;
+            }
+            this.breakNow(action.pos);
+          },
+        );
         return;
+      }
       case 'use':
+        this.heldNow = action.item;
         this.use(action);
         return;
       case 'hit':
         this.hit(action.entity);
         return;
       case 'interact':
+        this.heldNow = action.item;
         this.interact(action.entity);
         return;
       case 'useVehicle':
@@ -618,7 +727,22 @@ export class LocalWorldSource implements WorldSource {
         return;
       case 'tool': {
         if (action.tool === EXPLODE_TOOL) {
-          this.parity2.explode(action.pos);
+          if (this.scripts === null) {
+            this.parity2.explode(action.pos);
+            return;
+          }
+          // `world.explosion`: the scripts' answer, not the script text (B400).
+          const pos = action.pos;
+          this.scripts.ask(
+            'world.explosion',
+            {
+              pos: posValue({ x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 }),
+              radius: EXPLOSION_RADIUS,
+              source: null,
+              cause: 'block',
+            },
+            (decision) => this.parity2.explode(pos, decision),
+          );
           return;
         }
         const before = this.world.get(action.pos);
@@ -648,6 +772,7 @@ export class LocalWorldSource implements WorldSource {
     this.parity2.tick();
     this.fluids.tick();
     this.traders.tick();
+    this.scripts?.tick();
   }
 
   /** A time-lapse step of weathering: one in-game day of random ticks at once (B463). */
@@ -666,8 +791,33 @@ export class LocalWorldSource implements WorldSource {
    * when the item has no use in the air here.
    */
   useItem(item: string): boolean {
+    this.heldNow = item;
+    const scripts = this.scripts;
+    if (scripts?.hears('item.use') === true) {
+      // `item.use` (`UseItemCallback`) first; a cancel stops the item's own use.
+      scripts.ask(
+        'item.use',
+        { item: itemValue(item), player: PLAYER_VALUE, hand: 'main' },
+        (decision) => {
+          if (decision.cancelled) {
+            this.log.info(`A script stopped the use of ${this.itemName(item)}.`);
+            return;
+          }
+          if (!this.parity2.useItem(item)) this.triggers.itemUsed(item);
+        },
+      );
+      return true;
+    }
     if (this.parity2.useItem(item)) return true;
     return this.triggers.itemUsed(item).fired;
+  }
+
+  /**
+   * Loads the project's scripts, transpiled (B400); `problems` are those that could not be. Does
+   * nothing without {@link LocalSourceOptions.scripts}.
+   */
+  loadScripts(scripts: readonly CompiledScript[], problems: readonly ScriptProblem[] = []): void {
+    this.scripts?.load(scripts, problems);
   }
 
   /**
@@ -800,6 +950,7 @@ export class LocalWorldSource implements WorldSource {
   /** Stops listening to the world; the source should not be used afterwards. */
   dispose(): void {
     this.unsubscribeWorld();
+    this.scripts?.dispose();
     this.listeners.clear();
   }
 
@@ -810,6 +961,33 @@ export class LocalWorldSource implements WorldSource {
    * hatched); then the item's own `msm:on_use` when nothing took the click.
    */
   private use(action: Extract<PlayerAction, { type: 'use' }>): void {
+    const target = this.world.get(action.pos);
+    if (target !== null && this.scripts?.hears('block.interact') === true) {
+      // `block.interact` (`UseBlockCallback`) comes before anything else of the click.
+      this.scripts.ask(
+        'block.interact',
+        {
+          block: blockValue(action.pos, stateKey(target)),
+          player: PLAYER_VALUE,
+          hand: 'main',
+        },
+        (decision) => {
+          if (decision.cancelled) {
+            this.log.info(
+              `A script refused your use of ${this.nameOf(target.name)}; nothing happened.`,
+            );
+            return;
+          }
+          this.useNow(action);
+        },
+      );
+      return;
+    }
+    this.useNow(action);
+  }
+
+  /** {@link use} after the scripts' `block.interact`. */
+  private useNow(action: Extract<PlayerAction, { type: 'use' }>): void {
     const item = action.item;
     const target = this.world.get(action.pos);
     const block = target === null ? undefined : this.blockCatalogue.blockFor(target.name);
@@ -859,7 +1037,7 @@ export class LocalWorldSource implements WorldSource {
       return;
     }
     if (this.blockCatalogue.blockFor(item) !== undefined) {
-      this.place(action.pos, action.face, action.hit, item);
+      this.placeHeld(action.pos, action.face, action.hit, item);
       return;
     }
     if (this.triggers.itemUsed(item).fired) return;
@@ -902,6 +1080,28 @@ export class LocalWorldSource implements WorldSource {
   private interact(id: number): void {
     const mob = this.entities.entity(id);
     if (mob === undefined) return;
+    if (this.scripts?.hears('entity.interact') === true) {
+      // `entity.interact` (`UseEntityCallback`) comes before the mob's own use.
+      this.scripts.ask(
+        'entity.interact',
+        { entity: mobValue(id), player: PLAYER_VALUE, hand: 'main' },
+        (decision) => {
+          if (decision.cancelled) {
+            this.log.info(`A script refused your use of ${mob.kind.displayName}.`, mob.kind.origin);
+            return;
+          }
+          this.interactNow(id);
+        },
+      );
+      return;
+    }
+    this.interactNow(id);
+  }
+
+  /** {@link interact} after the scripts' `entity.interact`. */
+  private interactNow(id: number): void {
+    const mob = this.entities.entity(id);
+    if (mob === undefined) return;
     const traded = this.traders.use(id, this.player.sneaking);
     if (traded === 'opened') {
       if (this.screenNow !== null) this.closeScreen();
@@ -924,13 +1124,54 @@ export class LocalWorldSource implements WorldSource {
     if (mob === undefined) return;
     const type = mob.kind.id;
     const position = mob.position;
-    if (this.entities.hit(id)) this.triggers.mobDied(type, id, position);
+    const name = mob.kind.displayName;
+    if (!this.entities.hit(id)) return;
+    this.triggers.mobDied(type, id, position);
+    this.scripts?.fire('entity.death', {
+      entity: {
+        $entity: {
+          kind: 'gone',
+          mob: { id, type, name, pos: [position.x, position.y, position.z] },
+        },
+      },
+      attacker: PLAYER_VALUE,
+    });
+  }
+
+  /**
+   * Places the held block: with scripts, after their `block.place` (a cancel places nothing);
+   * else as {@link place}.
+   */
+  private placeHeld(pos: BlockPos, face: Face, hit: Vec3, block: string): void {
+    const scripts = this.scripts;
+    if (scripts === null) {
+      this.place(pos, face, hit, block);
+      return;
+    }
+    const target = adjacentPos(pos, face);
+    scripts.ask(
+      'block.place',
+      {
+        pos: posValue(target),
+        block,
+        item: itemValue(block),
+        player: PLAYER_VALUE,
+      },
+      (decision: ScriptDecision) => {
+        if (decision.cancelled) {
+          this.log.info(`${this.nameOf(block)} was not placed: a script stopped the placing.`);
+          return;
+        }
+        this.place(pos, face, hit, block);
+      },
+    );
   }
 
   /** Places a block as the player; returns where it went, or `null` when it was not placed. */
   private place(pos: BlockPos, face: Face, hit: Vec3, block: string): BlockPos | null {
-    // `block.place` rules may stop it before anything changes (B463, ADR 0096 D3).
-    if (!this.parity2.placing(block, this.nameOf(block))) return null;
+    // `block.place` rules may stop it before anything changes (B463, ADR 0096 D3); with scripts
+    // their own answer came before (B400).
+    if (this.scripts === null && !this.parity2.placing(block, this.nameOf(block))) return null;
     // Record what was there, so a place that would trap the player or a mob can be undone.
     const previous: { pos: BlockPos; state: BlockState | null }[] = [];
     const stop = this.world.onChange((change) =>
@@ -975,6 +1216,31 @@ export class LocalWorldSource implements WorldSource {
     return this.blockCatalogue.blockFor(id)?.displayName ?? id;
   }
 
+  /** Breaks a block as the player: `msm:on_break` fires before it goes (`playerWillDestroy`). */
+  private breakNow(pos: BlockPos): void {
+    if (this.screenNow !== null && samePos(this.screenNow.pos, pos)) this.closeScreen();
+    if (this.world.get(pos) !== null) this.triggers.blockBreaking(pos);
+    breakBlock(this.world, this.blockCatalogue, pos);
+  }
+
+  /** A `run_script` firing as the `ActionEvent` scripts get (ADR 0032 D4). */
+  private actionData(firing: Firing, eventId: string): Record<string, EncodedValue> {
+    const { ctx, owner } = firing;
+    const state = ctx.block === undefined ? null : this.world.get(ctx.block);
+    const actor = (one: typeof ctx.other): EncodedValue =>
+      one === undefined ? null : one.kind === 'player' ? PLAYER_VALUE : mobValue(one.id);
+    return {
+      owner: owner.id,
+      event: eventId,
+      pos: posValue(ctx.block ?? ctx.base),
+      block:
+        ctx.block === undefined || state === null ? null : blockValue(ctx.block, stateKey(state)),
+      entity: ctx.entity === undefined ? null : mobValue(ctx.entity),
+      player: ctx.player ? PLAYER_VALUE : null,
+      other: actor(ctx.other),
+    };
+  }
+
   private writeLine(text: string, onlyInMinecraft: boolean, origin?: SimOrigin): void {
     const line: SimLogLine = {
       tick: this.ticks,
@@ -991,4 +1257,17 @@ export class LocalWorldSource implements WorldSource {
   private emit(event: WorldEvent): void {
     for (const listener of [...this.listeners]) listener(event);
   }
+}
+
+/** A command's argument values as event data (positions as `[x, y, z]`, ADR 0096). */
+function commandArgs(args: Readonly<Record<string, unknown>>): Record<string, EncodedValue> {
+  const out: Record<string, EncodedValue> = {};
+  for (const [name, value] of Object.entries(args)) {
+    out[name] = Array.isArray(value)
+      ? value.map((one) => (typeof one === 'number' ? one : String(one)))
+      : typeof value === 'number' || typeof value === 'boolean'
+        ? value
+        : String(value);
+  }
+  return out;
 }

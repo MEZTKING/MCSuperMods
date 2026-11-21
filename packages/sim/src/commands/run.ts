@@ -14,6 +14,7 @@ import { type CommandsTarget, readCommands, type SimCommand, usageOf } from './c
 import {
   type CommandContext,
   type CommandParse,
+  type CommandValue,
   PREVIEW_PLAYER_NAME,
   parseCommandLine,
   valueWords,
@@ -29,8 +30,17 @@ export interface CommandHost {
   readonly knowsBlock: (id: string) => boolean | undefined;
   /** Runs an event of an owner (the trigger engine's `fireOwned`). */
   readonly fire: (owner: EventOwner, eventId: string, ctx: EventContext, sentence: string) => void;
-  /** The script listeners of the `command` event (`WorldEvents.commandRan`). */
-  readonly listeners: (id: string, sentence: string) => void;
+  /**
+   * The script listeners of the `command` event (`WorldEvents.commandRan`, or the area's scripts,
+   * B400), with the name typed and the arguments' values.
+   */
+  readonly listeners: (
+    id: string,
+    sentence: string,
+    used: { readonly name: string; readonly args: Readonly<Record<string, CommandValue>> },
+  ) => void;
+  /** A line that is not a command was said in the chat (the `player.chat` event, B400). */
+  readonly said?: (text: string) => void;
 }
 
 /** One line of the chat box's own history: what was typed and what came back. */
@@ -95,6 +105,7 @@ export class CommandRunner {
     if (typed === '') return this.keep({ typed, result: 'error', answer: [] });
     if (!typed.startsWith('/')) {
       this.host.log.info(`You said "${typed}" in the chat.`);
+      this.host.said?.(typed);
       return this.keep({ typed, result: 'ran', answer: [`<${PREVIEW_PLAYER_NAME}> ${typed}`] });
     }
     const parsed = this.check(typed);
@@ -158,7 +169,7 @@ export class CommandRunner {
       };
       this.host.fire(owner, command.event, ctx, sentence);
     }
-    this.host.listeners(command.id, sentence);
+    this.host.listeners(command.id, sentence, { name: parsed.literal, args: parsed.args });
     const answer = command.feedback === undefined ? [] : [command.feedback];
     if (command.feedback !== undefined)
       this.host.log.info(`/${command.name} answered: ${command.feedback}`, origin);
