@@ -45,37 +45,37 @@ interface BlockInteractEvent extends GameEvent {
 /**
  * A player is about to place a block from a block item.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface BlockPlaceEvent extends GameEvent {
   /**
    * The id of the block the item places, for example `minecraft:oak_planks`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly block: string;
   /**
    * Cancels the event: the block is not placed, the item is not used up and the player's screen is corrected.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   cancel(): void;
   /**
    * The item being placed, as held before the placement.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly item: ItemRef;
   /**
    * The player placing it.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player;
   /**
    * Where the block would go (the clicked block itself when it can be replaced, such as grass, else the block next to the clicked face).
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly pos: Pos;
 }
@@ -175,31 +175,31 @@ type BossBarStyle = "progress" | "notched_6" | "notched_10" | "notched_12" | "no
 /**
  * A project command ran.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface CommandEvent extends GameEvent {
   /**
    * The values typed, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a player or entity as its UUID, players as an array of names, a position or block position as `[x, y, z]`, an item or block as its id; an optional argument that was not typed is missing. A new object for each event.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly args: Record<string, unknown>;
   /**
    * The command's id in the project, for example `mypack:greet`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly id: string;
   /**
    * The command's name, as typed without the slash, for example `greet`; also when one of its other names was typed.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly name: string;
   /**
    * Who ran it: the player (see `asPlayer()`) or the entity of an `execute as`, or `undefined` for the server console or a command block.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly source: Entity | undefined;
 }
@@ -285,43 +285,43 @@ interface DataStore {
 /**
  * An item lying in the world, as `World.itemsNear` finds it. Once it is gone (picked up, merged into another stack, despawned or removed) `remove()` and `setItem()` do nothing.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface DroppedItem {
   /**
    * How long it has been lying there in ticks (20 a second); vanilla removes an item at 6000 (five minutes).
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly age: number;
   /**
    * A copy of the stack it holds now.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly item: ItemRef;
   /**
    * The UUID of the entity that dropped or threw it, or `undefined` when nothing did or that entity is not in the world (a player who has left).
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly owner: string | undefined;
   /**
    * Where it is now, exactly.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly pos: Pos;
   /**
    * Removes the item from the world at once; it drops nothing else.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   remove(): void;
   /**
    * Replaces the stack it holds; for example `d.setItem({ id: "minecraft:diamond", count: 3 })`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param item - The new stack; a count over the item's stack size holds the stack size.
    */
@@ -351,7 +351,7 @@ interface Entity {
   /**
    * Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   asVehicle(): Vehicle | undefined;
   /**
@@ -374,7 +374,7 @@ interface Entity {
   /**
    * Makes this entity get off what it rides; returns `false` when it rides nothing. For example `if (player.vehicle) player.dismount()`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   dismount(): boolean;
   /**
@@ -412,7 +412,7 @@ interface Entity {
   /**
    * Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly isVehicle: boolean;
   /** Kills the entity. */
@@ -426,7 +426,7 @@ interface Entity {
   /**
    * The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly passengers: Entity[];
   /**
@@ -462,7 +462,7 @@ interface Entity {
   /**
    * Makes this entity get on another, as it would by itself: returns `true` when it now rides `vehicle`, `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, or for a short while after getting off something, vanilla's boarding cooldown). Riding itself, riding something that rides it, riding into another world and riding a player are refused (`false`), as with vanilla's `/ride`. An entity that rides something else gets off it first; for example `zombie.ride(chicken)`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param vehicle - What to get on: a mob, a boat, a minecart, a project vehicle or any other entity.
    */
@@ -514,7 +514,7 @@ interface Entity {
   /**
    * What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly vehicle: Entity | undefined;
   /** The entity's motion in blocks per tick (x, y, z). */
@@ -615,43 +615,43 @@ type EquipmentSlot = "mainhand" | "offhand" | "head" | "chest" | "legs" | "feet"
 /**
  * Something is about to explode.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface ExplosionEvent extends GameEvent {
   /**
    * Cancels the event: nothing breaks and nothing is hurt or pushed. The bang and the smoke may still be seen and heard.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   cancel(): void;
   /**
    * The type id of `source`, for example `minecraft:tnt` or `minecraft:creeper`, or `"block"` when there is no source.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly cause: string;
   /**
    * Keeps every block safe: entities are still hurt and pushed, but no block breaks, drops or catches fire. `cancel()` wins when both are called.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   keepBlocks(): void;
   /**
    * The centre of the explosion, exactly.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly pos: Pos;
   /**
    * The explosion's power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly radius: number;
   /**
    * The entity that exploded (the primed TNT, the creeper, the fireball, the wind charge), or `undefined` for a block such as a bed or respawn anchor, or `World.explode`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly source: Entity | undefined;
 }
@@ -753,7 +753,7 @@ interface ItemRef {
   /**
    * The items this item holds, as copies: a bag's or other container item's contents (shulker boxes too) in slot order, then a bundle's in the bundle's order; empty slots are left out, and an item that holds nothing gives an empty array. Read-only: change a bag by giving the player a new stack.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly contents: ItemRef[];
   /** The number of items in the stack. */
@@ -824,19 +824,19 @@ interface ItemUseEvent extends GameEvent {
 /**
  * A player pressed a project key bind.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface KeyPressedEvent extends GameEvent {
   /**
    * The key bind's id, for example `mypack:dash`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly key: string;
   /**
    * The player who pressed the key.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player;
 }
@@ -844,19 +844,19 @@ interface KeyPressedEvent extends GameEvent {
 /**
  * A player let go of a project key bind.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface KeyReleasedEvent extends GameEvent {
   /**
    * The key bind's id, for example `mypack:dash`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly key: string;
   /**
    * The player who let go of the key.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player;
 }
@@ -997,55 +997,55 @@ interface MsmEvents {
   /**
    * Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "key.pressed", handler: (e: KeyPressedEvent) => void): void;
   /**
    * Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "key.released", handler: (e: KeyReleasedEvent) => void): void;
   /**
    * Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "vehicle.mounted", handler: (e: VehicleMountedEvent) => void): void;
   /**
    * Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "vehicle.dismounted", handler: (e: VehicleDismountedEvent) => void): void;
   /**
    * Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "vehicle.fired", handler: (e: VehicleFiredEvent) => void): void;
   /**
    * Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "vehicle.destroyed", handler: (e: VehicleDestroyedEvent) => void): void;
   /**
    * Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "block.place", handler: (e: BlockPlaceEvent) => void): void;
   /**
    * Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "world.explosion", handler: (e: ExplosionEvent) => void): void;
   /**
    * Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back. Several handlers run in registration order.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   on(name: "command", handler: (e: CommandEvent) => void): void;
 }
@@ -1121,7 +1121,7 @@ interface Player extends Entity {
   /**
    * Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud("mypack:mana")`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param id - The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`.
    */
@@ -1168,7 +1168,7 @@ interface Player extends Entity {
   /**
    * Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud("mypack:mana", 7)`. Any other value is a `TypeError`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param id - The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`.
    * @param value - A number (for a bar, icons or a number) or a text (cut to 256 characters).
@@ -1193,7 +1193,7 @@ interface Player extends Entity {
   /**
    * Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud("mypack:mana")`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param id - The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`.
    */
@@ -1405,13 +1405,13 @@ interface ServerTickEvent extends GameEvent {
 /**
  * A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on("vehicle.mounted", (e) => e.vehicle.setFuel(1200))`.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface Vehicle extends Entity {
   /**
    * Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo("cannon")`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param weapon - The weapon's `id` in the vehicle's definition, or its index from 0.
    */
@@ -1419,25 +1419,25 @@ interface Vehicle extends Entity {
   /**
    * The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly damageTaken: number;
   /**
    * The player in the first seat, who drives, or `undefined`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly driver: Player | undefined;
   /**
    * Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly fuel: number;
   /**
    * Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param weapon - The weapon's `id` in the vehicle's definition, or its index from 0.
    * @param rounds - The rounds, rounded down.
@@ -1446,7 +1446,7 @@ interface Vehicle extends Entity {
   /**
    * Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param amount - The damage; below 0 counts as 0.
    */
@@ -1454,7 +1454,7 @@ interface Vehicle extends Entity {
   /**
    * Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param ticks - Ticks of driving.
    */
@@ -1464,19 +1464,19 @@ interface Vehicle extends Entity {
 /**
  * A project vehicle is being destroyed.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface VehicleDestroyedEvent extends GameEvent {
   /**
    * The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player | undefined;
   /**
    * The vehicle, still in the world with its riders.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly vehicle: Vehicle;
 }
@@ -1484,19 +1484,19 @@ interface VehicleDestroyedEvent extends GameEvent {
 /**
  * A player got out of a project vehicle.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface VehicleDismountedEvent extends GameEvent {
   /**
    * The player who got out.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player;
   /**
    * The vehicle.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly vehicle: Vehicle;
 }
@@ -1504,25 +1504,25 @@ interface VehicleDismountedEvent extends GameEvent {
 /**
  * A project vehicle's weapon fired one shot.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface VehicleFiredEvent extends GameEvent {
   /**
    * The player who fired.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player;
   /**
    * The vehicle.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly vehicle: Vehicle;
   /**
    * The weapon's `id` in the vehicle's definition.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly weapon: string;
 }
@@ -1530,19 +1530,19 @@ interface VehicleFiredEvent extends GameEvent {
 /**
  * A player got into a project vehicle.
  *
- * Since runtime 1.5.1.
+ * Since runtime 1.5.2.
  */
 interface VehicleMountedEvent extends GameEvent {
   /**
    * The player who got in; `e.vehicle.driver` tells whether they drive.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly player: Player;
   /**
    * The vehicle.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    */
   readonly vehicle: Vehicle;
 }
@@ -1616,7 +1616,7 @@ interface World {
   /**
    * Returns the items lying on the ground (dropped, thrown or spilled) within a radius of a position; `entitiesNear` keeps returning living entities only. For example `for (const d of world.itemsNear(e.pos, 4)) if (d.item.id === "minecraft:rotten_flesh") d.remove();`.
    *
-   * Since runtime 1.5.1.
+   * Since runtime 1.5.2.
    *
    * @param radius - The radius in blocks.
    */

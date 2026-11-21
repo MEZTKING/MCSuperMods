@@ -6545,3 +6545,19 @@ Next
 
 **Next**
 - Wave 1: B492 to B494 draw the stubs in their family files; B493 changing tool or armour silhouettes will change `test/fixtures/art/existing/` (owned by B491), so it should regenerate those goldens too or leave the 20 alone. B494 adds its skin helpers to `art/skins.ts`, which the library index re-exports whole.
+
+## 2026-11-21 — executor — Script API 1.5 and 1.6 ship in runtime 1.5.2
+
+**What**
+- The 1.5.1 draft was built from 0e14663, which had Script API up to 1.4, so the 1.5 and 1.6 members first ship in runtime 1.5.2. Their "Since runtime" line in `packages/plugins/scripting/api/script-api-v1.json` now says 1.5.2: 81 doc strings (46 of 1.5, 35 of 1.6); the 113 doc strings of 1.1–1.4 still say 1.5.1.
+- Membership was decided by evidence: a script walked the current description against `git show 0e14663:packages/plugins/scripting/api/script-api-v1.json` and changed exactly the doc strings whose node (type, member, `msm.events.on` overload or event) is absent there. Every changed node carried the 1.5.1 line, and every new node has a Since line.
+- `api/msm-runtime.d.ts` regenerated (`UPDATE_GOLDENS=1`; 72 comment lines). The 1.5 snapshot `test/fixtures/previous/script-api-v1-1.9.0.json` got the same correction for its 46 nodes, so the additive check of 1.6 still compares like with like; the `SINCE` constants of `script-api-1-5.test.ts` and `script-api-1-6.test.ts` say 1.5.2.
+- `docs/guide/scripting.md` (the 1.5 and 1.6 sections) and the root `CLAUDE.md` status phrase updated (still 70 lines).
+- Checks: `pnpm lint`, `pnpm typecheck`, the scripting plugin's tests (153), the app's tests (2460, green on a run of their own; under the combined turbo run a different timing-dependent app test failed each time, the same as can happen at the base commit), `ScriptApiContractTest` (7).
+
+**Decisions**
+- The runtime's `ScriptApi` holds no doc text, so no Java changed.
+- Left for a follow-up (outside the brief's files): `docs/guide/rules.md` line 85 ("Script API 1.6 ... runtime 1.5.1 or later") and the vanilla blocks sample's script comment ("Script API 1.6 (runtime 1.5.1)") with its golden test `packages/exporters/test/sample-vanilla-blocks.golden.test.ts`.
+
+**Next**
+- Correct those three mentions with the 1.5.2 version bump.

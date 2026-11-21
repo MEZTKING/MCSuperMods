@@ -671,22 +671,22 @@
         "vehicle": {
           "kind": "property",
           "type": "Entity | undefined",
-          "doc": "What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.\n\nSince runtime 1.5.1."
+          "doc": "What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.\n\nSince runtime 1.5.2."
         },
         "passengers": {
           "kind": "property",
           "type": "Entity[]",
-          "doc": "The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.\n\nSince runtime 1.5.1."
+          "doc": "The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.\n\nSince runtime 1.5.2."
         },
         "isVehicle": {
           "kind": "property",
           "type": "boolean",
-          "doc": "Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.\n\nSince runtime 1.5.1."
+          "doc": "Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.\n\nSince runtime 1.5.2."
         },
         "asVehicle": {
           "kind": "method",
           "params": [],
-          "doc": "Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.\n\nSince runtime 1.5.1.",
+          "doc": "Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.\n\nSince runtime 1.5.2.",
           "returns": "Vehicle | undefined"
         }
       }
@@ -883,7 +883,7 @@
               "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
             }
           ],
-          "doc": "Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud(\"mypack:mana\")`.\n\nSince runtime 1.5.1.",
+          "doc": "Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud(\"mypack:mana\")`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         },
         "hideHud": {
@@ -895,7 +895,7 @@
               "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
             }
           ],
-          "doc": "Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud(\"mypack:mana\")`.\n\nSince runtime 1.5.1.",
+          "doc": "Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud(\"mypack:mana\")`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         },
         "setHud": {
@@ -912,7 +912,7 @@
               "doc": "A number (for a bar, icons or a number) or a text (cut to 256 characters)."
             }
           ],
-          "doc": "Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud(\"mypack:mana\", 7)`. Any other value is a `TypeError`.\n\nSince runtime 1.5.1.",
+          "doc": "Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud(\"mypack:mana\", 7)`. Any other value is a `TypeError`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         }
       },
@@ -1697,12 +1697,12 @@
       }
     },
     "Vehicle": {
-      "doc": "A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on(\"vehicle.mounted\", (e) => e.vehicle.setFuel(1200))`.\n\nSince runtime 1.5.1.",
+      "doc": "A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on(\"vehicle.mounted\", (e) => e.vehicle.setFuel(1200))`.\n\nSince runtime 1.5.2.",
       "members": {
         "fuel": {
           "kind": "property",
           "type": "number",
-          "doc": "Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.\n\nSince runtime 1.5.1."
+          "doc": "Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.\n\nSince runtime 1.5.2."
         },
         "setFuel": {
           "kind": "method",
@@ -1713,12 +1713,12 @@
               "doc": "Ticks of driving."
             }
           ],
-          "doc": "Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.\n\nSince runtime 1.5.1."
+          "doc": "Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.\n\nSince runtime 1.5.2."
         },
         "damageTaken": {
           "kind": "property",
           "type": "number",
-          "doc": "The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)\n\nSince runtime 1.5.1."
+          "doc": "The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)\n\nSince runtime 1.5.2."
         },
         "setDamageTaken": {
           "kind": "method",
@@ -1729,7 +1729,7 @@
               "doc": "The damage; below 0 counts as 0."
             }
           ],
-          "doc": "Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.\n\nSince runtime 1.5.1."
+          "doc": "Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.\n\nSince runtime 1.5.2."
         },
         "ammo": {
           "kind": "method",
@@ -1740,7 +1740,7 @@
               "doc": "The weapon's `id` in the vehicle's definition, or its index from 0."
             }
           ],
-          "doc": "Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo(\"cannon\")`.\n\nSince runtime 1.5.1.",
+          "doc": "Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo(\"cannon\")`.\n\nSince runtime 1.5.2.",
           "returns": "number"
         },
         "setAmmo": {
@@ -1757,113 +1757,113 @@
               "doc": "The rounds, rounded down."
             }
           ],
-          "doc": "Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.\n\nSince runtime 1.5.1."
+          "doc": "Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.\n\nSince runtime 1.5.2."
         },
         "driver": {
           "kind": "property",
           "type": "Player | undefined",
-          "doc": "The player in the first seat, who drives, or `undefined`.\n\nSince runtime 1.5.1."
+          "doc": "The player in the first seat, who drives, or `undefined`.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "Entity"
     },
     "KeyPressedEvent": {
-      "doc": "A player pressed a project key bind.\n\nSince runtime 1.5.1.",
+      "doc": "A player pressed a project key bind.\n\nSince runtime 1.5.2.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who pressed the key.\n\nSince runtime 1.5.1."
+          "doc": "The player who pressed the key.\n\nSince runtime 1.5.2."
         },
         "key": {
           "kind": "property",
           "type": "string",
-          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.1."
+          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "KeyReleasedEvent": {
-      "doc": "A player let go of a project key bind.\n\nSince runtime 1.5.1.",
+      "doc": "A player let go of a project key bind.\n\nSince runtime 1.5.2.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who let go of the key.\n\nSince runtime 1.5.1."
+          "doc": "The player who let go of the key.\n\nSince runtime 1.5.2."
         },
         "key": {
           "kind": "property",
           "type": "string",
-          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.1."
+          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleMountedEvent": {
-      "doc": "A player got into a project vehicle.\n\nSince runtime 1.5.1.",
+      "doc": "A player got into a project vehicle.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who got in; `e.vehicle.driver` tells whether they drive.\n\nSince runtime 1.5.1."
+          "doc": "The player who got in; `e.vehicle.driver` tells whether they drive.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleDismountedEvent": {
-      "doc": "A player got out of a project vehicle.\n\nSince runtime 1.5.1.",
+      "doc": "A player got out of a project vehicle.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who got out.\n\nSince runtime 1.5.1."
+          "doc": "The player who got out.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleFiredEvent": {
-      "doc": "A project vehicle's weapon fired one shot.\n\nSince runtime 1.5.1.",
+      "doc": "A project vehicle's weapon fired one shot.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who fired.\n\nSince runtime 1.5.1."
+          "doc": "The player who fired.\n\nSince runtime 1.5.2."
         },
         "weapon": {
           "kind": "property",
           "type": "string",
-          "doc": "The weapon's `id` in the vehicle's definition.\n\nSince runtime 1.5.1."
+          "doc": "The weapon's `id` in the vehicle's definition.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleDestroyedEvent": {
-      "doc": "A project vehicle is being destroyed.\n\nSince runtime 1.5.1.",
+      "doc": "A project vehicle is being destroyed.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle, still in the world with its riders.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle, still in the world with its riders.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player | undefined",
-          "doc": "The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).\n\nSince runtime 1.5.1."
+          "doc": "The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
@@ -2132,7 +2132,7 @@
                       "type": "(e: KeyPressedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2145,7 +2145,7 @@
                       "type": "(e: KeyReleasedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2158,7 +2158,7 @@
                       "type": "(e: VehicleMountedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2171,7 +2171,7 @@
                       "type": "(e: VehicleDismountedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2184,7 +2184,7 @@
                       "type": "(e: VehicleFiredEvent) => void"
                     }
                   ],
-                  "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2197,7 +2197,7 @@
                       "type": "(e: VehicleDestroyedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 }
               ],
               "doc": "Registers a handler for a game event."
@@ -2397,37 +2397,37 @@
       "type": "KeyPressedEvent",
       "cancellable": false,
       "source": "KeyBinds.KeyListener.pressed",
-      "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported.\n\nSince runtime 1.5.2."
     },
     "key.released": {
       "type": "KeyReleasedEvent",
       "cancellable": false,
       "source": "KeyBinds.KeyListener.released",
-      "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`.\n\nSince runtime 1.5.2."
     },
     "vehicle.mounted": {
       "type": "VehicleMountedEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.mounted",
-      "doc": "Runs when a player gets into a project vehicle, after its `on_mount`.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player gets into a project vehicle, after its `on_mount`.\n\nSince runtime 1.5.2."
     },
     "vehicle.dismounted": {
       "type": "VehicleDismountedEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.dismounted",
-      "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`.\n\nSince runtime 1.5.2."
     },
     "vehicle.fired": {
       "type": "VehicleFiredEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.fired",
-      "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`.\n\nSince runtime 1.5.1."
+      "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`.\n\nSince runtime 1.5.2."
     },
     "vehicle.destroyed": {
       "type": "VehicleDestroyedEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.destroyed",
-      "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each).\n\nSince runtime 1.5.1."
+      "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each).\n\nSince runtime 1.5.2."
     }
   },
   "functions": {

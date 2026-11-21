@@ -28,7 +28,7 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
-const SINCE = 'Since runtime 1.5.1.';
+const SINCE = 'Since runtime 1.5.2.';
 
 const ADDED_MEMBERS = ['Entity.ride', 'Entity.dismount', 'World.itemsNear', 'ItemRef.contents'];
 

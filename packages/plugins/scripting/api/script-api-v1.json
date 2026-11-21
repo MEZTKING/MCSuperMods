@@ -340,7 +340,7 @@
               "doc": "The radius in blocks."
             }
           ],
-          "doc": "Returns the items lying on the ground (dropped, thrown or spilled) within a radius of a position; `entitiesNear` keeps returning living entities only. For example `for (const d of world.itemsNear(e.pos, 4)) if (d.item.id === \"minecraft:rotten_flesh\") d.remove();`.\n\nSince runtime 1.5.1.",
+          "doc": "Returns the items lying on the ground (dropped, thrown or spilled) within a radius of a position; `entitiesNear` keeps returning living entities only. For example `for (const d of world.itemsNear(e.pos, 4)) if (d.item.id === \"minecraft:rotten_flesh\") d.remove();`.\n\nSince runtime 1.5.2.",
           "returns": "DroppedItem[]"
         }
       }
@@ -687,22 +687,22 @@
         "vehicle": {
           "kind": "property",
           "type": "Entity | undefined",
-          "doc": "What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.\n\nSince runtime 1.5.1."
+          "doc": "What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.\n\nSince runtime 1.5.2."
         },
         "passengers": {
           "kind": "property",
           "type": "Entity[]",
-          "doc": "The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.\n\nSince runtime 1.5.1."
+          "doc": "The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.\n\nSince runtime 1.5.2."
         },
         "isVehicle": {
           "kind": "property",
           "type": "boolean",
-          "doc": "Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.\n\nSince runtime 1.5.1."
+          "doc": "Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.\n\nSince runtime 1.5.2."
         },
         "asVehicle": {
           "kind": "method",
           "params": [],
-          "doc": "Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.\n\nSince runtime 1.5.1.",
+          "doc": "Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.\n\nSince runtime 1.5.2.",
           "returns": "Vehicle | undefined"
         },
         "ride": {
@@ -714,13 +714,13 @@
               "doc": "What to get on: a mob, a boat, a minecart, a project vehicle or any other entity."
             }
           ],
-          "doc": "Makes this entity get on another, as it would by itself: returns `true` when it now rides `vehicle`, `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, or for a short while after getting off something, vanilla's boarding cooldown). Riding itself, riding something that rides it, riding into another world and riding a player are refused (`false`), as with vanilla's `/ride`. An entity that rides something else gets off it first; for example `zombie.ride(chicken)`.\n\nSince runtime 1.5.1.",
+          "doc": "Makes this entity get on another, as it would by itself: returns `true` when it now rides `vehicle`, `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, or for a short while after getting off something, vanilla's boarding cooldown). Riding itself, riding something that rides it, riding into another world and riding a player are refused (`false`), as with vanilla's `/ride`. An entity that rides something else gets off it first; for example `zombie.ride(chicken)`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         },
         "dismount": {
           "kind": "method",
           "params": [],
-          "doc": "Makes this entity get off what it rides; returns `false` when it rides nothing. For example `if (player.vehicle) player.dismount()`.\n\nSince runtime 1.5.1.",
+          "doc": "Makes this entity get off what it rides; returns `false` when it rides nothing. For example `if (player.vehicle) player.dismount()`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         }
       }
@@ -917,7 +917,7 @@
               "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
             }
           ],
-          "doc": "Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud(\"mypack:mana\")`.\n\nSince runtime 1.5.1.",
+          "doc": "Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud(\"mypack:mana\")`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         },
         "hideHud": {
@@ -929,7 +929,7 @@
               "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
             }
           ],
-          "doc": "Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud(\"mypack:mana\")`.\n\nSince runtime 1.5.1.",
+          "doc": "Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud(\"mypack:mana\")`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         },
         "setHud": {
@@ -946,7 +946,7 @@
               "doc": "A number (for a bar, icons or a number) or a text (cut to 256 characters)."
             }
           ],
-          "doc": "Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud(\"mypack:mana\", 7)`. Any other value is a `TypeError`.\n\nSince runtime 1.5.1.",
+          "doc": "Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud(\"mypack:mana\", 7)`. Any other value is a `TypeError`.\n\nSince runtime 1.5.2.",
           "returns": "boolean"
         }
       },
@@ -1032,7 +1032,7 @@
         "contents": {
           "kind": "property",
           "type": "ItemRef[]",
-          "doc": "The items this item holds, as copies: a bag's or other container item's contents (shulker boxes too) in slot order, then a bundle's in the bundle's order; empty slots are left out, and an item that holds nothing gives an empty array. Read-only: change a bag by giving the player a new stack.\n\nSince runtime 1.5.1."
+          "doc": "The items this item holds, as copies: a bag's or other container item's contents (shulker boxes too) in slot order, then a bundle's in the bundle's order; empty slots are left out, and an item that holds nothing gives an empty array. Read-only: change a bag by giving the player a new stack.\n\nSince runtime 1.5.2."
         }
       }
     },
@@ -1736,12 +1736,12 @@
       }
     },
     "Vehicle": {
-      "doc": "A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on(\"vehicle.mounted\", (e) => e.vehicle.setFuel(1200))`.\n\nSince runtime 1.5.1.",
+      "doc": "A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on(\"vehicle.mounted\", (e) => e.vehicle.setFuel(1200))`.\n\nSince runtime 1.5.2.",
       "members": {
         "fuel": {
           "kind": "property",
           "type": "number",
-          "doc": "Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.\n\nSince runtime 1.5.1."
+          "doc": "Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.\n\nSince runtime 1.5.2."
         },
         "setFuel": {
           "kind": "method",
@@ -1752,12 +1752,12 @@
               "doc": "Ticks of driving."
             }
           ],
-          "doc": "Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.\n\nSince runtime 1.5.1."
+          "doc": "Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.\n\nSince runtime 1.5.2."
         },
         "damageTaken": {
           "kind": "property",
           "type": "number",
-          "doc": "The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)\n\nSince runtime 1.5.1."
+          "doc": "The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)\n\nSince runtime 1.5.2."
         },
         "setDamageTaken": {
           "kind": "method",
@@ -1768,7 +1768,7 @@
               "doc": "The damage; below 0 counts as 0."
             }
           ],
-          "doc": "Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.\n\nSince runtime 1.5.1."
+          "doc": "Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.\n\nSince runtime 1.5.2."
         },
         "ammo": {
           "kind": "method",
@@ -1779,7 +1779,7 @@
               "doc": "The weapon's `id` in the vehicle's definition, or its index from 0."
             }
           ],
-          "doc": "Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo(\"cannon\")`.\n\nSince runtime 1.5.1.",
+          "doc": "Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo(\"cannon\")`.\n\nSince runtime 1.5.2.",
           "returns": "number"
         },
         "setAmmo": {
@@ -1796,144 +1796,144 @@
               "doc": "The rounds, rounded down."
             }
           ],
-          "doc": "Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.\n\nSince runtime 1.5.1."
+          "doc": "Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.\n\nSince runtime 1.5.2."
         },
         "driver": {
           "kind": "property",
           "type": "Player | undefined",
-          "doc": "The player in the first seat, who drives, or `undefined`.\n\nSince runtime 1.5.1."
+          "doc": "The player in the first seat, who drives, or `undefined`.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "Entity"
     },
     "KeyPressedEvent": {
-      "doc": "A player pressed a project key bind.\n\nSince runtime 1.5.1.",
+      "doc": "A player pressed a project key bind.\n\nSince runtime 1.5.2.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who pressed the key.\n\nSince runtime 1.5.1."
+          "doc": "The player who pressed the key.\n\nSince runtime 1.5.2."
         },
         "key": {
           "kind": "property",
           "type": "string",
-          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.1."
+          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "KeyReleasedEvent": {
-      "doc": "A player let go of a project key bind.\n\nSince runtime 1.5.1.",
+      "doc": "A player let go of a project key bind.\n\nSince runtime 1.5.2.",
       "members": {
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who let go of the key.\n\nSince runtime 1.5.1."
+          "doc": "The player who let go of the key.\n\nSince runtime 1.5.2."
         },
         "key": {
           "kind": "property",
           "type": "string",
-          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.1."
+          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleMountedEvent": {
-      "doc": "A player got into a project vehicle.\n\nSince runtime 1.5.1.",
+      "doc": "A player got into a project vehicle.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who got in; `e.vehicle.driver` tells whether they drive.\n\nSince runtime 1.5.1."
+          "doc": "The player who got in; `e.vehicle.driver` tells whether they drive.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleDismountedEvent": {
-      "doc": "A player got out of a project vehicle.\n\nSince runtime 1.5.1.",
+      "doc": "A player got out of a project vehicle.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who got out.\n\nSince runtime 1.5.1."
+          "doc": "The player who got out.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleFiredEvent": {
-      "doc": "A project vehicle's weapon fired one shot.\n\nSince runtime 1.5.1.",
+      "doc": "A project vehicle's weapon fired one shot.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player who fired.\n\nSince runtime 1.5.1."
+          "doc": "The player who fired.\n\nSince runtime 1.5.2."
         },
         "weapon": {
           "kind": "property",
           "type": "string",
-          "doc": "The weapon's `id` in the vehicle's definition.\n\nSince runtime 1.5.1."
+          "doc": "The weapon's `id` in the vehicle's definition.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "VehicleDestroyedEvent": {
-      "doc": "A project vehicle is being destroyed.\n\nSince runtime 1.5.1.",
+      "doc": "A project vehicle is being destroyed.\n\nSince runtime 1.5.2.",
       "members": {
         "vehicle": {
           "kind": "property",
           "type": "Vehicle",
-          "doc": "The vehicle, still in the world with its riders.\n\nSince runtime 1.5.1."
+          "doc": "The vehicle, still in the world with its riders.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player | undefined",
-          "doc": "The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).\n\nSince runtime 1.5.1."
+          "doc": "The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "DroppedItem": {
-      "doc": "An item lying in the world, as `World.itemsNear` finds it. Once it is gone (picked up, merged into another stack, despawned or removed) `remove()` and `setItem()` do nothing.\n\nSince runtime 1.5.1.",
+      "doc": "An item lying in the world, as `World.itemsNear` finds it. Once it is gone (picked up, merged into another stack, despawned or removed) `remove()` and `setItem()` do nothing.\n\nSince runtime 1.5.2.",
       "members": {
         "item": {
           "kind": "property",
           "type": "ItemRef",
-          "doc": "A copy of the stack it holds now.\n\nSince runtime 1.5.1."
+          "doc": "A copy of the stack it holds now.\n\nSince runtime 1.5.2."
         },
         "pos": {
           "kind": "property",
           "type": "Pos",
-          "doc": "Where it is now, exactly.\n\nSince runtime 1.5.1."
+          "doc": "Where it is now, exactly.\n\nSince runtime 1.5.2."
         },
         "age": {
           "kind": "property",
           "type": "number",
-          "doc": "How long it has been lying there in ticks (20 a second); vanilla removes an item at 6000 (five minutes).\n\nSince runtime 1.5.1."
+          "doc": "How long it has been lying there in ticks (20 a second); vanilla removes an item at 6000 (five minutes).\n\nSince runtime 1.5.2."
         },
         "owner": {
           "kind": "property",
           "type": "string | undefined",
-          "doc": "The UUID of the entity that dropped or threw it, or `undefined` when nothing did or that entity is not in the world (a player who has left).\n\nSince runtime 1.5.1."
+          "doc": "The UUID of the entity that dropped or threw it, or `undefined` when nothing did or that entity is not in the world (a player who has left).\n\nSince runtime 1.5.2."
         },
         "remove": {
           "kind": "method",
           "params": [],
-          "doc": "Removes the item from the world at once; it drops nothing else.\n\nSince runtime 1.5.1."
+          "doc": "Removes the item from the world at once; it drops nothing else.\n\nSince runtime 1.5.2."
         },
         "setItem": {
           "kind": "method",
@@ -1944,99 +1944,99 @@
               "doc": "The new stack; a count over the item's stack size holds the stack size."
             }
           ],
-          "doc": "Replaces the stack it holds; for example `d.setItem({ id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.5.1."
+          "doc": "Replaces the stack it holds; for example `d.setItem({ id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.5.2."
         }
       }
     },
     "BlockPlaceEvent": {
-      "doc": "A player is about to place a block from a block item.\n\nSince runtime 1.5.1.",
+      "doc": "A player is about to place a block from a block item.\n\nSince runtime 1.5.2.",
       "members": {
         "pos": {
           "kind": "property",
           "type": "Pos",
-          "doc": "Where the block would go (the clicked block itself when it can be replaced, such as grass, else the block next to the clicked face).\n\nSince runtime 1.5.1."
+          "doc": "Where the block would go (the clicked block itself when it can be replaced, such as grass, else the block next to the clicked face).\n\nSince runtime 1.5.2."
         },
         "block": {
           "kind": "property",
           "type": "string",
-          "doc": "The id of the block the item places, for example `minecraft:oak_planks`.\n\nSince runtime 1.5.1."
+          "doc": "The id of the block the item places, for example `minecraft:oak_planks`.\n\nSince runtime 1.5.2."
         },
         "item": {
           "kind": "property",
           "type": "ItemRef",
-          "doc": "The item being placed, as held before the placement.\n\nSince runtime 1.5.1."
+          "doc": "The item being placed, as held before the placement.\n\nSince runtime 1.5.2."
         },
         "player": {
           "kind": "property",
           "type": "Player",
-          "doc": "The player placing it.\n\nSince runtime 1.5.1."
+          "doc": "The player placing it.\n\nSince runtime 1.5.2."
         },
         "cancel": {
           "kind": "method",
           "params": [],
-          "doc": "Cancels the event: the block is not placed, the item is not used up and the player's screen is corrected.\n\nSince runtime 1.5.1."
+          "doc": "Cancels the event: the block is not placed, the item is not used up and the player's screen is corrected.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "ExplosionEvent": {
-      "doc": "Something is about to explode.\n\nSince runtime 1.5.1.",
+      "doc": "Something is about to explode.\n\nSince runtime 1.5.2.",
       "members": {
         "pos": {
           "kind": "property",
           "type": "Pos",
-          "doc": "The centre of the explosion, exactly.\n\nSince runtime 1.5.1."
+          "doc": "The centre of the explosion, exactly.\n\nSince runtime 1.5.2."
         },
         "radius": {
           "kind": "property",
           "type": "number",
-          "doc": "The explosion's power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor.\n\nSince runtime 1.5.1."
+          "doc": "The explosion's power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor.\n\nSince runtime 1.5.2."
         },
         "source": {
           "kind": "property",
           "type": "Entity | undefined",
-          "doc": "The entity that exploded (the primed TNT, the creeper, the fireball, the wind charge), or `undefined` for a block such as a bed or respawn anchor, or `World.explode`.\n\nSince runtime 1.5.1."
+          "doc": "The entity that exploded (the primed TNT, the creeper, the fireball, the wind charge), or `undefined` for a block such as a bed or respawn anchor, or `World.explode`.\n\nSince runtime 1.5.2."
         },
         "cause": {
           "kind": "property",
           "type": "string",
-          "doc": "The type id of `source`, for example `minecraft:tnt` or `minecraft:creeper`, or `\"block\"` when there is no source.\n\nSince runtime 1.5.1."
+          "doc": "The type id of `source`, for example `minecraft:tnt` or `minecraft:creeper`, or `\"block\"` when there is no source.\n\nSince runtime 1.5.2."
         },
         "cancel": {
           "kind": "method",
           "params": [],
-          "doc": "Cancels the event: nothing breaks and nothing is hurt or pushed. The bang and the smoke may still be seen and heard.\n\nSince runtime 1.5.1."
+          "doc": "Cancels the event: nothing breaks and nothing is hurt or pushed. The bang and the smoke may still be seen and heard.\n\nSince runtime 1.5.2."
         },
         "keepBlocks": {
           "kind": "method",
           "params": [],
-          "doc": "Keeps every block safe: entities are still hurt and pushed, but no block breaks, drops or catches fire. `cancel()` wins when both are called.\n\nSince runtime 1.5.1."
+          "doc": "Keeps every block safe: entities are still hurt and pushed, but no block breaks, drops or catches fire. `cancel()` wins when both are called.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
     },
     "CommandEvent": {
-      "doc": "A project command ran.\n\nSince runtime 1.5.1.",
+      "doc": "A project command ran.\n\nSince runtime 1.5.2.",
       "members": {
         "id": {
           "kind": "property",
           "type": "string",
-          "doc": "The command's id in the project, for example `mypack:greet`.\n\nSince runtime 1.5.1."
+          "doc": "The command's id in the project, for example `mypack:greet`.\n\nSince runtime 1.5.2."
         },
         "name": {
           "kind": "property",
           "type": "string",
-          "doc": "The command's name, as typed without the slash, for example `greet`; also when one of its other names was typed.\n\nSince runtime 1.5.1."
+          "doc": "The command's name, as typed without the slash, for example `greet`; also when one of its other names was typed.\n\nSince runtime 1.5.2."
         },
         "source": {
           "kind": "property",
           "type": "Entity | undefined",
-          "doc": "Who ran it: the player (see `asPlayer()`) or the entity of an `execute as`, or `undefined` for the server console or a command block.\n\nSince runtime 1.5.1."
+          "doc": "Who ran it: the player (see `asPlayer()`) or the entity of an `execute as`, or `undefined` for the server console or a command block.\n\nSince runtime 1.5.2."
         },
         "args": {
           "kind": "property",
           "type": "Record<string, unknown>",
-          "doc": "The values typed, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a player or entity as its UUID, players as an array of names, a position or block position as `[x, y, z]`, an item or block as its id; an optional argument that was not typed is missing. A new object for each event.\n\nSince runtime 1.5.1."
+          "doc": "The values typed, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a player or entity as its UUID, players as an array of names, a position or block position as `[x, y, z]`, an item or block as its id; an optional argument that was not typed is missing. A new object for each event.\n\nSince runtime 1.5.2."
         }
       },
       "extends": "GameEvent"
@@ -2305,7 +2305,7 @@
                       "type": "(e: KeyPressedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2318,7 +2318,7 @@
                       "type": "(e: KeyReleasedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2331,7 +2331,7 @@
                       "type": "(e: VehicleMountedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2344,7 +2344,7 @@
                       "type": "(e: VehicleDismountedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2357,7 +2357,7 @@
                       "type": "(e: VehicleFiredEvent) => void"
                     }
                   ],
-                  "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2370,7 +2370,7 @@
                       "type": "(e: VehicleDestroyedEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2383,7 +2383,7 @@
                       "type": "(e: BlockPlaceEvent) => void"
                     }
                   ],
-                  "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2396,7 +2396,7 @@
                       "type": "(e: ExplosionEvent) => void"
                     }
                   ],
-                  "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 },
                 {
                   "params": [
@@ -2409,7 +2409,7 @@
                       "type": "(e: CommandEvent) => void"
                     }
                   ],
-                  "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                  "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back. Several handlers run in registration order.\n\nSince runtime 1.5.2."
                 }
               ],
               "doc": "Registers a handler for a game event."
@@ -2609,55 +2609,55 @@
       "type": "KeyPressedEvent",
       "cancellable": false,
       "source": "KeyBinds.KeyListener.pressed",
-      "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported.\n\nSince runtime 1.5.2."
     },
     "key.released": {
       "type": "KeyReleasedEvent",
       "cancellable": false,
       "source": "KeyBinds.KeyListener.released",
-      "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`.\n\nSince runtime 1.5.2."
     },
     "vehicle.mounted": {
       "type": "VehicleMountedEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.mounted",
-      "doc": "Runs when a player gets into a project vehicle, after its `on_mount`.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player gets into a project vehicle, after its `on_mount`.\n\nSince runtime 1.5.2."
     },
     "vehicle.dismounted": {
       "type": "VehicleDismountedEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.dismounted",
-      "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`.\n\nSince runtime 1.5.2."
     },
     "vehicle.fired": {
       "type": "VehicleFiredEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.fired",
-      "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`.\n\nSince runtime 1.5.1."
+      "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`.\n\nSince runtime 1.5.2."
     },
     "vehicle.destroyed": {
       "type": "VehicleDestroyedEvent",
       "cancellable": false,
       "source": "VehicleEvents.Listener.destroyed",
-      "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each).\n\nSince runtime 1.5.1."
+      "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each).\n\nSince runtime 1.5.2."
     },
     "block.place": {
       "type": "BlockPlaceEvent",
       "cancellable": true,
       "source": "BlockItemPlaceMixin",
-      "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it.\n\nSince runtime 1.5.1."
+      "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it.\n\nSince runtime 1.5.2."
     },
     "world.explosion": {
       "type": "ExplosionEvent",
       "cancellable": true,
       "source": "ServerExplosionMixin",
-      "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`.\n\nSince runtime 1.5.1."
+      "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`.\n\nSince runtime 1.5.2."
     },
     "command": {
       "type": "CommandEvent",
       "cancellable": false,
       "source": "MsmCommands.run",
-      "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back.\n\nSince runtime 1.5.1."
+      "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back.\n\nSince runtime 1.5.2."
     }
   },
   "functions": {

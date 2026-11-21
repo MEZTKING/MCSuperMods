@@ -193,7 +193,7 @@ A [status effect](effects-and-throwables.md) runs a script every few seconds whi
 
 ## Vehicles, keys and the screen from scripts
 
-Script API 1.5 (runtime 1.5.1 or later; each member says "Since runtime 1.5.1") is additive.
+Script API 1.5 (runtime 1.5.2 or later; each member says "Since runtime 1.5.2") is additive.
 
 - **Screen.** `player.showHud(id)`, `player.hideHud(id)` and `player.setHud(id, number | string)` show, hide and set an element ([Keys and the screen](keys-and-hud.md)). They return `false` for an id the project does not have.
 - **Entities.** `entity.vehicle` (what it rides), `entity.passengers`, `entity.isVehicle` and `entity.asVehicle()`.
@@ -204,7 +204,7 @@ Limits: `entity.health` and `maxHealth` read 0 on a vehicle, and `entity.kill()`
 
 ## Script API 1.6
 
-Script API 1.6 (runtime 1.5.1 or later; each member says "Since runtime 1.5.1") is additive. It adds placing, explosions, commands, riding, items on the ground and bag contents.
+Script API 1.6 (runtime 1.5.2 or later; each member says "Since runtime 1.5.2") is additive. It adds placing, explosions, commands, riding, items on the ground and bag contents.
 
 - **Events.**
   - `block.place`: `e.pos` (where the block would go), `e.block` (the id the item places), `e.item` and `e.player`. `e.cancel()` stops the placing: the block is not placed, the item is not used up and the player's screen is corrected.
