@@ -2497,7 +2497,7 @@ struct FluidCommon {
 	behaves_like?: FluidBehaviour,
 	/// Defaults per `behaves_like`.
 	flow?: FluidFlow,
-	/// Light level of the liquid block, 0 to 15; defaults to 0.
+	/// Light level of the liquid block, 0 to 15; defaults to 15 for a lava-like fluid, else 0.
 	light?: int @ 0..15,
 	/// An RGB colour, 0 to 16777215, multiplied over the still, flowing and overlay textures;
 	/// absent means none.

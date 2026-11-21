@@ -6517,7 +6517,7 @@
           }
         },
         {
-          "desc": "Light level of the liquid block, 0 to 15; defaults to 0.",
+          "desc": "Light level of the liquid block, 0 to 15; defaults to 15 for a lava-like fluid, else 0.",
           "key": "light",
           "kind": "pair",
           "optional": true,
@@ -23640,5 +23640,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:25c1d970244837c268ae9d7e0b47b3c30457376f70cba955473cf013213b1114"
+  "ref": "msm-mcdoc:sha256:519f085f47e6139ac07d111e19e768caf3c802b78656fdfb9627d54d86f8051c"
 }
