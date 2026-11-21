@@ -6416,3 +6416,14 @@ Next
 **Next**
 - Merge `b485` onto the session branch after 28b732b, confirm the four CI jobs green, fast-forward `main` and record the clean totals and sizes.
 - Ask the user the open questions (HANDOFF items 1 to 6) and show ADRs 0098–0101's vetoable defaults; a 1.5.2 test build would carry both batches.
+
+## 2026-11-21 — main session — World safety and the user's answers
+
+**What**
+- ADR 0102 (world backups before installing into a world, warnings before renaming exported ids), the user's choice of two of the three protections offered.
+
+**Decisions**
+- The user said to go ahead with the recommended answers to the open questions: updates install when the app closes (alongside Restart to update); `JavaProjectInput.commands` and `creativeTabs` are declared in the plugin API (additive, inside the unreleased 1.18.0); a 1.5.2 test build is made as a draft once the world-safety work is merged and CI is green (not published without the user's go); Try it slice 4 goes ahead; ADR 0092's art uses option B (an original vanilla-style generator, its default). The third world-safety idea ("what is in this world from my mod") was not chosen.
+
+**Next**
+- Workers for ADR 0102 D1–D3 (backups) and D4–D5 (rename warning), and for the updater and plugin API changes; then the 1.5.2 draft; then Try it slice 4 and the art batch.
