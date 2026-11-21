@@ -1,8 +1,8 @@
 /**
  * Block recipes of the vanilla-style generator (ADR 0092 D7, D8): 16 by 16 faces with no
  * outline, five or six shades per material, light from the top left and clustered noise that
- * wraps where the face tiles. The rows without a drawing are stubs that still draw their
- * placeholder pattern; B492 draws them.
+ * wraps where the face tiles. Every block row is drawn (B491 and B492); the drawings of B492
+ * live in `blocks-stone.ts`, `blocks-wood.ts`, `blocks-plants.ts` and `blocks-terrain.ts`.
  *
  * @packageDocumentation
  */
@@ -13,6 +13,20 @@ import { type ArtRecipeEntry, type DrawContext, recipeEntry } from '../info';
 import { barkRamp, materialRamp, type Ramp, spreadShades, stoneRamp, woodRamp } from '../materials';
 import { clusteredField, hashSeed, quantise, rng } from '../noise';
 import { generateRamp } from '../ramp';
+import { cropStage, sapling } from './blocks-plants';
+import {
+  blockFront,
+  bricks,
+  cobblestone,
+  pillarSide,
+  pillarTop,
+  plainBlock,
+  polishedStone,
+  portalFrame,
+  stone,
+} from './blocks-stone';
+import { dirt, grassSide, grassTop, gravel, portalSurface, sand } from './blocks-terrain';
+import { doorBottom, doorTop, strippedLog, strippedLogTop, trapdoor } from './blocks-wood';
 
 /** Grey stone in clustered blobs (a wrapping field, so the face tiles). */
 function stoneBase(image: ArtImage, context: DrawContext, deepslate: boolean): Ramp {
@@ -107,9 +121,11 @@ function ore(context: DrawContext, deepslate: boolean): ArtImage {
 /**
  * A storage block: a two-ring bevel (light top and left, dark bottom and right) round a
  * clustered centre; `gem` adds two or three glints running up to the right, `metal` two
- * plate seams with their lit edges.
+ * plate seams with their lit edges, `rough` a stone-like centre of four clustered shades with
+ * a few dark specks.
  */
 function storageBlock(context: DrawContext): ArtImage {
+  if (context.finish === 'rough') return roughStorageBlock(context);
   const image = blankImage(16, 16);
   const { material, shine } = materialRamp(context.colour, context.hueShift);
   const metal = context.finish === 'metal';
@@ -153,6 +169,36 @@ function storageBlock(context: DrawContext): ArtImage {
         if (x + 1 <= 13) setPixel(image, x + 1, y, pick(material, 4));
       }
     }
+  }
+  return image;
+}
+
+/** A rough storage block: the storage block's bevel round a stone-like clustered centre. */
+function roughStorageBlock(context: DrawContext): ArtImage {
+  const image = blankImage(16, 16);
+  const { material } = materialRamp(context.colour, context.hueShift);
+  const shades = quantise(
+    clusteredField(16, 16, hashSeed('block-rough', context.seed), { blurX: 1, wrap: false }),
+    spreadShades([0.14, 0.34, 0.36, 0.16], 2, context.noise),
+  );
+  for (let y = 0; y < 16; y += 1) {
+    for (let x = 0; x < 16; x += 1) {
+      const ring = Math.min(x, y, 15 - x, 15 - y);
+      const lit = x === ring || y === ring;
+      const shadow = x === 15 - ring || y === 15 - ring;
+      let shade: number;
+      if (ring === 0) shade = lit && shadow ? 3 : lit ? 5 : 1;
+      else if (ring === 1) shade = lit && shadow ? 3 : lit ? 4 : 2;
+      else shade = 1 + (shades[y * 16 + x] ?? 2) + ((7.5 - x + (7.5 - y)) / 15) * 0.4;
+      setPixel(image, x, y, pick(material, shade));
+    }
+  }
+  const random = rng(hashSeed('block-rough-specks', context.seed));
+  const specks = 2 + Math.round(2 * context.noise);
+  for (let k = 0; k < specks; k += 1) {
+    const x = 2 + Math.floor(random() * 12);
+    const y = 2 + Math.floor(random() * 12);
+    setPixel(image, x, y, pick(material, 1));
   }
   return image;
 }
@@ -264,30 +310,51 @@ function leaves(context: DrawContext): ArtImage {
 
 /** The block recipes, in table order. */
 export const BLOCK_RECIPES: readonly ArtRecipeEntry[] = Object.freeze([
-  recipeEntry({ id: 'plain', label: 'Plain block', kind: 'block', fallback: 'plain', tiles: true }),
-  recipeEntry({ id: 'stone', label: 'Stone', kind: 'block', fallback: 'stone', tiles: true }),
-  recipeEntry({
-    id: 'cobblestone',
-    label: 'Cobblestone',
-    kind: 'block',
-    fallback: 'stone',
-    tiles: true,
-  }),
-  recipeEntry({
-    id: 'polished_stone',
-    label: 'Polished stone',
-    kind: 'block',
-    fallback: 'polished_stone',
-  }),
-  recipeEntry({ id: 'bricks', label: 'Bricks', kind: 'block', fallback: 'bricks', tiles: true }),
-  recipeEntry({
-    id: 'pillar_side',
-    label: 'Pillar side',
-    kind: 'block',
-    fallback: 'pillar_side',
-    tiles: true,
-  }),
-  recipeEntry({ id: 'pillar_top', label: 'Pillar top', kind: 'block', fallback: 'pillar_top' }),
+  recipeEntry(
+    { id: 'plain', label: 'Plain block', kind: 'block', fallback: 'plain', tiles: true },
+    plainBlock,
+  ),
+  recipeEntry(
+    { id: 'stone', label: 'Stone', kind: 'block', fallback: 'stone', tiles: true },
+    stone,
+  ),
+  recipeEntry(
+    {
+      id: 'cobblestone',
+      label: 'Cobblestone',
+      kind: 'block',
+      fallback: 'stone',
+      tiles: true,
+    },
+    cobblestone,
+  ),
+  recipeEntry(
+    {
+      id: 'polished_stone',
+      label: 'Polished stone',
+      kind: 'block',
+      fallback: 'polished_stone',
+    },
+    polishedStone,
+  ),
+  recipeEntry(
+    { id: 'bricks', label: 'Bricks', kind: 'block', fallback: 'bricks', tiles: true },
+    bricks,
+  ),
+  recipeEntry(
+    {
+      id: 'pillar_side',
+      label: 'Pillar side',
+      kind: 'block',
+      fallback: 'pillar_side',
+      tiles: true,
+    },
+    pillarSide,
+  ),
+  recipeEntry(
+    { id: 'pillar_top', label: 'Pillar top', kind: 'block', fallback: 'pillar_top' },
+    pillarTop,
+  ),
   recipeEntry({ id: 'ore', label: 'Ore', kind: 'block', fallback: 'ore', tiles: true }, (context) =>
     ore(context, false),
   ),
@@ -301,85 +368,124 @@ export const BLOCK_RECIPES: readonly ArtRecipeEntry[] = Object.freeze([
       label: 'Storage block',
       kind: 'block',
       fallback: 'plain',
-      finishes: ['gem', 'metal'],
+      finishes: ['gem', 'metal', 'rough'],
     },
     storageBlock,
   ),
-  recipeEntry({
-    id: 'block_front',
-    label: 'Furnace front',
-    kind: 'block',
-    fallback: 'block_front',
-  }),
+  recipeEntry(
+    {
+      id: 'block_front',
+      label: 'Furnace front',
+      kind: 'block',
+      fallback: 'block_front',
+    },
+    blockFront,
+  ),
   recipeEntry({ id: 'bark', label: 'Bark', kind: 'block', fallback: 'bark', tiles: true }, bark),
   recipeEntry({ id: 'log_top', label: 'Log end', kind: 'block', fallback: 'log_top' }, logTop),
-  recipeEntry({
-    id: 'stripped_log',
-    label: 'Stripped log',
-    kind: 'block',
-    fallback: 'stripped_log',
-    tiles: true,
-  }),
-  recipeEntry({
-    id: 'stripped_log_top',
-    label: 'Stripped log end',
-    kind: 'block',
-    fallback: 'stripped_log_top',
-  }),
+  recipeEntry(
+    {
+      id: 'stripped_log',
+      label: 'Stripped log',
+      kind: 'block',
+      fallback: 'stripped_log',
+      tiles: true,
+    },
+    strippedLog,
+  ),
+  recipeEntry(
+    {
+      id: 'stripped_log_top',
+      label: 'Stripped log end',
+      kind: 'block',
+      fallback: 'stripped_log_top',
+    },
+    strippedLogTop,
+  ),
   recipeEntry(
     { id: 'planks', label: 'Planks', kind: 'block', fallback: 'planks', tiles: true },
     planks,
   ),
-  recipeEntry({ id: 'door_top', label: 'Door top', kind: 'block', fallback: 'door_top' }),
-  recipeEntry({ id: 'door_bottom', label: 'Door bottom', kind: 'block', fallback: 'door_bottom' }),
-  recipeEntry({ id: 'trapdoor', label: 'Trapdoor', kind: 'block', fallback: 'trapdoor' }),
+  recipeEntry({ id: 'door_top', label: 'Door top', kind: 'block', fallback: 'door_top' }, doorTop),
+  recipeEntry(
+    { id: 'door_bottom', label: 'Door bottom', kind: 'block', fallback: 'door_bottom' },
+    doorBottom,
+  ),
+  recipeEntry({ id: 'trapdoor', label: 'Trapdoor', kind: 'block', fallback: 'trapdoor' }, trapdoor),
   recipeEntry(
     { id: 'leaves', label: 'Leaves', kind: 'block', fallback: 'leaves', tiles: true },
     leaves,
   ),
-  recipeEntry({ id: 'sapling', label: 'Sapling', kind: 'block', fallback: 'sapling' }),
-  recipeEntry({
-    id: 'crop_stage0',
-    label: 'Crop, sprouts',
-    kind: 'block',
-    fallback: 'crop_stage0',
-  }),
-  recipeEntry({ id: 'crop_stage1', label: 'Crop, young', kind: 'block', fallback: 'crop_stage1' }),
-  recipeEntry({
-    id: 'crop_stage2',
-    label: 'Crop, growing',
-    kind: 'block',
-    fallback: 'crop_stage2',
-  }),
-  recipeEntry({
-    id: 'crop_stage3',
-    label: 'Crop, ripe',
-    kind: 'block',
-    fallback: 'crop_stage3',
-    colours: 2,
-  }),
-  recipeEntry({
-    id: 'portal',
-    label: 'Portal surface',
-    kind: 'block',
-    fallback: 'portal',
-    tiles: true,
-  }),
-  recipeEntry({
-    id: 'portal_frame',
-    label: 'Portal frame',
-    kind: 'block',
-    fallback: 'portal_frame',
-  }),
-  recipeEntry({ id: 'dirt', label: 'Dirt', kind: 'block', fallback: 'plain', tiles: true }),
-  recipeEntry({
-    id: 'grass_top',
-    label: 'Grass top',
-    kind: 'block',
-    fallback: 'plain',
-    tiles: true,
-  }),
-  recipeEntry({ id: 'grass_side', label: 'Grass side', kind: 'block', fallback: 'plain' }),
-  recipeEntry({ id: 'sand', label: 'Sand', kind: 'block', fallback: 'plain', tiles: true }),
-  recipeEntry({ id: 'gravel', label: 'Gravel', kind: 'block', fallback: 'stone', tiles: true }),
+  recipeEntry({ id: 'sapling', label: 'Sapling', kind: 'block', fallback: 'sapling' }, sapling),
+  recipeEntry(
+    {
+      id: 'crop_stage0',
+      label: 'Crop, sprouts',
+      kind: 'block',
+      fallback: 'crop_stage0',
+    },
+    cropStage(0),
+  ),
+  recipeEntry(
+    { id: 'crop_stage1', label: 'Crop, young', kind: 'block', fallback: 'crop_stage1' },
+    cropStage(1),
+  ),
+  recipeEntry(
+    {
+      id: 'crop_stage2',
+      label: 'Crop, growing',
+      kind: 'block',
+      fallback: 'crop_stage2',
+    },
+    cropStage(2),
+  ),
+  recipeEntry(
+    {
+      id: 'crop_stage3',
+      label: 'Crop, ripe',
+      kind: 'block',
+      fallback: 'crop_stage3',
+      colours: 2,
+    },
+    cropStage(3),
+  ),
+  recipeEntry(
+    {
+      id: 'portal',
+      label: 'Portal surface',
+      kind: 'block',
+      fallback: 'portal',
+      tiles: true,
+    },
+    portalSurface,
+  ),
+  recipeEntry(
+    {
+      id: 'portal_frame',
+      label: 'Portal frame',
+      kind: 'block',
+      fallback: 'portal_frame',
+    },
+    portalFrame,
+  ),
+  recipeEntry({ id: 'dirt', label: 'Dirt', kind: 'block', fallback: 'plain', tiles: true }, dirt),
+  recipeEntry(
+    {
+      id: 'grass_top',
+      label: 'Grass top',
+      kind: 'block',
+      fallback: 'plain',
+      tiles: true,
+    },
+    grassTop,
+  ),
+  recipeEntry(
+    { id: 'grass_side', label: 'Grass side', kind: 'block', fallback: 'plain' },
+    grassSide,
+  ),
+  recipeEntry({ id: 'sand', label: 'Sand', kind: 'block', fallback: 'plain', tiles: true }, sand),
+  recipeEntry(
+    { id: 'gravel', label: 'Gravel', kind: 'block', fallback: 'stone', tiles: true },
+    gravel,
+  ),
 ]);

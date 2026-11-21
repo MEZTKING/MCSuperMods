@@ -153,6 +153,16 @@ function paintedHue(look: ArtLook): number | undefined {
 
 const drawn = ART_RECIPE_INFO.filter((info) => info.drawn);
 
+/**
+ * The finishes with a golden in `existing/`: the 20 prototype recipes in their B491 finishes.
+ * Recipes and finishes drawn later keep their goldens in their family's test
+ * (`art-blocks.test.ts`, `fixtures/art/blocks/`).
+ */
+const existingGoldens = (info: ArtRecipeInfo): readonly (string | undefined)[] =>
+  EXISTING.includes(info.id)
+    ? finishesOf(info).filter((finish) => !(info.id === 'block' && finish === 'rough'))
+    : [];
+
 describe('the recipe table (ADR 0092 D7)', () => {
   it('has every recipe id once, in the order of ART_RECIPE_IDS', () => {
     expect(ART_RECIPE_INFO.map((info) => info.id)).toEqual([...ART_RECIPE_IDS]);
@@ -316,7 +326,7 @@ describe.each(drawn)('the drawn recipe $id (ADR 0092 D8, D13 (b))', (info) => {
     expect(shape([40, 150, 150])).toEqual(shape([200, 60, 30]));
   });
 
-  it.each(finishesOf(info))('equals its golden PNG (finish %s)', (finish) => {
+  it.each(existingGoldens(info))('equals its golden PNG (finish %s)', (finish) => {
     const png = artLookPng({ recipe: info.id, colour: DEFAULT_COLOUR, finish, seed: 0 });
     const file = join(goldens, `${info.id}${finish === undefined ? '' : `-${finish}`}.png`);
     if (update) {

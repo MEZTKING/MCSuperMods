@@ -6561,3 +6561,19 @@ Next
 
 **Next**
 - Correct those three mentions with the 1.5.2 version bump.
+## 2026-11-21 — executor — B492 block recipes
+
+**What**
+- Every block recipe of ADR 0092 D7 is drawn: the 25 stubs (plain, stone, cobblestone, polished stone, bricks, pillar side and top, furnace front, stripped log and its end, door top and bottom, trapdoor, sapling, crop stages 0 to 3, portal surface, portal frame, dirt, grass top, grass side, sand, gravel) and the storage block's new `rough` finish (a stone-like centre inside the usual bevel; `gem` and `metal` keep their bytes).
+- New family files beside `art/recipes/blocks.ts`: `blocks-common.ts` (colour ramps, the light lean, wrapping cells for stones and pebbles, `rampsAgree`), `blocks-stone.ts`, `blocks-wood.ts`, `blocks-plants.ts`, `blocks-terrain.ts`. Seeds are `hashSeed(<recipe id>, context.seed)`, never the colour; shapes (holes, plants, portal alpha) depend on the seed only.
+- Tests: `test/art-blocks.test.ts` (no block row or block pattern left on the fallback, the rough finish, every B492 recipe through `checkArtRules` over 12 colours, 4 seeds, every finish and detail, distinct seeds, solid faces opaque, portal alpha only 85/170/255, four trapdoor holes, crop heights growing, the second colour on the ripe crop) and 26 goldens in `test/fixtures/art/blocks/`. `art.test.ts` keeps its goldens in `existing/` for the 20 prototype recipes only (one helper, `existingGoldens`). `docs/reference/art/sheet.png` regenerated.
+- Checks: library tests (17 files, 1167 tests), `pnpm lint`, `pnpm typecheck`, check-deps.
+
+**Decisions**
+- Door windows are opaque dark glass with a glint; the trapdoor's four holes are transparent (2 by 2), as the brief says. Whether a trapdoor block renders its holes see-through in the game depends on its render layer (verify at implementation, in-game check).
+- The grass side's dirt is a fixed brown (`DIRT_BROWN`); the main colour is the grass. A ripe crop's produce defaults to a wheat gold (`CROP_PRODUCE`); when the second colour is so close to the stalks' that the two ramps would disagree on which shade is warmer, the produce is drawn from the stalks' ramp.
+- The portal frame's dark stone and glowing veins come from one ramp, so the ramp rule holds between them.
+- Non-tiling faces lean their shades towards the top left (`lean`), which the light rule needs on noisy faces such as the grass side's dirt.
+
+**Next**
+- B497 switches the flows to drawn art; B499 can use dirt, grass top and side, sand, stone, planks, bark and leaves for Try it.
