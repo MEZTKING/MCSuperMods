@@ -81,7 +81,7 @@ export const CUSTOM_MOB_PARAMETERS: readonly StarterParameter[] = Object.freeze(
   {
     id: 'colour',
     label: 'Skin colour',
-    description: 'The colour of the placeholder skin.',
+    description: 'The colour of the drawn skin.',
     group: 'Mob',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -90,7 +90,7 @@ export const CUSTOM_MOB_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     id: 'skin',
     label: 'Skin',
     description:
-      'A player skin PNG for the mob: 64 by 64 (its second layer, the hat and sleeves, shows too) or an old 64 by 32 one. Leave it empty for a placeholder in the skin colour.',
+      'A player skin PNG for the mob: 64 by 64 (its second layer, the hat and sleeves, shows too) or an old 64 by 32 one. Leave it empty for a skin drawn in the skin colour.',
     group: 'Mob',
     type: 'image',
     default: null,

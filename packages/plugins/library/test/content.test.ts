@@ -1,47 +1,39 @@
 /**
  * Shape of the library content: starter and example ids, categories, kinds, determinism,
- * namespaces and placeholder assets. Validation against the schema, loading and export with
+ * namespaces and drawn assets. Validation against the schema, loading and export with
  * the real resource pack and data pack plugins live in `packages/exporters/test/library.test.ts`.
  */
 import type { ContentBundle, ExampleProject, Json, ProjectStarter } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import { PARTICLE_FRAMES, PARTICLE_PATTERNS } from '../src/assets/png';
-import {
-  shellItemPng,
-  VEHICLE_FLOW_SHAPES,
-  vehicleFlowGeometry,
-  vehicleItemPng,
-  vehicleTexturePng,
-} from '../src/assets/vehicles/index';
 import { COLOURS } from '../src/content/bundle';
+import { presetSkinBoxes } from '../src/content/mob-presets';
 import { SKIN_ANIMALS, SKIN_SHADES, shade } from '../src/content/mob-skins';
-import { rgbFromHex } from '../src/content/parameters';
 import { DEFAULT_PARTICLE_COLOUR } from '../src/content/particle';
 import { vehicleModelTextureSize } from '../src/content/vehicle-models';
 import {
   behaviourExamples,
+  boxSkinPng,
   categoryTag,
   entityBehaviourExamples,
   kindExamples,
   libraryExamples,
   libraryStarters,
   MOB_PRESET_NAMES,
+  MOB_PRESETS,
   mobSkinPng,
   PLACEHOLDER_PATTERNS,
   POPULAR_CATEGORY,
-  paintingPng,
   placeholderPng,
   placeholderSkinPng,
   popularExamples,
-  presetSkinPng,
   rulesBehaviourExamples,
   STARTERS_CATEGORY,
   scriptBehaviourExamples,
   starterExamples,
   vehicleBehaviourExamples,
 } from '../src/index';
-import { VEHICLE_PAINTS } from '../src/starters/vehicle-flow';
 import { TINTABLE_GREY } from '../src/starters/wood-set';
 
 const STARTER_IDS = [
@@ -224,28 +216,6 @@ const KIND_IDS = [
  */
 const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
-/**
- * The flows whose pictures are drawn by MSM in the art rules of ADR 0092 rather than taken from
- * the placeholder patterns (ADR 0101 D2, B459), and the sign pictures of the Wood set.
- */
-const VANILLA_PARITY_FLOWS = new Set([
-  'copper-set',
-  'lights',
-  'bed',
-  'cake',
-  'backpack',
-  'custom-command',
-  'creative-tab',
-  // Batch 2 (B481): the Village job's workbench and apron, the Fluid's liquid and bucket, and the
-  // examples drawn with them.
-  'village-job',
-  'fluid',
-  'example_msm_villager_profession',
-  'example_msm_fluid',
-]);
-const isSignPicture = (path: string): boolean =>
-  /^textures\/(gui\/(hanging_)?signs\/|item\/[a-z0-9_]*sign\.png$)/.test(path);
-
 const entries: readonly (ProjectStarter | ExampleProject)[] = [
   ...libraryStarters,
   ...libraryExamples,
@@ -263,51 +233,36 @@ const build = (
   return bundle;
 };
 
-/** The colours the vehicle flows paint with by default: the library's, the paints', the flows'. */
-function vehicleFlowColours() {
-  const defaults = libraryStarters
-    .filter((starter) => starter.id.startsWith('vehicle-'))
-    .flatMap((starter) => starter.parameters ?? [])
-    .flatMap((parameter) =>
-      parameter.type === 'colour' ? [rgbFromHex(parameter.default, COLOURS.ruby)] : [],
-    );
-  return [...Object.values(COLOURS), ...VEHICLE_PAINTS.map((paint) => paint.colour), ...defaults];
-}
-
 /**
- * Every placeholder the library may produce: each pattern, the entity skin, the mob variant
- * skins and the painting placeholder of every size up to 4 by 4 in each library colour.
+ * Every placeholder the library could produce before the switch to drawn art (ADR 0092 D10 (a),
+ * B497): each pattern, the entity skin, the preset mob skins, the mob variant skins and the
+ * vehicle skins in each library colour. No library asset may be one of these; paintings keep
+ * their placeholder landscape (plan limit A2) and are not in the set.
  */
 const PLACEHOLDERS = new Set([
   ...PLACEHOLDER_PATTERNS.flatMap((pattern) =>
-    Object.values(COLOURS).map((colour) =>
+    [...Object.values(COLOURS), TINTABLE_GREY].map((colour) =>
       Buffer.from(placeholderPng(pattern, { colour })).toString('hex'),
-    ),
-  ),
-  // Leaves tinted by the biome colour are drawn grey (ADR 0068 D6).
-  Buffer.from(placeholderPng('leaves', { colour: TINTABLE_GREY })).toString('hex'),
-  // A ripe crop stage carries the produce in a second colour (ADR 0069 D2).
-  ...Object.values(COLOURS).flatMap((colour) =>
-    Object.values(COLOURS).map((accent) =>
-      Buffer.from(placeholderPng('crop_stage3', { colour, accent })).toString('hex'),
     ),
   ),
   ...Object.values(COLOURS).map((colour) =>
     Buffer.from(placeholderSkinPng({ colour })).toString('hex'),
   ),
-  // Preset mob skins (ADR 0073 D1): every preset in each colour.
   ...MOB_PRESET_NAMES.flatMap((preset) =>
-    Object.values(COLOURS).map((colour) =>
-      Buffer.from(presetSkinPng(preset, { colour })).toString('hex'),
-    ),
+    Object.values(COLOURS).map((colour) => {
+      const { width, height } = MOB_PRESETS[preset].texture;
+      return Buffer.from(boxSkinPng(presetSkinBoxes(preset), width, height, { colour })).toString(
+        'hex',
+      );
+    }),
   ),
-  // Mob variant skins (ADR 0064 D6): every vanilla size, in each colour and its shades.
   ...[
     ...Object.values(SKIN_ANIMALS).flatMap((facts) => [facts.adult, facts.baby]),
-    {
-      width: 128,
-      height: 128,
-    },
+    { width: 128, height: 128 },
+    ...(['tank', 'motorboat', 'raft'] as const).map((model) => ({
+      width: vehicleModelTextureSize(model),
+      height: vehicleModelTextureSize(model),
+    })),
   ].flatMap((size) =>
     size === undefined
       ? []
@@ -319,32 +274,6 @@ const PLACEHOLDERS = new Set([
           ),
         ),
   ),
-  ...[1, 2, 3, 4].flatMap((width) =>
-    [1, 2, 3, 4].flatMap((height) =>
-      Object.values(COLOURS).map((colour) =>
-        Buffer.from(paintingPng(width, height, colour)).toString('hex'),
-      ),
-    ),
-  ),
-  // Vehicle model skins (ADR 0091 D3): each example model's square texture in each colour.
-  ...(['tank', 'motorboat', 'raft'] as const).flatMap((model) =>
-    Object.values(COLOURS).map((colour) =>
-      Buffer.from(
-        mobSkinPng(vehicleModelTextureSize(model), vehicleModelTextureSize(model), { colour }),
-      ).toString('hex'),
-    ),
-  ),
-  // Vehicle flow pictures (ADR 0091 D2): each flow's texture, paints, item and shell picture in
-  // each library colour, the paint colours and the flows' default colours.
-  ...vehicleFlowColours().flatMap((colour) => [
-    ...VEHICLE_FLOW_SHAPES.flatMap((shape) => [
-      Buffer.from(vehicleTexturePng(vehicleFlowGeometry(shape, 'x'), colour)).toString('hex'),
-      Buffer.from(vehicleItemPng(shape, colour)).toString('hex'),
-    ]),
-    Buffer.from(shellItemPng(colour)).toString('hex'),
-  ]),
-  // Particle frames (ADR 0081 D3): every frame of each particle pattern, in each colour and the
-  // Particle flow's default gold.
   ...PARTICLE_PATTERNS.flatMap((pattern) =>
     [...Object.values(COLOURS), DEFAULT_PARTICLE_COLOUR].flatMap((colour) =>
       [...Array(PARTICLE_FRAMES).keys()].map((frame) =>
@@ -1020,12 +949,12 @@ describe('every starter and example', () => {
     }
   });
 
-  it('uses only generated placeholder textures with lower-case names inside a folder', () => {
+  it('uses drawn textures, never a placeholder, with lower-case names inside a folder', () => {
     for (const entry of entries) {
       for (const asset of build(entry).assets) {
         expect(asset.path, entry.id).toMatch(/^textures\/[a-z0-9_/]+\/[a-z0-9_.-]+\.png$/);
-        if (VANILLA_PARITY_FLOWS.has(entry.id) || isSignPicture(asset.path)) continue;
-        expect(PLACEHOLDERS.has(Buffer.from(asset.bytes).toString('hex')), asset.path).toBe(true);
+        if (asset.path.startsWith('textures/painting/')) continue;
+        expect(PLACEHOLDERS.has(Buffer.from(asset.bytes).toString('hex')), asset.path).toBe(false);
       }
     }
   });

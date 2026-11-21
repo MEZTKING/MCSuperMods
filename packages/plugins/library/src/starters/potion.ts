@@ -279,7 +279,7 @@ export function potionBundle(context: BundleContext): ContentBundle {
         effect,
         KINDS.effect,
         data,
-        `The new status effect the potion gives, shown in the colour ${hexFromRgb(colour)}, which also colours the potion. ${statWords} Its icon is textures/mob_effect/${name.id}_effect.png; paint over the placeholder to restyle it.`,
+        `The new status effect the potion gives, shown in the colour ${hexFromRgb(colour)}, which also colours the potion. ${statWords} Its icon is textures/mob_effect/${name.id}_effect.png; paint over the drawn picture to restyle it.`,
       ),
     );
     assets.push(effectIconAsset(namespace, `${name.id}_effect`, colour));

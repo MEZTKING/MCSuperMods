@@ -726,7 +726,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'mob-skin',
     'Mob skin',
-    'A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with placeholder textures of the right size to paint over, appearing in a biome you choose or everywhere. Works in vanilla packs.',
+    'A new skin for a vanilla wolf, cat, pig, cow, chicken or frog, with drawn textures of the right size to paint over, appearing in a biome you choose or everywhere. Works in vanilla packs.',
     'content',
     BOTH,
     mobSkinBundle,

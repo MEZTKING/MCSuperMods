@@ -132,7 +132,7 @@ export const WEAPON_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Weapon',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -340,7 +340,7 @@ export function weaponBundle(context: BundleContext): ContentBundle {
       namespace,
       name.id,
       type.parent,
-      `An item model drawn from textures/item/${name.id}.png; its parent ${type.parent} sets how it is held. Paint over the placeholder to restyle it.`,
+      `An item model drawn from textures/item/${name.id}.png; its parent ${type.parent} sets how it is held. Paint over the drawn picture to restyle it.`,
     ),
     element(
       rl(namespace, 'en_us'),

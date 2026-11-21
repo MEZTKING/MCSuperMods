@@ -63,7 +63,7 @@ export const TOTEM_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Totem',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -132,7 +132,7 @@ export function totemBundle(context: BundleContext): ContentBundle {
       namespace,
       name.id,
       'minecraft:item/generated',
-      `A flat item model drawn from textures/item/${name.id}.png. Paint over the placeholder to restyle it.`,
+      `A flat item model drawn from textures/item/${name.id}.png. Paint over the drawn picture to restyle it.`,
     ),
     element(
       rl(namespace, 'en_us'),

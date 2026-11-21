@@ -79,7 +79,7 @@ export const MOB_SKIN_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     id: 'colour',
     label: 'Colour',
     description:
-      'The colour of the placeholder textures, made at the size the animal needs. Paint over them, or use Picture to texture, to make the skin.',
+      'The colour of the drawn textures, made at the size the animal needs. Paint over them, or use Picture to texture, to make the skin.',
     group: 'Skin',
     type: 'colour',
     default: hexFromRgb(COLOURS.amber),
@@ -137,7 +137,7 @@ export function mobSkinBundle(context: BundleContext): ContentBundle {
   const whereWords = everywhere
     ? 'One spawn condition with priority 0 and no condition mixes it in wherever no biome skin of a higher priority applies.'
     : `Its spawn condition ties it to ${biome.label.toLowerCase()} (${biome.value}) with priority 1, so it joins the vanilla skins of that biome; the game picks among the matching skins of the highest priority.`;
-  const notes = `A new ${facts.label} skin with ${textureWords}, under textures/entity/${animal}/. ${whereWords} ${facts.spawns} Paint over the placeholders, keeping their size, to make the skin. Try /summon minecraft:${animal} ~ ~ ~ {variant:"${id}"}.`;
+  const notes = `A new ${facts.label} skin with ${textureWords}, under textures/entity/${animal}/. ${whereWords} ${facts.spawns} Paint over the drawn textures, keeping their size, to make the skin. Try /summon minecraft:${animal} ~ ~ ~ {variant:"${id}"}.`;
   return {
     elements: [
       packElement(namespace, `${projectName}: ${name.lower} ${facts.label} skin`, PACK_NOTES),

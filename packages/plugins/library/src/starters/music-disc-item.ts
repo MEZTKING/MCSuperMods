@@ -100,7 +100,7 @@ export const MUSIC_DISC_ITEM_PARAMETERS: readonly StarterParameter[] = Object.fr
   {
     id: 'colour',
     label: 'Label colour',
-    description: 'The colour of the disc label on the placeholder texture.',
+    description: 'The colour of the disc label on the drawn texture.',
     group: 'Disc',
     type: 'colour',
     default: hexFromRgb(COLOURS.violet),

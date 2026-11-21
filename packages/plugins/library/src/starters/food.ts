@@ -54,7 +54,7 @@ export const FOOD_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Food',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -149,7 +149,7 @@ export function foodBundle(context: BundleContext): ContentBundle {
       model,
       KINDS.model,
       { parent: 'minecraft:item/generated', textures: { layer0: model } },
-      `A flat item model drawn from textures/item/${name.id}.png. Paint over the placeholder to restyle it.`,
+      `A flat item model drawn from textures/item/${name.id}.png. Paint over the drawn picture to restyle it.`,
     ),
     element(
       rl(namespace, 'en_us'),

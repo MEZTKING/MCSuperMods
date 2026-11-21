@@ -12,13 +12,11 @@ import type {
   Json,
   ResourceLocation,
 } from '@msm/plugin-api';
-import {
-  mobSkinPng,
-  type PlaceholderPattern,
-  placeholderPng,
-  placeholderSkinPng,
-  type Rgb,
-} from '../assets/png';
+import { artPng, PATTERN_RECIPES } from '../art/artpng';
+import type { ArtRecipeId } from '../art/info';
+import { hashSeed } from '../art/noise';
+import { type ArtCoat, boxSkinArtPng, evenCoatArtPng, HUMANOID_SKIN_BOXES } from '../art/skins';
+import type { PlaceholderPattern, Rgb, SkinBox } from '../assets/png';
 import { decodePngDataUrl } from './parameters';
 
 /** Element kind ids used by the library's bundles. */
@@ -150,8 +148,27 @@ export function element(
 }
 
 /**
- * A generated placeholder texture at `textures/<path>.png` of `namespace`. Its texture id is
- * `<namespace>:<path>`.
+ * The default seed of a drawn picture (ADR 0092 D11): `hashSeed(namespace, path, recipe)`, so
+ * two flows' swords differ and the same project always gets the same bytes. `path` is the
+ * texture's path without `textures/` and `.png` (`item/ruby_sword`); `recipe` is the recipe id,
+ * or `box_skin` for a skin.
+ */
+export function artSeed(namespace: string, path: string, recipe: ArtRecipeId | 'box_skin'): number {
+  return hashSeed(namespace, path, recipe);
+}
+
+/** The look of a drawn texture beyond its colours: the variation and the finish. */
+export interface TextureLook {
+  /** The variation; defaults to {@link artSeed} of the texture. */
+  seed?: number;
+  /** One of the recipe's finishes; defaults to its first. */
+  finish?: string;
+}
+
+/**
+ * A texture at `textures/<path>.png` of `namespace`, drawn by the recipe of `pattern` in a
+ * Minecraft-like style (ADR 0092 D10 (a), `artPng`), with the default seed {@link artSeed}
+ * unless `look` gives one. Its texture id is `<namespace>:<path>`.
  */
 export function texture(
   namespace: string,
@@ -159,22 +176,25 @@ export function texture(
   pattern: PlaceholderPattern,
   colour?: Rgb,
   accent?: Rgb,
+  look: TextureLook = {},
 ): ContentBundleAsset {
   return {
     namespace,
     path: `textures/${path}.png`,
-    bytes: placeholderPng(pattern, {
+    bytes: artPng(pattern, {
       ...(colour === undefined ? {} : { colour }),
       ...(accent === undefined ? {} : { accent }),
+      seed: look.seed ?? artSeed(namespace, path, PATTERN_RECIPES[pattern]),
+      ...(look.finish === undefined ? {} : { finish: look.finish }),
     }),
   };
 }
 
 /**
  * A block texture at `textures/<path>.png` of `namespace` from an `image` parameter's value
- * (ADR 0069 D2): the picked PNG unchanged when it is square, else the generated placeholder of
- * `pattern` in `colour`. A non-square picture would be read as an animation strip, so it keeps
- * the placeholder.
+ * (ADR 0069 D2): the picked PNG unchanged when it is square, else `pattern` drawn in `colour`
+ * ({@link texture}). A non-square picture would be read as an animation strip, so it is not
+ * used.
  */
 export function pictureTexture(
   namespace: string,
@@ -190,17 +210,52 @@ export function pictureTexture(
   return texture(namespace, path, pattern, colour);
 }
 
-/**
- * A generated 64x64 two-tone entity skin at `textures/<path>.png` of `namespace` (texture id
- * `<namespace>:<path>`), for models over a 64x64 texture.
- */
-export function skinTexture(namespace: string, path: string, colour: Rgb): ContentBundleAsset {
-  return { namespace, path: `textures/${path}.png`, bytes: placeholderSkinPng({ colour }) };
+/** Options of {@link skinTexture}: the model's boxes, its texture size and the coat. */
+export interface SkinTextureOptions {
+  /** The model's box-UV cubes; defaults to {@link HUMANOID_SKIN_BOXES}. */
+  boxes?: readonly SkinBox[];
+  /** Texture width; defaults to 64. */
+  width?: number;
+  /** Texture height; defaults to 64. */
+  height?: number;
+  /** The coat; defaults to `smooth`. */
+  coat?: ArtCoat;
+  /** The second colour (belly and spots). */
+  accent?: Rgb;
 }
 
 /**
- * A generated two-tone mob texture of `width` by `height` at `textures/<path>.png` of
- * `namespace` (texture id `<namespace>:<path>`), for vanilla mob variants (ADR 0064 D6).
+ * An entity skin at `textures/<path>.png` of `namespace` (texture id `<namespace>:<path>`):
+ * the model's boxes drawn as a box skin (ADR 0092 D7, `boxSkinArtPng`), the humanoid boxes of
+ * the 64 by 64 player-skin layout unless `options.boxes` says otherwise, with the default seed
+ * {@link artSeed}. Pixels outside the faces are transparent, as on Minecraft's own skins.
+ */
+export function skinTexture(
+  namespace: string,
+  path: string,
+  colour: Rgb,
+  options: SkinTextureOptions = {},
+): ContentBundleAsset {
+  const width = options.width ?? 64;
+  const height = options.height ?? 64;
+  return {
+    namespace,
+    path: `textures/${path}.png`,
+    bytes: boxSkinArtPng(options.boxes ?? HUMANOID_SKIN_BOXES, width, height, {
+      colour,
+      coat: options.coat ?? 'smooth',
+      seed: artSeed(namespace, path, 'box_skin'),
+      ...(options.accent === undefined ? {} : { accent: options.accent }),
+    }),
+  };
+}
+
+/**
+ * A mob texture of `width` by `height` at `textures/<path>.png` of `namespace` (texture id
+ * `<namespace>:<path>`), for vanilla mob variants (ADR 0064 D6): an even coat (ADR 0092 D7,
+ * `evenCoatArtPng`, plan limit A3), since their layout belongs to vanilla's models. The seed
+ * defaults to {@link artSeed} of the path; a variant's textures (wild, tame, angry, baby) pass
+ * one seed so they share a coat.
  */
 export function mobSkinTexture(
   namespace: string,
@@ -208,8 +263,14 @@ export function mobSkinTexture(
   width: number,
   height: number,
   colour: Rgb,
+  coat: ArtCoat = 'fur',
+  seed: number = artSeed(namespace, path, 'box_skin'),
 ): ContentBundleAsset {
-  return { namespace, path: `textures/${path}.png`, bytes: mobSkinPng(width, height, { colour }) };
+  return {
+    namespace,
+    path: `textures/${path}.png`,
+    bytes: evenCoatArtPng(width, height, { colour, coat, seed }),
+  };
 }
 
 /** Reserved mod ids (ADR 0026 D2). */
@@ -280,8 +341,9 @@ export function modElement(namespace: string, projectName: string, description: 
 /**
  * The pulling frames of a bow or crossbow item model `<ns>:item/<path>`: models
  * `<path>_pulling_0`…`_2` (and for a crossbow `_arrow` and `_firework`) whose parents are the
- * vanilla frames, each with a tinted placeholder texture. The item's definition shows them
- * while it is drawn or loaded (`msm:ranged_weapon`).
+ * vanilla frames, each with a drawn texture. Every frame takes the seed of the weapon's own
+ * texture `item/<path>` (recipe `bow` or `crossbow`), so the frames draw one bow. The item's
+ * definition shows them while it is drawn or loaded (`msm:ranged_weapon`).
  */
 export function rangedPullFrames(
   namespace: string,
@@ -295,6 +357,7 @@ export function rangedPullFrames(
       : ['pulling_0', 'pulling_1', 'pulling_2', 'arrow', 'firework'];
   const elements: ContentBundleElement[] = [];
   const assets: ContentBundleAsset[] = [];
+  const seed = artSeed(namespace, `item/${path}`, type);
   for (const frame of frames) {
     const model = rl(namespace, `item/${path}_${frame}`);
     elements.push(
@@ -306,7 +369,14 @@ export function rangedPullFrames(
       ),
     );
     assets.push(
-      texture(namespace, `item/${path}_${frame}`, `${type}_${frame}` as PlaceholderPattern, colour),
+      texture(
+        namespace,
+        `item/${path}_${frame}`,
+        `${type}_${frame}` as PlaceholderPattern,
+        colour,
+        undefined,
+        { seed },
+      ),
     );
   }
   return { elements, assets };

@@ -8,11 +8,21 @@
 import type { ContentBundle, Json, JsonObject } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { placeholderPng } from '../src/assets/png';
-import { COLOURS } from '../src/content/bundle';
+import { artPng, PATTERN_RECIPES } from '../src/art/artpng';
+import { type PlaceholderPattern, placeholderPng, type Rgb } from '../src/assets/png';
+import { artSeed, COLOURS } from '../src/content/bundle';
 import { DEFAULT_PARTICLE_COLOUR } from '../src/content/particle';
 import { kindExamples, libraryExamples, libraryStarters } from '../src/index';
 import { particleBundle } from '../src/starters/particle';
+
+/** Frame `frame` of `pattern` as the Particle flow draws it for the particle `id` of `demo`. */
+function drawnFrame(id: string, pattern: PlaceholderPattern, colour: Rgb, frame: number) {
+  return artPng(pattern, {
+    colour,
+    frame,
+    seed: artSeed('demo', `particle/${id}`, PATTERN_RECIPES[pattern]),
+  });
+}
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 
@@ -116,7 +126,7 @@ describe('Particle flow (ADR 0081 D3)', () => {
     ]);
     for (const frame of [0, 1, 2, 3]) {
       expect(bytesOf(bundle, `textures/particle/golden_spark_${frame}.png`)).toEqual(
-        placeholderPng('particle_spark', { colour: DEFAULT_PARTICLE_COLOUR, frame }),
+        drawnFrame('golden_spark', 'particle_spark', DEFAULT_PARTICLE_COLOUR, frame),
       );
     }
   });
@@ -145,11 +155,11 @@ describe('Particle flow (ADR 0081 D3)', () => {
     expect(puff.animation).toBeUndefined();
     const blue = particle({ look: 'leaf', colour: '#2454c4' });
     expect(bytesOf(blue, 'textures/particle/golden_spark_2.png')).toEqual(
-      placeholderPng('particle_leaf', { colour: COLOURS.sapphire, frame: 2 }),
+      drawnFrame('golden_spark', 'particle_leaf', COLOURS.sapphire, 2),
     );
   });
 
-  it('uses a picked picture as the one frame, and a placeholder spark without one', () => {
+  it('uses a picked picture as the one frame, and a drawn spark without one', () => {
     const picture = placeholderPng('gem');
     const own = particle({ look: 'own', picture: pictureUrl(picture), particle_name: 'Star' });
     expect(data(own, 'demo:star')).toMatchObject({ textures: ['demo:star'] });
@@ -161,7 +171,7 @@ describe('Particle flow (ADR 0081 D3)', () => {
     expect(bytesOf(own, 'textures/particle/star.png')).toEqual(picture);
     const none = particle({ look: 'own', particle_name: 'Star' });
     expect(bytesOf(none, 'textures/particle/star.png')).toEqual(
-      placeholderPng('particle_spark', { colour: DEFAULT_PARTICLE_COLOUR }),
+      drawnFrame('star', 'particle_spark', DEFAULT_PARTICLE_COLOUR, 0),
     );
   });
 

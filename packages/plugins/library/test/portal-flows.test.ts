@@ -8,7 +8,8 @@
 import type { ContentBundle, Json, JsonObject } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
-import { COLOURS, libraryExamples, libraryStarters, placeholderPng } from '../src/index';
+import { texture } from '../src/content/bundle';
+import { COLOURS, libraryExamples, libraryStarters } from '../src/index';
 import { dimensionBundle } from '../src/starters/dimension';
 import { portalBundle } from '../src/starters/portal';
 
@@ -112,10 +113,10 @@ describe('Portal flow (ADR 0078 D2)', () => {
       'textures/block/sky_portal_frame.png',
     ]);
     expect(bytesOf(bundle, 'textures/block/sky_portal.png')).toEqual(
-      placeholderPng('portal', { colour: COLOURS.violet }),
+      texture('demo', 'block/sky_portal', 'portal', COLOURS.violet).bytes,
     );
     expect(bytesOf(bundle, 'textures/block/sky_portal_frame.png')).toEqual(
-      placeholderPng('portal_frame', { colour: COLOURS.violet }),
+      texture('demo', 'block/sky_portal_frame', 'portal_frame', COLOURS.violet).bytes,
     );
   });
 
@@ -170,7 +171,7 @@ describe('Portal flow (ADR 0078 D2)', () => {
       'textures/item/ember_gate_key.png',
     ]);
     expect(bytesOf(bundle, 'textures/block/ember_gate.png')).toEqual(
-      placeholderPng('portal', { colour: COLOURS.amber }),
+      texture('demo', 'block/ember_gate', 'portal', COLOURS.amber).bytes,
     );
     for (const igniter of ['minecraft:fire_charge', 'minecraft:ender_eye']) {
       expect(data(portal({ igniter }), 'demo:sky_portal').igniter).toBe(igniter);
@@ -227,10 +228,10 @@ describe("Dimension flow's portal answer (ADR 0078 D2)", () => {
       'execute in demo:ruby_realm run spreadplayers ~ ~ 0 64 false @s',
     );
     expect(bytesOf(bundle, 'textures/block/ruby_realm_portal.png')).toEqual(
-      placeholderPng('portal', { colour: COLOURS.sapphire }),
+      texture('demo', 'block/ruby_realm_portal', 'portal', COLOURS.sapphire).bytes,
     );
     expect(bytesOf(bundle, 'textures/block/ruby_realm_portal_frame.png')).toEqual(
-      placeholderPng('portal_frame', { colour: COLOURS.sapphire }),
+      texture('demo', 'block/ruby_realm_portal_frame', 'portal_frame', COLOURS.sapphire).bytes,
     );
   });
 

@@ -37,7 +37,7 @@ const VARIANTS: readonly VariantExample[] = [
     colour: COLOURS.frost,
     biomes: ['minecraft:snowy_taiga', 'minecraft:grove'],
     notes: (id) =>
-      `A wolf variant: assets names the wild, tame and angry textures of a grown wolf and baby_assets those of a pup, as texture ids under textures/entity/wolf/ (64 by 32 pixels, pups 32 by 32). spawn_conditions decides where it appears: in a snowy taiga or a grove with priority 1, so it joins the vanilla wolves of those biomes and the game picks among the highest priority that matches. Paint over the placeholders to make it yours. Try /summon minecraft:wolf ~ ~ ~ {variant:"${id}"}.`,
+      `A wolf variant: assets names the wild, tame and angry textures of a grown wolf and baby_assets those of a pup, as texture ids under textures/entity/wolf/ (64 by 32 pixels, pups 32 by 32). spawn_conditions decides where it appears: in a snowy taiga or a grove with priority 1, so it joins the vanilla wolves of those biomes and the game picks among the highest priority that matches. Paint over the drawn textures to make it yours. Try /summon minecraft:wolf ~ ~ ~ {variant:"${id}"}.`,
     tags: ['wolf', 'skin', 'texture', 'spawn_conditions'],
   },
   {
@@ -273,7 +273,14 @@ const otherExamples: readonly ExampleProject[] = [
           ),
         ],
         assets: [
-          mobSkinTexture(namespace, 'entity/nautilus/slate_nautilus', 128, 128, COLOURS.slate),
+          mobSkinTexture(
+            namespace,
+            'entity/nautilus/slate_nautilus',
+            128,
+            128,
+            COLOURS.slate,
+            'smooth',
+          ),
         ],
       };
     },

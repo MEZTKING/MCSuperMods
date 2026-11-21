@@ -63,7 +63,7 @@ export const CUSTOM_ORE_PARAMETERS: readonly StarterParameter[] = Object.freeze(
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder textures of the ore, the gem and the block.',
+    description: 'The colour of the drawn textures of the ore, the gem and the block.',
     group: 'Ore',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),

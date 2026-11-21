@@ -21,6 +21,7 @@ import type {
 } from '@msm/plugin-api';
 import type { Rgb } from '../assets/png';
 import {
+  artSeed,
   COLOURS,
   element,
   KINDS,
@@ -224,7 +225,7 @@ export function variantParameters(places: readonly VariantPlace[]): StarterParam
       {
         id: `variant_${slot}_colour`,
         label: `Variant ${slot} colour`,
-        description: `The colour of variant ${slot}'s placeholder skin.`,
+        description: `The colour of variant ${slot}'s drawn skin.`,
         group: 'Variants',
         type: 'colour',
         default: hexFromRgb(VARIANT_COLOURS[slot - 1] as Rgb),
@@ -232,7 +233,7 @@ export function variantParameters(places: readonly VariantPlace[]): StarterParam
       {
         id: `variant_${slot}_picture`,
         label: `Variant ${slot} picture`,
-        description: `A skin PNG for variant ${slot}, the same size as the model's texture; leave it empty for the placeholder.`,
+        description: `A skin PNG for variant ${slot}, the same size as the model's texture; leave it empty for a drawn skin.`,
         group: 'Variants',
         type: 'image',
         default: null,
@@ -339,7 +340,7 @@ export function skinParameters(colour: Rgb): StarterParameter[] {
     {
       id: 'colour',
       label: 'Colour',
-      description: 'The colour of the placeholder skin and spawn egg.',
+      description: 'The colour of the drawn skin and spawn egg.',
       group: 'Mob',
       type: 'colour',
       default: hexFromRgb(colour),
@@ -348,7 +349,7 @@ export function skinParameters(colour: Rgb): StarterParameter[] {
       id: 'picture',
       label: 'Skin picture',
       description:
-        "A skin PNG of the model's texture size (64 by 64, or 64 by 32 for the bird and fish). Leave it empty for a placeholder in the colour.",
+        "A skin PNG of the model's texture size (64 by 64, or 64 by 32 for the bird and fish). Leave it empty for a picture drawn in the colour.",
       group: 'Mob',
       type: 'image',
       default: null,
@@ -403,7 +404,7 @@ export function presetSize(
 
 /**
  * A skin texture at `textures/<path>.png`: the picked PNG when it has the preset's texture
- * size, else the preset's placeholder skin in `colour`.
+ * size, else the preset's drawn skin in `colour` (seed {@link artSeed} of the path).
  */
 export function presetSkinAsset(
   namespace: string,
@@ -417,7 +418,11 @@ export function presetSkinAsset(
   if (decoded !== null && decoded.width === width && decoded.height === height) {
     return { namespace, path: `textures/${path}.png`, bytes: decoded.bytes };
   }
-  return { namespace, path: `textures/${path}.png`, bytes: presetSkinPng(preset, { colour }) };
+  return {
+    namespace,
+    path: `textures/${path}.png`,
+    bytes: presetSkinPng(preset, { colour, seed: artSeed(namespace, path, 'box_skin') }),
+  };
 }
 
 /** The `msm:variants` component of a mob with extra `variants`, or `undefined` without any. */

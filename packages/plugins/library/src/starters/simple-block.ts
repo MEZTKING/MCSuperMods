@@ -87,7 +87,7 @@ export const SIMPLE_BLOCK_PARAMETERS: readonly StarterParameter[] = Object.freez
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Block',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -107,7 +107,7 @@ export const SIMPLE_BLOCK_PARAMETERS: readonly StarterParameter[] = Object.freez
     id: 'placement',
     label: 'When placed',
     description:
-      'A block that turns gets a second placeholder texture: a front with an opening, or ring-capped ends.',
+      'A block that turns gets a second drawn texture: a front with an opening, or ring-capped ends.',
     group: 'Block',
     type: 'choice',
     default: 'same',
@@ -246,7 +246,7 @@ export function simpleBlockBundle(context: BundleContext): ContentBundle {
             model,
             KINDS.model,
             { parent: 'minecraft:block/cube_all', textures: { all: model } },
-            `A full cube with the same texture on every side, drawn from textures/block/${name.id}.png. Paint over the placeholder to restyle it.`,
+            `A full cube with the same texture on every side, drawn from textures/block/${name.id}.png. Paint over the drawn picture to restyle it.`,
           ),
         ]),
     element(

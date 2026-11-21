@@ -62,7 +62,7 @@ export const SCRIPTED_ITEM_PARAMETERS: readonly StarterParameter[] = Object.free
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Item',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -282,7 +282,7 @@ export function scriptedItemBundle(context: BundleContext): ContentBundle {
         ids.model,
         KINDS.model,
         { parent: 'minecraft:item/generated', textures: { layer0: ids.model } },
-        `A flat item model drawn from textures/item/${name.id}.png. Paint over the placeholder to restyle it.`,
+        `A flat item model drawn from textures/item/${name.id}.png. Paint over the drawn picture to restyle it.`,
       ),
       element(
         ids.script,

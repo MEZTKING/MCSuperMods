@@ -8,7 +8,8 @@
  */
 
 import type { JsonObject } from '@msm/plugin-api';
-import { boxSkinPixels, encodePng, type Rgb, type SkinBox } from '../png';
+import { boxSkinArtPixels } from '../../art/skins';
+import { encodePng, type Rgb, type SkinBox } from '../png';
 import { geometryCubes, type VehicleFlowShape } from './models';
 
 /** Tyres, tracks and propellers. */
@@ -27,13 +28,15 @@ function toneOf(bone: string, colour: Rgb): Rgb {
 }
 
 /**
- * The entity texture of a flow's geometry in `colour`: each box drawn with box UV (lighter
- * top, darker bottom, a rim), toned by its bone; transparent outside the faces.
+ * The entity texture of a flow's geometry in `colour`: each box drawn as a smooth box skin
+ * (ADR 0092 D7: the top lighter, the bottom and sides darker, lit from the top left), toned by
+ * its bone; transparent outside the faces.
  *
- * @param geometry - A geometry of `vehicleFlowGeometry`.
+ * @param geometry - A geometry of `vehicleFlowGeometry` or `vehicleModelGeometry`.
  * @param colour - The body colour.
+ * @param seed - The variation; the flows pass `artSeed(namespace, path, 'box_skin')`.
  */
-export function vehicleTexturePng(geometry: JsonObject, colour: Rgb): Uint8Array {
+export function vehicleTexturePng(geometry: JsonObject, colour: Rgb, seed = 0): Uint8Array {
   const { size, cubes } = geometryCubes(geometry);
   const rgba = new Uint8Array(size * size * 4);
   const tones = new Map<string, { tone: Rgb; boxes: SkinBox[] }>();
@@ -45,7 +48,7 @@ export function vehicleTexturePng(geometry: JsonObject, colour: Rgb): Uint8Array
     tones.set(key, group);
   }
   for (const { tone, boxes } of tones.values()) {
-    const layer = boxSkinPixels(boxes, size, size, { colour: tone });
+    const layer = boxSkinArtPixels(boxes, size, size, { colour: tone, coat: 'smooth', seed });
     for (let index = 0; index < layer.length; index += 4) {
       if ((layer[index + 3] ?? 0) > 0) rgba.set(layer.subarray(index, index + 4), index);
     }

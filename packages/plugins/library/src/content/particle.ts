@@ -24,8 +24,9 @@ import type {
   JsonObject,
   ResourceLocation,
 } from '@msm/plugin-api';
-import { PARTICLE_FRAMES, type PlaceholderPattern, placeholderPng, type Rgb } from '../assets/png';
-import { COLOURS, element, KINDS, rl, texture } from './bundle';
+import { artPng, PATTERN_RECIPES } from '../art/artpng';
+import { PARTICLE_FRAMES, type PlaceholderPattern, type Rgb } from '../assets/png';
+import { artSeed, COLOURS, element, KINDS, rl, texture } from './bundle';
 import { decodePngDataUrl, type NameForms } from './parameters';
 
 /**
@@ -189,7 +190,8 @@ export function particleFrames(
     const decoded = answers.picture === null ? null : decodePngDataUrl(answers.picture);
     // Without a picture, the first frame of the spark in the colour stands in for it.
     const bytes =
-      decoded?.bytes ?? placeholderFrame('particle_spark', 0, answers.colour, namespace, id).bytes;
+      decoded?.bytes ??
+      drawnFrame('particle_spark', 0, answers.colour, namespace, id, `particle/${id}`).bytes;
     return {
       sprites: [rl(namespace, id)],
       assets: [{ namespace, path: `textures/particle/${id}.png`, bytes }],
@@ -201,24 +203,33 @@ export function particleFrames(
   return {
     sprites: frames.map((frame) => rl(namespace, `${id}_${frame}`)),
     assets: frames.map((frame) =>
-      placeholderFrame(pattern, frame, answers.colour, namespace, `${id}_${frame}`),
+      drawnFrame(pattern, frame, answers.colour, namespace, `${id}_${frame}`, `particle/${id}`),
     ),
     own: false,
   };
 }
 
-/** Frame `frame` of `pattern` in `colour`, at `textures/particle/<name>.png`. */
-function placeholderFrame(
+/**
+ * Frame `frame` of `pattern` drawn in `colour` (ADR 0092), at `textures/particle/<name>.png`.
+ * Every frame of one particle takes the seed of `seedPath` (`particle/<id>`), so the frames
+ * draw one animation.
+ */
+function drawnFrame(
   pattern: PlaceholderPattern,
   frame: number,
   colour: Rgb,
   namespace: string,
   name: string,
+  seedPath: string,
 ): ContentBundleAsset {
   return {
     namespace,
     path: `textures/particle/${name}.png`,
-    bytes: placeholderPng(pattern, { colour, frame }),
+    bytes: artPng(pattern, {
+      colour,
+      frame,
+      seed: artSeed(namespace, seedPath, PATTERN_RECIPES[pattern]),
+    }),
   };
 }
 
@@ -261,7 +272,7 @@ export function particleContent(
   const show = choiceOf(PARTICLE_SHOW, answers.show).value;
   const pictures =
     frames.sprites.length === 1
-      ? `textures/particle/${id}.png${frames.own ? ' (your picture)' : ' (a placeholder spark until you pick a picture)'}`
+      ? `textures/particle/${id}.png${frames.own ? ' (your picture)' : ' (a drawn spark until you pick a picture)'}`
       : `textures/particle/${id}_0.png to _${frames.sprites.length - 1}.png`;
   const looks = look.pattern === undefined ? 'your own picture' : look.words;
   const elements: ContentBundleElement[] = [

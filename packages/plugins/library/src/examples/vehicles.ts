@@ -9,13 +9,10 @@
  * Choices are inspired by the vehicle mods the research surveyed; nothing is copied from them.
  */
 import type { ExampleProject } from '@msm/plugin-api';
-import { COLOURS, element, KINDS, mobSkinTexture, rl, texture } from '../content/bundle';
+import { vehicleTexturePng } from '../assets/vehicles/pictures';
+import { artSeed, COLOURS, element, KINDS, rl, texture } from '../content/bundle';
 import { hasFabric } from '../content/supports';
-import {
-  type VehicleModel,
-  vehicleModelGeometry,
-  vehicleModelTextureSize,
-} from '../content/vehicle-models';
+import { type VehicleModel, vehicleModelGeometry } from '../content/vehicle-models';
 import { defineExample } from './define';
 
 const VEHICLE_KIND = 'msm:vehicle';
@@ -36,14 +33,14 @@ function vehicleLooks(
   model: VehicleModel,
   colour: typeof COLOURS.slate,
 ) {
-  const size = vehicleModelTextureSize(model);
   const own = rl(namespace, `entity/${name}`);
+  const geometry = vehicleModelGeometry(model, `entity.${name}`);
   return {
     elements: [
       element(
         own,
         KINDS.geoModel,
-        vehicleModelGeometry(model, `entity.${name}`),
+        geometry,
         `The boxed model of the ${name.replace(/_/g, ' ')}, drawn for MSM. The vehicle names its bones in turret, parts and muzzle.`,
       ),
       element(
@@ -54,7 +51,15 @@ function vehicleLooks(
       ),
     ],
     assets: [
-      mobSkinTexture(namespace, `entity/${name}`, size, size, colour),
+      {
+        namespace,
+        path: `textures/entity/${name}.png`,
+        bytes: vehicleTexturePng(
+          geometry,
+          colour,
+          artSeed(namespace, `entity/${name}`, 'box_skin'),
+        ),
+      },
       texture(namespace, `item/${name}`, 'plain', colour),
     ],
   };

@@ -124,7 +124,7 @@ const OPTIONAL_NAME_PATTERN = '^([A-Za-z][A-Za-z0-9]*( [A-Za-z0-9]+)*)?$';
 const picture = (id: string, label: string, colour: string): StarterParameter => ({
   id,
   label,
-  description: `A square PNG for this texture (16 by 16 as vanilla, up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}). Leave it empty for a placeholder in the ${colour}.`,
+  description: `A square PNG for this texture (16 by 16 as vanilla, up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}). Leave it empty for a picture drawn in the ${colour}.`,
   group: 'Pictures',
   type: 'image',
   default: null,
@@ -171,7 +171,7 @@ export const CROP_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Produce colour',
-    description: 'The colour of the placeholder produce, seeds and ripe crop.',
+    description: 'The colour of the drawn produce, seeds and ripe crop.',
     group: 'Crop',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -179,7 +179,7 @@ export const CROP_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'plant_colour',
     label: 'Plant colour',
-    description: 'The colour of the placeholder stalks and leaves.',
+    description: 'The colour of the drawn stalks and leaves.',
     group: 'Crop',
     type: 'colour',
     default: hexFromRgb(COLOURS.jade),

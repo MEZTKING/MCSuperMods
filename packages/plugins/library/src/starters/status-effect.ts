@@ -303,7 +303,7 @@ export function statusEffectBundle(context: BundleContext): ContentBundle {
       : ` Stat changes (attribute_modifiers): ${stats.map(describeStat).join(' and ')}; they are removed when the effect ends.`;
   const categoryWord =
     category === 'beneficial' ? 'a good' : category === 'harmful' ? 'a bad' : 'a neutral';
-  const effectNotes = `A custom status effect, ${categoryWord} one (category ${category}) shown in the colour ${hexFromRgb(colour)}. ${doing}${statWords} Its icon is textures/mob_effect/${name.id}.png; paint over the placeholder to restyle it. Custom effects need the Fabric mod jar export.`;
+  const effectNotes = `A custom status effect, ${categoryWord} one (category ${category}) shown in the colour ${hexFromRgb(colour)}. ${doing}${statWords} Its icon is textures/mob_effect/${name.id}.png; paint over the drawn picture to restyle it. Custom effects need the Fabric mod jar export.`;
 
   const elements = [
     packElement(namespace, `${projectName}: ${name.lower}`, PACK_NOTES),
@@ -416,7 +416,7 @@ export function statusEffectBundle(context: BundleContext): ContentBundle {
         namespace,
         itemPath,
         'minecraft:item/generated',
-        `A flat item model drawn from textures/item/${itemPath}.png. Paint over the placeholder to restyle it.`,
+        `A flat item model drawn from textures/item/${itemPath}.png. Paint over the drawn picture to restyle it.`,
       ),
     );
     assets.push(

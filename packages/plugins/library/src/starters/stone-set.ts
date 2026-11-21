@@ -142,7 +142,7 @@ export const STONE_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder textures.',
+    description: 'The colour of the drawn textures.',
     group: 'Stone',
     type: 'colour',
     default: hexFromRgb(COLOURS.slate),
@@ -197,7 +197,7 @@ export const STONE_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     (picture): StarterParameter => ({
       id: picture.id,
       label: picture.label,
-      description: `A square PNG for this texture (16 by 16 as vanilla, up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}). Leave it empty for a placeholder in the colour.`,
+      description: `A square PNG for this texture (16 by 16 as vanilla, up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}). Leave it empty for a picture drawn in the colour.`,
       group: 'Pictures',
       type: 'image',
       default: null,

@@ -24,7 +24,15 @@ import {
   vehicleItemPng,
   vehicleTexturePng,
 } from '../assets/vehicles/index';
-import { element, KINDS, modElement, PACK_NOTES, packElement, rl } from '../content/bundle';
+import {
+  artSeed,
+  element,
+  KINDS,
+  modElement,
+  PACK_NOTES,
+  packElement,
+  rl,
+} from '../content/bundle';
 import {
   booleanValue,
   hexFromRgb,
@@ -342,16 +350,18 @@ export function vehicleFlowBundle(input: VehicleFlowInput): ContentBundle {
       ),
     );
   }
+  // One seed for the body and every paint, so a paint is the same drawing in another colour.
+  const skinSeed = artSeed(namespace, `entity/${name.id}`, 'box_skin');
   const assets: ContentBundleAsset[] = [
     {
       namespace,
       path: `textures/entity/${name.id}.png`,
-      bytes: vehicleTexturePng(geometry, colour),
+      bytes: vehicleTexturePng(geometry, colour, skinSeed),
     },
     ...paints.map((paint) => ({
       namespace,
       path: `textures/entity/${name.id}_${paint.id}.png`,
-      bytes: vehicleTexturePng(geometry, paint.colour),
+      bytes: vehicleTexturePng(geometry, paint.colour, skinSeed),
     })),
     { namespace, path: `textures/item/${name.id}.png`, bytes: vehicleItemPng(shape, colour) },
   ];

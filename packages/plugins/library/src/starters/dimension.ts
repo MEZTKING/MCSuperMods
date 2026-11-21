@@ -497,7 +497,7 @@ export const DIMENSION_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     id: 'colour',
     label: 'Key or portal colour',
     description:
-      'The colour of the key item, or of the portal and its frame, on their placeholder textures.',
+      'The colour of the key item, or of the portal and its frame, on their drawn textures.',
     group: 'Travel',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),

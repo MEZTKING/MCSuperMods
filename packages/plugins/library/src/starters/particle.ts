@@ -66,7 +66,7 @@ export const PARTICLE_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'picture',
     label: 'My own picture',
-    description: `For My own picture: one PNG, 8 by 8 as vanilla's particles (up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}), drawn as it is. Leave it empty for a placeholder spark.`,
+    description: `For My own picture: one PNG, 8 by 8 as vanilla's particles (up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}), drawn as it is. Leave it empty for a drawn spark.`,
     group: 'Look',
     type: 'image',
     default: null,

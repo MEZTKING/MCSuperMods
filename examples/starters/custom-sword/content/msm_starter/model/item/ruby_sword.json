@@ -10,6 +10,6 @@
   "kind": "minecraft:model",
   "meta": {
     "createdAt": "2026-11-04T00:00:00.000Z",
-    "notes": "A handheld item model: held like a tool, drawn from textures/item/ruby_sword.png. Paint over the placeholder to restyle the blade."
+    "notes": "A handheld item model: held like a tool, drawn from textures/item/ruby_sword.png. Paint over the drawn picture to restyle the blade."
   }
 }

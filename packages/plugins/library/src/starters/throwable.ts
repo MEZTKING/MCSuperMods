@@ -142,7 +142,7 @@ export const THROWABLE_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Item',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -384,7 +384,7 @@ export function throwableBundle(context: BundleContext): ContentBundle {
       namespace,
       name.id,
       style.parent,
-      `A ${style.parent.endsWith('handheld') ? 'handheld' : 'flat'} item model drawn from textures/item/${name.id}.png. Paint over the placeholder to restyle it.`,
+      `A ${style.parent.endsWith('handheld') ? 'handheld' : 'flat'} item model drawn from textures/item/${name.id}.png. Paint over the drawn picture to restyle it.`,
     ),
   ];
   if (ingredient !== undefined && ingredient.value !== 'none') {

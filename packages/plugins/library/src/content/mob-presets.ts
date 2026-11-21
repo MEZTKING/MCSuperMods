@@ -17,7 +17,8 @@
  * @packageDocumentation
  */
 import type { JsonObject } from '@msm/plugin-api';
-import { boxSkinPng, type PlaceholderOptions, type SkinBox } from '../assets/png';
+import { type ArtCoat, boxSkinArtPng } from '../art/skins';
+import { DEFAULT_COLOUR, type Rgb, type SkinBox } from '../assets/png';
 import {
   ANIMATION_FORMAT_VERSION,
   bipedAnimations,
@@ -665,14 +666,44 @@ export function presetSkinBoxes(name: MobPresetName): SkinBox[] {
 }
 
 /**
- * A byte-stable skin PNG for a preset in one colour (ADR 0073 D1), at the preset's texture
- * size: every cube's faces in the colour with a darker rim, eyes on the face, the saddle in
- * leather brown, transparent elsewhere.
+ * The coat each preset's skin is drawn in (ADR 0092 D7): fur for the animals, scales for the
+ * fish, smooth for the figure and stone for the box-shaped, golem-like cube creature.
+ */
+export const PRESET_COATS: Readonly<Record<MobPresetName, ArtCoat>> = Object.freeze({
+  quadruped: 'fur',
+  bird: 'fur',
+  fish: 'scales',
+  flyer: 'fur',
+  biped: 'smooth',
+  cube_creature: 'stone',
+});
+
+/** Options of {@link presetSkinPng}. */
+export interface PresetSkinOptions {
+  /** The main colour. */
+  colour?: Rgb;
+  /** The second colour (belly and spots). */
+  accent?: Rgb;
+  /** The variation; defaults to 0. The flows pass `artSeed(namespace, path, 'box_skin')`. */
+  seed?: number;
+  /** The coat; defaults to the preset's {@link PRESET_COATS}. */
+  coat?: ArtCoat;
+}
+
+/**
+ * A byte-stable skin PNG for a preset (ADR 0073 D1, ADR 0092 D7), at the preset's texture
+ * size: every cube drawn as a box skin in the preset's coat, each face shaded by its side, eyes
+ * on the face, the saddle in leather, transparent elsewhere.
  *
  * @param name - The preset.
- * @param options - The main colour.
+ * @param options - The colours, seed and coat.
  */
-export function presetSkinPng(name: MobPresetName, options: PlaceholderOptions = {}): Uint8Array {
+export function presetSkinPng(name: MobPresetName, options: PresetSkinOptions = {}): Uint8Array {
   const { width, height } = MOB_PRESETS[name].texture;
-  return boxSkinPng(presetSkinBoxes(name), width, height, options);
+  return boxSkinArtPng(presetSkinBoxes(name), width, height, {
+    colour: options.colour ?? DEFAULT_COLOUR,
+    ...(options.accent === undefined ? {} : { accent: options.accent }),
+    coat: options.coat ?? PRESET_COATS[name],
+    seed: options.seed ?? 0,
+  });
 }

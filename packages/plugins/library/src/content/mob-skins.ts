@@ -1,12 +1,13 @@
 /**
  * Mob skins (ADR 0064 D6): the vanilla mob variant kinds the Mob skin flow and the examples
  * write, with the texture sizes their models map (read from the client jars of both built-in
- * targets, where they agree). Textures are generated two-tone placeholders,
- * never Mojang files.
+ * targets, where they agree). Textures are drawn as an even coat in the animal's coat (ADR 0092
+ * D7, plan limit A3), never Mojang files.
  */
 import type { ContentBundleAsset, Json, JsonObject } from '@msm/plugin-api';
+import type { ArtCoat } from '../art/skins';
 import type { Rgb } from '../assets/png';
-import { KINDS, mobSkinTexture } from './bundle';
+import { artSeed, KINDS, mobSkinTexture } from './bundle';
 
 /** An animal the Mob skin flow offers. */
 export type SkinAnimal = 'wolf' | 'cat' | 'pig' | 'cow' | 'chicken' | 'frog';
@@ -73,6 +74,16 @@ export const SKIN_ANIMALS: Readonly<Record<SkinAnimal, SkinAnimalFacts>> = Objec
   },
 });
 
+/** The coat each animal's variant textures are drawn in: fur, but smooth for pigs and frogs. */
+export const SKIN_COATS: Readonly<Record<SkinAnimal, ArtCoat>> = Object.freeze({
+  wolf: 'fur',
+  cat: 'fur',
+  pig: 'smooth',
+  cow: 'fur',
+  chicken: 'fur',
+  frog: 'smooth',
+});
+
 /** The shades of a skin colour the variants use: the colour, the tame look, the angry look. */
 export const SKIN_SHADES: readonly number[] = Object.freeze([0, 24, -32]);
 
@@ -111,9 +122,20 @@ export function mobSkinVariant(
   const facts = SKIN_ANIMALS[animal];
   const assets: ContentBundleAsset[] = [];
   const textures: string[] = [];
+  const seed = artSeed(namespace, `entity/${animal}/${path}`, 'box_skin');
   const add = (suffix: string, size: { width: number; height: number }, tint: Rgb): string => {
     const texturePath = `entity/${animal}/${path}${suffix}`;
-    assets.push(mobSkinTexture(namespace, texturePath, size.width, size.height, tint));
+    assets.push(
+      mobSkinTexture(
+        namespace,
+        texturePath,
+        size.width,
+        size.height,
+        tint,
+        SKIN_COATS[animal],
+        seed,
+      ),
+    );
     textures.push(`textures/${texturePath}.png`);
     return `${namespace}:${texturePath}`;
   };

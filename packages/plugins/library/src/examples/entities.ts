@@ -15,6 +15,7 @@ import type {
   ExampleProject,
   JsonObject,
 } from '@msm/plugin-api';
+import { boxesOfGeoModel } from '../art/skins';
 import type { Rgb } from '../assets/png';
 import { COLOURS, element, KINDS, rl, skinTexture, texture } from '../content/bundle';
 import {
@@ -58,6 +59,7 @@ function mob(input: MobInput): ContentBundle {
   const model = rl(namespace, `entity/${name}`);
   const animations = rl(namespace, `entity/${name}_animations`);
   const attack = input.attack === true;
+  const geometry = input.shape === 'biped' ? bipedGeometry(name) : cubeCreatureGeometry(name);
   const elements: ContentBundleElement[] = [
     element(
       id,
@@ -82,12 +84,7 @@ function mob(input: MobInput): ContentBundle {
       },
       input.notes.entity,
     ),
-    element(
-      model,
-      KINDS.geoModel,
-      input.shape === 'biped' ? bipedGeometry(name) : cubeCreatureGeometry(name),
-      input.notes.model,
-    ),
+    element(model, KINDS.geoModel, geometry, input.notes.model),
     element(
       animations,
       KINDS.animation,
@@ -95,7 +92,12 @@ function mob(input: MobInput): ContentBundle {
       input.notes.animations,
     ),
   ];
-  const assets = [skinTexture(namespace, `entity/${name}`, input.colour)];
+  const assets = [
+    skinTexture(namespace, `entity/${name}`, input.colour, {
+      boxes: boxesOfGeoModel(geometry) ?? [],
+      coat: input.shape === 'biped' ? 'smooth' : 'stone',
+    }),
+  ];
   if (input.egg) assets.push(texture(namespace, `item/${name}_spawn_egg`, 'egg', input.colour));
   return { elements, assets };
 }

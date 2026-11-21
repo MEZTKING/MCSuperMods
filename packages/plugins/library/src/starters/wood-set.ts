@@ -199,7 +199,7 @@ export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     id: 'colour',
     label: 'Wood colour',
     description:
-      'The colour of the placeholder planks; the bark is drawn in darker shades of it, the stripped wood in lighter ones.',
+      'The colour of the drawn planks; the bark is drawn in darker shades of it, the stripped wood in lighter ones.',
     group: 'Wood',
     type: 'colour',
     default: hexFromRgb(COLOURS.wood),
@@ -207,7 +207,7 @@ export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'leaf_colour',
     label: 'Leaf colour',
-    description: 'The colour of the placeholder leaves and sapling.',
+    description: 'The colour of the drawn leaves and sapling.',
     group: 'Wood',
     type: 'colour',
     default: hexFromRgb(COLOURS.amber),
@@ -317,7 +317,7 @@ export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     (picture): StarterParameter => ({
       id: picture.id,
       label: picture.label,
-      description: `A square PNG for this texture (16 by 16 as vanilla, up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}). Leave it empty for a placeholder in the ${picture.leafy ? 'leaf' : 'wood'} colour.`,
+      description: `A square PNG for this texture (16 by 16 as vanilla, up to ${PICTURE_MAX_SIZE} by ${PICTURE_MAX_SIZE}). Leave it empty for a picture drawn in the ${picture.leafy ? 'leaf' : 'wood'} colour.`,
       group: 'Pictures',
       type: 'image',
       default: null,

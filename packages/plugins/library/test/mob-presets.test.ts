@@ -21,6 +21,7 @@ import {
 } from '@msm/schemas';
 import { builtInTargets, readVendoredJson } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
+import { oklchToRgb } from '../src/art/colour';
 import { SADDLE_COLOUR } from '../src/assets/png';
 import {
   MOB_PRESET_NAMES,
@@ -349,8 +350,10 @@ describe('preset skins', () => {
       ...image.rgba.subarray((y * image.width + x) * 4, (y * image.width + x) * 4 + 4),
     ];
     // Front face from (6, 27); eyes on row 29, columns 7 and 10.
-    expect(pixel(7, 29)).toEqual([24, 22, 28, 255]);
-    expect(pixel(10, 29)).toEqual([24, 22, 28, 255]);
+    // The drawn skins' eye colour (ADR 0092 D7, `art/skins.ts`).
+    const eye = [...oklchToRgb([0.2, 0.02, 280]), 255];
+    expect(pixel(7, 29)).toEqual(eye);
+    expect(pixel(10, 29)).toEqual(eye);
     const fish = presetSkinBoxes('fish').find((box) => box.role === 'side_face');
     expect(fish).toMatchObject({ u: 0, v: 0, w: 3, h: 6, d: 10 });
   });

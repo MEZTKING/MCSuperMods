@@ -36,7 +36,7 @@ import type {
   ResourceLocation,
   StarterParameter,
 } from '@msm/plugin-api';
-import { armorLayerPng, bodyArmorLayerPng, type PlaceholderPattern } from '../assets/png';
+import type { PlaceholderPattern } from '../assets/png';
 import {
   COLOURS,
   element,
@@ -392,7 +392,7 @@ export const GEAR_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
   {
     id: 'colour',
     label: 'Colour',
-    description: 'The colour of every placeholder texture of the set.',
+    description: 'The colour of every drawn texture of the set.',
     group: 'Material',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -715,7 +715,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       materialModel,
       KINDS.model,
       { parent: 'minecraft:item/generated', textures: { layer0: materialModel } },
-      `A flat item model drawn from textures/${materialModel.slice(namespace.length + 1)}.png. Paint over the placeholder to restyle it.`,
+      `A flat item model drawn from textures/${materialModel.slice(namespace.length + 1)}.png. Paint over the drawn picture to restyle it.`,
     ),
   );
   assets.push(
@@ -886,7 +886,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         templateModel,
         KINDS.model,
         { parent: 'minecraft:item/generated', textures: { layer0: templateModel } },
-        `A flat item model drawn from textures/item/${name.id}_upgrade_smithing_template.png, a placeholder to paint over.`,
+        `A flat item model drawn from textures/item/${name.id}_upgrade_smithing_template.png, a drawn picture to paint over.`,
       ),
       element(
         rl(
@@ -1152,16 +1152,13 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         `humanoid_leggings draws the leggings from textures/entity/equipment/humanoid_leggings/${name.id}.png`,
       );
       assets.push(
-        {
+        texture(namespace, `entity/equipment/humanoid/${name.id}`, 'armor_layer_1', colour),
+        texture(
           namespace,
-          path: `textures/entity/equipment/humanoid/${name.id}.png`,
-          bytes: armorLayerPng(1, colour),
-        },
-        {
-          namespace,
-          path: `textures/entity/equipment/humanoid_leggings/${name.id}.png`,
-          bytes: armorLayerPng(2, colour),
-        },
+          `entity/equipment/humanoid_leggings/${name.id}`,
+          'armor_layer_2',
+          colour,
+        ),
       );
     }
     for (const piece of bodyArmour) {
@@ -1169,11 +1166,14 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
       files.push(
         `${piece.layer} draws the ${piece.label.toLowerCase()} from textures/entity/equipment/${piece.layer}/${name.id}.png`,
       );
-      assets.push({
-        namespace,
-        path: `textures/entity/equipment/${piece.layer}/${name.id}.png`,
-        bytes: bodyArmorLayerPng(piece.slot, colour),
-      });
+      assets.push(
+        texture(
+          namespace,
+          `entity/equipment/${piece.layer}/${name.id}`,
+          piece.slot === 'horse' ? 'horse_armor_layer' : 'wolf_armor_layer',
+          colour,
+        ),
+      );
     }
     const listed =
       files.length === 1 ? files[0] : `${files.slice(0, -1).join('; ')}; ${files.at(-1)}`;
@@ -1182,7 +1182,7 @@ export function gearSetBundle(context: BundleContext): ContentBundle {
         ids.equipment,
         KINDS.equipment,
         { layers },
-        `How the armour looks when worn; the armour pieces name it in equipment_asset. The texture id ${material} names one file in each layer folder: ${listed}. ${bodyArmour.length === 0 ? 'Both are 64 by 32 placeholders in the vanilla armour layout' : `${files.length === 1 ? 'It is a placeholder' : 'They are placeholders'} in the vanilla texture layouts (64 by 32${bodyArmour.some((piece) => piece.slot === 'horse') ? ', the horse layer 64 by 64' : ''})`}: paint over ${files.length === 1 ? 'it' : 'them'}, or replace ${files.length === 1 ? 'it' : 'them'} with textures from Blockbench.`,
+        `How the armour looks when worn; the armour pieces name it in equipment_asset. The texture id ${material} names one file in each layer folder: ${listed}. ${bodyArmour.length === 0 ? 'Both are 64 by 32 drawn pictures in the vanilla armour layout' : `${files.length === 1 ? 'It is a drawn picture' : 'They are drawn pictures'} in the vanilla texture layouts (64 by 32${bodyArmour.some((piece) => piece.slot === 'horse') ? ', the horse layer 64 by 64' : ''})`}: paint over ${files.length === 1 ? 'it' : 'them'}, or replace ${files.length === 1 ? 'it' : 'them'} with textures from Blockbench.`,
       ),
     );
   }

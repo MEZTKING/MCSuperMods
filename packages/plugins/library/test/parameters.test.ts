@@ -12,6 +12,8 @@ import type {
 } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
+import type { PlaceholderPattern, Rgb } from '../src/assets/png';
+import { texture } from '../src/content/bundle';
 import {
   attributeModifiers,
   chosenStats,
@@ -31,14 +33,21 @@ import {
   rgbFromHex,
 } from '../src/content/parameters';
 import {
-  armorLayerPng,
-  bodyArmorLayerPng,
   encodePng,
   libraryStarters,
   nearestTrimPalette,
   paintingPng,
   placeholderPng,
 } from '../src/index';
+
+/**
+ * The drawn texture a flow writes at `path` (`textures/<p>.png` of `demo`) for `pattern` in
+ * `colour`, with the default seed of ADR 0092 D11.
+ */
+function drawnAt(path: string | undefined, pattern: PlaceholderPattern, colour: Rgb): Uint8Array {
+  const inner = (path ?? '').replace(/^textures\//, '').replace(/\.png$/, '');
+  return texture('demo', inner, pattern, colour).bytes;
+}
 
 /**
  * A minimal Ogg Vorbis file: a first page with the identification header, and a last page
@@ -591,7 +600,7 @@ describe('Creator flows', () => {
       ]),
     );
     const layer = bundle.assets.find((asset) => asset.path.endsWith('humanoid/ruby.png'));
-    expect(layer?.bytes).toEqual(armorLayerPng(1, [196, 28, 52]));
+    expect(layer?.bytes).toEqual(drawnAt(layer?.path, 'armor_layer_1', [196, 28, 52]));
     expect(data(bundle, 'demo:en_us')).toMatchObject({
       'item.demo.ruby': 'Ruby',
       'item.demo.ruby_helmet': 'Ruby Helmet',
@@ -795,13 +804,17 @@ describe('Creator flows', () => {
     expect(data(bundle, 'minecraft:trim_materials')).toEqual({ values: ['demo:jade'] });
     const asset = (path: string) => bundle.assets.find((entry) => entry.path === path)?.bytes;
     expect(asset('textures/entity/equipment/horse_body/jade.png')).toEqual(
-      bodyArmorLayerPng('horse', [40, 160, 96]),
+      drawnAt('textures/entity/equipment/horse_body/jade.png', 'horse_armor_layer', [40, 160, 96]),
     );
     expect(asset('textures/entity/equipment/wolf_body/jade.png')).toEqual(
-      bodyArmorLayerPng('wolf', [40, 160, 96]),
+      drawnAt('textures/entity/equipment/wolf_body/jade.png', 'wolf_armor_layer', [40, 160, 96]),
     );
     expect(asset('textures/item/jade_upgrade_smithing_template.png')).toEqual(
-      placeholderPng('smithing_template', { colour: [24, 96, 58] }),
+      drawnAt(
+        'textures/item/jade_upgrade_smithing_template.png',
+        'smithing_template',
+        [24, 96, 58],
+      ),
     );
     expect(bundle.assets.some((entry) => entry.path.includes('humanoid'))).toBe(false);
   });
@@ -846,7 +859,7 @@ describe('Creator flows', () => {
       expect(ids(bundle), type).toContain('demo:ruby_thing_from_emerald');
       expect(ids(bundle).includes('minecraft:swords'), type).toBe(type === 'sword');
       expect(bundle.assets[0]?.bytes, type).toEqual(
-        placeholderPng(type as 'sword', { colour: [196, 28, 52] }),
+        drawnAt(bundle.assets[0]?.path, type as 'sword', [196, 28, 52]),
       );
     }
     const custom = build(starter('weapon'), {
@@ -984,9 +997,11 @@ describe('Creator flows', () => {
       'textures/item/ruby_rush_tonic.png',
     ]);
     expect(bundle.assets[0]?.bytes).toEqual(
-      placeholderPng('effect_icon', { colour: [196, 28, 52] }),
+      drawnAt(bundle.assets[0]?.path, 'effect_icon', [196, 28, 52]),
     );
-    expect(bundle.assets[1]?.bytes).toEqual(placeholderPng('bottle', { colour: [196, 28, 52] }));
+    expect(bundle.assets[1]?.bytes).toEqual(
+      drawnAt(bundle.assets[1]?.path, 'bottle', [196, 28, 52]),
+    );
   });
 
   it('Status effect: every category, behaviour, particle and source follows the values', () => {
@@ -1065,7 +1080,7 @@ describe('Creator flows', () => {
     expect(data(flask, 'demo:ruby_rush_flask_from_blaze_powder')).toMatchObject({
       ingredients: ['minecraft:blaze_powder', 'minecraft:glass_bottle', 'minecraft:gunpowder'],
     });
-    expect(flask.assets[1]?.bytes).toEqual(placeholderPng('flask', { colour: [196, 28, 52] }));
+    expect(flask.assets[1]?.bytes).toEqual(drawnAt(flask.assets[1]?.path, 'flask', [196, 28, 52]));
 
     const bare = build(starter('status-effect'), { source: 'none' });
     expect(bare.elements.map((entry) => entry.kind)).toEqual([
@@ -1135,7 +1150,9 @@ describe('Creator flows', () => {
       ingredients: ['minecraft:flint', 'minecraft:iron_ingot'],
       result: { id: 'demo:ruby_knife', count: 2 },
     });
-    expect(bundle.assets[0]?.bytes).toEqual(placeholderPng('knife', { colour: [196, 28, 52] }));
+    expect(bundle.assets[0]?.bytes).toEqual(
+      drawnAt(bundle.assets[0]?.path, 'knife', [196, 28, 52]),
+    );
   });
 
   it('Throwable: every style, weight and hit follows the values', () => {
@@ -1156,7 +1173,7 @@ describe('Creator flows', () => {
       ] as JsonObject;
       expect(component.after_throw, style).toBe(afterThrow);
       expect(bundle.assets[0]?.bytes, style).toEqual(
-        placeholderPng(pattern as 'ball', { colour: [196, 28, 52] }),
+        drawnAt(bundle.assets[0]?.path, pattern as 'ball', [196, 28, 52]),
       );
     }
     // A bomb bursts unless another hit is chosen.

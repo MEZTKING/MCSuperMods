@@ -12,7 +12,9 @@
  * @packageDocumentation
  */
 import type { ContentBundleAsset, JsonObject, StarterParameter } from '@msm/plugin-api';
-import { placeholderPng, type Rgb } from '../assets/png';
+import { artPng } from '../art/artpng';
+import type { Rgb } from '../assets/png';
+import { artSeed } from './bundle';
 import { numberValue, type ParameterValues, stringValue } from './parameters';
 
 /** The "no effect" value of an effect slot. */
@@ -368,13 +370,16 @@ export function colourInt(rgb: Rgb): number {
 }
 
 /**
- * The 18 by 18 placeholder icon of the effect `<namespace>:<path>`, at the fixed path
+ * The 18 by 18 drawn icon (ADR 0092, recipe `effect_icon`, seed {@link artSeed}) of the effect `<namespace>:<path>`, at the fixed path
  * `textures/mob_effect/<path>.png` the game looks it up by (ADR 0055 D2, D6).
  */
 export function effectIconAsset(namespace: string, path: string, colour: Rgb): ContentBundleAsset {
   return {
     namespace,
     path: `textures/mob_effect/${path}.png`,
-    bytes: placeholderPng('effect_icon', { colour }),
+    bytes: artPng('effect_icon', {
+      colour,
+      seed: artSeed(namespace, `mob_effect/${path}`, 'effect_icon'),
+    }),
   };
 }

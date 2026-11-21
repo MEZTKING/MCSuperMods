@@ -68,7 +68,7 @@ export const CUSTOM_SWORD_PARAMETERS: readonly StarterParameter[] = Object.freez
   {
     id: 'colour',
     label: 'Blade colour',
-    description: 'The colour of the placeholder texture.',
+    description: 'The colour of the drawn texture.',
     group: 'Sword',
     type: 'colour',
     default: hexFromRgb(COLOURS.ruby),
@@ -161,7 +161,7 @@ export function customSwordBundle(context: BundleContext): ContentBundle {
         model,
         KINDS.model,
         { parent: 'minecraft:item/handheld', textures: { layer0: model } },
-        `A handheld item model: held like a tool, drawn from textures/item/${sword.id}.png. Paint over the placeholder to restyle the blade.`,
+        `A handheld item model: held like a tool, drawn from textures/item/${sword.id}.png. Paint over the drawn picture to restyle the blade.`,
       ),
       element(
         rl(namespace, 'en_us'),
