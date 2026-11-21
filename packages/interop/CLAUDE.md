@@ -17,6 +17,7 @@ Phase 2 code complete: `minecraft-install/` locates `.minecraft`, lists versions
 | `node.ts` | 1 | Subpath `@msm/interop/node`: Node `InstallFileSystem`, `nodeEnv`, `sha1Hex` (main process only) |
 | `nbt/` | 3 | `level-dat.ts`: `readLevelName` (gzip, zlib or raw NBT; never throws). Structure files are read and written by `@msm/plugin-structures` importers and exporters (ADR 0021) |
 | `blockbench/` | 5 | ADR 0029 D3: `convert.ts` (`convertBbmodel`: 4.x and 5.x projects, cubes only, Bedrock export signs, 5.x keyframes flipped, geometry 1.12.0 and animations 1.8.0, embedded PNGs; `java_block` refused), `passthrough.ts` (`.geo.json`, `.animation.json` checked, unchanged), `importer.ts` (`blockbenchImporter`: `msm:geo_model` `<ns>:entity/<name>`, `msm:animation` `<name>_animations`, `textures/entity/`, original as `blockbench/<name>.bbmodel`) |
+| `world/` | Try it | ADR 0087: `readWorldArea(readFile, worldDir, { centre, inflate? })` reads a 48 by 32 by 48 `WorldArea` from a save's Anvil region files (`region.ts`, `chunk.ts`, `level.ts`, `area.ts`; gzip, zlib, uncompressed and `.mcc` chunks, the 1.18+ layout, 26.x palettes and `dimensions/minecraft/overworld/`; Overworld only, LZ4 refused, `WorldReadError` codes); pure, used by the app's `platform/try-it-worlds.ts` |
 
 ## Conventions
 

@@ -6678,3 +6678,25 @@ Next
 
 **Next**
 - B403 close.
+
+## 2026-11-21 — orchestrator — B403 close of Try it
+
+**What**
+- Reviewed ADR 0085 against the merged code at dac9ae5 (`packages/sim/src/` world, blocks, player, tick, entities, events, grounds, script with `shim.ts`, `bridge.ts`, `runner.ts`, `rule-steps.ts`; `local-source.ts`; the app's `tryit/` view, renderer, `script-worker.ts`, `WhatHappened.tsx`, `effects.ts`, `MockScreen.tsx`; the CSP in `app/src/renderer/index.html`) and the plan's notes for B385–B402, B404, B405 and the other batches' Try it briefs (B428, B429, B463, B483). Accepted with a dated "Findings at close (B403)" section: what was built per decision, what moved between the fidelity levels, the CSP finding (the worker runs under `script-src 'self'; worker-src 'self' blob:` with no `unsafe-eval`), the in-process runner that cannot stop a loop, the events the preview never fires (hurt, damaged, respawn, leave, dimension change; and for scripts the key and vehicle events), logic rule steps depending on the compiler's line shapes (pinned by `rule-steps.test.ts`), the sky as a choice, the parity numbers, the measurements and sizes, the decisions taken and the open follow-ups. The plan's fact table (T1–T16, with an "At close" column) and limits (L1–L19 with their outcome, L20–L24 added during the plan) moved into the ADR.
+- ADR 0087 (already Accepted): findings added (Quick world as a fourth ground, the 26.x reader fixes, error codes, loading rules, measurements, follow-ups). ADR 0086 (Surprise me, Proposed): the code matches D1–D9 (17 flow recipes, slot weights, the 0.6 lucky-rule chance, `MAX_SEED`, `crypto.randomUUID` set ids, `foldItems`, 200 seeds per target, Pick for me, File > Surprise Me…, the palette); accepted with findings (Home now 27 tiles under eight headings after ADRs 0091 and 0101). ADR 0083: D2 points to ADR 0086 D8's tiles, D4's toolbar list gains Try it.
+- `docs/DESIGN.md`: a "Try it" subsection in §8 after "Test in Minecraft" (and the Very easy paragraph with Surprise me and the grouped tiles), §14 (the CSP's `worker-src`), §15 (`packages/sim/` and its dependency rule), §16 (a Try it row). Still 19 H2 headings; no new `DESIGN.md#` links.
+- ROADMAP: a section "Try it, the in-app test area (done, awaiting the user's checks)" with the slices ticked, the user's checks and the follow-ups gathered; the Rules section's link repointed; a Milestone Log row. HANDOFF: header, Start here state (1.5.2 being built as a draft), "State at handover", "Where things stand", "Waiting on the user" (the answered questions summarised; new items: the 1.5.2 Windows test, Try it on Windows, the WebGL fallback question, world safety, art, AI pictures, batch 2 defaults), "Open follow-ups", "Next" (the art batch first) and "Try it lessons". AGENTS.md: one open plan. Coverage audit: Try it has no row of its own (its W-A6 line already names ADR 0087); unchanged.
+- Status lines: root `CLAUDE.md` (70 lines), `docs/CLAUDE.md` (44), `app/CLAUDE.md` (52), `packages/sim/CLAUDE.md` (44: the status, an `events/` line, the parity test and `blockSteppedOn`), `packages/interop/CLAUDE.md` (50: a `world/` row). `docs/PLAN-art.md` fact A13 no longer names the deleted plan.
+- `docs/guide/try-it.md`: two stale limits rows fixed (containers and machines now open as mock-ups; project sounds play and Minecraft's are captions), both left behind since B398.
+- Deleted `docs/PLAN-test-world.md`; `git grep PLAN-test-world` now finds only past DEVLOG entries and two plain mentions in ADR 0085 and HANDOFF saying it was deleted.
+- Checks: `pnpm --filter @msm/sim test` 601 of 601 (the first run on the shared machine failed once without the failing test's name in the kept output; the rerun was green). Not run: the app suite, `pnpm build`, the size check, e2e and Gradle (the close changes no code).
+
+**Decisions**
+- The fact table and limits live in ADR 0085 (the plan's umbrella ADR); ADR 0087 keeps only its own findings.
+- ADR 0086 is accepted: its code was reviewed against every decision and nothing is missing; the tile count changed only by later ADRs.
+- The WebGL fallback on a PC with a blocked GPU (T9) is left to the user as HANDOFF question 3 rather than decided here: it affects every preview, not only Try it.
+
+**Next**
+- Merge `b403` onto the session branch, confirm the four CI jobs, fast-forward `main` and record the clean totals.
+- Finish the 1.5.2 draft for the user's test; ask the HANDOFF questions; carry on with the art batch's wave 2.
+- Small follow-up outside a close: the AI helper's `TRY_IT` line in `packages/ai/src/system-prompt.ts` says sounds are not in Try it, though project sounds play (Minecraft's are captions).

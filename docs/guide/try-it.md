@@ -216,9 +216,9 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **No survival** | No health, hunger, damage, armour, mining speed, tool wear, drops or loot. Blocks break at once and drop nothing. |
 | **Growth only with Grow** | Crops and saplings grow only when you use **Grow**. Saplings never become trees, leaves never fall and crops plant on anything. |
 | **Minecraft's blocks are props** | They are drawn and solid, nothing more: chests do not open and pistons do not move. |
-| **Containers and machines do not open** | Their windows are Minecraft's own menus and are not shown here. |
+| **Containers and machines are mock-ups** | Using one opens a plain window marked **Mock-up** with its title and slots (chest rows, the hopper's five, the dispenser's three by three, a machine's input, fuel and output), not Minecraft's own menu. No items move and nothing is smelted; the close button, Esc or E closes it. |
 | **Portals do not take you anywhere** | There are no other dimensions here, and frames are not checked. |
-| **Minecraft's looks need your Minecraft folder; sounds are not played** | Minecraft's pictures are never shipped with MCSuperMods. Without your Minecraft folder, project blocks that build on Minecraft's models use MCSuperMods' own simple shapes, Minecraft's blocks cannot be placed, and the Minecraft blocks of a ground are plain coloured cubes. Try it plays no sounds. |
+| **Minecraft's looks need your Minecraft folder; its sounds are captions** | Minecraft's pictures are never shipped with MCSuperMods. Without your Minecraft folder, project blocks that build on Minecraft's models use MCSuperMods' own simple shapes, Minecraft's blocks cannot be placed, and the Minecraft blocks of a ground are plain coloured cubes. Your project's own sounds play; Minecraft's sounds show only as a caption marked "(plays in the game only)". |
 | **Needs WebGL** | Without it, Try it says so and offers **Play in Minecraft**. |
 | **A small area that is not saved** | 48 by 48 blocks, 32 high, so it stays fast on any computer. Placing stops at the edge, and the area is cleared when you close the project. |
 | **Animations as in the preview** | Mobs move as in the Entity Studio's preview: smooth steps are straight lines and Molang counts as 0. GeckoLib plays more in the game. |
