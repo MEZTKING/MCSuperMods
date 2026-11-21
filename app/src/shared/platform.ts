@@ -1043,8 +1043,11 @@ export interface PlatformAdapter {
 
 /** The renderer's side of the window close round trip ({@link MsmBridge.onCloseRequest}). */
 export interface CloseRequestHandlers {
-  /** Reports held-back edits; returns whether the project has unsaved changes. */
-  report(): boolean;
+  /**
+   * Reports held-back edits; resolves whether the project has unsaved changes once they have
+   * landed (a Rules edit reaches the project asynchronously).
+   */
+  report(): boolean | Promise<boolean>;
   /** Saves the project; resolves `true` once it is saved, `false` when saving failed. */
   save(): Promise<boolean>;
 }

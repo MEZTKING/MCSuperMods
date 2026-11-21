@@ -389,13 +389,14 @@ const bridge: MsmBridge = {
         ipcRenderer.send(EventChannels.closeAnswer, { id, value });
       };
       if (op === 'report') {
-        let dirty = true;
+        // Unknown state (a throw or a rejection): let main's prompt ask rather than lose changes.
+        let reported: boolean | Promise<boolean> = true;
         try {
-          dirty = handlers.report();
+          reported = handlers.report();
         } catch {
-          // Unknown state: let main's prompt ask rather than lose changes.
+          reported = true;
         }
-        answer(dirty);
+        Promise.resolve(reported).then(answer, () => answer(true));
       } else if (op === 'save') {
         handlers.save().then(answer, () => answer(false));
       }

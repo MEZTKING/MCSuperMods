@@ -1582,9 +1582,12 @@ export class ProjectSession {
    * @throws Error If no project is open, or two elements map to the same file.
    */
   async save(): Promise<void> {
+    this.#requireStack();
+    // Typing an editor still holds back is part of what the user saves; wait until it is on
+    // the stack (a Rules edit lands asynchronously), else the files miss it and the project
+    // stays unsaved.
+    await flushPendingEdits();
     const stack = this.#requireStack();
-    // Typing an editor still holds back is part of what the user saves.
-    flushPendingEdits();
     const state = stack.state;
     const result = await saveProject(
       this.#fs,
@@ -3424,7 +3427,7 @@ export class ProjectSession {
   // Internals ----------------------------------------------------------------------------
 
   async #confirmDiscard(): Promise<boolean> {
-    flushPendingEdits();
+    await flushPendingEdits();
     if (!this.#snapshot.dirty) return true;
     return this.#platform.dialogs.confirmDiscard(
       'The current project has unsaved changes. Discard them?',

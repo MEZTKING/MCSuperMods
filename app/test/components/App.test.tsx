@@ -577,7 +577,9 @@ describe('App menu commands', () => {
     expect(await screen.findByText('Version 9.9.9 is ready \u2014')).toBeTruthy();
     // Held-back editor typing is reported, then the unsaved state, then main closes the
     // window through its unsaved-changes prompt (2026-11-14 updater audit).
-    const unregister = registerPendingEdit(() => harness.updateEvents.push('flush'));
+    const unregister = registerPendingEdit(() => {
+      harness.updateEvents.push('flush');
+    });
     try {
       await userEvent.setup().click(screen.getByTestId('update-install'));
     } finally {
@@ -594,11 +596,11 @@ describe('App menu commands', () => {
   it('answers main before a window close with held-back typing as unsaved', async () => {
     const harness = await renderApp();
     await waitFor(() => expect(harness.closeHandlers).not.toBeNull());
-    expect(harness.closeHandlers?.report()).toBe(harness.session.snapshot.dirty);
+    expect(await harness.closeHandlers?.report()).toBe(harness.session.snapshot.dirty);
     // Typing an editor still holds back makes the project unsaved once reported.
     const unregister = registerPendingEdit(() => harness.session.addNamespace('typed'));
     try {
-      expect(harness.closeHandlers?.report()).toBe(true);
+      expect(await harness.closeHandlers?.report()).toBe(true);
     } finally {
       unregister();
     }

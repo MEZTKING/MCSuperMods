@@ -1328,7 +1328,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   // typing an editor still holds back and the unsaved state first, synchronously, so the
   // prompt sees it (the effect that normally reports `dirty` runs only after a render).
   const reportUnsavedBeforeUpdate = useCallback((): void => {
-    flushPendingEdits();
+    // Edits that land later are caught by the close request's own report.
+    void flushPendingEdits();
     bridge.setDirty(session.snapshot.dirty);
   }, [bridge, session]);
   // Every window close asks first: held-back typing and the unsaved state, and the prompt's Save.

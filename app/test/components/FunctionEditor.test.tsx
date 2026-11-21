@@ -62,13 +62,17 @@ describe('FunctionEditor (textarea fallback)', () => {
     const onChange = vi.fn();
     const view = render(<FunctionEditor lines={['']} onChange={onChange} />);
     fireEvent.change(area(), { target: { value: 'say saved' } });
-    act(() => flushPendingEdits());
+    act(() => {
+      void flushPendingEdits();
+    });
     expect(onChange).toHaveBeenCalledExactlyOnceWith('/lines', ['say saved'], {
       coalesce: FUNCTION_SOURCE_COALESCE,
     });
     act(() => vi.advanceTimersByTime(FUNCTION_EDIT_DEBOUNCE_MS));
     view.unmount();
-    act(() => flushPendingEdits());
+    act(() => {
+      void flushPendingEdits();
+    });
     expect(onChange).toHaveBeenCalledOnce();
   });
 

@@ -31,6 +31,7 @@ import {
   ExportJavaProjectDialog,
   rulesNotInEject,
 } from '../../src/renderer/src/components/ExportJavaProjectDialog';
+import { flushPendingEdits } from '../../src/renderer/src/session/pending-edits';
 import { usePreferences } from '../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
@@ -142,12 +143,14 @@ function Harness(props: { stack: CommandStack; id: ResourceLocation }) {
 }
 
 /** A host whose `applyChanges` applies the items to the stack as one step, like the session. */
-function hostFor(stack: CommandStack): BlocksItemsStudioHost {
+/** `applyDelayMs` makes the edit land that much later, as the session's `applyChangeset` can. */
+function hostFor(stack: CommandStack, applyDelayMs = 0): BlocksItemsStudioHost {
   return {
     thumbnail: async () => new Uint8Array(),
     revision: 0,
     paintTexture: () => undefined,
     applyChanges: async (items: readonly ChangeItem[], label: string) => {
+      if (applyDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, applyDelayMs));
       const plan = planChangeItems(stack.state, items);
       if (plan.skipped.length > 0) throw new Error('The project changed meanwhile.');
       const parts = plan.commands;
@@ -165,7 +168,7 @@ function hostFor(stack: CommandStack): BlocksItemsStudioHost {
 async function renderThing(
   subject: Element,
   others: Element[] = [],
-  options: { host?: boolean; problems?: Problem[] } = {},
+  options: { host?: boolean; problems?: Problem[]; applyDelayMs?: number } = {},
 ) {
   const stack = new CommandStack(projectOf(subject, RUBY, ...others));
   const openElement = vi.fn();
@@ -178,7 +181,7 @@ async function renderThing(
           options.host === false
             ? null
             : {
-                ...hostFor(stack),
+                ...hostFor(stack, options.applyDelayMs),
                 ...(options.problems === undefined ? {} : { problems: options.problems }),
               }
         }
@@ -271,6 +274,37 @@ describe('Rules section', () => {
     expect((rulesOfBook(find(BOOK))[1] as { name?: string }).name).toBe('Ruby gift');
     fireEvent.click(screen.getByTestId('rules-section-open-book'));
     expect(openElement).toHaveBeenCalledWith(BOOK);
+  });
+
+  it('flushing held-back typing resolves once the edit is in the project (Save waits for it)', async () => {
+    const book = element(BOOK, RULES_KIND, { counters: [], format: 1, rules: [ELSEWHERE, GIFT] });
+    // The edit lands a while after it is sent, as the session's asynchronous `applyChangeset`
+    // can on a slow machine (B427's controls path in CI).
+    const { find } = await renderThing(element(BLOCK, 'msm:block', blockData()), [book], {
+      applyDelayMs: 30,
+    });
+    const nameOf = (): string | undefined => (rulesOfBook(find(BOOK))[1] as { name?: string }).name;
+    const card = screen.getAllByTestId('rule-card')[0] as HTMLElement;
+    fireEvent.change(within(card).getByTestId('rule-name'), { target: { value: 'Ruby present' } });
+    // Typing is held back.
+    expect(nameOf()).toBe('Ruby gift');
+    // The session's `save` awaits this before it reads the state it writes, so the promise
+    // must settle only once the edit is on the stack, not when it has merely been sent.
+    let settled = false;
+    const flushed = flushPendingEdits().then(() => {
+      settled = true;
+      return nameOf();
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    });
+    expect(settled).toBe(false);
+    expect(nameOf()).toBe('Ruby gift');
+    let nameWhenSettled: string | undefined;
+    await act(async () => {
+      nameWhenSettled = await flushed;
+    });
+    expect(nameWhenSettled).toBe('Ruby present');
   });
 
   it('shows the books’ schema and validator problems from the session at the chips', async () => {

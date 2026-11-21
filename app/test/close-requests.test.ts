@@ -21,18 +21,29 @@ afterEach(() => {
 });
 
 describe('closeRequestHandlers (the renderer side of the window close round trip)', () => {
-  it('reports typing an editor still holds back as unsaved', () => {
+  it('reports typing an editor still holds back as unsaved', async () => {
     const session = fakeSession();
     unregister.push(
       registerPendingEdit(() => {
         session.snapshot = { dirty: true };
       }),
     );
-    expect(closeRequestHandlers(session).report()).toBe(true);
+    await expect(closeRequestHandlers(session).report()).resolves.toBe(true);
   });
 
-  it('reports a clean project as clean', () => {
-    expect(closeRequestHandlers(fakeSession()).report()).toBe(false);
+  it('reports an edit that lands asynchronously (a Rules edit) as unsaved', async () => {
+    const session = fakeSession();
+    unregister.push(
+      registerPendingEdit(async () => {
+        await Promise.resolve();
+        session.snapshot = { dirty: true };
+      }),
+    );
+    await expect(closeRequestHandlers(session).report()).resolves.toBe(true);
+  });
+
+  it('reports a clean project as clean', async () => {
+    await expect(closeRequestHandlers(fakeSession()).report()).resolves.toBe(false);
   });
 
   it('saves for the prompt\'s "Save" and says whether it worked', async () => {

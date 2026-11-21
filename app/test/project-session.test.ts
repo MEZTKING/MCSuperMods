@@ -136,14 +136,47 @@ describe('ProjectSession: projects', () => {
     expect(saved.data.ambientocclusion).toBe(false);
   });
 
+  it('waits for a held-back edit that lands asynchronously (a Rules edit) before writing', async () => {
+    const fs = createMemoryFileSystem();
+    const { session } = newSession(fs);
+    await session.newProject();
+    session.addElement({ id: 'demo:block/rule', kind: 'minecraft:model' });
+    // The Rules section sends its edit through `applyChangeset`, which reaches the stack after
+    // a few awaits: Save must write it and end up saved, not write the old state and stay dirty.
+    const unregister = registerPendingEdit(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      session.setElementValue('demo:block/rule', '/ambientocclusion', false, {});
+    });
+    try {
+      await session.save();
+    } finally {
+      unregister();
+    }
+    expect(session.snapshot.dirty).toBe(false);
+    const saved = JSON.parse(
+      utf8.decode(await fs.readFile('content/demo/model/block/rule.json')),
+    ) as { data: Record<string, unknown> };
+    expect(saved.data.ambientocclusion).toBe(false);
+  });
+
   it('stays unsaved when an edit lands while the files are written', async () => {
     const fs = createMemoryFileSystem();
     const { session } = newSession(fs);
     await session.newProject();
     session.addElement({ id: 'demo:block/late', kind: 'minecraft:model' });
-    const saving = session.save();
-    session.setElementValue('demo:block/late', '/ambientocclusion', false, {});
-    await saving;
+    // The edit lands while the first file is written.
+    const writeFile = fs.writeFile.bind(fs);
+    let landed = false;
+    fs.writeFile = async (path, data) => {
+      if (!landed) {
+        landed = true;
+        session.setElementValue('demo:block/late', '/ambientocclusion', false, {});
+      }
+      return writeFile(path, data);
+    };
+    await session.save();
+    expect(landed).toBe(true);
+    fs.writeFile = writeFile;
     expect(session.snapshot.dirty).toBe(true);
     await session.save();
     expect(session.snapshot.dirty).toBe(false);

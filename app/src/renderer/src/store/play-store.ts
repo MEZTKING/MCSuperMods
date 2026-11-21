@@ -303,7 +303,7 @@ async function saveAndBuild(
 ): Promise<BuiltInput | null> {
   const { session } = host;
   setProgress(PLAY_CONTROL_LABELS.saving);
-  flushPendingEdits();
+  await flushPendingEdits();
   if (session.snapshot.dirty) await session.save();
   const project = session.snapshot.project;
   if (project === null) return null;

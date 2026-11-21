@@ -6170,3 +6170,18 @@ Next
 - `@msm/sim`'s schema-walk test still fails on the fluid's `on_entity_inside`: the sim has no fluid owner kind yet (B483, or an orchestrator decision).
 - The runtime's `ConformanceCorpusTest` has no parser for the five new prefixes: add them to its `PENDING` list (engine-mod, B472 or B474/B475) or CI's engine-mod job fails.
 - `packages/schemas/CLAUDE.md` should list the new prefixes, refs and the exported type count.
+## 2026-11-21 — executor — controls-path: Save waits for held-back Rules edits
+
+**What**
+- Applied and finished `docs/reference/unfinished/controls-path-save.patch`, then removed the patch file (the README and the B472 and B473 patches stay). `flushPendingEdits()` (`app/src/renderer/src/session/pending-edits.ts`) now returns a promise that settles once asynchronous flushes have landed; `ProjectSession.save()`, the discard check, the close request's `report` (renderer, preload, `shared/platform.ts`) and Play's save wait for it. The Rules section registers a flush that sends held-back typing and returns its edit chain, so it covers typing timers, immediate edits and edits with new elements.
+- Tests: a RulesSection test where the host's `applyChanges` lands 30 ms late (the flush promise settles only once the edit is on the stack; it fails if the flush does not return the chain), a `project-session` test that a save started while an async flush is landing ends saved with the edit written (fails if `save()` does not await), close request tests for an async report, a new `app/test/pending-edits.test.ts`, and the App and FunctionEditor tests updated for the promise.
+- Reproduced the slow case: a temporary 500 ms delay in the Rules section's `apply` made `controls-path` fail before the fix (the saved rule had no step) and pass with it; the delay was removed before committing.
+- Checked: `pnpm lint`, `pnpm typecheck`, `pnpm --filter @msm/app test`, `pnpm build`, and the e2e specs `controls-path`, `rules-path`, `vehicles-path` and `very-easy-path`.
+
+**Decisions**
+- Main's one-second close report timeout stays: an in-memory changeset lands in milliseconds, and a late answer still falls back to the last reported state as before.
+- `App.tsx`'s update-install path still reports `dirty` synchronously; an edit that lands later is caught by the close request's own awaited report.
+
+**Next**
+- Push `ctlfix2` and confirm CI green, then B472 and B473.
+- One-shot Rule book Studio actions (`changeWith`, Copy as script) call `applyChanges` directly and are not awaited by Save; they are clicks rather than held-back typing, but could join the pending-edit registry if a similar race shows up.

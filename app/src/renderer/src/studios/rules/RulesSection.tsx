@@ -161,13 +161,15 @@ function useBookDrafts(apply: ApplyChanges | undefined, onError: (message: strin
 
   // Save and the discard check send held-back typing first; so does leaving the Studio.
   useEffect(() => {
-    const flushAll = () => {
+    // Resolves once every edit sent so far (held back or already on its way) is in the project.
+    const flushAll = (): Promise<void> => {
       for (const bookId of [...timers.current.keys()]) flush(bookId);
+      return chain.current;
     };
     const unregister = registerPendingEdit(flushAll);
     return () => {
       unregister();
-      flushAll();
+      void flushAll();
     };
   }, [flush]);
 

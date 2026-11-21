@@ -28,8 +28,8 @@ export function closeRequestHandlers(
   feedback: CloseRequestFeedback = {},
 ): CloseRequestHandlers {
   return {
-    report() {
-      flushPendingEdits();
+    async report() {
+      await flushPendingEdits();
       return session.snapshot.dirty;
     },
     async save() {
