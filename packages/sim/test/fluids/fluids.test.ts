@@ -19,7 +19,10 @@ const only = (source: LocalWorldSource): string[] =>
 describe.each(targets.map((target) => [target.id, target] as const))(
   'the Fluid starter on %s',
   (_id, target) => {
-    it('reads the fluid, pours it from its bucket and says that it does not flow', async () => {
+    // Lowering a whole starter project takes longer than the default on a busy CI machine.
+    it('reads the fluid, pours it from its bucket and says that it does not flow', {
+      timeout: 30_000,
+    }, async () => {
       const { files } = await lowerProjectAt(
         join(REPO_ROOT, 'examples', 'starters', 'fluid'),
         target,

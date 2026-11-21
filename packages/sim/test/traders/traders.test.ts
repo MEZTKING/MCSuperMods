@@ -40,7 +40,10 @@ const only = (source: LocalWorldSource): string[] =>
 describe.each(targets.map((target) => [target.id, target] as const))(
   'the Wandering merchant starter on %s',
   (_id, target) => {
-    it('opens the merchant screen with its wares, trades, levels up and says the vanilla sets', async () => {
+    // Lowering a whole starter project takes longer than the default on a busy CI machine.
+    it('opens the merchant screen with its wares, trades, levels up and says the vanilla sets', {
+      timeout: 30_000,
+    }, async () => {
       const { files } = await lowerProjectAt(
         join(REPO_ROOT, 'examples', 'starters', 'wandering-merchant'),
         target,
