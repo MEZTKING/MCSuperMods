@@ -6475,3 +6475,15 @@ Next
 **Next**
 - A modpack build and Test could record each member's ids into the member's own folder (needs a write through `modpacks`).
 - `app/CLAUDE.md` could list `session/exported-ids.ts` next to the other `.msm/` files.
+## 2026-11-21 — executor — the shoulder pet sneak GameTest
+
+**What**
+- Root cause of the flaky `aPerchedPetStaysOnTheShoulderThroughATeleportAndIsSaved` ("sneaking kept the pet on on tick 8", CI run 44948669629 on 8fdd516, both versions): the test teleported the owner 7 blocks east and 3 south (`owner.position().add(7, 0, 3)`), which can carry the perched pet out of the test's 8 by 8 box. The GameTest server force-loads only the chunks that box touches (`TestInstanceBlockEntity.forceLoadChunks`), its simulation distance is 0, and a mock player's simulation ticket stays at the chunk it joined in (`ServerPlayer.teleportTo` does not call `ServerChunkCache.move`; only a client's position packet does). Test positions are random per run, so whenever a chunk border fell between the box's edge and the destination, the pet was in a chunk that is not entity-ticking: it stopped ticking, `MobShoulder.tick` never ran and the sneak was never seen. Reproduced with temporary prints: the failing run had the pet one block past the box (`forced=false`, `petTicking=false`) and its tick count did not move in the two ticks after the sneak; a passing run had `forced=true` and two pet ticks.
+- Fix (test only, `engine-mod/src/gametest/java/dev/mcsupermods/runtime/gametest/MsmMobStorageGameTest.java`): the teleport goes to (6.5, 2, 6.5) in the test's own box (still about 6.4 blocks from the start), with an assertion that the pet's place on the shoulder stays inside `helper.getBounds()`, and a comment saying why.
+- The runtime was not at fault: once the pet ticks, sneaking takes it off on its next tick. In a real game the player's own ticket follows the player and keeps the pet's chunk ticking. The other tests in the class keep the pet inside the box (the dimension change moves only the owner), so they do not have this fragility.
+
+**Decisions**
+- No longer delays and no `succeedWhen`: the unperch is deterministic once the pet ticks, so the fixed two ticks stay.
+
+**Next**
+- Any future GameTest that moves a mock player and expects nearby mobs to keep ticking must stay inside its test box (or call `ServerChunkCache.move` for the player, which still covers only its own chunk at simulation distance 0).

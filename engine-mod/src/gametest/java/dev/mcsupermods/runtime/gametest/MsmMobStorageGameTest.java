@@ -284,7 +284,11 @@ public class MsmMobStorageGameTest {
 
         helper.runAfterDelay(3, () -> {
             near(helper, pet, owner, "three ticks later");
-            Vec3 to = owner.position().add(7, 0, 3);
+            // Stay inside the test's own box: the GameTest server only force-loads the chunks that box touches, its
+            // simulation distance is 0 and a mock player's chunk ticket stays where it joined (no client sends the
+            // position that moves it), so a pet carried out of the box stops ticking and could never be thrown off.
+            Vec3 to = helper.absoluteVec(new Vec3(6.5, MID.getY(), 6.5));
+            helper.assertTrue(helper.getBounds().contains(to.add(MobShoulder.offset(owner))), "the teleport leaves the test's loaded chunks");
             owner.teleportTo(to.x, to.y, to.z);
             owner.setOnGround(true);
             helper.runAfterDelay(3, () -> {
