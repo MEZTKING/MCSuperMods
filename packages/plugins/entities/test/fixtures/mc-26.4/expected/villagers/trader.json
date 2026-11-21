@@ -1,0 +1,56 @@
+[
+  {
+    "contents": {
+      "category": "creature",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/ruby_golem",
+          "texture": "example:entity/ruby_golem"
+        },
+        "msm:trader": {
+          "levels": true,
+          "on_trade": "example:traded",
+          "restock": "never",
+          "trade_sets": [
+            {
+              "trade_set": "minecraft:mason/level_1"
+            },
+            {
+              "trade_set": "minecraft:mason/level_2",
+              "xp_to_next": 70
+            }
+          ],
+          "trade_sound": "minecraft:entity.villager.yes"
+        }
+      },
+      "events": {
+        "example:traded": {
+          "actions": [
+            {
+              "sound": "minecraft:entity.villager.celebrate",
+              "type": "play_sound"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.95,
+        "width": 0.6
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/ruby_golem.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.ruby_golem": "Ruby Merchant"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

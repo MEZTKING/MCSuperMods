@@ -68,9 +68,10 @@ const templateOf = (id: string): ElementTemplate =>
 describe('vehicle templates', () => {
   it('has the eight ids in picker order, after the mob templates', () => {
     expect(vehicleTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(plugin.contributes.elementTemplates?.slice(-8).map((template) => template.id)).toEqual(
-      IDS,
-    );
+    // The villager templates follow (`villager-templates.test.ts`).
+    expect(
+      plugin.contributes.elementTemplates?.slice(10, 18).map((template) => template.id),
+    ).toEqual(IDS);
     expect(Object.keys(VEHICLE_TEMPLATE_SHAPES)).toEqual(IDS);
     expect(Object.values(VEHICLE_TEMPLATE_SHAPES)).toEqual([...VEHICLE_SHAPES]);
   });

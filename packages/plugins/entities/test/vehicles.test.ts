@@ -153,8 +153,8 @@ const SAMPLES: Sample[] = [
 
 describe('msm:vehicle kind', () => {
   it('is contributed after msm:entity with its schema, folder, registry and preview', () => {
-    expect(entitiesKinds.map((kind) => kind.id)).toEqual(['msm:entity', 'msm:vehicle']);
-    expect(plugin.contributes.elementKinds?.map((kind) => kind.id)).toEqual([
+    expect(entitiesKinds.map((kind) => kind.id).slice(0, 2)).toEqual(['msm:entity', 'msm:vehicle']);
+    expect(plugin.contributes.elementKinds?.map((kind) => kind.id).slice(0, 2)).toEqual([
       'msm:entity',
       'msm:vehicle',
     ]);

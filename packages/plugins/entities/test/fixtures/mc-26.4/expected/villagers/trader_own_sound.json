@@ -1,0 +1,32 @@
+[
+  {
+    "contents": {
+      "base": "monster",
+      "category": "monster",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/shade",
+          "texture": "example:entity/shade"
+        },
+        "msm:trader": {
+          "levels": false,
+          "trade_sets": [
+            {
+              "trade_set": "minecraft:wandering_trader/common"
+            }
+          ],
+          "trade_sound": "minecraft:entity.wandering_trader.yes"
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.9,
+        "width": 0.6
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/shade.json",
+    "schema": "msm:entity_definition"
+  }
+]

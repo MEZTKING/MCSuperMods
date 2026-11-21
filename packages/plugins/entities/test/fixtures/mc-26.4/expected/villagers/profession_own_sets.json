@@ -1,0 +1,32 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "job_site": "example:smithing_anvil",
+      "trade_sets": [
+        "minecraft:armorer/level_1",
+        "minecraft:armorer/level_2",
+        "minecraft:toolsmith/level_3",
+        "minecraft:toolsmith/level_4",
+        "minecraft:weaponsmith/level_5"
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/example/villager_profession/smith.json",
+    "schema": "msm:villager_profession_definition"
+  },
+  {
+    "contents": {
+      "values": [
+        {
+          "id": "example:smith",
+          "required": false
+        }
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/point_of_interest_type/acquirable_job_site.json",
+    "schema": "tag:point_of_interest_type"
+  }
+]

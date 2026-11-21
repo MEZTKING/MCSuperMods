@@ -6217,3 +6217,23 @@ Next
 - B475: read the pictures from the block model's texture variables (or agree another route), and the sprites must be in the block atlas (a `block/` texture path).
 - B480: Very easy wording for the four new codes; the app's registry index should count a fluid's liquid block, its bucket `<ns>:<path>_bucket` and, on two-fluid targets, `<ns>:flowing_<path>`, or references to them read as unknown ids.
 - B481: a per-kind example for `msm:fluid`, then empty `KINDS_AWAITING_EXAMPLES` again.
+## 2026-11-21 — executor — B476 entities plugin: traders, professions, storage, shoulder pets
+
+**What**
+- `@msm/plugin-entities` gains the kind `msm:villager_profession` (`kinds/profession.ts`, registry `villager_profession`, default `{ format: 1, job_site: '' }`) and lowering for ADR 0098 D1–D4. The entity kind now lowers through `lowerEntityWithComponents` (`kinds/index.ts`): `msm:trader` gets the target's trade sound when `trade_sound` is absent (`lowering/trader.ts`), `msm:storage` gets `rows` 3 and `needs_chest` false written out (`lowering/storage.ts`), `msm:shoulder_riding` is written as `{}` (`lowering/shoulder.ts`).
+- `lowering/profession.ts`: the runtime definition `msm/<ns>/villager_profession/<path>.json` (without `display_name` and `textures`); with no `trade_sets`, the five trade sets `data/<ns>/trade_set/<path>/level_<n>.json` (two trades from `#<ns>:<path>/level_<n>`) and those five villager trade tags, empty and `merge: 'tag'`; the profession's entry `{ id, required: false }` in `#minecraft:acquirable_job_site`; the name `entity.<ns>.villager.<path>`; `professionTexturePaths` gives the fixed picture paths of the villager and zombie villager layers.
+- `validators-villagers.ts` (four validators, eight codes): `entities.trade-set-unknown`, `entities.trade-set-villager-only` (warning), `entities.trader-monster` (info), `entities.job-site-taken`, `entities.job-site-unknown`, `entities.shoulder-too-wide`, `entities.shoulder-needs-tameable`, `entities.storage-rows` (info), plus `on_trade` under the shared `entities.unknown-event`.
+- Four templates in "Villagers and traders": Wandering merchant, Pack mule, Shoulder pet, Village job.
+- Tests: goldens for a trader (two), a pack mule, a shoulder pet and two professions on both targets (`test/villagers.test.ts`), a case per code (`test/validators-villagers.test.ts`), the templates with zero problems on both targets once the files they name exist (`test/villager-templates.test.ts`); the existing kind, template and validator order tests updated.
+
+**Decisions**
+- The profession definition keeps an absent `trade_sets` absent (the runtime defaults it): written out, the export gate warns that the default set ids are not in the project's registry.
+- Lowering cannot copy picture bytes, so a profession picture whose id is not already at `entity/villager/profession/<path>` is for the host to copy (`professionTexturePaths`); the Village job template points the picture at the fixed place.
+- The point of interest id is the profession's id; the tag entry is written `required: false` so vanilla's tag loads without the runtime.
+- `entities.storage-rows` is an info for a chest-needing store above three rows (the schema already checks 1 to 6).
+- `acquirable_job_site` is a constant in the plugin, not a target fact.
+
+**Next**
+- `packages/exporters/test/library.test.ts`: `msm:villager_profession` needs a per-kind example (B481) or an entry in `KINDS_AWAITING_EXAMPLES` at merge.
+- B480: the app's registry index should count each profession's id as a `point_of_interest_type` and, without own `trade_sets`, its `defaultTradeSets` as `trade_set` and `tag/villager_trade` ids; copy profession pictures (`professionTexturePaths`); Very easy wording for the eight new codes (`ENTITIES_VILLAGER_PROBLEM_CODES`).
+- B474: the point of interest id equals the profession id; an absent `trade_sets` means `<ns>:<path>/level_1` to `level_5`.

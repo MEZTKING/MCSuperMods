@@ -13,11 +13,13 @@ import plugin, {
   entityKind,
   hasSpawnEgg,
   lowerEntity,
+  professionKind,
   SPAWN_EGG_PARENT_MODEL,
   spawnEggPath,
   splitResourceLocation,
   vehicleKind,
   vehicleTemplates,
+  villagerTemplates,
 } from '../src/index';
 import { blockingProblems, element, indexesFor } from './support';
 
@@ -45,8 +47,12 @@ describe('@msm/plugin-entities', () => {
   });
 
   it('contributes msm:entity with its schema, folder, registry and preview', () => {
-    expect(kinds().map((kind) => kind.id)).toEqual(['msm:entity', 'msm:vehicle']);
-    expect(entitiesKinds).toEqual([entityKind, vehicleKind]);
+    expect(kinds().map((kind) => kind.id)).toEqual([
+      'msm:entity',
+      'msm:vehicle',
+      'msm:villager_profession',
+    ]);
+    expect(entitiesKinds).toEqual([entityKind, vehicleKind, professionKind]);
     expect([
       entityKind.schema,
       entityKind.folder,
@@ -81,6 +87,7 @@ describe('@msm/plugin-entities', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual([
       ...entitiesTemplates.map((t) => t.id),
       ...vehicleTemplates.map((t) => t.id),
+      ...villagerTemplates.map((t) => t.id),
     ]);
     expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
       'msm.entities.unknown-event',
@@ -102,6 +109,10 @@ describe('@msm/plugin-entities', () => {
       'msm.entities.vehicle-weapons',
       'msm.entities.vehicle-items',
       'msm.entities.vehicle-events',
+      'msm.entities.trader',
+      'msm.entities.profession',
+      'msm.entities.shoulder',
+      'msm.entities.storage',
     ]);
     expect(entitiesValidators).toHaveLength(8);
   });

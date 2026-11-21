@@ -1,0 +1,123 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "speed": 1.2,
+              "type": "panic"
+            },
+            {
+              "items": [
+                "minecraft:apple"
+              ],
+              "speed": 1,
+              "type": "tempt"
+            },
+            {
+              "type": "wander"
+            },
+            {
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 22
+        },
+        "msm:movement": {
+          "speed": 0.175
+        },
+        "msm:rideable": {
+          "controlled_by": "owner",
+          "jump": 0.5,
+          "saddle": true,
+          "speed": 1
+        },
+        "msm:storage": {
+          "needs_chest": true,
+          "rows": 3
+        },
+        "msm:tameable": {
+          "chance": 0.25,
+          "defends_owner": false,
+          "follows_owner": false,
+          "items": [
+            "minecraft:apple"
+          ],
+          "sit": false
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.6,
+        "width": 1.4
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:plains"
+        ],
+        "max_group": 2,
+        "min_group": 1,
+        "rule": "animal",
+        "weight": 3
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/entity_type/can_equip_saddle.json"
+  }
+]

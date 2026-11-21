@@ -1,0 +1,111 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "job_site": "demo:sample_job_site"
+    },
+    "layer": "msm",
+    "path": "msm/demo/villager_profession/sample.json"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#demo:sample/level_1"
+    },
+    "layer": "datapack",
+    "path": "data/demo/trade_set/sample/level_1.json"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/villager_trade/sample/level_1.json"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#demo:sample/level_2"
+    },
+    "layer": "datapack",
+    "path": "data/demo/trade_set/sample/level_2.json"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/villager_trade/sample/level_2.json"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#demo:sample/level_3"
+    },
+    "layer": "datapack",
+    "path": "data/demo/trade_set/sample/level_3.json"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/villager_trade/sample/level_3.json"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#demo:sample/level_4"
+    },
+    "layer": "datapack",
+    "path": "data/demo/trade_set/sample/level_4.json"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/villager_trade/sample/level_4.json"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#demo:sample/level_5"
+    },
+    "layer": "datapack",
+    "path": "data/demo/trade_set/sample/level_5.json"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/demo/tags/villager_trade/sample/level_5.json"
+  },
+  {
+    "contents": {
+      "values": [
+        {
+          "id": "demo:sample",
+          "required": false
+        }
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/point_of_interest_type/acquirable_job_site.json"
+  },
+  {
+    "contents": {
+      "entity.demo.villager.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

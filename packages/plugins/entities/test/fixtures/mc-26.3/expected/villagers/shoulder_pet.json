@@ -1,0 +1,42 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/moth",
+          "texture": "example:entity/moth"
+        },
+        "msm:shoulder_riding": {},
+        "msm:storage": {
+          "needs_chest": false,
+          "rows": 1
+        },
+        "msm:tameable": {
+          "items": [
+            "minecraft:sweet_berries"
+          ]
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.4,
+        "width": 0.4
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/mobs/moth.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.mobs.moth": "Moth"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

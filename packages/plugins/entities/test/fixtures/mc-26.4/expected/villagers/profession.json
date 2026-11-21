@@ -1,0 +1,131 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "job_site": "example:cutting_table",
+      "requested_items": [
+        "minecraft:emerald"
+      ],
+      "secondary_job_blocks": [
+        "minecraft:stone"
+      ],
+      "work_sound": "minecraft:entity.villager.work_mason"
+    },
+    "layer": "msm",
+    "path": "msm/example/villager_profession/jobs/gem_cutter.json",
+    "schema": "msm:villager_profession_definition"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#example:jobs/gem_cutter/level_1"
+    },
+    "layer": "datapack",
+    "path": "data/example/trade_set/jobs/gem_cutter/level_1.json",
+    "schema": "resource:trade_set"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/example/tags/villager_trade/jobs/gem_cutter/level_1.json",
+    "schema": "tag:villager_trade"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#example:jobs/gem_cutter/level_2"
+    },
+    "layer": "datapack",
+    "path": "data/example/trade_set/jobs/gem_cutter/level_2.json",
+    "schema": "resource:trade_set"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/example/tags/villager_trade/jobs/gem_cutter/level_2.json",
+    "schema": "tag:villager_trade"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#example:jobs/gem_cutter/level_3"
+    },
+    "layer": "datapack",
+    "path": "data/example/trade_set/jobs/gem_cutter/level_3.json",
+    "schema": "resource:trade_set"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/example/tags/villager_trade/jobs/gem_cutter/level_3.json",
+    "schema": "tag:villager_trade"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#example:jobs/gem_cutter/level_4"
+    },
+    "layer": "datapack",
+    "path": "data/example/trade_set/jobs/gem_cutter/level_4.json",
+    "schema": "resource:trade_set"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/example/tags/villager_trade/jobs/gem_cutter/level_4.json",
+    "schema": "tag:villager_trade"
+  },
+  {
+    "contents": {
+      "amount": 2,
+      "trades": "#example:jobs/gem_cutter/level_5"
+    },
+    "layer": "datapack",
+    "path": "data/example/trade_set/jobs/gem_cutter/level_5.json",
+    "schema": "resource:trade_set"
+  },
+  {
+    "contents": {
+      "values": []
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/example/tags/villager_trade/jobs/gem_cutter/level_5.json",
+    "schema": "tag:villager_trade"
+  },
+  {
+    "contents": {
+      "values": [
+        {
+          "id": "example:jobs/gem_cutter",
+          "required": false
+        }
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/point_of_interest_type/acquirable_job_site.json",
+    "schema": "tag:point_of_interest_type"
+  },
+  {
+    "contents": {
+      "entity.example.villager.jobs.gem_cutter": "Gem Cutter"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

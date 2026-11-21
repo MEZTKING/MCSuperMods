@@ -1,0 +1,57 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/shade",
+          "texture": "example:entity/shade"
+        },
+        "msm:rideable": {
+          "controlled_by": "owner"
+        },
+        "msm:storage": {
+          "close_sound": "minecraft:entity.donkey.chest",
+          "needs_chest": true,
+          "rows": 3
+        },
+        "msm:tameable": {
+          "items": [
+            "minecraft:apple"
+          ],
+          "sit": false
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.6,
+        "width": 1.4
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/shade.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.shade": "Pack Mule"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:shade"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/entity_type/can_equip_saddle.json",
+    "schema": "tag:entity_type"
+  }
+]
