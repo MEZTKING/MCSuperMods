@@ -6745,3 +6745,20 @@ Next
 
 **Next**
 - The user's Windows test of the draft, then `publish-release.yml` with version 1.5.2 only on their go.
+
+## 2026-11-21 — executor — B499 Try it draws its terrain
+
+**What**
+- Without the client jar, Try it now draws Minecraft's terrain and wood blocks with the library's vanilla-style recipes (ADR 0092 D16) in the colours of its own table, seeded by the block id (`hashSeed('tryit', <block path>)`): the natural stones (stone, granite, diorite, andesite, deepslate, tuff, calcite, bedrock) with `stone`; cobblestone, mossy cobblestone and cobbled deepslate with `cobblestone`; dirt, coarse and rooted dirt with `dirt`; grass block with `grass_top`, `grass_side` (in the grass colour) and a `dirt` bottom, podzol and mycelium with a `dirt` top in their colour and `grass_side`; sand and red sand with `sand`; gravel with `gravel`; every wood's planks with `planks`; logs and stems with `bark` and `log_top`, stripped ones with `stripped_log` and `stripped_log_top`, wood and hyphae with `bark` (stripped: `stripped_log`); leaves with `leaves` (its own clear pixels make the holes). Every other block keeps its one-colour cube; water, lava and bubble columns stay plain, as before.
+- `app/src/renderer/src/tryit/render/fallback-colours.ts`: `DRAWN_RECIPES`, `FallbackLook.drawn` (the recipe of each face), texture ids `msm:tryit_drawn/<recipe>/<rrggbb>/<block path>` (`drawnTextureId`, `parseDrawnTextureId`) and `fallbackTexturePng(id)` (async: a drawn face through `artLookPng`, or the plain picture). The library is imported on the first drawn face with a dynamic `import('@msm/plugin-library')` (only a type import at the top), so the lazy canvas chunk loads as quickly as before: a static import made the two happy-dom "no WebGL" boundary tests time out while the chunk loaded. The library is already in the main chunk, so this downloads nothing.
+- Wiring in `resources.ts` (two lines): the texture step calls `await fallbackTexturePng(id)` in place of `parseFallbackTextureId` and `fallbackPicture`. `resources.test.ts`: the grass and stone assertion counts `msm:tryit_drawn/` textures (still 4).
+- Tests: `fallback-colours.test.ts` 6 (was 3): the families and their recipes per face, colours from the table, per-block seeds, every recipe drawn by the library (no stub) and a block face, other blocks and liquids still one colour, drawn bytes equal the library's, 16 by 16, leaves with clear pixels. App 2471 tests green; `tryit-path` 7 of 7 under `xvfb-run -a` after `pnpm build`; `pnpm lint`, `pnpm typecheck`, check-deps pass. Renderer 16.3 MB of 18; `TryItView` 351.3 kB, unchanged.
+- Frame rate, Island seed 1234, canvas 640 by 360, Smaller picture off, SwiftShader, three runs of 8 seconds each, same session, built alternately with and without the change: the machine's load was 10 to 33 (other workers), so the numbers move with the load more than with the build. Before (load 19 to 33): 12 to 28 fps, median about 17. After (load 20 to 30): 13 to 26, median about 17; at load 10 to 14: 23 to 38. Geometry, atlas pass and draw calls are unchanged (only the pixels of about 30 atlas pictures differ), so no difference was expected and none was seen; B405's 22 to 23 fps was not reproducible at this load either way.
+
+**Decisions**
+- Seeds are per block id, so stone and andesite of the same recipe differ and each block id always gives the same bytes; one picture per block face, shared by every block of that id.
+- Podzol and mycelium use the grass side in their own colour and a dirt top in their colour (no new recipe).
+
+**Next**
+- The side panel's hint (`NO_VANILLA_GROUND_TEXT` in `TryItView.tsx`) and `docs/guide/try-it.md` (Grounds paragraph and the Limits row) still say Minecraft's blocks are "plain coloured cubes"; they should say the terrain and wood are MSM's own drawn pictures and the rest plain cubes (B501 or B402, whoever owns the files).
+- Re-measure the Island frame rate on a quiet machine or a hardware GPU.

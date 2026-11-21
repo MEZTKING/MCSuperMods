@@ -199,8 +199,8 @@ describe('Try it resources', () => {
     expect(prepared.missingTextures).toEqual([]);
     expect(prepared.fallbackBlocks).toEqual(['minecraft:grass_block', 'minecraft:stone']);
     expect(flagsOf(prepared, 'minecraft:stone')).toEqual({ opaque: true });
-    // Grass has its own top, side and bottom colours; stone one colour.
-    expect(atlases[0]?.filter((id) => id.startsWith('msm:tryit_colour/'))).toHaveLength(4);
+    // Grass has its own top, side and bottom pictures; stone one (B499: drawn by the art recipes).
+    expect(atlases[0]?.filter((id) => id.startsWith('msm:tryit_drawn/'))).toHaveLength(4);
     // A project block without a definition is still the missing cube.
     const missing = await prepare(['demo:nothing']);
     expect(missing.prepared.missingDefinitions).toEqual(['demo:nothing']);

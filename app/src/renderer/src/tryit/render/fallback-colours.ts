@@ -1,26 +1,63 @@
 /**
- * MSM's own plain cubes for Minecraft blocks (B405): without the user's client jar (ADR 0011)
- * a vanilla block of a ground or the picker has no picture, so Try it draws it as a cube of one
- * colour from a small table by block id or family, with a little shading so faces read. Water
- * and lava always draw this way (see-through blue, orange), because the game draws liquids with
- * code, not with a block model (ADR 0087, limit L7).
+ * MSM's own pictures for Minecraft blocks (B405, B499): without the user's client jar (ADR 0011)
+ * a vanilla block of a ground or the picker has no picture. The terrain and wood families
+ * (stone, cobblestone, dirt, grass top and side, sand, gravel, planks, logs and their ends,
+ * leaves) are drawn by the library's vanilla-style recipes (ADR 0092 D16) in the colours of the
+ * table below, seeded by the block id; every other block is a cube of one colour from the table
+ * by block id or family, with a little shading so faces read. Water and lava always draw as
+ * one-colour cubes (see-through blue, orange), because the game draws liquids with code, not
+ * with a block model (ADR 0087, limit L7).
  *
- * Nothing here is Mojang's: the colours are MSM's own picks and the pictures are made here as
- * 16 by 16 PNGs (a stored-deflate encoder, no dependency).
+ * Nothing here is Mojang's: the colours are MSM's own picks, the drawn pictures are MSM's own
+ * recipes (`@msm/plugin-library`, never read from or compared with the game) and the plain
+ * pictures are made here as 16 by 16 PNGs (a stored-deflate encoder, no dependency).
  */
 
 import type { JsonObject } from '@msm/plugin-api';
+// Only the type here: the library itself is loaded when the first drawn face is (see
+// `fallbackTexturePng`), so the lazy canvas chunk stays as light to load as before.
+import type { ArtRecipeId } from '@msm/plugin-library';
 
 /** An RGBA colour, 0..255 each. */
 export type Rgba = readonly [number, number, number, number];
 
+/** The art recipes Try it draws Minecraft's terrain and wood with (ADR 0092 D16). */
+export const DRAWN_RECIPES = [
+  'stone',
+  'cobblestone',
+  'dirt',
+  'grass_top',
+  'grass_side',
+  'sand',
+  'gravel',
+  'planks',
+  'bark',
+  'log_top',
+  'stripped_log',
+  'stripped_log_top',
+  'leaves',
+] as const satisfies readonly ArtRecipeId[];
+
+/** A recipe Try it draws with; see {@link DRAWN_RECIPES}. */
+export type DrawnRecipe = (typeof DRAWN_RECIPES)[number];
+
+/** Which recipe draws each face of a block; a face without one is a plain colour. */
+export interface FallbackDrawing {
+  readonly top?: DrawnRecipe;
+  readonly side?: DrawnRecipe;
+  readonly bottom?: DrawnRecipe;
+}
+
 /** How a fallback block looks: one colour, or a top, side and bottom, and its shape. */
 export interface FallbackLook {
+  /** The colour of each face: the plain cube's colour, or a drawn face's main colour. */
   readonly top: Rgba;
   readonly side: Rgba;
   readonly bottom: Rgba;
   /** `cube`, `plant` (a small upright box) or `leaves` (a cube with holes). */
   readonly shape: 'cube' | 'plant' | 'leaves';
+  /** The faces drawn by a recipe (B499); absent for one-colour cubes. */
+  readonly drawn?: FallbackDrawing;
 }
 
 const rgb = (hex: number, alpha = 255): Rgba => [
@@ -168,9 +205,105 @@ const same = (colour: Rgba, shape: FallbackLook['shape'] = 'cube'): FallbackLook
   shape,
 });
 
+/** Natural stones drawn with the stone recipe in their own colours. */
+const STONES = new Set([
+  'stone',
+  'granite',
+  'diorite',
+  'andesite',
+  'deepslate',
+  'tuff',
+  'calcite',
+  'bedrock',
+]);
+
+/** Cobbles drawn with the cobblestone recipe. */
+const COBBLES: Readonly<Record<string, number>> = {
+  cobblestone: 0x727272,
+  mossy_cobblestone: 0x6a7a5a,
+  cobbled_deepslate: 0x4d4d55,
+};
+
+/** Grass-like blocks: a top colour drawn as grass, a dirt bottom, and the grass side. */
+const GRASSES: Readonly<Record<string, number>> = {
+  grass_block: 0x5f9f35,
+  podzol: 0x5b3d1a,
+  mycelium: 0x6f6265,
+};
+
+const DIRT = 0x86603f;
+
+const all = (recipe: DrawnRecipe): FallbackDrawing => ({
+  top: recipe,
+  side: recipe,
+  bottom: recipe,
+});
+
+/**
+ * The drawn look of a terrain or wood block (ADR 0092 D16), or `null` when the block stays a
+ * one-colour cube. Liquids never draw here.
+ */
+function drawnLook(path: string): FallbackLook | null {
+  const grass = GRASSES[path];
+  if (grass !== undefined) {
+    return {
+      top: rgb(grass),
+      side: rgb(grass),
+      bottom: rgb(DIRT),
+      shape: 'cube',
+      drawn: {
+        top: path === 'grass_block' ? 'grass_top' : 'dirt',
+        side: 'grass_side',
+        bottom: 'dirt',
+      },
+    };
+  }
+  const plain = (colour: Rgba, recipe: DrawnRecipe): FallbackLook => ({
+    ...same(colour),
+    drawn: all(recipe),
+  });
+  if (STONES.has(path)) return plain(EXACT[path] as Rgba, 'stone');
+  const cobble = COBBLES[path];
+  if (cobble !== undefined) return plain(rgb(cobble), 'cobblestone');
+  if (path === 'dirt' || path === 'coarse_dirt' || path === 'rooted_dirt') {
+    return plain(EXACT[path] as Rgba, 'dirt');
+  }
+  if (path === 'sand' || path === 'red_sand') return plain(EXACT[path] as Rgba, 'sand');
+  if (path === 'gravel') return plain(EXACT[path] as Rgba, 'gravel');
+  for (const [wood, tones] of Object.entries(WOODS)) {
+    const stripped = path.startsWith(`stripped_${wood}_`);
+    if (!path.startsWith(`${wood}_`) && !stripped) continue;
+    const rest = path.slice(stripped ? `stripped_${wood}_`.length : `${wood}_`.length);
+    if (rest === 'leaves' || rest === 'flowering_leaves') {
+      return { ...same(rgb(tones.leaves), 'leaves'), drawn: all('leaves') };
+    }
+    if (rest === 'planks') return plain(rgb(tones.inner), 'planks');
+    if (rest === 'log' || rest === 'stem') {
+      return {
+        top: rgb(tones.inner),
+        side: rgb(stripped ? tones.inner : tones.bark),
+        bottom: rgb(tones.inner),
+        shape: 'cube',
+        drawn: stripped
+          ? { top: 'stripped_log_top', side: 'stripped_log', bottom: 'stripped_log_top' }
+          : { top: 'log_top', side: 'bark', bottom: 'log_top' },
+      };
+    }
+    if (rest === 'wood' || rest === 'hyphae') {
+      return stripped ? plain(rgb(tones.inner), 'stripped_log') : plain(rgb(tones.bark), 'bark');
+    }
+  }
+  if (path.endsWith('_leaves')) return { ...same(rgb(0x4a8a2c), 'leaves'), drawn: all('leaves') };
+  return null;
+}
+
 /** How a Minecraft block id draws without the client jar; see the module comment. */
 export function fallbackLook(id: string): FallbackLook {
   const path = id.includes(':') ? id.slice(id.indexOf(':') + 1) : id;
+  if (!alwaysFallback(`minecraft:${path}`)) {
+    const drawn = drawnLook(path);
+    if (drawn !== null) return drawn;
+  }
   if (path === 'grass_block') {
     return { top: rgb(0x5f9f35), side: rgb(0x7f6a3e), bottom: rgb(0x86603f), shape: 'cube' };
   }
@@ -358,6 +491,50 @@ export function parseFallbackTextureId(id: string): { colour: Rgba; holes: boole
   return { colour, holes: match[2] !== undefined };
 }
 
+/**
+ * The texture id of a drawn face (`msm:tryit_drawn/<recipe>/<rrggbb>/<block path>`); the block
+ * path seeds the drawing (`hashSeed('tryit', path)`), so each block id has its own variation.
+ */
+export function drawnTextureId(recipe: DrawnRecipe, colour: Rgba, path: string): string {
+  return `${FALLBACK_NAMESPACE}:tryit_drawn/${recipe}/${hex(colour).slice(0, 6)}/${path}`;
+}
+
+/** The recipe, colour and block path a drawn texture id stands for, or `null` for any other id. */
+export function parseDrawnTextureId(
+  id: string,
+): { recipe: DrawnRecipe; colour: readonly [number, number, number]; path: string } | null {
+  const match = /^msm:tryit_drawn\/([a-z_]+)\/([0-9a-f]{6})\/([a-z0-9_.-]+)$/.exec(id);
+  if (match === null) return null;
+  const recipe = match[1] as DrawnRecipe;
+  if (!(DRAWN_RECIPES as readonly string[]).includes(recipe)) return null;
+  const value = match[2] as string;
+  const colour = [0, 2, 4].map((at) => Number.parseInt(value.slice(at, at + 2), 16)) as [
+    number,
+    number,
+    number,
+  ];
+  return { recipe, colour, path: match[3] as string };
+}
+
+/**
+ * The PNG of a fallback texture id: a drawn face (the library's recipe, byte-stable for the same
+ * id) or a plain colour; `null` for any other id. The library is imported on the first drawn
+ * face (it is already in the app's main chunk, so this costs no download).
+ */
+export async function fallbackTexturePng(id: string): Promise<Uint8Array | null> {
+  const drawn = parseDrawnTextureId(id);
+  if (drawn !== null) {
+    const { artLookPng, hashSeed } = await import('@msm/plugin-library');
+    return artLookPng({
+      recipe: drawn.recipe,
+      colour: drawn.colour,
+      seed: hashSeed('tryit', drawn.path),
+    });
+  }
+  const plain = parseFallbackTextureId(id);
+  return plain === null ? null : fallbackPicture(plain.colour, plain.holes);
+}
+
 /** The model id of a block's fallback cube. */
 export function fallbackModelId(id: string): string {
   const path = id.includes(':') ? id.slice(id.indexOf(':') + 1) : id;
@@ -369,15 +546,18 @@ export function fallbackDefinition(id: string): JsonObject {
   return { variants: { '': { model: fallbackModelId(id) } } };
 }
 
-/** The fallback model of a block: a cube (or a small upright box) with its colours. */
+/** The fallback model of a block: a cube (or a small upright box) with its pictures. */
 export function fallbackModel(id: string): JsonObject {
   const look = fallbackLook(id);
   const holes = look.shape === 'leaves';
-  const textures = {
-    top: fallbackTextureId(look.top, holes),
-    side: fallbackTextureId(look.side, holes),
-    bottom: fallbackTextureId(look.bottom, holes),
+  const path = id.includes(':') ? id.slice(id.indexOf(':') + 1) : id;
+  const texture = (face: 'top' | 'side' | 'bottom'): string => {
+    const recipe = look.drawn?.[face];
+    return recipe === undefined
+      ? fallbackTextureId(look[face], holes)
+      : drawnTextureId(recipe, look[face], path);
   };
+  const textures = { top: texture('top'), side: texture('side'), bottom: texture('bottom') };
   const plant = look.shape === 'plant';
   const cull = (face: string) => (plant ? {} : { cullface: face });
   const face = (texture: string, name: string) => ({

@@ -49,8 +49,7 @@ import {
   alwaysFallback,
   fallbackDefinition,
   fallbackModel,
-  fallbackPicture,
-  parseFallbackTextureId,
+  fallbackTexturePng,
 } from './fallback-colours';
 
 /** Where Try it's pictures come from. */
@@ -373,10 +372,9 @@ export async function prepareTryItResources(
   const blobs: Record<string, Blob> = {};
   const missingTextures: string[] = [];
   for (const id of [...textureIds].sort()) {
-    const plain = parseFallbackTextureId(id);
+    const plain = await fallbackTexturePng(id);
     if (plain !== null) {
-      const bytes = fallbackPicture(plain.colour, plain.holes);
-      blobs[id] = new Blob([bytes.slice()], { type: 'image/png' });
+      blobs[id] = new Blob([plain.slice()], { type: 'image/png' });
       continue;
     }
     const { namespace, projectPath, vanillaPath } = textureLocations(id, folders);
