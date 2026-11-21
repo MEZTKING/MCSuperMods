@@ -67,6 +67,32 @@ Select a world preset or a dimension whose biome source is `multi_noise` with an
 
 The map shows the climate points only, not real terrain: the game's noise decides where each climate actually occurs. A noise-sampled map is not available yet.
 
+## A sky and rules of your own (dimension types)
+
+A **dimension type** says what a dimension is like to be in: the colour of its sky and fog, whether the sun, moon and stars move or stand still, how bright it is, whether beds work, whether water evaporates, how tall it is. Every dimension points at one. Until now your dimensions borrowed a vanilla one (the overworld's, the nether's or the end's); now you can make your own.
+
+There are three ways:
+
+- the Creator's **Dimension** flow has the answer **Give it its own sky and rules** (off by default). Switched on, it asks for **Sky colour**, **Fog colour**, **Time of day** (**As the chosen sky has it**, **Always day: the sun stands at noon** or **Always night: moon and stars**) and **Beds** (**As the chosen sky has them**, **Beds explode here** or **Beds work: sleep at night and set your spawn**), and adds a dimension type `<id>_type` copied from the **Sky and rules** you picked, with your changes, for the dimension to use. Switched off, nothing changes;
+- **Add element** (Ctrl+N), the templates **Moon dimension type** (a black starry sky, the sun standing still low in the sky, no clouds, no sleeping, though beds still set your spawn) and **Nether-like dimension type** (no sky and a bedrock ceiling, red fog, fast lava, water that evaporates, beds that explode, working respawn anchors and one block here for eight in the overworld), both under **Dimensions**;
+- any element of the kind `dimension_type`, edited in the **Dimension Type Studio**.
+
+The Dimension Type Studio has seven sections. Only the settings your Minecraft version has are shown; anything else stays in **Advanced**.
+
+- **Sky**: a small swatch of the sky, then **Sky colour**, **Fog colour**, **Cloud colour**, **Sunrise colour**, **Cloud height**, **Sun angle**, **Moon angle**, **Star angle**, **Star brightness**, **Sky hidden above** and the **Ambient particles** of the dimension.
+- **Light**: **Ambient light**, **Sky light**, **Ceiling (a roof of bedrock)**, **Light on block sides** and the light colours.
+- **Time**: **Time of day** is **Day and night (follows the clock)** or **Fixed: the sun stands still**, with the clock and timelines the day uses.
+- **Rules**: **Beds** is **As usual**, **Beds work: sleep at night and set your spawn**, **Beds explode when used** or **No sleeping, but beds set your spawn**; then yes-or-no switches: **Respawn anchors work**, **Piglins turn into zombies**, **Monsters burn in daylight**, **Lava flows fast**, **Water evaporates**, **Raids can start**, **Pillager patrols**, **Portals spawn zombified piglins**, **Snow golems melt** and **Fire burns out faster**.
+- **Height**: **Lowest block (min y)**, **Height**, **Logical height** (how high portals and chorus fruit reach) and **Distance scale** (one block here is this many blocks in the overworld, as 8 in the nether).
+- **Spawning**: the monster spawn light levels and the block light limit.
+- **Advanced**: every field of the type.
+
+**Problems** checks the height in plain words: the lowest block and the height must be multiples of 16 within the game's limits, the height must be at least 16, and the logical height may not be above the height. A setting that your version of Minecraft does not know is an error, because the game refuses the whole data pack; the message says to pick one the Studio lists.
+
+A dimension type is a data pack file, so it works in a vanilla data pack and in the mod. A new dimension, as always, is loaded when a world opens.
+
+**There is no gravity, and no sky picture, per dimension.** Vanilla has no such setting in its data. To make a moon feel light, add a [rule](rules.md) that gives players the **Slow Falling** or **Jump Boost** effect while they are in the dimension (the **Give an effect** step with the condition **The dimension is**). [Try it](try-it.md) shows only the sky colour, in the side panel's **Sky** choice.
+
 ## Other worldgen elements
 
 Dimensions (**Multi-noise overworld**, **Single-biome dimension**) and the elements under **Worldgen (advanced)** (noise settings, density functions, noise, carvers, flat level presets, multi-noise parameter lists, block state providers, material conditions and rules) use the general form with templates. Each template is a minimal valid file to build on. To get players into a dimension of your own, use the Creator's Dimension or Portal flow: a key item, a portal block (Fabric mod jar) or a travel function (see [Portals](portals.md)).

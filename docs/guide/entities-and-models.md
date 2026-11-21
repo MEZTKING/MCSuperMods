@@ -40,6 +40,7 @@ Selecting an entity opens the Entity Studio. Empty fields use the defaults. **Ad
 - **Stats**: **Health** (default 20), **Speed** (default 0.25; a zombie has 0.23, so small changes matter), **Follow range** (how far it notices targets, default 16), **Knockback resistance** (0 to 1), **Swims** (floats up in water instead of sinking; on by default) and **Fire immune**.
 - **Attack**: **Attacks in melee** with **Damage** and **Knockback**, and **On attack**, an event that runs after each hit. Without it, a melee goal does nothing.
 - **Movement**, **Ranged attack**, **Taming**, **Breeding**, **Riding**, **Variants** and **Boss bar**: see [Mob behaviours](mob-behaviours.md).
+- **Trader**, **Storage** and **Shoulder**: a mob that trades through the villager trading screen (**Trades with players**), a mob that carries a chest's worth of things (**Carries things, like a donkey with a chest**) and a tamed pet that sits on its owner's shoulder (**Rides on its owner's shoulder**). They have a page of their own: [Villagers, traders and pets that carry things](villagers-and-traders.md). A new job for villagers is its own element, edited in the Profession Studio (same page).
 - **Behaviour**: the goals (see below).
 - **Sounds**: the sounds the mob makes (see [Mob sounds](#mob-sounds)).
 - **Spawning**: natural spawning (see [Spawning](#spawning)).

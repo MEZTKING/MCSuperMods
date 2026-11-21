@@ -6380,3 +6380,20 @@ Next
 **Next**
 - B484 guide part: the plain-words limits above match the prompt (Q21 to Q31).
 - B485: ADR 0101 D7 "as built, batch 2" from this entry.
+
+## 2026-11-21 — executor — B484 guide, changelog and status lines, batch 2
+
+**What**
+- New guide pages `docs/guide/villagers-and-traders.md` (traders and the Trader section with the trade editor, village jobs and the Profession Studio, Storage, Shoulder, the Wandering merchant and Village job flows, the tile "Make a trader", vanilla packs, Try it, the in-game check, limits Q21 to Q24 and the trade rebalance note) and `docs/guide/fluids.md` (the Fluid flow and Studio, water, lava or neither, pictures and tint, buckets, lakes, 26.3 against 26.4, Try it without flow, limits Q25, Q26, Q28 and Q29, and that a resource pack cannot change a fluid's pictures).
+- Lines in `entities-and-models.md`, `mob-behaviours.md` (a seventh Mobs flow, the new Pet and Mount answers), `worldgen.md` (a section on dimension types and the Dimension Type Studio; no gravity or sky pictures per dimension, Q27), `very-easy.md` (the tile, the Village job and Liquid cards, the Fluid pick, twelve new plain-words problems), `try-it.md` (merchant mock-up, fluids that do not flow, the Sky choice, two limit rows) and `templates-and-examples.md` (counts, templates, three flows, three examples, starter folders); the guide index, the site sidebar and the page list in `docs/CLAUDE.md`; `CHANGELOG.md` `[Unreleased]`.
+- Status lines in the root `CLAUDE.md` (still 70 lines) and the scoped `engine-mod`, `packages/plugins`, `packages/plugin-api` and `packages/targets` files; contents lines in `packages/sim/CLAUDE.md` (`traders/`, `fluids/`) and `app/CLAUDE.md`.
+- Checks: `vitepress build` in `docs/site` passes (dead links fail it; run with the main checkout's `node_modules` linked in, link removed again), a script checked every `file.md#anchor` and `#anchor` link of the guide (0 bad), no emojis, line limits kept, DESIGN.md untouched.
+
+**Decisions**
+- Counts used: 104 kinds (the per-kind examples test, `content.test.ts`: 104), 60 starters and 48 Creator flows (counted in `starters/index.ts`), 164 examples (`content.test.ts`), 249 templates (241 plus 8: 4 villagers, 2 fluids, 2 dimension types, by plugin worldgen 24, blocks-items 87, entities 22), 705 GameTests per variant (B482), about 1093 JUnit (B479), 36 e2e spec files (counted), sample villagers 15 (B482).
+- The tile's real sentence is "A mob that trades with you, or a new job for villagers." (it also opens the Village job flow), not the plan's shorter wording.
+- Where the notes did not say, the guide says "an in-game check" (a villager restocking at a project job block, sleeping or gliding with a pet perched, a server stop with a pet perched, how a project fluid meets water or lava) rather than a claim.
+
+**Next**
+- `creator.md` still lists six Mobs flows and no Wandering merchant, Village job or Fluid rows (not in this brief's owner list); `templates-and-examples.md` still lacks Vehicles and Controls rows from before.
+- B485: DESIGN.md sections, the coverage audit lines and the plan's deletion.

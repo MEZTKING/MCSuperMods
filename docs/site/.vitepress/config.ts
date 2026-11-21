@@ -57,6 +57,8 @@ export default defineConfig({
           { text: 'Containers and machines', link: '/containers-and-machines' },
           { text: 'Portals', link: '/portals' },
           { text: 'Particles', link: '/particles' },
+          { text: 'Villagers and traders', link: '/villagers-and-traders' },
+          { text: 'Fluids', link: '/fluids' },
           { text: 'Vehicles', link: '/vehicles' },
           { text: 'Keys and the screen', link: '/keys-and-hud' },
           { text: 'The Creator', link: '/creator' },

@@ -40,6 +40,7 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | Vehicles | **Make a vehicle** | Cars, tanks, planes and boats you can drive. It asks **What kind?** (Car, Tank, Plane, Boat) and **What is it called?**, then opens the vehicle with **Try it** and **Play** offered |
 | Creatures | **Make a mob** | A new creature, a flying or swimming one, or a boss |
 | | **Make a pet or animal** | A pet to tame, a farm animal or something to ride |
+| | **Make a trader** | A mob that trades with you, or a new job for villagers |
 | Magic | **Make a potion or effect** | A potion to brew or a new effect |
 | | **Make sparkles** | Particles of your own around a block or from an item |
 | | **Make a magic wand** | A wand that heals, throws you up, calls lightning or gives an effect |
@@ -62,6 +63,8 @@ Two tiles show a short list of **pictures** when they open the Creator, so you c
 
 In **Make things happen** the Rules also offer, in the same plain words, **A player places a block** (**Which block?**) with **Stop the placing**; **Something explodes** with **Stop the explosion** and **Keep the blocks safe**; **A player types the command** (then pick the command, shown as `/name`); **A player gets on something** and **A player gets off something** with **Ride something** and **Get off**; and the checks **Someone is riding** and **Something is facing a way** (north, east, south, west, up or down), with **The way it faces** for messages and **In front of here** for a place ([Rules](rules.md#placing-explosions-commands-and-riding)).
 
+**Make a trader** opens a short list of two pages: **Wandering merchant** ("A mob that trades with you.") and **Village job** ("A new job for villagers, with its workbench."). The merchant asks **What is it called?**, **What does it look like?** (the mob pictures), then **What does it sell?** (pick an item) and **For how many emeralds?**; the job asks **What is the job called?**, the colours of its apron and workbench and its first trades. Both create with their defaults, so you can press **Create** at once. **Make a block** also offers **Fluid** ("A liquid of your own, with its bucket."). See [Villagers, traders and pets that carry things](villagers-and-traders.md) and [Fluids](fluids.md). In the pet and mount pages, **Rides on your shoulder** and **Carries a chest** are single switches.
+
 In the Creator, **Pick for me** fills in every question with random answers that work; change any of them before you press **Create**.
 
 ## Surprise me
@@ -81,7 +84,7 @@ Everything a surprise makes is one step, so **Undo** takes all of it back. Each 
 
 ## My things
 
-Below the tiles, **My things** has a card for each thing you made: a set from the Creator (a gear set is one card), or a loose block, item, mob, effect, potion, portal or rule book, with its picture. Choose a card to open it in its editor; the editor shows the parts that matter and keeps the rest away. A **Rules** section comes first in the block, item, mob and effect editors, so the quickest way to make a thing do something is to open it and add a rule ([Rules](rules.md)).
+Below the tiles, **My things** has a card for each thing you made: a set from the Creator (a gear set is one card), or a loose block, item, mob, effect, potion, portal, **Village job**, **Liquid** or rule book, with its picture. A **Village job** card (its profession, workbench block and trades are one card) opens at the job, and a **Liquid** card opens the liquid, not its block or bucket. Choose a card to open it in its editor; the editor shows the parts that matter and keeps the rest away. A **Rules** section comes first in the block, item, mob and effect editors, so the quickest way to make a thing do something is to open it and add a rule ([Rules](rules.md)).
 
 A card's menu has:
 
@@ -107,6 +110,16 @@ The newest things are explained in the same plain way, for example:
 - a berry bush or a potted plant that points at something missing: "<name> gives a berry that is not an item in your mod or in Minecraft. Pick another item.";
 - a command with a name that Minecraft or another of your commands already uses: "<name> has a name that Minecraft or another of your commands already uses. Pick another.";
 - a creative tab whose icon does not exist: "The creative tab <name> shows a picture of something that does not exist. Pick another.";
+- a trader that borrows a list of trades that does not exist: "<name> trades from a list of trades that does not exist. Pick other trades for it.";
+- a trader that borrows trades only some villagers may offer: "<name> borrows trades that only some villagers may offer, so it offers fewer of them or none. Give it trades of its own.";
+- a monster that trades: "<name> is a monster, so it does not trade at night. That is allowed." (a tip, not a problem);
+- a village job with no work block of its own: "<name> needs a work block of your own. Make a block and pick it.", or one whose work block belongs to Minecraft or another job: "<name> uses a block that already belongs to Minecraft or to another job as its work block. Pick a block of your own.";
+- a shoulder pet that is too wide or not tameable: "<name> is too wide to sit on a shoulder. Make it narrower, or let it stay on the ground." and "<name> can only sit on a shoulder if it is an animal that can be tamed.";
+- a mob with a chest bigger than one chest: "<name> holds more than the one chest put on it. That is allowed." (a tip);
+- a liquid whose bucket has the name of something else: "The bucket of <name> has the same name as another thing in your mod. Rename one of them.";
+- a liquid that looks further for a way down than it can spread: "<name> looks further for a way down than it can spread. Make it look less far, or spread further.";
+- a liquid missing a picture: "<name> is missing one of its pictures, so it looks like plain water or lava there.";
+- a liquid that behaves like nothing: "<name> behaves like nothing, so players see through it as through air. Make it behave like water or lava.";
 - a rule step from another moment: "A rule in <name> uses a step or a check that only works with another "When" (such as "Stop the placing" when a player places a block).".
 
 If there is nothing to fix it says "Everything is ready to play." Less serious notes are folded under **Tips**. A problem MCSuperMods has no words for yet reads "Something in <thing> needs fixing", with **Show details** for the original message.
@@ -119,7 +132,7 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 
 ## Try it
 
-**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)).
+**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)). A trader you made shows its trading screen there, and a liquid's bucket pours a pool that does not flow.
 
 ## Share my mod
 

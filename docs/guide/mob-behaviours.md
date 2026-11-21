@@ -6,15 +6,16 @@ Everything here works in the **Fabric mod jar** only, like every mob, and on bot
 
 ## The quick way: the Creator flows
 
-The **Creator** (the **Create** button, see [The Creator](creator.md)) has six flows under **Mobs** that set these parts up from a few questions. Each one makes the mob, its model, animations, skin, variants, spawn egg and loot, and you can open the result in the Entity Studio afterwards.
+The **Creator** (the **Create** button, see [The Creator](creator.md)) has seven flows under **Mobs** that set these parts up from a few questions. Each one makes the mob, its model, animations, skin, variants, spawn egg and loot, and you can open the result in the Entity Studio afterwards.
 
 | Flow | Makes | Questions worth knowing |
 |---|---|---|
-| **Pet** | An animal you tame with a food; it sits when told, follows and defends you, and has babies | **Pet name**, **Model**, **Taming food**, **Sits when told**, **Defends you**, **Can have babies**, **Breeding food** |
+| **Pet** | An animal you tame with a food; it sits when told, follows and defends you, and has babies | **Pet name**, **Model**, **Taming food**, **Sits when told**, **Defends you**, **Rides on your shoulder**, **Can have babies**, **Breeding food** |
 | **Farm animal** | An animal you breed with a food, with babies and drops | **Animal name**, **Breeding food**, **Baby size**, **Drops**, **Can be ridden** |
-| **Mount** | A mob you ride and steer | **Mount name**, **Needs a saddle**, **Speed**, **Jump strength**, **Only its owner can ride it**, **Flying** |
+| **Mount** | A mob you ride and steer | **Mount name**, **Needs a saddle**, **Speed**, **Jump strength**, **Only its owner can ride it**, **Carries a chest** (with **Rows of storage**), **Flying** |
 | **Flying mob** | A mob that flies and hovers: peaceful, neutral, hostile or a shooter | **Mob name**, **Behaviour**, **Flying speed** |
 | **Water mob** | A fish, a dolphin-like swimmer or an amphibian | **Mob name**, **Kind**, **Behaviour** |
+| **Wandering merchant** | A mob that sells things through the villager trading screen, like the wandering trader | **What does it sell?**, **How many at a time?**, **For how many emeralds?**, **Sales before it runs out**, **Also sells the wandering trader's wares**, **Restocks** |
 | **Boss** | A large monster with a boss bar | **Boss name**, **Size**, **Attacks**, **Boss bar colour**, **Boss bar style**, **Darkens the sky**, **Drops** |
 
 Every mob flow asks for a **Model** (a four-legged mob, a bird, a fish, a round flyer or a two-legged mob, all with ready-made animations that you can replace with your own Blockbench model later), a **Colour** or **Skin picture**, and, except for the **Boss** (which has no variants and appears only from its spawn egg), up to three **Extra variants** (each with a colour, a picture and where it appears) and **Spawns in**. The older **Custom mob** flow gained a **Hostile archer** behaviour and the same variants.
@@ -98,6 +99,10 @@ The built-in renderer reads the same model and animation files as GeckoLib, so n
 
 The [Java project export](eject.md) draws every mob with GeckoLib, including built-in ones, and says so.
 
+## Traders, storage and shoulder pets
+
+Three more sections of the Entity Studio give a mob something to do with the player's hands and pockets: **Trader** (it sells things through the villager trading screen, with levels and restocking), **Storage** (a chest's worth of slots, opened by sneaking and using it, or with the inventory key while riding) and **Shoulder** (a tamed pet that jumps onto its owner's shoulder). **Taming** and **Riding** work together with them: a shoulder pet must be an animal with **Taming**, and a pack animal is usually a mount. The whole story, with the Creator's **Wandering merchant** flow and the village job, is in [Villagers, traders and pets that carry things](villagers-and-traders.md).
+
 ## Limits
 
 - **Riding moves on the rider's game.** In Minecraft a ridden mob follows what the rider's client says, so steering, speed and jumping run the rider's copy of the mob. Server and player must have the same version of the mod. Launching, teleporting or knocking back a ridden mob may be lost or jitter.
@@ -110,6 +115,7 @@ The [Java project export](eject.md) draws every mob with GeckoLib, including bui
 - **Boss music only in the End**, and a boss bar only for players within range.
 - **The base needs a restart** to change (see above).
 - **Saddles use a vanilla tag.** A data pack that replaces `#minecraft:can_equip_saddle` outright stops custom mobs being saddled.
+- **Traders, storage and shoulder pets have limits of their own**: no gossip or discounts, no hopper access, one small shoulder pet per player. They are listed under [Villagers, traders and pets that carry things](villagers-and-traders.md#limits).
 - **A modpack with GeckoLib on one side only** can make automatic mobs behave differently on client and server: ship GeckoLib to both or to neither.
 
 ## The in-game check
@@ -121,6 +127,7 @@ Install the jar as in [Entities and models](entities-and-models.md#the-in-game-c
 3. A mount: saddle it, right-click it and steer. Check the jump bar and, for a flyer, rising while you jump.
 4. A shooter: stand in its sight and see it fire at the range you chose; the shoot animation plays once per shot.
 5. A boss: summon it from its egg and look for the bar, the style and the sky.
+6. A trader: use it with an empty hand and trade; a pack animal: use a chest on it and open it while sneaking; a shoulder pet: tame it and stand near it ([the checks](villagers-and-traders.md#the-in-game-check)).
 
 The sample project `fixtures/sample-creatures` has a full checklist for 26.3 and 26.4: [`fixtures/sample-creatures/README.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-creatures/README.md).
 

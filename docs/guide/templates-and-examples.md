@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (241) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (57) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (161) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (249) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (60) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (164) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting and rules plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -251,6 +251,8 @@ A trade reaches a villager through the vanilla trade tag of its profession and l
 | Multi-noise overworld | `dimension_multi_noise` | `minecraft:dimension` | Overworld terrain with one biome at a mild, humid climate point and vanilla biomes around it. That entry starts as this element's own id: set it to your biome, such as `amber_grove` for `amber_world`. |
 | Single-biome dimension | `dimension_single_biome` | `minecraft:dimension` | Overworld terrain where every column is one biome. The biome starts as this element's own id: set it to your biome, such as `amber_grove` for `amber_world`. |
 | World preset | `world_preset` | `minecraft:worldgen/world_preset` | A World Type with the vanilla overworld, nether and end; change the overworld biome source to add your biomes. |
+| Moon dimension type | `dimension_type_moon` | `minecraft:dimension_type` | A black starry sky with the sun standing still low in the sky, no clouds and no sleeping (beds still set your spawn). Point a dimension at it; vanilla has no gravity setting, so use Rules to give players Slow Falling or Jump Boost there ([A sky and rules of your own](worldgen.md#a-sky-and-rules-of-your-own-dimension-types)). |
+| Nether-like dimension type | `dimension_type_nether_like` | `minecraft:dimension_type` | No sky and a bedrock ceiling, red fog, fast lava, water that evaporates, beds that explode, working respawn anchors and one block here for eight in the overworld. |
 
 #### Worldgen (advanced)
 
@@ -377,6 +379,15 @@ Particles of your own (`msm:particle`) need the Fabric mod jar; see [Particles](
 | Block with ambient particles | `msm_block_ambient_particles` | `msm:block` | A glowing block that gives off end rod sparkles by itself, as a torch shows its flame. Swap the particle for one of your own. |
 | Retexture a vanilla particle | `particle_retexture` | `minecraft:particle` | Gives a vanilla particle (flame by default) a picture of your own: add it as `textures/particle/<name>.png`. Works in a plain resource pack. |
 
+#### Fluids
+
+Liquids of your own (`msm:fluid`) need the Fabric mod jar; see [Fluids](fluids.md).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Water-like fluid | `msm_fluid_water_like` | `msm:fluid` | A green liquid that flows, makes new sources and lets you swim in it like water, with a bucket to carry it. It uses vanilla water pictures under a green tint until you give it your own. Default name `swamp_water`. |
+| Lava-like fluid | `msm_fluid_lava_like` | `msm:fluid` | A glowing molten liquid that flows slowly, never makes new sources, lights up the dark and sets things on fire like lava, with vanilla lava pictures under a golden tint. Default name `molten_gold`. |
+
 #### Additions
 
 Additions to vanilla content need the Fabric mod jar too; see [Adding to vanilla](adding-to-vanilla.md).
@@ -408,6 +419,17 @@ New mobs, like new blocks and items, exist only in the **Fabric mod jar** export
 | Fish | `msm_entity_fish` | `msm:entity` | A small fish that swims in schools, darts away from players and dries out on land. |
 | Archer | `msm_entity_archer` | `msm:entity` | A skeleton-like monster that circles players and shoots arrows from a distance. |
 | Boss | `msm_entity_boss` | `msm:entity` | A large monster with a boss bar that darkens the sky; it never spawns on its own. |
+
+#### Villagers and traders
+
+Traders, village jobs, pack animals and shoulder pets need the Fabric mod jar; see [Villagers, traders and pets that carry things](villagers-and-traders.md).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Wandering merchant | `msm_entity_wandering_merchant` | `msm:entity` | A mob that trades through the villager trading screen: it sells what vanilla's wandering trader sells, and its rarer wares unlock as you trade. Offers refill twice a day. With a spawn egg. |
+| Pack mule | `msm_entity_pack_mule` | `msm:entity` | An animal you tame with apples and ride with a saddle. Use a chest on it to give it three rows of storage, opened with the inventory key while riding or by using it while sneaking. |
+| Shoulder pet | `msm_entity_shoulder_pet` | `msm:entity` | A small animal you tame with sweet berries. Once tamed it follows you, sits when you use it and jumps onto your shoulder when you stand still near it. |
+| Village job | `msm_villager_profession` | `msm:villager_profession` | A new job for vanilla villagers: a villager without a job takes it at a job site block of your own. Five trade levels are created for you; add trades to their trade tags. |
 
 #### Entity models
 
@@ -519,6 +541,9 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Flying mob (Creator: Mobs) | `flying-mob` | resource, mod | A mob that flies and hovers: peaceful, neutral, hostile or shooting a projectile at players. |
 | Water mob (Creator: Mobs) | `water-mob` | resource, mod | A fish, a dolphin-like swimmer or an amphibian. |
 | Boss (Creator: Mobs) | `boss` | resource, data, mod | A large monster with a boss bar that darkens the sky, melee or ranged attacks and drops. |
+| Wandering merchant (Creator: Mobs) | `wandering-merchant` | resource, data, mod | A mob that trades with you: up to three wares for emeralds, optionally the wandering trader's wares at levels 2 and 3, restocking twice a day or never, with a model, skin and spawn egg. |
+| Village job (Creator: Worlds) | `village-job` | resource, data, mod | A new job for villagers: the workbench block, the apron villagers and zombie villagers wear, what it buys and sells and, if you choose, the trades of a vanilla job at every level. |
+| Fluid (Creator: Blocks) | `fluid` | resource, data, mod | A new liquid with its bucket: water-like, lava-like or neither, its colour and pictures, how fast and far it flows, what happens to someone in it and, if you choose, lakes of it in the world. |
 | Scripted ore | `scripted_ore` | resource, data, mod | The Custom ore starter with three scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. |
 | Scripted behaviour (Creator: Scripts) | `scripted-item` | resource, mod | An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio. |
 
@@ -594,7 +619,7 @@ Two wishes from the research are simplified: the Orchard tree's pie is eaten who
 
 ### All examples
 
-There is one example for each of the 102 element kinds, thirty-three more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), sixteen **Popular ideas** (below), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 104 element kinds, thirty-four more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), sixteen **Popular ideas** (below), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle, Wandering merchant, Village job, Fluid) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -734,6 +759,9 @@ There is one example for each of the 102 element kinds, thirty-three more behavi
 | Copper roof | `example_msm_copper_roof` | Blocks | `msm:block` | Roof stairs and slabs that age through four stages like copper, with waxed copies that keep their colour. |
 | Adventurer's satchel | `example_msm_adventurers_satchel` | Items | `msm:item` | A satchel that holds two rows of items, a roll that works like a bundle and a creative tab for them, with recipes. |
 | Server helper | `example_msm_server_helper` | Commands | `msm:command` | `/helpme` for everyone, `/hub` to jump to a lobby and `/boost` with a number for operators, with a rule book that points new players at `/helpme`. |
+| Village blacksmith job | `example_msm_villager_profession` | Villagers | `msm:villager_profession` | A blacksmith job for villagers: a villager takes it at a forge block, wears a leather apron and trades coal, iron and a toolsmith's wares as it levels up ([Villagers, traders and pets that carry things](villagers-and-traders.md)). |
+| Oil well | `example_msm_fluid` | Fluids | `msm:fluid` | Oil: a thick dark liquid that flows slowly and never refills, slows down whoever wades in, comes in a bucket and lies in lakes in deserts ([Fluids](fluids.md)). |
+| Roadside merchant | `example_msm_roadside_merchant` | Entities | `msm:entity` | A merchant by the road who sells bread and apples, then saddles and leads once you have traded with it, and rings a bell with every sale. |
 | Glowshard: a whole first mod | `example_popular_glowshard` | Popular ideas | `msm:item` | A glowing ore that generates in caves and drops shards, a block of glowshard, a sword, pickaxe, axe, shovel and hoe, a full suit of armour, an armour trim material and an advancement tab: the beginner route in one project. Inspired by: ore, tool and armour progression. |
 | Ember drake | `example_popular_ember_drake` | Popular ideas | `msm:entity` | A drake hatched from its spawn egg, tamed with raw meat, saddled and flown by its owner, that shoots fireballs at monsters and at anything that hurts it. Inspired by: dragon mounts and pets. |
 | Cottage furniture | `example_popular_cottage_furniture` | Popular ideas | `msm:block` | A table, a stool and a lamp with shapes of their own, and a wooden crate that holds items, all crafted from planks. You cannot sit on the stool: MSM has no seats yet. Inspired by: furniture and decoration. |
@@ -761,7 +789,7 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 
 | Folder | Namespace | Contents |
 |---|---|---|
-| `examples/all-kinds/` | `msm_examples` | The 96 per-kind examples in one project |
+| `examples/all-kinds/` | `msm_examples` | The 104 per-kind examples in one project |
 | `examples/blocks-items/` | `msm_examples` | The blocks and items behaviour examples (Sturdy pickaxe, Beacon stone, Fuel log, Life-steal sword, Night-vision helmet, Brewed with your own item, Elm wood set, Shale stone set, Onion crop, Silver birch tree, Crusher, Vault door, Loot crate in a structure, Ore crusher, Shulker crate) |
 | `examples/entities/` | `msm_examples` | The entity behaviour examples (Hostile mob, Natural spawning, Tameable fox-like pet, Rideable flying mount, Archer with a throwable, Fish school with biome variants, Boss with a boss bar, Drawn without GeckoLib), each with its model, animations and textures |
 | `examples/scripts/` | `msm_examples` | The script behaviour examples (Script: scheduled effects, Script: action handler, Script: scripted effect, Script: kill counter, Script: full set bonus, Script: teleport staff, Script: boss fight bar) |
@@ -800,6 +828,9 @@ The same examples are in the repository as ordinary MCSuperMods projects, so you
 | `examples/starters/water-mob/` | `msm_starter` | The Water mob starter |
 | `examples/starters/boss/` | `msm_starter` | The Boss starter |
 | `examples/starters/particle/` | `msm_starter` | The Particle starter |
+| `examples/starters/wandering-merchant/` | `msm_starter` | The Wandering merchant starter |
+| `examples/starters/village-job/` | `msm_starter` | The Village job starter |
+| `examples/starters/fluid/` | `msm_starter` | The Fluid starter |
 
 Copy a folder somewhere else before opening it, so your edits do not change the repository. See [examples/README.md](https://github.com/MEZTKING/MCSuperMods/blob/main/examples/README.md).
 
