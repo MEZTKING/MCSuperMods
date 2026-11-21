@@ -127,7 +127,16 @@ describe('the trigger table', () => {
       [...text.matchAll(/\n\t(on_[a-z_]+)\?: string,/g)].map((m) => m[1] as string),
     );
     const lastKeys = new Set(TRIGGER_SPECS.map((spec) => spec.path.at(-1)));
-    for (const field of fields) expect(lastKeys, field).toContain(field);
+    // Fields whose owner the sim cannot hold yet, each with the brief that adds it; that brief
+    // deletes its entry. `on_entity_inside`: the fluid kind (ADR 0099), owned by B483.
+    const waiting = new Set(['on_entity_inside']);
+    for (const field of fields) {
+      if (waiting.has(field)) {
+        expect(lastKeys, `${field} is in the table: remove it from "waiting"`).not.toContain(field);
+        continue;
+      }
+      expect(lastKeys, field).toContain(field);
+    }
   });
 
   it('fires or says every trigger a definition sets', () => {

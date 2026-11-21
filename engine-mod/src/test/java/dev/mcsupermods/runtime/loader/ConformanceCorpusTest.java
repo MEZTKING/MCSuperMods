@@ -40,8 +40,11 @@ class ConformanceCorpusTest {
      * {@code hud-} and {@code action-hud-} by B416 ({@code HudParser}, the HUD actions), {@code vehicle-} by B412
      * ({@code VehicleParser}, with {@code action-explode-}); B416 also decoded {@code vehicle-tank}, which uses the HUD
      * actions. {@code command-} and {@code creative-tab-} decoded by B454 ({@code CommandParser}, {@code CreativeTabParser}).
+     * Batch 2's format (B473): {@code trader-} and {@code profession-} wait for B474, {@code fluid-} for B475,
+     * {@code storage-} and {@code shoulder-} for B479; each brief removes its prefixes when its parser decodes them.
      */
-    private static final List<String> PENDING = List.of();
+    private static final List<String> PENDING =
+            List.of("trader-", "profession-", "fluid-", "storage-", "shoulder-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
