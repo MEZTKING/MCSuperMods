@@ -1,0 +1,19 @@
+{
+  "behaves_like": "water",
+  "events": {
+    "msm_test:inside": {
+      "actions": [
+        {
+          "amplifier": 0,
+          "effect": "minecraft:glowing",
+          "seconds": 2.0,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "on_entity_inside": "msm_test:inside",
+  "tint": 2280516
+}

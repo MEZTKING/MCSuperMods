@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "msm_test:block/fluid_lava"
+    }
+  }
+}

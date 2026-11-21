@@ -1,0 +1,8 @@
+{
+  "textures": {
+    "flowing": "msm_test:block/fluid_water_flow",
+    "overlay": "msm_test:block/fluid_water_overlay",
+    "particle": "msm_test:block/fluid_water_still",
+    "still": "msm_test:block/fluid_water_still"
+  }
+}

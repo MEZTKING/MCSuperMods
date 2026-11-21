@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "msm_test:fluid_lava",
+    {
+      "id": "msm_test:flowing_fluid_lava",
+      "required": false
+    }
+  ]
+}

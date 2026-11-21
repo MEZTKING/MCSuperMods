@@ -1,0 +1,11 @@
+{
+  "explosion_resistance": 3.0,
+  "flow": {
+    "drop_off": 2,
+    "infinite": false,
+    "slope_distance": 2,
+    "tick_delay": 10
+  },
+  "format": 1,
+  "light": 9
+}

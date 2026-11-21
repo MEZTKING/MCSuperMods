@@ -1,0 +1,7 @@
+{
+  "textures": {
+    "flowing": "msm_test:block/fluid_lava_flow",
+    "particle": "msm_test:block/fluid_lava_still",
+    "still": "msm_test:block/fluid_lava_still"
+  }
+}
