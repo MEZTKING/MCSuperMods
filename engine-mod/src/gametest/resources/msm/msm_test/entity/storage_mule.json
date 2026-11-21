@@ -1,0 +1,32 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "speed": 0.2
+    },
+    "msm:rideable": {
+      "saddle": false
+    },
+    "msm:storage": {
+      "rows": 2
+    },
+    "msm:tameable": {
+      "chance": 1.0,
+      "items": [
+        "minecraft:bone"
+      ],
+      "sit": false
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.4,
+    "width": 1.2
+  },
+  "spawn_egg": false
+}

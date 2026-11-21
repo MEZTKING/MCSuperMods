@@ -41,10 +41,10 @@ class ConformanceCorpusTest {
      * ({@code VehicleParser}, with {@code action-explode-}); B416 also decoded {@code vehicle-tank}, which uses the HUD
      * actions. {@code command-} and {@code creative-tab-} decoded by B454 ({@code CommandParser}, {@code CreativeTabParser}).
      * Batch 2's format (B473): {@code trader-} and {@code profession-} decoded by B474 ({@code TraderParser} through
-     * {@code EntityComponents}, {@code ProfessionParser}), {@code fluid-} by B475 ({@code FluidParser}); {@code storage-}
-     * and {@code shoulder-} wait for B479, which removes them when its parsers decode them.
+     * {@code EntityComponents}, {@code ProfessionParser}), {@code fluid-} by B475 ({@code FluidParser}), {@code storage-}
+     * and {@code shoulder-} by B479 ({@code StorageParser} through {@code EntityComponents}).
      */
-    private static final List<String> PENDING = List.of("storage-", "shoulder-");
+    private static final List<String> PENDING = List.of();
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -112,7 +112,9 @@ class ConformanceCorpusTest {
             new Kind("creative-tab-", CreativeTabParser::parse), // B454
             new Kind("trader-", DefinitionParser::parseEntity), // B474
             new Kind("profession-", ProfessionParser::parse), // B474
-            new Kind("fluid-", FluidParser::parse)) // B475
+            new Kind("fluid-", FluidParser::parse), // B475
+            new Kind("storage-", DefinitionParser::parseEntity), // B479
+            new Kind("shoulder-", DefinitionParser::parseEntity)) // B479
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

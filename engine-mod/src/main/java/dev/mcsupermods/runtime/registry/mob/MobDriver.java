@@ -166,6 +166,7 @@ public final class MobDriver {
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         variants.onSyncedDataUpdated(accessor);
         animations.onSyncedDataUpdated(accessor);
+        shoulder.onSyncedDataUpdated(accessor);
     }
 
     /** After vanilla's {@code addAdditionalSaveData}. */
@@ -174,6 +175,8 @@ public final class MobDriver {
         variants.addAdditionalSaveData(output);
         bossBar.addAdditionalSaveData(output);
         trader.addAdditionalSaveData(output);
+        storage.addAdditionalSaveData(output);
+        shoulder.addAdditionalSaveData(output);
     }
 
     /** After vanilla's {@code readAdditionalSaveData}. */
@@ -182,6 +185,8 @@ public final class MobDriver {
         variants.readAdditionalSaveData(input);
         bossBar.readAdditionalSaveData(input);
         trader.readAdditionalSaveData(input);
+        storage.readAdditionalSaveData(input);
+        shoulder.readAdditionalSaveData(input);
     }
 
     /** Vanilla keeps the mob unless a module needs it kept (tamed mobs, bosses). */
@@ -221,31 +226,43 @@ public final class MobDriver {
             definition().components().onDeath().ifPresent(c -> fire(level, c.event(), source.getEntity() instanceof Player p ? p : null));
         }
         bossBar.die(source);
+        if (!wasDead && dead) {
+            storage.die();
+            shoulder.die();
+        }
     }
 
     /** After vanilla's {@code remove}. */
     public void remove(Entity.RemovalReason reason) {
         bossBar.remove(reason);
+        shoulder.remove(reason);
+    }
+
+    /** After vanilla's {@code tick}, on both sides (the {@code animal} body only: shoulder pets). */
+    public void tick() {
+        shoulder.tick();
     }
 
     /**
-     * {@code mobInteract} in the order of ADR 0071 D1: breeding food, the owner's sit toggle, mounting, then
-     * {@code msm:on_interact} (which, when present, answers every right click as before); otherwise vanilla's.
+     * {@code mobInteract} in the order of ADR 0071 D1, with batch 2's modules (ADR 0098): mount storage first (a chest
+     * on a {@code needs_chest} mob, and a sneaking use opening the store: sneaking beats feeding, the sit toggle and
+     * trading, as a donkey's inventory does), then breeding food, the owner's sit toggle, mounting, trading on a plain
+     * use, then {@code msm:on_interact} (which, when present, answers every right click as before); otherwise vanilla's.
      */
     public InteractionResult mobInteract(Player player, InteractionHand hand, Supplier<InteractionResult> vanilla) {
-        InteractionResult result = breeding.mobInteract(player, hand);
+        InteractionResult result = storage.mobInteract(player, hand);
+        if (result == null) {
+            result = breeding.mobInteract(player, hand);
+        }
         if (result == null) {
             result = taming.mobInteract(player, hand);
         }
         if (result == null) {
             result = riding.mobInteract(player, hand);
         }
-        // Batch 2 (ADR 0098): trading (B474); mount storage and shoulder pets are stubs until B479.
+        // Batch 2 (ADR 0098): trading (B474); storage went first above, shoulder pets have no click of their own (B479).
         if (result == null) {
             result = trader.mobInteract(player, hand);
-        }
-        if (result == null) {
-            result = storage.mobInteract(player, hand);
         }
         if (result == null) {
             result = shoulder.mobInteract(player, hand);

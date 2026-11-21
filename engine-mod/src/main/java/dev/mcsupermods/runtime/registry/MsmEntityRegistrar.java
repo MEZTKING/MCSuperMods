@@ -120,10 +120,15 @@ public final class MsmEntityRegistrar {
                 }
                 MsmRegistrar.checkEvents(raw, def.events(), errors);
                 boolean geo = renderer == EntityComponents.Renderer.GECKOLIB || (renderer == EntityComponents.Renderer.AUTO && geckolib);
+                // ADR 0098 D3: msm:storage picks the bodies that are a HasCustomInventoryScreen (StorageBodies).
+                boolean storage = def.components().storage().isPresent();
                 EntityType<? extends Mob> type = switch (def.base()) {
-                    case MOB -> register(raw.id(), def, geo ? GeckolibEntities.factory() : MsmEntity::new);
-                    case ANIMAL -> register(raw.id(), def, geo ? GeckolibEntities.animalFactory() : MsmAnimal::new);
-                    case MONSTER -> register(raw.id(), def, geo ? GeckolibEntities.monsterFactory() : MsmMonster::new);
+                    case MOB -> register(raw.id(), def, geo ? GeckolibEntities.factory(storage)
+                            : storage ? StorageBodies.StorageEntity::new : MsmEntity::new);
+                    case ANIMAL -> register(raw.id(), def, geo ? GeckolibEntities.animalFactory(storage)
+                            : storage ? StorageBodies.StorageAnimal::new : MsmAnimal::new);
+                    case MONSTER -> register(raw.id(), def, geo ? GeckolibEntities.monsterFactory(storage)
+                            : storage ? StorageBodies.StorageMonster::new : MsmMonster::new);
                 };
                 if (geo) {
                     GEO_TYPES.add(type);

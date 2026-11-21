@@ -46,6 +46,8 @@ import net.minecraft.world.phys.Vec3;
 public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob, PlayerRideableJumping {
     public static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> DATA_ANIM = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.INT);
+    /** A shoulder pet sits on its owner's shoulder (ADR 0098 D4 as amended; {@code MobShoulder}); false for every other animal. */
+    public static final EntityDataAccessor<Boolean> DATA_PERCHED = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.BOOLEAN);
 
     /** No initialiser: assigned during the super constructor by {@link #driver()}, and Java must not reset it. */
     private MobDriver driver;
@@ -89,6 +91,7 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         MobDriver.defineSynchedData(builder, DATA_VARIANT, DATA_ANIM);
+        builder.define(DATA_PERCHED, false);
     }
 
     @Override
@@ -130,6 +133,29 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
     public void stopSeenByPlayer(ServerPlayer player) {
         super.stopSeenByPlayer(player);
         driver().stopSeenByPlayer(player);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        driver().tick();
+    }
+
+    // Shoulder pets (ADR 0098 D4): a perched pet is not pushed, pushes nothing and does not suffocate in a low ceiling.
+
+    @Override
+    public boolean isPushable() {
+        return driver().shoulder().isPushable(super.isPushable());
+    }
+
+    @Override
+    protected void doPush(Entity entity) {
+        driver().shoulder().doPush(entity, () -> super.doPush(entity));
+    }
+
+    @Override
+    public boolean isInWall() {
+        return driver().shoulder().isInWall(super::isInWall);
     }
 
     // Goals and AI

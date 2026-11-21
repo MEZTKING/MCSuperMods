@@ -125,5 +125,6 @@ public final class MobGoals {
         }
         mob.driver().taming().addGoals(goalSelector, targetSelector);
         mob.driver().breeding().addGoals(goalSelector, targetSelector);
+        mob.driver().shoulder().addGoals(goalSelector);
     }
 }

@@ -19,6 +19,7 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
+import dev.mcsupermods.runtime.loader.StorageParser;
 import dev.mcsupermods.runtime.loader.TraderParser;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,9 @@ import net.minecraft.resources.Identifier;
 /**
  * Runtime entity components ({@code ::msm::definition::EntityComponents}); {@code msm:animated_model} is required. The
  * mob components of ADR 0070 and ADR 0071 ({@code msm:ranged_attack}, {@code msm:tameable}, {@code msm:breedable},
- * {@code msm:rideable}, {@code msm:variants}, {@code msm:boss_bar}) and {@code msm:trader} (ADR 0098 D1,
- * {@link TraderParser.Trader}) are closed structs, as the trigger structs of
+ * {@code msm:rideable}, {@code msm:variants}, {@code msm:boss_bar}), {@code msm:trader} (ADR 0098 D1,
+ * {@link TraderParser.Trader}), {@code msm:storage} and {@code msm:shoulder_riding} (ADR 0098 D3, D4,
+ * {@link StorageParser}) are closed structs, as the trigger structs of
  * ADR 0061: an unknown key is an error naming the key. {@code msm:movement} and {@code msm:animated_model} stay open, as
  * before (older runtimes ignore their new fields).
  */
@@ -52,11 +54,14 @@ public record EntityComponents(
         Optional<Rideable> rideable,
         Optional<Variants> variants,
         Optional<BossBar> bossBar,
-        Optional<TraderParser.Trader> trader) {
+        Optional<TraderParser.Trader> trader,
+        Optional<StorageParser.Storage> storage,
+        Optional<StorageParser.ShoulderRiding> shoulderRiding) {
 
     public static final List<String> KEYS = List.of("msm:animated_model", "msm:health", "msm:movement", "msm:attack", "msm:ai_goals",
             "msm:on_hurt", "msm:on_death", "msm:on_interact", "msm:on_tick", "msm:on_spawn", "msm:ranged_attack", "msm:tameable",
-            "msm:breedable", "msm:rideable", "msm:variants", "msm:boss_bar", "msm:trader");
+            "msm:breedable", "msm:rideable", "msm:variants", "msm:boss_bar", "msm:trader", "msm:storage",
+            "msm:shoulder_riding");
 
     /** Components that need {@code base} {@code animal} (ADR 0071 D1, D2). */
     public static final List<String> ANIMAL_ONLY = List.of("msm:tameable", "msm:breedable");
@@ -85,17 +90,25 @@ public record EntityComponents(
             .apply(i, (model, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn, rangedAttack, tameable,
                     breedable, rideable, variants, bossBar) -> new EntityComponents(model, health, movement, attack, aiGoals, onHurt,
                     onDeath, onInteract, onTick, onSpawn, rangedAttack, tameable, breedable, rideable, variants, bossBar,
-                    Optional.empty())));
+                    Optional.empty(), Optional.empty(), Optional.empty())));
 
     public static final Codec<EntityComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             FIRST.forGetter(c -> c),
-            optional("msm:trader", TraderParser.Trader.CODEC).forGetter(EntityComponents::trader)) // ADR 0098 D1, B474
-            .apply(i, (first, trader) -> first.withTrader(trader)));
+            optional("msm:trader", TraderParser.Trader.CODEC).forGetter(EntityComponents::trader), // ADR 0098 D1, B474
+            optional("msm:storage", StorageParser.Storage.CODEC).forGetter(EntityComponents::storage), // ADR 0098 D3, B479
+            optional("msm:shoulder_riding", StorageParser.ShoulderRiding.CODEC).forGetter(EntityComponents::shoulderRiding)) // D4, B479
+            .apply(i, (first, trader, storage, shoulder) -> first.withTrader(trader).withStorage(storage, shoulder)));
 
     /** A copy with {@code msm:trader} set (ADR 0098 D1). */
     public EntityComponents withTrader(Optional<TraderParser.Trader> trader) {
         return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
-                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader);
+                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding);
+    }
+
+    /** A copy with {@code msm:storage} and {@code msm:shoulder_riding} set (ADR 0098 D3, D4). */
+    public EntityComponents withStorage(Optional<StorageParser.Storage> storage, Optional<StorageParser.ShoulderRiding> shoulderRiding) {
+        return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
+                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding);
     }
 
     /** The keys of {@link #ANIMAL_ONLY} present here. */
@@ -109,7 +122,7 @@ public record EntityComponents(
     /** A copy without {@code msm:tameable} and {@code msm:breedable} (dropped on a base other than {@code animal}). */
     public EntityComponents withoutAnimalOnly() {
         return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
-                rangedAttack, Optional.empty(), Optional.empty(), rideable, variants, bossBar, trader);
+                rangedAttack, Optional.empty(), Optional.empty(), rideable, variants, bossBar, trader, storage, shoulderRiding);
     }
 
     /** Every event id a component names, with the component for messages. */
