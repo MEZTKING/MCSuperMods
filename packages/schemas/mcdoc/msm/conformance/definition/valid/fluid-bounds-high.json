@@ -1,0 +1,10 @@
+{
+  "flow": {
+    "drop_off": 4,
+    "slope_distance": 8,
+    "tick_delay": 100
+  },
+  "format": 1,
+  "light": 15,
+  "tint": 16777215
+}

@@ -336,6 +336,50 @@ describe('target mc-26.4', () => {
     }
   });
 
+  it('lists the fluid model and tags of this version (ADR 0099 D4)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    // One fluid per liquid, and the swimming pose's own tag (B470).
+    expect(target.blocks?.fluidModel).toBe('one_fluid');
+    expect(registries.fluid).toEqual(['empty', 'lava', 'water']);
+    expect(target.blocks?.fluidTags).toEqual({
+      water: ['minecraft:water', 'minecraft:swimmable'],
+      lava: ['minecraft:lava'],
+    });
+    expect(registries['tag/fluid']).toContain('swimmable');
+  });
+
+  it('lists the trade sets and points of interest of this version (ADR 0098 D2, D5)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const sets = target.entities?.vanillaTradeSets ?? {};
+    expect(Object.keys(sets)).toHaveLength(68);
+    expect(registries.point_of_interest_type).toHaveLength(21);
+    expect(Object.keys(target.entities?.vanillaJobSites ?? {})).toHaveLength(21);
+    // Only the cartographer's maps and banners and the fisherman's boats depend on the
+    // villager's biome type (B469 found them missing for a project trader).
+    const villagerOnly = Object.entries(sets)
+      .filter(([, facts]) => facts.villagerOnly)
+      .map(([id]) => id);
+    expect(villagerOnly).toEqual([
+      'minecraft:cartographer/level_2',
+      'minecraft:cartographer/level_4',
+      'minecraft:fisherman/level_5',
+    ]);
+    expect(sets['minecraft:wandering_trader/common']).toEqual({
+      trades: 80,
+      villagerOnlyTrades: 0,
+      villagerOnly: false,
+    });
+    expect(target.entities?.vanillaJobSites?.['minecraft:librarian']).toEqual([
+      'minecraft:lectern',
+    ]);
+  });
+
   it('lists the feature decoration steps in the vendored mcdoc order', async () => {
     const symbols = (await readJson('../vendor/vanilla-mcdoc/symbols.json')) as {
       mcdoc: Record<string, { kind: string; values?: { value: unknown }[] }>;

@@ -1,0 +1,6 @@
+{
+  "job_site": "mymod:potter_wheel",
+  "textures": {
+    "witch": "mymod:entity/witch"
+  }
+}

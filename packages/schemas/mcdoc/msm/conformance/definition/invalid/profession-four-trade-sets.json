@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "job_site": "mymod:potter_wheel",
+  "trade_sets": [
+    "mymod:potter/level_1",
+    "mymod:potter/level_2",
+    "mymod:potter/level_3",
+    "mymod:potter/level_4"
+  ]
+}

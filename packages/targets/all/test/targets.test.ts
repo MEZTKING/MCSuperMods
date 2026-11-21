@@ -614,6 +614,83 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       // The jar listing check is `model-templates.test.ts`.
     });
 
+    it('lists trader, job site and trade set facts the vendored registries know (ADR 0098 D5)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const facts = target.entities;
+      const sounds = registries.sound_event ?? [];
+      // Trade sounds: vanilla villager sound events of this version.
+      expect(Object.keys(facts?.tradeSounds ?? {}).sort()).toEqual(['no', 'trading', 'yes']);
+      expect(facts?.tradeSounds?.yes).toBe('minecraft:entity.villager.yes');
+      for (const id of Object.values(facts?.tradeSounds ?? {})) {
+        expect(sounds, id).toContain(id.slice('minecraft:'.length));
+      }
+      // Job sites: one entry per point of interest type, each block registered, no block twice.
+      const sites = facts?.vanillaJobSites ?? {};
+      expect(Object.keys(sites)).toEqual(
+        (registries.point_of_interest_type ?? []).map((id) => `minecraft:${id}`).sort(),
+      );
+      const blocks = registries.block ?? [];
+      const seen = new Set<string>();
+      for (const [poi, list] of Object.entries(sites)) {
+        expect(list.length, poi).toBeGreaterThan(0);
+        for (const id of list) {
+          expect(id, poi).toMatch(/^minecraft:[a-z0-9_]+$/);
+          expect(blocks, id).toContain(id.slice('minecraft:'.length));
+          expect(seen.has(id), id).toBe(false);
+          seen.add(id);
+        }
+      }
+      // The acquirable job sites are the professions' point of interest types.
+      const professions = (registries.villager_profession ?? []).filter(
+        (id) => id !== 'none' && id !== 'nitwit',
+      );
+      for (const id of professions) expect(Object.keys(sites)).toContain(`minecraft:${id}`);
+      expect(registries['tag/point_of_interest_type']).toContain('acquirable_job_site');
+      // Trade sets: exactly the vendored registry, counts consistent with the flag.
+      const sets = facts?.vanillaTradeSets ?? {};
+      expect(Object.keys(sets)).toEqual(
+        (registries.trade_set ?? []).map((id) => `minecraft:${id}`).sort(),
+      );
+      for (const [id, set] of Object.entries(sets)) {
+        expect(set.trades, id).toBeGreaterThan(0);
+        expect(set.villagerOnlyTrades, id).toBeLessThanOrEqual(set.trades);
+        expect(set.villagerOnly, id).toBe(set.villagerOnlyTrades > 0);
+      }
+      // Every profession but the jobless ones has five level sets.
+      for (const id of professions) {
+        for (let level = 1; level <= 5; level++) {
+          expect(sets, `${id}/level_${level}`).toHaveProperty([`minecraft:${id}/level_${level}`]);
+        }
+      }
+    });
+
+    it('lists fluid facts the vendored registries know (ADR 0099 D4)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      const facts = target.blocks;
+      const fluids = registries.fluid ?? [];
+      // Two fluids exactly when the flowing ids are registered.
+      expect(facts?.fluidModel).toBe(fluids.includes('flowing_water') ? 'two_fluids' : 'one_fluid');
+      expect(fluids.includes('flowing_lava')).toBe(facts?.fluidModel === 'two_fluids');
+      const tags = registries['tag/fluid'] ?? [];
+      expect(facts?.fluidTags?.water[0]).toBe('minecraft:water');
+      expect(facts?.fluidTags?.lava).toEqual(['minecraft:lava']);
+      for (const id of [...(facts?.fluidTags?.water ?? []), ...(facts?.fluidTags?.lava ?? [])]) {
+        expect(tags, id).toContain(id.slice('minecraft:'.length));
+      }
+      // The swimming pose's tag joins the water-like fluid's tags wherever the version has it.
+      expect(facts?.fluidTags?.water.includes('minecraft:swimmable')).toBe(
+        tags.includes('swimmable'),
+      );
+    });
+
     it('lists command facts the vendored command tree and registries know (ADR 0096 D6)', async () => {
       const commands = (await readVendoredJson(bundle, 'mcmetaCommands', nodeReadFile)) as {
         children: Record<string, CommandNode>;

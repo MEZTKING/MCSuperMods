@@ -1,0 +1,19 @@
+{
+  "display_name": "Potter",
+  "format": 1,
+  "job_site": "mymod:potter_wheel",
+  "requested_items": ["minecraft:clay_ball", "mymod:glaze"],
+  "secondary_job_blocks": ["minecraft:clay", "mymod:kiln"],
+  "textures": {
+    "villager": "mymod:entity/villager/potter",
+    "zombie_villager": "mymod:entity/zombie_villager/potter"
+  },
+  "trade_sets": [
+    "mymod:potter/level_1",
+    "mymod:potter/level_2",
+    "mymod:potter/level_3",
+    "mymod:potter/level_4",
+    "mymod:potter/level_5"
+  ],
+  "work_sound": "minecraft:block.decorated_pot.insert"
+}

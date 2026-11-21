@@ -1,0 +1,36 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:trader": {
+      "trade_sets": [
+        {
+          "trade_set": "mymod:merchant/level_1"
+        },
+        {
+          "trade_set": "mymod:merchant/level_2"
+        },
+        {
+          "trade_set": "mymod:merchant/level_3"
+        },
+        {
+          "trade_set": "mymod:merchant/level_4"
+        },
+        {
+          "trade_set": "mymod:merchant/level_5"
+        },
+        {
+          "trade_set": "mymod:merchant/level_6"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

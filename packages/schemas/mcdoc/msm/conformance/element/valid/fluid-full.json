@@ -1,0 +1,35 @@
+{
+  "behaves_like": "water",
+  "bucket_display_name": "Bucket of Oil",
+  "display_name": "Oil",
+  "events": {
+    "mymod:glow": {
+      "actions": [
+        {
+          "amplifier": 0,
+          "effect": "minecraft:glowing",
+          "seconds": 5.0,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "explosion_resistance": 100.0,
+  "flow": {
+    "drop_off": 1,
+    "infinite": true,
+    "slope_distance": 4,
+    "tick_delay": 5
+  },
+  "format": 1,
+  "light": 4,
+  "on_entity_inside": "mymod:glow",
+  "textures": {
+    "bucket": "mymod:item/oil_bucket",
+    "flowing": "mymod:block/oil_flow",
+    "overlay": "mymod:block/oil_overlay",
+    "still": "mymod:block/oil_still"
+  },
+  "tint": 3381759
+}

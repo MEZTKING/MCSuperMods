@@ -335,6 +335,22 @@
     "code": "schema.out-of-range",
     "path": "/sounds/ambient_interval_ticks"
   },
+  "fluid-bucket-display-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/bucket_display_name"
+  },
+  "fluid-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "fluid-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "fluid-textures-still-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/textures/still"
+  },
   "item-compost-40.json": {
     "code": "schema.invalid-enum",
     "path": "/compost"
@@ -458,6 +474,30 @@
   "potion-strong-no-amplifier.json": {
     "code": "schema.missing-field",
     "path": "/strong/amplifier"
+  },
+  "profession-display-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/display_name"
+  },
+  "profession-no-job-site.json": {
+    "code": "schema.missing-field",
+    "path": "/job_site"
+  },
+  "profession-textures-witch.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/witch"
+  },
+  "shoulder-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:shoulder_riding/side"
+  },
+  "storage-rows-9.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:storage/rows"
+  },
+  "trader-restock-weekly.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:trader/restock"
   },
   "waterlog-level.json": {
     "code": "schema.unknown-field",

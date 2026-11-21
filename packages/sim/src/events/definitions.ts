@@ -125,6 +125,8 @@ export const TRIGGER_SPECS: readonly TriggerSpec[] = Object.freeze([
   spec('entity', c('msm:tameable', 'on_tame'), false, 'the mob is tamed'),
   spec('entity', c('msm:breedable', 'on_breed'), false, 'the mob breeds'),
   spec('entity', c('msm:rideable', 'on_mount'), false, 'someone mounts the mob'),
+  // Traders (ADR 0098 D1): said until the sim learns trading (B483).
+  spec('entity', c('msm:trader', 'on_trade'), false, 'a player trades with the mob'),
   // Mob effects (ADR 0055).
   spec('effect', c('msm:on_start'), false, 'the effect starts'),
   spec('effect', c('msm:on_tick'), false, 'the effect is active', {

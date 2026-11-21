@@ -43,6 +43,12 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  *   the `msm:command` and `msm:creative_tab` kinds (the definition with `format` optional;
  *   commands add `feedback_text`, tabs `display_name`) and the runtime definitions written to
  *   `msm/<ns>/command/<path>.json` and `msm/<ns>/creative_tab/<path>.json` (ADR 0096 D1, D2).
+ * - `villagerProfession` / `villagerProfessionDefinition`, `fluid` / `fluidDefinition`: element
+ *   data of the `msm:villager_profession` and `msm:fluid` kinds (the definition with `format`
+ *   optional; professions add `display_name` and `textures`, fluids `display_name`,
+ *   `bucket_display_name` and `textures`) and the runtime definitions written to
+ *   `msm/<ns>/villager_profession/<path>.json` and `msm/<ns>/fluid/<path>.json` (ADR 0098 D2,
+ *   ADR 0099 D1).
  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
  *   definition exists and the conformance corpus has no rule book files.
@@ -81,6 +87,10 @@ export const MSM_SCHEMA_REFS = {
   commandDefinition: 'msm:command_definition',
   creativeTab: 'msm:creative_tab',
   creativeTabDefinition: 'msm:creative_tab_definition',
+  villagerProfession: 'msm:villager_profession',
+  villagerProfessionDefinition: 'msm:villager_profession_definition',
+  fluid: 'msm:fluid',
+  fluidDefinition: 'msm:fluid_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -116,6 +126,10 @@ export const MSM_TYPE_PATHS = {
   commandDefinition: '::msm::definition::Command',
   creativeTab: '::msm::element::CreativeTab',
   creativeTabDefinition: '::msm::definition::CreativeTab',
+  villagerProfession: '::msm::element::VillagerProfession',
+  villagerProfessionDefinition: '::msm::definition::VillagerProfession',
+  fluid: '::msm::element::Fluid',
+  fluidDefinition: '::msm::definition::Fluid',
   action: '::msm::action::Action',
 } as const;
 
@@ -152,6 +166,10 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.commandDefinition]: MSM_TYPE_PATHS.commandDefinition,
   [MSM_SCHEMA_REFS.creativeTab]: MSM_TYPE_PATHS.creativeTab,
   [MSM_SCHEMA_REFS.creativeTabDefinition]: MSM_TYPE_PATHS.creativeTabDefinition,
+  [MSM_SCHEMA_REFS.villagerProfession]: MSM_TYPE_PATHS.villagerProfession,
+  [MSM_SCHEMA_REFS.villagerProfessionDefinition]: MSM_TYPE_PATHS.villagerProfessionDefinition,
+  [MSM_SCHEMA_REFS.fluid]: MSM_TYPE_PATHS.fluid,
+  [MSM_SCHEMA_REFS.fluidDefinition]: MSM_TYPE_PATHS.fluidDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

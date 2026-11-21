@@ -1,0 +1,6 @@
+{
+  "format": 1,
+  "mixes_with": {
+    "minecraft:water": "minecraft:obsidian"
+  }
+}

@@ -1,12 +1,14 @@
 // MSM definition format v1: the runtime definitions of blocks, items (ADR 0025 D2, D3),
 // entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
 // D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1),
-// vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2). Lowering writes these to
+// vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2), villager professions
+// (ADR 0098 D2) and fluids (ADR 0099 D1). Lowering writes these to
 // `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
 // `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
 // `msm/<ns>/loot_addition/<path>.json`, `msm/<ns>/particle/<path>.json`,
 // `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json`, `msm/<ns>/vehicle/<path>.json`,
-// `msm/<ns>/command/<path>.json` and `msm/<ns>/creative_tab/<path>.json`.
+// `msm/<ns>/command/<path>.json`, `msm/<ns>/creative_tab/<path>.json`,
+// `msm/<ns>/villager_profession/<path>.json` and `msm/<ns>/fluid/<path>.json`.
 
 use super::action::Event
 use super::action::ParticleSpec
@@ -1875,6 +1877,78 @@ struct BossBar {
 	range?: float @ 8..256,
 }
 
+/// How often a trader's offers refill (ADR 0098 D1).
+enum(string) TraderRestock {
+	/// Twice a day at the mob, as a vanilla villager at its job site, with no workstation needed.
+	TwiceADay = "twice_a_day",
+	/// Never: a used-up offer stays used up.
+	Never = "never",
+}
+
+/// One trading level of a trader (ADR 0098 D1): the trade set its offers are drawn from when the
+/// mob reaches the level.
+struct TradeLevel {
+	/// A trade set id, the project's (`<ns>:<path>`, an ADR 0060 `trade_set` element) or vanilla's
+	/// (`minecraft:armorer/level_1`). Vanilla sets whose trades only villagers of a biome type may
+	/// offer give a project mob fewer offers or none (a validator warning).
+	trade_set: #[id="trade_set"] string,
+	/// Trading XP needed to reach the next level, counted from the start; defaults to vanilla's
+	/// thresholds for the level. Ignored on the last level and without `levels`.
+	xp_to_next?: int @ 1..,
+}
+
+/// Makes the mob trade with players through vanilla's merchant screen (ADR 0098 D1), on any
+/// `base`. Using the mob with an empty hand, or with an item that does nothing else first (a
+/// lead, name tag, saddle, spawn egg or breeding food keeps its meaning), opens the screen.
+/// Offers are drawn per level from the level's trade set with vanilla's own rules and saved on the
+/// mob with its XP and level. Babies, angry or ridden mobs, and `monster` mobs at night do not
+/// trade. Runtimes older than the release that ships ADR 0098 ignore the component with a
+/// warning.
+struct Trader {
+	/// The trading levels, level 1 first, one to five.
+	trade_sets: [TradeLevel] @ 1..5,
+	/// Whether trading gives XP and unlocks the next level, as villagers do; defaults to true.
+	/// Without it only level 1's trade set is used.
+	levels?: boolean,
+	/// Defaults to `twice_a_day`.
+	restock?: TraderRestock,
+	/// Played when a trade is made; defaults to `minecraft:entity.villager.yes` (the target's
+	/// trade sound).
+	trade_sound?: #[id="sound_event"] string,
+	/// An event id declared in `events`, fired after each trade; self is the mob, `other` the
+	/// player.
+	on_trade?: string,
+}
+
+/// Gives the mob a chest-like store (ADR 0098 D3), as vanilla's donkeys and llamas carry: vanilla's
+/// chest screen opens when its rider presses the inventory key, or when its owner (for a
+/// `msm:tameable` mob) or anyone (otherwise) uses it while sneaking. Contents are saved on the mob
+/// and dropped when it dies. No hopper access. Runtimes older than the release that ships ADR
+/// 0098 ignore the component with a warning.
+struct Storage {
+	/// Rows of nine slots, one to six; defaults to 3.
+	rows?: int @ 1..6,
+	/// Whether the store needs a chest first: a chest used on the mob adds it with vanilla's
+	/// chest-equip sound, and the chest drops with the contents when the mob dies; defaults to
+	/// false.
+	needs_chest?: boolean,
+	/// Played when the store opens; defaults to vanilla's chest opening sound.
+	open_sound?: #[id="sound_event"] string,
+	/// Played when the store closes; defaults to vanilla's chest closing sound.
+	close_sound?: #[id="sound_event"] string,
+}
+
+/// Lets a small tamed pet sit on its owner's shoulder (ADR 0098 D4, as amended after the spike):
+/// needs `base` `animal`, `msm:tameable` and a hitbox no wider than 0.7 blocks (validator
+/// errors). A sitting-capable pet whose owner stands near and is not riding jumps up and is
+/// perched: it stays at the owner's shoulder (turned with the owner's body, lower while
+/// sneaking) with no gravity or pushing, drawn by its own renderer. It jumps down when the owner
+/// takes damage, sneaks, sleeps, rides, swims, flies with an elytra, changes dimension, leaves
+/// the game or dies, and does not come back for 100 ticks. One shoulder pet per player; a parrot
+/// keeps vanilla's own shoulder. Runtimes older than the release that ships ADR 0098 ignore the
+/// component with a warning.
+struct ShoulderRiding {}
+
 /// Entity components other than `msm:animated_model`, shared with the element data.
 struct EntityBehaviourComponents {
 	"msm:health"?: Health,
@@ -1901,6 +1975,12 @@ struct EntityBehaviourComponents {
 	"msm:variants"?: Variants,
 	/// A boss bar (ADR 0071 D5).
 	"msm:boss_bar"?: BossBar,
+	/// Trading through vanilla's merchant screen (ADR 0098 D1).
+	"msm:trader"?: Trader,
+	/// A chest-like store (ADR 0098 D3).
+	"msm:storage"?: Storage,
+	/// Riding on the owner's shoulder (ADR 0098 D4); needs `base` `animal` and `msm:tameable`.
+	"msm:shoulder_riding"?: ShoulderRiding,
 }
 
 /// Runtime entity components; `msm:animated_model` is required.
@@ -2357,4 +2437,88 @@ struct CreativeTab {
 	/// Definition format; this is version 1.
 	format: 1,
 	...CreativeTabCommon,
+}
+
+/// Fields every villager profession definition and element share (ADR 0098 D2).
+struct VillagerProfessionCommon {
+	/// The job site: a project block. A vanilla villager without a job takes the profession at
+	/// it. A block that already has a point of interest type (a vanilla workstation, a bed, a
+	/// bell) is refused (a validator error, and the runtime refuses it too).
+	job_site: #[id="block"] string,
+	/// The trade sets of levels 1 to 5, exactly five; defaults to
+	/// `<ns>:<path>/level_1` to `<ns>:<path>/level_5`, which lowering creates with their tags when
+	/// absent. A missing set gives the villager no offers at that level.
+	trade_sets?: [#[id="trade_set"] string] @ 5,
+	/// Played while the villager works at its job site; absent means none.
+	work_sound?: #[id="sound_event"] string,
+	/// Items the villager picks up and keeps (as a farmer's seeds); defaults to none.
+	requested_items?: [#[id="item"] string],
+	/// Blocks near the job site the villager also works at (as a farmer's farmland); defaults to
+	/// none.
+	secondary_job_blocks?: [#[id="block"] string],
+}
+
+/// A villager profession definition, `msm/<ns>/villager_profession/<path>.json` (ADR 0098 D2): a
+/// job for vanilla villagers, with a point of interest type for every state of its job site.
+/// Runtimes older than the release that ships ADR 0098 ignore the `villager_profession` folder.
+struct VillagerProfession {
+	/// Definition format; this is version 1.
+	format: 1,
+	...VillagerProfessionCommon,
+}
+
+/// Which vanilla liquid a fluid behaves like for entities (ADR 0099 D1).
+enum(string) FluidBehaviour {
+	/// Joins the water fluid tags: entities swim, float, drown and are put out.
+	Water = "water",
+	/// Joins the lava fluid tag: entities are set on fire and hurt as in lava.
+	Lava = "lava",
+	/// Joins no tag: entities move through it as through air or, on targets with one-fluid liquids,
+	/// slowly and without fall damage.
+	None = "none",
+}
+
+/// How a fluid spreads (ADR 0099 D1); defaults follow `behaves_like`: water's 5, 4, 1 and
+/// infinite, lava's 30, 2, 2 and not infinite (`none` takes water's).
+struct FluidFlow {
+	/// Ticks between two flow steps, 1 to 100.
+	tick_delay?: int @ 1..100,
+	/// How far, in blocks, flowing fluid looks for a way down, 1 to 8.
+	slope_distance?: int @ 1..8,
+	/// Levels lost per block of spreading, 1 to 4: the larger, the shorter the flow.
+	drop_off?: int @ 1..4,
+	/// Whether two sources next to each other make a new source.
+	infinite?: boolean,
+}
+
+/// Fields every fluid definition and fluid element share (ADR 0099 D1).
+struct FluidCommon {
+	/// Defaults to `water`.
+	behaves_like?: FluidBehaviour,
+	/// Defaults per `behaves_like`.
+	flow?: FluidFlow,
+	/// Light level of the liquid block, 0 to 15; defaults to 0.
+	light?: int @ 0..15,
+	/// An RGB colour, 0 to 16777215, multiplied over the still, flowing and overlay textures;
+	/// absent means none.
+	tint?: int @ 0..16777215,
+	/// Explosion resistance of the liquid block; defaults to 100, as water's.
+	explosion_resistance?: float @ 0..,
+	/// An event id declared in `events`, fired on the server while an entity is in the fluid, at
+	/// most every 10 ticks for the same entity (ADR 0061).
+	on_entity_inside?: string,
+	/// Events that `on_entity_inside` refers to, by id.
+	events?: struct FluidEvents {
+		[string]: Event,
+	},
+}
+
+/// A fluid definition, `msm/<ns>/fluid/<path>.json` (ADR 0099 D1): the fluid (one registry entry,
+/// or a source and `<ns>:flowing_<path>` on targets that register two), its liquid block under
+/// the same id and its bucket item `<ns>:<path>_bucket`. Runtimes older than the release that
+/// ships ADR 0099 ignore the `fluid` folder.
+struct Fluid {
+	/// Definition format; this is version 1.
+	format: 1,
+	...FluidCommon,
 }

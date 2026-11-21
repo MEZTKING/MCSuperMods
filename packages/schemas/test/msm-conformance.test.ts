@@ -32,7 +32,10 @@ import {
  * are ADR 0094's twenty block types (blocks), `waterlog-` and `weathering-` files blocks with
  * ADR 0094's `msm:waterloggable`, `msm:weathering` and `msm:waxable`, `item-inventory-` and
  * `bundle-` files items with ADR 0095's `msm:item_inventory` and `msm:bundle`, and `command-`
- * and `creative-tab-` files ADR 0096's `msm:command` and `msm:creative_tab`.
+ * and `creative-tab-` files ADR 0096's `msm:command` and `msm:creative_tab`. `trader-`,
+ * `storage-` and `shoulder-` files are entities with ADR 0098's `msm:trader`, `msm:storage` and
+ * `msm:shoulder_riding`; `profession-` and `fluid-` files ADR 0098's `msm:villager_profession`
+ * and ADR 0099's `msm:fluid`.
  * The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
@@ -45,11 +48,12 @@ type Group = 'definition' | 'element' | 'geometry' | 'animation' | 'machine-reci
 const MACHINE_RECIPE = '::msm::recipe::MachineRecipe';
 
 /**
- * File name prefixes of block and item files besides `block-` and `item-` (ADRs 0061, 0074,
- * 0075, 0077, 0080, 0094, 0095).
+ * File name prefixes of block, item and entity files besides `block-`, `item-` and `entity-`
+ * (ADRs 0061, 0074, 0075, 0077, 0080, 0094, 0095, 0098).
  */
 const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
   item: ['bundle'],
+  entity: ['trader', 'storage', 'shoulder'],
   block: [
     'trigger-block',
     'container',
@@ -141,6 +145,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     bundle: MSM_SCHEMA_REFS.itemDefinition,
     command: MSM_SCHEMA_REFS.commandDefinition,
     'creative-tab': MSM_SCHEMA_REFS.creativeTabDefinition,
+    trader: MSM_SCHEMA_REFS.entityDefinition,
+    storage: MSM_SCHEMA_REFS.entityDefinition,
+    shoulder: MSM_SCHEMA_REFS.entityDefinition,
+    profession: MSM_SCHEMA_REFS.villagerProfessionDefinition,
+    fluid: MSM_SCHEMA_REFS.fluidDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -164,6 +173,11 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     bundle: MSM_SCHEMA_REFS.item,
     command: MSM_SCHEMA_REFS.command,
     'creative-tab': MSM_SCHEMA_REFS.creativeTab,
+    trader: MSM_SCHEMA_REFS.entity,
+    storage: MSM_SCHEMA_REFS.entity,
+    shoulder: MSM_SCHEMA_REFS.entity,
+    profession: MSM_SCHEMA_REFS.villagerProfession,
+    fluid: MSM_SCHEMA_REFS.fluid,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -420,8 +434,18 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'bundle-', 1, 1],
     ['element', 'command-', 2, 2],
     ['element', 'creative-tab-', 2, 1],
+    ['definition', 'trader-', 4, 10],
+    ['definition', 'storage-', 3, 5],
+    ['definition', 'shoulder-', 2, 3],
+    ['definition', 'profession-', 4, 9],
+    ['definition', 'fluid-', 6, 18],
+    ['element', 'trader-', 1, 1],
+    ['element', 'storage-', 1, 1],
+    ['element', 'shoulder-', 1, 1],
+    ['element', 'profession-', 2, 3],
+    ['element', 'fluid-', 2, 4],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096, 0098, 0099)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -487,6 +511,10 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'command', MSM_SCHEMA_REFS.command],
     ['definition', 'creative-tab', MSM_SCHEMA_REFS.creativeTabDefinition],
     ['element', 'creative-tab', MSM_SCHEMA_REFS.creativeTab],
+    ['definition', 'profession', MSM_SCHEMA_REFS.villagerProfessionDefinition],
+    ['element', 'profession', MSM_SCHEMA_REFS.villagerProfession],
+    ['definition', 'fluid', MSM_SCHEMA_REFS.fluidDefinition],
+    ['element', 'fluid', MSM_SCHEMA_REFS.fluid],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);

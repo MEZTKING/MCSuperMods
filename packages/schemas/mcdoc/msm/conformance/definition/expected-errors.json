@@ -1019,6 +1019,78 @@
     "code": "schema.out-of-range",
     "path": "/size/width"
   },
+  "fluid-behaves-like-honey.json": {
+    "code": "schema.invalid-enum",
+    "path": "/behaves_like"
+  },
+  "fluid-display-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "fluid-drop-off-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/flow/drop_off"
+  },
+  "fluid-drop-off-5.json": {
+    "code": "schema.out-of-range",
+    "path": "/flow/drop_off"
+  },
+  "fluid-explosion-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/explosion_resistance"
+  },
+  "fluid-flow-viscosity.json": {
+    "code": "schema.unknown-field",
+    "path": "/flow/viscosity"
+  },
+  "fluid-infinite-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/flow/infinite"
+  },
+  "fluid-light-16.json": {
+    "code": "schema.out-of-range",
+    "path": "/light"
+  },
+  "fluid-mixing.json": {
+    "code": "schema.unknown-field",
+    "path": "/mixes_with"
+  },
+  "fluid-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "fluid-on-entity-inside-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/on_entity_inside"
+  },
+  "fluid-slope-distance-9.json": {
+    "code": "schema.out-of-range",
+    "path": "/flow/slope_distance"
+  },
+  "fluid-textures.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures"
+  },
+  "fluid-tick-delay-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/flow/tick_delay"
+  },
+  "fluid-tick-delay-101.json": {
+    "code": "schema.out-of-range",
+    "path": "/flow/tick_delay"
+  },
+  "fluid-tint-negative.json": {
+    "code": "schema.out-of-range",
+    "path": "/tint"
+  },
+  "fluid-tint-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/tint"
+  },
+  "fluid-tint-too-big.json": {
+    "code": "schema.out-of-range",
+    "path": "/tint"
+  },
   "hud-anchor-middle.json": {
     "code": "schema.invalid-enum",
     "path": "/anchor"
@@ -1742,6 +1814,130 @@
   "potion-unknown-key.json": {
     "code": "schema.unknown-field",
     "path": "/colour"
+  },
+  "profession-display-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "profession-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "profession-four-trade-sets.json": {
+    "code": "schema.invalid-length",
+    "path": "/trade_sets"
+  },
+  "profession-job-site-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/job_site"
+  },
+  "profession-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "profession-no-job-site.json": {
+    "code": "schema.missing-field",
+    "path": "/job_site"
+  },
+  "profession-poi-tickets.json": {
+    "code": "schema.unknown-field",
+    "path": "/max_tickets"
+  },
+  "profession-requested-items-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/requested_items"
+  },
+  "profession-six-trade-sets.json": {
+    "code": "schema.invalid-length",
+    "path": "/trade_sets"
+  },
+  "profession-textures.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures"
+  },
+  "shoulder-cooldown.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:shoulder_riding/cooldown_ticks"
+  },
+  "shoulder-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:shoulder_riding/side"
+  },
+  "shoulder-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:shoulder_riding"
+  },
+  "storage-hoppers.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:storage/hoppers"
+  },
+  "storage-needs-chest-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:storage/needs_chest"
+  },
+  "storage-open-sound-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:storage/open_sound"
+  },
+  "storage-rows-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:storage/rows"
+  },
+  "storage-rows-7.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:storage/rows"
+  },
+  "storage-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:storage"
+  },
+  "trader-empty-trade-sets.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:trader/trade_sets"
+  },
+  "trader-gossip.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:trader/gossip"
+  },
+  "trader-level-no-trade-set.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:trader/trade_sets/0/trade_set"
+  },
+  "trader-levels-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/levels"
+  },
+  "trader-no-trade-sets.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:trader/trade_sets"
+  },
+  "trader-restock-daily.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:trader/restock"
+  },
+  "trader-six-levels.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:trader/trade_sets"
+  },
+  "trader-trade-set-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/trade_sets/0"
+  },
+  "trader-trade-sound-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/trade_sound"
+  },
+  "trader-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader"
+  },
+  "trader-xp-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/components/msm:trader/trade_sets/0/xp_to_next"
+  },
+  "trader-xp-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:trader/trade_sets/0/xp_to_next"
   },
   "trigger-block-entity-inside-cooldown-4.json": {
     "code": "schema.out-of-range",

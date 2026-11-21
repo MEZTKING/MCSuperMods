@@ -6153,3 +6153,20 @@ Next
 
 **Next**
 - B473 (format, plugin API 1.18.0 and facts), then Wave 11 (B474 to B478) fill these stubs.
+## 2026-11-21 — executor — B473 format, plugin API and facts, batch 2
+
+**What**
+- Finished the B473 patch kept in `docs/reference/unfinished/` (applied without its DEVLOG hunk), reviewed it against the brief, ADR 0098 D1–D5 and ADR 0099 D1, D4 with their amendments after the spikes, and removed the patch file.
+- MSM mcdoc: entity components `msm:trader` (`Trader`, `TradeLevel`, `TraderRestock`), `msm:storage` (`Storage`) and `msm:shoulder_riding` (`ShoulderRiding`, no fields: the perch of ADR 0098 D4 as amended); kinds `villager_profession` (`VillagerProfessionCommon`, definition and element with `display_name` and `textures`) and `fluid` (`FluidCommon` with `behaves_like`, `flow`, `light`, `tint`, `explosion_resistance`, `on_entity_inside` and its `events`; element adds `display_name`, `bucket_display_name`, `textures`); refs `msm:villager_profession`, `msm:fluid` and their `_definition` variants; `symbols.json` regenerated (493 to 509 exported types). Corpus: 85 new files under the prefixes `trader-`, `storage-`, `shoulder-`, `profession-`, `fluid-` (definition 19 valid and 49 invalid, element 7 valid and 10 invalid), each an `msm-conformance` case.
+- Plugin API 1.18.0 (same section as B471): `EntityFacts.tradeSounds` (`TradeSoundFacts`), `vanillaJobSites`, `vanillaTradeSets` (`VanillaTradeSetFacts` with `trades`, `villagerOnlyTrades`, `villagerOnly`), `BlockFacts.fluidModel` and `fluidTags` (`FluidTagFacts`); type tests.
+- Targets: 26.3 `fluidModel` `two_fluids`, `fluidTags` water `minecraft:water`, lava `minecraft:lava`; 26.4 `one_fluid`, water `minecraft:water` and `minecraft:swimmable`, lava `minecraft:lava`. Both: trade sounds `entity.villager.yes`, `no`, `trade`; 21 point of interest types with their blocks; 68 trade sets, villager-only on `cartographer/level_2`, `cartographer/level_4` and `fisherman/level_5`; `wandering_trader/common` 78 trades on 26.3 and 80 on 26.4. Tests tie them to the vendored registries (`all/test/targets.test.ts`) and recount the trade sets, fluid tags and acquirable job sites from the Loom-cached client jars' data files (`all/test/villagers.test.ts`, shared jar reader `all/test/client-jar.ts`, skipped without a jar; both jars were present and the tests ran).
+- `@msm/sim`: the trigger table gains `msm:trader` `on_trade` (said, not fired), as its schema-walk test asks for every event field of `definition.mcdoc`.
+
+**Decisions**
+- Kept the patch's gap fills: the fluid's own `events` map (its `on_entity_inside` names an event, as every other definition does), `xp_to_next` at least 1, `tint` 0 to 16777215, `explosion_resistance` at least 0, and the fluid language key marked (verify at implementation).
+- B469 saw armourer level 5 give a project mob no offers, but none of its trades carries a villager variant predicate; the facts record what the data says and leave the cause to B474 (verify at implementation). The block lists of each point of interest type (above all `straw_bed` in `home`) are (verify at implementation) in a GameTest.
+
+**Next**
+- `@msm/sim`'s schema-walk test still fails on the fluid's `on_entity_inside`: the sim has no fluid owner kind yet (B483, or an orchestrator decision).
+- The runtime's `ConformanceCorpusTest` has no parser for the five new prefixes: add them to its `PENDING` list (engine-mod, B472 or B474/B475) or CI's engine-mod job fails.
+- `packages/schemas/CLAUDE.md` should list the new prefixes, refs and the exported type count.

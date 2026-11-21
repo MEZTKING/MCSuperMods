@@ -1,0 +1,27 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:rideable": {
+      "saddle": false
+    },
+    "msm:storage": {
+      "close_sound": "minecraft:block.barrel.close",
+      "needs_chest": true,
+      "open_sound": "minecraft:block.barrel.open",
+      "rows": 6
+    },
+    "msm:tameable": {
+      "items": ["minecraft:sweet_berries"]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

@@ -75,6 +75,7 @@ export type {
   DimensionHeightFacts,
   EntityFacts,
   FabricFacts,
+  FluidTagFacts,
   GeckolibFacts,
   GeneratedFile,
   ItemFacts,
@@ -91,7 +92,9 @@ export type {
   Target,
   TargetChannel,
   TargetFacts,
+  TradeSoundFacts,
   VanillaToolStats,
+  VanillaTradeSetFacts,
   VehicleFacts,
   WorldgenFacts,
 } from './target';

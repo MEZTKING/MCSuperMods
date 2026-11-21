@@ -1,0 +1,23 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:trader": {
+      "levels": false,
+      "restock": "twice_a_day",
+      "trade_sets": [
+        {
+          "trade_set": "mymod:stall"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

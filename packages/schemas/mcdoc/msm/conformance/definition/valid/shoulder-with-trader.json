@@ -1,0 +1,26 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:shoulder_riding": {},
+    "msm:tameable": {
+      "items": ["minecraft:sweet_berries"]
+    },
+    "msm:trader": {
+      "trade_sets": [
+        {
+          "trade_set": "minecraft:wandering_trader/common"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  }
+}

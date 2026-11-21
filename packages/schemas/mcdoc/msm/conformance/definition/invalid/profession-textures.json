@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "job_site": "mymod:potter_wheel",
+  "textures": {
+    "villager": "mymod:entity/potter"
+  }
+}

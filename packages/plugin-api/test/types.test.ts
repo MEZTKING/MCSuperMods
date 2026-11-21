@@ -18,6 +18,7 @@ import type {
   ExporterInput,
   ExporterOption,
   FabricFacts,
+  FluidTagFacts,
   GeckolibFacts,
   GeneratedFile,
   JavaProjectGenerator,
@@ -41,8 +42,10 @@ import type {
   Target,
   TargetChannel,
   TargetFacts,
+  TradeSoundFacts,
   ValidationInput,
   ValidationRegistry,
+  VanillaTradeSetFacts,
   VehicleFacts,
   WorldgenFacts,
 } from '../src/index';
@@ -559,6 +562,59 @@ describe('0.8.0 additions', () => {
     // A 1.16.0-shaped block facts object without them stays assignable.
     const older: BlockFacts = { setTypes: [], woodTypes: [] };
     expect(older.modelTemplates).toBeUndefined();
+  });
+
+  it('carries optional fluid facts on blocks (1.18.0)', () => {
+    expectTypeOf<BlockFacts['fluidModel']>().toEqualTypeOf<
+      'two_fluids' | 'one_fluid' | undefined
+    >();
+    expectTypeOf<BlockFacts['fluidTags']>().toEqualTypeOf<FluidTagFacts | undefined>();
+    expectTypeOf<FluidTagFacts['water']>().toEqualTypeOf<readonly string[]>();
+    expectTypeOf<FluidTagFacts['lava']>().toEqualTypeOf<readonly string[]>();
+    const facts: BlockFacts = {
+      setTypes: [],
+      woodTypes: [],
+      fluidModel: 'one_fluid',
+      fluidTags: { water: ['minecraft:water', 'minecraft:swimmable'], lava: ['minecraft:lava'] },
+    };
+    expect(facts.fluidTags?.water).toContain('minecraft:swimmable');
+    // @ts-expect-error: only the two liquid models exist.
+    const wrong: BlockFacts = { setTypes: [], woodTypes: [], fluidModel: 'three_fluids' };
+    expect(wrong.fluidModel).toBe('three_fluids');
+    // A 1.17.0-shaped block facts object without them stays assignable.
+    const older: BlockFacts = { setTypes: [], woodTypes: [] };
+    expect(older.fluidModel).toBeUndefined();
+    expect(older.fluidTags).toBeUndefined();
+  });
+
+  it('carries optional trade, job site and trade set facts on entities (1.18.0)', () => {
+    expectTypeOf<EntityFacts['tradeSounds']>().toEqualTypeOf<TradeSoundFacts | undefined>();
+    expectTypeOf<EntityFacts['vanillaJobSites']>().toEqualTypeOf<
+      Readonly<Record<string, readonly string[]>> | undefined
+    >();
+    expectTypeOf<EntityFacts['vanillaTradeSets']>().toEqualTypeOf<
+      Readonly<Record<string, VanillaTradeSetFacts>> | undefined
+    >();
+    expectTypeOf<VanillaTradeSetFacts['villagerOnly']>().toEqualTypeOf<boolean>();
+    const facts: EntityFacts = {
+      projectileItems: [],
+      saddleTag: 'minecraft:can_equip_saddle',
+      tradeSounds: {
+        yes: 'minecraft:entity.villager.yes',
+        no: 'minecraft:entity.villager.no',
+        trading: 'minecraft:entity.villager.trade',
+      },
+      vanillaJobSites: { 'minecraft:librarian': ['minecraft:lectern'] },
+      vanillaTradeSets: {
+        'minecraft:cartographer/level_2': { trades: 8, villagerOnlyTrades: 7, villagerOnly: true },
+      },
+    };
+    expect(facts.vanillaJobSites?.['minecraft:librarian']).toEqual(['minecraft:lectern']);
+    expect(facts.vanillaTradeSets?.['minecraft:cartographer/level_2']?.villagerOnly).toBe(true);
+    // A 1.17.0-shaped entity facts object without them stays assignable.
+    const older: EntityFacts = { projectileItems: [], saddleTag: 'minecraft:can_equip_saddle' };
+    expect(older.tradeSounds).toBeUndefined();
+    expect(testTarget.entities?.vanillaTradeSets).toBeUndefined();
   });
 
   it('carries optional command facts on a target (1.17.0)', () => {

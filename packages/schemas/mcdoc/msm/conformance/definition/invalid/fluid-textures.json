@@ -1,0 +1,6 @@
+{
+  "format": 1,
+  "textures": {
+    "still": "mymod:block/oil_still"
+  }
+}

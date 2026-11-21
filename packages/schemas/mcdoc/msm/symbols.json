@@ -5910,6 +5910,36 @@
             "kind": "reference",
             "path": "::msm::definition::BossBar"
           }
+        },
+        {
+          "desc": "Trading through vanilla's merchant screen (ADR 0098 D1).",
+          "key": "msm:trader",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Trader"
+          }
+        },
+        {
+          "desc": "A chest-like store (ADR 0098 D3).",
+          "key": "msm:storage",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Storage"
+          }
+        },
+        {
+          "desc": "Riding on the owner's shoulder (ADR 0098 D4); needs `base` `animal` and `msm:tameable`.",
+          "key": "msm:shoulder_riding",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ShoulderRiding"
+          }
         }
       ],
       "kind": "struct"
@@ -6414,6 +6444,218 @@
               "kind": 0,
               "min": 0
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Fluid": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::FluidCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FluidBehaviour": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Joins the water fluid tags: entities swim, float, drown and are put out.",
+          "identifier": "Water",
+          "value": "water"
+        },
+        {
+          "desc": "Joins the lava fluid tag: entities are set on fire and hurt as in lava.",
+          "identifier": "Lava",
+          "value": "lava"
+        },
+        {
+          "desc": "Joins no tag: entities move through it as through air or, on targets with one-fluid liquids,\nslowly and without fall damage.",
+          "identifier": "None",
+          "value": "none"
+        }
+      ]
+    },
+    "::msm::definition::FluidCommon": {
+      "fields": [
+        {
+          "desc": "Defaults to `water`.",
+          "key": "behaves_like",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::FluidBehaviour"
+          }
+        },
+        {
+          "desc": "Defaults per `behaves_like`.",
+          "key": "flow",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::FluidFlow"
+          }
+        },
+        {
+          "desc": "Light level of the liquid block, 0 to 15; defaults to 0.",
+          "key": "light",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 15,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "An RGB colour, 0 to 16777215, multiplied over the still, flowing and overlay textures;\nabsent means none.",
+          "key": "tint",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16777215,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Explosion resistance of the liquid block; defaults to 100, as water's.",
+          "key": "explosion_resistance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired on the server while an entity is in the fluid, at\nmost every 10 ticks for the same entity (ADR 0061).",
+          "key": "on_entity_inside",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Events that `on_entity_inside` refers to, by id.",
+          "key": "events",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "fields": [
+              {
+                "key": {
+                  "kind": "string"
+                },
+                "kind": "pair",
+                "type": {
+                  "kind": "reference",
+                  "path": "::msm::action::Event"
+                }
+              }
+            ],
+            "kind": "struct"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FluidEvents": {
+      "fields": [
+        {
+          "key": {
+            "kind": "string"
+          },
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::Event"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FluidFlow": {
+      "fields": [
+        {
+          "desc": "Ticks between two flow steps, 1 to 100.",
+          "key": "tick_delay",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How far, in blocks, flowing fluid looks for a way down, 1 to 8.",
+          "key": "slope_distance",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 8,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Levels lost per block of spreading, 1 to 4: the larger, the shorter the flow.",
+          "key": "drop_off",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 4,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether two sources next to each other make a new source.",
+          "key": "infinite",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -9895,6 +10137,10 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::ShoulderRiding": {
+      "fields": [],
+      "kind": "struct"
+    },
     "::msm::definition::SignFields": {
       "fields": [
         {
@@ -10377,6 +10623,76 @@
                         "value": "required"
                       }
                     }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Storage": {
+      "fields": [
+        {
+          "desc": "Rows of nine slots, one to six; defaults to 3.",
+          "key": "rows",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 6,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether the store needs a chest first: a chest used on the mob adds it with vanilla's\nchest-equip sound, and the chest drops with the contents when the mob dies; defaults to\nfalse.",
+          "key": "needs_chest",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Played when the store opens; defaults to vanilla's chest opening sound.",
+          "key": "open_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Played when the store closes; defaults to vanilla's chest closing sound.",
+          "key": "close_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
                   }
                 }
               }
@@ -11067,6 +11383,131 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::TradeLevel": {
+      "fields": [
+        {
+          "desc": "A trade set id, the project's (`<ns>:<path>`, an ADR 0060 `trade_set` element) or vanilla's\n(`minecraft:armorer/level_1`). Vanilla sets whose trades only villagers of a biome type may\noffer give a project mob fewer offers or none (a validator warning).",
+          "key": "trade_set",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "trade_set"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Trading XP needed to reach the next level, counted from the start; defaults to vanilla's\nthresholds for the level. Ignored on the last level and without `levels`.",
+          "key": "xp_to_next",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::Trader": {
+      "fields": [
+        {
+          "desc": "The trading levels, level 1 first, one to five.",
+          "key": "trade_sets",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::TradeLevel"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether trading gives XP and unlocks the next level, as villagers do; defaults to true.\nWithout it only level 1's trade set is used.",
+          "key": "levels",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Defaults to `twice_a_day`.",
+          "key": "restock",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::TraderRestock"
+          }
+        },
+        {
+          "desc": "Played when a trade is made; defaults to `minecraft:entity.villager.yes` (the target's\ntrade sound).",
+          "key": "trade_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired after each trade; self is the mob, `other` the\nplayer.",
+          "key": "on_trade",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::TraderRestock": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Twice a day at the mob, as a vanilla villager at its job site, with no workstation needed.",
+          "identifier": "TwiceADay",
+          "value": "twice_a_day"
+        },
+        {
+          "desc": "Never: a used-up offer stays used up.",
+          "identifier": "Never",
+          "value": "never"
+        }
+      ]
+    },
     "::msm::definition::VanillaComponents": {
       "fields": [
         {
@@ -11175,6 +11616,153 @@
           "type": {
             "kind": "reference",
             "path": "::msm::vehicle::VehicleCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::VillagerProfession": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VillagerProfessionCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::VillagerProfessionCommon": {
+      "fields": [
+        {
+          "desc": "The job site: a project block. A vanilla villager without a job takes the profession at\nit. A block that already has a point of interest type (a vanilla workstation, a bed, a\nbell) is refused (a validator error, and the runtime refuses it too).",
+          "key": "job_site",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The trade sets of levels 1 to 5, exactly five; defaults to\n`<ns>:<path>/level_1` to `<ns>:<path>/level_5`, which lowering creates with their tags when\nabsent. A missing set gives the villager no offers at that level.",
+          "key": "trade_sets",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "trade_set"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 5
+            }
+          }
+        },
+        {
+          "desc": "Played while the villager works at its job site; absent means none.",
+          "key": "work_sound",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "sound_event"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Items the villager picks up and keeps (as a farmer's seeds); defaults to none.",
+          "key": "requested_items",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "item"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Blocks near the job site the villager also works at (as a farmer's farmland); defaults to\nnone.",
+          "key": "secondary_job_blocks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "block"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
           }
         }
       ],
@@ -12963,6 +13551,148 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Fluid": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::FluidCommon"
+          }
+        },
+        {
+          "desc": "The fluid's name, lowered to the `block.<ns>.<path>` and `fluid.<ns>.<path>` language keys\n(verify the fluid key at implementation).",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The bucket's name, lowered to the `item.<ns>.<path>_bucket` language key; defaults to the\ndisplay name followed by \" Bucket\".",
+          "key": "bucket_display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The still, flowing, overlay and bucket pictures.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::FluidTextures"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::FluidTextures": {
+      "fields": [
+        {
+          "desc": "The still surface.",
+          "key": "still",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The flowing surface.",
+          "key": "flowing",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Drawn on the sides of glass and leaves next to the fluid, as water's overlay; absent means\nnone.",
+          "key": "overlay",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The bucket item's picture.",
+          "key": "bucket",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::Fuel": {
       "fields": [
         {
@@ -14102,6 +14832,53 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::ProfessionTextures": {
+      "fields": [
+        {
+          "desc": "Lowered to `assets/<ns>/textures/entity/villager/profession/<path>.png`.",
+          "key": "villager",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Lowered to `assets/<ns>/textures/entity/zombie_villager/profession/<path>.png`; defaults to\n`villager`.",
+          "key": "zombie_villager",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::SaplingElementFields": {
       "fields": [
         {
@@ -14823,6 +15600,50 @@
           "optional": true,
           "type": {
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::VillagerProfession": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VillagerProfessionCommon"
+          }
+        },
+        {
+          "desc": "The job's name over the trading screen, lowered to the language key\n`entity.<ns>.villager.<path>`.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The profession's pictures; absent means villagers in it look jobless.",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::ProfessionTextures"
           }
         }
       ],
@@ -22819,5 +23640,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:d8a4266a49ffacc4dd58276fa4f82d87c89cfcf83c49de60e64ebf630c0cabac"
+  "ref": "msm-mcdoc:sha256:25c1d970244837c268ae9d7e0b47b3c30457376f70cba955473cf013213b1114"
 }

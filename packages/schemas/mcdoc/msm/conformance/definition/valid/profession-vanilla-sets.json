@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "job_site": "mymod:potter_wheel",
+  "trade_sets": [
+    "minecraft:mason/level_1",
+    "minecraft:mason/level_2",
+    "minecraft:mason/level_3",
+    "minecraft:mason/level_4",
+    "minecraft:mason/level_5"
+  ],
+  "work_sound": "minecraft:entity.villager.work_mason"
+}

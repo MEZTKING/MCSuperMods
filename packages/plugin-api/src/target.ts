@@ -317,6 +317,35 @@ export interface BlockFacts {
    * to the runtime. Since 1.17.0 (ADR 0094 D2, D12).
    */
   defaultTorchParticle?: string;
+  /**
+   * How the game registers a liquid: `two_fluids`, a source fluid and a flowing one
+   * (`<namespace>:flowing_<path>` beside `<namespace>:<path>`), or `one_fluid`, a single fluid
+   * whose state says whether it is a source. Lowering writes the flowing id into a project
+   * fluid's tags only with `two_fluids`; the Fluid Studio words its notes by it. Informational:
+   * the runtime keeps its own seam. Optional: a target without it is treated as `one_fluid`.
+   * Since 1.18.0 (ADR 0099 D4).
+   */
+  fluidModel?: 'two_fluids' | 'one_fluid';
+  /**
+   * The namespaced fluid tag ids a project fluid joins by its `behaves_like`, so entities treat
+   * it as vanilla's liquid ({@link FluidTagFacts}). Optional: a target without it leaves a
+   * fluid in no tag. Since 1.18.0 (ADR 0099 D1, D4).
+   */
+  fluidTags?: FluidTagFacts;
+}
+
+/**
+ * The fluid tags of a target ({@link BlockFacts.fluidTags}), per `behaves_like` value; `none`
+ * joins no tag. Since 1.18.0 (ADR 0099 D4).
+ */
+export interface FluidTagFacts {
+  /**
+   * The tags of a water-like fluid (for example `minecraft:water`, and the tag the swimming pose
+   * follows where the game has one), each a vanilla fluid tag.
+   */
+  water: readonly string[];
+  /** The tags of a lava-like fluid (for example `minecraft:lava`). */
+  lava: readonly string[];
 }
 
 /**
@@ -373,6 +402,58 @@ export interface EntityFacts {
    * 1.11.0.
    */
   saddleTag: string;
+  /**
+   * The namespaced sound event ids vanilla's merchants play while trading
+   * ({@link TradeSoundFacts}); `yes` is the default `trade_sound` of an `msm:trader`. Optional:
+   * a target without them leaves the defaults to the runtime. Since 1.18.0 (ADR 0098 D1, D5).
+   */
+  tradeSounds?: TradeSoundFacts;
+  /**
+   * Every vanilla block that already has a point of interest type, by the namespaced point of
+   * interest type id (for example `minecraft:librarian` to `['minecraft:lectern']`, or
+   * `minecraft:home` to the beds): the job sites and the other points of interest (beds, bells,
+   * bee homes, portals). A villager profession's `job_site` may not be one of these blocks
+   * (`entities.job-site-taken`). The keys are the target's `point_of_interest_type` registry.
+   * Optional: a target without it skips the check. Since 1.18.0 (ADR 0098 D2, D5).
+   */
+  vanillaJobSites?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Every vanilla trade set, by namespaced id (for example `minecraft:mason/level_3` or
+   * `minecraft:wandering_trader/common`), with how many trades it can draw and how many of those
+   * only villagers can offer ({@link VanillaTradeSetFacts}). An `msm:trader` naming a set whose
+   * `villagerOnly` is true is warned that it gets fewer offers or none. Optional: a target
+   * without it skips the checks. Since 1.18.0 (ADR 0098 D1, D5, as amended after the spike).
+   */
+  vanillaTradeSets?: Readonly<Record<string, VanillaTradeSetFacts>>;
+}
+
+/**
+ * The sounds of vanilla's merchant screen ({@link EntityFacts.tradeSounds}), namespaced sound
+ * event ids. Since 1.18.0 (ADR 0098 D1).
+ */
+export interface TradeSoundFacts {
+  /** Played when a trade is made or an offer can be taken (for example `minecraft:entity.villager.yes`). */
+  yes: string;
+  /** Played when an offer cannot be taken or the trader refuses (for example `minecraft:entity.villager.no`). */
+  no: string;
+  /** The idle sound while a player has the screen open (for example `minecraft:entity.villager.trade`). */
+  trading: string;
+}
+
+/**
+ * One vanilla trade set ({@link EntityFacts.vanillaTradeSets}). Since 1.18.0 (ADR 0098 D1, as
+ * amended after the spike).
+ */
+export interface VanillaTradeSetFacts {
+  /** The number of distinct villager trades the set can draw from, its trade tags resolved. */
+  trades: number;
+  /**
+   * The number of those trades carrying a `merchant_predicate` on the villager's variant (a
+   * biome type): they give a mob that is not a villager no offer.
+   */
+  villagerOnlyTrades: number;
+  /** True when `villagerOnlyTrades` is above 0: a project trader gets fewer offers from the set. */
+  villagerOnly: boolean;
 }
 
 /**

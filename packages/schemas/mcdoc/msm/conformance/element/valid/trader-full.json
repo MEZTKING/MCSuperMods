@@ -1,0 +1,53 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:trader": {
+      "levels": true,
+      "on_trade": "mymod:traded",
+      "restock": "never",
+      "trade_sets": [
+        {
+          "trade_set": "mymod:merchant/level_1",
+          "xp_to_next": 10
+        },
+        {
+          "trade_set": "mymod:merchant/level_2",
+          "xp_to_next": 70
+        },
+        {
+          "trade_set": "minecraft:mason/level_3",
+          "xp_to_next": 150
+        },
+        {
+          "trade_set": "mymod:merchant/level_4",
+          "xp_to_next": 250
+        },
+        {
+          "trade_set": "mymod:merchant/level_5"
+        }
+      ],
+      "trade_sound": "minecraft:entity.wandering_trader.yes"
+    }
+  },
+  "events": {
+    "mymod:traded": {
+      "actions": [
+        {
+          "pitch": 1.0,
+          "sound": "minecraft:entity.villager.celebrate",
+          "type": "play_sound",
+          "volume": 1.0
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}
