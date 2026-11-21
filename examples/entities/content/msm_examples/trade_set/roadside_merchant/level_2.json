@@ -1,0 +1,20 @@
+{
+  "data": {
+    "amount": 2,
+    "trades": [
+      "msm_examples:roadside_merchant/saddle",
+      "msm_examples:roadside_merchant/lead"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:roadside_merchant/level_2",
+  "kind": "minecraft:trade_set",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The merchant's level 2 wares: a trade set listing its trades by id, offering both (amount 2). A trade set can also draw from a villager trade tag (#namespace:path).",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

@@ -60,6 +60,7 @@ const STARTER_IDS = [
   'copper-set',
   'lights',
   'bed',
+  'fluid',
   'storage-crate',
   'machine',
   'food',
@@ -78,6 +79,7 @@ const STARTER_IDS = [
   'dimension',
   'portal',
   'villager-trade',
+  'village-job',
   'extra-drop',
   'mob-skin',
   'goat-horn',
@@ -91,6 +93,7 @@ const STARTER_IDS = [
   'pet',
   'farm-animal',
   'mount',
+  'wandering-merchant',
   'flying-mob',
   'water-mob',
   'boss',
@@ -211,6 +214,8 @@ const KIND_IDS = [
   'msm:hud',
   'msm:command',
   'msm:creative_tab',
+  'msm:villager_profession',
+  'msm:fluid',
 ];
 
 /**
@@ -231,6 +236,12 @@ const VANILLA_PARITY_FLOWS = new Set([
   'backpack',
   'custom-command',
   'creative-tab',
+  // Batch 2 (B481): the Village job's workbench and apron, the Fluid's liquid and bucket, and the
+  // examples drawn with them.
+  'village-job',
+  'fluid',
+  'example_msm_villager_profession',
+  'example_msm_fluid',
 ]);
 const isSignPicture = (path: string): boolean =>
   /^textures\/(gui\/(hanging_)?signs\/|item\/[a-z0-9_]*sign\.png$)/.test(path);
@@ -344,7 +355,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the fifty-seven starters in order', () => {
+  it('lists the sixty starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -354,7 +365,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(53).fill('content'),
+      ...Array<string>(56).fill('content'),
     ]);
   });
 
@@ -760,8 +771,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 102 per-kind examples, one per built-in kind, 39 behaviour examples, 16 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(102);
+  it('has 104 per-kind examples, one per built-in kind, 40 behaviour examples, 16 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(104);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -799,6 +810,7 @@ describe('examples', () => {
       'example_msm_fish_school',
       'example_msm_boss_bar',
       'example_msm_vanilla_renderer',
+      'example_msm_roadside_merchant',
     ]);
     expect(scriptBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_script_schedule',
@@ -840,7 +852,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(161);
+    expect(libraryExamples).toHaveLength(164);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -905,6 +917,12 @@ describe('every starter and example', () => {
       }
       if (entry.id === 'potion') {
         for (const element of build(entry, 'demo', { effect: 'minecraft:speed' }).elements) {
+          used.add(element.kind);
+        }
+      }
+      // The Fluid flow's lakes (B481).
+      if (entry.id === 'fluid') {
+        for (const element of build(entry, 'demo', { lakes: true }).elements) {
           used.add(element.kind);
         }
       }
@@ -1089,12 +1107,13 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the eight worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops and four popular ideas', () => {
+  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes and four popular ideas', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
       'crop',
       'tree',
+      'fluid',
       'dimension',
       'portal',
       'custom_biome',
@@ -1106,6 +1125,7 @@ describe('structure and worldgen content', () => {
         return example?.id;
       }),
       'example_msm_biome_addition',
+      'example_msm_fluid',
       'example_msm_wood_set',
       'example_msm_crop',
       'example_msm_tree',
@@ -1145,12 +1165,14 @@ describe('structure and worldgen content', () => {
             continue;
           // An item's or block's trigger names one of its own events, not an element, and a
           // run_script action a handler a script defines.
-          // A portal's on_travel (ADR 0077 D6) names one of its own events too.
+          // A portal's on_travel (ADR 0077 D6) names one of its own events too, and so does a
+          // fluid's on_entity_inside (ADR 0099 D1).
           if (
             (element.kind === 'msm:item' || element.kind === 'msm:block') &&
             (key === 'event' || key === 'handler' || key === 'on_travel')
           )
             continue;
+          if (element.kind === 'msm:fluid' && key === 'on_entity_inside') continue;
           if (!/^#?other_ns:/.test(text)) continue;
           expect(ids.has(text.replace(/^#/, '')), `${entry.id} ${element.id} ${key} ${text}`).toBe(
             true,

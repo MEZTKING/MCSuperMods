@@ -2,8 +2,10 @@
  * The Pet Creator flow (ADR 0073 D2): an animal on a preset model (four-legged, bird, round
  * flyer or two-legged) that players tame with a food, which then sits when told, follows its
  * owner and defends them, and if chosen has babies when fed a breeding food. Base `animal`,
- * `msm:tameable`, optional `msm:breedable`, renderer `auto`, extra variants. Ids derive from
- * `pet_name`. New mobs need the Fabric mod jar export.
+ * `msm:tameable`, optional `msm:breedable`, renderer `auto`, extra variants. If chosen it rides
+ * on your shoulder (`msm:shoulder_riding`, ADR 0098 D4 as amended, ADR 0101 D2): only small pets
+ * can, so the pet is then drawn at half size. Ids derive from `pet_name`. New mobs need the
+ * Fabric mod jar export.
  */
 import type { BundleContext, ContentBundle, JsonObject, StarterParameter } from '@msm/plugin-api';
 import { COLOURS } from '../content/bundle';
@@ -105,6 +107,15 @@ export const PET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     default: true,
   },
   {
+    id: 'shoulder',
+    label: 'Rides on your shoulder',
+    description:
+      'Once tamed it jumps onto your shoulder when you stand near it, and jumps down when you are hurt, sneak, ride, swim or fly. Only small pets can, so it is made half as big.',
+    group: 'Behaviour',
+    type: 'boolean',
+    default: false,
+  },
+  {
     id: 'babies',
     label: 'Can have babies',
     description: 'Two pets fed the breeding food have a baby.',
@@ -155,6 +166,7 @@ export function petBundle(context: BundleContext): ContentBundle {
   const speed = numberValue(values, 'speed');
   const spawn = spawnChoice(values, LAND_SPAWNS);
   const flies = preset === 'flyer';
+  const shoulder = booleanValue(values, 'shoulder');
   const leaps = preset === 'quadruped' && defends;
 
   const goals: JsonObject[] = [
@@ -176,11 +188,12 @@ export function petBundle(context: BundleContext): ContentBundle {
       defends_owner: defends,
       tamed_health: Math.min(1024, health * 2),
     },
+    ...(shoulder ? { 'msm:shoulder_riding': {} } : {}),
     ...(babies ? { 'msm:breedable': { items: [...breeding.items], baby_scale: 0.5 } } : {}),
     'msm:ai_goals': { goals },
   };
   const food = taming.label.toLowerCase();
-  const notes = `A pet: base animal makes it an animal that can be tamed${babies ? ' and bred' : ''}. msm:tameable tames it one time in three when a player feeds it ${food} (${taming.items.join(', ')}): then it follows its owner${sits ? ', sits or stands when the owner right-clicks it with an empty hand' : ''}${defends ? ' and attacks what hurts its owner or what its owner attacks (melee_attack, 3 damage)' : ''}, never despawns and has ${Math.min(1024, health * 2)} health instead of ${health}.${babies ? ` msm:breedable lets two tamed or wild pets fed ${breeding.label.toLowerCase()} have a baby at half size that grows up in 20 minutes; the food also tempts it.` : ''}${flies ? ' It flies (mode fly), hovering when idle, and takes no fall damage.' : ''} ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns in ${spawn.words} in groups of two to four (rule animal: on grass in daylight).`}`;
+  const notes = `A pet: base animal makes it an animal that can be tamed${babies ? ' and bred' : ''}. msm:tameable tames it one time in three when a player feeds it ${food} (${taming.items.join(', ')}): then it follows its owner${sits ? ', sits or stands when the owner right-clicks it with an empty hand' : ''}${defends ? ' and attacks what hurts its owner or what its owner attacks (melee_attack, 3 damage)' : ''}, never despawns and has ${Math.min(1024, health * 2)} health instead of ${health}.${shoulder ? " msm:shoulder_riding lets it perch on its owner's shoulder when the owner stands near it and is not riding; it jumps down when the owner is hurt, sneaks, sleeps, rides, swims, flies or changes dimension, and waits five seconds before it jumps up again. One pet sits on each player's shoulder; it is drawn at half size so it fits." : ''}${babies ? ` msm:breedable lets two tamed or wild pets fed ${breeding.label.toLowerCase()} have a baby at half size that grows up in 20 minutes; the food also tempts it.` : ''}${flies ? ' It flies (mode fly), hovering when idle, and takes no fall damage.' : ''} ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns in ${spawn.words} in groups of two to four (rule animal: on grass in daylight).`}`;
 
   return mobFlowBundle({
     context,
@@ -188,7 +201,7 @@ export function petBundle(context: BundleContext): ContentBundle {
     preset,
     colour,
     picture: imageValue(values, 'picture'),
-    scale: preset === 'biped' ? 0.6 : 0.8,
+    scale: (preset === 'biped' ? 0.6 : 0.8) * (shoulder ? 0.5 : 1),
     entity: {
       base: 'animal',
       category: 'creature',

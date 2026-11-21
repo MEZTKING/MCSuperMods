@@ -21,7 +21,7 @@ import { containerExamples } from './containers';
 import { dataKindExamples } from './data-kinds';
 import { dataPackExamples } from './data-pack';
 import { defineExample } from './define';
-import { entityBehaviourExamples, entityKindExamples } from './entities';
+import { entityKindExamples, entityBehaviourExamples as mobBehaviourExamples } from './entities';
 import { particleExamples, particleKindExamples } from './particles';
 import { popularExamples } from './popular';
 import { portalExamples } from './portals';
@@ -40,10 +40,10 @@ import {
   vanillaParityScriptExamples,
 } from './vanilla-parity';
 import { vehicleBehaviourExamples, vehicleKindExamples } from './vehicles';
+import { villagerBehaviourExamples, villagerFluidKindExamples } from './villagers-and-fluids';
 import { worldgenExamples } from './worldgen';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
-export { entityBehaviourExamples } from './entities';
 export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
 export { vehicleBehaviourExamples } from './vehicles';
@@ -57,6 +57,15 @@ export const scriptBehaviourExamples: readonly ExampleProject[] = Object.freeze(
   ...vanillaParityScriptExamples,
 ]);
 
+/**
+ * The entity behaviour examples, then the Roadside merchant (a trader, ADR 0101 D3; B481); the
+ * `examples/entities` mirror holds them all in one project.
+ */
+export const entityBehaviourExamples: readonly ExampleProject[] = Object.freeze([
+  ...mobBehaviourExamples,
+  ...villagerBehaviourExamples,
+]);
+
 /** The per-kind particle examples (ADR 0081 D5): the description first, then the type. */
 const [particleDescriptionExample, particleTypeExample] = particleKindExamples as [
   ExampleProject,
@@ -67,7 +76,8 @@ const [particleDescriptionExample, particleTypeExample] = particleKindExamples a
  * The per-kind examples, in gallery order: resource pack (the particle description last),
  * data pack, tags, registries, the data kinds sweep, structures, worldgen, blocks and items
  * (the particle type last), entities, models and animations, scripts, rules (the lucky block,
- * ADR 0082 D11), the vehicle, key bind and HUD examples (ADR 0091 D3).
+ * ADR 0082 D11), the vehicle, key bind and HUD examples (ADR 0091 D3), the command and creative
+ * tab examples (B461), and the villager profession and fluid examples (B481).
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
@@ -85,6 +95,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...rulesKindExamples,
   ...vehicleKindExamples,
   ...vanillaParityKindExamples,
+  ...villagerFluidKindExamples,
 ]);
 
 /**

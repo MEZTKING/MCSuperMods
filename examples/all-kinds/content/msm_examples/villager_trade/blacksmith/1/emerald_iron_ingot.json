@@ -1,0 +1,26 @@
+{
+  "data": {
+    "gives": {
+      "count": 3,
+      "id": "minecraft:iron_ingot"
+    },
+    "max_uses": 12,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 2,
+      "id": "minecraft:emerald"
+    },
+    "xp": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blacksmith/1/emerald_iron_ingot",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A novice trade: the blacksmith sells three iron ingots for two emeralds.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

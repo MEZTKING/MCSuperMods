@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "#minecraft:toolsmith/level_5"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker/level_5",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The trades tinkers draw from at level 5: the trade set of the same name, made for the job, picks two of them. #minecraft:toolsmith/level_5 adds every trade of a toolsmith at this level."
+  }
+}

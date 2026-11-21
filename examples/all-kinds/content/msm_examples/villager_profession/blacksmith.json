@@ -1,0 +1,26 @@
+{
+  "data": {
+    "display_name": "Blacksmith",
+    "format": 1,
+    "job_site": "msm_examples:blacksmith_forge",
+    "requested_items": [
+      "minecraft:coal"
+    ],
+    "textures": {
+      "villager": "msm_examples:entity/villager/profession/blacksmith",
+      "zombie_villager": "msm_examples:entity/zombie_villager/profession/blacksmith"
+    },
+    "work_sound": "minecraft:block.anvil.use"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blacksmith",
+  "kind": "msm:villager_profession",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A villager profession. A villager without a job that finds the block in \"job_site\" takes the job; the job site must be a block of the project that no other job (vanilla's included) uses. \"work_sound\" plays while it works there, and \"requested_items\" are items it picks up and shares with other villagers. \"trade_sets\" is left out, so the five levels are the trade sets msm_examples:blacksmith/level_1 to msm_examples:blacksmith/level_5, made when the project is exported, each drawing two trades from the villager trade tag of the same name. The pictures in \"textures\" are drawn over the villager and the zombie villager; they are already where the game reads them (entity/villager/profession/ and entity/zombie_villager/profession/). It needs the Fabric mod jar export; the vanilla packs keep only its trades, tags, pictures and language keys.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

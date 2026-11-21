@@ -1,0 +1,16 @@
+{
+  "data": {
+    "amount": 2,
+    "trades": [
+      "msm_starter:travelling_merchant/ware_1",
+      "msm_starter:travelling_merchant/ware_2"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:travelling_merchant/wares",
+  "kind": "minecraft:trade_set",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The travelling merchant's own wares: the trade set lists its 2 trades and offers all of them (amount 2). Add a trade here, and raise the amount, to sell more."
+  }
+}

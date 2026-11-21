@@ -3,8 +3,10 @@
  * and steer, with or without a vanilla saddle (the preset's `saddle` bone shows it), its speed
  * and jump strength, optionally steered by its owner only (which adds taming) and optionally
  * flying (a round flyer always flies). Base `animal`, `msm:rideable`, optional `msm:tameable`,
- * renderer `auto`, extra variants. Ids derive from `mount_name`. New mobs need the Fabric mod
- * jar export.
+ * renderer `auto`, extra variants. If chosen it carries a chest (`msm:storage`, ADR 0098 D3,
+ * ADR 0101 D2): one to six rows opened with the inventory key while riding or by using it while
+ * sneaking, from the start or once a chest is put on it. Ids derive from `mount_name`. New mobs
+ * need the Fabric mod jar export.
  */
 import type { BundleContext, ContentBundle, JsonObject, StarterParameter } from '@msm/plugin-api';
 import { COLOURS } from '../content/bundle';
@@ -84,6 +86,31 @@ export const MOUNT_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     type: 'boolean',
     default: false,
   },
+  {
+    id: 'carries_chest',
+    label: 'Carries a chest',
+    description:
+      'It has storage you open with the inventory key while riding it, or by using it while sneaking.',
+    group: 'Behaviour',
+    type: 'boolean',
+    default: false,
+  },
+  behaviourNumber(
+    'chest_rows',
+    'Rows of storage',
+    'How many rows of nine slots its storage has, 1 to 6; a chest has 3.',
+    3,
+    { min: 1, max: 6, step: 1 },
+  ),
+  {
+    id: 'needs_chest',
+    label: 'Needs a chest put on it first',
+    description:
+      'Players use a chest on it to give it storage, as with a donkey; off: it always has its storage.',
+    group: 'Behaviour',
+    type: 'boolean',
+    default: true,
+  },
   behaviourNumber('health', 'Health', 'Maximum health in half hearts; a horse has 15 to 30.', 24, {
     min: 2,
     max: 100,
@@ -105,6 +132,9 @@ export function mountBundle(context: BundleContext): ContentBundle {
   const flies = preset === 'flyer' || booleanValue(values, 'flying');
   const spawn = spawnChoice(values, LAND_SPAWNS);
   const saddleBone = MOB_PRESETS[preset].saddleBone;
+  const carries = booleanValue(values, 'carries_chest');
+  const rows = Math.max(1, Math.min(6, Math.round(numberValue(values, 'chest_rows'))));
+  const needsChest = booleanValue(values, 'needs_chest');
 
   const components: JsonObject = {
     'msm:health': { max: numberValue(values, 'health') },
@@ -130,6 +160,7 @@ export function mountBundle(context: BundleContext): ContentBundle {
           },
         }
       : {}),
+    ...(carries ? { 'msm:storage': { rows, needs_chest: needsChest } } : {}),
     'msm:ai_goals': {
       goals: [
         { type: 'panic', speed: 1.2 },
@@ -142,7 +173,7 @@ export function mountBundle(context: BundleContext): ContentBundle {
   const steer = saddle
     ? 'once it wears a vanilla saddle (shown by the saddle bone)'
     : 'without a saddle (the saddle bone stays hidden)';
-  const notes = `A mount: msm:rideable lets a player get on with an empty hand and steer it ${steer}${ownerOnly ? ', but only its owner (controlled_by owner): msm:tameable tames it one time in five with an apple, golden apple or golden carrot' : ''}. ${flies ? 'It flies (mode fly): the rider steers along the view and rises while holding jump; it takes no fall damage.' : `It walks${jump > 0 ? ` and jumps with the jump bar at strength ${jump}` : ''}, stepping up full blocks (step_height 1).`} Its ridden speed is its movement speed (${speed}); sneaking dismounts. ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns in ${spawn.words} in groups of two to four (rule animal: on grass in daylight).`}`;
+  const notes = `A mount: msm:rideable lets a player get on with an empty hand and steer it ${steer}${ownerOnly ? ', but only its owner (controlled_by owner): msm:tameable tames it one time in five with an apple, golden apple or golden carrot' : ''}. ${flies ? 'It flies (mode fly): the rider steers along the view and rises while holding jump; it takes no fall damage.' : `It walks${jump > 0 ? ` and jumps with the jump bar at strength ${jump}` : ''}, stepping up full blocks (step_height 1).`} Its ridden speed is its movement speed (${speed}); sneaking dismounts.${carries ? ` msm:storage gives it ${rows} row${rows === 1 ? '' : 's'} of storage${needsChest ? ' once a player uses a chest on it' : ''}: the rider opens it with the inventory key, and ${ownerOnly ? 'its owner' : 'anyone'} by using it while sneaking. What it carries is saved with it and dropped when it dies${needsChest ? ', with the chest' : ''}.` : ''} ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns in ${spawn.words} in groups of two to four (rule animal: on grass in daylight).`}`;
 
   return mobFlowBundle({
     context,

@@ -1,0 +1,22 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "max_uses": 16,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 8,
+      "id": "minecraft:copper_ingot"
+    },
+    "xp": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker/1/copper_ingot_emerald",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A first-level trade: the villager buys 8 minecraft:copper_ingot for an emerald. wants is what the player hands over, gives what the player gets."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_bottom_top",
+    "textures": {
+      "bottom": "msm_examples:block/blacksmith_forge_bottom",
+      "side": "msm_examples:block/blacksmith_forge_side",
+      "top": "msm_examples:block/blacksmith_forge_top"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:block/blacksmith_forge",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube with its own top, sides and bottom.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

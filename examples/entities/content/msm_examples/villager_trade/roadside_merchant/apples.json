@@ -1,0 +1,25 @@
+{
+  "data": {
+    "gives": {
+      "count": 4,
+      "id": "minecraft:apple"
+    },
+    "max_uses": 8,
+    "wants": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "xp": 3
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:roadside_merchant/apples",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "4 minecraft:apple for 1 emerald, offered at level 1.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

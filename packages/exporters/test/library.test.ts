@@ -119,6 +119,7 @@ import {
   createMemorySink,
   createZipSink,
   dataPackExporter,
+  fluidProfessionIdsOf,
   MOD_ONLY_FUNCTION,
   MOD_ONLY_REFERENCE,
   type ModOnlyIds,
@@ -259,6 +260,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { pet_name: 'Song Bird', preset: 'bird', sits: false, babies: false, spawn_biomes: 'jungles' },
     { pet_name: 'Little Squire', preset: 'biped', taming_food: 'bones', spawn_biomes: 'nowhere' },
+    // ADR 0101 D2: rides on your shoulder, on each preset.
+    { pet_name: 'Pocket Fox', shoulder: true },
+    { pet_name: 'Perch Bird', preset: 'bird', shoulder: true, sits: false },
+    { pet_name: 'Puff Ball', preset: 'flyer', shoulder: true, babies: false },
   ],
   'farm-animal': [
     {
@@ -289,6 +294,16 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       variant_1_biome: 'savannas',
     },
     { mount_name: 'Wing Horse', flying: true, jump: 0, spawn_biomes: 'savannas' },
+    // ADR 0101 D2: carries a chest, put on it or from the start, tamed or not.
+    { mount_name: 'Pack Yak', carries_chest: true },
+    {
+      mount_name: 'Cargo Ray',
+      preset: 'flyer',
+      carries_chest: true,
+      chest_rows: 6,
+      needs_chest: false,
+    },
+    { mount_name: 'Loyal Mule', carries_chest: true, owner_only: true, chest_rows: 2 },
   ],
   'flying-mob': [
     {
@@ -832,6 +847,65 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { tab_name: 'Gems', icon: 'minecraft:emerald', order: 'by_name' },
     { tab_name: 'Empty Tab', first_block: false },
   ],
+  // ADR 0101 D2 (batch 2, B481): every look, ware slot, level and restock answer of the
+  // Wandering merchant; every vanilla job and none for the Village job; every behaviour, look,
+  // picture, flow, effect and lake place of the Fluid.
+  'wandering-merchant': [
+    {
+      merchant_name: 'Gem Pedlar',
+      preset: 'quadruped',
+      ware_1: 'diamond',
+      ware_1_count: 1,
+      ware_1_emeralds: 12,
+      ware_2: '',
+      ware_3: 'minecraft:amethyst_shard',
+      vanilla_wares: false,
+      restock: 'never',
+      spawn_biomes: 'nowhere',
+      picture: pngDataUrl(64, 64),
+    },
+    { merchant_name: 'Sky Trader', preset: 'bird', ware_3: 'minecraft:feather' },
+    { merchant_name: 'Cube Seller', preset: 'cube_creature', spawn_biomes: 'badlands' },
+  ],
+  'village-job': [
+    {
+      job_name: 'Glass Blower',
+      colour: '#2454c4',
+      buys: 'sand',
+      sells: 'minecraft:glass_bottle',
+      trades_like: 'cleric',
+      recipe: false,
+    },
+    { job_name: 'Beekeeper', buys: 'minecraft:honeycomb', trades_like: 'farmer' },
+    { job_name: 'Scribe', trades_like: 'librarian' },
+    { job_name: 'Map Seller', trades_like: 'cartographer' },
+  ],
+  fluid: [
+    {
+      fluid_name: 'Molten Copper',
+      behaves_like: 'lava',
+      colour: '#de9420',
+      light: 12,
+      speed: 'slow',
+      spread: 'far',
+      sources: 'yes',
+      effect: 'minecraft:poison',
+      lakes: true,
+      lake_biomes: 'badlands',
+      lake_rarity: 120,
+    },
+    {
+      fluid_name: 'Dream Water',
+      look: 'drawn',
+      effect: 'minecraft:levitation',
+      speed: 'quick',
+      spread: 'near',
+      lakes: true,
+      lake_biomes: 'swamps',
+    },
+    { fluid_name: 'Ghost Mist', behaves_like: 'none', picture: pngDataUrl(16, 16), lakes: true },
+    { fluid_name: 'Pond Water', sources: 'no', effect: 'minecraft:regeneration' },
+  ],
   // ADR 0069 D1: vanilla logs and leaves, every tree shape, a tinted leaf, pictures.
   tree: [
     {
@@ -1043,6 +1117,9 @@ const MIRRORED_STARTERS = [
   'backpack',
   'custom-command',
   'creative-tab',
+  'wandering-merchant',
+  'village-job',
+  'fluid',
 ];
 
 function kindRegistry(): ElementKindRegistry {
@@ -1198,13 +1275,25 @@ function isMachine(data: Json): boolean {
   }
 }
 
-function projectRegistryIds(project: Project): Record<string, string[]> {
+function projectRegistryIds(
+  project: Project,
+  target: TargetFacts = DEFAULT_BUNDLE.target,
+): Record<string, string[]> {
   const ids: Record<string, string[]> = { model: [], sound: [], sound_event: [], texture: [] };
   const add = (name: string, id: string): void => {
     const list = ids[name] ?? [];
     list.push(id);
     ids[name] = list;
   };
+  // A fluid's liquid block, bucket and flowing fluid, a profession's point of interest type
+  // (ADR 0098 D2, ADR 0099 D1), as the app's registry view adds them (B478).
+  const batch2 = fluidProfessionIdsOf(
+    project.namespaces.flatMap((namespace) => namespace.elements),
+    target.blocks?.fluidModel === 'two_fluids',
+  );
+  for (const [registry, list] of Object.entries(batch2)) {
+    for (const id of list) add(registry, id);
+  }
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
       const kind = registry.get(element.kind);
@@ -1248,6 +1337,13 @@ function projectRegistryIds(project: Project): Record<string, string[]> {
       }
       // A vehicle registers its item under its own id, as the app's registry view does (B415).
       if (element.kind === 'msm:vehicle') add('item', element.id);
+      // A fluid's lowering writes the liquid block's model and the bucket's flat item model
+      // (ADR 0099 D1; B477), which its block state and item model definition name.
+      if (element.kind === 'msm:fluid') {
+        const path = element.id.slice(element.id.indexOf(':') + 1);
+        add('model', `${namespace.name}:block/${path}`);
+        add('model', `${namespace.name}:item/${path}_bucket`);
+      }
       if (
         name === 'potion' &&
         typeof element.data === 'object' &&
@@ -1540,7 +1636,7 @@ async function checkProject(
   warnings: Problem[];
 }> {
   const saved = await reload(built.fs);
-  const ids = projectRegistryIds(saved);
+  const ids = projectRegistryIds(saved, bundle.target);
   const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
   expect(elementProblems(saved, context.schemaIndex, registries)).toEqual([]);
   const project = await expanded(saved, bundle.target);
@@ -1802,9 +1898,9 @@ function typeCheck(script: string): string[] {
 
 /**
  * Kinds registered before their per-kind example exists. A new kind may wait here only until
- * its library brief lands. `msm:fluid` (B477) waits for B481's example.
+ * its library brief lands.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = ['msm:fluid', 'msm:villager_profession'];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 // Tests --------------------------------------------------------------------------------------
 
@@ -2088,6 +2184,55 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
             expect(found, `${element.id} ${path}`).toBe(true);
           }
         }
+      },
+    );
+
+    /**
+     * The flows of vanilla parity batch 2 (ADR 0101 D2, B481) with untouched defaults, and the
+     * new answers of the Mount (carries a chest) and Pet (rides on your shoulder) flows.
+     */
+    const batch2Cases = (
+      [
+        ['wandering-merchant', {}, 'msm:entity'],
+        ['village-job', {}, 'msm:villager_profession'],
+        ['fluid', {}, 'msm:fluid'],
+        ['fluid', { lakes: true }, 'msm:fluid'],
+        ['mount', { carries_chest: true }, 'msm:entity'],
+        ['pet', { shoulder: true }, 'msm:entity'],
+      ] as const
+    ).flatMap(([id, values, kind]) => {
+      const starter = starters.find((entry) => entry.id === id);
+      return starter === undefined
+        ? []
+        : [
+            [
+              `${id} ${JSON.stringify(values)}`,
+              starter,
+              values as Record<string, Json>,
+              kind,
+            ] as const,
+          ];
+    });
+
+    it('offers the batch 2 flows on every target with Fabric (ADR 0101 D2)', () => {
+      expect(batch2Cases.length).toBe(bundle.target.fabric === undefined ? 0 : 6);
+    });
+
+    it.each(batch2Cases)(
+      'batch 2 flow %s gives zero problems, warnings included, and exports to the jar (ADR 0101 D2)',
+      async (_label, starter, values, kind) => {
+        const built = await buildProject('Batch Two Test', 'demo', [
+          buildEntry(starter, 'demo', 'Batch Two Test', bundle.target, values),
+        ]);
+        const { warnings, jarFiles } = await checkProject(bundle, context, built);
+        expect(warnings).toEqual([]);
+        const main = built.project.namespaces
+          .flatMap((namespace) => namespace.elements)
+          .find((element) => element.kind === kind);
+        expect(main).toBeDefined();
+        const path = (main?.id ?? '').split(':')[1] ?? '';
+        const folder = { 'msm:entity': 'entity', 'msm:fluid': 'fluid' }[kind as string];
+        expect(jarFiles).toContain(`msm/demo/${folder ?? 'villager_profession'}/${path}.json`);
       },
     );
 
@@ -2945,8 +3090,8 @@ function withoutPotions(project: Project): Project {
  * over the whole project, potions included): {@link projectRegistryIds}, plus the spawn egg of
  * an entity that leaves `spawn_egg` out (the entity lowering gives it one).
  */
-function modOnlyIdsFor(project: Project): ModOnlyIds {
-  const ids = projectRegistryIds(project);
+function modOnlyIdsFor(project: Project, target?: TargetFacts): ModOnlyIds {
+  const ids = projectRegistryIds(project, target);
   const items = new Set(ids.item ?? []);
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
@@ -3031,7 +3176,7 @@ describe('vanilla server data packs', () => {
       for (const entry of cases) {
         const built = await entry.build();
         const project = await reload(built.fs);
-        const ids = projectRegistryIds(project);
+        const ids = projectRegistryIds(project, bundle.target);
         const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
         // As the app's session: a project with mod content exports without its potions and
         // through the vanilla pack safety rule (ADR 0063 D6, ADR 0066).
@@ -3040,7 +3185,7 @@ describe('vanilla server data packs', () => {
         // the vanilla-only ones are exported (a mod one, such as all-kinds, has noise settings
         // fields of the default target).
         if (entry.mirror === true && mod && bundle.target.id !== DEFAULT_TARGET) continue;
-        const modOnly = mod ? modOnlyIdsFor(project) : new Map();
+        const modOnly = mod ? modOnlyIdsFor(project, bundle.target) : new Map();
         // The app exports the expanded project (ADR 0082 D9); rule books add only `msm` files.
         const lowered = await expanded(project, bundle.target);
         const report = await exportProblems(

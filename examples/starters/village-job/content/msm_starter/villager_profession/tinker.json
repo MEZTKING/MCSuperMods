@@ -1,0 +1,19 @@
+{
+  "data": {
+    "display_name": "Tinker",
+    "format": 1,
+    "job_site": "msm_starter:tinker_workbench",
+    "textures": {
+      "villager": "msm_starter:entity/villager/profession/tinker",
+      "zombie_villager": "msm_starter:entity/zombie_villager/profession/tinker"
+    },
+    "work_sound": "minecraft:entity.villager.work_toolsmith"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker",
+  "kind": "msm:villager_profession",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new job for vanilla villagers: a villager without a job that finds a tinker workbench (job_site) takes the job, wears its apron (the pictures in textures, at the places the game reads them) and trades. Its five levels are the trade sets msm_starter:tinker/level_1 to msm_starter:tinker/level_5, created for you; each draws two trades from the villager trade tag of the same name, so add trades to those tags. work_sound is the toolsmith's, played while the villager works at its block. Breaking the workbench makes the villager lose the job, as with any workstation. Jobs need the Fabric mod jar export."
+  }
+}

@@ -6270,3 +6270,23 @@ Next
 
 **Next**
 - B482: sample fluids, server checks pinning `registered N fluid(s)`; B483: still and flowing pictures from the screenshots `msm_fluid_still_*` and `msm_fluid_flowing`; B484: the limits above.
+## 2026-11-21 — executor — B481 flows, templates and examples, batch 2
+
+**What**
+- Three Creator flows (ADR 0101 D2): **Wandering merchant** (`wandering-merchant`, group mobs: a trader mob on a preset model; up to three wares, each an item sold for emeralds, gathered in the trade set `<ns>:<id>/wares` at level 1, then, if chosen, vanilla's `wandering_trader/common` and `/uncommon`; restock twice a day or never; rare spawns or spawn egg only), **Village job** (`village-job`, group worlds: a `msm:villager_profession`, its workbench block `<id>_workbench` with model and recipe, two first-level trades, the five `<ns>:<id>/level_<n>` villager trade tags, optionally naming `#minecraft:<job>/level_<n>` of one of the thirteen vanilla jobs, whose work sound it takes) and **Fluid** (`fluid`, group blocks: water-like, lava-like or neither; vanilla's moving pictures under a tint, MSM-drawn still pictures or the user's picture; flow speed, spread, new sources, light, an effect while inside, and optional lakes: a `minecraft:lake` feature, placed feature and `msm:biome_addition`). All three are Fabric only (`hasFabric`).
+- New answers: the Mount flow's "Carries a chest" (`carries_chest`, `chest_rows`, `needs_chest`: `msm:storage`), the Pet flow's "Rides on your shoulder" (`shoulder`: `msm:shoulder_riding`, the pet drawn at half size so it stays under 0.7 blocks wide).
+- Pictures drawn by MSM in `library/src/assets/vanilla-parity/batch2.ts`: bucket, still and flowing liquid, job site top, sides and bottom, and a working apron on the 64 by 64 villager layout (written for the villager and the zombie villager at the paths the game reads, so nothing needs copying).
+- Examples (`library/src/examples/villagers-and-fluids.ts`): Village blacksmith job (the per-kind example of `msm:villager_profession`), Oil well (the per-kind example of `msm:fluid`, with lakes in deserts) and Roadside merchant (an entity behaviour example with two levels of its own trade sets and a bell on every trade).
+- `packages/exporters/test/library.test.ts`: `KINDS_AWAITING_EXAMPLES` is empty again; alternatives for the three flows and the two new answers; the three flows mirrored under `examples/starters/`; a batch 2 case list (defaults and new answers, zero problems with warnings, a runtime definition in the jar, both targets). `projectRegistryIds` now adds what the app's registry view must add for batch 2: `fluidProfessionIdsOf` (per target) and a fluid's two generated models (`<ns>:block/<path>`, `<ns>:item/<path>_bucket`).
+- Counts: 60 starters (48 Creator flows), 164 examples (104 per-kind), 249 templates (unchanged here).
+- Checks: `pnpm lint`, `pnpm typecheck`, `turbo run test --force --filter=@msm/plugin-library... --filter=@msm/exporters` green; the vanilla pack export with `MSM_LIBRARY_PACKS_OUT` passes for every new starter, alternative and example (the job site tag entry `required: false`); the vanilla server load itself was not run here (CI).
+
+**Decisions**
+- A lake in 26.x needs the three block predicates (`can_place_feature`, `can_replace_with_air_or_fluid`, `can_replace_with_barrier`) and `minecraft:simple` providers; the flow keeps lakes off blocks in `#minecraft:features_cannot_replace` and its lining off `#minecraft:lava_pool_stone_cannot_replace` (`lakeFeatureData`). The numbers vanilla's own lava lake uses were not checked (verify at implementation).
+- The merchant's own wares are one trade set listing trade ids (amount = number of wares), so every ware is offered; trade ids are `<id>/ware_<n>` so two wares of the same item never clash.
+- The Village job writes its own trades into the level tags rather than its own `trade_sets`, so the runtime's default sets (two trades a level) stay in use.
+
+**Next**
+- B480: the app's registry index must add a fluid's block model and bucket item model (or every fluid gets two `schema.unknown-id` warnings on export), as the test helper now does.
+- B482: the vanilla server check of the new packs runs in CI; in-game checks of the apron picture on villagers and zombie villagers, lakes of a project fluid and the shoulder pet at half size.
+- B484: guide lines for the three flows and two answers.

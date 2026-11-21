@@ -1,0 +1,25 @@
+{
+  "data": {
+    "gives": {
+      "count": 2,
+      "id": "minecraft:lead"
+    },
+    "max_uses": 8,
+    "wants": {
+      "count": 3,
+      "id": "minecraft:emerald"
+    },
+    "xp": 5
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:roadside_merchant/lead",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "2 minecraft:lead for 3 emeralds, offered at level 2.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

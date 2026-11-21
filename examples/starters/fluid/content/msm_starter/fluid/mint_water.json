@@ -1,0 +1,28 @@
+{
+  "data": {
+    "behaves_like": "water",
+    "bucket_display_name": "Bucket of Mint Water",
+    "display_name": "Mint Water",
+    "flow": {
+      "drop_off": 1,
+      "infinite": true,
+      "slope_distance": 4,
+      "tick_delay": 5
+    },
+    "format": 1,
+    "textures": {
+      "bucket": "msm_starter:item/mint_water_bucket",
+      "flowing": "minecraft:block/water_flow",
+      "overlay": "minecraft:block/water_overlay",
+      "still": "minecraft:block/water_still"
+    },
+    "tint": 3983500
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:mint_water",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A new liquid with its block (msm_starter:mint_water) and its bucket (msm_starter:mint_water_bucket), made from this one element. It behaves like water: it joins the water tag, so players and mobs swim in it, drown in it and are put out when burning. It flows one block every 5 ticks (tick_delay), finds slopes up to 4 blocks away (slope_distance) and loses 1 level with every block it flows (drop_off); a gap between two pools fills up for good (infinite). It is drawn with vanilla's moving water pictures under the tint #3cc88c; give it pictures of its own in textures to change that; the bucket has a picture of its own. Fluids need the Fabric mod jar export."
+  }
+}

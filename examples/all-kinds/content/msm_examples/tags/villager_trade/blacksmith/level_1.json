@@ -1,0 +1,20 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:blacksmith/1/coal_emerald",
+      "msm_examples:blacksmith/1/emerald_iron_ingot",
+      "#minecraft:toolsmith/level_1"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blacksmith/level_1",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The trades blacksmiths draw from at level 1: the job's own, and every toolsmith trade of the level (#minecraft:toolsmith/level_1). The job's trade set of the same name picks two of them.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

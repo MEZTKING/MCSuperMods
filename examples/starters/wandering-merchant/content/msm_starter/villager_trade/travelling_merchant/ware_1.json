@@ -1,0 +1,21 @@
+{
+  "data": {
+    "gives": {
+      "count": 6,
+      "id": "minecraft:glow_berries"
+    },
+    "max_uses": 8,
+    "wants": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "xp": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:travelling_merchant/ware_1",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One of the travelling merchant's wares: 6 minecraft:glow_berries for 1 emerald. wants is the price and gives what the player gets; max_uses (8) is how often it works before the merchant restocks, and xp the trading experience each sale earns. The trade set msm_starter:travelling_merchant/wares offers it."
+  }
+}

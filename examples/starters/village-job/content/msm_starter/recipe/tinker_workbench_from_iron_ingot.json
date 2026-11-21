@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "I": "minecraft:iron_ingot",
+      "P": "#minecraft:planks"
+    },
+    "pattern": [
+      "II",
+      "PP"
+    ],
+    "result": {
+      "id": "msm_starter:tinker_workbench"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker_workbench_from_iron_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two iron ingots over two planks of any wood make the tinker workbench."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "resistance": 2.5,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Tinker Workbench",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_starter:block/tinker_workbench",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker_workbench",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The tinker's job site: a workbench of boards under a metal top. Any block of yours can be a job site, but only one job each, and never a block that already has one (a vanilla workstation, a bed or a bell)."
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.3,
+            "type": "panic"
+          },
+          {
+            "speed": 0.5,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/roadside_merchant_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/roadside_merchant",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_examples:entity/roadside_merchant",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "speed": 0.4
+      },
+      "msm:trader": {
+        "levels": true,
+        "on_trade": "msm_examples:roadside_merchant_sold",
+        "restock": "twice_a_day",
+        "trade_sets": [
+          {
+            "trade_set": "msm_examples:roadside_merchant/level_1",
+            "xp_to_next": 10
+          },
+          {
+            "trade_set": "msm_examples:roadside_merchant/level_2"
+          }
+        ],
+        "trade_sound": "minecraft:entity.wandering_trader.yes"
+      }
+    },
+    "display_name": "Roadside Merchant",
+    "events": {
+      "msm_examples:roadside_merchant_sold": {
+        "actions": [
+          {
+            "pitch": 1.4,
+            "sound": "minecraft:block.bell.use",
+            "type": "play_sound",
+            "volume": 0.6
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/roadside_merchant_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:roadside_merchant",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A trader mob. msm:trader opens the villager trading screen when a player uses it with an empty hand. \"trade_sets\" lists its levels: level 1 offers msm_examples:roadside_merchant/level_1, and 10 trading experience (\"xp_to_next\") unlocks level 2, msm_examples:roadside_merchant/level_2. \"levels\" true makes trading earn experience; \"restock\" twice_a_day refills the trades at the mob, with no workstation. \"trade_sound\" plays on each trade and \"on_trade\" fires msm_examples:roadside_merchant_sold (self is the merchant, other the player), which rings a bell. It refuses to trade while a baby, fleeing or ridden, and keeps its offers when the world is saved. It has a spawn egg and never spawns on its own. It needs the Fabric mod jar export; the vanilla packs keep only its trades, tags, pictures and language keys.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

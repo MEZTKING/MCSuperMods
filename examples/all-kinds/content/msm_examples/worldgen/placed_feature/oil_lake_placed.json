@@ -1,0 +1,32 @@
+{
+  "data": {
+    "feature": "msm_examples:oil_lake",
+    "placement": [
+      {
+        "chance": 80,
+        "type": "minecraft:rarity_filter"
+      },
+      {
+        "type": "minecraft:in_square"
+      },
+      {
+        "heightmap": "WORLD_SURFACE_WG",
+        "type": "minecraft:heightmap"
+      },
+      {
+        "type": "minecraft:biome"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:oil_lake_placed",
+  "kind": "minecraft:worldgen/placed_feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One chunk in 80 tries for a lake, at a random spot on the surface; the biome filter keeps it to the biomes that list it.",
+    "tags": [
+      "example",
+      "fluids"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "data": {
+    "biomes": [
+      "minecraft:desert"
+    ],
+    "features": [
+      {
+        "feature": "msm_examples:oil_lake_placed",
+        "step": "lakes"
+      }
+    ],
+    "format": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:oil_lakes",
+  "kind": "msm:biome_addition",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A world addition: it adds the oil lakes to deserts at the lakes step, without replacing any vanilla file. Only chunks generated after the mod is installed get them.",
+    "tags": [
+      "example",
+      "fluids"
+    ]
+  }
+}

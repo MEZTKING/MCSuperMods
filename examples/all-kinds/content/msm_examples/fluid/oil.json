@@ -1,0 +1,45 @@
+{
+  "data": {
+    "behaves_like": "water",
+    "bucket_display_name": "Bucket of Oil",
+    "display_name": "Oil",
+    "events": {
+      "msm_examples:oil_sticky": {
+        "actions": [
+          {
+            "amplifier": 1,
+            "effect": "minecraft:slowness",
+            "seconds": 2,
+            "target": "other",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "explosion_resistance": 100,
+    "flow": {
+      "drop_off": 2,
+      "infinite": false,
+      "slope_distance": 2,
+      "tick_delay": 20
+    },
+    "format": 1,
+    "on_entity_inside": "msm_examples:oil_sticky",
+    "textures": {
+      "bucket": "msm_examples:item/oil_bucket",
+      "flowing": "msm_examples:block/oil_flow",
+      "still": "msm_examples:block/oil_still"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:oil",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A fluid. One element makes the fluid, its liquid block (the same id, msm_examples:oil) and its bucket (msm_examples:oil_bucket). \"behaves_like\" water joins the water tag, so you swim in it and drown in it; \"flow\" makes it slow (one block every 20 ticks), short (it finds slopes two blocks away and loses two levels a block) and finite (no new sources). \"on_entity_inside\" names an event in the fluid's own \"events\": whoever is inside gets Slowness II, at most every ten ticks each. \"textures\" are the still and flowing pictures and the bucket's; \"tint\" is left out because the pictures are already dark. It needs the Fabric mod jar export; the vanilla packs keep only its trades, tags, pictures and language keys.",
+    "tags": [
+      "example",
+      "fluids"
+    ]
+  }
+}

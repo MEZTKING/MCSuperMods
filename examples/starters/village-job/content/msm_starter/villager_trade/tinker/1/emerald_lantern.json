@@ -1,0 +1,22 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:lantern"
+    },
+    "max_uses": 12,
+    "reputation_discount": 0.05,
+    "wants": {
+      "count": 3,
+      "id": "minecraft:emerald"
+    },
+    "xp": 5
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker/1/emerald_lantern",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A first-level trade: the villager sells one minecraft:lantern for 3 emeralds. Demand and the player's reputation change the price, by reputation_discount per point."
+  }
+}

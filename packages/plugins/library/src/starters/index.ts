@@ -31,6 +31,7 @@ import { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 import { EXTRA_DROP_PARAMETERS, extraDropBundle } from './extra-drop';
 import { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
+import { FLUID_PARAMETERS, fluidBundle } from './fluid';
 import { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
@@ -63,7 +64,9 @@ import { VEHICLE_BOAT_PARAMETERS, vehicleBoatBundle } from './vehicle-boat';
 import { VEHICLE_CAR_PARAMETERS, vehicleCarBundle } from './vehicle-car';
 import { VEHICLE_PLANE_PARAMETERS, vehiclePlaneBundle } from './vehicle-plane';
 import { VEHICLE_TANK_PARAMETERS, vehicleTankBundle } from './vehicle-tank';
+import { VILLAGE_JOB_PARAMETERS, villageJobBundle } from './village-job';
 import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
+import { WANDERING_MERCHANT_PARAMETERS, wanderingMerchantBundle } from './wandering-merchant';
 import { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
 import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
@@ -99,6 +102,7 @@ export {
 export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 export { EXTRA_DROP_PARAMETERS, EXTRA_DROP_TABLES, extraDropBundle } from './extra-drop';
 export { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
+export { FLUID_PARAMETERS, fluidBundle, fluidIds } from './fluid';
 export { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
@@ -159,7 +163,20 @@ export {
   VEHICLE_TANK_PARAMETERS,
   vehicleTankBundle,
 } from './vehicle-tank';
+export {
+  JOB_LEVELS,
+  VANILLA_JOBS,
+  VILLAGE_JOB_PARAMETERS,
+  villageJobBundle,
+  villageJobIds,
+} from './village-job';
 export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
+export {
+  MERCHANT_WARE_SLOTS,
+  WANDERING_MERCHANT_PARAMETERS,
+  WANDERING_TRADER_SETS,
+  wanderingMerchantBundle,
+} from './wandering-merchant';
 export { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
 export { WEAPON_PARAMETERS, WEAPON_TYPES, weaponBundle } from './weapon';
 export { WOOD_SET_MEMBERS, WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
@@ -395,6 +412,20 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     {
       parameters: BED_PARAMETERS,
       creator: { group: 'blocks', blurb: 'A bed or a sleeping bag.' },
+    },
+  ),
+  starter(
+    'fluid',
+    'Fluid',
+    'A new liquid with its bucket: whether it behaves like water or lava, its colour and pictures, how fast and far it flows, whether two pools make a new one, what happens to someone in it and, if you choose, lakes of it in the world. Fluids need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    fluidBundle,
+    {
+      supports: hasFabric,
+      parameters: FLUID_PARAMETERS,
+      creator: { group: 'blocks', blurb: 'A liquid of your own, with its bucket.' },
+      probeValues: [{ lakes: true }],
     },
   ),
   starter(
@@ -665,6 +696,19 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     },
   ),
   starter(
+    'village-job',
+    'Village job',
+    'A new job for villagers: the workbench where a villager takes the job, the apron it wears, what it buys and sells and, if you choose, the trades of a vanilla job at every level. Jobs need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    villageJobBundle,
+    {
+      supports: hasFabric,
+      parameters: VILLAGE_JOB_PARAMETERS,
+      creator: { group: 'worlds', blurb: 'A new job for villagers, with its workbench.' },
+    },
+  ),
+  starter(
     'extra-drop',
     'Extra drop',
     'An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. Extra drops need the Fabric mod jar export.',
@@ -778,7 +822,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'pet',
     'Pet',
-    'An animal players tame with a food, which then sits when told, follows its owner, defends them and has babies: its model (four-legged, bird, round flyer or two-legged), animations, skin, variants and spawn egg, and the mod metadata. New mobs need the Fabric mod jar export.',
+    'An animal players tame with a food, which then sits when told, follows its owner, defends them, has babies and, if you choose, rides on your shoulder: its model (four-legged, bird, round flyer or two-legged), animations, skin, variants and spawn egg, and the mod metadata. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'msm'],
     petBundle,
@@ -810,7 +854,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'mount',
     'Mount',
-    'A mob players ride and steer, with or without a saddle: its speed and jump, whether only its owner may ride it and whether it flies, with its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'A mob players ride and steer, with or without a saddle: its speed and jump, whether only its owner may ride it, whether it flies and whether it carries a chest, with its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     mountBundle,
@@ -819,6 +863,19 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       parameters: MOUNT_PARAMETERS,
       creator: { group: 'mobs', blurb: 'A mob to ride: on the ground or in the air.' },
       probeValues: [{ preset: 'flyer', owner_only: true, needs_saddle: false }],
+    },
+  ),
+  starter(
+    'wandering-merchant',
+    'Wandering merchant',
+    "A mob that trades with you: what it sells and for how many emeralds, whether it also sells the wandering trader's wares, how often it restocks and where it turns up, with its model, skin and spawn egg. New mobs need the Fabric mod jar export.",
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    wanderingMerchantBundle,
+    {
+      supports: hasFabric,
+      parameters: WANDERING_MERCHANT_PARAMETERS,
+      creator: { group: 'mobs', blurb: 'A mob that trades with you.' },
     },
   ),
   starter(

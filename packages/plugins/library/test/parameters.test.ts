@@ -101,6 +101,7 @@ const WIZARDS = [
   'copper-set',
   'lights',
   'bed',
+  'fluid',
   'storage-crate',
   'machine',
   'food',
@@ -119,6 +120,7 @@ const WIZARDS = [
   'dimension',
   'portal',
   'villager-trade',
+  'village-job',
   'extra-drop',
   'mob-skin',
   'goat-horn',
@@ -126,6 +128,7 @@ const WIZARDS = [
   'pet',
   'farm-animal',
   'mount',
+  'wandering-merchant',
   'flying-mob',
   'water-mob',
   'boss',
@@ -157,6 +160,7 @@ const FLOWS: Record<string, string> = {
   'copper-set': 'blocks',
   lights: 'blocks',
   bed: 'blocks',
+  fluid: 'blocks',
   cake: 'food',
   'custom-command': 'scripts',
   'creative-tab': 'scripts',
@@ -170,6 +174,7 @@ const FLOWS: Record<string, string> = {
   dimension: 'worlds',
   portal: 'worlds',
   'villager-trade': 'worlds',
+  'village-job': 'worlds',
   'extra-drop': 'worlds',
   'mob-skin': 'mobs',
   'goat-horn': 'gear',
@@ -177,6 +182,7 @@ const FLOWS: Record<string, string> = {
   pet: 'mobs',
   'farm-animal': 'mobs',
   mount: 'mobs',
+  'wandering-merchant': 'mobs',
   'flying-mob': 'mobs',
   'water-mob': 'mobs',
   boss: 'mobs',
@@ -238,6 +244,9 @@ describe('wizard starters', () => {
     expect(groups('copper-set')).toEqual(['Metal', 'Pieces']);
     expect(groups('lights')).toEqual(['Lights', 'Pictures']);
     expect(groups('bed')).toEqual(['Bed']);
+    expect(groups('wandering-merchant')).toEqual(['Mob', 'Trades', 'Behaviour', 'Spawning']);
+    expect(groups('village-job')).toEqual(['Job', 'Trades']);
+    expect(groups('fluid')).toEqual(['Fluid', 'Flowing', 'World']);
     expect(groups('cake')).toEqual(['Cake', 'Food']);
     expect(groups('backpack')).toEqual(['Bag', 'Recipes']);
     expect(groups('custom-command')).toEqual(['Command', 'What it does']);

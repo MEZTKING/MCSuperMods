@@ -1,0 +1,17 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_bottom_top",
+    "textures": {
+      "bottom": "msm_starter:block/tinker_workbench_bottom",
+      "side": "msm_starter:block/tinker_workbench_side",
+      "top": "msm_starter:block/tinker_workbench_top"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:block/tinker_workbench",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A full cube with its own top, sides and bottom."
+  }
+}

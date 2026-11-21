@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 7
+      }
+    },
+    "display_name": "Blacksmith Forge",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_examples:block/blacksmith_forge",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blacksmith_forge",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The job site: a forge with a sooty iron top that glows a little. Breaking it makes the blacksmith lose the job, as with any workstation.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

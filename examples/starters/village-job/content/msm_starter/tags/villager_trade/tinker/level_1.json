@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "msm_starter:tinker/1/copper_ingot_emerald",
+      "msm_starter:tinker/1/emerald_lantern",
+      "#minecraft:toolsmith/level_1"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:tinker/level_1",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The trades tinkers draw from at level 1: the trade set of the same name, made for the job, picks two of them. The two trades above are the job's own. #minecraft:toolsmith/level_1 adds every trade of a toolsmith at this level."
+  }
+}

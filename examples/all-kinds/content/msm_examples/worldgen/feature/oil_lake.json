@@ -1,0 +1,53 @@
+{
+  "data": {
+    "barrier": {
+      "state": "minecraft:sandstone",
+      "type": "minecraft:simple"
+    },
+    "can_place_feature": {
+      "type": "minecraft:true"
+    },
+    "can_replace_with_air_or_fluid": {
+      "predicate": {
+        "tag": "minecraft:features_cannot_replace",
+        "type": "minecraft:matching_block_tag"
+      },
+      "type": "minecraft:not"
+    },
+    "can_replace_with_barrier": {
+      "predicates": [
+        {
+          "predicate": {
+            "tag": "minecraft:features_cannot_replace",
+            "type": "minecraft:matching_block_tag"
+          },
+          "type": "minecraft:not"
+        },
+        {
+          "predicate": {
+            "tag": "minecraft:lava_pool_stone_cannot_replace",
+            "type": "minecraft:matching_block_tag"
+          },
+          "type": "minecraft:not"
+        }
+      ],
+      "type": "minecraft:all_of"
+    },
+    "fluid": {
+      "state": "msm_examples:oil",
+      "type": "minecraft:simple"
+    },
+    "type": "minecraft:lake"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:oil_lake",
+  "kind": "minecraft:worldgen/feature",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A lake of oil: the lake feature hollows out a rounded pool, fills it with the liquid block (fluid) and lines the edges with sandstone (barrier) where the oil would leak out; the predicates keep it away from blocks features never replace.",
+    "tags": [
+      "example",
+      "fluids"
+    ]
+  }
+}

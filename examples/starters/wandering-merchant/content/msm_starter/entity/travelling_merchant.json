@@ -1,0 +1,85 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.3,
+            "type": "panic"
+          },
+          {
+            "speed": 0.6,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_starter:entity/travelling_merchant_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_starter:entity/travelling_merchant",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_starter:entity/travelling_merchant",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "speed": 0.4
+      },
+      "msm:trader": {
+        "levels": true,
+        "restock": "twice_a_day",
+        "trade_sets": [
+          {
+            "trade_set": "msm_starter:travelling_merchant/wares"
+          },
+          {
+            "trade_set": "minecraft:wandering_trader/common"
+          },
+          {
+            "trade_set": "minecraft:wandering_trader/uncommon"
+          }
+        ]
+      }
+    },
+    "display_name": "Travelling Merchant",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn": {
+      "biomes": [
+        "minecraft:plains",
+        "minecraft:sunflower_plains",
+        "minecraft:meadow"
+      ],
+      "max_group": 1,
+      "min_group": 1,
+      "rule": "animal",
+      "weight": 2
+    },
+    "spawn_egg": {
+      "texture": "msm_starter:item/travelling_merchant_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:travelling_merchant",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A merchant: msm:trader opens the villager trading screen when a player uses it with an empty hand. Its first level offers its own wares from msm_starter:travelling_merchant/wares (6 minecraft:glow_berries for 1 emerald, 1 minecraft:name_tag for 5 emeralds); trading earns it experience, which unlocks the wandering trader's common wares (minecraft:wandering_trader/common) and then its rare ones (minecraft:wandering_trader/uncommon). Its trades restock twice a day, without a workstation. It does not trade while it is a baby, hurt and fleeing, or ridden, and keeps its offers when the world is saved. It spawns now and then on its own in plains and meadows (rule animal: on grass in daylight). msm:animated_model names the model, animation set and texture with renderer auto: GeckoLib draws it where the target has GeckoLib, the runtime's own renderer elsewhere. Export the Fabric mod jar to try it in game."
+  }
+}
