@@ -8,6 +8,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
+- Work in progress: scripts that run in **Try it**, and drawn pictures in a Minecraft style made by MCSuperMods itself.
+
+## [1.5.2] - 2026-11-21
+
+### Added
+
 - **Vehicles**: make cars, tanks, planes, helicopters, hovercraft and boats. Players place one from its item, get in, drive with W, A, S and D and pick it up by hitting it while sneaking. A vehicle can need fuel, hold ammunition, fire a cannon from a turret that follows the look (R and V), take damage and be repaired, carry a chest's worth of items, be painted and sound a horn (H). The Creator's **Car**, **Tank**, **Plane** and **Boat** flows (group **Vehicles**), **Make a vehicle** in Very easy mode, eight templates and the **Vehicle Studio** make them. A vehicle needs the Fabric mod jar and a restart the first time. It is not in a Java project or a vanilla pack. See [Vehicles](docs/guide/vehicles.md).
 - **Keys of your own**: a **Key bind Studio** adds a key to Minecraft's **Controls** screen that runs events when pressed, held or let go. G is "Quick actions" in Minecraft 26.3, so a key on G warns about the clash. See [Keys and the screen](docs/guide/keys-and-hud.md).
 - **Things on the screen**: a **HUD Studio** makes bars, rows of icons and numbers (mana, stamina, a score, coordinates, a vehicle's fuel) with a preview of a drawn screen, shown and changed from events, Rules and scripts. Vehicles show a small dashboard of their own.
@@ -30,7 +36,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Pick for me** in the Creator fills in every question with random answers that work.
 - **More Home tiles**, now under headings: **Make a chest or machine**, **Make a recipe**, **Make sparkles**, **Make a magic wand**, **Make a world or biome**, **Make a building**, **Change drops and trades**, **Change how Minecraft looks**, **Make a painting** and **Make a sound or music**. Every Creator page can now be reached from Home, and the recipe, building, biome and resource pack starters are added to your mod in one click.
 
-- Work in progress: Try it will show what your rules and events do when you use, break and step on your blocks.
+- **Try it shows what happens**: your rules and events run when you use, break and step on your blocks, mobs spawn and wander, particles and portals show, and **What happened** lists each step, with what only Minecraft can do said as "Only in Minecraft".
+- **Try it worlds**: start the test area on a **Grid**, a **Flat world**, a **Quick world** you shape yourself, or a piece of one of your own saved worlds (**From my world**, read only, never changed).
 - A **Try it** page in the user guide: how to open it, the keys, the tools and the clock, mobs, particles and portals, **What happened**, and the full list of what Try it cannot show. The link on Try it's first-run card opens it.
 - **Skies and rules of your own**: a **Dimension Type Studio** sets a dimension's sky picture and sky, fog, cloud and sunrise colours (with a small preview of the sky), the sun, moon and stars, light, a fixed time of day or the day and night clock, the rules (beds, respawn anchors, piglins, monsters burning, fast lava, water evaporating, raids) and the height. The **Dimension** flow's new answer **Give it its own sky and rules** copies the chosen sky into a dimension type of your own with your sky and fog colours, time of day and beds. Templates **Moon dimension type** and **Nether-like dimension type**. Plugin API 1.18.0.
 - **Traders**: a mob can sell things through the villager trading screen. The Entity Studio's **Trader** section (**Trades with players**, **Levels**, **Restocks**, **On trade**, **Trade sound**, **Trades from**) and its trade editor (**Price**, **Product**, **Uses before restocking**, **Trading XP**) set the trades of each of up to five levels, or borrow a vanilla villager's list. The Creator's **Wandering merchant** flow and the Very easy tile **Make a trader** make one from a few questions. The merchant levels up as you trade and restocks twice a day or never.
@@ -42,6 +49,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - New templates **Wandering merchant**, **Pack mule**, **Shoulder pet**, **Village job**, **Water-like fluid** and **Lava-like fluid**, the examples **Village blacksmith job**, **Oil well** and **Roadside merchant**, and a sample, `fixtures/sample-villagers-and-fluids`. See [Villagers, traders and pets that carry things](docs/guide/villagers-and-traders.md), [Fluids](docs/guide/fluids.md) and [A sky and rules of your own](docs/guide/worldgen.md#a-sky-and-rules-of-your-own-dimension-types).
 - Plugin API 1.18.0 also adds trade sounds, vanilla job sites and trade sets, and the fluid model and tags to the target facts.
 - Not in the Java project export or the vanilla packs: traders, village jobs, storage, shoulder pets and fluids need the Fabric mod jar.
+
+- **World backups**: before MCSuperMods installs a data pack into one of your worlds, it saves a copy of the whole world first and keeps the last five for each world. **Settings > World backups** turns it off or on, sets how many to keep, and restores a backup next to the world (never over it).
+- **A warning before renaming or removing something you already exported**: MCSuperMods remembers which blocks, items, mobs and other things have left it in an export, an install, Test in Minecraft or Play. Renaming or removing one of them now warns that worlds already using it lose those blocks, items or mobs; you can still go on.
 
 ### Changed
 
