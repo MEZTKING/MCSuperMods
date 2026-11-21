@@ -1,0 +1,68 @@
+[
+  {
+    "contents": {
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/plain.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/plain"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/plain.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/water_flow",
+        "particle": "minecraft:block/water_still",
+        "still": "minecraft:block/water_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/plain.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/plain_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/plain_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/water_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/plain_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:plain",
+        "example:flowing_plain"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/water.json",
+    "schema": "tag:fluid"
+  }
+]

@@ -7,7 +7,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ElementKind, Json, OutputFile, ResourceLocation } from '@msm/plugin-api';
+import type { ElementKind, Json, OutputFile, ResourceLocation, TargetFacts } from '@msm/plugin-api';
 import { createRegistryIndex } from '@msm/schemas';
 import { builtInTargets } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
@@ -20,6 +20,9 @@ import {
   blockKind,
   blocksItemsKinds,
   effectKind,
+  FLUID_KIND,
+  fluidBucketId,
+  fluidRegistryIds,
   itemKind,
   lootAdditionKind,
   modKind,
@@ -1022,7 +1025,28 @@ const SAMPLES: Sample[] = [
  * block item, the block and item named in its data (base blocks, strip targets), the models it
  * names or generates and the textures it uses. Other samples see the shared project ids only.
  */
-function withOutputIds(indexes: TargetIndexes, sample: Sample, files: OutputFile[]): TargetIndexes {
+function withOutputIds(
+  indexes: TargetIndexes,
+  sample: Sample,
+  files: OutputFile[],
+  target: TargetFacts,
+): TargetIndexes {
+  // A fluid brings its liquid block, bucket, models and fluid ids (ADR 0099 D1; B477).
+  if (sample.kind.id === FLUID_KIND) {
+    const project: Record<string, readonly string[]> = {
+      ...PROJECT_IDS,
+      block: [...(PROJECT_IDS.block ?? []), sample.id],
+      item: [...(PROJECT_IDS.item ?? []), fluidBucketId(sample.id)],
+      model: [
+        ...(PROJECT_IDS.model ?? []),
+        ...files
+          .filter((file) => file.path.includes('/models/'))
+          .map((file) => file.path.replace(/^assets\/([^/]+)\/models\/(.+)\.json$/, '$1:$2')),
+      ],
+      fluid: fluidRegistryIds(target, sample.id),
+    };
+    return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
+  }
   const machine = /^(container|machine)-/.test(sample.name);
   if (!sample.name.startsWith('type-') && !machine) return indexes;
   const data = sample.data as Record<string, unknown>;
@@ -1082,7 +1106,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           element(sample.kind.id, sample.id, sample.data),
           bundle.target,
         );
-        const indexes = withOutputIds(await indexesFor(bundle), sample, files);
+        const indexes = withOutputIds(await indexesFor(bundle), sample, files, bundle.target);
         const problems = (schema: string, value: Json) => blockingProblems(indexes, schema, value);
         expect(problems(sample.kind.schema, sample.data)).toEqual([]);
         // Loot addition pools are `any` in the format: check them against vanilla's pool.

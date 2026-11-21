@@ -1,10 +1,10 @@
 /**
  * `@msm/plugin-blocks-items`: built-in MSM plugin contributing custom blocks, custom items and
  * the mod metadata (ADR 0025 D8), custom mob effects (ADR 0055) and additions to vanilla
- * content (ADR 0060), potions (ADR 0063), portal blocks (ADR 0077), particle types (ADR 0080),
+ * content (ADR 0060), potions (ADR 0063), portal blocks (ADR 0077), particle types (ADR 0080), fluids (ADR 0099),
  * waterlogging and weathering (ADR 0094 D7 to D9) and item inventories and bundles (ADR 0095):
  * the `msm:block`, `msm:item`, `msm:effect`, `msm:mod`, `msm:biome_addition`,
- * `msm:loot_addition`, `msm:potion`, `msm:particle` and `msm:creative_tab` (ADR 0096) kinds,
+ * `msm:loot_addition`, `msm:potion`, `msm:particle`, `msm:creative_tab` (ADR 0096) and `msm:fluid` kinds,
  * their lowering to runtime definitions under `msm/` plus vanilla pack files, the `blocks-items.*`
  * project validators and the "New element" templates.
  */
@@ -15,6 +15,7 @@ import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
 import { containerValidators } from './validators-containers';
 import { creativeTabValidators } from './validators-creative-tabs';
+import { fluidValidators } from './validators-fluids';
 import { furnitureValidators } from './validators-furniture';
 import { inventoryValidators } from './validators-inventory';
 import { particleValidators } from './validators-particles';
@@ -30,6 +31,7 @@ export {
 } from './expand-potted-plant';
 export * from './kinds';
 export * from './kinds/creative-tab';
+export * from './kinds/fluid';
 export * from './lowering';
 export { blockItemId, blockItemIdOf } from './lowering/block-item';
 export {
@@ -158,6 +160,7 @@ export {
   creativeTabValidators,
   projectItemIds,
 } from './validators-creative-tabs';
+export { FLUID_PROBLEM_CODES, fluidValidators } from './validators-fluids';
 export { FURNITURE_PROBLEM_CODES, furnitureValidators } from './validators-furniture';
 export {
   INVENTORY_CONFLICT_COMPONENTS,
@@ -210,6 +213,7 @@ export default definePlugin({
       ...weatheringValidators,
       ...inventoryValidators,
       ...creativeTabValidators,
+      ...fluidValidators,
     ],
   },
 });

@@ -6198,3 +6198,22 @@ Next
 
 **Next**
 - The host (app `dataRegistryIds`) must merge `fluidProfessionIdsOf` into the registry ids it passes to `modOnlyIdsOf` (B480 or the app owner).
+## 2026-11-21 — executor — B477 blocks-items plugin: fluids
+
+**What**
+- New kind `msm:fluid` in `@msm/plugin-blocks-items` (`src/kinds/fluid.ts`, folder and registry `fluid`, schema `msm:fluid`; the tenth kind of the plugin). Its default behaves like water with vanilla water's pictures (named, never bundled) under water's blue tint `0x3f76e4`.
+- Lowering (`src/lowering/fluid.ts`, ADR 0099 D1, D4 with B470's notes): the runtime definition `msm/<ns>/fluid/<path>.json` without `display_name`, `bucket_display_name` and `textures` (tint passes through as plain RGB); the liquid block's block state with a single `""` variant naming `<ns>:block/<path>`, a model without elements whose `particle` is the still picture and which also carries the texture variables `still`, `flowing` and (when set) `overlay`; the bucket's item model definition `assets/<ns>/items/<path>_bucket.json` and flat `minecraft:item/generated` model; `block.<ns>.<path>` and `item.<ns>.<path>_bucket` language keys; the fluid tags of `behaves_like` from `BlockFacts.fluidTags` (`merge: 'tag'`), with `<ns>:flowing_<path>` beside the fluid only where `fluidModel` is `two_fluids` (26.3; 26.4 also joins `minecraft:swimmable`). Pictures left out fall back to vanilla water's (lava's for `behaves_like: lava`). Helpers exported: `fluidBucketId`, `flowingFluidId`, `fluidRegistryIds`, `fluidFlowOf`, `fluidSpreadDistance`, `fluidTextures`, `fluidBlockModel`, `fluidDefinition`.
+- Validator `msm.blocks-items.fluids` (`src/validators-fluids.ts`, `FLUID_PROBLEM_CODES`): `blocks-items.generated-item-clash` (error: the bucket id is an element's id, a block's item or another fluid's bucket), `blocks-items.fluid-flow-range` (warning: `slope_distance` beyond the `floor(7 / drop_off)` blocks the fluid spreads, defaults of `behaves_like` filled in), `blocks-items.fluid-texture-missing` (warning per missing still, flowing or bucket picture) and `blocks-items.fluid-no-fog` (warning: `behaves_like: none` on a `one_fluid` target, where fog comes from the fluid's properties).
+- Templates in the new category "Fluids": `msm_fluid_water_like` (Swamp Water, green tint over water's pictures) and `msm_fluid_lava_like` (Molten Gold, light 15, golden tint over lava's pictures); zero problems on both targets.
+- Tests: `test/fluids.golden.test.ts` (water-like, lava-like, no tag and minimal fluids on both targets, outputs schema-checked, goldens under `fixtures/<target>/expected/fluid/`), `test/validators-fluids.test.ts` (every code, both targets, the kind default clean), and updates to `plugin.test.ts`, `lowering.golden.test.ts` (the kind default golden) and `templates.test.ts`. `packages/exporters/test/library.test.ts` lists `msm:fluid` in `KINDS_AWAITING_EXAMPLES` until B481's example.
+- Checked: `pnpm lint`, `pnpm typecheck`, `turbo run test --force --filter=@msm/plugin-blocks-items...`, the library and exporters tests, `pnpm --filter @msm/app test`.
+
+**Decisions**
+- The definition format (B473) has no picture fields, so the pictures reach the runtime through the liquid block's model: `textures.still`, `flowing` and optional `overlay` beside `particle`. B475's client reads them from `assets/<ns>/models/block/<path>.json` (or the orchestrator picks another route and this lowering follows).
+- No fluid language key: vanilla's `en_us.json` has none for water or lava (checked against the client jar). No `.png.mcmeta` is written: the element has no animation field, so an animated picture brings its own beside the PNG.
+- The 26.4 fog warning keys on `fluidModel: 'one_fluid'` rather than a version literal.
+
+**Next**
+- B475: read the pictures from the block model's texture variables (or agree another route), and the sprites must be in the block atlas (a `block/` texture path).
+- B480: Very easy wording for the four new codes; the app's registry index should count a fluid's liquid block, its bucket `<ns>:<path>_bucket` and, on two-fluid targets, `<ns>:flowing_<path>`, or references to them read as unknown ids.
+- B481: a per-kind example for `msm:fluid`, then empty `KINDS_AWAITING_EXAMPLES` again.

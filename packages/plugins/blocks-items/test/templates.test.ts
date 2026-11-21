@@ -19,6 +19,9 @@ import plugin, {
   blocksItemsKinds,
   blocksItemsTemplates,
   CREATIVE_TAB_KIND,
+  FLUID_KIND,
+  fluidBucketId,
+  fluidRegistryIds,
   MOD_ID_PATTERN,
   machineOf,
   modIdFromNamespace,
@@ -128,6 +131,8 @@ const IDS = [
   'msm_particle_falling_petal',
   'msm_particle_smoke_puff',
   'msm_block_ambient_particles',
+  'msm_fluid_water_like',
+  'msm_fluid_lava_like',
 ];
 const CATEGORIES = new Set([
   'Blocks',
@@ -140,6 +145,7 @@ const CATEGORIES = new Set([
   'Mod',
   'Additions',
   'Particles',
+  'Fluids',
 ]);
 
 const kindOf = (template: ElementTemplate) => {
@@ -178,9 +184,29 @@ function contextFor(
  * The test indexes plus the ids a new element brings into the project, as the app's registry
  * index counts them: its block item's own id (`blockItemId`, the Crop template's seeds), the
  * companion blocks (a wall sign, a bent stem), the block models its lowering generates from `textures` (ADR 0067 D7) and, for a machine, its own
- * id as a recipe type and serialiser (ADR 0075 D2).
+ * id as a recipe type and serialiser (ADR 0075 D2). A fluid brings its liquid block, its bucket
+ * item and its fluid ids (the flowing one too on a two-fluid target; ADR 0099 D1).
  */
-function withOwnIds(indexes: TargetIndexes, created: Element, files: OutputFile[]): TargetIndexes {
+function withOwnIds(
+  indexes: TargetIndexes,
+  created: Element,
+  files: OutputFile[],
+  target: TargetFacts,
+): TargetIndexes {
+  if (created.kind === FLUID_KIND) {
+    const modelIds = files
+      .map((file) => /^assets\/([^/]+)\/models\/(.+)\.json$/.exec(file.path))
+      .filter((match) => match !== null)
+      .map((match) => `${match[1]}:${match[2]}`);
+    const project: Record<string, readonly string[]> = {
+      ...PROJECT_IDS,
+      block: [...(PROJECT_IDS.block ?? []), created.id],
+      item: [...(PROJECT_IDS.item ?? []), fluidBucketId(created.id)],
+      model: [...(PROJECT_IDS.model ?? []), ...modelIds],
+      fluid: fluidRegistryIds(target, created.id),
+    };
+    return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
+  }
   const itemId = created.kind === BLOCK_KIND ? blockItemId(created) : undefined;
   const modelIds = files
     .map((file) => /^assets\/([^/]+)\/models\/(.+)\.json$/.exec(file.path))
@@ -265,7 +291,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const kind = kindOf(template);
         const created = element(kind.id, context.id, data);
         const files = await kind.lower(created, bundle.target);
-        const indexes = withOwnIds(await indexesFor(bundle), created, files);
+        const indexes = withOwnIds(await indexesFor(bundle), created, files, bundle.target);
         expect(blockingProblems(indexes, kind.schema, data)).toEqual([]);
         const problems = await Promise.all(
           (plugin.contributes.validators ?? []).map((validator) =>

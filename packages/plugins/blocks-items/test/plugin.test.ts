@@ -1,5 +1,5 @@
 import { API_VERSION, type ElementKind, type Json, type Target } from '@msm/plugin-api';
-import { MSM_SCHEMA_REFS } from '@msm/schemas';
+import { createRegistryIndex, MSM_SCHEMA_REFS } from '@msm/schemas';
 import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
@@ -15,7 +15,10 @@ import plugin, {
   descriptionKey,
   effectDefinition,
   effectKind,
+  FLUID_KIND,
   FULL_CUBE,
+  fluidBucketId,
+  fluidRegistryIds,
   incorrectForTierTag,
   isSeeThroughBlock,
   itemDefinition,
@@ -40,7 +43,7 @@ import plugin, {
   WEAPON_ITEM_TAGS,
   weaponItemTags,
 } from '../src/index';
-import { blockingProblems, element, indexesFor } from './support';
+import { blockingProblems, element, indexesFor, PROJECT_IDS } from './support';
 
 const KIND_IDS = [
   'msm:block',
@@ -52,6 +55,7 @@ const KIND_IDS = [
   'msm:potion',
   'msm:particle',
   'msm:creative_tab',
+  'msm:fluid',
 ];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
@@ -80,7 +84,7 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the nine kinds with their schemas, folders and registries', () => {
+  it('contributes the ten kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
@@ -93,6 +97,7 @@ describe('@msm/plugin-blocks-items', () => {
       [MSM_SCHEMA_REFS.potion, 'potion', 'potion'],
       [MSM_SCHEMA_REFS.particle, 'particle', 'particle_type'],
       [MSM_SCHEMA_REFS.creativeTab, 'creative_tab', 'creative_mode_tab'],
+      [MSM_SCHEMA_REFS.fluid, 'fluid', 'fluid'],
     ]);
   });
 
@@ -144,6 +149,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.weathering',
       'msm.blocks-items.item-inventory',
       'msm.blocks-items.creative-tab-icon',
+      'msm.blocks-items.fluids',
     ]);
     expect(blocksItemsValidators).toHaveLength(23);
   });
@@ -597,7 +603,27 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
 
     it.each(KIND_IDS.map((id) => [id] as const))('%s default data validates', async (kindId) => {
       const kind = kinds().find((entry) => entry.id === kindId) as ElementKind;
-      const indexes = await indexesFor(bundle);
+      const shared = await indexesFor(bundle);
+      // A fluid brings its liquid block's model and its fluid ids (ADR 0099 D1).
+      const indexes =
+        kindId === FLUID_KIND
+          ? {
+              ...shared,
+              registries: createRegistryIndex({
+                vanilla: shared.vanilla,
+                project: {
+                  ...PROJECT_IDS,
+                  item: [...(PROJECT_IDS.item ?? []), fluidBucketId('demo:sample')],
+                  model: [
+                    ...(PROJECT_IDS.model ?? []),
+                    'demo:block/sample',
+                    'demo:item/sample_bucket',
+                  ],
+                  fluid: fluidRegistryIds(bundle.target, 'demo:sample'),
+                },
+              }),
+            }
+          : shared;
       expect(blockingProblems(indexes, kind.schema, kind.defaultData as Json)).toEqual([]);
       const files = await kind.lower(
         element(

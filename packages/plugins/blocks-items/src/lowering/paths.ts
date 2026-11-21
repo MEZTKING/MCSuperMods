@@ -2,8 +2,8 @@
  * Output path helpers for blocks and items lowering. Vanilla folder names always come from the
  * target (`target.folders.resource`, `target.folders.data`), never from this plugin; the
  * runtime folders (`msm/<ns>/block/`, `msm/<ns>/item/`, `msm/<ns>/effect/`, `msm/<ns>/potion/`,
- * `msm/<ns>/biome_addition/`, `msm/<ns>/loot_addition/`, `msm/<ns>/particle/`) are fixed by
- * ADR 0025 D1, ADR 0055 D2, ADR 0060 D2, D3, ADR 0063 D2 and ADR 0080 D1. A copy of the other plugins' helpers, because
+ * `msm/<ns>/biome_addition/`, `msm/<ns>/loot_addition/`, `msm/<ns>/particle/`, `msm/<ns>/fluid/`) are fixed by
+ * ADR 0025 D1, ADR 0055 D2, ADR 0060 D2, D3, ADR 0063 D2, ADR 0080 D1 and ADR 0099 D1. A copy of the other plugins' helpers, because
  * `@msm/plugin-api` holds interfaces only.
  */
 import type {
@@ -92,7 +92,8 @@ export type DefinitionFolder =
   | 'potion'
   | 'biome_addition'
   | 'loot_addition'
-  | 'particle';
+  | 'particle'
+  | 'fluid';
 
 /**
  * The runtime definition path `msm/<namespace>/<folder>/<path>.json` (ADR 0025 D1, ADR 0055 D2,

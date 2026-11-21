@@ -1,0 +1,110 @@
+[
+  {
+    "contents": {
+      "behaves_like": "water",
+      "events": {
+        "example:oily": {
+          "actions": [
+            {
+              "effect": "minecraft:slowness",
+              "seconds": 2,
+              "target": "other",
+              "type": "apply_effect"
+            }
+          ]
+        }
+      },
+      "explosion_resistance": 100,
+      "flow": {
+        "drop_off": 1,
+        "infinite": true,
+        "slope_distance": 4,
+        "tick_delay": 10
+      },
+      "format": 1,
+      "light": 2,
+      "on_entity_inside": "example:oily",
+      "tint": 2761752
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/oil.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/oil"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/oil.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "example:block/oil_flow",
+        "overlay": "example:block/oil_overlay",
+        "particle": "example:block/oil_still",
+        "still": "example:block/oil_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/oil.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/oil_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/oil_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/oil_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/oil_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "block.example.oil": "Oil"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "item.example.oil_bucket": "Bucket of Oil"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:oil",
+        "example:flowing_oil"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/water.json",
+    "schema": "tag:fluid"
+  }
+]

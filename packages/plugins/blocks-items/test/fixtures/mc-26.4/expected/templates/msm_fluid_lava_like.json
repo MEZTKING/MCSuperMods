@@ -1,0 +1,86 @@
+[
+  {
+    "contents": {
+      "behaves_like": "lava",
+      "flow": {
+        "drop_off": 2,
+        "infinite": false,
+        "slope_distance": 2,
+        "tick_delay": 30
+      },
+      "format": 1,
+      "light": 15,
+      "tint": 16765514
+    },
+    "layer": "msm",
+    "path": "msm/demo/fluid/molten_gold.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/molten_gold"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/molten_gold.json"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/lava_flow",
+        "particle": "minecraft:block/lava_still",
+        "still": "minecraft:block/lava_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/molten_gold.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/molten_gold_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/molten_gold_bucket.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/lava_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/molten_gold_bucket.json"
+  },
+  {
+    "contents": {
+      "block.demo.molten_gold": "Molten Gold"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "item.demo.molten_gold_bucket": "Molten Gold Bucket"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:molten_gold"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/lava.json"
+  }
+]

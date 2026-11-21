@@ -20,6 +20,7 @@ import { lowerMod } from '../lowering/mod';
 import { lowerParticle } from '../lowering/particle';
 import { lowerPotion } from '../lowering/potion';
 import { creativeTabKind } from './creative-tab';
+import { fluidKind } from './fluid';
 
 /** Kind id of custom blocks. */
 export const BLOCK_KIND = 'msm:block';
@@ -195,4 +196,5 @@ export const blocksItemsKinds: readonly ElementKind[] = Object.freeze([
   potionKind,
   particleKind,
   creativeTabKind,
+  fluidKind,
 ]);

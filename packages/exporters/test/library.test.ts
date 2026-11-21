@@ -1802,9 +1802,9 @@ function typeCheck(script: string): string[] {
 
 /**
  * Kinds registered before their per-kind example exists. A new kind may wait here only until
- * its library brief lands. Empty since B461 added the command and creative tab examples.
+ * its library brief lands. `msm:fluid` (B477) waits for B481's example.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = ['msm:fluid'];
 
 // Tests --------------------------------------------------------------------------------------
 

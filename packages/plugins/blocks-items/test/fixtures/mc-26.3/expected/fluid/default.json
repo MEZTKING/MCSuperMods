@@ -1,0 +1,71 @@
+[
+  {
+    "contents": {
+      "behaves_like": "water",
+      "format": 1,
+      "tint": 4159204
+    },
+    "layer": "msm",
+    "path": "msm/demo/fluid/sample.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/water_flow",
+        "overlay": "minecraft:block/water_overlay",
+        "particle": "minecraft:block/water_still",
+        "still": "minecraft:block/water_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/water_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample",
+        "demo:flowing_sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/water.json",
+    "schema": "tag:fluid"
+  }
+]

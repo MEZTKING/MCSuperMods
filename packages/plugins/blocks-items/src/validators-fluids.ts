@@ -1,0 +1,186 @@
+/**
+ * `blocks-items.*` project validators of fluids (ADR 0099 D1, D4 and its amendment after the
+ * spike, B470). They read the element data (editor fields still present) and the target's fluid
+ * facts:
+ *
+ * - `blocks-items.generated-item-clash` (error): a fluid's generated bucket item
+ *   `<ns>:<path>_bucket` (`fluidBucketId`) is the id of a project element, of a block's item or
+ *   of another fluid's bucket, so the game would register two items under one id.
+ * - `blocks-items.fluid-flow-range` (warning): `slope_distance` is larger than the number of
+ *   blocks the fluid can spread (`floor(7 / drop_off)`, `fluidSpreadDistance`), defaults of
+ *   `behaves_like` filled in, so the fluid would look for a way down further than it can ever
+ *   flow. Vanilla's water (4 within 7) and lava (2 within 3) keep inside it.
+ * - `blocks-items.fluid-texture-missing` (warning): `textures.still`, `textures.flowing` or
+ *   `textures.bucket` is not set, so the fluid shows vanilla water's (or lava's) picture there.
+ *   Whether a named picture exists is the host's check (it sees the project's files).
+ * - `blocks-items.fluid-no-fog` (warning): a fluid that behaves like nothing on a target that
+ *   registers a liquid as one fluid (`fluidModel: 'one_fluid'`): its under-the-surface fog
+ *   comes from the fluid's own properties, which the runtime copies from vanilla water or lava by
+ *   `behaves_like`, so it has none and players see through it as through air.
+ */
+import type { Element, JsonObject, Problem, ProjectValidator, TargetFacts } from '@msm/plugin-api';
+import { BLOCK_KIND } from './kinds';
+import { FLUID_KIND } from './kinds/fluid';
+import { blockItemIdOf } from './lowering/block-item';
+import {
+  type FluidTextureSlot,
+  fluidBehaviourOf,
+  fluidBucketId,
+  fluidFlowOf,
+  fluidSpreadDistance,
+  fluidTextureOf,
+} from './lowering/fluid';
+import { isRecord } from './lowering/paths';
+
+/** Every code these validators report. */
+export const FLUID_PROBLEM_CODES: readonly string[] = Object.freeze([
+  'blocks-items.generated-item-clash',
+  'blocks-items.fluid-flow-range',
+  'blocks-items.fluid-texture-missing',
+  'blocks-items.fluid-no-fog',
+]);
+
+/** The texture slots `fluid-texture-missing` asks for, in report order. */
+const REQUIRED_TEXTURES: readonly FluidTextureSlot[] = ['still', 'flowing', 'bucket'];
+
+const TEXTURE_WORDS: Readonly<Record<FluidTextureSlot, string>> = {
+  still: 'still surface',
+  flowing: 'flowing surface',
+  overlay: 'overlay',
+  bucket: 'bucket',
+};
+
+const dataOf = (element: Element): JsonObject => (isRecord(element.data) ? element.data : {});
+
+/** The bucket id of `element`, or `undefined` when its id is not a safe resource location. */
+function bucketOf(element: Element): string | undefined {
+  try {
+    return fluidBucketId(element.id);
+  } catch {
+    return undefined;
+  }
+}
+
+/** The items a block element registers: its own block item, if any. */
+function blockItemOf(element: Element): string | undefined {
+  try {
+    return blockItemIdOf(element.id, dataOf(element));
+  } catch {
+    return undefined;
+  }
+}
+
+function generatedItemClashes(elements: readonly Element[]): Problem[] {
+  const fluids = elements.filter((element) => element.kind === FLUID_KIND);
+  if (fluids.length === 0) return [];
+  const ids = new Set(elements.map((element) => element.id as string));
+  const blockItems = new Map<string, string>();
+  for (const element of elements) {
+    if (element.kind !== BLOCK_KIND) continue;
+    const item = blockItemOf(element);
+    if (item !== undefined && item !== element.id) blockItems.set(item, element.id);
+  }
+  const owners = new Map<string, string>();
+  const problems: Problem[] = [];
+  for (const element of fluids) {
+    const bucket = bucketOf(element);
+    if (bucket === undefined) continue;
+    const block = blockItems.get(bucket);
+    const other = owners.get(bucket);
+    let message: string | undefined;
+    if (ids.has(bucket)) {
+      message = `This fluid registers its bucket as "${bucket}", but the project already has an element with that id, so the game would load only one of them. Rename that element, or this fluid.`;
+    } else if (block !== undefined) {
+      message = `This fluid registers its bucket as "${bucket}", and the block "${block}" registers its item under the same id. Rename one of them.`;
+    } else if (other !== undefined) {
+      message = `This fluid registers its bucket as "${bucket}", and the fluid "${other}" registers one with the same id. Rename one of them.`;
+    } else {
+      owners.set(bucket, element.id);
+    }
+    if (message !== undefined) {
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.generated-item-clash',
+        elementId: element.id,
+        message,
+      });
+    }
+  }
+  return problems;
+}
+
+/** The pointer of the flow field a flow warning points at: the one the element sets itself. */
+function flowPath(data: JsonObject): string {
+  const flow = isRecord(data.flow) ? data.flow : {};
+  if (flow.slope_distance !== undefined) return '/flow/slope_distance';
+  if (flow.drop_off !== undefined) return '/flow/drop_off';
+  return data.flow === undefined ? '/behaves_like' : '/flow';
+}
+
+function flowRanges(fluids: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of fluids) {
+    const data = dataOf(element);
+    const flow = fluidFlowOf(data);
+    const spread = fluidSpreadDistance(flow.dropOff);
+    if (flow.slopeDistance <= spread) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'blocks-items.fluid-flow-range',
+      elementId: element.id,
+      path: flowPath(data),
+      message: `This fluid looks ${flow.slopeDistance} blocks ahead for a way down, but with a drop-off of ${flow.dropOff} it only spreads ${spread} ${spread === 1 ? 'block' : 'blocks'} from its source. Lower the slope distance to ${spread} or less, or lower the drop-off.`,
+    });
+  }
+  return problems;
+}
+
+function missingTextures(fluids: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of fluids) {
+    const data = dataOf(element);
+    const vanilla = fluidBehaviourOf(data) === 'lava' ? 'lava' : 'water';
+    for (const slot of REQUIRED_TEXTURES) {
+      if (fluidTextureOf(data, slot) !== undefined) continue;
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.fluid-texture-missing',
+        elementId: element.id,
+        path: `/textures/${slot}`,
+        message: `This fluid has no ${TEXTURE_WORDS[slot]} picture, so it shows vanilla ${vanilla}'s there. Pick a picture.`,
+      });
+    }
+  }
+  return problems;
+}
+
+function missingFog(fluids: readonly Element[], target: TargetFacts): Problem[] {
+  if (target.blocks?.fluidModel !== 'one_fluid') return [];
+  return fluids
+    .filter((element) => fluidBehaviourOf(dataOf(element)) === 'none')
+    .map((element) => ({
+      severity: 'warning' as const,
+      code: 'blocks-items.fluid-no-fog',
+      elementId: element.id,
+      path: '/behaves_like',
+      message: `On Minecraft ${target.mcVersion} a fluid that behaves like nothing has no fog under its surface, so players see through it as through air. Make it behave like water or lava to give it their fog.`,
+    }));
+}
+
+/** The validators of fluids. */
+export const fluidValidators: readonly ProjectValidator[] = Object.freeze([
+  {
+    id: 'msm.blocks-items.fluids',
+    kinds: [FLUID_KIND, BLOCK_KIND],
+    validate: ({ elements, target }) => {
+      const fluids = elements.filter((element) => element.kind === FLUID_KIND);
+      if (fluids.length === 0) return [];
+      return [
+        ...generatedItemClashes(elements),
+        ...flowRanges(fluids),
+        ...missingTextures(fluids),
+        ...missingFog(fluids, target),
+      ];
+    },
+  },
+] satisfies ProjectValidator[]);

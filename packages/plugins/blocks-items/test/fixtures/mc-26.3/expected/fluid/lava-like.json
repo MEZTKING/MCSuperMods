@@ -1,0 +1,94 @@
+[
+  {
+    "contents": {
+      "behaves_like": "lava",
+      "flow": {
+        "drop_off": 2,
+        "infinite": false,
+        "slope_distance": 2,
+        "tick_delay": 30
+      },
+      "format": 1,
+      "light": 15
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/liquids/magma.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/liquids/magma"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/liquids/magma.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "example:block/magma_flow",
+        "particle": "example:block/magma_still",
+        "still": "example:block/magma_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/liquids/magma.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/liquids/magma_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/liquids/magma_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/magma_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/liquids/magma_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "block.example.liquids.magma": "Magma"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "item.example.liquids.magma_bucket": "Magma Bucket"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:liquids/magma",
+        "example:liquids/flowing_magma"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/lava.json",
+    "schema": "tag:fluid"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "contents": {
+      "behaves_like": "none",
+      "format": 1,
+      "tint": 13689087
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/mist.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/mist"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/mist.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/water_flow",
+        "particle": "minecraft:block/water_still",
+        "still": "minecraft:block/water_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/mist.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/mist_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/mist_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/water_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/mist_bucket.json",
+    "schema": "::java::assets::model::Model"
+  }
+]
