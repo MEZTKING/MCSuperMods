@@ -81,6 +81,7 @@ import {
 import { RangedSection } from './RangedSection';
 import { RidingSection } from './RidingSection';
 import { ShoulderSection } from './ShoulderSection';
+import { SkinSection } from './SkinSection';
 import { StorageSection } from './StorageSection';
 import { TamingSection } from './TamingSection';
 import { VariantsSection } from './VariantsSection';
@@ -429,6 +430,7 @@ export function EntityStudio(props: StudioProps) {
           testId="entity-texture"
           onChange={(value) => setModel('texture', value ?? '')}
         />
+        <SkinSection project={project} element={element} />
       </div>
       {at([...MODEL_PATH, 'model'])}
       {at([...MODEL_PATH, 'animations'])}

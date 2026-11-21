@@ -40,6 +40,12 @@ export interface DrawField {
   readonly colour?: Rgb;
   /** A skin field: draws a humanoid box skin instead of a recipe. */
   readonly skin?: boolean;
+  /**
+   * A skin field's own boxes (a model's box-UV cubes, from `boxesOfGeoModel`): the skin is
+   * drawn on them at the field's size and takes a second colour (belly and spots). Without
+   * them a skin field draws the humanoid skin.
+   */
+  readonly boxes?: readonly SkinBox[];
 }
 
 /** A drawn picture: every frame as a PNG and as RGBA pixels, each `width` by `height`. */
@@ -85,6 +91,8 @@ export interface DrawOption {
   readonly colours: 1 | 2;
   /** Its finishes (a skin's coats); the first is the default. */
   readonly finishes: readonly string[];
+  /** A skin's boxes, when not the humanoid's ({@link DrawField.boxes}). */
+  readonly boxes?: readonly SkinBox[];
 }
 
 /** The humanoid box skin as an option: one colour, the five coats as finishes. */
@@ -120,7 +128,18 @@ export function drawOptions(
   field: DrawField,
   recipes: readonly ArtRecipeInfo[] = ART_RECIPE_INFO,
 ): DrawOption[] {
-  if (field.skin === true) return [SKIN_DRAW_OPTION];
+  if (field.skin === true) {
+    if (field.boxes === undefined) return [SKIN_DRAW_OPTION];
+    return [
+      {
+        ...SKIN_DRAW_OPTION,
+        width: field.width,
+        height: field.height,
+        colours: 2,
+        boxes: field.boxes,
+      },
+    ];
+  }
   const sized = recipes.filter(
     (info) => info.drawn && info.width === field.width && info.height === field.height,
   );
@@ -282,8 +301,8 @@ export function selectedSeed(state: DrawState): number {
 
 /**
  * Draws `option` in the look with `seed`: every frame's PNG and RGBA pixels. A recipe draws
- * through `artFramePngs` and `artPixels`, the skin through `boxSkinArtPng` over
- * {@link HUMANOID_SKIN_BOXES}; the same look and seed always give the same bytes.
+ * through `artFramePngs` and `artPixels`, the skin through `boxSkinArtPng` over the option's
+ * boxes or {@link HUMANOID_SKIN_BOXES}; the same look and seed always give the same bytes.
  */
 export function drawPicture(option: DrawOption, state: DrawState, seed: number): DrawnPicture {
   const base = {
@@ -297,12 +316,13 @@ export function drawPicture(option: DrawOption, state: DrawState, seed: number):
       ART_COATS.includes(state.finish as ArtCoat) ? state.finish : ART_COATS[0]
     ) as ArtCoat;
     const look = { ...base, coat };
-    const { width, height } = HUMANOID_SKIN_SIZE;
+    const boxes = option.boxes ?? HUMANOID_SKIN_BOXES;
+    const { width, height } = option.boxes === undefined ? HUMANOID_SKIN_SIZE : option;
     return {
       width,
       height,
-      pngs: [boxSkinArtPng(HUMANOID_SKIN_BOXES, width, height, look)],
-      rgba: [boxSkinArtPixels(HUMANOID_SKIN_BOXES, width, height, look)],
+      pngs: [boxSkinArtPng(boxes, width, height, look)],
+      rgba: [boxSkinArtPixels(boxes, width, height, look)],
     };
   }
   const look = {

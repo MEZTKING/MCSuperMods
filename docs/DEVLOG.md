@@ -6700,3 +6700,21 @@ Next
 - Merge `b403` onto the session branch, confirm the four CI jobs, fast-forward `main` and record the clean totals.
 - Finish the 1.5.2 draft for the user's test; ask the HANDOFF questions; carry on with the art batch's wave 2.
 - Small follow-up outside a close: the AI helper's `TRY_IT` line in `packages/ai/src/system-prompt.ts` says sounds are not in Try it, though project sounds play (Minecraft's are captions).
+## 2026-11-21 — executor — B496 Draw a skin
+
+**What**
+- New `app/src/renderer/src/studios/entities/SkinSection.tsx`, mounted in the Entity Studio's Appearance row beside the texture picker (one import and one mount line in `EntityStudio.tsx`): **Draw a skin** draws the mob's model's own box-UV cubes (`boxesOfGeoModel`) at the size the geometry declares (`texture_width`/`texture_height`, or the old form's `texturewidth`/`textureheight`, else 64 by 64) through the shared Draw dialog: coat (Fur, Scales, Smooth, Stone, Slime), colour, second colour (belly and spots), detail, six variations and **New looks**. **Use this skin** writes over the project texture the mob names (an undoable write when recorded), or makes `textures/entity/<path>.png` in the mob's namespace and names it `<ns>:entity/<path>` in the same undo step ("Draw a skin textures/entity/<path>.png"). Greyed out, with the reason beside the button, for no model, a model outside the project, a per-face model (limit A4) and a model with no boxes. Needs no key; shown only where the Studio host can write (`applyChanges`).
+- The shared dialog gained what this needs: `DrawField.boxes` and `DrawOption.boxes` in `draw-model.ts` (a skin field on a model's own boxes, at the field's size, with a second colour; without boxes the humanoid skin as before), and optional `title` and `useLabel` props on `DrawPictureDialog`.
+- Tests: new `app/test/components/entities/skin-section.test.tsx` (7 tests: a two-box model drawn and named in one undo step, the bytes equal to `boxSkinArtPng` at the chosen seed, Undo removes the texture and the name; a named texture written over with Scales and a second colour; the per-face model greyed with the limit's words; no model and a model outside the project; Very easy words and dialog; nothing without a host; the texture size reader). App tests 2505 green, `pnpm lint`, `pnpm typecheck`, `pnpm build`: renderer 16.3 MB of 18, `DrawPictureDialog` chunk 10.2 kB, `app.asar` 29.2 MB of 32.
+
+**Decisions**
+- `draw-model.ts` and `DrawPictureDialog.tsx` (B495's files, not in this brief's owner list) were extended rather than a second dialog built, as the orchestrator asked; the changes are additive and B495's tests pass unchanged.
+- A mob naming a vanilla texture (`minecraft:entity/...`) gets a new texture of its own, named in the same step; the vanilla picture is never written.
+
+**UI labels (for B501)**
+- Button: **Draw a skin** (Very easy: **Draw its skin**); dialog title **Draw a skin** (Very easy **Draw its skin**), then the texture path; pick button **Use this skin**; the coat list under **Finish**; **Second colour**.
+- Greyed-out reasons: "Choose a model first.", "The model is not part of this project.", "This model's faces are mapped one by one", "This model has no boxes to draw on."
+- Undo label: "Draw a skin textures/entity/<path>.png".
+
+**Next**
+- B500: the e2e step on **Draw a skin** (`entity-draw-skin`, then `draw-use`). B501: guide labels above.

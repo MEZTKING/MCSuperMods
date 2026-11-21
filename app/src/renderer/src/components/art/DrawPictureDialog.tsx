@@ -55,6 +55,10 @@ export interface DrawPictureDialogProps {
   /** Writes the picked picture (one undo step); rejects with a message when it cannot. */
   onPick(picture: DrawnPicture): Promise<void> | void;
   onClose(): void;
+  /** The title in place of "Draw a picture" / "Draw it for me" (the Mob Studio's skins). */
+  title?: string;
+  /** The pick button's words in place of "Use this picture". */
+  useLabel?: string;
 }
 
 const DETAILS: readonly ArtDetail[] = ['smooth', 'normal', 'rough'];
@@ -115,7 +119,7 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
     }
   };
 
-  const title = veryEasy ? DRAW_IT_FOR_ME : DRAW_A_PICTURE;
+  const title = props.title ?? (veryEasy ? DRAW_IT_FOR_ME : DRAW_A_PICTURE);
   const thing = field.colour;
   return (
     <Dialog.Root
@@ -335,7 +339,7 @@ export function DrawPictureDialog(props: DrawPictureDialogProps) {
               disabled={option === undefined || saving}
               onClick={() => void use()}
             >
-              {saving ? 'Saving…' : 'Use this picture'}
+              {saving ? 'Saving…' : (props.useLabel ?? 'Use this picture')}
             </Button>
             <Button data-testid="draw-cancel" disabled={saving} onClick={props.onClose}>
               Cancel
