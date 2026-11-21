@@ -157,6 +157,7 @@ const platform = createNodePlatform({
   },
   dialogs: applyE2eHooks(electronDialogs, readE2eHooks(process.env)),
   showItemInFolder: (path) => shell.showItemInFolder(path),
+  openPath: (path) => shell.openPath(path),
   resizePng,
   msmHome,
   installEnv: nodeEnv(),

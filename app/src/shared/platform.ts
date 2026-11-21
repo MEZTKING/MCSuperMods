@@ -49,6 +49,75 @@ export interface UpdateSettings {
   autoCheck: boolean;
 }
 
+/** World backups before installing into a world (ADR 0102 D1). */
+export interface WorldBackupSettings {
+  /** Whether a data pack install into a world first zips the whole world. Default `true`. */
+  beforeInstall: boolean;
+  /** How many backups to keep per world; the oldest beyond it are deleted. Default 5. */
+  keep: number;
+}
+
+/** The backup a data pack install made (ADR 0102 D3: the install message names it). */
+export interface WorldBackupRef {
+  /** The backup zip. Absolute, under `<msmHome>/backups/`. */
+  path: string;
+  /** `<YYYY-MM-DD_HH-mm-ss>.zip`. */
+  fileName: string;
+  /** The location folder under `backups/` (`<launcher>-<instance|default>-<hash>`). */
+  location: string;
+  /** The world's folder name under `saves/`. */
+  worldDir: string;
+}
+
+/** One backup zip in Settings > World backups. */
+export interface WorldBackupEntry {
+  fileName: string;
+  /** Absolute path of the zip. */
+  path: string;
+  /** Size in bytes. */
+  size: number;
+  /** ISO 8601 modification time of the zip. */
+  createdAt: string;
+}
+
+/** The backups of one world, newest first. */
+export interface WorldBackupGroup {
+  /** The location folder under `backups/`. */
+  location: string;
+  /** The game location's name when it is still found, else the folder name. */
+  locationName: string;
+  /** Whether that game location is still found (Restore needs it). */
+  available: boolean;
+  worldDir: string;
+  backups: WorldBackupEntry[];
+}
+
+/** Everything in `<msmHome>/backups/`. */
+export interface WorldBackupList {
+  /** `<msmHome>/backups`. Absolute. */
+  folder: string;
+  groups: WorldBackupGroup[];
+}
+
+/** Which backup to restore. */
+export interface WorldBackupRestoreRequest {
+  location: string;
+  worldDir: string;
+  fileName: string;
+}
+
+/** World backups (ADR 0102 D3), served by main. */
+export interface WorldBackupsPlatform {
+  list(): Promise<WorldBackupList>;
+  /**
+   * Unpacks a backup beside its world as `<world-dir>-restored-<stamp>` in the same `saves/`
+   * folder, never over the live world. Resolves the new folder's name and path.
+   */
+  restore(request: WorldBackupRestoreRequest): Promise<{ dir: string; path: string }>;
+  /** Opens `<msmHome>/backups/` in the file manager (created when missing). */
+  openFolder(): Promise<void>;
+}
+
 /** The launchers MSM knows how to read (ADR 0019). */
 export type LauncherKind = 'official' | 'prism' | 'multimc' | 'curseforge';
 
@@ -138,6 +207,11 @@ export interface AppSettings {
    * reason as {@link launchers}. The API key is never part of the settings (D1).
    */
   ai?: AiSettings;
+  /**
+   * World backups before installing into a world (ADR 0102 D1). Main always fills it in;
+   * optional for the same reason as {@link launchers}.
+   */
+  backups?: WorldBackupSettings;
 }
 
 /**
@@ -169,6 +243,8 @@ export interface AppSettingsPatch {
   installTarget?: GameLocationRef | null | undefined;
   /** Replaces the AI helper settings (main cleans and clamps them). */
   ai?: AiSettings | undefined;
+  /** Replaces the world backup settings. */
+  backups?: WorldBackupSettings | undefined;
 }
 
 /** {@link AppSettings} plus what main detected. */
@@ -825,12 +901,16 @@ export interface PlatformAdapter {
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
     /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */
     listWorlds(): Promise<WorldInfo[]>;
-    /** Writes a data pack zip into `<gameDir>/saves/<worldDir>/datapacks/` of the selected location. */
+    /**
+     * Writes a data pack zip into `<gameDir>/saves/<worldDir>/datapacks/` of the selected
+     * location, after backing up the world when `backups.beforeInstall` is on (ADR 0102 D1);
+     * `backup` names that backup (absent or `null` when none was made).
+     */
     installDataPack(
       worldDir: string,
       fileName: string,
       data: Uint8Array,
-    ): Promise<{ path: string }>;
+    ): Promise<{ path: string; backup?: WorldBackupRef | null | undefined }>;
   };
   /** The offline mcfunction checker (ADR 0014), one service per target in main. */
   mcfunction: {
@@ -1039,6 +1119,11 @@ export interface PlatformAdapter {
    * written before it may omit it.
    */
   tryItWorlds?: TryItWorldsPlatform;
+  /**
+   * World backups (ADR 0102). The preload always provides it; optional so that test doubles
+   * written before it may omit it.
+   */
+  worldBackups?: WorldBackupsPlatform;
 }
 
 /** The renderer's side of the window close round trip ({@link MsmBridge.onCloseRequest}). */

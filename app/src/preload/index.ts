@@ -228,6 +228,16 @@ const bridge: MsmBridge = {
       };
     },
   },
+  worldBackups: {
+    list: () => ipcRenderer.invoke(InvokeChannels.worldBackupsList),
+    restore: (request) =>
+      ipcRenderer.invoke(InvokeChannels.worldBackupsRestore, {
+        location: request.location,
+        worldDir: request.worldDir,
+        fileName: request.fileName,
+      }),
+    openFolder: () => ipcRenderer.invoke(InvokeChannels.worldBackupsOpenFolder),
+  },
   tryItWorlds: {
     listWorlds: () => ipcRenderer.invoke(InvokeChannels.tryItListWorlds),
     readArea: (request) =>

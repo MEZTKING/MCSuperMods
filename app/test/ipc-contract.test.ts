@@ -396,7 +396,21 @@ const samples: Record<
       { worldDir: 'New World', fileName: 'pack-data.zip', data: bytes },
       { worldDir: '../New World', fileName: 'pack-data.zip', data: bytes },
     ],
-    response: [{ path: '/home/a/.minecraft/saves/New World/datapacks/pack-data.zip' }, {}],
+    response: [
+      {
+        path: '/home/a/.minecraft/saves/New World/datapacks/pack-data.zip',
+        backup: {
+          path: '/home/a/.msm/backups/official-default-0a1b2c3d/New World/2026-11-21_10-00-00.zip',
+          fileName: '2026-11-21_10-00-00.zip',
+          location: 'official-default-0a1b2c3d',
+          worldDir: 'New World',
+        },
+      },
+      {
+        path: '/x/p.zip',
+        backup: { path: '/x/b.zip', fileName: 'b.zip', location: '..', worldDir: 'w' },
+      },
+    ],
   },
   [InvokeChannels.mcfunctionCheck]: {
     request: [
@@ -823,6 +837,45 @@ const samples: Record<
       { worldId: 'prism:My_Pack/..', centre: 'spawn' },
     ],
     response: [tryItArea, { ...tryItArea, blocks: new Uint16Array(10) }],
+  },
+  [InvokeChannels.worldBackupsList]: {
+    request: [undefined, { all: true }],
+    response: [
+      {
+        folder: '/home/a/.msm/backups',
+        groups: [
+          {
+            location: 'official-default-0a1b2c3d',
+            locationName: 'Official launcher',
+            available: true,
+            worldDir: 'New World',
+            backups: [
+              {
+                fileName: '2026-11-21_10-00-00.zip',
+                path: '/home/a/.msm/backups/official-default-0a1b2c3d/New World/2026-11-21_10-00-00.zip',
+                size: 1024,
+                createdAt: '2026-11-21T10:00:00.000Z',
+              },
+            ],
+          },
+        ],
+      },
+      { folder: '/home/a/.msm/backups', groups: [{ location: '..' }] },
+    ],
+  },
+  [InvokeChannels.worldBackupsRestore]: {
+    request: [
+      { location: 'official-default-0a1b2c3d', worldDir: 'New World', fileName: 'a.zip' },
+      { location: 'official-default-0a1b2c3d', worldDir: '../New World', fileName: 'a.zip' },
+    ],
+    response: [
+      { dir: 'New World-restored-2026-11-21_10-00-00', path: '/home/a/.minecraft/saves/x' },
+      { dir: 'a/b', path: '/x' },
+    ],
+  },
+  [InvokeChannels.worldBackupsOpenFolder]: {
+    request: [undefined, { path: '/etc' }],
+    response: [undefined, 'done'],
   },
 };
 

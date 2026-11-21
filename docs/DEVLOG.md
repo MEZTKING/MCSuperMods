@@ -6441,3 +6441,20 @@ Next
 
 **Next**
 - The Windows check in `docs/HANDOFF.md` (updater item (c)) should add: with a downloaded update, close the window (after Save, Discard, or with nothing unsaved): no installer pages show, and the next start runs the new version with What's new once. HANDOFF's open question 3 is answered. README's "Releasing" text still says the update installs when the user chooses Restart to update.
+## 2026-11-21 — executor — B488 world backups before installing
+
+**What**
+- ADR 0102 D1–D3. Before a data pack goes into `<gameDir>/saves/<world>/datapacks/`, main zips the whole world into `<msmHome>/backups/<location>/<world-dir>/<YYYY-MM-DD_HH-mm-ss>.zip` (`app/src/main/platform/world-backups.ts`, called from `installDataPack` in `minecraft.ts` after the existing containment checks). The zip is streamed with fflate (already a dependency) into a temporary file beside it and renamed into place; the oldest beyond `backups.keep` are deleted only after a new backup succeeded; a failed backup stops the install with "The world could not be backed up, so nothing was installed: <reason> …". The location folder is `<launcher>-<instance|default>-<8 hex of the root's SHA-1>`.
+- Settings `backups.beforeInstall` (default on) and `backups.keep` (default 5, 1 to 50), stored only when not the defaults; zod-validated in `settings:get|set`. `installDataPack` answers `{ path, backup }`. New channels `msm:v1:worldBackups:list|restore|openFolder` (`PlatformAdapter.worldBackups`, optional like `tryItWorlds`).
+- Restore unpacks a backup into the same `saves/` as `<world-dir>-restored-<stamp>` (`-2`, `-3` when taken), through a temporary folder renamed into place; entry names are checked segment by segment, so a planted zip cannot write outside the new folder.
+- Renderer: `components/WorldBackupsSection.tsx` in Settings ("World backups": the folder with Open folder, "Back up a world before installing into it", "Backups to keep per world", the backups per world with Restore); the install message adds "The world was backed up first as <file> (Settings, World backups)." through `session/install-backups.ts`, which wraps the platform handed to the session in `main.tsx` (`project-session.ts` is untouched; it drops the backup field).
+- Tests: `test/main-world-backups.test.ts` (10), `test/components/settings-world-backups.test.tsx` (5), settings and IPC contract samples, the App install message; e2e `datapack-path` checks the zip, the message, the Settings list and a Restore. Guide: `playing-and-testing.md#world-backups`, a line in `getting-started.md`.
+
+**Decisions**
+- `session.lock` is left out of the zip (Minecraft's own Make Backup does the same; the game may hold it locked), and symbolic links inside a world are neither followed nor copied. Already-compressed files (`.mca`, `.dat`, `.png` and similar) are stored, the rest deflated.
+- fflate writes no ZIP64, so a world over 4 GB or 65,535 files fails its backup with a clear reason (and the install stops); the setting turns backups off for such worlds.
+- Entries sit under `<world-dir>/` like the game's own backup zips, so a zip can also be unzipped into `saves` by hand.
+
+**Next**
+- In-game check on Windows: install into a real world with Minecraft closed, restore, open the restored copy.
+- `app/CLAUDE.md` contents line for `world-backups.ts`, `WorldBackupsSection.tsx` and the `worldBackups:*` channels (not in this brief's files).

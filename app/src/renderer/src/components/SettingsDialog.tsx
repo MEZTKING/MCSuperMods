@@ -8,6 +8,7 @@ import type {
   AppSettingsPatch,
   AppSettingsView,
   MinecraftStatus,
+  WorldBackupsPlatform,
 } from '../../../shared/platform';
 import type { ExternalPluginState } from '../plugins/external-plugins';
 import { AiSettingsSection } from './ai/AiSettingsSection';
@@ -22,6 +23,7 @@ import {
 } from './install-target';
 import { fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
+import { WorldBackupsSection } from './WorldBackupsSection';
 
 /** Props of {@link SettingsDialog}. */
 export interface SettingsDialogProps {
@@ -73,6 +75,8 @@ export interface SettingsDialogProps {
   aiPictures?: AiPicturesPlatform | undefined;
   /** Called after the image service or its key changed. */
   onAiPicturesChanged?: (() => void) | undefined;
+  /** Main's world backups (ADR 0102 D3); the "World backups" section is shown only with them. */
+  worldBackups?: WorldBackupsPlatform | undefined;
 }
 
 /** The label of a plugin state in Settings > Plugins. */
@@ -676,6 +680,10 @@ export function SettingsDialog(props: SettingsDialogProps) {
               downloads it in the background. It installs only when you choose Restart to update.
               Help, Check for Updates works either way.
             </p>
+
+            {props.worldBackups !== undefined && (
+              <WorldBackupsSection backups={props.worldBackups} load={load} save={saveSettings} />
+            )}
 
             {props.ai !== undefined && (
               <AiSettingsSection

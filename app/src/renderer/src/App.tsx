@@ -114,6 +114,7 @@ import { PreviewPanel, type VanillaAssetReader } from './preview';
 import { closeRequestHandlers } from './session/close-requests';
 import { namespaceFromFolderName } from './session/element-defaults';
 import { importerFileFilters, isBlockbenchImporter } from './session/importers';
+import { backupNote, takeInstallBackup } from './session/install-backups';
 import {
   FUNCTION_KIND,
   functionElementUri,
@@ -800,7 +801,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       if (mode === 'combined') {
         text = `Exported the resource pack and the data pack to ${result.location ?? 'the chosen folder'}.`;
       } else if (mode === 'install' && pack === 'data') {
-        text = `Installed to ${result.location ?? 'the world'}. In Minecraft, open the world (or run /reload in it), then check /datapack list.`;
+        text = `Installed to ${result.location ?? 'the world'}.${backupNote(takeInstallBackup())} In Minecraft, open the world (or run /reload in it), then check /datapack list.`;
       } else if (mode === 'install') {
         text = `Installed to ${result.location ?? 'the resourcepacks folder'}. In Minecraft, open Options, then Resource Packs, and move the pack to the selected side.`;
       } else {
@@ -3093,6 +3094,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 aiConversationModel={aiConversationModel}
                 aiPictures={bridge.aiPictures}
                 onAiPicturesChanged={() => aiPicturesHost?.refresh()}
+                worldBackups={bridge.worldBackups}
               />
             )}
           </Toast.Provider>

@@ -5,6 +5,7 @@ import { App } from './App';
 import { builtInPlugins } from './plugins/built-in';
 import { loadExternalPlugins } from './plugins/external-plugins';
 import { bridge, createBridgeFileSystem } from './session/bridge-fs';
+import { recordInstallBackups } from './session/install-backups';
 import { mcfunctionCheckerFromPlatform } from './session/mcfunction-problems';
 import { ProjectSession } from './session/project-session';
 import './styles.css';
@@ -27,7 +28,8 @@ async function start(root: HTMLElement): Promise<void> {
   // Function sources are checked by the Spyglass service in main (ADR 0014), for the target
   // of the open project at call time.
   const session: ProjectSession = new ProjectSession(
-    { ...msm, fs: createBridgeFileSystem(msm) },
+    // ADR 0102 D3: the install message names the world backup the install made.
+    recordInstallBackups({ ...msm, fs: createBridgeFileSystem(msm) }),
     {
       plugins: builtInPlugins,
       externalPlugins: external.plugins,

@@ -41,12 +41,34 @@ describe('settings store', () => {
       launchers: noLaunchers,
       installTarget: null,
       ai: DEFAULT_AI_SETTINGS,
+      backups: { beforeInstall: true, keep: 5 },
       detectedMinecraftDir: null,
     });
     expect(await store().minecraftDir()).toBeNull();
     expect(await store().installTarget()).toBeNull();
     expect(await store().launcherSettings()).toEqual(noLaunchers);
     expect(await store().autoCheckUpdates()).toBe(true);
+  });
+
+  it('stores world backup settings only when they differ from the defaults (ADR 0102)', async () => {
+    expect(await store().backupSettings()).toEqual({ beforeInstall: true, keep: 5 });
+    await store().set({ backups: { beforeInstall: false, keep: 3 } });
+    expect(await store().backupSettings()).toEqual({ beforeInstall: false, keep: 3 });
+    const text = await readFile(join(temp, 'msm', 'settings.json'), 'utf8');
+    expect(JSON.parse(text).backups).toEqual({ beforeInstall: false, keep: 3 });
+    await store().set({ backups: { beforeInstall: true, keep: 5 } });
+    const after = JSON.parse(await readFile(join(temp, 'msm', 'settings.json'), 'utf8'));
+    expect(after.backups).toBeUndefined();
+    // A hand-edited file is cleaned: keep is clamped, anything but false keeps backups on.
+    await writeFile(
+      join(temp, 'msm', 'settings.json'),
+      JSON.stringify({
+        minecraftDir: null,
+        updates: { autoCheck: true },
+        backups: { beforeInstall: 'no', keep: 999 },
+      }),
+    );
+    expect(await store().backupSettings()).toEqual({ beforeInstall: true, keep: 50 });
   });
 
   it('detects the default launcher folder', async () => {
@@ -58,6 +80,7 @@ describe('settings store', () => {
       launchers: noLaunchers,
       installTarget: null,
       ai: DEFAULT_AI_SETTINGS,
+      backups: { beforeInstall: true, keep: 5 },
       detectedMinecraftDir: detected,
     });
     expect(await store().minecraftDir()).toBe(detected);

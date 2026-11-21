@@ -101,6 +101,10 @@ export const InvokeChannels = {
   // ADR 0087: Try it's worlds, read-only.
   tryItListWorlds: 'msm:v1:tryit:listWorlds',
   tryItReadArea: 'msm:v1:tryit:readArea',
+  /** World backups (ADR 0102 D3). */
+  worldBackupsList: 'msm:v1:worldBackups:list',
+  worldBackupsRestore: 'msm:v1:worldBackups:restore',
+  worldBackupsOpenFolder: 'msm:v1:worldBackups:openFolder',
 } as const;
 
 /**

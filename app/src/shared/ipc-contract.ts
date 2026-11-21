@@ -249,6 +249,56 @@ const worldInfo = z
 
 const updateSettings = z.object({ autoCheck: z.boolean() }).strict();
 
+/** The most backups per world `backups.keep` may ask for (ADR 0102 D1). */
+export const WORLD_BACKUPS_KEEP_MAX = 50;
+/** The default of `backups.keep`. */
+export const WORLD_BACKUPS_KEEP_DEFAULT = 5;
+
+const worldBackupSettings = z
+  .object({
+    beforeInstall: z.boolean(),
+    keep: z.number().int().min(1).max(WORLD_BACKUPS_KEEP_MAX),
+  })
+  .strict();
+
+/** A backup folder name under `<msmHome>/backups/`: one safe segment. */
+const backupSegment = worldDir;
+
+const worldBackupRef = z
+  .object({
+    path: absolutePath,
+    fileName: backupSegment,
+    location: backupSegment,
+    worldDir: backupSegment,
+  })
+  .strict();
+
+const worldBackupList = z
+  .object({
+    folder: absolutePath,
+    groups: z.array(
+      z
+        .object({
+          location: backupSegment,
+          locationName: z.string(),
+          available: z.boolean(),
+          worldDir: backupSegment,
+          backups: z.array(
+            z
+              .object({
+                fileName: backupSegment,
+                path: absolutePath,
+                size: z.number().int().nonnegative(),
+                createdAt: z.string(),
+              })
+              .strict(),
+          ),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
 /** The most manually added folders per launcher list in settings. */
 export const LAUNCHER_ROOTS_MAX = 16;
 /** The launchers MSM reads (ADR 0019); mirrors `LauncherKind`. */
@@ -922,6 +972,7 @@ export const ipcContract = {
         launchers: launcherSettingsSchema.optional(),
         installTarget: gameLocationRefSchema.nullable().optional(),
         ai: aiSettings.optional(),
+        backups: worldBackupSettings.optional(),
         detectedMinecraftDir: absolutePath.nullable(),
       })
       .strict(),
@@ -935,6 +986,7 @@ export const ipcContract = {
         launchers: launcherSettingsSchema.optional(),
         installTarget: gameLocationRefSchema.nullable().optional(),
         ai: aiSettings.optional(),
+        backups: worldBackupSettings.optional(),
       })
       .strict(),
     response: voidResponse,
@@ -995,7 +1047,9 @@ export const ipcContract = {
   },
   [InvokeChannels.minecraftInstallDataPack]: {
     request: z.object({ worldDir, fileName: packFileName, data: bytes }).strict(),
-    response: z.object({ path: absolutePath }).strict(),
+    response: z
+      .object({ path: absolutePath, backup: worldBackupRef.nullable().optional() })
+      .strict(),
   },
   [InvokeChannels.mcfunctionCheck]: {
     request: z
@@ -1310,6 +1364,14 @@ export const ipcContract = {
     response: z.array(tryItWorldInfo).max(TRYIT_WORLDS_MAX),
   },
   [InvokeChannels.tryItReadArea]: { request: tryItAreaRequest, response: tryItWorldArea },
+  [InvokeChannels.worldBackupsList]: { request: noRequest, response: worldBackupList },
+  [InvokeChannels.worldBackupsRestore]: {
+    request: z
+      .object({ location: backupSegment, worldDir: backupSegment, fileName: backupSegment })
+      .strict(),
+    response: z.object({ dir: backupSegment, path: absolutePath }).strict(),
+  },
+  [InvokeChannels.worldBackupsOpenFolder]: { request: noRequest, response: voidResponse },
 } as const satisfies Record<InvokeChannel, { request: z.ZodType; response: z.ZodType }>;
 
 /** The contract as a whole. */

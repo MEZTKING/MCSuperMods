@@ -221,6 +221,9 @@ export function createIpcHandlers(
     [InvokeChannels.aiPicturesCancel]: (req) => aiPictures.cancel(req.requestId),
     [InvokeChannels.tryItListWorlds]: () => platform.tryItWorlds.listWorlds(),
     [InvokeChannels.tryItReadArea]: (req) => platform.tryItWorlds.readArea(req),
+    [InvokeChannels.worldBackupsList]: () => platform.worldBackups.list(),
+    [InvokeChannels.worldBackupsRestore]: (req) => platform.worldBackups.restore(req),
+    [InvokeChannels.worldBackupsOpenFolder]: () => platform.worldBackups.openFolder(),
     [InvokeChannels.playStatus]: (req) => platform.play.status(req.targetId),
     [InvokeChannels.playPlay]: (req) => platform.play.play(playInput(req)),
     [InvokeChannels.playReload]: (req) =>

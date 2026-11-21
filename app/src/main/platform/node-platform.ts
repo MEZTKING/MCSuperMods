@@ -38,6 +38,7 @@ import { createTargetsService } from './targets';
 import { createTestInMinecraftService } from './test-in-minecraft';
 import { createThumbnailService } from './thumbnails';
 import { createTryItWorldsService, type TryItWorldsService } from './try-it-worlds';
+import { createWorldBackupService } from './world-backups';
 
 /**
  * Writes `data` to `path` through a temporary file in the same folder, then renames it into
@@ -125,6 +126,11 @@ export interface NodePlatformDeps {
    * (ADR 0083 D6). Default `<home>/Documents`.
    */
   documentsDir?: string;
+  /**
+   * Opens a folder in the OS file manager (Electron's `shell.openPath`); resolves an error
+   * text or `''`. Used by World backups' Open folder; without it the folder is only created.
+   */
+  openPath?(path: string): Promise<string>;
   /** File access for the Minecraft service. Defaults to the Node adapter. */
   installFs?: InstallFileSystem;
   /** ISO 8601 timestamp source for the asset cache and the recent-projects list. */
@@ -180,6 +186,8 @@ export interface MainPlatform
   play: PlayService;
   /** Try it's worlds (ADR 0087), read-only; the IPC layer serves `tryit:*` from it. */
   tryItWorlds: TryItWorldsService;
+  /** World backups (ADR 0102 D3); the IPC layer serves `worldBackups:*` from it. */
+  worldBackups: NonNullable<PlatformAdapter['worldBackups']>;
 }
 
 /**
@@ -245,10 +253,17 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
   const settings = createSettingsStore({ msmHome: deps.msmHome, installEnv: deps.installEnv });
   const installFs = deps.installFs ?? withAtomicWrites(createNodeInstallFileSystem());
   const locations = createLocationResolver({ fs: installFs, env: deps.installEnv, settings });
+  // ADR 0102: data pack installs into a world back the world up first.
+  const backups = createWorldBackupService({
+    msmHome: deps.msmHome,
+    settings,
+    ...(deps.openPath === undefined ? {} : { openPath: deps.openPath }),
+  });
   const minecraft = createMinecraftService({
     msmHome: deps.msmHome,
     fs: installFs,
     locations,
+    backups,
     ...(deps.now === undefined ? {} : { now: deps.now }),
   });
 
@@ -467,6 +482,11 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     targets,
     settings,
     minecraft,
+    worldBackups: {
+      list: () => minecraft.listWorldBackups(),
+      restore: (request) => minecraft.restoreWorldBackup(request),
+      openFolder: () => backups.openFolder(),
+    },
     mcfunction: createMcfunctionBroker({ readVendored: targets.readVendored }),
     exports: {
       ...createExportsService({

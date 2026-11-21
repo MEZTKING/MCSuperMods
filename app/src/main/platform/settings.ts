@@ -20,6 +20,8 @@ import {
   gameLocationRefSchema,
   LAUNCHER_ROOTS_MAX,
   RECENT_PROJECTS_MAX,
+  WORLD_BACKUPS_KEEP_DEFAULT,
+  WORLD_BACKUPS_KEEP_MAX,
 } from '../../shared/ipc-contract';
 import type {
   AppSettings,
@@ -28,6 +30,7 @@ import type {
   GameLocationRef,
   LauncherSettings,
   RecentProject,
+  WorldBackupSettings,
 } from '../../shared/platform';
 
 /** The settings file name below the MSM home directory. */
@@ -59,6 +62,8 @@ export interface SettingsStore {
   aiSettings(): Promise<AiSettings>;
   /** The stored install target, or `null` for the official launcher (ADR 0019). */
   installTarget(): Promise<GameLocationRef | null>;
+  /** The world backup settings (ADR 0102 D1; on, keeping 5 per world, by default). */
+  backupSettings(): Promise<WorldBackupSettings>;
   /** The manually added launcher folders (empty lists by default). */
   launcherSettings(): Promise<LauncherSettings>;
   /** The recent projects, newest first (normalised absolute roots, deduplicated, capped). */
@@ -213,6 +218,24 @@ export function cleanAiSettings(value: unknown): AiSettings {
   return result;
 }
 
+/** The default world backup settings (ADR 0102 D1). */
+export function defaultBackupSettings(): WorldBackupSettings {
+  return { beforeInstall: true, keep: WORLD_BACKUPS_KEEP_DEFAULT };
+}
+
+/**
+ * Cleans stored or sent world backup settings: anything but an explicit `false` keeps
+ * backups on, and `keep` is clamped to 1..{@link WORLD_BACKUPS_KEEP_MAX}.
+ */
+export function cleanBackupSettings(value: unknown): WorldBackupSettings {
+  const result = defaultBackupSettings();
+  const record = asRecord(value);
+  if (record === null) return result;
+  result.beforeInstall = record.beforeInstall !== false;
+  result.keep = clampInt(record.keep, [1, WORLD_BACKUPS_KEEP_MAX], result.keep);
+  return result;
+}
+
 /** Whether two AI helper settings are the same (both cleaned). */
 function sameAiSettings(a: AiSettings, b: AiSettings): boolean {
   return sortedJson(a) === sortedJson(b);
@@ -222,6 +245,7 @@ const defaults = (): StoredSettings => ({
   minecraftDir: null,
   updates: { autoCheck: true },
   ai: defaultAiSettings(),
+  backups: defaultBackupSettings(),
   launchers: emptyLaunchers(),
   installTarget: null,
   recentProjects: [],
@@ -409,6 +433,7 @@ export function createSettingsStore(deps: {
       launchers: cleanLaunchers(record.launchers, caseInsensitive, false),
       installTarget: parseInstallTarget(record.installTarget),
       ai: cleanAiSettings(record.ai),
+      backups: cleanBackupSettings(record.backups),
       recentProjects: cleanRecent(record.recentProjects, caseInsensitive),
       launcherPrograms: cleanPrograms(record.launcherPrograms),
       lastProjectParent: cleanProgram(record.lastProjectParent),
@@ -430,6 +455,7 @@ export function createSettingsStore(deps: {
       lastSeenVersion: nextSeen,
       modpacks: nextModpacks,
       ai: nextAi,
+      backups: nextBackups,
       ...base
     } = next;
     const programs = Object.fromEntries(
@@ -446,6 +472,9 @@ export function createSettingsStore(deps: {
       ...(hasManualRoots(nextLaunchers) ? { launchers: nextLaunchers } : {}),
       ...(nextTarget === null ? {} : { installTarget: nextTarget }),
       ...(sameAiSettings(nextAi, defaultAiSettings()) ? {} : { ai: nextAi }),
+      ...(sortedJson(nextBackups) === sortedJson(defaultBackupSettings())
+        ? {}
+        : { backups: nextBackups }),
       ...(nextRecent.length === 0 ? {} : { recentProjects: nextRecent }),
       ...(Object.keys(programs).length === 0 ? {} : { launcherPrograms: programs }),
       ...(nextParent === null ? {} : { lastProjectParent: nextParent }),
@@ -503,6 +532,8 @@ export function createSettingsStore(deps: {
         launchers: launchers ?? current.launchers,
         installTarget: installTarget === undefined ? current.installTarget : installTarget,
         ai: settings.ai === undefined ? current.ai : cleanAiSettings(settings.ai),
+        backups:
+          settings.backups === undefined ? current.backups : cleanBackupSettings(settings.backups),
         recentProjects: current.recentProjects,
         launcherPrograms: current.launcherPrograms,
         lastProjectParent: current.lastProjectParent,
@@ -522,6 +553,9 @@ export function createSettingsStore(deps: {
     },
     async installTarget() {
       return (await read()).installTarget;
+    },
+    async backupSettings() {
+      return (await read()).backups;
     },
     async launcherSettings() {
       return (await read()).launchers;

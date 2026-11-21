@@ -35,8 +35,16 @@ import {
 import { sha1Hex } from '@msm/interop/node';
 import { assertProjectRelativePath, isProjectRelativePath } from '@msm/plugin-api';
 import type { MinecraftProgress } from '../../shared/ipc-channels';
-import type { GameLocationList, MinecraftStatus, WorldInfo } from '../../shared/platform';
+import type {
+  GameLocationList,
+  MinecraftStatus,
+  WorldBackupList,
+  WorldBackupRef,
+  WorldBackupRestoreRequest,
+  WorldInfo,
+} from '../../shared/platform';
 import { type LocationResolver, targetWarnings, toLocationView } from './locations';
+import { locationSlug, type WorldBackupService } from './world-backups';
 
 /** Resource pack file names accepted by {@link MinecraftService.installResourcePack}. */
 export const RESOURCE_PACK_FILE_NAME = /^[A-Za-z0-9._ -]+\.zip$/;
@@ -89,9 +97,27 @@ export interface MinecraftService {
    * recent first, named by `Data.LevelName` (the folder name when `level.dat` is unreadable).
    */
   listWorlds(): Promise<WorldInfo[]>;
-  /** Writes a data pack zip into `<gameDir>/saves/<worldDir>/datapacks/` of the selected location. */
-  installDataPack(worldDir: string, fileName: string, data: Uint8Array): Promise<{ path: string }>;
+  /**
+   * Writes a data pack zip into `<gameDir>/saves/<worldDir>/datapacks/` of the selected
+   * location. With a backup service and `backups.beforeInstall` on, the whole world is backed
+   * up first (ADR 0102 D1); a failed backup stops the install and nothing is written.
+   */
+  installDataPack(
+    worldDir: string,
+    fileName: string,
+    data: Uint8Array,
+  ): Promise<{ path: string; backup: WorldBackupRef | null }>;
+  /** Every world backup, named by the game locations found now (ADR 0102 D3). */
+  listWorldBackups(): Promise<WorldBackupList>;
+  /**
+   * Unpacks a backup beside its world in the `saves/` folder of the location it came from,
+   * as `<world-dir>-restored-<stamp>`; never over the live world.
+   */
+  restoreWorldBackup(request: WorldBackupRestoreRequest): Promise<{ dir: string; path: string }>;
 }
+
+/** The start of the message when a backup before an install failed. */
+export const BACKUP_FAILED_MESSAGE = 'The world could not be backed up, so nothing was installed';
 
 /** What the service needs from its host. */
 export interface MinecraftServiceDeps {
@@ -108,6 +134,8 @@ export interface MinecraftServiceDeps {
   modifiedAt?(absPath: string): Promise<string | null>;
   /** Resolves symlinks in an existing absolute path. Defaults to `fs.realpath`. */
   realpath?(absPath: string): Promise<string>;
+  /** World backups before data pack installs (ADR 0102); without it, nothing is backed up. */
+  backups?: WorldBackupService;
 }
 
 async function defaultModifiedAt(absPath: string): Promise<string | null> {
@@ -413,12 +441,54 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
       if (!isPathInside(realSaves, realWorld)) {
         throw new Error(`The world ${JSON.stringify(worldDir)} is outside the saves folder.`);
       }
+      // ADR 0102 D1: back the whole world up first; the install waits for it and stops when
+      // it fails.
+      let backup: WorldBackupRef | null = null;
+      if (deps.backups !== undefined) {
+        try {
+          backup = await deps.backups.beforeInstall(location, worldDir, realWorld);
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          throw new Error(
+            `${BACKUP_FAILED_MESSAGE}: ${reason} Try again, or turn off "Back up a world before installing into it" in Settings, World backups.`,
+          );
+        }
+      }
       const datapacks = joinInstallPath(world, 'datapacks');
       await fs.mkdirp(datapacks);
       await assertInsideGameDir(realGame, datapacks, 'datapacks');
       const path = joinInstallPath(datapacks, fileName);
       await fs.writeFile(path, data);
-      return { path: normalize(path) };
+      return { path: normalize(path), backup };
+    },
+
+    async listWorldBackups() {
+      if (deps.backups === undefined) throw new Error('World backups are not available.');
+      let locations: GameLocation[] = [];
+      try {
+        locations = (await deps.locations.resolve()).locations;
+      } catch {
+        // Discovery failed: list the backups under their folder names.
+      }
+      return deps.backups.list(locations);
+    },
+
+    async restoreWorldBackup(request) {
+      const backups = deps.backups;
+      if (backups === undefined) throw new Error('World backups are not available.');
+      const zip = await backups.resolveBackup(request);
+      const { locations } = await deps.locations.resolve();
+      const location = locations.find((entry) => locationSlug(entry.ref) === request.location);
+      if (location === undefined) {
+        throw new Error(
+          'The game folder this backup came from was not found. Unzip it by hand from the backups folder.',
+        );
+      }
+      const realGame = await requireGameDir(location);
+      const saves = normalize(joinInstallPath(location.gameDir, 'saves'));
+      await fs.mkdirp(saves);
+      await assertInsideGameDir(realGame, saves, 'saves');
+      return backups.restoreInto(zip, await resolveReal(saves), request.worldDir);
     },
   };
 }

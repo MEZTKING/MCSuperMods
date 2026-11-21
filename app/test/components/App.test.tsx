@@ -23,6 +23,7 @@ import {
 import { registerCaretReader } from '../../src/renderer/src/components/function-editor/caret';
 import { BLOCKBENCH_IMPORT_NOTE } from '../../src/renderer/src/components/ImportFilesDialog';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
+import { recordInstallBackups } from '../../src/renderer/src/session/install-backups';
 import type { McfunctionChecker } from '../../src/renderer/src/session/mcfunction-problems';
 import { registerPendingEdit } from '../../src/renderer/src/session/pending-edits';
 import { type ExportResult, ProjectSession } from '../../src/renderer/src/session/project-session';
@@ -352,7 +353,15 @@ async function renderApp(
       },
       installDataPack: async (worldDir, fileName) => {
         harness.installs.push(`${worldDir}/${fileName}`);
-        return { path: `/saves/${worldDir}/datapacks/${fileName}` };
+        return {
+          path: `/saves/${worldDir}/datapacks/${fileName}`,
+          backup: {
+            path: `/msm/backups/official-default-0a1b2c3d/${worldDir}/2026-11-21_10-00-00.zip`,
+            fileName: '2026-11-21_10-00-00.zip',
+            location: 'official-default-0a1b2c3d',
+            worldDir,
+          },
+        };
       },
     },
     mcfunction: { check: unavailable, complete: unavailable },
@@ -439,7 +448,7 @@ async function renderApp(
     fs: createMemoryFileSystem(),
     ...(options.ai === undefined ? {} : { ai: options.ai }),
   };
-  const session = new ProjectSession(platform, {
+  const session = new ProjectSession(recordInstallBackups(platform), {
     plugins: options.plugins ?? builtInPlugins,
     targets: builtInTargets,
     now: () => '2026-01-01T00:00:00.000Z',
@@ -710,6 +719,10 @@ describe('App menu commands', () => {
     expect(within(picker).getByTestId('world-row-Survival')).toBeTruthy();
     await userEvent.setup().click(within(picker).getByTestId('world-picker-submit'));
     await toast(/^Installed to \/saves\/Survival\/datapacks\//);
+    // ADR 0102 D3: the message names the backup the install made.
+    await toast(
+      /The world was backed up first as 2026-11-21_10-00-00\.zip \(Settings, World backups\)\./,
+    );
     expect(harness.installs).toEqual([`Survival/demo-${defaultTarget.id}-data.zip`]);
   });
 

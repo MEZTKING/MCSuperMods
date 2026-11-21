@@ -380,6 +380,38 @@ test('data pack: function, problem, load tag, recipe grid, rename, export, insta
   if (installed === undefined) throw new Error('No installed zip.');
   checkDataPack(readZip(join(datapacks, installed)));
 
+  // ADR 0102 D1–D3: the world was backed up first, the message names the backup, and
+  // Settings > World backups lists it and restores it beside the world.
+  const backupsDir = join(folders.msmHome, 'backups');
+  const [locationDir] = readdirSync(backupsDir);
+  if (locationDir === undefined) throw new Error('No backup location folder.');
+  const [backupName] = zipsIn(join(backupsDir, locationDir, WORLD));
+  if (backupName === undefined) throw new Error('No world backup.');
+  expect(backupName).toMatch(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.zip$/);
+  const backup = readZip(join(backupsDir, locationDir, WORLD, backupName));
+  expect(Object.keys(backup).sort()).toEqual([`${WORLD}/`, `${WORLD}/level.dat`]);
+  await expect(window.getByTestId('status-toast-text')).toContainText(
+    `The world was backed up first as ${backupName} (Settings, World backups).`,
+  );
+  await window.getByTestId('toolbar-settings').click();
+  const settings = window.getByTestId('settings-dialog');
+  const backupsSection = settings.getByTestId('settings-world-backups');
+  await expect(backupsSection.getByTestId('settings-backups-folder')).toHaveText(backupsDir);
+  await expect(backupsSection.getByTestId('backup-group-0')).toContainText(WORLD);
+  await backupsSection.getByTestId('backup-restore-0-0').click();
+  await expect(backupsSection.getByTestId('settings-backups-notice')).toContainText(
+    `Restored as the world folder "${WORLD}-restored-`,
+  );
+  const restored = readdirSync(join(minecraftDir, 'saves')).filter((name) =>
+    name.startsWith(`${WORLD}-restored-`),
+  );
+  expect(restored).toHaveLength(1);
+  expect(readdirSync(join(minecraftDir, 'saves', restored[0] ?? ''))).toEqual(['level.dat']);
+  // The live world still has its data pack.
+  expect(zipsIn(datapacks)).toEqual([installed]);
+  await window.keyboard.press('Escape');
+  await expect(settings).toBeHidden();
+
   await window.screenshot({ path: join(outputDir, 'datapack-path.png') });
 
   // Save, so closing does not prompt to discard.

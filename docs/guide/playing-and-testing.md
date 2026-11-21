@@ -71,6 +71,21 @@ Choose **Restart** in the dialog (or in the Play menu). The game saves, closes, 
 
 Dev tools are on only in the test instance's single-player test world. They are off in your other instances, on servers and for friends who install the jar, so nothing in a Share my mod jar changes. MCSuperMods puts a folder `msm-dev/` in the test instance's game folder, with the files that carry your changes; nothing is written to your other Prism instances.
 
+## World backups
+
+Play uses its own test world, which is never backed up. When you install into one of your own worlds with **Install → Data pack to a world…**, MCSuperMods first saves a copy of the whole world as a zip, waits for it, and only then puts the data pack in. The message after the install names the backup, for example "The world was backed up first as 2026-11-21_10-05-09.zip (Settings, World backups)." If the backup cannot be made (a full disk, for example), nothing is installed and the message says why: try again, or turn backups off. Close the world in Minecraft before installing, as before.
+
+Backups are zips in the `backups` folder of MCSuperMods' own folder (`.msm` in your user folder), one folder per game location and world, named by date and time. They never leave your computer. Resource packs, the Play test instance and exports to a folder are not backed up, because MCSuperMods does not change a world with them. Minecraft's `session.lock` file is left out of the zip, as in the game's own backups.
+
+**Settings → World backups** has:
+
+- the backups folder, with **Open folder**;
+- **Back up a world before installing into it** (on by default);
+- **Backups to keep per world** (5 by default; the oldest are deleted once a new backup has been made);
+- every world's backups, newest first, each with **Restore**.
+
+**Restore** unpacks a backup beside the world as a new world folder, `<world folder>-restored-<date and time>`, in the same `saves` folder. It never replaces the world itself, so a wrong click loses nothing. In Minecraft both worlds show in the world list with the same name; the restored one is the copy. To swap them, close Minecraft, rename the world's folder in `saves` (or move it away), then rename the restored folder to the world's old folder name. When the game location a backup came from is no longer found (an instance was removed), Restore is off for it, but the zips stay in the backups folder and can be unzipped into a `saves` folder by hand.
+
 ## Things to know
 
 - **The world is flat on purpose.** The test world is for trying blocks, items, mobs and rules quickly. To see a biome or a structure in real terrain, make a world in Minecraft with the data pack ([Worldgen](worldgen.md), [Structures](structures.md)).
