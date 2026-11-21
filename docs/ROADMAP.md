@@ -805,6 +805,17 @@ Batch 2, Villagers, fluids and skies:
 
 Try it ([ADR 0085](adr/0085-try-it-in-app-test-area.md), [`PLAN-test-world.md`](PLAN-test-world.md)), running beside this plan: slices 1 to 3 are merged and both batches' Try it lines (B463, B483) landed in this plan; slice 4 (B400 script worker and Script API shim, B401 logic Rules in the log) still waits for the user's word, then B402 (guide, changelog) and B403 (close).
 
+### Add-on after 1.0 — Minecraft-style art (planned)
+
+The user's request of 2026-11-14 ("make the art much better ... rather than using your own art styles") and choice of 2026-11-21: option B of [ADR 0092](adr/0092-minecraft-style-art.md), an original vanilla-style generator; option A (recolouring the user's own textures) is not chosen. Design: ADR 0092 D6–D17 (Proposed; the main session's decisions, vetoable). Working plan: [`PLAN-art.md`](PLAN-art.md) (B491–B502). Every picture MSM makes (Creator flows, Surprise me, starters, examples, the AI helper's textures, Try it's terrain without the client jar) is drawn by the same rules, and every picture field gets **Draw…** beside **Make with AI**. Never Mojang pixels.
+
+- [ ] Wave 0: B491 art module, recipe table and pixel rules (A's code removed, `artPng` with the placeholder fallback, `checkArtRules`, goldens, the contact sheet).
+- [ ] Wave 1: B492 block recipes, B493 item recipes, B494 worn, mob, icon and particle pictures, B495 the Draw dialog and its buttons.
+- [ ] Wave 2: B496 Draw a skin in the Mob Studio, B497 switch the library to drawn art (the `examples/` mirror and fixtures once), B498 AI helper and AI pictures, B499 Try it drawn terrain.
+- [ ] Wave 3: B500 e2e `art-path`, B501 guide (`pictures.md`), changelog and status lines.
+- [ ] Wave 4: B502 close.
+- [ ] The user looks at the drawn pictures in game (a Creator Gear set, a Wood set, a mob, Surprise me) on 26.3 and 26.4.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.

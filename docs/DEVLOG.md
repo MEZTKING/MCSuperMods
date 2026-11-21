@@ -6487,3 +6487,20 @@ Next
 
 **Next**
 - Any future GameTest that moves a mock player and expects nearby mobs to keep ticking must stay inside its test box (or call `ServerChunkCache.move` for the player, which still covers only its own chunk at simulation distance 0).
+
+## 2026-11-21 — orchestrator — Plan for the art batch (ADR 0092 option B)
+
+**What**
+- ADR 0092 amended: the user's choice of 2026-11-21 recorded (option B, the original vanilla-style generator; option A not chosen; D3 not taken; D4 covered by ADR 0093; D5 left to the user), and D6–D17 for option B: A's code removed, the recipe families (blocks, items, worn and mob pictures, icons and particles), palette and shading rules, the look a user picks (recipe, colour, second colour, finish, detail, seed) and the **Draw…** dialog, where it plugs in (library flows and examples through `artPng`, Creator, Block, Item, Particle and Mob Studios, the painter, New texture, the AI helper, AI pictures' clean-up, Try it's terrain), determinism and seeds, the clean-room rules, tests (`checkArtRules`, property tests, golden PNGs, a contact sheet, a coverage test), the placeholder fallback. Still Proposed; D6–D17 are vetoable defaults.
+- New plan `docs/PLAN-art.md`: fact table A1–A16 (checked in the repository at fa37af3; nothing read from the client jar), limits A1–A8, rules for every brief, five waves and twelve briefs B491–B502.
+- ROADMAP: "Add-on after 1.0 — Minecraft-style art (planned)". HANDOFF: "Next" item 0 and the art question marked answered. AGENTS.md: both open plans. DESIGN §8: a "Pictures" paragraph (Proposed).
+
+**Decisions**
+- Interfaces first: B491 writes the whole recipe table with stubs that fall back to the placeholders byte for byte, so the three recipe briefs and the dialog run in parallel on separate files.
+- One switch: B497 alone moves every flow and example to drawn art and regenerates the `examples/` mirror, the flow-built fixture pictures and the pinned hashes, once, after all recipes land and the main session has looked at the contact sheet.
+- `placeholderPng` and its goldens stay unchanged (tests, fixtures and old AI tool calls use them); existing project pictures are never redrawn by themselves.
+- Only the main session regenerates `docs/reference/art/sheet.png`, after each wave, so parallel briefs never share it.
+- B498 (AI helper) and B501's `try-it.md` line wait for Try it's B402, which owns `packages/ai/src/system-prompt.ts` and `docs/guide/try-it.md`; B499 touches only Try it's `render/fallback-colours.ts`, agreed with Try it's running brief.
+
+**Next**
+- Start B491 (Opus, high effort) from the newest green commit; then wave 1 (B492–B495).
