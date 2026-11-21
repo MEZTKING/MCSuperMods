@@ -127,16 +127,7 @@ describe('the trigger table', () => {
       [...text.matchAll(/\n\t(on_[a-z_]+)\?: string,/g)].map((m) => m[1] as string),
     );
     const lastKeys = new Set(TRIGGER_SPECS.map((spec) => spec.path.at(-1)));
-    // Fields whose owner the sim cannot hold yet, each with the brief that adds it; that brief
-    // deletes its entry. `on_entity_inside`: the fluid kind (ADR 0099), owned by B483.
-    const waiting = new Set(['on_entity_inside']);
-    for (const field of fields) {
-      if (waiting.has(field)) {
-        expect(lastKeys, `${field} is in the table: remove it from "waiting"`).not.toContain(field);
-        continue;
-      }
-      expect(lastKeys, field).toContain(field);
-    }
+    for (const field of fields) expect(lastKeys, field).toContain(field);
   });
 
   it('fires or says every trigger a definition sets', () => {
@@ -159,6 +150,7 @@ describe('the trigger table', () => {
         events: { e: { actions: [] } },
       },
       effect: { format: 1, category: 'beneficial', color: 0, events: { e: { actions: [] } } },
+      fluid: { format: 1, events: { e: { actions: [] } } },
     };
     for (const spec of TRIGGER_SPECS) setAt(definitions[spec.owner] as JsonObject, spec.path, 'e');
     // The block also gives the project effect, so its triggers are met.
@@ -173,6 +165,7 @@ describe('the trigger table', () => {
         ['msm/ev/item/all.json', JSON.stringify(definitions.item)],
         ['msm/ev/entity/all.json', JSON.stringify(definitions.entity)],
         ['msm/ev/effect/all.json', JSON.stringify(definitions.effect)],
+        ['msm/ev/fluid/all.json', JSON.stringify(definitions.fluid)],
       ]),
     });
     source.act({ type: 'place', pos: floorAt(8, 8), face: 'up', hit: UP, block: 'ev:all' });

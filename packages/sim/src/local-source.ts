@@ -35,6 +35,10 @@
  * text and the sign editor, weathering (each tick and {@link LocalWorldSource.timeLapse}), the
  * place and explosion rules (asked before placing and by the Explode tool), the chat box
  * ({@link LocalWorldSource.chat}) and the bag screens ({@link LocalWorldSource.useItem}).
+ *
+ * Batch 2 (B483): {@link LocalWorldSource.traders} opens a trader mob's merchant screen (a
+ * mock-up) before its `msm:on_interact`, and {@link LocalWorldSource.fluids} pours a project
+ * fluid from its bucket (drawn, not flowing) and fires its `on_entity_inside`.
  */
 
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
@@ -43,16 +47,19 @@ import { breakBlock, placeBlock } from './blocks/placement.js';
 import { type ScreenSpec, screensFromFiles } from './blocks/screens.js';
 import { Types2Area } from './blocks/types2/area.js';
 import { EXPLODE_TOOL } from './blocks/types2/tools.js';
+import { TIME_LAPSE_TICKS } from './blocks/weathering.js';
 import type { CommandsTarget } from './commands/catalogue.js';
 import type { ChatLine } from './commands/run.js';
 import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
 import type { EntityHit } from './entities/spawn.js';
-import type { SimInventory } from './events/actions.js';
+import { PLAYER, type SimInventory } from './events/actions.js';
 import { type RuleBookInfo, readEventDefinitions } from './events/definitions.js';
 import { SimTrace, type TraceEntry } from './events/trace.js';
 import { type ChanceMode, TriggerEngine } from './events/triggers.js';
+import { FluidArea } from './fluids/area.js';
+import { addFluidBlocks, readFluids } from './fluids/catalogue.js';
 import {
   emptyGround,
   GROUND_AIR,
@@ -66,6 +73,8 @@ import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/control
 import { lookDirection, type PickResult, pick } from './player/pick.js';
 import { BlockTimers } from './tick/timers.js';
 import { applyTool } from './tick/tools.js';
+import { TraderArea } from './traders/area.js';
+import type { TradersTarget } from './traders/catalogue.js';
 import type {
   BlockPos,
   BlockShapes,
@@ -89,7 +98,7 @@ import { SimWorld, sameState, type WorldChange } from './world/sim-world.js';
  * What the local source reads from a target: folder names, the block names of the version and,
  * when it has them, the runtime's vehicle keys (B429).
  */
-export type LocalSourceTarget = CatalogueTarget & ControlsTarget & CommandsTarget;
+export type LocalSourceTarget = CatalogueTarget & ControlsTarget & CommandsTarget & TradersTarget;
 
 /** Options of a {@link LocalWorldSource}. */
 export interface LocalSourceOptions {
@@ -200,6 +209,10 @@ export class LocalWorldSource implements WorldSource {
   readonly controls: SimControls;
   /** Signs, weathering, the place and explosion rules, the chat box and bags (B463). */
   readonly parity2: Types2Area;
+  /** Project fluids: buckets, drawing, `on_entity_inside` (B483). */
+  readonly fluids: FluidArea;
+  /** Trader mobs and the merchant screen (B483). */
+  readonly traders: TraderArea;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -287,7 +300,10 @@ export class LocalWorldSource implements WorldSource {
       player: this.player,
       vehicles: this.vehicles,
       screenOpen: () =>
-        this.screenNow !== null || this.parity2.bag !== null || this.parity2.signEditing !== null,
+        this.screenNow !== null ||
+        this.parity2.bag !== null ||
+        this.parity2.signEditing !== null ||
+        this.traders.open !== null,
       fire: (owner, eventId, ctx, sentence) =>
         this.triggers.fireOwned(owner, eventId, ctx, sentence),
       trace: this.traceNow,
@@ -318,6 +334,27 @@ export class LocalWorldSource implements WorldSource {
       seed: options.seed ?? 1,
       ruleName: (book, key) => this.ruleNameOf(book, key),
     });
+    this.fluids = new FluidArea(this.files, this.target, {
+      world: this.world,
+      actors: () => [
+        { actor: PLAYER, box: this.player.box, name: 'You' },
+        ...this.entities.entities().map((mob) => ({
+          actor: { kind: 'mob' as const, id: mob.id },
+          box: mob.box,
+          name: mob.kind.displayName,
+        })),
+      ],
+      triggers: () => this.triggers,
+      log: this.log,
+      now: () => this.ticks,
+    });
+    this.traders = new TraderArea(this.files, this.target, {
+      entities: this.entities,
+      triggers: () => this.triggers,
+      log: this.log,
+      effect: (effect) => this.emit({ type: 'effect', effect }),
+      seed: options.seed ?? 1,
+    });
   }
 
   private ruleBooksNow: readonly RuleBookInfo[] = [];
@@ -328,12 +365,15 @@ export class LocalWorldSource implements WorldSource {
   }
 
   private buildBlocks(): BlockCatalogue {
-    return buildCatalogue(this.files, this.target, this.log, {
+    const catalogue = buildCatalogue(this.files, this.target, this.log, {
       ...(this.vanillaBlockstates === undefined
         ? {}
         : { vanillaBlockstates: this.vanillaBlockstates }),
       quietProps: (id) => this.groundIds.has(id),
     });
+    // Project fluids' liquid blocks (B483).
+    addFluidBlocks(catalogue, readFluids(this.files, this.target));
+    return catalogue;
   }
 
   /** The ground the area was last loaded with (B405). */
@@ -389,6 +429,8 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.clear();
     this.controls.clear();
     this.parity2.clear();
+    this.fluids.clear();
+    this.traders.clear();
     this.emit({ type: 'entities', entities: [] });
     const ground = this.groundBlocks;
     const { size } = ground;
@@ -604,11 +646,14 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.tick();
     this.controls.tick();
     this.parity2.tick();
+    this.fluids.tick();
+    this.traders.tick();
   }
 
   /** A time-lapse step of weathering: one in-game day of random ticks at once (B463). */
   timeLapse(): void {
     this.parity2.timeLapse();
+    this.traders.passTime(TIME_LAPSE_TICKS);
   }
 
   /** Runs a line typed in the chat box (B463). */
@@ -715,6 +760,8 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.setDefinitions(readEventDefinitions(files, target));
     this.controls.setFiles(files, target);
     this.parity2.setFiles(files, target);
+    this.fluids.setFiles(files, target);
+    this.traders.setFiles(files, target);
     const open = this.screenNow;
     if (open !== null) {
       const spec = this.screens.get(open.block);
@@ -743,6 +790,8 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.clear();
     this.controls.clear();
     this.parity2.clear();
+    this.fluids.clear();
+    this.traders.clear();
     this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
@@ -793,6 +842,13 @@ export class LocalWorldSource implements WorldSource {
     };
     if (this.triggers.itemUsedOn(item, action.pos, point).fired) return;
     if (this.parity2.useItem(item)) return;
+    // A project fluid's bucket pours a source of it where a block would go (B483).
+    const fluid = this.fluids.bucketOf(item);
+    if (fluid !== undefined) {
+      const placed = this.place(action.pos, action.face, action.hit, fluid.id);
+      if (placed !== null) this.fluids.poured(fluid, placed);
+      return;
+    }
     if (this.vehicles.isVehicleItem(item)) {
       this.vehicles.place(item, action, this.player.yaw);
       return;
@@ -839,10 +895,21 @@ export class LocalWorldSource implements WorldSource {
     return true;
   }
 
-  /** A right click on a mob: its `msm:on_interact`. */
+  /**
+   * A right click on a mob, in the runtime's order (B474, B479): a sneaking use of a mob's store,
+   * the merchant screen of a trader (B483), then its `msm:on_interact`.
+   */
   private interact(id: number): void {
     const mob = this.entities.entity(id);
     if (mob === undefined) return;
+    const traded = this.traders.use(id, this.player.sneaking);
+    if (traded === 'opened') {
+      if (this.screenNow !== null) this.closeScreen();
+      this.parity2.closeBag();
+      this.parity2.closeSignEditor();
+      this.controls.keys.releaseAll();
+    }
+    if (traded !== 'passed') return;
     if (!this.triggers.mobInteracted(id).fired) {
       this.log.info(
         `You used ${mob.kind.displayName}; nothing happens in the preview.`,
@@ -860,9 +927,10 @@ export class LocalWorldSource implements WorldSource {
     if (this.entities.hit(id)) this.triggers.mobDied(type, id, position);
   }
 
-  private place(pos: BlockPos, face: Face, hit: Vec3, block: string): void {
+  /** Places a block as the player; returns where it went, or `null` when it was not placed. */
+  private place(pos: BlockPos, face: Face, hit: Vec3, block: string): BlockPos | null {
     // `block.place` rules may stop it before anything changes (B463, ADR 0096 D3).
-    if (!this.parity2.placing(block, this.nameOf(block))) return;
+    if (!this.parity2.placing(block, this.nameOf(block))) return null;
     // Record what was there, so a place that would trap the player or a mob can be undone.
     const previous: { pos: BlockPos; state: BlockState | null }[] = [];
     const stop = this.world.onChange((change) =>
@@ -884,7 +952,7 @@ export class LocalWorldSource implements WorldSource {
     }
     if (!result.placed) {
       this.log.info(`${this.nameOf(block)} was not placed: ${result.reason}.`);
-      return;
+      return null;
     }
     const blocked = result.changes.some(
       (change) =>
@@ -895,10 +963,12 @@ export class LocalWorldSource implements WorldSource {
     if (blocked) {
       for (const undo of previous.reverse()) this.world.set(undo.pos, undo.state);
       this.log.info(`${this.nameOf(block)} was not placed: you or a mob stand where it would go.`);
-      return;
+      return null;
     }
     this.triggers.blockPlaced(result.pos);
     this.parity2.placed(result.pos);
+    this.traders.placed(block, result.pos, (id) => this.nameOf(id));
+    return result.pos;
   }
 
   private nameOf(id: string): string {

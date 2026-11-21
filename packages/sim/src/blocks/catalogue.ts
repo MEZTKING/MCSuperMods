@@ -122,6 +122,8 @@ export interface CatalogueBlock extends ShapeFacts {
   readonly weathering?: WeatheringFacts;
   /** Whether players climb it (`#minecraft:climbable` or a climbable type, B463). */
   readonly climbable?: boolean;
+  /** A project fluid's liquid block (B483, `fluids/`): no boxes, replaced on placing. */
+  readonly liquid?: boolean;
   /** Where log lines about it point. */
   readonly origin: SimOrigin;
 }
@@ -525,9 +527,14 @@ export class BlockCatalogue implements BlockShapes {
     return this.shapes(state).outline;
   }
 
-  /** Whether the state is a liquid prop ({@link LIQUID_PROP_IDS}): no boxes, replaced on placing. */
+  /**
+   * Whether the state is a liquid: a liquid prop ({@link LIQUID_PROP_IDS}) or a project fluid's
+   * block (B483). No boxes; replaced on placing.
+   */
   isLiquid(state: BlockState): boolean {
-    return LIQUID_PROP_IDS.has(state.name) && this.blocks.get(state.name)?.prop !== false;
+    const block = this.blocks.get(state.name);
+    if (block?.liquid === true) return true;
+    return LIQUID_PROP_IDS.has(state.name) && block?.prop !== false;
   }
 
   /** Whether the block is a solid full cube, as fences, walls and panes connect to. */

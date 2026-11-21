@@ -1,7 +1,8 @@
 /**
  * Event definitions (B396): the events, trigger components and their options (cooldown, chance,
  * interval, hand) of every project block, item, mob and effect, read from the lowered files the
- * game would get (ADR 0085 D3): `msm/<ns>/<block|item|entity|effect>/<path>.json` (ADR 0025 D4).
+ * game would get (ADR 0085 D3): `msm/<ns>/<block|item|entity|effect>/<path>.json` (ADR 0025 D4),
+ * and the fluids' `msm/<ns>/fluid/<path>.json` (ADR 0099 D1, B483).
  * Rules arrive here already compiled into ordinary events (ADR 0082 D3), so a plain rule is an
  * event like any other; a rule that needs a script is one `run_script` action whose handler's
  * rule keys come from the generated script's `// rule:<key>` markers.
@@ -16,7 +17,7 @@ import { plainEntityName } from '../entities/catalogue.js';
 import type { SimFiles, SimOrigin } from '../types.js';
 
 /** The definition kinds that own events. */
-export type EventOwnerKind = 'block' | 'item' | 'entity' | 'effect';
+export type EventOwnerKind = 'block' | 'item' | 'entity' | 'effect' | 'fluid';
 
 /** Where in the format a trigger lives and whether Try it fires it. */
 export interface TriggerSpec {
@@ -125,14 +126,19 @@ export const TRIGGER_SPECS: readonly TriggerSpec[] = Object.freeze([
   spec('entity', c('msm:tameable', 'on_tame'), false, 'the mob is tamed'),
   spec('entity', c('msm:breedable', 'on_breed'), false, 'the mob breeds'),
   spec('entity', c('msm:rideable', 'on_mount'), false, 'someone mounts the mob'),
-  // Traders (ADR 0098 D1): said until the sim learns trading (B483).
-  spec('entity', c('msm:trader', 'on_trade'), false, 'a player trades with the mob'),
+  // Traders (ADR 0098 D1): fired by the merchant mock-up (B483, `traders/`).
+  spec('entity', c('msm:trader', 'on_trade'), true, 'a player trades with the mob'),
   // Mob effects (ADR 0055).
   spec('effect', c('msm:on_start'), false, 'the effect starts'),
   spec('effect', c('msm:on_tick'), false, 'the effect is active', {
     interval: { field: 'interval_ticks', default: 20 },
   }),
   spec('effect', c('msm:on_end'), false, 'the effect ends'),
+  // Fluids (ADR 0099 D1): fired by `fluids/` (B483), at most every 10 ticks for each one inside,
+  // as the runtime's; a fluid has no cooldown field, so the default always holds.
+  spec('fluid', ['on_entity_inside'], true, 'someone is in the fluid', {
+    cooldown: { field: 'cooldown_ticks', default: 10 },
+  }),
 ]);
 
 /** A trigger as one definition sets it: the spec, the event it fires and its options. */
@@ -220,7 +226,8 @@ export interface RuleRef {
 /** The facts the definitions read from a target: its folder names. */
 export type DefinitionsTarget = Pick<TargetFacts, 'folders'>;
 
-const DEFINITION_PATH = /^msm\/([a-z0-9_.-]+)\/(block|item|entity|effect)\/([a-z0-9_./-]+)\.json$/;
+const DEFINITION_PATH =
+  /^msm\/([a-z0-9_.-]+)\/(block|item|entity|effect|fluid)\/([a-z0-9_./-]+)\.json$/;
 const SCRIPT_PATH = /^msm\/([a-z0-9_.-]+)\/script\/(.+)\.(ts|js)$/;
 
 const isRecord = (value: Json | undefined): value is JsonObject =>
@@ -237,6 +244,8 @@ const LANG_PREFIX: Readonly<Record<EventOwnerKind, string>> = {
   item: 'item',
   entity: 'entity',
   effect: 'effect',
+  // A fluid's name is its liquid block's (ADR 0099 D1).
+  fluid: 'block',
 };
 
 /** `/components/msm:on_step/event` from keys, escaped as RFC 6901 asks. */

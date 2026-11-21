@@ -19,6 +19,10 @@
  * mouse action has a key (`input.ts`). The labels are the same words in every mode (ADR 0083 D7:
  * "picture", "mob", seconds).
  *
+ * B483 adds batch 2 of vanilla parity (ADR 0101 D5): a trader mob's merchant mock-up
+ * (`traders/MerchantScreen.tsx`), fluid buckets in the hotbar and the fluids drawn
+ * (`fluids/`), and the side panel's "Sky" (a project dimension type's sky colour, `render/sky.ts`).
+ *
  * This module is a lazy chunk: the shell imports it with `lazy()`.
  */
 
@@ -55,6 +59,8 @@ import { Blocks2Overlay, Blocks2Panel, type ChatState } from './blocks2/Blocks2O
 import { bagThings } from './blocks2/things';
 import { Chips } from './Chips';
 import { webAudioOut } from './effects';
+import { fluidLooks } from './fluids/fluid-pass';
+import { bucketThings } from './fluids/things';
 import { GroundPicker } from './GroundPicker';
 import {
   describeGround,
@@ -88,9 +94,11 @@ import {
   turnLook,
 } from './input';
 import { MockScreen } from './MockScreen';
+import { projectSkies } from './render/sky';
 import { TryItScene } from './render/TryItScene';
 import { type LoweringSession, ruleBooksOf, SessionFiles, TryItArea } from './session-source';
 import { StateReadout, type TryItReadout } from './state-readout';
+import { MerchantScreen } from './traders/MerchantScreen';
 import { useTryItStore } from './tryit-store';
 import { driverCamera } from './vehicles/camera';
 import { VEHICLE_KEYS, vehicleKey } from './vehicles/keys';
@@ -324,6 +332,8 @@ export default function TryItView(props: TryItViewProps) {
   // The chat box (B463): closed, or open with its first line.
   const [chat, setChat] = useState<ChatState>(null);
   const [lastQuick, setLastQuick] = useState<QuickWorldOptions | undefined>(undefined);
+  // The sky (B483): MSM's own (''), or a project dimension's id whose own type gives the colour.
+  const [skyChoice, setSkyChoice] = useState('');
   const worlds = props.worlds === undefined ? defaultWorlds() : props.worlds;
 
   // Lower the project while the view is shown; the first files make the area.
@@ -420,7 +430,11 @@ export default function TryItView(props: TryItViewProps) {
       area === null || folders === null
         ? []
         : [
-            ...projectThings(area.source.catalogue, area.source.mobs, area.files, folders),
+            // A fluid's own block is placed only from its bucket (B483).
+            ...projectThings(area.source.catalogue, area.source.mobs, area.files, folders).filter(
+              (thing) => !area.source.fluids.isFluid(thing.id),
+            ),
+            ...bucketThings(area.source.fluids.catalogue.all(), area.files, folders),
             ...vehicleThings(area.source.vehicles.types, area.files, folders),
             ...bagThings(
               area.source.parity2.bagItems,
@@ -444,6 +458,14 @@ export default function TryItView(props: TryItViewProps) {
     [things, slotsChosen, chosenProps],
   );
   const held1 = slots[selected] ?? null;
+  // The fluids the picture draws, and the skies the project's dimension types give (B483).
+  const fluids = useMemo(
+    () => (area === null ? new Map() : fluidLooks(area.source.fluids.catalogue.all())),
+    // The catalogue changes with the files.
+    [area, area?.files],
+  );
+  const skies = useMemo(() => projectSkies(project), [project]);
+  const sky = skies.find((one) => one.dimension === skyChoice) ?? null;
   const blockIds = useMemo(
     () =>
       slots
@@ -900,6 +922,8 @@ export default function TryItView(props: TryItViewProps) {
                 vanilla={vanilla}
                 readProjectAsset={props.readProjectAsset}
                 particles={area.particles}
+                fluids={fluids}
+                sky={sky?.rgb ?? null}
                 mobs={area.mobField}
                 vehicles={{
                   snapshots: () => area.source.vehicles.snapshots(),
@@ -1003,6 +1027,22 @@ export default function TryItView(props: TryItViewProps) {
               />
             )}
             {screenOpen !== null && <MockScreen screen={screenOpen} onClose={closeScreen} />}
+            {area?.source.traders.open != null && (
+              <MerchantScreen
+                key={area.source.traders.open.mobId}
+                open={area.source.traders.open}
+                nameOf={(id) => area.source.itemName(id)}
+                onTrade={(index, all) => {
+                  area.source.traders.trade(index, all, (id) => area.source.itemName(id));
+                  rerender();
+                }}
+                onClose={() => {
+                  area.source.traders.close();
+                  rerender();
+                  wrapperRef.current?.focus({ preventScroll: true });
+                }}
+              />
+            )}
             {area !== null && (
               <Blocks2Overlay
                 area={area}
@@ -1278,6 +1318,28 @@ export default function TryItView(props: TryItViewProps) {
               </select>
             </label>
           </fieldset>
+          {skies.length > 0 && (
+            <label
+              className="flex items-center gap-1"
+              title="The sky colour of a dimension type of yours; no sun, moon, clouds or night in the preview"
+            >
+              Sky
+              <select
+                data-testid="tryit-sky"
+                data-sky={sky?.hex ?? ''}
+                className="min-w-0 flex-1 rounded border border-border bg-bg px-1"
+                value={sky === null ? '' : sky.dimension}
+                onChange={(event) => setSkyChoice(event.target.value)}
+              >
+                <option value="">The preview's own</option>
+                {skies.map((one) => (
+                  <option key={one.dimension} value={one.dimension}>
+                    {one.name}'s sky
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="flex items-center gap-1">
             <input
               type="checkbox"

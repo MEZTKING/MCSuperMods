@@ -91,7 +91,11 @@ export interface LoweredFixture {
  * become stable JSON text; bytes stay bytes.
  */
 export async function lowerFixture(name: string, target: Target): Promise<LoweredFixture> {
-  const root = join(REPO_ROOT, 'fixtures', name);
+  return lowerProjectAt(join(REPO_ROOT, 'fixtures', name), target);
+}
+
+/** Loads the project at `root` (for example a library starter under `examples/`) and lowers it. */
+export async function lowerProjectAt(root: string, target: Target): Promise<LoweredFixture> {
   const header = JSON.parse(await readFile(join(root, 'msm.project.json'), 'utf8')) as {
     plugins: string[];
   };

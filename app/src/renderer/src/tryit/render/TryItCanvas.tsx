@@ -23,6 +23,9 @@
  * - Mobs (B395) are drawn before those two passes, after the blocks and the outline, with the
  *   depth buffer kept: the `mobs` prop's snapshots through the geo preview's renderer, one baked
  *   look per model and texture, a box for a mob without a model, and a name plate (`mobs.ts`).
+ * - Project fluids (B483) are drawn by their own pass before the portals (`fluids/fluid-pass.ts`;
+ *   hidden from deepslate as portals are), and the sky is MSM's own colour or, when the view
+ *   chooses one, a project dimension type's sky colour (`sky.ts`).
  *
  * This module is the lazy chunk: `TryItScene` imports it with `lazy()` after checking WebGL.
  */
@@ -36,6 +39,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import { normaliseId } from '../../preview/model-chain';
 import { TRYIT_FALLBACK_MODELS } from '../blocks2/fallback-parents';
+import { type FluidLook, FluidPass } from '../fluids/fluid-pass';
 import { type VehicleDrawSource, VehiclePass } from '../vehicles/vehicle-pass';
 import {
   boxInFrustum,
@@ -54,6 +58,7 @@ import {
   withoutPortals,
 } from './portal';
 import { prepareTryItResources, type TryItResources } from './resources';
+import { PREVIEW_SKY } from './sky';
 import { TRYIT_CHUNK_SIZE, type TryItGrid, WorldStructure } from './world-structure';
 
 export type { CameraPose, PickedOutline } from './camera';
@@ -77,6 +82,8 @@ export interface TryItFrameStats {
   mobPlates: number;
   /** Vehicles drawn (B428). */
   vehicles: number;
+  /** Project fluid blocks drawn (B483). */
+  fluids: number;
 }
 
 /** What the resources found, for notes beside the view. */
@@ -129,6 +136,10 @@ export interface TryItCanvasProps {
    * drawing mobs and particles between ticks. Default 0.
    */
   partialTick?: PerFrame<number>;
+  /** The project's fluids by id (B483); their blocks are drawn by the fluid pass. */
+  fluids?: ReadonlyMap<string, FluidLook>;
+  /** The sky colour (0..1 RGB); absent or `null` for MSM's own (B483, ADR 0100 D4). */
+  sky?: PerFrame<readonly [number, number, number] | null>;
   /** "Smaller picture": draws at half the resolution and scales it up. */
   smaller?: boolean;
   /** False stops the render loop (the view is hidden). Default true. */
@@ -149,7 +160,8 @@ export interface TryItCanvasProps {
 }
 
 /** The sky behind the area: a plain MSM blue-grey, not Minecraft's sky colour. */
-const SKY: readonly [number, number, number] = [0.58, 0.66, 0.74];
+const SKY: readonly [number, number, number] = PREVIEW_SKY;
+const NO_FLUIDS: ReadonlyMap<string, FluidLook> = new Map();
 /** The floor's tint and its lines; every eighth line, and the edge, stand out. */
 const FLOOR: [number, number, number] = [0.36, 0.4, 0.44];
 const FLOOR_LINE: [number, number, number] = [0.46, 0.5, 0.55];
@@ -302,10 +314,13 @@ interface Scene {
   /** Try it's own passes, made with the renderer. */
   batch: QuadBatch | null;
   portalPass: PortalPass | null;
+  fluidPass: FluidPass | null;
   particlePass: ParticlePass | null;
   mobPass: MobPass | null;
   vehiclePass: VehiclePass | null;
   portalIndex: PortalIndex;
+  /** The fluid blocks of the grid (B483). */
+  fluidIndex: PortalIndex;
   /** Milliseconds drawn so far, for the portal pictures' frames. */
   animationMs: number;
 }
@@ -330,10 +345,12 @@ function createScene(): Scene | null {
     planes: new Float32Array(24),
     batch: null,
     portalPass: null,
+    fluidPass: null,
     particlePass: null,
     mobPass: null,
     vehiclePass: null,
     portalIndex: new PortalIndex(),
+    fluidIndex: new PortalIndex(),
     animationMs: 0,
   };
 }
@@ -341,11 +358,13 @@ function createScene(): Scene | null {
 function disposeScene(scene: Scene | null): void {
   if (scene === null) return;
   scene.portalPass?.dispose();
+  scene.fluidPass?.dispose();
   scene.particlePass?.dispose();
   scene.mobPass?.dispose();
   scene.vehiclePass?.dispose();
   scene.batch?.dispose();
   scene.portalIndex.dispose();
+  scene.fluidIndex.dispose();
   scene.gl.getExtension('WEBGL_lose_context')?.loseContext();
   scene.canvas.remove();
 }
@@ -379,6 +398,10 @@ interface FrameExtras {
   grid: TryItGrid;
   portalLooks: ReadonlyMap<string, PortalLook>;
   isPortal: (id: string) => boolean;
+  fluidLooks: ReadonlyMap<string, FluidLook>;
+  isFluid: (id: string) => boolean;
+  /** The sky colour, or `null` for MSM's own. */
+  sky: readonly [number, number, number] | null;
   particles: ParticleField | null;
   mobs: MobField | null;
   vehicles: VehicleDrawSource | null;
@@ -458,23 +481,44 @@ function drawVehicles(scene: Scene, projection: mat4, view: mat4, extras: FrameE
   return drawn.models + drawn.boxes;
 }
 
-/** Draws the portal and particle passes after the blocks; returns what they drew. */
+/** Draws the fluid, portal and particle passes after the blocks; returns what they drew. */
 function drawExtras(
   scene: Scene,
   view: mat4,
   pose: CameraPose,
   extras: FrameExtras,
-): { particles: number; portals: number } {
+): { particles: number; portals: number; fluids: number } {
   const { props } = extras;
   scene.portalIndex.follow(extras.grid, extras.isPortal);
   const portals = extras.portalLooks.size === 0 ? [] : scene.portalIndex.portals();
+  scene.fluidIndex.follow(extras.grid, extras.isFluid);
+  const fluids = extras.fluidLooks.size === 0 ? [] : scene.fluidIndex.portals();
   const particles = extras.particles;
-  if (portals.length === 0 && (particles === null || particles.size === 0)) {
-    return { particles: 0, portals: 0 };
+  if (portals.length === 0 && fluids.length === 0 && (particles === null || particles.size === 0)) {
+    return { particles: 0, portals: 0, fluids: 0 };
   }
   if (scene.batch === null) scene.batch = new QuadBatch(scene.gl);
   const batch = scene.batch;
   const readProjectAsset = props.readProjectAsset;
+  let drawnFluids = 0;
+  if (fluids.length > 0) {
+    const source = {
+      files: props.files,
+      folders: props.folders,
+      vanilla: props.vanilla,
+      ...(readProjectAsset === undefined ? {} : { readProjectAsset }),
+    };
+    if (scene.fluidPass === null) scene.fluidPass = new FluidPass(batch, source);
+    else scene.fluidPass.setSource(source);
+    drawnFluids = scene.fluidPass.draw(
+      fluids,
+      extras.fluidLooks,
+      (pos) => extras.grid.get(pos),
+      scene.animationMs / 50,
+      scene.clip,
+      pose.eye,
+    );
+  }
   let drawnPortals = 0;
   if (portals.length > 0) {
     const source = {
@@ -510,7 +554,7 @@ function drawExtras(
     );
   }
   resetGlForDeepslate(scene.gl);
-  return { particles: drawnParticles, portals: drawnPortals };
+  return { particles: drawnParticles, portals: drawnPortals, fluids: drawnFluids };
 }
 
 /** Draws one frame; returns what was drawn. */
@@ -522,10 +566,19 @@ function drawFrame(
   extras: FrameExtras,
 ): Omit<TryItFrameStats, 'rebuildMs'> {
   const { gl, renderer, internals } = scene;
-  const none = { meshes: 0, particles: 0, portals: 0, mobs: 0, mobPlates: 0, vehicles: 0 };
+  const none = {
+    meshes: 0,
+    particles: 0,
+    portals: 0,
+    mobs: 0,
+    mobPlates: 0,
+    vehicles: 0,
+    fluids: 0,
+  };
   if (renderer === null) return none;
   resetGlForDeepslate(gl);
-  gl.clearColor(SKY[0], SKY[1], SKY[2], 1);
+  const sky = extras.sky ?? SKY;
+  gl.clearColor(sky[0], sky[1], sky[2], 1);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   const view = viewMatrixFor(pose, scene.view);
   if (internals === null) {
@@ -643,12 +696,22 @@ export default function TryItCanvas(props: TryItCanvasProps) {
     const ids = new Set(portalKey === '' ? [] : portalKey.split('\n'));
     return (id: string): boolean => ids.has(id);
   }, [portalKey]);
+  // Project fluids (B483) are drawn by the fluid pass, so deepslate meshes without them too.
+  const fluidLooks = props.fluids ?? NO_FLUIDS;
+  const fluidKey = useMemo(() => [...fluidLooks.keys()].sort().join('\n'), [fluidLooks]);
+  const isFluid = useMemo(() => {
+    const ids = new Set(fluidKey === '' ? [] : fluidKey.split('\n'));
+    return (id: string): boolean => ids.has(id);
+  }, [fluidKey]);
   const meshGrid = useMemo(
-    () => (portalKey === '' ? grid : withoutPortals(grid, isPortal)),
-    [grid, portalKey, isPortal],
+    () =>
+      portalKey === '' && fluidKey === ''
+        ? grid
+        : withoutPortals(grid, (id) => isPortal(id) || isFluid(id)),
+    [grid, portalKey, isPortal, fluidKey, isFluid],
   );
-  const extrasRef = useRef({ portalLooks, isPortal });
-  extrasRef.current = { portalLooks, isPortal };
+  const extrasRef = useRef({ portalLooks, isPortal, fluidLooks, isFluid });
+  extrasRef.current = { portalLooks, isPortal, fluidLooks, isFluid };
 
   // The canvas and its context, once.
   useEffect(() => {
@@ -817,6 +880,9 @@ export default function TryItCanvas(props: TryItCanvasProps) {
             grid: current.grid,
             portalLooks: extrasRef.current.portalLooks,
             isPortal: extrasRef.current.isPortal,
+            fluidLooks: extrasRef.current.fluidLooks,
+            isFluid: extrasRef.current.isFluid,
+            sky: read(current.sky ?? null),
             particles: current.particles ?? null,
             mobs: current.mobs ?? null,
             vehicles: current.vehicles ?? null,

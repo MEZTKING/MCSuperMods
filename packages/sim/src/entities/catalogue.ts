@@ -112,6 +112,9 @@ const COMPONENT_WORDS: Readonly<Record<string, string>> = {
   'msm:rideable': 'riding',
   'msm:variants': 'texture variants',
   'msm:boss_bar': 'boss bar',
+  // Batch 2 (ADR 0098 D3, D4; B483): said, not simulated.
+  'msm:storage': 'storage (opened by sneaking and using it, or the inventory key while riding)',
+  'msm:shoulder_riding': "riding on its owner's shoulder",
 };
 
 /**
@@ -128,6 +131,8 @@ const HANDLED_COMPONENTS = new Set([
   'msm:on_interact',
   'msm:on_tick',
   'msm:on_spawn',
+  // Trading is the merchant mock-up's (B483, `traders/`).
+  'msm:trader',
 ]);
 
 /** `ranged_attack` as `ranged attack`. */
