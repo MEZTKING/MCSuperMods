@@ -54,13 +54,12 @@ export const PICKAXE: Silhouette = [
 
 export const AXE: Silhouette = [
   '................',
-  '........MMMM....',
-  '.......MMMMMMHH.',
-  '......MMMMMMHH..',
-  '......MMMMMHH...',
-  '.......MMMHH....',
-  '........MHH.....',
-  '........HH......',
+  '......MMMMM.....',
+  '.....MMMMMMMHH..',
+  '....MMMMMMMHH...',
+  '....MMMMMMHH....',
+  '.....MMMMHH.....',
+  '......MMHH......',
   '.......HH.......',
   '......HH........',
   '.....HH.........',
@@ -68,6 +67,7 @@ export const AXE: Silhouette = [
   '...HH...........',
   '..HH............',
   '.HH.............',
+  '................',
   '................',
 ];
 
@@ -92,12 +92,11 @@ export const SHOVEL: Silhouette = [
 
 export const HOE: Silhouette = [
   '................',
-  '........MMMMM...',
-  '.......MMMMMMM..',
-  '.......MM...HH..',
-  '.......M...HH...',
-  '..........HH....',
-  '.........HH.....',
+  '......MMMMMM....',
+  '.....MMMMMMMM...',
+  '.....MMMM..HH...',
+  '.....MMM..HH....',
+  '.....MM..HH.....',
   '........HH......',
   '.......HH.......',
   '......HH........',
@@ -106,6 +105,7 @@ export const HOE: Silhouette = [
   '...HH...........',
   '..HH............',
   '.HH.............',
+  '................',
   '................',
 ];
 
@@ -228,8 +228,8 @@ export const FRUIT: Silhouette = [
   '.......S.LL.....',
   '.......SLLL.....',
   '....MMMSMMM.....',
-  '...MMMMMMMMMM...',
-  '..M*MMMMMMMMMM..',
+  '...MM*MMMMMMM...',
+  '..M**MMMMMMMMM..',
   '..M*MMMMMMMMMM..',
   '..MMMMMMMMMMMM..',
   '..MMMMMMMMMMMM..',

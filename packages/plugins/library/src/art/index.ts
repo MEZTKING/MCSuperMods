@@ -1,49 +1,51 @@
 /**
- * Minecraft-style art prototype (ADR 0092, Proposed): approach A recolours the user's own
- * textures ({@link recolourTexture}), approach B draws original textures by vanilla's rules
- * ({@link generateArt}). Not wired into any flow yet.
+ * The low-level helpers of the vanilla-style generator (ADR 0092), exported from the library as
+ * `minecraftArt`: colour maths, hue-shifted ramps, seeded clustered noise, palettes and the
+ * sprite renderers. The recipe table, `artPixels`, `artPng`, `checkArtRules` and the box skins
+ * are exported from the library itself.
  *
  * @packageDocumentation
  */
 
+export { drawSprite, renderSprite, type SpriteOptions, type SpriteRamps } from './canvas';
 export {
   type ArtImage,
+  blankImage,
+  colourDistance,
   hueDelta,
   type Oklab,
   type Oklch,
+  oklabToRgb,
   oklchToRgb,
   packRgb,
   rgbToOklab,
   rgbToOklch,
+  unpackRgb,
 } from './colour';
 export {
-  ART_RECIPES,
-  type ArtOptions,
-  type ArtRecipe,
-  type ArtStyle,
-  DEFAULT_STYLE,
-  generateArt,
-  generateArtPng,
+  ART_HUE_SHIFT,
+  barkRamp,
+  CRUST,
+  DEEPSLATE_GREY,
+  HANDLE_BROWN,
+  handleRamp,
   LEAF_GREEN,
-} from './generator';
-export { clusteredField, hashSeed, quantise, rng } from './noise';
+  materialRamp,
+  type Ramp,
+  STONE_GREY,
+  spreadShades,
+  stoneRamp,
+  woodRamp,
+} from './materials';
+export { clusteredField, type FieldOptions, hashSeed, quantise, rng } from './noise';
+export { colourCount, extractPalette, type PaletteEntry } from './palette';
 export {
-  BASE_DIFFERENCE,
-  extractPalette,
-  type MaterialMaskOptions,
-  materialColours,
-  materialMask,
-  type PaletteEntry,
-  type TextureRamps,
-  textureRamps,
-} from './palette';
-export { defaultSteps, generateRamp, type RampOptions, type ShadeStep } from './ramp';
-export {
-  applyColourMap,
-  colourCount,
-  type RecolourOptions,
-  rampMap,
-  recolourTexture,
-  stripFrames,
-} from './recolour';
-export { learnStyle, meanRunLength, rampHueTurn } from './style';
+  COOL_HUE,
+  DEFAULT_HUE_SHIFT,
+  defaultSteps,
+  generateRamp,
+  type RampOptions,
+  type ShadeStep,
+  WARM_HUE,
+} from './ramp';
+export type { Silhouette } from './sprites';

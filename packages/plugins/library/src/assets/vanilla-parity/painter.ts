@@ -7,8 +7,8 @@
  * @packageDocumentation
  */
 
+import { renderSprite } from '../../art/canvas';
 import { oklchToRgb, rgbToOklch } from '../../art/colour';
-import { renderSprite } from '../../art/generator';
 import { clusteredField, hashSeed } from '../../art/noise';
 import { generateRamp } from '../../art/ramp';
 import type { Silhouette } from '../../art/sprites';

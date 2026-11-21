@@ -8,3 +8,5 @@ The decisions taken from them are in the ADR amendments, which win over anything
 - `b470/`: custom fluids (S14), measured on both versions, with and without the 26.4 `Entity.isInWater`/`isInLava` Mixin. Decisions in `docs/adr/0099-custom-fluids.md`, "Amendment after the spike". `spike-src/` holds `spike4/` (fluids, liquid block, Mixin, client), the 26.3 `SpikeFluid` seam and resources; `server-*.json` and `client-*.json` are the observations (`client-*`: `sp.*` singleplayer, `ds.*` a dedicated server with a joined client).
 
 The DEVLOG entries "B469" and "B470" of 2026-11-15 describe how each spike was run.
+
+The drawn art of ADR 0092 (the contact sheet and the numbers chosen for the generator) is not spike evidence and lives in `docs/reference/art/` (see its README).

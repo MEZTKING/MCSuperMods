@@ -30,7 +30,30 @@ import { definePlugin, type Plugin } from '@msm/plugin-api';
 import { libraryExamples } from './examples/index';
 import { libraryStarters } from './starters/index';
 
+export { type ArtPngOptions, artPng, PATTERN_RECIPES } from './art/artpng';
+export { artFramePngs, artLookPng, artPixels } from './art/draw';
 export * as minecraftArt from './art/index';
+export {
+  ART_RECIPE_IDS,
+  type ArtDetail,
+  type ArtLook,
+  type ArtPictureKind,
+  type ArtPixels,
+  type ArtRecipeId,
+  type ArtRecipeInfo,
+  DETAIL_NOISE,
+} from './art/info';
+export { hashSeed } from './art/noise';
+export {
+  ALPHA_LEVELS,
+  type ArtRulesImage,
+  COLOUR_CAPS,
+  checkArtRules,
+  LIGHTNESS_LIMITS,
+  softAlpha,
+} from './art/rules';
+export * from './art/skins';
+export { ART_RECIPE_INFO, artRecipeInfo } from './art/table';
 export {
   ARMOR_LAYER_SIZE,
   armorLayerPng,
@@ -55,6 +78,7 @@ export {
   placeholderSkinPixels,
   placeholderSkinPng,
   type Rgb,
+  type SkinBox,
   WOLF_ARMOR_LAYER_SIZE,
 } from './assets/png';
 export { COLOURS, KINDS, modIdFromNamespace } from './content/bundle';
