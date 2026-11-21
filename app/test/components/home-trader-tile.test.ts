@@ -12,13 +12,13 @@ import {
 const traderTile = () => MAKE_TILES.find((tile) => tile.id === 'trader');
 
 describe('Make a trader tile (ADR 0101 D4)', () => {
-  it('sits under Creatures after the pets and opens the Wandering merchant flow', () => {
+  it('sits under Creatures after the pets and opens the Wandering merchant and Village job flows', () => {
     expect(traderTile()).toEqual({
       id: 'trader',
       label: 'Make a trader',
-      sentence: 'A mob that trades with you.',
+      sentence: 'A mob that trades with you, or a new job for villagers.',
       group: 'creatures',
-      action: { type: 'flows', flowIds: ['wandering-merchant'] },
+      action: { type: 'flows', flowIds: ['wandering-merchant', 'village-job'] },
     });
     expect(TRADER_FLOW_ID).toBe('wandering-merchant');
     const ids = MAKE_TILES.map((tile) => tile.id);
@@ -30,13 +30,16 @@ describe('Make a trader tile (ADR 0101 D4)', () => {
     expect(`${tile?.label} ${tile?.sentence}`).not.toMatch(/[a-z0-9]+[:_-][a-z0-9]/);
   });
 
-  it('is hidden without the flow and shown with it', () => {
+  it('is hidden without its flows and shown with them', () => {
     const shown = (available: (id: string) => boolean) =>
       shownTiles({ flowAvailable: available, rules: false, ai: false }).map(
         (entry) => entry.tile.id,
       );
-    expect(shown((id) => id !== TRADER_FLOW_ID)).not.toContain('trader');
+    expect(shown(() => false)).not.toContain('trader');
     const withFlow = shownTiles({ flowAvailable: () => true, rules: false, ai: false });
-    expect(withFlow.find((entry) => entry.tile.id === 'trader')?.flowIds).toEqual([TRADER_FLOW_ID]);
+    expect(withFlow.find((entry) => entry.tile.id === 'trader')?.flowIds).toEqual([
+      TRADER_FLOW_ID,
+      'village-job',
+    ]);
   });
 });

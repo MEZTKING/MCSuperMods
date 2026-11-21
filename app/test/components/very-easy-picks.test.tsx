@@ -80,6 +80,7 @@ describe('Very easy picks (ADR 0101 D4)', () => {
         'simple-block',
         'custom_ore',
         'stone-set',
+        'fluid',
         'lights',
         'bed',
         'cake',
@@ -107,6 +108,7 @@ describe('Very easy picks (ADR 0101 D4)', () => {
       'simple-block',
       'custom_ore',
       'stone-set',
+      'fluid',
       'wood-set',
       'crop',
     ]);

@@ -149,7 +149,12 @@ describe('wizard model', () => {
         else expect(error).toBe('Enter a value.');
       }
     }
-    expect(optional).toEqual([expect.stringMatching(/crop.*\.seeds_name$/)]);
+    // The Wandering merchant's second and third wares may be left empty (B481).
+    expect(optional).toEqual([
+      expect.stringMatching(/crop.*\.seeds_name$/),
+      'wandering-merchant.ware_2',
+      'wandering-merchant.ware_3',
+    ]);
   });
 
   it('validates numbers: a number, min, max and step', () => {

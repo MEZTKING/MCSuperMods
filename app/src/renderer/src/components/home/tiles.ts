@@ -174,10 +174,10 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'block',
     label: 'Make a block',
-    sentence: 'A new block, an ore, stone with stairs, lights, a bed, a cake or a sign.',
+    sentence: 'A new block, an ore, stone with stairs, lights, a bed, a cake, a sign or a liquid.',
     group: 'blocks',
     // The Very easy picks (ADR 0101 D4) follow the first three; flows not in the library are hidden.
-    action: withPicks(['simple-block', 'custom_ore', 'stone-set'], MAKE_BLOCK_PICKS),
+    action: withPicks(['simple-block', 'custom_ore', 'stone-set', 'fluid'], MAKE_BLOCK_PICKS),
   },
   {
     id: 'machine',
@@ -245,9 +245,9 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'trader',
     label: 'Make a trader',
-    sentence: 'A mob that trades with you.',
+    sentence: 'A mob that trades with you, or a new job for villagers.',
     group: 'creatures',
-    action: flows(TRADER_FLOW_ID),
+    action: flows(TRADER_FLOW_ID, 'village-job'),
   },
   {
     id: 'vehicle',
