@@ -95,6 +95,8 @@ A card's menu has:
 
 Each is one step, so **Undo** takes it back.
 
+Rename only changes the shown name, so it never breaks a world. **Delete** asks first when you have already played with the thing or shared it (Play, Reload, Test in Minecraft, an install or an export): worlds that already have it lose it, so its blocks disappear and its items and creatures are gone. Choose **Delete anyway** to go on, or **Cancel** to keep it. **Undo** brings it back in MCSuperMods, but not in those worlds.
+
 ## Things to fix
 
 When something stops your mod from playing, **Things to fix (N)** lists it in plain words, with the thing's name: for example a picture that is missing, or a step in a rule that cannot work. Each line has:

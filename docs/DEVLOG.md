@@ -6458,3 +6458,20 @@ Next
 **Next**
 - In-game check on Windows: install into a real world with Minecraft closed, restore, open the restored copy.
 - `app/CLAUDE.md` contents line for `world-backups.ts`, `WorldBackupsSection.tsx` and the `worldBackups:*` channels (not in this brief's files).
+## 2026-11-21 — executor — B489 rename and delete warnings for exported ids
+
+**What**
+- ADR 0102 D4: `app/src/renderer/src/session/exported-ids.ts` (pure): `EXPORTED_IDS_FILE` (`.msm/exported-ids.json`), the world-kept registries (block, item, entity_type, fluid, mob_effect, potion, enchantment, dimension, villager_profession), `exportedIdsOf` over `dataRegistryIds` (so block items, buckets, liquid blocks, flowing fluids, spawn eggs, vehicle items and potion versions come from the same view the exporters use), `mergeExportedIds` (sorted, an id stays once exported, `lastExport` with date, target and how), `serialiseExportedIds` (`stableStringify`) and a forgiving `parseExportedIds`.
+- The session reads the record on open and create, and merges into it through its project file system after every successful export or install: Fabric mod jar (`content-jar`), Java project (`java-project`), data and resource pack zips, both packs, data pack and resource pack installs, Test in Minecraft; Play and Reload through the new `session.recordPlayed('play' | 'reload')` called by the Play store after main reports success. A vanilla data pack records only enchantments and dimensions (ADR 0066 leaves mod-only ids out of it), a resource pack no ids. Cancelled saves and blocked exports record nothing; a failed write only logs.
+- ADR 0102 D5: `renameWarning` and `deleteWarning` (owned ids from the same registry view, run on the element alone; a block item with its own `item.id` is kept by a rename and does not warn; a delete ignores ids another element still owns) and `exportedIdsWarningText` (ids and what they become in Easy and Advanced; plain words with the thing's name and no ids in Very easy). Session methods `renameExportedIdsWarning(oldId, newId?)` and `deleteExportedIdsWarning(ids)`.
+- UI: the Rename element dialog shows the warning (`rename-exported-warning`, recomputed as the new id is typed) and its button becomes **Rename anyway**; the sidebar's Remove asks first with **Remove anyway** and My things' **Delete** with **Delete anyway** (new dialog state `delete-exported` over `ConfirmDialog`); fresh elements rename and delete as before.
+- Tests: `test/exported-ids.test.ts` (11), `test/session-exported-ids.test.ts` (9: each export kind, merge, sorted file, reopen, rename and delete warnings), `test/components/RenameElementDialog.test.tsx` (2), two App tests (Very easy delete in plain words, sidebar remove); e2e step in `blocks-items-path` (shape preset test: the record after the jar export, the warning, Rename anyway). Guide: a paragraph in `getting-started.md` (Command palette and shortcuts) and in `very-easy.md` (My things).
+- Checks: `pnpm lint`, `pnpm typecheck`, `pnpm test` (24 tasks; app 2435 tests), `pnpm build`, and the whole e2e suite under `xvfb-run -a` (63 passed).
+
+**Decisions**
+- The Java project eject records too (its mod registers the same ids); modpack builds do not (they build other projects in scratch sessions over a snapshot, so the record would not reach the member's folder).
+- Very easy's Rename changes only the shown name, so it never warns; the plain words still exist for the rule-book rename, which uses the id dialog.
+
+**Next**
+- A modpack build and Test could record each member's ids into the member's own folder (needs a write through `modpacks`).
+- `app/CLAUDE.md` could list `session/exported-ids.ts` next to the other `.msm/` files.

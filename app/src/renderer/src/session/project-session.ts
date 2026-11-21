@@ -132,6 +132,19 @@ import {
   PACK_MCMETA_KIND,
   presentSingletonKinds,
 } from './element-defaults';
+import {
+  deleteWarning,
+  EXPORTED_IDS_FILE,
+  type ExportedIdsRecord,
+  type ExportedIdsScope,
+  type ExportedIdsWarning,
+  type ExportedVia,
+  exportedIdsOf,
+  mergeExportedIds,
+  parseExportedIds,
+  renameWarning,
+  serialiseExportedIds,
+} from './exported-ids';
 import { hudPictureProblems } from './hud-pictures';
 import {
   collectImporters,
@@ -860,6 +873,8 @@ export class ProjectSession {
     index: ReferenceIndex;
   } | null = null;
   #renameProblems: Problem[] = [];
+  /** The ids that already left MSM (ADR 0102 D4), read on open; `null` before. */
+  #exportedIds: ExportedIdsRecord | null = null;
   readonly #listeners = new Set<(snapshot: SessionSnapshot) => void>();
   readonly #schemaCache = new Map<string, Promise<SchemaContext>>();
   #stack: CommandStack | null = null;
@@ -1425,6 +1440,7 @@ export class ProjectSession {
     await this.#fillKindDefaults(this.#currentTarget());
     await this.#emptyTrash();
     await this.#writeScriptTypings();
+    await this.#readExportedIds();
     return { ok: true };
   }
 
@@ -1561,6 +1577,7 @@ export class ProjectSession {
       await this.#fillKindDefaults(this.#currentTarget());
       await this.#emptyTrash();
       await this.#writeScriptTypings();
+      await this.#readExportedIds();
       return { ok: true };
     } catch (error) {
       await this.#platform.project.closeRoot();
@@ -2335,6 +2352,7 @@ export class ProjectSession {
     const built = await this.#buildPack('resource');
     if (built.data === undefined) return built.report;
     const { path } = await this.#platform.minecraft.installResourcePack(built.fileName, built.data);
+    await this.#recordExport(built.project, built.target, 'resource-pack', 'install-resource-pack');
     return { ...built.report, location: path };
   }
 
@@ -2370,6 +2388,12 @@ export class ProjectSession {
               built.data,
             )
           : await this.#platform.minecraft.installResourcePack(built.fileName, built.data);
+      await this.#recordExport(
+        built.project,
+        built.target,
+        packScope(pack),
+        pack === 'data' ? 'install-data-pack' : 'install-resource-pack',
+      );
       return { ...built.report, location: path };
     }
     const label = pack === 'data' ? 'Data pack' : 'Resource pack';
@@ -2379,7 +2403,14 @@ export class ProjectSession {
       filters: [{ name: label, extensions: ['zip'] }],
       data: built.data,
     });
-    return location === null ? { ...built.report, cancelled: true } : { ...built.report, location };
+    if (location === null) return { ...built.report, cancelled: true };
+    await this.#recordExport(
+      built.project,
+      built.target,
+      packScope(pack),
+      pack === 'data' ? 'data-pack' : 'resource-pack',
+    );
+    return { ...built.report, location };
   }
 
   /** Installs the data pack into the world folder `worldDir` under `saves/`. */
@@ -2423,6 +2454,7 @@ export class ProjectSession {
       { name: names.resources, data: resources.data },
       { name: names.data, data: data.data },
     ]);
+    await this.#recordExport(data.project, data.target, 'data-pack', 'both-packs');
     return { ...report, location: folder };
   }
 
@@ -2512,14 +2544,30 @@ export class ProjectSession {
   async buildContentJar(
     options: Record<string, Json> = {},
   ): Promise<{ report: ExportResult; modId: string; data?: Uint8Array }> {
+    const { project: _project, target: _target, ...built } = await this.#buildContentJar(options);
+    return built;
+  }
+
+  /** {@link buildContentJar} with the project and target it built. */
+  async #buildContentJar(options: Record<string, Json>): Promise<{
+    report: ExportResult;
+    modId: string;
+    data?: Uint8Array;
+    project: Project;
+    target: Target;
+  }> {
     const sink = createMemorySink();
-    const { report, project } = await this.#runPipeline(this.#contentJarExporter, sink, options);
+    const { report, project, target } = await this.#runPipeline(
+      this.#contentJarExporter,
+      sink,
+      options,
+    );
     const written = sink.files();
     const modId =
       modIdOf(written.get(FABRIC_MOD_JSON_FILE)) ?? sanitiseModId(project.name) ?? 'mod';
-    if (!report.ok) return { report, modId };
+    if (!report.ok) return { report, modId, project, target };
     const data = createZipBytes([...written].map(([path, bytes]) => ({ path, data: bytes })));
-    return { report, modId, data };
+    return { report, modId, data, project, target };
   }
 
   /**
@@ -2551,7 +2599,7 @@ export class ProjectSession {
    * @throws Error If no project is open.
    */
   async exportFabricJar(options: Record<string, Json> = {}): Promise<ExportResult> {
-    const built = await this.buildContentJar(options);
+    const built = await this.#buildContentJar(options);
     if (built.data === undefined) return built.report;
     const { report } = built;
     const fileName = contentJarFileName(built.modId);
@@ -2562,7 +2610,9 @@ export class ProjectSession {
       filters: [{ name: 'Fabric mod', extensions: ['jar'] }],
       data,
     });
-    return location === null ? { ...report, cancelled: true } : { ...report, location };
+    if (location === null) return { ...report, cancelled: true };
+    await this.#recordExport(built.project, built.target, 'jar', 'content-jar');
+    return { ...report, location };
   }
 
   /**
@@ -2579,7 +2629,7 @@ export class ProjectSession {
   async exportJavaProject(folder?: string): Promise<ExportResult> {
     const sink = createMemorySink();
     const piped = await this.#runPipeline(this.#javaProjectExporter, sink);
-    const { project } = piped;
+    const { project, target } = piped;
     // ADR 0082 D10: rules that need a script are not in the eject; plain ones are events.
     const notInEject = rulesNotInEjectProblems(project, piped.expansion);
     const report: ExportReport = {
@@ -2613,6 +2663,7 @@ export class ProjectSession {
         ],
       };
     }
+    await this.#recordExport(project, target, 'jar', 'java-project');
     return { ...report, location: result.root };
   }
 
@@ -2655,13 +2706,18 @@ export class ProjectSession {
       modIdOf(written.get(FABRIC_MOD_JSON_FILE)) ?? sanitiseModId(project.name) ?? 'mod';
     const data = createZipBytes([...written].map(([path, bytes]) => ({ path, data: bytes })));
     const test = await this.#platform.testInMinecraft.run(target.id, modId, data);
+    await this.#recordExport(project, target, 'jar', 'test-in-minecraft');
     return { ...report, test };
   }
 
   /** Runs the export pipeline for one pack into a zip; `data` is absent when blocked. */
-  async #buildPack(
-    pack: PackKind,
-  ): Promise<{ report: ExportReport; fileName: string; data?: Uint8Array }> {
+  async #buildPack(pack: PackKind): Promise<{
+    report: ExportReport;
+    fileName: string;
+    data?: Uint8Array;
+    project: Project;
+    target: Target;
+  }> {
     const sink = createZipSink();
     // ADR 0063 D6 and finding P8: a brewing recipe naming a potion the game does not know
     // stops the whole data pack from loading, so vanilla packs leave potions out entirely.
@@ -2685,8 +2741,8 @@ export class ProjectSession {
       withVehicleNeedsJar(withControlsNeedJar(warned, project), project),
       project,
     );
-    if (!noted.ok) return { report: noted, fileName };
-    return { report: noted, fileName, data: sink.finish() };
+    if (!noted.ok) return { report: noted, fileName, project, target };
+    return { report: noted, fileName, data: sink.finish(), project, target };
   }
 
   /**
@@ -3371,6 +3427,112 @@ export class ProjectSession {
     }
   }
 
+  // Exported ids (ADR 0102 D4, D5) ----------------------------------------------------------
+
+  /** The record of ids that already left MSM, or `null` when none is recorded yet. */
+  get exportedIds(): ExportedIdsRecord | null {
+    return this.#exportedIds;
+  }
+
+  /**
+   * Records that the open project's ids reached the game through Play or Reload (ADR 0102 D4):
+   * the mod jar's ids for the open project and its target. Never throws.
+   */
+  async recordPlayed(via: Extract<ExportedVia, 'play' | 'reload'>): Promise<void> {
+    const stack = this.#stack;
+    const target = this.#currentTarget();
+    if (stack === null || target === undefined) return;
+    await this.#recordExport(stack.state, target, 'jar', via);
+  }
+
+  /**
+   * The warning for renaming `oldId` to `newId` (ADR 0102 D5): the exported ids the rename
+   * changes, or `null` when the element or none of its ids were exported. Without `newId`, every
+   * exported id the element owns.
+   */
+  renameExportedIdsWarning(
+    oldId: ResourceLocation,
+    newId?: ResourceLocation,
+  ): ExportedIdsWarning | null {
+    const stack = this.#stack;
+    if (stack === null) return null;
+    const element = elementsById(stack.state).get(oldId);
+    if (element === undefined) return null;
+    return renameWarning(
+      this.#exportedIds,
+      stack.state,
+      element,
+      newId,
+      this.registry,
+      this.#currentTarget(),
+    );
+  }
+
+  /**
+   * The warning for deleting the elements `ids` (ADR 0102 D5): the exported ids that go, or
+   * `null` when none of them were exported.
+   */
+  deleteExportedIdsWarning(ids: readonly ResourceLocation[]): ExportedIdsWarning | null {
+    const stack = this.#stack;
+    if (stack === null) return null;
+    const byId = elementsById(stack.state);
+    const elements = ids.flatMap((id) => {
+      const element = byId.get(id);
+      return element === undefined ? [] : [element];
+    });
+    if (elements.length === 0) return null;
+    return deleteWarning(
+      this.#exportedIds,
+      stack.state,
+      elements,
+      this.registry,
+      this.#currentTarget(),
+    );
+  }
+
+  /** Reads `.msm/exported-ids.json` into the cache (`null` when absent or unreadable). */
+  async #readExportedIds(): Promise<void> {
+    this.#exportedIds = await this.#loadExportedIds();
+  }
+
+  async #loadExportedIds(): Promise<ExportedIdsRecord | null> {
+    try {
+      if (!(await this.#fs.exists(EXPORTED_IDS_FILE))) return null;
+      const bytes = await this.#fs.readFile(EXPORTED_IDS_FILE);
+      return parseExportedIds(new TextDecoder().decode(bytes));
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Merges the ids an export of `project` carried into `.msm/exported-ids.json` (ADR 0102 D4)
+   * and the cache. A failed write is logged and never fails the export.
+   */
+  async #recordExport(
+    project: Project,
+    target: Target,
+    scope: ExportedIdsScope,
+    via: ExportedVia,
+  ): Promise<void> {
+    if (this.#stack === null) return;
+    try {
+      const current = (await this.#loadExportedIds()) ?? this.#exportedIds;
+      const ids = exportedIdsOf(project, this.registry, target, scope);
+      const record = mergeExportedIds(current, ids, {
+        date: this.#now?.() ?? new Date().toISOString(),
+        target: target.id,
+        via,
+      });
+      const text = serialiseExportedIds(record);
+      await this.#fs.mkdirp(EXPORTED_IDS_FILE.slice(0, EXPORTED_IDS_FILE.lastIndexOf('/')));
+      await this.#fs.writeFile(EXPORTED_IDS_FILE, new TextEncoder().encode(text));
+      this.#exportedIds = record;
+    } catch (error) {
+      console.warn(`MSM: could not write ${EXPORTED_IDS_FILE}: ${messageOf(error)}`);
+    }
+  }
+
   /**
    * The project's Wishlist (ADR 0053), from `msm.wishlist.json`; empty when there is none or
    * no project is open.
@@ -3541,6 +3703,7 @@ export class ProjectSession {
     this.#textureLayers.clear();
     this.#texturesPending = false;
     this.#renameProblems = [];
+    this.#exportedIds = null;
     this.#referenceCache = null;
     this.#scriptingProblem = null;
     this.#expansionCache = null;
@@ -3597,6 +3760,11 @@ export class ProjectSession {
     }
     for (const listener of [...this.#listeners]) listener(this.#snapshot);
   }
+}
+
+/** What a vanilla pack carries into the exported-ids record (ADR 0102 D4). */
+function packScope(pack: PackKind): ExportedIdsScope {
+  return pack === 'data' ? 'data-pack' : 'resource-pack';
 }
 
 /** `ids` with `extra` merged in, per registry: sorted, without duplicates. */

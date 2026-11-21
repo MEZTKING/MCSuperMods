@@ -57,6 +57,7 @@ export interface FakeSession extends PlaySession {
   save: Mock<PlaySession['save']>;
   buildContentJar: Mock<PlaySession['buildContentJar']>;
   lowerExpandedProject: Mock<PlaySession['lowerExpandedProject']>;
+  recordPlayed: Mock<PlaySession['recordPlayed']>;
 }
 
 export const JAR = new Uint8Array([80, 75, 3, 4]);
@@ -113,6 +114,7 @@ export function fakeSession(
         : { report: report(false, options.blocked), modId: 'demo' },
     ),
     lowerExpandedProject: vi.fn(async () => ({ files: LOWERED, problems: [] })),
+    recordPlayed: vi.fn(async () => {}),
     subscribe(listener: (snapshot: SessionSnapshot) => void) {
       listeners.add(listener);
       return () => listeners.delete(listener);

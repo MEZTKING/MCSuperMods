@@ -113,6 +113,11 @@ import type { ChangeOptions } from './forms';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
 import { closeRequestHandlers } from './session/close-requests';
 import { namespaceFromFolderName } from './session/element-defaults';
+import {
+  DELETE_ANYWAY_LABEL,
+  exportedIdsWarningText,
+  REMOVE_ANYWAY_LABEL,
+} from './session/exported-ids';
 import { importerFileFilters, isBlockbenchImporter } from './session/importers';
 import { backupNote, takeInstallBackup } from './session/install-backups';
 import {
@@ -242,6 +247,14 @@ type DialogState =
   | { type: 'import-files'; mode: ImportMode }
   | { type: 'settings' }
   | { type: 'remove-asset'; namespace: string; path: string }
+  | {
+      /** A delete that removes exported ids (ADR 0102 D5): confirm first. */
+      type: 'delete-exported';
+      title: string;
+      message: string;
+      confirmLabel: string;
+      onConfirm(): void;
+    }
   | { type: 'rename'; id: ResourceLocation; references: number }
   | { type: 'usages'; id: ResourceLocation; usages: readonly Reference[] }
   | { type: 'worlds'; worlds: readonly WorldInfo[] }
@@ -1763,6 +1776,20 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       );
   };
   const deleteThing = (card: ThingCard): void => {
+    const warning = session.deleteExportedIdsWarning(card.elements.map((element) => element.id));
+    if (warning !== null) {
+      setDialog({
+        type: 'delete-exported',
+        title: `Delete ${card.name}`,
+        message: exportedIdsWarningText('delete', warning, veryEasy, card.name),
+        confirmLabel: DELETE_ANYWAY_LABEL,
+        onConfirm: () => deleteThingNow(card),
+      });
+      return;
+    }
+    deleteThingNow(card);
+  };
+  const deleteThingNow = (card: ThingCard): void => {
     session
       .applyChangeset(
         card.elements.map((element, index) => ({
@@ -2471,9 +2498,21 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     project={project}
                     selectedId={selectedId}
                     onSelect={(id) => select(id)}
-                    onRemove={(id: ResourceLocation) =>
-                      run('Remove element', () => session.removeElement(id))
-                    }
+                    onRemove={(id: ResourceLocation) => {
+                      const remove = () => run('Remove element', () => session.removeElement(id));
+                      const warning = session.deleteExportedIdsWarning([id]);
+                      if (warning === null) {
+                        remove();
+                        return;
+                      }
+                      setDialog({
+                        type: 'delete-exported',
+                        title: 'Remove element',
+                        message: exportedIdsWarningText('delete', warning, false, id),
+                        confirmLabel: REMOVE_ANYWAY_LABEL,
+                        onConfirm: remove,
+                      });
+                    }}
                     assetActions={{
                       onImport: (namespace) => setDialog({ type: 'import', namespace }),
                       onRemove: (namespace, path) =>
@@ -2940,6 +2979,15 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
               <RenameElementDialog
                 id={dialog.id}
                 references={dialog.references}
+                warning={(newId) => {
+                  const warning = session.renameExportedIdsWarning(dialog.id, newId);
+                  if (warning === null) return null;
+                  const element = project?.namespaces
+                    .flatMap((namespace) => namespace.elements)
+                    .find((entry) => entry.id === dialog.id);
+                  const name = element === undefined ? dialog.id : displayNameOf(element);
+                  return exportedIdsWarningText('rename', warning, veryEasy, name);
+                }}
                 onCancel={() => setDialog(null)}
                 onSubmit={(newId) => {
                   // Throws on kind rules and a missing namespace; the dialog shows it.
@@ -3040,6 +3088,21 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onRun={() => {
                   setDialog(null);
                   void runTestInMinecraft();
+                }}
+              />
+            )}
+            {dialog?.type === 'delete-exported' && (
+              <ConfirmDialog
+                title={dialog.title}
+                message={dialog.message}
+                confirmLabel={dialog.confirmLabel}
+                // The alert dialog also reports "closed" after a confirm.
+                onCancel={() =>
+                  setDialog((current) => (current?.type === 'delete-exported' ? null : current))
+                }
+                onConfirm={() => {
+                  setDialog(null);
+                  dialog.onConfirm();
                 }}
               />
             )}

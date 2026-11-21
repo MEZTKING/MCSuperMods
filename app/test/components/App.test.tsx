@@ -1790,6 +1790,32 @@ describe('App Very easy mode (ADR 0083)', () => {
     expect(screen.getByRole('navigation', { name: 'Elements' })).toBeTruthy();
   });
 
+  it('warns in plain words before deleting a thing that was already played (ADR 0102 D5)', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('home-tile-food'));
+    await user.click(await screen.findByTestId('creator-flow-food'));
+    await waitFor(() =>
+      expect((screen.getByTestId('creator-create') as HTMLButtonElement).disabled).toBe(false),
+    );
+    await user.click(screen.getByTestId('creator-create'));
+    await waitFor(() => expect(harness.session.snapshot.undoLabel).toBe('Create Food'));
+    await act(() => harness.session.recordPlayed('play'));
+    await user.click(screen.getByTestId('toolbar-home'));
+    const things = await screen.findByTestId('my-things');
+    const key = things.querySelector('li')?.getAttribute('data-testid')?.replace('my-thing-', '');
+    await user.click(screen.getByTestId(`my-thing-menu-${key ?? ''}`));
+    await user.click(await screen.findByTestId('my-thing-delete'));
+    const confirm = await screen.findByTestId('confirm-dialog');
+    expect(confirm.textContent).toContain('You have already played with');
+    expect(confirm.textContent).not.toMatch(/[a-z0-9_]+:[a-z0-9_/]+/);
+    expect(screen.getByTestId('my-things')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Delete anyway' }));
+    await waitFor(() => expect(screen.queryByTestId('my-things')).toBeNull());
+    expect(harness.session.snapshot.undoLabel).toMatch(/^Delete /);
+  });
+
   it('opens the rule book from "Make things happen", making one when there is none', async () => {
     usePreferences.setState({ mode: 'very-easy', modeChosen: true });
     const harness = await renderApp();
@@ -1820,5 +1846,33 @@ describe('App Very easy mode (ADR 0083)', () => {
     expect(within(palette).queryByTestId('command-advancedMode')).toBeNull();
     await userEvent.setup().click(within(palette).getByTestId('command-veryEasyMode'));
     expect(usePreferences.getState().mode).toBe('very-easy');
+  });
+});
+
+describe('App warnings for exported ids (ADR 0102 D5)', () => {
+  it('asks before removing an exported element from the sidebar, not a fresh one', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    act(() => {
+      harness.session.addElement({ id: 'demo:ruby', kind: 'msm:item' });
+    });
+    await act(() => harness.session.recordPlayed('play'));
+    act(() => {
+      harness.session.addElement({ id: 'demo:fresh', kind: 'msm:item' });
+    });
+    await user.click(await screen.findByRole('button', { name: 'Remove demo:fresh' }));
+    await waitFor(() => expect(harness.session.snapshot.undoLabel).toBe('Remove demo:fresh'));
+    expect(screen.queryByTestId('confirm-dialog')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Remove demo:ruby' }));
+    const confirm = await screen.findByTestId('confirm-dialog');
+    expect(confirm.textContent).toContain('demo:ruby (item)');
+    await user.click(within(confirm).getByRole('button', { name: 'Remove anyway' }));
+    await waitFor(() =>
+      expect(
+        harness.session.snapshot.project?.namespaces[0]?.elements.some(
+          (element) => element.id === 'demo:ruby',
+        ),
+      ).toBe(false),
+    );
   });
 });

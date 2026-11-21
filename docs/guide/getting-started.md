@@ -175,6 +175,10 @@ Press **Ctrl+Shift+P** to open the command palette and type part of a command's 
 | Ctrl+R | Reload in Game: send your changes to the running test world |
 | Ctrl+Shift+R | Reload Window (the app itself) |
 
+### Renaming or removing something you already exported
+
+Minecraft keeps placed blocks, items and mobs in a world by their id. Each time you export or install your mod (the Fabric mod jar, the vanilla packs, an install into a game location, **Test in Minecraft**, **Play** or **Reload**), MCSuperMods notes the ids that left it in the project's `.msm/exported-ids.json`: blocks, items (block items, buckets and spawn eggs included), mobs and vehicles, liquids, effects, potions, enchantments, dimensions and villager jobs. A vanilla data pack only carries its enchantments and dimensions, so only those are noted for it. When you rename an element whose id, or an id made for it (a block's item, a liquid's bucket), is in that list, the **Rename element** dialog says which ids change and what they become: worlds that already use them lose those placed blocks, items or mobs. Keep the old id, or rename only before anyone has worlds with it; you can still go on with **Rename anyway**. Removing such an element from the list asks the same way, with **Remove anyway**. Elements you never exported rename and remove without asking. A copy of the project without its `.msm` folder has no list, so it does not warn.
+
 ## Where next
 
 - [Templates, starters and examples](templates-and-examples.md): every template, starter and example, and the Examples gallery.

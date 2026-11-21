@@ -69,7 +69,13 @@ export type PlayOperation = 'play' | 'reload' | 'restart' | 'new-world' | 'find-
 /** The session calls Play needs; a {@link ProjectSession} has them all. */
 export type PlaySession = Pick<
   ProjectSession,
-  'snapshot' | 'target' | 'save' | 'buildContentJar' | 'lowerExpandedProject' | 'subscribe'
+  | 'snapshot'
+  | 'target'
+  | 'save'
+  | 'buildContentJar'
+  | 'lowerExpandedProject'
+  | 'subscribe'
+  | 'recordPlayed'
 >;
 
 /** What Play needs from the host. */
@@ -375,6 +381,8 @@ export const usePlayStore = create<PlayState>()((set, get) => {
         notify({ kind: 'error', text: result.message });
         return;
       }
+      // ADR 0102 D4: the jar's ids are in the test world now.
+      await host.session.recordPlayed('play');
       notify({ kind: 'info', text: playResultMessage(result) });
     } catch (error) {
       notify({ kind: 'error', text: `Play failed: ${messageOf(error)}` });
@@ -440,6 +448,7 @@ export const usePlayStore = create<PlayState>()((set, get) => {
           notify({ kind: 'error', text: result.message });
           return;
         }
+        await host.session.recordPlayed('reload');
         notify({ kind: 'info', text: result.message });
         if (result.restart.length > 0) set({ restartDialog: result.restart });
       } catch (error) {

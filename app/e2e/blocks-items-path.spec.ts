@@ -25,7 +25,9 @@
  * A fourth test (ADR 0059) picks the "slab_bottom" shape preset for a "Simple block" in the Block
  * Studio's Shape section (one outline box, see-through by default), turns on "Walk-through" and
  * takes it back with Undo, and checks the jar: the definition's `msm:shape` holds the preset's
- * box and no `preset` (it is editor-only).
+ * box and no `preset` (it is editor-only). After the export the project's `.msm/exported-ids.json`
+ * lists the block and its item (ADR 0102 D4), and renaming the block warns first and still
+ * renames with "Rename anyway" (D5).
  *
  * A fifth test (ADRs 0060, 0061) adds the "Extra mob drop" template (sidebar "Extra drops"): the
  * Extra drops Studio raises the count, drops the player-kill condition and adds a diamond drop,
@@ -631,6 +633,35 @@ test('blocks and items: a Block Studio shape preset lowers to boxes in the jar',
     components: Record<string, unknown>;
   };
   expect(definition.components['msm:shape']).toEqual({ boxes: [[0, 0, 0, 16, 8, 16]] });
+
+  // The export recorded the ids that left MSM; a rename of them warns first (ADR 0102). -------
+  const blockId = `${NAMESPACE}:${BLOCK_PATH}`;
+  const recordPath = join(folders.projectDir, '.msm', 'exported-ids.json');
+  await expect
+    .poll(() => {
+      try {
+        return (JSON.parse(readFileSync(recordPath, 'utf8')) as { ids: Record<string, string[]> })
+          .ids;
+      } catch {
+        return null;
+      }
+    })
+    .toMatchObject({ block: [blockId], item: [blockId] });
+  await window.getByTestId(`element-row-${blockId}`).click();
+  const renamePalette = await openPalette(window, 'rename');
+  await renamePalette.getByTestId('command-renameElement').click();
+  const rename = window.getByTestId('rename-dialog');
+  await expect(rename).toBeVisible();
+  const warning = rename.getByTestId('rename-exported-warning');
+  await expect(warning).toContainText(`${blockId} (block)`);
+  await expect(warning).toContainText('lose the placed blocks, items or mobs');
+  const renamedId = `${blockId}_renamed`;
+  await rename.getByTestId('rename-input').fill(renamedId);
+  await expect(warning).toContainText(`${renamedId} (block)`);
+  await expect(rename.getByTestId('rename-dialog-submit')).toHaveText('Rename anyway');
+  await rename.getByTestId('rename-dialog-submit').click();
+  await expect(rename).toBeHidden();
+  await expect(window.getByTestId(`element-row-${renamedId}`)).toBeVisible();
 
   await window.getByTestId('toolbar-save').click();
   await expect(window.locator('footer').getByText('Saved', { exact: true })).toBeVisible();
