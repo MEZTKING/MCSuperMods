@@ -1,0 +1,20 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:emerald"
+    },
+    "max_uses": 16,
+    "wants": {
+      "count": 12,
+      "id": "minecraft:sand"
+    },
+    "xp": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:glassblower/1/sand",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

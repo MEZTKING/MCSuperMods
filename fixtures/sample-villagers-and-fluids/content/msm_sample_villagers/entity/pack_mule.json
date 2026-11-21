@@ -1,0 +1,85 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.2,
+            "type": "panic"
+          },
+          {
+            "items": [
+              "minecraft:apple"
+            ],
+            "speed": 1,
+            "type": "tempt"
+          },
+          {
+            "type": "wander"
+          },
+          {
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_villagers:entity/pack_mule_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_villagers:entity/pack_mule",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_sample_villagers:entity/pack_mule",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 22
+      },
+      "msm:movement": {
+        "speed": 0.175
+      },
+      "msm:rideable": {
+        "controlled_by": "owner",
+        "jump": 0.5,
+        "saddle": true,
+        "speed": 1
+      },
+      "msm:storage": {
+        "needs_chest": true,
+        "rows": 3
+      },
+      "msm:tameable": {
+        "chance": 0.25,
+        "defends_owner": false,
+        "follows_owner": false,
+        "items": [
+          "minecraft:apple"
+        ],
+        "sit": false
+      }
+    },
+    "display_name": "Pack Mule",
+    "format": 1,
+    "size": {
+      "height": 1.5,
+      "width": 1.3
+    },
+    "spawn_egg": {
+      "display_name": "Pack Mule Spawn Egg",
+      "texture": "msm_sample_villagers:item/pack_mule_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:pack_mule",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "data": {
+    "behaves_like": "water",
+    "bucket_display_name": "Bucket of Brine",
+    "display_name": "Brine",
+    "events": {
+      "msm_sample_villagers:brine_inside": {
+        "actions": [
+          {
+            "amplifier": 0,
+            "effect": "minecraft:glowing",
+            "seconds": 3,
+            "target": "other",
+            "type": "apply_effect"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "on_entity_inside": "msm_sample_villagers:brine_inside",
+    "textures": {
+      "bucket": "msm_sample_villagers:item/brine_bucket",
+      "flowing": "msm_sample_villagers:block/brine_flow",
+      "still": "msm_sample_villagers:block/brine_still"
+    },
+    "tint": 3843740
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:brine",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

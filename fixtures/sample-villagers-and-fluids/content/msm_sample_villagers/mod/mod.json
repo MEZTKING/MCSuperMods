@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample villagers and fluids: a pedlar who trades, a glassblower job for villagers, a pack mule with storage, a shoulder pet, brine and molten amber, and the Glow Moon.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_villagers",
+    "name": "MSM Sample Villagers and Fluids",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

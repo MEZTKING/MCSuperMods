@@ -1,0 +1,14 @@
+{
+  "data": {
+    "amount": 1,
+    "trades": [
+      "msm_sample_villagers:pedlar/name_tag"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:pedlar/level_2",
+  "kind": "minecraft:trade_set",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

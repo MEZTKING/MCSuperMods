@@ -234,6 +234,16 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-vanilla-blocks.golden.test.ts
           test -f "$RUNNER_TEMP/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar"
           cat "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json"
+      # Villagers and fluids of batch 2 (ADRs 0098-0100, B482): a trader with its own and a vanilla
+      # trade set, a villager profession and its job site block, a pack mule with storage, a shoulder
+      # pet, a water-like and a lava-like fluid, and the Glow Moon dimension with its own type. The
+      # mobs use the runtime's vanilla renderer, so the content jar needs no GeckoLib on any version.
+      - name: Export the sample villagers and fluids with the real runtime
+        run: |
+          MSM_SAMPLE_VILLAGERS_OUT="$RUNNER_TEMP/sample-villagers" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-villagers-and-fluids.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-villagers/msm_sample_villagers.jar"
+          cat "$RUNNER_TEMP/sample-villagers/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -360,6 +370,26 @@ jobs:
           --expect-line '[msm_runtime] registered 2 command(s)'
           --expect-line '[msm_runtime] registered 2 creative tab(s)'
           --expect-line '[msm_runtime] loaded 2 script(s); 0 error(s)'
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The sample villagers and fluids (B482): the bench, the three mobs and their eggs, the two
+      # fluids (with their liquid blocks and buckets) and the glassblower register (7 definition
+      # files), the Glow Moon is a level of the world (its chunks are saved at the stop), the 26.4
+      # fluid Mixin applies, and a dedicated server loads no client class (the fluid renderers are
+      # client code, B475).
+      - name: Headless Fabric server check (sample villagers and fluids)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-villagers/msm_sample_villagers.jar"
+          --facts "$RUNNER_TEMP/sample-villagers/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 1 block(s) and 4 item(s) from 7 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered 3 entity type(s) and 0 mob effect(s)'
+          --expect-line '[msm_runtime] registered 2 fluid(s)'
+          --expect-line '[msm_runtime] registered 1 villager profession(s)'
+          --expect-line "Saving chunks for level 'ServerLevel[world]'/msm_sample_villagers:glow_moon"
           --forbid-line NoClassDefFoundError
           --forbid-line 'Mixin apply'
           --forbid-line MixinTransformerError
@@ -785,6 +815,28 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-vanilla-blocks-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Villagers and fluids (B482, SampleVillagersParityTest, 15 tests): what registers on this
+      # version (26.3 registers a flowing_ fluid per liquid, 26.4 one fluid) and the Glow Moon's type;
+      # the pedlar's offers, a trade paying and rewarding XP, levelling into its second set and
+      # vanilla's wandering trader set, restocking in the next half day and saving; the glassblower's
+      # point of interest, a villager trading from its set and a free villager taking the job at the
+      # bench and losing it when the bench breaks; the pack mule's chest, store, inventory key, saving
+      # and drops; the sugar glider perching and jumping down when its owner is hurt; brine and molten
+      # amber flowing by their numbers, sources, buckets, a dispenser, light and what they do to
+      # entities. Black-box, on the content jar of every version only: the eject leaves batch 2 out
+      # (B478 warns and strips it), so there is no ejected run.
+      - name: Parity GameTests (sample villagers and fluids, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-villagers/msm_sample_villagers.jar"
+          --facts "$RUNNER_TEMP/sample-villagers/fabric-facts.json"
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_villagers_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-villagers-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -851,6 +903,12 @@ jobs:
         with:
           name: msm-sample-vanilla-blocks-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-vanilla-blocks/msm_sample_vanilla_blocks.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: msm-sample-villagers-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-villagers/msm_sample_villagers.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7

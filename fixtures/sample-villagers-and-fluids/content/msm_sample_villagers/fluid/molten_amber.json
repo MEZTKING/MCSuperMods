@@ -1,0 +1,26 @@
+{
+  "data": {
+    "behaves_like": "lava",
+    "bucket_display_name": "Bucket of Molten Amber",
+    "display_name": "Molten Amber",
+    "flow": {
+      "drop_off": 2,
+      "infinite": false,
+      "slope_distance": 2,
+      "tick_delay": 10
+    },
+    "format": 1,
+    "light": 12,
+    "textures": {
+      "bucket": "msm_sample_villagers:item/molten_amber_bucket",
+      "flowing": "msm_sample_villagers:block/molten_amber_flow",
+      "still": "msm_sample_villagers:block/molten_amber_still"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:molten_amber",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

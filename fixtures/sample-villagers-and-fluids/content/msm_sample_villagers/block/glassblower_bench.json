@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "resistance": 2.5,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Glassblower Bench",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_villagers:block/glassblower_bench",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:glassblower_bench",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "data": {
+    "gives": {
+      "count": 1,
+      "id": "minecraft:name_tag"
+    },
+    "max_uses": 2,
+    "wants": {
+      "count": 5,
+      "id": "minecraft:emerald"
+    },
+    "xp": 10
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:pedlar/name_tag",
+  "kind": "minecraft:villager_trade",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

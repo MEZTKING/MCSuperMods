@@ -1,0 +1,13 @@
+{
+  "data": {
+    "values": [
+      "#minecraft:mason/level_5"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:glassblower/level_5",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

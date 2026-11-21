@@ -1,0 +1,68 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.4,
+            "type": "panic"
+          },
+          {
+            "type": "wander"
+          },
+          {
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_villagers:entity/sugar_glider_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_villagers:entity/sugar_glider",
+        "renderer": "vanilla",
+        "sit": "sit",
+        "texture": "msm_sample_villagers:entity/sugar_glider",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 6
+      },
+      "msm:movement": {
+        "speed": 0.3
+      },
+      "msm:shoulder_riding": {},
+      "msm:tameable": {
+        "chance": 0.33,
+        "defends_owner": false,
+        "follows_owner": true,
+        "items": [
+          "minecraft:sweet_berries"
+        ],
+        "sit": true
+      }
+    },
+    "display_name": "Sugar Glider",
+    "format": 1,
+    "size": {
+      "height": 0.5,
+      "width": 0.5
+    },
+    "spawn_egg": {
+      "display_name": "Sugar Glider Spawn Egg",
+      "texture": "msm_sample_villagers:item/sugar_glider_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:sugar_glider",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

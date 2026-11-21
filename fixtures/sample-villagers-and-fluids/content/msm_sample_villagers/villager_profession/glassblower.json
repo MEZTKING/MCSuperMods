@@ -1,0 +1,18 @@
+{
+  "data": {
+    "display_name": "Glassblower",
+    "format": 1,
+    "job_site": "msm_sample_villagers:glassblower_bench",
+    "textures": {
+      "villager": "msm_sample_villagers:entity/villager/profession/glassblower",
+      "zombie_villager": "msm_sample_villagers:entity/zombie_villager/profession/glassblower"
+    },
+    "work_sound": "minecraft:entity.villager.work_mason"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:glassblower",
+  "kind": "msm:villager_profession",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

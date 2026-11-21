@@ -1,0 +1,16 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_bottom_top",
+    "textures": {
+      "bottom": "msm_sample_villagers:block/glassblower_bench_bottom",
+      "side": "msm_sample_villagers:block/glassblower_bench_side",
+      "top": "msm_sample_villagers:block/glassblower_bench_top"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:block/glassblower_bench",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

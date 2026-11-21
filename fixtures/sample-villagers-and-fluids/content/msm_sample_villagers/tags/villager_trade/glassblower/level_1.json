@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "msm_sample_villagers:glassblower/1/glass",
+      "msm_sample_villagers:glassblower/1/sand"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:glassblower/level_1",
+  "kind": "minecraft:tag/villager_trade",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

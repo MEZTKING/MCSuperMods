@@ -3,9 +3,16 @@ package dev.mcsupermods.runtime.gametest;
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.mcsupermods.runtime.client.fluid.FluidClient;
 import dev.mcsupermods.runtime.registry.fluid.MsmFluids;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
@@ -14,9 +21,13 @@ import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotCompa
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotComparisonOptions;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderingRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,8 +47,14 @@ import net.minecraft.world.level.block.state.BlockState;
  *       times the tint).
  * </ul>
  *
- * <p>The screenshots ({@code msm_fluid_still_<fluid>}, {@code msm_fluid_flowing}) land in
- * {@code build/run/clientGameTest/screenshots/}; they are the still and flowing pictures the Try it preview follows.
+ * <p>Then a villager in the project profession {@code pf_potter} (ADR 0098 D2; B482): a villager without a job facing
+ * the camera, then the same villager given the job; the job's picture ({@code msm_test:entity/villager/profession/
+ * pf_potter}, a magenta apron over the body and robe) must be drawn over it, so the second screenshot holds magenta
+ * pixels and the first none. The pixels are counted rather than compared, as the entity's lighting shades them.
+ *
+ * <p>The screenshots ({@code msm_fluid_still_<fluid>}, {@code msm_fluid_flowing}, {@code msm_villager_no_job},
+ * {@code msm_villager_pf_potter}) land in {@code build/run/clientGameTest/screenshots/}; the fluid ones are the still
+ * and flowing pictures the Try it preview follows.
  */
 public class MsmFluidClientGameTest implements FabricClientGameTest {
     private static final int Y = 100;
@@ -45,6 +62,9 @@ public class MsmFluidClientGameTest implements FabricClientGameTest {
     private static final List<String> POOLS = List.of("fluid_water", "fluid_lava", "fluid_plain", "fluid_custom");
     /** Where the flowing check happens: open stone ground east of the pools. */
     private static final int FLOW_X = 80;
+    /** Where the villager stands: open stone ground between the pools and the flowing fluids, away from both. */
+    private static final double VILLAGER_X = 60.5;
+    private static final double VILLAGER_Z = -10.5;
 
     private static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath("msm_test", path);
@@ -78,6 +98,7 @@ public class MsmFluidClientGameTest implements FabricClientGameTest {
                 still(context, world, i);
             }
             flowing(context, world);
+            villager(context, world);
         }
     }
 
@@ -213,5 +234,75 @@ public class MsmFluidClientGameTest implements FabricClientGameTest {
         context.takeScreenshot("msm_fluid_flowing");
         assertColour(context, "msm_fluid_flowing_lava", new int[] {120, 0, 255});
         assertColour(context, "msm_fluid_flowing_water", tinted(new int[] {128, 128, 128}, entry("fluid_water").definition().tint().orElseThrow()));
+    }
+
+    /** Pixels of the screenshot at {@code path} that are clearly magenta (red and blue alike, little green). */
+    private static int magenta(Path path) {
+        try (InputStream in = Files.newInputStream(path); NativeImage image = NativeImage.read(in)) {
+            int count = 0;
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    int p = image.getPixel(x, y);
+                    int r = (p >> 16) & 255;
+                    int g = (p >> 8) & 255;
+                    int b = p & 255;
+                    if (r > 90 && b > 90 && g * 3 < Math.min(r, b) && Math.abs(r - b) < 40) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * A villager without a job, facing the camera three blocks away, then given the project profession {@code pf_potter}:
+     * the job's picture is drawn over it (the second screenshot holds magenta, the first none).
+     */
+    private static void villager(ClientGameTestContext context, TestSingleplayerContext world) {
+        TestServerContext server = world.getServer();
+        AtomicReference<UUID> spawned = new AtomicReference<>();
+        server.runOnServer(s -> {
+            ServerLevel level = s.overworld();
+            Villager villager = EntityTypes.VILLAGER.create(level, EntitySpawnReason.COMMAND);
+            check(villager != null, "no villager");
+            villager.snapTo(VILLAGER_X, Y, VILLAGER_Z, 0f, 0f);
+            villager.setYHeadRot(0f);
+            villager.yBodyRot = 0f;
+            villager.setNoAi(true);
+            villager.setSilent(true);
+            level.addFreshEntity(villager);
+            spawned.set(villager.getUUID());
+        });
+        fly(server);
+        server.runCommand(String.format(Locale.ROOT, "tp @a %.2f %.2f %.2f 180 10", VILLAGER_X, (double) Y, VILLAGER_Z + 3));
+        fly(server);
+        context.waitTicks(10);
+        context.getInput().lookAt(180, 10);
+        world.getConnection().waitForChunksRender();
+        context.waitTicks(10);
+        context.runOnClient(mc -> mc.gui.toastManager().clear());
+        int before = magenta(context.takeScreenshot("msm_villager_no_job"));
+        server.runOnServer(s -> {
+            Villager villager = (Villager) s.overworld().getEntity(spawned.get());
+            check(villager != null, "the villager is gone");
+            var potter = BuiltInRegistries.VILLAGER_PROFESSION.wrapAsHolder(BuiltInRegistries.VILLAGER_PROFESSION.getValue(id("pf_potter")));
+            villager.setVillagerData(villager.getVillagerData().withProfession(potter));
+        });
+        context.waitTicks(10);
+        boolean synced = context.computeOnClient(mc -> {
+            for (var entity : mc.level.entitiesForRendering()) {
+                if (entity.getUUID().equals(spawned.get()) && entity instanceof Villager v) {
+                    return v.getVillagerData().profession().is(id("pf_potter"));
+                }
+            }
+            return false;
+        });
+        check(synced, "the client's villager has no pf_potter job");
+        int after = magenta(context.takeScreenshot("msm_villager_pf_potter"));
+        check(before < 10, "magenta on a villager without a job: " + before + " pixels");
+        check(after > 60, "the pf_potter picture was not drawn: " + after + " magenta pixels (" + before + " before)");
     }
 }

@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Villagers and Fluids",
+  "namespaces": [
+    "msm_sample_villagers"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.worldgen",
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

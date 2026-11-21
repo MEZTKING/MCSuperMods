@@ -1,0 +1,15 @@
+{
+  "data": {
+    "amount": 2,
+    "trades": [
+      "msm_sample_villagers:pedlar/glow_berries",
+      "msm_sample_villagers:pedlar/wheat"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:pedlar/level_1",
+  "kind": "minecraft:trade_set",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}

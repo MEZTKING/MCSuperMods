@@ -1,0 +1,76 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.3,
+            "type": "panic"
+          },
+          {
+            "speed": 0.6,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_villagers:entity/pedlar_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_villagers:entity/pedlar",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_sample_villagers:entity/pedlar",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "speed": 0.25
+      },
+      "msm:trader": {
+        "levels": true,
+        "restock": "twice_a_day",
+        "trade_sets": [
+          {
+            "trade_set": "msm_sample_villagers:pedlar/level_1",
+            "xp_to_next": 10
+          },
+          {
+            "trade_set": "msm_sample_villagers:pedlar/level_2",
+            "xp_to_next": 30
+          },
+          {
+            "trade_set": "minecraft:wandering_trader/common"
+          }
+        ]
+      }
+    },
+    "display_name": "Pedlar",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "display_name": "Pedlar Spawn Egg",
+      "texture": "msm_sample_villagers:item/pedlar_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_villagers:pedlar",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-21T00:00:00.000Z"
+  }
+}
