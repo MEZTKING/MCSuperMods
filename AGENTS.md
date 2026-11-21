@@ -46,5 +46,4 @@ Tests that pass locally can still fail in CI (slower machines); a failure seen i
 - Current state and next steps: `docs/HANDOFF.md` (rewritten at each handover).
 - History: `docs/DEVLOG.md`. Plan and milestones: `docs/ROADMAP.md`. Gaps against vanilla: `docs/COVERAGE-AUDIT.md`.
 - Spike evidence kept for later briefs: `docs/reference/spikes/` (see its README).
-- Work stopped part-way at the last handover, as patches to finish first: `docs/reference/unfinished/` (see its README).
 - User guide: `docs/guide/` (labels there must match the app). Changelog for users: `CHANGELOG.md` `[Unreleased]`.
