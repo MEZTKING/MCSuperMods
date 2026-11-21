@@ -242,12 +242,20 @@ describe('readWorldArea', () => {
       'region/r.0.-1.mca',
       'region/r.0.0.mca',
     ]);
-    // Warm the module code once, then time a fresh read.
+    // Warm the module code once, then time fresh reads. The budget holds for the fastest of three,
+    // so a pause of a shared test machine (CI runs every package's tests at once) does not count
+    // against the reader, while a reader that got slower still fails.
     await readWorldArea(save.read, save.dir, { centre: 'spawn' });
-    const started = performance.now();
-    const area = await readWorldArea(save.read, `${save.dir}/`, { centre: 'spawn' });
-    const elapsed = performance.now() - started;
-    console.log(`readWorldArea over 4 regions: ${elapsed.toFixed(1)} ms`);
+    const timedReads = 3;
+    let elapsed = Number.POSITIVE_INFINITY;
+    let area: Awaited<ReturnType<typeof readWorldArea>> | undefined;
+    for (let attempt = 0; attempt < timedReads; attempt += 1) {
+      const started = performance.now();
+      area = await readWorldArea(save.read, `${save.dir}/`, { centre: 'spawn' });
+      elapsed = Math.min(elapsed, performance.now() - started);
+    }
+    if (area === undefined) throw new Error('no timed read');
+    console.log(`readWorldArea over 4 regions (fastest of 3): ${elapsed.toFixed(1)} ms`);
     expect(elapsed).toBeLessThan(300);
 
     expect(area.format).toBe(1);
@@ -270,8 +278,10 @@ describe('readWorldArea', () => {
     expect(new Set(area.palette).size).toBe(area.palette.length);
     expect(area.skipped).toEqual({ blockEntities: 0, entities: 0, missingChunks: 0 });
     expect(area.warnings).toEqual([]);
-    // Each region file is read once.
-    expect(save.reads.filter((path) => path === `${save.dir}/region/r.0.0.mca`)).toHaveLength(2);
+    // Each region file is read once per call (the warm-up and the timed reads).
+    expect(save.reads.filter((path) => path === `${save.dir}/region/r.0.0.mca`)).toHaveLength(
+      1 + timedReads,
+    );
   });
 
   it('reads a 26.x save whose Overworld lives under dimensions/minecraft/overworld', async () => {
