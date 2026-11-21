@@ -502,18 +502,23 @@ public class MsmFluidGameTest {
         });
     }
 
-    /** Light: the liquid block gives its light level (lava-like 15 by default, the custom 9) to the world. */
-    @GameTest(structure = POOL, maxTicks = 40)
+    /**
+     * Light: the liquid block gives its light level (lava-like 15 by default, the custom 9) to the world. The light
+     * engine works through its queue on its own schedule after a block is set (on a busy server, with hundreds of tests
+     * placing blocks at once, the lava-like block still read 0 after five ticks in CI), so the test waits for the values
+     * within its time limit, as {@code MsmShapeGameTest.skyLightPassesASeeThroughCube} does; the emission itself is
+     * checked at once in {@link #registersFluidBlockAndBucket}.
+     */
+    @GameTest(structure = POOL, maxTicks = 100)
     public void liquidBlockLight(GameTestHelper helper) {
         BlockPos lava = new BlockPos(5, 1, 5);
         BlockPos custom = new BlockPos(17, 1, 17);
         helper.setBlock(lava, block("fluid_lava").defaultBlockState());
         helper.setBlock(custom, block("fluid_custom").defaultBlockState());
-        helper.runAfterDelay(5, () -> {
+        helper.succeedWhen(() -> {
             helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, helper.absolutePos(lava)), 15, "lava-like block light");
             helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, helper.absolutePos(custom)), 9, "custom block light");
             helper.assertValueEqual(helper.getLevel().getBrightness(LightLayer.BLOCK, helper.absolutePos(custom.above(2))), 7, "custom light two above");
-            helper.succeed();
         });
     }
 

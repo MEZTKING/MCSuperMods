@@ -490,7 +490,15 @@ async function renderApp(
   return harness;
 }
 
-const toast = (text: RegExp | string) => screen.findByText(text);
+/**
+ * Finds the visible status toast's text. Radix Toast also copies a new toast's text, after
+ * "Notification", into a visually hidden `role="status"` live region that it portals straight
+ * into `body` for screen readers: rendered on the next animation frame and removed after one
+ * second (`ToastAnnounce`). That copy is meant to be there, so it is left out here; without
+ * this, an unanchored pattern matched both elements whenever the query ran in that second.
+ */
+const toast = (text: RegExp | string) =>
+  screen.findByText(text, { ignore: 'script, style, body > [role="status"]' });
 
 beforeEach(() => {
   window.msmNoMonaco = true;

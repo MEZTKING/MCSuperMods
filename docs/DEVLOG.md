@@ -6577,3 +6577,19 @@ Next
 
 **Next**
 - B497 switches the flows to drawn art; B499 can use dirt, grass top and side, sand, stone, planks, bark and leaves for Try it.
+
+## 2026-11-21 — executor — two intermittent tests: fluid light and the install message
+
+**What**
+- `MsmFluidGameTest.liquidBlockLight` (B475) failed once on 26.4 in CI (run 44951188309: "Expected lava-like block light to be 15: was 0 on tick 5"). The runtime is right: every state of a project liquid block has the definition's emission (`MsmFluids`, `lightLevel(state -> light)`; `registersFluidBlockAndBucket` checks 15 and 9 at once). The light engine works through its queue on its own schedule after `setBlock`, and with hundreds of tests placing blocks in the same batch five ticks was sometimes too early (0 is "not computed yet"). The test now waits with `succeedWhen` within 100 ticks, as `MsmShapeGameTest.skyLightPassesASeeThroughCube` already did for sky light. The class's other tests wait on fixed ticks for scheduled fluid ticks, redstone, entity ticks and the `on_entity_inside` cooldown, which run on the game's own tick and are deterministic; only the light test depended on the light engine.
+- `App.test.tsx` "installs the data pack into the world picked in the world picker" failed twice in CI (runs 44951368132, 44952439366: "Found multiple elements"). The app shows one message: the second element in the failure's DOM dump is Radix Toast's screen-reader copy (`ToastAnnounce`: a visually hidden `role="status"` region portalled into `body`, holding "Notification" and the toast's text, rendered on the next animation frame and removed after one second). That copy is on purpose, so the app is unchanged. The first query `/^Installed to .../` never matched it (its text starts with "Notification"), the unanchored backup pattern did whenever it ran inside that second. The test file's `toast` helper now ignores `body > [role="status"]` (with the default `script, style`), so every `toast(...)` query matches only the visible toast.
+
+**Verification**
+- Before the fix the single test failed locally with the same error within `--repeats 50`; after it, `--repeats 50` of the test and `--repeats 20` of the whole file pass.
+- engine-mod: `./gradlew build` twice on 26.3 and twice with `-Pmc=26.4`, "All 705 required tests passed" each time. `pnpm lint`, `pnpm typecheck`, `pnpm --filter @msm/app test` pass.
+
+**Decisions**
+- Light checks in GameTests wait for the value (`succeedWhen`) instead of a fixed tick; other fixed-tick waits stay where the thing waited for runs on the game tick.
+
+**Next**
+- Nothing for these two tests; push and watch CI.
