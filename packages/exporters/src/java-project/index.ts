@@ -78,7 +78,40 @@ const NOT_IN_EJECT_KINDS: Readonly<Record<string, { label: string; reason: strin
   key_bind: { label: 'key bind', reason: "it needs the runtime's client code" },
   hud: { label: 'HUD element', reason: "it needs the runtime's client code" },
   vehicle: { label: 'vehicle', reason: "it needs the runtime's vehicle code" },
+  villager_profession: {
+    label: 'villager profession',
+    reason: "it needs the runtime's point of interest and profession registration",
+  },
+  fluid: { label: 'fluid', reason: "it needs the runtime's fluid and bucket code" },
 };
+
+/**
+ * Entity components of batch 2 (ADR 0098 D5) the eject leaves out: the mob itself is still
+ * generated, one warning per entity names the components it loses.
+ */
+const NOT_IN_EJECT_COMPONENTS: Readonly<Record<string, string>> = {
+  'msm:trader': 'trader',
+  'msm:storage': 'storage',
+  'msm:shoulder_riding': 'shoulder riding',
+};
+
+/** `definition` without the components of {@link NOT_IN_EJECT_COMPONENTS} (the generator rejects them). */
+function withoutBatch2Components(definition: JsonObject): JsonObject {
+  const components = definition.components;
+  if (!isObject(components) || notInEjectComponentsOf(definition).length === 0) return definition;
+  const kept: JsonObject = {};
+  for (const [key, value] of Object.entries(components)) {
+    if (!(key in NOT_IN_EJECT_COMPONENTS)) kept[key] = value;
+  }
+  return { ...definition, components: kept };
+}
+
+/** The batch 2 components (`msm:trader`, ...) an entity definition has, in a fixed order. */
+export function notInEjectComponentsOf(definition: JsonObject): string[] {
+  const components = definition.components;
+  if (!isObject(components)) return [];
+  return Object.keys(NOT_IN_EJECT_COMPONENTS).filter((key) => key in components);
+}
 
 /**
  * The script events that need the runtime's Mixins (ADR 0096 D3, D6): a script subscribing to one
@@ -326,7 +359,8 @@ async function loadWrapper(
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
  * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
- * (ADR 0088 D10, ADR 0090 D14), and per script and Mixin event it listens to (`block.place`,
+ * (ADR 0088 D10, ADR 0090 D14), per villager profession and fluid (ADR 0098 D5, ADR 0099 D4), per mob
+ * with a trader, storage or shoulder riding component (one warning per mob, ADR 0098 D5), and per script and Mixin event it listens to (`block.place`,
  * `world.explosion`; ADR 0096 D6); command and creative tab definitions go to the generator
  * (ADR 0096 D6); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
  * with GeckoLib (ADR 0072 D8).
@@ -463,10 +497,25 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
             message: `${file.path}: event ${event} runs script handler ${handler}; run_script actions are not ejected and were left out.`,
           });
         }
+        if (kind === 'entity') {
+          const lost = notInEjectComponentsOf(definition);
+          if (lost.length > 0) {
+            problems.report({
+              severity: 'warning',
+              code: ExportProblemCodes.notInEject,
+              file: file.path,
+              message: `${match[1]}:${match[3]} has the ${lost
+                .map((key) => NOT_IN_EJECT_COMPONENTS[key])
+                .join(
+                  ', ',
+                )} component${lost.length === 1 ? '' : 's'} (${lost.join(', ')}), which the Java project does not include (they need the runtime's trader, storage and shoulder code). The mob is still generated without ${lost.length === 1 ? 'it' : 'them'}. Export the Fabric mod jar to use ${lost.length === 1 ? 'it' : 'them'}.`,
+            });
+          }
+        }
         const entry: DefinitionInput = {
           id: `${match[1]}:${match[3]}`,
           path: file.path,
-          definition,
+          definition: kind === 'entity' ? withoutBatch2Components(definition) : definition,
         };
         if (match[2] === 'block') blocks.push(entry);
         else if (match[2] === 'item') items.push(entry);

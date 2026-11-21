@@ -90,6 +90,7 @@ export {
   COMMAND_LITERALS,
   commandLiteralsOf,
   FATAL_DATA_FOLDERS,
+  fluidProfessionIdsOf,
   MOD_ONLY_FUNCTION,
   MOD_ONLY_REFERENCE,
   type ModOnlyIds,

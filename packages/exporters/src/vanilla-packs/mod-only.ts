@@ -85,7 +85,10 @@ export const MOD_ONLY_FUNCTION = ExportProblemCodes.modOnlyFunction;
 
 /**
  * The registries MSM runtime kinds register ids in (ADR 0066 D2); `particle_type` since
- * ADR 0080 D10 (`msm:particle`), `creative_mode_tab` since ADR 0096 D2 (`msm:creative_tab`).
+ * ADR 0080 D10 (`msm:particle`), `creative_mode_tab` since ADR 0096 D2 (`msm:creative_tab`),
+ * `fluid` since ADR 0099 (`msm:fluid`; its liquid block and bucket are in `block` and `item`),
+ * `villager_profession` and `point_of_interest_type` since ADR 0098 D2 (`msm:villager_profession`
+ * registers both under one id; the acquirable job site tag entry becomes `required: false`).
  * Companion blocks (`<id>_wall`, `<id>_attached`, ADR 0094 D3) are in `block` as the host's
  * registry ids list them.
  */
@@ -97,6 +100,9 @@ export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
   'entity_type',
   'particle_type',
   'creative_mode_tab',
+  'fluid',
+  'villager_profession',
+  'point_of_interest_type',
 ]);
 
 /**
@@ -104,6 +110,46 @@ export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
  * {@link ModOnlyIds}: not an id registry, so only function text is checked against it.
  */
 export const COMMAND_LITERALS = 'command';
+
+/**
+ * The registry ids of the batch 2 kinds (ADR 0098 D2, ADR 0099 D1) for {@link modOnlyIdsOf}:
+ * `fluid` (the id, and `<ns>:flowing_<path>` when `twoFluids`, the two-fluid model), `block` (the
+ * liquid block, the fluid's id), `item` (the bucket, `<id>_bucket`), `villager_profession` and
+ * `point_of_interest_type` (the profession's id). Merge each list into the host's own ids of the
+ * same registry. Pure; ids are sorted and unique.
+ *
+ * @param elements - The project's elements (id and kind).
+ * @param twoFluids - Whether the target registers a source and a flowing fluid.
+ */
+export function fluidProfessionIdsOf(
+  elements: readonly { readonly id: ResourceLocation; readonly kind: string }[],
+  twoFluids: boolean,
+): Record<string, string[]> {
+  const out: Record<string, Set<string>> = {
+    fluid: new Set(),
+    block: new Set(),
+    item: new Set(),
+    villager_profession: new Set(),
+    point_of_interest_type: new Set(),
+  };
+  for (const element of elements) {
+    if (element.kind === 'msm:fluid') {
+      const [ns = '', path = ''] = element.id.split(':');
+      out.fluid?.add(element.id);
+      if (twoFluids) out.fluid?.add(`${ns}:flowing_${path}`);
+      out.block?.add(element.id);
+      out.item?.add(`${element.id}_bucket`);
+    } else if (element.kind === 'msm:villager_profession') {
+      out.villager_profession?.add(element.id);
+      out.point_of_interest_type?.add(element.id);
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(out)
+      .filter(([, ids]) => ids.size > 0)
+      .map(([registry, ids]) => [registry, [...ids].sort()]),
+  );
+}
 
 /** The literals (name and aliases) of `msm:command` elements, sorted, for {@link modOnlyIdsOf}. */
 export function commandLiteralsOf(

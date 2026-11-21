@@ -6185,3 +6185,16 @@ Next
 **Next**
 - Push `ctlfix2` and confirm CI green, then B472 and B473.
 - One-shot Rule book Studio actions (`changeWith`, Copy as script) call `applyChanges` directly and are not awaited by Save; they are clicks rather than held-back typing, but could join the pending-edit registry if a similar race shows up.
+
+## 2026-11-21 — executor — B478 exporters, batch 2
+
+**What**
+- `mod-only.ts`: `fluid`, `villager_profession` and `point_of_interest_type` join `RUNTIME_REGISTRIES`; new `fluidProfessionIdsOf(elements, twoFluids)` lists a project's fluid ids (and `flowing_` ids on a two-fluid target), liquid block, bucket (`<id>_bucket`), profession and POI ids for `modOnlyIdsOf`. The `#minecraft:acquirable_job_site` entry naming a project profession is therefore written `required: false`; fluid tag entries likewise; a trade, trade set or recipe naming a project item or bucket is left out (one warning per element), cascading to trade sets that name a left-out trade.
+- Eject: `villager_profession` and `fluid` definitions give `export.not-in-eject`; a mob with `msm:trader`, `msm:storage` or `msm:shoulder_riding` gets one warning naming its components and is generated without them.
+- Tests: `packages/exporters/test/batch2-exporters.test.ts` (hand-made lowered files; eject on both targets).
+
+**Decisions**
+- The POI type id is the profession's id (ADR 0098 D2, B474 to confirm). The generator rejects unknown components, so the exporter strips the three before generating.
+
+**Next**
+- The host (app `dataRegistryIds`) must merge `fluidProfessionIdsOf` into the registry ids it passes to `modOnlyIdsOf` (B480 or the app owner).
