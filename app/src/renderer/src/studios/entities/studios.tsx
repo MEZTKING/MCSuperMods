@@ -12,6 +12,7 @@ import { ENTITY_KIND } from '../blocks-items/blocks-items-model';
 import type { StudioEntry, StudioProps } from '../types';
 import { MOB_VERY_EASY_SECTIONS, RULES_SECTION_ID } from '../very-easy';
 import { EntityStudio } from './EntityStudio';
+import { PROFESSION_KIND, ProfessionStudio } from './ProfessionStudio';
 
 /** The Vehicle Studio (B419, ADR 0091 D1), a chunk of its own. */
 const VehicleStudio = lazy(() => import('./vehicle/VehicleStudio'));
@@ -54,4 +55,6 @@ export const studios: StudioEntry[] = [
     component: LazyVehicleStudio,
     veryEasy: VEHICLE_VERY_EASY_SECTIONS,
   },
+  // The Profession Studio (ADR 0098 D2): an empty component until B480; the kind arrives with B473.
+  { id: 'msm.entities.profession', kindId: PROFESSION_KIND, component: ProfessionStudio },
 ];

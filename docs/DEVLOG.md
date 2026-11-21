@@ -6137,3 +6137,19 @@ Next
 
 **Next**
 - Finish the `controls-path` patch first (CI green, then fast-forward `main`), then B472 and B473, then Wave 11.
+
+## 2026-11-21 — executor — B472 scaffold and stubs, batch 2
+
+**What**
+- Finished the stopped B472 patch (`docs/reference/unfinished/b472-scaffold-stubs.patch`, now removed) and checked it against the brief and the B469 and B470 notes. Wiring only, no behaviour: the scanner kinds `fluid` and `villager_profession`; `LoadReport` fields `fluids` and `professions` with the log lines `registered N fluid(s)` and `registered N villager profession(s)` (both 0); `MsmFluids.register` after the particle types and before the blocks, `MsmProfessions.register` after the blocks (both inside `MsmRegistrar.registerAll`, where particles and blocks are registered); `FluidClient.init()` in `MsmRuntimeClient`.
+- Stubs for the classes B474, B475 and B479 own: `registry/fluid/` (`MsmFluids`, `FluidDefinition`, `MsmLiquidBlock`), the fluid seam (26.3 `MsmFluid` and `MsmFlowingFluid`, 26.4 `MsmFluid`), the `registry/PoiTypes` seam (26.3 Fabric's `PoiHelper`, 26.4 reflection; stubs), `MsmProfessions`, `loader/FluidParser`, `ProfessionParser`, `TraderParser`, `StorageParser`, and the mob driver hooks `MobTrader`, `MobStorage`, `MobShoulder` (right-click hooks that pass the click on).
+- `EntityFluidMixin` stub on 26.4 (no injector yet). It exists on 26.4 only, so it is not listed in `msm_runtime.mixins.json`: the config's new plugin `mixin/MsmMixinPlugin` adds it when the version seam `mixin/MixinVersions` says so (true on 26.4, false on 26.3).
+- GameTest stubs `MsmTraderGameTest`, `MsmProfessionGameTest`, `MsmMobStorageGameTest`, `MsmFluidGameTest`, client stub `MsmFluidClientGameTest`, parity class `SampleVillagersParityTest`, all registered; `fixtures/sample-villagers-and-fluids/README.md`; skipped e2e placeholders `trader-path.spec.ts` and `fluid-path.spec.ts`; Studio registry lines for the empty `ProfessionStudio` and `FluidStudio`.
+- `MsmScriptApi16GameTest.itemsNearWithRemoveAndSetItem` was order-dependent: `itemsNear` returns items in entity-section order, which changes with the test's position, and the new tests moved it. The test script (`api16.js`) now collects the flesh's and the potato's results separately and joins them in a fixed order.
+- Checked: `./gradlew build` on 26.3 and 26.4 (All 667 required tests passed on each, the two new log lines at 0), `./gradlew -p parity build`, `pnpm lint`, `pnpm typecheck`, `pnpm --filter @msm/app test` (two files timed out while Gradle ran alongside; they pass on their own).
+
+**Decisions**
+- Version-only Mixins go through the config plugin and a seam, since one shared Mixin config cannot list a class that exists on one version only.
+
+**Next**
+- B473 (format, plugin API 1.18.0 and facts), then Wave 11 (B474 to B478) fill these stubs.

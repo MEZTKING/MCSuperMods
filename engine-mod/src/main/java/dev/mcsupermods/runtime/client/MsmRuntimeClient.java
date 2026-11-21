@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.client;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.client.controls.ControlsClient;
 import dev.mcsupermods.runtime.client.dev.DevClient;
+import dev.mcsupermods.runtime.client.fluid.FluidClient;
 import dev.mcsupermods.runtime.client.hud.HudClient;
 import dev.mcsupermods.runtime.client.particle.MsmParticleProvider;
 import dev.mcsupermods.runtime.client.vanilla.MsmVanillaRenderer;
@@ -53,6 +54,8 @@ public final class MsmRuntimeClient implements ClientModInitializer {
         ControlsClient.init();
         HudClient.init();
         DevClient.register();
+        // Project fluids (ADR 0099 D2).
+        FluidClient.init();
     }
 
     /**

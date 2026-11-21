@@ -2,6 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "dev.mcsupermods.runtime.mixin",
+  "plugin": "dev.mcsupermods.runtime.mixin.MsmMixinPlugin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "BlockItemPlaceMixin",

@@ -38,7 +38,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * The behaviour every {@code msm/<ns>/entity/*.json} mob shares, whatever body class carries it (ADR 0070 D2, the
  * pattern of {@code BlockBehaviourDriver}): events, triggers, sounds and the loot table here, each feature in one
  * module ({@link MobGoals}, {@link MobMovement}, {@link MobRanged}, {@link MobTaming}, {@link MobBreeding},
- * {@link MobRiding}, {@link MobVariants}, {@link MobBossBar}, {@link MobAnimations}). One driver per entity, built on
+ * {@link MobRiding}, {@link MobTrader}, {@link MobStorage}, {@link MobShoulder}, {@link MobVariants}, {@link MobBossBar}, {@link MobAnimations}). One driver per entity, built on
  * first use from the definition of the entity's type: {@code defineSynchedData}, {@code createNavigation} and
  * {@code registerGoals} run inside the vanilla constructors, before any field of the body is assigned, so the body
  * keeps the driver in a field without initialiser and builds it lazily. Building touches nothing but the type.
@@ -58,6 +58,9 @@ public final class MobDriver {
     private final MobTaming taming;
     private final MobBreeding breeding;
     private final MobRiding riding;
+    private final MobTrader trader;
+    private final MobStorage storage;
+    private final MobShoulder shoulder;
     private final MobVariants variants;
     private final MobBossBar bossBar;
     private final MobAnimations animations;
@@ -73,6 +76,9 @@ public final class MobDriver {
         this.taming = new MobTaming(mob, definition);
         this.breeding = new MobBreeding(mob, definition);
         this.riding = new MobRiding(mob, definition);
+        this.trader = new MobTrader(mob, definition);
+        this.storage = new MobStorage(mob, definition);
+        this.shoulder = new MobShoulder(mob, definition);
         this.variants = new MobVariants(mob, definition);
         this.bossBar = new MobBossBar(mob, definition);
         this.animations = new MobAnimations(mob, definition);
@@ -118,6 +124,18 @@ public final class MobDriver {
 
     public MobRiding riding() {
         return riding;
+    }
+
+    public MobTrader trader() {
+        return trader;
+    }
+
+    public MobStorage storage() {
+        return storage;
+    }
+
+    public MobShoulder shoulder() {
+        return shoulder;
     }
 
     public MobVariants variants() {
@@ -219,6 +237,16 @@ public final class MobDriver {
         }
         if (result == null) {
             result = riding.mobInteract(player, hand);
+        }
+        // Batch 2 (ADR 0098), stubs until B474 and B479: trading, mount storage, shoulder pets.
+        if (result == null) {
+            result = trader.mobInteract(player, hand);
+        }
+        if (result == null) {
+            result = storage.mobInteract(player, hand);
+        }
+        if (result == null) {
+            result = shoulder.mobInteract(player, hand);
         }
         if (result != null) {
             return result;

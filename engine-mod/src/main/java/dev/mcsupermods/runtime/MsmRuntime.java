@@ -54,6 +54,8 @@ public final class MsmRuntime implements ModInitializer {
         LOGGER.info("[{}] registered {} HUD element(s)", MOD_ID, report.hudElements().size());
         LOGGER.info("[{}] registered {} command(s)", MOD_ID, report.commands().size());
         LOGGER.info("[{}] registered {} creative tab(s)", MOD_ID, report.creativeTabs().size());
+        LOGGER.info("[{}] registered {} fluid(s)", MOD_ID, report.fluids().size());
+        LOGGER.info("[{}] registered {} villager profession(s)", MOD_ID, report.professions().size());
         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
         // exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));

@@ -22,6 +22,7 @@ import { BIOME_ADDITION_KIND, LOOT_ADDITION_KIND } from './additions-model';
 import { BlockStudio } from './BlockStudio';
 import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, PARTICLE_KIND } from './blocks-items-model';
 import { EffectStudio } from './EffectStudio';
+import { FLUID_KIND, FluidStudio } from './FluidStudio';
 import { ItemStudio } from './ItemStudio';
 import { PotionStudio } from './PotionStudio';
 import { POTION_KIND } from './potion-model';
@@ -100,4 +101,6 @@ export const studios: StudioEntry[] = [
     kindId: CREATIVE_TAB_KIND,
     component: LazyCreativeTabStudio,
   },
+  // The Fluid Studio (ADR 0099 D1): an empty component until B480; the kind arrives with B473.
+  { id: 'msm.blocks-items.fluid', kindId: FLUID_KIND, component: FluidStudio },
 ];

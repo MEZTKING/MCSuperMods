@@ -55,14 +55,19 @@
       "dev.mcsupermods.runtime.gametest.MsmCommandGameTest",
       "dev.mcsupermods.runtime.gametest.MsmCreativeTabGameTest",
       "dev.mcsupermods.runtime.gametest.MsmMixinEventGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmScriptApi16GameTest"
+      "dev.mcsupermods.runtime.gametest.MsmScriptApi16GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmTraderGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmProfessionGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmMobStorageGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmFluidGameTest"
     ],
     "fabric-client-gametest": [
       "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmDevClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmControlsClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmFluidClientGameTest"
     ]
   },
   "depends": {

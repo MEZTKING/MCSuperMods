@@ -20,7 +20,9 @@ import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.loader.types.PlantFields;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
+import dev.mcsupermods.runtime.registry.fluid.MsmFluids;
 import dev.mcsupermods.runtime.registry.inventory.ItemInventories;
+import dev.mcsupermods.runtime.registry.mob.MsmProfessions;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.registry.portal.PortalTravel;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
@@ -121,6 +123,8 @@ public final class MsmRegistrar {
         // Particle types right after sound events (ADR 0080 D3): effects, leaves, portals and events name them.
         List<Identifier> particles = MsmParticles.registerAll(scanned.definitions(), errors, warnings);
         MsmRuntime.LOGGER.info("[{}] registered {} particle type(s)", MsmRuntime.MOD_ID, particles.size());
+        // Fluids after particles and before blocks (ADR 0099 D1): a stub until B475.
+        List<Identifier> fluids = MsmFluids.register(scanned.definitions(), errors, warnings);
         // Effects first (ADR 0055 D3): items (consumables, death protection) resolve effect ids while registering.
         for (RawDefinition raw : scanned.definitions()) {
             if (!raw.kind().equals("effect")) {
@@ -191,6 +195,8 @@ public final class MsmRegistrar {
             }
         }
         registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
+        // Villager professions after the blocks their job sites name (ADR 0098 D2): a stub until B474.
+        List<Identifier> professions = MsmProfessions.register(scanned.definitions(), errors, warnings);
         Weathering.checkAfterRegistration(errors); // ADR 0094 D8, D9: the next and into links, once every block exists
         MsmRuntime.LOGGER.info("[{}] registered {} portal block(s)", MsmRuntime.MOD_ID, typeCounts.getOrDefault(BlockType.PORTAL, 0));
         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
@@ -228,7 +234,9 @@ public final class MsmRegistrar {
         checkPortalActions(errors);
         return new LoadReport(scanned.filesRead(), scanned.definitions(), List.copyOf(blocks), List.copyOf(items),
                 List.copyOf(entities), List.copyOf(effects), List.copyOf(potions), sounds, particles, biomeAdditions, lootAdditions, List.copyOf(errors), List.copyOf(warnings))
-                .withCreativeTabs(scanned.creativeTabs(), List.of(), List.of()); // registered before this pass (MsmCreativeTabs.register)
+                .withCreativeTabs(scanned.creativeTabs(), List.of(), List.of()) // registered before this pass (MsmCreativeTabs.register)
+                .withFluids(fluids, List.of(), List.of())
+                .withProfessions(professions, List.of(), List.of());
     }
 
     /**

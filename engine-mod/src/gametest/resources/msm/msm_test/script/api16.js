@@ -94,6 +94,9 @@ msm.actions.define("msm_test:api16_items", function (e) {
     var found = e.world.itemsNear(e.pos, 3);
     var ids = [];
     var out = [];
+    // The flesh's results before the potato's, whatever order itemsNear finds them in (it follows entity sections).
+    var fleshOut = [];
+    var potatoOut = [];
     for (var i = 0; i < found.length; i++) {
         var d = found[i];
         ids.push(d.item.id + "x" + d.item.count + (d.owner === undefined ? "" : (d.owner === e.player.uuid ? "@player" : "@other")));
@@ -102,18 +105,19 @@ msm.actions.define("msm_test:api16_items", function (e) {
         }
         if (d.item.id === "minecraft:rotten_flesh") {
             d.setItem({ id: "minecraft:leather", count: 2 });
-            out.push("set " + d.item.id + "x" + d.item.count);
-            attempt(out, "setMissing", function () { d.setItem(); });
-            attempt(out, "setBad", function () { d.setItem(3); });
+            fleshOut.push("set " + d.item.id + "x" + d.item.count);
+            attempt(fleshOut, "setMissing", function () { d.setItem(); });
+            attempt(fleshOut, "setBad", function () { d.setItem(3); });
             d.setItem({ id: "minecraft:leather", count: 999 });
-            out.push("capped " + d.item.count);
+            fleshOut.push("capped " + d.item.count);
         }
         if (d.item.id === "minecraft:poisonous_potato") {
             d.remove();
-            attempt(out, "removeAgain", function () { d.remove(); });
-            attempt(out, "setGone", function () { d.setItem("minecraft:diamond"); });
+            attempt(potatoOut, "removeAgain", function () { d.remove(); });
+            attempt(potatoOut, "setGone", function () { d.setItem("minecraft:diamond"); });
         }
     }
+    out = out.concat(fleshOut, potatoOut);
     ids.sort();
     out.push("living " + e.world.entitiesNear(e.pos, 3).length);
     out.push("tiny " + e.world.itemsNear(e.pos.offset(0, 50, 0), 0.5).length);
