@@ -21,6 +21,10 @@ import type { ThingSort } from '../thing-picker/thing-sources';
  */
 export const THING_KINDS: readonly { kind: string; word: string; sort: ThingSort }[] = [
   { kind: 'msm:vehicle', word: 'Vehicle', sort: 'mob' },
+  // Before blocks, so a Village job set (job plus workbench) and a fluid set open on the job and
+  // the liquid rather than on a block.
+  { kind: 'msm:villager_profession', word: 'Village job', sort: 'mob' },
+  { kind: 'msm:fluid', word: 'Liquid', sort: 'block' },
   { kind: 'msm:block', word: 'Block', sort: 'block' },
   { kind: 'msm:item', word: 'Item', sort: 'item' },
   { kind: 'msm:entity', word: 'Mob', sort: 'mob' },

@@ -290,6 +290,22 @@ describe('My things', () => {
     ]);
   });
 
+  it('shows liquids and village jobs, and opens a Village job set at its job', () => {
+    const job = { flowId: 'village-job', setId: 'set-3', values: { job_name: 'Tinker' } };
+    const cards = thingCards(
+      project([
+        element('ruby:tinker_workbench', 'msm:block', { display_name: 'Workbench' }, job),
+        element('ruby:tinker', 'msm:villager_profession', { display_name: 'Tinker' }, job),
+        element('ruby:mint_water', 'msm:fluid', { display_name: 'Mint Water' }),
+      ]),
+      { 'village-job': 'Village job' },
+    );
+    expect(cards.map((card) => [card.name, card.what, card.main.id])).toEqual([
+      ['Mint Water', 'Liquid', 'ruby:mint_water'],
+      ['Tinker', 'Village job', 'ruby:tinker'],
+    ]);
+  });
+
   it('opens a card and offers Edit in Creator, Rename, Duplicate and Delete', async () => {
     const p = homeProps();
     render(<Home {...p} />);
