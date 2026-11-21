@@ -12,7 +12,8 @@
  * B405 adds the grounds (ADR 0087): "Start on" in the first-run card and the side panel's
  * "Ground" with "Change ground…" open the picker (`GroundPicker.tsx`); the view makes or reads
  * the ground, reads Minecraft's block states for it when the client jar is set up, and loads it
- * into the area. Without the jar, a hint says Minecraft's blocks are plain coloured cubes.
+ * into the area. Without the jar, a hint says Minecraft's terrain and wood are MSM's own drawn pictures and other
+ * blocks plain coloured cubes.
  *
  * The view lowers the open project through {@link SessionFiles} while it is shown and keeps one
  * {@link TryItArea} in the Try it store, so the area survives a trip to a Studio and back. Every
@@ -205,7 +206,7 @@ function defaultWorlds(): TryItWorldsPlatform | null {
 
 /** The hint beside the ground without the client jar. */
 export const NO_VANILLA_GROUND_TEXT =
-  'Minecraft’s own blocks show as plain coloured cubes. Set up your Minecraft folder to see their pictures.';
+  'Without your Minecraft folder, its terrain and wood show as MSM’s own drawn pictures and other blocks as plain coloured cubes. Set up your Minecraft folder to see Minecraft’s pictures.';
 
 /** The default of {@link TryItViewProps.onOpenElement}. */
 function openElement(elementId: string, pointer: string | null): void {
