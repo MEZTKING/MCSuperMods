@@ -275,6 +275,17 @@ const LOG_FAILURE =
   /Failed to load|Couldn't load tag|Couldn't parse|Registry loading errors|\/ERROR\]/;
 
 /**
+ * ERROR lines vanilla's own world generation prints whatever packs are loaded, so they say
+ * nothing about the pack. Keep this list to exact messages.
+ * - The dungeon feature logs this when the spawner it placed was overwritten by a later
+ *   feature before its block entity was set (it depends on the random world, CI run of
+ *   2026-11-21 on 26.3).
+ */
+export const KNOWN_VANILLA_ERRORS: readonly RegExp[] = [
+  /\/ERROR\]: Failed to fetch mob spawner entity at \(-?\d+, -?\d+, -?\d+\)$/,
+];
+
+/**
  * Checks the run: the pack listed as enabled, every count above zero, no load failure.
  *
  * @param lines - The server's output, one entry per line.
@@ -291,7 +302,9 @@ export function checkDatapackRun(
     failures.push(`the data pack file/${zipName} is not listed as enabled`);
   }
   for (const line of lines) {
-    if (LOG_FAILURE.test(line)) failures.push(`log: ${line.trim()}`);
+    if (!LOG_FAILURE.test(line)) continue;
+    if (KNOWN_VANILLA_ERRORS.some((known) => known.test(line.trim()))) continue;
+    failures.push(`log: ${line.trim()}`);
   }
   for (const [name] of CHECKS) {
     const count = counts[name];

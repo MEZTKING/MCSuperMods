@@ -38,7 +38,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { describeError, freePort, serverProperties } from './index.ts';
-import { DONE, serverJar, startServer } from './vanilla-datapack.ts';
+import { DONE, KNOWN_VANILLA_ERRORS, serverJar, startServer } from './vanilla-datapack.ts';
 
 /** Everything a check needs. */
 export interface PacksOptions {
@@ -269,7 +269,9 @@ export function analyseRun(
     }
     const skipped = /Failed to load function ([a-z0-9_.-]+:[a-z0-9_./-]+)\s*$/.exec(line);
     const isProblem =
-      LOAD_PROBLEM.test(line) && !(skipped !== null && skippedFunctions.has(skipped[1] as string));
+      LOAD_PROBLEM.test(line) &&
+      !(skipped !== null && skippedFunctions.has(skipped[1] as string)) &&
+      !KNOWN_VANILLA_ERRORS.some((known) => known.test(line.trim()));
     if (isProblem) problems.push(line.trim());
     if (/^\[[^\]]*\] \[/.test(line)) inError = isProblem;
     if (

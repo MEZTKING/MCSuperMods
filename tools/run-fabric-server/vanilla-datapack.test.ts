@@ -141,6 +141,15 @@ describe('checkDatapackRun', () => {
     expect(checkDatapackRun([ENABLED], ZIP, ALL)).toEqual({ ok: true, failures: [], counts: ALL });
   });
 
+  it("ignores vanilla's own dungeon spawner message, but no other ERROR line", () => {
+    const spawner =
+      '[20:28:56] [Worker-Main-3/ERROR]: Failed to fetch mob spawner entity at (56, -45, 0)';
+    expect(checkDatapackRun([ENABLED, spawner], ZIP, ALL).ok).toBe(true);
+    const other =
+      '[20:28:56] [Worker-Main-3/ERROR]: Failed to fetch something else at (56, -45, 0)';
+    expect(checkDatapackRun([ENABLED, other], ZIP, ALL).failures).toEqual([`log: ${other}`]);
+  });
+
   it('fails on a missing pack, a zero or missing count and load errors', () => {
     const outcome = checkDatapackRun(
       [
