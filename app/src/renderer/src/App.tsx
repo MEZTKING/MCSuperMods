@@ -2787,6 +2787,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 name={`${dialog.namespace}:${dialog.path}`}
                 bytes={dialog.bytes}
                 {...(dialog.size === undefined ? {} : { size: dialog.size })}
+                isNew={dialog.bytes === null || dialog.isNew === true}
                 onSave={async (bytes) => {
                   const file = { namespace: dialog.namespace, path: dialog.path, bytes };
                   if (dialog.bytes === null || dialog.isNew === true) {
@@ -2864,13 +2865,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                     .find((entry) => entry.name === dialog.namespace)
                     ?.assets.map((asset) => asset.path) ?? []
                 }
-                onPaint={({ kind, path }) =>
+                onPaint={({ kind, path, bytes }) =>
                   setDialog({
                     type: 'paint',
                     namespace: dialog.namespace,
                     path,
-                    bytes: null,
+                    bytes: bytes ?? null,
                     size: { width: kind.width, height: kind.height },
+                    isNew: true,
                   })
                 }
                 onClose={() => setDialog(null)}

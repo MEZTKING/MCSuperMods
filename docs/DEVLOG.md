@@ -6643,3 +6643,24 @@ Next
 
 **Next**
 - B496 can draw skins with `boxesOfGeoModel`, `boxSkinArtPng` and `ART_COAT_LABELS`; B497 switches `skinTexture` to `boxSkinArtPng(HUMANOID_SKIN_BOXES, ...)` and `mobSkinTexture` to `evenCoatArtPng`. Once B493 merges, the coverage test in `art-worn.test.ts` sees every pattern drawn.
+## 2026-11-21 — executor — B495 the Draw dialog
+
+**What**
+- New `app/src/renderer/src/components/art/`: `draw-model.ts` (pure: `drawOptions` filters `ART_RECIPE_INFO` to drawn recipes of the field's picture kinds and size, never a stub, the guess first; `guessRecipe` reads whole words of the field's name, slot or texture path, longest recipe id first, then aliases such as `log` for bark and `ruby` for a gem; `DrawState`, `drawReducer`, `pageSeeds`, six seeds a page; `drawPicture` through `artFramePngs`/`artPixels`, or `boxSkinArtPng` over `HUMANOID_SKIN_BOXES`, the player skin layout, on skin fields; the ten Surprise me theme colours from `surprise/themes.ts`), `DrawPictureDialog.tsx` (lazy chunk) and `DrawButton.tsx` (`drawFieldForTexture`, `LazyDrawPictureDialog`).
+- **Draw…** beside **Make with AI** on: the Creator's image fields (a humanoid box skin on skin fields, which have no Make with AI), the Block and Item Studios' picture rows and the Block Studio's texture slots (`SlotPictureDraw`, `slotPictureChange`; the rows now show whenever the Studio host can write, Make with AI only with an AI host), the Particle Studio (**Draw frames…**: all four frames `<id>_0` to `<id>_3` and the frame list in one undo step, through `splitChangeset`), the texture painter (replaces the canvas as one painter undo step) and **New texture…** (**Start from**: **Blank** or **Drawn picture**; paintings start blank).
+- Each pick is one undo step through `texture-write.ts`: a write over a recorded texture, else a new asset item (and the slot naming it). Draw needs no key or AI host and shows in every mode.
+- Tests: `app/test/components/art/` (`draw-model.test.ts`, `draw-dialog.test.tsx`, `draw-studios.test.tsx`, `draw-particles.test.tsx`; 30 tests). App tests 2496, lint, typecheck, build: renderer 16.2 MB (+21 kB; `DrawPictureDialog` chunk 10.1 kB), `app.asar` 29.1 MB.
+
+**Decisions**
+- `App.tsx` (not an owner file) changed in two lines: New texture passes the drawn bytes and `isNew` to the painter, and the painter takes `isNew` so Save is offered on a drawn picture before any change.
+- `CreatorImageField` takes `colourHint` for "The thing's colour", but `CreatorDialog` (not an owner file) does not pass it yet.
+- The particle recipes are still stubs, so **Draw frames…** offers nothing until B494 draws them; its test marks them drawn.
+
+**UI labels (for B501)**
+- Buttons: **Draw…** (Very easy: **Draw it for me**), **Draw frames…** (Particle Studio). Dialog title: **Draw a picture** (Very easy: **Draw it for me**), then what is drawn.
+- Dialog: "MCSuperMods draws it here in a Minecraft-like style, without a key or the internet. You can paint over it afterwards."; **What is it?** (tiles with the recipe labels, "Skin" on skin fields); **Colour** (colour well, the theme swatches Ruby, Frost, Ember, Moss, Sky, Void, Sun, Coral, Amber, Storm, and **The thing's colour**); **Second colour** with "Its own colour until you pick one." and **Its own colour**; **Finish** (Gem, Metal, Rough; Drop, Heart, Star, Flame, Swirl; skins Fur, Scales, Smooth, Stone, Slime); **Detail** (Smooth, Normal, Rough); six variations ("4 frames" on particles); **New looks**, **Use this picture**, **Cancel**; "Nothing can be drawn at W by H pixels yet. Paint it or choose a picture instead."
+- New texture: **Start from**: **Blank**, **Drawn picture**; "Paintings start blank."; the submit button reads **Draw…** for a drawn picture.
+- Undo labels: "Draw <slot>", "Draw textures/…png", "Draw frames"; Particle status "Drew 4 frames, … Undo puts the old frames back."
+
+**Next**
+- B500: e2e `art-path` (not done here). Wire `colourHint` from `CreatorDialog` (the flow's colour answer). B496 can reuse `HUMANOID_SKIN_BOXES`' pattern with the model's own boxes.

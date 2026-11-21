@@ -2,6 +2,8 @@
  * The texture editor (ADR 0047 D5): paints a project PNG pixel by pixel. Pencil, eraser, fill
  * and eyedropper, a colour picker and the texture's own palette, zoom, undo and redo inside the
  * dialog. Save hands the PNG bytes to the host, which writes them as one undoable step.
+ * "Draw…" (ADR 0092 D10 (b)) and "Make with AI" (ADR 0093) replace the canvas with the picked
+ * picture as one painter undo step.
  *
  * @packageDocumentation
  */
@@ -11,6 +13,8 @@ import { Dialog } from 'radix-ui';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { MakeWithAiButton } from '../ai-pictures/MakeWithAiButton';
 import { defaultPrompt, styleForTexturePath } from '../ai-pictures/prompt';
+import { DrawButton, drawFieldForTexture } from '../art/DrawButton';
+import type { DrawnPicture } from '../art/draw-model';
 import { Button } from '../ui/Button';
 import { fitInside } from './image-convert';
 import {
@@ -44,6 +48,11 @@ export interface TextureEditorDialogProps {
   bytes: Uint8Array | null;
   /** The size of a new picture (used when `bytes` is `null`; 16 × 16 by default). */
   size?: { width: number; height: number };
+  /**
+   * The texture is not in the project yet (a new or drawn picture): Save is offered before any
+   * change. Defaults to `bytes === null`.
+   */
+  isNew?: boolean;
   /** Saves the edited PNG (the host writes it as one undoable step). */
   onSave(bytes: Uint8Array): Promise<void> | void;
   onClose(): void;
@@ -55,7 +64,7 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
   const [tool, setTool] = useState<Tool>('pencil');
   const [colour, setColour] = useState<Rgba>([200, 40, 60, 255]);
   const [zoom, setZoom] = useState(16);
-  const [dirty, setDirty] = useState(props.bytes === null);
+  const [dirty, setDirty] = useState(props.isNew ?? props.bytes === null);
   const [saving, setSaving] = useState(false);
   const [, setTick] = useState(0);
   const history = useRef(new PixelHistory());
@@ -198,6 +207,24 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
     setDirty(true);
   };
 
+  /** Puts a drawn picture (ADR 0092) on the canvas as one painter undo step. */
+  const takeDrawnPicture = (picture: DrawnPicture): void => {
+    const rgba = picture.rgba[0];
+    if (image === null || rgba === undefined) return;
+    const drawn: RgbaImage = {
+      width: picture.width,
+      height: picture.height,
+      data: new Uint8ClampedArray(rgba),
+    };
+    const next =
+      drawn.width === image.width && drawn.height === image.height
+        ? drawn
+        : fitInside(drawn, image.width, image.height, 'sharp');
+    history.current.push(image);
+    setImage(next);
+    setDirty(true);
+  };
+
   return (
     <Dialog.Root
       open
@@ -275,9 +302,15 @@ export function TextureEditorDialog(props: TextureEditorDialogProps) {
                 <span className="text-xs text-muted">
                   {image.width}×{image.height}
                 </span>
+                <DrawButton
+                  testId="texture-draw"
+                  className="ml-auto"
+                  target={props.name}
+                  field={drawFieldForTexture(props.name, image.width, image.height)}
+                  onPick={takeDrawnPicture}
+                />
                 <MakeWithAiButton
                   testId="texture-make-with-ai"
-                  className="ml-auto"
                   target={props.name}
                   defaultPrompt={defaultPrompt(props.name, aiStyle)}
                   defaultStyle={aiStyle}

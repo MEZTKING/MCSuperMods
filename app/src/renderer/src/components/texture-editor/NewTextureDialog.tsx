@@ -1,11 +1,15 @@
 /**
- * "New texture…" (ADR 0047 D5): a name and a kind that fixes the folder and size; the host then
- * opens the texture editor on a blank picture and adds the PNG to the namespace on Save.
+ * "New texture…" (ADR 0047 D5): a name and a kind that fixes the folder and size, and **Start
+ * from** (ADR 0092 D10 (b)): **Blank**, or **Drawn picture**, which opens the Draw dialog
+ * first. The host then opens the texture editor on the blank or drawn picture and adds the PNG
+ * to the namespace on Save. Paintings have no drawing, so they always start blank.
  *
  * @packageDocumentation
  */
 
-import { useId, useState } from 'react';
+import { Suspense, useId, useState } from 'react';
+import { usePreferences } from '../../store/preferences';
+import { drawFieldForTexture, LazyDrawPictureDialog } from '../art/DrawButton';
 import { fieldClass, Modal } from '../NewElementDialog';
 
 /**
@@ -82,6 +86,14 @@ export const NEW_TEXTURE_KINDS = [
 
 export type NewTextureKind = (typeof NEW_TEXTURE_KINDS)[number];
 
+/** Where a new texture starts: a blank picture or a drawn one (ADR 0092 D10 (b)). */
+export type NewTextureStart = 'blank' | 'drawn';
+
+/** Whether a kind of texture can start from a drawn picture (paintings cannot). */
+export function drawableKind(kind: NewTextureKind): boolean {
+  return !kind.id.startsWith('painting');
+}
+
 /** A texture name: lower case letters, digits, `_`, `-` and `.`, starting with a letter or digit. */
 const NAME = /^[a-z0-9][a-z0-9_.-]*$/;
 
@@ -89,16 +101,21 @@ export interface NewTextureDialogProps {
   namespace: string;
   /** Asset paths the namespace already has (`textures/item/ruby.png`), to refuse clashes. */
   existing: readonly string[];
-  onPaint(choice: { kind: NewTextureKind; name: string; path: string }): void;
+  /** Opens the painter on the new texture: on `bytes` (a drawn picture), or blank without. */
+  onPaint(choice: { kind: NewTextureKind; name: string; path: string; bytes?: Uint8Array }): void;
   onClose(): void;
 }
 
 export function NewTextureDialog(props: NewTextureDialogProps) {
   const [name, setName] = useState('');
   const [kindId, setKindId] = useState<NewTextureKind['id']>('item');
+  const [startChoice, setStart] = useState<NewTextureStart>('blank');
+  const [drawing, setDrawing] = useState(false);
+  const veryEasy = usePreferences((state) => state.mode) === 'very-easy';
   const nameId = useId();
   const kindIdField = useId();
   const kind = NEW_TEXTURE_KINDS.find((entry) => entry.id === kindId) ?? NEW_TEXTURE_KINDS[0];
+  const start: NewTextureStart = drawableKind(kind) ? startChoice : 'blank';
   const path = `${kind.folder}/${name}.png`;
   const error =
     name === ''
@@ -109,48 +126,94 @@ export function NewTextureDialog(props: NewTextureDialogProps) {
           ? `${path} already exists: use the brush on its row to paint it.`
           : null;
   return (
-    <Modal
-      title={`New texture in ${props.namespace}`}
-      error={error}
-      testId="new-texture-dialog"
-      submitLabel="Paint…"
-      busy={name === '' || error !== null}
-      onCancel={props.onClose}
-      onSubmit={() => props.onPaint({ kind, name, path })}
-    >
-      <label htmlFor={nameId} className="text-sm font-medium">
-        Name
-      </label>
-      <input
-        id={nameId}
-        data-testid="new-texture-name"
-        className={fieldClass}
-        placeholder="ruby_staff"
-        value={name}
-        onChange={(event) => setName(event.target.value.trim().toLowerCase())}
-      />
-      <label htmlFor={kindIdField} className="text-sm font-medium">
-        What it is for
-      </label>
-      <select
-        id={kindIdField}
-        data-testid="new-texture-kind"
-        className={fieldClass}
-        value={kindId}
-        onChange={(event) => setKindId(event.target.value as NewTextureKind['id'])}
+    <>
+      <Modal
+        title={`New texture in ${props.namespace}`}
+        error={error}
+        testId="new-texture-dialog"
+        submitLabel={start === 'drawn' ? 'Draw…' : 'Paint…'}
+        busy={name === '' || error !== null || drawing}
+        onCancel={props.onClose}
+        onSubmit={() => {
+          if (start === 'drawn') setDrawing(true);
+          else props.onPaint({ kind, name, path });
+        }}
       >
-        {NEW_TEXTURE_KINDS.map((entry) => (
-          <option key={entry.id} value={entry.id}>
-            {entry.label}
-          </option>
-        ))}
-      </select>
-      <p className="text-xs text-muted">
-        It is saved as {props.namespace}:{name === '' ? '<name>' : name} in {kind.folder}.{' '}
-        {kind.id === 'effect_icon'
-          ? 'Name it after the effect (ruby_rush for the effect ruby_rush): the game finds the icon by name.'
-          : 'Point a model or an equipment layer at it to use it.'}
-      </p>
-    </Modal>
+        <label htmlFor={nameId} className="text-sm font-medium">
+          Name
+        </label>
+        <input
+          id={nameId}
+          data-testid="new-texture-name"
+          className={fieldClass}
+          placeholder="ruby_staff"
+          value={name}
+          onChange={(event) => setName(event.target.value.trim().toLowerCase())}
+        />
+        <label htmlFor={kindIdField} className="text-sm font-medium">
+          What it is for
+        </label>
+        <select
+          id={kindIdField}
+          data-testid="new-texture-kind"
+          className={fieldClass}
+          value={kindId}
+          onChange={(event) => setKindId(event.target.value as NewTextureKind['id'])}
+        >
+          {NEW_TEXTURE_KINDS.map((entry) => (
+            <option key={entry.id} value={entry.id}>
+              {entry.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted">
+          It is saved as {props.namespace}:{name === '' ? '<name>' : name} in {kind.folder}.{' '}
+          {kind.id === 'effect_icon'
+            ? 'Name it after the effect (ruby_rush for the effect ruby_rush): the game finds the icon by name.'
+            : 'Point a model or an equipment layer at it to use it.'}
+        </p>
+        <fieldset className="flex flex-wrap items-center gap-3">
+          <legend className="text-sm font-medium">Start from</legend>
+          <label className="flex items-center gap-1 text-sm">
+            <input
+              type="radio"
+              name="new-texture-start"
+              data-testid="new-texture-start-blank"
+              checked={start === 'blank'}
+              onChange={() => setStart('blank')}
+            />
+            Blank
+          </label>
+          <label className="flex items-center gap-1 text-sm">
+            <input
+              type="radio"
+              name="new-texture-start"
+              data-testid="new-texture-start-drawn"
+              checked={start === 'drawn'}
+              disabled={!drawableKind(kind)}
+              onChange={() => setStart('drawn')}
+            />
+            Drawn picture
+          </label>
+          {!drawableKind(kind) && (
+            <span className="text-xs text-muted">Paintings start blank.</span>
+          )}
+        </fieldset>
+      </Modal>
+      {drawing && (
+        <Suspense fallback={null}>
+          <LazyDrawPictureDialog
+            field={drawFieldForTexture(path, kind.width, kind.height)}
+            target={`${props.namespace}:${path}`}
+            veryEasy={veryEasy}
+            onPick={(picture) => {
+              const bytes = picture.pngs[0];
+              if (bytes !== undefined) props.onPaint({ kind, name, path, bytes });
+            }}
+            onClose={() => setDrawing(false)}
+          />
+        </Suspense>
+      )}
+    </>
   );
 }

@@ -7,7 +7,8 @@
  *
  * Test ids as the wizard's image field: `param-<id>` (the choose button), `param-<id>-field`,
  * `param-<id>-thumbnail`, `param-<id>-empty`, `param-<id>-summary`, `param-<id>-clear`,
- * `param-<id>-error`.
+ * `param-<id>-error`; `param-<id>-draw` (**Draw…**, ADR 0092 D10: a humanoid box skin on skin
+ * fields) and `param-<id>-ai` (**Make with AI**, ADR 0093, not on skins).
  *
  * @packageDocumentation
  */
@@ -16,6 +17,8 @@ import type { StarterParameter } from '@msm/plugin-api';
 import { useId, useState } from 'react';
 import { MakeWithAiButton } from '../ai-pictures/MakeWithAiButton';
 import { defaultPrompt, styleForName, wordsOf } from '../ai-pictures/prompt';
+import { DrawButton } from '../art/DrawButton';
+import type { DrawField } from '../art/draw-model';
 import { Button } from '../ui/Button';
 import { checkPngBytes, imageSummary, pngDataUrl } from '../wizard/wizard-model';
 
@@ -38,6 +41,8 @@ export interface CreatorImageFieldProps {
   onChange(value: string): void;
   /** The thing's name so far (the flow's name field), for the AI description (ADR 0093). */
   nameHint?: string;
+  /** The thing's colour as `#rrggbb` (the flow's colour), for the Draw dialog (ADR 0092 D9). */
+  colourHint?: string;
 }
 
 /** Whether "Make with AI" suits an image parameter: not a mob skin's 64 by 64 layout. */
@@ -45,14 +50,49 @@ export function takesAiPicture(parameter: StarterParameter & { type: 'image' }):
   return !/skin/i.test(`${parameter.id} ${parameter.label}`);
 }
 
+/** Whether an image parameter is a block's texture (else an item's picture), by its words. */
+function isBlockPicture(parameter: StarterParameter & { type: 'image' }): boolean {
+  const words = `${parameter.id} ${parameter.label}`.toLowerCase();
+  return /block|planks|log|stone|bark|leaves|side|top|bottom|front|paint|crate|machine|texture/.test(
+    words,
+  );
+}
+
 /** The AI style of an image parameter: a block texture or an item icon. */
 function aiStyleOf(parameter: StarterParameter & { type: 'image' }, name: string) {
-  const words = `${parameter.id} ${parameter.label}`.toLowerCase();
-  const block =
-    /block|planks|log|stone|bark|leaves|side|top|bottom|front|paint|crate|machine|texture/.test(
-      words,
-    );
-  return styleForName(name, block ? 'block' : 'item');
+  return styleForName(name, isBlockPicture(parameter) ? 'block' : 'item');
+}
+
+/**
+ * What the Draw dialog draws for an image parameter (ADR 0092 D10 (b)): a humanoid box skin
+ * for a skin, else a 16 by 16 block or item picture (smaller when the field allows less),
+ * guessed from the parameter's words and the thing's name.
+ */
+export function drawFieldOf(
+  parameter: StarterParameter & { type: 'image' },
+  name: string,
+  colour?: string,
+): DrawField {
+  const rgb = colour === undefined ? null : hexColour(colour);
+  const base = rgb === null ? {} : { colour: rgb };
+  if (!takesAiPicture(parameter)) {
+    return { kinds: ['entity'], width: 64, height: 64, skin: true, ...base };
+  }
+  const size = parameter.maxSize !== undefined && parameter.maxSize < 16 ? parameter.maxSize : 16;
+  return {
+    kinds: isBlockPicture(parameter) ? ['block', 'item'] : ['item', 'block'],
+    width: size,
+    height: size,
+    name: `${name} ${parameter.label} ${parameter.id}`,
+    ...base,
+  };
+}
+
+function hexColour(hex: string): [number, number, number] | null {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (match === null) return null;
+  const value = Number.parseInt(match[1] as string, 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 }
 
 /** A picked PNG for an image parameter, through the host's file picker. */
@@ -63,6 +103,7 @@ export function CreatorImageField({
   pickImage,
   onChange,
   nameHint,
+  colourHint,
 }: CreatorImageFieldProps) {
   const labelId = useId();
   const descriptionId = useId();
@@ -132,6 +173,19 @@ export function CreatorImageField({
             >
               <span id={chooseId}>{value === '' ? 'Choose picture…' : 'Replace…'}</span>
             </Button>
+            <DrawButton
+              testId={`${testId}-draw`}
+              target={parameter.label}
+              field={drawFieldOf(parameter, aiName, colourHint)}
+              onPick={(picture) => {
+                const bytes = picture.pngs[0];
+                if (bytes === undefined) return;
+                const problem = checkPngBytes(parameter, bytes);
+                if (problem !== null) throw new Error(problem);
+                setPickError(null);
+                onChange(pngDataUrl(bytes));
+              }}
+            />
             {takesAiPicture(parameter) && (
               <MakeWithAiButton
                 testId={`${testId}-ai`}

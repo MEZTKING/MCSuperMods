@@ -22,7 +22,7 @@ import type { Element, Json, Project } from '@msm/core';
 import { useEffect, useState } from 'react';
 import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import { pngDataUrl } from '../../components/AssetList';
-import { SlotPictureAi } from '../../components/ai-pictures/StudioAiPictures';
+import { SlotPictureAi, SlotPictureDraw } from '../../components/ai-pictures/StudioAiPictures';
 import { textureChange } from '../../components/ai-pictures/texture-write';
 import { buttonClass } from '../../components/ui/Button';
 import type { FormProblem } from '../../forms';
@@ -127,7 +127,7 @@ export interface TexturesSectionProps {
   problems: readonly FormProblem[];
   suggest(registry: string, prefix: string): string[];
   set(path: readonly (string | number)[], value: Json | undefined, coalesce?: string): void;
-  /** The project, for "Make with AI" on each slot (ADR 0093); without it no button. */
+  /** The project, for "Draw…" and "Make with AI" on each slot (ADRs 0092, 0093); without it none. */
   project?: Project;
 }
 
@@ -267,13 +267,22 @@ export function TexturesSection(props: TexturesSectionProps) {
                     onCommit={(text) => setTexture(slot.key, text)}
                   />
                   {props.project !== undefined && (
-                    <SlotPictureAi
-                      project={props.project}
-                      element={element}
-                      slot={slot.key}
-                      label={slot.label}
-                      value={String(value)}
-                    />
+                    <>
+                      <SlotPictureDraw
+                        project={props.project}
+                        element={element}
+                        slot={slot.key}
+                        label={slot.label}
+                        value={String(value)}
+                      />
+                      <SlotPictureAi
+                        project={props.project}
+                        element={element}
+                        slot={slot.key}
+                        label={slot.label}
+                        value={String(value)}
+                      />
+                    </>
                   )}
                 </div>
               );

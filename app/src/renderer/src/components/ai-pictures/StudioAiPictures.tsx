@@ -1,9 +1,10 @@
 /**
- * "Make with AI" in the blocks and items Studios (ADR 0093 D6): a picture row per project
- * texture of a model (the Block and Item Studios), and the button of one texture slot (the Block
- * Studio's Textures section). The picked picture is written through the Studio host's
- * `applyChanges` as one undo step: over the texture's bytes, or as a new texture that the slot
- * then names.
+ * "Draw…" (ADR 0092 D10 (b)) and "Make with AI" (ADR 0093 D6) in the blocks and items Studios:
+ * a picture row per project texture of a model (the Block and Item Studios), and the buttons
+ * of one texture slot (the Block Studio's Textures section). The picked picture is written
+ * through the Studio host's `applyChanges` as one undo step: over the texture's bytes, or as a
+ * new texture that the slot then names. Draw needs no AI host, so the rows and Draw are shown
+ * whenever the host can write; "Make with AI" only with an AI host.
  *
  * @packageDocumentation
  */
@@ -11,7 +12,9 @@
 import type { Element, Json, Project } from '@msm/core';
 import { useEffect, useState } from 'react';
 import type { AiPictureStyle } from '../../../../shared/ai-pictures';
+import type { ChangeAsset, ChangeItem } from '../../changeset/changeset';
 import { useBlocksItemsStudioHost } from '../../studios/blocks-items/host';
+import { DrawButton } from '../art/DrawButton';
 import { useAiPictures } from './ai-pictures-host';
 import { MakeWithAiButton } from './MakeWithAiButton';
 import { defaultPrompt, styleForName } from './prompt';
@@ -63,12 +66,12 @@ export interface ModelPicturesAiProps {
   testId: string;
 }
 
-/** A row per project texture of `model`, each with "Make with AI". */
+/** A row per project texture of `model`, each with "Draw…" and (with an AI host) "Make with AI". */
 export function ModelPicturesAi(props: ModelPicturesAiProps) {
   const ai = useAiPictures();
   const host = useBlocksItemsStudioHost();
   const textures = useModelTextures(props.model);
-  if (ai === null || host?.applyChanges === undefined) return null;
+  if (host?.applyChanges === undefined) return null;
   if (textures.length === 0) {
     // Vanilla models have no project pictures, so there is nothing to make: say why (no button).
     return isVanillaModel(props.model) ? (
@@ -86,20 +89,38 @@ export function ModelPicturesAi(props: ModelPicturesAiProps) {
         const asset = textureAsset(texture);
         if (asset === null) return null;
         const style: AiPictureStyle = styleForName(props.name, props.kind);
+        const rowId = `${props.testId}-${texture.replace(/[^a-z0-9]+/gi, '-')}`;
+        const write = async (bytes: Uint8Array, label: string) => {
+          const change = textureChange(props.project, asset.namespace, asset.path, bytes);
+          await apply(change.items, `${label} ${asset.path}`, change.writes);
+        };
         return (
           <div key={texture} className="flex items-center gap-2 text-xs">
             <span className="font-mono">{texture}</span>
-            <MakeWithAiButton
-              testId={`${props.testId}-${texture.replace(/[^a-z0-9]+/gi, '-')}`}
+            <DrawButton
+              testId={`${rowId}-draw`}
               target={`${asset.namespace}:${asset.path}`}
-              defaultPrompt={defaultPrompt(props.name, style)}
-              defaultStyle={style}
-              size={16}
-              onPick={async (bytes) => {
-                const change = textureChange(props.project, asset.namespace, asset.path, bytes);
-                await apply(change.items, `Make with AI ${asset.path}`, change.writes);
+              field={{
+                kinds: props.kind === 'block' ? ['block', 'item'] : ['item', 'block'],
+                width: 16,
+                height: 16,
+                name: texture,
+              }}
+              onPick={async (picture) => {
+                const bytes = picture.pngs[0];
+                if (bytes !== undefined) await write(bytes, 'Draw');
               }}
             />
+            {ai !== null && (
+              <MakeWithAiButton
+                testId={rowId}
+                target={`${asset.namespace}:${asset.path}`}
+                defaultPrompt={defaultPrompt(props.name, style)}
+                defaultStyle={style}
+                size={16}
+                onPick={(bytes) => write(bytes, 'Make with AI')}
+              />
+            )}
           </div>
         );
       })}
@@ -119,16 +140,57 @@ export interface SlotPictureAiProps {
   value: string;
 }
 
+/**
+ * The change of a picture picked for one texture slot (ADR 0045): the bytes over the texture
+ * the slot names, or a new texture `<ns>:block/<name>_<slot>` and the slot naming it, as the
+ * items and writes of one `applyChanges` step.
+ */
+export function slotPictureChange(
+  project: Project,
+  element: Element,
+  slot: string,
+  value: string,
+  bytes: Uint8Array,
+): { items: ChangeItem[]; writes: ChangeAsset[] } {
+  const { asset, current, textureId } = slotTexture(element, slot, value);
+  const change = textureChange(project, asset.namespace, asset.path, bytes);
+  const items = [...change.items];
+  if (current === null) {
+    const data = asObject(element.data);
+    const after: Json = {
+      ...data,
+      textures: { ...asObject(data.textures), [slot]: textureId },
+    };
+    items.push({
+      itemId: `ai-picture-slot:${slot}`,
+      op: 'update',
+      elementId: element.id,
+      kind: element.kind,
+      before: element.data,
+      after,
+      accepted: true,
+      problems: [],
+    });
+  }
+  return { items, writes: change.writes };
+}
+
+/** The texture a slot names, or the new one a picture for it is saved as. */
+function slotTexture(element: Element, slot: string, value: string) {
+  const [namespace, name] = splitElementId(element.id);
+  const current = value === '' ? null : textureAsset(value);
+  const textureId = current === null ? `${namespace}:block/${name}_${slot}` : value;
+  const asset = current ?? { namespace, path: `textures/block/${name}_${slot}.png` };
+  return { asset, current, textureId, name };
+}
+
 /** "Make with AI" for one texture slot of a typed block. */
 export function SlotPictureAi(props: SlotPictureAiProps) {
   const ai = useAiPictures();
   const host = useBlocksItemsStudioHost();
   if (ai === null || host?.applyChanges === undefined) return null;
   const apply = host.applyChanges;
-  const [namespace, name] = splitElementId(props.element.id);
-  const current = props.value === '' ? null : textureAsset(props.value);
-  const textureId = current === null ? `${namespace}:block/${name}_${props.slot}` : props.value;
-  const asset = current ?? { namespace, path: `textures/block/${name}_${props.slot}.png` };
+  const { asset, name } = slotTexture(props.element, props.slot, props.value);
   const displayName = displayNameOf(props.element.data) ?? name;
   return (
     <MakeWithAiButton
@@ -138,26 +200,41 @@ export function SlotPictureAi(props: SlotPictureAiProps) {
       defaultStyle="block"
       size={16}
       onPick={async (bytes) => {
-        const change = textureChange(props.project, asset.namespace, asset.path, bytes);
-        const items = [...change.items];
-        if (current === null) {
-          const data = asObject(props.element.data);
-          const after: Json = {
-            ...data,
-            textures: { ...asObject(data.textures), [props.slot]: textureId },
-          };
-          items.push({
-            itemId: `ai-picture-slot:${props.slot}`,
-            op: 'update',
-            elementId: props.element.id,
-            kind: props.element.kind,
-            before: props.element.data,
-            after,
-            accepted: true,
-            problems: [],
-          });
-        }
-        await apply(items, `Make with AI ${props.label}`, change.writes);
+        const change = slotPictureChange(
+          props.project,
+          props.element,
+          props.slot,
+          props.value,
+          bytes,
+        );
+        await apply(change.items, `Make with AI ${props.label}`, change.writes);
+      }}
+    />
+  );
+}
+
+/** "Draw…" for one texture slot of a typed block (ADR 0092 D10 (b)); no AI host needed. */
+export function SlotPictureDraw(props: SlotPictureAiProps) {
+  const host = useBlocksItemsStudioHost();
+  if (host?.applyChanges === undefined) return null;
+  const apply = host.applyChanges;
+  const { asset, textureId } = slotTexture(props.element, props.slot, props.value);
+  return (
+    <DrawButton
+      testId={`block-texture-${props.slot}-draw`}
+      target={`${asset.namespace}:${asset.path}`}
+      field={{ kinds: ['block'], width: 16, height: 16, name: textureId }}
+      onPick={async (picture) => {
+        const bytes = picture.pngs[0];
+        if (bytes === undefined) return;
+        const change = slotPictureChange(
+          props.project,
+          props.element,
+          props.slot,
+          props.value,
+          bytes,
+        );
+        await apply(change.items, `Draw ${props.label}`, change.writes);
       }}
     />
   );

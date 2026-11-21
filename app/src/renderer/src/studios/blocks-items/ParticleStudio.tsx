@@ -4,8 +4,9 @@
  *
  * - Pictures: the frames in order (a project sprite `<ns>:<name>`, the picture
  *   `textures/particle/<name>.png`, or a vanilla sprite id), "Add frame", reorder, remove,
- *   "Paint" and "New picture" (the texture editor at 8 by 8), "Split a strip into frames" (one
- *   PNG cut into `<id>_<n>` frames in one undo step, ADR 0045) and "Animation".
+ *   "Paint" and "New picture" (the texture editor at 8 by 8), "Draw frames…" (four drawn
+ *   frames `<id>_0` to `<id>_3` in one undo step, ADR 0092 D10), "Split a strip into frames"
+ *   (one PNG cut into `<id>_<n>` frames in one undo step, ADR 0045) and "Animation".
  * - Life and size: "Lifetime" (one number or "Between" two), "Size", "Size at the end".
  * - Movement: "Gravity" with "Floats up", "None" and "Falls", "Drag", "Stops on blocks",
  *   "Spin".
@@ -24,6 +25,8 @@ import { useState } from 'react';
 import { MakeWithAiButton } from '../../components/ai-pictures/MakeWithAiButton';
 import { defaultPrompt } from '../../components/ai-pictures/prompt';
 import { textureChange } from '../../components/ai-pictures/texture-write';
+import { DrawButton } from '../../components/art/DrawButton';
+import type { DrawnPicture } from '../../components/art/draw-model';
 import { buttonClass, iconButtonClass } from '../../components/ui/Button';
 import { IdInput, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -137,6 +140,19 @@ export default function ParticleStudio(props: StudioProps) {
     } catch (error) {
       setStatus({ text: messageOf(error), error: true });
     }
+  };
+
+  /** The four drawn frames as `<id>_0` to `<id>_3`, pictures and list in one undo step. */
+  const drawFrames = async (picture: DrawnPicture) => {
+    if (host?.applyChanges === undefined) {
+      throw new Error('Drawing needs the full app (it writes picture files).');
+    }
+    const change = splitChangeset(project, target, element, picture.pngs);
+    await host.applyChanges(change.items, 'Draw frames', change.writes);
+    setStatus({
+      text: `Drew ${change.sprites.length} frames, ${change.sprites[0]} to ${change.sprites.at(-1)}. Undo puts the old frames back.`,
+      error: false,
+    });
   };
 
   const life = data.lifetime;
@@ -278,6 +294,24 @@ export default function ParticleStudio(props: StudioProps) {
         >
           New picture
         </button>
+        <DrawButton
+          testId="particle-draw-frames"
+          label="Draw frames…"
+          target={element.id}
+          field={{
+            kinds: ['particle'],
+            width: NEW_PICTURE_SIZE.width,
+            height: NEW_PICTURE_SIZE.height,
+            name: element.id,
+          }}
+          disabled={host?.applyChanges === undefined}
+          title={
+            host?.applyChanges === undefined
+              ? 'Drawing needs the full app (it writes picture files).'
+              : 'Draw all four frames in a Minecraft-like style, in one step'
+          }
+          onPick={drawFrames}
+        />
       </div>
       <p className="text-muted text-xs">
         A project picture <code>mymod:spark_0</code> is the file{' '}
