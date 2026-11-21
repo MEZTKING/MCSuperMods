@@ -38,7 +38,7 @@ export function updateCheckMessage(
     case 'downloaded':
       return {
         kind: 'info',
-        text: `Version ${status.version} is ready. Choose Restart to update to install it.`,
+        text: `Version ${status.version} is ready. It installs when you close MCSuperMods, or choose Restart to update to install it now.`,
       };
     case 'error':
       return { kind: 'error', text: status.message || 'Could not check for updates.' };
@@ -196,7 +196,7 @@ export function UpdateBanner({ updates, onWhatsNew, beforeInstall }: UpdateBanne
           <span role="status" data-testid="update-banner-text">
             {installing
               ? 'MCSuperMods will close, install the update and open again.'
-              : `Version ${notice.version} is ready \u2014`}
+              : `Version ${notice.version} is ready and installs when you close MCSuperMods \u2014`}
           </span>
           <Button
             data-testid="update-install"

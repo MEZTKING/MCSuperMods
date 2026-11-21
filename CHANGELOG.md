@@ -43,6 +43,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Plugin API 1.18.0 also adds trade sounds, vanilla job sites and trade sets, and the fluid model and tags to the target facts.
 - Not in the Java project export or the vanilla packs: traders, village jobs, storage, shoulder pets and fluids need the Fabric mod jar.
 
+### Changed
+
+- **Updates install when you close MCSuperMods.** A downloaded update now also installs quietly the next time you close the app, so the new version is there when you start it again. **Restart to update** still installs it straight away. Unsaved changes are asked about first, and **Cancel** keeps the app open without installing.
+- Plugin API 1.18.0 declares the command and creative tab definitions a Java project generator receives (`JavaProjectInput.commands` and `creativeTabs`).
+
 ## [1.5.1] - 2026-11-14
 
 ### Added

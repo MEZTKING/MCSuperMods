@@ -261,7 +261,7 @@ const updater = createUpdater({
     if (!Notification.isSupported()) return;
     const notification = new Notification({
       title: 'MCSuperMods update ready',
-      body: `Version ${version} has downloaded. Restart MCSuperMods to update.`,
+      body: `Version ${version} has downloaded. It installs when you close MCSuperMods, or choose Restart to update.`,
     });
     notification.on('click', () => {
       const [window] = BrowserWindow.getAllWindows();
@@ -344,7 +344,9 @@ void app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   // After "Restart to update" every window has closed: start the silent installer, which
-  // quits this app and starts the new version (ADR 0018).
+  // quits this app and starts the new version (ADR 0018). Otherwise the app quits, and a
+  // downloaded update installs on that quit (electron-updater's `autoInstallOnAppQuit`, ADR
+  // 0018 amendment of 2026-11-21); a close the unsaved-changes prompt cancelled never gets here.
   const install = updater.finishInstall();
   if (install === 'installing') return;
   if (install === 'failed') {

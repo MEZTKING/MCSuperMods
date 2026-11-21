@@ -9,10 +9,9 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { DefinitionInput, JsonObject } from '@msm/plugin-api';
+import type { DefinitionInput, JavaProjectInput, JsonObject } from '@msm/plugin-api';
 import { describe, expect, it } from 'vitest';
 import { ARGUMENT_TYPES } from '../src/java-project/commands';
-import type { GeneratorInput } from '../src/java-project/context';
 import { generateJavaProject } from '../src/java-project/index';
 import { PARITY_DEFAULTS, VANILLA_PARITY_TYPES } from '../src/java-project/vanilla-types';
 import { target } from '../src/target';
@@ -27,7 +26,7 @@ function definition(kind: string, path: string, json: JsonObject): DefinitionInp
   return { id: `msm_test:${path}`, path: `msm/msm_test/${kind}/${path}.json`, definition: json };
 }
 
-function input(parts: Partial<GeneratorInput>): GeneratorInput {
+function input(parts: Partial<JavaProjectInput>): JavaProjectInput {
   return {
     modId: 'msm_test',
     javaPackage: 'msm_test',
@@ -97,7 +96,7 @@ describe('the 26.3 generator and the ADR 0094 block types', () => {
   });
 
   it('fails where the runtime refuses', () => {
-    const fails = (parts: Partial<GeneratorInput>, message: RegExp) =>
+    const fails = (parts: Partial<JavaProjectInput>, message: RegExp) =>
       expect(() => generateJavaProject(input(parts))).toThrow(message);
     fails(
       {

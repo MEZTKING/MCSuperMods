@@ -574,7 +574,11 @@ describe('App menu commands', () => {
     expect(text.closest('li')?.className ?? '').toMatch(/max-w-\[min\(420px,90vw\)\]/);
     expect(screen.queryByTestId('update-banner')).toBeNull();
     harness.pushUpdate({ state: 'downloaded', version: '9.9.9' });
-    expect(await screen.findByText('Version 9.9.9 is ready \u2014')).toBeTruthy();
+    expect(
+      await screen.findByText(
+        'Version 9.9.9 is ready and installs when you close MCSuperMods \u2014',
+      ),
+    ).toBeTruthy();
     // Held-back editor typing is reported, then the unsaved state, then main closes the
     // window through its unsaved-changes prompt (2026-11-14 updater audit).
     const unregister = registerPendingEdit(() => {

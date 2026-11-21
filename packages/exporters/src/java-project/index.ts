@@ -583,16 +583,9 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const javaPackage = javaPackageFor(modId);
       const modClassName = modClassNameFor(modId);
 
-      // Commands and creative tabs (ADR 0096 D6) go to generators that read them; the plugin API's
-      // JavaProjectInput does not declare them yet, so they are passed as extra fields.
-      const parity = {
-        ...(commands.length > 0 ? { commands } : {}),
-        ...(creativeTabs.length > 0 ? { creativeTabs } : {}),
-      };
       let generated: GeneratedFile[];
       try {
         generated = generator.generate({
-          ...parity,
           modId,
           javaPackage,
           modClassName,
@@ -605,6 +598,9 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           ...(particles.length > 0 ? { particles } : {}),
           ...(biomeAdditions.length > 0 ? { biomeAdditions } : {}),
           ...(lootAdditions.length > 0 ? { lootAdditions } : {}),
+          // Commands and creative tabs (ADR 0096 D6; plugin API 1.18.0).
+          ...(commands.length > 0 ? { commands } : {}),
+          ...(creativeTabs.length > 0 ? { creativeTabs } : {}),
           geckolib: geckolib !== undefined,
         });
       } catch (error) {

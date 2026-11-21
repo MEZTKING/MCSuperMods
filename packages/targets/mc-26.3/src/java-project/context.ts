@@ -4,23 +4,11 @@
  * @packageDocumentation
  */
 
-import type { DefinitionInput, GeneratedFile, JavaProjectInput } from '@msm/plugin-api';
-
-/**
- * The generator's input: the plugin API's, plus the command and creative tab definitions (ADR
- * 0096 D6), which the `java-project` exporter passes on and the plugin API does not declare yet
- * (both optional, absent meaning none).
- */
-export interface GeneratorInput extends JavaProjectInput {
-  /** Command definitions (`msm/<namespace>/command/*.json`), in a stable order. */
-  readonly commands?: DefinitionInput[];
-  /** Creative tab definitions (`msm/<namespace>/creative_tab/*.json`), in a stable order. */
-  readonly creativeTabs?: DefinitionInput[];
-}
+import type { GeneratedFile, JavaProjectInput } from '@msm/plugin-api';
 
 /** The generation of one ejected project. */
 export interface GenerationContext {
-  readonly input: GeneratorInput;
+  readonly input: JavaProjectInput;
   /**
    * The ids of the project's own creative tabs (ADR 0096 D2): their members are listed by the
    * generated `ModCreativeTabs`, so blocks, items and spawn eggs naming one add no tab line.

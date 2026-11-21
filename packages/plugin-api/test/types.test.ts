@@ -364,6 +364,8 @@ describe('0.8.0 additions', () => {
       lootAdditions?: DefinitionInput[];
       potions?: DefinitionInput[];
       particles?: DefinitionInput[];
+      commands?: DefinitionInput[];
+      creativeTabs?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
@@ -687,6 +689,30 @@ describe('0.8.0 additions', () => {
     // A 1.14.0-shaped contributions object without expanders stays assignable.
     const older: PluginContributions = { validators: [] };
     expect(older.projectExpanders).toBeUndefined();
+  });
+
+  it('keeps a 1.17.0-shaped JavaProjectInput assignable (commands and creative tabs are optional, 1.18.0)', () => {
+    const input: JavaProjectInput = {
+      modId: 'm',
+      javaPackage: 'a.b',
+      modClassName: 'M',
+      blocks: [],
+      items: [],
+      entities: [],
+      particles: [],
+      geckolib: false,
+    };
+    expect(input.commands).toBeUndefined();
+    expect(input.creativeTabs).toBeUndefined();
+    const withBoth: JavaProjectInput = {
+      ...input,
+      commands: [{ id: 'ns:hello', path: 'msm/ns/command/hello.json', definition: {} }],
+      creativeTabs: [{ id: 'ns:tab', path: 'msm/ns/creative_tab/tab.json', definition: {} }],
+    };
+    expect(withBoth.commands).toHaveLength(1);
+    expect(withBoth.creativeTabs).toHaveLength(1);
+    expectTypeOf<JavaProjectInput['commands']>().toEqualTypeOf<DefinitionInput[] | undefined>();
+    expectTypeOf<JavaProjectInput['creativeTabs']>().toEqualTypeOf<DefinitionInput[] | undefined>();
   });
 
   it('keeps a 1.8.0-shaped JavaProjectInput assignable (potions is optional, 1.9.0)', () => {

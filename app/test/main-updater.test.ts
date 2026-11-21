@@ -21,7 +21,7 @@ const windows: UpdaterGate = { isPackaged: true, platform: 'win32', env: {} };
 /** A fake electron-updater: `checkForUpdates` plays the scripted events. */
 class FakeAutoUpdater implements AutoUpdaterLike {
   autoDownload = false;
-  autoInstallOnAppQuit = true;
+  autoInstallOnAppQuit = false;
   allowPrerelease = true;
   allowDowngrade = true;
   disableWebInstaller = false;
@@ -151,7 +151,7 @@ describe('createUpdater', () => {
     });
   });
 
-  it('checks after the start-up delay when the setting is on, with download but no install on quit', async () => {
+  it('checks after the start-up delay when the setting is on, with download and install on quit', async () => {
     const { fake, sent, scheduled, updater, runScheduled } = setup();
     updater.scheduleStartupCheck();
     expect(scheduled.map((entry) => entry.delayMs)).toEqual([STARTUP_CHECK_DELAY_MS]);
@@ -159,7 +159,7 @@ describe('createUpdater', () => {
     await runScheduled();
     await vi.waitFor(() => expect(fake.checks).toBe(1));
     expect(fake.autoDownload).toBe(true);
-    expect(fake.autoInstallOnAppQuit).toBe(false);
+    expect(fake.autoInstallOnAppQuit).toBe(true);
     // Only newer published releases: no pre-releases, no downgrades, no web installer.
     expect(fake.allowPrerelease).toBe(false);
     expect(fake.allowDowngrade).toBe(false);
@@ -182,7 +182,7 @@ describe('createUpdater', () => {
     expect(fake.checks).toBe(1);
   });
 
-  it('reports download progress and the downloaded version, and installs only on request', async () => {
+  it('reports download progress and the downloaded version, and installs on Restart to update', async () => {
     const { fake, sent, deps, updater } = setup();
     fake.script = [
       ['update-available', { version: '0.2.0' }],
@@ -200,7 +200,8 @@ describe('createUpdater', () => {
       { state: 'downloading', percent: 75, version: '0.2.0' },
       { state: 'downloaded', version: '0.2.0' },
     ]);
-    // Downloaded, but nothing installs until the user asks.
+    // Downloaded, but MSM starts no installer itself: the install on an ordinary quit is
+    // electron-updater's (`autoInstallOnAppQuit`, main-updater-feed.test.ts).
     expect(fake.installs).toEqual([]);
     expect(updater.finishInstall()).toBe('none');
     // A further check is not needed once downloaded.

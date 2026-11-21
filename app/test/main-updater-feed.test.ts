@@ -19,6 +19,7 @@ import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type CloseChoice, createCloseGuard } from '../src/main/close-guard';
 import { createNodePlatform } from '../src/main/platform/node-platform';
 import { type AutoUpdaterLike, createUpdater } from '../src/main/updater';
 import type { UpdateStatus } from '../src/shared/ipc-channels';
@@ -182,11 +183,11 @@ describe('electron-updater against a local feed (NsisUpdater, generic provider)'
     expect(sent.map((status) => status.state)).toContain('available');
     // The options MSM sets reached the real updater.
     expect(real.updater.autoDownload).toBe(true);
-    expect(real.updater.autoInstallOnAppQuit).toBe(false);
+    expect(real.updater.autoInstallOnAppQuit).toBe(true);
     expect(real.updater.allowPrerelease).toBe(false);
     expect(real.updater.allowDowngrade).toBe(false);
-    // Nothing installs on an ordinary quit (no quit handler was added).
-    expect(real.quitHandlers).toEqual([]);
+    // The download added electron-updater's install-on-quit handler (ADR 0018, 2026-11-21).
+    expect(real.quitHandlers).toHaveLength(1);
 
     await updater.install();
     expect(updater.finishInstall()).toBe('installing');
@@ -196,6 +197,9 @@ describe('electron-updater against a local feed (NsisUpdater, generic provider)'
     expect(await readFile(real.spawned[0]?.cmd ?? '')).toEqual(bytes);
     // electron-updater then quits the app on the next tick.
     await vi.waitFor(() => expect(real.quits).toHaveLength(1));
+    // That quit does not run the installer a second time.
+    for (const handler of real.quitHandlers) handler(0);
+    expect(real.spawned).toHaveLength(1);
   });
 
   it('never offers an older published release to a newer installed app (1.5.1 over 1.0.0)', async () => {
@@ -252,6 +256,122 @@ describe('electron-updater against a local feed (NsisUpdater, generic provider)'
     const result = await updater.check();
     expect(result.state).toBe('error');
     expect(result.state === 'error' && result.message).toMatch(/^Could not reach GitHub/);
+  });
+});
+
+/**
+ * One window behind MSM's close guard, with main's `window-all-closed` step: after the guard
+ * lets the close through, `finishInstall` runs, and when no Restart to update was asked for the
+ * app quits normally (the real updater's quit handlers run with `exitCode`).
+ */
+function guardedWindow(
+  real: Awaited<ReturnType<typeof realUpdater>>,
+  updater: ReturnType<typeof msmUpdater>['updater'],
+  options: { dirty: boolean; choice: CloseChoice; saves?: boolean; exitCode?: number },
+) {
+  const closed: string[] = [];
+  const confirm = vi.fn(async () => options.choice);
+  const save = vi.fn(async () => options.saves ?? true);
+  const onClose = createCloseGuard({
+    isDirty: () => options.dirty,
+    flush: async () => options.dirty,
+    confirm,
+    save,
+    close() {
+      closed.push('closed');
+      if (updater.finishInstall() !== 'none') return;
+      for (const handler of real.quitHandlers) handler(options.exitCode ?? 0);
+    },
+  });
+  const close = async (): Promise<void> => {
+    onClose({ preventDefault() {} });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
+  return { closed, confirm, save, close };
+}
+
+/** A real updater that has downloaded 1.5.2 from the local feed. */
+async function downloaded() {
+  const bytes = randomBytes(8 * 1024);
+  files.set('latest.yml', latestYml('1.5.2', bytes));
+  files.set(installerName('1.5.2'), bytes);
+  const real = await realUpdater();
+  const { updater } = msmUpdater(async () => real.updater as unknown as AutoUpdaterLike);
+  await updater.check();
+  await vi.waitFor(() =>
+    expect(updater.status).toMatchObject({ state: 'downloaded', version: '1.5.2' }),
+  );
+  return { real, updater, bytes };
+}
+
+describe('a downloaded update installs when the app closes (ADR 0018, 2026-11-21)', () => {
+  it('installs silently on an ordinary close of a saved project, without starting the app', async () => {
+    const { real, updater, bytes } = await downloaded();
+    const window = guardedWindow(real, updater, { dirty: false, choice: 'cancel' });
+    await window.close();
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(window.closed).toEqual(['closed']);
+    expect(real.spawned).toHaveLength(1);
+    // Silent, and the app is not started again: the user closed it.
+    expect(real.spawned[0]?.args).toEqual(['--updated', '/S']);
+    expect(await readFile(real.spawned[0]?.cmd ?? '')).toEqual(bytes);
+  });
+
+  it('installs after Save in the unsaved-changes prompt', async () => {
+    const { real, updater } = await downloaded();
+    const window = guardedWindow(real, updater, { dirty: true, choice: 'save' });
+    await window.close();
+    expect(window.save).toHaveBeenCalledOnce();
+    expect(window.closed).toEqual(['closed']);
+    expect(real.spawned).toHaveLength(1);
+  });
+
+  it('installs after Discard changes in the unsaved-changes prompt', async () => {
+    const { real, updater } = await downloaded();
+    const window = guardedWindow(real, updater, { dirty: true, choice: 'discard' });
+    await window.close();
+    expect(window.closed).toEqual(['closed']);
+    expect(real.spawned).toHaveLength(1);
+  });
+
+  it('installs nothing when the prompt is cancelled or the save fails, and the window stays open', async () => {
+    const { real, updater } = await downloaded();
+    const cancelled = guardedWindow(real, updater, { dirty: true, choice: 'cancel' });
+    await cancelled.close();
+    expect(cancelled.confirm).toHaveBeenCalledOnce();
+    const failedSave = guardedWindow(real, updater, { dirty: true, choice: 'save', saves: false });
+    await failedSave.close();
+    expect(failedSave.save).toHaveBeenCalledOnce();
+    expect(cancelled.closed).toEqual([]);
+    expect(failedSave.closed).toEqual([]);
+    expect(real.spawned).toEqual([]);
+    // The update stays ready, and a later close after Discard changes installs it.
+    expect(updater.status).toMatchObject({ state: 'downloaded', version: '1.5.2' });
+    const later = guardedWindow(real, updater, { dirty: true, choice: 'discard' });
+    await later.close();
+    expect(real.spawned).toHaveLength(1);
+  });
+
+  it('installs nothing when the app quits with an error exit code', async () => {
+    const { real, updater } = await downloaded();
+    const window = guardedWindow(real, updater, { dirty: false, choice: 'cancel', exitCode: 1 });
+    await window.close();
+    expect(window.closed).toEqual(['closed']);
+    expect(real.spawned).toEqual([]);
+  });
+
+  it('keeps Restart to update: installs once and starts the new version after the prompt', async () => {
+    const { real, updater } = await downloaded();
+    const window = guardedWindow(real, updater, { dirty: true, choice: 'discard' });
+    await updater.install();
+    await window.close();
+    expect(window.closed).toEqual(['closed']);
+    expect(real.spawned).toHaveLength(1);
+    expect(real.spawned[0]?.args).toEqual(['--updated', '/S', '--force-run']);
+    // electron-updater's own quit then skips the install-on-quit handler.
+    await vi.waitFor(() => expect(real.quits).toHaveLength(1));
+    for (const handler of real.quitHandlers) handler(0);
+    expect(real.spawned).toHaveLength(1);
   });
 });
 

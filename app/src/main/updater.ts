@@ -15,11 +15,15 @@
  *   `downloading` carries the version being downloaded.
  * - Only published, non-prerelease releases newer than the running version are offered
  *   (`allowPrerelease` and `allowDowngrade` off): an installed 1.5.1 never "updates" to 1.0.0.
- * - Updates download automatically; installing happens only when the user asks
- *   ({@link Updater.install}), after every window has closed through the unsaved-changes
- *   prompt, as a silent install that starts the new version (`quitAndInstall(true, true)`).
- *   Nothing installs on an ordinary quit (`autoInstallOnAppQuit` off, ADR 0018); a downloaded
- *   update stays cached and is offered again on the next start.
+ * - Updates download automatically. A downloaded update installs in one of two ways, each only
+ *   after every window has closed through the unsaved-changes prompt:
+ *   - Restart to update ({@link Updater.install}): a silent install that starts the new version
+ *     (`quitAndInstall(true, true)`).
+ *   - Closing the app (`autoInstallOnAppQuit` on, ADR 0018 amendment of 2026-11-21): when the
+ *     app quits normally (exit code 0), electron-updater runs the downloaded installer silently
+ *     and the new version is there on the next start. The quit only happens once every window
+ *     has closed, so a cancelled prompt or a failed save keeps the app open and installs
+ *     nothing. After Restart to update the quit does not install a second time.
  * - When the installer cannot start, {@link Updater.finishInstall} answers `failed` so the
  *   host opens a window again instead of leaving a running app with no window.
  * - Errors never throw out of the updater. Each is classified ({@link classifyUpdateError}):
@@ -408,10 +412,12 @@ export function createUpdater(deps: UpdaterDeps): Updater {
 
   const ensureLoaded = (): Promise<AutoUpdaterLike> => {
     loading ??= deps.load().then((updater) => {
-      // Download in the background; install only when the user asks (never on quit, ADR
-      // 0018). Only newer published releases: no pre-releases, no downgrades.
+      // Download in the background; install on Restart to update or when the app closes (ADR
+      // 0018, amended 2026-11-21). electron-updater reads `autoInstallOnAppQuit` when a download
+      // finishes, so it is set here, before the first check. Only newer published releases: no
+      // pre-releases, no downgrades.
       updater.autoDownload = true;
-      updater.autoInstallOnAppQuit = false;
+      updater.autoInstallOnAppQuit = true;
       updater.allowPrerelease = false;
       updater.allowDowngrade = false;
       updater.disableWebInstaller = true;

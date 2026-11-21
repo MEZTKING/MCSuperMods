@@ -41,12 +41,12 @@
  * @packageDocumentation
  */
 
-import type { GeneratedFile, JavaProjectGenerator } from '@msm/plugin-api';
+import type { GeneratedFile, JavaProjectGenerator, JavaProjectInput } from '@msm/plugin-api';
 import { generateBlocks } from './blocks';
 import { generateClient } from './client';
 import { generateCommands } from './commands';
 import { BLOCK_ENTITY_CLASS_NAMES, generateBlockEntities } from './containers';
-import type { GenerationContext, GeneratorInput } from './context';
+import type { GenerationContext } from './context';
 import { generateCreativeTabs, projectTabIds } from './creative-tabs';
 import { generateEffects } from './effects';
 import { generateEntities } from './entities';
@@ -83,7 +83,7 @@ export interface JavaEntrypoints {
  * naming the definition when one cannot be generated (an unknown component, action or goal,
  * an undeclared event).
  */
-export function generateJavaProject(input: GeneratorInput): {
+export function generateJavaProject(input: JavaProjectInput): {
   files: GeneratedFile[];
   entrypoints: JavaEntrypoints;
 } {
@@ -244,7 +244,7 @@ export function generateJavaProject(input: GeneratorInput): {
  * The path of the thrown item entity type id in the mod's namespace: `thrown_item`, or
  * `thrown_item_<n>` when a project entity already has `<mod id>:thrown_item`.
  */
-function thrownItemPath(input: GeneratorInput): string {
+function thrownItemPath(input: JavaProjectInput): string {
   const taken = new Set(
     input.entities
       .map((entity) => splitId(entity.id))

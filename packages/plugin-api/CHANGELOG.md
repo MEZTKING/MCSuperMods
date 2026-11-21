@@ -4,16 +4,17 @@ All changes to the `@msm/plugin-api` surface. The package follows semver; every 
 
 ## 1.18.0 — 2026-11-15
 
-Dimension type, trader, profession and fluid facts (ADR 0100 D5, ADR 0098 D5, ADR 0099 D4). `API_VERSION` is `1.18.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+Dimension type, trader, profession and fluid facts, and the command and creative tab inputs of the Java project generator (ADR 0100 D5, ADR 0098 D5, ADR 0099 D4, ADR 0096 D6). `API_VERSION` is `1.18.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
 
 - `WorldgenFacts.dimensionHeight?: DimensionHeightFacts` with `DimensionHeightFacts { minY: number; maxY: number; step: number }`: the lowest `min_y` of a dimension type, its highest block y (`min_y + height - 1` may not pass it) and the step `min_y` and `height` are multiples of. The worldgen validators `worldgen.dimension-height-multiple` and `worldgen.dimension-height-range` read it.
 - `WorldgenFacts.environmentAttributes?: readonly string[]`: every namespaced id of the game's `environment_attribute` registry, sorted, from the vendored registries. The Dimension Type Studio shows only these, and `worldgen.dimension-attribute-unknown` reports any other key of a dimension type's `attributes`.
 - `EntityFacts` gains three optional fields (ADR 0098 D1, D2, D5): `tradeSounds?: TradeSoundFacts` with `TradeSoundFacts { yes: string; no: string; trading: string }` (vanilla's merchant sounds; `yes` is an `msm:trader`'s default `trade_sound`); `vanillaJobSites?: Readonly<Record<string, readonly string[]>>` (every vanilla block that already has a point of interest type, by point of interest type id, for the `entities.job-site-taken` refusal of a profession's `job_site`); `vanillaTradeSets?: Readonly<Record<string, VanillaTradeSetFacts>>` with `VanillaTradeSetFacts { trades: number; villagerOnlyTrades: number; villagerOnly: boolean }` (every vanilla trade set; `villagerOnly` marks sets with trades that carry a `merchant_predicate` on the villager's variant, which give a project trader no offer).
 - `BlockFacts` gains two optional fields (ADR 0099 D4): `fluidModel?: 'two_fluids' | 'one_fluid'` (whether the game registers a liquid as a source and a flowing fluid or as one fluid; informational, for lowering's `flowing_` tag ids and the Fluid Studio's wording) and `fluidTags?: FluidTagFacts` with `FluidTagFacts { water: readonly string[]; lava: readonly string[] }` (the vanilla fluid tags a project fluid joins by `behaves_like`).
+- `JavaProjectInput` gains two optional fields (ADR 0096 D6, added 2026-11-21 within 1.18.0): `commands?: DefinitionInput[]` (the `msm/<namespace>/command/*.json` definitions) and `creativeTabs?: DefinitionInput[]` (the `msm/<namespace>/creative_tab/*.json` definitions), each in a stable order and absent when the project has none. The `java-project` exporter has passed both since the vanilla parity batch (B457) as undeclared extra fields; they are now part of the contract, so a third-party generator can read them without a cast.
 
 ### Migration from 1.17.0
 
-None. A plugin that reads `dimensionHeight`, `environmentAttributes`, the new entity facts or the fluid facts should declare `^1.18.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them.
+None. A plugin that reads `dimensionHeight`, `environmentAttributes`, the new entity facts or the fluid facts should declare `^1.18.0` and treat an absent value as "no facts to check against"; plugins written earlier ignore them. A Java project generator that reads `commands` or `creativeTabs` treats an absent value as an empty array.
 
 ## 1.17.0 — 2026-11-15
 

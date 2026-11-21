@@ -815,6 +815,18 @@ export interface JavaProjectInput {
    * means the same as an empty array. Since 1.14.0 (ADR 0080 D11).
    */
   particles?: DefinitionInput[];
+  /**
+   * The project's command definitions (`msm/<namespace>/command/*.json`), in a stable order,
+   * for generators that register the commands with Brigadier. Optional: absent means the same
+   * as an empty array. Since 1.18.0 (ADR 0096 D6).
+   */
+  commands?: DefinitionInput[];
+  /**
+   * The project's creative tab definitions (`msm/<namespace>/creative_tab/*.json`), in a stable
+   * order, for generators that register the tabs and list their members. Optional: absent means
+   * the same as an empty array. Since 1.18.0 (ADR 0096 D6).
+   */
+  creativeTabs?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }

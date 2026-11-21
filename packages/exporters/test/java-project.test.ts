@@ -374,6 +374,42 @@ describe.each(
     expect(Object.hasOwn(captured as unknown as JavaProjectInput, 'potions')).toBe(false);
   });
 
+  it('routes command and creative tab definitions into their declared inputs (plugin API 1.18.0)', async () => {
+    let captured: JavaProjectInput | undefined;
+    const spy: Target = {
+      ...target,
+      javaProject: {
+        generate(input) {
+          captured = input;
+          return [];
+        },
+      },
+    };
+    const command = raw('ruby:hello', {
+      path: 'msm/ruby/command/hello.json',
+      layer: 'msm',
+      json: { format: 1 },
+    });
+    const tab = raw('ruby:gems', {
+      path: 'msm/ruby/creative_tab/gems.json',
+      layer: 'msm',
+      json: { format: 1, icon: 'ruby:ruby' },
+    });
+    const both = await eject([command, tab, plainItem], { wrapper, target: spy });
+    expect(both.report.ok).toBe(true);
+    expect(captured?.commands?.map((entry) => entry.id)).toEqual(['ruby:hello']);
+    expect(captured?.commands?.[0]?.path).toBe('msm/ruby/command/hello.json');
+    expect(captured?.creativeTabs?.map((entry) => entry.id)).toEqual(['ruby:gems']);
+    expect(captured?.creativeTabs?.[0]?.definition).toEqual({ format: 1, icon: 'ruby:ruby' });
+    expect(captured?.entities).toEqual([]);
+
+    captured = undefined;
+    await eject([plainItem], { wrapper, target: spy });
+    expect(captured).toBeDefined();
+    expect(Object.hasOwn(captured as unknown as JavaProjectInput, 'commands')).toBe(false);
+    expect(Object.hasOwn(captured as unknown as JavaProjectInput, 'creativeTabs')).toBe(false);
+  });
+
   it('routes biome and loot additions into their inputs, never entities, and omits them when absent', async () => {
     let captured: JavaProjectInput | undefined;
     const spy: Target = {

@@ -11,7 +11,9 @@
  * A clean window then closes; a dirty one asks first: "Save" (saves, then closes, or carries
  * on with the update install), "Discard changes" or "Cancel". Only a cancelled prompt or a
  * failed save keeps the window open. Nothing here listens to `before-quit`, so once every
- * window has closed nothing stands between "Restart to update" and the installer (ADR 0018).
+ * window has closed nothing stands between "Restart to update" (or the install when the app
+ * closes) and the installer; while the prompt is open or was cancelled the app does not quit,
+ * so nothing installs (ADR 0018).
  *
  * @packageDocumentation
  */

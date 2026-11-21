@@ -73,7 +73,7 @@ describe('UpdateBanner', () => {
     expect(screen.queryByTestId('update-install')).toBeNull();
     push({ state: 'downloaded', version: '1.4.0' });
     expect(screen.getByTestId('update-banner-text').textContent).toBe(
-      'Version 1.4.0 is ready \u2014',
+      'Version 1.4.0 is ready and installs when you close MCSuperMods \u2014',
     );
     expect(install).not.toHaveBeenCalled();
     await userEvent.setup().click(screen.getByRole('button', { name: 'Restart to update' }));
@@ -107,7 +107,7 @@ describe('UpdateBanner', () => {
   it('starts from the current status, so a reload does not lose a downloaded update', async () => {
     renderBanner({ current: { state: 'downloaded', version: '2.0.0', notes: '- New' } });
     expect((await screen.findByTestId('update-banner-text')).textContent).toBe(
-      'Version 2.0.0 is ready \u2014',
+      'Version 2.0.0 is ready and installs when you close MCSuperMods \u2014',
     );
   });
 

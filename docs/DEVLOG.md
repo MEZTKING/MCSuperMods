@@ -6427,3 +6427,17 @@ Next
 
 **Next**
 - Workers for ADR 0102 D1–D3 (backups) and D4–D5 (rename warning), and for the updater and plugin API changes; then the 1.5.2 draft; then Try it slice 4 and the art batch.
+
+## 2026-11-21 — executor — B490 updates install on close; plugin API Java project input
+
+**What**
+- Updates install when the app closes (the user's answer of 2026-11-21): `app/src/main/updater.ts` sets `autoInstallOnAppQuit` on, so electron-updater's quit handler runs the downloaded installer silently (`--updated /S`, the app is not started again) when the app quits with exit code 0. Restart to update is unchanged (`quitAndInstall(true, true)`, installs once; electron-updater's own quit skips the quit handler). The close guard still runs first: the app quits only after every window has closed, so Cancel or a failed save installs nothing, and a close after Save or Discard installs. The rules on what is offered (no pre-releases or downgrades, no web installer, only packaged on Windows outside test runs) are unchanged.
+- Wording: the banner reads "Version X is ready and installs when you close MCSuperMods —" with Restart to update; the Check for Updates toast and the Windows notification say the same; the guide's updates paragraph (`docs/guide/getting-started.md`), DESIGN Open Question 4, ADR 0018 (amendment of 2026-11-21) and CHANGELOG `[Unreleased]` "Changed".
+- Tests: `app/test/main-updater-feed.test.ts` gains six cases with electron-updater's real `NsisUpdater` behind MSM's close guard and main's `window-all-closed` step (clean close, Save, Discard, Cancel and a failed save, a non-zero exit code, Restart to update installing once); `main-updater.test.ts` and the banner tests follow the new option and wording.
+- Plugin API 1.18.0 (unreleased, no bump) declares `JavaProjectInput.commands?` and `creativeTabs?` (`DefinitionInput[]`, ADR 0096 D6); the exporter passes them as ordinary fields, and the 26.3 generator's `GeneratorInput` workaround is gone (it uses `JavaProjectInput`). Type and routing tests added in `packages/plugin-api/test/types.test.ts` and `packages/exporters/test/java-project.test.ts`; ADR 0096's open item is marked resolved.
+
+**Decisions**
+- Install on close relies on electron-updater's own `autoInstallOnAppQuit` handler rather than a second MSM path, so the exit-code and "already installing" rules are electron-updater's; it adds the handler when a download finishes, which is why the option is set when the updater loads.
+
+**Next**
+- The Windows check in `docs/HANDOFF.md` (updater item (c)) should add: with a downloaded update, close the window (after Save, Discard, or with nothing unsaved): no installer pages show, and the next start runs the new version with What's new once. HANDOFF's open question 3 is answered. README's "Releasing" text still says the update installs when the user chooses Restart to update.
