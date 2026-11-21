@@ -546,3 +546,13 @@ describe('systemPrompt traders, jobs, storage, shoulder pets, fluids and dimensi
     },
   );
 });
+
+describe('systemPrompt Try it line', () => {
+  it('says Try it proves nothing and points to Play', () => {
+    for (const mode of ['chat', 'build'] as const) {
+      const text = systemPrompt(mode);
+      expect(text).toContain('Never tell a user that Try it proved');
+      expect(text).toContain('Play in Minecraft');
+    }
+  });
+});

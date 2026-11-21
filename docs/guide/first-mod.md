@@ -44,6 +44,8 @@ The element list fills with your new ore, ruby, ruby block, tools, armour, recip
 - The **Problems** tab on the right should say there are no errors. Errors (red) stop the export; warnings (yellow) do not.
 - Choose **Save** (Ctrl+S).
 
+A quick look first: **Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed, where you can walk around your new blocks and items. It is a preview, not the game, so the real check is the next step ([Try it](try-it.md)).
+
 ## 5. Play with it in Minecraft
 
 1. Open the **Export** menu (the arrow next to **Export .zip**) and choose **Test in Minecraft…**.

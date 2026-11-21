@@ -6664,3 +6664,17 @@ Next
 
 **Next**
 - B500: e2e `art-path` (not done here). Wire `colourHint` from `CreatorDialog` (the flow's colour answer). B496 can reuse `HUMANOID_SKIN_BOXES`' pattern with the model's own boxes.
+
+## 2026-11-21 — executor — B402 Try it guide and status lines
+
+**What**
+- `docs/guide/try-it.md`: new "Scripts and logic rules" section (sandboxed worker, "<Member>, used by the script <id>", the 2-second stop with its panel line, effects a moment after the event's other actions, `The script <id> says to you: "..."` plus chip, events never fired, logic-rule steps named by kind, chances follow "Run every time" or a seeded roll, "for each player" finds only you, errors name rule and step, the "Mob drops a reward" template cannot be seen). The "Plain rules only, no scripts" limits row became "Scripts and rules run in a sandbox"; intro line updated. Labels checked against `packages/sim/src/script/bridge.ts` (`ruleLine`, time-out line, `NOT_FIRED`).
+- `first-mod.md` (new paragraph before step 5) and `very-easy.md` (sentence in its Try it section) point to Try it and Play. CHANGELOG 1.5.2 lines already match the guide; no edit.
+- Status lines: root `CLAUDE.md` (70 lines), `docs/CLAUDE.md` (44), `app/CLAUDE.md` (52): slice 4 merged, close B403 next.
+- `packages/ai/src/system-prompt.ts`: a `TRY_IT` line (what Try it can and cannot show; never say it proved a behaviour); one pin test added. AI tests 97 green, `pnpm lint` green, docs site builds.
+
+**Decisions**
+- The limits table still holds the earlier rows; both parity batches were already covered by them (vehicles, keys, bags, signs, traders, fluids, skies).
+
+**Next**
+- B403 close.

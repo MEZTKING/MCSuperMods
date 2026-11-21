@@ -2,7 +2,7 @@
 
 **Try it** is a small test area inside MCSuperMods. You walk or fly around in it, put down and break your blocks, see how they look in every state, open your doors, grow your crops, hatch your mobs and watch your particles. It opens at once, needs no Minecraft, no launcher and no account, and it changes as you edit.
 
-It is a preview, not the game. A strip across the top always says **Preview, not the real game.**, with a **Play in Minecraft** button for the real check ([Playing and testing](playing-and-testing.md)). Walking is roughly right, mobs only wander, commands are checked and logged but not carried out in the world, and redstone, survival and world generation are not there. The full list is under [Limits](#limits).
+It is a preview, not the game. A strip across the top always says **Preview, not the real game.**, with a **Play in Minecraft** button for the real check ([Playing and testing](playing-and-testing.md)). Walking is roughly right, mobs only wander, commands are checked and logged but not carried out in the world, your scripts run in a closed-off sandbox with the game's own parts left out, and redstone, survival and world generation are not there. The full list is under [Limits](#limits).
 
 ## What it is
 
@@ -161,6 +161,28 @@ A key of your own does its events when you press it in Try it: the key bind's **
 
 Your on-screen elements are drawn over the picture at the game's automatic GUI scale, laid out by the same rules as the HUD Studio. **Set by rules** values, the player's x, y and z, and a vehicle's fuel, health and speed are real. The player's health, food and air show 20, armour and level 0, and a vehicle's ammunition and reload, scores and saved data are said once and show only what a step sets. The vehicle dashboard shows weapons always ready.
 
+## Scripts and logic rules
+
+**Scripts.** Your project's scripts run in Try it, in a sandboxed worker that has no network, no files and no timers of its own. They hear the events the preview fires: a right click on a block, breaking, placing, using an item, using a mob, an explosion from the **Explode** tool, a mob's death (after a hit), commands and chat from the chat box, the server and player ticks, and the start of the area. A script that cancels a click, a break or a place decides it, as in the game.
+
+- What the script does shows in **What happened** under the script's name: blocks it sets, particles, sounds, items it gives you, and what it stores.
+- A script's message shows as `The script <id> says to you: "..."` in **What happened**, and as a chip above the hotbar. It does not go in the chat box.
+- A member that needs the game is said once as "Only in Minecraft: <Member>, used by the script <id>" and does nothing.
+- Events the preview never fires are said once per script, with the reason: a mob's hurt and damage (mobs have no health here), respawn, leaving, dimension changes, keys and vehicles.
+- The effects of `run_script` and of events you cannot cancel show a moment after the event's other actions, a few milliseconds later. This is an approximation.
+- A call that runs for more than 2 seconds is stopped. **What happened** says "... ran for more than 2 seconds (an endless loop?), so the preview stopped the scripts and started them again; their waiting msm.schedule calls were dropped."
+- What a script stores is kept while the project is open, also when the scripts start again.
+
+**Logic rules.** A rule with checks, chances, repeats, waits or "for each player" runs in the same sandbox and says its steps in **What happened** under the rule's name, for example `Rule "Try your luck" checked its "if": true, so its "then" steps ran.`
+
+- The steps are named by what they are, not by a number: "only if", "if" (then or otherwise), chance, repeat, "for each player", wait. A step after a wait says so ("waits 2 seconds (40 ticks of the preview's clock)", "waited 2 seconds and goes on").
+- A chance follows **Run every time**: with it on, a chance always comes up; otherwise it is decided by a seeded roll, the same each time you open Try it, not the game's own random.
+- "For each player" only ever finds you, so it runs for 1 player.
+- A tick rule whose "only if" is false says so once, not every tick.
+- An error stops only that rule and names it and the step it reached: `Rule "<name>" failed after its wait of 2 seconds: ...`
+- What the rule did is said under its name: "gave you 1 Ruby", "played sound ...", "says to you", "set ... at x, y, z", "showed 4 ... particles", "set its counter ... to ...". A rule step the preview cannot do is said as "Only in Minecraft: <Member>, used by rule "<name>"".
+- The "Mob drops a reward" template cannot be seen running here, because Minecraft's own zombies cannot be spawned in Try it. Use **Play**.
+
 ## What happened
 
 **What happened** lists the newest lines first: what you placed, broke, spawned and hit, what grew or was powered, and what was refused. Lines in the warning colour start with **Only in Minecraft:**. They name something your project has that Try it does not run, for example:
@@ -182,7 +204,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Mobs only wander** | No attacks, targets, taming, breeding, riding or boss fights. A hit removes a mob; there is no health or death. |
 | **Commands and explosions are logged** | The chat box checks your commands and runs their events, but the result is a line in **What happened**, not something in the area. Functions and scripts that listen for a command run only in the game. An explosion breaks blocks; its damage, pushing, drops, fire, sound and smoke are only in the game. |
 | **Vehicles and keys are rough** | Vehicles drive by our own simulation and fire nothing you can see; keys and on-screen elements follow the rules above, with the exceptions listed there. |
-| **Plain rules only, no scripts** | Your events and plain rules run (see **What happened**). Rules with conditions, repeats or waits, and your scripts, do not run in Try it yet: **What happened** names them with "Only in Minecraft". Use **Play**. |
+| **Scripts and rules run in a sandbox** | Your scripts and your rules run (see [Scripts and logic rules](#scripts-and-logic-rules)), but what needs the game (health, other worlds, anything outside the area) is said as "Only in Minecraft" and does nothing. A call that runs for more than 2 seconds is stopped. Events the preview never fires (hurt, damage, respawn, leaving, dimension changes, keys on vehicles) do not reach your scripts. Their effects can show a moment after the event's other actions. A chance in a rule follows **Run every time**, or a seeded roll, not the game's random. Use **Play** for the real check. |
 | **No redstone** | **Power** changes one block's own picture; nothing travels along dust, and powering a block runs nothing. |
 | **No light, shadows or liquids that flow** | A glowing block looks the same lit or unlit around it: light is not drawn, its level is only said. Water and lava in a ground are drawn as plain see-through blocks. Water does not flow, and you walk through it as through air. A fluid of your own pours as one block and stays where you pour it; how it flows, swims, drowns and burns are said, not shown. |
 | **Traders pay nothing** | The merchant screen is a mock-up: no emeralds are taken, nothing is given, and prices do not change with demand or reputation. Villagers taking a job, mob storage and shoulder pets are only said. |
@@ -190,7 +212,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Nothing checks support** | Torches, vines and pods can float, and you cannot stand on scaffolding, which does not fall when what holds it is broken. |
 | **Ageing and waxing** | Doors age half by half. Honeycomb waxing and axe scraping are only in the game. |
 | **Signs and bags** | Glowing ink is drawn as a box. Bundles are not opened, and bags move no items. |
-| **Other rule parts** | Rule conditions and steps Try it does not know run only in the game. Local `^` coordinates count from the feet. |
+| **Other rule parts** | Rule conditions and steps Try it does not know are said as "Only in Minecraft" and run only in the game. Local `^` coordinates count from the feet. |
 | **No survival** | No health, hunger, damage, armour, mining speed, tool wear, drops or loot. Blocks break at once and drop nothing. |
 | **Growth only with Grow** | Crops and saplings grow only when you use **Grow**. Saplings never become trees, leaves never fall and crops plant on anything. |
 | **Minecraft's blocks are props** | They are drawn and solid, nothing more: chests do not open and pistons do not move. |

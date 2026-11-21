@@ -135,7 +135,7 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 
 ## Try it
 
-**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)). A trader you made shows its trading screen there, and a liquid's bucket pours a pool that does not flow.
+**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)). A trader you made shows its trading screen there, and a liquid's bucket pours a pool that does not flow. Your scripts and rules run there too, in a sandbox, and say what they did in **What happened**; a pass in Try it is not a pass in the game, so press **Play** for the real check.
 
 ## Share my mod
 
