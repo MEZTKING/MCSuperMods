@@ -4,6 +4,10 @@
  * case is rendered, through the kind's allowance. `msm:block` shows all 38 block types and the
  * vehicle, key bind and command kinds their event action types through their allowances (ADRs
  * 0091 D8, 0101 D7); the HUD, creative tab and item kinds are complete within the defaults.
+ * Batch 2 (B484): the trader levels of `msm:entity`, the events of `msm:fluid` and every
+ * environment attribute of `minecraft:dimension_type` show through their allowances; the
+ * profession and the trade data kinds show every field within the defaults, and a type that
+ * contains itself no longer overflows the stack.
  */
 import { CONDITIONS, STEPS, TRIGGERS } from '@msm/plugin-rules';
 import { builtInTargets } from '@msm/targets';
@@ -142,6 +146,117 @@ describe('kind_schema for the vehicle, controls and vanilla parity kinds (ADRs 0
         expect(text.length, kind).toBeLessThanOrEqual(kindSchemaSummaryOptions(kind).maxChars);
         for (const word of words) expect(text, `${kind}: ${word}`).toContain(word);
       }
+    });
+  }
+});
+
+describe('kind_schema for batch 2 (ADRs 0098 to 0100, B484)', () => {
+  const complete = (text: string) => {
+    expect(text).not.toContain('(truncated');
+    expect(text).not.toContain('in all)');
+    expect(text).not.toContain('(other cases not shown)');
+  };
+
+  for (const bundle of builtInTargets) {
+    const targetId = bundle.target.id;
+
+    it(`renders the trader levels, storage and shoulder components of msm:entity on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      const options = kindSchemaSummaryOptions('msm:entity');
+      const text = kindSchemaSummary(index.resolveSchemaRef('msm:entity'), options);
+      complete(text);
+      expect(text.length).toBeLessThanOrEqual(options.maxChars);
+      for (const word of [
+        'msm:trader?:',
+        'trade_set: id(trade_set)',
+        'xp_to_next?:',
+        '"twice_a_day"',
+        'on_trade?:',
+        'msm:storage?:',
+        'needs_chest?:',
+        'msm:shoulder_riding?:',
+      ]) {
+        expect(text, word).toContain(word);
+      }
+      // The default depth hides the level's fields, which is why the kind has an allowance.
+      expect(kindSchemaSummary(index.resolveSchemaRef('msm:entity'))).not.toContain(
+        'trade_set: id(trade_set)',
+      );
+    });
+
+    it(`renders msm:villager_profession and msm:fluid in full on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      const terms: Record<string, string[]> = {
+        'msm:villager_profession': [
+          'job_site: id(block)',
+          'trade_sets?: list<id(trade_set)> 5..5',
+          'work_sound?:',
+          'requested_items?:',
+          'secondary_job_blocks?:',
+          'zombie_villager?:',
+        ],
+        'msm:fluid': [
+          '"water" | "lava" | "none"',
+          'tick_delay?: int 1..100',
+          'drop_off?: int 1..4',
+          'light?: int 0..15',
+          'on_entity_inside?:',
+          '"run_function"',
+          'bucket?: id(texture)',
+        ],
+      };
+      for (const [kind, words] of Object.entries(terms)) {
+        const options = kindSchemaSummaryOptions(kind);
+        const text = kindSchemaSummary(index.resolveSchemaRef(kind), options);
+        complete(text);
+        expect(text.length, kind).toBeLessThanOrEqual(options.maxChars);
+        for (const word of words) expect(text, `${kind}: ${word}`).toContain(word);
+      }
+    });
+
+    it(`renders every environment attribute of minecraft:dimension_type on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      const options = kindSchemaSummaryOptions('minecraft:dimension_type');
+      const text = kindSchemaSummary(index.resolveSchemaRef('resource:dimension_type'), options);
+      complete(text);
+      expect(text.length).toBeLessThanOrEqual(options.maxChars);
+      const attributes = bundle.target.worldgen.environmentAttributes ?? [];
+      expect(attributes.length).toBeGreaterThan(40);
+      for (const id of attributes) {
+        expect(text, id).toContain(`case ${id.replace(/^minecraft:/, '')}:`);
+      }
+      for (const word of ['min_y', 'logical_height', 'skybox?:', 'default_clock?:']) {
+        expect(text, word).toContain(word);
+      }
+      // The default bounds cut the attributes short, which is why the kind has an allowance.
+      expect(kindSchemaSummary(index.resolveSchemaRef('resource:dimension_type'))).toContain(
+        '(other cases not shown)',
+      );
+    });
+
+    it(`renders the trade data kinds within the defaults on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      const trade = kindSchemaSummary(index.resolveSchemaRef('resource:villager_trade'));
+      expect(trade).not.toContain('(truncated');
+      for (const word of [
+        'wants:',
+        'additional_wants?:',
+        'gives:',
+        'max_uses?:',
+        'xp?:',
+        'reputation_discount?:',
+        'merchant_predicate?:',
+      ]) {
+        expect(trade, word).toContain(word);
+      }
+      const set = kindSchemaSummary(index.resolveSchemaRef('resource:trade_set'));
+      complete(set);
+      for (const word of ['trades: id(villager_trade) | list<id(villager_trade)>', 'amount:']) {
+        expect(set, word).toContain(word);
+      }
+      const tag = kindSchemaSummary(index.resolveSchemaRef('tag:villager_trade'));
+      complete(tag);
+      expect(tag).toContain('id(villager_trade)');
     });
   }
 });

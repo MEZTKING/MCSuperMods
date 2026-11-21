@@ -6,6 +6,9 @@ import {
   RULES_PROMPT_PLAIN_STEPS,
   RULES_PROMPT_TEMPLATES,
   systemPrompt,
+  VILLAGERS_FLUIDS_FLOW_ANSWERS,
+  VILLAGERS_FLUIDS_PROMPT_CODES,
+  VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
 } from '../src/index';
 
 describe('systemPrompt', () => {
@@ -467,6 +470,79 @@ describe('systemPrompt vanilla parity paragraphs (ADR 0101 D7)', () => {
         expect(text, term).toContain(term);
       }
       expect(text).not.toContain('Signs, hanging signs, boats and shelves are not available');
+    },
+  );
+});
+
+describe('systemPrompt traders, jobs, storage, shoulder pets, fluids and dimension types (ADR 0101 D7, batch 2)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the kinds, components, ids, flows, codes and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        'msm:trader',
+        'msm:villager_profession',
+        'msm:storage',
+        'msm:shoulder_riding',
+        'msm:fluid',
+        'minecraft:villager_trade',
+        'minecraft:trade_set',
+        'minecraft:tag/villager_trade',
+        'minecraft:dimension_type',
+        // The trade editor's layout (B480).
+        '"<id>/level_<n>"',
+        '"#<id>/level_<n>_trades"',
+        '"<id>/level_<n>/<price>_<product>"',
+        'emerald_copper_ingot',
+        'update_element the mob',
+        // Professions (ADR 0098 D2, B476).
+        '"<id>/level_1" to "<id>/level_5"',
+        'two random trades',
+        '"#minecraft:<job>/level_<n>"',
+        'entity/villager/profession/',
+        // Storage and shoulders (ADR 0098 D3, D4 as amended).
+        'needs_chest',
+        'inventory key while riding',
+        'at most 0.7 blocks wide',
+        'one per player',
+        // Fluids (ADR 0099 with B475's findings).
+        'behaves_like',
+        'ceil(8 / drop_off) - 1',
+        '"<id>_bucket"',
+        '"flowing_"',
+        'on_entity_inside',
+        'only vanilla lava does',
+        'blocks.fluidModel is "two_fluids"',
+        'a resource pack cannot change a fluid',
+        // Dimension types (ADR 0100).
+        'worldgen.dimensionHeight',
+        'worldgen.environmentAttributes',
+        'minecraft:visual/sky_color',
+        'minecraft:visual/has_sky_occluder',
+        'Gravity per dimension',
+        // Limits for the user (B474).
+        'no gossip, no Hero of the Village',
+        'Villager Trade Rebalance experiment',
+        // Flows.
+        '"Wandering merchant" (wandering-merchant',
+        '"Village job" (village-job',
+        '"Fluid" (fluid',
+        '"Carries a chest"',
+        '"Rides on your shoulder"',
+        '"Give it its own sky and rules"',
+        'export.not-in-eject',
+        'note_missing_feature',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+      for (const code of VILLAGERS_FLUIDS_PROMPT_CODES) expect(text, code).toContain(`"${code}"`);
+      for (const id of VILLAGERS_FLUIDS_PROMPT_TEMPLATES) expect(text, id).toContain(id);
+      for (const answer of Object.values(VILLAGERS_FLUIDS_FLOW_ANSWERS).flat()) {
+        expect(text, answer).toContain(answer);
+      }
+      // Fluids and dimension types are no longer listed as missing.
+      expect(text).not.toContain('fluids and energy are not available');
+      expect(text).not.toContain('dimension types cannot be edited here');
     },
   );
 });

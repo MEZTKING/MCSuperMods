@@ -38,6 +38,15 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  * the default, so their fuel items and the action types of their events show (about 3,200, 750
  * and 850 characters). `msm:hud`, `msm:creative_tab` and the bag and bundle components of
  * `msm:item` are complete within the defaults.
+ *
+ * Batch 2 (ADRs 0098 to 0100): `msm:entity` goes one level deeper so the levels of `msm:trader`
+ * show `trade_set` and `xp_to_next` (about 5,000 characters), and `msm:fluid` so the action
+ * types of its events show (about 850). `minecraft:dimension_type` keys its `attributes` by the
+ * target's environment attributes (51 or 52), more than the default list and case bounds: 64
+ * shows every id and case (about 9,800 characters). `msm:villager_profession`,
+ * `minecraft:villager_trade`, `minecraft:trade_set` and `minecraft:tag/villager_trade` show
+ * every field within the defaults (a trade's item components list their first ids, as every
+ * item stack's do).
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>
@@ -47,6 +56,14 @@ export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   'msm:vehicle': Object.freeze({ maxDepth: 5, maxChars: 6_000 }),
   'msm:key_bind': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
   'msm:command': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
+  'msm:entity': Object.freeze({ maxDepth: 5, maxChars: 12_000 }),
+  'msm:fluid': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
+  'minecraft:dimension_type': Object.freeze({
+    maxDepth: 4,
+    maxChars: 14_000,
+    maxList: 64,
+    maxCases: 64,
+  }),
 });
 
 /** The bounds of the `kind_schema` tool for `kindId`: its allowance, else the defaults. */
@@ -106,8 +123,18 @@ function rangeText(range: { min?: number; max?: number } | undefined): string {
   return ` ${range.min ?? ''}..${range.max ?? ''}`;
 }
 
-/** A one-line type for scalar nodes; `undefined` for nodes that need their own lines. */
-function inlineType(node: SchemaNode, max = MAX_LIST): string | undefined {
+/**
+ * A one-line type for scalar nodes; `undefined` for nodes that need their own lines. `open`
+ * holds the lists and unions being rendered further up, so a type that contains itself (such
+ * as a text component inside `minecraft:villager_trade`) reads as `{...} (recursive)` instead
+ * of recursing without end.
+ */
+function inlineType(
+  node: SchemaNode,
+  max = MAX_LIST,
+  open: ReadonlySet<SchemaNode> = new Set(),
+): string | undefined {
+  if (open.has(node)) return '{...} (recursive)';
   switch (node.kind) {
     case 'string': {
       if (node.idRegistry !== undefined) {
@@ -132,13 +159,14 @@ function inlineType(node: SchemaNode, max = MAX_LIST): string | undefined {
       return 'any (not modelled)';
     case 'list': {
       const item = deref(node.item);
-      const inner = item === undefined ? 'any' : inlineType(item, max);
+      const inner = item === undefined ? 'any' : inlineType(item, max, new Set(open).add(node));
       return inner === undefined ? undefined : `list<${inner}>${rangeText(node.lengthRange)}`;
     }
     case 'union': {
       const members = node.members.map(deref);
+      const inside = new Set(open).add(node);
       const texts = members.map((member) =>
-        member === undefined ? 'any' : inlineType(member, max),
+        member === undefined ? 'any' : inlineType(member, max, inside),
       );
       if (texts.some((text) => text === undefined)) return undefined;
       return listText(texts as string[], max);

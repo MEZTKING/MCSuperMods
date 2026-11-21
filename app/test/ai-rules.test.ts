@@ -7,6 +7,9 @@
  * - The vehicle, controls and vanilla parity templates and flows the prompt names (ADRs 0091 D8,
  *   0101 D7) are pinned against the entities, controls, blocks-items and scripting plugins and the
  *   library's starters, and the limits of B454 and B457 are pinned in plain words.
+ * - Batch 2 (ADR 0101 D7, B484): the villager, fluid and dimension type templates, the new flows
+ *   and answers, the problem codes the prompt explains and the vanilla trade sets it names are
+ *   pinned against the entities, blocks-items and worldgen plugins, the library and the targets.
  * - A scripted build-mode run makes a lucky block with a rule book (a plain rule and a rule
  *   that needs the generated script) through the real tool executor; `run_checks` compiles the
  *   book with no errors, the changeset applies as one undo step, and the content jar holds the
@@ -32,13 +35,20 @@ import {
   systemPrompt,
   VANILLA_PARITY_PROMPT_TEMPLATES,
   VEHICLE_PROMPT_TEMPLATES,
+  VILLAGERS_FLUIDS_FLOW_ANSWERS,
+  VILLAGERS_FLUIDS_PROMPT_CODES,
+  VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
 } from '@msm/ai';
 import { createMemoryFileSystem, type JsonObject } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
 import type { ElementTemplate, Json, TargetFacts } from '@msm/plugin-api';
-import { blocksItemsTemplates } from '@msm/plugin-blocks-items';
+import { blocksItemsTemplates, FLUID_KIND, FLUID_PROBLEM_CODES } from '@msm/plugin-blocks-items';
 import { controlsTemplates } from '@msm/plugin-controls';
-import { vehicleTemplates } from '@msm/plugin-entities';
+import {
+  ENTITIES_VILLAGER_PROBLEM_CODES,
+  vehicleTemplates,
+  villagerTemplates,
+} from '@msm/plugin-entities';
 import { libraryStarters } from '@msm/plugin-library';
 import {
   CATALOGUE_IDS,
@@ -53,6 +63,7 @@ import {
   TRIGGERS,
 } from '@msm/plugin-rules';
 import { commandTemplates } from '@msm/plugin-scripting';
+import { WORLDGEN_PROBLEM_CODES, worldgenTemplates } from '@msm/plugin-worldgen';
 import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
@@ -245,6 +256,93 @@ describe('the system prompt names the vehicle, controls and vanilla parity conte
     // Signs, commands and creative tabs are no longer listed as missing.
     expect(text).not.toContain('Signs, hanging signs, boats and shelves are not available');
     expect(text).not.toContain('custom commands and creative tabs; propose');
+  });
+});
+
+describe('the system prompt names the villager, fluid and dimension type content exactly (ADR 0101 D7, batch 2)', () => {
+  it('lists every villager, fluid and dimension type template', () => {
+    expect([...VILLAGERS_FLUIDS_PROMPT_TEMPLATES].sort()).toEqual(
+      [
+        ...villagerTemplates,
+        ...blocksItemsTemplates.filter((template) => template.kind === FLUID_KIND),
+        ...worldgenTemplates.filter((template) => template.kind === 'minecraft:dimension_type'),
+      ]
+        .map((template) => template.id)
+        .sort(),
+    );
+  });
+
+  it('explains every problem code of traders, jobs, storage, shoulders, fluids and dimension types', () => {
+    expect([...VILLAGERS_FLUIDS_PROMPT_CODES].sort()).toEqual(
+      [
+        ...ENTITIES_VILLAGER_PROBLEM_CODES,
+        ...FLUID_PROBLEM_CODES,
+        ...WORLDGEN_PROBLEM_CODES.filter((code) => code.startsWith('worldgen.dimension-')),
+      ].sort(),
+    );
+  });
+
+  it('names flow answers that exist', () => {
+    for (const [starterId, answers] of Object.entries(VILLAGERS_FLUIDS_FLOW_ANSWERS)) {
+      const starter = libraryStarters.find((entry) => entry.id === starterId);
+      expect(starter?.creator, starterId).toBeDefined();
+      const parameters = starter?.parameters?.map((entry) => entry.id) ?? [];
+      for (const answer of answers) expect(parameters, `${starterId}: ${answer}`).toContain(answer);
+    }
+    const merchant = libraryStarters.find((entry) => entry.id === 'wandering-merchant');
+    const ids = merchant?.parameters?.map((entry) => entry.id) ?? [];
+    for (const parameter of [
+      'ware_1',
+      'ware_1_count',
+      'ware_1_emeralds',
+      'ware_3',
+      'vanilla_wares',
+      'restock',
+    ]) {
+      expect(ids, parameter).toContain(parameter);
+    }
+    const job = libraryStarters.find((entry) => entry.id === 'village-job');
+    for (const parameter of ['buys', 'sells', 'trades_like']) {
+      expect(
+        job?.parameters?.map((entry) => entry.id),
+        parameter,
+      ).toContain(parameter);
+    }
+    const fluid = libraryStarters.find((entry) => entry.id === 'fluid');
+    for (const parameter of ['behaves_like', 'colour']) {
+      expect(
+        fluid?.parameters?.map((entry) => entry.id),
+        parameter,
+      ).toContain(parameter);
+    }
+  });
+
+  it('names vanilla trade sets and attributes every target has', () => {
+    const text = systemPrompt('build');
+    for (const bundle of builtInTargets) {
+      const facts = bundle.target;
+      for (const set of ['minecraft:wandering_trader/common', 'minecraft:mason/level_1']) {
+        expect(text, set).toContain(`"${set}"`);
+        expect(facts.entities?.vanillaTradeSets?.[set], `${facts.id}: ${set}`).toBeDefined();
+      }
+      for (const attribute of [
+        'minecraft:visual/sky_color',
+        'minecraft:visual/fog_color',
+        'minecraft:visual/sun_angle',
+        'minecraft:gameplay/bed_rule',
+      ]) {
+        expect(text, attribute).toContain(`"${attribute}"`);
+        expect(facts.worldgen.environmentAttributes, `${facts.id}: ${attribute}`).toContain(
+          attribute,
+        );
+      }
+    }
+    // The attribute only 26.4 has.
+    const has = builtInTargets.filter((bundle) =>
+      bundle.target.worldgen.environmentAttributes?.includes('minecraft:visual/has_sky_occluder'),
+    );
+    expect(has.map((bundle) => bundle.target.mcVersion)).toEqual(['26.4-snapshot-7']);
+    expect(text).toContain('newer targets also list "minecraft:visual/has_sky_occluder"');
   });
 });
 

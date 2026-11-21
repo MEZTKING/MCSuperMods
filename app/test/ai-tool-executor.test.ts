@@ -120,6 +120,13 @@ describe('createToolExecutor: read tools', () => {
     expect(value.schema).toContain('case scaffolding:');
     const recipe = await fixture.call('kind_schema', { kind: 'minecraft:recipe' });
     expect(recipe.value.schema).toMatch(/crafting_shaped/);
+    // A villager trade's text components contain themselves; the summary stops there (B484).
+    const trade = await fixture.call('kind_schema', { kind: 'minecraft:villager_trade' });
+    expect(trade.result.isError).toBe(false);
+    expect(trade.value.schema).toContain('merchant_predicate?:');
+    const dimensionType = await fixture.call('kind_schema', { kind: 'minecraft:dimension_type' });
+    expect(dimensionType.value.schema).toContain('case visual/sky_color:');
+    expect(dimensionType.value.schema).not.toContain('(other cases not shown)');
     await expectError(fixture, 'kind_schema', { kind: 'nope:kind' }, 'unknown_kind');
   });
 
@@ -252,6 +259,15 @@ describe('createToolExecutor: read tools', () => {
     expect(value.commands).toEqual(fixture.session.target.commands);
     expect(value.commands.vanillaNames).toContain('give');
     expect(JSON.stringify(value.commands).length).toBeLessThan(2_000);
+    // Batch 2 facts (plugin API 1.18.0) arrive with the entities, blocks and worldgen facts.
+    expect(value.entities.tradeSounds).toEqual(fixture.session.target.entities?.tradeSounds);
+    expect(value.entities.vanillaTradeSets['minecraft:wandering_trader/common']).toBeDefined();
+    expect(value.entities.vanillaJobSites).toBeDefined();
+    expect(value.blocks.fluidModel).toBe(fixture.session.target.blocks?.fluidModel);
+    expect(value.blocks.fluidTags.water).toContain('minecraft:water');
+    expect(value.worldgen.dimensionHeight).toEqual(fixture.session.target.worldgen.dimensionHeight);
+    expect(value.worldgen.dimensionHeight.step).toBe(16);
+    expect(value.worldgen.environmentAttributes).toContain('minecraft:visual/sky_color');
     ({ value } = await fixture.call('script_api_typings'));
     expect(value.typings).toBe(fixture.session.scriptTypings);
     await fixture.call('create_texture', { namespace: 'demo', path: 'item/ruby', pattern: 'gem' });

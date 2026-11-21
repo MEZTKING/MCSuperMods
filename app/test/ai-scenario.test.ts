@@ -12,6 +12,10 @@
  *   `add_starter` and an `msm:hud` bar showing the vehicle's speed while driving.
  * - "a cottage with a bed and lanterns" (ADR 0101 D7, B466): the Bed and Lights flows, a carpet
  *   block written by hand and a creative tab holding the set.
+ * - "a merchant who sells copper" (ADR 0101 D7, B484), on both targets: the Wandering merchant
+ *   flow selling copper, then a second level of the mob's own trades written as the trade editor
+ *   writes them (trade set `<id>/level_2`, tag `<id>/level_2_trades`, trades
+ *   `<id>/level_2/<price>_<product>`) and the mob's `msm:trader` updated to unlock it.
  *
  * The scripts are checked here, so stale tool inputs (a starter parameter, a kind's schema)
  * fail loudly.
@@ -34,6 +38,7 @@ import {
 } from '@msm/ai';
 import { createMemoryFileSystem, type Json, type Project } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
+import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { problemContextBlock } from '../src/renderer/src/ai/context-blocks';
@@ -56,7 +61,7 @@ function loadScript(name: string): AiModelScript {
 const runtimeBytes = new Uint8Array([0x50, 0x4b, 0x05, 0x06, 1, 2, 3]);
 const geckolibBytes = new Uint8Array([0x50, 0x4b, 0x05, 0x06, 9, 9, 9]);
 
-async function openSession() {
+async function openSession(targetId?: string) {
   const fs = createMemoryFileSystem();
   const checker = await nodeMcfunctionChecker();
   const { session, platform, calls } = newSession(fs, {}, { mcfunction: checker });
@@ -65,7 +70,7 @@ async function openSession() {
     runtimeJar: async () => runtimeBytes,
     geckolibJar: async () => geckolibBytes,
   };
-  await session.newProject();
+  await session.newProject(targetId === undefined ? {} : { targetId });
   await session.schemas();
   await session.flushValidation();
   return { session, calls, fs };
@@ -1267,4 +1272,230 @@ describe('AI helper scenario: the cottage with a bed and lanterns (build mode)',
     expect(session.undo()).toBe(true);
     expect(session.snapshot.project).toEqual(before);
   });
+});
+
+/** The merchant (ADR 0101 D7, brief B484): the Wandering merchant flow and a level of trades. */
+const MERCHANT_PROMPT = 'a merchant who sells copper';
+
+const MERCHANT_ID = 'copper:copper_merchant';
+
+/** The flow's answers: copper ingots and a copper block, without the wandering trader's wares. */
+const MERCHANT_FLOW = {
+  starterId: 'wandering-merchant',
+  namespace: 'copper',
+  values: {
+    merchant_name: 'Copper Merchant',
+    ware_1: 'minecraft:copper_ingot',
+    ware_1_count: 4,
+    ware_1_emeralds: 1,
+    ware_2: 'minecraft:copper_block',
+    ware_2_count: 1,
+    ware_2_emeralds: 3,
+    ware_3: '',
+    vanilla_wares: false,
+  },
+} satisfies Record<string, Json>;
+
+/** The second level as the trade editor writes it (`trade-model.ts`). */
+const LEVEL_2 = {
+  set: `${MERCHANT_ID}/level_2`,
+  tag: `${MERCHANT_ID}/level_2_trades`,
+  rod: `${MERCHANT_ID}/level_2/emerald_lightning_rod`,
+  spyglass: `${MERCHANT_ID}/level_2/emerald_spyglass`,
+};
+
+const LEVEL_2_ELEMENTS: { id: string; kind: string; data: Json }[] = [
+  {
+    id: LEVEL_2.rod,
+    kind: 'minecraft:villager_trade',
+    data: {
+      wants: { id: 'minecraft:emerald', count: 2 },
+      gives: { id: 'minecraft:lightning_rod', count: 1 },
+      max_uses: 12,
+      xp: 5,
+      reputation_discount: 0.05,
+    },
+  },
+  {
+    id: LEVEL_2.spyglass,
+    kind: 'minecraft:villager_trade',
+    data: {
+      wants: { id: 'minecraft:emerald', count: 6 },
+      gives: { id: 'minecraft:spyglass', count: 1 },
+      max_uses: 4,
+      xp: 10,
+      reputation_discount: 0.05,
+    },
+  },
+  {
+    id: LEVEL_2.tag,
+    kind: 'minecraft:tag/villager_trade',
+    data: { values: [LEVEL_2.rod, LEVEL_2.spyglass] },
+  },
+  {
+    id: LEVEL_2.set,
+    kind: 'minecraft:trade_set',
+    data: { trades: `#${LEVEL_2.tag}`, amount: 2 },
+  },
+];
+
+/**
+ * The merchant's data as the flow proposes it, read through the real executor (a model reads it
+ * from the add_starter result before it updates the mob).
+ */
+async function flowMerchantData(targetId: string): Promise<Record<string, Json>> {
+  const { session } = await openSession(targetId);
+  const changeset = new PendingChangeset();
+  const execute = createToolExecutor(session, changeset, {
+    proposePlan: async (plan) => ({ decision: 'build_all', items: plan.items, comments: '' }),
+    checkpoint: async () => 'continue',
+  });
+  const answer = await execute(
+    { requestId: 'r1', toolUseId: 'toolu_flow', name: 'add_starter', input: MERCHANT_FLOW },
+    new AbortController().signal,
+  );
+  expect(answer.isError, answer.content).toBe(false);
+  const data = createdOf(changeset).get(MERCHANT_ID);
+  if (data === undefined) throw new Error('the flow made no merchant');
+  return data;
+}
+
+/** The mob with a second level of its own trades after the flow's wares. */
+function withSecondLevel(mob: Record<string, Json>): Record<string, Json> {
+  const components = mob.components as Record<string, Record<string, Json>>;
+  const trader = components['msm:trader'] as Record<string, Json>;
+  return {
+    ...mob,
+    components: {
+      ...components,
+      'msm:trader': {
+        ...trader,
+        trade_sets: [...(trader.trade_sets as Json[]), { trade_set: LEVEL_2.set }],
+      },
+    },
+  };
+}
+
+const merchantScript = (mob: Record<string, Json>): AiModelScript =>
+  buildScript(
+    {
+      title: 'Copper merchant',
+      items: [
+        {
+          itemId: 'merchant',
+          kind: 'msm:entity',
+          elementId: MERCHANT_ID,
+          summary: 'The Wandering merchant flow selling copper ingots and copper blocks.',
+        },
+        {
+          itemId: 'level_2',
+          kind: 'minecraft:trade_set',
+          elementId: LEVEL_2.set,
+          summary: 'A second level of its own trades: a lightning rod and a spyglass.',
+          dependsOn: ['merchant'],
+        },
+      ],
+    },
+    [
+      { name: 'add_starter', input: MERCHANT_FLOW },
+      { name: 'create_elements', input: { elements: LEVEL_2_ELEMENTS } },
+      { name: 'update_element', input: { id: MERCHANT_ID, data: mob } },
+    ],
+    'The copper merchant is ready to review: it sells copper ingots and copper blocks for emeralds, and once players have traded with it a lightning rod and a spyglass. The pictures are placeholders to replace; the merchant needs the Fabric mod jar.',
+  );
+
+describe('AI helper scenario: a merchant who sells copper (build mode)', () => {
+  for (const bundle of builtInTargets) {
+    const targetId = bundle.target.id;
+    it(`builds the Wandering merchant flow and a level of trades with zero problems on ${targetId}`, async () => {
+      const mob = withSecondLevel(await flowMerchantData(targetId));
+      const { session } = await openSession(targetId);
+      expect(session.target.id).toBe(targetId);
+      const before = session.snapshot.project;
+      const changeset = new PendingChangeset();
+      const client = new ScriptedModelClient(merchantScript(mob));
+      const conversation = createConversation('conversation-8', 'claude-opus-5-5');
+
+      const { result, record } = await run(session, changeset, client, conversation, {
+        mode: 'build',
+        text: MERCHANT_PROMPT,
+      });
+      expect(result.reason).toBe('end_turn');
+      expect(client.remaining).toBe(0);
+      expect(record.checkpoints).toBe(1);
+      expect(
+        [...record.results.entries()]
+          .filter(([, answer]) => answer.isError)
+          .map(([id, answer]) => `${id}: ${answer.content}`),
+      ).toEqual([]);
+      const system = JSON.stringify(client.requests[0]?.system);
+      expect(system).toContain('msm:trader');
+      expect(system).toContain('<id>/level_<n>_trades');
+
+      // The flow's wares at level 1, the trade editor's layout at level 2.
+      expect(changeset.items.filter((item) => item.conflict !== undefined)).toEqual([]);
+      const created = createdOf(changeset);
+      expect(created.get(`${MERCHANT_ID}/wares`)).toEqual({
+        trades: [`${MERCHANT_ID}/ware_1`, `${MERCHANT_ID}/ware_2`],
+        amount: 2,
+      });
+      expect(created.get(`${MERCHANT_ID}/ware_1`)?.gives).toMatchObject({
+        id: 'minecraft:copper_ingot',
+        count: 4,
+      });
+      for (const entry of LEVEL_2_ELEMENTS) expect(created.get(entry.id)).toEqual(entry.data);
+      const update = changeset.items.find(
+        (item) => item.op === 'update' && item.elementId === MERCHANT_ID,
+      );
+      const merged = (update?.after ?? created.get(MERCHANT_ID)) as Record<string, Json>;
+      expect(
+        (merged.components as Record<string, Record<string, Json>>)['msm:trader']?.trade_sets,
+      ).toEqual([{ trade_set: `${MERCHANT_ID}/wares` }, { trade_set: LEVEL_2.set }]);
+
+      const checks = checkErrorsOf(record, conversation);
+      expect(checks.errors).toEqual([]);
+      expect(checks.count).toBe(0);
+      expectAppendOnly(client);
+
+      // One undo step, no problems at all, and the content jar holds the trader and its trades.
+      const applied = await session.applyChangeset(changeset.items);
+      expect(applied.skipped).toEqual([]);
+      expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+      await session.flushValidation();
+      expect(
+        session.snapshot.problems.map(
+          (problem) =>
+            `${problem.severity} ${problem.code} ${problem.elementId}: ${problem.message}`,
+        ),
+      ).toEqual([]);
+      const built = await session.buildContentJar({ [SEPARATE_RUNTIME_OPTION]: true });
+      expect(built.report.ok, JSON.stringify(built.report.problems)).toBe(true);
+      if (built.data === undefined) throw new Error('no jar');
+      const entries = unzipSync(built.data);
+      const decode = (path: string): Record<string, Json> =>
+        JSON.parse(new TextDecoder().decode(entries[path])) as Record<string, Json>;
+      const entityPath = Object.keys(entries).find((path) =>
+        path.endsWith('copper/entity/copper_merchant.json'),
+      );
+      const trader = (decode(entityPath ?? '').components as Record<string, Record<string, Json>>)[
+        'msm:trader'
+      ];
+      expect(trader?.trade_sets).toEqual([
+        { trade_set: `${MERCHANT_ID}/wares` },
+        { trade_set: LEVEL_2.set },
+      ]);
+      expect(decode('data/copper/trade_set/copper_merchant/level_2.json')).toEqual({
+        trades: `#${LEVEL_2.tag}`,
+        amount: 2,
+      });
+      expect(decode('data/copper/tags/villager_trade/copper_merchant/level_2_trades.json')).toEqual(
+        { values: [LEVEL_2.rod, LEVEL_2.spyglass] },
+      );
+      expect(
+        decode('data/copper/villager_trade/copper_merchant/level_2/emerald_spyglass.json').gives,
+      ).toEqual({ id: 'minecraft:spyglass', count: 1 });
+      expect(session.undo()).toBe(true);
+      expect(session.snapshot.project).toEqual(before);
+    });
+  }
 });
