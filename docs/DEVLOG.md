@@ -6736,3 +6736,12 @@ Next
 
 **Next**
 - The main session regenerates `docs/reference/art/sheet.png`. B496's Mob Studio can reuse `PRESET_COATS` and `SKIN_COATS`.
+
+## 2026-11-21 — main session — 1.5.2 test build (draft)
+
+**What**
+- `main` fast-forwarded to 67cfedc (every CI job green) and `release.yml` run 44961950016 built the 1.5.2 draft from it: `MCSuperMods-1.5.2-win-x64.exe` (133 MB), its blockmap, `latest.yml` and `msm-plugin-api-1.18.0.tgz`. It is a draft, not published; it supersedes the 1.5.1 draft for the user's Windows test.
+- 1.5.2 holds everything since the 1.5.1 draft up to Try it slice 4 (scripts and logic rules), world backups, the rename warning and updates installing on close. The art batch's library code is in it but nothing the user sees: the Draw dialog and the drawn flow pictures came after 67cfedc and wait for the next version.
+
+**Next**
+- The user's Windows test of the draft, then `publish-release.yml` with version 1.5.2 only on their go.
