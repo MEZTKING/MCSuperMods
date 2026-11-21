@@ -15,6 +15,12 @@
  * (their waiting `msm.schedule` callbacks are dropped).
  *
  * Events the simulation never fires are said out loud once per script ({@link SIM_SCRIPT_EVENTS}).
+ *
+ * Logic rules (B401): a script Rules generated runs instrumented (`rule-steps.ts`), so what it
+ * did comes back with the rule's key. Each such line is named by the rule (`Rule "<name>"`,
+ * from {@link ScriptBridgeHost.ruleName}, else its key) and links to the rule card; the rule's
+ * own steps ({@link RuleStep}: conditions, chances, loops, waits, an error with the step it was
+ * in) are said in words. A tick rule whose "only if" is false is said once, not every tick.
  */
 import type { BlockCatalogue } from '../blocks/catalogue.js';
 import { updateNeighbours } from '../blocks/neighbours.js';
@@ -32,10 +38,11 @@ import type {
   EntityRef,
   MobSnapshot,
   PlayerSnapshot,
-  ScriptLine,
+  RuleStep,
   ScriptOp,
   ScriptRequest,
   ScriptResponse,
+  ScriptStep,
   WorldSync,
   XYZ,
 } from './protocol.js';
@@ -83,6 +90,10 @@ export interface ScriptBridgeHost {
   itemName(id: string): string;
   /** The item in the player's hand, as the last click had it. */
   heldItem(): string | undefined;
+  /** A rule's name in its book, when the rule books are known (B401). */
+  ruleName?(book: string, key: string): string | undefined;
+  /** How rules' chances are decided now ("Run every time", B401); default `random`. */
+  chance?(): 'random' | 'always' | 'never';
 }
 
 /** Options of a {@link ScriptBridge}. */
@@ -357,14 +368,17 @@ export class ScriptBridge {
       scripts: this.scripts.map((one) => ({ id: one.id })),
       stores,
       sync: this.sync(),
+      seed: this.options.seed ?? 1,
     };
   }
 
   private sync(): WorldSync {
+    const chance = this.host.chance?.() ?? 'random';
     const base = {
       tick: this.host.now(),
       player: this.playerSnapshot(),
       mobs: this.mobSnapshots(),
+      ...(chance === 'random' ? {} : { chance }),
     };
     if (this.needFull) {
       this.needFull = false;
@@ -459,23 +473,100 @@ export class ScriptBridge {
     this.fire('player.join', { player: PLAYER_VALUE });
   }
 
-  private applySteps(steps: readonly (ScriptOp | ScriptLine)[]): void {
-    const blocks = new Map<string, { count: number; last: string; at: XYZ }>();
+  private applySteps(steps: readonly ScriptStep[]): void {
+    const blocks: BlockTally = new Map();
+    // A tick rule's start, held until its "only if" says whether it went on (with the lines
+    // that came before that check).
+    let held: { script: string; rule: string; event: string; kept: ScriptStep[] } | null = null;
+    const flush = (): void => {
+      if (held === null) return;
+      const { script, rule, event, kept } = held;
+      held = null;
+      this.ruleLine(script, rule, { at: 'start', event });
+      for (const one of kept) this.applyStep(one, blocks);
+    };
     for (const op of steps) {
-      if ('kind' in op) {
-        this.applyLine(op);
+      if (held !== null) {
+        const same = op.rule === held.rule && 'kind' in op;
+        if (same && op.kind === 'rule' && op.step.at === 'check' && op.step.which === 'only') {
+          if (!op.step.met) {
+            const { script, rule, event, kept } = held;
+            held = null;
+            for (const one of kept)
+              if ('kind' in one && one.kind === 'only') this.applyStep(one, blocks);
+            this.sayOnce(
+              `only-if:${script}:${rule}`,
+              'skipped',
+              script,
+              `${this.ruleWords(script, rule)} checked its "only if" on ${event}: false, so it stopped. (Said once: it checks again every time.)`,
+              rule,
+              'check',
+            );
+            continue;
+          }
+          flush();
+          this.applyStep(op, blocks);
+          continue;
+        }
+        if (same && (op.kind === 'only' || (op.kind === 'rule' && op.step.at === 'chance'))) {
+          held.kept.push(op);
+          continue;
+        }
+        flush();
+      }
+      if (
+        'kind' in op &&
+        op.kind === 'rule' &&
+        op.step.at === 'start' &&
+        TICK_EVENTS.includes(op.step.event) &&
+        op.rule !== undefined
+      ) {
+        held = { script: op.script, rule: op.rule, event: op.step.event, kept: [] };
         continue;
       }
+      this.applyStep(op, blocks);
+    }
+    flush();
+    for (const one of blocks.values()) {
+      const who = this.subject(one.script, one.rule);
+      this.add(
+        one.script,
+        'action',
+        one.count === 1
+          ? `${who} set ${one.last} at ${one.at.join(', ')}.`
+          : `${who} set ${one.count} blocks.`,
+        one.rule,
+        'did',
+      );
+    }
+  }
+
+  /** Applies one step of an answer; blocks set are tallied in `blocks` and said after. */
+  private applyStep(op: ScriptStep, blocks: BlockTally): void {
+    if ('kind' in op) {
+      if (op.kind === 'rule') this.ruleLine(op.script, op.rule ?? '', op.step);
+      else this.applyLine(op);
+      return;
+    }
+    {
+      const who = this.subject(op.script ?? '', op.rule);
       switch (op.op) {
         case 'setBlock': {
           const placed = this.setBlock(op.script, op.pos, op.state);
           if (placed === null) break;
-          const one = blocks.get(op.script) ?? { count: 0, last: placed, at: op.pos };
-          blocks.set(op.script, { count: one.count + 1, last: placed, at: op.pos });
+          const key = `${op.script}|${op.rule ?? ''}`;
+          const one = blocks.get(key) ?? {
+            script: op.script,
+            ...(op.rule === undefined ? {} : { rule: op.rule }),
+            count: 0,
+            last: placed,
+            at: op.pos,
+          };
+          blocks.set(key, { ...one, count: one.count + 1, last: placed, at: op.pos });
           break;
         }
         case 'particle':
-          this.particles(op);
+          this.particles(op, op.rule);
           break;
         case 'sound':
           this.host.effect({
@@ -484,21 +575,17 @@ export class ScriptBridge {
             position: { x: op.pos[0], y: op.pos[1], z: op.pos[2] },
             volume: op.volume,
             pitch: op.pitch,
-            origin: this.origin(op.script),
+            origin: this.origin(op.script, op.rule),
           });
-          this.add(
-            op.script,
-            'action',
-            `The script ${op.script} played sound ${soundName(op.id)}.`,
-          );
+          this.add(op.script, 'action', `${who} played sound ${soundName(op.id)}.`, op.rule, 'did');
           break;
         case 'message':
-          this.add(op.script, 'action', `The script ${op.script} says to you: "${op.text}"`);
+          this.add(op.script, 'action', `${who} says to you: "${op.text}"`, op.rule, 'did');
           this.host.effect({
             kind: 'chip',
             id: op.text,
             target: 'player',
-            origin: this.origin(op.script),
+            origin: this.origin(op.script, op.rule),
           });
           break;
         case 'give': {
@@ -508,11 +595,28 @@ export class ScriptBridge {
           this.add(
             op.script,
             'action',
-            `The script ${op.script} gave you ${given} ${name}.${left > 0 ? ` ${left} did not fit in your items.` : ''}`,
+            `${who} gave you ${given} ${name}.${left > 0 ? ` ${left} did not fit in your items.` : ''}`,
+            op.rule,
+            'did',
           );
           break;
         }
         case 'store': {
+          // A rule's counter (ADR 0082 F: `rules.counter.<name>`), said by the rule.
+          if (
+            op.rule !== undefined &&
+            op.script !== undefined &&
+            op.key.startsWith(COUNTER_PREFIX) &&
+            op.value !== undefined
+          ) {
+            this.add(
+              op.script,
+              'action',
+              `${who} set its counter ${op.key.slice(COUNTER_PREFIX.length)} to ${JSON.stringify(op.value)}.`,
+              op.rule,
+              'did',
+            );
+          }
           let values = this.stores.get(op.owner);
           if (values === undefined) {
             values = new Map();
@@ -524,14 +628,95 @@ export class ScriptBridge {
         }
       }
     }
-    for (const [script, one] of blocks) {
-      this.add(
-        script,
-        'action',
-        one.count === 1
-          ? `The script ${script} set ${one.last} at ${one.at.join(', ')}.`
-          : `The script ${script} set ${one.count} blocks.`,
-      );
+  }
+
+  /** How a line names who did something: the rule (B401), else the script. */
+  private subject(script: string, rule: string | undefined): string {
+    return rule === undefined ? `The script ${script}` : this.ruleWords(script, rule);
+  }
+
+  /** `Rule "<name>"` for a rule of the generated script `script`. */
+  private ruleWords(script: string, rule: string): string {
+    const book = this.books.get(script);
+    const name = book === undefined ? undefined : this.host.ruleName?.(book, rule);
+    return `Rule "${name ?? rule}"`;
+  }
+
+  /** Says a step of a logic rule (B401) in words. */
+  private ruleLine(script: string, rule: string, step: RuleStep): void {
+    const name = this.ruleWords(script, rule);
+    const say = (kind: TraceEntry['kind'], text: string) =>
+      this.add(script, kind, text, rule, step.at);
+    switch (step.at) {
+      case 'start':
+        say('trigger', `The script heard ${step.event}, so rule ${name.slice(5)} ran.`);
+        return;
+      case 'check':
+        if (step.which === 'only') {
+          say(
+            step.met ? 'action' : 'skipped',
+            `${name} checked its "only if": ${step.met ? 'true, so it went on' : 'false, so it stopped'}.`,
+          );
+        } else {
+          say(
+            'action',
+            `${name} checked its "if": ${
+              step.met
+                ? 'true, so its "then" steps ran'
+                : step.otherwise === true
+                  ? 'false, so its "otherwise" steps ran'
+                  : 'false, so its "then" steps were left out'
+            }.`,
+          );
+        }
+        return;
+      case 'chance': {
+        const how =
+          step.mode === 'always'
+            ? ' ("Run every time" is on)'
+            : step.mode === 'never'
+              ? ' (chances never come up now)'
+              : '';
+        say(
+          'action',
+          `${name} rolled its ${step.percent} per cent chance: it ${step.met ? 'came up' : 'did not come up'}${how}.`,
+        );
+        return;
+      }
+      case 'repeat':
+        say(
+          'action',
+          step.time <= step.of
+            ? `${name} repeats: time ${step.time} of ${step.of}.`
+            : `${name} finished repeating (${step.of} ${step.of === 1 ? 'time' : 'times'}).`,
+        );
+        return;
+      case 'each':
+        say(
+          step.count === 0 ? 'skipped' : 'action',
+          step.count === 0
+            ? `${name} found no players for its "for each player" steps.`
+            : `${name} runs its "for each player" steps for ${step.count} ${step.count === 1 ? 'player' : 'players'}.`,
+        );
+        return;
+      case 'wait':
+        say(
+          'action',
+          `${name} waits ${secondsWords(step.ticks)} (${step.ticks} ${step.ticks === 1 ? 'tick' : 'ticks'} of the preview's clock).`,
+        );
+        return;
+      case 'resume':
+        say('action', `${name} waited ${secondsWords(step.ticks)} and goes on.`);
+        return;
+      case 'gone':
+        say('skipped', `${name} stopped after its wait: who started it is gone.`);
+        return;
+      case 'error':
+        say(
+          'skipped',
+          `${name} failed${step.during === undefined ? '' : ` ${step.during}`}: ${step.message}`,
+        );
+        return;
     }
   }
 
@@ -563,7 +748,7 @@ export class ScriptBridge {
     return block.displayName;
   }
 
-  private particles(op: Extract<ScriptOp, { op: 'particle' }>): void {
+  private particles(op: Extract<ScriptOp, { op: 'particle' }>, rule?: string): void {
     const options = typeof op.particle === 'string' ? undefined : op.particle;
     const id = options === undefined ? (op.particle as string) : String(options.type ?? '');
     const gaussian = (): number => {
@@ -584,34 +769,61 @@ export class ScriptBridge {
             ? { x: gaussian() * op.speed, y: gaussian() * op.speed, z: gaussian() * op.speed }
             : { x: op.motion[0], y: op.motion[1], z: op.motion[2] },
         ...(options === undefined ? {} : { options }),
-        origin: this.origin(op.script),
+        origin: this.origin(op.script, rule),
       });
     }
     this.add(
       op.script,
       'action',
-      `The script ${op.script} showed ${op.count} ${particleName(id)} ${op.count === 1 ? 'particle' : 'particles'}.`,
+      `${this.subject(op.script, rule)} showed ${op.count} ${particleName(id)} ${op.count === 1 ? 'particle' : 'particles'}.`,
+      rule,
+      'did',
     );
   }
 
-  private applyLine(line: ScriptLine): void {
+  private applyLine(line: Exclude<ScriptStep, { kind: 'rule' } | ScriptOp>): void {
+    const rule = line.rule;
     switch (line.kind) {
       case 'log': {
+        // The generated scripts' own error line ("Rules <book>, rule <key>: ..."), when a rule
+        // ran without its steps instrumented.
+        const failed = line.level === 'error' ? RULE_ERROR.exec(line.text) : null;
+        if (failed !== null && this.books.has(line.script)) {
+          const key = failed[2] as string;
+          this.add(
+            line.script,
+            'skipped',
+            `${this.ruleWords(line.script, key)} failed: ${failed[3]}`,
+            key,
+            'error',
+          );
+          break;
+        }
         const what =
           line.level === 'info'
             ? 'logged'
             : line.level === 'warn'
               ? 'logged a warning'
               : 'logged an error';
-        this.add(line.script, 'action', `The script ${line.script} ${what}: ${line.text}`);
+        this.add(
+          line.script,
+          'action',
+          `${this.subject(line.script, rule)} ${what}: ${line.text}`,
+          rule,
+          rule === undefined ? undefined : 'did',
+        );
         break;
       }
       case 'only':
         this.sayOnce(
-          `only:${line.script}:${line.member}`,
+          `only:${line.script}:${line.member}${rule === undefined ? '' : `:${rule}`}`,
           'onlyInMinecraft',
           line.script,
-          `${line.member}, used by the script ${line.script}`,
+          rule === undefined
+            ? `${line.member}, used by the script ${line.script}`
+            : `${line.member}, used by rule ${this.ruleWords(line.script, rule).slice(5)}`,
+          rule,
+          rule === undefined ? undefined : 'did',
         );
         break;
       case 'error':
@@ -620,27 +832,73 @@ export class ScriptBridge {
           'skipped',
           line.script === ''
             ? `The scripts could not run: ${line.message}.`
-            : `The script ${line.script} failed in its ${line.where}: ${line.message}`,
+            : rule === undefined
+              ? `The script ${line.script} failed in its ${line.where}: ${line.message}`
+              : `${this.ruleWords(line.script, rule)} failed in its ${line.where}: ${line.message}`,
+          rule,
+          rule === undefined ? undefined : 'error',
         );
         break;
     }
   }
 
-  private origin(script: string): SimOrigin {
+  private origin(script: string, rule?: string): SimOrigin {
     if (script === '') return {};
     const book = this.books.get(script);
-    return book === undefined ? { elementId: script } : { elementId: book, ruleBook: book };
+    if (book === undefined) return { elementId: script };
+    return rule === undefined
+      ? { elementId: book, ruleBook: book }
+      : { elementId: book, ruleKey: rule, ruleBook: book };
   }
 
-  private add(script: string, kind: TraceEntry['kind'], text: string): void {
-    this.host.trace.add({ kind, text, origin: this.origin(script) });
+  private add(
+    script: string,
+    kind: TraceEntry['kind'],
+    text: string,
+    rule?: string,
+    ruleStep?: string,
+  ): void {
+    this.host.trace.add({
+      kind,
+      text,
+      origin: this.origin(script, rule),
+      ...(rule === undefined || ruleStep === undefined ? {} : { ruleStep }),
+    });
   }
 
-  private sayOnce(key: string, kind: TraceEntry['kind'], script: string, text: string): void {
+  private sayOnce(
+    key: string,
+    kind: TraceEntry['kind'],
+    script: string,
+    text: string,
+    rule?: string,
+    ruleStep?: string,
+  ): void {
     if (this.said.has(key)) return;
     this.said.add(key);
-    this.add(script, kind, text);
+    this.add(script, kind, text, rule, ruleStep);
   }
+}
+
+/** Blocks set by each script (and rule) in one answer. */
+type BlockTally = Map<
+  string,
+  { script: string; rule?: string; count: number; last: string; at: XYZ }
+>;
+
+/** The events of a tick: a rule started by one whose "only if" is false is said once (B401). */
+const TICK_EVENTS: readonly string[] = ['server.tick', 'player.tick'];
+
+/** The data store key prefix of Rules counters (ADR 0082 findings). */
+const COUNTER_PREFIX = 'rules.counter.';
+
+/** The error line of a generated script's `rule` helper (ADR 0082 findings). */
+const RULE_ERROR = /^Rules ([a-z0-9_.-]+:[a-z0-9_./-]+), rule ([A-Za-z0-9_.-]+): ([\s\S]*)$/;
+
+/** Ticks as seconds in words ("0.5 seconds", "1 second"). */
+function secondsWords(ticks: number): string {
+  const value = ticks / 20;
+  return `${value} ${value === 1 ? 'second' : 'seconds'}`;
 }
 
 /** An entity of the area as event data. */

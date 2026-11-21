@@ -5,6 +5,7 @@
  * Try it area loads the project's scripts through a transpiler and reports an endless loop in
  * "What happened".
  */
+import { readFileSync } from 'node:fs';
 import { createContext, runInContext } from 'node:vm';
 import type { OutputFile } from '@msm/plugin-api';
 import { SCRIPT_API } from '@msm/plugin-scripting';
@@ -220,6 +221,49 @@ msm.events.on("server.started", () => msm.log.info("started"));`),
         `The script ${NS}:spin logged: started`,
       ),
     );
+    area.dispose();
+  });
+
+  it('runs a generated Rules script in the worker and names its steps by the rule (B401)', async () => {
+    const golden = readFileSync(
+      new URL(
+        '../../../../packages/plugins/rules/test/fixtures/goldens/trigger-player_joined.ts',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    const area = new TryItArea({
+      files: toSimFiles([
+        ...demoOutputs(),
+        {
+          path: 'msm/demo/script/rules/rules.ts',
+          contents: new TextEncoder().encode(golden),
+          layer: 'msm',
+        } as OutputFile,
+      ]),
+      target: TARGET,
+      scripts: {
+        transpile: async (source) => transpile(source),
+        api: SCRIPT_API,
+        runner: () => createWorkerRunner({ spawn: vmWorker }),
+      },
+    });
+    await area.loadScripts();
+    await vi.waitFor(() =>
+      expect(area.whatHappened.map((entry) => entry.text)).toContain(
+        'Rule "sample" says to you: "Something happened."',
+      ),
+    );
+    const lines = area.whatHappened.filter((entry) => entry.ruleStep !== undefined);
+    expect(lines.map((entry) => [entry.kind, entry.ruleStep, entry.text])).toEqual([
+      ['trigger', 'start', 'The script heard player.join, so rule "sample" ran.'],
+      ['action', 'did', 'Rule "sample" says to you: "Something happened."'],
+    ]);
+    expect(lines[0]?.origin).toEqual({
+      elementId: 'demo:rules',
+      ruleKey: 'sample',
+      ruleBook: 'demo:rules',
+    });
     area.dispose();
   });
 

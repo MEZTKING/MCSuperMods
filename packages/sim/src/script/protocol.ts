@@ -69,6 +69,11 @@ export interface WorldSync {
   readonly full?: WorldSnapshot;
   /** Blocks changed since the last message: x, y, z and the state (`''` for air). */
   readonly changes?: readonly (readonly [number, number, number, string])[];
+  /**
+   * How chances of rules are decided now (B401, the area's "Run every time"): `always`,
+   * `never` or `random` (seeded); absent is `random`.
+   */
+  readonly chance?: 'random' | 'always' | 'never';
 }
 
 /** One script as the runtime loads it, in load order. */
@@ -87,6 +92,8 @@ export interface ScriptRuntimeInit {
   /** Data stores kept from before a restart: `world` and entity UUIDs, key to value. */
   readonly stores: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   readonly sync: WorldSync;
+  /** The seed of rules' chances (B401); default 1. */
+  readonly seed?: number;
 }
 
 /** A request to the runtime. */
@@ -131,6 +138,8 @@ export type ScriptOp =
   | { readonly op: 'give'; readonly script: string; readonly item: string; readonly count: number }
   | {
       readonly op: 'store';
+      /** The script that wrote it (B401), when one was running. */
+      readonly script?: string;
       readonly owner: string;
       readonly key: string;
       readonly value?: unknown;
@@ -151,12 +160,53 @@ export type ScriptLine =
       readonly script: string;
       readonly where: string;
       readonly message: string;
-    };
+    }
+  /** A step of a rule in a script Rules generated (B401, {@link RuleStep}). */
+  | { readonly kind: 'rule'; readonly script: string; readonly step: RuleStep };
+
+/**
+ * What a rule of a generated Rules script did at one of its steps (B401). The script is
+ * instrumented in place by `instrumentRuleScript` (`rule-steps.ts`) at the `// rule:<key>`
+ * markers of ADR 0082 D3, and the shim reports each step through the `msm:try-it` hooks.
+ */
+export type RuleStep =
+  /** The rule started from a Script API event (rules run by `run_script` are said by the action). */
+  | { readonly at: 'start'; readonly event: string }
+  /** An `if` step's conditions, or the rule's `only if` conditions, were checked. */
+  | {
+      readonly at: 'check';
+      readonly which: 'if' | 'only';
+      readonly met: boolean;
+      /** The `if` step has `otherwise` steps. */
+      readonly otherwise?: boolean;
+    }
+  /** A `chance` condition was rolled. */
+  | {
+      readonly at: 'chance';
+      readonly percent: number;
+      readonly met: boolean;
+      readonly mode: 'random' | 'always' | 'never';
+    }
+  /** A `repeat` step starts its time `time` (from 1) of `of`, or finished when `time > of`. */
+  | { readonly at: 'repeat'; readonly time: number; readonly of: number }
+  /** A `for each player` step found `count` players. */
+  | { readonly at: 'each'; readonly count: number }
+  /** A `wait` step started: the rule goes on `ticks` later on the area's clock. */
+  | { readonly at: 'wait'; readonly ticks: number; readonly due: number }
+  /** A wait ended and the rule goes on. */
+  | { readonly at: 'resume'; readonly ticks: number }
+  /** After a wait, the player or mob of the trigger was gone, so the rule stopped. */
+  | { readonly at: 'gone' }
+  /** The rule stopped with an error; `during` names the step it was in, in words. */
+  | { readonly at: 'error'; readonly message: string; readonly during?: string };
+
+/** What scripts did and said, with the rule key when a rule of a generated script did it (B401). */
+export type ScriptStep = (ScriptOp | ScriptLine) & { readonly rule?: string };
 
 /** What a request came to. */
 export interface ScriptResponse {
   /** What the scripts did ({@link ScriptOp}) and said ({@link ScriptLine}), in order. */
-  readonly steps: readonly (ScriptOp | ScriptLine)[];
+  readonly steps: readonly ScriptStep[];
   /** A handler called `cancel()`. */
   readonly cancelled: boolean;
   /** A handler called `keepBlocks()` (explosions). */

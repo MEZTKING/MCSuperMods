@@ -212,6 +212,8 @@ export interface WhatHappenedEntry {
   readonly text: string;
   readonly kind: WhatHappenedKind;
   readonly origin?: SimOrigin;
+  /** For a step of a logic rule run as a script, what the step was (B401 `TraceEntry.ruleStep`). */
+  readonly ruleStep?: string;
 }
 
 /** The most lines the panel keeps. */
@@ -312,7 +314,7 @@ export class TryItArea {
           }),
     });
     this.scripts = options.scripts;
-    for (const line of this.source.lines) this.addEntry(line, undefined);
+    for (const line of this.source.lines) this.addEntry(line, undefined, undefined);
     const log = this.source.log;
     this.particles = new ParticleField({ files: options.files, target: options.target, log });
     const portal = options.target.blocks?.portal?.particle;
@@ -567,7 +569,7 @@ export class TryItArea {
         const last = this.source.trace.at(-1);
         const own =
           last !== undefined && last.text === event.line.text && last.origin === event.line.origin;
-        this.addEntry(event.line, own ? last.kind : undefined);
+        this.addEntry(event.line, own ? last.kind : undefined, own ? last.ruleStep : undefined);
         break;
       }
       case 'blockChanged':
@@ -606,7 +608,11 @@ export class TryItArea {
     }
   }
 
-  private addEntry(line: SimLogLine, kind: TraceKind | undefined): void {
+  private addEntry(
+    line: SimLogLine,
+    kind: TraceKind | undefined,
+    ruleStep: string | undefined,
+  ): void {
     this.entrySerial += 1;
     this.entries.push({
       serial: this.entrySerial,
@@ -614,6 +620,7 @@ export class TryItArea {
       text: line.text,
       kind: kind ?? (line.onlyInMinecraft ? 'onlyInMinecraft' : 'info'),
       ...(line.origin === undefined ? {} : { origin: line.origin }),
+      ...(ruleStep === undefined ? {} : { ruleStep }),
     });
     if (this.entries.length > WHAT_HAPPENED_LIMIT) {
       this.entries.splice(0, this.entries.length - WHAT_HAPPENED_LIMIT);

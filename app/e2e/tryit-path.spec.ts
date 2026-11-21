@@ -51,6 +51,10 @@
  * `MSM_TRYIT_BLOCKS_SHOT=<file.png>` it saves a picture of the signs, the bed, the lanterns and
  * the bag screen at device scale 2.
  *
+ * A seventh test (B401) opens a copy of `fixtures/sample-rules` as it is: the generated scripts
+ * run in the worker, "Welcome" says its start and its sound by the rule's name, and using the
+ * Lucky Block without sneaking says "Try your luck"'s "only if" check, linked to the rule card.
+ *
  * With `MSM_TRYIT_SHOT=<file.png>` the run also saves a picture of the area with a few blocks, a
  * mob and particles (launch with `--force-device-scale-factor=2` for a sharp one). With
  * `MSM_TRYIT_GROUND_SHOTS=<folder>` it saves the grounds picker, the island with a block and a
@@ -1146,5 +1150,52 @@ test('Try it: the sample script runs in the script worker, and an endless loop i
   await expect(log).toContainText(
     `The script ${SCRIPT_NAMESPACE}:on_player_chat says to you: "Sample commands: !help`,
     { timeout: 10_000 },
+  );
+});
+
+test('Try it: a logic rule says its steps by the rule, from the script worker (B401)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-logic-'));
+  const folders = {
+    projectDir: join(base, RULES_NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  cpSync(join(appDir, '..', 'fixtures', 'sample-rules'), folders.projectDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${CHIME_ID}`)).toBeVisible();
+  const { canvas, state } = await openTryIt(window);
+  await window.getByTestId('tryit-card-close').click();
+  const log = window.getByTestId('tryit-log');
+
+  // "Welcome" starts from player.join in the generated world rules script.
+  const welcome = log.locator('[data-rule-step="start"]', {
+    hasText: 'The script heard player.join, so rule "Welcome" ran.',
+  });
+  await expect(welcome).toHaveCount(1, { timeout: 20_000 });
+  await expect(welcome.getByTestId('tryit-log-link')).toHaveText('Rule');
+  await expect(
+    log.locator('[data-rule-step="did"]', { hasText: 'Rule "Welcome" played sound Chime.' }),
+  ).toHaveCount(1);
+
+  // "Try your luck" runs only while sneaking: its "only if" is checked and said by the rule.
+  await press(canvas, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+  await expect(state).toHaveAttribute('data-pointed', 'the floor');
+  await hold(window, `${RULES_NAMESPACE}:lucky_block`);
+  await canvas.focus();
+  await press(canvas, 'KeyC');
+  await expect(state).toHaveAttribute('data-blocks', '1');
+  await press(canvas, 'KeyC');
+  const check = log.locator('[data-rule-step="check"]', {
+    hasText: 'Rule "Try your luck" checked its "only if": false, so it stopped.',
+  });
+  await expect(check).toHaveCount(1);
+  await expect(check).toHaveAttribute('data-kind', 'skipped');
+  await expect(check.getByTestId('tryit-log-link')).toHaveAttribute(
+    'data-element',
+    `${RULES_NAMESPACE}:lucky_block_rules`,
   );
 });

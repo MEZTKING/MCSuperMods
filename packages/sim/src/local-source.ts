@@ -337,6 +337,7 @@ export class LocalWorldSource implements WorldSource {
       this.emit({ type: 'blockChanged', pos: change.pos, state: change.state }),
     );
     this.traceNow = new SimTrace(this.log, () => this.ticks);
+    this.ruleBooksNow = options.ruleBooks ?? [];
     this.scripts =
       options.scripts === undefined
         ? null
@@ -352,6 +353,8 @@ export class LocalWorldSource implements WorldSource {
               now: () => this.ticks,
               itemName: (id) => this.triggers.nameOfItem(id),
               heldItem: () => this.heldNow,
+              ruleName: (book, key) => this.ruleNameOf(book, key),
+              chance: () => this.triggers.chance,
             },
             {
               runner: options.scripts.runner,

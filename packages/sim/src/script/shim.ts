@@ -24,6 +24,11 @@
  * script worker's `Blob` (as the plugin sandbox's bootstrap is, ADR 0035), where the scripts run
  * without `eval` under the renderer's Content Security Policy. Scripts write into a copy of the
  * area held here; what they do comes back as {@link ScriptOp}s the bridge applies.
+ *
+ * Rule steps (B401): a script Rules generated is instrumented (`rule-steps.ts`) to call the hooks
+ * of the module `msm:try-it` here. While a rule runs, everything it does carries its key; its
+ * `msm.schedule` callbacks (its waits) run with the key again; its conditions, chances, loops and
+ * waits come back as `rule` lines ({@link RuleStep}), and an error stops only that rule.
  */
 import type {
   EncodedValue,
@@ -31,12 +36,14 @@ import type {
   MobSnapshot,
   PlayerSnapshot,
   ProbeResult,
+  RuleStep,
   ScriptLine,
   ScriptModuleFn,
   ScriptOp,
   ScriptRequest,
   ScriptResponse,
   ScriptRuntimeInit,
+  ScriptStep,
   WorldSync,
   XYZ,
 } from './protocol.js';
@@ -105,7 +112,7 @@ export function createScriptRuntime(
 
   // What the current request did.
   /** What scripts did and said, in order. */
-  let steps: (ScriptOp | ScriptLine)[] = [];
+  let steps: ScriptStep[] = [];
   let cancelled = false;
   let keepBlocks = false;
   const said = new Set<string>();
@@ -116,7 +123,15 @@ export function createScriptRuntime(
 
   const handlers = new Map<string, Handler[]>();
   const actions = new Map<string, { script: string; fn: (event: unknown) => void }>();
-  let schedules: { due: number; seq: number; script: string; fn: () => void }[] = [];
+  let schedules: {
+    due: number;
+    seq: number;
+    script: string;
+    fn: () => void;
+    /** The rule that waits (B401), and for how long. */
+    rule: string | null;
+    ticks: number;
+  }[] = [];
   let scheduleSeq = 0;
   const stores = new Map<string, Map<string, Json>>();
   for (const [owner, values] of Object.entries(init.stores)) {
@@ -139,6 +154,7 @@ export function createScriptRuntime(
 
   function applySync(sync: WorldSync): void {
     tick = sync.tick;
+    chanceMode = sync.chance ?? 'random';
     player = sync.player;
     mobs = new Map(sync.mobs.map((mob) => [mob.id, mob]));
     if (sync.full !== undefined) {
@@ -153,20 +169,121 @@ export function createScriptRuntime(
     }
   }
 
+  // Rule steps (B401): see the module comment.
+  /** The key of the rule running now. */
+  let ruleNow: string | null = null;
+  /** The step the rule running now reached, in words, for an error. */
+  let duringNow: string | undefined;
+  /** The Script API event being handled (a rule run by `run_script` has none). */
+  let eventNow: string | null = null;
+  let chanceMode: 'random' | 'always' | 'never' = 'random';
+  let chanceSeed = ((init.seed ?? 1) ^ 0x2545f491) >>> 0 || 1;
+  /** A seeded number from 0 (inclusive) to 1 (xorshift32). */
+  const roll = (): number => {
+    chanceSeed ^= chanceSeed << 13;
+    chanceSeed >>>= 0;
+    chanceSeed ^= chanceSeed >>> 17;
+    chanceSeed ^= chanceSeed << 5;
+    chanceSeed >>>= 0;
+    return chanceSeed / 4294967296;
+  };
+
   // Lines.
+  /** Records a step, with the rule key while a rule runs. */
+  const emit = (step: ScriptOp | ScriptLine): void => {
+    steps.push(ruleNow === null ? step : { ...step, rule: ruleNow });
+  };
+  const ruleStep = (step: RuleStep): void => {
+    if (ruleNow !== null) emit({ kind: 'rule', script: who(), step });
+  };
+  /** Runs `run` as the rule `key` at the step `during`. */
+  function inRule<T>(key: string | null, during: string | undefined, run: () => T): T {
+    const beforeRule = ruleNow;
+    const beforeDuring = duringNow;
+    ruleNow = key;
+    duringNow = during;
+    try {
+      return run();
+    } finally {
+      ruleNow = beforeRule;
+      duringNow = beforeDuring;
+    }
+  }
   const only = (member: string): void => {
     const script = who();
-    const key = `${script}|${member}`;
+    const key = `${script}|${member}${ruleNow === null ? '' : `|${ruleNow}`}`;
     if (said.has(key)) return;
     said.add(key);
-    steps.push({ kind: 'only', script, member });
+    emit({ kind: 'only', script, member });
   };
   const errorText = (error: unknown): string => {
     if (error instanceof Error) return `${error.name}: ${error.message}`;
     return String(error);
   };
   const fail = (script: string, where: string, error: unknown): void => {
-    steps.push({ kind: 'error', script, where, message: errorText(error) });
+    emit({ kind: 'error', script, where, message: errorText(error) });
+  };
+  /** Says the rule running now stopped with `error`. */
+  const ruleFailed = (error: unknown): void => {
+    ruleStep({
+      at: 'error',
+      message: errorText(error),
+      ...(duringNow === undefined ? {} : { during: duringNow }),
+    });
+  };
+  const seconds = (ticks: number): string => {
+    const value = ticks / 20;
+    return `${value} ${value === 1 ? 'second' : 'seconds'}`;
+  };
+  /** The hooks of `msm:try-it` (B401). */
+  const tryIt = {
+    rule(key: unknown, body: unknown): void {
+      if (typeof body !== 'function') return;
+      inRule(String(key), undefined, () => {
+        if (eventNow !== null) ruleStep({ at: 'start', event: eventNow });
+        try {
+          (body as () => void)();
+        } catch (error) {
+          ruleFailed(error);
+        }
+      });
+    },
+    check(which: unknown, value: unknown, otherwise?: unknown): boolean {
+      const met = Boolean(value);
+      const kind = which === 'only' ? 'only' : 'if';
+      ruleStep(
+        kind === 'if'
+          ? { at: 'check', which: kind, met, otherwise: otherwise === true }
+          : { at: 'check', which: kind, met },
+      );
+      duringNow = kind === 'if' ? 'after its "if" check' : 'after its "only if" check';
+      return met;
+    },
+    chance(percent: unknown): boolean {
+      const p = num(percent, 0);
+      const met =
+        chanceMode === 'always' ? true : chanceMode === 'never' ? false : roll() * 100 < p;
+      ruleStep({ at: 'chance', percent: p, met, mode: chanceMode });
+      return met;
+    },
+    repeat(count: unknown, times: unknown): boolean {
+      const c = num(count, 0);
+      const n = num(times, 0);
+      const going = c < n;
+      ruleStep({ at: 'repeat', time: c + 1, of: n });
+      duringNow = going ? `in time ${c + 1} of its repeat` : 'after its repeat';
+      return going;
+    },
+    each<T>(list: T): T {
+      ruleStep({ at: 'each', count: Array.isArray(list) ? list.length : 0 });
+      duringNow = 'after starting its "for each player"';
+      return list;
+    },
+    gone(value: unknown): boolean {
+      const isGone = Boolean(value);
+      if (isGone) ruleStep({ at: 'gone' });
+      return isGone;
+    },
   };
 
   // Types from the description.
@@ -330,12 +447,12 @@ export function createScriptRuntime(
         }
         const kept = copy(value);
         values().set(k, kept);
-        steps.push({ op: 'store', owner, key: k, value: kept });
+        emit({ op: 'store', script: who(), owner, key: k, value: kept });
       }),
       remove: fn((name) => {
         const k = key(name);
         const had = values().delete(k);
-        if (had) steps.push({ op: 'store', owner, key: k });
+        if (had) emit({ op: 'store', script: who(), owner, key: k });
         return had;
       }),
       has: fn((name) => values().has(key(name))),
@@ -402,13 +519,13 @@ export function createScriptRuntime(
         if (stack !== undefined) stack.count += amount;
         else items.push({ id, count: amount });
         player = { ...player, items };
-        steps.push({ op: 'give', script: who(), item: id, count: amount });
+        emit({ op: 'give', script: who(), item: id, count: amount });
       }),
       hasItem: fn(
         (item) => player.held === item || player.items.some((stack) => stack.id === item),
       ),
       sendMessage: fn((text) => {
-        steps.push({ op: 'message', script: who(), text: String(text) });
+        emit({ op: 'message', script: who(), text: String(text) });
       }),
     });
     return self;
@@ -428,7 +545,7 @@ export function createScriptRuntime(
       const text = state.trim().includes(':') ? state.trim() : `minecraft:${state.trim()}`;
       const air = /^minecraft:(air|cave_air|void_air)$/.test(text);
       cells[cellOf(at[0], at[1], at[2])] = air ? 0 : intern(text);
-      steps.push({ op: 'setBlock', script: who(), pos: at, state: air ? '' : text });
+      emit({ op: 'setBlock', script: who(), pos: at, state: air ? '' : text });
       return true;
     }),
     spawnParticle: fn((particle, pos, options) => {
@@ -448,7 +565,7 @@ export function createScriptRuntime(
         Array.isArray(o.motion) && o.motion.length === 3
           ? ([num(o.motion[0], 0), num(o.motion[1], 0), num(o.motion[2], 0)] as XYZ)
           : undefined;
-      steps.push({
+      emit({
         op: 'particle',
         script: who(),
         particle: kind,
@@ -461,7 +578,7 @@ export function createScriptRuntime(
     }),
     playSound: fn((id, pos, options) => {
       const o = (options ?? {}) as { volume?: unknown; pitch?: unknown };
-      steps.push({
+      emit({
         op: 'sound',
         script: who(),
         id: String(id),
@@ -566,7 +683,7 @@ export function createScriptRuntime(
   const logAt =
     (level: 'info' | 'warn' | 'error') =>
     (message: unknown): void => {
-      steps.push({ kind: 'log', level, script: who(), text: String(message) });
+      emit({ kind: 'log', level, script: who(), text: String(message) });
     };
   const worldStore = storeObj('world');
   const msm: Obj = namespaceObj('msm.', api.globals.msm?.members ?? {}, {
@@ -576,7 +693,7 @@ export function createScriptRuntime(
     'msm.log.error': fn(logAt('error')),
     'msm.events.on': fn((name, handler, options) => {
       if (typeof name !== 'string' || api.events[name] === undefined) {
-        steps.push({
+        emit({
           kind: 'error',
           script: who(),
           where: 'msm.events.on',
@@ -612,7 +729,10 @@ export function createScriptRuntime(
         seq: scheduleSeq,
         script: who(),
         fn: callback as () => void,
+        rule: ruleNow,
+        ticks,
       });
+      ruleStep({ at: 'wait', ticks, due: tick + ticks });
     }),
     'msm.storage': prop(() => worldStore),
     'msm.players': fn(() => [playerObj()]),
@@ -623,6 +743,7 @@ export function createScriptRuntime(
     }),
   });
   const runtimeModule = { msm };
+  const tryItModule = { tryIt };
 
   // Modules (CommonJS, ADR 0031 D3 and the D1 amendment of ADR 0032).
   const loaded = new Map<string, { exports: unknown }>();
@@ -642,6 +763,7 @@ export function createScriptRuntime(
   }
   function requireFrom(from: string, id: unknown): unknown {
     if (id === 'msm:runtime') return runtimeModule;
+    if (id === 'msm:try-it') return tryItModule;
     if (typeof id !== 'string' || !(id.startsWith('./') || id.startsWith('../'))) {
       throw new Error(
         `Cannot find script ${JSON.stringify(id)}: require takes "./..." or "msm:runtime"`,
@@ -699,8 +821,14 @@ export function createScriptRuntime(
     if (list.length === 0) return;
     const type = api.events[name]?.type ?? 'GameEvent';
     const event = eventObj(type, data);
-    for (const handler of [...list]) {
-      call(handler.script, `${name} handler`, () => handler.fn(event));
+    const before = eventNow;
+    eventNow = name;
+    try {
+      for (const handler of [...list]) {
+        call(handler.script, `${name} handler`, () => handler.fn(event));
+      }
+    } finally {
+      eventNow = before;
     }
   }
 
@@ -712,15 +840,37 @@ export function createScriptRuntime(
       const event = eventObj(api.events['player.tick']?.type ?? 'GameEvent', {
         player: { $entity: { kind: 'player' } },
       });
-      for (const handler of players)
-        call(handler.script, 'player.tick handler', () => handler.fn(event));
+      eventNow = 'player.tick';
+      try {
+        for (const handler of players)
+          call(handler.script, 'player.tick handler', () => handler.fn(event));
+      } finally {
+        eventNow = null;
+      }
     }
     const due = schedules
       .filter((one) => one.due <= tick)
       .sort((a, b) => a.due - b.due || a.seq - b.seq);
     if (due.length === 0) return;
     schedules = schedules.filter((one) => one.due > tick);
-    for (const one of due) call(one.script, 'msm.schedule callback', one.fn);
+    for (const one of due) {
+      if (one.rule === null) {
+        call(one.script, 'msm.schedule callback', one.fn);
+        continue;
+      }
+      // A rule's wait ended (B401): the rule goes on, by its key.
+      const rule = one.rule;
+      call(one.script, 'msm.schedule callback', () =>
+        inRule(rule, `after its wait of ${seconds(one.ticks)}`, () => {
+          ruleStep({ at: 'resume', ticks: one.ticks });
+          try {
+            one.fn();
+          } catch (error) {
+            ruleFailed(error);
+          }
+        }),
+      );
+    }
   }
 
   function handle(request: ScriptRequest): void {
@@ -742,7 +892,7 @@ export function createScriptRuntime(
     } else if (request.type === 'action') {
       const action = actions.get(request.handler);
       if (action === undefined) {
-        steps.push({
+        emit({
           kind: 'error',
           script: '',
           where: 'run_script',

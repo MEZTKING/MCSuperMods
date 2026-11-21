@@ -6,7 +6,12 @@
  *
  * Each line links to where it came from: the rule card (the rule book with the rule focused),
  * the event in its Studio, or the Studio of the thing. The "Run every time" option makes every
- * chance come up (B396 `always`).
+ * chance come up (B396 `always`; in logic rules too, B401).
+ *
+ * Logic rules (B401): a rule that runs as a script says each of its steps by the rule's name
+ * (`Rule "<name>" checked its "if": ...`, its loops, waits, what it did and what only the game
+ * does, an error with the step it was in); those lines sit one step further in under the rule's
+ * own line, carry `data-rule-step` and link to the rule card.
  *
  * Part of the lazy Try it chunk.
  */
@@ -140,6 +145,14 @@ const KIND_CLASS: Readonly<Record<WhatHappenedEntry['kind'], string>> = {
   info: '',
 };
 
+/** The classes of a line: a logic rule's step sits under the rule's own line (B401). */
+export function lineClass(entry: Pick<WhatHappenedEntry, 'kind' | 'ruleStep'>): string {
+  const base = KIND_CLASS[entry.kind];
+  if (entry.ruleStep === undefined || entry.ruleStep === 'start') return base;
+  const words = base.replace('pl-3', '').trim();
+  return `pl-6${words === '' ? '' : ` ${words}`}`;
+}
+
 /** The panel; see the module comment. */
 export function WhatHappened(props: WhatHappenedProps) {
   const { entries, project } = props;
@@ -173,7 +186,8 @@ export function WhatHappened(props: WhatHappenedProps) {
               key={entry.serial}
               data-testid={entry.kind === 'onlyInMinecraft' ? 'tryit-log-only' : 'tryit-log-line'}
               data-kind={entry.kind}
-              className={`flex items-start gap-1 ${KIND_CLASS[entry.kind]}`}
+              {...(entry.ruleStep === undefined ? {} : { 'data-rule-step': entry.ruleStep })}
+              className={`flex items-start gap-1 ${lineClass(entry)}`}
             >
               <span className="min-w-0 flex-1">{entryText(entry)}</span>
               {link !== null && (

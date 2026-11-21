@@ -4,6 +4,11 @@
  * and book when the event is one Rules generated). Every entry also goes to the log in plain
  * words, so the panel works from the log alone; the trace keeps every firing (the log says each
  * "Only in Minecraft" line once) for the panel's links and for tests. B398 draws it.
+ *
+ * Logic rules (B401): each step a rule of a generated Rules script reached in the script worker
+ * (its conditions checked, chances rolled, loops, waits, what it did, an error) is an entry named
+ * by the rule (`Rule "<name>" ...`), with the rule's key and book in its origin and the step in
+ * {@link TraceEntry.ruleStep}; the script bridge writes them.
  */
 import type { BlockPos, SimLog, SimOrigin } from '../types.js';
 
@@ -39,6 +44,13 @@ export interface TraceEntry {
   readonly pos?: BlockPos;
   /** For a `trigger_event` action, the event it ran (at `depth + 1`). */
   readonly ranEvent?: string;
+  /**
+   * For a step of a logic rule in a generated script (B401): what the step was (`check`,
+   * `chance`, `repeat`, `each`, `wait`, `resume`, `gone`, `error`, `start`), or `did` for
+   * something the rule did (a block set, a sound, a message, an item given, a counter, a line
+   * only the game has). The rule is `origin.ruleKey` of `origin.ruleBook`.
+   */
+  readonly ruleStep?: string;
 }
 
 /** The most entries a trace keeps. */

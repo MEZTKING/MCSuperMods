@@ -3,7 +3,12 @@ import type { Project } from '@msm/core';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WhatHappenedEntry } from '../../../src/renderer/src/tryit/session-source';
-import { entryText, linkFor, WhatHappened } from '../../../src/renderer/src/tryit/WhatHappened';
+import {
+  entryText,
+  lineClass,
+  linkFor,
+  WhatHappened,
+} from '../../../src/renderer/src/tryit/WhatHappened';
 
 afterEach(cleanup);
 
@@ -139,6 +144,62 @@ describe('What happened', () => {
     ).toEqual({ label: 'Studio', elementId: BLOCK, pointer: '/components/msm:on_interact/event' });
     expect(linkFor({ elementId: 'minecraft:stone' }, project)).toBeNull();
     expect(linkFor(undefined, project)).toBeNull();
+  });
+
+  it("puts a logic rule's steps under the rule, linked to its card (B401)", () => {
+    const origin = { elementId: BOOK, ruleKey: 'ring_chime', ruleBook: BOOK };
+    const steps: WhatHappenedEntry[] = [
+      entry('trigger', 'The script heard block.break, so rule "Ring the chime" ran.', origin),
+      {
+        ...entry(
+          'action',
+          'Rule "Ring the chime" checked its "if": true, so its "then" steps ran.',
+          origin,
+        ),
+        ruleStep: 'check',
+      },
+      {
+        ...entry('onlyInMinecraft', 'Player.showActionBar, used by rule "Ring the chime"', origin),
+        ruleStep: 'did',
+      },
+      {
+        ...entry(
+          'skipped',
+          'Rule "Ring the chime" failed after its "if" check: Error: boom',
+          origin,
+        ),
+        ruleStep: 'error',
+      },
+    ];
+    const onOpen = vi.fn();
+    render(
+      <WhatHappened
+        entries={steps}
+        project={project}
+        onOpen={onOpen}
+        runEveryTime={false}
+        onRunEveryTime={vi.fn()}
+      />,
+    );
+    const items = [...screen.getByTestId('tryit-log').querySelectorAll('li')];
+    expect(items.map((item) => item.dataset.ruleStep)).toEqual([
+      'error',
+      'did',
+      'check',
+      undefined,
+    ]);
+    expect(items.map((item) => item.className.includes('pl-6'))).toEqual([true, true, true, false]);
+    expect(items[0]?.className).toContain('text-muted');
+    expect(items[1]?.querySelector('span')?.textContent).toBe(
+      'Only in Minecraft: Player.showActionBar, used by rule "Ring the chime"',
+    );
+    const links = screen.getAllByTestId('tryit-log-link');
+    expect(links.map((link) => link.textContent)).toEqual(['Rule', 'Rule', 'Rule', 'Rule']);
+    fireEvent.click(links[0] as HTMLElement);
+    expect(onOpen).toHaveBeenLastCalledWith(BOOK, '/rules/1');
+    expect(lineClass({ kind: 'action' })).toBe('pl-3');
+    expect(lineClass({ kind: 'trigger', ruleStep: 'start' })).toBe('font-medium');
+    expect(lineClass({ kind: 'onlyInMinecraft', ruleStep: 'did' })).toBe('pl-6 text-warning');
   });
 
   it('turns "Run every time" on and off', () => {

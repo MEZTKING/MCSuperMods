@@ -2,9 +2,11 @@
  * The scripts among the lowered files (B400): `msm/<ns>/script/<path>.ts` (ADR 0032 D3), in the
  * runtime's load order (namespace, then path), with the rule book of a script Rules generated
  * (ADR 0082 D3). The app transpiles each source to ES5 (ADR 0031 D2) and hands the results to
- * the bridge as {@link CompiledScript}s.
+ * the bridge as {@link CompiledScript}s. A generated Rules script comes with its rule steps
+ * instrumented for the preview (B401, {@link instrumentRuleScript}).
  */
 import type { SimFiles } from '../types.js';
+import { instrumentRuleScript } from './rule-steps.js';
 
 /** One script's source. */
 export interface ScriptSource {
@@ -12,7 +14,7 @@ export interface ScriptSource {
   readonly id: string;
   /** The lowered path (`msm/<ns>/script/<path>.ts`). */
   readonly path: string;
-  /** The TypeScript source. */
+  /** The TypeScript source (a generated Rules script's instrumented, B401). */
   readonly source: string;
   /** The rule book, for a script Rules generated. */
   readonly book?: string;
@@ -49,7 +51,7 @@ export function scriptSources(files: SimFiles): ScriptSource[] {
     out.push({
       id: `${match[1]}:${match[2]}`,
       path,
-      source,
+      source: book === undefined ? source : instrumentRuleScript(source),
       ...(book === undefined ? {} : { book }),
     });
   }

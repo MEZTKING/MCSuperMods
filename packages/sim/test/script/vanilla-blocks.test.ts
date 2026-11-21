@@ -30,7 +30,7 @@ function both() {
 }
 
 describe('sample-vanilla-blocks with its scripts running', () => {
-  it("stops a cobweb as the rule says, and says the rule's message", () => {
+  it("stops a cobweb as the rule says, and says the rule's message by the rule (B401)", () => {
     const { read, run, texts } = both();
     for (const source of [read, run]) {
       source.act({
@@ -42,9 +42,7 @@ describe('sample-vanilla-blocks with its scripts running', () => {
       });
       expect(source.world.get({ x: 3, y: 0, z: 3 })).toBeNull();
     }
-    expect(texts()).toContain(
-      `The script ${NS}:rules/vanilla_blocks_rules says to you: "Cobwebs are not welcome here."`,
-    );
+    expect(texts()).toContain('Rule "no_cobwebs" says to you: "Cobwebs are not welcome here."');
     expect(
       run.lines.some(
         (line) => line.text === 'Cobweb was not placed: a script stopped the placing.',
@@ -103,8 +101,6 @@ describe('sample-vanilla-blocks with its scripts running', () => {
       `The script ${NS}:script_api_1_6 says to you: "The script heard /greet."`,
     );
     run.chat('/kit Player 5');
-    expect(texts()).toContain(
-      `The script ${NS}:rules/vanilla_blocks_rules says to you: "Kit handed out."`,
-    );
+    expect(texts()).toContain('Rule "kit_note" says to you: "Kit handed out."');
   });
 });
