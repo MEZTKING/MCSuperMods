@@ -68,7 +68,7 @@ You make a fluid the same way on both. What differs:
 
 ## Problems
 
-**Problems** says, in plain words: a bucket with the same name as another thing in your mod (rename one), a fluid that looks further for a way down than it can spread, a fluid missing one of its pictures (it looks like plain water or lava there) and a fluid that behaves like nothing (see through as air). In Very easy mode they appear in **Things to fix**.
+**Problems** says, in plain words: a bucket with the same name as another thing in your mod (rename one), a fluid that looks further for a way down than it can spread, a fluid missing one of its pictures (it looks like plain water or lava there), a fluid that behaves like nothing (see through as air) and a fluid whose **Something inside** names an event it no longer has (the game would refuse the fluid). In Very easy mode they appear in **Things to fix**.
 
 ## Vanilla packs
 

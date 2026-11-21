@@ -1,6 +1,6 @@
 # Spike evidence
 
-Results of the throwaway spikes of vanilla parity 2, batch 2, kept so the briefs that build on them (B472–B485 in `docs/PLAN-vanilla-parity-2.md`) can read what was measured and reuse code that worked. The spike code was deleted from `engine-mod/`; these are copies. Nothing here is built, linted or shipped. Only MSM's own code and our own measurements are kept: no vanilla files, decompiled code, `javap` listings or screenshots of the game.
+Results of the throwaway spikes of vanilla parity 2, batch 2, kept so the briefs that build on them (B472–B485 of vanilla parity 2, batch 2; the plan was deleted at B485, its facts and limits are in ADR 0101) can read what was measured and reuse code that worked. The spike code was deleted from `engine-mod/`; these are copies. Nothing here is built, linted or shipped. Only MSM's own code and our own measurements are kept: no vanilla files, decompiled code, `javap` listings or screenshots of the game.
 
 The decisions taken from them are in the ADR amendments, which win over anything here:
 

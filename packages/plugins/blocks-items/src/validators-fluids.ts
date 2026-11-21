@@ -17,6 +17,10 @@
  *   registers a liquid as one fluid (`fluidModel: 'one_fluid'`): its under-the-surface fog
  *   comes from the fluid's own properties, which the runtime copies from vanilla water or lava by
  *   `behaves_like`, so it has none and players see through it as through air.
+ * - `blocks-items.fluid-unknown-event` (error, B485): `on_entity_inside`, or a `trigger_event`
+ *   action in one of the fluid's events, names an event that is not in the fluid's own `events`.
+ *   The runtime's `FluidParser` refuses such a definition, so the fluid would not load. The
+ *   shared `blocks-items.unknown-event` covers blocks, items and effects only.
  */
 import type { Element, JsonObject, Problem, ProjectValidator, TargetFacts } from '@msm/plugin-api';
 import { BLOCK_KIND } from './kinds';
@@ -38,6 +42,7 @@ export const FLUID_PROBLEM_CODES: readonly string[] = Object.freeze([
   'blocks-items.fluid-flow-range',
   'blocks-items.fluid-texture-missing',
   'blocks-items.fluid-no-fog',
+  'blocks-items.fluid-unknown-event',
 ]);
 
 /** The texture slots `fluid-texture-missing` asks for, in report order. */
@@ -167,6 +172,48 @@ function missingFog(fluids: readonly Element[], target: TargetFacts): Problem[] 
     }));
 }
 
+/** The events a fluid declares in its own `events` map. */
+function fluidEvents(data: JsonObject): JsonObject {
+  return isRecord(data.events) ? data.events : {};
+}
+
+function unknownFluidEvents(fluids: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of fluids) {
+    const data = dataOf(element);
+    const events = fluidEvents(data);
+    const declared = new Set(Object.keys(events));
+    const report = (event: string, path: string) => {
+      if (declared.has(event)) return;
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.fluid-unknown-event',
+        elementId: element.id,
+        path,
+        message: `Event "${event}" is not in this fluid's own "events", so the runtime would refuse the fluid. Add the event there or pick one of its events.`,
+      });
+    };
+    if (typeof data.on_entity_inside === 'string') {
+      report(data.on_entity_inside, '/on_entity_inside');
+    }
+    for (const [name, event] of Object.entries(events)) {
+      const actions = isRecord(event) ? event.actions : undefined;
+      if (!Array.isArray(actions)) continue;
+      actions.forEach((action, index) => {
+        if (!isRecord(action) || action.type !== 'trigger_event') return;
+        if (typeof action.event !== 'string') return;
+        report(action.event, `/events/${escapePointer(name)}/actions/${index}/event`);
+      });
+    }
+  }
+  return problems;
+}
+
+/** One JSON Pointer segment (RFC 6901). */
+function escapePointer(segment: string): string {
+  return segment.replaceAll('~', '~0').replaceAll('/', '~1');
+}
+
 /** The validators of fluids. */
 export const fluidValidators: readonly ProjectValidator[] = Object.freeze([
   {
@@ -180,6 +227,7 @@ export const fluidValidators: readonly ProjectValidator[] = Object.freeze([
         ...flowRanges(fluids),
         ...missingTextures(fluids),
         ...missingFog(fluids, target),
+        ...unknownFluidEvents(fluids),
       ];
     },
   },

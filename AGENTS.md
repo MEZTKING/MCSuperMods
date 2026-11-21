@@ -7,7 +7,7 @@ This file is for any coding agent or person picking up the work, whatever tool t
 1. `docs/HANDOFF.md`: where things stand, what is in progress, what waits on the user, what to do next. Its section "State at handover" is the most recent snapshot.
 2. The root `CLAUDE.md`: what the project is, the directory map and the golden rules.
 3. The last few entries at the end of `docs/DEVLOG.md` (append-only; newest last).
-4. The open plan you will work on: `docs/PLAN-vanilla-parity-2.md` (batch 2 briefs B472–B485 and "Notes from implementation" at its end) or `docs/PLAN-test-world.md` (Try it).
+4. The open plan, if any: `docs/PLAN-test-world.md` (Try it; slice 4 waits for the user's word, then B402 and B403). Vanilla parity 2 closed at B485: its decisions, facts and limits are in ADRs 0094–0101, its follow-ups in `docs/ROADMAP.md`. New work starts with a plan file and ADRs (`docs/HANDOFF.md` "Next").
 5. Before touching an area, the scoped `CLAUDE.md` in that folder (`app/`, `packages/core/`, `packages/schemas/`, `packages/plugin-api/`, `packages/plugins/`, `packages/exporters/`, `packages/targets/`, `packages/interop/`, `packages/sim/`, `engine-mod/`, `docs/`). `docs/DESIGN.md` is authoritative; decisions are in `docs/adr/`.
 
 ## Rules you must keep

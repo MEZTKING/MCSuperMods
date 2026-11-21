@@ -1,6 +1,7 @@
 /**
  * The fluid validators (ADR 0099 D1, D4; B477): `blocks-items.generated-item-clash`,
- * `fluid-flow-range`, `fluid-texture-missing` and the one-fluid target's `fluid-no-fog`, run
+ * `fluid-flow-range`, `fluid-texture-missing`, the one-fluid target's `fluid-no-fog` and
+ * `fluid-unknown-event` (B485), run
  * through every validator of the plugin as the app does, on both built-in targets.
  */
 import type { Element, Problem, TargetFacts } from '@msm/plugin-api';
@@ -72,6 +73,7 @@ describe('fluid validators', () => {
       'blocks-items.fluid-flow-range',
       'blocks-items.fluid-texture-missing',
       'blocks-items.fluid-no-fog',
+      'blocks-items.fluid-unknown-event',
     ]);
   });
 
@@ -192,6 +194,39 @@ describe('fluid validators', () => {
         ),
       );
       expect(withCode(results.flat(), 'fluid-no-fog')).toEqual([]);
+    });
+  });
+
+  describe('fluid-unknown-event', () => {
+    const glow = { actions: [{ type: 'apply_effect', effect: 'minecraft:glowing', duration: 40 }] };
+    it('reports on_entity_inside and trigger_event naming an event the fluid does not declare', async () => {
+      const elements = [
+        fluid('demo:good', { on_entity_inside: 'glow', events: { glow } }),
+        fluid('demo:missing', { on_entity_inside: 'glow' }),
+        fluid('demo:other', { on_entity_inside: 'glow', events: { shine: glow } }),
+        fluid('demo:chain', {
+          on_entity_inside: 'start',
+          events: { start: { actions: [{ type: 'trigger_event', event: 'gone' }] } },
+        }),
+        fluid('demo:plain'),
+      ];
+      for (const bundle of [TWO, ONE]) {
+        expect(withCode(await validate(elements, bundle), 'fluid-unknown-event')).toEqual([
+          ['demo:missing', '/on_entity_inside', 'error'],
+          ['demo:other', '/on_entity_inside', 'error'],
+          ['demo:chain', '/events/start/actions/0/event', 'error'],
+        ]);
+      }
+    });
+
+    it('leaves blocks to the shared unknown-event check', async () => {
+      const problems = await validate([
+        block('demo:lamp', { components: { 'msm:on_step': { event: 'nope' } } }),
+      ]);
+      expect(withCode(problems, 'fluid-unknown-event')).toEqual([]);
+      expect(withCode(problems, 'unknown-event')).toEqual([
+        ['demo:lamp', '/components/msm:on_step/event', 'error'],
+      ]);
     });
   });
 });

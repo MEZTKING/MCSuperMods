@@ -103,6 +103,10 @@ export const MOB_VERY_EASY_SECTIONS: readonly string[] = [
   'entity-taming',
   'entity-breeding',
   'entity-riding',
+  // B485 (ADR 0101 D4): batch 2's sections, in plain words (trade sets by name, not id).
+  'entity-storage',
+  'entity-shoulder',
+  'entity-trader',
   'entity-boss-bar',
   'entity-spawning',
   'entity-spawn-egg',

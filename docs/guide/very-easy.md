@@ -120,6 +120,7 @@ The newest things are explained in the same plain way, for example:
 - a liquid that looks further for a way down than it can spread: "<name> looks further for a way down than it can spread. Make it look less far, or spread further.";
 - a liquid missing a picture: "<name> is missing one of its pictures, so it looks like plain water or lava there.";
 - a liquid that behaves like nothing: "<name> behaves like nothing, so players see through it as through air. Make it behave like water or lava.";
+- a liquid that runs something that is gone when you are in it: "<name> runs something when you are in it that is not there any more. Pick what happens again.";
 - a rule step from another moment: "A rule in <name> uses a step or a check that only works with another "When" (such as "Stop the placing" when a player places a block).".
 
 If there is nothing to fix it says "Everything is ready to play." Less serious notes are folded under **Tips**. A problem MCSuperMods has no words for yet reads "Something in <thing> needs fixing", with **Show details** for the original message.

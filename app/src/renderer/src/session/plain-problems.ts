@@ -464,6 +464,10 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) =>
       `${t} behaves like nothing, so players see through it as through air. Make it behave like water or lava.`,
   ),
+  'blocks-items.fluid-unknown-event': entry(
+    (t) =>
+      `${t} runs something when you are in it that is not there any more. Pick what happens again.`,
+  ),
 
   // Fields filled in by hand ---------------------------------------------------------------
   'schema.missing-field': entry((t) => `${t} is missing something it needs. Fill it in.`),

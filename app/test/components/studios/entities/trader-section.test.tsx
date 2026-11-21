@@ -12,6 +12,7 @@ import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/re
 import type { ReactNode } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { planChangeItems } from '../../../../src/renderer/src/changeset/changeset';
+import { usePreferences } from '../../../../src/renderer/src/store/preferences';
 import {
   type BlocksItemsStudioHost,
   BlocksItemsStudioHostContext,
@@ -36,6 +37,7 @@ import {
   updateTradeChange,
 } from '../../../../src/renderer/src/studios/entities/trade-model';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
+import { MOB_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
 import { projectOf, renderOnStack, schemaState } from '../blocks-items/harness';
@@ -351,5 +353,25 @@ describe('Storage and Shoulder sections', () => {
       'It must be tameable (switch on Taming).',
       'It is 0.9 blocks wide; a shoulder pet is at most 0.7.',
     ]);
+  });
+});
+
+describe('Very easy', () => {
+  it('shows the Trader, Storage and Shoulder sections and hides the rest of the advanced ones', async () => {
+    expect(MOB_VERY_EASY_SECTIONS).toEqual(
+      expect.arrayContaining(['entity-trader', 'entity-storage', 'entity-shoulder']),
+    );
+    const before = usePreferences.getState().mode;
+    usePreferences.setState({ mode: 'very-easy' as never });
+    try {
+      withHost(mob());
+      expect(await screen.findByTestId('entity-trader')).toBeTruthy();
+      expect(screen.getByTestId('entity-storage')).toBeTruthy();
+      expect(screen.getByTestId('entity-shoulder')).toBeTruthy();
+      expect(screen.getByTestId('entity-trader-on')).toBeTruthy();
+      expect(screen.queryByTestId('entity-variants')).toBeNull();
+    } finally {
+      usePreferences.setState({ mode: before });
+    }
   });
 });
