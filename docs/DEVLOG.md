@@ -6290,3 +6290,25 @@ Next
 - B480: the app's registry index must add a fluid's block model and bucket item model (or every fluid gets two `schema.unknown-id` warnings on export), as the test helper now does.
 - B482: the vanilla server check of the new packs runs in CI; in-game checks of the apron picture on villagers and zombie villagers, lakes of a project fluid and the shoulder pet at half size.
 - B484: guide lines for the three flows and two answers.
+## 2026-11-21 — executor — B480 app: trader, storage and shoulder sections, Profession and Fluid Studios, Make a trader
+
+**What**
+- Mob Studio: Storage section ("Carries things, like a donkey with a chest": Size in rows and slots, "Needs a chest put on it first", Opening sound, Closing sound), Shoulder section ("Rides on its owner's shoulder", with what the mob still needs in words) and the lazy Trader section ("Trades with players", Levels, Restocks, On trade, "Gets better with trading", Trade sound, level tabs Novice to Master, "Trades from": its own trades or "A villager: <set>", "Trading XP to reach the next level").
+- The trade editor (`studios/entities/TradeEditor.tsx`, `trade-model.ts`) shared by the Trader section and the Profession Studio: Price, "Also costs a second item" with Second price, Product (each with How many), Uses before restocking, Trading XP; Add the trade, Change, Save the trade, Remove. It writes ADR 0060 elements through the host's `applyChanges`, one undo step each: a trader's level `n` is the trade set `<ns>:<path>/level_<n>` drawing every trade (`amount` follows the count) from the tag `#<ns>:<path>/level_<n>_trades`; a profession's level writes only the tag `<ns>:<path>/level_<n>` that lowering's default trade sets draw from; trades are `<ns>:<path>/level_<n>/<price>_<product>`.
+- Profession Studio (lazy): Job (Name of the job, Job site block, the vanilla workstation note), Pictures (Villager picture, Zombie villager picture; a picture stored elsewhere is copied to the fixed places of `professionTexturePaths` in the same undo step, and "Copy the pictures to where the game looks" does it for older ones), Trades (five level tabs and the trade editor, or the five named trade sets and "Use its own trades"), Work (Work sound, Items it picks up, Other blocks it works at).
+- Fluid Studio (lazy, `fluid-model.ts`): Preview (Still, Flowing, Overlay, Bucket tiles with the tint multiplied over the pictures; vanilla water's or lava's from the game where the fluid has none), Liquid (Name, Bucket name, "Also makes", Behaves like, Coloured and Colour, Explosion resistance, Light), Flow (Speed in blocks a second, How far it spreads, Looks for a way down, "Two sources side by side make a new source", Use the defaults), Pictures, Something inside ("While a mob or player is in it").
+- Home tile "Make a trader" ("A mob that trades with you.") under Creatures, opening the `wandering-merchant` flow (B481); hidden until the library has it.
+- Very easy wording for the eight `ENTITIES_VILLAGER_PROBLEM_CODES` and the four `FLUID_PROBLEM_CODES`; the coverage test lists both groups (the plugin keeps its villager codes apart).
+- Registry view: `dataRegistryIds` and `projectRegistryIds` take an optional target; a fluid adds its liquid block, `<id>_bucket` and (two-fluid targets) `flowing_` id; a profession adds its `point_of_interest_type` and, without `trade_sets`, `defaultTradeSets` as `trade_set` and `tag/villager_trade`. `projectRegistryIds` also counts a fluid's two models, `<ns>:block/<path>` and `<ns>:item/<path>_bucket` (B481's finding). The vanilla pack gate merges `fluidProfessionIdsOf(...)` (`withExtraIds`).
+- Tests: `trader-section.test.tsx` (model and sections), `profession-studio.test.tsx`, `fluid-studio.test.tsx`, `home-trader-tile.test.ts`, `session-villagers-fluids-registry.test.ts`, `plain-problems.test.ts` coverage.
+
+**Decisions**
+- A trader's own trade set draws every trade of its level (`amount` = the number of trades) so traders are predictable; a profession keeps lowering's two random trades per level, as vanilla's.
+- The tag of a trader level is `<id>/level_<n>_trades`, since element ids are unique across kinds and the trade set already has `<id>/level_<n>`.
+- The Profession and Fluid Studios and the Trader section are lazy chunks (5.5, 7.3 and 9.8 kB, the shared trade editor 10.8 kB; renderer 16.1 of 18 MB); their registry lines in `studios.tsx` became lazy wrappers.
+- Outside the owner list: `test/components/Home.test.tsx` (the tile order, and `wandering-merchant` in `FLOWS_AWAITING_LIBRARY` until B481 lands); new helper files `trade-model.ts`, `TradeEditor.tsx`, `profession-model.ts`, `fluid-model.ts`.
+
+**Next**
+- The Trader section is not in `MOB_VERY_EASY_SECTIONS` (`studios/very-easy.ts`); add it if Very easy users should edit trades after the flow.
+- B481: the flow id must be `wandering-merchant` for the tile to show.
+- B484: the labels above for the guide.

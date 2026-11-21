@@ -1,5 +1,5 @@
 /**
- * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4) under their headings,
+ * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4, ADR 0101 D4) under their headings,
  * and what each opens: "Surprise me", Creator flows by flow id (the library's starters with
  * `creator`), other library starters by id, the Rule book, the picture painter or the AI helper.
  * A tile whose flows and starters are all unavailable on the project's target is hidden.
@@ -154,6 +154,14 @@ const choices = (flowIds: string[], starterIds: string[]): MakeTileAction => ({
  */
 export const VEHICLE_FLOW_IDS = ['vehicle-car', 'vehicle-tank', 'vehicle-plane', 'vehicle-boat'];
 
+/**
+ * The Creator flow "Make a trader" opens (ADR 0101 D2, D4): the library's Wandering merchant
+ * flow, whose questions are "What does it sell?" (an item, then "For how many emeralds?"),
+ * "What does it look like?" and "What is it called?". The tile is hidden while the library has
+ * no such flow.
+ */
+export const TRADER_FLOW_ID = 'wandering-merchant';
+
 /** The tiles, in the order Home shows them (ADR 0083 D2, ADR 0086 D8). */
 export const MAKE_TILES: readonly MakeTile[] = [
   {
@@ -233,6 +241,13 @@ export const MAKE_TILES: readonly MakeTile[] = [
     sentence: 'A pet to tame, a farm animal or something to ride.',
     group: 'creatures',
     action: flows('pet', 'farm-animal', 'mount'),
+  },
+  {
+    id: 'trader',
+    label: 'Make a trader',
+    sentence: 'A mob that trades with you.',
+    group: 'creatures',
+    action: flows(TRADER_FLOW_ID),
   },
   {
     id: 'vehicle',

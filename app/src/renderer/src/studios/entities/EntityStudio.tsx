@@ -10,7 +10,8 @@
  *   and the `sit`, `fly`, `swim` and `shoot` animations in Appearance.
  * - Stats: `msm:health` and `msm:movement`; Movement: the mode and its fields (ADR 0070 D3).
  * - Ranged attack, Taming, Breeding, Riding, Variants and Boss bar sections (ADR 0070 D4,
- *   ADR 0071 D1–D5), each in its own file.
+ *   ADR 0071 D1–D5), each in its own file; Storage, Shoulder and the lazy Trader section with
+ *   its trade editor (ADR 0098 D1, D3, D4; B480).
  * - Sounds (ADR 0057 D6): ambient, hurt, death and step sound pickers over the sound event
  *   ids, the project's own sounds first (ADR 0057 D3), and the ambient interval.
  * - Attack: `msm:attack` on or off, damage, knockback, the on-attack event.
@@ -79,11 +80,15 @@ import {
 } from './mob-kinds';
 import { RangedSection } from './RangedSection';
 import { RidingSection } from './RidingSection';
+import { ShoulderSection } from './ShoulderSection';
+import { StorageSection } from './StorageSection';
 import { TamingSection } from './TamingSection';
 import { VariantsSection } from './VariantsSection';
 
 /** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
 const RulesSection = lazy(() => import('../rules/RulesSection'));
+/** The Trader section with its trade editor (ADR 0098 D1), a chunk of its own. */
+const TraderSection = lazy(() => import('./TraderSection'));
 
 type JsonObject = { [key: string]: Json };
 
@@ -961,6 +966,17 @@ export function EntityStudio(props: StudioProps) {
       <TamingSection {...mobProps} />
       <BreedingSection {...mobProps} />
       <RidingSection {...mobProps} />
+      <StorageSection {...mobProps} />
+      <ShoulderSection {...mobProps} />
+      <Suspense
+        fallback={
+          <p className="text-muted text-xs" data-testid="entity-trader-loading">
+            Loading the Trader section…
+          </p>
+        }
+      >
+        <TraderSection {...mobProps} target={target} />
+      </Suspense>
       <VariantsSection {...mobProps} />
       <BossBarSection {...mobProps} />
       {spawning}

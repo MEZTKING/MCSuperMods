@@ -421,6 +421,50 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) => `${t} is a monster but spawns like a friendly animal.`,
   ),
 
+  // Traders, jobs, storage and shoulder pets (ADR 0098, B476) ---------------------------------
+  'entities.trade-set-unknown': entry(
+    (t) => `${t} trades from a list of trades that does not exist. Pick other trades for it.`,
+  ),
+  'entities.trade-set-villager-only': entry(
+    (t) =>
+      `${t} borrows trades that only some villagers may offer, so it offers fewer of them or none. Give it trades of its own.`,
+  ),
+  'entities.trader-monster': entry(
+    (t) => `${t} is a monster, so it does not trade at night. That is allowed.`,
+  ),
+  'entities.job-site-taken': entry(
+    (t) =>
+      `${t} uses a block that already belongs to Minecraft or to another job as its work block. Pick a block of your own.`,
+  ),
+  'entities.job-site-unknown': entry(
+    (t) => `${t} needs a work block of your own. Make a block and pick it.`,
+  ),
+  'entities.shoulder-too-wide': entry(
+    (t) => `${t} is too wide to sit on a shoulder. Make it narrower, or let it stay on the ground.`,
+  ),
+  'entities.shoulder-needs-tameable': entry(
+    (t) => `${t} can only sit on a shoulder if it is an animal that can be tamed.`,
+  ),
+  'entities.storage-rows': entry(
+    (t) => `${t} holds more than the one chest put on it. That is allowed.`,
+  ),
+
+  // Liquids (ADR 0099, B477) -------------------------------------------------------------------
+  'blocks-items.generated-item-clash': entry(
+    (t) => `The bucket of ${t} has the same name as another thing in your mod. Rename one of them.`,
+  ),
+  'blocks-items.fluid-flow-range': entry(
+    (t) =>
+      `${t} looks further for a way down than it can spread. Make it look less far, or spread further.`,
+  ),
+  'blocks-items.fluid-texture-missing': entry(
+    (t) => `${t} is missing one of its pictures, so it looks like plain water or lava there.`,
+  ),
+  'blocks-items.fluid-no-fog': entry(
+    (t) =>
+      `${t} behaves like nothing, so players see through it as through air. Make it behave like water or lava.`,
+  ),
+
   // Fields filled in by hand ---------------------------------------------------------------
   'schema.missing-field': entry((t) => `${t} is missing something it needs. Fill it in.`),
   'schema.unknown-field': entry((t) => `${t} has a setting Minecraft does not know.`),

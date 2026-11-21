@@ -6,7 +6,7 @@
  */
 
 import { defaultKindRegistry, type Project, parseJsonPointer } from '@msm/core';
-import type { Element, Json, OutputFile, Plugin, Target } from '@msm/plugin-api';
+import type { Element, Json, OutputFile, Plugin, Target, TargetFacts } from '@msm/plugin-api';
 import {
   blockGeneratedBlockIds,
   blockGeneratedModelIds,
@@ -14,9 +14,11 @@ import {
   blockStateFlag,
   blockTypeOf,
   bundleModelIds,
+  fluidBucketId,
+  fluidRegistryIds,
   potionVariantIds,
 } from '@msm/plugin-blocks-items';
-import { vehicleItemPicture } from '@msm/plugin-entities';
+import { defaultTradeSets, vehicleItemPicture } from '@msm/plugin-entities';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -188,15 +190,23 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * An `msm:block` machine (`msm:machine` on a type that takes it) also registers its id as a
  * `recipe_type` and a `recipe_serializer` (ADR 0075 D2; {@link isMachineBlock}), as the
  * runtime does, so its own recipes and other machines' `recipe_types` resolve.
+ * An `msm:fluid` element (registry `fluid`, ADR 0099 D1) also registers its liquid block under
+ * its own id in `block`, its bucket `<id>_bucket` in `item` and, on a target that keeps still and
+ * flowing liquid apart (`fluidModel: 'two_fluids'`, only when `target` is given), its
+ * `<ns>:flowing_<path>` in `fluid`. An `msm:villager_profession` element (ADR 0098 D2) also
+ * registers a `point_of_interest_type` of its id and, without `trade_sets`, the five trade sets
+ * lowering writes (`defaultTradeSets`) in `trade_set` and their tags in `tag/villager_trade`.
  * Only registries with at least one id appear. Sorted,
  * namespaced, without duplicates.
  *
  * @param project - The project.
  * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
+ * @param target - The target, for the ids that differ by target (a fluid's flowing id).
  */
 export function dataRegistryIds(
   project: Project,
   kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+  target?: Pick<TargetFacts, 'blocks'>,
 ): Record<string, string[]> {
   const map = new Map<string, Set<string>>();
   const add = (registry: string, id: string): void => {
@@ -231,6 +241,12 @@ export function dataRegistryIds(
           add(RECIPE_TYPE_REGISTRY, element.id);
           add(RECIPE_SERIALIZER_REGISTRY, element.id);
         }
+        if (element.kind === FLUID_KIND) {
+          for (const [registry, id] of fluidExtraIds(element.id, target)) add(registry, id);
+        }
+        if (element.kind === PROFESSION_KIND) {
+          for (const [registry, id] of professionExtraIds(element)) add(registry, id);
+        }
         continue;
       }
       const registry = registered ?? defaultKindRegistry(element.kind);
@@ -255,7 +271,50 @@ const BLOCK_KIND = 'msm:block';
 const ENTITY_KIND = 'msm:entity';
 const POTION_KIND = 'msm:potion';
 const VEHICLE_KIND = 'msm:vehicle';
+const FLUID_KIND = 'msm:fluid';
+const PROFESSION_KIND = 'msm:villager_profession';
 const RECIPE_TYPE_REGISTRY = 'recipe_type';
+
+/**
+ * The ids an `msm:fluid` element registers beside its own: the liquid block, the bucket and, on
+ * a two-fluid `target`, the flowing fluid (ADR 0099 D1). Nothing for an unsafe id.
+ */
+function fluidExtraIds(
+  id: string,
+  target: Pick<TargetFacts, 'blocks'> | undefined,
+): [string, string][] {
+  try {
+    const out: [string, string][] = [
+      [BLOCK_REGISTRY, id],
+      [ITEM_REGISTRY, fluidBucketId(id)],
+    ];
+    for (const fluid of fluidRegistryIds(target ?? {}, id)) out.push(['fluid', fluid]);
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The ids an `msm:villager_profession` element registers beside its own: its point of interest
+ * type and, without `trade_sets`, the default trade sets and their villager trade tags (ADR 0098
+ * D2, B476). Nothing for an unsafe id.
+ */
+function professionExtraIds(element: Element): [string, string][] {
+  const out: [string, string][] = [['point_of_interest_type', element.id]];
+  const data = element.data;
+  const named =
+    typeof data === 'object' && data !== null && !Array.isArray(data) && 'trade_sets' in data;
+  if (named) return out;
+  try {
+    for (const set of defaultTradeSets(element.id)) {
+      out.push(['trade_set', set], [`${TAG_PREFIX}villager_trade`, set]);
+    }
+  } catch {
+    // An unsafe id: lowering reports it.
+  }
+  return out;
+}
 const RECIPE_SERIALIZER_REGISTRY = 'recipe_serializer';
 
 /**
@@ -348,7 +407,8 @@ function isBundleTextures(data: unknown): data is { bundle_textures: Record<stri
  * The ids a project defines, per registry: `model` (model elements, the item models of
  * entity spawn eggs with a texture and the models lowering generates for `msm:block` elements,
  * `blockGeneratedModelIds`: a typed block's `<ns>:block/<path>` models and the flat item model
- * of doors, panes, crops and saplings), `texture` (PNG assets
+ * of doors, panes, crops and saplings; an `msm:fluid`'s `<ns>:block/<path>` and
+ * `<ns>:item/<path>_bucket`), `texture` (PNG assets
  * under `textures/`), `sound` (Ogg assets under `sounds/`), `weighed_sound_event` (every event
  * key of a `minecraft:sounds` element: key `foo.bar` in namespace `ns` is `ns:foo.bar`) and
  * the data pack registries of {@link dataRegistryIds}. Sorted, namespaced, without duplicates.
@@ -360,10 +420,12 @@ function isBundleTextures(data: unknown): data is { bundle_textures: Record<stri
  *
  * @param project - The project.
  * @param kinds - The registered kinds; defaults to the built-in plugins' kinds.
+ * @param target - The target, for the ids that differ by target ({@link dataRegistryIds}).
  */
 export function projectRegistryIds(
   project: Project,
   kinds: KindRegistryLookup = BUILT_IN_KIND_LOOKUP,
+  target?: Pick<TargetFacts, 'blocks'>,
 ): Record<string, string[]> {
   const model: string[] = [];
   const texture: string[] = [];
@@ -397,6 +459,13 @@ export function projectRegistryIds(
           model.push(`${element.id.slice(0, colon)}:item/${element.id.slice(colon + 1)}`);
         }
       }
+      if (element.kind === FLUID_KIND) {
+        // The liquid block's model and the bucket's flat item model lowering writes (ADR 0099 D1, B477).
+        const colon = element.id.indexOf(':');
+        const ns = element.id.slice(0, colon);
+        const path = element.id.slice(colon + 1);
+        if (colon > 0) model.push(`${ns}:block/${path}`, `${ns}:item/${path}_bucket`);
+      }
       if (element.kind === ENTITY_KIND) {
         const eggModel = spawnEggModelId(element.id, element.data);
         if (eggModel !== undefined) model.push(eggModel);
@@ -413,7 +482,7 @@ export function projectRegistryIds(
     }
   }
   return {
-    ...dataRegistryIds(project, kinds),
+    ...dataRegistryIds(project, kinds, target),
     model: [...new Set(model)].sort(),
     sound: sound.sort(),
     texture: texture.sort(),
@@ -581,7 +650,7 @@ export async function loadSchemaContext(
     vanillaRegistries,
     registries(project, kindId) {
       if (project !== cachedProject || cachedIds === null) {
-        cachedIds = projectRegistryIds(project, kinds);
+        cachedIds = projectRegistryIds(project, kinds, target);
         cachedProject = project;
       }
       const ids = cachedIds;

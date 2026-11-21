@@ -92,6 +92,7 @@ describe('Home tiles', () => {
       'blocks: Make a recipe',
       'creatures: Make a mob',
       'creatures: Make a pet or animal',
+      'creatures: Make a trader',
       'vehicles: Make a vehicle',
       'magic: Make a potion or effect',
       'magic: Make sparkles',
@@ -181,9 +182,10 @@ describe('Home tiles', () => {
 
   /**
    * The Very easy picks' flows (ADR 0101 D4) not yet in the library; B459 added the last ones,
-   * so the check below covers every pick.
+   * so the check below covers every pick. "Make a trader" (B480) waits for B481's Wandering
+   * merchant flow; remove it here once that flow is in the library.
    */
-  const FLOWS_AWAITING_LIBRARY = new Set<string>();
+  const FLOWS_AWAITING_LIBRARY = new Set<string>(['wandering-merchant']);
 
   it('every flow id a tile names is a Creator flow of the library', async () => {
     const { default: library } = await import('@msm/plugin-library');

@@ -1,18 +1,19 @@
 /**
  * The entities Studios (B118), discovered by `studios/studio-registry.ts`: the Entity Studio
  * for `msm:entity` and the Vehicle Studio for `msm:vehicle` (B419, ADR 0091 D1; loaded with
- * `React.lazy`, a chunk of its own). `msm:geo_model` and `msm:animation` stay on the schema form with the
+ * `React.lazy`, a chunk of its own) and the Profession Studio for `msm:villager_profession` (B480,
+ * ADR 0098 D2; lazy too). `msm:geo_model` and `msm:animation` stay on the schema form with the
  * preview beside it; the Raw JSON tab is the power path.
  *
  * @packageDocumentation
  */
 
+import { PROFESSION_KIND } from '@msm/plugin-entities';
 import { lazy, Suspense } from 'react';
 import { ENTITY_KIND } from '../blocks-items/blocks-items-model';
 import type { StudioEntry, StudioProps } from '../types';
 import { MOB_VERY_EASY_SECTIONS, RULES_SECTION_ID } from '../very-easy';
 import { EntityStudio } from './EntityStudio';
-import { PROFESSION_KIND, ProfessionStudio } from './ProfessionStudio';
 
 /** The Vehicle Studio (B419, ADR 0091 D1), a chunk of its own. */
 const VehicleStudio = lazy(() => import('./vehicle/VehicleStudio'));
@@ -28,6 +29,24 @@ function LazyVehicleStudio(props: StudioProps) {
       }
     >
       <VehicleStudio {...props} />
+    </Suspense>
+  );
+}
+
+/** The Profession Studio (ADR 0098 D2, ADR 0101 D1), a chunk of its own. */
+const ProfessionStudio = lazy(() => import('./ProfessionStudio'));
+
+/** The Profession Studio behind its loading fallback. */
+function LazyProfessionStudio(props: StudioProps) {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-muted text-sm" data-testid="profession-studio-loading">
+          Loading the Profession Studio…
+        </p>
+      }
+    >
+      <ProfessionStudio {...props} />
     </Suspense>
   );
 }
@@ -55,6 +74,6 @@ export const studios: StudioEntry[] = [
     component: LazyVehicleStudio,
     veryEasy: VEHICLE_VERY_EASY_SECTIONS,
   },
-  // The Profession Studio (ADR 0098 D2): an empty component until B480; the kind arrives with B473.
-  { id: 'msm.entities.profession', kindId: PROFESSION_KIND, component: ProfessionStudio },
+  // The Profession Studio (ADR 0098 D2, ADR 0101 D1).
+  { id: 'msm.entities.profession', kindId: PROFESSION_KIND, component: LazyProfessionStudio },
 ];

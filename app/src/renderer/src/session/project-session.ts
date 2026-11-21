@@ -63,6 +63,7 @@ import {
   type ExportReport,
   FABRIC_MOD_ID_PATTERN,
   FABRIC_MOD_JSON_FILE,
+  fluidProfessionIdsOf,
   JAVA_PROJECT_MOD_JSON,
   MOD_ONLY_FUNCTION,
   MOD_ONLY_REFERENCE,
@@ -2701,8 +2702,12 @@ export class ProjectSession {
     target: Target,
   ): Promise<Exporter> {
     // B457a: project command names and aliases are mod-only literals, so a function running one is kept.
+    // B478/B480: fluids (block, bucket, flowing id) and professions (point of interest type) too.
     const modOnly = modOnlyIdsOf(
-      dataRegistryIds(project, this.registry),
+      withExtraIds(
+        dataRegistryIds(project, this.registry, target),
+        fluidProfessionIdsOf(projectElements(project), target.blocks?.fluidModel === 'two_fluids'),
+      ),
       commandLiteralsOf(projectElements(project)),
     );
     if (modOnly.size === 0) return exporter;
@@ -3592,6 +3597,18 @@ export class ProjectSession {
     }
     for (const listener of [...this.#listeners]) listener(this.#snapshot);
   }
+}
+
+/** `ids` with `extra` merged in, per registry: sorted, without duplicates. */
+export function withExtraIds(
+  ids: Readonly<Record<string, readonly string[]>>,
+  extra: Readonly<Record<string, readonly string[]>>,
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const registry of new Set([...Object.keys(ids), ...Object.keys(extra)])) {
+    out[registry] = [...new Set([...(ids[registry] ?? []), ...(extra[registry] ?? [])])].sort();
+  }
+  return out;
 }
 
 /** Kind id of potions (ADR 0063 D1), matched by string. */

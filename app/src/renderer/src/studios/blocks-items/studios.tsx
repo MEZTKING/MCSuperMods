@@ -1,14 +1,15 @@
 /**
  * The blocks and items Studios (B97), discovered by `studios/studio-registry.ts`: the Block
  * Studio, the Item Studio, the Effect Studio (B205, ADR 0055), the Potion Studio (B253, ADR 0063) and the "World addition" and
- * "Extra drops" Studios (B239, ADR 0060) and the Particle Studio (B353, ADR 0081 D1), loaded with
+ * "Extra drops" Studios (B239, ADR 0060), the Particle Studio (B353, ADR 0081 D1), the Creative
+ * Tab Studio and the Fluid Studio (B480, ADR 0099 D1), the last three loaded with
  * `React.lazy` inside a `Suspense` fallback so its code is a chunk of its own. `msm:mod` stays
  * on the schema form.
  *
  * @packageDocumentation
  */
 
-import { CREATIVE_TAB_KIND } from '@msm/plugin-blocks-items';
+import { CREATIVE_TAB_KIND, FLUID_KIND } from '@msm/plugin-blocks-items';
 import { lazy, Suspense } from 'react';
 import type { StudioEntry, StudioProps } from '../types';
 import {
@@ -22,7 +23,6 @@ import { BIOME_ADDITION_KIND, LOOT_ADDITION_KIND } from './additions-model';
 import { BlockStudio } from './BlockStudio';
 import { BLOCK_KIND, EFFECT_KIND, ITEM_KIND, PARTICLE_KIND } from './blocks-items-model';
 import { EffectStudio } from './EffectStudio';
-import { FLUID_KIND, FluidStudio } from './FluidStudio';
 import { ItemStudio } from './ItemStudio';
 import { PotionStudio } from './PotionStudio';
 import { POTION_KIND } from './potion-model';
@@ -59,6 +59,24 @@ function LazyCreativeTabStudio(props: StudioProps) {
       }
     >
       <CreativeTabStudio {...props} />
+    </Suspense>
+  );
+}
+
+/** The Fluid Studio (ADR 0099 D1, ADR 0101 D1), a chunk of its own. */
+const FluidStudio = lazy(() => import('./FluidStudio'));
+
+/** The Fluid Studio behind its loading fallback. */
+function LazyFluidStudio(props: StudioProps) {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-muted text-xs" data-testid="fluid-studio-loading">
+          Loading the Fluid Studio…
+        </p>
+      }
+    >
+      <FluidStudio {...props} />
     </Suspense>
   );
 }
@@ -101,6 +119,6 @@ export const studios: StudioEntry[] = [
     kindId: CREATIVE_TAB_KIND,
     component: LazyCreativeTabStudio,
   },
-  // The Fluid Studio (ADR 0099 D1): an empty component until B480; the kind arrives with B473.
-  { id: 'msm.blocks-items.fluid', kindId: FLUID_KIND, component: FluidStudio },
+  // The Fluid Studio (ADR 0099 D1, ADR 0101 D1).
+  { id: 'msm.blocks-items.fluid', kindId: FLUID_KIND, component: LazyFluidStudio },
 ];

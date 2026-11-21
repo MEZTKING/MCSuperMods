@@ -12,6 +12,7 @@ import {
   BLOCKS_ITEMS_PROBLEM_CODES,
   CONTAINER_PROBLEM_CODES,
   CREATIVE_TAB_PROBLEM_CODES,
+  FLUID_PROBLEM_CODES,
   FURNITURE_PROBLEM_CODES,
   INVENTORY_PROBLEM_CODES,
   PARTICLE_PROBLEM_CODES,
@@ -20,7 +21,11 @@ import {
   WEATHERING_PROBLEM_CODES,
 } from '@msm/plugin-blocks-items';
 import { CONTROLS_PROBLEM_CODES } from '@msm/plugin-controls';
-import { ENTITIES_PROBLEM_CODES, VEHICLE_PROBLEM_CODES } from '@msm/plugin-entities';
+import {
+  ENTITIES_PROBLEM_CODES,
+  ENTITIES_VILLAGER_PROBLEM_CODES,
+  VEHICLE_PROBLEM_CODES,
+} from '@msm/plugin-entities';
 import { RULES_PROBLEM_CODES } from '@msm/plugin-rules';
 import { COMMAND_PROBLEM_CODES } from '@msm/plugin-scripting';
 import { describe, expect, it } from 'vitest';
@@ -59,6 +64,9 @@ const BEGINNER_CODES: readonly string[] = [
   ...CREATIVE_TAB_PROBLEM_CODES,
   ...COMMAND_PROBLEM_CODES,
   ...ENTITIES_PROBLEM_CODES,
+  // Kept apart by the plugin (B476); worded for Very easy by B480.
+  ...ENTITIES_VILLAGER_PROBLEM_CODES,
+  ...FLUID_PROBLEM_CODES,
   ...VEHICLE_PROBLEM_CODES,
   ...CONTROLS_PROBLEM_CODES,
   CONTROLS_NEEDS_JAR_CODE,
