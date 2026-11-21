@@ -30,8 +30,6 @@ import {
   artPixels,
   artPng,
   artRecipeInfo,
-  boxSkinArtPng,
-  boxSkinPng,
   checkArtRules,
   DEFAULT_COLOUR,
   encodePng,
@@ -243,44 +241,44 @@ describe('placeholder patterns map to recipes (ADR 0092 D13 (e), D14)', () => {
     }
   });
 
-  it('draws a stub recipe from its placeholder, every frame', () => {
-    const look: ArtLook = { recipe: 'particle_orb', colour: [40, 150, 150] };
+  // A stub left in the table (none once every family is drawn) draws its placeholder, every frame.
+  const stub = ART_RECIPE_INFO.find((info) => !info.drawn);
+  it.skipIf(stub === undefined)('draws a stub recipe from its placeholder, every frame', () => {
+    const info = stub as ArtRecipeInfo;
+    const { fallback } = ART_TABLE.find((entry) => entry.info.id === info.id) as {
+      fallback: PlaceholderPattern;
+    };
+    const look: ArtLook = { recipe: info.id, colour: [40, 150, 150] };
     const pixels = artPixels(look);
-    expect([pixels.width, pixels.height, pixels.frames]).toEqual([8, 8, 4]);
-    for (let frame = 0; frame < 4; frame += 1) {
-      const one = placeholderPixels('particle_orb', { colour: [40, 150, 150], frame });
-      expect([...pixels.data.subarray(frame * 256, (frame + 1) * 256)]).toEqual([...one]);
+    const size = info.width * info.height * 4;
+    for (let frame = 0; frame < info.frames; frame += 1) {
+      const one = placeholderPixels(fallback, { colour: [40, 150, 150], frame });
+      expect([...pixels.data.subarray(frame * size, (frame + 1) * size)]).toEqual([...one]);
     }
-    const frames = artFramePngs(look);
-    expect(frames.map(sha256)).toEqual(
-      [0, 1, 2, 3].map((frame) =>
-        sha256(placeholderPng('particle_orb', { colour: [40, 150, 150], frame })),
+    expect(artFramePngs(look).map(sha256)).toEqual(
+      Array.from({ length: info.frames }, (_, frame) =>
+        sha256(placeholderPng(fallback, { colour: [40, 150, 150], frame })),
       ),
     );
-    expect(sha256(artLookPng(look))).toBe(sha256(encodePng(pixels.data, 8, 32)));
+    expect(sha256(artLookPng(look))).toBe(
+      sha256(encodePng(pixels.data, info.width, info.height * info.frames)),
+    );
   });
 
-  it.each(drawn.filter((info) => Object.values(PATTERN_RECIPES).includes(info.id)))(
-    'artPng of a drawn pattern draws the recipe ($id)',
-    (info) => {
-      const pattern = (Object.keys(PATTERN_RECIPES) as PlaceholderPattern[]).find(
-        (key) => PATTERN_RECIPES[key] === info.id,
-      ) as PlaceholderPattern;
-      const png = artPng(pattern, { colour: [40, 150, 150], seed: 2 });
-      expect(sha256(png)).toBe(
-        sha256(artLookPng({ recipe: info.id, colour: [40, 150, 150], seed: 2 })),
-      );
-      expect(sha256(png)).not.toBe(sha256(placeholderPng(pattern, { colour: [40, 150, 150] })));
-      expect(sha256(artPng(pattern))).toBe(
-        sha256(artLookPng({ recipe: info.id, colour: DEFAULT_COLOUR, seed: 0 })),
-      );
-    },
-  );
-
-  it('box skins fall back to the placeholder box skin until they are drawn', () => {
-    const boxes = [{ u: 0, v: 0, w: 8, h: 8, d: 8, role: 'face' as const }];
-    expect(sha256(boxSkinArtPng(boxes, 64, 32, { colour: [40, 150, 150], coat: 'fur' }))).toBe(
-      sha256(boxSkinPng(boxes, 64, 32, { colour: [40, 150, 150] })),
+  // One-frame recipes; artPng of a particle gives one frame (`art-worn.test.ts`).
+  it.each(
+    drawn.filter((info) => info.frames === 1 && Object.values(PATTERN_RECIPES).includes(info.id)),
+  )('artPng of a drawn pattern draws the recipe ($id)', (info) => {
+    const pattern = (Object.keys(PATTERN_RECIPES) as PlaceholderPattern[]).find(
+      (key) => PATTERN_RECIPES[key] === info.id,
+    ) as PlaceholderPattern;
+    const png = artPng(pattern, { colour: [40, 150, 150], seed: 2 });
+    expect(sha256(png)).toBe(
+      sha256(artLookPng({ recipe: info.id, colour: [40, 150, 150], seed: 2 })),
+    );
+    expect(sha256(png)).not.toBe(sha256(placeholderPng(pattern, { colour: [40, 150, 150] })));
+    expect(sha256(artPng(pattern))).toBe(
+      sha256(artLookPng({ recipe: info.id, colour: DEFAULT_COLOUR, seed: 0 })),
     );
   });
 });
@@ -394,8 +392,11 @@ describe('speed (ADR 0092 D17)', () => {
       if (process.env.ART_TIMINGS === '1') {
         console.log(`${info.id}\t${median(one).toFixed(3)} ms\t${median(six).toFixed(3)} ms`);
       }
-      expect(median(one)).toBeLessThan(2);
-      expect(median(six)).toBeLessThan(20);
+      // D17 sets 2 ms for a 16 by 16 recipe; the worn layers have 8 to 16 times its pixels
+      // and encoding a 64 by 64 PNG alone takes about 1.2 ms, so they get twice the time.
+      const factor = info.width * info.height > 18 * 18 ? 2 : 1;
+      expect(median(one)).toBeLessThan(2 * factor);
+      expect(median(six)).toBeLessThan(20 * factor);
     },
     20_000,
   );
