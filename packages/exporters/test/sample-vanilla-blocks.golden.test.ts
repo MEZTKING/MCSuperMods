@@ -797,7 +797,7 @@ const RULE_TEXT = {
 } as const;
 
 /**
- * Every Script API 1.6 member (B455, "Since runtime 1.5.1"): `block.place` cancelling bedrock,
+ * Every Script API 1.6 member (B455, "Since runtime 1.5.2"): `block.place` cancelling bedrock,
  * `world.explosion` keeping the blocks of a creeper's blast, `command` answering `/greet` (and
  * `/hiya`), `Entity.ride` onto a cow and `dismount` on `/greet`, `World.itemsNear` with
  * `remove` and `setItem` from the sea lamp, `ItemRef.contents` of the satchel, and one
@@ -807,7 +807,7 @@ const RULE_TEXT = {
 const API_SCRIPT_LINES = [
   'import { msm } from "msm:runtime";',
   '',
-  '// Script API 1.6 (runtime 1.5.1) in the vanilla blocks sample: placing, explosions, commands,',
+  '// Script API 1.6 (runtime 1.5.2) in the vanilla blocks sample: placing, explosions, commands,',
   '// riding, items lying on the ground and what a bag holds.',
   `const NS = "${NAMESPACE}";`,
   '',

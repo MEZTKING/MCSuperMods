@@ -82,7 +82,7 @@ Plain rules go into the key's or vehicle's own events. A rule with logic becomes
 
 ## Placing, explosions, commands and riding
 
-Script API 1.6 gave rules five more moments (runtime 1.5.1 or later). They are in the table under **Placing, explosions, commands, riding**.
+Script API 1.6 gave rules five more moments (runtime 1.5.2 or later). They are in the table under **Placing, explosions, commands, riding**.
 
 - **A player places a block** (then **Which block?**, or leave it empty for any block). **Stop the placing** cancels it, so the block is not placed and the player keeps it; it is offered only for this moment. For example: when a player places TNT, stop the placing and show "No TNT here". Only placing by a player is seen: dispensers, endermen and commands that place blocks are not, and the moment can fire for a placing that then fails (the block did not fit).
 - **Something explodes** covers every explosion: TNT, creepers, fireballs, wind charges, a bed or respawn anchor in the wrong dimension and **Make an explosion**. **Stop the explosion** cancels it. **Keep the blocks safe** lets the explosion hurt and push but not break blocks or start fires; when both steps are given, stopping wins. The check **What caused it** ("it was caused by") picks a mob type, with **A block** first in the picker for explosions that come from a block (a bed or an anchor). Rules cannot make an explosion bigger or smaller; **Make an explosion** makes a new one. A stopped explosion may still show its smoke and sound.

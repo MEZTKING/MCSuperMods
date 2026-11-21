@@ -3,7 +3,7 @@
     "lines": [
       "import { msm } from \"msm:runtime\";",
       "",
-      "// Script API 1.6 (runtime 1.5.1) in the vanilla blocks sample: placing, explosions, commands,",
+      "// Script API 1.6 (runtime 1.5.2) in the vanilla blocks sample: placing, explosions, commands,",
       "// riding, items lying on the ground and what a bag holds.",
       "const NS = \"msm_sample_vanilla_blocks\";",
       "",
