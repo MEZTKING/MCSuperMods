@@ -195,8 +195,6 @@ public final class MsmRegistrar {
             }
         }
         registerStairs(stairs, blocks, items, errors, warnings, typeCounts);
-        // Villager professions after the blocks their job sites name (ADR 0098 D2): a stub until B474.
-        List<Identifier> professions = MsmProfessions.register(scanned.definitions(), errors, warnings);
         Weathering.checkAfterRegistration(errors); // ADR 0094 D8, D9: the next and into links, once every block exists
         MsmRuntime.LOGGER.info("[{}] registered {} portal block(s)", MsmRuntime.MOD_ID, typeCounts.getOrDefault(BlockType.PORTAL, 0));
         MsmRuntime.LOGGER.info("[{}] registered blocks by type: {}", MsmRuntime.MOD_ID, typeCounts.isEmpty() ? "none"
@@ -224,6 +222,9 @@ public final class MsmRegistrar {
                 fail(errors, raw, e);
             }
         }
+        // Villager professions after the blocks and items their job sites, secondary job blocks and requested items name
+        // (ADR 0098 D2, B474).
+        List<Identifier> professions = MsmProfessions.register(scanned.definitions(), errors, warnings);
         // Entities last: their spawn eggs count as items and must not collide with item definitions.
         List<Identifier> entities = MsmEntityRegistrar.registerAll(scanned.definitions(), items, errors, warnings);
         // Additions to vanilla content last (ADR 0060 D2, D3): they name ids that are resolved when a server runs.

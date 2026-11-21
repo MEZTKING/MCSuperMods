@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "job_site": "msm_test:pf_wheel",
+  "requested_items": [
+    "minecraft:clay_ball",
+    "msm_test:no_such_item"
+  ],
+  "secondary_job_blocks": [
+    "minecraft:clay"
+  ],
+  "work_sound": "minecraft:entity.villager.work_mason"
+}

@@ -173,6 +173,7 @@ public final class MobDriver {
         taming.addAdditionalSaveData(output);
         variants.addAdditionalSaveData(output);
         bossBar.addAdditionalSaveData(output);
+        trader.addAdditionalSaveData(output);
     }
 
     /** After vanilla's {@code readAdditionalSaveData}. */
@@ -180,6 +181,7 @@ public final class MobDriver {
         taming.readAdditionalSaveData(input);
         variants.readAdditionalSaveData(input);
         bossBar.readAdditionalSaveData(input);
+        trader.readAdditionalSaveData(input);
     }
 
     /** Vanilla keeps the mob unless a module needs it kept (tamed mobs, bosses). */
@@ -238,7 +240,7 @@ public final class MobDriver {
         if (result == null) {
             result = riding.mobInteract(player, hand);
         }
-        // Batch 2 (ADR 0098), stubs until B474 and B479: trading, mount storage, shoulder pets.
+        // Batch 2 (ADR 0098): trading (B474); mount storage and shoulder pets are stubs until B479.
         if (result == null) {
             result = trader.mobInteract(player, hand);
         }
@@ -274,6 +276,7 @@ public final class MobDriver {
             }
         }
         bossBar.customServerAiStep(level);
+        trader.customServerAiStep(level);
     }
 
     /** The same stagger as {@code MsmItem.due} (package-private there): due when game time plus entity id hits the interval. */

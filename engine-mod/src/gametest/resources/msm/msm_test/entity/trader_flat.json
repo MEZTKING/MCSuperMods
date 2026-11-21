@@ -1,0 +1,31 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "speed": 0.2
+    },
+    "msm:trader": {
+      "levels": false,
+      "restock": "never",
+      "trade_sets": [
+        {
+          "trade_set": "msm_test:tr_stall/level_1"
+        },
+        {
+          "trade_set": "msm_test:tr_stall/level_2"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.8,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

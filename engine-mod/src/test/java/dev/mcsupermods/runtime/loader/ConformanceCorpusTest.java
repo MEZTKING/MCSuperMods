@@ -40,11 +40,12 @@ class ConformanceCorpusTest {
      * {@code hud-} and {@code action-hud-} by B416 ({@code HudParser}, the HUD actions), {@code vehicle-} by B412
      * ({@code VehicleParser}, with {@code action-explode-}); B416 also decoded {@code vehicle-tank}, which uses the HUD
      * actions. {@code command-} and {@code creative-tab-} decoded by B454 ({@code CommandParser}, {@code CreativeTabParser}).
-     * Batch 2's format (B473): {@code trader-} and {@code profession-} wait for B474, {@code fluid-} for B475,
-     * {@code storage-} and {@code shoulder-} for B479; each brief removes its prefixes when its parser decodes them.
+     * Batch 2's format (B473): {@code trader-} and {@code profession-} decoded by B474 ({@code TraderParser} through
+     * {@code EntityComponents}, {@code ProfessionParser}), {@code fluid-} waits for B475, {@code storage-} and
+     * {@code shoulder-} for B479; each brief removes its prefixes when its parser decodes them.
      */
     private static final List<String> PENDING =
-            List.of("trader-", "profession-", "fluid-", "storage-", "shoulder-");
+            List.of("fluid-", "storage-", "shoulder-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -109,7 +110,9 @@ class ConformanceCorpusTest {
             new Kind("action-hud-entity-", DefinitionParser::parseEntity),
             new Kind("action-hud-effect-", DefinitionParser::parseEffect),
             new Kind("command-", CommandParser::parse), // B454
-            new Kind("creative-tab-", CreativeTabParser::parse)) // B454
+            new Kind("creative-tab-", CreativeTabParser::parse), // B454
+            new Kind("trader-", DefinitionParser::parseEntity), // B474
+            new Kind("profession-", ProfessionParser::parse)) // B474
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

@@ -5,16 +5,22 @@ import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.registry.mob.MobDriver;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 
 /**
  * Every runtime mob body ({@link MsmEntity}, {@link MsmAnimal}, {@link MsmMonster} and their GeckoLib subclasses;
  * ADR 0070 D2). A body overrides the vanilla callbacks and only delegates to its {@link MobDriver}, which holds the
  * behaviour every body shares; this interface is what the driver and its modules see of the body.
  */
-public interface MsmMob extends AnimationTarget {
+public interface MsmMob extends AnimationTarget, Merchant {
     /** The body's driver, built on first use from the definition of the body's entity type. */
     MobDriver driver();
 
@@ -46,5 +52,74 @@ public interface MsmMob extends AnimationTarget {
     @Override
     default void playAnimation(String controller, String animation) {
         driver().animations().play(controller, animation);
+    }
+
+    // Merchant (ADR 0098 D1, B474): the body is the merchant of its trading menu, because vanilla's menu treats the
+    // merchant as an entity (a shift-click plays the trade sound at it). Everything goes to the driver's MobTrader; a mob
+    // without msm:trader has no offers and never opens the menu.
+
+    @Override
+    default void setTradingPlayer(Player player) {
+        driver().trader().setTradingPlayer(player);
+    }
+
+    @Override
+    default Player getTradingPlayer() {
+        return driver().trader().getTradingPlayer();
+    }
+
+    @Override
+    default MerchantOffers getOffers() {
+        return driver().trader().getOffers();
+    }
+
+    @Override
+    default void overrideOffers(MerchantOffers offers) {
+        driver().trader().overrideOffers(offers);
+    }
+
+    @Override
+    default void notifyTrade(MerchantOffer offer) {
+        driver().trader().notifyTrade(offer);
+    }
+
+    @Override
+    default void notifyTradeUpdated(ItemStack stack) {
+        driver().trader().notifyTradeUpdated(stack);
+    }
+
+    @Override
+    default int getVillagerXp() {
+        return driver().trader().getVillagerXp();
+    }
+
+    @Override
+    default void overrideXp(int xp) {
+        driver().trader().overrideXp(xp);
+    }
+
+    @Override
+    default boolean showProgressBar() {
+        return driver().trader().showProgressBar();
+    }
+
+    @Override
+    default SoundEvent getNotifyTradeSound() {
+        return driver().trader().getNotifyTradeSound();
+    }
+
+    @Override
+    default boolean canRestock() {
+        return driver().trader().canRestock();
+    }
+
+    @Override
+    default boolean isClientSide() {
+        return driver().trader().isClientSide();
+    }
+
+    @Override
+    default boolean stillValid(Player player) {
+        return driver().trader().stillValid(player);
     }
 }

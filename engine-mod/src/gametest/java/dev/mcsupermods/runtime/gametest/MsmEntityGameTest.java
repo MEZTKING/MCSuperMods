@@ -325,7 +325,7 @@ public class MsmEntityGameTest {
                 "follower", "singer", "off_key", "ticker", "mx_animal", "mx_monster", "mx_swimmer", "mx_tame_on_mob", "mx_tempter", "mx_panicker");
         withoutGeckolib(helper, auto.toArray(String[]::new));
         int geo = geckolib() ? auto.size() + 1 : 0; // plus mx_geckolib_only, which needs GeckoLib; never mx_vanilla
-        // The mob feature modules' own definitions (prefixes mv_, rg_, tb_, rd_, vb_) are counted by their own GameTests.
+        // The mob feature modules' own definitions (prefixes mv_, rg_, tb_, rd_, vb_, trader_) are counted by their own GameTests.
         long reported = MsmRuntime.report().entities().stream().filter(id -> !featureDefinition(id.getPath())).count();
         long geoTypes = MsmEntityRegistrar.geoTypes().stream()
                 .filter(type -> !featureDefinition(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath())).count();
@@ -339,7 +339,7 @@ public class MsmEntityGameTest {
 
     private static boolean featureDefinition(String path) {
         return path.startsWith("mv_") || path.startsWith("rg_") || path.startsWith("tb_") || path.startsWith("rd_")
-                || path.startsWith("vb_");
+                || path.startsWith("vb_") || path.startsWith("trader_");
     }
 
     // Goals

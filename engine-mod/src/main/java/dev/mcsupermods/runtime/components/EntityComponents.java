@@ -16,8 +16,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.mcsupermods.runtime.loader.MsmCodecs;
+import dev.mcsupermods.runtime.loader.TraderParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +30,8 @@ import net.minecraft.resources.Identifier;
 /**
  * Runtime entity components ({@code ::msm::definition::EntityComponents}); {@code msm:animated_model} is required. The
  * mob components of ADR 0070 and ADR 0071 ({@code msm:ranged_attack}, {@code msm:tameable}, {@code msm:breedable},
- * {@code msm:rideable}, {@code msm:variants}, {@code msm:boss_bar}) are closed structs, as the trigger structs of
+ * {@code msm:rideable}, {@code msm:variants}, {@code msm:boss_bar}) and {@code msm:trader} (ADR 0098 D1,
+ * {@link TraderParser.Trader}) are closed structs, as the trigger structs of
  * ADR 0061: an unknown key is an error naming the key. {@code msm:movement} and {@code msm:animated_model} stay open, as
  * before (older runtimes ignore their new fields).
  */
@@ -48,16 +51,21 @@ public record EntityComponents(
         Optional<Breedable> breedable,
         Optional<Rideable> rideable,
         Optional<Variants> variants,
-        Optional<BossBar> bossBar) {
+        Optional<BossBar> bossBar,
+        Optional<TraderParser.Trader> trader) {
 
     public static final List<String> KEYS = List.of("msm:animated_model", "msm:health", "msm:movement", "msm:attack", "msm:ai_goals",
             "msm:on_hurt", "msm:on_death", "msm:on_interact", "msm:on_tick", "msm:on_spawn", "msm:ranged_attack", "msm:tameable",
-            "msm:breedable", "msm:rideable", "msm:variants", "msm:boss_bar");
+            "msm:breedable", "msm:rideable", "msm:variants", "msm:boss_bar", "msm:trader");
 
     /** Components that need {@code base} {@code animal} (ADR 0071 D1, D2). */
     public static final List<String> ANIMAL_ONLY = List.of("msm:tameable", "msm:breedable");
 
-    public static final Codec<EntityComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
+    /**
+     * The components up to {@code msm:boss_bar}: {@code RecordCodecBuilder} groups at most 16 fields, so the batch 2
+     * components (ADR 0098) are decoded in a second group by {@link #CODEC} on top of this one.
+     */
+    private static final MapCodec<EntityComponents> FIRST = RecordCodecBuilder.mapCodec(i -> i.group(
             required("msm:animated_model", AnimatedModel.CODEC).forGetter(EntityComponents::animatedModel),
             optional("msm:health", Health.CODEC).forGetter(EntityComponents::health),
             optional("msm:movement", Movement.CODEC).forGetter(EntityComponents::movement),
@@ -74,7 +82,21 @@ public record EntityComponents(
             optional("msm:rideable", Rideable.CODEC).forGetter(EntityComponents::rideable),
             optional("msm:variants", Variants.CODEC).forGetter(EntityComponents::variants),
             optional("msm:boss_bar", BossBar.CODEC).forGetter(EntityComponents::bossBar))
-            .apply(i, EntityComponents::new));
+            .apply(i, (model, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn, rangedAttack, tameable,
+                    breedable, rideable, variants, bossBar) -> new EntityComponents(model, health, movement, attack, aiGoals, onHurt,
+                    onDeath, onInteract, onTick, onSpawn, rangedAttack, tameable, breedable, rideable, variants, bossBar,
+                    Optional.empty())));
+
+    public static final Codec<EntityComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
+            FIRST.forGetter(c -> c),
+            optional("msm:trader", TraderParser.Trader.CODEC).forGetter(EntityComponents::trader)) // ADR 0098 D1, B474
+            .apply(i, (first, trader) -> first.withTrader(trader)));
+
+    /** A copy with {@code msm:trader} set (ADR 0098 D1). */
+    public EntityComponents withTrader(Optional<TraderParser.Trader> trader) {
+        return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
+                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader);
+    }
 
     /** The keys of {@link #ANIMAL_ONLY} present here. */
     public List<String> animalOnlyPresent() {
@@ -87,7 +109,7 @@ public record EntityComponents(
     /** A copy without {@code msm:tameable} and {@code msm:breedable} (dropped on a base other than {@code animal}). */
     public EntityComponents withoutAnimalOnly() {
         return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
-                rangedAttack, Optional.empty(), Optional.empty(), rideable, variants, bossBar);
+                rangedAttack, Optional.empty(), Optional.empty(), rideable, variants, bossBar, trader);
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -103,6 +125,7 @@ public record EntityComponents(
         tameable.flatMap(Tameable::onTame).ifPresent(e -> out.add(new String[] {"msm:tameable.on_tame", e.toString()}));
         breedable.flatMap(Breedable::onBreed).ifPresent(e -> out.add(new String[] {"msm:breedable.on_breed", e.toString()}));
         rideable.flatMap(Rideable::onMount).ifPresent(e -> out.add(new String[] {"msm:rideable.on_mount", e.toString()}));
+        trader.flatMap(TraderParser.Trader::onTrade).ifPresent(e -> out.add(new String[] {"msm:trader.on_trade", e.toString()}));
         return out.build();
     }
 
