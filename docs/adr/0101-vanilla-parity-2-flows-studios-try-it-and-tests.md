@@ -101,12 +101,12 @@ Checked 2026-11-14 at 39529ca with `javap` (JDK 25, no `-c` on Mojang classes) o
 | Q2 | **New block types are fixed at start.** | Registry freeze (audit L1). | A new type or companion needs Restart in Play. | Play's restart reasons. |
 | Q3 | **Companion ids are reserved.** | Torches, signs and stems register `<path>_wall` or `<path>_attached`. | An element with that id is refused. | Validator error. |
 | Q4 | **No candle cakes on project cakes.** | Vanilla's candle cake pairs vanilla cakes only. | Candles cannot be put on a project cake. | Guide note. |
-| Q5 | **Project plants go into vanilla's empty pot only.** | A pot's plant is fixed per block. | No pots of other materials. | Follow-up. |
-| Q6 | **Lightning and copper golems do not scrape or wax project copper.** | Vanilla keeps those maps for vanilla blocks. | Only axes and honeycomb change the stage. | Guide note. |
-| Q7 | **Weathering only on the listed types.** | One subclass per type (ADR 0094 D8). | No weathering buttons, plates or fences. | Follow-up. |
-| Q8 | **Containers and machines are not waterloggable.** | Their class is not the waterlogged one. | No underwater chests of your own. | Follow-up if S-notes allow. |
+| Q5 | **Project plants go into vanilla's empty pot only.** | A pot's plant is fixed per block. | No pots of other materials. | Follow-up. Closed 2026-11-22: project flower pots ([ADR 0103](0103-growing-plants-and-project-flower-pots.md) D2, close B523). |
+| Q6 | **Lightning and copper golems do not scrape or wax project copper.** | Vanilla keeps those maps for vanilla blocks. | Only axes and honeycomb change the stage. | Guide note. Lightning closed 2026-11-22 ([ADR 0104](0104-weathering-lightning-and-storage-2.md) D2, close B523); copper golems still keep vanilla's maps (plan limit N5). |
+| Q7 | **Weathering only on the listed types.** | One subclass per type (ADR 0094 D8). | No weathering buttons, plates or fences. | Follow-up. Closed 2026-11-22: 17 types and containers ([ADR 0104](0104-weathering-lightning-and-storage-2.md) D1, D6, close B523). |
+| Q8 | **Containers and machines are not waterloggable.** | Their class is not the waterlogged one. | No underwater chests of your own. | Follow-up if S-notes allow. Closed 2026-11-22 ([ADR 0104](0104-weathering-lightning-and-storage-2.md) D3, close B523). |
 | Q9 | **Scaffolding only if B440 allows.** | Vanilla's distance may count vanilla scaffolding only. | The type may be missing. | Recorded at B440. |
-| Q10 | **No glow lichen, kelp, cave vines, bamboo, sugar cane, cactus or dripleaf types.** | Out of this batch's scope. | Use the existing types. | Later batch. |
+| Q10 | **No glow lichen, kelp, cave vines, bamboo, sugar cane, cactus or dripleaf types.** | Out of this batch's scope. | Use the existing types. | Later batch. Closed 2026-11-22: types `growing_plant`, `column_plant`, `multiface`, `dripleaf` ([ADR 0103](0103-growing-plants-and-project-flower-pots.md) D1, close B523). |
 | Q11 | **Beds use the sixteen dye colours and vanilla's bed rules.** | `BedBlock` takes a `DyeColor`; rules are environment attributes. | Beds explode in the Nether as vanilla's do unless the dimension type says otherwise (ADR 0100). | Dimension Type Studio's Rules. |
 | Q12 | **Project layers do not pile up in snowfall.** | Vanilla snows its own snow. | Layers are placed by hand or by features. | None. |
 | Q13 | **Bags open from the hand only; hoppers do not reach them.** | ADR 0095 D3. | No "open bag in inventory" click. | None. |
