@@ -1,0 +1,35 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "speed": 0.2
+    },
+    "msm:trader": {
+      "demand": false,
+      "levels": false,
+      "reputation": {
+        "decay_per_day": 4,
+        "gift": 10,
+        "gift_item": "#minecraft:small_flowers",
+        "hurt": 10,
+        "price_step": 5,
+        "trade": 5
+      },
+      "trade_sets": [
+        {
+          "trade_set": "msm_test:tr_market/level_1"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.8,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

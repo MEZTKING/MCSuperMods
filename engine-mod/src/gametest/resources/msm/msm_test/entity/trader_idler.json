@@ -1,0 +1,27 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "speed": 0.3
+    },
+    "msm:trader": {
+      "levels": false,
+      "trade_sets": [
+        {
+          "trade_set": "msm_test:tr_market/level_1"
+        }
+      ],
+      "work_site": "minecraft:cartography_table"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.8,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}

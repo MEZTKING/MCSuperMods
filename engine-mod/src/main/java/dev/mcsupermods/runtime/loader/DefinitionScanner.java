@@ -24,9 +24,9 @@ import net.minecraft.resources.Identifier;
 public final class DefinitionScanner {
     private static final List<String> KINDS = List.of("block", "item", "entity", "effect", "potion", "particle", "biome_addition", "loot_addition",
             KeyBindParser.KIND, HudParser.KIND, VehicleParser.KIND, CommandParser.KIND, CreativeTabParser.KIND, FluidParser.KIND,
-            ProfessionParser.KIND, VanillaBlockRulesParser.KIND,
-            // Batch 2 (ADRs 0107 D5, 0111 D5, D6): string literals until B527 adds the parsers and their KIND constants.
-            "villager_type", "game_rule", "stat");
+            ProfessionParser.KIND, VanillaBlockRulesParser.KIND, VillagerTypeParser.KIND,
+            // Batch 2 (ADR 0111 D5, D6): string literals until B533 swaps in GameRuleParser.KIND and StatParser.KIND.
+            "game_rule", "stat");
 
     private DefinitionScanner() {}
 

@@ -1,7 +1,9 @@
 package dev.mcsupermods.runtime.registry.types;
 
+import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.registry.BlockBehaviourDriver;
+import dev.mcsupermods.runtime.registry.PoiTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -26,9 +28,14 @@ import net.minecraft.world.phys.BlockHitResult;
  * and the block places the head beyond it), sleeping, spawn setting, Sweet Dreams and exploding where the rule says, with
  * the definition's {@code colour}. The rule is the environment attribute {@code gameplay/bed_rule} or, with
  * {@code rule: "straw_bed"}, {@code gameplay/straw_bed_rule}; the bed keeps vanilla's bed shape and destroy behaviour
- * either way. Villagers do not sleep in or claim project beds (no point of interest; a known limit, B440).
+ * either way. Villagers claim and sleep in project beds (ADR 0107 D4 as amended after the B524 spike): the constructor
+ * makes every head state a {@code minecraft:home} point of interest through the {@link PoiTypes} seam, which runs during
+ * registration, before any world loads. If that fails the bed still works for players and one warning says villagers
+ * will not use it.
  */
 public class MsmBedBlock extends BedBlock implements DrivenBlock {
+    private static boolean homesWarned;
+
     private final BlockBehaviourDriver driver;
     private final boolean strawRule;
 
@@ -36,6 +43,20 @@ public class MsmBedBlock extends BedBlock implements DrivenBlock {
         super(colour, properties);
         this.driver = new BlockBehaviourDriver(id, definition);
         this.strawRule = strawRule;
+        becomeHome(id);
+    }
+
+    /** Joins vanilla's home point of interest (ADR 0107 D4); warns once when the seam cannot. */
+    private void becomeHome(Identifier id) {
+        try {
+            PoiTypes.addHome(this);
+        } catch (IllegalStateException e) {
+            if (!homesWarned) {
+                homesWarned = true;
+                MsmRuntime.LOGGER.warn("[{}] {}: villagers will not claim or sleep in project beds: {}", MsmRuntime.MOD_ID, id,
+                        e.getMessage());
+            }
+        }
     }
 
     @Override

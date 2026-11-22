@@ -1,0 +1,7 @@
+{
+  "biomes": [
+    "msm_test:no_such_biome",
+    "#msm_test:no_such_tag"
+  ],
+  "format": 1
+}

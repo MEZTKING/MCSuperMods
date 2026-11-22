@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.registry.mob;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.events.EventContext;
 import dev.mcsupermods.runtime.events.EventRunner;
+import dev.mcsupermods.runtime.goals.RestockAtWorkSiteGoal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.loader.TraderParser;
 import dev.mcsupermods.runtime.registry.MsmMob;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -64,6 +66,16 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
  * trading with another player do not trade: the click passes on (to {@code msm:on_interact} or vanilla). Vanilla's
  * client shows the XP bar against villager thresholds, so with {@code xp_to_next} the XP sent to the screen is scaled
  * into the vanilla range of the level ({@link #getVillagerXp}); the real XP is {@link #xp()}.
+ *
+ * <p>Batch 2 of vanilla parity 3 (ADR 0107 D1 to D3 as amended after the B524 spike): with {@code reputation} the mob
+ * remembers each player ({@link TraderReputation}): a hit lowers the standing, a trade and a gift of the gift item (a
+ * plain use with it, before the menu; at the gift cap the click opens the menu instead) raise it, and every clock day it
+ * fades. Each time a player opens the menu the special prices are worked out for that player, and they are reset when
+ * the menu closes, so another player sees their own. With {@code demand} (the default) each restock first applies
+ * vanilla's demand rule ({@code MerchantOffer.updateDemand} before {@code resetUses}), so heavily used offers cost more
+ * until quieter restocks bring them down. With {@code work_site} a due restock only marks the offers as waiting
+ * ({@link #restockPending}); the mob's {@link RestockAtWorkSiteGoal}, added on its first server AI step, walks to the
+ * nearest such block within 16 blocks and restocks there.
  */
 public final class MobTrader {
     /** Save keys (the vanilla villager's names where one exists). */
@@ -71,6 +83,7 @@ public final class MobTrader {
     static final String XP = "Xp";
     static final String LEVEL = "TraderLevel";
     static final String RESTOCK = "RestockHalfDay";
+    static final String PENDING = "RestockPending";
     /** Clock ticks between two restock chances: two a day. */
     public static final long HALF_DAY = 12000L;
     private static final long UNKNOWN = Long.MIN_VALUE;
@@ -89,11 +102,17 @@ public final class MobTrader {
     private int resends;
     private int restocks;
     private int lastTradeSound = -20;
+    /** Null without {@code reputation}. */
+    private final TraderReputation reputation;
+    /** Whether a due restock waits for the work site ({@code work_site} only). */
+    private boolean restockPending;
+    private RestockAtWorkSiteGoal workSiteGoal;
 
     MobTrader(MsmMob mob, EntityDefinition definition) {
         this.mob = mob;
         this.definition = definition;
         this.trader = definition == null ? null : definition.components().trader().orElse(null);
+        this.reputation = trader == null ? null : trader.reputation().map(TraderReputation::new).orElse(null);
     }
 
     /** Whether the mob has {@code msm:trader}. */
@@ -121,6 +140,21 @@ public final class MobTrader {
         return restocks;
     }
 
+    /** The per-player memory ({@code reputation}), or empty without it. */
+    public Optional<TraderReputation> reputation() {
+        return Optional.ofNullable(reputation);
+    }
+
+    /** Whether a due restock waits for the mob to reach its work site ({@code work_site}). */
+    public boolean restockPending() {
+        return restockPending;
+    }
+
+    /** The work site goal once the first server AI step added it, or null; for the GameTests. */
+    public RestockAtWorkSiteGoal workSiteGoal() {
+        return workSiteGoal;
+    }
+
     private PathfinderMob body() {
         return mob.asMob();
     }
@@ -137,19 +171,73 @@ public final class MobTrader {
             // The client cannot see targets, offers or the time of night; it only answers the arm swing.
             return body.isBaby() || body.isVehicle() ? null : InteractionResult.SUCCESS;
         }
+        InteractionResult gift = takeGift(server, player, hand);
+        if (gift != null) {
+            return gift;
+        }
         if (refusal(player, server.isDarkOutside()) != null) {
             return null;
         }
-        restockIfDue(server, clockTicks(server));
+        long clock = clockTicks(server);
+        restockIfDue(server, clock);
+        decayIfDue(clock);
         if (getOffers().isEmpty()) {
             return null;
         }
         setTradingPlayer(player);
+        applyPrices(player);
         mob.openTradingScreen(player, body.getDisplayName(), level);
         if (tradingPlayer == player && !(player.containerMenu instanceof MerchantMenu)) {
             tradingPlayer = null; // the menu did not open (a fake player without a connection)
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * A gift of the {@code reputation} gift item: taken (one from the stack, none in creative) when the mob is alive, not
+     * a baby, not angry and below the gift cap; the trade sound plays and happy particles rise. Null passes the click on
+     * (it then opens the menu as any other item).
+     */
+    private InteractionResult takeGift(ServerLevel server, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (reputation == null || !reputation.isGift(stack)) {
+            return null;
+        }
+        PathfinderMob body = body();
+        if (!body.isAlive() || body.isBaby() || body.getTarget() != null || !reputation.gift(player.getUUID())) {
+            return null;
+        }
+        stack.consume(1, player);
+        body.playSound(getNotifyTradeSound(), 1.0f, body.getVoicePitch());
+        server.sendParticles(ParticleTypes.HAPPY_VILLAGER, body.getX(), body.getY() + body.getBbHeight() + 0.3, body.getZ(), 5,
+                0.3, 0.2, 0.3, 0.0);
+        return InteractionResult.SUCCESS;
+    }
+
+    /** A hit by {@code player} ({@link TraderReputation}'s damage listener): the hit part of the standing grows. */
+    void hurtBy(Player player) {
+        if (reputation != null && body().level() instanceof ServerLevel) {
+            reputation.hurt(player.getUUID());
+        }
+    }
+
+    /**
+     * Sets every offer's special price for {@code player}'s standing ({@code reputation}); nothing without it. Vanilla's
+     * menu shows and charges the changed price; {@link #setTradingPlayer} resets it when the menu closes.
+     */
+    public void applyPrices(Player player) {
+        if (reputation == null || offers == null || player == null) {
+            return;
+        }
+        int value = reputation.value(player.getUUID());
+        for (MerchantOffer offer : offers) {
+            offer.setSpecialPriceDiff(reputation.specialPrice(value, offer));
+        }
+    }
+
+    /** Fades the standings once per clock day ({@code reputation}); returns whether anything faded. */
+    public boolean decayIfDue(long clockTicks) {
+        return reputation != null && reputation.decayIfDue(clockTicks);
     }
 
     /**
@@ -253,6 +341,9 @@ public final class MobTrader {
     // Trading
 
     public void setTradingPlayer(Player player) {
+        if (player == null && reputation != null && offers != null) {
+            offers.forEach(MerchantOffer::resetSpecialPriceDiff); // as a villager when trading stops
+        }
         tradingPlayer = player;
     }
 
@@ -271,6 +362,10 @@ public final class MobTrader {
         if (offer.shouldRewardExp()) {
             ExperienceOrb.award(server, body.position().add(0, 0.5, 0), 3 + body.getRandom().nextInt(4));
         }
+        Player player = tradingPlayer;
+        if (reputation != null && player != null) {
+            reputation.trade(player.getUUID());
+        }
         if (trader.levels()) {
             xp += offer.getXp();
             boolean levelled = false;
@@ -280,10 +375,10 @@ public final class MobTrader {
                 draw(server, level);
             }
             if (levelled) {
+                applyPrices(player); // the new level's offers, at the prices of the menu's player
                 resend();
             }
         }
-        Player player = tradingPlayer;
         trader.onTrade().ifPresent(event -> EventRunner.fire(mob.definitionId(), definition.events(), event,
                 EventContext.forEntity(server, body, player)));
     }
@@ -369,7 +464,9 @@ public final class MobTrader {
 
     /**
      * Refills used offers when {@code clockTicks} is in another half day than the last check ({@code twice_a_day});
-     * the first check only remembers the half day. Returns whether the offers were refilled.
+     * the first check only remembers the half day. Returns whether the offers were refilled. With {@code work_site} a
+     * due restock only marks the offers as waiting ({@link #restockPending}) and returns false: the work site goal
+     * restocks.
      */
     public boolean restockIfDue(ServerLevel server, long clockTicks) {
         if (!canRestock()) {
@@ -384,10 +481,34 @@ public final class MobTrader {
         if (first || offers == null || offers.stream().noneMatch(MerchantOffer::needsRestock)) {
             return false;
         }
-        offers.forEach(MerchantOffer::resetUses);
+        if (trader.workSite().isPresent()) {
+            restockPending = true;
+            return false;
+        }
+        restock();
+        return true;
+    }
+
+    /** The work site goal reached the site: restocks the waiting offers. Returns whether it restocked. */
+    public boolean restockAtWorkSite() {
+        if (!restockPending) {
+            return false;
+        }
+        restockPending = false;
+        restock();
+        return true;
+    }
+
+    /** Refills every offer, after vanilla's demand rule when {@code demand} is on (B524: demand first, then the uses). */
+    private void restock() {
+        for (MerchantOffer offer : offers) {
+            if (trader.demand()) {
+                offer.updateDemand();
+            }
+            offer.resetUses();
+        }
         restocks++;
         resend();
-        return true;
     }
 
     /** After vanilla's {@code customServerAiStep}: a trading mob stands and looks at its customer; restocking. */
@@ -404,8 +525,15 @@ public final class MobTrader {
                 tradingPlayer = null;
             }
         }
+        if (workSiteGoal == null && trader.workSite().isPresent()) {
+            // MobGoals runs inside the vanilla constructor; the goal joins on the first server AI step instead.
+            workSiteGoal = new RestockAtWorkSiteGoal(body, this, trader.workSite().get());
+            body.getGoalSelector().addGoal(MobTaming.afterFighting(definition.components()), workSiteGoal);
+        }
         if (Math.floorMod(server.getGameTime() + body.getId(), 20L) == 0) {
-            restockIfDue(server, clockTicks(server));
+            long clock = clockTicks(server);
+            restockIfDue(server, clock);
+            decayIfDue(clock);
         }
     }
 
@@ -422,6 +550,12 @@ public final class MobTrader {
         if (restockHalfDay != UNKNOWN) {
             output.putLong(RESTOCK, restockHalfDay);
         }
+        if (restockPending) {
+            output.putBoolean(PENDING, true);
+        }
+        if (reputation != null) {
+            reputation.save(output);
+        }
     }
 
     /** After vanilla's {@code readAdditionalSaveData}. */
@@ -430,8 +564,15 @@ public final class MobTrader {
             return;
         }
         offers = input.read(OFFERS, MerchantOffers.CODEC).orElse(null);
+        if (offers != null) {
+            offers.forEach(MerchantOffer::resetSpecialPriceDiff); // a mob saved while trading kept that player's prices
+        }
         xp = Math.max(0, input.getIntOr(XP, 0));
         level = Math.clamp(input.getIntOr(LEVEL, 1), 1, trader.maxLevel());
         restockHalfDay = input.getLongOr(RESTOCK, UNKNOWN);
+        restockPending = trader.workSite().isPresent() && input.getBooleanOr(PENDING, false);
+        if (reputation != null) {
+            reputation.load(input);
+        }
     }
 }
