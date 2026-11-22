@@ -7697,3 +7697,20 @@ Next
 
 **Next**
 - B543: guide labels (the plan notes); `docs/guide/villagers-and-traders.md` still says one shoulder pet a player; `commands-and-tabs.md` lists two tab orders.
+## 2026-11-22 — executor — B537 eject of batch 2 (vanilla parity 2 and 3)
+
+**What**
+- The 26.3 Java eject now writes: villager professions with their job site points of interest (`ModProfessions`, Fabric `PoiHelper`, the runtime's refusals logged); fluids with liquid blocks, buckets, renderers, mixing, cauldrons and bottles (`ModFluids` before the blocks, `fluid/` copied from the runtime's `MsmFluids`, `MsmLiquidBlock`, `FluidMixing`, `MsmCauldronBlock`, `MsmCauldrons`, `MsmBottleItem` and the 26.3 `MsmFluid` seam, `client/fluid/FluidRenderers` from `FluidClient`; a fluid's events in `fluid/<Name>FluidEvents`); villager types (`ModVillagerTypes`, the runtime's `VillagerTypes` with `BY_BIOME` by reflection and tags at server start and reload); game rules (`ModGameRules`, Fabric `GameRuleBuilder`) and statistics (`ModStats`, `custom_stat` with the registered instance); the rules for vanilla blocks (`ModVanillaBlockRules` through `BlockStripping`, `BlockWaxing`, `FlammableBlockRegistry` and, on 26.3, `OxidizableBlocksRegistry`); all 44 command argument types with the runtime's macro values (`ARGUMENT_TYPES`, `message` also rest of line); the hand-ordered creative tab (`by_hand` with `items`; the search tab keeps the members' order); the `open_dialog` event action (`Actions.openDialog`, as `EventRunner.openDialog`).
+- Plugin API 1.20.0 (within the line): `JavaProjectInput.villagerProfessions?`, `fluids?`, `villagerTypes?`, `gameRules?`, `stats?`; the exporter passes them and `vanillaBlockRules`; `NOT_IN_EJECT_KINDS` keeps key binds, HUD elements and vehicles only.
+- Still left out with `export.not-in-eject`, in plain words: boats (`msm:boat`; the item and its chest boat are skipped, their recipes left out and tag entries made optional, as in a vanilla pack), and per mob the trader, storage, shoulder riding and fish bucket components, the six habit goals, hovering and phasing (the mob flies instead) and the dash; the mob is still generated. Mixin events and scripts stay out as before.
+- Vanilla packs: `fluidProfessionIdsOf` lists a fluid's `<id>_cauldron` and `<id>_bottle` and an item's chest boat as mod-only (`chestBoatIdOf`), and the flowing fluid of a nested id as the runtime names it (`a/flowing_b`).
+- Tests: targets `test/java-project/batch-2.test.ts` (every accepted runtime GameTest definition of the eight kinds generates, refusals fail by name, every shared class keeps at least 75% of its code lines from the runtime source), the argument type test now pins all 44; exporters `vanilla-parity-3-batch-2.test.ts` (`MSM_VANILLA_PARITY_3_BATCH_2_JAVA_OUT`) and `sample-villagers-and-fluids.java.golden.test.ts` (`MSM_SAMPLE_VILLAGERS_JAVA_OUT`), the plants Java golden repinned (the rules are ejected now), batch 2 and parity 3 exporter tests updated.
+- Verified: both trees built with `./gradlew build --offline` (JDK 25) and started on a real Fabric 26.3 server with `tools/run-fabric-server --no-runtime` (pass; the mods register with no error). `pnpm lint`, `pnpm typecheck`, targets, exporters and plugin-api tests green.
+
+**Decisions**
+- A boolean game rule with `min` or `max` fails generation (the runtime refuses it too).
+- Fluid events run with the entity inside, or the drinker, as the actor (`step_block` events).
+
+**Next**
+- Boats in the eject now that B536 is merged; then the mob parts above (bucket, shoulders, traders with reputation and demand, storage, habits, hover, phase, dash).
+- B541: wire the two `*_JAVA_OUT` variables into CI; `SamplePlantsAndStorageRulesParityTest` can now run against the ejected jar.

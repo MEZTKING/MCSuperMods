@@ -67,29 +67,65 @@ export function generateCreativeTabs(context: GenerationContext): string | undef
   const list = file.use('java.util.List');
   const fields = new NameTable();
   const body: string[] = [];
+  let usesHand = false;
   for (const tab of tabs) {
     const reader = readDefinition(tab);
-    reader.onlyKeys(['format', 'icon', 'title', 'order'], 'top-level key');
+    reader.onlyKeys(['format', 'icon', 'title', 'order', 'items'], 'top-level key');
     checkFormat(reader);
     const icon = reader.requiredString('icon');
     const { namespace, path } = splitId(tab.id);
     const title = reader.string('title', `itemGroup.${namespace}.${path.replaceAll('/', '.')}`);
     const order = reader.string('order', 'as_listed');
-    if (order !== 'as_listed' && order !== 'by_name') {
-      reader.fail(`order '${order}' is not as_listed or by_name`);
+    if (order !== 'as_listed' && order !== 'by_name' && order !== 'by_hand') {
+      reader.fail(`order '${order}' is not as_listed, by_name or by_hand`);
     }
-    const field = fields.take(constantName(path), (name) => [name, `${name}_KEY`, `${name}_ITEMS`]);
+    // ADR 0111 D7: `items` counts only for by_hand (the runtime warns and ignores it otherwise).
+    const hand = order === 'by_hand' ? reader.strings('items', []) : [];
+    const field = fields.take(constantName(path), (name) => [
+      name,
+      `${name}_KEY`,
+      `${name}_ITEMS`,
+      `${name}_HAND`,
+    ]);
     const ids = members(context, tab.id).map((id) => `        ${identifierExpression(file, id)}`);
+    const idList = (name: string, lines: string[]): string[] => [
+      `private static final ${list}<${identifier}> ${name} = ${list}.of(${lines.length === 0 ? ');' : ''}`,
+      ...lines.map((line, i) => `${line}${i === lines.length - 1 ? ');' : ','}`),
+    ];
+    const what =
+      order === 'by_name'
+        ? 'by display name'
+        : order === 'by_hand'
+          ? 'the listed items first, in that order, then the other members in registration order'
+          : 'in registration order';
+    const display =
+      order === 'by_hand'
+        ? [
+            '        .displayItems((parameters, output) -> {',
+            `            ${list}<${itemStack}> members = members(${field}_ITEMS, false);`,
+            `            output.acceptAll(handOrder(members, ${field}_HAND), ${tabType}.TabVisibility.PARENT_TAB_ONLY);`,
+            `            output.acceptAll(members, ${tabType}.TabVisibility.SEARCH_TAB_ONLY);`,
+            '        })',
+          ]
+        : [
+            `        .displayItems((parameters, output) -> output.acceptAll(members(${field}_ITEMS, ${order === 'by_name'})))`,
+          ];
+    if (order === 'by_hand') usesHand = true;
     body.push(
       '',
-      `/** {@code ${tab.id}} (${tab.path}): its items ${order === 'by_name' ? 'by display name' : 'in registration order'}. */`,
-      `private static final ${list}<${identifier}> ${field}_ITEMS = ${list}.of(${ids.length === 0 ? ');' : ''}`,
-      ...ids.map((line, i) => `${line}${i === ids.length - 1 ? ');' : ','}`),
+      `/** {@code ${tab.id}} (${tab.path}): its items ${what}. */`,
+      ...idList(`${field}_ITEMS`, ids),
+      ...(order === 'by_hand'
+        ? idList(
+            `${field}_HAND`,
+            hand.map((id) => `        ${identifierExpression(file, id)}`),
+          )
+        : []),
       `public static final ${resourceKey}<${tabType}> ${field}_KEY = ${resourceKey}.create(${registries}.CREATIVE_MODE_TAB, ${identifierExpression(file, tab.id)});`,
       `public static final ${tabType} ${field} = ${registry}.register(${builtIn}.CREATIVE_MODE_TAB, ${field}_KEY, ${fabricTab}.builder()`,
       `        .title(${component}.translatable(${javaString(title)}))`,
       `        .icon(() -> new ${itemStack}(${builtIn}.ITEM.getValue(${identifierExpression(file, icon)})))`,
-      `        .displayItems((parameters, output) -> output.acceptAll(members(${field}_ITEMS, ${order === 'by_name'})))`,
+      ...display,
       '        .build());',
     );
   }
@@ -118,6 +154,41 @@ export function generateCreativeTabs(context: GenerationContext): string | undef
     '        }',
     '        return stacks;',
     '    }',
+    ...(usesHand
+      ? [
+          '',
+          '    /**',
+          '     * A {@code by_hand} page (ADR 0111 D7): for each id of {@code hand}, the first member stack of that item, or a new',
+          '     * stack of it when it is no member (left out when it is no item, and when it was listed before); then the members',
+          '     * not taken, in their order.',
+          '     */',
+          `    private static ${list}<${itemStack}> handOrder(${list}<${itemStack}> members, ${list}<${identifier}> hand) {`,
+          `        ${list}<${itemStack}> rest = new java.util.ArrayList<>(members);`,
+          `        ${list}<${itemStack}> out = new java.util.ArrayList<>();`,
+          `        java.util.Set<${identifier}> seen = new java.util.HashSet<>();`,
+          `        for (${identifier} id : hand) {`,
+          `            if (!seen.add(id) || !${builtIn}.ITEM.containsKey(id)) {`,
+          '                continue;',
+          '            }',
+          `            ${itemStack} found = null;`,
+          `            for (${itemStack} stack : rest) {`,
+          `                if (stack.is(${builtIn}.ITEM.getValue(id))) {`,
+          '                    found = stack;',
+          '                    break;',
+          '                }',
+          '            }',
+          '            if (found != null) {',
+          '                rest.remove(found);',
+          '                out.add(found);',
+          '            } else {',
+          `                out.add(new ${itemStack}(${builtIn}.ITEM.getValue(id)));`,
+          '            }',
+          '        }',
+          '        out.addAll(rest);',
+          '        return out;',
+          '    }',
+        ]
+      : []),
     '}',
   ];
   context.files.push({

@@ -13,10 +13,11 @@ Villager type, cauldron, command argument, game rule and statistic facts, and th
 - `TargetFacts.gameRules?: GameRuleFacts { kinds; categories; vanillaNames }` with `GameRuleKindName` (`'boolean' | 'integer'`): the kinds and categories a project game rule may take and vanilla's own rule ids.
 - `TargetFacts.stats?: StatFacts { formats; criterionPrefix; vanillaCustomStats }` with `StatFormatName` (`'default' | 'distance' | 'time'`): a statistic's formatters, its scoreboard criterion prefix (`minecraft.custom:`) and vanilla's own custom statistics.
 - `JavaProjectInput.vanillaBlockRules?: DefinitionInput[]`: the project's `msm/<namespace>/vanilla_block_rules/*.json` definitions, in a stable order, for generators that register the pairs on vanilla blocks. Absent means the same as an empty array.
+- `JavaProjectInput.villagerProfessions?`, `fluids?`, `villagerTypes?`, `gameRules?` and `stats?: DefinitionInput[]` (added 2026-11-22 within 1.20.0, B537): the project's `villager_profession`, `fluid`, `villager_type`, `game_rule` and `stat` definitions, in a stable order, for generators that eject them (ADR 0112 D3). Absent means the same as an empty array.
 
 ### Migration from 1.19.0
 
-None for plugins that only read target facts. A plugin that reads the new facts should declare `^1.20.0` and treat an absent value as "no facts to check against". A plugin that switches over `CommandFacts.argumentTypes` names without a default case adds the 32 new names. A test that compares `JavaProjectInput` with an exact type adds `vanillaBlockRules?`.
+None for plugins that only read target facts. A plugin that reads the new facts should declare `^1.20.0` and treat an absent value as "no facts to check against". A plugin that switches over `CommandFacts.argumentTypes` names without a default case adds the 32 new names. A test that compares `JavaProjectInput` with an exact type adds `vanillaBlockRules?`, `villagerProfessions?`, `fluids?`, `villagerTypes?`, `gameRules?` and `stats?`.
 
 ## 1.19.0 — 2026-11-22
 

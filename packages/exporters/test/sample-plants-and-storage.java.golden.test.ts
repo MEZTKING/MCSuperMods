@@ -4,8 +4,7 @@
  * project pot and its potted plants, bronze on the six new weathering types with lightning, the
  * double, per-player, waterlogged and ageing chests, own sounds and set types, and flatten and
  * till. As in the app, the eject receives the expanded project. The rules for vanilla blocks are
- * left out with one `export.not-in-eject` warning (B517: the generator has no field for them yet),
- * so the parity runs of the ejected jar leave out `SamplePlantsAndStorageRulesParityTest`.
+ * ejected too since B537 (`ModVanillaBlockRules`), so nothing is `export.not-in-eject`.
  *
  * - The export succeeds without errors or warnings other than project ids the vanilla registries
  *   do not know and that one; the project's files and contents hash to the value pinned in
@@ -55,11 +54,8 @@ for (const plugin of PLUGINS) registerPlugin(registry, plugin);
 const meta = { msmVersion: '1.5.2', plugins: ['msm.blocks-items', 'msm.datapack'] };
 const NAMESPACE = 'msm_sample_plants';
 const PKG = `src/main/java/${NAMESPACE}`;
-/** Warnings the eject may give: project ids, and the rules for vanilla blocks it leaves out. */
-const EXPECTED_WARNINGS: ReadonlySet<string> = new Set([
-  'schema.unknown-id',
-  'export.not-in-eject',
-]);
+/** Warnings the eject may give: project ids. */
+const EXPECTED_WARNINGS: ReadonlySet<string> = new Set(['schema.unknown-id']);
 const unexpected = (problem: Problem): boolean =>
   problem.severity === 'error' ||
   (problem.severity === 'warning' && !EXPECTED_WARNINGS.has(problem.code));
@@ -112,11 +108,7 @@ describe.each(
     const { files, problems, ok } = await run();
     expect(problems.filter(unexpected)).toEqual([]);
     expect(ok).toBe(true);
-    expect(
-      problems
-        .filter((problem) => problem.code === 'export.not-in-eject')
-        .map((problem) => problem.file),
-    ).toEqual([`msm/${NAMESPACE}/vanilla_block_rules/farm_rules.json`]);
+    expect(problems.filter((problem) => problem.code === 'export.not-in-eject')).toEqual([]);
     const paths = [...files.keys()];
     for (const path of [
       'build.gradle.kts',
@@ -128,6 +120,7 @@ describe.each(
       `${PKG}/Lightning.java`,
       `${PKG}/BlockWaxing.java`,
       `${PKG}/BlockStripping.java`,
+      `${PKG}/ModVanillaBlockRules.java`,
       `${PKG}/block/PlayerStores.java`,
       `${PKG}/block/DoubleChestBlock.java`,
       `${PKG}/block/type/PlantSpec.java`,

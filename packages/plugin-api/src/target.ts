@@ -1048,6 +1048,38 @@ export interface JavaProjectInput {
    * D4, ADR 0112 D3).
    */
   vanillaBlockRules?: DefinitionInput[];
+  /**
+   * The project's villager profession definitions (`msm/<namespace>/villager_profession/*.json`),
+   * in a stable order, for generators that register the job site points of interest and the
+   * professions. Optional: absent means the same as an empty array. Since 1.20.0 (added
+   * 2026-11-22 within 1.20.0; ADR 0098 D5, ADR 0112 D3).
+   */
+  villagerProfessions?: DefinitionInput[];
+  /**
+   * The project's fluid definitions (`msm/<namespace>/fluid/*.json`), in a stable order, for
+   * generators that register the fluids with their liquid blocks, buckets, mixing rules,
+   * cauldrons and bottles. Optional: absent means the same as an empty array. Since 1.20.0 (added
+   * 2026-11-22 within 1.20.0; ADR 0099 D4, ADR 0108, ADR 0112 D3).
+   */
+  fluids?: DefinitionInput[];
+  /**
+   * The project's villager type definitions (`msm/<namespace>/villager_type/*.json`), in a stable
+   * order, for generators that register the types and their biomes. Optional: absent means the
+   * same as an empty array. Since 1.20.0 (added 2026-11-22 within 1.20.0; ADR 0107, ADR 0112 D3).
+   */
+  villagerTypes?: DefinitionInput[];
+  /**
+   * The project's game rule definitions (`msm/<namespace>/game_rule/*.json`), in a stable order.
+   * Optional: absent means the same as an empty array. Since 1.20.0 (added 2026-11-22 within
+   * 1.20.0; ADR 0111 D5, ADR 0112 D3).
+   */
+  gameRules?: DefinitionInput[];
+  /**
+   * The project's statistic definitions (`msm/<namespace>/stat/*.json`), in a stable order.
+   * Optional: absent means the same as an empty array. Since 1.20.0 (added 2026-11-22 within
+   * 1.20.0; ADR 0111 D6, ADR 0112 D3).
+   */
+  stats?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }

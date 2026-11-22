@@ -22,6 +22,8 @@ export interface GenerationContext {
   usesActions: boolean;
   /** Set when an event uses `apply_effect` (`Actions.applyEffect` is then written). */
   usesApplyEffect: boolean;
+  /** Set when an event uses `open_dialog` (`Actions.openDialog` is then written, ADR 0111 D4). */
+  usesOpenDialog: boolean;
   /** Set when an event uses `launch` (`Actions.launch` is then written, ADR 0052). */
   usesLaunch: boolean;
   /** Set when an event uses `damage` (`Actions.damage` is then written, ADR 0055 D4). */

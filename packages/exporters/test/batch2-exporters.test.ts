@@ -6,8 +6,8 @@
  * - a trade set naming a project item is left out of the vanilla data pack (with its trade,
  *   and the level tag entry naming it becomes optional);
  * - the acquirable job site tag entry is written as `required: false`;
- * - the eject warns `export.not-in-eject` once per profession, fluid and mob with batch 2
- *   components.
+ * - the eject warns `export.not-in-eject` once per mob with batch 2 components; professions and
+ *   fluids are ejected since B537 (`ModProfessions`, `ModFluids`).
  */
 import type { Json, OutputFile } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
@@ -191,7 +191,7 @@ describe.each(
     json: { format: 1 },
   });
 
-  it('warns once per profession, fluid and mob, and reports no error', async () => {
+  it('warns once per mob, ejects the profession and the fluid, and reports no error', async () => {
     const { schemaIndex, registries } = await indexesFor(bundle);
     const sink = createMemorySink();
     const report = await runExport({
@@ -208,13 +208,14 @@ describe.each(
     const warned = report.problems.filter(
       (problem) => problem.code === ExportProblemCodes.notInEject,
     );
-    expect(warned.map((problem) => problem.file)).toEqual([
-      'msm/demo/entity/merchant.json',
-      'msm/demo/fluid/honey.json',
-      'msm/demo/villager_profession/smith.json',
-    ]);
+    expect(warned.map((problem) => problem.file)).toEqual(['msm/demo/entity/merchant.json']);
     expect(warned.every((problem) => problem.severity === 'warning')).toBe(true);
-    expect(warned[0]?.message).toContain('msm:trader, msm:storage, msm:shoulder_riding');
+    expect(warned[0]?.message).toContain(
+      'trader (msm:trader), storage (msm:storage), shoulder riding (msm:shoulder_riding)',
+    );
+    const paths = [...sink.files().keys()];
+    expect(paths.some((path) => path.endsWith('/ModProfessions.java'))).toBe(true);
+    expect(paths.some((path) => path.endsWith('/ModFluids.java'))).toBe(true);
     expect(
       report.problems.filter((problem) => problem.code === ExportProblemCodes.javaGenerationFailed),
     ).toEqual([]);

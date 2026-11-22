@@ -120,17 +120,24 @@ export const RUNTIME_REGISTRIES: readonly string[] = Object.freeze([
 export const COMMAND_LITERALS = 'command';
 
 /**
- * The registry ids of the batch 2 kinds (ADR 0098 D2, ADR 0099 D1) for {@link modOnlyIdsOf}:
- * `fluid` (the id, and `<ns>:flowing_<path>` when `twoFluids`, the two-fluid model), `block` (the
- * liquid block, the fluid's id), `item` (the bucket, `<id>_bucket`), `villager_profession` and
- * `point_of_interest_type` (the profession's id). Merge each list into the host's own ids of the
- * same registry. Pure; ids are sorted and unique.
+ * The registry ids of the batch 2 kinds (ADR 0098 D2, ADR 0099 D1, ADR 0108 D2, D3, ADR 0110 D4)
+ * for {@link modOnlyIdsOf}: `fluid` (the id, and the flowing fluid when `twoFluids`, the two-fluid
+ * model: `flowing_` before the last path segment, as the runtime's `MsmFluids.flowingId`), `block`
+ * (the liquid block, the fluid's id; the cauldron `<id>_cauldron` when the fluid has `cauldron`),
+ * `item` (the bucket, `<id>_bucket`; the bottle `<id>_bottle` when the fluid has `bottle`; the chest
+ * boat of an item with `msm:boat` and `chest`, `<wood>_chest_boat` or `<wood>_chest_raft`),
+ * `villager_profession` and `point_of_interest_type` (the profession's id). Merge each list into the
+ * host's own ids of the same registry. Pure; ids are sorted and unique.
  *
- * @param elements - The project's elements (id and kind).
+ * @param elements - The project's elements (id, kind and, for the companions, data).
  * @param twoFluids - Whether the target registers a source and a flowing fluid.
  */
 export function fluidProfessionIdsOf(
-  elements: readonly { readonly id: ResourceLocation; readonly kind: string }[],
+  elements: readonly {
+    readonly id: ResourceLocation;
+    readonly kind: string;
+    readonly data?: Json;
+  }[],
   twoFluids: boolean,
 ): Record<string, string[]> {
   const out: Record<string, Set<string>> = {
@@ -141,15 +148,23 @@ export function fluidProfessionIdsOf(
     point_of_interest_type: new Set(),
   };
   for (const element of elements) {
+    const data = isObject(element.data) ? element.data : undefined;
     if (element.kind === 'msm:fluid') {
       const [ns = '', path = ''] = element.id.split(':');
+      const slash = path.lastIndexOf('/');
       out.fluid?.add(element.id);
-      if (twoFluids) out.fluid?.add(`${ns}:flowing_${path}`);
+      if (twoFluids)
+        out.fluid?.add(`${ns}:${path.slice(0, slash + 1)}flowing_${path.slice(slash + 1)}`);
       out.block?.add(element.id);
       out.item?.add(`${element.id}_bucket`);
+      if (data !== undefined && isObject(data.cauldron)) out.block?.add(`${element.id}_cauldron`);
+      if (data !== undefined && isObject(data.bottle)) out.item?.add(`${element.id}_bottle`);
     } else if (element.kind === 'msm:villager_profession') {
       out.villager_profession?.add(element.id);
       out.point_of_interest_type?.add(element.id);
+    } else if (element.kind === 'msm:item' && data !== undefined) {
+      const chest = chestBoatIdOf(element.id, data);
+      if (chest !== undefined) out.item?.add(chest);
     }
   }
   return Object.fromEntries(
@@ -157,6 +172,26 @@ export function fluidProfessionIdsOf(
       .filter(([, ids]) => ids.size > 0)
       .map(([registry, ids]) => [registry, [...ids].sort()]),
   );
+}
+
+/**
+ * The chest companion of an item with `msm:boat` and `chest` (ADR 0110 D2): `<ns>:<wood>_chest_boat`,
+ * or `<wood>_chest_raft` for a raft, `<wood>` the item's path without its `_boat` or `_raft` ending
+ * (as the blocks-items plugin's `boatChestId`); `undefined` without one.
+ */
+export function chestBoatIdOf(id: string, data: Json | undefined): string | undefined {
+  const components = isObject(data) ? data.components : undefined;
+  const boat = isObject(components) ? components['msm:boat'] : undefined;
+  if (!isObject(boat) || boat.chest !== true) return undefined;
+  const [ns = '', path = ''] = id.split(':');
+  let wood = path;
+  for (const ending of ['_boat', '_raft']) {
+    if (path.endsWith(ending) && path.length > ending.length) {
+      wood = path.slice(0, -ending.length);
+      break;
+    }
+  }
+  return `${ns}:${wood}${boat.raft === true ? '_chest_raft' : '_chest_boat'}`;
 }
 
 /** The literals (name and aliases) of `msm:command` elements, sorted, for {@link modOnlyIdsOf}. */

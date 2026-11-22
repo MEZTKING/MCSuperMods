@@ -10,8 +10,8 @@
  *   layer is written, and `needsJarNotes` gives one `export.needs-jar` for the rules for vanilla
  *   blocks; where block sounds are data the sound set entries are kept;
  * - the Java eject (targets with a Java generator): the same project generates with no error; the
- *   only `export.not-in-eject` is the one for the rules for vanilla blocks (the generator's input
- *   has no field for them yet). With `MSM_VANILLA_PARITY_3_JAVA_OUT` set, the tree is written there
+ *   rules for vanilla blocks are ejected too (`ModVanillaBlockRules`, B537), so nothing is
+ *   `export.not-in-eject`. With `MSM_VANILLA_PARITY_3_JAVA_OUT` set, the tree is written there
  *   with the engine-mod Gradle wrapper for `./gradlew build` (JDK 25; B520 wires it into CI).
  */
 import { readFile } from 'node:fs/promises';
@@ -344,10 +344,8 @@ describe('vanilla parity 3, batch 1, in the Java project', () => {
       expect(report.problems.filter((p) => p.severity === 'error')).toEqual([]);
       expect(report.ok).toBe(true);
       const leftOut = report.problems.filter((p) => p.code === ExportProblemCodes.notInEject);
-      expect(leftOut.map((p) => [p.file, p.severity])).toEqual([
-        ['msm/demo/vanilla_block_rules/farm_rules.json', 'warning'],
-      ]);
-      expect(leftOut[0]?.message).toContain('rules for vanilla blocks');
+      // The rules for vanilla blocks are ejected since B537 (ModVanillaBlockRules).
+      expect(leftOut).toEqual([]);
       const files = sink.files();
       const root =
         [...files.keys()]
@@ -359,6 +357,7 @@ describe('vanilla parity 3, batch 1, in the Java project', () => {
         if (data === undefined) throw new Error(`${path} was not generated`);
         return utf8.decode(data);
       };
+      expect(text('ModVanillaBlockRules.java')).toContain('BlockStripping.register();');
       const blocks = text('ModBlocks.java');
       expect(blocks).toContain('GLOW_VINE.attachBody(GLOW_VINE_PLANT);');
       expect(blocks).toContain('new ModGrowingPlantHeadBlock.Water(new PlantSpec.GrowingPlant(');

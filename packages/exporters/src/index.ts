@@ -88,6 +88,7 @@ export {
 } from './vanilla-packs/index';
 export {
   COMMAND_LITERALS,
+  chestBoatIdOf,
   commandLiteralsOf,
   FATAL_DATA_FOLDERS,
   fluidProfessionIdsOf,

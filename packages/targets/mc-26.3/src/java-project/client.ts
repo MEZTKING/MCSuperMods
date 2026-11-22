@@ -40,6 +40,7 @@ export function generateClient(
   throwables: boolean,
   leafTints: readonly LeafTintEntry[] = [],
   particles: readonly ParticleEntry[] = [],
+  fluids = false,
 ): string {
   const clientPackage = packageOf(context, 'client');
   const modelPackage = packageOf(context, 'client.entity');
@@ -56,12 +57,20 @@ export function generateClient(
     throwables ? 'the msm:throwable components' : undefined,
     leafTints.length > 0 ? 'the leaves in msm/<namespace>/block/*.json' : undefined,
     particles.length > 0 ? 'the msm/<namespace>/particle/*.json definitions' : undefined,
+    fluids ? 'the msm/<namespace>/fluid/*.json definitions' : undefined,
   ]);
   const file = new JavaFile(clientPackage, source);
   const initializer = file.use('net.fabricmc.api.ClientModInitializer');
   const renderers = (): string => file.use('net.minecraft.client.renderer.entity.EntityRenderers');
 
   const body: string[] = [];
+  if (fluids) {
+    const renderers = file.use(`${packageOf(context, 'client.fluid')}.FluidRenderers`);
+    body.push(
+      '// Fluids (ADR 0099 D2): their still, flowing and overlay pictures and their tint.',
+      `${renderers}.init();`,
+    );
+  }
   if (throwables) {
     const thrownRenderer = file.use('net.minecraft.client.renderer.entity.ThrownItemRenderer');
     const thrown = file.use(`${packageOf(context, 'entity')}.ThrownItemEntity`);

@@ -38,7 +38,31 @@ export function actionsJava(
   functionAsEntity = false,
   functionAsTriggerActor = false,
   functionAsOwnMob = false,
+  openDialog = false,
 ): string {
+  // open_dialog (ADR 0111 D4), as the runtime's EventRunner.openDialog; names written in full, so no import changes.
+  const dialogMethod = openDialog
+    ? `
+
+    private static final java.util.Set<String> UNKNOWN_DIALOGS = ConcurrentHashMap.newKeySet();
+
+    /** Opens the dialog {@code id} for {@code target} when it is a player; an unknown dialog is logged once. */
+    public static void openDialog(String owner, Entity target, String id) {
+        if (!(target instanceof net.minecraft.server.level.ServerPlayer player)) {
+            return;
+        }
+        Optional<net.minecraft.core.Holder.Reference<net.minecraft.server.dialog.Dialog>> dialog = player.registryAccess()
+                .lookupOrThrow(net.minecraft.core.registries.Registries.DIALOG)
+                .get(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIALOG, Identifier.parse(id)));
+        if (dialog.isEmpty()) {
+            if (UNKNOWN_DIALOGS.add(id)) {
+                LOGGER.error("{}: open_dialog: {} is no dialog of this game", owner, id);
+            }
+            return;
+        }
+        player.openDialog(dialog.get());
+    }`
+    : '';
   const living = applyEffect || damage || heal;
   const holderImport = applyEffect
     ? `import net.minecraft.core.Holder;
@@ -268,7 +292,7 @@ public final class Actions {
         }
         SoundSource source = entity != null ? SoundSource.NEUTRAL : SoundSource.BLOCKS;
         level.playSound(null, origin.x, origin.y, origin.z, sound.get(), source, volume, pitch);
-    }${effectMethod}${launchMethod}${damageMethod}${healMethod}
+    }${effectMethod}${launchMethod}${damageMethod}${healMethod}${dialogMethod}
 }
 `;
 }

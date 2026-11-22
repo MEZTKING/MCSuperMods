@@ -111,6 +111,7 @@ export const ACTION_TYPES = [
   'damage',
   'heal',
   'light_portal',
+  'open_dialog',
 ] as const;
 
 /** The default `play_animation` controller (the runtime's `TRIGGERED_CONTROLLER`). */
@@ -130,6 +131,8 @@ export interface Events {
   readonly otherParameter: boolean;
   /** Whether any action is `apply_effect` (the `Actions` helper then has `applyEffect`). */
   readonly appliesEffects: boolean;
+  /** Whether an `open_dialog` action is used (ADR 0111 D4; `Actions.openDialog` is then written). */
+  readonly opensDialogs: boolean;
   /** Whether any action is `launch` (the `Actions` helper then has `launch`, ADR 0052). */
   readonly launches: boolean;
   /** Whether any action is `damage` (the `Actions` helper then has `damage`, ADR 0055 D4). */
@@ -162,7 +165,7 @@ export interface Events {
 }
 
 /** Actions whose `target` is `self` or `other`. */
-const TARGETED_ACTIONS = ['apply_effect', 'launch', 'damage', 'heal'];
+const TARGETED_ACTIONS = ['apply_effect', 'launch', 'damage', 'heal', 'open_dialog'];
 
 /**
  * Reads and checks a definition's `events`: every event has an `actions` list, every action
@@ -218,6 +221,7 @@ export function readEvents(definition: Reader, kind: EventOwnerKind, triggerActo
     methods: eventMethodNames([...byId.keys()]),
     otherParameter: takesOther(kind) && otherTarget,
     appliesEffects: used.has('apply_effect'),
+    opensDialogs: used.has('open_dialog'),
     launches: used.has('launch'),
     damages: used.has('damage'),
     heals: used.has('heal'),
@@ -285,6 +289,7 @@ export function noteActions(context: GenerationContext, file: JavaFile, events: 
   if (!usesActions(events)) return 'Actions';
   context.usesActions = true;
   if (events.appliesEffects) context.usesApplyEffect = true;
+  if (events.opensDialogs) context.usesOpenDialog = true;
   if (events.launches) context.usesLaunch = true;
   if (events.damages) context.usesDamage = true;
   if (events.heals) context.usesHeal = true;
@@ -490,6 +495,28 @@ function actionLines(
       const target = livingTarget(file, action, events, kind);
       return [
         `${actions}.applyEffect(OWNER, ${target}, ${effect}, ${javaInt(ticksOf(seconds))}, ${javaInt(amplifier)});`,
+      ];
+    }
+    case 'open_dialog': {
+      // ADR 0111 D4 (the runtime's EventRunner.openDialog): the target as launch's, a player only.
+      action.onlyKeys(['type', 'dialog', 'target'], 'open_dialog field');
+      const dialog = action.requiredString('dialog');
+      if (!/^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(dialog))
+        action.fail(`dialog '${dialog}' is not an id`);
+      let target: string;
+      if (effectTarget(action) === 'other') {
+        target = events.otherParameter
+          ? 'other'
+          : kind === 'step_block'
+            ? livingFallback(file)
+            : 'player';
+      } else if (selfFallsBackToEntity(kind)) {
+        target = 'player != null ? player : entity';
+      } else {
+        target = 'player';
+      }
+      return [
+        `${actions}.openDialog(OWNER, ${target}, ${javaString(dialog.includes(':') ? dialog : `minecraft:${dialog}`)});`,
       ];
     }
     case 'launch': {

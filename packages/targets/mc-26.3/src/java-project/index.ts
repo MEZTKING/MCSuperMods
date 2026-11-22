@@ -36,7 +36,12 @@
  * `ParticleLook`, copied from the runtime); a `spawn_particle` with an options object, `motion`
  * or `force` and `msm:ambient_particles` add `particle/ParticleSpecs.java` and
  * `particle/AmbientParticles.java` (copied from the runtime). Paths are sorted; text uses LF and
- * four-space indentation.
+ * four-space indentation. Batch 2 (ADR 0112 D3, B537): `ModFluids.java` (before the blocks) with
+ * `fluid/` (the runtime's fluid, liquid block, mixing, cauldron and bottle classes) and
+ * `client/fluid/FluidRenderers.java`, `ModProfessions.java` (after the entities),
+ * `ModVillagerTypes.java`, `ModGameRules.java`, `ModStats.java` and `ModVanillaBlockRules.java`
+ * (after the commands, in the runtime's order); `ModCommands` writes all 44 argument types and
+ * `Actions` the `open_dialog` action.
  *
  * @packageDocumentation
  */
@@ -50,6 +55,8 @@ import type { GenerationContext } from './context';
 import { generateCreativeTabs, projectTabIds } from './creative-tabs';
 import { generateEffects } from './effects';
 import { generateEntities } from './entities';
+import { generateFluids } from './fluids';
+import { generateGameRules, generateStats } from './game-rules';
 import { generateItems } from './items';
 import { generateLoot } from './loot';
 import { generateRecipes } from './machines';
@@ -58,6 +65,7 @@ import { NameTable, splitId } from './names';
 import { generateParticles, writeParticleSpecFiles } from './particles';
 import { checkLightPortals, isPortal, portalInitLines } from './portals';
 import { generatePotions } from './potions';
+import { generateProfessions } from './professions';
 import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
 import { cooldownMapJava } from './templates/cooldown-map-java';
@@ -68,6 +76,8 @@ import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
 import { tickLimiterJava } from './templates/tick-limiter-java';
 import { DRIVER_CLASSES } from './templates/vanilla-blocks-java';
 import { vanillaComponentsJava } from './templates/vanilla-components-java';
+import { generateVanillaBlockRules } from './vanilla-rules';
+import { generateVillagerTypes } from './villager-types';
 import { generateWorldgen } from './worldgen';
 
 export { className, constantName, eventMethodName, JAVA_KEYWORDS } from './names';
@@ -94,6 +104,7 @@ export function generateJavaProject(input: JavaProjectInput): {
     projectTabs: projectTabIds(input.creativeTabs),
     usesActions: false,
     usesApplyEffect: false,
+    usesOpenDialog: false,
     usesLaunch: false,
     usesDamage: false,
     usesHeal: false,
@@ -159,6 +170,9 @@ export function generateJavaProject(input: JavaProjectInput): {
       },
     );
   }
+  // Fluids after the particle types and before the blocks, as the runtime's registrar (ADR 0099 D1).
+  const fluids = generateFluids(context);
+  if (fluids !== undefined) registrations.push(fluids.before);
   const blocks = generateBlocks(context, classNames);
   if (blocks !== undefined) registrations.push(blocks.className);
   // Block entity types after the blocks, then the machines' recipe types (ADR 0074 D9, ADR 0075 D11).
@@ -170,6 +184,9 @@ export function generateJavaProject(input: JavaProjectInput): {
   if (items !== undefined) registrations.push(items);
   const entities = generateEntities(context, classNames);
   if (entities !== undefined) registrations.push(entities.className);
+  // Professions after the blocks and items their job sites, secondary blocks and requested items name (ADR 0098 D2).
+  const professions = generateProfessions(context);
+  if (professions !== undefined) registrations.push(professions);
   // Additions to vanilla content last, as the runtime registers them (ADR 0060 D9).
   const worldgen = generateWorldgen(context);
   if (worldgen !== undefined) registrations.push(worldgen);
@@ -178,6 +195,19 @@ export function generateJavaProject(input: JavaProjectInput): {
   // Commands last: they run functions and events at run time (ADR 0096 D1).
   const commands = generateCommands(context);
   if (commands !== undefined) registrations.push(commands);
+  // Batch 2 of vanilla parity 3, in the runtime's order: villager types, fluid cauldrons and bottles,
+  // game rules, statistics, then mixing (ADR 0112 D3); the rules for vanilla blocks after them (ADR 0105 D4).
+  const villagerTypes = generateVillagerTypes(context);
+  if (villagerTypes !== undefined) registrations.push(villagerTypes);
+  if (fluids?.after.includes('fluid.FluidCauldrons') === true)
+    registrations.push('fluid.FluidCauldrons');
+  const gameRules = generateGameRules(context);
+  if (gameRules !== undefined) registrations.push(gameRules);
+  const stats = generateStats(context);
+  if (stats !== undefined) registrations.push(stats);
+  if (fluids?.after.includes('fluid.FluidMixing') === true) registrations.push('fluid.FluidMixing');
+  const vanillaRules = generateVanillaBlockRules(context);
+  if (vanillaRules !== undefined) registrations.push(vanillaRules);
   const main = generateMod(
     context,
     registrations,
@@ -186,9 +216,20 @@ export function generateJavaProject(input: JavaProjectInput): {
   const leafTints = blocks?.leafTints ?? [];
   const particleTypes = particles?.particles ?? [];
   const client =
-    entities === undefined && !throwables && leafTints.length === 0 && particleTypes.length === 0
+    entities === undefined &&
+    !throwables &&
+    leafTints.length === 0 &&
+    particleTypes.length === 0 &&
+    fluids === undefined
       ? undefined
-      : generateClient(context, entities?.entities ?? [], throwables, leafTints, particleTypes);
+      : generateClient(
+          context,
+          entities?.entities ?? [],
+          throwables,
+          leafTints,
+          particleTypes,
+          fluids !== undefined,
+        );
   writeParticleSpecFiles(context);
   if (context.usesActions) {
     context.files.push({
@@ -203,6 +244,7 @@ export function generateJavaProject(input: JavaProjectInput): {
         context.usesRunFunctionAsEntity,
         context.usesRunFunctionAsTriggerActor,
         context.usesRunFunctionAsOwnMob,
+        context.usesOpenDialog,
       ),
     });
   }

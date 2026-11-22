@@ -30,6 +30,7 @@ import {
 } from '../fabric-content-jar/index';
 import { EXPORT_MANIFEST_FILE, exportManifest } from '../manifest';
 import { ExportProblemCodes } from '../problem-codes';
+import { chestBoatIdOf, modOnlyIdsOf, vanillaSafeDataFiles } from '../vanilla-packs/mod-only';
 import { comparePaths } from '../zip';
 import {
   buildGradle,
@@ -78,18 +79,31 @@ const NOT_IN_EJECT_KINDS: Readonly<Record<string, { label: string; reason: strin
   key_bind: { label: 'key bind', reason: "it needs the runtime's client code" },
   hud: { label: 'HUD element', reason: "it needs the runtime's client code" },
   vehicle: { label: 'vehicle', reason: "it needs the runtime's vehicle code" },
-  villager_profession: {
-    label: 'villager profession',
-    reason: "it needs the runtime's point of interest and profession registration",
-  },
-  fluid: { label: 'fluid', reason: "it needs the runtime's fluid and bucket code" },
-  // ADR 0105 D4: the generator's input has no field for these files yet (plugin API 1.20.0, B527).
-  vanilla_block_rules: {
-    label: 'file of rules for vanilla blocks',
-    reason:
-      'the Java project cannot yet change what an axe, shovel, hoe or honeycomb does to vanilla blocks, or how they age and burn',
-  },
 };
+
+/**
+ * The definition folders the eject passes to the generator in their own `JavaProjectInput` lists
+ * (ADR 0112 D3; plugin API 1.20.0, B537), besides blocks, items and entities.
+ */
+const LISTED_KINDS = [
+  'effect',
+  'potion',
+  'particle',
+  'biome_addition',
+  'loot_addition',
+  'command',
+  'creative_tab',
+  'vanilla_block_rules',
+  'villager_profession',
+  'fluid',
+  'villager_type',
+  'game_rule',
+  'stat',
+] as const;
+type ListedKind = (typeof LISTED_KINDS)[number];
+
+/** The item component of boats (ADR 0110), which the eject leaves out until the runtime's boats are mirrored. */
+const BOAT_COMPONENT = 'msm:boat';
 
 /**
  * Entity components of batch 2 (ADR 0098 D5) the eject leaves out: the mob itself is still
@@ -99,24 +113,92 @@ const NOT_IN_EJECT_COMPONENTS: Readonly<Record<string, string>> = {
   'msm:trader': 'trader',
   'msm:storage': 'storage',
   'msm:shoulder_riding': 'shoulder riding',
+  'msm:bucketable': 'fish bucket',
 };
 
-/** `definition` without the components of {@link NOT_IN_EJECT_COMPONENTS} (the generator rejects them). */
+/** The goals of ADR 0109 D4 the eject leaves out (the mob keeps its other goals). */
+const NOT_IN_EJECT_GOALS: Readonly<Record<string, string>> = {
+  swoop: 'swooping',
+  roost: 'roosting',
+  collect_items: 'collecting items',
+  dig_items: 'digging up items',
+  play_dead: 'playing dead',
+  barter: 'bartering',
+};
+
+/** The movement modes of ADR 0109 D3 the eject leaves out: the mob flies instead (the runtime's stand-in before B532). */
+const NOT_IN_EJECT_MODES: Readonly<Record<string, string>> = {
+  hover: 'hovering',
+  phase: 'flying through walls',
+};
+
+/**
+ * `definition` without what {@link notInEjectComponentsOf} names: the components of
+ * {@link NOT_IN_EJECT_COMPONENTS}, the goals of {@link NOT_IN_EJECT_GOALS}, the movement modes of
+ * {@link NOT_IN_EJECT_MODES} (as `fly`, without `hover_height`) and `msm:rideable.dash`; the
+ * generator rejects them.
+ */
 function withoutBatch2Components(definition: JsonObject): JsonObject {
   const components = definition.components;
   if (!isObject(components) || notInEjectComponentsOf(definition).length === 0) return definition;
   const kept: JsonObject = {};
   for (const [key, value] of Object.entries(components)) {
-    if (!(key in NOT_IN_EJECT_COMPONENTS)) kept[key] = value;
+    if (key in NOT_IN_EJECT_COMPONENTS) continue;
+    if (key === 'msm:ai_goals' && isObject(value) && Array.isArray(value.goals)) {
+      kept[key] = {
+        ...value,
+        goals: value.goals.filter(
+          (goal) =>
+            !(isObject(goal) && typeof goal.type === 'string' && goal.type in NOT_IN_EJECT_GOALS),
+        ),
+      };
+    } else if (key === 'msm:movement' && isObject(value)) {
+      const { hover_height: _height, ...rest } = value;
+      kept[key] =
+        typeof value.mode === 'string' && value.mode in NOT_IN_EJECT_MODES
+          ? { ...rest, mode: 'fly' }
+          : rest;
+    } else if (key === 'msm:rideable' && isObject(value)) {
+      const { dash: _dash, ...rest } = value;
+      kept[key] = rest;
+    } else {
+      kept[key] = value;
+    }
   }
   return { ...definition, components: kept };
 }
 
-/** The batch 2 components (`msm:trader`, ...) an entity definition has, in a fixed order. */
+/**
+ * What an entity definition has that the eject leaves out, in a fixed order, in plain words: the
+ * components of batch 2 of vanilla parity 2 and the fish bucket (`msm:trader`, ...), the habits'
+ * goals, hovering and phasing, and the dash.
+ */
 export function notInEjectComponentsOf(definition: JsonObject): string[] {
   const components = definition.components;
   if (!isObject(components)) return [];
-  return Object.keys(NOT_IN_EJECT_COMPONENTS).filter((key) => key in components);
+  const out = Object.keys(NOT_IN_EJECT_COMPONENTS)
+    .filter((key) => key in components)
+    .map((key) => `${NOT_IN_EJECT_COMPONENTS[key]} (${key})`);
+  const goals = components['msm:ai_goals'];
+  if (isObject(goals) && Array.isArray(goals.goals)) {
+    const types = new Set(
+      goals.goals.flatMap((goal) =>
+        isObject(goal) && typeof goal.type === 'string' ? [goal.type] : [],
+      ),
+    );
+    for (const [type, words] of Object.entries(NOT_IN_EJECT_GOALS)) {
+      if (types.has(type)) out.push(`${words} (goal ${type})`);
+    }
+  }
+  const movement = components['msm:movement'];
+  if (isObject(movement) && typeof movement.mode === 'string') {
+    const words = NOT_IN_EJECT_MODES[movement.mode];
+    if (words !== undefined)
+      out.push(`${words} (movement mode ${movement.mode}; it flies instead)`);
+  }
+  const rideable = components['msm:rideable'];
+  if (isObject(rideable) && rideable.dash !== undefined) out.push('the dash (msm:rideable dash)');
+  return out;
 }
 
 /**
@@ -365,11 +447,13 @@ async function loadWrapper(
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
  * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
- * (ADR 0088 D10, ADR 0090 D14), per villager profession and fluid (ADR 0098 D5, ADR 0099 D4), per
- * file of rules for vanilla blocks (`msm:vanilla_block_rules`, ADR 0105 D4; B517), per mob
- * with a trader, storage or shoulder riding component (one warning per mob, ADR 0098 D5), and per script and Mixin event it listens to (`block.place`,
- * `world.explosion`; ADR 0096 D6); command and creative tab definitions go to the generator
- * (ADR 0096 D6); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
+ * (ADR 0088 D10, ADR 0090 D14), per boat item (`msm:boat`, ADR 0110; its recipes are left out and
+ * its tag entries made optional, as in a vanilla pack), per mob with a trader, storage, shoulder
+ * riding or fish bucket component, a habit goal, hovering or phasing, or a dash (one warning per
+ * mob, naming them; the mob is generated without them, ADR 0098 D5, ADR 0109), and per script and
+ * Mixin event it listens to (`block.place`, `world.explosion`; ADR 0096 D6); command, creative tab,
+ * villager profession, fluid, villager type, game rule, statistic and vanilla block rules
+ * definitions go to the generator (ADR 0096 D6, ADR 0112 D3; B537); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
  * with GeckoLib (ADR 0072 D8).
  *
  * @param options - Where the Gradle wrapper comes from.
@@ -403,13 +487,9 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const blocks: DefinitionInput[] = [];
       const items: DefinitionInput[] = [];
       const entities: DefinitionInput[] = [];
-      const effects: DefinitionInput[] = [];
-      const potions: DefinitionInput[] = [];
-      const particles: DefinitionInput[] = [];
-      const biomeAdditions: DefinitionInput[] = [];
-      const lootAdditions: DefinitionInput[] = [];
-      const commands: DefinitionInput[] = [];
-      const creativeTabs: DefinitionInput[] = [];
+      const lists = new Map<ListedKind, DefinitionInput[]>(LISTED_KINDS.map((kind) => [kind, []]));
+      /** Boat items left out, and their chest companions (their recipes and tags are made safe below). */
+      const leftOutItems: string[] = [];
       const scripts: string[] = [];
       const resources: OutputFile[] = [];
       let provided: OutputFile | undefined;
@@ -469,13 +549,7 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           kind !== 'block' &&
           kind !== 'item' &&
           kind !== 'entity' &&
-          kind !== 'effect' &&
-          kind !== 'potion' &&
-          kind !== 'particle' &&
-          kind !== 'biome_addition' &&
-          kind !== 'loot_addition' &&
-          kind !== 'command' &&
-          kind !== 'creative_tab'
+          !(LISTED_KINDS as readonly string[]).includes(kind as string)
         ) {
           problems.report({
             severity: 'warning',
@@ -511,30 +585,53 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
               severity: 'warning',
               code: ExportProblemCodes.notInEject,
               file: file.path,
-              message: `${match[1]}:${match[3]} has the ${lost
-                .map((key) => NOT_IN_EJECT_COMPONENTS[key])
-                .join(
-                  ', ',
-                )} component${lost.length === 1 ? '' : 's'} (${lost.join(', ')}), which the Java project does not include (they need the runtime's trader, storage and shoulder code). The mob is still generated without ${lost.length === 1 ? 'it' : 'them'}. Export the Fabric mod jar to use ${lost.length === 1 ? 'it' : 'them'}.`,
+              message: `${match[1]}:${match[3]} uses ${lost.join(', ')}, which the Java project does not include yet (${lost.length === 1 ? 'it needs' : 'they need'} the runtime's mob code). The mob is still generated without ${lost.length === 1 ? 'it' : 'them'}. Export the Fabric mod jar to use ${lost.length === 1 ? 'it' : 'them'}.`,
             });
           }
+        }
+        const itemComponents = definition.components;
+        if (kind === 'item' && isObject(itemComponents) && BOAT_COMPONENT in itemComponents) {
+          const id = `${match[1]}:${match[3]}`;
+          const chest = chestBoatIdOf(id, definition);
+          leftOutItems.push(id, ...(chest === undefined ? [] : [chest]));
+          problems.report({
+            severity: 'warning',
+            code: ExportProblemCodes.notInEject,
+            file: file.path,
+            message: `${id} is a boat${chest === undefined ? '' : ` (with its chest boat ${chest})`}, which the Java project does not include yet (it needs the runtime's boat code); its recipes are left out and its tag entries made optional. Export the Fabric mod jar to use it.`,
+          });
+          continue;
         }
         const entry: DefinitionInput = {
           id: `${match[1]}:${match[3]}`,
           path: file.path,
           definition: kind === 'entity' ? withoutBatch2Components(definition) : definition,
         };
-        if (match[2] === 'block') blocks.push(entry);
-        else if (match[2] === 'item') items.push(entry);
-        else if (kind === 'effect') effects.push(entry);
-        else if (kind === 'potion') potions.push(entry);
-        else if (kind === 'particle') particles.push(entry);
-        else if (kind === 'biome_addition') biomeAdditions.push(entry);
-        else if (kind === 'loot_addition') lootAdditions.push(entry);
-        else if (kind === 'command') commands.push(entry);
-        else if (kind === 'creative_tab') creativeTabs.push(entry);
-        else entities.push(entry);
+        if (kind === 'block') blocks.push(entry);
+        else if (kind === 'item') items.push(entry);
+        else if (kind === 'entity') entities.push(entry);
+        else lists.get(kind as ListedKind)?.push(entry);
       }
+      if (leftOutItems.length > 0) {
+        // The boats are mod-only here: recipes naming them are left out, tag entries made optional.
+        const kept = resources.filter((file) => file.layer === 'datapack');
+        const safe = vanillaSafeDataFiles(
+          kept,
+          modOnlyIdsOf({ item: leftOutItems }),
+          target.folders.data,
+        );
+        if (safe.files !== kept) {
+          const others = resources.filter((file) => file.layer !== 'datapack');
+          resources.length = 0;
+          resources.push(...others, ...safe.files);
+          resources.sort((a, b) => comparePaths(a.path, b.path));
+        }
+      }
+      const listed = (kind: ListedKind): DefinitionInput[] => lists.get(kind) ?? [];
+      const optionalList = <K extends string>(key: K, kind: ListedKind) =>
+        (listed(kind).length > 0 ? { [key]: listed(kind) } : {}) as Partial<
+          Record<K, DefinitionInput[]>
+        >;
       const soundEvents = collectSoundEvents(resources, problems);
       if (outside > 0) {
         problems.report({
@@ -599,15 +696,22 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
           blocks,
           items,
           entities,
-          effects,
+          effects: listed('effect'),
           soundEvents,
-          ...(potions.length > 0 ? { potions } : {}),
-          ...(particles.length > 0 ? { particles } : {}),
-          ...(biomeAdditions.length > 0 ? { biomeAdditions } : {}),
-          ...(lootAdditions.length > 0 ? { lootAdditions } : {}),
+          ...optionalList('potions', 'potion'),
+          ...optionalList('particles', 'particle'),
+          ...optionalList('biomeAdditions', 'biome_addition'),
+          ...optionalList('lootAdditions', 'loot_addition'),
           // Commands and creative tabs (ADR 0096 D6; plugin API 1.18.0).
-          ...(commands.length > 0 ? { commands } : {}),
-          ...(creativeTabs.length > 0 ? { creativeTabs } : {}),
+          ...optionalList('commands', 'command'),
+          ...optionalList('creativeTabs', 'creative_tab'),
+          // ADR 0112 D3 (plugin API 1.20.0, B537).
+          ...optionalList('vanillaBlockRules', 'vanilla_block_rules'),
+          ...optionalList('villagerProfessions', 'villager_profession'),
+          ...optionalList('fluids', 'fluid'),
+          ...optionalList('villagerTypes', 'villager_type'),
+          ...optionalList('gameRules', 'game_rule'),
+          ...optionalList('stats', 'stat'),
           geckolib: geckolib !== undefined,
         });
       } catch (error) {

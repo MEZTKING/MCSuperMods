@@ -83,11 +83,10 @@ describe('the 26.3 generator and the ADR 0094 block types', () => {
     expect(PARITY_DEFAULTS.stemFruitSoil).toBe(facts.blocks?.stemTags?.fruitSoil);
     expect(PARITY_DEFAULTS.torchParticle).toBe(facts.blocks?.defaultTorchParticle);
     const argumentTypes = facts.commands?.argumentTypes ?? {};
-    // The eject writes ADR 0096's twelve types, the facts' first twelve; the 32 of ADR 0111 D2
-    // (plugin API 1.20.0) reach the eject with B537.
-    expect(Object.keys(ARGUMENT_TYPES)).toEqual(Object.keys(argumentTypes).slice(0, 12));
+    // The eject writes all 44 types (ADR 0096's twelve and the 32 of ADR 0111 D2, B537), in the facts' order.
+    expect(Object.keys(ARGUMENT_TYPES)).toEqual(Object.keys(argumentTypes));
     expect(Object.keys(argumentTypes)).toHaveLength(44);
-    for (const [name, info] of Object.entries(argumentTypes).slice(0, 12)) {
+    for (const [name, info] of Object.entries(argumentTypes)) {
       expect(
         { parser: ARGUMENT_TYPES[name]?.parser, properties: ARGUMENT_TYPES[name]?.properties },
         name,

@@ -381,6 +381,11 @@ describe('0.8.0 additions', () => {
       commands?: DefinitionInput[];
       creativeTabs?: DefinitionInput[];
       vanillaBlockRules?: DefinitionInput[];
+      villagerProfessions?: DefinitionInput[];
+      fluids?: DefinitionInput[];
+      villagerTypes?: DefinitionInput[];
+      gameRules?: DefinitionInput[];
+      stats?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
@@ -704,6 +709,15 @@ describe('0.8.0 additions', () => {
     expectTypeOf<JavaProjectInput['vanillaBlockRules']>().toEqualTypeOf<
       DefinitionInput[] | undefined
     >();
+    for (const key of [
+      'villagerProfessions',
+      'fluids',
+      'villagerTypes',
+      'gameRules',
+      'stats',
+    ] as const) {
+      expectTypeOf<JavaProjectInput[typeof key]>().toEqualTypeOf<DefinitionInput[] | undefined>();
+    }
     const entities: EntityFacts = {
       projectileItems: [],
       saddleTag: 'minecraft:can_equip_saddle',
