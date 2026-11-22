@@ -1,0 +1,73 @@
+{
+ "mc-26.3": {
+  "static": 1661,
+  "bySource": {
+   "kind": 118,
+   "template": 297,
+   "starter": 12,
+   "flow": 62,
+   "example": 200,
+   "command": 51,
+   "rule": 144,
+   "problem": 251,
+   "tile": 27,
+   "showcase": 13,
+   "setting": 12,
+   "guide": 474
+  },
+  "staticAfterFolding": 1644,
+  "vanillaIds": {
+   "block": 1286,
+   "item": 1658,
+   "entity_type": 161,
+   "mob_effect": 40,
+   "enchantment": 43,
+   "potion": 46,
+   "particle_type": 128,
+   "sound_event": 1991,
+   "worldgen/biome": 67
+  },
+  "vanillaIdsTotal": 5420,
+  "vanillaEntriesAfterFoldingBlocksAndItems": 4291,
+  "corpusJsonBytes": 876596,
+  "indexTerms": 3357,
+  "postings": 74191
+ },
+ "mc-26.4": {
+  "static": 1661,
+  "bySource": {
+   "kind": 118,
+   "template": 297,
+   "starter": 12,
+   "flow": 62,
+   "example": 200,
+   "command": 51,
+   "rule": 144,
+   "problem": 251,
+   "tile": 27,
+   "showcase": 13,
+   "setting": 12,
+   "guide": 474
+  },
+  "staticAfterFolding": 1644,
+  "vanillaIds": {
+   "block": 1311,
+   "item": 1686,
+   "entity_type": 163,
+   "mob_effect": 41,
+   "enchantment": 43,
+   "potion": 48,
+   "particle_type": 128,
+   "sound_event": 2048,
+   "worldgen/biome": 68
+  },
+  "vanillaIdsTotal": 5536,
+  "vanillaEntriesAfterFoldingBlocksAndItems": 4382,
+  "corpusJsonBytes": 876596,
+  "indexTerms": 3361,
+  "postings": 74701
+ },
+ "project": {
+  "sampleModThings": 94
+ }
+}

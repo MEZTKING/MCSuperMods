@@ -1,0 +1,116 @@
+{
+ "textInput": [
+  {
+   "where": "window-capture",
+   "key": "K",
+   "target": "text-input"
+  },
+  {
+   "where": "window-bubble",
+   "key": "K",
+   "ctrl": true,
+   "target": "text-input",
+   "defaultPrevented": false
+  }
+ ],
+ "monaco": {
+  "events": [
+   {
+    "where": "window-capture",
+    "key": "K",
+    "target": "DIV"
+   }
+  ],
+  "chordMessageShown": false,
+  "chordRan": true,
+  "before": "  a line with spaces   \nsecond line",
+  "after": "  a line with spaces\nsecond line"
+ },
+ "monacoUndo": {
+  "events": [],
+  "value": "  a line with spaces   \nsecond line"
+ },
+ "body": [
+  {
+   "where": "window-capture",
+   "key": "K",
+   "target": "BODY"
+  },
+  {
+   "where": "window-bubble",
+   "key": "K",
+   "ctrl": true,
+   "target": "BODY",
+   "defaultPrevented": false
+  }
+ ],
+ "ariaSnapshot": "- text: What do you want to make?\n- combobox \"What do you want to make?\" [expanded]: blue sword\n- listbox \"What do you want to make?\":\n  - group \"Best match\":\n    - text: Best match\n    - option \"Blue Sword. A sword. Blue.\" [selected]\n  - group \"Things you can make\":\n    - text: Things you can make\n    - option \"Gear set\"\n    - option \"Enchantment\"\n  - group \"From Minecraft\":\n    - text: From Minecraft\n    - option \"Iron sword. Not on this Minecraft version.\" [disabled]\n- status: \"4 results. Best match: Blue Sword.\"",
+ "axNodes": [
+  {
+   "role": "combobox",
+   "name": "What do you want to make?",
+   "props": [
+    "autocomplete=\"list\"",
+    "expanded=true",
+    "activedescendant=[\"hit-weapon\"]",
+    "controls=\"search-results\""
+   ]
+  },
+  {
+   "role": "listbox",
+   "name": "What do you want to make?",
+   "props": []
+  },
+  {
+   "role": "status",
+   "name": "",
+   "props": [
+    "live=\"polite\""
+   ]
+  },
+  {
+   "role": "group",
+   "name": "Best match",
+   "props": []
+  },
+  {
+   "role": "group",
+   "name": "Things you can make",
+   "props": []
+  },
+  {
+   "role": "group",
+   "name": "From Minecraft",
+   "props": []
+  },
+  {
+   "role": "option",
+   "name": "Blue Sword. A sword. Blue.",
+   "props": [
+    "selected=true"
+   ]
+  },
+  {
+   "role": "option",
+   "name": "Gear set",
+   "props": [
+    "selected=false"
+   ]
+  },
+  {
+   "role": "option",
+   "name": "Enchantment",
+   "props": [
+    "selected=false"
+   ]
+  },
+  {
+   "role": "option",
+   "name": "Iron sword. Not on this Minecraft version.",
+   "props": [
+    "disabled=true",
+    "selected=false"
+   ]
+  }
+ ]
+}

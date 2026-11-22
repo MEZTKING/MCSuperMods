@@ -1,0 +1,241 @@
+{
+ "target": "mc-26.4",
+ "node": "v24.22.2",
+ "jar": {
+  "enUsBytes": 561688,
+  "readMs": 26.6,
+  "keys": 8766
+ },
+ "vanillaCollectMs": 13.3,
+ "vanillaEntries": 4382,
+ "staticEntries": 1661,
+ "build": {
+  "staticCold": 197.8,
+  "static": 120.8,
+  "staticPlusVanilla": 292.4,
+  "vanillaAlone": 78.4,
+  "mod500Alone": 9.8,
+  "mod5000Alone": 97.1
+ },
+ "memory": {
+  "static": {
+   "entries": 1644,
+   "terms": 2958,
+   "postings": 51506,
+   "buildMs": 108.3,
+   "heapMB": 3.7
+  },
+  "static+vanilla": {
+   "entries": 6026,
+   "terms": 3361,
+   "postings": 74701,
+   "buildMs": 275.6,
+   "heapMB": 6.9
+  },
+  "static+vanilla+mod500": {
+   "entries": 6526,
+   "terms": 3363,
+   "postings": 76849,
+   "buildMs": 181.9,
+   "heapMB": 6.9
+  },
+  "static+vanilla+mod5000": {
+   "entries": 11026,
+   "terms": 3363,
+   "postings": 100681,
+   "buildMs": 274.8,
+   "heapMB": 9.4
+  }
+ },
+ "latency": {
+  "static": {
+   "all": {
+    "median": 0.573,
+    "p95": 3.134,
+    "max": 6.521,
+    "n": 880
+   },
+   "1 words": {
+    "median": 0.21,
+    "p95": 2.337,
+    "max": 3.378,
+    "n": 220
+   },
+   "2 words": {
+    "median": 0.381,
+    "p95": 3.078,
+    "max": 5.292,
+    "n": 320
+   },
+   "3 words": {
+    "median": 0.891,
+    "p95": 2.837,
+    "max": 3.913,
+    "n": 70
+   },
+   "4 words": {
+    "median": 1.112,
+    "p95": 1.736,
+    "max": 2.796,
+    "n": 90
+   },
+   "5 words": {
+    "median": 0.925,
+    "p95": 3.384,
+    "max": 5.157,
+    "n": 80
+   },
+   "6 words": {
+    "median": 1.72,
+    "p95": 3.913,
+    "max": 6.521,
+    "n": 100
+   }
+  },
+  "static+vanilla": {
+   "all": {
+    "median": 0.675,
+    "p95": 7.261,
+    "max": 19.924,
+    "n": 880
+   },
+   "1 words": {
+    "median": 0.277,
+    "p95": 10.369,
+    "max": 19.924,
+    "n": 220
+   },
+   "2 words": {
+    "median": 0.492,
+    "p95": 4.639,
+    "max": 12.856,
+    "n": 320
+   },
+   "3 words": {
+    "median": 0.989,
+    "p95": 4.359,
+    "max": 7.175,
+    "n": 70
+   },
+   "4 words": {
+    "median": 1.203,
+    "p95": 6.12,
+    "max": 8.097,
+    "n": 90
+   },
+   "5 words": {
+    "median": 0.89,
+    "p95": 3.556,
+    "max": 5.996,
+    "n": 80
+   },
+   "6 words": {
+    "median": 1.91,
+    "p95": 8.521,
+    "max": 13.232,
+    "n": 100
+   }
+  },
+  "static+vanilla+mod500": {
+   "all": {
+    "median": 0.6,
+    "p95": 6.518,
+    "max": 11.883,
+    "n": 880
+   },
+   "1 words": {
+    "median": 0.206,
+    "p95": 9.139,
+    "max": 11.229,
+    "n": 220
+   },
+   "2 words": {
+    "median": 0.431,
+    "p95": 3.968,
+    "max": 8.907,
+    "n": 320
+   },
+   "3 words": {
+    "median": 0.901,
+    "p95": 2.923,
+    "max": 4.499,
+    "n": 70
+   },
+   "4 words": {
+    "median": 1.168,
+    "p95": 5.161,
+    "max": 7.157,
+    "n": 90
+   },
+   "5 words": {
+    "median": 0.891,
+    "p95": 2.765,
+    "max": 4.569,
+    "n": 80
+   },
+   "6 words": {
+    "median": 1.88,
+    "p95": 9.033,
+    "max": 11.883,
+    "n": 100
+   }
+  },
+  "static+vanilla+mod5000": {
+   "all": {
+    "median": 0.778,
+    "p95": 6.525,
+    "max": 14.764,
+    "n": 880
+   },
+   "1 words": {
+    "median": 0.204,
+    "p95": 7.686,
+    "max": 13.056,
+    "n": 220
+   },
+   "2 words": {
+    "median": 0.72,
+    "p95": 3.003,
+    "max": 8.173,
+    "n": 320
+   },
+   "3 words": {
+    "median": 1.141,
+    "p95": 3.044,
+    "max": 4.407,
+    "n": 70
+   },
+   "4 words": {
+    "median": 1.455,
+    "p95": 4.497,
+    "max": 6.261,
+    "n": 90
+   },
+   "5 words": {
+    "median": 1.069,
+    "p95": 2.864,
+    "max": 3.045,
+    "n": 80
+   },
+   "6 words": {
+    "median": 2.082,
+    "p95": 10.032,
+    "max": 14.764,
+    "n": 100
+   }
+  }
+ },
+ "worker": {
+  "buildRoundTripMs": 419,
+  "workerBuildMs": 290.3,
+  "direct": {
+   "median": 1.022,
+   "p95": 8.734
+  },
+  "roundTrip": {
+   "median": 1.858,
+   "p95": 13.528
+  },
+  "meanResultBytes": 11414
+ }
+}

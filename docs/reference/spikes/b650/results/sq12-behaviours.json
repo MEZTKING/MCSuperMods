@@ -1,0 +1,351 @@
+[
+ {
+  "id": "glows",
+  "clause": "glows",
+  "appliesTo": [
+   "block"
+  ],
+  "kind": "flow answers",
+  "sentence": "Gives off light.",
+  "problems": []
+ },
+ {
+  "id": "explodes-broken",
+  "clause": "explodes",
+  "appliesTo": [
+   "block"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player breaks it, make an explosion.",
+  "problems": []
+ },
+ {
+  "id": "explodes-used",
+  "clause": "explodes",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, make an explosion.",
+  "problems": []
+ },
+ {
+  "id": "drops-xp",
+  "clause": "drops xp",
+  "appliesTo": [
+   "block"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player breaks it, give experience.",
+  "problems": []
+ },
+ {
+  "id": "mob-drops-xp",
+  "clause": "drops xp",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "one rule",
+  "sentence": "When it dies, give experience.",
+  "problems": []
+ },
+ {
+  "id": "sets-on-fire",
+  "clause": "sets mobs on fire",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "companion flow",
+  "sentence": "An enchantment for it that sets the target on fire.",
+  "problems": []
+ },
+ {
+  "id": "gives-speed",
+  "clause": "gives speed",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, give Speed.",
+  "problems": []
+ },
+ {
+  "id": "ride",
+  "clause": "you can ride",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "the flow itself",
+  "sentence": "You can ride it.",
+  "problems": []
+ },
+ {
+  "id": "flies",
+  "clause": "flies",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "the flow itself",
+  "sentence": "It flies.",
+  "problems": []
+ },
+ {
+  "id": "heals",
+  "clause": "heals you",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, heal 4 half hearts.",
+  "problems": []
+ },
+ {
+  "id": "teleports",
+  "clause": "teleports you",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, teleport them.",
+  "problems": []
+ },
+ {
+  "id": "shoots-arrows",
+  "clause": "shoots arrows",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "flow answers",
+  "sentence": "It shoots arrows at players.",
+  "problems": []
+ },
+ {
+  "id": "poisons",
+  "clause": "poisons",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "companion flow",
+  "sentence": "An enchantment for it that poisons the target.",
+  "problems": []
+ },
+ {
+  "id": "friendly",
+  "clause": "is friendly",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "flow answers",
+  "sentence": "It never fights.",
+  "problems": []
+ },
+ {
+  "id": "attacks",
+  "clause": "attacks players",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "flow answers",
+  "sentence": "It attacks players.",
+  "problems": []
+ },
+ {
+  "id": "step-launch",
+  "clause": "bounces you",
+  "appliesTo": [
+   "block"
+  ],
+  "kind": "one rule",
+  "sentence": "When something steps on it, launch it up.",
+  "problems": []
+ },
+ {
+  "id": "grows",
+  "clause": "grows",
+  "appliesTo": [
+   "block"
+  ],
+  "kind": "the flow itself",
+  "sentence": "It grows like a crop.",
+  "problems": []
+ },
+ {
+  "id": "drops-item",
+  "clause": "drops diamonds",
+  "appliesTo": [
+   "block"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player breaks it, drop an item.",
+  "problems": []
+ },
+ {
+  "id": "spawns-mob",
+  "clause": "spawns zombies",
+  "appliesTo": [
+   "block",
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, spawn a mob.",
+  "problems": []
+ },
+ {
+  "id": "plays-music",
+  "clause": "plays music",
+  "appliesTo": [
+   "block",
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, play a sound.",
+  "problems": []
+ },
+ {
+  "id": "jump-higher",
+  "clause": "makes you jump higher",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, give Jump boost.",
+  "problems": []
+ },
+ {
+  "id": "slows",
+  "clause": "slows mobs",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "companion flow",
+  "sentence": "An enchantment for it that gives the target Slowness.",
+  "problems": []
+ },
+ {
+  "id": "message",
+  "clause": "sends a message",
+  "appliesTo": [
+   "block",
+   "item",
+   "mob"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, show a chat message.",
+  "problems": []
+ },
+ {
+  "id": "mines-faster",
+  "clause": "mines faster",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "companion flow",
+  "sentence": "An enchantment for it that mines faster.",
+  "problems": []
+ },
+ {
+  "id": "knocks-back",
+  "clause": "knocks back",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "companion flow",
+  "sentence": "An enchantment for it with extra knockback.",
+  "problems": []
+ },
+ {
+  "id": "eat",
+  "clause": "you can eat",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "the flow itself",
+  "sentence": "You can eat it.",
+  "problems": []
+ },
+ {
+  "id": "stores",
+  "clause": "stores items",
+  "appliesTo": [
+   "block",
+   "item"
+  ],
+  "kind": "the flow itself",
+  "sentence": "It stores items.",
+  "problems": []
+ },
+ {
+  "id": "follows",
+  "clause": "follows you",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "the flow itself",
+  "sentence": "You can tame it and it follows you.",
+  "problems": []
+ },
+ {
+  "id": "invisible",
+  "clause": "makes you invisible",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, give Invisibility.",
+  "problems": []
+ },
+ {
+  "id": "rain",
+  "clause": "makes it rain",
+  "appliesTo": [
+   "item",
+   "block"
+  ],
+  "kind": "one rule",
+  "sentence": "When a player uses it, set the weather to rain.",
+  "problems": []
+ },
+ {
+  "id": "unbreakable",
+  "clause": "never breaks",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "gap",
+  "sentence": "It never wears out.",
+  "gap": "No flow answer makes an item unbreakable; only Advanced through `msm:components` (`minecraft:unbreakable`).",
+  "problems": []
+ },
+ {
+  "id": "walk-on-water",
+  "clause": "walks on water",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "gap",
+  "sentence": "Freezes water under you.",
+  "gap": "The Enchantment flow has no Frost Walker-like effect; the Rules have no step that replaces nearby blocks in an area.",
+  "problems": []
+ },
+ {
+  "id": "lightning",
+  "clause": "strikes lightning",
+  "appliesTo": [
+   "item"
+  ],
+  "kind": "one rule",
+  "sentence": "When it hits a mob, strike lightning there.",
+  "problems": []
+ },
+ {
+  "id": "mob-sets-fire",
+  "clause": "sets players on fire",
+  "appliesTo": [
+   "mob"
+  ],
+  "kind": "gap",
+  "sentence": "Its attacks set the target on fire.",
+  "gap": "No Rules step or Script API member sets an entity on fire; a mob has no \"on fire\" attack answer.",
+  "problems": []
+ }
+]

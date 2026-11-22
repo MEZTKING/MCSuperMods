@@ -8549,3 +8549,16 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - Two fixes before B551/B552 (outside this brief, reported as follow-ups): MSM's structure template writer writes `Name`/`Properties` palettes at the target's DataVersion, which 26.x places as air (needs `id`/`properties`); `@msm/schemas/mcfunction` throws on `#holder` scores in most positions and on named random sequences.
 - ADR 0116 D2's left-out list needs the 26.x names `players/data`, `players/advancements`, `players/stats`; every map with its own world type shows the "experimental settings" backup screen when opened (B554 and B556 should expect it).
 - B548 scaffold can start.
+## 2026-11-22 — executor — B650 spike: search everything
+
+**What**
+- Answered SQ1 to SQ16 of the search plan on both targets, from main 0cb3abe, with a throwaway engine (normalising, spelling folds, a light stemmer, three typo methods, BM25F, intent weights, answers from words, behaviour clauses) over the real corpus collected from the built-in plugins and the app's own lists, in Node 24 and in an Electron 45 Web Worker (and the page's main thread at four times slower). Evidence in `docs/reference/spikes/b650/` (README, `results/`, the 82 draft queries, `spike-src/`); notes appended to the plan's "Notes from implementation".
+- Measured: corpus 1,661 static entries and about 4,300 vanilla entries per target; worker build 90 to 177 ms, queries p95 under 8 ms (under 25 ms at four times slower), 9.4 MB with a 5,000-thing mod; 302 misspellings (91.7 % right first); stemmer merges; the 82 queries (today's matchers 20.7 % first, the spike 87.8 % after one tuning pass, 95.1 % in the top three); answers from words over the 62 flows; preview bundle times; the jar's `en_us.json` route; Ctrl+K in Monaco and a text field; the guide's packaging and Markdown needs; renderer and asar size of the chunks; 34 behaviour clauses; search data through the sandbox; the accessibility tree.
+- The client jars were read only in memory from the Loom cache; no name from them is kept. The throwaway Vitest files and renderer chunks were removed from `app/`; nothing under `packages/` or `app/src` changed.
+
+**Decisions** (recommendations for the orchestrator)
+- Go for the worker, the draft time and memory budgets, trigram typo candidates (no sound-alike key: B674 and B675 and B676 not needed), the dictionary-aware stemmer with an exception list, the palette door, the packaged guide, and the size budgets on condition that the plugins' search data loads lazily (`searchData()` in place of eager arrays: an interface correction for B651).
+- D16: keep 85 % and 95 % overall and add per-class floors; D7: drop an out-of-range number instead of clamping it.
+
+**Next**
+- Main session: review the interface corrections and the gap list (set on fire in Rules and the Script API, an enchantment on a made item from the start, a Frost Walker-like effect, "unbreakable" as a flow answer) for `docs/COVERAGE-AUDIT.md`; add a `b650/` line to `docs/reference/spikes/README.md`; then B651 and B652. The guide needs recipe and data pack sections (B672).

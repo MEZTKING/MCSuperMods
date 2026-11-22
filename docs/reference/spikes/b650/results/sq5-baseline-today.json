@@ -1,0 +1,1050 @@
+{
+ "total": {
+  "n": 82,
+  "first": 17,
+  "top3": 18
+ },
+ "byClass": {
+  "plain": {
+   "n": 10,
+   "first": 0,
+   "top3": 0
+  },
+  "misspelt": {
+   "n": 8,
+   "first": 0,
+   "top3": 0
+  },
+  "american": {
+   "n": 6,
+   "first": 1,
+   "top3": 1
+  },
+  "slang": {
+   "n": 8,
+   "first": 1,
+   "top3": 1
+  },
+  "how-to": {
+   "n": 8,
+   "first": 0,
+   "top3": 0
+  },
+  "id": {
+   "n": 6,
+   "first": 2,
+   "top3": 3
+  },
+  "mine": {
+   "n": 8,
+   "first": 0,
+   "top3": 0
+  },
+  "setting": {
+   "n": 6,
+   "first": 0,
+   "top3": 0
+  },
+  "command": {
+   "n": 8,
+   "first": 7,
+   "top3": 7
+  },
+  "behaviour": {
+   "n": 8,
+   "first": 0,
+   "top3": 0
+  },
+  "nonsense": {
+   "n": 6,
+   "first": 6,
+   "top3": 6
+  }
+ },
+ "queries": [
+  {
+   "q": "blue sword",
+   "expect": "flow:weapon",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "make a pig fly",
+   "expect": "flow:flying-mob",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a mob I can ride",
+   "expect": "flow:mount",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "make a car",
+   "expect": "flow:vehicle-car",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a new ore",
+   "expect": "flow:custom_ore",
+   "rank": -1,
+   "counts": {
+    "command": 1,
+    "template": 2,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "make a potion",
+   "expect": "flow:potion",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 2,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a pet that follows me",
+   "expect": "flow:pet",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "make a dimension",
+   "expect": "flow:dimension",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "music disc",
+   "expect": "flow:music-disc-item",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 2,
+    "vanilla": 22,
+    "project": 0
+   }
+  },
+  {
+   "q": "stone stairs and slabs",
+   "expect": "flow:stone-set",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "creper",
+   "expect": "vanilla:entity_type:creeper",
+   "rank": -1,
+   "counts": {
+    "command": 1,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "netherrite sword",
+   "expect": "flow:weapon",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "enchantmant",
+   "expect": "flow:enchantment",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "dimention",
+   "expect": "flow:dimension",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "vehical",
+   "expect": "tile:vehicle",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "skeliton",
+   "expect": "vanilla:entity_type:skeleton",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "custum ore",
+   "expect": "flow:custom_ore",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "glyder",
+   "expect": "flow:glider",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "armor",
+   "expect": "tile:armour",
+   "rank": -1,
+   "counts": {
+    "command": 1,
+    "template": 1,
+    "example": 0,
+    "vanilla": 32,
+    "project": 0
+   }
+  },
+  {
+   "q": "armour",
+   "expect": "tile:armour",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 7,
+    "example": 7,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "gray wool",
+   "expect": "vanilla:thing:gray_wool",
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 12,
+    "project": 0
+   }
+  },
+  {
+   "q": "colored lights",
+   "expect": "flow:lights",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "armor trim",
+   "expect": "flow:armour-trim",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 18,
+    "project": 0
+   }
+  },
+  {
+   "q": "mob behavior",
+   "expect": "guide:mob-behaviours.md#the-quick-way-the-creator-flows",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "skyblock",
+   "expect": "flow:world-empty-sky",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 1,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "netherite pick",
+   "expect": "flow:gear-set",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 1,
+    "project": 0
+   }
+  },
+  {
+   "q": "give xp",
+   "expect": "rule:step:give_experience",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "tp",
+   "expect": "rule:step:teleport",
+   "rank": -1,
+   "counts": {
+    "command": 13,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "op sword",
+   "expect": "flow:weapon",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "pet doggo",
+   "expect": "flow:pet",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "mod jar",
+   "expect": "command:exportFabricJar",
+   "rank": 0,
+   "counts": {
+    "command": 1,
+    "template": 4,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "void world",
+   "expect": "flow:world-empty-sky",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how do I add a recipe",
+   "expect": "starter:recipe_pack",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how do I test my mod",
+   "expect": "guide:playing-and-testing.md#play",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how to make a portal",
+   "expect": "guide:creator.md#make-a-portal",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how do rules work",
+   "expect": "guide:rules.md#where-rules-live",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how to export a modpack",
+   "expect": "guide:modpacks.md#export-modpack-mrpack-",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how do I make a mob",
+   "expect": "guide:creator.md#make-a-mob",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "how to reload the game",
+   "expect": "guide:playing-and-testing.md#reload",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "what is a datapack",
+   "expect": "starter:data_pack",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "minecraft:iron_ingot",
+   "expect": "vanilla:thing:iron_ingot",
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 1,
+    "project": 0
+   }
+  },
+  {
+   "q": "minecraft:creeper",
+   "expect": "vanilla:entity_type:creeper",
+   "rank": 4,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 6,
+    "project": 0
+   }
+  },
+  {
+   "q": "msm:block",
+   "expect": "kind:msm:block",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 72,
+    "example": 32,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "minecraft:recipe",
+   "expect": "kind:minecraft:recipe",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 11,
+    "example": 2,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "minecraft:plains",
+   "expect": "vanilla:worldgen/biome:plains",
+   "rank": 1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 4,
+    "project": 0
+   }
+  },
+  {
+   "q": "minecraft:speed",
+   "expect": "vanilla:mob_effect:speed",
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 1,
+    "project": 0
+   }
+  },
+  {
+   "q": "ruby sword",
+   "expect": "project:msm_sample_mod:item/ruby_sword",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "maple door",
+   "expect": "project:msm_sample_mod:block/maple_door",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "ruby ore",
+   "expect": "project:msm_sample_mod:block/ruby_ore",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "zombie drops ruby",
+   "expect": "project:msm_sample_mod:loot_addition/zombie_drops_ruby",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "open ruby bow",
+   "expect": "project:msm_sample_mod:item/ruby_bow",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "glow stone",
+   "expect": "project:msm_sample_mod:block/glow_stone",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "rubby wand",
+   "expect": "project:msm_sample_mod:item/ruby_wand",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "maple log",
+   "expect": "project:msm_sample_mod:block/maple_log",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "turn off showcase clips",
+   "expect": "setting:play-showcase-clips",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "minecraft folder",
+   "expect": "setting:official-launcher-folder",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "automatic updates",
+   "expect": "setting:check-for-updates-automatically",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "prism launcher",
+   "expect": "setting:other-launchers",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "ai key",
+   "expect": "setting:ai-helper-key",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 2,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "world backups",
+   "expect": "setting:keep-world-backups",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "export jar",
+   "expect": "command:exportFabricJar",
+   "rank": 0,
+   "counts": {
+    "command": 2,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "undo",
+   "expect": "command:undo",
+   "rank": 0,
+   "counts": {
+    "command": 3,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "play",
+   "expect": "command:play",
+   "rank": 0,
+   "counts": {
+    "command": 2,
+    "template": 52,
+    "example": 10,
+    "vanilla": 4,
+    "project": 0
+   }
+  },
+  {
+   "q": "advanced mode",
+   "expect": "command:advancedMode",
+   "rank": 0,
+   "counts": {
+    "command": 2,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "save",
+   "expect": "command:save",
+   "rank": 0,
+   "counts": {
+    "command": 2,
+    "template": 1,
+    "example": 1,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "import blockbench",
+   "expect": "command:importBlockbench",
+   "rank": 0,
+   "counts": {
+    "command": 1,
+    "template": 31,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "whats new",
+   "expect": "command:whatsNew",
+   "rank": 0,
+   "counts": {
+    "command": 1,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "surprise me",
+   "expect": "tile:surprise",
+   "rank": -1,
+   "counts": {
+    "command": 1,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "blue sword that sets mobs on fire",
+   "expect": "flow:weapon",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "custom ore that drops xp",
+   "expect": "flow:custom_ore",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a block that explodes",
+   "expect": "flow:simple-block",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a sword that poisons",
+   "expect": "flow:weapon",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a mob that flies",
+   "expect": "flow:flying-mob",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 1,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "an animal you can ride",
+   "expect": "flow:mount",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 2,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a block that glows",
+   "expect": "flow:simple-block",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 3,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "a wand that teleports you",
+   "expect": "flow:scripted-item",
+   "rank": -1,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "asdfgh",
+   "expect": null,
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "qwerty uiop",
+   "expect": null,
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "zzzz",
+   "expect": null,
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "lorem ipsum dolor",
+   "expect": null,
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "blorptastic",
+   "expect": null,
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  },
+  {
+   "q": "xyzzy plugh",
+   "expect": null,
+   "rank": 0,
+   "counts": {
+    "command": 0,
+    "template": 0,
+    "example": 0,
+    "vanilla": 0,
+    "project": 0
+   }
+  }
+ ]
+}

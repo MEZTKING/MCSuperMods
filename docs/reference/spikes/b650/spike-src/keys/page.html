@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="keys-page.css"></head><body>
+<input data-where="text-input" id="plain" aria-label="Plain field">
+<div id="editor" style="width:600px;height:200px;border:1px solid #888"></div>
+<div id="search">
+  <label id="search-label" for="search-input">What do you want to make?</label>
+  <input id="search-input" data-where="search" role="combobox" aria-expanded="true" aria-controls="search-results" aria-autocomplete="list" aria-activedescendant="hit-weapon" aria-labelledby="search-label" value="blue sword">
+  <div id="search-results" role="listbox" aria-labelledby="search-label">
+    <div role="group" aria-labelledby="h-best"><div id="h-best" role="presentation">Best match</div>
+      <div role="option" id="hit-weapon" aria-selected="true">Blue Sword. A sword. Blue.</div>
+    </div>
+    <div role="group" aria-labelledby="h-make"><div id="h-make" role="presentation">Things you can make</div>
+      <div role="option" id="hit-gear" aria-selected="false">Gear set</div>
+      <div role="option" id="hit-ench" aria-selected="false">Enchantment</div>
+    </div>
+    <div role="group" aria-labelledby="h-mc"><div id="h-mc" role="presentation">From Minecraft</div>
+      <div role="option" id="hit-iron" aria-selected="false" aria-disabled="true">Iron sword. Not on this Minecraft version.</div>
+    </div>
+  </div>
+  <div role="status" aria-live="polite" id="live">4 results. Best match: Blue Sword.</div>
+</div>
+<script src="keys-page.js"></script></body></html>

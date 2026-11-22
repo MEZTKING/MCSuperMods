@@ -1,0 +1,72 @@
+{
+ "mc-26.3": {
+  "enUsBytes": 546577,
+  "keys": 8559,
+  "readFromJarMs": [
+   13.9,
+   16.8,
+   14.9,
+   15
+  ],
+  "parseMs": 2.8,
+  "keysByPrefix": {
+   "block.minecraft.": 1975,
+   "item.minecraft.": 803,
+   "entity.minecraft.": 218,
+   "effect.minecraft.": 40,
+   "enchantment.minecraft.": 44,
+   "biome.minecraft.": 67,
+   "item.minecraft.potion.effect.": 26,
+   "subtitles.": 1023
+  },
+  "wantedKeys": 4136,
+  "wantedBytesAsJson": 227593,
+  "idsNamed": {
+   "block": "1270 of 1286",
+   "item": "537 of 1658",
+   "entity_type": "161 of 161",
+   "mob_effect": "40 of 40",
+   "enchantment": "43 of 43",
+   "potion": "24 of 46",
+   "particle_type": "0 of 128",
+   "sound_event": "0 of 1991",
+   "worldgen/biome": "67 of 67"
+  },
+  "vanillaEntriesMs": 8.9
+ },
+ "mc-26.4": {
+  "enUsBytes": 561688,
+  "keys": 8766,
+  "readFromJarMs": [
+   14,
+   13.8,
+   20.3,
+   19.4
+  ],
+  "parseMs": 2.8,
+  "keysByPrefix": {
+   "block.minecraft.": 2000,
+   "item.minecraft.": 811,
+   "entity.minecraft.": 220,
+   "effect.minecraft.": 41,
+   "enchantment.minecraft.": 44,
+   "biome.minecraft.": 68,
+   "item.minecraft.potion.effect.": 27,
+   "subtitles.": 1039
+  },
+  "wantedKeys": 4188,
+  "wantedBytesAsJson": 231037,
+  "idsNamed": {
+   "block": "1295 of 1311",
+   "item": "540 of 1686",
+   "entity_type": "163 of 163",
+   "mob_effect": "41 of 41",
+   "enchantment": "43 of 43",
+   "potion": "25 of 48",
+   "particle_type": "0 of 128",
+   "sound_event": "0 of 2048",
+   "worldgen/biome": "68 of 68"
+  },
+  "vanillaEntriesMs": 4.9
+ }
+}

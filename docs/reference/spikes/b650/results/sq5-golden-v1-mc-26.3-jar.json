@@ -1,0 +1,218 @@
+{
+ "target": "mc-26.3",
+ "jar": true,
+ "keywords": true,
+ "typo": "trigram",
+ "v1": true,
+ "soundAlike": false,
+ "total": {
+  "n": 82,
+  "first": 72,
+  "top3": 78,
+  "answers": 10,
+  "answersN": 12
+ },
+ "byClass": {
+  "plain": {
+   "n": 10,
+   "first": 9,
+   "top3": 10,
+   "answers": 2,
+   "answersN": 2
+  },
+  "misspelt": {
+   "n": 8,
+   "first": 7,
+   "top3": 8,
+   "answers": 0,
+   "answersN": 1
+  },
+  "american": {
+   "n": 6,
+   "first": 5,
+   "top3": 5,
+   "answers": 0,
+   "answersN": 0
+  },
+  "slang": {
+   "n": 8,
+   "first": 6,
+   "top3": 8,
+   "answers": 0,
+   "answersN": 1
+  },
+  "how-to": {
+   "n": 8,
+   "first": 5,
+   "top3": 5,
+   "answers": 0,
+   "answersN": 0
+  },
+  "id": {
+   "n": 6,
+   "first": 6,
+   "top3": 6,
+   "answers": 0,
+   "answersN": 0
+  },
+  "mine": {
+   "n": 8,
+   "first": 8,
+   "top3": 8,
+   "answers": 0,
+   "answersN": 0
+  },
+  "setting": {
+   "n": 6,
+   "first": 6,
+   "top3": 6,
+   "answers": 0,
+   "answersN": 0
+  },
+  "command": {
+   "n": 8,
+   "first": 8,
+   "top3": 8,
+   "answers": 0,
+   "answersN": 0
+  },
+  "behaviour": {
+   "n": 8,
+   "first": 6,
+   "top3": 8,
+   "answers": 8,
+   "answersN": 8
+  },
+  "nonsense": {
+   "n": 6,
+   "first": 6,
+   "top3": 6,
+   "answers": 0,
+   "answersN": 0
+  }
+ },
+ "misses": [
+  {
+   "q": "blue sword",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "flow:weapon",
+    "example:example_msm_life_steal_sword"
+   ],
+   "answers": {
+    "colour": "#3c44aa",
+    "weapon_type": "sword",
+    "weapon_name": "Blue Sword"
+   },
+   "confident": true
+  },
+  {
+   "q": "netherrite sword",
+   "expect": "flow:weapon",
+   "got": [
+    "vanilla:thing:netherite_sword",
+    "starter:custom-sword",
+    "flow:weapon"
+   ],
+   "answers": {
+    "weapon_type": "sword"
+   },
+   "confident": true
+  },
+  {
+   "q": "mob behavior",
+   "expect": "guide:mob-behaviours.md#the-quick-way-the-creator-flows",
+   "got": [
+    "flow:custom_mob",
+    "guide:mob-behaviours.md#kind-of-mob-and-base",
+    "guide:mob-behaviours.md#choose-how-the-mob-is-drawn"
+   ],
+   "confident": true
+  },
+  {
+   "q": "netherite pick",
+   "expect": "flow:gear-set",
+   "got": [
+    "vanilla:thing:netherite_pickaxe",
+    "flow:gear-set",
+    "example:example_msm_tool"
+   ],
+   "answers": {
+    "tier": "netherite"
+   },
+   "confident": true
+  },
+  {
+   "q": "mod jar",
+   "expect": "command:exportFabricJar",
+   "got": [
+    "example:example_msm_firefly_jar",
+    "command:exportFabricJar",
+    "guide:getting-started.md#8-export-the-fabric-mod-jar"
+   ],
+   "confident": true
+  },
+  {
+   "q": "how do I add a recipe",
+   "expect": "starter:recipe_pack",
+   "got": [
+    "guide:containers-and-machines.md#machine-recipes",
+    "example:starter_recipe_pack",
+    "kind:minecraft:recipe"
+   ],
+   "confident": true
+  },
+  {
+   "q": "how do I test my mod",
+   "expect": "guide:playing-and-testing.md#play",
+   "got": [
+    "guide:first-mod.md#6-change-something-and-test-again",
+    "guide:blocks-and-items.md#test-in-minecraft",
+    "guide:modpacks.md#test-modpack-in-minecraft"
+   ],
+   "confident": true
+  },
+  {
+   "q": "how do rules work",
+   "expect": "guide:rules.md#where-rules-live",
+   "got": [
+    "problem:rules.needs-jar",
+    "guide:worldgen.md#a-sky-and-rules-of-your-own-dimension-types-",
+    "problem:rules.needs-plain"
+   ],
+   "confident": true
+  },
+  {
+   "q": "blue sword that sets mobs on fire",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "flow:weapon",
+    "example:example_msm_life_steal_sword"
+   ],
+   "answers": {
+    "colour": "#3c44aa",
+    "weapon_type": "sword",
+    "weapon_name": "Blue Sword"
+   },
+   "behaviour": "sets-on-fire",
+   "confident": true
+  },
+  {
+   "q": "a sword that poisons",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "example:example_msm_life_steal_sword",
+    "flow:weapon"
+   ],
+   "answers": {
+    "weapon_type": "sword"
+   },
+   "behaviour": "poisons",
+   "confident": true
+  }
+ ],
+ "note": "The jar was read in memory to name the vanilla layer; what the matcher understood is left out so no word of it is kept."
+}

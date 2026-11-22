@@ -1,0 +1,16 @@
+{
+ "lines": 200,
+ "entries": 3,
+ "searchDataBytes": 23048,
+ "descriptionBytes": 24051,
+ "readyMs": 6.4,
+ "structuredCloneMs": 0.796,
+ "checkMs": 0.209,
+ "problems": [
+  "entry steal: opens starter weapon, not one of the plugin's own",
+  "entry: functions supports are ignored"
+ ],
+ "codeEntryFunctions": [
+  "supports"
+ ]
+}

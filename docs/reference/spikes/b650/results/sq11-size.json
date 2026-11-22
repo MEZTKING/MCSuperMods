@@ -1,0 +1,18 @@
+{
+ "build": "pnpm --filter @msm/app build (electron-vite 5), worktree at 0cb3abe, 2026-11-22",
+ "note": "app.asar was not built (dist:dir skipped to save disk); app.asar packs out/** uncompressed, so its delta is the out/ delta",
+ "outBytesBefore": 27425638,
+ "outBytesAfter": 27557745,
+ "outDelta": 132107,
+ "rendererBefore": "17.6 MB of 19 MB (check-size)",
+ "chunks": {
+  "worker: engine and text, minified": 19398,
+  "SearchPanel: an empty combobox": 501,
+  "client stub: the lazy loader": 579,
+  "vocab-2000: 2,000 vocabulary lines of the draft shape": 111317,
+  "index.js (first paint) change: the import stub": 154,
+  "index.css change": 24
+ },
+ "rendererDelta": 131973,
+ "vocabularySourceBytes": 132015
+}

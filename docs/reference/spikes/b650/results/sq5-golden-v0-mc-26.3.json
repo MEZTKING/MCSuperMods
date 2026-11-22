@@ -1,0 +1,514 @@
+{
+ "target": "mc-26.3",
+ "jar": false,
+ "keywords": false,
+ "typo": "deletion",
+ "v1": false,
+ "soundAlike": false,
+ "total": {
+  "n": 82,
+  "first": 58,
+  "top3": 71,
+  "answers": 8,
+  "answersN": 12
+ },
+ "byClass": {
+  "plain": {
+   "n": 10,
+   "first": 7,
+   "top3": 8,
+   "answers": 1,
+   "answersN": 2
+  },
+  "misspelt": {
+   "n": 8,
+   "first": 7,
+   "top3": 8,
+   "answers": 0,
+   "answersN": 1
+  },
+  "american": {
+   "n": 6,
+   "first": 4,
+   "top3": 5,
+   "answers": 0,
+   "answersN": 0
+  },
+  "slang": {
+   "n": 8,
+   "first": 3,
+   "top3": 6,
+   "answers": 0,
+   "answersN": 1
+  },
+  "how-to": {
+   "n": 8,
+   "first": 4,
+   "top3": 5,
+   "answers": 0,
+   "answersN": 0
+  },
+  "id": {
+   "n": 6,
+   "first": 6,
+   "top3": 6,
+   "answers": 0,
+   "answersN": 0
+  },
+  "mine": {
+   "n": 8,
+   "first": 8,
+   "top3": 8,
+   "answers": 0,
+   "answersN": 0
+  },
+  "setting": {
+   "n": 6,
+   "first": 5,
+   "top3": 6,
+   "answers": 0,
+   "answersN": 0
+  },
+  "command": {
+   "n": 8,
+   "first": 6,
+   "top3": 7,
+   "answers": 0,
+   "answersN": 0
+  },
+  "behaviour": {
+   "n": 8,
+   "first": 3,
+   "top3": 7,
+   "answers": 7,
+   "answersN": 8
+  },
+  "nonsense": {
+   "n": 6,
+   "first": 5,
+   "top3": 5,
+   "answers": 0,
+   "answersN": 0
+  }
+ },
+ "misses": [
+  {
+   "q": "blue sword",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "flow:weapon",
+    "example:example_msm_life_steal_sword"
+   ],
+   "answers": {
+    "colour": "#3c44aa",
+    "weapon_type": "sword",
+    "weapon_name": "Blue Sword"
+   },
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "make a pig fly",
+   "expect": "flow:flying-mob",
+   "got": [
+    "example:example_pig_variant",
+    "example:example_pig_sound_variant",
+    "vanilla:entity_type:pig"
+   ],
+   "understood": {
+    "intent": "make",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "stone stairs and slabs",
+   "expect": "flow:stone-set",
+   "got": [
+    "vanilla:thing:stone_stairs",
+    "vanilla:thing:stone_brick_stairs",
+    "vanilla:thing:end_stone_brick_stairs"
+   ],
+   "answers": {
+    "tool_tier": "stone",
+    "members": [
+     "stairs"
+    ]
+   },
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": [
+     "slabs"
+    ],
+    "clause": "slabs"
+   },
+   "confident": true
+  },
+  {
+   "q": "netherrite sword",
+   "expect": "flow:weapon",
+   "got": [
+    "vanilla:thing:netherite_sword",
+    "starter:custom-sword",
+    "flow:weapon"
+   ],
+   "answers": {
+    "weapon_type": "sword"
+   },
+   "understood": {
+    "intent": "none",
+    "corrected": [
+     {
+      "from": "netherrite",
+      "to": "netherite"
+     }
+    ],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "colored lights",
+   "expect": "flow:lights",
+   "got": [
+    "guide:particles.md#colour-and-light",
+    "flow:lights",
+    "flow:simple-block"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "mob behavior",
+   "expect": "guide:mob-behaviours.md#the-quick-way-the-creator-flows",
+   "got": [
+    "flow:custom_mob",
+    "guide:mob-behaviours.md#kind-of-mob-and-base",
+    "guide:mob-behaviours.md#choose-how-the-mob-is-drawn"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "skyblock",
+   "expect": "flow:world-empty-sky",
+   "got": [
+    "example:example_world_cloud_realm",
+    "flow:world-empty-sky",
+    "template:noise_settings_empty"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "netherite pick",
+   "expect": "flow:gear-set",
+   "got": [
+    "vanilla:thing:netherite_pickaxe",
+    "vanilla:thing:netherite_axe",
+    "vanilla:thing:netherite_block"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "op sword",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "example:example_msm_life_steal_sword",
+    "vanilla:thing:copper_sword"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": [
+     "op"
+    ]
+   },
+   "confident": true
+  },
+  {
+   "q": "mod jar",
+   "expect": "command:exportFabricJar",
+   "got": [
+    "example:example_msm_firefly_jar",
+    "command:exportFabricJar",
+    "guide:getting-started.md#8-export-the-fabric-mod-jar"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "void world",
+   "expect": "flow:world-empty-sky",
+   "got": [
+    "example:example_world_cloud_realm",
+    "flow:world-empty-sky",
+    "template:noise_settings_empty"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "how do I add a recipe",
+   "expect": "starter:recipe_pack",
+   "got": [
+    "guide:containers-and-machines.md#machine-recipes",
+    "example:starter_recipe_pack",
+    "kind:minecraft:recipe"
+   ],
+   "understood": {
+    "intent": "learn",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "how do I test my mod",
+   "expect": "guide:playing-and-testing.md#play",
+   "got": [
+    "guide:first-mod.md#6-change-something-and-test-again",
+    "guide:blocks-and-items.md#test-in-minecraft",
+    "guide:modpacks.md#test-modpack-in-minecraft"
+   ],
+   "understood": {
+    "intent": "learn",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "how do rules work",
+   "expect": "guide:rules.md#where-rules-live",
+   "got": [
+    "problem:rules.needs-jar",
+    "guide:worldgen.md#a-sky-and-rules-of-your-own-dimension-types-",
+    "problem:rules.needs-plain"
+   ],
+   "understood": {
+    "intent": "learn",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "what is a datapack",
+   "expect": "starter:data_pack",
+   "got": [
+    "guide:getting-started.md#10-a-data-pack-the-functions-starter",
+    "starter:data_pack",
+    "guide:boats.md#vanilla-packs"
+   ],
+   "understood": {
+    "intent": "learn",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "world backups",
+   "expect": "setting:keep-world-backups",
+   "got": [
+    "guide:playing-and-testing.md#world-backups",
+    "setting:keep-world-backups",
+    "flow:dimension"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "play",
+   "expect": "command:play",
+   "got": [
+    "setting:play-showcase-clips",
+    "command:play",
+    "guide:playing-and-testing.md#play"
+   ],
+   "understood": {
+    "intent": "command",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "whats new",
+   "expect": "command:whatsNew",
+   "got": [
+    "rule:value:command_argument",
+    "rule:condition:caused_by",
+    "guide:try-it.md#what-happened"
+   ],
+   "understood": {
+    "intent": "make",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "blue sword that sets mobs on fire",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "flow:weapon",
+    "example:example_msm_life_steal_sword"
+   ],
+   "answers": {
+    "colour": "#3c44aa",
+    "weapon_type": "sword",
+    "weapon_name": "Blue Sword"
+   },
+   "behaviour": "sets-on-fire",
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": [],
+    "clause": "sets mobs on fire",
+    "behaviour": "sets-on-fire"
+   },
+   "confident": true
+  },
+  {
+   "q": "a block that explodes",
+   "expect": "flow:simple-block",
+   "got": [
+    "tile:block",
+    "flow:simple-block",
+    "example:example_tag_block"
+   ],
+   "behaviour": "explodes-broken",
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": [],
+    "clause": "explodes",
+    "behaviour": "explodes-broken"
+   },
+   "confident": false
+  },
+  {
+   "q": "a sword that poisons",
+   "expect": "flow:weapon",
+   "got": [
+    "starter:custom-sword",
+    "example:example_msm_life_steal_sword",
+    "vanilla:thing:copper_sword"
+   ],
+   "answers": {
+    "weapon_type": "sword"
+   },
+   "behaviour": "poisons",
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": [],
+    "clause": "poisons",
+    "behaviour": "poisons"
+   },
+   "confident": true
+  },
+  {
+   "q": "an animal you can ride",
+   "expect": "flow:mount",
+   "got": [
+    "tile:pet",
+    "flow:mount",
+    "guide:villagers-and-traders.md#pets-that-ride-on-your-shoulder"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": []
+   },
+   "confident": true
+  },
+  {
+   "q": "a block that glows",
+   "expect": "flow:simple-block",
+   "got": [
+    "tile:block",
+    "flow:simple-block",
+    "example:example_tag_block"
+   ],
+   "answers": {
+    "light_level": 15
+   },
+   "behaviour": "glows",
+   "understood": {
+    "intent": "none",
+    "corrected": [],
+    "notUnderstood": [],
+    "clause": "glows",
+    "behaviour": "glows"
+   },
+   "confident": false
+  },
+  {
+   "q": "lorem ipsum dolor",
+   "expect": null,
+   "got": [
+    "example:example_item_modifier",
+    "example:example_msm_iron_door",
+    "vanilla:thing:acacia_door"
+   ],
+   "understood": {
+    "intent": "none",
+    "corrected": [
+     {
+      "from": "lorem",
+      "to": "lore"
+     },
+     {
+      "from": "dolor",
+      "to": "door"
+     }
+    ],
+    "notUnderstood": [
+     "ipsum"
+    ]
+   },
+   "confident": true
+  }
+ ]
+}
