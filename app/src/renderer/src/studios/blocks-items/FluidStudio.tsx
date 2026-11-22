@@ -23,8 +23,7 @@
 import type { Json } from '@msm/core';
 import { FLUID_FLOW_DEFAULTS, fluidBucketId } from '@msm/plugin-blocks-items';
 import { Plus, X } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
-import { pngDataUrl } from '../../components/AssetList';
+import { useId, useState } from 'react';
 import { thingName } from '../../components/thing-picker/thing-sources';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
@@ -34,96 +33,20 @@ import type { StudioProps } from '../types';
 import { useVeryEasy } from '../very-easy';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import { asObject, pathSetter, pointerOf } from './blocks-items-model';
+import { FluidPictures, fluidSpreadWords } from './FluidPicture';
 import {
   FLOW_RANGES,
   FLUID_BEHAVIOUR_LABELS,
   FLUID_BEHAVIOURS,
-  type FluidPicture,
   fluidPreviewOf,
   MIXING_WITH_LABELS,
   mixingRulesOf,
-  pictureAssetPath,
   speedWords,
   spreadWords,
   tintFromColour,
   withMixingRule,
 } from './fluid-model';
-import { useBlocksItemsStudioHost } from './host';
 import { CheckField, EventSelect, ProblemsAt, TextField } from './parts';
-
-const PICTURE_SIZE = 64;
-
-/** The picture of `texture` as a data URL: a project thumbnail, or vanilla's from the game. */
-function usePicture(texture: string): string | null {
-  const host = useBlocksItemsStudioHost();
-  const [url, setUrl] = useState<string | null>(null);
-  const thumbnail = host?.thumbnail;
-  const vanilla = host?.modelPreview?.vanilla ?? null;
-  const revision = host?.revision ?? 0;
-  const path = pictureAssetPath(texture);
-  useEffect(() => {
-    void revision;
-    setUrl(null);
-    const load = path.startsWith('assets/minecraft/')
-      ? vanilla === null
-        ? undefined
-        : () => vanilla.readAsset(path)
-      : thumbnail === undefined
-        ? undefined
-        : () => thumbnail(path, PICTURE_SIZE);
-    if (load === undefined) return;
-    let live = true;
-    load().then(
-      (bytes) => {
-        if (live && bytes !== null) setUrl(pngDataUrl(bytes));
-      },
-      () => undefined,
-    );
-    return () => {
-      live = false;
-    };
-  }, [thumbnail, vanilla, path, revision]);
-  return url;
-}
-
-/** One tile of the preview: the picture's first frame with the tint multiplied over it. */
-export function FluidTile(props: {
-  label: string;
-  picture: FluidPicture;
-  tint: string | undefined;
-  testId: string;
-}) {
-  const url = usePicture(props.picture.texture);
-  return (
-    <figure className="flex flex-col items-center gap-1" data-testid={props.testId}>
-      <div
-        className="relative size-16 overflow-hidden border border-border bg-bg"
-        data-testid={`${props.testId}-picture`}
-        data-texture={props.picture.texture}
-      >
-        {url !== null && (
-          <img
-            alt=""
-            src={url}
-            className="absolute inset-0 size-16 object-cover object-top [image-rendering:pixelated]"
-          />
-        )}
-        {props.tint !== undefined && (
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            data-testid={`${props.testId}-tint`}
-            style={{ backgroundColor: props.tint, mixBlendMode: 'multiply' }}
-          />
-        )}
-      </div>
-      <figcaption className="text-center text-muted text-xs">
-        {props.label}
-        {props.picture.fallback ? ' (from your game)' : ''}
-      </figcaption>
-    </figure>
-  );
-}
 
 /** A labelled slider over a whole number. */
 function Slider(props: {
@@ -215,39 +138,7 @@ export default function FluidStudio(props: StudioProps) {
 
   const previewSection = (
     <Section title="Preview" testId="fluid-preview">
-      <div className="flex flex-wrap gap-3">
-        <FluidTile
-          label="Still"
-          picture={preview.still}
-          tint={preview.tint}
-          testId="fluid-preview-still"
-        />
-        <FluidTile
-          label="Flowing"
-          picture={preview.flowing}
-          tint={preview.tint}
-          testId="fluid-preview-flowing"
-        />
-        {preview.overlay !== undefined && (
-          <FluidTile
-            label="Overlay"
-            picture={preview.overlay}
-            tint={preview.tint}
-            testId="fluid-preview-overlay"
-          />
-        )}
-        <FluidTile
-          label="Bucket"
-          picture={preview.bucket}
-          tint={undefined}
-          testId="fluid-preview-bucket"
-        />
-      </div>
-      <p className="text-muted text-xs" data-testid="fluid-preview-words">
-        {`${name} flows ${speedWords(preview.flow.tickDelay)} and ${fluidSpreadWords(
-          preview.flow.dropOff,
-        )}${preview.light > 0 ? `, with light level ${preview.light}` : ''}.`}
-      </p>
+      <FluidPictures element={element} />
       {target.blocks?.fluidModel === 'two_fluids' && (
         <p className="text-muted text-xs" data-testid="fluid-two-fluids">
           Minecraft {target.mcVersion} keeps still and flowing liquid apart; both are made for you.
@@ -710,11 +601,4 @@ function MixingRow(props: {
       </button>
     </li>
   );
-}
-
-/** "spreads 7 blocks" for the defaults line. */
-function fluidSpreadWords(dropOff: number): string {
-  return spreadWords(dropOff)
-    .replace(/^Spreads/, 'spreads')
-    .replace(/ from its source.*$/, '');
 }

@@ -13,6 +13,7 @@ import type { Element, Project } from '@msm/plugin-api';
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { DATA_VIEWS } from './data';
+import { EXISTING_VIEWS } from './existing';
 import type { VanillaDataReader } from './vanilla-data';
 import type { LiveViewPrefs } from './view-prefs';
 
@@ -33,6 +34,12 @@ export interface LiveViewProps {
    * Minecraft folder is not set up.
    */
   readonly vanillaAssets: VanillaAssetReader | null;
+  /**
+   * Reads one of the project's files by its path in the project (`assets/<ns>/textures/...`),
+   * or a bundle's first (`bundleAssetReader`), so the project's own pictures draw; `null` when it
+   * is not there. Absent where nothing can be read (the views then draw no project pictures).
+   */
+  readonly readProject?: (path: string) => Promise<Uint8Array | null>;
   /** The view choices (seed, situation, sample item, sample text). */
   readonly preferences: LiveViewPrefs;
   /** Changes part of the view choices. */
@@ -47,6 +54,9 @@ export type LiveViewLoader = () => Promise<{ default: ComponentType<LiveViewProp
 /** Every live view by element kind id. */
 export const LIVE_VIEWS: Readonly<Record<string, LiveViewLoader>> = Object.freeze({
   ...DATA_VIEWS,
+  // B615: today's previews (mobs, vehicles, particles, liquids, effects, potions, merchants,
+  // blocks and items, mob skins) wrapped as views, for the Creator and the AI helper.
+  ...EXISTING_VIEWS,
 });
 
 /** Whether a kind has a live view. */

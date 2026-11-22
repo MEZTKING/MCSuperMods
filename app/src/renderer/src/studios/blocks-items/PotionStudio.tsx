@@ -32,6 +32,7 @@ import {
   projectEffects,
   withProjectIds,
 } from './blocks-items-model';
+import { PotionNames } from './PotionNames';
 import { CheckField, ProblemsAt, TextField } from './parts';
 import {
   brewingSteps,
@@ -43,7 +44,6 @@ import {
   NEW_EFFECT_DURATION,
   newLongVersion,
   newStrongVersion,
-  potionIds,
   potionItemNames,
   stepSummary,
 } from './potion-model';
@@ -126,21 +126,11 @@ export function PotionStudio(props: StudioProps) {
   const long = data.long === undefined ? undefined : asObject(data.long);
   const strong = data.strong === undefined ? undefined : asObject(data.strong);
   const names = potionItemNames(element);
-  const ids = potionIds(element);
   const steps = brewingSteps(element);
 
   const preview = (
     <Section title="Preview" testId="potion-preview">
-      <ul className="flex flex-col gap-0.5 text-xs" data-testid="potion-preview-names">
-        {names.map(({ key, text }) => (
-          <li key={key} title={key}>
-            {text}
-          </li>
-        ))}
-      </ul>
-      <p className="text-muted text-xs" data-testid="potion-preview-ids">
-        Potion ids: {ids.join(', ')}
-      </p>
+      <PotionNames element={element} />
       <p className="text-muted text-xs">
         Potions need the Fabric mod export: vanilla data packs leave them and their brewing out.
       </p>

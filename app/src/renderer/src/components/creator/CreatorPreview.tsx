@@ -1,10 +1,13 @@
 /**
- * The Creator's live preview (ADR 0043 D3): six tabs over the bundle the flow builds now, read
+ * The Creator’s live preview (ADR 0043 D3): tabs over the bundle the flow builds now, read
  * from memory (nothing is applied). Items and Blocks list every piece with its generated
  * texture as a `data:` image and draw the chosen one with the deepslate preview (typed blocks
  * with the models their textures make), and Blocks also shows the whole set as a row of blocks
  * (`SetPreview`, B272); Recipes draws
- * crafting grids; Map (B587, ADR 0119 D11) draws the world a world or dimension flow makes,
+ * crafting grids; Live (B615, ADR 0120 D7) draws the live view of each thing the flow makes
+ * (`liveviews/LiveThings.tsx`, a lazy chunk), one at a time with the others in a strip, over the
+ * bundle laid over the project, so mobs, vehicles, particles, liquids, trades and extra drops
+ * are seen before anything is made; Map (B587, ADR 0119 D11) draws the world a world or dimension flow makes,
  * live as the answers change (`terrain/LiveMap.tsx`, a lazy chunk; from the bundle in memory,
  * never written to disk), with the map's Preview tag and notes; Armour shows the two layer textures and the humanoid armour geometry in the
  * geo renderer, and horse and wolf armour layers as flat textures; Stats puts the numbers in
@@ -23,6 +26,7 @@ import { targetById } from '@msm/targets';
 import { Tabs } from 'radix-ui';
 import { lazy, type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { CreatorPlan } from '../../changeset/creator-sets';
+import { liveThings, nothingToPicture, readByPath } from '../../liveviews/live-things';
 import {
   bundleAssetBytes,
   bundleAssetReader,
@@ -187,6 +191,75 @@ function WorldTab(props: {
   );
 }
 const GeoCanvas = lazy(() => import('../../preview/geo/GeoCanvas'));
+const LiveThings = lazy(() => import('../../liveviews/LiveThings'));
+
+/**
+ * The Live tab (B615): the live view of each thing the flow makes that has one, over the bundle
+ * laid over the project; a line when there is nothing to picture. Looking applies nothing.
+ */
+function LiveTab(props: {
+  bundle: ContentBundle;
+  project: Project;
+  folders: ResourceFolders;
+  readProjectAsset: CreatorPreviewProps['readProjectAsset'];
+  vanilla: VanillaAssetReader | null;
+}) {
+  const { bundle, project, folders } = props;
+  const root = useUiStore((state) => state.snapshot?.root ?? null);
+  const preview = useMemo(() => bundlePreviewProject(project, bundle), [project, bundle]);
+  const things = useMemo(
+    () =>
+      liveThings(
+        preview,
+        bundle.elements.map((entry) => entry.id),
+      ),
+    [preview, bundle],
+  );
+  const readProject = useMemo(
+    () => readByPath(bundleAssetReader(bundle, props.readProjectAsset)),
+    [bundle, props.readProjectAsset],
+  );
+  const targetId = project.targets[0];
+  const mcVersion =
+    targetId === undefined ? null : (targetById(targetId)?.target.mcVersion ?? null);
+  if (things.length === 0) {
+    return (
+      <p className="text-sm text-muted" data-testid="creator-live-empty">
+        {nothingToPicture(bundle.elements.length)}
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2" data-testid="creator-live">
+      <p className="text-xs text-muted">
+        What your answers make, drawn before anything is made. It changes as you answer.
+      </p>
+      <Suspense fallback={<Empty>Loading the view…</Empty>}>
+        <LiveThings
+          project={preview}
+          things={things}
+          testId="creator-live"
+          vanillaAssets={props.vanilla}
+          mcVersion={mcVersion}
+          projectRoot={root}
+          readProject={readProject}
+          picture={(thing) => {
+            const piece = bundle.elements.find((entry) => entry.id === thing.element.id);
+            return piece === undefined || (piece.kind !== 'msm:item' && piece.kind !== 'msm:block')
+              ? undefined
+              : pieceTextureBytes(bundle, piece, folders);
+          }}
+          onSetup={() =>
+            useUiStore.getState().setMessage({
+              kind: 'info',
+              text: 'Set up your Minecraft folder in Settings, under Game locations, to see Minecraft’s own parts here.',
+            })
+          }
+        />
+      </Suspense>
+    </div>
+  );
+}
 
 /** Props of {@link CreatorPreview}. */
 export interface CreatorPreviewProps {
@@ -418,7 +491,7 @@ function ArmourTab(props: {
   );
 }
 
-/** The six preview tabs. */
+/** The preview tabs. */
 export function CreatorPreview(props: CreatorPreviewProps) {
   const { bundle } = props;
   const webgl = props.webgl ?? hasWebGL();
@@ -483,6 +556,15 @@ export function CreatorPreview(props: CreatorPreviewProps) {
             />
           </Tabs.Content>
         )}
+        <Tabs.Content value="live">
+          <LiveTab
+            bundle={bundle}
+            project={props.project}
+            folders={props.folders}
+            readProjectAsset={props.readProjectAsset}
+            vanilla={props.vanilla}
+          />
+        </Tabs.Content>
         <Tabs.Content value="items">
           <PieceGallery type="item" {...props} webgl={webgl} />
         </Tabs.Content>

@@ -1,9 +1,11 @@
-import { type Json, stableStringify } from '@msm/core';
+import { type Json, type Project, stableStringify } from '@msm/core';
 import { TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { CHANGE_OPS, type ChangeItem, type ChangeOp } from '../../changeset/changeset';
+import { useUiStore } from '../../store/ui-store';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Button } from '../ui/Button';
+import { AiSeeIt } from './AiSeeIt';
 import { lineDiff } from './line-diff';
 
 /** The group headings of the review, by operation. */
@@ -139,9 +141,14 @@ function ChangeRow(props: { item: ChangeItem; onToggle(accepted: boolean): void 
  * The pending changeset (ADR 0041 D5): items grouped by operation, each with an accept
  * checkbox, kind and id, a before/after diff, the problems the last check found and conflict
  * notes. Apply is enabled when an accepted item has no conflict; Discard asks first.
+ *
+ * The **See it** pane (B615, {@link AiSeeIt}) comes first: the open project as it would be with
+ * the kept changes, drawn live; looking applies nothing.
  */
 export function AiChangesetReview(props: {
   items: readonly ChangeItem[];
+  /** The project the changes apply to; default: the open project. */
+  project?: Project | null;
   running: boolean;
   applying: boolean;
   onToggle(itemId: string, accepted: boolean): void;
@@ -151,6 +158,8 @@ export function AiChangesetReview(props: {
   const [confirming, setConfirming] = useState(false);
   const { items } = props;
   const accepted = items.filter((item) => item.accepted).length;
+  const open = useUiStore((state) => state.snapshot?.project ?? null);
+  const project = props.project === undefined ? open : props.project;
   return (
     <section
       className="flex flex-col gap-2 rounded border border-border p-2 text-sm"
@@ -160,6 +169,7 @@ export function AiChangesetReview(props: {
       <h3 className="font-semibold">
         Proposed changes ({accepted} of {items.length} kept)
       </h3>
+      {project !== null && <AiSeeIt project={project} items={items} running={props.running} />}
       {props.running && (
         <p className="text-xs text-muted">The helper is still working; more changes may follow.</p>
       )}

@@ -19,8 +19,7 @@
 
 import type { Json } from '@msm/core';
 import { FlaskConical, Paintbrush, Plus, X } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { pngDataUrl } from '../../components/AssetList';
+import { lazy, Suspense, useState } from 'react';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
@@ -40,19 +39,16 @@ import {
   projectEffects,
   suggestEventId,
 } from './blocks-items-model';
+import { EffectPreviewCard, IconImage, useIconThumbnail } from './EffectPreview';
 import { EventsEditor } from './EventsEditor';
 import {
   ATTRIBUTE_OPERATIONS,
-  categoryColour,
   EFFECT_CATEGORIES,
   EFFECT_ICON_SIZE,
-  effectDisplayName,
   effectIconPath,
   hasEffectIcon,
-  modifierSummary,
   NEW_MODIFIER,
   OPERATION_LABELS,
-  tickInterval,
 } from './effect-model';
 import { useBlocksItemsStudioHost } from './host';
 import { particlesFirst } from './particle-model';
@@ -76,56 +72,6 @@ const TRIGGERS = [
   { component: 'msm:on_tick', label: 'While active', suffix: 'tick', testId: 'effect-on-tick' },
   { component: 'msm:on_end', label: 'When it ends', suffix: 'end', testId: 'effect-on-end' },
 ] as const;
-
-/** A thumbnail `data:` URL of `assetPath` from the host, or `null`. */
-function useIconThumbnail(assetPath: string, present: boolean): string | null {
-  const host = useBlocksItemsStudioHost();
-  const [url, setUrl] = useState<string | null>(null);
-  const load = host?.thumbnail;
-  const revision = host?.revision ?? 0;
-  useEffect(() => {
-    setUrl(null);
-    if (load === undefined || !present) return;
-    let live = true;
-    load(assetPath, EFFECT_ICON_SIZE * 2).then(
-      (bytes) => {
-        if (live) setUrl(pngDataUrl(bytes));
-      },
-      () => {
-        if (live) setUrl(null);
-      },
-    );
-    return () => {
-      live = false;
-    };
-  }, [load, assetPath, present, revision]);
-  return url;
-}
-
-/** The icon, or a swatch of the effect colour when there is no thumbnail. */
-function IconImage(props: { url: string | null; colour: string; testId: string }) {
-  return props.url !== null ? (
-    <img
-      src={props.url}
-      alt="Effect icon"
-      data-testid={props.testId}
-      width={EFFECT_ICON_SIZE * 2}
-      height={EFFECT_ICON_SIZE * 2}
-      style={{ imageRendering: 'pixelated' }}
-    />
-  ) : (
-    <span
-      aria-hidden
-      data-testid={`${props.testId}-placeholder`}
-      className="inline-block rounded border border-border"
-      style={{
-        width: EFFECT_ICON_SIZE * 2,
-        height: EFFECT_ICON_SIZE * 2,
-        background: props.colour,
-      }}
-    />
-  );
-}
 
 export function EffectStudio(props: StudioProps) {
   const { project, element, node, problems, suggest, onChange } = props;
@@ -166,7 +112,6 @@ export function EffectStudio(props: StudioProps) {
   const colourHex = typeof data.color === 'number' ? data.color : undefined;
   const swatch =
     colourHex === undefined ? 'transparent' : `#${colourHex.toString(16).padStart(6, '0')}`;
-  const name = effectDisplayName(element);
   const modifiers = Array.isArray(data.attribute_modifiers) ? data.attribute_modifiers : [];
 
   const general = (
@@ -423,34 +368,9 @@ export function EffectStudio(props: StudioProps) {
     </Section>
   );
 
-  const levels = [1, 2];
   const preview = (
     <Section title="Preview" testId="effect-preview">
-      <div className="flex items-center gap-2 rounded border border-border bg-bg p-2">
-        <IconImage url={thumbnail} colour={swatch} testId="effect-preview-icon" />
-        <span
-          data-testid="effect-preview-name"
-          className="font-medium text-sm"
-          style={{ color: categoryColour(data.category) }}
-        >
-          {name}
-        </span>
-      </div>
-      <ul className="flex flex-col gap-0.5 text-xs" data-testid="effect-preview-levels">
-        {levels.map((level) => {
-          const interval = tickInterval(onTick, level);
-          const parts = [
-            ...modifiers.map((modifier) => modifierSummary(modifier, level)),
-            ...(interval === undefined ? [] : [`acts every ${interval} ticks`]),
-          ];
-          return (
-            <li key={level}>
-              <span className="text-muted">Level {level === 1 ? 'I' : 'II'}: </span>
-              {parts.length === 0 ? 'no stat changes or tick actions' : parts.join(', ')}
-            </li>
-          );
-        })}
-      </ul>
+      <EffectPreviewCard element={element} iconUrl={thumbnail} />
     </Section>
   );
 

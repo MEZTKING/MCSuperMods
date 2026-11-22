@@ -2,12 +2,16 @@
  * One element's live view over a project or a bundle (ADR 0120 D2): the registry's view for the
  * element's kind, loaded when first shown. The preview panel, the Creator's Live tab and the AI
  * review's See it pane all draw this, each over its own project (the Creator and the AI review
- * over `bundlePreviewProject`). Looking applies nothing. B608 builds the real wiring; this is the
- * stub's: the preferences come from the app's view preferences by project root.
+ * over a project with the bundle or the proposal laid over it). Looking applies nothing.
+ *
+ * The view choices (seed, situation, sample item) are kept with the app's view preferences by
+ * project root. Without a project root (a bundle with no open project) they are kept in memory
+ * under one fixed key ({@link BUNDLE_PREFS_KEY}) for this run and never written (B608's note,
+ * B615): looking writes nothing without a project folder.
  */
 
 import type { Element, Project } from '@msm/plugin-api';
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { liveViewComponent } from './registry';
 import {
@@ -15,7 +19,13 @@ import {
   NOT_SET_UP_VANILLA_DATA,
   type VanillaDataReader,
 } from './vanilla-data';
-import { prefsOf, useLiveViewPrefs } from './view-prefs';
+import { DEFAULT_PREFS, type LiveViewPrefs, prefsOf, useLiveViewPrefs } from './view-prefs';
+
+/** The key the choices of a view without a project root are kept under, in memory only. */
+export const BUNDLE_PREFS_KEY = '(bundle without a project folder)';
+
+/** Choices made without a project root, for this run (never stored). */
+let bundlePrefs: LiveViewPrefs = DEFAULT_PREFS;
 
 /** Props of {@link BundleLiveView}. */
 export interface BundleLiveViewProps {
@@ -36,6 +46,11 @@ export interface BundleLiveViewProps {
   readonly vanilla?: VanillaDataReader;
   /** The project's folder (choices are kept per project), or `null` for a bundle with none. */
   readonly projectRoot?: string | null;
+  /**
+   * Reads a project file by its path (`assets/<ns>/...`), the bundle's own first where there is
+   * one, so the project's pictures draw.
+   */
+  readonly readProject?: (path: string) => Promise<Uint8Array | null>;
   /** Opens the Minecraft folder settings. */
   onSetup(): void;
 }
@@ -57,6 +72,7 @@ export default function BundleLiveView(props: BundleLiveViewProps) {
   const root = props.projectRoot ?? null;
   const prefs = useLiveViewPrefs((state) => state.prefs);
   const setPrefs = useLiveViewPrefs((state) => state.setPrefs);
+  const [memory, setMemory] = useState<LiveViewPrefs>(bundlePrefs);
   const View = liveViewComponent(element.kind);
   if (View === null) {
     return (
@@ -72,9 +88,15 @@ export default function BundleLiveView(props: BundleLiveViewProps) {
         element={element}
         vanilla={vanilla}
         vanillaAssets={vanillaAssets}
-        preferences={prefsOf(prefs, root)}
+        {...(props.readProject === undefined ? {} : { readProject: props.readProject })}
+        preferences={root === null ? memory : prefsOf(prefs, root)}
         onPreferences={(patch) => {
-          if (root !== null) setPrefs(root, patch);
+          if (root !== null) {
+            setPrefs(root, patch);
+            return;
+          }
+          bundlePrefs = { ...bundlePrefs, ...patch };
+          setMemory(bundlePrefs);
         }}
         onSetup={onSetup}
       />

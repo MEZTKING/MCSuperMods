@@ -9,6 +9,7 @@ import {
   LiveViewClient,
   type LiveViewWorkerLike,
 } from '../../../src/renderer/src/liveviews/client';
+import { EXISTING_VIEWS } from '../../../src/renderer/src/liveviews/existing';
 import { weakest } from '../../../src/renderer/src/liveviews/frame/fidelity';
 import { hasLiveView, liveViewKinds } from '../../../src/renderer/src/liveviews/registry';
 import { answerRequest } from '../../../src/renderer/src/liveviews/worker';
@@ -60,16 +61,19 @@ describe('the live view stubs (B601)', () => {
     );
   });
 
-  it('has a view for exactly the kinds that declare previewKind live_view', async () => {
+  it('has a view for exactly the kinds that declare previewKind live_view, and today’s previews (B615)', async () => {
     const declared: string[] = [];
     for (const plugin of builtInPlugins) {
       for (const kind of plugin.contributes.elementKinds ?? []) {
         if (kind.previewKind === 'live_view') declared.push(kind.id);
       }
     }
-    expect(declared.sort()).toEqual([...liveViewKinds()]);
     expect(declared).toHaveLength(34);
-    expect(hasLiveView('minecraft:tag/villager_trade')).toBe(false);
+    const existing = Object.keys(EXISTING_VIEWS);
+    expect(existing.filter((kind) => declared.includes(kind))).toEqual([]);
+    expect([...declared, ...existing].sort()).toEqual([...liveViewKinds()]);
+    // The merchant trade tag has the merchant screen (B615), not the tag members.
+    expect(hasLiveView('minecraft:tag/villager_trade')).toBe(true);
   });
 
   it('answers the worker stub with not yet, and drops a replaced request', async () => {

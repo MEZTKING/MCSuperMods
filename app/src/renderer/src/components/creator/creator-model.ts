@@ -17,6 +17,7 @@ import type {
 } from '@msm/plugin-api';
 import { blockItemIdOf } from '@msm/plugin-blocks-items';
 import type { CreatorEntryStatus } from '../../changeset/creator-sets';
+import { hasLiveView } from '../../liveviews/registry';
 import type { ArmourPiece } from '../../preview/geo/armour';
 import { defaultRawValue, type RawValue, type RawValues } from '../wizard/wizard-model';
 import {
@@ -45,6 +46,7 @@ export const CREATOR_GROUPS: readonly { group: CreatorGroup; title: string }[] =
 
 /** The preview tabs, in order, with their labels (`creator-tab-<id>`). */
 export const CREATOR_TABS = [
+  { id: 'live', label: 'Live' },
   { id: 'items', label: 'Items' },
   { id: 'blocks', label: 'Blocks' },
   { id: 'recipes', label: 'Recipes' },
@@ -600,12 +602,54 @@ export function bundleHasCards(bundle: ContentBundle): boolean {
   );
 }
 
+/** Kinds that only support a flow's main thing (pack files, models, names, mod settings). */
+const SUPPORTING_KINDS: ReadonlySet<string> = new Set([
+  'minecraft:pack_mcmeta',
+  'msm:mod',
+  'minecraft:lang',
+  'minecraft:model',
+  'minecraft:item_definition',
+  'minecraft:block_definition',
+  'msm:geo_model',
+  'msm:animation',
+]);
+
+/** The flow's main thing: its first element that is not a supporting file, or `undefined`. */
+export function mainThing(bundle: ContentBundle): ContentBundle['elements'][number] | undefined {
+  return bundle.elements.find((entry) => !SUPPORTING_KINDS.has(entry.kind));
+}
+
+/** Main things the Card tab shows (an enchantment's card, a painting on a wall, an effect). */
+const CARD_KINDS: ReadonlySet<string> = new Set([
+  'minecraft:enchantment',
+  'minecraft:painting_variant',
+  'msm:effect',
+]);
+
 /**
- * The tab a newly picked flow opens on: Card for a status effect, else Items, else Blocks, else
- * Card, else Stats, else Elements, so a Painting or an Enchantment opens on its card.
+ * Whether a flow opens on the Live tab (B615, ADR 0120 D7): its main thing has a live view and
+ * no Items or Blocks picture (it is not an item or a block), and the Card tab does not show it.
+ */
+export function opensLive(bundle: ContentBundle): boolean {
+  const main = mainThing(bundle);
+  return (
+    main !== undefined &&
+    main.kind !== ITEM_KIND &&
+    main.kind !== BLOCK_KIND &&
+    hasLiveView(main.kind) &&
+    !CARD_KINDS.has(main.kind)
+  );
+}
+
+/**
+ * The tab a newly picked flow opens on: Card for a status effect, Live for a flow whose main
+ * thing has a live view and no Items or Blocks picture (a mob, a vehicle, a particle, a liquid,
+ * trades, extra drops), else Items, else Blocks, else Card, else Stats, else Elements, so a
+ * Painting or an Enchantment opens on its card.
  */
 export function firstTab(bundle: ContentBundle): CreatorTab {
   if (effectCards(bundle).length > 0) return 'card';
+  if (opensLive(bundle)) return 'live';
   if (bundleItems(bundle).length > 0) return 'items';
   if (bundleBlocks(bundle).length > 0) return 'blocks';
   if (bundleHasCards(bundle)) return 'card';
