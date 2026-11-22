@@ -6956,3 +6956,17 @@ Next
 - Schema owner: teach the schemas `step_sound` on wolf sounds, then fix B504's default and template and add the example.
 - In game: the trim recolouring with the own key, the loom offering the paper pattern, the brick sherd on a pot, the glider gliding and its wings.
 - Guide (B522): the new tiles' wording in `docs/guide/very-easy.md`.
+## 2026-11-22 — executor — B507 plugin API 1.19.0 and target facts
+
+**What**
+- `@msm/plugin-api` 1.19.0 (`API_VERSION`, package version, CHANGELOG): `BlockFacts` gains `soundTypes?`, `soundModel?` (`sound_type` or `block_sound_set`), `vanillaPairs?: VanillaPairFacts` (`strip`, `flatten`, `till`, `wax`, `age`, each block id to block id) and `plantSoils?: PlantSoilFacts` (nine block tag ids); the CHANGELOG also lists the seven `DataFolderKey` members B504 added. Both types exported; type tests added.
+- Both targets: `soundModel` `sound_type` on 26.3 (131 `SoundType` constants, `empty` included, read with javap) and `block_sound_set` on 26.4 (the 137 ids of the vendored registry; 26.4 has no `SoundType` class). `vanillaPairs` identical on both: strip 25, flatten 6, till 5 from the jar's `block_transformer/{axe,shovel,hoe}.json` with tags expanded, wax 60 and age 45 as the reverse of the axe's wax-off and scrape rules, which equal the game's own `HoneycombItem.WAXABLES` and `WeatheringCopper.NEXT_BY_BLOCK` read by calling them. `plantSoils` identical on both (B503's tags).
+- Tests: per-target checks against the vendored registries; new `all/test/block-facts.test.ts` reads the Loom-cached client jar (sound type field names from the class file's field table, the block transformers and tags), skipped without a jar; `all/test/client-jar.ts` gains `zipEntryBytes`.
+
+**Decisions**
+- The context providers (`context_int_provider`, `context_float_provider`) stay out of `dev.worldDataFolders`: calling `RegistryDataLoader.RELOADABLE_REGISTRIES` in the game lists them as reloadable (`/reload` reads them). The world and dimension lists equal the existing facts on both targets (52 and 53).
+- Sound names are the game's own per target, so `amethyst` (26.3) is `amethyst_block` on 26.4, and `twisting_vines` and `empty` exist only on 26.3; mapping the format's names is left to the validator and runtime briefs.
+- `cannot_support_kelp`, `support_override_cactus_flower` and `cave_vines` are in the facts from the jar's tags; what the first two do in game was not observed ("verify at implementation" in `CHANGES.md`).
+
+**Next**
+- B506/B515: reconcile the mcdoc `SoundType` enum and `MsmSoundType` with `soundTypes` per target. Main session: the plugin API version lines in root and `packages/plugin-api/CLAUDE.md`, and the stale world data folder counts in `packages/targets/CLAUDE.md`.

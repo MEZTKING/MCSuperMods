@@ -2,6 +2,19 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.19.0 — 2026-11-22
+
+Block sound, vanilla pair and plant soil facts, and the data folder keys of the data kinds sweep 2 (ADR 0105 D5, ADR 0103 D5, ADR 0106 D1). `API_VERSION` is `1.19.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `DataFolderKey` gains seven members (ADR 0106 D1; added with the kinds in B504): `decorated_pot_pattern`, `block_transformer`, `test_environment`, `test_instance`, `sulfur_cube_archetype`, `context_int_provider` and `context_float_provider` (`wolf_sound_variant` was already a key). Each built-in target maps them to the folder of the same name. A plugin that builds a `Record<DataFolderKey, string>` of its own (a test fixture, say) must add them.
+- `BlockFacts` gains four optional fields: `soundTypes?: readonly string[]` (every vanilla block sound name of the target, bare and sorted; the names differ between targets), `soundModel?: 'sound_type' | 'block_sound_set'` (whether a block holds a fixed sound object or names an entry of the `block_sound_set` world registry, so a block's own sounds are built by the runtime or written as a data file by lowering), `vanillaPairs?: VanillaPairFacts` and `plantSoils?: PlantSoilFacts`.
+- `VanillaPairFacts { strip; flatten; till; wax; age }`, each a `Readonly<Record<string, string>>` from the namespaced id of the vanilla block used on to the block it turns into: what an axe strips, a shovel flattens, a hoe tills, honeycomb waxes and what ages into the next copper stage (an axe's wax-off and scrape are the reverse of `wax` and `age`). The validators warn when a project pair on a vanilla block replaces one.
+- `PlantSoilFacts { cane; caneWater; cactus; cactusFlower; bamboo; bigDripleaf; smallDripleaf; notKelp; caveVines }`, each a namespaced block tag id without `#`: the tags vanilla's growing and climbing plants survive on (the default `soil` of a `column_plant` or `dripleaf`), the tag of blocks that count as water beside a cane, the cactus flower's support override, the blocks kelp may not stand on, and the tag naming vanilla's cave vine blocks.
+
+### Migration from 1.18.0
+
+None for plugins that only read target facts. A plugin that reads the new block facts should declare `^1.19.0` and treat an absent value as "no facts to check against". A plugin or test that writes a complete `Record<DataFolderKey, string>` adds the seven new keys.
+
 ## 1.18.0 — 2026-11-15
 
 Dimension type, trader, profession and fluid facts, and the command and creative tab inputs of the Java project generator (ADR 0100 D5, ADR 0098 D5, ADR 0099 D4, ADR 0096 D6). `API_VERSION` is `1.18.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

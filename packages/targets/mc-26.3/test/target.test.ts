@@ -274,10 +274,14 @@ describe('target mc-26.3', () => {
       expect(target.folders.data[key]).toBe(key);
       expect(registries[key]?.length, key).toBeGreaterThan(0);
     }
-    // `dev.worldDataFolders` does not list the two context providers (verify at implementation
-    // whether the world or `/reload` reads them); the other five are world data.
+    // The two context providers are reloadable registries (`/reload` reads them; B507 read
+    // `RegistryDataLoader.RELOADABLE_REGISTRIES` in the game), so `dev.worldDataFolders` leaves
+    // them out; the other five are world data.
     for (const key of keys.slice(0, 5)) {
       expect(target.dev?.worldDataFolders, key).toContain(target.folders.data[key]);
+    }
+    for (const key of keys.slice(5)) {
+      expect(target.dev?.worldDataFolders, key).not.toContain(target.folders.data[key]);
     }
   });
 
@@ -377,6 +381,88 @@ describe('target mc-26.3', () => {
       lava: ['minecraft:lava'],
     });
     expect(registries['tag/fluid']).not.toContain('swimmable');
+  });
+
+  it('lists the block sound names and model of this version (ADR 0105 D5)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const soundTypes = target.blocks?.soundTypes ?? [];
+    expect(soundTypes).toEqual([...new Set(soundTypes)].sort());
+    expect(target.blocks?.soundModel).toBe('sound_type');
+    // No `block_sound_set` registry on 26.3; the names are the `SoundType` constants (the jar
+    // test in `all/test/block-facts.test.ts` reads them).
+    expect(registries.block_sound_set).toBeUndefined();
+    expect(target.dev?.worldDataFolders).not.toContain('block_sound_set');
+    expect(soundTypes).toHaveLength(131);
+    for (const name of ['stone', 'wood', 'amethyst', 'twisting_vines', 'empty']) {
+      expect(soundTypes, name).toContain(name);
+    }
+  });
+
+  it("lists vanilla's block pairs over registered blocks (ADR 0105 D4, D5)", async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const blocks = new Set((registries.block ?? []).map((name) => `minecraft:${name}`));
+    const pairs: Readonly<Record<string, Readonly<Record<string, string>>>> | undefined =
+      target.blocks?.vanillaPairs === undefined ? undefined : { ...target.blocks.vanillaPairs };
+    expect(pairs).toBeDefined();
+    const sizes = Object.fromEntries(
+      Object.entries(pairs ?? {}).map(([kind, map]) => [kind, Object.keys(map).length]),
+    );
+    expect(sizes).toEqual({ strip: 25, flatten: 6, till: 5, wax: 60, age: 45 });
+    for (const [kind, map] of Object.entries(pairs ?? {})) {
+      const entries = Object.entries(map);
+      expect(Object.keys(map), kind).toEqual(Object.keys(map).sort());
+      for (const [from, into] of entries) {
+        expect(blocks.has(from), `${kind} ${from}`).toBe(true);
+        expect(blocks.has(into), `${kind} ${into}`).toBe(true);
+        expect(from, kind).not.toBe(into);
+      }
+    }
+    // Waxing and ageing are one-to-one: the axe's wax-off and scrape rules are their reverse.
+    for (const kind of ['wax', 'age'] as const) {
+      const into = Object.values(pairs?.[kind] ?? {});
+      expect(new Set(into).size, kind).toBe(into.length);
+    }
+    expect(target.blocks?.vanillaPairs?.strip['minecraft:oak_log']).toBe(
+      'minecraft:stripped_oak_log',
+    );
+    expect(target.blocks?.vanillaPairs?.flatten['minecraft:grass_block']).toBe(
+      'minecraft:dirt_path',
+    );
+    expect(target.blocks?.vanillaPairs?.till['minecraft:coarse_dirt']).toBe('minecraft:dirt');
+    expect(target.blocks?.vanillaPairs?.wax['minecraft:copper_block']).toBe(
+      'minecraft:waxed_copper_block',
+    );
+    expect(target.blocks?.vanillaPairs?.age['minecraft:copper_block']).toBe(
+      'minecraft:exposed_copper',
+    );
+  });
+
+  it('names plant soil tags of the vendored registries (ADR 0103 D5)', async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const soils = target.blocks?.plantSoils;
+    expect(soils).toEqual({
+      cane: 'minecraft:supports_sugar_cane',
+      caneWater: 'minecraft:supports_sugar_cane_adjacently',
+      cactus: 'minecraft:supports_cactus',
+      cactusFlower: 'minecraft:support_override_cactus_flower',
+      bamboo: 'minecraft:supports_bamboo',
+      bigDripleaf: 'minecraft:supports_big_dripleaf',
+      smallDripleaf: 'minecraft:supports_small_dripleaf',
+      notKelp: 'minecraft:cannot_support_kelp',
+      caveVines: 'minecraft:cave_vines',
+    });
+    for (const tag of Object.values(soils ?? {})) {
+      expect(registries['tag/block'], tag).toContain(tag.replace('minecraft:', ''));
+    }
   });
 
   it('lists the trade sets and points of interest of this version (ADR 0098 D2, D5)', async () => {

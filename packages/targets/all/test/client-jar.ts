@@ -76,6 +76,34 @@ export async function zipEntryNames(path: string): Promise<string[]> {
   return (await zipEntries(path)).map((entry) => entry.name);
 }
 
+/** The bytes of one entry, or `undefined` when the jar has no entry of that name. */
+export async function zipEntryBytes(path: string, name: string): Promise<Buffer | undefined> {
+  const entry = (await zipEntries(path)).find((candidate) => candidate.name === name);
+  if (entry === undefined) return undefined;
+  const file = await open(path, 'r');
+  try {
+    return await readEntry(file, path, entry);
+  } finally {
+    await file.close();
+  }
+}
+
+async function readEntry(
+  file: Awaited<ReturnType<typeof open>>,
+  path: string,
+  entry: ZipEntry,
+): Promise<Buffer> {
+  const header = Buffer.alloc(30);
+  await file.read(header, 0, 30, entry.localHeaderOffset);
+  if (header.readUInt32LE(0) !== 0x04034b50) throw new Error(`${path}: bad header ${entry.name}`);
+  const start = entry.localHeaderOffset + 30 + header.readUInt16LE(26) + header.readUInt16LE(28);
+  const data = Buffer.alloc(entry.compressedSize);
+  await file.read(data, 0, entry.compressedSize, start);
+  if (entry.method === 0) return data;
+  if (entry.method === 8) return inflateRawSync(data);
+  throw new Error(`${path}: ${entry.name} uses compression method ${entry.method}`);
+}
+
 /**
  * The parsed entries whose names start with one of `prefixes` and end with `.json`, by name.
  * Stored and deflated entries only. Used for the game's data files (trade sets, tags), never its
@@ -93,18 +121,7 @@ export async function zipJsonEntries(
   const out = new Map<string, unknown>();
   try {
     for (const entry of wanted) {
-      const header = Buffer.alloc(30);
-      await file.read(header, 0, 30, entry.localHeaderOffset);
-      if (header.readUInt32LE(0) !== 0x04034b50)
-        throw new Error(`${path}: bad header ${entry.name}`);
-      const start =
-        entry.localHeaderOffset + 30 + header.readUInt16LE(26) + header.readUInt16LE(28);
-      const data = Buffer.alloc(entry.compressedSize);
-      await file.read(data, 0, entry.compressedSize, start);
-      let bytes: Buffer;
-      if (entry.method === 0) bytes = data;
-      else if (entry.method === 8) bytes = inflateRawSync(data);
-      else throw new Error(`${path}: ${entry.name} uses compression method ${entry.method}`);
+      const bytes = await readEntry(file, path, entry);
       out.set(entry.name, JSON.parse(bytes.toString('utf8')));
     }
   } finally {

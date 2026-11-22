@@ -349,6 +349,94 @@ export interface BlockFacts {
    * fluid in no tag. Since 1.18.0 (ADR 0099 D1, D4).
    */
   fluidTags?: FluidTagFacts;
+  /**
+   * Every vanilla block sound name of the target, bare (no namespace) and sorted (for example
+   * `stone`, `wood` or `amethyst_cluster`): with {@link BlockFacts.soundModel} `sound_type` the
+   * game's sound type constants in lower case, with `block_sound_set` the ids of the game's
+   * `block_sound_set` registry without `minecraft:`. The names differ between targets (one
+   * target may call a set `amethyst` where another calls it `amethyst_block`). The block
+   * validators read these, not the format's own list, to check a block's `sound_type`.
+   * Optional: a target without them skips the check. Since 1.19.0 (ADR 0105 D5).
+   */
+  soundTypes?: readonly string[];
+  /**
+   * How the game gives a block its sounds: `sound_type`, a fixed object built into the block
+   * (a block's own sounds are built by the runtime), or `block_sound_set`, an entry of the
+   * synchronised world registry `block_sound_set` that the block names by key (a block's own
+   * sounds are a data file `data/<namespace>/block_sound_set/<path>.json` written by lowering,
+   * read when a world loads, so a change needs the world opened again). Optional: a target
+   * without it is treated as `sound_type`. Since 1.19.0 (ADR 0105 D1, D5, as amended after the
+   * spike).
+   */
+  soundModel?: 'sound_type' | 'block_sound_set';
+  /**
+   * Vanilla's own tool and item pairs on vanilla blocks ({@link VanillaPairFacts}), so the
+   * validators warn when a project pair on a vanilla block replaces one. Optional: a target
+   * without them skips the warning. Since 1.19.0 (ADR 0105 D4, D5).
+   */
+  vanillaPairs?: VanillaPairFacts;
+  /**
+   * The namespaced block tag ids vanilla's growing and climbing plants survive on, by plant
+   * ({@link PlantSoilFacts}): the default `soil` of a `column_plant` or `dripleaf` without its
+   * own, offered by the Studio. Optional: a target without them leaves the defaults to the
+   * runtime. Since 1.19.0 (ADR 0103 D5).
+   */
+  plantSoils?: PlantSoilFacts;
+}
+
+/**
+ * Vanilla's pairs on vanilla blocks ({@link BlockFacts.vanillaPairs}): each a map from the
+ * namespaced id of the block used on to the namespaced id of the block it turns into. Block
+ * state properties are left out (the game copies or sets them). A data pack may change the
+ * strip, flatten and till pairs (the `block_transformer` registry); these are the game's own.
+ * Since 1.19.0 (ADR 0105 D4, D5).
+ */
+export interface VanillaPairFacts {
+  /** An axe strips a log or wood (for example `minecraft:oak_log` to `minecraft:stripped_oak_log`). */
+  strip: Readonly<Record<string, string>>;
+  /** A shovel flattens a block into a path (for example `minecraft:dirt` to `minecraft:dirt_path`). */
+  flatten: Readonly<Record<string, string>>;
+  /** A hoe tills a block (for example `minecraft:dirt` to `minecraft:farmland`). */
+  till: Readonly<Record<string, string>>;
+  /**
+   * Honeycomb waxes a block (for example `minecraft:copper_block` to
+   * `minecraft:waxed_copper_block`); an axe takes the wax off again, the reverse pair.
+   */
+  wax: Readonly<Record<string, string>>;
+  /**
+   * A block ages into the next stage over time (for example `minecraft:copper_block` to
+   * `minecraft:exposed_copper`); an axe scrapes it back one stage, the reverse pair.
+   */
+  age: Readonly<Record<string, string>>;
+}
+
+/**
+ * The block tags of vanilla's growing and climbing plants ({@link BlockFacts.plantSoils}), each
+ * a namespaced block tag id without `#` (for example `minecraft:supports_cactus`). Since 1.19.0
+ * (ADR 0103 D5).
+ */
+export interface PlantSoilFacts {
+  /** The blocks sugar cane grows on (`column_plant` `cane`). */
+  cane: string;
+  /** The blocks that count as water beside a sugar cane's soil, besides water itself. */
+  caneWater: string;
+  /** The blocks a cactus grows on (`column_plant` `cactus`). */
+  cactus: string;
+  /** The blocks that hold a cactus flower although they would not otherwise (a support override). */
+  cactusFlower: string;
+  /** The blocks bamboo and its shoot grow on (`column_plant` `bamboo`). */
+  bamboo: string;
+  /** The blocks a big dripleaf grows on (`dripleaf` `big`). */
+  bigDripleaf: string;
+  /** The blocks a small dripleaf grows on (`dripleaf` `small`). */
+  smallDripleaf: string;
+  /** The blocks kelp may not stand on (a kelp-like `growing_plant`). */
+  notKelp: string;
+  /**
+   * The tag naming vanilla's cave vine blocks (other tags include it: climbing, and the plants
+   * bees help grow). Not a soil: a cave-vine-like plant may join it.
+   */
+  caveVines: string;
 }
 
 /**

@@ -32,6 +32,7 @@ import type {
   OutputFile,
   OutputMergeMode,
   ParticleFacts,
+  PlantSoilFacts,
   PluginContributions,
   Problem,
   Project,
@@ -45,6 +46,7 @@ import type {
   TradeSoundFacts,
   ValidationInput,
   ValidationRegistry,
+  VanillaPairFacts,
   VanillaTradeSetFacts,
   VehicleFacts,
   WorldgenFacts,
@@ -594,6 +596,51 @@ describe('0.8.0 additions', () => {
     const older: BlockFacts = { setTypes: [], woodTypes: [] };
     expect(older.fluidModel).toBeUndefined();
     expect(older.fluidTags).toBeUndefined();
+  });
+
+  it('carries optional sound, pair and plant soil facts on blocks (1.19.0)', () => {
+    expectTypeOf<BlockFacts['soundTypes']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<BlockFacts['soundModel']>().toEqualTypeOf<
+      'sound_type' | 'block_sound_set' | undefined
+    >();
+    expectTypeOf<BlockFacts['vanillaPairs']>().toEqualTypeOf<VanillaPairFacts | undefined>();
+    expectTypeOf<VanillaPairFacts['strip']>().toEqualTypeOf<Readonly<Record<string, string>>>();
+    expectTypeOf<BlockFacts['plantSoils']>().toEqualTypeOf<PlantSoilFacts | undefined>();
+    expectTypeOf<PlantSoilFacts['cane']>().toEqualTypeOf<string>();
+    const facts: BlockFacts = {
+      setTypes: [],
+      woodTypes: [],
+      soundTypes: ['stone', 'wood'],
+      soundModel: 'block_sound_set',
+      vanillaPairs: {
+        strip: { 'minecraft:oak_log': 'minecraft:stripped_oak_log' },
+        flatten: { 'minecraft:dirt': 'minecraft:dirt_path' },
+        till: { 'minecraft:dirt': 'minecraft:farmland' },
+        wax: { 'minecraft:copper_block': 'minecraft:waxed_copper_block' },
+        age: { 'minecraft:copper_block': 'minecraft:exposed_copper' },
+      },
+      plantSoils: {
+        cane: 'minecraft:supports_sugar_cane',
+        caneWater: 'minecraft:supports_sugar_cane_adjacently',
+        cactus: 'minecraft:supports_cactus',
+        cactusFlower: 'minecraft:support_override_cactus_flower',
+        bamboo: 'minecraft:supports_bamboo',
+        bigDripleaf: 'minecraft:supports_big_dripleaf',
+        smallDripleaf: 'minecraft:supports_small_dripleaf',
+        notKelp: 'minecraft:cannot_support_kelp',
+        caveVines: 'minecraft:cave_vines',
+      },
+    };
+    expect(facts.vanillaPairs?.strip['minecraft:oak_log']).toBe('minecraft:stripped_oak_log');
+    // @ts-expect-error: only the two sound models exist.
+    const wrong: BlockFacts = { setTypes: [], woodTypes: [], soundModel: 'sound_event' };
+    expect(wrong.soundModel).toBe('sound_event');
+    // A 1.18.0-shaped block facts object without them stays assignable.
+    const older: BlockFacts = { setTypes: [], woodTypes: [] };
+    expect(older.soundTypes).toBeUndefined();
+    expect(older.soundModel).toBeUndefined();
+    expect(older.vanillaPairs).toBeUndefined();
+    expect(older.plantSoils).toBeUndefined();
   });
 
   it('carries optional trade, job site and trade set facts on entities (1.18.0)', () => {
