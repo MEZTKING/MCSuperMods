@@ -1,6 +1,6 @@
 # B574 spike: deepslate against the real game (live world generation)
 
-Answers WS1 to WS18 of [`docs/PLAN-live-worldgen.md`](../../../PLAN-live-worldgen.md) for ADR 0119, measured on 2026-11-22 on this cloud machine (4 cores, 15 GB) for the targets 26.3 and 26.4-snapshot-7. Nothing here is built, linted or shipped.
+Answers WS1 to WS18 of the live world generation plan (deleted at its close, B591; the questions in short, the decisions and what the built code reached are in [ADR 0119](../../../adr/0119-live-worldgen-preview.md)), measured on 2026-11-22 on this cloud machine (4 cores, 15 GB) for the targets 26.3 and 26.4-snapshot-7. Nothing here is built, linted or shipped.
 
 Clean room: no Mojang method body was read; deepslate 0.27.2 (MIT) was read and its code adapted in `spike-src/`. Vanilla worldgen JSON was read from the Loom cache's client jars into the scratchpad at run time and deleted afterwards; no vanilla file, listing or game screenshot is kept here. The real worlds were made by the vanilla dedicated server (cached in `~/.cache/msm-fabric-server`), with MSM's own data pack of test dimensions (`spike-src/make_pack.py`, `make_fixture.py`), read with the reference pack's `region.py`, and deleted.
 

@@ -24,7 +24,7 @@ On Home, **Start a new mod** asks one question: **What is your mod called?** Pre
 
 ## See what you can make
 
-Under the three buttons on Home, **See what you can make** shows ten cards of things to make: a set of wood, a pet, a crop, a machine, a vehicle, a portal, sparkles, a trader, a liquid and a lucky block. Hover a card to see a short clip. **Make this** starts the card's flow, asking only **What is your mod called?** when no mod is open, and **See the example** opens or copies the finished example. With a mod open, the cards sit between the tiles and **My things**, then fold to **Show what you can make** once your mod has things; **Hide what you can make** folds them again. **Settings > Showcase > Play showcase clips** turns the moving pictures off. See [See what you can make](showcase.md).
+Under the three buttons on Home, **See what you can make** shows thirteen cards of things to make: a set of wood, a pet, a crop, a machine, a vehicle, a portal, sparkles, a trader, a liquid, a lucky block and three worlds of your own (islands, tall mountains, caves). Hover a card to see a short clip. **Make this** starts the card's flow, asking only **What is your mod called?** when no mod is open, and **See the example** opens or copies the finished example. With a mod open, the cards sit between the tiles and **My things**, then fold to **Show what you can make** once your mod has things; **Hide what you can make** folds them again. **Settings > Showcase > Play showcase clips** turns the moving pictures off. See [See what you can make](showcase.md).
 
 ## Make something
 

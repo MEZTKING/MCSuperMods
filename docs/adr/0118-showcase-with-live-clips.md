@@ -175,7 +175,7 @@ The first ten cards, each with the example it is drawn from:
 | A liquid of your own | `example_msm_fluid` |
 | Rules: a lucky block | `example_msm_rules` |
 
-No spare was needed. The clip outlines as built are in "The first ten as built" below; the measured action sequences are in `docs/reference/spikes/b565/` (`clips.json`). Skyblock, One block and the other game modes join through the game modes plan (its B557 and B558), and the world generation flows through the live world generation plan (its B588).
+No spare was needed. The clip outlines as built are in "The first ten as built" below; the measured action sequences are in `docs/reference/spikes/b565/` (`clips.json`). Skyblock, One block and the other game modes join through the game modes plan (its B557 and B558), and the world generation flows through live world generation's B588 (done: "Amendment: the world cards" below, 13 cards in all).
 
 ### D13 Budgets, and the go or no-go
 
@@ -281,8 +281,28 @@ Measured by B565 in the real app under SwiftShader on a loaded 4-core machine, o
 - Reset script state on a loop restart, if live "What happened" lines are ever shown as captions.
 - The sentences of nine cards are pinned by Vitest only (the e2e reads the wood set's).
 - A hardware GPU and a PC with a blocked GPU are unmeasured (ADR 0085 D12's open question 3); the user's Windows look decides whether "plays by itself" stays the default.
-- More cards: the game modes (the game modes plan's B557 and B558), world generation flows (the live world generation plan's B588), a stone set, a gear set and Surprise me itself.
+- More cards: the game modes (the game modes plan's B557 and B558), a stone set, a gear set and Surprise me itself. The world generation cards are done (the amendment below).
 - A `showcases` contribution for plugins, only if a plugin asks (D3).
+
+## Amendment: the world cards (B588, 2026-11-22)
+
+Live world generation ([ADR 0119](0119-live-worldgen-preview.md) D12) adds three cards after the first ten, so the gallery has **13 cards**; the first ten keep their order and the gallery wraps the new ones onto the next row. Recorded at that plan's close (B591).
+
+| # | Card and sentence | Example | Make this | Clip |
+|---|---|---|---|---|
+| 11 | **A world of islands** "Your own world: small sandy islands in a wide sea." | Coral Isles | flow `world-islands` | A slow look round sand, sea and grass. Captions "Islands rise out of a wide sea" and "Its jungle trees grow in the game." |
+| 12 | **A world of tall mountains** "Your own world: snowy peaks as tall as the sky allows." | Frost Peaks | flow `world-mountains` | Snow and stone near the top of the world. Captions "Snowy peaks as tall as the world allows" and "Its caves are carved in the game." |
+| 13 | **A world of caves** "Your own world: caves under a roof of rock, with lava lakes." | Ember Caverns | flow `world-caves` | Lava, shroomlight and deepslate at the bottom of the world. Captions "Caves under a roof of rock" and "Lava lakes glow at the bottom". |
+
+Each clip is 200 ticks at seed 12345 with no player steps, and its mod name is Island Mod, Mountain Mod or Cave Mod.
+
+- **The clip format (D4)** gains a fourth ground, `generated` (`ClipGeneratedGround`: the example's world preset, a dimension, a seed, a centre and an optional `bottom`, the window's lowest block); `validateClip` checks them.
+- **Playback (D5).** A generated ground is Try it's ground "My world generation" over the example's own lowered world files, made by the showcase's own terrain worker, not the open mod's. The player sets nothing up and steps nothing until the land is in, in full, at its bottom and with nothing left out; `ClipView` keeps the still over the picture until then. A ground that cannot be made is a problem, and such a clip never plays. A loop's restart gives the land back.
+- **Honest clips (D11).** A clip never reads the player's jar for the land, so every computer draws the same world, as "What moved" already records for vanilla props. That is why there are three cards and not five: Endless Blossom's cherry trees are the game's own biome features, so without the jar its clip would be plain green hills, and Cloud Realm is all air until Skyblock's start island exists. The islands' caption says that their trees grow in the game.
+- **Budgets (D13), measured in the built app under SwiftShader.** Hover to the first frame with the land in: 1.35 to 1.61 s for the islands and the mountains and 2.02 to 2.72 s for the caves on a first launch (its window moves to its bottom, so the stages are asked twice), 0.56 to 1.41 s warm. All are within the accepted 3 s; only the warm islands and mountains meet the 1.5 s go line every time. Frame rate at 320 by 180: 35 to 52 for the islands and the mountains, 20 to 33 for the caves, which is under the 24 go line on one of two runs and above the 15 no-go line. No card falls back to its still. The `ClipView` chunk is 13.1 kB (11 kB before).
+- **Stills (D7, limit U6).** The world examples have no pictures, so a world card's drawn still, before its clip has played, with reduced motion or without WebGL, is the plain tint. A small drawn map picture is the follow-up.
+- **Tests (D14).** `showcases.test.ts` plays each world card to its end on both targets on the real engine and pins what the camera sees at the still; `generated-clip.test.tsx` covers waiting for the land, the restart and a missing world; e2e `showcase-path` counts 13 cards, and `worldgen-live-path` mounts "A world of islands" in Very easy.
+- **Vetoable defaults added:** the three world cards, their place after the first ten, and their captions.
 
 ## Fact table (W1 to W18)
 
@@ -331,11 +351,11 @@ U4 after the close: vanilla blocks in a clip look plain even with the game's pic
 
 ## Status
 
-Accepted with findings (2026-11-22, close B572; briefs B565–B572, reserve B573 not run; the plan is deleted, its fact table and limits are above). Vetoable defaults, for the user's look:
+Accepted with findings (2026-11-22, close B572; briefs B565–B572, reserve B573 not run; the plan is deleted, its fact table and limits are above). Amended the same day for the three world cards of live world generation (B588, recorded at close B591): 13 cards. Vetoable defaults, for the user's look:
 
 - the gallery on both Home states and in the New project dialog, not in Easy and Advanced's empty editor area;
 - the list in the app, not a plugin contribution;
-- the ten cards and their order;
+- the ten cards and their order, and the three world cards after them;
 - the Rules card opening the example rather than the Rule book;
 - one live clip: hover or focus first, else the first card in view, playing by itself;
 - silent clips;

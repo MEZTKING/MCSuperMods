@@ -2,7 +2,7 @@
 
 ## Context
 
-After B582 (the live world map) `app.asar` was 31.03 MB of its 32 MB budget and the renderer output 17.56 MB of 18 MB, above the stop lines the plans set for app briefs (31 MB and 17.5 MB, [`docs/PLAN-live-worldgen.md`](../PLAN-live-worldgen.md), [`docs/PLAN-live-views.md`](../PLAN-live-views.md)), so no further app brief could start. Live world generation and the live views still have renderer and main code to land.
+After B582 (the live world map) `app.asar` was 31.03 MB of its 32 MB budget and the renderer output 17.56 MB of 18 MB, above the stop lines the plans set for app briefs (31 MB and 17.5 MB: the live world generation plan, since closed into [ADR 0119](0119-live-worldgen-preview.md), and [`docs/PLAN-live-views.md`](../PLAN-live-views.md)), so no further app brief could start. Live world generation and the live views still have renderer and main code to land.
 
 Both budgets had a reserve on record:
 

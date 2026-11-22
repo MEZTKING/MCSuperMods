@@ -1,8 +1,8 @@
 # Plan: Live views 2 to 4
 
-**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), all Proposed. Starts after live world generation closes (B591). Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
+**Status: draft (2026-11-22).** Brief ids B600–B648 (B596–B599 stay free); ADRs [0120](adr/0120-live-views-data.md) (data), [0121](adr/0121-live-views-looks-and-sounds.md) (looks and sounds) and [0122](adr/0122-live-views-assembled-structures.md) (assembled structures), all Proposed. Live world generation is closed (B591, 2026-11-22; [ADR 0119](adr/0119-live-worldgen-preview.md) accepted with findings), so batch 2 may start with its spike B600. Each batch starts with a spike; nothing after a batch's wave 0 starts before its spike has reported.
 
-Working plan for the rest of the user's standing rule of 2026-11-22, **Everything visible live** ([ADR 0119 D1](adr/0119-live-worldgen-preview.md)). The audit [`docs/LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) (B575) counts 118 kinds: 28 have a live view, 9 are exempt, 81 need one. Fourteen of those belong to [`docs/PLAN-live-worldgen.md`](PLAN-live-worldgen.md) (B574–B595) and are not repeated here. This plan closes the other 67 in three batches, plus the two surfaces that are not kinds: the Creator's flows that show nothing of what they make, and the AI helper's proposals, seen only as JSON. Written 2026-11-22 by the orchestrator at 505d7c3 (branch `ccr-d077e76e-4gnbx2`). Every "today" claim was checked against the code at that commit or is the audit's; what was not checked says "(verify at implementation)".
+Working plan for the rest of the user's standing rule of 2026-11-22, **Everything visible live** ([ADR 0119 D1](adr/0119-live-worldgen-preview.md)). The audit [`docs/LIVE-VIEW-AUDIT.md`](LIVE-VIEW-AUDIT.md) (B575) counted 118 kinds when this plan was written: 28 had a live view, 9 were exempt, 81 needed one. Fourteen of those were live world generation's (B574–B592, closed at B591 into ADR 0119) and now have one, so the audit stands at 42, 9 and 67. This plan closes the other 67 in three batches, plus the two surfaces that are not kinds: the Creator's flows that show nothing of what they make, and the AI helper's proposals, seen only as JSON. Written 2026-11-22 by the orchestrator at 505d7c3 (branch `ccr-d077e76e-4gnbx2`). Every "today" claim was checked against the code at that commit or is the audit's; what was not checked says "(verify at implementation)".
 
 ## In plain words
 
@@ -458,7 +458,7 @@ Recorded in ADR 0120 and used by all three batches.
 |---|---|---|
 | 4F1 | The Template Pool Studio shows pieces and connections (`connections.ts`), no picture; one template draws in 3D (`preview/structure.ts`) | `app/src/renderer/src/studios/structures/`; the audit |
 | 4F2 | Kinds: `structure_template` (JSON lowered to `.nbt`; over 48 a side is a warning), `template_pool`, `structure`, `structure_set`, `processor_list` | game modes plan G5; `packages/plugins/structures/src/kinds/` |
-| 4F3 | Live worldgen draws start markers (B585, limit WL5) and keeps structures in the ground as reserve B595 with owner folder `packages/terrain/src/structures/` | `docs/PLAN-live-worldgen.md` |
+| 4F3 | Live worldgen draws start markers (B585, limit WL5; `app/src/renderer/src/terrain/markers.ts`) and left structures in the ground as reserve B595, not run, with owner folder `packages/terrain/src/structures/` | ADR 0119 findings and limits |
 | 4F4 | deepslate has structure placement (where a structure may start) and a structure renderer; no jigsaw assembly and no processors | ADR 0119 context; (verify at implementation) |
 | 4F5 | The game modes plan adds chests and loot tables to the Structure Studio (B555) and a structure as a Try it ground (B558) | `docs/PLAN-game-modes.md` |
 | 4F6 | The Jigsaw structure flow makes a village of huts placed by `random_spread` | game modes plan G22 |
@@ -562,7 +562,7 @@ Recorded in ADR 0120 and used by all three batches.
 
 ## Rules for every brief
 
-The rules of `docs/PLAN-live-worldgen.md` "Rules for every brief" apply (clean room, no new dependency, git worktrees in the scratchpad with the given identity and no `git config`, disk and Gradle limits, one owner per shared file per wave, notes for the plan, exit criteria, plain words, models), with these additions:
+The rules of `docs/HANDOFF.md` "Rules for every brief" apply (clean room, no new dependency, git worktrees in the scratchpad with the given identity and no `git config`, disk and Gradle limits, one owner per shared file per wave, notes for the plan, exit criteria, plain words, models), together with live world generation's own rules, kept in [ADR 0119](adr/0119-live-worldgen-preview.md) "Rules that stay" (clean room for worldgen, vanilla data only from the user's jar at runtime, the engine keyed by type id and folder key, no fork of deepslate, nothing sampled on the main thread, honest views), with these additions:
 
 - **Clean room.** Only `javap` signatures of Mojang classes; never a method body. Behaviour is written from the data's own field names and from what the real game shows on MSM's own fixture content. What cannot be learned that way becomes "only in the game", not a guess. Mojang's Bedrock files are Mojang's assets and are not read.
 - **Vanilla files come only from the user's own Minecraft files at runtime** (the client jar; for sounds the launcher's asset store). They are never committed, bundled, exported, written into a project or sent to the AI helper. Tests that need them run only where a jar is present and skip elsewhere; every other test uses MSM's own fixtures.
@@ -606,7 +606,7 @@ At most five executors at once and at most two engine-mod executors; no file in 
 
 ## Order, and the game modes plan
 
-**After live world generation's close (B591).** This plan reuses its worker pattern, its view controls, its jar reading (cache schema 4) and, in batch 4, `@msm/terrain` and its markers.
+**After live world generation's close (B591, done 2026-11-22).** This plan reuses its worker pattern, its view controls, its jar reading (cache schema 4) and, in batch 4, `@msm/terrain` and its markers.
 
 **Recommended order:** live world generation, then **batch 2 with the game modes plan's first waves beside it**, then the rest of the game modes plan, then batch 3, then batch 4.
 

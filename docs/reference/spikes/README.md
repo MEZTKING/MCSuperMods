@@ -13,7 +13,7 @@ The decisions taken from them are in the ADR amendments, which win over anything
 
 - `b565/`: the Showcase plan's measurements (Z1–Z13 of ADR 0118, whose plan is deleted: example lowering, mount to first frame, frame rates, mount churn and memory, stills from the canvas, reach, driving, portals, Rules in the script worker, crops, the machine, a fluid, silence), measured on mc-26.3 and mc-26.4 under SwiftShader. Decisions go into ADR 0118 from the B565 report. `clips.json` holds the action sequence and camera keys per clip; `results/` the numbers; `stills/` the ten mc-26.3 stills (MSM's own drawing, no client jar); `spike-src/` the throwaway clip player, harness and specs (not built).
 
-- `b574/`: the live world generation spike (WS1–WS18 of `docs/PLAN-live-worldgen.md`: deepslate 0.27.2 against real worlds of the vanilla server on 26.3 and 26.4-snapshot-7, speed in a worker, what it lacks, the jar paths; a go with ten fixes). Its README has the answers; the decisions go into ADR 0119.
+- `b574/`: the live world generation spike (WS1–WS18 of the live world generation plan, since closed into ADR 0119: deepslate 0.27.2 against real worlds of the vanilla server on 26.3 and 26.4-snapshot-7, speed in a worker, what it lacks, the jar paths; a go with ten fixes). Its README has the answers; the decisions and what the built code reached are in ADR 0119.
 
 The DEVLOG entries "B469" and "B470" of 2026-11-15 and "B503", "B524", "B525", "B565" and "B574" of 2026-11-22 describe how each spike was run.
 
