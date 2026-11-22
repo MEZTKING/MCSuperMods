@@ -1,0 +1,8 @@
+{
+  "berries": {
+    "item": "mymod:pods",
+    "light": 16
+  },
+  "format": 1,
+  "type": "growing_plant"
+}

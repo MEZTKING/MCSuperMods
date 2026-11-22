@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "models": {
+    "multiface": "mymod:block/glow_moss"
+  },
+  "type": "multiface"
+}

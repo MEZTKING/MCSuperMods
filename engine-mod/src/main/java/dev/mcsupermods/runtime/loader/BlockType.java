@@ -17,6 +17,7 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.mcsupermods.runtime.loader.types.FurnitureFields;
+import dev.mcsupermods.runtime.loader.types.GrowingPlantFields;
 import dev.mcsupermods.runtime.loader.types.PlantFields;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -72,13 +73,13 @@ public enum BlockType {
     HANGING_SIGN("hanging_sign", FurnitureFields.fields("hanging_sign")),
     STEM("stem", FurnitureFields.fields("stem")),
     SCAFFOLDING("scaffolding", FurnitureFields.fields("scaffolding")),
-    // The five growing, climbing and potted plant types of batch 3 (ADR 0103 D1, D2). Stubs from B505: no fields yet
-    // (B506 freezes them), and BlockTypes answers "not yet" for a block of these types until B509 and B510.
-    GROWING_PLANT("growing_plant", List.of()),
-    COLUMN_PLANT("column_plant", List.of()),
-    MULTIFACE("multiface", List.of()),
-    DRIPLEAF("dripleaf", List.of()),
-    FLOWER_POT("flower_pot", List.of());
+    // The five growing, climbing and potted plant types of batch 3 (ADR 0103 D1, D2). Their own fields and codecs live in
+    // loader/types/GrowingPlantFields (B506); BlockTypes answers "not yet" for a block of these types until B509 and B510.
+    GROWING_PLANT("growing_plant", GrowingPlantFields.fields("growing_plant")),
+    COLUMN_PLANT("column_plant", GrowingPlantFields.fields("column_plant")),
+    MULTIFACE("multiface", GrowingPlantFields.fields("multiface")),
+    DRIPLEAF("dripleaf", GrowingPlantFields.fields("dripleaf")),
+    FLOWER_POT("flower_pot", GrowingPlantFields.fields("flower_pot"));
 
     /**
      * Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3;
@@ -191,38 +192,74 @@ public enum BlockType {
                 required("wood_type", WoodKind.CODEC).forGetter(FenceGate::woodType)).apply(i, FenceGate::new));
     }
 
-    /** A door or trapdoor: the vanilla set type. */
-    public record Opening(SetType setType) implements Fields {
+    /**
+     * A door or trapdoor: the vanilla set type or one of its own (ADR 0105 D2).
+     *
+     * @param setTypeSetting {@code set_type} as written; {@link #setType()} is the vanilla one, or an own one's base
+     */
+    public record Opening(SetTypeSetting setTypeSetting) implements Fields {
         static final MapCodec<Opening> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                required("set_type", SetType.CODEC).forGetter(Opening::setType)).apply(i, Opening::new));
+                required("set_type", SetTypeSetting.CODEC).forGetter(Opening::setTypeSetting)).apply(i, Opening::new));
+
+        /** The vanilla set type, or the {@code base} of an own one. */
+        public SetType setType() {
+            return setTypeSetting.base();
+        }
+
+        /** The element's own set type, when {@code set_type} is an object. */
+        public Optional<OwnSetType> ownSetType() {
+            return setTypeSetting.own();
+        }
     }
 
     /**
      * A button.
      *
+     * @param setTypeSetting {@code set_type} as written; {@link #setType()} is the vanilla one, or an own one's base
      * @param pressTicksSetting {@code press_ticks} as written; {@link #pressTicks()} applies the default
      */
-    public record Button(SetType setType, Optional<Integer> pressTicksSetting) implements Fields {
+    public record Button(SetTypeSetting setTypeSetting, Optional<Integer> pressTicksSetting) implements Fields {
         static final MapCodec<Button> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                required("set_type", SetType.CODEC).forGetter(Button::setType),
+                required("set_type", SetTypeSetting.CODEC).forGetter(Button::setTypeSetting),
                 optional("press_ticks", intRange(1, 200)).forGetter(Button::pressTicksSetting)).apply(i, Button::new));
+
+        /** The vanilla set type, or the {@code base} of an own one. */
+        public SetType setType() {
+            return setTypeSetting.base();
+        }
+
+        /** The element's own set type, when {@code set_type} is an object. */
+        public Optional<OwnSetType> ownSetType() {
+            return setTypeSetting.own();
+        }
 
         /** Ticks the button stays pressed: as written, else 30 for the wooden set types and 20 otherwise, as vanilla. */
         public int pressTicks() {
-            return pressTicksSetting.orElse(setType.wooden() ? 30 : 20);
+            return pressTicksSetting.orElse(setType().wooden() ? 30 : 20);
         }
     }
 
     /**
      * A pressure plate.
      *
+     * @param setTypeSetting {@code set_type} as written; {@link #setType()} is the vanilla one, or an own one's base
      * @param weightedMax present: a weighted plate whose signal grows with the entity count up to this; absent: an
      *     ordinary plate
      */
-    public record PressurePlate(SetType setType, Optional<Integer> weightedMax) implements Fields {
+    public record PressurePlate(SetTypeSetting setTypeSetting, Optional<Integer> weightedMax) implements Fields {
         static final MapCodec<PressurePlate> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                required("set_type", SetType.CODEC).forGetter(PressurePlate::setType),
+                required("set_type", SetTypeSetting.CODEC).forGetter(PressurePlate::setTypeSetting),
                 optional("weighted_max", intAtLeast(1)).forGetter(PressurePlate::weightedMax)).apply(i, PressurePlate::new));
+
+        /** The vanilla set type, or the {@code base} of an own one. */
+        public SetType setType() {
+            return setTypeSetting.base();
+        }
+
+        /** The element's own set type, when {@code set_type} is an object. */
+        public Optional<OwnSetType> ownSetType() {
+            return setTypeSetting.own();
+        }
     }
 
     /**
@@ -252,7 +289,7 @@ public enum BlockType {
     /** Stages added by bone meal, picked from {@code min} to {@code max}; default vanilla's 2 to 5. */
     public record BonemealGrowth(int min, int max) {
         public static final BonemealGrowth DEFAULT = new BonemealGrowth(2, 5);
-        static final Codec<BonemealGrowth> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+        public static final Codec<BonemealGrowth> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
                 required("min", intRange(0, 15)).forGetter(BonemealGrowth::min),
                 required("max", intRange(0, 15)).forGetter(BonemealGrowth::max)).apply(i, BonemealGrowth::new)), List.of("min", "max"));
     }
@@ -509,6 +546,127 @@ public enum BlockType {
     }
 
     /**
+     * {@code set_type}: a vanilla set type by name or a set type of the element's own ({@code BlockSetType | OwnSetType},
+     * ADR 0105 D2).
+     */
+    public sealed interface SetTypeSetting permits VanillaSetType, OwnSetType {
+        Codec<SetTypeSetting> CODEC = MsmCodecs.nameOrObject(VanillaSetType.class,
+                SetType.CODEC.xmap(VanillaSetType::new, VanillaSetType::setType), OwnSetType.CODEC);
+
+        /** The vanilla set type, or the {@code base} of an own one. */
+        SetType base();
+
+        /**
+         * The own set type, if this is one. Not a default method: a default method would make initialising either record
+         * initialise this interface, whose {@link #CODEC} reads {@link OwnSetType#CODEC}.
+         */
+        Optional<OwnSetType> own();
+    }
+
+    /** A vanilla set type by name. */
+    public record VanillaSetType(SetType setType) implements SetTypeSetting {
+        @Override
+        public SetType base() {
+            return setType;
+        }
+
+        @Override
+        public Optional<OwnSetType> own() {
+            return Optional.empty();
+        }
+    }
+
+    /** {@code ::msm::definition::PlateSensitivity} (ADR 0105 D2). */
+    public enum PlateSensitivity {
+        /** Any entity, items included, as wooden plates. */
+        EVERYTHING("everything"),
+        /** Mobs and players only, as stone plates. */
+        MOBS("mobs");
+
+        public static final Codec<PlateSensitivity> CODEC = MsmCodecs.named("plate sensitivity", values(), PlateSensitivity::id);
+        private final String id;
+
+        PlateSensitivity(String id) {
+            this.id = id;
+        }
+
+        public String id() {
+            return id;
+        }
+    }
+
+    /**
+     * The sounds of an own set type ({@code ::msm::definition::SetTypeSounds}, closed); each empty one is the base's.
+     *
+     * @param open a door or trapdoor opening
+     * @param close a door or trapdoor closing
+     * @param press a button or plate being pressed
+     * @param release a button or plate being released
+     */
+    public record SetTypeSounds(Optional<Identifier> open, Optional<Identifier> close, Optional<Identifier> press,
+            Optional<Identifier> release) {
+        public static final SetTypeSounds NONE = new SetTypeSounds(Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty());
+        public static final List<String> KEYS = List.of("open", "close", "press", "release");
+        static final Codec<SetTypeSounds> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("open", ID).forGetter(SetTypeSounds::open),
+                optional("close", ID).forGetter(SetTypeSounds::close),
+                optional("press", ID).forGetter(SetTypeSounds::press),
+                optional("release", ID).forGetter(SetTypeSounds::release)).apply(i, SetTypeSounds::new)), KEYS);
+    }
+
+    /**
+     * A set type of the element's own ({@code ::msm::definition::OwnSetType}, ADR 0105 D2; closed), built for this block
+     * alone behind the {@code BlockSetTypes} seam. Every setting not written is {@code base}'s.
+     *
+     * @param base the vanilla set type that fills in the rest; default {@link SetType#WOOD}
+     * @param canOpenByHandSetting {@code can_open_by_hand} as written; {@link #canOpenByHand()} applies the default
+     * @param canOpenByWindChargeSetting {@code can_open_by_wind_charge} as written; {@link #canOpenByWindCharge()} applies
+     *     the default
+     * @param arrowsPressSetting {@code arrows_press} as written; {@link #arrowsPress()} applies the default
+     * @param plateSensitivitySetting {@code plate_sensitivity} as written; {@link #plateSensitivity()} applies the default
+     */
+    public record OwnSetType(SetType base, SetTypeSounds sounds, Optional<Boolean> canOpenByHandSetting,
+            Optional<Boolean> canOpenByWindChargeSetting, Optional<Boolean> arrowsPressSetting,
+            Optional<PlateSensitivity> plateSensitivitySetting) implements SetTypeSetting {
+        public static final List<String> KEYS = List.of("base", "sounds", "can_open_by_hand", "can_open_by_wind_charge", "arrows_press",
+                "plate_sensitivity");
+        static final Codec<OwnSetType> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("base", SetType.CODEC, SetType.WOOD).forGetter(OwnSetType::base),
+                optional("sounds", SetTypeSounds.CODEC, SetTypeSounds.NONE).forGetter(OwnSetType::sounds),
+                optional("can_open_by_hand", Codec.BOOL).forGetter(OwnSetType::canOpenByHandSetting),
+                optional("can_open_by_wind_charge", Codec.BOOL).forGetter(OwnSetType::canOpenByWindChargeSetting),
+                optional("arrows_press", Codec.BOOL).forGetter(OwnSetType::arrowsPressSetting),
+                optional("plate_sensitivity", PlateSensitivity.CODEC).forGetter(OwnSetType::plateSensitivitySetting))
+                .apply(i, OwnSetType::new)), KEYS);
+
+        @Override
+        public Optional<OwnSetType> own() {
+            return Optional.of(this);
+        }
+
+        /** Whether a hand opens the door or trapdoor: as written, else as {@code base} (not {@code iron} or {@code gold}). */
+        public boolean canOpenByHand() {
+            return canOpenByHandSetting.orElse(base != SetType.IRON && base != SetType.GOLD);
+        }
+
+        /** Whether a wind charge opens the door or trapdoor: as written, else {@link #canOpenByHand()}. */
+        public boolean canOpenByWindCharge() {
+            return canOpenByWindChargeSetting.orElse(canOpenByHand());
+        }
+
+        /** Whether arrows press the button: as written, else whether {@code base} is a wooden set type. */
+        public boolean arrowsPress() {
+            return arrowsPressSetting.orElse(base.wooden());
+        }
+
+        /** Which entities press the plate: as written, else everything for a wooden {@code base} and mobs otherwise. */
+        public PlateSensitivity plateSensitivity() {
+            return plateSensitivitySetting.orElse(base.wooden() ? PlateSensitivity.EVERYTHING : PlateSensitivity.MOBS);
+        }
+    }
+
+    /**
      * A vanilla wood type by name ({@code ::msm::definition::WoodType}, ADR 0067 D2); the vanilla {@code WoodType}
      * constants have the same names on both targets.
      */
@@ -559,8 +717,8 @@ public enum BlockType {
             case PORTAL -> Portal.CODEC;
             case CAKE, BERRY_BUSH, TALL_PLANT, POTTED_PLANT, VINE, SEA_PICKLE, CARPET, LAYERS, COCOA, CANDLE -> PlantFields.codec(id);
             case BED, LADDER, TORCH, LANTERN, CHAIN, ROD, SIGN, HANGING_SIGN, STEM, SCAFFOLDING -> FurnitureFields.codec(id);
-            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, WALL, FENCE, PANE, GROWING_PLANT, COLUMN_PLANT, MULTIFACE, DRIPLEAF,
-                    FLOWER_POT -> MapCodec.unit(None.INSTANCE);
+            case GROWING_PLANT, COLUMN_PLANT, MULTIFACE, DRIPLEAF, FLOWER_POT -> GrowingPlantFields.codec(id);
+            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, WALL, FENCE, PANE -> MapCodec.unit(None.INSTANCE);
         };
         return (MapCodec<Fields>) codec;
     }
@@ -609,7 +767,7 @@ public enum BlockType {
                         .toList();
                 if (!unknown.isEmpty()) {
                     return DataResult.error(() -> String.join(", ", unknown) + ": unknown field for type 'portal' (expected the block"
-                            + " fields format, type, sound_type, loot_table, item, components, events and its own fields "
+                            + " fields format, type, sound_type, block_sounds, loot_table, item, components, events and its own fields "
                             + String.join(", ", PORTAL.fields) + ")");
                 }
             }

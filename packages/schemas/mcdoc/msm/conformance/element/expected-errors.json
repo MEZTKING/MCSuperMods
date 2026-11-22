@@ -119,6 +119,30 @@
     "code": "schema.unknown-field",
     "path": "/textures/side"
   },
+  "block-type-3-block-sounds-volume.json": {
+    "code": "schema.out-of-range",
+    "path": "/block_sounds/volume"
+  },
+  "block-type-3-column-plant-textures-front.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/front"
+  },
+  "block-type-3-dripleaf-textures-leaf.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/leaf"
+  },
+  "block-type-3-flower-pot-textures-plant.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/plant"
+  },
+  "block-type-3-growing-plant-textures-side.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/side"
+  },
+  "block-type-3-multiface-textures-top.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/top"
+  },
   "block-type-absent-models.json": {
     "code": "schema.unknown-field",
     "path": "/models/all"
@@ -498,6 +522,10 @@
   "trader-restock-weekly.json": {
     "code": "schema.invalid-enum",
     "path": "/components/msm:trader/restock"
+  },
+  "vanilla-block-rules-burn-low.json": {
+    "code": "schema.out-of-range",
+    "path": "/burn/0/burn_odds"
   },
   "waterlog-level.json": {
     "code": "schema.unknown-field",

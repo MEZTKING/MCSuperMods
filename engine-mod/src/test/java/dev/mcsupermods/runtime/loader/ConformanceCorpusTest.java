@@ -43,8 +43,13 @@ class ConformanceCorpusTest {
      * Batch 2's format (B473): {@code trader-} and {@code profession-} decoded by B474 ({@code TraderParser} through
      * {@code EntityComponents}, {@code ProfessionParser}), {@code fluid-} by B475 ({@code FluidParser}), {@code storage-}
      * and {@code shoulder-} by B479 ({@code StorageParser} through {@code EntityComponents}).
+     * Vanilla parity 3 batch 1's format (B506) decodes every new field, but two load rules are the runtime's until its
+     * briefs change them: {@code container-2-} and {@code machine-2-} (a waterlogged or weathering container or machine,
+     * ADR 0104 D3, D6) still get {@code checkAgeing}'s warning until B513, and {@code weathering-2-} (weathering on rods,
+     * buttons, plates, fences, gates and walls, ADR 0104 D1) is still refused by {@code BlockType.allows} until B510
+     * extends {@code WEATHERING_TYPES}. Each of those briefs removes its prefixes here.
      */
-    private static final List<String> PENDING = List.of();
+    private static final List<String> PENDING = List.of("container-2-", "machine-2-", "weathering-2-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);
@@ -114,7 +119,9 @@ class ConformanceCorpusTest {
             new Kind("profession-", ProfessionParser::parse), // B474
             new Kind("fluid-", FluidParser::parse), // B475
             new Kind("storage-", DefinitionParser::parseEntity), // B479
-            new Kind("shoulder-", DefinitionParser::parseEntity)) // B479
+            new Kind("shoulder-", DefinitionParser::parseEntity), // B479
+            new Kind("block-tools-", DefinitionParser::parseBlock), // B506
+            new Kind("vanilla-block-rules-", VanillaBlockRulesParser::parse)) // B506
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

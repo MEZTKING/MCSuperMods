@@ -1,0 +1,5 @@
+{
+  "format": 1,
+  "plants": ["minecraft:poppy", "mymod:ruby_sapling"],
+  "type": "flower_pot"
+}

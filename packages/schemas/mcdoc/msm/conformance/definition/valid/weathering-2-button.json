@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_button"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_button",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "set_type": "copper",
+  "type": "button"
+}

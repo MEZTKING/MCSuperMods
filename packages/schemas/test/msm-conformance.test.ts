@@ -35,7 +35,13 @@ import {
  * and `creative-tab-` files ADR 0096's `msm:command` and `msm:creative_tab`. `trader-`,
  * `storage-` and `shoulder-` files are entities with ADR 0098's `msm:trader`, `msm:storage` and
  * `msm:shoulder_riding`; `profession-` and `fluid-` files ADR 0098's `msm:villager_profession`
- * and ADR 0099's `msm:fluid`.
+ * and ADR 0099's `msm:fluid`. `block-type-3-` files are ADR 0103's five plant and pot types,
+ * the own set types of doors, trapdoors, buttons and plates and the `block_sounds` of ADR 0105
+ * D1, D2 (blocks); `block-tools-` files blocks with ADR 0105 D3's `msm:flattenable` and
+ * `msm:tillable`; `container-double`, `container-per-player` and `container-2-` files ADR 0104
+ * D3 to D6's containers (and `machine-2-` its waterlogged machines); `weathering-2-` files ADR
+ * 0104 D1's six weathering types; `vanilla-block-rules-` files ADR 0105 D4's
+ * `msm:vanilla_block_rules`.
  * The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
@@ -150,6 +156,7 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     shoulder: MSM_SCHEMA_REFS.entityDefinition,
     profession: MSM_SCHEMA_REFS.villagerProfessionDefinition,
     fluid: MSM_SCHEMA_REFS.fluidDefinition,
+    'vanilla-block-rules': MSM_SCHEMA_REFS.vanillaBlockRulesDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -178,6 +185,7 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     shoulder: MSM_SCHEMA_REFS.entity,
     profession: MSM_SCHEMA_REFS.villagerProfession,
     fluid: MSM_SCHEMA_REFS.fluid,
+    'vanilla-block-rules': MSM_SCHEMA_REFS.vanillaBlockRules,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -444,8 +452,15 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'shoulder-', 1, 1],
     ['element', 'profession-', 2, 3],
     ['element', 'fluid-', 2, 4],
+    ['definition', 'block-type-3-', 18, 30],
+    ['element', 'block-type-3-', 11, 6],
+    ['definition', 'block-tools-', 2, 3],
+    ['definition', 'container-2-', 2, 0],
+    ['definition', 'weathering-2-', 6, 0],
+    ['definition', 'vanilla-block-rules-', 3, 10],
+    ['element', 'vanilla-block-rules-', 1, 1],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096, 0098, 0099)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096, 0098, 0099, 0103-0105)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -515,6 +530,8 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'profession', MSM_SCHEMA_REFS.villagerProfession],
     ['definition', 'fluid', MSM_SCHEMA_REFS.fluidDefinition],
     ['element', 'fluid', MSM_SCHEMA_REFS.fluid],
+    ['definition', 'vanilla-block-rules', MSM_SCHEMA_REFS.vanillaBlockRulesDefinition],
+    ['element', 'vanilla-block-rules', MSM_SCHEMA_REFS.vanillaBlockRules],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);
@@ -525,10 +542,10 @@ describe('MSM conformance corpus coverage', () => {
     expect(missing).toEqual([]);
   });
 
-  describe('ADR 0067, ADR 0068, ADR 0077 and ADR 0094 block types', () => {
+  describe('ADR 0067, ADR 0068, ADR 0077, ADR 0094 and ADR 0103 block types', () => {
     /**
-     * The 17 block types of ADR 0067 D1 and ADR 0068 D1, ADR 0077's `portal` and the twenty of
-     * ADR 0094 D1, in name order.
+     * The 17 block types of ADR 0067 D1 and ADR 0068 D1, ADR 0077's `portal`, the twenty of
+     * ADR 0094 D1 and the five of ADR 0103 D1, D2, in name order.
      */
     const TYPES = [
       'bed',
@@ -540,17 +557,22 @@ describe('MSM conformance corpus coverage', () => {
       'carpet',
       'chain',
       'cocoa',
+      'column_plant',
       'crop',
       'directional',
       'door',
+      'dripleaf',
       'fence',
       'fence_gate',
+      'flower_pot',
+      'growing_plant',
       'hanging_sign',
       'horizontal',
       'ladder',
       'lantern',
       'layers',
       'leaves',
+      'multiface',
       'pane',
       'pillar',
       'portal',

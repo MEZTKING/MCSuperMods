@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:container": {},
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_crate"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_crate",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:machine": {},
+    "msm:waterloggable": {}
+  },
+  "format": 1,
+  "type": "horizontal"
+}

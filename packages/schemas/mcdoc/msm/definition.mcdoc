@@ -2,13 +2,15 @@
 // entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
 // D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1),
 // vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2), villager professions
-// (ADR 0098 D2) and fluids (ADR 0099 D1). Lowering writes these to
+// (ADR 0098 D2), fluids (ADR 0099 D1) and rules for vanilla blocks (ADR 0105 D4). Lowering
+// writes these to
 // `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
 // `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
 // `msm/<ns>/loot_addition/<path>.json`, `msm/<ns>/particle/<path>.json`,
 // `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json`, `msm/<ns>/vehicle/<path>.json`,
 // `msm/<ns>/command/<path>.json`, `msm/<ns>/creative_tab/<path>.json`,
-// `msm/<ns>/villager_profession/<path>.json` and `msm/<ns>/fluid/<path>.json`.
+// `msm/<ns>/villager_profession/<path>.json`, `msm/<ns>/fluid/<path>.json` and
+// `msm/<ns>/vanilla_block_rules/<path>.json`.
 
 use super::action::Event
 use super::action::ParticleSpec
@@ -132,6 +134,12 @@ struct BlockCommon {
 	...msm:block_type[[type]],
 	/// Sounds for breaking, placing and stepping; defaults to `stone`.
 	sound_type?: SoundType,
+	/// The block's own sounds (ADR 0105 D1): each event given replaces that event of
+	/// `sound_type`, which gives the rest. On targets whose sounds are data (26.4) a change shows
+	/// only after the world is opened again. Named `block_sounds` because a `portal` has its own
+	/// `sounds` (ADR 0077 D1). Runtimes older than the release that ships ADR 0105 reject the
+	/// field.
+	block_sounds?: BlockSounds,
 	/// Drops; absent means the vanilla default for the block id.
 	loot_table?: #[id="loot_table"] string,
 	/// The block item; absent means a stack size of 64 in no creative tab; `false` means no
@@ -141,6 +149,25 @@ struct BlockCommon {
 	events?: struct BlockEvents {
 		[string]: Event,
 	},
+}
+
+/// A block's own sounds (ADR 0105 D1), each a vanilla or project sound event; an event not given
+/// is `sound_type`'s.
+struct BlockSounds {
+	/// Played when the block is broken.
+	break?: #[id="sound_event"] string,
+	/// Played when an entity walks on the block.
+	step?: #[id="sound_event"] string,
+	/// Played when the block is placed.
+	place?: #[id="sound_event"] string,
+	/// Played while a player is breaking the block.
+	hit?: #[id="sound_event"] string,
+	/// Played when an entity falls on the block.
+	fall?: #[id="sound_event"] string,
+	/// Volume, 0 to 10; defaults to `sound_type`'s (1 for most).
+	volume?: float @ 0..10,
+	/// Pitch, 0.25 to 4; defaults to `sound_type`'s (1 for most).
+	pitch?: float @ 0.25..4,
 }
 
 /// How hard the block is to break. Absent means hardness 1.5, resistance 6 and no tool needed.
@@ -229,6 +256,10 @@ struct BlockBehaviourComponents {
 	"msm:on_entity_inside"?: OnEntityInside,
 	"msm:flammable"?: Flammable,
 	"msm:strippable"?: Strippable,
+	/// A shovel flattens the block into another (ADR 0105 D3).
+	"msm:flattenable"?: Flattenable,
+	/// A hoe tills the block into another (ADR 0105 D3).
+	"msm:tillable"?: Tillable,
 	"msm:container"?: Container,
 	"msm:machine"?: Machine,
 	"msm:ambient_particles"?: AmbientParticles,
@@ -244,8 +275,10 @@ struct BlockBehaviourComponents {
 /// `waterlogged` property, fills from a bucket and from flowing water and gives a water source
 /// back. Only on the types `block`, `pillar`, `horizontal` and `directional` (the validators
 /// check it; `ladder`, `lantern`, `chain`, `sign`, `hanging_sign`, `candle`, `sea_pickle` and
-/// `scaffolding` are waterloggable by themselves). Runtimes older than the release that ships ADR
-/// 0094 reject the component.
+/// `scaffolding` are waterloggable by themselves). Also allowed with `msm:container` and
+/// `msm:machine` (ADR 0104 D3): the block keeps its contents, screen and hopper faces. Runtimes
+/// older than the release that ships ADR 0094 reject the component, and those older than the
+/// release that ships ADR 0104 drop it from a container or machine with a warning.
 struct Waterloggable {}
 
 /// A weathering stage, as copper's.
@@ -259,8 +292,13 @@ enum(string) WeatheringStage {
 /// Makes the block age into `next` on random ticks as vanilla's copper does (ADR 0094 D8), by
 /// vanilla's own chance and neighbour rule: a neighbour at a lower stage, project or vanilla,
 /// stops the ageing. Only on the types `block`, `pillar`, `horizontal`, `directional`, `slab`,
-/// `stairs`, `door`, `trapdoor`, `pane`, `chain` and `lantern`. Shared block state properties are
-/// copied. Runtimes older than the release that ships ADR 0094 reject the component.
+/// `stairs`, `door`, `trapdoor`, `pane`, `chain` and `lantern`, and (ADR 0104 D1) `rod`,
+/// `button`, `pressure_plate`, `fence`, `fence_gate` and `wall`. Shared block state properties are
+/// copied. Also allowed with `msm:container` (ADR 0104 D6): ageing keeps the contents. Lightning
+/// striking the block or a neighbour sends it back, as vanilla's copper (ADR 0104 D2). Runtimes
+/// older than the release that ships ADR 0094 reject the component, and those older than the
+/// release that ships ADR 0104 reject it on the six newer types and drop it from a container
+/// with a warning.
 struct Weathering {
 	/// The block of the next stage, of the same type; absent at the last stage (the block then
 	/// never ages).
@@ -321,6 +359,25 @@ struct Strippable {
 	into: #[id="block"] string,
 }
 
+/// Lets a shovel flatten the block into another block (ADR 0105 D3), as dirt turns into a dirt
+/// path; only when the block above is air, as vanilla's. Shared block state properties are
+/// copied. Runtimes older than the release that ships ADR 0105 reject the component.
+struct Flattenable {
+	/// The block the flattened block becomes.
+	into: #[id="block"] string,
+}
+
+/// Lets a hoe till the block into another block (ADR 0105 D3), as dirt turns into farmland and
+/// rooted dirt into dirt; only when the block above is air, as vanilla's. Runtimes older than the
+/// release that ships ADR 0105 reject the component.
+struct Tillable {
+	/// The block the tilled block becomes.
+	into: #[id="block"] string,
+	/// An item dropped once on top of the block when it is tilled, as rooted dirt drops hanging
+	/// roots; absent means none.
+	drops?: #[id="item"] string,
+}
+
 /// The vanilla screen a container opens (ADR 0074 D1).
 enum(string) ContainerLayout {
 	/// A chest screen of `rows` rows of nine (`ChestMenu`); with `keep_contents` the shulker box
@@ -338,7 +395,8 @@ enum(string) ContainerLayout {
 
 /// Makes the block hold items in a vanilla screen (ADR 0074 D1), as a barrel does. Only on the
 /// types `block`, `pillar`, `horizontal` and `directional`, and never together with
-/// `msm:machine`. The block gains vanilla's `open` property while a player has it open; the
+/// `msm:machine`; it may hold water (`msm:waterloggable`) and age (`msm:weathering`, ADR 0104 D3,
+/// D6). The block gains vanilla's `open` property while a player has it open; the
 /// contents drop when it is broken unless `keep_contents` is set; `msm:on_interact` still fires
 /// after the screen opens or the holder is used. Runtimes older than the release that ships ADR
 /// 0074 reject the component.
@@ -374,6 +432,21 @@ dispatch msm:container_layout[%none, chest] to struct ChestLayoutFields {
 	/// runtime turns the option off with a load error otherwise); the screen is then the shulker
 	/// box screen, which refuses items that cannot go inside container items.
 	keep_contents?: boolean,
+	/// Whether two of these blocks placed side by side join into one double chest of six rows,
+	/// as vanilla's chests (ADR 0104 D4): the block gains a `type` property (`single`, `left`,
+	/// `right`), one screen shows both halves and each half keeps its own slots for hoppers,
+	/// comparators and drops; placing while sneaking keeps them apart. Defaults to false. Needs
+	/// `rows` 3 and not `keep_contents` or `per_player` (the validators check it, and the runtime
+	/// turns the option off with a load error otherwise). Runtimes older than the release that
+	/// ships ADR 0104 reject the field.
+	double?: boolean,
+	/// Whether each player sees their own contents, as an ender chest (ADR 0104 D5): every block
+	/// of this id shares one store per player, kept across death and dimension change; hoppers and
+	/// comparators do not reach it and nothing drops when it is broken. Defaults to false. Not with
+	/// `keep_contents` or `double` (the validators check it, and the runtime turns the option off
+	/// with a load error otherwise). Runtimes older than the release that ships ADR 0104 reject the
+	/// field.
+	per_player?: boolean,
 }
 
 /// The `hopper` and `dispenser` layouts have a fixed size and no fields of their own.
@@ -555,6 +628,22 @@ enum(string) BlockType {
 	/// Scaffolding that stands up to six blocks from its support, climbed and descended as
 	/// vanilla's.
 	Scaffolding = "scaffolding",
+	/// A strand that grows one block at a time from its tip, up or down, as kelp, weeping and
+	/// twisting vines and cave vines (ADR 0103 D1); the strand below the tip is the generated
+	/// `<path>_plant`. The types from `growing_plant` to `flower_pot` are ADR 0103's; runtimes
+	/// older than the release that ships ADR 0103 reject them.
+	GrowingPlant = "growing_plant",
+	/// A stalk that grows up to a height on given soils, as sugar cane, cactus and bamboo; a
+	/// bamboo-like stalk starts as the generated `<path>_shoot`.
+	ColumnPlant = "column_plant",
+	/// A thin layer on any face of its neighbours that spreads by bone meal, as glow lichen.
+	Multiface = "multiface",
+	/// A dripleaf: a big leaf on a stem that tilts under a standing entity (the stem is the
+	/// generated `<path>_stem`), or a small two-block plant that bone meal grows into a big one.
+	Dripleaf = "dripleaf",
+	/// An empty flower pot of the project's own that takes the plants it lists (ADR 0103 D2); each
+	/// potted plant is the generated `<path>_<plant path>`. Vanilla's flower pot is not changed.
+	FlowerPot = "flower_pot",
 }
 
 /// A vanilla block set type (ADR 0067 D2): sounds, whether hands open the block (not `iron`),
@@ -571,6 +660,45 @@ enum(string) BlockSetType {
 	Gold = "gold",
 	Stone = "stone",
 	PolishedBlackstone = "polished_blackstone",
+}
+
+/// Which entities press a pressure plate (ADR 0105 D2).
+enum(string) PlateSensitivity {
+	/// Any entity, items included, as wooden plates.
+	Everything = "everything",
+	/// Mobs and players only, as stone plates.
+	Mobs = "mobs",
+}
+
+/// The sounds of a set type of the project's own (ADR 0105 D2), each a vanilla or project sound
+/// event; a sound not given is `base`'s.
+struct SetTypeSounds {
+	/// A door or trapdoor opening.
+	open?: #[id="sound_event"] string,
+	/// A door or trapdoor closing.
+	close?: #[id="sound_event"] string,
+	/// A button or pressure plate being pressed.
+	press?: #[id="sound_event"] string,
+	/// A button or pressure plate being released.
+	release?: #[id="sound_event"] string,
+}
+
+/// A set type of the element's own (ADR 0105 D2), built for this block alone (it is not
+/// registered). Every setting not given is `base`'s. Runtimes older than the release that ships
+/// ADR 0105 reject the object.
+struct OwnSetType {
+	/// The vanilla set type whose sounds and rules fill in what is not given; defaults to `wood`.
+	base?: BlockSetType,
+	/// The set type's sounds.
+	sounds?: SetTypeSounds,
+	/// Whether a player's hand opens a door or trapdoor; `base`'s by default (false for `iron`).
+	can_open_by_hand?: boolean,
+	/// Whether a wind charge opens a door or trapdoor; defaults to `can_open_by_hand`.
+	can_open_by_wind_charge?: boolean,
+	/// Whether arrows press a button; `base`'s by default (true for the wooden set types).
+	arrows_press?: boolean,
+	/// Which entities press a plate; `base`'s by default (`everything` for the wooden set types).
+	plate_sensitivity?: PlateSensitivity,
 }
 
 /// A vanilla wood type (ADR 0067 D2), which gives a fence gate its open and close sounds.
@@ -608,24 +736,26 @@ dispatch msm:block_type[fence_gate] to struct FenceGateFields {
 
 /// A door or trapdoor (ADR 0067 D2).
 dispatch msm:block_type[door, trapdoor] to struct OpeningFields {
-	/// The vanilla set type; `iron` cannot be opened by hand.
-	set_type: BlockSetType,
+	/// The vanilla set type (`iron` cannot be opened by hand), or one of the element's own (ADR
+	/// 0105 D2).
+	set_type: (BlockSetType | OwnSetType),
 }
 
 /// A button (ADR 0067 D2).
 dispatch msm:block_type[button] to struct ButtonFields {
-	/// The vanilla set type; arrows press only wooden buttons.
-	set_type: BlockSetType,
+	/// The vanilla set type (arrows press only wooden buttons), or one of the element's own (ADR
+	/// 0105 D2).
+	set_type: (BlockSetType | OwnSetType),
 	/// Ticks the button stays pressed, 1 to 200; defaults to 30 for the wooden set types and
-	/// 20 otherwise, as vanilla.
+	/// 20 otherwise, as vanilla (for an own set type, by its `base`).
 	press_ticks?: int @ 1..200,
 }
 
 /// A pressure plate (ADR 0067 D2).
 dispatch msm:block_type[pressure_plate] to struct PressurePlateFields {
-	/// The vanilla set type; wooden plates are pressed by any entity, the others by mobs and
-	/// players only.
-	set_type: BlockSetType,
+	/// The vanilla set type (wooden plates are pressed by any entity, the others by mobs and
+	/// players only), or one of the element's own (ADR 0105 D2).
+	set_type: (BlockSetType | OwnSetType),
 	/// Present: a weighted plate whose signal grows with the number of entities up to this
 	/// count, as gold and iron plates; absent: an ordinary plate.
 	weighted_max?: int @ 1..,
@@ -881,12 +1011,16 @@ dispatch msm:block_type[sign, hanging_sign] to struct SignFields {
 	wood_type: WoodType,
 }
 
-/// A plant in vanilla's flower pot (ADR 0094 D2). The block has no item of its own; breaking it
-/// drops the pot and the plant.
+/// A plant in a flower pot (ADR 0094 D2, ADR 0103 D2). The block has no item of its own;
+/// breaking it drops the pot and the plant.
 dispatch msm:block_type[potted_plant] to struct PottedPlantFields {
 	/// The plant inside: a project `sapling`, `berry_bush` or cross-model `block`, or a vanilla
 	/// plant that vanilla does not pot. Tall plants cannot be potted.
 	plant: #[id="block"] string,
+	/// The empty pot: a project `flower_pot` (the plant is then potted only in that pot, never in
+	/// vanilla's), or vanilla's; defaults to `minecraft:flower_pot`. Runtimes older than the
+	/// release that ships ADR 0103 reject the field.
+	pot?: #[id="block"] string,
 }
 
 /// A stem (ADR 0094 D2, D3): grows through ages 0 to 7 on `soil`, then grows `fruit` on a
@@ -912,6 +1046,134 @@ dispatch msm:block_type[vine] to struct VineFields {
 dispatch msm:block_type[cocoa] to struct CocoaFields {
 	/// The blocks the pod can hang on; defaults to `#minecraft:supports_cocoa` (B440).
 	support?: #[id(registry="block", tags="required")] string,
+}
+
+/// Which way a growing plant grows from its tip (ADR 0103 D1).
+enum(string) GrowthDirection {
+	/// Upwards, as kelp and twisting vines.
+	Up = "up",
+	/// Downwards, as weeping vines and cave vines.
+	Down = "down",
+}
+
+/// A block id, or a block tag such as `#minecraft:supports_sugar_cane`.
+type BlockOrTag = (#[id="block"] string | #[id(registry="block", tags="required")] string)
+
+/// Berries a growing plant bears, as cave vines bear glow berries (ADR 0103 D1): a random tick
+/// or bone meal puts them on a block of the strand, using it picks them, and the block glows at
+/// `light` while it has them.
+struct PlantBerries {
+	/// The item picked; it also plants the strand when it is the element's own block item.
+	item: #[id="item"] string,
+	/// Light level of a block with berries, 0 to 15; defaults to 14, as cave vines (verify at
+	/// implementation).
+	light?: int @ 0..15,
+}
+
+/// A growing plant (ADR 0103 D1): the element is the tip, which grows into `<path>_plant` behind
+/// it. Growth, bone meal and survival are vanilla's for the strand shape.
+dispatch msm:block_type[growing_plant] to struct GrowingPlantFields {
+	/// Which way the strand grows; defaults to `up`.
+	direction?: GrowthDirection,
+	/// The age a newly placed tip starts from, 0 to 25 (vanilla's range: a strand grows at most
+	/// 26 blocks from age 0, and stops at age 25); defaults to 25, as kelp (verify at
+	/// implementation).
+	max_age?: int @ 0..25,
+	/// Chance per random tick that the tip grows one block, 0 to 1; defaults to 0.14, as kelp
+	/// (verify at implementation).
+	growth_chance?: float @ 0..1,
+	/// Blocks added by one use of bone meal, picked from `min` to `max`; defaults to vanilla's
+	/// for the strand (one for a water plant, as kelp).
+	bonemeal_growth?: BonemealGrowth,
+	/// Whether the plant lives in water as kelp: always waterlogged, placed only in water, and
+	/// broken when the water goes; defaults to false.
+	needs_water?: boolean,
+	/// Berries the strand bears, as cave vines; absent means none.
+	berries?: PlantBerries,
+	/// Whether entities climb the strand, as vines; defaults to true unless `needs_water` is set.
+	climbable?: boolean,
+	/// The blocks or tags the base of the strand may stand on (or hang from); absent means any
+	/// block with a sturdy face, as vanilla's strands. The element checks the list itself, so
+	/// vanilla's plants are not changed.
+	soil?: [BlockOrTag] @ 1..16,
+}
+
+/// The shape of a column plant (ADR 0103 D1).
+enum(string) ColumnPlantStyle {
+	/// A cross-model stalk next to water, as sugar cane.
+	Cane = "cane",
+	/// A spiny column that hurts entities touching it, as cactus.
+	Cactus = "cactus",
+	/// A woody stalk with leaves that grows from a shoot, as bamboo.
+	Bamboo = "bamboo",
+}
+
+/// A column plant (ADR 0103 D1): stacked blocks of the element that grow up to a height. Cane and
+/// cactus grow as vanilla's; a bamboo-like stalk follows the runtime's own rules over vanilla's
+/// measured numbers (ADR 0103's amendment): leaves by height and the generated `<path>_shoot`.
+dispatch msm:block_type[column_plant] to struct ColumnPlantFields {
+	/// The shape.
+	style: ColumnPlantStyle,
+	/// The highest the column grows by itself, 1 to 32 blocks; defaults to 3 (cane and cactus) or
+	/// 16 (bamboo), vanilla's (verify at implementation).
+	max_height?: int @ 1..32,
+	/// The lowest height at which a column may stop: each column stops at a random height from
+	/// `min_height` to `max_height`; defaults to `max_height`, or 12 for bamboo, vanilla's (verify
+	/// at implementation). Not above `max_height` (the validators check it, and the runtime
+	/// refuses the file otherwise).
+	min_height?: int @ 1..32,
+	/// The blocks or tags the column stands on; defaults to vanilla's for the style (the
+	/// `TargetFacts.blocks.plantSoils` tags). The element checks the list itself, so vanilla's
+	/// plants are not changed.
+	soil?: [BlockOrTag] @ 1..16,
+	/// Whether the base needs water (or a waterlogged block) beside it, as sugar cane; defaults to
+	/// true for `cane`, else false.
+	needs_water_nearby?: boolean,
+	/// Damage dealt to an entity touching the column, 0 to 100; defaults to 1 for `cactus`, else
+	/// 0.
+	touch_damage?: float @ 0..100,
+}
+
+/// A multiface plant (ADR 0103 D1), as glow lichen: it covers any face of the blocks around it.
+dispatch msm:block_type[multiface] to struct MultifaceFields {
+	/// Light level, 0 to 15; defaults to 7, as glow lichen (verify at implementation).
+	light?: int @ 0..15,
+	/// Whether bone meal spreads it to nearby faces; defaults to true.
+	spreads?: boolean,
+	/// Whether it can hold water, as glow lichen; defaults to true.
+	waterloggable?: boolean,
+}
+
+/// The size of a dripleaf (ADR 0103 D1).
+enum(string) DripleafSize {
+	/// A big leaf on a stem, as big dripleaf.
+	Big = "big",
+	/// A two-block plant, as small dripleaf.
+	Small = "small",
+}
+
+/// A dripleaf (ADR 0103 D1), following the runtime's own rules over vanilla's measured numbers
+/// (ADR 0103's amendment). A `big` leaf stands on its stem `<path>_stem`, tilts under a standing
+/// entity and bone meal grows it a block taller; a `small` one is two blocks high and bone meal
+/// turns it into the `big` element `grows_into`.
+dispatch msm:block_type[dripleaf] to struct DripleafFields {
+	/// The size.
+	size: DripleafSize,
+	/// The `big` dripleaf element a `small` one grows into; required with `small`, not allowed
+	/// with `big` (the validators check it, and the runtime refuses the file otherwise).
+	grows_into?: #[id="block"] string,
+	/// Ticks a `big` leaf takes from an entity standing on it to tilting a little, from there to
+	/// tilting fully, and from there to dropping the entity, 1 to 1200 each; defaults to `[2, 10,
+	/// 10]`, as measured on vanilla's (verify at implementation). Only with `big`.
+	tilt_ticks?: [int @ 1..1200] @ 3,
+}
+
+/// An empty flower pot (ADR 0103 D2) of the project's own: using it with a listed plant's item
+/// puts the plant in, which turns it into the generated `<path>_<plant path>`. The block item
+/// places the empty pot.
+dispatch msm:block_type[flower_pot] to struct FlowerPotFields {
+	/// The plants the pot takes, 1 to 64 blocks that have an item (vanilla or project).
+	plants: [#[id="block"] string] @ 1..64,
 }
 
 /// Runtime block components.
@@ -2521,4 +2783,65 @@ struct Fluid {
 	/// Definition format; this is version 1.
 	format: 1,
 	...FluidCommon,
+}
+
+/// A block turned into another by a tool or an item (ADR 0105 D4).
+struct VanillaBlockPair {
+	/// The block the tool is used on, usually a vanilla block.
+	block: #[id="block"] string,
+	/// The block it becomes. Shared block state properties are copied.
+	into: #[id="block"] string,
+}
+
+/// A block a hoe tills (ADR 0105 D4).
+struct VanillaTillPair {
+	/// The block the hoe is used on, usually a vanilla block.
+	block: #[id="block"] string,
+	/// The block it becomes.
+	into: #[id="block"] string,
+	/// An item dropped once on top of the block, as rooted dirt drops hanging roots; absent means
+	/// none.
+	drops?: #[id="item"] string,
+}
+
+/// A block that ages into another as copper does (ADR 0105 D4), by vanilla's chance and
+/// neighbour rule.
+struct VanillaAgePair {
+	/// The block that ages, usually a vanilla block.
+	block: #[id="block"] string,
+	/// The block of the next stage.
+	next: #[id="block"] string,
+}
+
+/// A block that catches fire and burns away (ADR 0105 D4), with the odds of `msm:flammable`.
+struct VanillaBurnRule {
+	/// The block, usually a vanilla block.
+	block: #[id="block"] string,
+	/// How readily fire spreads to the block, 0 to 300.
+	burn_odds: int @ 0..300,
+	/// How readily the block burns away once alight, 0 to 300.
+	ignite_odds: int @ 0..300,
+}
+
+/// Rules for vanilla blocks, `msm/<ns>/vanilla_block_rules/<path>.json` (ADR 0105 D4), as the
+/// additions of ADR 0060 add to vanilla content: an axe strips, a shovel flattens, a hoe tills,
+/// honeycomb waxes, blocks age and burn. A rule for a block vanilla already pairs replaces
+/// vanilla's (the validators warn). Several files may give rules; a later one (by mod and path)
+/// for the same block and tool wins with a warning. Only in the Fabric mod jar. Runtimes older
+/// than the release that ships ADR 0105 ignore the `vanilla_block_rules` folder.
+struct VanillaBlockRules {
+	/// Definition format; this is version 1.
+	format: 1,
+	/// Blocks an axe strips, as logs into stripped logs.
+	strip?: [VanillaBlockPair] @ 1..256,
+	/// Blocks a shovel flattens, as dirt into a dirt path (only with air above).
+	flatten?: [VanillaBlockPair] @ 1..256,
+	/// Blocks a hoe tills, as dirt into farmland (only with air above).
+	till?: [VanillaTillPair] @ 1..256,
+	/// Blocks honeycomb waxes; an axe turns `into` back into `block`.
+	wax?: [VanillaBlockPair] @ 1..256,
+	/// Blocks that age into the next stage, as copper.
+	age?: [VanillaAgePair] @ 1..256,
+	/// Blocks that burn.
+	burn?: [VanillaBurnRule] @ 1..256,
 }

@@ -1,0 +1,11 @@
+{
+  "display_name": "Clay pot",
+  "format": 1,
+  "plants": ["minecraft:poppy"],
+  "textures": {
+    "dirt": "minecraft:block/rooted_dirt",
+    "item": "mymod:item/clay_pot",
+    "pot": "mymod:block/clay_pot"
+  },
+  "type": "flower_pot"
+}

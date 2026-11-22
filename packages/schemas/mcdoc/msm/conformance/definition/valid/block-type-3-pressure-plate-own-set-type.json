@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "set_type": {
+    "base": "stone",
+    "plate_sensitivity": "everything"
+  },
+  "type": "pressure_plate"
+}

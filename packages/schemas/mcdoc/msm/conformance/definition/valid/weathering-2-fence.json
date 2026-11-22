@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_fence"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_fence",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "type": "fence"
+}

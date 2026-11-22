@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "till": [
+    {
+      "block": "minecraft:dirt",
+      "drops": 1,
+      "into": "minecraft:farmland"
+    }
+  ]
+}

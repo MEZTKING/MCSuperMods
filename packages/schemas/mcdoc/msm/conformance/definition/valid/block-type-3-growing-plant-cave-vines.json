@@ -1,0 +1,12 @@
+{
+  "berries": {
+    "item": "mymod:glow_pods",
+    "light": 14
+  },
+  "climbable": true,
+  "direction": "down",
+  "format": 1,
+  "max_age": 20,
+  "soil": ["minecraft:stone", "#mymod:vine_ceilings"],
+  "type": "growing_plant"
+}

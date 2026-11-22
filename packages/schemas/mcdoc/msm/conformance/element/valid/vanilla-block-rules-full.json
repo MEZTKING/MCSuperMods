@@ -1,0 +1,41 @@
+{
+  "age": [
+    {
+      "block": "minecraft:iron_block",
+      "next": "mymod:rusty_iron_block"
+    }
+  ],
+  "burn": [
+    {
+      "block": "minecraft:mushroom_stem",
+      "burn_odds": 5,
+      "ignite_odds": 5
+    }
+  ],
+  "flatten": [
+    {
+      "block": "minecraft:mycelium",
+      "into": "minecraft:dirt_path"
+    }
+  ],
+  "format": 1,
+  "strip": [
+    {
+      "block": "minecraft:mushroom_stem",
+      "into": "mymod:stripped_mushroom_stem"
+    }
+  ],
+  "till": [
+    {
+      "block": "minecraft:sand",
+      "drops": "minecraft:dead_bush",
+      "into": "mymod:sand_farmland"
+    }
+  ],
+  "wax": [
+    {
+      "block": "minecraft:iron_block",
+      "into": "mymod:waxed_iron_block"
+    }
+  ]
+}

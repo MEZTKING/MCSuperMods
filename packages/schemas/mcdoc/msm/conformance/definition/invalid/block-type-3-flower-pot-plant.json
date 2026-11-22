@@ -1,0 +1,6 @@
+{
+  "format": 1,
+  "plant": "minecraft:poppy",
+  "plants": ["minecraft:poppy"],
+  "type": "flower_pot"
+}

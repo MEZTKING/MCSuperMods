@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "grows_into": "mymod:fern_leaf",
+  "models": {
+    "top": "mymod:block/small_fern_leaf_top"
+  },
+  "size": "small",
+  "type": "dripleaf"
+}

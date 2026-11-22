@@ -2,7 +2,8 @@
 // `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3),
 // `msm:particle` (ADR 0080 D1), `msm:key_bind` (ADR 0088 D3), `msm:hud` (ADR 0089 D1),
 // `msm:vehicle` (ADR 0090 D2), `msm:command` and `msm:creative_tab` (ADR 0096 D1, D2),
-// `msm:villager_profession` (ADR 0098 D2) and `msm:fluid` (ADR 0099 D1):
+// `msm:villager_profession` (ADR 0098 D2), `msm:fluid` (ADR 0099 D1) and
+// `msm:vanilla_block_rules` (ADR 0105 D4):
 // the runtime definition plus editor-only fields that lower to ordinary pack files.
 
 use super::definition::BiomeAddition as DefinitionBiomeAddition
@@ -23,6 +24,7 @@ use super::definition::ItemCommon
 use super::definition::LootAddition as DefinitionLootAddition
 use super::definition::ParticleCommon
 use super::definition::Potion as DefinitionPotion
+use super::definition::VanillaBlockRules as DefinitionVanillaBlockRules
 use super::definition::ToolTier
 use super::definition::VillagerProfessionCommon
 use super::controls::HudCommon
@@ -587,6 +589,112 @@ dispatch msm:block_type_element[scaffolding] to struct ScaffoldingElementFields 
 	models?: BlockModels,
 }
 
+/// Textures of a `growing_plant` (ADR 0103 D1), drawn as crosses as vanilla's strands.
+struct GrowingPlantTextures {
+	/// The tip (the element itself); also the item's picture.
+	head?: #[id="texture"] string,
+	/// The strand behind the tip (`<path>_plant`); defaults to `head`.
+	body?: #[id="texture"] string,
+	/// The tip while it bears berries; defaults to `head`. Only with `berries`.
+	head_berries?: #[id="texture"] string,
+	/// The strand while it bears berries; defaults to `body`. Only with `berries`.
+	body_berries?: #[id="texture"] string,
+	/// The block item's picture; defaults to `head`.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `column_plant` (ADR 0103 D1), as vanilla's sugar cane, cactus and bamboo
+/// models name them: a `cane` uses `all`, a `cactus` `top`, `side` and `bottom`, a `bamboo`
+/// `stalk`, `leaves_small`, `leaves_large` and `shoot`.
+struct ColumnPlantTextures {
+	/// A cane's cross picture.
+	all?: #[id="texture"] string,
+	top?: #[id="texture"] string,
+	side?: #[id="texture"] string,
+	bottom?: #[id="texture"] string,
+	/// A bamboo's stalk.
+	stalk?: #[id="texture"] string,
+	/// A bamboo's small leaves.
+	leaves_small?: #[id="texture"] string,
+	/// A bamboo's large leaves.
+	leaves_large?: #[id="texture"] string,
+	/// A bamboo's shoot (`<path>_shoot`).
+	shoot?: #[id="texture"] string,
+	/// The block item's picture; defaults to `all`, `side` or `stalk`.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `dripleaf` (ADR 0103 D1), as vanilla's dripleaf models name them: a `big` one
+/// uses `top`, `side`, `tip` and `stem`, a `small` one `top`, `side`, `stem_top` and
+/// `stem_bottom`.
+struct DripleafTextures {
+	/// The leaf seen from above.
+	top?: #[id="texture"] string,
+	/// The leaf's edge.
+	side?: #[id="texture"] string,
+	/// A big leaf's tip while tilted.
+	tip?: #[id="texture"] string,
+	/// A big dripleaf's stem (`<path>_stem`).
+	stem?: #[id="texture"] string,
+	/// The upper half of a small dripleaf's stem.
+	stem_top?: #[id="texture"] string,
+	/// The lower half of a small dripleaf's stem.
+	stem_bottom?: #[id="texture"] string,
+	/// The block item's picture; defaults to `top`.
+	item?: #[id="texture"] string,
+}
+
+/// Textures of a `flower_pot` (ADR 0103 D2), on vanilla's `flower_pot` and `flower_pot_cross`
+/// models; each potted plant shows the plant's own picture in this pot.
+struct FlowerPotTextures {
+	/// The pot.
+	pot?: #[id="texture"] string,
+	/// The earth inside the pot; defaults to vanilla's `minecraft:block/dirt`.
+	dirt?: #[id="texture"] string,
+	/// The block item's picture; defaults to `pot`.
+	item?: #[id="texture"] string,
+}
+
+/// Element fields of a `growing_plant`.
+dispatch msm:block_type_element[growing_plant] to struct GrowingPlantElementFields {
+	/// Textures of the generated models.
+	textures?: GrowingPlantTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `column_plant`.
+dispatch msm:block_type_element[column_plant] to struct ColumnPlantElementFields {
+	/// Textures of the generated models.
+	textures?: ColumnPlantTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `multiface` plant: one picture on vanilla's multiface template.
+dispatch msm:block_type_element[multiface] to struct MultifaceElementFields {
+	/// Textures of the generated models.
+	textures?: SingleTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `dripleaf`.
+dispatch msm:block_type_element[dripleaf] to struct DripleafElementFields {
+	/// Textures of the generated models.
+	textures?: DripleafTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
+/// Element fields of a `flower_pot`.
+dispatch msm:block_type_element[flower_pot] to struct FlowerPotElementFields {
+	/// Textures of the generated models.
+	textures?: FlowerPotTextures,
+	/// The type's own models, used instead of `textures`.
+	models?: BlockModels,
+}
+
 /// `msm:block` element data.
 struct Block {
 	...BlockCommon,
@@ -748,6 +856,9 @@ struct Potion {
 
 /// `msm:biome_addition` element data: the definition as written (ADR 0060 D2).
 type BiomeAddition = DefinitionBiomeAddition
+
+/// `msm:vanilla_block_rules` element data: the definition as written (ADR 0105 D4).
+type VanillaBlockRules = DefinitionVanillaBlockRules
 
 /// `msm:loot_addition` element data: the definition as written (ADR 0060 D3).
 struct LootAddition {

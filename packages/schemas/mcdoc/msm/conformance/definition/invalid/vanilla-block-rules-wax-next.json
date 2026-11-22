@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "wax": [
+    {
+      "block": "minecraft:iron_block",
+      "next": "mymod:waxed_iron"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:container": {
+      "double": true,
+      "per_player": false,
+      "rows": 3
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

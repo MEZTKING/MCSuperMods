@@ -49,6 +49,9 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  *   `bucket_display_name` and `textures`) and the runtime definitions written to
  *   `msm/<ns>/villager_profession/<path>.json` and `msm/<ns>/fluid/<path>.json` (ADR 0098 D2,
  *   ADR 0099 D1).
+ * - `vanillaBlockRules` / `vanillaBlockRulesDefinition`: element data of the
+ *   `msm:vanilla_block_rules` addition kind (the definition as written) and the runtime
+ *   definition written to `msm/<ns>/vanilla_block_rules/<path>.json` (ADR 0105 D4).
  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
  *   definition exists and the conformance corpus has no rule book files.
@@ -91,6 +94,8 @@ export const MSM_SCHEMA_REFS = {
   villagerProfessionDefinition: 'msm:villager_profession_definition',
   fluid: 'msm:fluid',
   fluidDefinition: 'msm:fluid_definition',
+  vanillaBlockRules: 'msm:vanilla_block_rules',
+  vanillaBlockRulesDefinition: 'msm:vanilla_block_rules_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -130,6 +135,8 @@ export const MSM_TYPE_PATHS = {
   villagerProfessionDefinition: '::msm::definition::VillagerProfession',
   fluid: '::msm::element::Fluid',
   fluidDefinition: '::msm::definition::Fluid',
+  vanillaBlockRules: '::msm::element::VanillaBlockRules',
+  vanillaBlockRulesDefinition: '::msm::definition::VanillaBlockRules',
   action: '::msm::action::Action',
 } as const;
 
@@ -170,6 +177,8 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.villagerProfessionDefinition]: MSM_TYPE_PATHS.villagerProfessionDefinition,
   [MSM_SCHEMA_REFS.fluid]: MSM_TYPE_PATHS.fluid,
   [MSM_SCHEMA_REFS.fluidDefinition]: MSM_TYPE_PATHS.fluidDefinition,
+  [MSM_SCHEMA_REFS.vanillaBlockRules]: MSM_TYPE_PATHS.vanillaBlockRules,
+  [MSM_SCHEMA_REFS.vanillaBlockRulesDefinition]: MSM_TYPE_PATHS.vanillaBlockRulesDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

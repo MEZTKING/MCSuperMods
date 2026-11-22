@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {
+      "double": false,
+      "layout": "chest",
+      "per_player": true
+    }
+  },
+  "format": 1
+}

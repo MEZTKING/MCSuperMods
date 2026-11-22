@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:flattenable": {
+      "into": "mymod:ruby_path"
+    },
+    "msm:tillable": {
+      "drops": "mymod:ruby_roots",
+      "into": "mymod:ruby_farmland"
+    }
+  },
+  "display_name": "Ruby soil",
+  "format": 1,
+  "model": "mymod:block/ruby_soil"
+}

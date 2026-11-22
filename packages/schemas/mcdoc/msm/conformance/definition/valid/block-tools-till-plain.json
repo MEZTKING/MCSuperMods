@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:tillable": {
+      "into": "minecraft:farmland"
+    }
+  },
+  "format": 1,
+  "type": "pillar"
+}

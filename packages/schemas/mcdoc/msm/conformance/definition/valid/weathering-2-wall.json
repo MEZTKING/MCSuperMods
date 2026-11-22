@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_wall"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_wall",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "type": "wall"
+}

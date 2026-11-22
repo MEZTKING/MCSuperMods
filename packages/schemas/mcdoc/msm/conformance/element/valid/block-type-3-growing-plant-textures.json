@@ -1,0 +1,19 @@
+{
+  "berries": {
+    "item": "mymod:glow_pods"
+  },
+  "block_sounds": {
+    "break": "minecraft:block.cave_vines.break"
+  },
+  "display_name": "Glow strand",
+  "format": 1,
+  "loot": "self",
+  "textures": {
+    "body": "mymod:block/glow_strand_plant",
+    "body_berries": "mymod:block/glow_strand_plant_lit",
+    "head": "mymod:block/glow_strand",
+    "head_berries": "mymod:block/glow_strand_lit",
+    "item": "mymod:item/glow_pods"
+  },
+  "type": "growing_plant"
+}

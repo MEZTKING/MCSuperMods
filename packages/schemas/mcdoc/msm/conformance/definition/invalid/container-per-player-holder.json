@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "layout": "none",
+      "per_player": true
+    }
+  },
+  "format": 1
+}

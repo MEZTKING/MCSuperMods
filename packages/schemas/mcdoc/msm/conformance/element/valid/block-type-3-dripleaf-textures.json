@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "size": "big",
+  "textures": {
+    "item": "mymod:item/fern_leaf",
+    "side": "mymod:block/fern_leaf_side",
+    "stem": "mymod:block/fern_leaf_stem",
+    "stem_bottom": "mymod:block/fern_leaf_stem_bottom",
+    "stem_top": "mymod:block/fern_leaf_stem_top",
+    "tip": "mymod:block/fern_leaf_tip",
+    "top": "mymod:block/fern_leaf_top"
+  },
+  "type": "dripleaf"
+}

@@ -259,6 +259,18 @@
     "code": "schema.out-of-range",
     "path": "/components/msm:on_step/cooldown_ticks"
   },
+  "block-tools-flattenable-no-into.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:flattenable/into"
+  },
+  "block-tools-tillable-drops-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:tillable/drops"
+  },
+  "block-tools-tillable-extra.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:tillable/count"
+  },
   "block-type-2-bed-colour-teal.json": {
     "code": "schema.invalid-enum",
     "path": "/colour"
@@ -371,6 +383,134 @@
     "code": "schema.type-mismatch",
     "path": "/spreads"
   },
+  "block-type-3-block-sounds-ambient.json": {
+    "code": "schema.unknown-field",
+    "path": "/block_sounds/ambient"
+  },
+  "block-type-3-block-sounds-break-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/block_sounds/break"
+  },
+  "block-type-3-block-sounds-pitch.json": {
+    "code": "schema.out-of-range",
+    "path": "/block_sounds/pitch"
+  },
+  "block-type-3-block-sounds-volume.json": {
+    "code": "schema.out-of-range",
+    "path": "/block_sounds/volume"
+  },
+  "block-type-3-column-plant-damage.json": {
+    "code": "schema.out-of-range",
+    "path": "/touch_damage"
+  },
+  "block-type-3-column-plant-direction.json": {
+    "code": "schema.unknown-field",
+    "path": "/direction"
+  },
+  "block-type-3-column-plant-height-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/max_height"
+  },
+  "block-type-3-column-plant-melon.json": {
+    "code": "schema.invalid-enum",
+    "path": "/style"
+  },
+  "block-type-3-column-plant-min-height-33.json": {
+    "code": "schema.out-of-range",
+    "path": "/min_height"
+  },
+  "block-type-3-column-plant-no-style.json": {
+    "code": "schema.missing-field",
+    "path": "/style"
+  },
+  "block-type-3-column-plant-water-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/needs_water_nearby"
+  },
+  "block-type-3-door-own-set-type-number.json": {
+    "code": "schema.no-union-match",
+    "path": "/set_type"
+  },
+  "block-type-3-dripleaf-grows-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/grows_into"
+  },
+  "block-type-3-dripleaf-huge.json": {
+    "code": "schema.invalid-enum",
+    "path": "/size"
+  },
+  "block-type-3-dripleaf-no-size.json": {
+    "code": "schema.missing-field",
+    "path": "/size"
+  },
+  "block-type-3-dripleaf-tilt-two.json": {
+    "code": "schema.invalid-length",
+    "path": "/tilt_ticks"
+  },
+  "block-type-3-dripleaf-tilt-zero.json": {
+    "code": "schema.out-of-range",
+    "path": "/tilt_ticks/0"
+  },
+  "block-type-3-flower-pot-no-plants.json": {
+    "code": "schema.missing-field",
+    "path": "/plants"
+  },
+  "block-type-3-flower-pot-plant.json": {
+    "code": "schema.unknown-field",
+    "path": "/plant"
+  },
+  "block-type-3-flower-pot-plants-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/plants"
+  },
+  "block-type-3-growing-plant-berries-light.json": {
+    "code": "schema.out-of-range",
+    "path": "/berries/light"
+  },
+  "block-type-3-growing-plant-berries-no-item.json": {
+    "code": "schema.missing-field",
+    "path": "/berries/item"
+  },
+  "block-type-3-growing-plant-chance-2.json": {
+    "code": "schema.out-of-range",
+    "path": "/growth_chance"
+  },
+  "block-type-3-growing-plant-max-age-26.json": {
+    "code": "schema.out-of-range",
+    "path": "/max_age"
+  },
+  "block-type-3-growing-plant-sideways.json": {
+    "code": "schema.invalid-enum",
+    "path": "/direction"
+  },
+  "block-type-3-growing-plant-soil-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/soil"
+  },
+  "block-type-3-growing-plant-textures.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures"
+  },
+  "block-type-3-growing-plant-water-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/needs_water"
+  },
+  "block-type-3-multiface-light-16.json": {
+    "code": "schema.out-of-range",
+    "path": "/light"
+  },
+  "block-type-3-multiface-spreads-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/spreads"
+  },
+  "block-type-3-multiface-water-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/waterloggable"
+  },
+  "block-type-3-potted-plant-pot-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/pot"
+  },
   "block-type-absent-base-block.json": {
     "code": "schema.unknown-field",
     "path": "/base_block"
@@ -428,7 +568,7 @@
     "path": "/max_age"
   },
   "block-type-door-bad-set-type.json": {
-    "code": "schema.invalid-enum",
+    "code": "schema.no-union-match",
     "path": "/set_type"
   },
   "block-type-door-no-set-type.json": {
@@ -619,6 +759,14 @@
     "code": "schema.type-mismatch",
     "path": "/components/msm:container/comparator"
   },
+  "container-double-hopper.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:container/double"
+  },
+  "container-double-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/double"
+  },
   "container-hoppers-string.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:container/hoppers"
@@ -646,6 +794,14 @@
   "container-open-sound-number.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:container/open_sound"
+  },
+  "container-per-player-holder.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:container/per_player"
+  },
+  "container-per-player-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:container/per_player"
   },
   "container-rows-0.json": {
     "code": "schema.out-of-range",
@@ -1990,6 +2146,46 @@
   "trigger-item-while-worn-string.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:while_worn"
+  },
+  "vanilla-block-rules-age-no-next.json": {
+    "code": "schema.missing-field",
+    "path": "/age/0/next"
+  },
+  "vanilla-block-rules-burn-301.json": {
+    "code": "schema.out-of-range",
+    "path": "/burn/0/burn_odds"
+  },
+  "vanilla-block-rules-burn-spread.json": {
+    "code": "schema.unknown-field",
+    "path": "/burn/0/spread_odds"
+  },
+  "vanilla-block-rules-flatten-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/flatten/0/into"
+  },
+  "vanilla-block-rules-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "vanilla-block-rules-strip-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/strip"
+  },
+  "vanilla-block-rules-strip-no-into.json": {
+    "code": "schema.missing-field",
+    "path": "/strip/0/into"
+  },
+  "vanilla-block-rules-till-drops-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/till/0/drops"
+  },
+  "vanilla-block-rules-unknown.json": {
+    "code": "schema.unknown-field",
+    "path": "/grow"
+  },
+  "vanilla-block-rules-wax-next.json": {
+    "code": "schema.unknown-field",
+    "path": "/wax/0/next"
   },
   "vehicle-ammo-capacity-0.json": {
     "code": "schema.out-of-range",

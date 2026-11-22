@@ -1,0 +1,14 @@
+{
+  "bonemeal_growth": {
+    "max": 1,
+    "min": 1
+  },
+  "climbable": false,
+  "direction": "up",
+  "format": 1,
+  "growth_chance": 0.14,
+  "max_age": 25,
+  "needs_water": true,
+  "sound_type": "grass",
+  "type": "growing_plant"
+}

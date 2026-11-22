@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "set_type": {
+    "base": "iron",
+    "sounds": {
+      "open": "mymod:block.hatch.open"
+    }
+  },
+  "type": "trapdoor"
+}

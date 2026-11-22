@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "size": "big",
+  "textures": {
+    "leaf": "mymod:block/x"
+  },
+  "type": "dripleaf"
+}

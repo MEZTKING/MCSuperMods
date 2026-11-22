@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "max_height": 3,
+  "needs_water_nearby": true,
+  "soil": ["#minecraft:supports_sugar_cane"],
+  "style": "cane",
+  "type": "column_plant"
+}

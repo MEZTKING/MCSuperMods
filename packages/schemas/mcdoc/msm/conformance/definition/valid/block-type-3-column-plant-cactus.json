@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "max_height": 4,
+  "min_height": 2,
+  "needs_water_nearby": false,
+  "style": "cactus",
+  "touch_damage": 2,
+  "type": "column_plant"
+}

@@ -1,0 +1,17 @@
+{
+  "display_name": "Reed",
+  "format": 1,
+  "style": "bamboo",
+  "textures": {
+    "all": "mymod:block/reed",
+    "bottom": "mymod:block/reed_bottom",
+    "item": "mymod:item/reed",
+    "leaves_large": "mymod:block/reed_large_leaves",
+    "leaves_small": "mymod:block/reed_small_leaves",
+    "shoot": "mymod:block/reed_shoot",
+    "side": "mymod:block/reed_side",
+    "stalk": "mymod:block/reed_stalk",
+    "top": "mymod:block/reed_top"
+  },
+  "type": "column_plant"
+}

@@ -47,12 +47,16 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  * `minecraft:villager_trade`, `minecraft:trade_set` and `minecraft:tag/villager_trade` show
  * every field within the defaults (a trade's item components list their first ids, as every
  * item stack's do).
+ *
+ * Vanilla parity 3 batch 1 (B506): the five plant and pot types of ADR 0103, `block_sounds`,
+ * own set types and the flattening and tilling components of ADR 0105 bring `msm:block` to
+ * about 20,300 characters, so its allowance is 22,000.
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>
 > = Object.freeze({
   'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 24_000, maxList: 64, maxCases: 64 }),
-  'msm:block': Object.freeze({ maxDepth: 4, maxChars: 20_000, maxList: 48, maxCases: 48 }),
+  'msm:block': Object.freeze({ maxDepth: 4, maxChars: 22_000, maxList: 48, maxCases: 48 }),
   'msm:vehicle': Object.freeze({ maxDepth: 5, maxChars: 6_000 }),
   'msm:key_bind': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
   'msm:command': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),

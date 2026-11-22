@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_rod"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_rod",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "type": "rod"
+}

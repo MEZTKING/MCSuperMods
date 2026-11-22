@@ -1,0 +1,13 @@
+{
+  "block_sounds": {
+    "break": "mymod:block.reed.break",
+    "fall": "minecraft:block.bamboo.fall",
+    "hit": "mymod:block.reed.hit",
+    "pitch": 1.2,
+    "place": "mymod:block.reed.place",
+    "step": "minecraft:block.bamboo.step",
+    "volume": 0.8
+  },
+  "format": 1,
+  "sound_type": "wood"
+}

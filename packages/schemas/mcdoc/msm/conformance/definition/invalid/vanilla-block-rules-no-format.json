@@ -1,0 +1,8 @@
+{
+  "strip": [
+    {
+      "block": "minecraft:oak_log",
+      "into": "minecraft:stripped_oak_log"
+    }
+  ]
+}

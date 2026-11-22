@@ -6970,3 +6970,22 @@ Next
 
 **Next**
 - B506/B515: reconcile the mcdoc `SoundType` enum and `MsmSoundType` with `soundTypes` per target. Main session: the plugin API version lines in root and `packages/plugin-api/CLAUDE.md`, and the stale world data folder counts in `packages/targets/CLAUDE.md`.
+## 2026-11-22 — executor — B506 format, vanilla parity 3 batch 1
+
+**What**
+- MSM mcdoc (`definition.mcdoc`, `element.mcdoc`; 509 to 540 exported types, `symbols.json` rebuilt): the five ADR 0103 types on `msm:block_type` with their fields (`growing_plant`, `column_plant`, `multiface`, `dripleaf`, `flower_pot`) and element textures; `potted_plant.pot`; ADR 0104's `double` and `per_player` on the `chest` layout, weathering documented on the six new types and on containers, water on containers and machines; ADR 0105's `block_sounds` beside `sound_type`, `set_type` as a vanilla name or an own set type object, block components `msm:flattenable` and `msm:tillable` (in `BlockBehaviourComponents`), and the addition kind `::msm::definition::VanillaBlockRules` (`strip`, `flatten`, `till`, `wax`, `age`, `burn`) with its element alias and the refs `msm:vanilla_block_rules` and `msm:vanilla_block_rules_definition`.
+- Runtime decoding: new `loader/types/GrowingPlantFields` (the five types, closed at the top level, with the load rules the mcdoc cannot express), `loader/VanillaBlockRulesParser`, `MsmSoundType.Sounds`, `BlockDefinition.blockSounds`, `BlockType.SetTypeSetting`/`OwnSetType` (callers keep `setType()`, the base), `PlantFields.PottedPlant.pot()`, and in `BlockComponents` the container's `double`/`per_player` with their `checkContainer` rules and a third nested group `TOOLS` for flattening and tilling. Nothing new is registered or behaves differently yet.
+- Corpus: 104 new files (`block-type-3-`, `block-tools-`, `container-double`, `container-per-player`, `container-2-`, `machine-2-`, `weathering-2-`, `vanilla-block-rules-`); `block-type-door-bad-set-type` now expects `schema.no-union-match`. JUnit `VanillaParity3FormatTest` (15) covers defaults and the Java-only load rules.
+- App: the AI helper's `msm:block` kind_schema allowance from 20,000 to 22,000 characters (the summary grew to about 20,300).
+- Checks: `node tools/build-msm-mcdoc/index.ts --check`; schemas 1821, blocks-items 863, library 1919, exporters 1649, core 206, ai 100, sim 602 tests; app 2514 of 2518 (the two `block-type-model` failures are from B505's five `BLOCK_TYPES`, for B516); `pnpm lint`, `pnpm typecheck`; engine-mod 1216 JUnit, `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib`, 711 GameTests each.
+
+**Decisions**
+- The block's own sounds are `block_sounds`, not ADR 0105's `sounds`: a `portal` already has a top-level `sounds` (ADR 0077 D1).
+- Burn rules of vanilla blocks use `msm:flammable`'s `burn_odds` and `ignite_odds`, not ADR 0105's `spread_odds`.
+- An own set type takes a `base` vanilla set type (default `wood`) that fills in every unset field, and `can_open_by_wind_charge` (vanilla's set types have it).
+- `container-2-`, `machine-2-` and `weathering-2-` stay pending in `ConformanceCorpusTest` until B513 lifts `checkAgeing`'s container rule and B510 extends `WEATHERING_TYPES`.
+- `DefinitionScanner` is not changed (B505 froze it): the `vanilla_block_rules` folder is not scanned yet.
+
+**Next**
+- Main session: add `VanillaBlockRulesParser.KIND` to `DefinitionScanner.KINDS` (and `EventOverlay.KINDS_WITHOUT_EVENTS`) or give that line to B514.
+- B509 to B516 build on the frozen shapes listed in the B506 report.

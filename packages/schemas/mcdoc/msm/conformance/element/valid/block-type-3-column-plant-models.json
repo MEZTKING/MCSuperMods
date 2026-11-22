@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "models": {
+    "cane": "mymod:block/reed"
+  },
+  "style": "cane",
+  "type": "column_plant"
+}

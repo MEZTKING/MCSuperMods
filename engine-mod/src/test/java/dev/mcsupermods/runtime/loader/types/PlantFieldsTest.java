@@ -39,7 +39,7 @@ class PlantFieldsTest {
         assertEquals(List.of("food", "on_eat"), PlantFields.fields("cake"));
         assertEquals(List.of("berry", "harvest", "hurts"), PlantFields.fields("berry_bush"));
         assertEquals(List.of("bonemeal"), PlantFields.fields("tall_plant"));
-        assertEquals(List.of("plant"), PlantFields.fields("potted_plant"));
+        assertEquals(List.of("plant", "pot"), PlantFields.fields("potted_plant"));
         assertEquals(List.of("spreads"), PlantFields.fields("vine"));
         assertEquals(List.of("support"), PlantFields.fields("cocoa"));
         for (String type : List.of("sea_pickle", "carpet", "layers", "candle")) {
@@ -75,7 +75,7 @@ class PlantFieldsTest {
         assertEquals(0, bush.harvest().ripe().low(), "a reversed range is ordered");
         assertEquals(4, bush.harvest().ripe().high());
         assertEquals(new PlantFields.TallPlant(PlantFields.TallPlantBonemeal.NONE), fields("tall_plant", ", \"bonemeal\": \"none\""));
-        assertEquals(new PlantFields.PottedPlant(Identifier.parse("minecraft:short_grass")),
+        assertEquals(new PlantFields.PottedPlant(Identifier.parse("minecraft:short_grass"), Optional.empty()),
                 fields("potted_plant", ", \"plant\": \"minecraft:short_grass\""));
         assertEquals(new PlantFields.Vine(false), fields("vine", ", \"spreads\": false"));
         assertEquals(new PlantFields.Cocoa(Identifier.parse("minecraft:logs")), fields("cocoa", ", \"support\": \"#minecraft:logs\""));

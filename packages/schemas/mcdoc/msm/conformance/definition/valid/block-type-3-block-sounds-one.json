@@ -1,0 +1,7 @@
+{
+  "block_sounds": {
+    "break": "mymod:block.reed.break"
+  },
+  "format": 1,
+  "type": "slab"
+}

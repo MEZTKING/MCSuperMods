@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:flattenable": {
+      "into": "mymod:ruby_path"
+    },
+    "msm:tillable": {
+      "drops": "mymod:ruby_roots",
+      "into": "mymod:ruby_farmland"
+    }
+  },
+  "format": 1
+}

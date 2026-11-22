@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "models": {
+    "empty": "mymod:block/clay_pot"
+  },
+  "plants": ["mymod:ruby_sapling"],
+  "type": "flower_pot"
+}

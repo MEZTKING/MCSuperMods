@@ -1,0 +1,14 @@
+{
+  "block_sounds": {
+    "break": "mymod:block.reed.break",
+    "fall": "mymod:block.reed.fall",
+    "hit": "mymod:block.reed.hit",
+    "pitch": 1.1,
+    "place": "mymod:block.reed.place",
+    "step": "mymod:block.reed.step",
+    "volume": 1
+  },
+  "display_name": "Reed block",
+  "format": 1,
+  "model": "mymod:block/reed_block"
+}

@@ -1,0 +1,7 @@
+{
+  "format": 1,
+  "textures": {
+    "head": "mymod:block/kelp"
+  },
+  "type": "growing_plant"
+}

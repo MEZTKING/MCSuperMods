@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_pressure_plate"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_pressure_plate",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "set_type": "copper",
+  "type": "pressure_plate"
+}

@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "plants": ["minecraft:poppy"],
+  "textures": {
+    "plant": "mymod:block/x"
+  },
+  "type": "flower_pot"
+}

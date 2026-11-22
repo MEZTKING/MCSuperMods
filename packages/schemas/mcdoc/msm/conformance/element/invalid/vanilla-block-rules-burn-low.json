@@ -1,0 +1,10 @@
+{
+  "burn": [
+    {
+      "block": "minecraft:dirt",
+      "burn_odds": -1,
+      "ignite_odds": 5
+    }
+  ],
+  "format": 1
+}

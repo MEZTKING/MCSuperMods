@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "mymod:waxed_copper_fence_gate"
+    },
+    "msm:weathering": {
+      "next": "mymod:exposed_copper_fence_gate",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "type": "fence_gate",
+  "wood_type": "oak"
+}

@@ -115,10 +115,22 @@ public final class PlantFields {
                 .apply(i, TallPlant::new));
     }
 
-    /** A plant in vanilla's flower pot (ADR 0094 D2); {@code plant} is the block inside. */
-    public record PottedPlant(Identifier plant) implements BlockType.Extension {
+    /**
+     * A plant in a flower pot (ADR 0094 D2, ADR 0103 D2); {@code plant} is the block inside.
+     *
+     * @param potSetting {@code pot} as written: a project {@code flower_pot}; {@link #pot()} applies the default
+     */
+    public record PottedPlant(Identifier plant, Optional<Identifier> potSetting) implements BlockType.Extension {
+        /** Vanilla's empty flower pot, the default {@code pot}. */
+        public static final Identifier VANILLA_POT = Identifier.withDefaultNamespace("flower_pot");
         static final MapCodec<PottedPlant> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                required("plant", ID).forGetter(PottedPlant::plant)).apply(i, PottedPlant::new));
+                required("plant", ID).forGetter(PottedPlant::plant),
+                optional("pot", ID).forGetter(PottedPlant::potSetting)).apply(i, PottedPlant::new));
+
+        /** The empty pot: as written, else vanilla's {@code minecraft:flower_pot}. */
+        public Identifier pot() {
+            return potSetting.orElse(VANILLA_POT);
+        }
     }
 
     /** A vine (ADR 0094 D2); {@code spreads} default true. */
@@ -145,7 +157,7 @@ public final class PlantFields {
             case "cake" -> List.of("food", "on_eat");
             case "berry_bush" -> List.of("berry", "harvest", "hurts");
             case "tall_plant" -> List.of("bonemeal");
-            case "potted_plant" -> List.of("plant");
+            case "potted_plant" -> List.of("plant", "pot");
             case "vine" -> List.of("spreads");
             case "cocoa" -> List.of("support");
             default -> List.of();
@@ -163,14 +175,15 @@ public final class PlantFields {
             case "cocoa" -> Cocoa.CODEC;
             default -> MapCodec.unit(Plain.INSTANCE);
         };
-        return closedTopLevel(typeId, codec);
+        return closedTopLevel(typeId, fields(typeId), codec);
     }
 
     /**
      * {@code codec}, failing first on any top-level key outside {@link BlockDefinition#KEYS} (the common keys and every
-     * type's fields; another type's fields are already refused by {@code BlockType.SPEC_CODEC}).
+     * type's fields; another type's fields are already refused by {@code BlockType.SPEC_CODEC}); {@code own} names the
+     * type's own fields in the message. Shared with {@link GrowingPlantFields}.
      */
-    private static <A> MapCodec<A> closedTopLevel(String typeId, MapCodec<A> codec) {
+    static <A> MapCodec<A> closedTopLevel(String typeId, List<String> own, MapCodec<A> codec) {
         return new MapCodec<>() {
             @Override
             public <T> Stream<T> keys(DynamicOps<T> ops) {
@@ -185,7 +198,6 @@ public final class PlantFields {
                         .sorted()
                         .toList();
                 if (!unknown.isEmpty()) {
-                    List<String> own = fields(typeId);
                     return DataResult.error(() -> String.join(", ", unknown) + ": unknown field for type '" + typeId + "' ("
                             + (own.isEmpty() ? "it has no fields of its own" : "its fields are " + String.join(", ", own)) + ")");
                 }

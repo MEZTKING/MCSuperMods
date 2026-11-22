@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "till": [
+    {
+      "block": "minecraft:mud",
+      "into": "minecraft:farmland"
+    }
+  ]
+}

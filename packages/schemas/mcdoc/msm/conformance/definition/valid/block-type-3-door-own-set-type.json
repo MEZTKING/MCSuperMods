@@ -1,0 +1,17 @@
+{
+  "format": 1,
+  "set_type": {
+    "arrows_press": true,
+    "base": "wood",
+    "can_open_by_hand": true,
+    "can_open_by_wind_charge": false,
+    "plate_sensitivity": "mobs",
+    "sounds": {
+      "close": "mymod:block.reed_door.close",
+      "open": "mymod:block.reed_door.open",
+      "press": "minecraft:block.bamboo_wood_button.click_on",
+      "release": "minecraft:block.bamboo_wood_button.click_off"
+    }
+  },
+  "type": "door"
+}

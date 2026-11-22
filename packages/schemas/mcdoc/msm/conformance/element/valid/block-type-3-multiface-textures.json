@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "textures": {
+    "all": "mymod:block/glow_moss",
+    "texture": "mymod:block/glow_moss"
+  },
+  "type": "multiface"
+}

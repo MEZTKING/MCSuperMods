@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:tillable": {
+      "count": 2,
+      "into": "minecraft:farmland"
+    }
+  },
+  "format": 1
+}

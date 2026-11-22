@@ -45,19 +45,23 @@ public record BlockComponents(
         Optional<AmbientParticles> ambientParticles,
         Optional<Waterloggable> waterloggable,
         Optional<Weathering> weathering,
-        Optional<Waxable> waxable) {
+        Optional<Waxable> waxable,
+        Optional<Flattenable> flattenable,
+        Optional<Tillable> tillable) {
 
     public static final List<String> KEYS = List.of("msm:breakable", "msm:light_emitter", "msm:on_interact", "msm:on_step", "msm:redstone",
             "msm:shape", "msm:on_break", "msm:on_place", "msm:on_random_tick", "msm:on_entity_inside",
             "msm:flammable", "msm:strippable", "msm:container", "msm:machine", "msm:ambient_particles",
-            "msm:waterloggable", "msm:weathering", "msm:waxable");
+            "msm:waterloggable", "msm:weathering", "msm:waxable", "msm:flattenable", "msm:tillable");
     public static final BlockComponents NONE = new BlockComponents(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+            Optional.empty(), Optional.empty());
 
     /**
      * The first 15 components, 15 of the 16 fields a {@code RecordCodecBuilder} group takes (limit C18, ADR 0080 D6;
-     * limit K14); the waterlogging and weathering components of ADR 0094 D7 to D9 are the nested group {@link #AGEING}.
+     * limit K14); the waterlogging and weathering components of ADR 0094 D7 to D9 are the nested group {@link #AGEING},
+     * and the flattening and tilling components of ADR 0105 D3 the nested group {@link #TOOLS}.
      */
     private static final MapCodec<BlockComponents> FIRST = RecordCodecBuilder.mapCodec(i -> i.group(
             optional("msm:breakable", Breakable.CODEC).forGetter(BlockComponents::breakable),
@@ -76,7 +80,7 @@ public record BlockComponents(
             optional("msm:machine", Machine.CODEC).forGetter(BlockComponents::machine),
             optional("msm:ambient_particles", AmbientParticles.CODEC).forGetter(BlockComponents::ambientParticles))
             .apply(i, (a, b, c, d, e, f, g, h, j, k, l, m, n, o, q) -> new BlockComponents(a, b, c, d, e, f, g, h, j, k, l, m,
-                    n, o, q, Optional.empty(), Optional.empty(), Optional.empty())));
+                    n, o, q, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty())));
 
     /** {@code msm:waterloggable}, {@code msm:weathering} and {@code msm:waxable} (ADR 0094 D7 to D9). */
     private record Ageing(Optional<Waterloggable> waterloggable, Optional<Weathering> weathering, Optional<Waxable> waxable) {}
@@ -86,15 +90,25 @@ public record BlockComponents(
             optional("msm:weathering", Weathering.CODEC).forGetter(Ageing::weathering),
             optional("msm:waxable", Waxable.CODEC).forGetter(Ageing::waxable)).apply(i, Ageing::new));
 
+    /** {@code msm:flattenable} and {@code msm:tillable} (ADR 0105 D3). */
+    private record Tools(Optional<Flattenable> flattenable, Optional<Tillable> tillable) {}
+
+    private static final MapCodec<Tools> TOOLS = RecordCodecBuilder.mapCodec(i -> i.group(
+            optional("msm:flattenable", Flattenable.CODEC).forGetter(Tools::flattenable),
+            optional("msm:tillable", Tillable.CODEC).forGetter(Tools::tillable)).apply(i, Tools::new));
+
     public static final Codec<BlockComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             FIRST.forGetter(c -> c),
-            AGEING.forGetter(c -> new Ageing(c.waterloggable, c.weathering, c.waxable)))
-            .apply(i, (first, ageing) -> first.withAgeing(ageing.waterloggable(), ageing.weathering(), ageing.waxable())));
+            AGEING.forGetter(c -> new Ageing(c.waterloggable, c.weathering, c.waxable)),
+            TOOLS.forGetter(c -> new Tools(c.flattenable, c.tillable)))
+            .apply(i, (first, ageing, tools) -> first.withAgeing(ageing.waterloggable(), ageing.weathering(), ageing.waxable())
+                    .withTools(tools.flattenable(), tools.tillable())));
 
     /** The keys of the components present, in {@link #KEYS} order. */
     public List<String> present() {
         List<Optional<?>> values = List.of(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, container, machine, ambientParticles, waterloggable, weathering, waxable);
+                onEntityInside, flammable, strippable, container, machine, ambientParticles, waterloggable, weathering, waxable, flattenable,
+                tillable);
         List<String> out = new ArrayList<>();
         for (int n = 0; n < KEYS.size(); n++) {
             if (values.get(n).isPresent()) {
@@ -124,13 +138,21 @@ public record BlockComponents(
                 keys.contains("msm:ambient_particles") ? Optional.empty() : ambientParticles,
                 keys.contains("msm:waterloggable") ? Optional.empty() : waterloggable,
                 keys.contains("msm:weathering") ? Optional.empty() : weathering,
-                keys.contains("msm:waxable") ? Optional.empty() : waxable);
+                keys.contains("msm:waxable") ? Optional.empty() : waxable,
+                keys.contains("msm:flattenable") ? Optional.empty() : flattenable,
+                keys.contains("msm:tillable") ? Optional.empty() : tillable);
     }
 
     /** These components with the three of ADR 0094 D7 to D9 replaced. */
     public BlockComponents withAgeing(Optional<Waterloggable> water, Optional<Weathering> weather, Optional<Waxable> wax) {
         return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, container, machine, ambientParticles, water, weather, wax);
+                onEntityInside, flammable, strippable, container, machine, ambientParticles, water, weather, wax, flattenable, tillable);
+    }
+
+    /** These components with the two of ADR 0105 D3 replaced. */
+    public BlockComponents withTools(Optional<Flattenable> flatten, Optional<Tillable> till) {
+        return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
+                onEntityInside, flammable, strippable, container, machine, ambientParticles, waterloggable, weathering, waxable, flatten, till);
     }
 
     /**
@@ -162,7 +184,8 @@ public record BlockComponents(
     /** These components with {@code msm:container} replaced (empty removes it). */
     public BlockComponents withContainer(Optional<Container> other) {
         return new BlockComponents(breakable, lightEmitter, onInteract, onStep, redstone, shape, onBreak, onPlace, onRandomTick,
-                onEntityInside, flammable, strippable, other, machine, ambientParticles, waterloggable, weathering, waxable);
+                onEntityInside, flammable, strippable, other, machine, ambientParticles, waterloggable, weathering, waxable, flattenable,
+                tillable);
     }
 
     /**
@@ -183,7 +206,9 @@ public record BlockComponents(
      * The load-time rules of {@code msm:container} that the Codec cannot express (ADR 0074 D1, D6; the layout dispatch of
      * {@code ::msm::definition::Container}): {@code rows} outside layout {@code chest} or {@code size} outside layout
      * {@code none} is an error and the component is not applied; {@code keep_contents} outside a 3-row chest is an error
-     * and the option is turned off. Problems are added to {@code errors}.
+     * and the option is turned off. ADR 0104 D4, D5: {@code double} and {@code per_player} outside layout {@code chest},
+     * {@code double} outside a 3-row chest or with {@code keep_contents}, and {@code per_player} with {@code keep_contents} or
+     * {@code double} are errors and the option is turned off. Problems are added to {@code errors}.
      */
     public BlockComponents checkContainer(List<String> errors) {
         if (container.isEmpty()) {
@@ -205,9 +230,28 @@ public record BlockComponents(
         if (keepMisplaced || keepWrongRows) {
             errors.add("components: msm:container: keep_contents needs layout 'chest' with 3 rows (layout '" + c.layout().id()
                     + "'" + (c.layout() == ContainerLayout.CHEST ? ", " + c.rows() + " rows" : "") + "); it is turned off");
-            return withContainer(Optional.of(c.withoutKeepContents()));
+            c = c.withoutKeepContents();
         }
-        return this;
+        if (c.doubleChestSetting().isPresent() && c.layout() != ContainerLayout.CHEST) {
+            errors.add("components: msm:container: double is only for layout 'chest', not '" + c.layout().id() + "'; it is turned off");
+            c = c.withoutDoubleChest();
+        }
+        if (c.perPlayerSetting().isPresent() && c.layout() != ContainerLayout.CHEST) {
+            errors.add("components: msm:container: per_player is only for layout 'chest', not '" + c.layout().id()
+                    + "'; it is turned off");
+            c = c.withoutPerPlayer();
+        }
+        if (c.doubleChest() && (c.rows() != 3 || c.keepContents())) {
+            errors.add("components: msm:container: double needs 3 rows and no keep_contents (" + c.rows() + " rows"
+                    + (c.keepContents() ? ", keep_contents" : "") + "); it is turned off");
+            c = c.withoutDoubleChest();
+        }
+        if (c.perPlayer() && (c.keepContents() || c.doubleChest())) {
+            errors.add("components: msm:container: per_player is not allowed with " + (c.keepContents() ? "keep_contents" : "double")
+                    + "; it is turned off");
+            c = c.withoutPerPlayer();
+        }
+        return c.equals(container.get()) ? this : withContainer(Optional.of(c));
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -318,6 +362,23 @@ public record BlockComponents(
     public record Strippable(Identifier into) {
         public static final Codec<Strippable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
                 required("into", ID).forGetter(Strippable::into)).apply(i, Strippable::new)), List.of("into"));
+    }
+
+    /** A shovel flattens the block into {@code into} (ADR 0105 D3), as dirt into a path. */
+    public record Flattenable(Identifier into) {
+        public static final Codec<Flattenable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("into", ID).forGetter(Flattenable::into)).apply(i, Flattenable::new)), List.of("into"));
+    }
+
+    /**
+     * A hoe tills the block into {@code into} (ADR 0105 D3), as dirt into farmland.
+     *
+     * @param drops an item dropped once on top when tilled, as rooted dirt drops hanging roots; empty: none
+     */
+    public record Tillable(Identifier into, Optional<Identifier> drops) {
+        public static final Codec<Tillable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                required("into", ID).forGetter(Tillable::into),
+                optional("drops", ID).forGetter(Tillable::drops)).apply(i, Tillable::new)), List.of("into", "drops"));
     }
 
     /** The block holds water (ADR 0094 D7); an empty struct. */
@@ -440,20 +501,25 @@ public record BlockComponents(
      * @param rowsSetting {@code rows} as written (1 to 6); {@link #rows()} applies the default 3
      * @param sizeSetting {@code size} as written (1 to 9); {@link #size()} applies the default 1
      * @param keepContentsSetting {@code keep_contents} as written; {@link #keepContents()} applies the default false
+     * @param doubleChestSetting {@code double} as written (ADR 0104 D4); {@link #doubleChest()} applies the default false
+     * @param perPlayerSetting {@code per_player} as written (ADR 0104 D5); {@link #perPlayer()} applies the default false
      * @param openSound absent: the barrel's open sound
      * @param closeSound absent: the barrel's close sound
      */
     public record Container(ContainerLayout layout, Optional<Integer> rowsSetting, Optional<Integer> sizeSetting,
-            Optional<Boolean> keepContentsSetting, boolean hoppers, boolean comparator, Optional<Identifier> openSound,
-            Optional<Identifier> closeSound, Optional<Identifier> onOpen, Optional<Identifier> onClose) {
-        public static final List<String> KEYS = List.of("layout", "rows", "size", "keep_contents", "hoppers", "comparator",
-                "open_sound", "close_sound", "on_open", "on_close");
+            Optional<Boolean> keepContentsSetting, Optional<Boolean> doubleChestSetting, Optional<Boolean> perPlayerSetting,
+            boolean hoppers, boolean comparator, Optional<Identifier> openSound, Optional<Identifier> closeSound,
+            Optional<Identifier> onOpen, Optional<Identifier> onClose) {
+        public static final List<String> KEYS = List.of("layout", "rows", "size", "keep_contents", "double", "per_player", "hoppers",
+                "comparator", "open_sound", "close_sound", "on_open", "on_close");
 
         public static final Codec<Container> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
                 optional("layout", ContainerLayout.CODEC, ContainerLayout.CHEST).forGetter(Container::layout),
                 optional("rows", intRange(1, 6)).forGetter(Container::rowsSetting),
                 optional("size", intRange(1, 9)).forGetter(Container::sizeSetting),
                 optional("keep_contents", Codec.BOOL).forGetter(Container::keepContentsSetting),
+                optional("double", Codec.BOOL).forGetter(Container::doubleChestSetting),
+                optional("per_player", Codec.BOOL).forGetter(Container::perPlayerSetting),
                 optional("hoppers", Codec.BOOL, true).forGetter(Container::hoppers),
                 optional("comparator", Codec.BOOL, true).forGetter(Container::comparator),
                 optional("open_sound", ID).forGetter(Container::openSound),
@@ -486,10 +552,32 @@ public record BlockComponents(
             };
         }
 
+        /** Whether two side by side join into one six-row double chest (ADR 0104 D4); default false. */
+        public boolean doubleChest() {
+            return doubleChestSetting.orElse(false);
+        }
+
+        /** Whether each player sees their own contents, one store per player and block id (ADR 0104 D5); default false. */
+        public boolean perPlayer() {
+            return perPlayerSetting.orElse(false);
+        }
+
         /** This container with {@code keep_contents} turned off. */
         public Container withoutKeepContents() {
-            return new Container(layout, rowsSetting, sizeSetting, Optional.empty(), hoppers, comparator, openSound, closeSound,
-                    onOpen, onClose);
+            return new Container(layout, rowsSetting, sizeSetting, Optional.empty(), doubleChestSetting, perPlayerSetting, hoppers,
+                    comparator, openSound, closeSound, onOpen, onClose);
+        }
+
+        /** This container with {@code double} turned off. */
+        public Container withoutDoubleChest() {
+            return new Container(layout, rowsSetting, sizeSetting, keepContentsSetting, Optional.empty(), perPlayerSetting, hoppers,
+                    comparator, openSound, closeSound, onOpen, onClose);
+        }
+
+        /** This container with {@code per_player} turned off. */
+        public Container withoutPerPlayer() {
+            return new Container(layout, rowsSetting, sizeSetting, keepContentsSetting, doubleChestSetting, Optional.empty(), hoppers,
+                    comparator, openSound, closeSound, onOpen, onClose);
         }
     }
 

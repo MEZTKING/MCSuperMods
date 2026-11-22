@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "max_height": 16,
+  "min_height": 12,
+  "soil": ["#minecraft:supports_bamboo", "mymod:ruby_soil"],
+  "style": "bamboo",
+  "type": "column_plant"
+}
