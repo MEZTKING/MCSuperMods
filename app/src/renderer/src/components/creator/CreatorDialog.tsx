@@ -52,7 +52,7 @@ import {
   toValues,
 } from '../wizard/wizard-model';
 import { CreatorAudioField, type PickAudio } from './CreatorAudioField';
-import { CreatorImageField, type PickImage } from './CreatorImageField';
+import { CreatorImageField, colourHintOf, type PickImage } from './CreatorImageField';
 import { CreatorPreview } from './CreatorPreview';
 import {
   CREATOR_DEBOUNCE_MS,
@@ -64,6 +64,11 @@ import {
   parameterGroups,
   rawValuesFromStored,
 } from './creator-model';
+
+/** The Creator image field's `colourHint` prop, left out when the flow gives no colour. */
+function colourHintProps(colourHint: string | undefined): { colourHint?: string } {
+  return colourHint === undefined ? {} : { colourHint };
+}
 
 /** "Your mod already has Glow Stone, so it will not be made again. Choose another name." */
 export function skippedWarning(names: readonly string[], mode?: UiMode): string {
@@ -540,6 +545,7 @@ export function CreatorDialog(props: CreatorDialogProps) {
                           pickImage={props.pickImage}
                           onChange={(value) => change(parameter.id, value)}
                           {...(nameHint === undefined ? {} : { nameHint })}
+                          {...colourHintProps(colourHintOf(parameters ?? [], raw, parameter))}
                         />
                       ) : (
                         <Fragment key={parameter.id}>

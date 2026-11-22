@@ -17,7 +17,7 @@ The pictures are MCSuperMods' own drawings. They are never copied, traced, recol
 The **Draw a picture** window (Very easy: **Draw it for me**) says "MCSuperMods draws it here in a Minecraft-like style, without a key or the internet. You can paint over it afterwards." and asks:
 
 - **What is it?** Tiles with a small picture and a name: a sword, planks, leaves, an ore and so on. The list is cut down to what fits the field: a block texture offers block pictures, an item field offers items, an effect icon offers icons. The tile that matches the field's name is chosen to begin with. A skin field offers **Skin**.
-- **Colour.** A colour well, ten theme swatches (Ruby, Frost, Ember, Moss, Sky, Void, Sun, Coral, Amber and Storm, the same ones Surprise me uses) and, where the field knows it, **The thing's colour**.
+- **Colour.** A colour well, ten theme swatches (Ruby, Frost, Ember, Moss, Sky, Void, Sun, Coral, Amber and Storm, the same ones Surprise me uses) and, where the field knows it, **The thing's colour**. In the Creator the field knows the colour you gave the thing, and the window starts on it.
 - **Second colour**, for pictures that have one (the spots of a spawn egg, the ring of a disc, the produce on a crop). It reads "Its own colour until you pick one." and **Its own colour** puts it back.
 - **Finish**, for pictures that come in more than one: **Gem**, **Metal** or **Rough** for blocks; **Drop**, **Heart**, **Star**, **Flame** or **Swirl** for effect icons; and the coat of a skin: **Fur**, **Scales**, **Smooth**, **Stone** or **Slime**.
 - **Detail**: **Smooth**, **Normal** or **Rough**, how much speckle the shading has.

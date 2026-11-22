@@ -207,7 +207,7 @@ export const resourcePackExamples: readonly ExampleProject[] = [
                 humanoid_leggings: [{ texture: id }],
               },
             },
-            'An armour piece names this asset in its equipment_asset field, and the game draws these layers on whoever wears it. humanoid covers the helmet, chestplate and boots; humanoid_leggings covers the leggings. Each texture id names textures/entity/equipment/<layer>/ruby_armour.png in this namespace; the placeholders here are small, so draw the real 64 by 32 armour textures over them.',
+            'An armour piece names this asset in its equipment_asset field, and the game draws these layers on whoever wears it. humanoid covers the helmet, chestplate and boots; humanoid_leggings covers the leggings. Each texture id names textures/entity/equipment/<layer>/ruby_armour.png in this namespace; the pictures here are small 16 by 16 drawings, so paint the real 64 by 32 armour textures over them.',
           ),
         ],
         assets: [

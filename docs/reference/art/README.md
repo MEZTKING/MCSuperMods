@@ -1,10 +1,10 @@
 # Drawn art: contact sheet and notes
 
-The contact sheet of MSM's vanilla-style generator (ADR 0092 option B, `docs/PLAN-art.md`). Everything here is drawn by MSM's own code in `packages/plugins/library/src/art/`; no Minecraft texture was opened, traced, measured or compared to make it (ADR 0092 D12).
+The contact sheet of MSM's vanilla-style generator ([ADR 0092](../../adr/0092-minecraft-style-art.md) option B, accepted with findings at B502). Everything here is drawn by MSM's own code in `packages/plugins/library/src/art/`; no Minecraft texture was opened, traced, measured or compared to make it (ADR 0092 D12).
 
 ## The sheet
 
-`sheet.png` shows every recipe of the table (`ART_RECIPE_INFO`) in table order: blocks, items, worn pictures, the effect icon and the particles. Each recipe is drawn at four Surprise me theme colours side by side (Ruby `#c41c34`, Frost `#8fd3ff`, Moss `#4c8a2c`, Amber `#de9420`), seed 0, normal detail, the first finish, at 4x on a grey ground; a particle shows its four frames for each colour. Recipes that are still stubs (`drawn: false`) show the placeholder pattern they fall back to, so the sheet also shows what is left to draw.
+`sheet.png` shows every recipe of the table (`ART_RECIPE_INFO`) in table order: blocks, items, worn pictures, the effect icon and the particles. Each recipe is drawn at four Surprise me theme colours side by side (Ruby `#c41c34`, Frost `#8fd3ff`, Moss `#4c8a2c`, Amber `#de9420`), seed 0, normal detail, the first finish, at 4x on a grey ground; a particle shows its four frames for each colour. Every recipe is drawn since B494; a recipe added later as a stub (`drawn: false`) would show the placeholder pattern it falls back to.
 
 Only the main session regenerates it, after each wave has merged:
 
@@ -20,10 +20,10 @@ The goldens of the drawn recipes are in `packages/plugins/library/test/fixtures/
 - **Detail:** `smooth` halves the shade noise, `rough` takes 1.5 times it (`DETAIL_NOISE`); on clustered faces it scales every share of the off-centre shades, on items it scales the clustered flecks and the number of seeded nudges.
 - **Speed:** one 16 by 16 recipe draws in 0.21 to 0.34 ms (median of 100, a Linux container), six variations in 1.3 to 2.3 ms; the limits are 2 ms and 20 ms (ADR 0092 D17).
 
-## The ramp maths and the engine (fact A2, ADR 0092 D11)
+## The ramp maths and the engine (ADR 0092 fact A2 and D11)
 
 The colour maths uses `Math.cbrt`, `Math.pow` (written as `Math.pow`, not `**`, so a test can reach it), `Math.atan2`, `Math.hypot`, `Math.sin` and `Math.cos`; the noise uses only integer and plain floating-point arithmetic and a sort, which are exact in every engine. Findings:
 
-- Node and Electron both run V8, which computes these functions with its own implementations (ported from fdlibm) on every platform rather than the system's maths library, so the same look gives the same bytes on Linux, Windows and macOS. A run of the golden test on Windows is still to be seen in CI (verify at implementation).
+- Node and Electron both run V8, which computes these functions with its own implementations (ported from fdlibm) on every platform rather than the system's maths library, so the same look gives the same bytes on Linux, Windows and macOS. A run of the golden test on Windows is still to be seen: the CI's Windows job builds only the sample plugin (an open follow-up of ADR 0092).
 - Every shade is rounded to bytes before it is drawn, so a different last bit could only matter where a value sits within about 1e-13 of a rounding edge. `art.test.ts` checks this directly: it nudges each of the six functions by one unit in the last place, up and then down, and every drawn recipe in the twelve test colours and every finish keeps its bytes. No further rounding was needed.
 - Another engine (a browser other than Chromium, for example) might still differ on some colour not in the test set; the mitigation would be to compare goldens by pixels within one step instead of by bytes.

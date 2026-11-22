@@ -14,9 +14,9 @@ There are three ways to make one:
 
 Open the Creator and choose **Storage crate** under **Blocks**. The defaults make a working crate called `supply_crate`: a 3-row chest that faces you when placed and is crafted from eight planks around a chest.
 
-- **Crate**: **Crate name**, **Size** (**Small (1 row, 9 slots)**, **Medium (3 rows, 27 slots, as a chest)** or **Large (6 rows, 54 slots, as a double chest)**), **Keep contents when broken** (offered for the medium size only, see [Keep the contents](#keep-the-contents)), **Look** (**Wood (mined with an axe, as a barrel)** or **Stone (needs a pickaxe)**) and **Colour** for the placeholder pictures.
+- **Crate**: **Crate name**, **Size** (**Small (1 row, 9 slots)**, **Medium (3 rows, 27 slots, as a chest)** or **Large (6 rows, 54 slots, as a double chest)**), **Keep contents when broken** (offered for the medium size only, see [Keep the contents](#keep-the-contents)), **Look** (**Wood (mined with an axe, as a barrel)** or **Stone (needs a pickaxe)**) and **Colour** for the drawn pictures.
 - **Recipe**: **Crafted from**, with **No recipe (creative menu only)** as the last choice.
-- **Pictures**: **Front** and **Front when open**, or leave them empty for placeholders.
+- **Pictures**: **Front** and **Front when open**, or leave them empty for pictures drawn in the colour.
 
 ## Make a machine in the Creator
 

@@ -55,7 +55,7 @@ The element list shows everything in the namespace `ruby_ore`:
 - the models `block/ruby_ore`, `block/ruby_block` and `item/ruby`;
 - the loot table `blocks/ruby_ore` (what the ore drops), the recipes `ruby_block_from_rubies`, `ruby_from_block` and `ruby_from_smelting`, the item tag `gems`, the advancements `root` and `get_ruby`, and the `pack` description.
 
-The three textures, `ruby_ore.png`, `ruby_block.png` and `ruby.png`, are placeholders drawn by MCSuperMods.
+The three textures, `ruby_ore.png`, `ruby_block.png` and `ruby.png`, are drawn by MCSuperMods in a Minecraft-like style ([Drawing pictures](pictures.md)); they are its own drawings, not copied from the game.
 
 ## 4. Look around and edit with forms
 
@@ -78,7 +78,7 @@ Try a few edits (the steps below assume the starter's names, so undo the first e
 
 Select `ruby_ore:block/ruby_ore`: the live preview beside the form shows the block turning in 3D with the ruby ore texture, and it redraws as you edit. Items and blocks preview their model, armour looks and armour pieces show on a figure (tick parts to show them, expand a part to see its texture, **Edit** jumps to its field), recipes show their crafting grid. **Preview** in the editor's header hides the pane or shows it again; while it is hidden the **Preview** tab on the right shows the same view. If the preview says "Vanilla assets not found — set your Minecraft folder.", go back to step 2 and extract the vanilla assets.
 
-To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **Import assets** on the toolbar, pick the namespace `ruby_ore` and **Block textures (textures/block)**, then the file. It replaces the placeholder and the preview updates. `ruby.png` goes into **Item textures (textures/item)** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
+To use your own texture, paint a 16×16 PNG named `ruby_ore.png`, choose **Import assets** on the toolbar, pick the namespace `ruby_ore` and **Block textures (textures/block)**, then the file. It replaces the drawn picture and the preview updates. `ruby.png` goes into **Item textures (textures/item)** the same way. See [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders).
 
 ## 6. Problems
 

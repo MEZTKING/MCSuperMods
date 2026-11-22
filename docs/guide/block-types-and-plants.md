@@ -11,7 +11,7 @@ The twenty furniture, light, food and plant types are described in [More plants,
 
 ## The four flows
 
-Open **Create…** on the toolbar and pick a flow under **Blocks** (see [The Creator](creator.md)). Every flow draws placeholder textures in the colours you choose, or takes a square PNG of your own for each texture under **Pictures** (16 by 16 as vanilla, up to 256 by 256). A set is one undoable step, and **Edit in Creator** on any of its members changes the answers later: members you switch off are removed only if you have not edited them.
+Open **Create…** on the toolbar and pick a flow under **Blocks** (see [The Creator](creator.md)). Every flow draws its textures in the colours you choose, in a Minecraft-like style ([Drawing pictures](pictures.md)), or takes a square PNG of your own for each texture under **Pictures** (16 by 16 as vanilla, up to 256 by 256). A set is one undoable step, and **Edit in Creator** on any of its members changes the answers later: members you switch off are removed only if you have not edited them.
 
 ### Wood set
 

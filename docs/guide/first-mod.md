@@ -32,7 +32,7 @@ The element list on the left now holds one element, `pack`, which every project 
 2. Under **Gear**, pick **Gear set**.
 3. Fill in the first fields:
    - **Material name**: `Ruby`.
-   - **Colour**: a red you like. The Creator tints its placeholder textures with it.
+   - **Colour**: a red you like. The Creator draws its pictures in it.
    - **Where the material comes from**: keep the new ore with a storage block, so rubies are found in the world.
 4. Leave everything else as it is for now. Look at the tabs on the right: **Items** shows every new item, **Recipes** how each one is crafted, **Armour** the armour on a figure, **Stats** the numbers in words, **Elements** everything that will be added.
 5. Choose **Create**.
@@ -74,7 +74,7 @@ Open the **Export** menu and choose **Fabric mod (.jar)…**, then save the jar.
 ## Where to go next
 
 - Make things happen without code, such as a block that gives a reward: [Rules](rules.md). Prefer big tiles and plain words? [Very easy mode](very-easy.md).
-- Replace the placeholder textures with your own pictures: [Replacing the placeholders](creator.md#replacing-the-placeholders).
+- Pick another look for a drawn picture with **Draw…** ([Drawing pictures](pictures.md)), or replace it with your own picture: [Replacing the placeholders](creator.md#replacing-the-placeholders).
 - More things to make with a few questions: weapons, food, totems, enchantments, paintings, music discs, mobs ([The Creator](creator.md)).
 - A tour of the whole window, forms and Studios: [Getting started](getting-started.md).
 - Let the AI helper build or explain things for you, with your own Anthropic key: [The AI helper](ai-helper.md).

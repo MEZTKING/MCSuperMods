@@ -45,6 +45,26 @@ export interface CreatorImageFieldProps {
   colourHint?: string;
 }
 
+/**
+ * The flow's colour answer for an image field (ADR 0092 D9), as `#rrggbb`: a colour parameter of
+ * the field's own group, else the flow's first colour parameter; `undefined` when the flow asks
+ * for no colour or the answer is not a colour yet.
+ */
+export function colourHintOf(
+  parameters: readonly StarterParameter[],
+  raw: Readonly<Record<string, unknown>>,
+  image: StarterParameter & { type: 'image' },
+): string | undefined {
+  const colours = parameters.filter((parameter) => parameter.type === 'colour');
+  const own = colours.find((parameter) => parameter.group === image.group);
+  const chosen = own ?? colours[0];
+  if (chosen === undefined) return undefined;
+  const value = raw[chosen.id];
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value.trim())
+    ? value.trim().toLowerCase()
+    : undefined;
+}
+
 /** Whether "Make with AI" suits an image parameter: not a mob skin's 64 by 64 layout. */
 export function takesAiPicture(parameter: StarterParameter & { type: 'image' }): boolean {
   return !/skin/i.test(`${parameter.id} ${parameter.label}`);
