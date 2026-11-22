@@ -413,15 +413,11 @@ describe.each(targets.map((target) => [target.id, target] as const))(
       expect(source.chat('/hiya').result).toBe('ran');
       const kit = source.chat('/kit Player 5');
       expect(kit.result).toBe('ran');
+      // The command's function runs in Try it with the arguments as its macro values (B606).
       expect(
-        source.lines.some(
-          (line) =>
-            line.onlyInMinecraft &&
-            line.text.includes(
-              `run function ${id('give_kit')} with who = "Player's UUID", count = 5`,
-            ),
-        ),
+        source.lines.some((line) => line.text.includes(`from function ${id('give_kit')}`)),
       ).toBe(true);
+      expect(source.inventory.count(id('tallow_candle'))).toBe(5);
       expect(source.chat('/kit Player 0').answer).toEqual([
         'Integer must not be less than 1, found 0',
         '...it Player <--[HERE]',
@@ -433,7 +429,8 @@ describe.each(targets.map((target) => [target.id, target] as const))(
         'Only one player is allowed, but the provided selector allows more than one',
       );
       expect(source.chat('/greet now').answer[0]).toBe('Incorrect argument for command');
-      expect(source.chat('/give @s stone').result).toBe('game');
+      expect(source.chat('/give @s stone').result).toBe('ran');
+      expect(source.chat('/weather clear').result).toBe('game');
       expect(source.chat('/nothing').answer).toEqual([
         'Unknown or incomplete command, see below for error',
         'nothing<--[HERE]',

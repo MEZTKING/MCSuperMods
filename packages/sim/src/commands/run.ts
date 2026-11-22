@@ -1,16 +1,23 @@
 /**
  * Running a line from Try it's chat box (B463, Q29: commands are logged, not shown), in the
- * runtime's order (B454 `MsmCommands`): the function it runs (only in the game: functions are
- * data pack commands), then its event, whose actions Try it runs like any other (self and other
- * the player who typed it), then the `command` listeners of scripts (Rules made for a command
- * that runs a function, B458), then the feedback line. A line that does not read gets the game's
- * error and nothing runs; the game's own commands are said out loud.
+ * runtime's order (B454 `MsmCommands`): the function it runs, then its event, whose actions Try
+ * it runs like any other (self and other the player who typed it), then the `command` listeners
+ * of scripts (Rules made for a command that runs a function, B458), then the feedback line. A
+ * line that does not read gets the game's error and nothing runs.
+ *
+ * Functions and the game's own commands (B606, ADR 0120 D8): once the local source hands the
+ * runner its {@link ChatFunctions}, a command's function runs with the arguments as its macro
+ * values (players as the preview player's UUID, as the runtime writes them), and a line of the
+ * game's own commands (`/give`, `/function`, `/execute`, ...) runs through them; a command the
+ * preview does not run is said out loud. Without them both are "Only in Minecraft", as before.
  */
 
+import type { Json, JsonObject } from '@msm/plugin-api';
 import { type EventContext, PLAYER } from '../events/actions.js';
 import type { EventOwner } from '../events/definitions.js';
 import type { SimLog, SimOrigin, Vec3 } from '../types.js';
 import { type CommandsTarget, readCommands, type SimCommand, usageOf } from './catalogue.js';
+import type { VanillaChatAnswer } from './functions.js';
 import {
   type CommandContext,
   type CommandParse,
@@ -19,6 +26,7 @@ import {
   parseCommandLine,
   valueWords,
 } from './parse.js';
+import { PREVIEW_PLAYER_UUID, VANILLA_COMMANDS } from './vanilla.js';
 
 /** What the runner works with. */
 export interface CommandHost {
@@ -43,6 +51,25 @@ export interface CommandHost {
   readonly said?: (text: string) => void;
 }
 
+/** The functions and the game's own commands, from the local source (B606). */
+export interface ChatFunctions {
+  /** Runs a line of the game's own commands (with its `/`). */
+  runLine(line: string): VanillaChatAnswer;
+  /** Runs a function as the player with macro values; returns the lines to show. */
+  runFunction(id: string, args: JsonObject, origin: SimOrigin): readonly string[];
+}
+
+/** A command's argument values as macro values (players as UUIDs, as the runtime writes them). */
+export function macroValues(args: Readonly<Record<string, CommandValue>>): JsonObject {
+  const out: Record<string, Json> = {};
+  for (const [name, value] of Object.entries(args)) {
+    if (value === `${PREVIEW_PLAYER_NAME}'s UUID`) out[name] = PREVIEW_PLAYER_UUID;
+    else if (Array.isArray(value)) out[name] = [...value];
+    else out[name] = value as Json;
+  }
+  return out;
+}
+
 /** One line of the chat box's own history: what was typed and what came back. */
 export interface ChatLine {
   readonly typed: string;
@@ -62,6 +89,7 @@ export class CommandRunner {
   private readonly host: CommandHost;
   private readonly history: ChatLine[] = [];
   private readonly saidPermission = new Set<string>();
+  private functions: ChatFunctions | null = null;
 
   constructor(
     files: Parameters<typeof readCommands>[0],
@@ -89,6 +117,11 @@ export class CommandRunner {
     this.vanilla = target.commands?.vanillaNames ?? [];
   }
 
+  /** Runs functions and the game's own commands through these from now on (B606). */
+  useFunctions(functions: ChatFunctions | null): void {
+    this.functions = functions;
+  }
+
   /** Forgets the history ("Clear the area"). */
   clear(): void {
     this.history.length = 0;
@@ -107,6 +140,19 @@ export class CommandRunner {
       this.host.log.info(`You said "${typed}" in the chat.`);
       this.host.said?.(typed);
       return this.keep({ typed, result: 'ran', answer: [`<${PREVIEW_PLAYER_NAME}> ${typed}`] });
+    }
+    const literal = typed.slice(1).split(' ', 1)[0] ?? '';
+    const functions = this.functions;
+    const ours = this.commandsNow.some(
+      (one) => one.name === literal || one.aliases.includes(literal),
+    );
+    if (
+      functions !== null &&
+      !ours &&
+      (VANILLA_COMMANDS.includes(literal) || this.vanilla.includes(literal))
+    ) {
+      const done = functions.runLine(typed);
+      return this.keep({ typed, result: done.result, answer: done.answer });
     }
     const parsed = this.check(typed);
     if (!parsed.ok) {
@@ -144,7 +190,15 @@ export class CommandRunner {
       );
     }
     for (const what of parsed.unchecked) this.host.log.onlyInMinecraft(what, origin);
-    if (command.function !== undefined) {
+    const ran: string[] = [];
+    if (command.function !== undefined && functions !== null) {
+      ran.push(
+        ...functions.runFunction(command.function, macroValues(parsed.args), {
+          ...origin,
+          pointer: '/function',
+        }),
+      );
+    } else if (command.function !== undefined) {
       this.host.log.onlyInMinecraft(
         `run function ${command.function}${values.length === 0 ? '' : ` with ${values.join(', ')}`}`,
         { ...origin, pointer: '/function' },
@@ -170,7 +224,7 @@ export class CommandRunner {
       this.host.fire(owner, command.event, ctx, sentence);
     }
     this.host.listeners(command.id, sentence, { name: parsed.literal, args: parsed.args });
-    const answer = command.feedback === undefined ? [] : [command.feedback];
+    const answer = command.feedback === undefined ? ran : [...ran, command.feedback];
     if (command.feedback !== undefined)
       this.host.log.info(`/${command.name} answered: ${command.feedback}`, origin);
     if (command.function === undefined && command.event === undefined) {

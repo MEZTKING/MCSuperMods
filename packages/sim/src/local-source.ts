@@ -59,8 +59,16 @@
  * after a chat line, `server.tick` and `player.tick` each tick, `server.started` and
  * `player.join` after the first load. `run_script` actions call their handlers. The place,
  * explosion and command rules B463 read from the script text are then the scripts' own answer.
+ *
+ * Functions (B606, ADR 0120 D8, `commands/functions.ts`): {@link LocalWorldSource.functions}
+ * runs the project's functions with the game's own commands the preview honours: the load tag
+ * at the first tick (and after an edit to the functions, or "Clear the area"), the tick tag and
+ * due schedules at the start of every tick, before the player moves, all within 10,000 commands
+ * a tick; {@link LocalWorldSource.runFunction} is the Function editor's "Run in Try it", and the
+ * chat box runs the game's own commands and project commands' functions through it.
  */
 
+import type { Json, TargetFacts } from '@msm/plugin-api';
 import { type BlockCatalogue, buildCatalogue, type CatalogueTarget } from './blocks/catalogue.js';
 import { useBlock } from './blocks/interact.js';
 import { breakBlock, placeBlock } from './blocks/placement.js';
@@ -70,6 +78,7 @@ import { EXPLODE_TOOL, EXPLOSION_RADIUS } from './blocks/types2/tools.js';
 import { Types3Area } from './blocks/types3/area.js';
 import { TIME_LAPSE_TICKS } from './blocks/weathering.js';
 import type { CommandsTarget } from './commands/catalogue.js';
+import { FunctionEngine, type FunctionRun } from './commands/functions.js';
 import type { ChatLine } from './commands/run.js';
 import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { readBoats, withBoats } from './entities/boats.js';
@@ -103,6 +112,8 @@ import type { BlockLookup } from './player/collide.js';
 import { REACH } from './player/constants.js';
 import { IDLE_INPUT, PlayerController, type PlayerInput } from './player/controller.js';
 import { adjacentPos, lookDirection, type PickResult, pick } from './player/pick.js';
+import { type EvalContext, type Situation, testPredicate } from './predicates/api.js';
+import { unsupportedWords } from './predicates/words.js';
 import type { ScriptApiDescription } from './script/api.js';
 import {
   ScriptBridge as Bridge,
@@ -117,6 +128,9 @@ import {
 import type { EncodedValue } from './script/protocol.js';
 import type { ScriptRunner } from './script/runner.js';
 import type { CompiledScript, ScriptProblem } from './script/sources.js';
+import type { DataLookup } from './tags/api.js';
+import { filesLookup, layeredLookup } from './tags/lookup.js';
+import { createTagResolver } from './tags/resolve.js';
 import { BlockTimers } from './tick/timers.js';
 import { applyTool } from './tick/tools.js';
 import { TraderArea } from './traders/area.js';
@@ -166,6 +180,11 @@ export interface LocalSourceOptions {
   readonly ruleBooks?: readonly RuleBookInfo[];
   /** Runs the project's scripts (B400); without it scripts are said to run only in the game. */
   readonly scripts?: LocalSourceScripts;
+  /**
+   * Vanilla's data files from the user's jar (B603), for block and function tags and predicates
+   * in functions (B606); without it only the project's files are read.
+   */
+  readonly vanillaData?: DataLookup;
 }
 
 /** How the local source runs scripts (B400). */
@@ -280,6 +299,8 @@ export class LocalWorldSource implements WorldSource {
   readonly mobs2: Mobs2Area;
   /** The area's scripts (B400), or `null` when they run only in the game. */
   readonly scripts: ScriptBridge | null;
+  /** Functions and the game's own commands (B606). */
+  readonly functions: FunctionEngine;
 
   private files: SimFiles;
   private target: LocalSourceTarget;
@@ -306,6 +327,8 @@ export class LocalWorldSource implements WorldSource {
   private groundBlocks: GroundBlocks = emptyGround();
   /** Vanilla ids of the loaded ground: summed up in one line, not one line each. */
   private groundIds = new Set<string>();
+  private readonly vanillaData: DataLookup | undefined;
+  private evalNow: { readonly files: SimFiles; readonly ctx: EvalContext } | null = null;
 
   /** The log every part of the simulation writes to; lines go out as `log` events. */
   readonly log: SimLog = {
@@ -519,6 +542,72 @@ export class LocalWorldSource implements WorldSource {
       },
       now: () => this.ticks,
     });
+    this.vanillaData = options.vanillaData;
+    const seed = options.seed ?? 1;
+    this.functions = new FunctionEngine(
+      {
+        log: this.log,
+        world: this.world,
+        catalogue: () => this.blockCatalogue,
+        player: this.player,
+        entities: this.entities,
+        inventory: () => this.triggers.inventory,
+        effect: (effect) => this.emit({ type: 'effect', effect }),
+        itemName: (id) => this.itemName(id),
+        random: new SimRandom((seed ^ 0x2c1b3c6d) >>> 0),
+        now: () => this.ticks,
+        timeOfDay: () => this.traders.timeOfDay,
+        passTime: (ticks) => this.traders.passTime(ticks),
+        predicate: (id, situation) => this.tryPredicate(id, situation),
+        blockTag: (id) => {
+          const tag = this.evalContext().resolveTag('block', id);
+          return tag.dropped ? undefined : tag.members.map((member) => member.id);
+        },
+        data: () => this.evalContext().lookup,
+      },
+      this.files,
+      this.target,
+    );
+    this.parity2.commands.useFunctions({
+      runLine: (line) => this.functions.runChatLine(line),
+      runFunction: (id, args, origin) => this.functions.runFunction(id, { args, origin }).answer,
+    });
+  }
+
+  /**
+   * Runs a function now as and at the player (the Function editor's "Run in Try it", B606),
+   * with macro arguments when it has macro lines.
+   */
+  runFunction(id: string, args?: Readonly<Record<string, Json>>): FunctionRun {
+    return this.functions.runFunction(id, args === undefined ? {} : { args: { ...args } });
+  }
+
+  /** What the evaluators read: the project's files over vanilla's, the area's seed (B606). */
+  private evalContext(): EvalContext {
+    if (this.evalNow?.files === this.files) return this.evalNow.ctx;
+    const project = filesLookup(this.files);
+    const lookup =
+      this.vanillaData === undefined ? project : layeredLookup(project, this.vanillaData);
+    const tagsFolder = this.target.folders.data.tags;
+    const ctx: EvalContext = {
+      random: new SimRandom(0x51ed270b),
+      lookup,
+      resolveTag: createTagResolver(lookup, { tagsFolder }),
+      types: { folders: this.target.folders } as unknown as TargetFacts,
+    };
+    this.evalNow = { files: this.files, ctx };
+    return ctx;
+  }
+
+  private tryPredicate(
+    id: string,
+    situation: Situation,
+  ): { answer: 'yes' | 'no' | 'unknown'; why: string[] } | undefined {
+    const ctx = this.evalContext();
+    const file = ctx.lookup(this.target.folders.data.predicate, id);
+    if (file === undefined) return undefined;
+    const result = testPredicate(file, situation, ctx);
+    return { answer: result.answer, why: result.unsupported.map(unsupportedWords) };
   }
 
   /** The project's vehicles and boats (B540). */
@@ -606,6 +695,7 @@ export class LocalWorldSource implements WorldSource {
     this.fluids.clear();
     this.traders.clear();
     this.mobs2.clear();
+    this.functions.clear();
     this.emit({ type: 'entities', entities: [] });
     const ground = this.groundBlocks;
     const { size } = ground;
@@ -849,6 +939,7 @@ export class LocalWorldSource implements WorldSource {
   /** Runs one tick; see the module comment. */
   tick(): void {
     this.ticks += 1;
+    this.functions.tick();
     const wasRiding = this.vehicles.riding !== null;
     const gotOut = this.vehicles.tick(this.input);
     if (!wasRiding) this.player.step(this.input);
@@ -1047,6 +1138,7 @@ export class LocalWorldSource implements WorldSource {
     this.parity3.setFiles(files);
     this.fluids.setFiles(files, target);
     this.traders.setFiles(files, target);
+    this.functions.setFiles(files, target);
     const open = this.screenNow;
     if (open !== null) {
       const spec = this.screens.get(open.block);
@@ -1079,6 +1171,7 @@ export class LocalWorldSource implements WorldSource {
     this.fluids.clear();
     this.traders.clear();
     this.mobs2.clear();
+    this.functions.clear();
     this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
