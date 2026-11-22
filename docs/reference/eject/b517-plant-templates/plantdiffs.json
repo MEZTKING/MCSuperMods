@@ -1,0 +1,114 @@
+{
+ "MsmGrowingPlantHeadBlock": [
+  [
+   "    /** The tip of {@code definition}: a dry plant or a water plant, with or without berries. */\n    public static Block create(Identifier id, BlockDefinition definition, Properties props) {\n        PlantSpec.GrowingPlant fields = (PlantSpec.GrowingPlant) definition.typeFields();\n        SETUP.set(fields.berries().isPresent());\n        try {\n            return fields.needsWater() ? new Water(id, definition, props) : new ModGrowingPlantHeadBlock(id, definition, fields, props);\n        } finally {\n            SETUP.remove();\n        }\n    }\n",
+   "    /** {@code props}, after marking whether the states being built have berries; called inside the constructors' {@code super}. */\n    static Properties setup(PlantSpec.GrowingPlant fields, Properties props) {\n        SETUP.set(fields.berries().isPresent());\n        return props;\n    }\n"
+  ],
+  [
+   "    private ModGrowingPlantHeadBlock(Identifier id, BlockDefinition definition, PlantSpec.GrowingPlant fields, Properties props) {\n        super(props, direction(fields), headShape(fields), false, fields.growthChance());\n        this.rules = new Rules(this, id, definition);",
+   "    public ModGrowingPlantHeadBlock(PlantSpec.GrowingPlant fields, Properties props) {\n        super(setup(fields, props), direction(fields), headShape(fields), false, fields.growthChance());\n        SETUP.remove();\n        this.rules = new Rules(this, fields);"
+  ],
+  [
+   "        Water(Identifier id, BlockDefinition definition, Properties props) {\n            super(props);\n            this.rules = new Rules(this, id, definition);\n            this.growthChance = ((PlantSpec.GrowingPlant) definition.typeFields()).growthChance();",
+   "        public Water(PlantSpec.GrowingPlant fields, Properties props) {\n            super(setup(fields, props));\n            SETUP.remove();\n            this.rules = new Rules(this, fields);\n            this.growthChance = fields.growthChance();"
+  ],
+  [
+   "    Rules rules() {\n        return rules;\n    }\n",
+   "    Rules rules() {\n        return rules;\n    }\n\n    /** The strand companion, registered right after the tip ({@code ModBlocks}). */\n    public void attachBody(Block body) {\n        rules.attach(body);\n    }\n"
+  ],
+  [
+   "        Rules rules() {\n            return rules;\n        }\n",
+   "        Rules rules() {\n            return rules;\n        }\n\n        /** The strand companion, registered right after the tip ({@code ModBlocks}). */\n        public void attachBody(Block body) {\n            rules.attach(body);\n        }\n"
+  ],
+  [
+   "        Rules(Block block, Identifier id, BlockDefinition definition) {\n            this.block = block;\n            this.fields = (PlantSpec.GrowingPlant) definition.typeFields();",
+   "        Rules(Block block, PlantSpec.GrowingPlant fields) {\n            this.block = block;\n            this.fields = fields;"
+  ],
+  [
+   "            if (body == null) {\n                Optional<Block> found = Companions.companionOf(block);\n                if (found.isEmpty()) {\n                    return block;\n                }\n                body = found.get();\n            }\n            return body;\n        }\n",
+   "            return body == null ? block : body;\n        }\n\n        void attach(Block companion) {\n            body = companion;\n        }\n"
+  ]
+ ],
+ "MsmGrowingPlantBodyBlock": [
+  [
+   "    /** The strand of {@code head}, a dry tip or a {@link ModGrowingPlantHeadBlock.Water} tip. */\n    static Block create(Identifier id, BlockDefinition definition, Block head, Properties props) {\n        PlantSpec.GrowingPlant fields = (PlantSpec.GrowingPlant) definition.typeFields();\n        ModGrowingPlantHeadBlock.SETUP.set(fields.berries().isPresent());\n        try {\n            return head instanceof ModGrowingPlantHeadBlock.Water water ? new Water(id, definition, water, props)\n                    : new ModGrowingPlantBodyBlock(id, definition, (ModGrowingPlantHeadBlock) head, fields, props);\n        } finally {\n            ModGrowingPlantHeadBlock.SETUP.remove();\n        }\n    }\n\n",
+   ""
+  ],
+  [
+   "    private ModGrowingPlantBodyBlock(Identifier id, BlockDefinition definition, ModGrowingPlantHeadBlock head,\n            PlantSpec.GrowingPlant fields, Properties props) {\n        super(props, ModGrowingPlantHeadBlock.direction(fields), bodyShape(fields), false);\n        this.head = head;\n        this.rules = new ModGrowingPlantHeadBlock.Rules(this, id, definition);",
+   "    public ModGrowingPlantBodyBlock(PlantSpec.GrowingPlant fields, ModGrowingPlantHeadBlock head, Properties props) {\n        super(ModGrowingPlantHeadBlock.setup(fields, props), ModGrowingPlantHeadBlock.direction(fields), bodyShape(fields), false);\n        ModGrowingPlantHeadBlock.SETUP.remove();\n        this.head = head;\n        this.rules = new ModGrowingPlantHeadBlock.Rules(this, fields);"
+  ],
+  [
+   "        Water(Identifier id, BlockDefinition definition, ModGrowingPlantHeadBlock.Water head, Properties props) {\n            super(props);\n            this.head = head;\n            this.rules = new ModGrowingPlantHeadBlock.Rules(this, id, definition);",
+   "        public Water(PlantSpec.GrowingPlant fields, ModGrowingPlantHeadBlock.Water head, Properties props) {\n            super(ModGrowingPlantHeadBlock.setup(fields, props));\n            ModGrowingPlantHeadBlock.SETUP.remove();\n            this.head = head;\n            this.rules = new ModGrowingPlantHeadBlock.Rules(this, fields);"
+  ]
+ ],
+ "MsmColumnPlantBlock": [
+  [
+   "        Cane(Identifier id, BlockDefinition definition, Properties props) {\n            super(props);\n            this.fields = (PlantSpec.ColumnPlant) definition.typeFields();",
+   "        public Cane(PlantSpec.ColumnPlant fields, Properties props) {\n            super(props);\n            this.fields = fields;"
+  ],
+  [
+   "        Cactus(Identifier id, BlockDefinition definition, Properties props) {\n            super(props);\n            this.fields = (PlantSpec.ColumnPlant) definition.typeFields();",
+   "        public Cactus(PlantSpec.ColumnPlant fields, Properties props) {\n            super(props);\n            this.fields = fields;"
+  ]
+ ],
+ "MsmBambooBlock": [
+  [
+   "    ModBambooBlock(Identifier id, BlockDefinition definition, Properties props) {\n        super(props);\n        this.fields = (PlantSpec.ColumnPlant) definition.typeFields();",
+   "    public ModBambooBlock(PlantSpec.ColumnPlant fields, Properties props) {\n        super(props);\n        this.fields = fields;"
+  ],
+  [
+   "    /** The shoot companion, once registered. */\n    public Optional<Block> shoot() {\n        return Companions.companionOf(this);\n    }",
+   "    private Block shoot;\n\n    /** The shoot companion, registered right after the stalk ({@code ModBlocks}). */\n    public void attachShoot(Block companion) {\n        shoot = companion;\n    }\n\n    /** The shoot companion, once registered. */\n    public Optional<Block> shoot() {\n        return Optional.ofNullable(shoot);\n    }"
+  ]
+ ],
+ "MsmBambooShootBlock": [
+  [
+   "    ModBambooShootBlock(Identifier id, BlockDefinition definition, ModBambooBlock stalk, Properties props) {",
+   "    public ModBambooShootBlock(ModBambooBlock stalk, Properties props) {"
+  ]
+ ],
+ "MsmMultifaceBlock": [
+  [
+   "    ModMultifaceBlock(Identifier id, BlockDefinition definition, Properties props) {\n        super(props);\n        this.fields = (PlantSpec.Multiface) definition.typeFields();",
+   "    public ModMultifaceBlock(PlantSpec.Multiface fields, Properties props) {\n        super(props);\n        this.fields = fields;"
+  ]
+ ],
+ "MsmBigDripleafBlock": [
+  [
+   "    ModBigDripleafBlock(Identifier id, BlockDefinition definition, Properties props) {\n        super(props);\n        this.tiltTicks = ((PlantSpec.Dripleaf) definition.typeFields()).tiltTicks();",
+   "    public ModBigDripleafBlock(PlantSpec.Dripleaf fields, Properties props) {\n        super(props);\n        this.tiltTicks = fields.tiltTicks();"
+  ],
+  [
+   "        return Companions.companionOf(this);\n    }",
+   "        return Optional.ofNullable(stem);\n    }\n\n    private Block stem;\n\n    /** The stem companion, registered right after the leaf ({@code ModBlocks}). */\n    public void attachStem(Block companion) {\n        stem = companion;\n    }"
+  ]
+ ],
+ "MsmDripleafStemBlock": [
+  [
+   "    ModDripleafStemBlock(Identifier id, BlockDefinition definition, ModBigDripleafBlock leaf, Properties props) {",
+   "    public ModDripleafStemBlock(ModBigDripleafBlock leaf, Properties props) {"
+  ]
+ ],
+ "MsmSmallDripleafBlock": [
+  [
+   "    ModSmallDripleafBlock(Identifier id, BlockDefinition definition, Properties props) {\n        super(props);\n        this.growsInto = ((PlantSpec.Dripleaf) definition.typeFields()).growsInto().orElseThrow();",
+   "    public ModSmallDripleafBlock(PlantSpec.Dripleaf fields, Properties props) {\n        super(props);\n        this.growsInto = fields.growsInto().orElseThrow();"
+  ]
+ ],
+ "MsmFlowerPotBlock": [
+  [
+   "    public ModFlowerPotBlock(Identifier id, BlockDefinition definition, Block plant, ModFlowerPotBlock emptyPot,\n            Properties properties) {",
+   "    public ModFlowerPotBlock(Block plant, ModFlowerPotBlock emptyPot, Properties properties) {"
+  ],
+  [
+   "    void addPotted(",
+   "    public void addPotted("
+  ],
+  [
+   "            return own.consumesAction() ? own : InteractionResult.CONSUME;",
+   "            return InteractionResult.CONSUME;"
+  ]
+ ]
+}
