@@ -6,7 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.3.
+### Added
+
+- The Java project export now also includes traders (their levels, restocks, reputation, demand, work sites and **On trade** event) and shoulder pets, so no mob part is left out of it any more.
+- **The AI helper** knows vanilla parity 3 batch 2: trader reputation, demand and work sites, villager looks and homes, fish buckets, hovering and phasing flight, the six habits and the dash, both shoulders, liquid mixing, cauldrons and bottles, boats, the 44 command argument types, hand-ordered tabs, game rules, statistics, the new Rules triggers, steps, checks and **What the player typed**, Script API 1.7, the **Villager look** and **Game rule** flows and every new answer, and the limits in plain words. Its schema reading of a mob now shows the fields of every goal and event action.
+- User guide: a new **Boats** page, and the villagers and traders, fluids, mob behaviours, commands and tabs (with game rules and statistics), rules, scripting (Script API 1.7), eject, Creator, Try it and templates pages cover batch 2.
+
+### Changed
+
+- The AI helper no longer says that prices never change, that fluids cannot mix or fill cauldrons, that a player carries one shoulder pet, or that traders, storage, shoulder pets and fluids are left out of the Java project.
 
 ## [1.5.3] - 2026-11-22
 

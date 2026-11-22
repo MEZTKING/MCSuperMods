@@ -36,14 +36,14 @@ A rule's **key** (a to z, 0 to 9 and `_`, at most 32 characters, different in ea
 | Thrown items | The thrown item hits a mob or a block |
 | Mobs | The mob is hurt, dies, attacks or spawns; A player uses the mob; Every few seconds while the mob is alive |
 | Effects | The effect starts, ends, or every few seconds while it lasts |
-| Players | A player joins, leaves, respawns, chats or changes dimension; Every few seconds for each player |
+| Players | A player joins, leaves, respawns, chats or changes dimension; Every few seconds for each player; A player crafts; A player picks up; A player eats; A player goes to sleep; A player wakes up; A player gets an advancement |
 | The world | The world starts; Every few seconds |
 | Keys | A player presses a key; A player lets go of a key; A player holds a key (every half second by default) |
 | Vehicles | Someone gets in the vehicle; Someone gets out; The vehicle fires; The vehicle is destroyed; Every few seconds while the vehicle is driven |
 | Placing, explosions, commands, riding | A player places a block; Something explodes; A player types the command (one of your [commands](commands-and-tabs.md)); A player gets on something; A player gets off something |
 | Anything | A player uses or breaks any block; A player uses any item; Any mob is hurt or dies; A player uses any mob. Pick a vanilla thing or one of yours, or leave it empty for all of them |
 
-Some things have no moment: crafting, picking up, eating, sleeping and advancements. They are not offered.
+**A player crafts**, **A player picks up** and **A player eats** (eating or drinking) take an item, vanilla or one of yours, or nothing for any item; an item's own Rules section offers them too. **A player gets an advancement** takes an advancement, or nothing for any. **A player goes to sleep** and **A player wakes up** take nothing.
 
 Moments with "every few seconds" take a number of seconds; some take a cooldown in seconds or a chance. These options belong to the thing's moment, not to one rule, so **two rules on the same block and moment share them**: change "every 2 seconds" on one and the other changes too. The cards show the shared value.
 
@@ -51,8 +51,8 @@ Moments with "every few seconds" take a number of seconds; some take a cooldown 
 
 | Group | Steps |
 |---|---|
-| Players | Give an item; Take an item away; Heal; Hurt; Feed; Give experience; Set the game mode; Teleport; Launch; Show a chat message; Show a title; Show text above the hotbar; Give an effect; Remove an effect |
-| World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Make an explosion; Set the weather; Run a function; Run a command; Light a portal |
+| Players | Give an item; Take an item away; Heal; Hurt; Feed; Give experience; Set the game mode; Teleport; Launch; Show a chat message; Show a title; Show text above the hotbar; Give an effect; Remove an effect; Open a dialog; Add to a statistic |
+| World | Place a block; Remove a block (with or without drops); Spawn a mob; Drop an item; Make an explosion; Set the weather; Set a game rule; Run a function; Run a command; Light a portal |
 | On screen | Show on screen; Hide from the screen; Show a number on screen |
 | Sounds and particles | Play a sound; Spawn particles; Play an animation |
 | Mobs | Remove the mob; Show a boss bar |
@@ -62,7 +62,7 @@ Moments with "every few seconds" take a number of seconds; some take a cooldown 
 
 Places are "Here", "Above here", "In front of here" (one block along the way the block faces), "At the player", "At the mob", "Where the player looks" and "Offset". Who is "The player", "The mob", "The other one", "Every player" or "Every player nearby". A moment offers only what exists there: a random tick has no player, so there is no "The player".
 
-Numbers can be fixed or **readings**: a random number, a counter, the player's health, food, level or position, the number of players, the time of day, or a sum. Text can mix words and readings ("You have used the lucky block" and a counter).
+Numbers can be fixed or **readings**: a random number, a counter, the player's health, food, level or position, the number of players, the time of day, **What the player typed** (on **A player types the command**), or a sum. Text can mix words and readings ("You have used the lucky block" and a counter).
 
 **The time of day** counts game ticks: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. **Weather** is the server's, so "It is raining" is never true in the Nether or the End.
 
@@ -86,7 +86,7 @@ Script API 1.6 gave rules five more moments (runtime 1.5.2 or later). They are i
 
 - **A player places a block** (then **Which block?**, or leave it empty for any block). **Stop the placing** cancels it, so the block is not placed and the player keeps it; it is offered only for this moment. For example: when a player places TNT, stop the placing and show "No TNT here". Only placing by a player is seen: dispensers, endermen and commands that place blocks are not, and the moment can fire for a placing that then fails (the block did not fit).
 - **Something explodes** covers every explosion: TNT, creepers, fireballs, wind charges, a bed or respawn anchor in the wrong dimension and **Make an explosion**. **Stop the explosion** cancels it. **Keep the blocks safe** lets the explosion hurt and push but not break blocks or start fires; when both steps are given, stopping wins. The check **What caused it** ("it was caused by") picks a mob type, with **A block** first in the picker for explosions that come from a block (a bed or an anchor). Rules cannot make an explosion bigger or smaller; **Make an explosion** makes a new one. A stopped explosion may still show its smoke and sound.
-- **A player types the command** picks one of your commands, shown as `/name` in the picker ([Commands and creative tabs](commands-and-tabs.md)). "The player" is whoever typed it. For a command that runs a function the rules listen to the Script API's `command` event, and they do not run when the console or a command block runs it. Rules cannot read what was typed after the command yet.
+- **A player types the command** picks one of your commands, shown as `/name` in the picker ([Commands and creative tabs](commands-and-tabs.md)). "The player" is whoever typed it. For a command that runs a function the rules listen to the Script API's `command` event, and they do not run when the console or a command block runs it. The reading **What the player typed** reads one of the command's words: pick it in **Typed for** (the menu lists the words Rules can read), and for a place or block position the **Part** (x, y or z). Whole numbers and numbers are numbers; words, text, a player (by name), a mob or player (by UUID), an item, a block, a dimension and an effect are text. Other kinds of words cannot be read by rules: they reach the command's function or a script only.
 - **A player gets on something** and **A player gets off something**; "The other one" is what they got on or off. Getting on and off is noticed up to a quarter of a second late, and only for players. Mobs getting on things have no moment.
 - **Ride something** (who rides what) and **Get off**. The vanilla boarding rules apply (a cooldown, a free seat) and nothing can ride a player. The picker for what is ridden does not offer "every player" or "players nearby".
 - **Someone is riding** checks who is riding, and optionally what. **Something is facing a way** checks the block here, the player, the mob or the other one against north, east, south, west, up or down. A block is read by the way it points, else by its axis (x is east, y up, z south). A player or a mob is read by the way it looks, flat on the ground: **entity facing is horizontal only**, so up and down fit only blocks.
@@ -96,6 +96,21 @@ Script API 1.6 gave rules five more moments (runtime 1.5.2 or later). They are i
 The Try it preview ([Try it](try-it.md)) lists an explosion or a command as a line in **What happened** and does not show a blast or run a function; check them in the game.
 
 Problems reports a step or check that belongs to another moment: "uses a step or a check that only works with another 'When' (such as 'Stop the placing' when a player places a block)".
+
+## Crafting, eating, sleeping, dialogs, game rules and statistics
+
+Script API 1.7 gave rules six more moments, three steps, two checks and a reading (runtime 1.5.3 or later).
+
+- **A player crafts** runs once for each craft, in the inventory's grid, at a crafting table (once for each craft of a Shift and click) or when a player takes a furnace's result. Crafters and dispensers do not count.
+- **A player picks up** runs when a player picks up an item from the ground, also when only part of it fits.
+- **A player eats** runs when a player finishes eating or drinking (food, a potion, milk, a bottle of your liquid); a meal stopped before the end does not count.
+- **A player goes to sleep** and **A player wakes up** (in the morning, by leaving the bed, or woken).
+- **A player gets an advancement**, by playing or by `/advancement`. The recipe advancements that unlock entries of the recipe book do not count.
+- **Open a dialog** opens a dialog, yours or Minecraft's, on a player's screen. It is a plain step.
+- **Add to a statistic** adds a number to one of your [statistics](commands-and-tabs.md#statistics) for a player, and **The statistic is at least** checks it.
+- **Set a game rule** sets one of your [game rules](commands-and-tabs.md#game-rules) or Minecraft's, and **The game rule is** checks it. For one of Minecraft's rules the editor offers both true or false and a number, because it does not know which the rule holds.
+
+The six moments come from small hooks the runtime adds to the game, and a rule on them, like the steps and checks above other than **Open a dialog**, is a rule with logic. Try it says them in **What happened** as "Only in Minecraft" ([Try it](try-it.md)).
 
 ## Counters
 
@@ -144,7 +159,7 @@ A hand-made event whose actions can all be written as steps has **Turn into rule
 - **A new moment needs a restart.** The first rule that gives a block, say, "A player breaks the block" changes the block itself, so Minecraft must start again to read it. Editing rules on a moment the thing already has reloads in the running game. See [Playing and testing](playing-and-testing.md).
 - **Rules need the Fabric mod jar.** Vanilla packs carry no rules. Exporting a resource or data pack says: "Rules are not in vanilla packs: they need the Fabric mod jar. Export the Fabric mod jar to play with your rules."
 - **Rules with logic are not in the Java project.** The [Java eject](eject.md) has events but no scripts, so a rule that needs a script does nothing there. The Export Java project dialog lists those rules, and **Problems** says: "The rule "<name>" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events." To change that code by hand, use **Copy as my own script** in the rule book (Advanced mode, see above); the script still needs porting to Java by hand for the eject.
-- **Placing and explosion rules are scripts.** They listen to the two Script API 1.6 events, so they are not in the Java project either (`export.not-in-eject`). A plain rule on a command is part of the command's event and is.
+- **Placing and explosion rules are scripts.** They listen to the two Script API 1.6 events, so they are not in the Java project either (`export.not-in-eject`). Rules on crafting, picking up, eating, sleeping, waking and advancements are scripts too, and so are not in it. A plain rule on a command is part of the command's event and is.
 - **Pictures and sounds.** Pictures of Minecraft's own things need your Minecraft files (Settings, Game locations). Minecraft's sounds cannot be played in the editor; you see their names. Sounds of your own project play.
 - **Time limits.** One script call may run for two seconds; a very long repeat or a long chain of waits is stopped.
 

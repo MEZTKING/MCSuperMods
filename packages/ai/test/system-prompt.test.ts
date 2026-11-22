@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   ART_RECIPE_NAMES,
+  MOBS_COMMANDS_FLOW_ANSWERS,
+  MOBS_COMMANDS_PROMPT_CODES,
+  MOBS_COMMANDS_PROMPT_TEMPLATES,
+  NEW_FLOW_PROMPT_IDS,
   PLANTS_STORAGE_FLOW_ANSWERS,
   PLANTS_STORAGE_PROMPT_CODES,
   PLANTS_STORAGE_PROMPT_TEMPLATES,
@@ -509,7 +513,7 @@ describe('systemPrompt traders, jobs, storage, shoulder pets, fluids and dimensi
         'needs_chest',
         'inventory key while riding',
         'at most 0.7 blocks wide',
-        'one per player',
+        'two pets at most, one on each shoulder',
         // Fluids (ADR 0099 with B475's findings).
         'behaves_like',
         'ceil(8 / drop_off) - 1',
@@ -518,7 +522,7 @@ describe('systemPrompt traders, jobs, storage, shoulder pets, fluids and dimensi
         'on_entity_inside',
         'only vanilla lava does',
         'blocks.fluidModel is "two_fluids"',
-        'a resource pack cannot change a fluid',
+        'a resource pack can repaint a fluid',
         // Dimension types (ADR 0100).
         'worldgen.dimensionHeight',
         'worldgen.environmentAttributes',
@@ -661,6 +665,114 @@ describe('systemPrompt plants, pots, storage, sounds and vanilla block rules (AD
     const text = systemPrompt('chat');
     expect(text).toContain('Grow tool');
     expect(text).toContain('Lightning tool');
+  });
+});
+
+describe('systemPrompt buckets, flight, habits, boats, fluids 2, villager looks, game rules and statistics (ADRs 0107 to 0111, ADR 0112 D2, batch 2)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the fields, components, kinds, flows, codes and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        // Traders 2, villager homes and looks (ADR 0107 as amended).
+        'reputation { hurt',
+        'gift_item',
+        'decay_per_day',
+        'price_step',
+        'demand (default true',
+        'work_site, a block or "#" tag',
+        'within 16 blocks',
+        "not vanilla's gossip",
+        'only while they work',
+        'Villagers claim a project bed',
+        'msm:villager_type',
+        'entity/villager/type/<path>',
+        'entity/zombie_villager/type/<path>',
+        'entities.villagerTypes',
+        'only a look and a biome list',
+        // Fluids 2 (ADR 0108 as amended).
+        'mixing: 1 to 16 rules',
+        'cauldron { levels }',
+        'bottle { food, effects, on_drink }',
+        '"<id>_cauldron"',
+        '"<id>_bottle"',
+        '1.6 seconds',
+        'boats float and paddle on a water-like fluid',
+        'dispensers do not fill or empty project cauldrons',
+        // Mobs 2 (ADR 0109 as amended).
+        'msm:bucketable',
+        '"<id>_bucket" (stacks to 1',
+        'bucket_display_name',
+        '"hover" (floats hover_height',
+        '"phase" (flies as "fly"',
+        '"swoop"',
+        '"roost"',
+        '"collect_items"',
+        '"dig_items"',
+        '"play_dead"',
+        '"barter"',
+        'dash { power',
+        'two pets at most',
+        'parrots keep their shoulders',
+        "a warden's senses",
+        'keeps its normal pose',
+        // Boats (ADR 0110).
+        'msm:boat',
+        '"<wood>_chest_boat"',
+        '"<wood>_chest_raft"',
+        'entity/boat/<wood>',
+        'entity/chest_boat/<wood>',
+        '"#minecraft:chest_boats"',
+        'by dispensers',
+        "reuses vanilla's pictures",
+        // Commands, Rules, game rules and statistics (ADR 0111).
+        '"player_crafted"',
+        '"player_advancement"',
+        'Crafters and dispensers do not fire',
+        'recipe advancements',
+        '"command_argument"',
+        'world.gameRule(id)',
+        'player.addStat(id, amount)',
+        'player.openDialog(id)',
+        'event.args',
+        'item.picked_up',
+        'player.woke',
+        'rules.not-in-eject',
+        '"<namespace>:allow_<name>"',
+        // Limits N10 to N26 in plain words.
+        "fixed at the game's start",
+        'fish buckets are for swimming mobs only',
+        "vanilla's three formats",
+        'the Java project export includes the liquids, cauldrons, bottles, jobs, villager looks',
+        'checked in the game',
+        // Q27: gravity the vanilla way.
+        'minecraft:gravity base set',
+        // Flows.
+        '"Villager look" (villager-look',
+        '"Game rule" (game-rule',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+      for (const code of MOBS_COMMANDS_PROMPT_CODES) expect(text, code).toContain(`"${code}"`);
+      for (const id of MOBS_COMMANDS_PROMPT_TEMPLATES) expect(text, id).toContain(id);
+      for (const answer of Object.values(MOBS_COMMANDS_FLOW_ANSWERS).flat()) {
+        expect(text, answer).toContain(answer);
+      }
+      for (const [flow, parameter] of Object.entries(NEW_FLOW_PROMPT_IDS)) {
+        expect(text, flow).toContain(flow);
+        expect(text, parameter).toContain(parameter);
+      }
+      // No longer described as missing or left out.
+      expect(text).not.toContain('prices do not change with demand or reputation');
+      expect(text).not.toContain('cauldrons, bottles and potions of a fluid');
+      expect(text).not.toContain('fetching items like an allay');
+      expect(text).not.toContain('and the Java project export leaves them out');
+    },
+  );
+
+  it('names the two new flows with their name parameter', () => {
+    expect(NEW_FLOW_PROMPT_IDS['villager-look']).toBe('look_name');
+    expect(NEW_FLOW_PROMPT_IDS['game-rule']).toBe('rule_name');
   });
 });
 

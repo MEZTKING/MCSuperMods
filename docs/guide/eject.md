@@ -49,10 +49,26 @@ On Windows, run `gradlew.bat build`. The first build downloads Gradle, Fabric Lo
 
 Any Java IDE that opens Gradle projects (IntelliJ IDEA, Eclipse, Visual Studio Code with the Java extensions) can open the folder. Fabric's own documentation explains how to run the game from the IDE and how to go further.
 
+## What it covers
+
+Besides blocks, items, mobs, effects, potions, particles and the additions to vanilla, the Java project of a Minecraft 26.3 project contains:
+
+- [commands and creative tabs](commands-and-tabs.md), with all 44 kinds of command words and tabs in your own order, and your [game rules and statistics](commands-and-tabs.md#game-rules);
+- the [block types](block-types-and-plants.md) of vanilla parity, growing and climbing plants, flower pots of your own, weathering and waxing, lightning, double and per-player chests, containers that hold water, your own block sounds and set types, and the [rules for vanilla blocks](adding-to-vanilla.md);
+- [traders](villagers-and-traders.md) with their levels, restocks, reputation, demand, work sites and **On trade** event, village jobs with their job site blocks, villager looks, your beds as villager homes, mob storage and shoulder pets;
+- [fluids](fluids.md) with their buckets, mixing, cauldrons and bottles;
+- fish buckets, hovering and phasing flight, the six habits and the dash ([Mob behaviours](mob-behaviours.md));
+- [boats](boats.md) and chest boats, with their renderers.
+
+A 26.4 project has no Java project export yet.
+
 ## What is not included
 
 - **Scripts.** `msm:script` elements and every `run_script` action are left out, so the behaviour they add is missing from the ejected mod. The export reports one warning per script ("Script <id> is not ejected; the Java project does without it (see its README)."), and the project's `README.md` lists them under **Scripts**. Port them to Java by hand if you need them.
 - **Rules that need a script.** [Rules](rules.md) without logic (no **Only if**, plain numbers, steps such as Give an item, Play a sound or Spawn particles) are in the Java project as events. A rule with logic compiles to a script, and scripts are left out, so it does nothing there. The Export Java project dialog lists those rules (**Problems** has `rules.not-in-eject`: "The rule \"<name>\" needs a script, and scripts are not in the Java project, so it does nothing there. Rules without logic are in it as events."). Port them to Java by hand if you need them; the generated script is shown in Advanced mode under **What this becomes** in the rule book, and **Copy as my own script** there makes it a script of your own (see [Rules](rules.md#copy-as-my-own-script)).
+- **Key binds, on-screen elements and vehicles.** They need the runtime's own client and vehicle code; the export warns once for each (`export.not-in-eject`).
+- **Scripts on the game's hooks.** A script that listens for a block being placed or an explosion is left out with `export.not-in-eject`, and rules on crafting, picking up, eating, sleeping, waking and advancements are rules with logic, so they are left out as above.
+- **Two poses.** An ejected mob is drawn by GeckoLib and keeps its normal pose while it roosts or plays dead.
 - **The MCSuperMods project itself.** The `msm/` definitions do not appear in the output; the Java code replaces them.
 
 Resource and data pack content (models, textures, recipes, loot tables, functions, structures, worldgen) is copied as it is and works as before.

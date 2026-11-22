@@ -86,6 +86,11 @@ Every event object `e` has `e.world`, the dimension it happened in. Through it a
 | `block.place` | Before a player places a block from a block item (Script API 1.6) | `pos`, `block` (the id the item places), `item`, `player` | Yes |
 | `world.explosion` | Before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `world.explode` (Script API 1.6) | `pos`, `radius`, `source`, `cause` | Yes |
 | `command` | After one of your [commands](commands-and-tabs.md) ran (Script API 1.6) | `id`, `name`, `source`, `args` | No |
+| `item.crafted` | A player crafted something (Script API 1.7) | `player`, `item`, `count` | No |
+| `item.picked_up` | A player picked up an item from the ground (Script API 1.7) | `player`, `item`, `count` | No |
+| `player.ate` | A player finished eating or drinking (Script API 1.7) | `player`, `item` | No |
+| `player.slept`, `player.woke` | A player lay down in a bed, or got out of it (Script API 1.7) | `player`, `pos` (the bed) | No |
+| `player.advancement` | A player completed an advancement (Script API 1.7) | `player`, `advancement` (its id) | No |
 
 The last six events need runtime 1.5.1 or later, and `entity.hurt` gains `source` (the damage type id, for example `minecraft:fall`) and `direct` (what hit: an arrow rather than its shooter). `entity.hurt` runs before the damage and can cancel it; `entity.damaged` runs after it with the final amount. Neither can change the amount.
 
@@ -227,6 +232,29 @@ msm.events.on("world.explosion", (e) => {
 ```
 
 Limits: `block.place` sees players only, so a dispenser, an enderman or a command placing a block is not seen, and it can fire for a placing that then fails. A cancelled explosion may still show its smoke and sound. `ride` follows the boarding cooldown and nothing rides a player. `DroppedItem.owner` is `undefined` once the thrower is not loaded. `ItemRef.contents` is read-only. A script that listens for `block.place` or `world.explosion` is not in the [Java project](eject.md): the export says `export.not-in-eject`.
+
+## Script API 1.7
+
+Script API 1.7 (runtime 1.5.3 or later; each member says "Since runtime 1.5.3") is additive. It adds game rules, statistics, dialogs, a command's typed values in events, and six events.
+
+- **Game rules.** `world.gameRule(id)` reads a game rule, yours or Minecraft's, with its namespace (`"mypack:allow_heal"`, `"minecraft:keep_inventory"`): `true` or `false`, a whole number, or `undefined` when the game has no such rule. `world.setGameRule(id, value)` sets it for the whole server as `/gamerule` does; it is saved with the world. A number is rounded down and kept between the rule's lowest and highest; an unknown id or a value of the wrong kind is a `TypeError`. See [Game rules](commands-and-tabs.md#game-rules).
+- **Statistics.** `player.stat(id)` reads a player's value of one of your [statistics](commands-and-tabs.md#statistics) (0 when it was never counted; a distance in centimetres, a time in ticks), and `player.addStat(id, amount)` adds to it and returns the new value. It is saved with the player, shown in the Statistics screen and moves the scores of objectives that count it. An unknown id is a `TypeError`.
+- **Dialogs.** `player.openDialog(id)` opens a dialog, yours or Minecraft's, on the player's screen, as `/dialog show` does. It returns `false` when the game has no such dialog.
+- **What was typed.** In a project command's own event (and the events it triggers), a `run_script` action's event has `e.args`: the typed values by argument name, as the `command` event gives them.
+- **Events.** `item.crafted` (`e.player`, `e.item`, `e.count`) runs for each craft: in the inventory's grid, at a crafting table (once for each craft of a Shift and click) or when a furnace's result is taken; crafters and dispensers do not fire it. `item.picked_up` (`e.player`, `e.item`, `e.count`: how many went in, fewer when the inventory was nearly full). `player.ate` (`e.player`, `e.item`) runs when a meal or drink is finished, not when it was stopped. `player.slept` and `player.woke` (`e.player`, `e.pos`, the bed): waking is in the morning, by leaving the bed, or woken. `player.advancement` (`e.player`, `e.advancement`) runs for every advancement but the recipe ones that unlock recipe book entries (`<namespace>:recipes/...`).
+
+```ts
+msm.events.on("item.crafted", (e) => {
+  if (e.item.id === "minecraft:cake") e.player.addStat("mypack:cakes_baked", e.count);
+});
+msm.events.on("player.slept", (e) => {
+  if (e.world.gameRule("mypack:dream_messages") === true) {
+    e.player.openDialog("mypack:dream");
+  }
+});
+```
+
+Limits: the six events come from small hooks the runtime adds to the game, so they are not in the [Java project export](eject.md) (scripts never are). Try it does not fire them: **What happened** says they are only in Minecraft ([Try it](try-it.md)).
 
 ## Saved data
 

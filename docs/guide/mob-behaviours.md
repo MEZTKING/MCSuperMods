@@ -1,6 +1,6 @@
 # Mob behaviours
 
-A mob made with MCSuperMods can be more than something that wanders and hits: it can fly or swim, shoot arrows or snowballs, be tamed into a pet, breed and have babies, be ridden with a saddle, wear one of several skins and show a boss bar. This page covers those parts of the **Entity Studio**. The basics (importing a model, goals, spawning, spawn eggs, events and the preview) are in [Entities and models](entities-and-models.md).
+A mob made with MCSuperMods can be more than something that wanders and hits: it can fly, hover or swim, shoot arrows or snowballs, be tamed into a pet, breed and have babies, be ridden with a saddle, dash, be caught in a bucket, fetch, dig, barter, roost or play dead, wear one of several skins and show a boss bar. This page covers those parts of the **Entity Studio**. The basics (importing a model, goals, spawning, spawn eggs, events and the preview) are in [Entities and models](entities-and-models.md).
 
 Everything here works in the **Fabric mod jar** only, like every mob, and on both Minecraft versions: on 26.3 the mobs are drawn by GeckoLib or by the built-in renderer, on the 26.4 snapshot by the built-in renderer (see [Choose how the mob is drawn](#choose-how-the-mob-is-drawn)).
 
@@ -10,12 +10,12 @@ The **Creator** (the **Create** button, see [The Creator](creator.md)) has seven
 
 | Flow | Makes | Questions worth knowing |
 |---|---|---|
-| **Pet** | An animal you tame with a food; it sits when told, follows and defends you, and has babies | **Pet name**, **Model**, **Taming food**, **Sits when told**, **Defends you**, **Rides on your shoulder**, **Can have babies**, **Breeding food** |
+| **Pet** | An animal you tame with a food; it sits when told, follows and defends you, and has babies | **Pet name**, **Model**, **Taming food**, **Sits when told**, **Defends you**, **Rides on your shoulder** (with **Which shoulder it sits on**), **Brings you items**, **Digs things up**, **Can have babies**, **Breeding food** |
 | **Farm animal** | An animal you breed with a food, with babies and drops | **Animal name**, **Breeding food**, **Baby size**, **Drops**, **Can be ridden** |
-| **Mount** | A mob you ride and steer | **Mount name**, **Needs a saddle**, **Speed**, **Jump strength**, **Only its owner can ride it**, **Carries a chest** (with **Rows of storage**), **Flying** |
-| **Flying mob** | A mob that flies and hovers: peaceful, neutral, hostile or a shooter | **Mob name**, **Behaviour**, **Flying speed** |
-| **Water mob** | A fish, a dolphin-like swimmer or an amphibian | **Mob name**, **Kind**, **Behaviour** |
-| **Wandering merchant** | A mob that sells things through the villager trading screen, like the wandering trader | **What does it sell?**, **How many at a time?**, **For how many emeralds?**, **Sales before it runs out**, **Also sells the wandering trader's wares**, **Restocks** |
+| **Mount** | A mob you ride and steer | **Mount name**, **Needs a saddle**, **Speed**, **Jump strength**, **Dashes forward**, **Only its owner can ride it**, **Carries a chest** (with **Rows of storage**), **Flying** |
+| **Flying mob** | A mob that flies and hovers: peaceful, neutral, hostile or a shooter | **Mob name**, **Behaviour**, **How it flies** (**Flies about and hovers in place**, **Floats above the ground, as a ghast** or **Flies through walls when it charges, as a vex**), **Swoops down from above**, **Hangs under blocks by day**, **Flying speed** |
+| **Water mob** | A fish, a dolphin-like swimmer or an amphibian | **Mob name**, **Kind**, **Behaviour**, **Can be caught in a bucket**, **Plays dead when badly hurt** |
+| **Wandering merchant** | A mob that sells things through the villager trading screen, like the wandering trader | **What does it sell?**, **How many at a time?**, **For how many emeralds?**, **Sales before it runs out**, **Also sells the wandering trader's wares**, **Restocks**, **Prices rise when you buy a lot**, **Remembers how you treat it**, **Barters for gold** |
 | **Boss** | A large monster with a boss bar | **Boss name**, **Size**, **Attacks**, **Boss bar colour**, **Boss bar style**, **Darkens the sky**, **Drops** |
 
 Every mob flow asks for a **Model** (a four-legged mob, a bird, a fish, a round flyer or a two-legged mob, all with ready-made animations that you can replace with your own Blockbench model later), a **Colour** or **Skin picture**, and, except for the **Boss** (which has no variants and appears only from its spawn egg), up to three **Extra variants** (each with a colour, a picture and where it appears) and **Spawns in**. The older **Custom mob** flow gained a **Hostile archer** behaviour and the same variants.
@@ -40,8 +40,27 @@ The **Movement** section's **Moves by** chooses:
 - **Flies**: it flies and, with **Hovers in place when idle**, stays in the air like a bee. **Flying speed** is its speed in the air (a bee has 0.6, a parrot 0.4). It takes no fall damage.
 - **Swims (lives in water)**: it swims about like a fish or a dolphin. It flops on land and takes damage after **Dries out after (ticks)** out of water. Tick **Breathes air (surfaces like a dolphin)** for a swimmer that must come up for air. A swimmer needs a **Speed** near 1 (a dolphin has 1.2), unlike a walker.
 - **Walks and swims**: an amphibian, like an axolotl, that walks on land and swims in water.
+- **Hovers (floats above the ground)**: it floats **Hover height (blocks)** above the ground below it (4 unless you set it), as a ghast or a blaze, without falling or fall damage, climbing and sinking gently as the ground changes. The top of water or lava counts as ground.
+- **Flies through walls while charging**: it flies as a flyer does and passes through blocks while it charges at what it attacks, as a vex does, until it is out of the block it charged into.
 
 **Step height** is how tall a block it climbs without jumping. A water mob should use a water category (**Water creature** or **Fish** in **Kind of mob**); **Problems** points out a swimmer in a land category.
+
+## Fish buckets
+
+**Bucket** ("Can be caught in a bucket") lets a player catch a swimming mob with a water bucket, as cod and axolotls are caught. The bucket, `<id>_bucket`, keeps the mob's name, health and variant, stacks to 1 and is in the **Tools and Utilities** tab; using it lets the mob out with the water. **Bucket holds water** is on by default; switched off, an empty bucket takes the mob and lets it out without water. **Bucket name** (empty: "Bucket of" and the mob's name) and **Bucket picture (optional)** set how the bucket looks. Only a mob that **Swims (lives in water)** can be caught: the section says so otherwise.
+
+## Habits
+
+**Habits** gives a mob one of six things vanilla mobs do, each with a few numbers:
+
+- **Swoops**: circles high above what it attacks, then dives at it, as a phantom does (**Circles this high above (blocks)**, **Dive speed**, **Swoops at**, **Fights back when hurt**). It must fly, hover or fly through walls, and it needs an attack to hit with.
+- **Roosts**: hangs upside down under a block by day, as a bat does, and lets go when a player comes within 4 blocks or it is hurt (**Roosts by day**, **Also roosts when it has nothing to do**, **Looks this far up for a roost (blocks)**).
+- **Collects items**: give it an item and it fetches more of the same for its owner, or for a note block it heard, as an allay does; an empty hand takes the item back (**Looks this far for items (blocks)**, **Brings items to a note block it heard**). Items its owner threw are left alone.
+- **Digs up items**: now and then digs on certain blocks and drops what it finds, as a sniffer does (**Digs on**, **What it digs up (a loot table)**, **Time between digs (ticks)**).
+- **Plays dead**: when badly hurt it lies still on its side, is left alone and gets better, as an axolotl does (**Plays dead for (ticks)**, **Gets better while playing dead**).
+- **Barters**: takes an item from a player or the ground and drops something back, as a piglin does with gold (**Barters for (an item)**, **What it gives back (a loot table)**, **Thinks for (ticks)**, **Also picks the item up from the ground**).
+
+On a mob that can be ridden, **Dash** makes its rider charge the jump bar and the mob leap forward, as a camel does: about 7 blocks at a full bar with **Dash power** 1, then **Wait before the next dash (ticks)**. It replaces the jump, and only walking and amphibious mounts dash. Habits are goals, so the **Behaviour** list shows them in order and points to this section.
 
 ## Ranged attacks
 
@@ -97,25 +116,26 @@ In **Appearance**, beside **Idle animation**, **Walk animation** and **Attack an
 
 The built-in renderer reads the same model and animation files as GeckoLib, so nothing is converted. It plays the subset of animations that vanilla knows: plain numbers and linear or smooth (`catmullrom`) keyframes. Molang expressions play as 0, other easings play as linear, and sound and particle keyframes are silent; **Problems** names what the mob uses (`entities.vanilla-renderer-subset`). A note under **Renderer** says which renderer a mob gets on the project's version. The ready-made models stay inside the subset.
 
-The [Java project export](eject.md) draws every mob with GeckoLib, including built-in ones, and says so.
+The [Java project export](eject.md) draws every mob with GeckoLib, including built-in ones, and says so. An ejected mob keeps its normal pose while it roosts or plays dead.
 
 ## Traders, storage and shoulder pets
 
-Three more sections of the Entity Studio give a mob something to do with the player's hands and pockets: **Trader** (it sells things through the villager trading screen, with levels and restocking), **Storage** (a chest's worth of slots, opened by sneaking and using it, or with the inventory key while riding) and **Shoulder** (a tamed pet that jumps onto its owner's shoulder). **Taming** and **Riding** work together with them: a shoulder pet must be an animal with **Taming**, and a pack animal is usually a mount. The whole story, with the Creator's **Wandering merchant** flow and the village job, is in [Villagers, traders and pets that carry things](villagers-and-traders.md).
+Three more sections of the Entity Studio give a mob something to do with the player's hands and pockets: **Trader** (it sells things through the villager trading screen, with levels and restocking), **Storage** (a chest's worth of slots, opened by sneaking and using it, or with the inventory key while riding) and **Shoulder** (a tamed pet that jumps onto its owner's shoulder, two a player). **Taming** and **Riding** work together with them: a shoulder pet must be an animal with **Taming**, and a pack animal is usually a mount. The whole story, with the Creator's **Wandering merchant** flow and the village job, is in [Villagers, traders and pets that carry things](villagers-and-traders.md).
 
 ## Limits
 
 - **Riding moves on the rider's game.** In Minecraft a ridden mob follows what the rider's client says, so steering, speed and jumping run the rider's copy of the mob. Server and player must have the same version of the mod. Launching, teleporting or knocking back a ridden mob may be lost or jitter.
 - **Update client and server together.** Each side reads the mob's definition itself, so a server with a newer jar than the player shows wrong skins, animations or steering.
 - **The built-in renderer is a subset of GeckoLib** (see above), and drawing is checked in the game only, so report anything that looks wrong.
-- **Mobs with a brain are out of reach.** Allays, axolotls, frogs, camels, sniffers, wardens and piglins use behaviour that goals cannot copy, and phantoms, ghasts, vexes and bats have their own flight. Their equivalents here are goal-based: no item fetching, playing dead, swooping or fluttering.
+- **Some vanilla behaviours are out of reach.** A warden's senses, a frog's tongue, a piglin's brain and sculk reactions are the game's own code, not offered. Fetching, digging, bartering, playing dead, swooping, roosting, hovering, flying through walls and the dash are goals of MCSuperMods with vanilla's numbers, checked in the game by the tests.
+- **Fish buckets are for swimmers only.** A mob that does not swim cannot be caught.
 - **No held bow pose.** A shooter fires without a weapon in its hand, and there is no crossbow-charging pose.
 - **Two animations in one tick.** With the built-in renderer, two animations triggered in the same tick play only the second.
 - **Spawn caps are shared.** A custom creature counts against the same limit as vanilla animals (or monsters, or fish), so many of them thin the vanilla ones out.
 - **Boss music only in the End**, and a boss bar only for players within range.
 - **The base needs a restart** to change (see above).
 - **Saddles use a vanilla tag.** A data pack that replaces `#minecraft:can_equip_saddle` outright stops custom mobs being saddled.
-- **Traders, storage and shoulder pets have limits of their own**: no gossip or discounts, no hopper access, one small shoulder pet per player. They are listed under [Villagers, traders and pets that carry things](villagers-and-traders.md#limits).
+- **Traders, storage and shoulder pets have limits of their own**: reputation is the trader's own (no gossip), no hopper access, two small shoulder pets per player. They are listed under [Villagers, traders and pets that carry things](villagers-and-traders.md#limits).
 - **A modpack with GeckoLib on one side only** can make automatic mobs behave differently on client and server: ship GeckoLib to both or to neither.
 
 ## The in-game check
@@ -128,6 +148,8 @@ Install the jar as in [Entities and models](entities-and-models.md#the-in-game-c
 4. A shooter: stand in its sight and see it fire at the range you chose; the shoot animation plays once per shot.
 5. A boss: summon it from its egg and look for the bar, the style and the sky.
 6. A trader: use it with an empty hand and trade; a pack animal: use a chest on it and open it while sneaking; a shoulder pet: tame it and stand near it ([the checks](villagers-and-traders.md#the-in-game-check)).
+7. A fish bucket: use a water bucket on the mob, look at the bucket's name, pour it out and see the same mob.
+8. Habits: a hovering mob over a cliff, a phasing one charging through a wall, a swooping one at night, a roosting one under a ceiling by day, a collector given an item, a digger on its blocks, a barterer given its item, a mob playing dead after a hit, a dash at a full jump bar.
 
 The sample project `fixtures/sample-creatures` has a full checklist for 26.3 and 26.4: [`fixtures/sample-creatures/README.md`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-creatures/README.md).
 

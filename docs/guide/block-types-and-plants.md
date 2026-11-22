@@ -257,7 +257,7 @@ The resource pack exports the models, blockstates and names. The vanilla data pa
 
 ## What it cannot do
 
-- **Boats** (with chest boats) are not made: they need client code and an entity of their own. Signs are made ([More plants, food, furniture and lights](#more-plants-food-furniture-and-lights)).
+- **Boats** are not blocks: the Wood set's **Has boats** makes a boat and a chest boat of the wood as items ([Boats](boats.md)). Signs are made ([More plants, food, furniture and lights](#more-plants-food-furniture-and-lights)).
 - **Stripping, flattening and tilling only by players** with the tool: a dispenser or another mod that calls vanilla's transformer directly does not strip your logs.
 - **Leaf tint is client-side**: the **Tint** shows in the game only, not in the app's preview. Tint sources are the four above or one colour.
 - **Villagers farm only on farmland**: a crop with another **Planted on** soil is never farmed by villagers.

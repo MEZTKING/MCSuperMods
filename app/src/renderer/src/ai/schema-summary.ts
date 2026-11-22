@@ -55,17 +55,26 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  * age, burn) within the defaults (about 600 characters). An own set type object and a chest's
  * `double` and `per_player` sit below the default depth (`{...}`), so the system prompt spells
  * them out (B522).
+ *
+ * Vanilla parity 3 batch 2 (B543): `msm:rules` has 62 triggers, 47 steps, 21 conditions and 14
+ * values (B534) and its text is about 23,500 characters, so its lists and cases go to 80 and its
+ * length to 27,000, with room for the next catalogue additions. `msm:entity` has 16 goal types
+ * (ADR 0109 adds six) and 18 event action types: depth 7 with cases up to 24 shows every goal's
+ * and action's fields, the bucket, the dash and the trader's reputation (about 11,100
+ * characters). The fluid's mixing, cauldron and bottle, the item's `msm:boat` and boat
+ * pictures, `msm:villager_type`, `msm:game_rule`, `msm:stat` and the hand-ordered
+ * `msm:creative_tab` are complete within their bounds.
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>
 > = Object.freeze({
-  'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 24_000, maxList: 64, maxCases: 64 }),
+  'msm:rules': Object.freeze({ maxDepth: 8, maxChars: 27_000, maxList: 80, maxCases: 80 }),
   'msm:block': Object.freeze({ maxDepth: 4, maxChars: 22_000, maxList: 48, maxCases: 48 }),
   'msm:vehicle': Object.freeze({ maxDepth: 5, maxChars: 6_000 }),
   'msm:key_bind': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
   // 44 argument types since B527 (plugin API 1.20.0): the list is shown whole.
   'msm:command': Object.freeze({ maxDepth: 5, maxChars: 4_000, maxList: 48 }),
-  'msm:entity': Object.freeze({ maxDepth: 5, maxChars: 12_000 }),
+  'msm:entity': Object.freeze({ maxDepth: 7, maxChars: 13_000, maxCases: 24 }),
   'msm:fluid': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
   'minecraft:dimension_type': Object.freeze({
     maxDepth: 4,
