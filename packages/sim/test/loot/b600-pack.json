@@ -1,0 +1,1221 @@
+{
+  "enchantment": {
+    "msm_b600:spike": {
+      "anvil_cost": 2,
+      "description": {
+        "translate": "enchantment.msm_b600.spike"
+      },
+      "effects": {
+        "minecraft:damage": [
+          {
+            "effect": {
+              "type": "minecraft:add",
+              "value": {
+                "base": 1.0,
+                "per_level_above_first": 0.5,
+                "type": "minecraft:linear"
+              }
+            }
+          }
+        ]
+      },
+      "max_cost": {
+        "base": 25,
+        "per_level_above_first": 8
+      },
+      "max_level": 5,
+      "min_cost": {
+        "base": 5,
+        "per_level_above_first": 8
+      },
+      "primary_items": "#msm_b600:spiky",
+      "slots": ["mainhand"],
+      "supported_items": "#msm_b600:spiky",
+      "weight": 10
+    },
+    "msm_b600:spike_curse": {
+      "anvil_cost": 2,
+      "description": {
+        "text": "Curse of Spikes"
+      },
+      "max_cost": {
+        "base": 25,
+        "per_level_above_first": 8
+      },
+      "max_level": 1,
+      "min_cost": {
+        "base": 5,
+        "per_level_above_first": 8
+      },
+      "primary_items": "#msm_b600:spiky",
+      "slots": ["mainhand"],
+      "supported_items": "#msm_b600:spiky",
+      "weight": 10
+    },
+    "msm_b600:spike_ten": {
+      "anvil_cost": 2,
+      "description": {
+        "translate": "enchantment.msm_b600.spike_ten"
+      },
+      "max_cost": {
+        "base": 6,
+        "per_level_above_first": 3
+      },
+      "max_level": 12,
+      "min_cost": {
+        "base": 1,
+        "per_level_above_first": 3
+      },
+      "primary_items": "#msm_b600:spiky",
+      "slots": ["mainhand"],
+      "supported_items": "#msm_b600:spiky",
+      "weight": 10
+    }
+  },
+  "item_modifier": {
+    "msm_b600:conditional": {
+      "condition": {
+        "chance": 0.0,
+        "type": "minecraft:random_chance"
+      },
+      "count": 9,
+      "type": "minecraft:set_count"
+    },
+    "msm_b600:list": {
+      "functions": [
+        {
+          "count": 3,
+          "type": "minecraft:set_count"
+        },
+        {
+          "name": "Three",
+          "target": "item_name",
+          "type": "minecraft:set_name"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "msm_b600:rarity": {
+      "components": {
+        "minecraft:rarity": "epic"
+      },
+      "type": "minecraft:set_components"
+    },
+    "msm_b600:ref": {
+      "functions": ["msm_b600:set_count"],
+      "type": "minecraft:sequence"
+    },
+    "msm_b600:set_count": {
+      "count": 5,
+      "type": "minecraft:set_count"
+    },
+    "msm_b600:set_damage": {
+      "damage": 0.5,
+      "type": "minecraft:set_damage"
+    },
+    "msm_b600:set_enchantments": {
+      "enchantments": {
+        "minecraft:sharpness": 3,
+        "msm_b600:spike": 2
+      },
+      "type": "minecraft:set_enchantments"
+    },
+    "msm_b600:set_lore": {
+      "lore": [
+        {
+          "text": "Line one"
+        },
+        "Line two"
+      ],
+      "mode": "append",
+      "type": "minecraft:set_lore"
+    },
+    "msm_b600:set_name": {
+      "name": {
+        "color": "gold",
+        "text": "Spike Sword"
+      },
+      "target": "custom_name",
+      "type": "minecraft:set_name"
+    },
+    "msm_b600:smelt": {
+      "type": "minecraft:furnace_smelt"
+    }
+  },
+  "loot_table": {
+    "minecraft:blocks/gray_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": {
+                "type": "minecraft:survives_explosion"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/light_blue_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": {
+                "chances": [0.1, 0.3, 0.6, 0.9],
+                "enchantment": "minecraft:fortune",
+                "type": "minecraft:table_bonus"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/light_gray_wool": {
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": {
+                    "max": 2,
+                    "min": -6,
+                    "type": "minecraft:uniform"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "limit": {
+                    "min": 0
+                  },
+                  "type": "minecraft:limit_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/lime_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": "minecraft:tool/can_silk_touch",
+                  "name": "minecraft:lime_wool",
+                  "type": "minecraft:item"
+                },
+                {
+                  "name": "minecraft:stick",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/magenta_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:binomial_with_bonus_count",
+                "parameters": {
+                  "extra": 3,
+                  "probability": 0.5714286
+                },
+                "type": "minecraft:apply_bonus"
+              },
+              "name": "minecraft:wheat_seeds",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/orange_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:uniform_bonus_count",
+                "parameters": {
+                  "bonusMultiplier": 2
+                },
+                "type": "minecraft:apply_bonus"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/pink_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": 10,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/white_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "enchantment": "minecraft:fortune",
+                "formula": "minecraft:ore_drops",
+                "type": "minecraft:apply_bonus"
+              },
+              "name": "minecraft:diamond",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "minecraft:blocks/yellow_wool": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": {
+                "enchanted_chance": {
+                  "base": 0.25,
+                  "per_level_above_first": 0.25,
+                  "type": "minecraft:linear"
+                },
+                "enchantment": "minecraft:fortune",
+                "type": "minecraft:random_chance_with_enchanted_bonus",
+                "unenchanted_chance": 0.1
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:block"
+    },
+    "msm_b600:alternatives": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "chance": 0.5,
+                    "type": "minecraft:random_chance"
+                  },
+                  "name": "minecraft:stone",
+                  "type": "minecraft:item"
+                },
+                {
+                  "name": "minecraft:dirt",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:chest_like": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "count": {
+                  "max": 3,
+                  "min": 1,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              },
+              "name": "minecraft:bread",
+              "type": "minecraft:item",
+              "weight": 20
+            },
+            {
+              "modifier": {
+                "count": {
+                  "max": 5,
+                  "min": 1,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              },
+              "name": "minecraft:iron_ingot",
+              "type": "minecraft:item",
+              "weight": 10
+            },
+            {
+              "name": "minecraft:diamond",
+              "type": "minecraft:item",
+              "weight": 3
+            },
+            {
+              "type": "minecraft:empty",
+              "weight": 5
+            }
+          ],
+          "rolls": {
+            "max": 4,
+            "min": 2,
+            "type": "minecraft:uniform"
+          }
+        }
+      ],
+      "type": "minecraft:chest"
+    },
+    "msm_b600:count_add": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "count": {
+                    "max": 2,
+                    "min": 0,
+                    "type": "minecraft:uniform"
+                  },
+                  "type": "minecraft:set_count"
+                }
+              ],
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:count_binomial": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "count": {
+                  "n": 5,
+                  "p": 0.3,
+                  "type": "minecraft:binomial"
+                },
+                "type": "minecraft:set_count"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:count_dispatch": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "count": {
+                  "cases": [
+                    {
+                      "condition": {
+                        "chance": 0.5,
+                        "type": "minecraft:random_chance"
+                      },
+                      "value": 3
+                    }
+                  ],
+                  "default": 1,
+                  "type": "minecraft:number_dispatcher"
+                },
+                "type": "minecraft:set_count"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:count_uniform": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "count": {
+                  "max": 5,
+                  "min": 2,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:count_weighted": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "count": {
+                  "distribution": [
+                    {
+                      "data": 1,
+                      "weight": 3
+                    },
+                    {
+                      "data": 5,
+                      "weight": 1
+                    }
+                  ],
+                  "type": "minecraft:weighted_list"
+                },
+                "type": "minecraft:set_count"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:empty_weight": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:empty",
+              "weight": 1
+            },
+            {
+              "name": "minecraft:stone",
+              "type": "minecraft:item",
+              "weight": 3
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:enchant_levels_book": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "levels": 30,
+                "type": "minecraft:enchant_with_levels"
+              },
+              "name": "minecraft:book",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:enchant_levels_sword": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "levels": {
+                  "max": 15,
+                  "min": 5,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:enchant_with_levels"
+              },
+              "name": "minecraft:diamond_sword",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:enchant_randomly_book": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "type": "minecraft:enchant_randomly"
+              },
+              "name": "minecraft:book",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:group": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "chance": 0.5,
+                    "type": "minecraft:random_chance"
+                  },
+                  "name": "minecraft:stone",
+                  "type": "minecraft:item"
+                },
+                {
+                  "name": "minecraft:dirt",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:group"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:limit": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": {
+                    "max": 10,
+                    "min": 1,
+                    "type": "minecraft:uniform"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "limit": {
+                    "max": 6,
+                    "min": 3
+                  },
+                  "type": "minecraft:limit_count"
+                }
+              ],
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:looting": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": {
+                    "max": 2,
+                    "min": 0,
+                    "type": "minecraft:uniform"
+                  },
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "count": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "minecraft:uniform"
+                  },
+                  "enchantment": "minecraft:looting",
+                  "type": "minecraft:enchanted_count_increase"
+                }
+              ],
+              "name": "minecraft:rotten_flesh",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "entries": [
+            {
+              "condition": {
+                "type": "minecraft:killed_by_player"
+              },
+              "name": "minecraft:bone",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "entries": [
+            {
+              "condition": {
+                "enchanted_chance": {
+                  "base": 0.2,
+                  "per_level_above_first": 0.1,
+                  "type": "minecraft:linear"
+                },
+                "enchantment": "minecraft:looting",
+                "type": "minecraft:random_chance_with_enchanted_bonus",
+                "unenchanted_chance": 0.1
+              },
+              "name": "minecraft:emerald",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:entity"
+    },
+    "msm_b600:looting_limit": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": [
+                {
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "count": {
+                    "max": 3.0,
+                    "min": 0.0,
+                    "type": "minecraft:uniform"
+                  },
+                  "enchantment": "minecraft:looting",
+                  "limit": 3,
+                  "type": "minecraft:enchanted_count_increase"
+                }
+              ],
+              "name": "minecraft:rotten_flesh",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:entity"
+    },
+    "msm_b600:luck": {
+      "pools": [
+        {
+          "bonus_rolls": 1.0,
+          "entries": [
+            {
+              "name": "minecraft:stone",
+              "quality": 0,
+              "type": "minecraft:item",
+              "weight": 1
+            },
+            {
+              "name": "minecraft:dirt",
+              "quality": 5,
+              "type": "minecraft:item",
+              "weight": 1
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:nested": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:loot_table",
+              "value": "msm_b600:weights",
+              "weight": 1
+            },
+            {
+              "name": "minecraft:apple",
+              "type": "minecraft:item",
+              "weight": 1
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:random_chance": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": {
+                "chance": 0.25,
+                "type": "minecraft:random_chance"
+              },
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:rolls_uniform": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": {
+            "max": 3,
+            "min": 1,
+            "type": "minecraft:uniform"
+          }
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:sequence": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "chance": 0.5,
+                    "type": "minecraft:random_chance"
+                  },
+                  "name": "minecraft:stone",
+                  "type": "minecraft:item"
+                },
+                {
+                  "name": "minecraft:dirt",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:sequence"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:set_damage": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "modifier": {
+                "damage": {
+                  "max": 0.6,
+                  "min": 0.2,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_damage"
+              },
+              "name": "minecraft:diamond_sword",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:table_modifier": {
+      "modifier": {
+        "add": true,
+        "count": 1,
+        "type": "minecraft:set_count"
+      },
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "minecraft:apple",
+              "type": "minecraft:item"
+            }
+          ],
+          "modifier": {
+            "count": 3,
+            "type": "minecraft:set_count"
+          },
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:tag_all": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "expand": false,
+              "items": "#msm_b600:three",
+              "type": "minecraft:tag"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:tag_expand": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "expand": true,
+              "items": "#msm_b600:three",
+              "type": "minecraft:tag"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:two_pools": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "minecraft:stone",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "chance": 0.3,
+            "type": "minecraft:random_chance"
+          },
+          "entries": [
+            {
+              "name": "minecraft:dirt",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    },
+    "msm_b600:weights": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "name": "minecraft:stone",
+              "type": "minecraft:item",
+              "weight": 1
+            },
+            {
+              "name": "minecraft:dirt",
+              "type": "minecraft:item",
+              "weight": 2
+            },
+            {
+              "name": "minecraft:sand",
+              "type": "minecraft:item",
+              "weight": 3
+            },
+            {
+              "name": "minecraft:gravel",
+              "type": "minecraft:item",
+              "weight": 4
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "type": "minecraft:generic"
+    }
+  },
+  "predicate": {
+    "msm_b600:all_any": {
+      "terms": [
+        {
+          "chance": 1.0,
+          "type": "minecraft:random_chance"
+        },
+        {
+          "terms": [
+            {
+              "chance": 0.0,
+              "type": "minecraft:random_chance"
+            },
+            {
+              "chance": 0.5,
+              "type": "minecraft:random_chance"
+            }
+          ],
+          "type": "minecraft:any_of"
+        }
+      ],
+      "type": "minecraft:all_of"
+    },
+    "msm_b600:chance30": {
+      "chance": 0.3,
+      "type": "minecraft:random_chance"
+    },
+    "msm_b600:damage_fire": {
+      "predicate": {
+        "tags": [
+          {
+            "expected": true,
+            "id": "#minecraft:is_fire"
+          }
+        ]
+      },
+      "type": "minecraft:damage_source_properties"
+    },
+    "msm_b600:day": {
+      "clock": "minecraft:overworld",
+      "period": 24000,
+      "type": "minecraft:time_check",
+      "value": {
+        "max": 12000,
+        "min": 0
+      }
+    },
+    "msm_b600:enchant_active": {
+      "active": true,
+      "type": "minecraft:enchantment_active_check"
+    },
+    "msm_b600:high": {
+      "predicate": {
+        "position": {
+          "y": {
+            "min": 100
+          }
+        }
+      },
+      "type": "minecraft:location_check"
+    },
+    "msm_b600:int_check": {
+      "test": {
+        "max": 5,
+        "min": 3
+      },
+      "type": "minecraft:int_value_check",
+      "value": 4
+    },
+    "msm_b600:inverted_zero": {
+      "term": {
+        "chance": 0.0,
+        "type": "minecraft:random_chance"
+      },
+      "type": "minecraft:inverted"
+    },
+    "msm_b600:is_player": {
+      "entity": "this",
+      "predicate": {
+        "minecraft:entity_type": "minecraft:player"
+      },
+      "type": "minecraft:entity_properties"
+    },
+    "msm_b600:killed_by_player": {
+      "type": "minecraft:killed_by_player"
+    },
+    "msm_b600:list_form": {
+      "terms": [
+        {
+          "chance": 1.0,
+          "type": "minecraft:random_chance"
+        },
+        {
+          "chance": 0.5,
+          "type": "minecraft:random_chance"
+        }
+      ],
+      "type": "minecraft:all_of"
+    },
+    "msm_b600:plains": {
+      "predicate": {
+        "biomes": "minecraft:plains"
+      },
+      "type": "minecraft:location_check"
+    },
+    "msm_b600:raining": {
+      "raining": true,
+      "type": "minecraft:weather_check"
+    },
+    "msm_b600:ref": {
+      "terms": ["msm_b600:chance30"],
+      "type": "minecraft:all_of"
+    },
+    "msm_b600:score5": {
+      "entity": "this",
+      "scores": {
+        "b600": {
+          "min": 5
+        }
+      },
+      "type": "minecraft:entity_scores"
+    },
+    "msm_b600:sneaking": {
+      "entity": "this",
+      "predicate": {
+        "minecraft:flags": {
+          "is_sneaking": true
+        }
+      },
+      "type": "minecraft:entity_properties"
+    },
+    "msm_b600:survives_explosion": {
+      "type": "minecraft:survives_explosion"
+    },
+    "msm_b600:table_bonus": {
+      "chances": [1.0],
+      "enchantment": "minecraft:fortune",
+      "type": "minecraft:table_bonus"
+    },
+    "msm_b600:tool_any": {
+      "predicate": {},
+      "type": "minecraft:match_tool"
+    }
+  },
+  "tags/enchantment": {
+    "minecraft:curse": {
+      "values": ["msm_b600:spike_curse"]
+    }
+  },
+  "tags/item": {
+    "msm_b600:spiky": {
+      "values": ["minecraft:diamond_sword"]
+    },
+    "msm_b600:three": {
+      "values": ["minecraft:stone", "minecraft:dirt", "minecraft:sand"]
+    }
+  },
+  "trial_spawner": {
+    "msm_b600:waves": {
+      "items_to_drop_when_ominous": "msm_b600:weights",
+      "loot_tables_to_eject": [
+        {
+          "data": "msm_b600:weights",
+          "weight": 1
+        }
+      ],
+      "simultaneous_mobs": 2.0,
+      "simultaneous_mobs_added_per_player": 1.0,
+      "spawn_potentials": [
+        {
+          "data": {
+            "entity": {
+              "id": "minecraft:zombie"
+            }
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "entity": {
+              "id": "minecraft:skeleton"
+            }
+          },
+          "weight": 1
+        }
+      ],
+      "spawn_range": 4,
+      "ticks_between_spawn": 40,
+      "total_mobs": 6.0,
+      "total_mobs_added_per_player": 2.0
+    }
+  }
+}
