@@ -151,6 +151,8 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 
 **Share my mod** builds the Fabric mod jar with the usual settings and saves it where you choose. It then says: "Your mod is saved. Give the file to friends: they put it in their mods folder." **Where is it?** shows the file. Friends need Fabric Loader and Fabric API, like for any Fabric mod; the jar carries MCSuperMods' small runtime, so nothing else is needed. (The same file is **Fabric mod (.jar)…** in the Export menu in the other modes; see [Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar).)
 
+To share the mod with everyone, not only your friends, add the project to the [MCSuperMods community repository](https://github.com/MEZTKING/MCSuperMods-Community): copy your project folder (the one with `msm.project.json` in it) into its `mods/` folder with a short README, a picture and a licence, and open a pull request. Its checks open and export every shared mod on both Minecraft versions, and refuse Minecraft's own pictures and sounds. The repository also has every example of MCSuperMods as a project you can open; its `CONTRIBUTING.md` explains each step.
+
 ## What Very easy leaves out
 
 Very easy shows the question pages and the sections that matter and hides the rest of a Studio: the events editor and the triggers, the Advanced switch, Raw JSON and element ids. A few ids can still appear inside the sections that are shown. If you need a field that is hidden, switch to Easy.

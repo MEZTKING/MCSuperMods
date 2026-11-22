@@ -914,6 +914,13 @@ The user's request of 2026-11-22: "Make an elite search bar so that whatever a u
 - [ ] Reserves, only on the spike's word: B674 a sound-alike key for typos, B675 a faster or split index build, B676 the engine on the main thread.
 - [ ] The user looks at the vetoable defaults in the Status of ADR 0124.
 
+### Add-on after 1.0 — Community repository (delivered)
+
+The user's request of 2026-11-22 ("make another repo where we store all our public example mod or people created mods"; chosen: examples and submissions). [MCSuperMods-Community](https://github.com/MEZTKING/MCSuperMods-Community) holds every example of the `examples/` mirror as a project with a picture and README, and `mods/`, where people add their own mods by pull request. Its CI runs `tools/check-project` (the app's session: open, Upgrade project target, every validator, the resource pack, data pack and Fabric mod jar, on both targets; refuses Minecraft's own pictures and sounds and oversized files) on every changed folder, and `tools/community-repo/sync.ts --check` against MCSuperMods `main`. No ADR: tooling and a separate repository only, no app, plugin API or runtime change.
+
+- [x] `tools/check-project/` and `tools/community-repo/` (tests, READMEs); the community repository's first commit with all 87 examples passing on both targets.
+- [ ] After a change to the examples mirror, run `node tools/community-repo/sync.ts --repo <community checkout>` and commit there (its CI fails until then).
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.

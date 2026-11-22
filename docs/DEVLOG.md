@@ -8757,3 +8757,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B616 can drive the test ids `advancement-node` (`data-id`, `data-x`, `data-y`, `data-state`), `advancement-criterion`, `dialog-screen`, `dialog-button`, `dialog-said`, `sample-line-death`, `sample-line-chat`, `sample-line-text`.
 - The hurt sound's Play waits for batch 3; project item icons show the name's start (views get no project asset reader).
+
+## 2026-11-22 — executor — The community repository: tools/check-project and tools/community-repo
+
+**What**
+- The user's request ("make another repo where we store all our public example mod or people created mods"; chosen: examples and submissions). New repository [MCSuperMods-Community](https://github.com/MEZTKING/MCSuperMods-Community): `examples/` (all 87 mirror projects, each with `picture.png` and a README from the library entry), `mods/` for people's own mods by pull request (`mods/_template/`), README, CONTRIBUTING, MIT `LICENSE` with the licence rules (mods state their own; CC BY 4.0 when none), a pull request checklist and `.github/workflows/check.yml`.
+- `tools/check-project/`: `node tools/check-project/index.ts <folder>... [--target <id>|all] [--json]`. Runs the app's own `ProjectSession` (built-in plugins and targets, the main process's mcfunction broker and scripting service) over an in-memory copy of each folder: Upgrade project target (`upgradeTargetPreview`, `upgradeTarget`) when the target is not the project's own, every validator, the resource pack and data pack zips and the Fabric mod jar (`separateRuntime`). Says which exports the content needs (the layers of its lowered files). File rules: only project files plus README, LICENSE and picture.png; nothing under `assets/minecraft/`; no export shipping `assets/minecraft/textures|sounds`; no picture or sound whose name nothing mentions; PNG and Ogg signatures; 2 MiB a file, 8 MiB a sound, 25 MiB a folder.
+- `tools/community-repo/sync.ts --repo <checkout> [--check]`: writes the community `examples/` (project files byte for byte, the first non-empty item or block texture enlarged to 128 px without smoothing or a drawn placeholder, a README, `examples/README.md` by category); idempotent; `--check` fails when out of date.
+- `tools/shared/workspace-hooks.ts`: `module.registerHooks` resolves the workspace's imports without endings and Vite's `?raw`, so both tools run under plain Node 24.
+- Checked: all 87 examples pass on mc-26.4 and mc-26.3 (from the mirror and from the community copies); `pnpm lint`, tools typecheck and the tools' tests (28 new) pass.
+
+**Decisions**
+- The checker reuses the app's session rather than copying the library test's export helpers, so it exports exactly as the app does; `@msm/tools` may depend on anything (`layers.json`), and its tsconfig now references `app/tsconfig.node.json`.
+- No exporter rule against Mojang assets exists, so the rule is the checker's own and conservative (documented in its README); the "asset nothing uses" rule matches names, not bytes, because the packs copy every asset.
+- A community example is its mirror folder's path with the project at the folder's top; submissions use the same layout under `mods/<name>/`.
+
+**Next**
+- After a change to the examples mirror, run the sync into a checkout of the community repository and commit there; its CI fails until then.
+- The main session pushes the community repository's first commit and checks its first workflow run (`pnpm/action-setup` `package_json_file` and the checkout paths: verify at implementation).

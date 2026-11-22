@@ -12,6 +12,9 @@
     { "path": "../packages/plugin-api" },
     { "path": "../packages/schemas" },
     { "path": "../packages/core" },
-    { "path": "../packages/targets/mc-26.3" }
+    { "path": "../packages/targets/mc-26.3" },
+    { "path": "../packages/targets/all" },
+    { "path": "../packages/plugins/library" },
+    { "path": "../app/tsconfig.node.json" }
   ]
 }

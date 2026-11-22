@@ -8,8 +8,13 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@msm/core": "workspace:*",
+    "@msm/plugin-api": "workspace:*",
+    "@msm/plugin-library": "workspace:*",
+    "@msm/targets": "workspace:*",
     "@spyglassmc/mcdoc-cli": "catalog:",
     "@types/node": "catalog:",
+    "fflate": "catalog:",
     "vitest": "catalog:"
   }
 }
