@@ -3,6 +3,7 @@ import {
   aiEventSchema,
   aiModelScriptSchema,
   type BetaRawMessageStreamEvent,
+  ModelClientError,
   type ModelRequest,
   ScriptedModelClient,
   testApiKey,
@@ -101,6 +102,104 @@ describe('ScriptedModelClient', () => {
     ).toBe(false);
   });
 
+  it('waits for a delayed turn before its first event', async () => {
+    const client = new ScriptedModelClient({
+      turns: [{ content: [{ type: 'text', text: 'late' }], delayMs: 80 }],
+    });
+    const events: BetaRawMessageStreamEvent[] = [];
+    const started = Date.now();
+    const pending = client.stream(request, new AbortController().signal, (e) => events.push(e));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    // The request is recorded at once; nothing is emitted before the delay.
+    expect(client.requests).toHaveLength(1);
+    expect(events).toEqual([]);
+    const message = await pending;
+    expect(Date.now() - started).toBeGreaterThanOrEqual(75);
+    expect(events[0]?.type).toBe('message_start');
+    expect(message.content).toEqual([{ type: 'text', text: 'late', citations: null }]);
+  });
+
+  it('cancels a delayed turn while it waits', async () => {
+    const client = new ScriptedModelClient({
+      turns: [{ content: [{ type: 'text', text: 'never' }], delayMs: 60_000 }],
+    });
+    const controller = new AbortController();
+    const events: BetaRawMessageStreamEvent[] = [];
+    const started = Date.now();
+    setTimeout(() => controller.abort(), 20);
+    await expect(
+      client.stream(request, controller.signal, (e) => events.push(e)),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    expect(Date.now() - started).toBeLessThan(5_000);
+    expect(events).toEqual([]);
+    // An aborted signal ends the wait before it starts.
+    const again = new ScriptedModelClient({
+      turns: [{ content: [{ type: 'text', text: 'x' }], delayMs: 60_000 }],
+    });
+    await expect(again.stream(request, controller.signal, () => {})).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+  });
+
+  it('throws the error of an error turn, after its delay', async () => {
+    const client = new ScriptedModelClient({
+      turns: [
+        { error: { errorClass: 'APIError', message: 'credit balance is too low', status: 402 } },
+        { error: { errorClass: 'APIConnectionError', message: 'Connection error.' }, delayMs: 10 },
+        { content: [{ type: 'text', text: 'ok' }] },
+      ],
+    });
+    const events: BetaRawMessageStreamEvent[] = [];
+    const first = client.stream(request, new AbortController().signal, (e) => events.push(e));
+    await expect(first).rejects.toBeInstanceOf(ModelClientError);
+    await expect(first).rejects.toMatchObject({
+      errorClass: 'APIError',
+      message: 'credit balance is too low',
+      status: 402,
+    });
+    await expect(
+      client.stream(request, new AbortController().signal, (e) => events.push(e)),
+    ).rejects.toMatchObject({ errorClass: 'APIConnectionError', status: undefined });
+    expect(events).toEqual([]);
+    // The next turn answers normally (Try again).
+    await client.stream(request, new AbortController().signal, () => {});
+    expect(client.remaining).toBe(0);
+    expect(client.requests).toHaveLength(3);
+  });
+
+  it('validates delays and error turns', () => {
+    const ok = aiModelScriptSchema.safeParse({
+      turns: [
+        { content: [{ type: 'text', text: 'a' }], delayMs: 2000 },
+        { error: { errorClass: 'RateLimitError', message: 'slow', status: 429 }, delayMs: 5 },
+      ],
+    });
+    expect(ok.success).toBe(true);
+    expect(aiModelScriptSchema.safeParse({ turns: [{ content: [], delayMs: -1 }] }).success).toBe(
+      false,
+    );
+    expect(
+      aiModelScriptSchema.safeParse({ turns: [{ error: { errorClass: '', message: 'x' } }] })
+        .success,
+    ).toBe(false);
+  });
+
+  it('reports one-hour cache writes in the usage', async () => {
+    const client = new ScriptedModelClient({
+      turns: [
+        {
+          content: [{ type: 'text', text: 'a' }],
+          usage: { cacheCreationInputTokens: 1000, cacheCreation1hInputTokens: 800 },
+        },
+      ],
+    });
+    const message = await client.stream(request, new AbortController().signal, () => {});
+    expect(message.usage.cache_creation).toEqual({
+      ephemeral_1h_input_tokens: 800,
+      ephemeral_5m_input_tokens: 200,
+    });
+  });
+
   it('answers the key test', async () => {
     const client = new ScriptedModelClient({
       turns: [{ content: [{ type: 'text', text: 'ok' }] }],
@@ -128,6 +227,9 @@ describe('aiEventSchema', () => {
       { type: 'usage', turn: usage, total: usage },
       { type: 'fallback', from: 'a', to: 'b' },
       { type: 'done', reason: 'refusal', stopDetails: { category: null, explanation: 'x' } },
+      { type: 'done', reason: 'error', message: 'x', errorClass: 'BillingError' },
+      { type: 'done', reason: 'limit', message: 'x', limit: { toolTurns: 24, outputTokens: 1 } },
+      { type: 'usage', turn: { ...usage, cacheCreation1hInputTokens: 1 }, total: usage },
     ]) {
       expect(aiEventSchema.safeParse(event).success).toBe(true);
     }

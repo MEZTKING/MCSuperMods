@@ -168,7 +168,13 @@ export interface AiUsage {
   inputTokens: number;
   outputTokens: number;
   cacheReadInputTokens: number;
+  /** Every cache write, of both lifetimes (the API's `cache_creation_input_tokens`). */
   cacheCreationInputTokens: number;
+  /**
+   * The part of {@link cacheCreationInputTokens} written with the one-hour lifetime, which costs
+   * more (ADR 0125 D8). Absent when nothing was written for an hour.
+   */
+  cacheCreation1hInputTokens?: number;
   requests: number;
 }
 
@@ -177,6 +183,7 @@ export const aiUsageSchema = z.object({
   outputTokens: z.number(),
   cacheReadInputTokens: z.number(),
   cacheCreationInputTokens: z.number(),
+  cacheCreation1hInputTokens: z.number().optional(),
   requests: z.number(),
 });
 
@@ -191,15 +198,20 @@ export function emptyUsage(): AiUsage {
   };
 }
 
-/** Sums two usages. */
+/** Sums two usages. The one-hour write count is present only when either side has it. */
 export function addUsage(a: AiUsage, b: AiUsage): AiUsage {
-  return {
+  const sum: AiUsage = {
     inputTokens: a.inputTokens + b.inputTokens,
     outputTokens: a.outputTokens + b.outputTokens,
     cacheReadInputTokens: a.cacheReadInputTokens + b.cacheReadInputTokens,
     cacheCreationInputTokens: a.cacheCreationInputTokens + b.cacheCreationInputTokens,
     requests: a.requests + b.requests,
   };
+  if (a.cacheCreation1hInputTokens !== undefined || b.cacheCreation1hInputTokens !== undefined) {
+    sum.cacheCreation1hInputTokens =
+      (a.cacheCreation1hInputTokens ?? 0) + (b.cacheCreation1hInputTokens ?? 0);
+  }
+  return sum;
 }
 
 /** Why a run ended. `no_key` is emitted by the host (main) when no key is stored. */
@@ -228,6 +240,14 @@ export interface AiStopDetails {
   explanation: string;
 }
 
+/** The limits a `limit` stop reached, for Advanced (ADR 0125 D10); the sentence has no numbers. */
+export interface AiLimitReached {
+  /** The run's tool-turn limit (after any rise to the build limits). */
+  toolTurns: number;
+  /** The run's output-token limit (after any rise to the build limits). */
+  outputTokens: number;
+}
+
 /** What a run reports while it proceeds. */
 export type AiEvent =
   | { type: 'turn_start' }
@@ -237,7 +257,16 @@ export type AiEvent =
   | { type: 'tool_done'; requestId: string; isError: boolean }
   | { type: 'usage'; turn: AiUsage; total: AiUsage }
   | { type: 'fallback'; from: string; to: string }
-  | { type: 'done'; reason: AiDoneReason; message?: string; stopDetails?: AiStopDetails };
+  | {
+      type: 'done';
+      reason: AiDoneReason;
+      message?: string;
+      stopDetails?: AiStopDetails;
+      /** With `error`: one of `AI_ERROR_CLASSES`, so the panel can offer the right action. */
+      errorClass?: string;
+      /** With `limit`: the limits the run stopped at. */
+      limit?: AiLimitReached;
+    };
 
 export const aiEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('turn_start') }),
@@ -252,6 +281,8 @@ export const aiEventSchema = z.discriminatedUnion('type', [
     reason: aiDoneReasonSchema,
     message: z.string().optional(),
     stopDetails: z.object({ category: z.string().nullable(), explanation: z.string() }).optional(),
+    errorClass: z.string().max(200).optional(),
+    limit: z.object({ toolTurns: z.number(), outputTokens: z.number() }).optional(),
   }),
 ]);
 

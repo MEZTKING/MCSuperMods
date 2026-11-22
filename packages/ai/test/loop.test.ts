@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { ModelClient } from '../src/index';
 import {
+  type AiErrorClass,
   type AiModelScript,
   type AiSettings,
   aiStartRequestSchema,
   type BetaMessageParam,
   createConversation,
+  ERROR_SENTENCES,
   FALLBACK_BETA,
   ModelClientError,
   ModelOutputError,
@@ -293,9 +295,12 @@ describe('runAssistant', () => {
     });
     expect(result.reason).toBe('limit');
     expect(host.requests).toHaveLength(2);
-    expect(doneEvent(host.events)?.message).toBe(
-      "The run stopped at its limit (2 tool turns / 100000 output tokens). Raise the limit under Run limits and send 'continue' to carry on.",
+    const done = doneEvent(host.events);
+    expect(done?.message).toBe(
+      'The helper paused at its limit so the cost stays small; send "continue" to carry on.',
     );
+    expect(done?.message).not.toMatch(/\d/);
+    expect(done?.limit).toEqual({ toolTurns: 2, outputTokens: 100_000 });
     const last = toolResultsOf(conversation.messages.at(-1));
     expect(last).toEqual([
       {
@@ -508,7 +513,11 @@ describe('runAssistant', () => {
       expect(Array.isArray(request.system)).toBe(true);
       const system = request.system as Array<{ text: string; cache_control?: unknown }>;
       expect(system).toHaveLength(1);
-      expect(system[0]?.cache_control).toEqual({ type: 'ephemeral' });
+      // The fixed part is cached for an hour; the conversation's breakpoint keeps five minutes.
+      expect(system[0]?.cache_control).toEqual({ type: 'ephemeral', ttl: '1h' });
+      expect(request.cache_control).toEqual({ type: 'ephemeral' });
+      expect(JSON.stringify(request.messages)).not.toContain('"ttl"');
+      expect(JSON.stringify(request.tools)).not.toContain('cache_control');
       expect(request.tools).toEqual(toolParams());
       expect(request.tool_choice).toEqual({ type: 'auto' });
       expect(request.thinking).toEqual({ type: 'adaptive', display: 'summarized' });
@@ -596,8 +605,167 @@ describe('runAssistant', () => {
       signal: new AbortController().signal,
     });
     expect(result.reason).toBe('error');
-    expect(doneEvent(host.events)?.message).toBe('The API key was rejected (AuthenticationError)');
+    expect(doneEvent(host.events)?.message).toBe('Your Anthropic API key was not accepted.');
+    expect(doneEvent(host.events)?.errorClass).toBe('AuthenticationError');
     expect(conversation.messages).toEqual([]);
+  });
+
+  it('ends the run on each scripted error turn with its class and sentence', async () => {
+    const cases: Array<[{ errorClass: string; message: string; status?: number }, string]> = [
+      [
+        { errorClass: 'AuthenticationError', message: 'invalid', status: 401 },
+        'AuthenticationError',
+      ],
+      [{ errorClass: 'APIError', message: 'credit balance', status: 402 }, 'BillingError'],
+      [{ errorClass: 'RateLimitError', message: 'slow', status: 429 }, 'RateLimitError'],
+      [
+        { errorClass: 'InternalServerError', message: 'Overloaded', status: 529 },
+        'OverloadedError',
+      ],
+      [{ errorClass: 'APIConnectionError', message: 'Connection error.' }, 'APIConnectionError'],
+      [{ errorClass: 'APIConnectionTimeoutError', message: 'timed out' }, 'TimeoutError'],
+      [{ errorClass: 'APIError', message: 'too big', status: 413 }, 'RequestTooLargeError'],
+    ];
+    for (const [error, errorClass] of cases) {
+      const { client, conversation } = setup({ turns: [{ error }] });
+      const host = recordingHost();
+      const result = await runAssistant({
+        client,
+        conversation,
+        request: startRequest(),
+        settings,
+        limits: limits(),
+        host,
+        signal: new AbortController().signal,
+      });
+      expect(result.reason).toBe('error');
+      const done = doneEvent(host.events);
+      expect(done?.errorClass).toBe(errorClass);
+      expect(done?.message).toBe(ERROR_SENTENCES[errorClass as AiErrorClass]);
+      expect(done?.message).not.toContain(error.errorClass);
+      expect(conversation.messages).toEqual([]);
+    }
+  });
+
+  it('cancels a run while its turn is delayed, before any event', async () => {
+    const { client, conversation } = setup({
+      turns: [{ content: [{ type: 'text', text: 'late' }], delayMs: 60_000 }],
+    });
+    const controller = new AbortController();
+    const host = recordingHost();
+    setTimeout(() => controller.abort(), 20);
+    const result = await runAssistant({
+      client,
+      conversation,
+      request: startRequest(),
+      settings,
+      limits: limits(),
+      host,
+      signal: controller.signal,
+    });
+    expect(result.reason).toBe('cancelled');
+    expect(host.events.map((e) => e.type)).toEqual(['turn_start', 'done']);
+    expect(conversation.messages).toEqual([]);
+  });
+
+  it('raises a chat run to the build limits once a plan is accepted', async () => {
+    const turn = { content: [{ type: 'tool_use' as const, name: 'list_kinds', input: {} }] };
+    const plan = {
+      content: [{ type: 'tool_use' as const, name: 'propose_plan', input: planInput() }],
+    };
+    const run = async (decision: string) => {
+      const { client, conversation } = setup({
+        turns: [plan, turn, turn, turn, { content: [{ type: 'text', text: 'Done.' }] }],
+      });
+      const host = recordingHost((request) => ({
+        requestId: request.requestId,
+        content:
+          request.name === 'propose_plan'
+            ? JSON.stringify({ decision, items: planInput().items, comments: '' })
+            : '[]',
+        isError: false,
+      }));
+      const result = await runAssistant({
+        client,
+        conversation,
+        request: startRequest(),
+        settings,
+        // A chat run that would stop after two tool turns.
+        limits: limits({ maxToolTurns: 2 }),
+        host,
+        signal: new AbortController().signal,
+      });
+      return { result, client, host };
+    };
+    for (const decision of ['build_all', 'step']) {
+      const { result, client } = await run(decision);
+      expect(result.reason).toBe('end_turn');
+      expect(client.requests).toHaveLength(5);
+      // The task budget follows the raised output limit; the effort stays the chat one.
+      expect(client.requests[1]?.output_config).toEqual({
+        effort: 'medium',
+        task_budget: { type: 'tokens', total: settings.limits.build.maxOutputTokens },
+      });
+      expect(client.requests[0]?.output_config?.task_budget).toEqual({
+        type: 'tokens',
+        total: 100_000,
+      });
+    }
+    // A plan sent back for changes keeps the chat limits.
+    const revised = await run('revise');
+    expect(revised.result.reason).toBe('limit');
+    expect(doneEvent(revised.host.events)?.limit).toEqual({
+      toolTurns: 2,
+      outputTokens: 100_000,
+    });
+  });
+
+  it('reports the limits it stopped at after a rise', async () => {
+    const turn = { content: [{ type: 'tool_use' as const, name: 'list_kinds', input: {} }] };
+    const plan = {
+      content: [{ type: 'tool_use' as const, name: 'propose_plan', input: planInput() }],
+    };
+    const { client, conversation } = setup({ turns: [plan, turn, turn] });
+    const host = recordingHost((request) => ({
+      requestId: request.requestId,
+      content: JSON.stringify({ decision: 'build_all', items: [], comments: '' }),
+      isError: false,
+    }));
+    const result = await runAssistant({
+      client,
+      conversation,
+      request: startRequest(),
+      settings: { ...settings, limits: { ...settings.limits, build: limits({ maxToolTurns: 2 }) } },
+      limits: limits({ maxToolTurns: 1 }),
+      host,
+      signal: new AbortController().signal,
+    });
+    expect(result.reason).toBe('limit');
+    expect(doneEvent(host.events)?.limit).toEqual({ toolTurns: 2, outputTokens: 100_000 });
+  });
+
+  it('counts one-hour cache writes in the usage', async () => {
+    const { client, conversation } = setup({
+      turns: [
+        {
+          content: [{ type: 'text', text: 'ok' }],
+          usage: { cacheCreationInputTokens: 30_000, cacheCreation1hInputTokens: 28_000 },
+        },
+      ],
+    });
+    const result = await runAssistant({
+      client,
+      conversation,
+      request: startRequest(),
+      settings,
+      limits: limits(),
+      host: recordingHost(),
+      signal: new AbortController().signal,
+    });
+    expect(result.usage).toMatchObject({
+      cacheCreationInputTokens: 30_000,
+      cacheCreation1hInputTokens: 28_000,
+    });
   });
 
   it('retries unreadable output twice, then gives up', async () => {
@@ -640,7 +808,12 @@ describe('runAssistant', () => {
         signal: new AbortController().signal,
       }),
     ).rejects.toThrow('bug');
-    expect(doneEvent(host.events)).toEqual({ type: 'done', reason: 'error', message: 'bug' });
+    expect(doneEvent(host.events)).toEqual({
+      type: 'done',
+      reason: 'error',
+      message: 'bug',
+      errorClass: 'Error',
+    });
   });
 });
 

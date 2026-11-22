@@ -8809,3 +8809,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B682 changes wording per topic file and moves the two pinned hashes once, on purpose.
+## 2026-11-22 — executor — B680 the AI helper's run engine: waits, failures, limits and prices
+
+**What**
+- `@msm/ai` only (ADR 0125 D2, D8, D9, D10, D12). The scripted model gains `delayMs` on a turn (nothing is emitted before it; the abort signal ends the wait) and error turns `{ "error": { "errorClass", "message", "status" } }` that throw a `ModelClientError`, plus `cacheCreation1hInputTokens` in a turn's usage.
+- Failures: `classifyModelClientError` works out one of `AI_ERROR_CLASSES` from the status and the API's error type before the SDK class (402 or `billing_error` is `BillingError`, 529 or `overloaded_error` `OverloadedError`, 413 `RequestTooLargeError`, the SDK's time-out, 408 and 504 `TimeoutError`); `describeModelClientError` says a plain sentence from `ERROR_SENTENCES` without the class name (Anthropic's own text is kept only after a refused request and an unknown failure). The `done` event gains `errorClass` (also `ContextWindowExceeded`, `ModelOutputError` and `Error` from the loop).
+- Limits: the limit stop says 'The helper paused at its limit so the cost stays small; send "continue" to carry on.' with no numbers; `done` carries `limit: { toolTurns, outputTokens }`. A `propose_plan` answer of `build_all` or `step` raises the run's limits to the larger of its own and the settings' build limits (`raisedLimits`, `acceptsPlan`); the effort stays the run's, so the cache holds.
+- Cache: the system block is cached for an hour (`SYSTEM_CACHE_TTL = '1h'`, the one-line veto); the conversation's top-level breakpoint keeps five minutes, so the longer entry comes first. The pinned SDK (1.1.0) types `ttl?: '5m' | '1h'`. Usage counts one-hour writes from `usage.cache_creation.ephemeral_1h_input_tokens`.
+- Prices, read on 2026-11-22 from https://platform.claude.com/docs/en/about-claude/pricing: Opus 5.5 $4 / $20, cache hits $0.20; Sonnet 5.5 $2 / $10, cache hits $0.10 (was $0.20 here); Haiku 5.5 $0.10 / $0.50, cache hits $0.01, and over 100,000 prompt tokens $0.50 / $2.50, cache hits $0.05; writes 1.25 times input for five minutes and 2 times for an hour; 286 tool-use system tokens on all three. New `typicalCost(model, prefixTokens)` (a first question and a follow-up), `PROMPT_PREFIX_CHARS` (112,804: the build prompt 90,470 plus the tools 22,334, held within 5 % by a test), `PROMPT_PREFIX_TOKENS` (28,487 at four characters a token, an estimate).
+- Tests: new `errors.test.ts`; new cases in `scripted-client.test.ts`, `loop.test.ts` and `models.test.ts`. `@msm/ai` 128 green; app `main-ai-service`, `ai-scenario`, `ai-art-scenario`, `ai-rules`, `ai-patterns`, `ai-store`, `main-e2e-hooks` and the AI component tests green unchanged; `pnpm lint` and `pnpm typecheck` green.
+
+**Decisions**
+- The error class is a classification, not always the SDK's name: the SDK has no class for 402 and reports 529 as `InternalServerError`, and `src/sdk/index.ts` is not this brief's, so billing and overloaded are found from the status and from the error type in the message text.
+- Haiku 5.5's higher tier is decided per request; a summed usage is priced as `requests` requests of its average prompt (exact for one request, an estimate for a sum).
+- The typical question assumes 2,000 tokens of message and conversation and 1,500 of answer, one request (`TYPICAL_QUESTION`): on Opus 5.5 about $0.27 for a first question and $0.05 for a follow-up; Sonnet 5.5 $0.13 and $0.02; Haiku 5.5 under a cent.
+
+**Next**
+- Count the prefix with the token-counting endpoint once, outside the tests (the newer tokenizer makes about 30 % more tokens than four characters a token suggests): `CHARS_PER_TOKEN` is "(verify at implementation)".
+- B684 maps `errorClass` and `limit` to words; B686 and B687 use `typicalCost` and `estimateCost`.

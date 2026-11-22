@@ -8,11 +8,19 @@
  * `tool_use` without its results. Assistant turns go back unchanged, thinking blocks included.
  */
 import type { ConversationState, ModelClient } from './client';
-import { describeModelClientError, ModelClientError, ModelOutputError } from './errors';
+import {
+  type AiErrorClass,
+  classifyModelClientError,
+  describeModelClientError,
+  ERROR_SENTENCES,
+  ModelClientError,
+  ModelOutputError,
+} from './errors';
 import { modelInfo } from './models';
 import {
   type AiDoneReason,
   type AiHost,
+  type AiLimitReached,
   type AiRunLimits,
   type AiSettings,
   type AiStartRequest,
@@ -48,6 +56,13 @@ export const TASK_BUDGET_BETA = 'task-budgets-2026-03-13';
 /** Consecutive unreadable responses retried before the run ends with an error. */
 export const OUTPUT_ERROR_RETRIES = 2;
 
+/**
+ * The cache lifetime of the system block (tools and system prompt, the fixed part of every
+ * request), ADR 0125 D8. The conversation's own breakpoint keeps the default five minutes, so
+ * the longer entry comes first, as the API requires. `'5m'` here is the one-line veto.
+ */
+export const SYSTEM_CACHE_TTL: '5m' | '1h' = '1h';
+
 export interface RunAssistantOptions {
   client: ModelClient;
   conversation: ConversationState;
@@ -65,9 +80,38 @@ export interface RunAssistantResult {
   usage: AiUsage;
 }
 
-/** The text of a `limit` stop. */
-export function limitMessage(limits: AiRunLimits): string {
-  return `The run stopped at its limit (${limits.maxToolTurns} tool turns / ${limits.maxOutputTokens} output tokens). Raise the limit under Run limits and send 'continue' to carry on.`;
+/**
+ * The text of a `limit` stop: one plain sentence without numbers (ADR 0125 D10). Limits count
+ * from zero in every run, so sending "continue" carries on; the numbers travel on the `done`
+ * event's `limit` field.
+ */
+export function limitMessage(): string {
+  return 'The helper paused at its limit so the cost stays small; send "continue" to carry on.';
+}
+
+/**
+ * The limits of a run once the user has accepted a plan in it (ADR 0125 D2): each number is the
+ * larger of the run's own and the build limits; the task-budget switch stays the run's own.
+ */
+export function raisedLimits(limits: AiRunLimits, build: AiRunLimits): AiRunLimits {
+  return {
+    maxToolTurns: Math.max(limits.maxToolTurns, build.maxToolTurns),
+    maxOutputTokens: Math.max(limits.maxOutputTokens, build.maxOutputTokens),
+    taskBudget: limits.taskBudget,
+  };
+}
+
+/** Whether a tool result is a `propose_plan` answer that builds (`build_all` or `step`). */
+export function acceptsPlan(toolName: string, content: string, isError: boolean): boolean {
+  if (toolName !== 'propose_plan' || isError) return false;
+  try {
+    const value: unknown = JSON.parse(content);
+    if (typeof value !== 'object' || value === null) return false;
+    const decision = (value as { decision?: unknown }).decision;
+    return decision === 'build_all' || decision === 'step';
+  } catch {
+    return false;
+  }
 }
 
 /** Builds the params of one request (exported for tests and for main's diagnostics). */
@@ -86,7 +130,13 @@ export function buildRequest(
   const params: ModelRequest = {
     model: conversation.model,
     max_tokens: MAX_TOKENS,
-    system: [{ type: 'text', text: systemPrompt(mode), cache_control: { type: 'ephemeral' } }],
+    system: [
+      {
+        type: 'text',
+        text: systemPrompt(mode),
+        cache_control: { type: 'ephemeral', ttl: SYSTEM_CACHE_TTL },
+      },
+    ],
     tools: toolParams(),
     tool_choice: { type: 'auto' },
     thinking: { type: 'adaptive', display: 'summarized' },
@@ -95,7 +145,8 @@ export function buildRequest(
       ...(useBudget ? { task_budget: { type: 'tokens', total: limits.maxOutputTokens } } : {}),
     },
     // Automatic caching: a second breakpoint on the last cacheable block, so each request
-    // reads the conversation prefix the previous one wrote.
+    // reads the conversation prefix the previous one wrote (five minutes, after the system
+    // block's longer entry).
     cache_control: { type: 'ephemeral' },
     messages,
   };
@@ -105,13 +156,16 @@ export function buildRequest(
 }
 
 function usageOf(message: BetaMessage): AiUsage {
-  return {
+  const usage: AiUsage = {
     inputTokens: message.usage.input_tokens,
     outputTokens: message.usage.output_tokens,
     cacheReadInputTokens: message.usage.cache_read_input_tokens ?? 0,
     cacheCreationInputTokens: message.usage.cache_creation_input_tokens ?? 0,
     requests: 1,
   };
+  const written1h = message.usage.cache_creation?.ephemeral_1h_input_tokens ?? 0;
+  if (written1h > 0) usage.cacheCreation1hInputTokens = written1h;
+  return usage;
 }
 
 function assistantParam(message: BetaMessage): BetaMessageParam {
@@ -139,7 +193,9 @@ function abortPromise(signal: AbortSignal): Promise<never> {
 
 /** Runs one user message to the end. Never leaves the conversation inconsistent. */
 export async function runAssistant(options: RunAssistantOptions): Promise<RunAssistantResult> {
-  const { client, conversation, request, settings, limits, host, signal } = options;
+  const { client, conversation, request, settings, host, signal } = options;
+  // The run's limits; they rise to the build limits once a plan is accepted (ADR 0125 D2).
+  let limits = options.limits;
   let total = emptyUsage();
   let toolTurns = 0;
   let outputErrors = 0;
@@ -166,7 +222,12 @@ export async function runAssistant(options: RunAssistantOptions): Promise<RunAss
 
   const finish = (
     reason: AiDoneReason,
-    extra: { message?: string; stopDetails?: AiStopDetails } = {},
+    extra: {
+      message?: string;
+      stopDetails?: AiStopDetails;
+      errorClass?: AiErrorClass;
+      limit?: AiLimitReached;
+    } = {},
   ): RunAssistantResult => {
     host.emit({ type: 'done', reason, ...extra });
     return { reason, usage: total };
@@ -200,16 +261,21 @@ export async function runAssistant(options: RunAssistantOptions): Promise<RunAss
       }
       if (error instanceof ModelOutputError) {
         return finish('error', {
-          message: `The model's output could not be read: ${error.message}`,
+          message: `${ERROR_SENTENCES.ModelOutputError} ${error.message}`,
+          errorClass: 'ModelOutputError',
         });
       }
       if (error instanceof ModelClientError) {
-        return finish('error', { message: describeModelClientError(error) });
+        return finish('error', {
+          message: describeModelClientError(error),
+          errorClass: classifyModelClientError(error),
+        });
       }
       host.emit({
         type: 'done',
         reason: 'error',
         message: error instanceof Error ? error.message : String(error),
+        errorClass: 'Error',
       });
       throw error;
     }
@@ -237,7 +303,8 @@ export async function runAssistant(options: RunAssistantOptions): Promise<RunAss
       case 'model_context_window_exceeded':
         commitWithoutTools(message, 'not run: the context window is full');
         return finish('error', {
-          message: 'The conversation is too long for the model; start a new conversation.',
+          message: ERROR_SENTENCES.ContextWindowExceeded,
+          errorClass: 'ContextWindowExceeded',
         });
       case 'pause_turn':
         staged.push(assistantParam(message));
@@ -258,11 +325,22 @@ export async function runAssistant(options: RunAssistantOptions): Promise<RunAss
     toolTurns++;
     if (toolTurns > limits.maxToolTurns || total.outputTokens > limits.maxOutputTokens) {
       commitWithoutTools(message, 'not run: run limit reached');
-      return finish('limit', { message: limitMessage(limits) });
+      return finish('limit', {
+        message: limitMessage(),
+        limit: { toolTurns: limits.maxToolTurns, outputTokens: limits.maxOutputTokens },
+      });
     }
 
     const results = await runTools(uses, request.runId, () => ++requestSeq, host, signal);
     if (results === 'cancelled') return finish('cancelled');
+    const accepted = results.some((result, i) =>
+      acceptsPlan(
+        uses[i]?.name ?? '',
+        typeof result.content === 'string' ? result.content : '',
+        result.is_error === true,
+      ),
+    );
+    if (accepted) limits = raisedLimits(limits, settings.limits.build);
     staged.push(assistantParam(message));
     staged.push({ role: 'user', content: results });
     commit();

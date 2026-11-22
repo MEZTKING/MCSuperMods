@@ -12,8 +12,17 @@ export {
   type ModelClient,
   testApiKey,
 } from './client';
-export { describeModelClientError, ModelClientError, ModelOutputError } from './errors';
 export {
+  AI_ERROR_CLASSES,
+  type AiErrorClass,
+  classifyModelClientError,
+  describeModelClientError,
+  ERROR_SENTENCES,
+  ModelClientError,
+  ModelOutputError,
+} from './errors';
+export {
+  acceptsPlan,
   buildRequest,
   FALLBACK_BETA,
   limitMessage,
@@ -21,17 +30,30 @@ export {
   OUTPUT_ERROR_RETRIES,
   type RunAssistantOptions,
   type RunAssistantResult,
+  raisedLimits,
   runAssistant,
+  SYSTEM_CACHE_TTL,
   TASK_BUDGET_BETA,
 } from './loop';
 export {
   AI_MODELS,
   type AiModelInfo,
   type AiModelPricing,
+  type AiPriceTier,
+  type AiTypicalCost,
+  CACHE_WRITE_1H_MULTIPLIER,
   CACHE_WRITE_MULTIPLIER,
+  CHARS_PER_TOKEN,
   estimateCost,
   formatCost,
   modelInfo,
+  PRICES_CHECKED_ON,
+  PRICES_SOURCE,
+  PROMPT_PREFIX_CHARS,
+  PROMPT_PREFIX_TOKENS,
+  TOOL_USE_SYSTEM_TOKENS,
+  TYPICAL_QUESTION,
+  typicalCost,
 } from './models';
 export {
   AI_IMAGE_MAX_BASE64,
@@ -44,6 +66,7 @@ export {
   type AiEvent,
   type AiHost,
   type AiImage,
+  type AiLimitReached,
   type AiMode,
   type AiModelId,
   type AiRunLimits,
@@ -76,7 +99,10 @@ export {
 export {
   type AiModelScript,
   aiModelScriptSchema,
+  SCRIPTED_DELAY_MAX_MS,
   type ScriptedBlock,
+  type ScriptedContentTurn,
+  type ScriptedErrorTurn,
   ScriptedModelClient,
   type ScriptedTurn,
 } from './scripted-client';

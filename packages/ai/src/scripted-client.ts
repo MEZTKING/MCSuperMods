@@ -1,11 +1,14 @@
 /**
  * A {@link ModelClient} that replays a script of assistant turns (ADR 0041 D9). It emits realistic
  * stream events, assigns `toolu_<n>` ids, records every request it was sent and throws on a
- * request past the last turn. Used by unit tests, the scenario test and the e2e hook
+ * request past the last turn. A turn may wait before its first event (`delayMs`) or be an error
+ * the client throws (`{ error: { errorClass, message, status } }`), so the waiting and failing
+ * states can be tested without a key (ADR 0125 D12). Used by unit tests, the scenario test and the e2e hook
  * (`MSM_E2E_AI_SCRIPT`).
  */
 import { z } from 'zod';
 import type { ModelClient } from './client';
+import { ModelClientError } from './errors';
 import type { AiUsage } from './protocol';
 import type {
   BetaContentBlock,
@@ -22,12 +25,28 @@ export type ScriptedBlock =
   | { type: 'tool_use'; name: string; input: unknown }
   | { type: 'fallback'; from: string; to: string };
 
-export interface ScriptedTurn {
+/** A scripted answer. */
+export interface ScriptedContentTurn {
   content: ScriptedBlock[];
   /** Defaults to `tool_use` when the turn has a `tool_use` block, otherwise `end_turn`. */
   stopReason?: 'end_turn' | 'tool_use' | 'max_tokens' | 'refusal';
+  /**
+   * Usage of the turn. `cacheCreation1hInputTokens` is the part of `cacheCreationInputTokens`
+   * written for an hour; `requests` is ignored (each turn is one request).
+   */
   usage?: Partial<AiUsage>;
+  /** Milliseconds to wait before the first event; the abort signal ends the wait. */
+  delayMs?: number;
 }
+
+/** A scripted failure: the client throws a {@link ModelClientError} with these fields. */
+export interface ScriptedErrorTurn {
+  error: { errorClass: string; message: string; status?: number };
+  /** Milliseconds to wait before throwing; the abort signal ends the wait. */
+  delayMs?: number;
+}
+
+export type ScriptedTurn = ScriptedContentTurn | ScriptedErrorTurn;
 
 export interface AiModelScript {
   turns: ScriptedTurn[];
@@ -39,24 +58,41 @@ const usageSchema = z
     outputTokens: z.number().int().min(0),
     cacheReadInputTokens: z.number().int().min(0),
     cacheCreationInputTokens: z.number().int().min(0),
+    cacheCreation1hInputTokens: z.number().int().min(0),
     requests: z.number().int().min(0),
   })
   .partial();
 
+/** The longest wait a scripted turn may ask for. */
+export const SCRIPTED_DELAY_MAX_MS = 600_000;
+
+const delaySchema = z.number().int().min(0).max(SCRIPTED_DELAY_MAX_MS).optional();
+
 export const aiModelScriptSchema = z.object({
   turns: z.array(
-    z.object({
-      content: z.array(
-        z.discriminatedUnion('type', [
-          z.object({ type: z.literal('text'), text: z.string() }),
-          z.object({ type: z.literal('thinking'), thinking: z.string() }),
-          z.object({ type: z.literal('tool_use'), name: z.string(), input: z.unknown() }),
-          z.object({ type: z.literal('fallback'), from: z.string(), to: z.string() }),
-        ]),
-      ),
-      stopReason: z.enum(['end_turn', 'tool_use', 'max_tokens', 'refusal']).optional(),
-      usage: usageSchema.optional(),
-    }),
+    z.union([
+      z.object({
+        content: z.array(
+          z.discriminatedUnion('type', [
+            z.object({ type: z.literal('text'), text: z.string() }),
+            z.object({ type: z.literal('thinking'), thinking: z.string() }),
+            z.object({ type: z.literal('tool_use'), name: z.string(), input: z.unknown() }),
+            z.object({ type: z.literal('fallback'), from: z.string(), to: z.string() }),
+          ]),
+        ),
+        stopReason: z.enum(['end_turn', 'tool_use', 'max_tokens', 'refusal']).optional(),
+        usage: usageSchema.optional(),
+        delayMs: delaySchema,
+      }),
+      z.object({
+        error: z.object({
+          errorClass: z.string().min(1).max(200),
+          message: z.string().max(2000),
+          status: z.number().int().min(100).max(599).optional(),
+        }),
+        delayMs: delaySchema,
+      }),
+    ]),
   ),
 });
 
@@ -64,6 +100,25 @@ function abortError(): Error {
   const error = new Error('The request was aborted');
   error.name = 'AbortError';
   return error;
+}
+
+/** Waits `ms`, rejecting with an abort error as soon as `signal` aborts. */
+function wait(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(abortError());
+      return;
+    }
+    const onAbort = (): void => {
+      clearTimeout(timer);
+      reject(abortError());
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
 }
 
 /** Splits text into word chunks that keep their trailing whitespace. */
@@ -107,6 +162,12 @@ export class ScriptedModelClient implements ModelClient {
     }
     this.#next++;
 
+    if (turn.delayMs !== undefined && turn.delayMs > 0) await wait(turn.delayMs, signal);
+    if (signal.aborted) throw abortError();
+    if ('error' in turn) {
+      throw new ModelClientError(turn.error.errorClass, turn.error.message, turn.error.status);
+    }
+
     const content: BetaContentBlock[] = turn.content.map((block): BetaContentBlock => {
       switch (block.type) {
         case 'text':
@@ -138,6 +199,14 @@ export class ScriptedModelClient implements ModelClient {
       cacheReadInputTokens: turn.usage?.cacheReadInputTokens ?? 0,
       cacheCreationInputTokens: turn.usage?.cacheCreationInputTokens ?? 0,
     };
+    const written1h = turn.usage?.cacheCreation1hInputTokens;
+    const cacheCreation =
+      written1h === undefined
+        ? null
+        : {
+            ephemeral_1h_input_tokens: written1h,
+            ephemeral_5m_input_tokens: Math.max(0, usage.cacheCreationInputTokens - written1h),
+          };
     const message: BetaMessage = {
       id: `msg_scripted_${turnIndex + 1}`,
       type: 'message',
@@ -151,7 +220,7 @@ export class ScriptedModelClient implements ModelClient {
       stop_sequence: null,
       stop_details: null,
       usage: {
-        cache_creation: null,
+        cache_creation: cacheCreation,
         cache_creation_input_tokens: usage.cacheCreationInputTokens,
         cache_read_input_tokens: usage.cacheReadInputTokens,
         fallback_credit: null,
