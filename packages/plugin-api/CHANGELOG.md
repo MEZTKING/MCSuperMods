@@ -2,6 +2,22 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.20.0 — 2026-11-22
+
+Villager type, cauldron, command argument, game rule and statistic facts, and the vanilla block rules input of the Java project generator (ADR 0107 D6, ADR 0108 D6, ADR 0111 D2, D8, ADR 0112 D3). `API_VERSION` is `1.20.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `EntityFacts.villagerTypes?: readonly string[]`: vanilla's villager type ids, bare and sorted (seven on both built-in targets).
+- `BlockFacts.cauldrons?: readonly string[]`: vanilla's cauldron block ids, namespaced and sorted (the empty cauldron and its three filled forms), so a fluid's cauldron companion cannot take one.
+- `CommandFacts.argumentTypes` gains 32 entries after the twelve of 1.17.0, in this order: `dimension`, `time`, `team_colour`, `hex_colour`, `rotation`, `angle`, `uuid`, `objective`, `score_holder`, `score_holders`, `item_predicate`, `block_predicate`, `effect`, `enchantment`, `biome`, `biome_or_tag`, `structure`, `structure_or_tag`, `entity_type`, `particle`, `game_mode`, `text_component`, `int_range`, `identifier`, `team`, `slot`, `nbt`, `message`, `dialog`, `loot_table`, `advancement`, `recipe`. A plugin that maps every argument type name to its own code must handle them or refuse them by name.
+- `CommandArgumentFacts.keyOnly?: boolean`: true for the key types (`structure`, `structure_or_tag`, `advancement`, `recipe`), whose registries the game never sends to players, so the id is checked only when the command runs.
+- `TargetFacts.gameRules?: GameRuleFacts { kinds; categories; vanillaNames }` with `GameRuleKindName` (`'boolean' | 'integer'`): the kinds and categories a project game rule may take and vanilla's own rule ids.
+- `TargetFacts.stats?: StatFacts { formats; criterionPrefix; vanillaCustomStats }` with `StatFormatName` (`'default' | 'distance' | 'time'`): a statistic's formatters, its scoreboard criterion prefix (`minecraft.custom:`) and vanilla's own custom statistics.
+- `JavaProjectInput.vanillaBlockRules?: DefinitionInput[]`: the project's `msm/<namespace>/vanilla_block_rules/*.json` definitions, in a stable order, for generators that register the pairs on vanilla blocks. Absent means the same as an empty array.
+
+### Migration from 1.19.0
+
+None for plugins that only read target facts. A plugin that reads the new facts should declare `^1.20.0` and treat an absent value as "no facts to check against". A plugin that switches over `CommandFacts.argumentTypes` names without a default case adds the 32 new names. A test that compares `JavaProjectInput` with an exact type adds `vanillaBlockRules?`.
+
 ## 1.19.0 — 2026-11-22
 
 Block sound, vanilla pair and plant soil facts, and the data folder keys of the data kinds sweep 2 (ADR 0105 D5, ADR 0103 D5, ADR 0106 D1). `API_VERSION` is `1.19.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

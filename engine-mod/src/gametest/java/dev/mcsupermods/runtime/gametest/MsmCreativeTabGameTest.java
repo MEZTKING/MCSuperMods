@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
  * {@code tab_listed} ({@code as_listed}, icon {@code msm_test:tab_zebra}; members the block {@code tab_block}'s item, the
  * items {@code tab_apple} "Apple" and {@code tab_zebra} "Zebra", and the spawn egg of {@code monster_spawn}),
  * {@code tab_named} ({@code by_name}, a set title; items {@code tab_n1} "Cherry", {@code tab_n2} "Apricot", {@code tab_n3}
- * "Banana"), {@code tab_bad_icon} (an icon that is no item) and {@code tab_broken} (an {@code items} key: refused). The
+ * "Banana"), {@code tab_bad_icon} (an icon that is no item) and {@code tab_broken} (an empty {@code items} list: refused; B527 made {@code items} a field). The
  * item names are {@code minecraft:custom_name} components, so sorting needs no language on the server. Contents are built on
  * the server with {@code CreativeModeTab.buildContents}, which runs Fabric's output events as the client does.
  */

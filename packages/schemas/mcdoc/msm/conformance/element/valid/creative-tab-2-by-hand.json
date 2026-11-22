@@ -1,0 +1,7 @@
+{
+  "display_name": "Gems",
+  "format": 1,
+  "icon": "mymod:ruby",
+  "items": ["mymod:ruby", "minecraft:diamond", "mymod:ruby_block"],
+  "order": "by_hand"
+}

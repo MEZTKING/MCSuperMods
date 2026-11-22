@@ -1,0 +1,18 @@
+{
+  "boat_textures": {
+    "boat": "mymod:entity/boat/maple",
+    "chest_boat": "mymod:entity/chest_boat/maple",
+    "chest_boat_item": "mymod:item/maple_chest_boat"
+  },
+  "chest_boat_display_name": "Maple Boat with Chest",
+  "components": {
+    "msm:boat": {
+      "chest": true,
+      "raft": false,
+      "wood_texture": "mymod:maple"
+    }
+  },
+  "display_name": "Maple Boat",
+  "format": 1,
+  "model": "mymod:item/maple_boat"
+}

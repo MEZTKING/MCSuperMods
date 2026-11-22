@@ -81,7 +81,8 @@ public final class MobMovement {
         PathfinderMob self = mob.asMob();
         switch (movement.mode()) {
             case WALK -> {}
-            case FLY -> {
+            // HOVER and PHASE (ADR 0109 D3, B527's format) fly until B532 builds them.
+            case FLY, HOVER, PHASE -> {
                 mob.setControls(new FlyingMoveControl<>(self, FLY_MAX_TURN, movement.hovers()), null);
                 self.setNoGravity(true);
                 // A bee's and a parrot's path costs: no fire, no water.
@@ -120,7 +121,7 @@ public final class MobMovement {
         PathfinderMob self = mob.asMob();
         return switch (movement.mode()) {
             case WALK -> vanilla.get();
-            case FLY -> new WaterAvoidingRandomFlyingGoal(self, wander.speed());
+            case FLY, HOVER, PHASE -> new WaterAvoidingRandomFlyingGoal(self, wander.speed());
             case SWIM -> new RandomSwimmingGoal(self, wander.speed(), SWIM_WANDER_INTERVAL);
             case AMPHIBIOUS -> new RandomStrollGoal(self, wander.speed());
         };
@@ -131,7 +132,7 @@ public final class MobMovement {
         PathfinderMob self = mob.asMob();
         return switch (movement.mode()) {
             case WALK -> vanilla.get();
-            case FLY -> {
+            case FLY, HOVER, PHASE -> {
                 FlyingPathNavigation navigation = new FlyingPathNavigation(self, level);
                 navigation.setCanOpenDoors(false);
                 navigation.setCanFloat(true);
@@ -163,7 +164,7 @@ public final class MobMovement {
 
     /** Fliers take no fall damage (a bee's and a parrot's empty {@code checkFallDamage}, reached without overriding it). */
     public boolean causeFallDamage(double fallDistance, float multiplier, DamageSource source, BooleanSupplier vanilla) {
-        if (movement.mode() == MovementMode.FLY) {
+        if (movement.mode().flies()) {
             return false;
         }
         return vanilla.getAsBoolean();
@@ -172,7 +173,7 @@ public final class MobMovement {
     /** Swimmers breathe water unless {@code breathes_air}; amphibious mobs breathe both. */
     public boolean canBreatheUnderwater(boolean vanilla) {
         return switch (movement.mode()) {
-            case WALK, FLY -> vanilla;
+            case WALK, FLY, HOVER, PHASE -> vanilla;
             case SWIM -> !movement.breathesAir();
             case AMPHIBIOUS -> true;
         };

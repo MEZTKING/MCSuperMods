@@ -1,0 +1,40 @@
+{
+  "arguments": [
+    {
+      "name": "a_item_predicate",
+      "type": "item_predicate"
+    },
+    {
+      "name": "a_block_predicate",
+      "type": "block_predicate"
+    },
+    {
+      "name": "a_effect",
+      "type": "effect"
+    },
+    {
+      "name": "a_enchantment",
+      "type": "enchantment"
+    },
+    {
+      "name": "a_particle",
+      "type": "particle"
+    },
+    {
+      "name": "a_game_mode",
+      "type": "game_mode"
+    },
+    {
+      "name": "a_int_range",
+      "type": "int_range"
+    },
+    {
+      "name": "a_identifier",
+      "optional": true,
+      "type": "identifier"
+    }
+  ],
+  "format": 1,
+  "function": "mymod:tests",
+  "name": "msm_tests"
+}

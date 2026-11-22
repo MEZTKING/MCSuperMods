@@ -1,0 +1,40 @@
+{
+  "arguments": [
+    {
+      "name": "a_slot",
+      "type": "slot"
+    },
+    {
+      "name": "a_nbt",
+      "type": "nbt"
+    },
+    {
+      "name": "a_dialog",
+      "type": "dialog"
+    },
+    {
+      "name": "a_loot_table",
+      "type": "loot_table"
+    },
+    {
+      "name": "a_advancement",
+      "type": "advancement"
+    },
+    {
+      "name": "a_recipe",
+      "type": "recipe"
+    },
+    {
+      "name": "a_text_component",
+      "type": "text_component"
+    },
+    {
+      "name": "a_message",
+      "optional": true,
+      "type": "message"
+    }
+  ],
+  "format": 1,
+  "function": "mymod:data",
+  "name": "msm_data"
+}

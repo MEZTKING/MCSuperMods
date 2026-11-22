@@ -1,0 +1,12 @@
+{
+  "arguments": [
+    {
+      "name": "r",
+      "registry": "minecraft:mob_effect",
+      "type": "effect"
+    }
+  ],
+  "format": 1,
+  "function": "mymod:look",
+  "name": "look"
+}

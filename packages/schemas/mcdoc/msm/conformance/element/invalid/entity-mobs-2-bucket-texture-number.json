@@ -1,0 +1,20 @@
+{
+  "base": "mob",
+  "bucket_texture": 4,
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:bucketable": {},
+    "msm:movement": {
+      "mode": "swim"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "category": "drops",
+  "default": false,
+  "display_name": "Ghosts drop ectoplasm",
+  "kind": "boolean"
+}

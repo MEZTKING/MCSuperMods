@@ -178,6 +178,8 @@ describe('the trigger table', () => {
       hit: UP,
       item: 'ev:all_spawn_egg',
     });
+    // The fluid appears from its bucket, so its unplayed triggers (the bottle's) are said.
+    source.act({ type: 'use', pos: floorAt(20, 20), face: 'up', hit: UP, item: 'ev:all_bucket' });
     const said = source.trace
       .filter((entry) => entry.kind === 'onlyInMinecraft')
       .map((entry) => entry.text);

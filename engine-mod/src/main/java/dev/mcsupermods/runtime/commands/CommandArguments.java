@@ -64,6 +64,9 @@ public final class CommandArguments {
             case BLOCK_POSITION -> BlockPosArgument.blockPos();
             case ITEM -> ItemArgument.item(buildContext);
             case BLOCK -> BlockStateArgument.block(buildContext);
+            // ADR 0111 D2's types are in the format since B527; B533 builds them.
+            default -> throw new UnsupportedOperationException("argument type '" + arg.type().serialName()
+                    + "' is not built by this runtime yet");
         };
     }
 

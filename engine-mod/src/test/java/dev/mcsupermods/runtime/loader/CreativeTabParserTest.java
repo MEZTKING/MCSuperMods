@@ -44,7 +44,7 @@ class CreativeTabParserTest {
     @Test
     void closedFieldsAreErrors() {
         refused("{\"format\": 1, \"icon\": \"a:b\", \"display_name\": \"Gems\"}", "display_name");
-        refused("{\"format\": 1, \"icon\": \"a:b\", \"items\": [\"a:c\"]}", "items");
+        refused("{\"format\": 1, \"icon\": \"a:b\", \"items\": []}", "items");
         refused("{\"format\": 1}", "icon");
         refused("{\"format\": 1, \"icon\": 3}", "icon");
         refused("{\"format\": 1, \"icon\": \"a:b\", \"order\": \"random\"}", "order");

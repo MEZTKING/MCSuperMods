@@ -247,8 +247,27 @@ public final class DefinitionParser {
     }
 
     public static ParseResult<EntityDefinition> parseEntity(JsonElement json) {
-        return dropComponentsNotForBase(parse(json, EntityDefinition.KEYS, EntityComponents.KEYS, EntityDefinition.CODEC,
-                def -> new Refs(def.events(), def.components().eventReferences(), def.components().goalErrors())));
+        return dropBucketableWithoutSwim(dropComponentsNotForBase(parse(json, EntityDefinition.KEYS, EntityComponents.KEYS,
+                EntityDefinition.CODEC, def -> new Refs(def.events(), def.components().eventReferences(), def.components().goalErrors()))));
+    }
+
+    /**
+     * {@code msm:bucketable} is for {@code swim} mobs (ADR 0109 D1, limit N12): on any other movement mode it is a warning and
+     * is not applied (the validators make it an error).
+     */
+    private static ParseResult<EntityDefinition> dropBucketableWithoutSwim(ParseResult<EntityDefinition> result) {
+        if (result.definition().isEmpty()) {
+            return result;
+        }
+        EntityDefinition def = result.definition().get();
+        EntityComponents.MovementMode mode = def.components().movementOrDefault().mode();
+        if (def.components().bucketable().isEmpty() || mode == EntityComponents.MovementMode.SWIM) {
+            return result;
+        }
+        List<String> warnings = new ArrayList<>(result.warnings());
+        warnings.add("components: msm:bucketable needs msm:movement mode 'swim' (mode is '" + mode.serialName() + "'); it is not applied");
+        return new ParseResult<>(Optional.of(def.withComponents(def.components().withBucketable(Optional.empty()))), result.errors(),
+                List.copyOf(warnings));
     }
 
     /** {@code msm:tameable} and {@code msm:breedable} need the {@code animal} base: an error each, and it is not applied. */

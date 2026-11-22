@@ -271,6 +271,10 @@
     "code": "schema.unknown-field",
     "path": "/bundle_textures/selected"
   },
+  "command-2-argument-colour-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/arguments/0/type"
+  },
   "command-format-2.json": {
     "code": "schema.invalid-literal",
     "path": "/format"
@@ -282,6 +286,10 @@
   "container-rows-7.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:container/rows"
+  },
+  "creative-tab-2-items-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/items"
   },
   "creative-tab-no-icon.json": {
     "code": "schema.missing-field",
@@ -310,6 +318,14 @@
   "entity-missing-components.json": {
     "code": "schema.missing-field",
     "path": "/components"
+  },
+  "entity-mobs-2-bucket-texture-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/bucket_texture"
+  },
+  "entity-mobs-2-roost-range-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/range"
   },
   "entity-mx-base-unknown.json": {
     "code": "schema.invalid-enum",
@@ -359,6 +375,10 @@
     "code": "schema.out-of-range",
     "path": "/sounds/ambient_interval_ticks"
   },
+  "fluid-2-textures-cauldron.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/cauldron"
+  },
   "fluid-bucket-display-name-number.json": {
     "code": "schema.type-mismatch",
     "path": "/bucket_display_name"
@@ -374,6 +394,18 @@
   "fluid-textures-still-number.json": {
     "code": "schema.type-mismatch",
     "path": "/textures/still"
+  },
+  "game-rule-boolean-max.json": {
+    "code": "schema.unknown-field",
+    "path": "/max"
+  },
+  "game-rule-description-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/description"
+  },
+  "item-boat-textures-sail.json": {
+    "code": "schema.unknown-field",
+    "path": "/boat_textures/sail"
   },
   "item-compost-40.json": {
     "code": "schema.invalid-enum",
@@ -511,13 +543,29 @@
     "code": "schema.unknown-field",
     "path": "/textures/witch"
   },
+  "shoulder-2-sides-both.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:shoulder_riding/sides"
+  },
   "shoulder-side.json": {
     "code": "schema.unknown-field",
     "path": "/components/msm:shoulder_riding/side"
   },
+  "stat-display-name-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/display_name"
+  },
+  "stat-formatter-divide.json": {
+    "code": "schema.invalid-enum",
+    "path": "/formatter"
+  },
   "storage-rows-9.json": {
     "code": "schema.out-of-range",
     "path": "/components/msm:storage/rows"
+  },
+  "trader-2-reputation-gift-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/reputation/gift"
   },
   "trader-restock-weekly.json": {
     "code": "schema.invalid-enum",
@@ -526,6 +574,18 @@
   "vanilla-block-rules-burn-low.json": {
     "code": "schema.out-of-range",
     "path": "/burn/0/burn_odds"
+  },
+  "villager-type-display-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "villager-type-hat-tall.json": {
+    "code": "schema.invalid-enum",
+    "path": "/textures/hat"
+  },
+  "villager-type-textures-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures/name"
   },
   "waterlog-level.json": {
     "code": "schema.unknown-field",

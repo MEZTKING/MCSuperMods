@@ -1,0 +1,33 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:trader": {
+      "demand": false,
+      "reputation": {
+        "decay_per_day": 10,
+        "gift": 20,
+        "gift_item": "minecraft:poppy",
+        "hurt": 30,
+        "price_step": 15,
+        "trade": 3
+      },
+      "restock": "twice_a_day",
+      "trade_sets": [
+        {
+          "trade_set": "mymod:merchant/level_1"
+        }
+      ],
+      "work_site": "minecraft:lectern"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

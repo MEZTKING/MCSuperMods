@@ -1,0 +1,71 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "height": 16,
+          "must_see": false,
+          "priority": 1,
+          "retaliate": true,
+          "speed": 1.5,
+          "targets": ["minecraft:player"],
+          "type": "swoop"
+        },
+        {
+          "daylight": false,
+          "priority": 2,
+          "range": 12,
+          "type": "roost",
+          "when_idle": true
+        },
+        {
+          "note_blocks": false,
+          "priority": 3,
+          "range": 48,
+          "speed": 1.2,
+          "type": "collect_items"
+        },
+        {
+          "dig_blocks": ["minecraft:moss_block", "#minecraft:dirt"],
+          "interval_ticks": 600,
+          "loot_table": "mymod:gameplay/dig",
+          "priority": 4,
+          "speed": 0.8,
+          "type": "dig_items"
+        },
+        {
+          "below_health": 0.25,
+          "priority": 5,
+          "regenerates": false,
+          "ticks": 400,
+          "type": "play_dead"
+        },
+        {
+          "from_ground": false,
+          "item": "minecraft:gold_ingot",
+          "loot_table": "mymod:gameplay/barter",
+          "priority": 6,
+          "ticks": 80,
+          "type": "barter"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:attack": {
+      "damage": 2
+    },
+    "msm:movement": {
+      "mode": "phase"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "behaves_like": "lava",
+  "cauldron": {},
+  "format": 1,
+  "mixing": [
+    {
+      "source": "minecraft:basalt",
+      "with": "minecraft:water"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:movement": {
+      "hover_height": 4,
+      "mode": "hover"
+    },
+    "msm:rideable": {
+      "dash": {
+        "cooldown_ticks": 0,
+        "power": 2
+      }
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

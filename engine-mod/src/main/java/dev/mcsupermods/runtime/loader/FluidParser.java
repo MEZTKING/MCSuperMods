@@ -1,21 +1,28 @@
 package dev.mcsupermods.runtime.loader;
 
+import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.closed;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.listOfLength;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Action;
 import dev.mcsupermods.runtime.events.EventDefinition;
 import dev.mcsupermods.runtime.events.Events;
 import dev.mcsupermods.runtime.registry.fluid.FluidDefinition;
 import dev.mcsupermods.runtime.registry.fluid.FluidDefinition.Behaviour;
+import dev.mcsupermods.runtime.registry.fluid.FluidDefinition.Bottle;
+import dev.mcsupermods.runtime.registry.fluid.FluidDefinition.Cauldron;
 import dev.mcsupermods.runtime.registry.fluid.FluidDefinition.Flow;
+import dev.mcsupermods.runtime.registry.fluid.FluidDefinition.Mixing;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +46,10 @@ import net.minecraft.resources.Identifier;
  *       {@code on_entity_inside} and every {@code trigger_event} must name a declared event (an error otherwise; the
  *       fluid still registers, without the inside event). {@code play_animation} actions are dropped with a warning: a
  *       fluid has no animation controllers.</li>
+ *   <li>ADR 0108 (B527's format, closed like the rest): {@code mixing} is 1 to 16 rules, each a {@code with} keyword
+ *       ({@code water}, {@code lava}) or fluid id and at least one of {@code source} and {@code flowing} (a rule with
+ *       neither is dropped with a warning); {@code cauldron} {@code levels} on a lava-like fluid is ignored with a warning;
+ *       {@code bottle.on_drink} must name a declared event (an error otherwise; the bottle registers without it).</li>
  * </ol>
  */
 public final class FluidParser {
@@ -65,11 +76,45 @@ public final class FluidParser {
             optional("drop_off", intRange(1, 4)).forGetter(RawFlow::dropOff),
             optional("infinite", Codec.BOOL).forGetter(RawFlow::infinite)).apply(i, RawFlow::new)), RawFlow.KEYS);
 
+    /** {@code FluidMixing} as written. */
+    record RawMixing(String with, Optional<Identifier> source, Optional<Identifier> flowing) {
+        static final List<String> KEYS = List.of("with", "source", "flowing");
+    }
+
+    /** {@code FluidMixing.with}: the {@code water} or {@code lava} keyword, else a fluid id. */
+    static final Codec<String> WITH = Codec.STRING.validate(w -> w.equals("water") || w.equals("lava") || Identifier.tryParse(w) != null
+            ? DataResult.success(w)
+            : DataResult.error(() -> "with: '" + w + "' is not water, lava or a fluid id"));
+
+    static final Codec<RawMixing> RAW_MIXING_CODEC = closed(RecordCodecBuilder.create(i -> i.group(
+            required("with", WITH).forGetter(RawMixing::with),
+            optional("source", ID).forGetter(RawMixing::source),
+            optional("flowing", ID).forGetter(RawMixing::flowing)).apply(i, RawMixing::new)), RawMixing.KEYS);
+
+    /** {@code FluidCauldron} as written. */
+    record RawCauldron(boolean levels) {
+        static final List<String> KEYS = List.of("levels");
+    }
+
+    static final Codec<RawCauldron> CAULDRON_CODEC = closed(RecordCodecBuilder.create(i -> i.group(
+            MsmCodecs.optional("levels", Codec.BOOL, false).forGetter(RawCauldron::levels)).apply(i, RawCauldron::new)), RawCauldron.KEYS);
+
+    /** {@code FluidBottle} as written. */
+    record RawBottle(Optional<ItemComponents.Food> food, List<ItemComponents.ConsumeEffect> effects, Optional<String> onDrink) {
+        static final List<String> KEYS = List.of("food", "effects", "on_drink");
+    }
+
+    static final Codec<RawBottle> BOTTLE_CODEC = closed(RecordCodecBuilder.create(i -> i.group(
+            optional("food", ItemComponents.Food.CODEC).forGetter(RawBottle::food),
+            MsmCodecs.optional("effects", ItemComponents.ConsumeEffect.CODEC.listOf(), List.of()).forGetter(RawBottle::effects),
+            optional("on_drink", Codec.STRING).forGetter(RawBottle::onDrink)).apply(i, RawBottle::new)), RawBottle.KEYS);
+
     /** {@code Fluid} as written, before the defaults. */
     record Raw(Optional<Behaviour> behavesLike, Optional<RawFlow> flow, Optional<Integer> light, Optional<Integer> tint,
-            Optional<Float> explosionResistance, Optional<String> onEntityInside, Events events) {
+            Optional<Float> explosionResistance, Optional<String> onEntityInside, Events events, Optional<List<RawMixing>> mixing,
+            Optional<RawCauldron> cauldron, Optional<RawBottle> bottle) {
         static final List<String> KEYS = List.of("format", "behaves_like", "flow", "light", "tint", "explosion_resistance",
-                "on_entity_inside", "events");
+                "on_entity_inside", "events", "mixing", "cauldron", "bottle");
     }
 
     static final Codec<Raw> CODEC = closed(RecordCodecBuilder.create(i -> i.group(
@@ -79,7 +124,10 @@ public final class FluidParser {
             optional("tint", intRange(0, 0xFFFFFF)).forGetter(Raw::tint),
             optional("explosion_resistance", floatAtLeast(0)).forGetter(Raw::explosionResistance),
             optional("on_entity_inside", Codec.STRING).forGetter(Raw::onEntityInside),
-            MsmCodecs.optional("events", Events.CODEC, Events.NONE).forGetter(Raw::events)).apply(i, Raw::new)), Raw.KEYS);
+            MsmCodecs.optional("events", Events.CODEC, Events.NONE).forGetter(Raw::events),
+            optional("mixing", listOfLength(RAW_MIXING_CODEC, 1, 16)).forGetter(Raw::mixing),
+            optional("cauldron", CAULDRON_CODEC).forGetter(Raw::cauldron),
+            optional("bottle", BOTTLE_CODEC).forGetter(Raw::bottle)).apply(i, Raw::new)), Raw.KEYS);
 
     /**
      * The fluid definitions among {@code definitions} that parse, by id in scan order; problems are added to
@@ -136,8 +184,41 @@ public final class FluidParser {
         }
         Behaviour behaviour = raw.behavesLike().orElse(Behaviour.WATER);
         Flow flow = raw.flow().map(f -> f.resolve(Flow.defaults(behaviour))).orElse(Flow.defaults(behaviour));
+        List<Mixing> mixing = new ArrayList<>();
+        List<RawMixing> rules = raw.mixing().orElse(List.of());
+        for (int n = 0; n < rules.size(); n++) {
+            RawMixing rule = rules.get(n);
+            if (rule.source().isEmpty() && rule.flowing().isEmpty()) {
+                warnings.add("mixing[" + n + "]: names neither source nor flowing; the rule is dropped");
+                continue;
+            }
+            boolean keyword = rule.with().equals("water") || rule.with().equals("lava");
+            mixing.add(new Mixing(keyword ? Optional.of(rule.with().equals("water") ? Behaviour.WATER : Behaviour.LAVA) : Optional.empty(),
+                    keyword ? Optional.empty() : Optional.of(Identifier.parse(rule.with())), rule.source(), rule.flowing()));
+        }
+        Optional<Cauldron> cauldron = raw.cauldron().map(c -> {
+            if (c.levels() && behaviour == Behaviour.LAVA) {
+                warnings.add("cauldron: levels is ignored on a lava-like fluid; its cauldron is full only");
+                return new Cauldron(false);
+            }
+            return new Cauldron(c.levels());
+        });
+        Optional<Bottle> bottle = raw.bottle().map(b -> {
+            Optional<Identifier> drink = Optional.empty();
+            if (b.onDrink().isPresent()) {
+                String ref = b.onDrink().get();
+                Identifier id = Identifier.tryParse(ref);
+                if (id == null || !events.contains(id)) {
+                    errors.add("bottle: on_drink: names event " + ref + ", which is not declared in events (or was dropped)");
+                } else {
+                    drink = Optional.of(id);
+                }
+            }
+            return new Bottle(b.food(), b.effects(), drink);
+        });
         FluidDefinition def = new FluidDefinition(behaviour, flow, raw.light().orElse(behaviour.defaultLight()), raw.tint(),
-                raw.explosionResistance().orElse(FluidDefinition.DEFAULT_EXPLOSION_RESISTANCE), inside, events);
+                raw.explosionResistance().orElse(FluidDefinition.DEFAULT_EXPLOSION_RESISTANCE), inside, events, List.copyOf(mixing),
+                cauldron, bottle);
         return new ParseResult<>(Optional.of(def), List.copyOf(errors), List.copyOf(warnings));
     }
 }

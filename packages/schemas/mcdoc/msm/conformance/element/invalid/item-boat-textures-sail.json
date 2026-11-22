@@ -1,0 +1,9 @@
+{
+  "boat_textures": {
+    "sail": "mymod:entity/sail"
+  },
+  "components": {
+    "msm:boat": {}
+  },
+  "format": 1
+}

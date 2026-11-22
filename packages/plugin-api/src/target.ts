@@ -391,6 +391,13 @@ export interface BlockFacts {
    * runtime. Since 1.19.0 (ADR 0103 D5).
    */
   plantSoils?: PlantSoilFacts;
+  /**
+   * The namespaced ids of vanilla's cauldron blocks, sorted (for example `minecraft:cauldron`
+   * and `minecraft:water_cauldron`): the empty cauldron and every filled one. A fluid's cauldron
+   * companion `<namespace>:<path>_cauldron` may not take one of these ids, and the Fluid Studio
+   * lists them. Optional: a target without them skips the check. Since 1.20.0 (ADR 0108 D6).
+   */
+  cauldrons?: readonly string[];
 }
 
 /**
@@ -498,6 +505,14 @@ export interface CommandArgumentFacts {
    * Range limits (`min`, `max`) are the command's own and never appear here.
    */
   properties?: Readonly<Record<string, string>>;
+  /**
+   * True when the argument names an id of a registry the game does not send to players (a
+   * structure, an advancement, a recipe): the parser takes any id (a key type) and the game
+   * checks it only when the command runs, so a typing player gets no completions from the
+   * registry. A registry-checked parser over such a registry would disconnect every player.
+   * Absent means false. Since 1.20.0 (ADR 0111 D2, as amended after the spike).
+   */
+  keyOnly?: boolean;
 }
 
 /**
@@ -512,11 +527,67 @@ export interface CommandFacts {
    */
   vanillaNames: readonly string[];
   /**
-   * MSM's twelve argument type names (`integer`, `number`, `word`, `text`, `boolean`, `player`,
-   * `players`, `entity`, `position`, `block_position`, `item`, `block`), each mapped to the
-   * game's parser and properties.
+   * MSM's argument type names, each mapped to the game's parser and properties: the twelve of
+   * 1.17.0 (`integer`, `number`, `word`, `text`, `boolean`, `player`, `players`, `entity`,
+   * `position`, `block_position`, `item`, `block`), then (since 1.20.0, ADR 0111 D2) the 32 the
+   * game takes on every built-in target and sends to players' command trees: `dimension`,
+   * `time`, `team_colour`, `hex_colour`, `rotation`, `angle`, `uuid`, `objective`,
+   * `score_holder`, `score_holders`, `item_predicate`, `block_predicate`, `effect`,
+   * `enchantment`, `biome`, `biome_or_tag`, `structure`, `structure_or_tag`, `entity_type`,
+   * `particle`, `game_mode`, `text_component`, `int_range`, `identifier`, `team`, `slot`, `nbt`,
+   * `message`, `dialog`, `loot_table`, `advancement` and `recipe`. The record's order is that
+   * order. `text` and `message` take the rest of the line, so only the last argument may have
+   * them.
    */
   argumentTypes: Readonly<Record<string, CommandArgumentFacts>>;
+}
+
+/**
+ * The kind of value a game rule holds: vanilla's two. Since 1.20.0 (ADR 0111 D5).
+ */
+export type GameRuleKindName = 'boolean' | 'integer';
+
+/**
+ * Game rule facts of a target: what the `msm:game_rule` kind and its validators check against.
+ * Since 1.20.0 (ADR 0111 D5, D8, as amended after the spike).
+ */
+export interface GameRuleFacts {
+  /** The kinds of value a game rule may hold, `boolean` and `integer`. */
+  kinds: readonly GameRuleKindName[];
+  /**
+   * The categories of the game rule screen, bare and in the game's order (for example `player`,
+   * `mobs` and `misc`); a game rule's `category` is one of them.
+   */
+  categories: readonly string[];
+  /**
+   * Every vanilla game rule id without `minecraft:`, sorted (for example `keep_inventory`). A
+   * project game rule always has its own namespace, so these never clash; the Studio shows them
+   * beside the project's rules.
+   */
+  vanillaNames: readonly string[];
+}
+
+/**
+ * How a statistic's number is shown: vanilla's formatters of a custom statistic. Since 1.20.0
+ * (ADR 0111 D6).
+ */
+export type StatFormatName = 'default' | 'distance' | 'time';
+
+/**
+ * Statistic facts of a target: what the `msm:stat` kind and its validators check against, and
+ * how a statistic is named as a scoreboard criterion. Since 1.20.0 (ADR 0111 D6, D8, as amended
+ * after the spike).
+ */
+export interface StatFacts {
+  /** The formatters a statistic may use, `default`, `distance` and `time`. */
+  formats: readonly StatFormatName[];
+  /**
+   * What a custom statistic's scoreboard criterion starts with, followed by its namespace, a
+   * dot and its path: `minecraft.custom:` gives `minecraft.custom:<namespace>.<path>`.
+   */
+  criterionPrefix: string;
+  /** Every vanilla custom statistic id without `minecraft:`, sorted (for example `jump`). */
+  vanillaCustomStats: readonly string[];
 }
 
 /**
@@ -561,6 +632,13 @@ export interface EntityFacts {
    * without it skips the checks. Since 1.18.0 (ADR 0098 D1, D5, as amended after the spike).
    */
   vanillaTradeSets?: Readonly<Record<string, VanillaTradeSetFacts>>;
+  /**
+   * The bare ids of vanilla's villager types, sorted (for example `plains` and `taiga`): the
+   * looks villagers take from their biome. A project villager type has its own namespace, so it
+   * never replaces one; the Villager type Studio lists them. Optional: a target without them
+   * skips the listing. Since 1.20.0 (ADR 0107 D6).
+   */
+  villagerTypes?: readonly string[];
 }
 
 /**
@@ -963,6 +1041,13 @@ export interface JavaProjectInput {
    * the same as an empty array. Since 1.18.0 (ADR 0096 D6).
    */
   creativeTabs?: DefinitionInput[];
+  /**
+   * The project's rules for vanilla blocks (`msm/<namespace>/vanilla_block_rules/*.json`), in a
+   * stable order, for generators that register the strip, flatten, till, wax, age and burn pairs
+   * on vanilla blocks. Optional: absent means the same as an empty array. Since 1.20.0 (ADR 0105
+   * D4, ADR 0112 D3).
+   */
+  vanillaBlockRules?: DefinitionInput[];
   /** `true` when the project has entities and the target has {@link TargetFacts.geckolib} facts. */
   geckolib: boolean;
 }
@@ -1120,6 +1205,18 @@ export interface TargetFacts {
    * reading them must handle their absence. Since 1.17.0 (ADR 0096 D6).
    */
   commands?: CommandFacts;
+  /**
+   * Game rule facts: the kinds and categories a project game rule may take and vanilla's own
+   * rule names. Optional: a target without them skips the checks that need them. Since 1.20.0
+   * (ADR 0111 D5, D8).
+   */
+  gameRules?: GameRuleFacts;
+  /**
+   * Statistic facts: the formatters a project statistic may use, its scoreboard criterion and
+   * vanilla's own custom statistics. Optional: a target without them skips the checks that need
+   * them. Since 1.20.0 (ADR 0111 D6, D8).
+   */
+  stats?: StatFacts;
 }
 
 /**

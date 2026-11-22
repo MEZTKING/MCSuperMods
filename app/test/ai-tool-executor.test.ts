@@ -271,7 +271,8 @@ describe('createToolExecutor: read tools', () => {
     // The command facts (plugin API 1.17.0): vanilla's command names and the argument types.
     expect(value.commands).toEqual(fixture.session.target.commands);
     expect(value.commands.vanillaNames).toContain('give');
-    expect(JSON.stringify(value.commands).length).toBeLessThan(2_000);
+    // 44 argument types since plugin API 1.20.0 (B527).
+    expect(JSON.stringify(value.commands).length).toBeLessThan(4_000);
     // Batch 2 facts (plugin API 1.18.0) arrive with the entities, blocks and worldgen facts.
     expect(value.entities.tradeSounds).toEqual(fixture.session.target.entities?.tradeSounds);
     expect(value.entities.vanillaTradeSets['minecraft:wandering_trader/common']).toBeDefined();

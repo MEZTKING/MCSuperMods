@@ -1,0 +1,11 @@
+{
+  "components": {
+    "msm:boat": {
+      "chest": true,
+      "raft": false,
+      "wood_texture": "mymod:maple"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}

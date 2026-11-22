@@ -1,0 +1,23 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "dig_blocks": ["minecraft:dirt"],
+          "type": "dig_items"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

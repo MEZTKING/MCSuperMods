@@ -3,7 +3,10 @@ package dev.mcsupermods.runtime.components;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.ID_OR_TAG;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.floatAtLeast;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.floatRange;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.intAtLeast;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.intRange;
+import static dev.mcsupermods.runtime.loader.MsmCodecs.listOfLength;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import static dev.mcsupermods.runtime.loader.MsmCodecs.required;
 
@@ -20,7 +23,9 @@ import net.minecraft.resources.Identifier;
  * One AI goal of {@code msm:ai_goals}, selected by {@code type} (dispatcher {@code msm:ai_goal} in
  * {@code definition.mcdoc}). Every goal takes an optional {@code priority}; absent means its
  * position in the list. The goals of ADR 0070 D5 ({@code ranged_attack}, {@code tempt}, {@code panic},
- * {@code leap_at_target}) are closed: an unknown key drops the goal with an error naming the key.
+ * {@code leap_at_target}) are closed: an unknown key drops the goal with an error naming the key. So are the goals of
+ * ADR 0109 D3, D4 ({@code swoop}, {@code roost}, {@code collect_items}, {@code dig_items}, {@code play_dead},
+ * {@code barter}; B527's format, built by B532: until then {@code MobGoals} adds nothing for them).
  */
 public sealed interface Goal {
     Type type();
@@ -44,7 +49,13 @@ public sealed interface Goal {
         RANGED_ATTACK("ranged_attack", RangedAttack.CODEC),
         TEMPT("tempt", Tempt.CODEC),
         PANIC("panic", Panic.CODEC),
-        LEAP_AT_TARGET("leap_at_target", LeapAtTarget.CODEC);
+        LEAP_AT_TARGET("leap_at_target", LeapAtTarget.CODEC),
+        SWOOP("swoop", Swoop.CODEC),
+        ROOST("roost", Roost.CODEC),
+        COLLECT_ITEMS("collect_items", CollectItems.CODEC),
+        DIG_ITEMS("dig_items", DigItems.CODEC),
+        PLAY_DEAD("play_dead", PlayDead.CODEC),
+        BARTER("barter", Barter.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Goal> codec;
@@ -231,6 +242,133 @@ public sealed interface Goal {
         @Override
         public Type type() {
             return Type.LEAP_AT_TARGET;
+        }
+    }
+
+    /**
+     * Circles {@code height} blocks above its target, then dives at it with the mob's {@code msm:attack}, as a phantom
+     * (ADR 0109 D3). Speed 1, height 2 to 32 (default 12, verify at implementation), targets and the two flags as
+     * {@code melee_attack}.
+     */
+    record Swoop(Optional<Integer> priority, float speed, float height, List<Identifier> targets, boolean mustSee, boolean retaliate)
+            implements Goal {
+        public static final float DEFAULT_HEIGHT = 12.0f;
+        static final MapCodec<Swoop> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(Swoop::priority),
+                optional("speed", floatAtLeast(0), 1.0f).forGetter(Swoop::speed),
+                optional("height", floatRange(2.0f, 32.0f), DEFAULT_HEIGHT).forGetter(Swoop::height),
+                optional("targets", ID.listOf(), List.of()).forGetter(Swoop::targets),
+                optional("must_see", Codec.BOOL, true).forGetter(Swoop::mustSee),
+                optional("retaliate", Codec.BOOL, false).forGetter(Swoop::retaliate)).apply(i, Swoop::new)),
+                "speed", "height", "targets", "must_see", "retaliate");
+
+        @Override
+        public Type type() {
+            return Type.SWOOP;
+        }
+
+        @Override
+        public List<Identifier> entityTypes() {
+            return targets;
+        }
+    }
+
+    /**
+     * Hangs upside down under a block, as a bat (ADR 0109 D3 as amended: one synced flag). {@code daylight} default true,
+     * {@code when_idle} default false, {@code range} 1 to 16 (default 8).
+     */
+    record Roost(Optional<Integer> priority, boolean daylight, boolean whenIdle, int range) implements Goal {
+        static final MapCodec<Roost> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(Roost::priority),
+                optional("daylight", Codec.BOOL, true).forGetter(Roost::daylight),
+                optional("when_idle", Codec.BOOL, false).forGetter(Roost::whenIdle),
+                optional("range", intRange(1, 16), 8).forGetter(Roost::range)).apply(i, Roost::new)),
+                "daylight", "when_idle", "range");
+
+        @Override
+        public Type type() {
+            return Type.ROOST;
+        }
+    }
+
+    /**
+     * Brings items like the one it was given to its owner or a note block it heard, as an allay (ADR 0109 D4). Speed 1,
+     * {@code range} 1 to 64 (default 32), {@code note_blocks} default true.
+     */
+    record CollectItems(Optional<Integer> priority, float speed, float range, boolean noteBlocks) implements Goal {
+        static final MapCodec<CollectItems> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(CollectItems::priority),
+                optional("speed", floatAtLeast(0), 1.0f).forGetter(CollectItems::speed),
+                optional("range", floatRange(1.0f, 64.0f), 32.0f).forGetter(CollectItems::range),
+                optional("note_blocks", Codec.BOOL, true).forGetter(CollectItems::noteBlocks)).apply(i, CollectItems::new)),
+                "speed", "range", "note_blocks");
+
+        @Override
+        public Type type() {
+            return Type.COLLECT_ITEMS;
+        }
+    }
+
+    /**
+     * Digs on its {@code dig_blocks} (1 to 64 ids or {@code #}-prefixed tags) and drops a roll of {@code loot_table}, as a
+     * sniffer (ADR 0109 D4). {@code interval_ticks} at least 20 (default 240, verify at implementation), speed 1.
+     */
+    record DigItems(Optional<Integer> priority, List<String> digBlocks, Identifier lootTable, int intervalTicks, float speed)
+            implements Goal {
+        public static final int DEFAULT_INTERVAL_TICKS = 240;
+        static final MapCodec<DigItems> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(DigItems::priority),
+                required("dig_blocks", listOfLength(ID_OR_TAG, 1, 64)).forGetter(DigItems::digBlocks),
+                required("loot_table", ID).forGetter(DigItems::lootTable),
+                optional("interval_ticks", intAtLeast(20), DEFAULT_INTERVAL_TICKS).forGetter(DigItems::intervalTicks),
+                optional("speed", floatAtLeast(0), 1.0f).forGetter(DigItems::speed)).apply(i, DigItems::new)),
+                "dig_blocks", "loot_table", "interval_ticks", "speed");
+
+        @Override
+        public Type type() {
+            return Type.DIG_ITEMS;
+        }
+    }
+
+    /**
+     * Plays dead when hurt below {@code below_health} of its maximum health (0.01 to 1, default 0.5, verify at
+     * implementation), for {@code ticks} (20 to 1200, default 200), regenerating unless {@code regenerates} is false, as an
+     * axolotl (ADR 0109 D4).
+     */
+    record PlayDead(Optional<Integer> priority, float belowHealth, int ticks, boolean regenerates) implements Goal {
+        public static final float DEFAULT_BELOW_HEALTH = 0.5f;
+        public static final int DEFAULT_TICKS = 200;
+        static final MapCodec<PlayDead> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(PlayDead::priority),
+                optional("below_health", floatRange(0.01f, 1.0f), DEFAULT_BELOW_HEALTH).forGetter(PlayDead::belowHealth),
+                optional("ticks", intRange(20, 1200), DEFAULT_TICKS).forGetter(PlayDead::ticks),
+                optional("regenerates", Codec.BOOL, true).forGetter(PlayDead::regenerates)).apply(i, PlayDead::new)),
+                "below_health", "ticks", "regenerates");
+
+        @Override
+        public Type type() {
+            return Type.PLAY_DEAD;
+        }
+    }
+
+    /**
+     * Takes {@code item} (an id or {@code #}-prefixed tag) and after {@code ticks} (1 to 1200, default 120) drops a roll of
+     * {@code loot_table}, as a piglin (ADR 0109 D4 as amended: the {@code barter} loot context with the mob only).
+     * {@code from_ground} default true.
+     */
+    record Barter(Optional<Integer> priority, String item, Identifier lootTable, int ticks, boolean fromGround) implements Goal {
+        public static final int DEFAULT_TICKS = 120;
+        static final MapCodec<Barter> CODEC = closed(RecordCodecBuilder.mapCodec(i -> i.group(
+                priorityField().forGetter(Barter::priority),
+                required("item", ID_OR_TAG).forGetter(Barter::item),
+                required("loot_table", ID).forGetter(Barter::lootTable),
+                optional("ticks", intRange(1, 1200), DEFAULT_TICKS).forGetter(Barter::ticks),
+                optional("from_ground", Codec.BOOL, true).forGetter(Barter::fromGround)).apply(i, Barter::new)),
+                "item", "loot_table", "ticks", "from_ground");
+
+        @Override
+        public Type type() {
+            return Type.BARTER;
         }
     }
 

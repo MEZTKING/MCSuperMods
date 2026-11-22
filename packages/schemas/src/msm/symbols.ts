@@ -52,6 +52,12 @@ import { parseVanillaMcdocSymbols, type VanillaMcdocSymbols } from '../symbols/p
  * - `vanillaBlockRules` / `vanillaBlockRulesDefinition`: element data of the
  *   `msm:vanilla_block_rules` addition kind (the definition as written) and the runtime
  *   definition written to `msm/<ns>/vanilla_block_rules/<path>.json` (ADR 0105 D4).
+ * - `villagerType` / `villagerTypeDefinition`, `gameRule` / `gameRuleDefinition`, `stat` /
+ *   `statDefinition`: element data of the `msm:villager_type`, `msm:game_rule` and `msm:stat`
+ *   kinds (the definition with `format` optional; villager types add `textures`, game rules
+ *   `display_name` and `description`, statistics `display_name`) and the runtime definitions
+ *   written to `msm/<ns>/villager_type/<path>.json`, `msm/<ns>/game_rule/<path>.json` and
+ *   `msm/<ns>/stat/<path>.json` (ADR 0107 D5, ADR 0111 D5, D6).
  * - `rules`: element data of the `msm:rules` kind, a rule book (ADR 0082 D2, D5). Editor-only:
  *   the rules plugin compiles it at lowering time into events and a script, so no runtime
  *   definition exists and the conformance corpus has no rule book files.
@@ -96,6 +102,12 @@ export const MSM_SCHEMA_REFS = {
   fluidDefinition: 'msm:fluid_definition',
   vanillaBlockRules: 'msm:vanilla_block_rules',
   vanillaBlockRulesDefinition: 'msm:vanilla_block_rules_definition',
+  villagerType: 'msm:villager_type',
+  villagerTypeDefinition: 'msm:villager_type_definition',
+  gameRule: 'msm:game_rule',
+  gameRuleDefinition: 'msm:game_rule_definition',
+  stat: 'msm:stat',
+  statDefinition: 'msm:stat_definition',
 } as const;
 
 /** The mcdoc type path behind each MSM schema reference. */
@@ -137,6 +149,12 @@ export const MSM_TYPE_PATHS = {
   fluidDefinition: '::msm::definition::Fluid',
   vanillaBlockRules: '::msm::element::VanillaBlockRules',
   vanillaBlockRulesDefinition: '::msm::definition::VanillaBlockRules',
+  villagerType: '::msm::element::VillagerType',
+  villagerTypeDefinition: '::msm::definition::VillagerType',
+  gameRule: '::msm::element::GameRule',
+  gameRuleDefinition: '::msm::definition::GameRule',
+  stat: '::msm::element::Stat',
+  statDefinition: '::msm::definition::Stat',
   action: '::msm::action::Action',
 } as const;
 
@@ -179,6 +197,12 @@ export const MSM_SCHEMA_ALIASES: Readonly<Record<string, string>> = Object.freez
   [MSM_SCHEMA_REFS.fluidDefinition]: MSM_TYPE_PATHS.fluidDefinition,
   [MSM_SCHEMA_REFS.vanillaBlockRules]: MSM_TYPE_PATHS.vanillaBlockRules,
   [MSM_SCHEMA_REFS.vanillaBlockRulesDefinition]: MSM_TYPE_PATHS.vanillaBlockRulesDefinition,
+  [MSM_SCHEMA_REFS.villagerType]: MSM_TYPE_PATHS.villagerType,
+  [MSM_SCHEMA_REFS.villagerTypeDefinition]: MSM_TYPE_PATHS.villagerTypeDefinition,
+  [MSM_SCHEMA_REFS.gameRule]: MSM_TYPE_PATHS.gameRule,
+  [MSM_SCHEMA_REFS.gameRuleDefinition]: MSM_TYPE_PATHS.gameRuleDefinition,
+  [MSM_SCHEMA_REFS.stat]: MSM_TYPE_PATHS.stat,
+  [MSM_SCHEMA_REFS.statDefinition]: MSM_TYPE_PATHS.statDefinition,
 });
 
 let parsed: VanillaMcdocSymbols | undefined;

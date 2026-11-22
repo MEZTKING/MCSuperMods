@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "mixing": [
+    {
+      "result": "minecraft:stone",
+      "with": "water"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:trader": {
+      "reputation": true,
+      "trade_sets": [
+        {
+          "trade_set": "mymod:merchant/level_1"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

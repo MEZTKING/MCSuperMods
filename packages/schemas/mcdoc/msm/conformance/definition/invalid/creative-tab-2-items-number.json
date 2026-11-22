@@ -1,5 +1,6 @@
 {
   "format": 1,
   "icon": "mymod:ruby",
-  "items": ["mymod:ruby"]
+  "items": [3],
+  "order": "by_hand"
 }

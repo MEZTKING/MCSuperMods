@@ -725,9 +725,47 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         'block_position',
         'item',
         'block',
+        // ADR 0111 D2 (plugin API 1.20.0), in B525's order.
+        'dimension',
+        'time',
+        'team_colour',
+        'hex_colour',
+        'rotation',
+        'angle',
+        'uuid',
+        'objective',
+        'score_holder',
+        'score_holders',
+        'item_predicate',
+        'block_predicate',
+        'effect',
+        'enchantment',
+        'biome',
+        'biome_or_tag',
+        'structure',
+        'structure_or_tag',
+        'entity_type',
+        'particle',
+        'game_mode',
+        'text_component',
+        'int_range',
+        'identifier',
+        'team',
+        'slot',
+        'nbt',
+        'message',
+        'dialog',
+        'loot_table',
+        'advancement',
+        'recipe',
       ]);
       // Every parser and its properties occur together on an argument node of the tree, and
-      // every parser is a registered command argument type.
+      // every parser is a registered command argument type. Two pairs have no node in the
+      // vanilla tree, as no vanilla command takes them, yet B525 registered them and saw the
+      // client parse them: `angle` on both targets, and on 26.4 `effect` (vanilla's `/effect`
+      // takes `resource_or_tag` there). Their registry, when they have one, is still a vendored
+      // registry the game sends to players.
+      const notInTree = new Set(['angle', ...(target.id === 'mc-26.4' ? ['effect'] : [])]);
       const seen = new Set<string>();
       const walk = (node: CommandNode): void => {
         if (node.type === 'argument' && node.parser !== undefined) {
@@ -744,15 +782,73 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         const properties = Object.fromEntries(
           Object.entries(argument.properties ?? {}).sort(([a], [b]) => a.localeCompare(b)),
         );
-        expect(seen, name).toContain(`${argument.parser} ${JSON.stringify(properties)}`);
+        const pair = `${argument.parser} ${JSON.stringify(properties)}`;
+        if (notInTree.has(name)) expect(seen, name).not.toContain(pair);
+        else expect(seen, name).toContain(pair);
         const registryId = argument.parser.startsWith('minecraft:')
           ? argument.parser.slice('minecraft:'.length)
           : argument.parser;
         expect(argumentTypes, name).toContain(registryId);
+        const registry = argument.properties?.registry;
+        if (registry !== undefined) {
+          expect(registries[registry.slice('minecraft:'.length)], name).toBeDefined();
+        }
+      }
+      // The key types (ADR 0111 D2 as amended): registries the game never sends to players.
+      expect(
+        Object.entries(facts?.argumentTypes ?? {})
+          .filter(([, argument]) => argument.keyOnly === true)
+          .map(([name]) => name),
+      ).toEqual(['structure', 'structure_or_tag', 'advancement', 'recipe']);
+      for (const name of ['structure', 'structure_or_tag', 'advancement', 'recipe']) {
+        expect(facts?.argumentTypes[name]?.parser, name).toMatch(
+          /^minecraft:resource(_or_tag)?_key$/,
+        );
       }
       // Copied by `targetFacts` with the other data fields.
       expect(targetFacts(target.id)?.commands).toEqual(target.commands);
       expect(targetFacts(target.id)?.blocks?.modelTemplates).toEqual(target.blocks?.modelTemplates);
+    });
+
+    it('lists villager type, cauldron, game rule and statistic facts the vendored registries know (ADR 0107 D6, ADR 0108 D6, ADR 0111 D8)', async () => {
+      const registries = (await readVendoredJson(
+        bundle,
+        'mcmetaRegistries',
+        nodeReadFile,
+      )) as Record<string, string[]>;
+      expect(target.entities?.villagerTypes).toEqual([...(registries.villager_type ?? [])].sort());
+      expect(target.entities?.villagerTypes).toHaveLength(7);
+      expect(target.blocks?.cauldrons).toEqual(
+        (registries.block ?? [])
+          .filter((id) => id.includes('cauldron'))
+          .map((id) => `minecraft:${id}`)
+          .sort(),
+      );
+      expect(target.blocks?.cauldrons).toEqual([
+        'minecraft:cauldron',
+        'minecraft:lava_cauldron',
+        'minecraft:powder_snow_cauldron',
+        'minecraft:water_cauldron',
+      ]);
+      expect(target.gameRules?.kinds).toEqual(['boolean', 'integer']);
+      expect(target.gameRules?.categories).toEqual([
+        'player',
+        'mobs',
+        'spawning',
+        'drops',
+        'updates',
+        'chat',
+        'misc',
+      ]);
+      expect(target.gameRules?.vanillaNames).toEqual([...(registries.game_rule ?? [])].sort());
+      expect(target.gameRules?.vanillaNames).toContain('keep_inventory');
+      expect(target.stats?.formats).toEqual(['default', 'distance', 'time']);
+      expect(target.stats?.criterionPrefix).toBe('minecraft.custom:');
+      expect(target.stats?.vanillaCustomStats).toEqual([...(registries.custom_stat ?? [])].sort());
+      expect(target.stats?.vanillaCustomStats).toContain('jump');
+      // Copied by `targetFacts` with the other data fields.
+      expect(targetFacts(target.id)?.gameRules).toEqual(target.gameRules);
+      expect(targetFacts(target.id)?.stats).toEqual(target.stats);
     });
 
     it('loads its vanilla-mcdoc export through @msm/schemas', async () => {

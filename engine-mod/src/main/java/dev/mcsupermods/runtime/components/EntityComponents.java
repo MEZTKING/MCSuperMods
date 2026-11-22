@@ -56,12 +56,13 @@ public record EntityComponents(
         Optional<BossBar> bossBar,
         Optional<TraderParser.Trader> trader,
         Optional<StorageParser.Storage> storage,
-        Optional<StorageParser.ShoulderRiding> shoulderRiding) {
+        Optional<StorageParser.ShoulderRiding> shoulderRiding,
+        Optional<Bucketable> bucketable) {
 
     public static final List<String> KEYS = List.of("msm:animated_model", "msm:health", "msm:movement", "msm:attack", "msm:ai_goals",
             "msm:on_hurt", "msm:on_death", "msm:on_interact", "msm:on_tick", "msm:on_spawn", "msm:ranged_attack", "msm:tameable",
             "msm:breedable", "msm:rideable", "msm:variants", "msm:boss_bar", "msm:trader", "msm:storage",
-            "msm:shoulder_riding");
+            "msm:shoulder_riding", "msm:bucketable");
 
     /** Components that need {@code base} {@code animal} (ADR 0071 D1, D2). */
     public static final List<String> ANIMAL_ONLY = List.of("msm:tameable", "msm:breedable");
@@ -90,25 +91,33 @@ public record EntityComponents(
             .apply(i, (model, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn, rangedAttack, tameable,
                     breedable, rideable, variants, bossBar) -> new EntityComponents(model, health, movement, attack, aiGoals, onHurt,
                     onDeath, onInteract, onTick, onSpawn, rangedAttack, tameable, breedable, rideable, variants, bossBar,
-                    Optional.empty(), Optional.empty(), Optional.empty())));
+                    Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty())));
 
     public static final Codec<EntityComponents> CODEC = RecordCodecBuilder.create(i -> i.group(
             FIRST.forGetter(c -> c),
             optional("msm:trader", TraderParser.Trader.CODEC).forGetter(EntityComponents::trader), // ADR 0098 D1, B474
             optional("msm:storage", StorageParser.Storage.CODEC).forGetter(EntityComponents::storage), // ADR 0098 D3, B479
-            optional("msm:shoulder_riding", StorageParser.ShoulderRiding.CODEC).forGetter(EntityComponents::shoulderRiding)) // D4, B479
-            .apply(i, (first, trader, storage, shoulder) -> first.withTrader(trader).withStorage(storage, shoulder)));
+            optional("msm:shoulder_riding", StorageParser.ShoulderRiding.CODEC).forGetter(EntityComponents::shoulderRiding), // D4, B479
+            optional("msm:bucketable", Bucketable.CODEC).forGetter(EntityComponents::bucketable)) // ADR 0109 D1, B527
+            .apply(i, (first, trader, storage, shoulder, bucketable) -> first.withTrader(trader).withStorage(storage, shoulder)
+                    .withBucketable(bucketable)));
 
     /** A copy with {@code msm:trader} set (ADR 0098 D1). */
     public EntityComponents withTrader(Optional<TraderParser.Trader> trader) {
         return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
-                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding);
+                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding, bucketable);
+    }
+
+    /** A copy with {@code msm:bucketable} set (ADR 0109 D1); empty drops it. */
+    public EntityComponents withBucketable(Optional<Bucketable> other) {
+        return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
+                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding, other);
     }
 
     /** A copy with {@code msm:storage} and {@code msm:shoulder_riding} set (ADR 0098 D3, D4). */
     public EntityComponents withStorage(Optional<StorageParser.Storage> storage, Optional<StorageParser.ShoulderRiding> shoulderRiding) {
         return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
-                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding);
+                rangedAttack, tameable, breedable, rideable, variants, bossBar, trader, storage, shoulderRiding, bucketable);
     }
 
     /** The keys of {@link #ANIMAL_ONLY} present here. */
@@ -122,7 +131,7 @@ public record EntityComponents(
     /** A copy without {@code msm:tameable} and {@code msm:breedable} (dropped on a base other than {@code animal}). */
     public EntityComponents withoutAnimalOnly() {
         return new EntityComponents(animatedModel, health, movement, attack, aiGoals, onHurt, onDeath, onInteract, onTick, onSpawn,
-                rangedAttack, Optional.empty(), Optional.empty(), rideable, variants, bossBar, trader, storage, shoulderRiding);
+                rangedAttack, Optional.empty(), Optional.empty(), rideable, variants, bossBar, trader, storage, shoulderRiding, bucketable);
     }
 
     /** Every event id a component names, with the component for messages. */
@@ -166,12 +175,20 @@ public record EntityComponents(
                 required("max", floatAtLeast(1)).forGetter(Health::max)).apply(i, Health::new));
     }
 
-    /** How a mob moves ({@code ::msm::definition::MovementMode}, ADR 0070 D3). */
+    /**
+     * How a mob moves ({@code ::msm::definition::MovementMode}, ADR 0070 D3); {@code hover} and {@code phase} since ADR 0109
+     * D3 (B527's format: until B532 builds them they move as {@code fly}).
+     */
     public enum MovementMode {
-        WALK, FLY, SWIM, AMPHIBIOUS;
+        WALK, FLY, SWIM, AMPHIBIOUS, HOVER, PHASE;
 
         public String serialName() {
             return name().toLowerCase(Locale.ROOT);
+        }
+
+        /** Whether the mode has no gravity and no fall damage: {@code fly}, {@code hover} and {@code phase}. */
+        public boolean flies() {
+            return this == FLY || this == HOVER || this == PHASE;
         }
 
         public static final Codec<MovementMode> CODEC = MsmCodecs.named("movement mode", values(), MovementMode::serialName);
@@ -181,16 +198,20 @@ public record EntityComponents(
     public static final float DEFAULT_FLYING_SPEED = 0.4f;
     /** The {@code dry_out_ticks} default (ADR 0070 D3: vanilla's water animals; verify at implementation). */
     public static final int DEFAULT_DRY_OUT_TICKS = 300;
+    /** The {@code hover_height} default in blocks (ADR 0109 D3). */
+    public static final float DEFAULT_HOVER_HEIGHT = 4.0f;
 
     /**
      * Movement attributes; absent means speed 0.25, follow range 16, no knockback resistance, swims, not fire immune and
      * walking (ADR 0070 D3: {@code mode}, {@code flying_speed} 0.4, {@code hovers} true, {@code breathes_air} false,
-     * {@code dry_out_ticks} 300, {@code step_height} absent keeps vanilla's 0.6). Open, as before: unknown keys pass.
+     * {@code dry_out_ticks} 300, {@code step_height} absent keeps vanilla's 0.6; ADR 0109 D3: {@code hover_height} 4, 0.5 to
+     * 32, read by {@code hover} only). Open, as before: unknown keys pass.
      */
     public record Movement(float speed, float followRange, float knockbackResistance, boolean swims, boolean fireImmune,
-            MovementMode mode, float flyingSpeed, boolean hovers, boolean breathesAir, int dryOutTicks, Optional<Float> stepHeight) {
+            MovementMode mode, float flyingSpeed, boolean hovers, boolean breathesAir, int dryOutTicks, Optional<Float> stepHeight,
+            float hoverHeight) {
         public static final Movement DEFAULT = new Movement(0.25f, 16.0f, 0.0f, true, false, MovementMode.WALK, DEFAULT_FLYING_SPEED, true,
-                false, DEFAULT_DRY_OUT_TICKS, Optional.empty());
+                false, DEFAULT_DRY_OUT_TICKS, Optional.empty(), DEFAULT_HOVER_HEIGHT);
         public static final Codec<Movement> CODEC = RecordCodecBuilder.create(i -> i.group(
                 optional("speed", floatAtLeast(0), 0.25f).forGetter(Movement::speed),
                 optional("follow_range", floatAtLeast(0), 16.0f).forGetter(Movement::followRange),
@@ -202,7 +223,9 @@ public record EntityComponents(
                 optional("hovers", Codec.BOOL, true).forGetter(Movement::hovers),
                 optional("breathes_air", Codec.BOOL, false).forGetter(Movement::breathesAir),
                 optional("dry_out_ticks", intAtLeast(20), DEFAULT_DRY_OUT_TICKS).forGetter(Movement::dryOutTicks),
-                optional("step_height", floatRange(0, 10)).forGetter(Movement::stepHeight)).apply(i, Movement::new));
+                optional("step_height", floatRange(0, 10)).forGetter(Movement::stepHeight),
+                optional("hover_height", floatRange(0.5f, 32.0f), DEFAULT_HOVER_HEIGHT).forGetter(Movement::hoverHeight))
+                .apply(i, Movement::new));
     }
 
     /** Melee attack attributes; absent means no melee attacks. */
@@ -398,9 +421,9 @@ public record EntityComponents(
      * the seat on top of the hitbox ({@code riderOffset} empty).
      */
     public record Rideable(boolean saddle, RideControl controlledBy, float speed, float jump, int passengers,
-            Optional<List<Float>> riderOffset, Optional<String> saddleBone, Optional<Identifier> onMount) {
+            Optional<List<Float>> riderOffset, Optional<String> saddleBone, Optional<Identifier> onMount, Optional<RideDash> dash) {
         public static final List<String> KEYS = List.of("saddle", "controlled_by", "speed", "jump", "passengers", "rider_offset",
-                "saddle_bone", "on_mount");
+                "saddle_bone", "on_mount", "dash");
         public static final Codec<Rideable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
                 optional("saddle", Codec.BOOL, true).forGetter(Rideable::saddle),
                 optional("controlled_by", RideControl.CODEC, RideControl.ANYONE).forGetter(Rideable::controlledBy),
@@ -409,7 +432,47 @@ public record EntityComponents(
                 optional("passengers", intRange(1, 4), 1).forGetter(Rideable::passengers),
                 optional("rider_offset", listOfLength(FLOAT, 3, 3)).forGetter(Rideable::riderOffset),
                 optional("saddle_bone", Codec.STRING).forGetter(Rideable::saddleBone),
-                optional("on_mount", ID).forGetter(Rideable::onMount)).apply(i, Rideable::new)), KEYS);
+                optional("on_mount", ID).forGetter(Rideable::onMount),
+                optional("dash", RideDash.CODEC).forGetter(Rideable::dash)).apply(i, Rideable::new)), KEYS);
+    }
+
+    /**
+     * {@code dash} of {@code msm:rideable} (ADR 0109 D4, {@code ::msm::definition::RideDash}): a charged forward leap from
+     * the ridden jump bar, as a camel's. Closed. {@code power} 0.1 to 5, default 1 (about 7 blocks at a full bar, B524);
+     * {@code cooldown_ticks} 0 to 1200, default 55 (verify at implementation).
+     */
+    public record RideDash(float power, int cooldownTicks) {
+        public static final List<String> KEYS = List.of("power", "cooldown_ticks");
+        public static final float DEFAULT_POWER = 1.0f;
+        public static final int DEFAULT_COOLDOWN_TICKS = 55;
+        public static final Codec<RideDash> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("power", floatRange(0.1f, 5.0f), DEFAULT_POWER).forGetter(RideDash::power),
+                optional("cooldown_ticks", intRange(0, 1200), DEFAULT_COOLDOWN_TICKS).forGetter(RideDash::cooldownTicks))
+                .apply(i, RideDash::new)), KEYS);
+    }
+
+    /**
+     * {@code msm:bucketable} (ADR 0109 D1, {@code ::msm::definition::Bucketable}): a bucket takes the mob into the item
+     * {@code <ns>:<path>_bucket}. Closed. {@code item_name} is the bucket's language key (empty means
+     * {@link #defaultItemName(Identifier)}); {@code water} defaults to true (a water bucket takes it and releasing places
+     * water). Needs {@code msm:movement} {@code mode} {@code swim} ({@code DefinitionParser} drops it with a warning
+     * otherwise).
+     */
+    public record Bucketable(Optional<String> itemName, boolean water) {
+        public static final List<String> KEYS = List.of("item_name", "water");
+        public static final Codec<Bucketable> CODEC = MsmCodecs.closed(RecordCodecBuilder.create(i -> i.group(
+                optional("item_name", Codec.STRING).forGetter(Bucketable::itemName),
+                optional("water", Codec.BOOL, true).forGetter(Bucketable::water)).apply(i, Bucketable::new)), KEYS);
+
+        /** The bucket item's id: {@code <ns>:<path>_bucket}. */
+        public static Identifier itemId(Identifier entity) {
+            return Identifier.fromNamespaceAndPath(entity.getNamespace(), entity.getPath() + "_bucket");
+        }
+
+        /** The default language key of the bucket's name: {@code item.<ns>.<path>_bucket}, every {@code /} as {@code .}. */
+        public static String defaultItemName(Identifier entity) {
+            return "item." + entity.getNamespace() + "." + entity.getPath().replace('/', '.') + "_bucket";
+        }
     }
 
     /** How a variant is picked ({@code ::msm::definition::VariantChoice}). */

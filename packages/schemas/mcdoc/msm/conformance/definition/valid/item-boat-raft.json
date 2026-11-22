@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:boat": {
+      "chest": true,
+      "raft": true
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,44 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "type": "swoop"
+        },
+        {
+          "type": "roost"
+        },
+        {
+          "type": "collect_items"
+        },
+        {
+          "dig_blocks": ["minecraft:grass_block"],
+          "loot_table": "mymod:gameplay/dig",
+          "type": "dig_items"
+        },
+        {
+          "type": "play_dead"
+        },
+        {
+          "item": "#minecraft:piglin_loved",
+          "loot_table": "mymod:gameplay/barter",
+          "type": "barter"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:movement": {
+      "mode": "fly"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

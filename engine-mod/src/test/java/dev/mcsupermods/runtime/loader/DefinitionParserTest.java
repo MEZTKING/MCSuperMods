@@ -946,7 +946,7 @@ class DefinitionParserTest {
                 6.0f, 40, 20, 15.0f, Identifier.parse("minecraft:entity.skeleton.shoot"), Optional.empty()), c.rangedAttack().orElseThrow());
         assertEquals(new dev.mcsupermods.runtime.components.EntityComponents.Rideable(true,
                 dev.mcsupermods.runtime.components.EntityComponents.RideControl.ANYONE, 1.0f, 0.0f, 1, Optional.empty(), Optional.empty(),
-                Optional.empty()), c.rideable().orElseThrow());
+                Optional.empty(), Optional.empty()), c.rideable().orElseThrow());
         assertEquals(new dev.mcsupermods.runtime.components.EntityComponents.BossBar(
                 dev.mcsupermods.runtime.components.EntityComponents.BossBarColour.PURPLE,
                 dev.mcsupermods.runtime.components.EntityComponents.BossBarOverlay.PROGRESS, false, false, false, Optional.empty()),

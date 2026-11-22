@@ -1,0 +1,10 @@
+{
+  "bottle": {
+    "effects": [
+      {
+        "seconds": 5
+      }
+    ]
+  },
+  "format": 1
+}

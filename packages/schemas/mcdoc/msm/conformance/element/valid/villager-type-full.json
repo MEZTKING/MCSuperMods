@@ -1,0 +1,9 @@
+{
+  "biomes": ["minecraft:cherry_grove", "#minecraft:is_forest"],
+  "format": 1,
+  "textures": {
+    "hat": "partial",
+    "villager": "mymod:entity/villager/type/blossom",
+    "zombie_villager": "mymod:entity/zombie_villager/type/blossom"
+  }
+}

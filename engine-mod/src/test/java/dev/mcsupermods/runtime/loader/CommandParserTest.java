@@ -47,22 +47,28 @@ class CommandParserTest {
 
     @Test
     void everyArgumentTypeDecodes() {
-        StringBuilder args = new StringBuilder();
-        for (ArgumentType type : ArgumentType.values()) {
-            if (type == ArgumentType.TEXT) {
-                continue;
-            }
-            args.append("{\"name\": \"a_").append(type.serialName()).append("\", \"type\": \"").append(type.serialName()).append("\"},");
-        }
-        // Eight arguments at most: split over two commands.
-        List<String> all = new ArrayList<>(List.of(args.toString().split("},")));
-        String first = String.join("},", all.subList(0, 6)) + "}";
-        String second = String.join("},", all.subList(6, all.size())) + "}";
-        Command a = clean("{\"format\": 1, \"name\": \"a\", \"arguments\": [" + first + "]}");
-        Command b = clean("{\"format\": 1, \"name\": \"b\", \"arguments\": [" + second + ", {\"name\": \"rest\", \"type\": \"text\"}]}");
+        // Eight arguments at most per command, and the greedy types (text, message) only last: one command per eight
+        // other types, one per greedy type (B527: 44 types).
+        List<ArgumentType> plain = new ArrayList<>();
         List<ArgumentType> seen = new ArrayList<>();
-        a.arguments().forEach(arg -> seen.add(arg.type()));
-        b.arguments().forEach(arg -> seen.add(arg.type()));
+        for (ArgumentType type : ArgumentType.values()) {
+            if (type.greedy()) {
+                Command one = clean("{\"format\": 1, \"name\": \"g\", \"arguments\": [{\"name\": \"rest\", \"type\": \""
+                        + type.serialName() + "\"}]}");
+                one.arguments().forEach(arg -> seen.add(arg.type()));
+            } else {
+                plain.add(type);
+            }
+        }
+        for (int from = 0; from < plain.size(); from += 8) {
+            StringBuilder args = new StringBuilder();
+            for (ArgumentType type : plain.subList(from, Math.min(plain.size(), from + 8))) {
+                args.append(args.isEmpty() ? "" : ",").append("{\"name\": \"a_").append(type.serialName()).append("\", \"type\": \"")
+                        .append(type.serialName()).append("\"}");
+            }
+            Command cmd = clean("{\"format\": 1, \"name\": \"c\", \"arguments\": [" + args + "]}");
+            cmd.arguments().forEach(arg -> seen.add(arg.type()));
+        }
         assertEquals(ArgumentType.values().length, seen.size());
         assertTrue(seen.containsAll(List.of(ArgumentType.values())));
     }

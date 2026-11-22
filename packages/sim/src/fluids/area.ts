@@ -105,6 +105,7 @@ export class FluidArea {
     if (fluid.light > 0) {
       log.onlyInMinecraft(`${fluid.displayName} gives off light ${fluid.light}`, fluid.origin);
     }
+    this.host.triggers().appeared('fluid', fluid.id);
   }
 
   /** Runs once per tick, after the player and the mobs moved: `on_entity_inside` and its lines. */

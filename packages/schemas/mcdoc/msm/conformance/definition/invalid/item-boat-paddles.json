@@ -1,0 +1,8 @@
+{
+  "components": {
+    "msm:boat": {
+      "paddles": 2
+    }
+  },
+  "format": 1
+}

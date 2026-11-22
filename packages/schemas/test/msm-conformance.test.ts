@@ -41,7 +41,11 @@ import {
  * `msm:tillable`; `container-double`, `container-per-player` and `container-2-` files ADR 0104
  * D3 to D6's containers (and `machine-2-` its waterlogged machines); `weathering-2-` files ADR
  * 0104 D1's six weathering types; `vanilla-block-rules-` files ADR 0105 D4's
- * `msm:vanilla_block_rules`.
+ * `msm:vanilla_block_rules`. Batch 2 of vanilla parity 3 (ADRs 0107 to 0111): `villager-type-`,
+ * `game-rule-` and `stat-` files are the kinds `msm:villager_type`, `msm:game_rule` and
+ * `msm:stat`; the new trader, shoulder, mob, boat, fluid, command and tab fields live in files of
+ * the existing prefixes (`trader-2-`, `shoulder-2-`, `entity-mobs-2-`, `item-boat-`, `fluid-2-`,
+ * `command-2-`, `creative-tab-2-`).
  * The longest matching file name prefix selects the schema;
  * `expected-errors.json` maps each invalid file to one error (pointer and code) that
  * `validateJson` must report.
@@ -157,6 +161,9 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     profession: MSM_SCHEMA_REFS.villagerProfessionDefinition,
     fluid: MSM_SCHEMA_REFS.fluidDefinition,
     'vanilla-block-rules': MSM_SCHEMA_REFS.vanillaBlockRulesDefinition,
+    'villager-type': MSM_SCHEMA_REFS.villagerTypeDefinition,
+    'game-rule': MSM_SCHEMA_REFS.gameRuleDefinition,
+    stat: MSM_SCHEMA_REFS.statDefinition,
   },
   element: {
     block: MSM_SCHEMA_REFS.block,
@@ -186,6 +193,9 @@ const SCHEMAS: Record<Group, Record<string, string>> = {
     profession: MSM_SCHEMA_REFS.villagerProfession,
     fluid: MSM_SCHEMA_REFS.fluid,
     'vanilla-block-rules': MSM_SCHEMA_REFS.vanillaBlockRules,
+    'villager-type': MSM_SCHEMA_REFS.villagerType,
+    'game-rule': MSM_SCHEMA_REFS.gameRule,
+    stat: MSM_SCHEMA_REFS.stat,
   },
   geometry: { geometry: MSM_SCHEMA_REFS.geoModel },
   animation: { animation: MSM_SCHEMA_REFS.animation },
@@ -459,8 +469,28 @@ describe('MSM conformance corpus coverage', () => {
     ['definition', 'weathering-2-', 6, 0],
     ['definition', 'vanilla-block-rules-', 3, 10],
     ['element', 'vanilla-block-rules-', 1, 1],
+    ['definition', 'trader-2-', 3, 7],
+    ['definition', 'shoulder-2-', 3, 2],
+    ['definition', 'entity-mobs-2-', 9, 20],
+    ['definition', 'item-boat-', 2, 4],
+    ['definition', 'fluid-2-', 3, 10],
+    ['definition', 'command-2-', 4, 2],
+    ['definition', 'creative-tab-2-', 2, 3],
+    ['definition', 'villager-type-', 2, 7],
+    ['definition', 'game-rule-', 5, 9],
+    ['definition', 'stat-', 4, 5],
+    ['element', 'trader-2-', 1, 1],
+    ['element', 'shoulder-2-', 1, 1],
+    ['element', 'entity-mobs-2-', 3, 2],
+    ['element', 'item-boat-', 1, 1],
+    ['element', 'fluid-2-', 1, 1],
+    ['element', 'command-2-', 1, 1],
+    ['element', 'creative-tab-2-', 1, 1],
+    ['element', 'villager-type-', 2, 3],
+    ['element', 'game-rule-', 2, 2],
+    ['element', 'stat-', 2, 2],
   ] as const)(
-    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096, 0098, 0099, 0103-0105)',
+    'has enough %s %s cases (ADRs 0055, 0056, 0059, 0060, 0061, 0070-0072, 0074, 0075, 0077, 0080, 0088-0090, 0094-0096, 0098, 0099, 0103-0105, 0107-0111)',
     (group, prefix, minValid, minInvalid) => {
       const count = (kind: 'valid' | 'invalid') =>
         files(group, kind).filter((name) => name.startsWith(prefix)).length;
@@ -532,6 +562,12 @@ describe('MSM conformance corpus coverage', () => {
     ['element', 'fluid', MSM_SCHEMA_REFS.fluid],
     ['definition', 'vanilla-block-rules', MSM_SCHEMA_REFS.vanillaBlockRulesDefinition],
     ['element', 'vanilla-block-rules', MSM_SCHEMA_REFS.vanillaBlockRules],
+    ['definition', 'villager-type', MSM_SCHEMA_REFS.villagerTypeDefinition],
+    ['element', 'villager-type', MSM_SCHEMA_REFS.villagerType],
+    ['definition', 'game-rule', MSM_SCHEMA_REFS.gameRuleDefinition],
+    ['element', 'game-rule', MSM_SCHEMA_REFS.gameRule],
+    ['definition', 'stat', MSM_SCHEMA_REFS.statDefinition],
+    ['element', 'stat', MSM_SCHEMA_REFS.stat],
   ] as const)('sets every %s %s field in some valid file', (group, prefix, ref) => {
     const declared = new Set<string>();
     fieldPaths(index.resolveSchemaRef(ref), '', declared);

@@ -63,7 +63,8 @@ export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   'msm:block': Object.freeze({ maxDepth: 4, maxChars: 22_000, maxList: 48, maxCases: 48 }),
   'msm:vehicle': Object.freeze({ maxDepth: 5, maxChars: 6_000 }),
   'msm:key_bind': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
-  'msm:command': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
+  // 44 argument types since B527 (plugin API 1.20.0): the list is shown whole.
+  'msm:command': Object.freeze({ maxDepth: 5, maxChars: 4_000, maxList: 48 }),
   'msm:entity': Object.freeze({ maxDepth: 5, maxChars: 12_000 }),
   'msm:fluid': Object.freeze({ maxDepth: 5, maxChars: 3_000 }),
   'minecraft:dimension_type': Object.freeze({

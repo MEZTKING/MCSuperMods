@@ -1,0 +1,26 @@
+{
+  "base": "mob",
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:movement": {
+      "hover_height": 6,
+      "mode": "hover"
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.9
+  }
+}

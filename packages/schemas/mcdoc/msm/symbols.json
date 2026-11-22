@@ -2988,6 +2988,86 @@
         }
       ]
     },
+    "::msm::definition::BarterGoal": {
+      "fields": [
+        {
+          "desc": "The item or item tag (`#`-prefixed) the mob barters for.",
+          "key": "item",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The loot table rolled for each item taken.",
+          "key": "loot_table",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between taking the item and dropping the loot, 1 to 1200; defaults to 120.",
+          "key": "ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether the mob also picks the item up from the ground; defaults to true.",
+          "key": "from_ground",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::BedFields": {
       "fields": [
         {
@@ -4374,6 +4454,38 @@
         }
       ]
     },
+    "::msm::definition::Boat": {
+      "fields": [
+        {
+          "desc": "Whether a chest boat comes with it; defaults to false.",
+          "key": "chest",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether it is a raft, drawn and sized as vanilla's bamboo raft; defaults to false.",
+          "key": "raft",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "The wood its pictures are named after: `<ns>:<name>` draws\n`assets/<ns>/textures/entity/boat/<name>.png` (128 x 64) and, with `chest`,\n`assets/<ns>/textures/entity/chest_boat/<name>.png` (128 x 128); defaults to the item's id\nwithout its `_boat` or `_raft` ending.",
+          "key": "wood_texture",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::BonemealGrowth": {
       "fields": [
         {
@@ -4398,6 +4510,20 @@
               "max": 15,
               "min": 0
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::BooleanGameRule": {
+      "fields": [
+        {
+          "desc": "The value of a new world; defaults to false.",
+          "key": "default",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -4663,6 +4789,29 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Bucketable": {
+      "fields": [
+        {
+          "desc": "The language key of the bucket item's name; defaults to `item.<ns>.<path>_bucket`.",
+          "key": "item_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Whether the bucket holds water: a water bucket takes the mob and releasing it places water\n(true, the default); false takes it with an empty bucket and releases it without water.",
+          "key": "water",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Bundle": {
       "fields": [],
       "kind": "struct"
@@ -4838,6 +4987,47 @@
               }
             ],
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::CollectItemsGoal": {
+      "fields": [
+        {
+          "desc": "Speed multiplier; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "How far, in blocks, the mob looks for items, 1 to 64; defaults to 32.",
+          "key": "range",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whether a note block played near the mob becomes its drop-off point for a while, as an\nallay's; defaults to true.",
+          "key": "note_blocks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -5087,6 +5277,166 @@
           "desc": "A block id.",
           "identifier": "Block",
           "value": "block"
+        },
+        {
+          "desc": "A dimension id (ADR 0111 D2: the types below arrive with the release that ships ADR 0111;\nolder runtimes refuse them).",
+          "identifier": "Dimension",
+          "value": "dimension"
+        },
+        {
+          "desc": "A time in ticks, written as `20`, `5s` or `2d`.",
+          "identifier": "Time",
+          "value": "time"
+        },
+        {
+          "desc": "A team colour name, such as `red`.",
+          "identifier": "TeamColour",
+          "value": "team_colour"
+        },
+        {
+          "desc": "A colour written as six hex digits, such as `FF8800`.",
+          "identifier": "HexColour",
+          "value": "hex_colour"
+        },
+        {
+          "desc": "A rotation, as `~ ~` (yaw and pitch).",
+          "identifier": "Rotation",
+          "value": "rotation"
+        },
+        {
+          "desc": "One angle, as `~45`.",
+          "identifier": "Angle",
+          "value": "angle"
+        },
+        {
+          "desc": "A UUID.",
+          "identifier": "Uuid",
+          "value": "uuid"
+        },
+        {
+          "desc": "A scoreboard objective's name.",
+          "identifier": "Objective",
+          "value": "objective"
+        },
+        {
+          "desc": "One score holder: a name or a selector.",
+          "identifier": "ScoreHolder",
+          "value": "score_holder"
+        },
+        {
+          "desc": "Several score holders, `*` included.",
+          "identifier": "ScoreHolders",
+          "value": "score_holders"
+        },
+        {
+          "desc": "An item test, as `#minecraft:logs` or an item with components.",
+          "identifier": "ItemPredicate",
+          "value": "item_predicate"
+        },
+        {
+          "desc": "A block test, as `#minecraft:logs` or a block with states.",
+          "identifier": "BlockPredicate",
+          "value": "block_predicate"
+        },
+        {
+          "desc": "A mob effect id.",
+          "identifier": "Effect",
+          "value": "effect"
+        },
+        {
+          "desc": "An enchantment id.",
+          "identifier": "Enchantment",
+          "value": "enchantment"
+        },
+        {
+          "desc": "A biome id.",
+          "identifier": "Biome",
+          "value": "biome"
+        },
+        {
+          "desc": "A biome id or a biome tag (`#`-prefixed).",
+          "identifier": "BiomeOrTag",
+          "value": "biome_or_tag"
+        },
+        {
+          "desc": "A structure id; checked only when the command runs (the game does not send structures to\nplayers).",
+          "identifier": "Structure",
+          "value": "structure"
+        },
+        {
+          "desc": "A structure id or a structure tag (`#`-prefixed); checked only when the command runs.",
+          "identifier": "StructureOrTag",
+          "value": "structure_or_tag"
+        },
+        {
+          "desc": "An entity type id.",
+          "identifier": "EntityType",
+          "value": "entity_type"
+        },
+        {
+          "desc": "A particle, with its options.",
+          "identifier": "Particle",
+          "value": "particle"
+        },
+        {
+          "desc": "A game mode name.",
+          "identifier": "GameMode",
+          "value": "game_mode"
+        },
+        {
+          "desc": "A text component in JSON or SNBT.",
+          "identifier": "TextComponent",
+          "value": "text_component"
+        },
+        {
+          "desc": "A whole number range, as `1..5`.",
+          "identifier": "IntRange",
+          "value": "int_range"
+        },
+        {
+          "desc": "Any namespaced id.",
+          "identifier": "Identifier",
+          "value": "identifier"
+        },
+        {
+          "desc": "A team's name.",
+          "identifier": "Team",
+          "value": "team"
+        },
+        {
+          "desc": "An inventory slot name, such as `hotbar.3`.",
+          "identifier": "Slot",
+          "value": "slot"
+        },
+        {
+          "desc": "An SNBT compound, such as `{a:1b}`.",
+          "identifier": "Nbt",
+          "value": "nbt"
+        },
+        {
+          "desc": "The rest of the line as a chat message, selectors resolved; only as the last argument.",
+          "identifier": "Message",
+          "value": "message"
+        },
+        {
+          "desc": "A dialog id or an inline dialog.",
+          "identifier": "Dialog",
+          "value": "dialog"
+        },
+        {
+          "desc": "A loot table id or an inline loot table.",
+          "identifier": "LootTable",
+          "value": "loot_table"
+        },
+        {
+          "desc": "An advancement id; checked only when the command runs.",
+          "identifier": "Advancement",
+          "value": "advancement"
+        },
+        {
+          "desc": "A recipe id; checked only when the command runs.",
+          "identifier": "Recipe",
+          "value": "recipe"
         }
       ]
     },
@@ -5618,6 +5968,35 @@
             "kind": "reference",
             "path": "::msm::definition::CreativeTabOrder"
           }
+        },
+        {
+          "desc": "With `order` `by_hand`: the items in the order the tab shows them, 1 to 1024 ids, vanilla's\nor the project's; an item not otherwise in the tab joins it (ADR 0111 D7). Ignored with a\nwarning under another order.",
+          "key": "items",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "item"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 1024,
+              "min": 1
+            }
+          }
         }
       ],
       "kind": "struct"
@@ -5635,6 +6014,11 @@
           "desc": "By display name.",
           "identifier": "ByName",
           "value": "by_name"
+        },
+        {
+          "desc": "In the order of `items` (ADR 0111 D7); the tab's other items follow in registration order.\nRuntimes older than the release that ships ADR 0111 refuse the value.",
+          "identifier": "ByHand",
+          "value": "by_hand"
         }
       ]
     },
@@ -5738,6 +6122,97 @@
           "optional": true,
           "type": {
             "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::DigItemsGoal": {
+      "fields": [
+        {
+          "desc": "Blocks and block tags (`#`-prefixed) the mob digs on, 1 to 64.",
+          "key": "dig_blocks",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "block"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The loot table rolled for each dig.",
+          "key": "loot_table",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "loot_table"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Ticks between two digs, at least 20; defaults to 240 (verify at implementation).",
+          "key": "interval_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "min": 20
+            }
+          }
+        },
+        {
+          "desc": "Speed multiplier while walking to a dig spot; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
           }
         }
       ],
@@ -6384,6 +6859,16 @@
             "kind": "reference",
             "path": "::msm::definition::ShoulderRiding"
           }
+        },
+        {
+          "desc": "Caught in a bucket (ADR 0109 D1); needs `msm:movement` `mode` `swim`.",
+          "key": "msm:bucketable",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Bucketable"
+          }
         }
       ],
       "kind": "struct"
@@ -6996,6 +7481,57 @@
         }
       ]
     },
+    "::msm::definition::FluidBottle": {
+      "fields": [
+        {
+          "desc": "Hunger restored when drunk; absent means none (it can be drunk at any time).",
+          "key": "food",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Food"
+          }
+        },
+        {
+          "desc": "Mob effects given when drunk.",
+          "key": "effects",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::ConsumeEffect"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "An event id declared in `events`, fired when the bottle is drunk; self is the drinker.",
+          "key": "on_drink",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FluidCauldron": {
+      "fields": [
+        {
+          "desc": "Whether it fills in three levels as water's does (a bottle takes or adds one, the bucket\ntakes only a full one); defaults to false, full only as lava's. Ignored with a warning on a\nlava-like fluid.",
+          "key": "levels",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::FluidCommon": {
       "fields": [
         {
@@ -7069,7 +7605,45 @@
           }
         },
         {
-          "desc": "Events that `on_entity_inside` refers to, by id.",
+          "desc": "What forms where this fluid meets another (ADR 0108 D1 as amended), 1 to 16 rules; checked\nby the fluid's own liquid block on both versions, fluid ids before `water` and `lava`, the\nfirst matching rule winning. When set, vanilla's own lava rule no longer applies to this\nfluid. Runtimes older than the release that ships ADR 0108 refuse the field.",
+          "key": "mixing",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "kind": "reference",
+              "path": "::msm::definition::FluidMixing"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "A cauldron of this fluid, the block `<ns>:<path>_cauldron` (ADR 0108 D2), filled and emptied\nwith the bucket and, with `levels`, the bottle; vanilla's empty cauldron takes the bucket.\nA lava-like fluid's cauldron is always full only. Absent means none. Runtimes older than the\nrelease that ships ADR 0108 refuse the field.",
+          "key": "cauldron",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::FluidCauldron"
+          }
+        },
+        {
+          "desc": "A bottle of this fluid, the item `<ns>:<path>_bottle` (ADR 0108 D3), filled by a glass\nbottle used on a source (or a cauldron with levels) and drunk in 1.6 seconds, leaving a\nglass bottle. Absent means none. Runtimes older than the release that ships ADR 0108 refuse\nthe field.",
+          "key": "bottle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::FluidBottle"
+          }
+        },
+        {
+          "desc": "Events that `on_entity_inside` and `bottle.on_drink` refer to, by id.",
           "key": "events",
           "kind": "pair",
           "optional": true,
@@ -7162,6 +7736,98 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::FluidMixing": {
+      "fields": [
+        {
+          "desc": "The other liquid: `water`, `lava`, or a fluid id (the project's or vanilla's, matched\nexactly).",
+          "key": "with",
+          "kind": "pair",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "reference",
+                "path": "::msm::definition::FluidMixingTag"
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "fluid"
+                      }
+                    }
+                  }
+                ],
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
+          "desc": "The block a source of this fluid becomes when the other liquid touches it, as lava's\nobsidian; absent leaves it.",
+          "key": "source",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The block flowing fluid of this kind becomes when the other liquid touches it, as lava's\ncobblestone; absent leaves it.",
+          "key": "flowing",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "block"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::FluidMixingTag": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "Any fluid in `#minecraft:water`, vanilla's water and every water-like fluid.",
+          "identifier": "Water",
+          "value": "water"
+        },
+        {
+          "desc": "Any fluid in `#minecraft:lava`.",
+          "identifier": "Lava",
+          "value": "lava"
+        }
+      ]
     },
     "::msm::definition::FollowGoal": {
       "fields": [
@@ -7267,6 +7933,117 @@
         }
       ],
       "kind": "struct"
+    },
+    "::msm::definition::GameRule": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::GameRuleCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::GameRuleCategory": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Player",
+          "value": "player"
+        },
+        {
+          "identifier": "Mobs",
+          "value": "mobs"
+        },
+        {
+          "identifier": "Spawning",
+          "value": "spawning"
+        },
+        {
+          "identifier": "Drops",
+          "value": "drops"
+        },
+        {
+          "identifier": "Updates",
+          "value": "updates"
+        },
+        {
+          "identifier": "Chat",
+          "value": "chat"
+        },
+        {
+          "identifier": "Misc",
+          "value": "misc"
+        }
+      ]
+    },
+    "::msm::definition::GameRuleCommon": {
+      "fields": [
+        {
+          "desc": "The kind of value.",
+          "key": "kind",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::GameRuleKind"
+          }
+        },
+        {
+          "desc": "Defaults to `misc`.",
+          "key": "category",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::GameRuleCategory"
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "dispatcher",
+            "parallelIndices": [
+              {
+                "accessor": ["kind"],
+                "kind": "dynamic"
+              }
+            ],
+            "registry": "msm:game_rule_kind"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::GameRuleKind": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "True or false.",
+          "identifier": "Boolean",
+          "value": "boolean"
+        },
+        {
+          "desc": "A whole number.",
+          "identifier": "Integer",
+          "value": "integer"
+        }
+      ]
     },
     "::msm::definition::GenerationStep": {
       "enumKind": "string",
@@ -7411,6 +8188,36 @@
           "desc": "Leaps at its attack target (`LeapAtTargetGoal`, ADR 0070 D5).",
           "identifier": "LeapAtTarget",
           "value": "leap_at_target"
+        },
+        {
+          "desc": "Circles high above its target, then dives at it, as a phantom (ADR 0109 D3).",
+          "identifier": "Swoop",
+          "value": "swoop"
+        },
+        {
+          "desc": "Hangs upside down under a block, as a bat (ADR 0109 D3).",
+          "identifier": "Roost",
+          "value": "roost"
+        },
+        {
+          "desc": "Picks up items like the one it was given and brings them to its owner, as an allay\n(ADR 0109 D4).",
+          "identifier": "CollectItems",
+          "value": "collect_items"
+        },
+        {
+          "desc": "Digs on its `dig_blocks` and drops a roll of a loot table, as a sniffer (ADR 0109 D4).",
+          "identifier": "DigItems",
+          "value": "dig_items"
+        },
+        {
+          "desc": "Lies still and recovers when badly hurt, as an axolotl (ADR 0109 D4).",
+          "identifier": "PlayDead",
+          "value": "play_dead"
+        },
+        {
+          "desc": "Takes an item and drops a roll of a loot table, as a piglin bartering (ADR 0109 D4).",
+          "identifier": "Barter",
+          "value": "barter"
         }
       ]
     },
@@ -7624,6 +8431,38 @@
           "type": {
             "kind": "reference",
             "path": "::msm::controls::HudCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::IntegerGameRule": {
+      "fields": [
+        {
+          "desc": "The value of a new world, within `min` and `max` (checked by the validators); defaults to 0,\nkept within `min` and `max`.",
+          "key": "default",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "desc": "The lowest value `/gamerule` accepts; absent means none.",
+          "key": "min",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int"
+          }
+        },
+        {
+          "desc": "The highest value `/gamerule` accepts, at least `min` (checked by the validators); absent\nmeans none.",
+          "key": "max",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int"
           }
         }
       ],
@@ -7900,6 +8739,16 @@
           "type": {
             "kind": "reference",
             "path": "::msm::definition::Bundle"
+          }
+        },
+        {
+          "desc": "A boat or raft (ADR 0110 D1).",
+          "key": "msm:boat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::Boat"
           }
         }
       ],
@@ -8696,6 +9545,20 @@
               "min": 0
             }
           }
+        },
+        {
+          "desc": "`hover` only: the height in blocks the mob keeps above the ground below it, 0.5 to 32;\ndefaults to 4 (ADR 0109 D3).",
+          "key": "hover_height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 0.5
+            }
+          }
         }
       ],
       "kind": "struct"
@@ -8723,6 +9586,16 @@
           "desc": "Walks on land and swims in water, breathing both; `wander` stays the walking stroll.",
           "identifier": "Amphibious",
           "value": "amphibious"
+        },
+        {
+          "desc": "Floats at `hover_height` above the ground below it, as a ghast or a blaze (ADR 0109 D3): no\ngravity and no fall damage, the height kept by a damped climb or sink over the first block\nwith a collision shape below. Runtimes older than the release that ships ADR 0109 refuse the\nvalue (the entity does not register).",
+          "identifier": "Hover",
+          "value": "hover"
+        },
+        {
+          "desc": "Flies as `fly`, and passes through blocks while its attack goal charges at a target, as a\nvex (ADR 0109 D3). Runtimes older than the release that ships ADR 0109 refuse the value.",
+          "identifier": "Phase",
+          "value": "phase"
         }
       ]
     },
@@ -9620,6 +10493,48 @@
           "value": "mobs"
         }
       ]
+    },
+    "::msm::definition::PlayDeadGoal": {
+      "fields": [
+        {
+          "desc": "The share of its maximum health below which a hit makes the mob play dead, 0.01 to 1;\ndefaults to 0.5 (verify at implementation).",
+          "key": "below_health",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 1,
+              "min": 0.01
+            }
+          }
+        },
+        {
+          "desc": "Ticks it plays dead, 20 to 1200; defaults to 200.",
+          "key": "ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 20
+            }
+          }
+        },
+        {
+          "desc": "Whether it regenerates health while playing dead; defaults to true.",
+          "key": "regenerates",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::definition::PortalArrival": {
       "enumKind": "string",
@@ -10617,6 +11532,39 @@
         }
       ]
     },
+    "::msm::definition::RideDash": {
+      "fields": [
+        {
+          "desc": "How far the leap carries, as a factor; defaults to 1 (about 7 blocks at a full bar).",
+          "key": "power",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 5,
+              "min": 0.1
+            }
+          }
+        },
+        {
+          "desc": "Ticks before the mob can dash again, 0 to 1200; defaults to 55 (verify at implementation).",
+          "key": "cooldown_ticks",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1200,
+              "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::definition::Rideable": {
       "fields": [
         {
@@ -10711,6 +11659,53 @@
           "optional": true,
           "type": {
             "kind": "string"
+          }
+        },
+        {
+          "desc": "A charged forward leap from vanilla's ridden jump bar, as a camel's dash (ADR 0109 D4); `{}`\ngives the defaults. For `walk` and `amphibious` mobs; in place of the jump while set.\nRuntimes older than the release that ships ADR 0109 refuse the field (the component is not\napplied).",
+          "key": "dash",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::RideDash"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::RoostGoal": {
+      "fields": [
+        {
+          "desc": "Whether the mob roosts in daylight, as a bat sleeps through the day; defaults to true.",
+          "key": "daylight",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether the mob also roosts at other times when it has nothing else to do; defaults to\nfalse.",
+          "key": "when_idle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "How far up, in blocks, the mob looks for a block to hang under, 1 to 16; defaults to 8.",
+          "key": "range",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 16,
+              "min": 1
+            }
           }
         }
       ],
@@ -11037,8 +12032,38 @@
       "kind": "struct"
     },
     "::msm::definition::ShoulderRiding": {
-      "fields": [],
+      "fields": [
+        {
+          "desc": "Which shoulder the pet takes, as the player sees it; defaults to `either` (the free one,\nthe right first). Runtimes older than the release that ships ADR 0109 refuse the field (the\ncomponent is not applied).",
+          "key": "sides",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::ShoulderSide"
+          }
+        }
+      ],
       "kind": "struct"
+    },
+    "::msm::definition::ShoulderSide": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "identifier": "Left",
+          "value": "left"
+        },
+        {
+          "identifier": "Right",
+          "value": "right"
+        },
+        {
+          "desc": "Whichever is free.",
+          "identifier": "Either",
+          "value": "either"
+        }
+      ]
     },
     "::msm::definition::SignFields": {
       "fields": [
@@ -11453,6 +12478,66 @@
       ],
       "kind": "struct"
     },
+    "::msm::definition::Stat": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::StatCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::StatCommon": {
+      "fields": [
+        {
+          "desc": "Defaults to `default`.",
+          "key": "formatter",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::StatFormatter"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::StatFormatter": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "As it is, a count.",
+          "identifier": "Default",
+          "value": "default"
+        },
+        {
+          "desc": "In centimetres, shown as metres or kilometres.",
+          "identifier": "Distance",
+          "value": "distance"
+        },
+        {
+          "desc": "In ticks, shown as seconds, minutes, hours or days.",
+          "identifier": "Time",
+          "value": "time"
+        }
+      ]
+    },
     "::msm::definition::StemFields": {
       "fields": [
         {
@@ -11634,6 +12719,80 @@
               }
             ],
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::SwoopGoal": {
+      "fields": [
+        {
+          "desc": "Speed multiplier of the dive; defaults to 1.",
+          "key": "speed",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Height in blocks above the target the mob circles at before diving, 2 to 32; defaults to\n12 (verify at implementation).",
+          "key": "height",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "float",
+            "valueRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 2
+            }
+          }
+        },
+        {
+          "desc": "Entity types to swoop at; `minecraft:player` matches players. Absent or empty with\n`retaliate` only fights back.",
+          "key": "targets",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "string",
+                      "value": "entity_type"
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list"
+          }
+        },
+        {
+          "desc": "Whether a target must be in sight; defaults to true.",
+          "key": "must_see",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "Whether to fight back when hurt; defaults to false.",
+          "key": "retaliate",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
           }
         }
       ],
@@ -12445,6 +13604,166 @@
           "type": {
             "kind": "string"
           }
+        },
+        {
+          "desc": "How the mob remembers each player (ADR 0107 D1 as amended): a value per player, saved with\nthe mob, that changes every offer's price for that player. Absent means none: prices never\nchange by player. `{}` gives vanilla's numbers. It does not spread to other mobs.",
+          "key": "reputation",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::TraderReputation"
+          }
+        },
+        {
+          "desc": "Whether vanilla's demand rule applies to each offer: an offer traded heavily costs more\nafter the next restock, and settles again with light trading (ADR 0107 D2); defaults to\ntrue, as vanilla villagers.",
+          "key": "demand",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        },
+        {
+          "desc": "A block or block tag (`#`-prefixed) the mob restocks at: when offers need a refill it walks\nto the nearest such block within 16 blocks and restocks within 2 blocks of it, twice a day\nas vanilla villagers (ADR 0107 D3). Absent means it restocks where it stands. Only with\n`restock` `twice_a_day`.",
+          "key": "work_site",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "block"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::TraderReputation": {
+      "fields": [
+        {
+          "desc": "Taken off the player's value each time the player hurts the mob, 0 to 100; defaults to\n25.",
+          "key": "hurt",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "Added for each trade with the player, 0 to 25; defaults to 2. Trading adds up to 25 at most.",
+          "key": "trade",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 25,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "An item or item tag (`#`-prefixed) a player can give the mob (using the mob with it, which\nuses one up) to raise their value by `gift`; absent means no gifts.",
+          "key": "gift_item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "tree",
+                  "values": {
+                    "registry": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "item"
+                      }
+                    },
+                    "tags": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "string",
+                        "value": "allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Added for each gift, 0 to 100; defaults to 25. Gifts add up to 25 at most.",
+          "key": "gift",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "How far a value below 0 moves back toward 0 each day, 0 to 100; defaults to 20. Trading\nvalue fades by 2 a day, as vanilla's.",
+          "key": "decay_per_day",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 100,
+              "min": 0
+            }
+          }
+        },
+        {
+          "desc": "The value that changes a price by one item, 1 to 1000; absent means each offer's own price\nmultiplier decides (1 divided by it: 20 for vanilla's usual 0.05).",
+          "key": "price_step",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "int",
+            "valueRange": {
+              "kind": 0,
+              "max": 1000,
+              "min": 1
+            }
+          }
         }
       ],
       "kind": "struct"
@@ -13052,6 +14371,75 @@
               "kind": "string"
             },
             "kind": "list"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::VillagerType": {
+      "fields": [
+        {
+          "desc": "Definition format; this is version 1.",
+          "key": "format",
+          "kind": "pair",
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VillagerTypeCommon"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::definition::VillagerTypeCommon": {
+      "fields": [
+        {
+          "desc": "Biome ids and biome tags (`#`-prefixed), 1 to 64, where villagers and zombie villagers\nspawn and are born with this type; their union. A biome another villager type also names\ngoes to the later one by mod and path, with a warning.",
+          "key": "biomes",
+          "kind": "pair",
+          "type": {
+            "item": {
+              "attributes": [
+                {
+                  "name": "id",
+                  "value": {
+                    "kind": "tree",
+                    "values": {
+                      "registry": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "worldgen/biome"
+                        }
+                      },
+                      "tags": {
+                        "kind": "literal",
+                        "value": {
+                          "kind": "string",
+                          "value": "allowed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "kind": "string"
+            },
+            "kind": "list",
+            "lengthRange": {
+              "kind": 0,
+              "max": 64,
+              "min": 1
+            }
           }
         }
       ],
@@ -13885,6 +15273,74 @@
           "value": "hoe"
         }
       ]
+    },
+    "::msm::element::BoatTextures": {
+      "fields": [
+        {
+          "desc": "The boat, 128 x 64, lowered to `assets/<ns>/textures/entity/boat/<name>.png`.",
+          "key": "boat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The chest boat, 128 x 128, lowered to `assets/<ns>/textures/entity/chest_boat/<name>.png`.",
+          "key": "chest_boat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The chest boat item's picture; the boat item's is the item's `model`.",
+          "key": "chest_boat_item",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
     },
     "::msm::element::Breakable": {
       "fields": [
@@ -15022,6 +16478,36 @@
             "kind": "reference",
             "path": "::msm::element::EntityComponents"
           }
+        },
+        {
+          "desc": "The bucket item's name with `msm:bucketable` (ADR 0109 D1), lowered to the language key its\n`item_name` names (default `item.<ns>.<path>_bucket`); defaults to \"Bucket of \" followed by\nthe display name.",
+          "key": "bucket_display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The bucket item's picture with `msm:bucketable`, lowered to its item model.",
+          "key": "bucket_texture",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
         }
       ],
       "kind": "struct"
@@ -15367,13 +16853,31 @@
           }
         },
         {
-          "desc": "The still, flowing, overlay and bucket pictures.",
+          "desc": "The still, flowing, overlay, bucket and bottle pictures.",
           "key": "textures",
           "kind": "pair",
           "optional": true,
           "type": {
             "kind": "reference",
             "path": "::msm::element::FluidTextures"
+          }
+        },
+        {
+          "desc": "The bottle's name with `bottle`, lowered to the `item.<ns>.<path>_bottle` language key;\ndefaults to \"Bottle of \" followed by the display name.",
+          "key": "bottle_display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "The cauldron's name with `cauldron`, lowered to the `block.<ns>.<path>_cauldron` language\nkey; defaults to the display name followed by \" Cauldron\".",
+          "key": "cauldron_display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -15464,6 +16968,27 @@
             ],
             "kind": "string"
           }
+        },
+        {
+          "desc": "The bottle item's picture, with `bottle` (ADR 0108 D3).",
+          "key": "bottle",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
         }
       ],
       "kind": "struct"
@@ -15480,6 +17005,49 @@
               "kind": 0,
               "min": 0.05
             }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::GameRule": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::GameRuleCommon"
+          }
+        },
+        {
+          "desc": "The rule's name in the game rule screen, lowered to the `gamerule.<ns>.<path>` language key.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Its description, lowered to the `gamerule.<ns>.<path>.description` language key.",
+          "key": "description",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -15805,6 +17373,25 @@
           "type": {
             "kind": "reference",
             "path": "::msm::element::BundleTextures"
+          }
+        },
+        {
+          "desc": "Pictures of an `msm:boat` (ADR 0110 D1), lowered to the boat texture paths of its\n`wood_texture`; only with `msm:boat`.",
+          "key": "boat_textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::BoatTextures"
+          }
+        },
+        {
+          "desc": "The chest boat's name, lowered to its `item.<ns>.<id path>` and `entity.<ns>.<id path>`\nlanguage keys; only with `msm:boat` `chest`. Defaults to the display name followed by\n\" with Chest\".",
+          "key": "chest_boat_display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
           }
         }
       ],
@@ -17328,6 +18915,40 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::Stat": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::StatCommon"
+          }
+        },
+        {
+          "desc": "The statistic's name in the Statistics screen, lowered to the `stat.<ns>.<path>` language\nkey.",
+          "key": "display_name",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::element::StemElementFields": {
       "fields": [
         {
@@ -17544,6 +19165,27 @@
       ],
       "kind": "struct"
     },
+    "::msm::element::VillagerHat": {
+      "enumKind": "string",
+      "kind": "enum",
+      "values": [
+        {
+          "desc": "No hat; the profession's headwear shows.",
+          "identifier": "None",
+          "value": "none"
+        },
+        {
+          "desc": "A hat that shows the profession's headwear over it.",
+          "identifier": "Partial",
+          "value": "partial"
+        },
+        {
+          "desc": "A hat that hides the profession's headwear.",
+          "identifier": "Full",
+          "value": "full"
+        }
+      ]
+    },
     "::msm::element::VillagerProfession": {
       "fields": [
         {
@@ -17583,6 +19225,98 @@
           "type": {
             "kind": "reference",
             "path": "::msm::element::ProfessionTextures"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::VillagerType": {
+      "fields": [
+        {
+          "desc": "Definition format; lowering writes 1.",
+          "key": "format",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "literal",
+            "value": {
+              "kind": "int",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "spread",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::definition::VillagerTypeCommon"
+          }
+        },
+        {
+          "desc": "The type's pictures; absent means villagers of the type have no picture (the game draws\nits missing texture).",
+          "key": "textures",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::VillagerTypeTextures"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::element::VillagerTypeTextures": {
+      "fields": [
+        {
+          "desc": "Lowered to `assets/<ns>/textures/entity/villager/type/<path>.png`.",
+          "key": "villager",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Lowered to `assets/<ns>/textures/entity/zombie_villager/type/<path>.png`; defaults to\n`villager`.",
+          "key": "zombie_villager",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "texture"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Lowered to both pictures' `.png.mcmeta` as `villager.hat`; absent writes none (no hat).",
+          "key": "hat",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::element::VillagerHat"
           }
         }
       ],
@@ -24725,6 +26459,18 @@
       }
     },
     "msm:ai_goal": {
+      "barter": {
+        "kind": "reference",
+        "path": "::msm::definition::BarterGoal"
+      },
+      "collect_items": {
+        "kind": "reference",
+        "path": "::msm::definition::CollectItemsGoal"
+      },
+      "dig_items": {
+        "kind": "reference",
+        "path": "::msm::definition::DigItemsGoal"
+      },
       "flee": {
         "kind": "reference",
         "path": "::msm::definition::FleeGoal"
@@ -24753,9 +26499,21 @@
         "kind": "reference",
         "path": "::msm::definition::PanicGoal"
       },
+      "play_dead": {
+        "kind": "reference",
+        "path": "::msm::definition::PlayDeadGoal"
+      },
       "ranged_attack": {
         "kind": "reference",
         "path": "::msm::definition::RangedAttackGoal"
+      },
+      "roost": {
+        "kind": "reference",
+        "path": "::msm::definition::RoostGoal"
+      },
+      "swoop": {
+        "kind": "reference",
+        "path": "::msm::definition::SwoopGoal"
       },
       "tempt": {
         "kind": "reference",
@@ -25142,6 +26900,16 @@
       "none": {
         "kind": "reference",
         "path": "::msm::definition::HolderLayoutFields"
+      }
+    },
+    "msm:game_rule_kind": {
+      "boolean": {
+        "kind": "reference",
+        "path": "::msm::definition::BooleanGameRule"
+      },
+      "integer": {
+        "kind": "reference",
+        "path": "::msm::definition::IntegerGameRule"
       }
     },
     "msm:hud_value": {
@@ -25619,5 +27387,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:1eb028c90c5927e7c8c805884d0bb15b170b3b2b301d1d704952361e3129bf28"
+  "ref": "msm-mcdoc:sha256:bd3c5d7109316a648b045e26f1af6a039689619302e5e02744548d3f52ffe25a"
 }

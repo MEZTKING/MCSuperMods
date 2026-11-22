@@ -1,0 +1,10 @@
+{
+  "category": "spawning",
+  "default": 3,
+  "description": "How many ghosts may haunt one player",
+  "display_name": "Ghost limit",
+  "format": 1,
+  "kind": "integer",
+  "max": 10,
+  "min": 0
+}

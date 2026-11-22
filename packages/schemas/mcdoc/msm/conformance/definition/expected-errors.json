@@ -707,6 +707,14 @@
     "code": "schema.type-mismatch",
     "path": "/components/msm:bundle"
   },
+  "command-2-argument-color.json": {
+    "code": "schema.invalid-enum",
+    "path": "/arguments/0/type"
+  },
+  "command-2-argument-registry.json": {
+    "code": "schema.unknown-field",
+    "path": "/arguments/0/registry"
+  },
   "command-argument-no-type.json": {
     "code": "schema.missing-field",
     "path": "/arguments/0/type"
@@ -831,6 +839,18 @@
     "code": "schema.unknown-field",
     "path": "/components/msm:container/slots"
   },
+  "creative-tab-2-items-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/items"
+  },
+  "creative-tab-2-items-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/items/0"
+  },
+  "creative-tab-2-order-by-hand-dash.json": {
+    "code": "schema.invalid-enum",
+    "path": "/order"
+  },
   "creative-tab-display-name.json": {
     "code": "schema.unknown-field",
     "path": "/display_name"
@@ -838,10 +858,6 @@
   "creative-tab-icon-number.json": {
     "code": "schema.type-mismatch",
     "path": "/icon"
-  },
-  "creative-tab-items.json": {
-    "code": "schema.unknown-field",
-    "path": "/items"
   },
   "creative-tab-no-icon.json": {
     "code": "schema.missing-field",
@@ -946,6 +962,94 @@
   "entity-missing-size.json": {
     "code": "schema.missing-field",
     "path": "/size"
+  },
+  "entity-mobs-2-barter-no-item.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ai_goals/goals/0/item"
+  },
+  "entity-mobs-2-barter-ticks-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/ticks"
+  },
+  "entity-mobs-2-bucketable-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:bucketable"
+  },
+  "entity-mobs-2-bucketable-unknown.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:bucketable/release_water"
+  },
+  "entity-mobs-2-bucketable-water-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:bucketable/water"
+  },
+  "entity-mobs-2-collect-range-65.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/range"
+  },
+  "entity-mobs-2-dash-cooldown-1201.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:rideable/dash/cooldown_ticks"
+  },
+  "entity-mobs-2-dash-leap.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:rideable/dash/leap"
+  },
+  "entity-mobs-2-dash-power-6.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:rideable/dash/power"
+  },
+  "entity-mobs-2-dash-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:rideable/dash"
+  },
+  "entity-mobs-2-dig-blocks-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/components/msm:ai_goals/goals/0/dig_blocks"
+  },
+  "entity-mobs-2-dig-interval-19.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/interval_ticks"
+  },
+  "entity-mobs-2-dig-no-loot-table.json": {
+    "code": "schema.missing-field",
+    "path": "/components/msm:ai_goals/goals/0/loot_table"
+  },
+  "entity-mobs-2-hover-height-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:movement/hover_height"
+  },
+  "entity-mobs-2-hover-height-33.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:movement/hover_height"
+  },
+  "entity-mobs-2-mode-burrow.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:movement/mode"
+  },
+  "entity-mobs-2-play-dead-health-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/below_health"
+  },
+  "entity-mobs-2-play-dead-ticks-19.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/ticks"
+  },
+  "entity-mobs-2-roost-daylight-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:ai_goals/goals/0/daylight"
+  },
+  "entity-mobs-2-roost-range-17.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/range"
+  },
+  "entity-mobs-2-swoop-dive-speed.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:ai_goals/goals/0/dive_speed"
+  },
+  "entity-mobs-2-swoop-height-1.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:ai_goals/goals/0/height"
   },
   "entity-model-missing-texture.json": {
     "code": "schema.missing-field",
@@ -1175,6 +1279,46 @@
     "code": "schema.out-of-range",
     "path": "/size/width"
   },
+  "fluid-2-bottle-effects-no-effect.json": {
+    "code": "schema.missing-field",
+    "path": "/bottle/effects/0/effect"
+  },
+  "fluid-2-bottle-food-no-nutrition.json": {
+    "code": "schema.missing-field",
+    "path": "/bottle/food/nutrition"
+  },
+  "fluid-2-bottle-on-drink-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/bottle/on_drink"
+  },
+  "fluid-2-bottle-seconds.json": {
+    "code": "schema.unknown-field",
+    "path": "/bottle/seconds"
+  },
+  "fluid-2-cauldron-levels-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/cauldron/levels"
+  },
+  "fluid-2-cauldron-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/cauldron"
+  },
+  "fluid-2-mixing-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/mixing"
+  },
+  "fluid-2-mixing-no-with.json": {
+    "code": "schema.missing-field",
+    "path": "/mixing/0/with"
+  },
+  "fluid-2-mixing-result.json": {
+    "code": "schema.unknown-field",
+    "path": "/mixing/0/result"
+  },
+  "fluid-2-mixing-source-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/mixing/0/source"
+  },
   "fluid-behaves-like-honey.json": {
     "code": "schema.invalid-enum",
     "path": "/behaves_like"
@@ -1246,6 +1390,42 @@
   "fluid-tint-too-big.json": {
     "code": "schema.out-of-range",
     "path": "/tint"
+  },
+  "game-rule-boolean-default-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/default"
+  },
+  "game-rule-boolean-min.json": {
+    "code": "schema.unknown-field",
+    "path": "/min"
+  },
+  "game-rule-category-world.json": {
+    "code": "schema.invalid-enum",
+    "path": "/category"
+  },
+  "game-rule-display-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "game-rule-integer-default-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/default"
+  },
+  "game-rule-integer-max-fraction.json": {
+    "code": "schema.not-integer",
+    "path": "/max"
+  },
+  "game-rule-kind-float.json": {
+    "code": "schema.invalid-enum",
+    "path": "/kind"
+  },
+  "game-rule-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "game-rule-no-kind.json": {
+    "code": "schema.missing-field",
+    "path": "/kind"
   },
   "hud-anchor-middle.json": {
     "code": "schema.invalid-enum",
@@ -1374,6 +1554,22 @@
   "item-bad-tool-type.json": {
     "code": "schema.invalid-enum",
     "path": "/components/msm:tool/type"
+  },
+  "item-boat-chest-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:boat/chest"
+  },
+  "item-boat-paddles.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:boat/paddles"
+  },
+  "item-boat-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:boat"
+  },
+  "item-boat-wood-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:boat/wood_texture"
   },
   "item-components-not-object.json": {
     "code": "schema.type-mismatch",
@@ -2011,6 +2207,14 @@
     "code": "schema.unknown-field",
     "path": "/textures"
   },
+  "shoulder-2-sides-both.json": {
+    "code": "schema.invalid-enum",
+    "path": "/components/msm:shoulder_riding/sides"
+  },
+  "shoulder-2-sides-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:shoulder_riding/sides"
+  },
   "shoulder-cooldown.json": {
     "code": "schema.unknown-field",
     "path": "/components/msm:shoulder_riding/cooldown_ticks"
@@ -2022,6 +2226,26 @@
   "shoulder-true.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:shoulder_riding"
+  },
+  "stat-display-name.json": {
+    "code": "schema.unknown-field",
+    "path": "/display_name"
+  },
+  "stat-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "stat-formatter-percent.json": {
+    "code": "schema.invalid-enum",
+    "path": "/formatter"
+  },
+  "stat-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "stat-unit.json": {
+    "code": "schema.unknown-field",
+    "path": "/unit"
   },
   "storage-hoppers.json": {
     "code": "schema.unknown-field",
@@ -2046,6 +2270,34 @@
   "storage-true.json": {
     "code": "schema.type-mismatch",
     "path": "/components/msm:storage"
+  },
+  "trader-2-demand-string.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/demand"
+  },
+  "trader-2-reputation-gossip.json": {
+    "code": "schema.unknown-field",
+    "path": "/components/msm:trader/reputation/gossip"
+  },
+  "trader-2-reputation-hurt-101.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:trader/reputation/hurt"
+  },
+  "trader-2-reputation-step-0.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:trader/reputation/price_step"
+  },
+  "trader-2-reputation-trade-26.json": {
+    "code": "schema.out-of-range",
+    "path": "/components/msm:trader/reputation/trade"
+  },
+  "trader-2-reputation-true.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/reputation"
+  },
+  "trader-2-work-site-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/components/msm:trader/work_site"
   },
   "trader-empty-trade-sets.json": {
     "code": "schema.invalid-length",
@@ -2342,6 +2594,34 @@
   "vehicle-weapons-9.json": {
     "code": "schema.invalid-length",
     "path": "/weapons"
+  },
+  "villager-type-biome-number.json": {
+    "code": "schema.type-mismatch",
+    "path": "/biomes/0"
+  },
+  "villager-type-biomes-empty.json": {
+    "code": "schema.invalid-length",
+    "path": "/biomes"
+  },
+  "villager-type-format-2.json": {
+    "code": "schema.invalid-literal",
+    "path": "/format"
+  },
+  "villager-type-no-biomes.json": {
+    "code": "schema.missing-field",
+    "path": "/biomes"
+  },
+  "villager-type-no-format.json": {
+    "code": "schema.missing-field",
+    "path": "/format"
+  },
+  "villager-type-textures.json": {
+    "code": "schema.unknown-field",
+    "path": "/textures"
+  },
+  "villager-type-trades.json": {
+    "code": "schema.unknown-field",
+    "path": "/trades"
   },
   "waterlog-boolean.json": {
     "code": "schema.type-mismatch",

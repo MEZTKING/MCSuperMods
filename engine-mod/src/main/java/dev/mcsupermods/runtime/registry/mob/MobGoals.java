@@ -121,6 +121,13 @@ public final class MobGoals {
                 case Goal.Tempt t -> goalSelector.addGoal(priority, new TemptGoal(self, t.speed(), ofItems(t.items()), t.scared()));
                 case Goal.Panic p -> goalSelector.addGoal(priority, new PanicGoal(self, p.speed()));
                 case Goal.LeapAtTarget l -> goalSelector.addGoal(priority, new LeapAtTargetGoal(self, l.height()));
+                // ADR 0109 D3, D4: in the format since B527; B532 builds swoop, roost and the habits.
+                case Goal.Swoop g -> {}
+                case Goal.Roost g -> {}
+                case Goal.CollectItems g -> {}
+                case Goal.DigItems g -> {}
+                case Goal.PlayDead g -> {}
+                case Goal.Barter g -> {}
             }
         }
         mob.driver().taming().addGoals(goalSelector, targetSelector);

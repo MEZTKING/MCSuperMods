@@ -2,15 +2,16 @@
 // entities (ADR 0028 D2), mob effects (ADR 0055 D2), additions to vanilla content (ADR 0060
 // D2, D3), particle types (ADR 0080 D1), key binds (ADR 0088 D3), HUD elements (ADR 0089 D1),
 // vehicles (ADR 0090 D2), commands and creative tabs (ADR 0096 D1, D2), villager professions
-// (ADR 0098 D2), fluids (ADR 0099 D1) and rules for vanilla blocks (ADR 0105 D4). Lowering
-// writes these to
+// (ADR 0098 D2), fluids (ADR 0099 D1), rules for vanilla blocks (ADR 0105 D4), villager types
+// (ADR 0107 D5), game rules and statistics (ADR 0111 D5, D6). Lowering writes these to
 // `msm/<ns>/block/<path>.json`, `msm/<ns>/item/<path>.json`, `msm/<ns>/entity/<path>.json`,
 // `msm/<ns>/effect/<path>.json`, `msm/<ns>/biome_addition/<path>.json`,
 // `msm/<ns>/loot_addition/<path>.json`, `msm/<ns>/particle/<path>.json`,
 // `msm/<ns>/key_bind/<path>.json`, `msm/<ns>/hud/<path>.json`, `msm/<ns>/vehicle/<path>.json`,
 // `msm/<ns>/command/<path>.json`, `msm/<ns>/creative_tab/<path>.json`,
-// `msm/<ns>/villager_profession/<path>.json`, `msm/<ns>/fluid/<path>.json` and
-// `msm/<ns>/vanilla_block_rules/<path>.json`.
+// `msm/<ns>/villager_profession/<path>.json`, `msm/<ns>/fluid/<path>.json`,
+// `msm/<ns>/vanilla_block_rules/<path>.json`, `msm/<ns>/villager_type/<path>.json`,
+// `msm/<ns>/game_rule/<path>.json` and `msm/<ns>/stat/<path>.json`.
 
 use super::action::Event
 use super::action::ParticleSpec
@@ -1536,6 +1537,26 @@ struct ItemInventory {
 /// validators). Runtimes older than the release that ships ADR 0095 reject the component.
 struct Bundle {}
 
+/// Makes the item a boat (ADR 0110 D1 as amended after the spike): the runtime registers the
+/// entity type of the item's id with vanilla's boat behaviour (paddling, water and ice handling,
+/// two seats) and vanilla's boat renderer, and the item places it on water as vanilla's boats do.
+/// With `chest` it also registers a chest boat, an item and an entity type of the id
+/// `<ns>:<wood>_chest_boat` (`<wood>_chest_raft` for a raft), where `<wood>` is the item's path
+/// without its `_boat` or `_raft` ending (the whole path when it has neither).
+/// The item stacks to 1. Only in the Fabric mod jar. Runtimes older than the release that ships ADR
+/// 0110 reject the component.
+struct Boat {
+	/// Whether a chest boat comes with it; defaults to false.
+	chest?: boolean,
+	/// Whether it is a raft, drawn and sized as vanilla's bamboo raft; defaults to false.
+	raft?: boolean,
+	/// The wood its pictures are named after: `<ns>:<name>` draws
+	/// `assets/<ns>/textures/entity/boat/<name>.png` (128 x 64) and, with `chest`,
+	/// `assets/<ns>/textures/entity/chest_boat/<name>.png` (128 x 128); defaults to the item's id
+	/// without its `_boat` or `_raft` ending.
+	wood_texture?: string,
+}
+
 /// Runtime item components.
 struct ItemComponents {
 	"msm:food"?: Food,
@@ -1574,6 +1595,8 @@ struct ItemComponents {
 	"msm:item_inventory"?: ItemInventory,
 	/// A bundle (ADR 0095 D4).
 	"msm:bundle"?: Bundle,
+	/// A boat or raft (ADR 0110 D1).
+	"msm:boat"?: Boat,
 }
 
 /// Fields every item definition and item element share.
@@ -1675,6 +1698,14 @@ enum(string) MovementMode {
 	Swim = "swim",
 	/// Walks on land and swims in water, breathing both; `wander` stays the walking stroll.
 	Amphibious = "amphibious",
+	/// Floats at `hover_height` above the ground below it, as a ghast or a blaze (ADR 0109 D3): no
+	/// gravity and no fall damage, the height kept by a damped climb or sink over the first block
+	/// with a collision shape below. Runtimes older than the release that ships ADR 0109 refuse the
+	/// value (the entity does not register).
+	Hover = "hover",
+	/// Flies as `fly`, and passes through blocks while its attack goal charges at a target, as a
+	/// vex (ADR 0109 D3). Runtimes older than the release that ships ADR 0109 refuse the value.
+	Phase = "phase",
 }
 
 /// The entity's hitbox in blocks.
@@ -1741,6 +1772,9 @@ struct Movement {
 	dry_out_ticks?: int @ 20..,
 	/// The `step_height` attribute in blocks; absent keeps vanilla's 0.6.
 	step_height?: float @ 0..10,
+	/// `hover` only: the height in blocks the mob keeps above the ground below it, 0.5 to 32;
+	/// defaults to 4 (ADR 0109 D3).
+	hover_height?: float @ 0.5..32,
 }
 
 /// Ranged attacks (ADR 0070 D4), used by the `ranged_attack` goal as `msm:attack` is by
@@ -1803,6 +1837,19 @@ enum(string) GoalType {
 	Panic = "panic",
 	/// Leaps at its attack target (`LeapAtTargetGoal`, ADR 0070 D5).
 	LeapAtTarget = "leap_at_target",
+	/// Circles high above its target, then dives at it, as a phantom (ADR 0109 D3).
+	Swoop = "swoop",
+	/// Hangs upside down under a block, as a bat (ADR 0109 D3).
+	Roost = "roost",
+	/// Picks up items like the one it was given and brings them to its owner, as an allay
+	/// (ADR 0109 D4).
+	CollectItems = "collect_items",
+	/// Digs on its `dig_blocks` and drops a roll of a loot table, as a sniffer (ADR 0109 D4).
+	DigItems = "dig_items",
+	/// Lies still and recovers when badly hurt, as an axolotl (ADR 0109 D4).
+	PlayDead = "play_dead",
+	/// Takes an item and drops a roll of a loot table, as a piglin bartering (ADR 0109 D4).
+	Barter = "barter",
 }
 
 /// One AI goal, selected by `type`.
@@ -1909,6 +1956,95 @@ dispatch msm:ai_goal[panic] to struct PanicGoal {
 dispatch msm:ai_goal[leap_at_target] to struct LeapAtTargetGoal {
 	/// Upward speed of the leap in blocks per tick; defaults to 0.4.
 	height?: float @ 0..,
+}
+
+/// Circles about `height` blocks above its target, then dives at it and hits it with the mob's
+/// `msm:attack`, as a phantom (ADR 0109 D3); for `fly`, `hover` and `phase` mobs (a validator
+/// error otherwise). Without `msm:attack` the goal adds nothing, as `melee_attack`. Runtimes older
+/// than the release that ships ADR 0109 drop the goal with an error.
+dispatch msm:ai_goal[swoop] to struct SwoopGoal {
+	/// Speed multiplier of the dive; defaults to 1.
+	speed?: float @ 0..,
+	/// Height in blocks above the target the mob circles at before diving, 2 to 32; defaults to
+	/// 12 (verify at implementation).
+	height?: float @ 2..32,
+	/// Entity types to swoop at; `minecraft:player` matches players. Absent or empty with
+	/// `retaliate` only fights back.
+	targets?: [#[id="entity_type"] string],
+	/// Whether a target must be in sight; defaults to true.
+	must_see?: boolean,
+	/// Whether to fight back when hurt; defaults to false.
+	retaliate?: boolean,
+}
+
+/// Hangs upside down under a block with no gravity, as a bat (ADR 0109 D3 as amended: one synced
+/// flag the renderer flips the model by), and lets go when a player comes near or it is hurt.
+/// Runtimes older than the release that ships ADR 0109 drop the goal with an error.
+dispatch msm:ai_goal[roost] to struct RoostGoal {
+	/// Whether the mob roosts in daylight, as a bat sleeps through the day; defaults to true.
+	daylight?: boolean,
+	/// Whether the mob also roosts at other times when it has nothing else to do; defaults to
+	/// false.
+	when_idle?: boolean,
+	/// How far up, in blocks, the mob looks for a block to hang under, 1 to 16; defaults to 8.
+	range?: int @ 1..16,
+}
+
+/// Picks up items like the one a player gave it (using the mob with an item gives it; using it
+/// with an empty hand takes it back) and brings them to its owner, or to a note block it heard
+/// play, as an allay (ADR 0109 D4). Thrown items whose thrower is the owner are left alone.
+/// Runtimes older than the release that ships ADR 0109 drop the goal with an error.
+dispatch msm:ai_goal[collect_items] to struct CollectItemsGoal {
+	/// Speed multiplier; defaults to 1.
+	speed?: float @ 0..,
+	/// How far, in blocks, the mob looks for items, 1 to 64; defaults to 32.
+	range?: float @ 1..64,
+	/// Whether a note block played near the mob becomes its drop-off point for a while, as an
+	/// allay's; defaults to true.
+	note_blocks?: boolean,
+}
+
+/// Every `interval_ticks` walks to one of its `dig_blocks` near it, digs and drops a roll of
+/// `loot_table`, as a sniffer (ADR 0109 D4; the loot context is vanilla's `gift`). Runtimes older
+/// than the release that ships ADR 0109 drop the goal with an error.
+dispatch msm:ai_goal[dig_items] to struct DigItemsGoal {
+	/// Blocks and block tags (`#`-prefixed) the mob digs on, 1 to 64.
+	dig_blocks: [#[id(registry="block", tags="allowed")] string] @ 1..64,
+	/// The loot table rolled for each dig.
+	loot_table: #[id="loot_table"] string,
+	/// Ticks between two digs, at least 20; defaults to 240 (verify at implementation).
+	interval_ticks?: int @ 20..,
+	/// Speed multiplier while walking to a dig spot; defaults to 1.
+	speed?: float @ 0..,
+}
+
+/// When hurt below `below_health` of its maximum health, lies still for `ticks` ticks (one synced
+/// flag the renderer shows as lying on its side), is no longer seen as a target by mobs, and
+/// recovers, as an axolotl (ADR 0109 D4). Runtimes older than the release that ships ADR 0109 drop
+/// the goal with an error.
+dispatch msm:ai_goal[play_dead] to struct PlayDeadGoal {
+	/// The share of its maximum health below which a hit makes the mob play dead, 0.01 to 1;
+	/// defaults to 0.5 (verify at implementation).
+	below_health?: float @ 0.01..1,
+	/// Ticks it plays dead, 20 to 1200; defaults to 200.
+	ticks?: int @ 20..1200,
+	/// Whether it regenerates health while playing dead; defaults to true.
+	regenerates?: boolean,
+}
+
+/// Takes `item` from a player (using the mob with it) or picks it up from the ground, holds it for
+/// `ticks` ticks, then drops a roll of `loot_table`, as a piglin bartering (ADR 0109 D4 as
+/// amended: vanilla's `barter` loot context with the mob only). Runtimes older than the release
+/// that ships ADR 0109 drop the goal with an error.
+dispatch msm:ai_goal[barter] to struct BarterGoal {
+	/// The item or item tag (`#`-prefixed) the mob barters for.
+	item: #[id(registry="item", tags="allowed")] string,
+	/// The loot table rolled for each item taken.
+	loot_table: #[id="loot_table"] string,
+	/// Ticks between taking the item and dropping the loot, 1 to 1200; defaults to 120.
+	ticks?: int @ 1..1200,
+	/// Whether the mob also picks the item up from the ground; defaults to true.
+	from_ground?: boolean,
 }
 
 /// The mob's AI goals.
@@ -2075,6 +2211,19 @@ struct Rideable {
 	saddle_bone?: string,
 	/// Event fired when a player mounts the mob; `player` is the rider.
 	on_mount?: string,
+	/// A charged forward leap from vanilla's ridden jump bar, as a camel's dash (ADR 0109 D4); `{}`
+	/// gives the defaults. For `walk` and `amphibious` mobs; in place of the jump while set.
+	/// Runtimes older than the release that ships ADR 0109 refuse the field (the component is not
+	/// applied).
+	dash?: RideDash,
+}
+
+/// A ridden dash (ADR 0109 D4).
+struct RideDash {
+	/// How far the leap carries, as a factor; defaults to 1 (about 7 blocks at a full bar).
+	power?: float @ 0.1..5,
+	/// Ticks before the mob can dash again, 0 to 1200; defaults to 55 (verify at implementation).
+	cooldown_ticks?: int @ 0..1200,
 }
 
 /// How a mob's variant is picked when it spawns.
@@ -2189,6 +2338,42 @@ struct Trader {
 	/// An event id declared in `events`, fired after each trade; self is the mob, `other` the
 	/// player.
 	on_trade?: string,
+	/// How the mob remembers each player (ADR 0107 D1 as amended): a value per player, saved with
+	/// the mob, that changes every offer's price for that player. Absent means none: prices never
+	/// change by player. `{}` gives vanilla's numbers. It does not spread to other mobs.
+	reputation?: TraderReputation,
+	/// Whether vanilla's demand rule applies to each offer: an offer traded heavily costs more
+	/// after the next restock, and settles again with light trading (ADR 0107 D2); defaults to
+	/// true, as vanilla villagers.
+	demand?: boolean,
+	/// A block or block tag (`#`-prefixed) the mob restocks at: when offers need a refill it walks
+	/// to the nearest such block within 16 blocks and restocks within 2 blocks of it, twice a day
+	/// as vanilla villagers (ADR 0107 D3). Absent means it restocks where it stands. Only with
+	/// `restock` `twice_a_day`.
+	work_site?: #[id(registry="block", tags="allowed")] string,
+}
+
+/// A project trader's memory of each player (ADR 0107 D1 as amended). Every offer's price for a
+/// player changes by the player's value divided by `price_step`, rounded down (a positive value
+/// makes it cheaper, a negative one dearer), never below one item. Each value moves back toward 0
+/// once a day.
+struct TraderReputation {
+	/// Taken off the player's value each time the player hurts the mob, 0 to 100; defaults to
+	/// 25.
+	hurt?: int @ 0..100,
+	/// Added for each trade with the player, 0 to 25; defaults to 2. Trading adds up to 25 at most.
+	trade?: int @ 0..25,
+	/// An item or item tag (`#`-prefixed) a player can give the mob (using the mob with it, which
+	/// uses one up) to raise their value by `gift`; absent means no gifts.
+	gift_item?: #[id(registry="item", tags="allowed")] string,
+	/// Added for each gift, 0 to 100; defaults to 25. Gifts add up to 25 at most.
+	gift?: int @ 0..100,
+	/// How far a value below 0 moves back toward 0 each day, 0 to 100; defaults to 20. Trading
+	/// value fades by 2 a day, as vanilla's.
+	decay_per_day?: int @ 0..100,
+	/// The value that changes a price by one item, 1 to 1000; absent means each offer's own price
+	/// multiplier decides (1 divided by it: 20 for vanilla's usual 0.05).
+	price_step?: int @ 1..1000,
 }
 
 /// Gives the mob a chest-like store (ADR 0098 D3), as vanilla's donkeys and llamas carry: vanilla's
@@ -2217,8 +2402,35 @@ struct Storage {
 /// takes damage, sneaks, sleeps, rides, swims, flies with an elytra, changes dimension, leaves
 /// the game or dies, and does not come back for 100 ticks. One shoulder pet per player; a parrot
 /// keeps vanilla's own shoulder. Runtimes older than the release that ships ADR 0098 ignore the
-/// component with a warning.
-struct ShoulderRiding {}
+/// component with a warning. Since ADR 0109 D2 a player carries up to two pets, one on each
+/// shoulder, beside vanilla's parrots on the sides they leave free.
+struct ShoulderRiding {
+	/// Which shoulder the pet takes, as the player sees it; defaults to `either` (the free one,
+	/// the right first). Runtimes older than the release that ships ADR 0109 refuse the field (the
+	/// component is not applied).
+	sides?: ShoulderSide,
+}
+
+/// A shoulder side (ADR 0109 D2), named by the player's view.
+enum(string) ShoulderSide {
+	Left = "left",
+	Right = "right",
+	/// Whichever is free.
+	Either = "either",
+}
+
+/// Lets a player catch the mob in a bucket, as vanilla's fish (ADR 0109 D1): a water bucket used on
+/// the mob takes it into the item `<ns>:<path>_bucket` (generated, stacking to 1), which keeps its
+/// custom name, health and variant and lets it out again with the water. Needs `msm:movement`
+/// `mode` `swim` (a validator error otherwise; the runtime drops the component with a warning).
+/// Runtimes older than the release that ships ADR 0109 ignore the component with a warning.
+struct Bucketable {
+	/// The language key of the bucket item's name; defaults to `item.<ns>.<path>_bucket`.
+	item_name?: string,
+	/// Whether the bucket holds water: a water bucket takes the mob and releasing it places water
+	/// (true, the default); false takes it with an empty bucket and releases it without water.
+	water?: boolean,
+}
 
 /// Entity components other than `msm:animated_model`, shared with the element data.
 struct EntityBehaviourComponents {
@@ -2252,6 +2464,8 @@ struct EntityBehaviourComponents {
 	"msm:storage"?: Storage,
 	/// Riding on the owner's shoulder (ADR 0098 D4); needs `base` `animal` and `msm:tameable`.
 	"msm:shoulder_riding"?: ShoulderRiding,
+	/// Caught in a bucket (ADR 0109 D1); needs `msm:movement` `mode` `swim`.
+	"msm:bucketable"?: Bucketable,
 }
 
 /// Runtime entity components; `msm:animated_model` is required.
@@ -2625,6 +2839,72 @@ enum(string) CommandArgumentType {
 	Item = "item",
 	/// A block id.
 	Block = "block",
+	/// A dimension id (ADR 0111 D2: the types below arrive with the release that ships ADR 0111;
+	/// older runtimes refuse them).
+	Dimension = "dimension",
+	/// A time in ticks, written as `20`, `5s` or `2d`.
+	Time = "time",
+	/// A team colour name, such as `red`.
+	TeamColour = "team_colour",
+	/// A colour written as six hex digits, such as `FF8800`.
+	HexColour = "hex_colour",
+	/// A rotation, as `~ ~` (yaw and pitch).
+	Rotation = "rotation",
+	/// One angle, as `~45`.
+	Angle = "angle",
+	/// A UUID.
+	Uuid = "uuid",
+	/// A scoreboard objective's name.
+	Objective = "objective",
+	/// One score holder: a name or a selector.
+	ScoreHolder = "score_holder",
+	/// Several score holders, `*` included.
+	ScoreHolders = "score_holders",
+	/// An item test, as `#minecraft:logs` or an item with components.
+	ItemPredicate = "item_predicate",
+	/// A block test, as `#minecraft:logs` or a block with states.
+	BlockPredicate = "block_predicate",
+	/// A mob effect id.
+	Effect = "effect",
+	/// An enchantment id.
+	Enchantment = "enchantment",
+	/// A biome id.
+	Biome = "biome",
+	/// A biome id or a biome tag (`#`-prefixed).
+	BiomeOrTag = "biome_or_tag",
+	/// A structure id; checked only when the command runs (the game does not send structures to
+	/// players).
+	Structure = "structure",
+	/// A structure id or a structure tag (`#`-prefixed); checked only when the command runs.
+	StructureOrTag = "structure_or_tag",
+	/// An entity type id.
+	EntityType = "entity_type",
+	/// A particle, with its options.
+	Particle = "particle",
+	/// A game mode name.
+	GameMode = "game_mode",
+	/// A text component in JSON or SNBT.
+	TextComponent = "text_component",
+	/// A whole number range, as `1..5`.
+	IntRange = "int_range",
+	/// Any namespaced id.
+	Identifier = "identifier",
+	/// A team's name.
+	Team = "team",
+	/// An inventory slot name, such as `hotbar.3`.
+	Slot = "slot",
+	/// An SNBT compound, such as `{a:1b}`.
+	Nbt = "nbt",
+	/// The rest of the line as a chat message, selectors resolved; only as the last argument.
+	Message = "message",
+	/// A dialog id or an inline dialog.
+	Dialog = "dialog",
+	/// A loot table id or an inline loot table.
+	LootTable = "loot_table",
+	/// An advancement id; checked only when the command runs.
+	Advancement = "advancement",
+	/// A recipe id; checked only when the command runs.
+	Recipe = "recipe",
 }
 
 /// One argument of a command (ADR 0096 D1). A function receives it as the macro value
@@ -2687,6 +2967,9 @@ enum(string) CreativeTabOrder {
 	AsListed = "as_listed",
 	/// By display name.
 	ByName = "by_name",
+	/// In the order of `items` (ADR 0111 D7); the tab's other items follow in registration order.
+	/// Runtimes older than the release that ships ADR 0111 refuse the value.
+	ByHand = "by_hand",
 }
 
 /// Fields every creative tab definition and element share (ADR 0096 D2).
@@ -2697,6 +2980,10 @@ struct CreativeTabCommon {
 	title?: string,
 	/// The order of the items; defaults to `as_listed`.
 	order?: CreativeTabOrder,
+	/// With `order` `by_hand`: the items in the order the tab shows them, 1 to 1024 ids, vanilla's
+	/// or the project's; an item not otherwise in the tab joins it (ADR 0111 D7). Ignored with a
+	/// warning under another order.
+	items?: [#[id="item"] string] @ 1..1024,
 }
 
 /// A creative tab definition, `msm/<ns>/creative_tab/<path>.json` (ADR 0096 D2): a tab in the
@@ -2778,10 +3065,65 @@ struct FluidCommon {
 	/// An event id declared in `events`, fired on the server while an entity is in the fluid, at
 	/// most every 10 ticks for the same entity (ADR 0061).
 	on_entity_inside?: string,
-	/// Events that `on_entity_inside` refers to, by id.
+	/// What forms where this fluid meets another (ADR 0108 D1 as amended), 1 to 16 rules; checked
+	/// by the fluid's own liquid block on both versions, fluid ids before `water` and `lava`, the
+	/// first matching rule winning. When set, vanilla's own lava rule no longer applies to this
+	/// fluid. Runtimes older than the release that ships ADR 0108 refuse the field.
+	mixing?: [FluidMixing] @ 1..16,
+	/// A cauldron of this fluid, the block `<ns>:<path>_cauldron` (ADR 0108 D2), filled and emptied
+	/// with the bucket and, with `levels`, the bottle; vanilla's empty cauldron takes the bucket.
+	/// A lava-like fluid's cauldron is always full only. Absent means none. Runtimes older than the
+	/// release that ships ADR 0108 refuse the field.
+	cauldron?: FluidCauldron,
+	/// A bottle of this fluid, the item `<ns>:<path>_bottle` (ADR 0108 D3), filled by a glass
+	/// bottle used on a source (or a cauldron with levels) and drunk in 1.6 seconds, leaving a
+	/// glass bottle. Absent means none. Runtimes older than the release that ships ADR 0108 refuse
+	/// the field.
+	bottle?: FluidBottle,
+	/// Events that `on_entity_inside` and `bottle.on_drink` refer to, by id.
 	events?: struct FluidEvents {
 		[string]: Event,
 	},
+}
+
+/// The other liquid of a mixing rule (ADR 0108 D1): any fluid in vanilla's water or lava tag.
+enum(string) FluidMixingTag {
+	/// Any fluid in `#minecraft:water`, vanilla's water and every water-like fluid.
+	Water = "water",
+	/// Any fluid in `#minecraft:lava`.
+	Lava = "lava",
+}
+
+/// One mixing rule (ADR 0108 D1 as amended). At least one of `source` and `flowing` (a validator
+/// error otherwise; the runtime drops the rule with a warning).
+struct FluidMixing {
+	/// The other liquid: `water`, `lava`, or a fluid id (the project's or vanilla's, matched
+	/// exactly).
+	with: (FluidMixingTag | #[id="fluid"] string),
+	/// The block a source of this fluid becomes when the other liquid touches it, as lava's
+	/// obsidian; absent leaves it.
+	source?: #[id="block"] string,
+	/// The block flowing fluid of this kind becomes when the other liquid touches it, as lava's
+	/// cobblestone; absent leaves it.
+	flowing?: #[id="block"] string,
+}
+
+/// A fluid's cauldron (ADR 0108 D2).
+struct FluidCauldron {
+	/// Whether it fills in three levels as water's does (a bottle takes or adds one, the bucket
+	/// takes only a full one); defaults to false, full only as lava's. Ignored with a warning on a
+	/// lava-like fluid.
+	levels?: boolean,
+}
+
+/// A fluid's bottle (ADR 0108 D3), drunk like a potion.
+struct FluidBottle {
+	/// Hunger restored when drunk; absent means none (it can be drunk at any time).
+	food?: Food,
+	/// Mob effects given when drunk.
+	effects?: [ConsumeEffect],
+	/// An event id declared in `events`, fired when the bottle is drunk; self is the drinker.
+	on_drink?: string,
 }
 
 /// A fluid definition, `msm/<ns>/fluid/<path>.json` (ADR 0099 D1): the fluid (one registry entry,
@@ -2853,4 +3195,107 @@ struct VanillaBlockRules {
 	age?: [VanillaAgePair] @ 1..256,
 	/// Blocks that burn.
 	burn?: [VanillaBurnRule] @ 1..256,
+}
+
+/// Fields every villager type definition and element share (ADR 0107 D5).
+struct VillagerTypeCommon {
+	/// Biome ids and biome tags (`#`-prefixed), 1 to 64, where villagers and zombie villagers
+	/// spawn and are born with this type; their union. A biome another villager type also names
+	/// goes to the later one by mod and path, with a warning.
+	biomes: [#[id(registry="worldgen/biome", tags="allowed")] string] @ 1..64,
+}
+
+/// A villager type definition, `msm/<ns>/villager_type/<path>.json` (ADR 0107 D5 as amended after
+/// the spike): a villager look, registered at start, that villagers born or spawned in its biomes
+/// take; vanilla draws it from `assets/<ns>/textures/entity/villager/type/<path>.png` and
+/// `assets/<ns>/textures/entity/zombie_villager/type/<path>.png` (64 x 64) with no client code.
+/// It brings no trades of its own. Runtimes older than the release that ships ADR 0107 ignore the
+/// `villager_type` folder.
+struct VillagerType {
+	/// Definition format; this is version 1.
+	format: 1,
+	...VillagerTypeCommon,
+}
+
+/// The kind of value a game rule holds (ADR 0111 D5): vanilla's two.
+enum(string) GameRuleKind {
+	/// True or false.
+	Boolean = "boolean",
+	/// A whole number.
+	Integer = "integer",
+}
+
+/// The group a game rule is listed under in the world's game rule screen (ADR 0111 D5 as amended:
+/// vanilla's categories).
+enum(string) GameRuleCategory {
+	Player = "player",
+	Mobs = "mobs",
+	Spawning = "spawning",
+	Drops = "drops",
+	Updates = "updates",
+	Chat = "chat",
+	Misc = "misc",
+}
+
+/// Fields of a `boolean` game rule.
+dispatch msm:game_rule_kind[boolean] to struct BooleanGameRule {
+	/// The value of a new world; defaults to false.
+	default?: boolean,
+}
+
+/// Fields of an `integer` game rule.
+dispatch msm:game_rule_kind[integer] to struct IntegerGameRule {
+	/// The value of a new world, within `min` and `max` (checked by the validators); defaults to 0,
+	/// kept within `min` and `max`.
+	default?: int,
+	/// The lowest value `/gamerule` accepts; absent means none.
+	min?: int,
+	/// The highest value `/gamerule` accepts, at least `min` (checked by the validators); absent
+	/// means none.
+	max?: int,
+}
+
+/// Fields every game rule definition and element share (ADR 0111 D5).
+struct GameRuleCommon {
+	/// The kind of value.
+	kind: GameRuleKind,
+	/// Defaults to `misc`.
+	category?: GameRuleCategory,
+	...msm:game_rule_kind[[kind]],
+}
+
+/// A game rule definition, `msm/<ns>/game_rule/<path>.json` (ADR 0111 D5 as amended after the
+/// spike): a world setting registered at start, set with `/gamerule <ns>:<path>` (the namespace is
+/// required) and saved with the world. Runtimes older than the release that ships ADR 0111 ignore
+/// the `game_rule` folder.
+struct GameRule {
+	/// Definition format; this is version 1.
+	format: 1,
+	...GameRuleCommon,
+}
+
+/// How a statistic's number is shown (ADR 0111 D6): vanilla's formatters.
+enum(string) StatFormatter {
+	/// As it is, a count.
+	Default = "default",
+	/// In centimetres, shown as metres or kilometres.
+	Distance = "distance",
+	/// In ticks, shown as seconds, minutes, hours or days.
+	Time = "time",
+}
+
+/// Fields every statistic definition and element share (ADR 0111 D6).
+struct StatCommon {
+	/// Defaults to `default`.
+	formatter?: StatFormatter,
+}
+
+/// A statistic definition, `msm/<ns>/stat/<path>.json` (ADR 0111 D6 as amended after the spike):
+/// a custom statistic registered at start, counted per player, shown in the Statistics screen and
+/// usable as the scoreboard criterion `minecraft.custom:<ns>.<path>`. Runtimes older than the
+/// release that ships ADR 0111 ignore the `stat` folder.
+struct Stat {
+	/// Definition format; this is version 1.
+	format: 1,
+	...StatCommon,
 }

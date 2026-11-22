@@ -1,0 +1,11 @@
+{
+  "arguments": [
+    {
+      "name": "c",
+      "type": "color"
+    }
+  ],
+  "format": 1,
+  "function": "mymod:paint",
+  "name": "paint"
+}

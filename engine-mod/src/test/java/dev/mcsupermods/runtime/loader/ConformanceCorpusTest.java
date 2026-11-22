@@ -46,7 +46,10 @@ class ConformanceCorpusTest {
      * Vanilla parity 3 batch 1's format (B506) decodes every new field: {@code weathering-2-} (weathering on rods, buttons,
      * plates, fences, gates and walls, ADR 0104 D1) since B510 extended {@code WEATHERING_TYPES}, {@code container-2-} and
      * {@code machine-2-} (a waterlogged or weathering container, a waterlogged machine, ADR 0104 D3, D6) since B513 lifted
-     * {@code checkAgeing}'s Q8 drop. Nothing is pending now; a later format batch adds its prefixes here.
+     * {@code checkAgeing}'s Q8 drop. Batch 2's format (B527) decodes every new field in its own parsers: {@code villager-type-}
+     * ({@code VillagerTypeParser}), {@code game-rule-} ({@code GameRuleParser}), {@code stat-} ({@code StatParser}), and the
+     * new fields of traders, shoulders, mobs, boats, fluids, commands and tabs in the files of the existing prefixes.
+     * Nothing is pending now; a later format batch adds its prefixes here.
      */
     private static final List<String> PENDING = List.of();
 
@@ -120,7 +123,10 @@ class ConformanceCorpusTest {
             new Kind("storage-", DefinitionParser::parseEntity), // B479
             new Kind("shoulder-", DefinitionParser::parseEntity), // B479
             new Kind("block-tools-", DefinitionParser::parseBlock), // B506
-            new Kind("vanilla-block-rules-", VanillaBlockRulesParser::parse)) // B506
+            new Kind("vanilla-block-rules-", VanillaBlockRulesParser::parse), // B506
+            new Kind("villager-type-", VillagerTypeParser::parse), // B527
+            new Kind("game-rule-", GameRuleParser::parse), // B527
+            new Kind("stat-", StatParser::parse)) // B527
             .sorted(Comparator.comparingInt((Kind k) -> k.prefix().length()).reversed())
             .toList();
 

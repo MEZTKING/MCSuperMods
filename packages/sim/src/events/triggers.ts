@@ -423,6 +423,12 @@ export class TriggerEngine {
    * Fires a trigger an owner binds by its spec id (B463: a cake's `on_eat`, a bag's `on_open`
    * and `on_close`), with its chance and rule names; false when the owner does not set it.
    */
+  /** An owner first appears without a trigger of its own firing (a fluid poured): its unfired triggers said. */
+  appeared(kind: EventOwner['kind'], id: string): void {
+    const owner = this.definitions.get(kind, id);
+    if (owner !== undefined) this.sayUnhandled(owner);
+  }
+
   fireTrigger(
     kind: EventOwner['kind'],
     id: string,

@@ -1,0 +1,40 @@
+{
+  "arguments": [
+    {
+      "name": "a_time",
+      "type": "time"
+    },
+    {
+      "name": "a_team_colour",
+      "type": "team_colour"
+    },
+    {
+      "name": "a_hex_colour",
+      "type": "hex_colour"
+    },
+    {
+      "name": "a_uuid",
+      "type": "uuid"
+    },
+    {
+      "name": "a_objective",
+      "type": "objective"
+    },
+    {
+      "name": "a_score_holder",
+      "type": "score_holder"
+    },
+    {
+      "name": "a_score_holders",
+      "type": "score_holders"
+    },
+    {
+      "name": "a_team",
+      "optional": true,
+      "type": "team"
+    }
+  ],
+  "format": 1,
+  "function": "mymod:scores",
+  "name": "msm_scores"
+}

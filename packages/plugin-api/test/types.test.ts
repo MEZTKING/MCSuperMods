@@ -19,6 +19,8 @@ import type {
   ExporterOption,
   FabricFacts,
   FluidTagFacts,
+  GameRuleFacts,
+  GameRuleKindName,
   GeckolibFacts,
   GeneratedFile,
   JavaProjectGenerator,
@@ -41,6 +43,8 @@ import type {
   ResourceFolderKey,
   RuntimeKeyFacts,
   SoundSetFacts,
+  StatFacts,
+  StatFormatName,
   Target,
   TargetChannel,
   TargetFacts,
@@ -376,6 +380,7 @@ describe('0.8.0 additions', () => {
       particles?: DefinitionInput[];
       commands?: DefinitionInput[];
       creativeTabs?: DefinitionInput[];
+      vanillaBlockRules?: DefinitionInput[];
       geckolib: boolean;
     }>();
     expectTypeOf<JavaProjectGenerator['generate']>().toEqualTypeOf<
@@ -686,6 +691,60 @@ describe('0.8.0 additions', () => {
     const older: EntityFacts = { projectileItems: [], saddleTag: 'minecraft:can_equip_saddle' };
     expect(older.tradeSounds).toBeUndefined();
     expect(testTarget.entities?.vanillaTradeSets).toBeUndefined();
+  });
+
+  it('carries villager type, cauldron, key-only argument, game rule and stat facts (1.20.0)', () => {
+    expectTypeOf<EntityFacts['villagerTypes']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<BlockFacts['cauldrons']>().toEqualTypeOf<readonly string[] | undefined>();
+    expectTypeOf<CommandArgumentFacts['keyOnly']>().toEqualTypeOf<boolean | undefined>();
+    expectTypeOf<TargetFacts['gameRules']>().toEqualTypeOf<GameRuleFacts | undefined>();
+    expectTypeOf<GameRuleFacts['kinds']>().toEqualTypeOf<readonly GameRuleKindName[]>();
+    expectTypeOf<TargetFacts['stats']>().toEqualTypeOf<StatFacts | undefined>();
+    expectTypeOf<StatFacts['formats']>().toEqualTypeOf<readonly StatFormatName[]>();
+    expectTypeOf<JavaProjectInput['vanillaBlockRules']>().toEqualTypeOf<
+      DefinitionInput[] | undefined
+    >();
+    const entities: EntityFacts = {
+      projectileItems: [],
+      saddleTag: 'minecraft:can_equip_saddle',
+      villagerTypes: ['desert', 'plains'],
+    };
+    const blocks: BlockFacts = { setTypes: [], woodTypes: [], cauldrons: ['minecraft:cauldron'] };
+    const structure: CommandArgumentFacts = {
+      parser: 'minecraft:resource_key',
+      properties: { registry: 'minecraft:worldgen/structure' },
+      keyOnly: true,
+    };
+    const gameRules: GameRuleFacts = {
+      kinds: ['boolean', 'integer'],
+      categories: ['player', 'misc'],
+      vanillaNames: ['keep_inventory'],
+    };
+    const stats: StatFacts = {
+      formats: ['default', 'distance', 'time'],
+      criterionPrefix: 'minecraft.custom:',
+      vanillaCustomStats: ['jump'],
+    };
+    expect(entities.villagerTypes).toContain('plains');
+    expect(blocks.cauldrons).toEqual(['minecraft:cauldron']);
+    expect(structure.keyOnly).toBe(true);
+    expect(gameRules.kinds).toHaveLength(2);
+    expect(stats.criterionPrefix).toBe('minecraft.custom:');
+    // @ts-expect-error: a game rule holds only vanilla's two kinds of value.
+    const wrongKind: GameRuleFacts = { kinds: ['float'], categories: [], vanillaNames: [] };
+    expect(wrongKind.kinds).toEqual(['float']);
+    const wrongFormat: StatFacts = {
+      // @ts-expect-error: a statistic has only vanilla's three formatters.
+      formats: ['percent'],
+      criterionPrefix: '',
+      vanillaCustomStats: [],
+    };
+    expect(wrongFormat.formats).toEqual(['percent']);
+    // 1.19.0-shaped facts without them stay assignable.
+    const older: EntityFacts = { projectileItems: [], saddleTag: 'minecraft:can_equip_saddle' };
+    expect(older.villagerTypes).toBeUndefined();
+    expect(testTarget.gameRules).toBeUndefined();
+    expect(testTarget.stats).toBeUndefined();
   });
 
   it('carries optional command facts on a target (1.17.0)', () => {

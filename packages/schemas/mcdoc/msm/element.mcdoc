@@ -2,8 +2,9 @@
 // `msm:effect` (ADR 0055 D2), `msm:biome_addition` and `msm:loot_addition` (ADR 0060 D2, D3),
 // `msm:particle` (ADR 0080 D1), `msm:key_bind` (ADR 0088 D3), `msm:hud` (ADR 0089 D1),
 // `msm:vehicle` (ADR 0090 D2), `msm:command` and `msm:creative_tab` (ADR 0096 D1, D2),
-// `msm:villager_profession` (ADR 0098 D2), `msm:fluid` (ADR 0099 D1) and
-// `msm:vanilla_block_rules` (ADR 0105 D4):
+// `msm:villager_profession` (ADR 0098 D2), `msm:fluid` (ADR 0099 D1),
+// `msm:vanilla_block_rules` (ADR 0105 D4), `msm:villager_type` (ADR 0107 D5), `msm:game_rule` and
+// `msm:stat` (ADR 0111 D5, D6):
 // the runtime definition plus editor-only fields that lower to ordinary pack files.
 
 use super::definition::BiomeAddition as DefinitionBiomeAddition
@@ -14,6 +15,9 @@ use super::definition::CommandCommon
 use super::definition::CreativeTabCommon
 use super::definition::EffectCommon
 use super::definition::FluidCommon
+use super::definition::GameRuleCommon
+use super::definition::StatCommon
+use super::definition::VillagerTypeCommon
 use super::definition::Breakable as DefinitionBreakable
 use super::definition::Shape as DefinitionShape
 use super::definition::EntityBehaviourComponents
@@ -735,6 +739,23 @@ struct Item {
 	/// Pictures of an `msm:bundle` (ADR 0095 D4), lowered to the item model definition in
 	/// vanilla's bundle shape; only with `msm:bundle`.
 	bundle_textures?: BundleTextures,
+	/// Pictures of an `msm:boat` (ADR 0110 D1), lowered to the boat texture paths of its
+	/// `wood_texture`; only with `msm:boat`.
+	boat_textures?: BoatTextures,
+	/// The chest boat's name, lowered to its `item.<ns>.<id path>` and `entity.<ns>.<id path>`
+	/// language keys; only with `msm:boat` `chest`. Defaults to the display name followed by
+	/// " with Chest".
+	chest_boat_display_name?: string,
+}
+
+/// Pictures of a boat (ADR 0110 D1), in vanilla's boat texture layout.
+struct BoatTextures {
+	/// The boat, 128 x 64, lowered to `assets/<ns>/textures/entity/boat/<name>.png`.
+	boat?: #[id="texture"] string,
+	/// The chest boat, 128 x 128, lowered to `assets/<ns>/textures/entity/chest_boat/<name>.png`.
+	chest_boat?: #[id="texture"] string,
+	/// The chest boat item's picture; the boat item's is the item's `model`.
+	chest_boat_item?: #[id="texture"] string,
 }
 
 /// Pictures of a bundle (ADR 0095 D4); the selected item is drawn by vanilla's own selected
@@ -807,6 +828,12 @@ struct Entity {
 	spawn_egg?: (SpawnEgg | false),
 	/// Behaviour components; `msm:animated_model` is required.
 	components: EntityComponents,
+	/// The bucket item's name with `msm:bucketable` (ADR 0109 D1), lowered to the language key its
+	/// `item_name` names (default `item.<ns>.<path>_bucket`); defaults to "Bucket of " followed by
+	/// the display name.
+	bucket_display_name?: string,
+	/// The bucket item's picture with `msm:bucketable`, lowered to its item model.
+	bucket_texture?: #[id="texture"] string,
 }
 
 /// `msm:effect` element data.
@@ -965,6 +992,8 @@ struct FluidTextures {
 	overlay?: #[id="texture"] string,
 	/// The bucket item's picture.
 	bucket?: #[id="texture"] string,
+	/// The bottle item's picture, with `bottle` (ADR 0108 D3).
+	bottle?: #[id="texture"] string,
 }
 
 /// `msm:fluid` element data (ADR 0099 D1): the definition with `format` optional, as lowering sets
@@ -979,6 +1008,68 @@ struct Fluid {
 	/// The bucket's name, lowered to the `item.<ns>.<path>_bucket` language key; defaults to the
 	/// display name followed by " Bucket".
 	bucket_display_name?: string,
-	/// The still, flowing, overlay and bucket pictures.
+	/// The still, flowing, overlay, bucket and bottle pictures.
 	textures?: FluidTextures,
+	/// The bottle's name with `bottle`, lowered to the `item.<ns>.<path>_bottle` language key;
+	/// defaults to "Bottle of " followed by the display name.
+	bottle_display_name?: string,
+	/// The cauldron's name with `cauldron`, lowered to the `block.<ns>.<path>_cauldron` language
+	/// key; defaults to the display name followed by " Cauldron".
+	cauldron_display_name?: string,
+}
+
+/// Whether a villager type's hat covers the profession's headwear (vanilla's `villager.hat`
+/// texture metadata).
+enum(string) VillagerHat {
+	/// No hat; the profession's headwear shows.
+	None = "none",
+	/// A hat that shows the profession's headwear over it.
+	Partial = "partial",
+	/// A hat that hides the profession's headwear.
+	Full = "full",
+}
+
+/// Pictures of a villager type (ADR 0107 D5), 64 x 64, in vanilla's villager texture layout.
+struct VillagerTypeTextures {
+	/// Lowered to `assets/<ns>/textures/entity/villager/type/<path>.png`.
+	villager?: #[id="texture"] string,
+	/// Lowered to `assets/<ns>/textures/entity/zombie_villager/type/<path>.png`; defaults to
+	/// `villager`.
+	zombie_villager?: #[id="texture"] string,
+	/// Lowered to both pictures' `.png.mcmeta` as `villager.hat`; absent writes none (no hat).
+	hat?: VillagerHat,
+}
+
+/// `msm:villager_type` element data (ADR 0107 D5): the definition with `format` optional, as
+/// lowering sets it, plus the pictures lowering writes. Vanilla has no name for a villager type.
+struct VillagerType {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...VillagerTypeCommon,
+	/// The type's pictures; absent means villagers of the type have no picture (the game draws
+	/// its missing texture).
+	textures?: VillagerTypeTextures,
+}
+
+/// `msm:game_rule` element data (ADR 0111 D5): the definition with `format` optional, as lowering
+/// sets it, plus the language texts lowering writes.
+struct GameRule {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...GameRuleCommon,
+	/// The rule's name in the game rule screen, lowered to the `gamerule.<ns>.<path>` language key.
+	display_name?: string,
+	/// Its description, lowered to the `gamerule.<ns>.<path>.description` language key.
+	description?: string,
+}
+
+/// `msm:stat` element data (ADR 0111 D6): the definition with `format` optional, as lowering sets
+/// it, plus the language text lowering writes.
+struct Stat {
+	/// Definition format; lowering writes 1.
+	format?: 1,
+	...StatCommon,
+	/// The statistic's name in the Statistics screen, lowered to the `stat.<ns>.<path>` language
+	/// key.
+	display_name?: string,
 }

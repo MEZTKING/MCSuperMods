@@ -1,0 +1,40 @@
+{
+  "arguments": [
+    {
+      "name": "a_dimension",
+      "type": "dimension"
+    },
+    {
+      "name": "a_rotation",
+      "type": "rotation"
+    },
+    {
+      "name": "a_angle",
+      "type": "angle"
+    },
+    {
+      "name": "a_biome",
+      "type": "biome"
+    },
+    {
+      "name": "a_biome_or_tag",
+      "type": "biome_or_tag"
+    },
+    {
+      "name": "a_structure",
+      "type": "structure"
+    },
+    {
+      "name": "a_structure_or_tag",
+      "type": "structure_or_tag"
+    },
+    {
+      "name": "a_entity_type",
+      "optional": true,
+      "type": "entity_type"
+    }
+  ],
+  "format": 1,
+  "function": "mymod:places",
+  "name": "msm_places"
+}

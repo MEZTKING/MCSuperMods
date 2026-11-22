@@ -1,0 +1,21 @@
+{
+  "base": "animal",
+  "category": "creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/critter",
+      "texture": "mymod:entity/critter"
+    },
+    "msm:shoulder_riding": {
+      "sides": "either"
+    },
+    "msm:tameable": {
+      "items": ["minecraft:sweet_berries"]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.5
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "arguments": [
+    {
+      "name": "what",
+      "type": "item_predicate"
+    },
+    {
+      "name": "mood",
+      "type": "text_component"
+    }
+  ],
+  "feedback_text": "Done.",
+  "format": 1,
+  "function": "mymod:tests",
+  "name": "msm_tests"
+}

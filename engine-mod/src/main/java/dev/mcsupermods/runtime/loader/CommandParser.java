@@ -37,8 +37,8 @@ import net.minecraft.resources.Identifier;
  *       than 4 aliases or 8 arguments, a permission outside 0..4 or an unknown argument type is an error and nothing is
  *       registered.</li>
  *   <li>The literals ({@code name} and {@code aliases}) and argument names must be lower case {@code [a-z0-9_]}; an
- *       argument name used twice, an optional argument before a required one, a {@code text} argument that is not
- *       last, or {@code min} above {@code max} is an error and the command is not registered (Brigadier could not
+ *       argument name used twice, an optional argument before a required one, a {@code text} or {@code message}
+ *       argument that is not last, or {@code min} above {@code max} is an error and the command is not registered (Brigadier could not
  *       build it). An alias equal to the name or an earlier alias is dropped with a warning.</li>
  *   <li>{@code min} and {@code max} on an argument that is not {@code integer} or {@code number} are ignored with a
  *       warning.</li>
@@ -60,9 +60,18 @@ public final class CommandParser {
 
     private CommandParser() {}
 
-    /** {@code CommandArgumentType}: the twelve kinds of value, each a vanilla Brigadier argument type (B444). */
+    /**
+     * {@code CommandArgumentType}: the kinds of value, each a vanilla Brigadier argument type. The twelve of ADR 0096 D1
+     * (B444), then the 32 of ADR 0111 D2 as B525 found them working on both versions and reaching the client's command
+     * tree (B527's format; {@code commands.CommandArguments} builds them from B533 on). {@code STRUCTURE},
+     * {@code STRUCTURE_OR_TAG}, {@code ADVANCEMENT} and {@code RECIPE} are key types: the id is checked only when the
+     * command runs, since the client never receives those registries.
+     */
     public enum ArgumentType {
-        INTEGER, NUMBER, WORD, TEXT, BOOLEAN, PLAYER, PLAYERS, ENTITY, POSITION, BLOCK_POSITION, ITEM, BLOCK;
+        INTEGER, NUMBER, WORD, TEXT, BOOLEAN, PLAYER, PLAYERS, ENTITY, POSITION, BLOCK_POSITION, ITEM, BLOCK,
+        DIMENSION, TIME, TEAM_COLOUR, HEX_COLOUR, ROTATION, ANGLE, UUID, OBJECTIVE, SCORE_HOLDER, SCORE_HOLDERS, ITEM_PREDICATE,
+        BLOCK_PREDICATE, EFFECT, ENCHANTMENT, BIOME, BIOME_OR_TAG, STRUCTURE, STRUCTURE_OR_TAG, ENTITY_TYPE, PARTICLE, GAME_MODE,
+        TEXT_COMPONENT, INT_RANGE, IDENTIFIER, TEAM, SLOT, NBT, MESSAGE, DIALOG, LOOT_TABLE, ADVANCEMENT, RECIPE;
 
         public String serialName() {
             return name().toLowerCase(Locale.ROOT);
@@ -71,6 +80,11 @@ public final class CommandParser {
         /** Whether {@code min} and {@code max} mean anything for this type. */
         public boolean ranged() {
             return this == INTEGER || this == NUMBER;
+        }
+
+        /** Whether the type takes the rest of the line, so it must be the last argument ({@code text}, {@code message}). */
+        public boolean greedy() {
+            return this == TEXT || this == MESSAGE;
         }
 
         public static final Codec<ArgumentType> CODEC = MsmCodecs.named("type", values(), ArgumentType::serialName);
@@ -219,8 +233,8 @@ public final class CommandParser {
             } else if (optionalSeen) {
                 fatal.add(at + ": a required argument after an optional one (optional arguments come only at the end)");
             }
-            if (arg.type() == ArgumentType.TEXT && i != def.arguments().size() - 1) {
-                fatal.add(at + ": a text argument takes the rest of the line, so it must be the last argument");
+            if (arg.type().greedy() && i != def.arguments().size() - 1) {
+                fatal.add(at + ": a " + arg.type().serialName() + " argument takes the rest of the line, so it must be the last argument");
             }
             if (!arg.type().ranged() && (arg.min().isPresent() || arg.max().isPresent())) {
                 warnings.add(at + ": min and max are only for integer and number arguments; ignored");

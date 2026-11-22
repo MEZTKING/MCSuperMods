@@ -1,0 +1,58 @@
+{
+  "behaves_like": "water",
+  "bottle": {
+    "effects": [
+      {
+        "amplifier": 1,
+        "chance": 0.5,
+        "effect": "minecraft:speed",
+        "seconds": 10
+      }
+    ],
+    "food": {
+      "can_always_eat": true,
+      "nutrition": 2,
+      "saturation": 0.5
+    },
+    "on_drink": "mymod:drank"
+  },
+  "bottle_display_name": "Bottle of Sap",
+  "cauldron": {
+    "levels": true
+  },
+  "cauldron_display_name": "Sap Cauldron",
+  "display_name": "Sap",
+  "events": {
+    "mymod:drank": {
+      "actions": [
+        {
+          "amount": 2,
+          "target": "self",
+          "type": "heal"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "mixing": [
+    {
+      "flowing": "minecraft:cobblestone",
+      "source": "minecraft:obsidian",
+      "with": "lava"
+    },
+    {
+      "source": "minecraft:clay",
+      "with": "mymod:goo"
+    },
+    {
+      "flowing": "minecraft:mud",
+      "with": "water"
+    }
+  ],
+  "textures": {
+    "bottle": "mymod:item/sap_bottle",
+    "bucket": "mymod:item/sap_bucket",
+    "flowing": "mymod:block/sap_flow",
+    "still": "mymod:block/sap_still"
+  }
+}

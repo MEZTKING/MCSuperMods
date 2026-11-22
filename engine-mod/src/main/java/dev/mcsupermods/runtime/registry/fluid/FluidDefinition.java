@@ -1,6 +1,8 @@
 package dev.mcsupermods.runtime.registry.fluid;
 
+import dev.mcsupermods.runtime.components.ItemComponents;
 import dev.mcsupermods.runtime.events.Events;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.resources.Identifier;
@@ -20,9 +22,15 @@ import net.minecraft.resources.Identifier;
  * @param onEntityInside      an event id declared in {@code events}, fired on the server while an entity is in the fluid,
  *                            at most every {@link #INSIDE_COOLDOWN_TICKS} ticks for the same entity
  * @param events              the fluid's events
+ * @param mixing              what forms where this fluid meets another (ADR 0108 D1, B527's format; B529 acts on it), in
+ *                            file order; empty means vanilla's behaviour per version
+ * @param cauldron            the cauldron companion {@code <ns>:<path>_cauldron} (ADR 0108 D2); empty means none
+ * @param bottle              the bottle companion {@code <ns>:<path>_bottle} (ADR 0108 D3); empty means none
  */
 public record FluidDefinition(Behaviour behavesLike, Flow flow, int light, Optional<Integer> tint, float explosionResistance,
-        Optional<Identifier> onEntityInside, Events events) {
+        Optional<Identifier> onEntityInside, Events events, List<Mixing> mixing, Optional<Cauldron> cauldron, Optional<Bottle> bottle) {
+    /** Seconds a bottle takes to drink (ADR 0108 D3 as amended: a potion's 1.6, B525). */
+    public static final float BOTTLE_DRINK_SECONDS = 1.6f;
     /** Explosion resistance without {@code explosion_resistance}: water's. */
     public static final float DEFAULT_EXPLOSION_RESISTANCE = 100.0f;
     /** Ticks between two {@code on_entity_inside} firings for the same entity (ADR 0099 D1, ADR 0061 D2). */
@@ -61,4 +69,31 @@ public record FluidDefinition(Behaviour behavesLike, Flow flow, int light, Optio
             return behaviour == Behaviour.LAVA ? LAVA : WATER;
         }
     }
+
+    /**
+     * {@code FluidMixing} (ADR 0108 D1 as amended): when this fluid meets {@code withTag} (any fluid in vanilla's water or
+     * lava tag) or exactly {@code withFluid}, its touched source becomes {@code source} and its touched flowing fluid
+     * {@code flowing}; at least one of them (the parser drops a rule with neither). Fluid rules are checked before tag
+     * rules.
+     *
+     * @param withTag   {@code WATER} or {@code LAVA} for the {@code water} and {@code lava} keywords; empty with a fluid id
+     * @param withFluid the other fluid's id; empty with a keyword
+     */
+    public record Mixing(Optional<Behaviour> withTag, Optional<Identifier> withFluid, Optional<Identifier> source,
+            Optional<Identifier> flowing) {}
+
+    /**
+     * {@code FluidCauldron} (ADR 0108 D2): {@code levels} fills in three levels as water's (default false, full only as
+     * lava's; always false for a lava-like fluid, which the parser warns about).
+     */
+    public record Cauldron(boolean levels) {}
+
+    /**
+     * {@code FluidBottle} (ADR 0108 D3): drunk in {@link #BOTTLE_DRINK_SECONDS}, leaving a glass bottle.
+     *
+     * @param food    hunger restored; empty means none (drinkable at any time)
+     * @param effects mob effects given when drunk
+     * @param onDrink an event id declared in {@code events}, fired when drunk (self the drinker)
+     */
+    public record Bottle(Optional<ItemComponents.Food> food, List<ItemComponents.ConsumeEffect> effects, Optional<Identifier> onDrink) {}
 }
