@@ -9,9 +9,10 @@
  *   set type that is neither a vanilla sound event nor a key of the project's `sounds.json`, so
  *   nothing plays there.
  * - `blocks-items.block-sounds-partial` (warning): on a target whose block sounds are data
- *   (`soundModel` `block_sound_set`), `block_sounds` that leave events out: the block's
- *   own entry holds only the events given, so the others are silent there instead of the
- *   `sound_type`'s.
+ *   (`soundModel` `block_sound_set`), `block_sounds` that leave events out when the target has
+ *   no `soundSetEvents` entry for the block's `sound_type`: lowering fills the left-out events
+ *   from that set, so without it the block's own entry holds only the events given and the
+ *   others are silent there instead of the `sound_type`'s.
  * - `blocks-items.block-sounds-range` (warning): on such a target, a `pitch` above 2 or a
  *   `volume` of 0, which the game's entry does not take; lowering writes the nearest it takes.
  * - `blocks-items.sound-type-unknown` (error): a `sound_type` that is neither one of the format's
@@ -50,6 +51,7 @@ import {
   FORMAT_SOUND_TYPES,
   missingSoundEvents,
   SOUND_SET_MAX_PITCH,
+  soundSetOf,
   usesSoundSets,
 } from './lowering/sounds';
 
@@ -190,14 +192,14 @@ function soundSetLimits(elements: readonly Element[], target: TargetFacts): Prob
   for (const { element, data } of blocks(elements)) {
     const sounds = blockSoundsOf(data);
     if (sounds === undefined) continue;
-    const missing = missingSoundEvents(sounds);
+    const missing = missingSoundEvents(sounds, soundSetOf(target.blocks, data));
     if (missing.length > 0) {
       problems.push({
         severity: 'warning',
         code: 'blocks-items.block-sounds-partial',
         elementId: element.id,
         path: pointer(BLOCK_SOUNDS_FIELD),
-        message: `On Minecraft ${target.mcVersion} a block's own sounds are one data entry that cannot borrow from its sound type, so ${missing.map((event) => `"${event}"`).join(', ')} ${missing.length === 1 ? 'is' : 'are'} silent there. Give every sound to keep them.`,
+        message: `On Minecraft ${target.mcVersion} a block's own sounds are one data entry, and MCSuperMods does not know the sounds of its sound type there, so ${missing.map((event) => `"${event}"`).join(', ')} ${missing.length === 1 ? 'is' : 'are'} silent. Give every sound to keep them.`,
       });
     }
     if (sounds.pitch !== undefined && sounds.pitch > SOUND_SET_MAX_PITCH) {

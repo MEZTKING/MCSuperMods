@@ -403,6 +403,39 @@ describe('target mc-26.4', () => {
     expect(soundTypes).not.toContain('amethyst');
   });
 
+  it("lists each sound set's events, volume and pitch (ADR 0105 D1, D5)", async () => {
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    const events = new Set((registries.sound_event ?? []).map((name) => `minecraft:${name}`));
+    const sets = target.blocks?.soundSetEvents ?? {};
+    // One entry per `soundTypes` name, sorted (the jar test reads the entries themselves).
+    expect(Object.keys(sets)).toEqual(target.blocks?.soundTypes);
+    for (const [name, set] of Object.entries(sets)) {
+      for (const event of ['break', 'step', 'place', 'hit', 'fall'] as const) {
+        const id = set[event];
+        if (id !== undefined) expect(events.has(id), `${name} ${event} ${id}`).toBe(true);
+      }
+      expect(set.volume, name).toBeGreaterThan(0);
+      expect(set.pitch, name).toBeGreaterThan(0);
+      expect(set.pitch, name).toBeLessThanOrEqual(2);
+    }
+    expect(sets.stone).toEqual({
+      break: 'minecraft:block.stone.break',
+      step: 'minecraft:block.stone.step',
+      place: 'minecraft:block.stone.place',
+      hit: 'minecraft:block.stone.hit',
+      fall: 'minecraft:block.stone.fall',
+      volume: 1,
+      pitch: 1,
+    });
+    expect(sets.metal?.pitch).toBe(1.5);
+    expect(sets.anvil?.volume).toBe(0.3);
+    // A cactus flower has no step, hit or fall sound in vanilla.
+    expect(sets.cactus_flower?.step).toBeUndefined();
+  });
+
   it("lists vanilla's block pairs over registered blocks (ADR 0105 D4, D5)", async () => {
     const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
       string,

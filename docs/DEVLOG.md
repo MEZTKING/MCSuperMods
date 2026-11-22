@@ -7173,3 +7173,20 @@ Next
 
 **Next**
 - Main session: decide whether fluid events join the overlay (`KINDS_WITH_EVENTS` plus a resolve call) or `fluid` goes to `KINDS_WITHOUT_EVENTS` with a restart message. The `StorageExtras` comment "a stub until B513" in `MsmRegistrar` is also stale.
+
+## 2026-11-22 — executor — 26.4 own block sounds filled from the sound type (B515 follow-up)
+
+**What**
+- Plugin API 1.19.0 (unreleased, same section): `BlockFacts.soundSetEvents?: Readonly<Record<string, SoundSetFacts>>` with `SoundSetFacts { break?; step?; place?; hit?; fall?; volume; pitch }`, keyed by the bare `soundTypes` names. CHANGELOG line and type tests.
+- 26.4: the fact from the data files `data/minecraft/block_sound_set/*.json` of the cached 26.4-snapshot-7 client jar (only the registry ids are vendored): 137 sets in `packages/targets/mc-26.4/src/sound-sets.ts` (119 with all five events `minecraft:block.<name>.<event>` at volume and pitch 1, 18 written out; `anvil` volume 0.3, `metal` pitch 1.5; `cactus_flower`, `red_shrub`, `dried_ghast`, `resin` and `shelf_mushroom` lack events in vanilla too). 26.3 has none (the runtime builds the `SoundType`).
+- Tests: `all/test/block-facts.test.ts` compares the fact with the jar's sound set files (and finds none in the 26.3 jar); `mc-26.4/test/target.test.ts` checks keys against `soundTypes` and every event against the vendored `sound_event` registry; `mc-26.3` asserts the fact is absent.
+- `lowering/sounds.ts`: `soundSetOf(blocks, data)` finds the `sound_type`'s set (default `stone`, `FORMAT_SOUND_SET_ALIASES` maps `amethyst` to `amethyst_block`); `blockSoundSetEntry(sounds, base)` fills events, volume and pitch not given from it (volume and pitch only when not 1; an event the vanilla set lacks stays out). `block-sounds-partial` now warns only when the target has no set for the block's `sound_type`. Golden `mc-26.4/expected/block/sounds-partial-high.json` updated; new golden-test case and validator cases.
+- Both targets' `CHANGES.md`.
+
+**Decisions**
+- Events are optional in the fact because vanilla's own sets leave some out (silent in vanilla); volume and pitch are always present (1 when the file omits them, as the mcdoc says).
+- The `amethyst` alias lives in the plugin as a format-name mapping (as the runtime's `BlockSounds`), so the fact stays exactly the registry's names and is checkable against the jar.
+- Filled events use the `{ sound_id }` form, as the given ones do.
+
+**Next**
+- `mc-26.3` `test/java-project-containers.test.ts` fails two cases on main 51da6f8 already (`MsmStorageBlockEntity.java`, `ContainerOpeners.java` copied line by line); outside this brief (java-project is a parallel worker's area).

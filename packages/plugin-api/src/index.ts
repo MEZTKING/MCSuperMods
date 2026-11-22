@@ -90,6 +90,7 @@ export type {
   RangedPullFacts,
   ResourceFolderKey,
   RuntimeKeyFacts,
+  SoundSetFacts,
   Target,
   TargetChannel,
   TargetFacts,

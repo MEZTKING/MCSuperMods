@@ -20,6 +20,7 @@ import {
   blockSoundSetEntry,
   blockSoundsOf,
   FORMAT_SOUND_TYPES,
+  soundSetOf,
 } from '../src/lowering/sounds';
 import {
   blockingProblems,
@@ -352,6 +353,38 @@ describe('own block sounds (ADR 0105 D1)', () => {
       blockSoundSetEntry(sounds ?? { events: {}, pitch: undefined, volume: undefined }),
     ).toEqual({ pitch: 2, step_sound: { sound_id: 'minecraft:block.wool.step' }, volume: 0.00001 });
     expect(blockSoundsOf({})).toBeUndefined();
+  });
+
+  it("fills the events left out from the sound type's vanilla set where sounds are data", async () => {
+    const bundle = bundleOf('block_sound_set');
+    const files = await lowerSample(byName('sounds-partial-high'), bundle);
+    // No `sound_type`: the format's default `stone`; pitch and volume as the entry takes them.
+    expect(contentsOf(files, 'data/example/block_sound_set/squeaky_block.json')).toEqual({
+      break_sound: { sound_id: 'minecraft:block.stone.break' },
+      fall_sound: { sound_id: 'minecraft:block.stone.fall' },
+      hit_sound: { sound_id: 'minecraft:block.stone.hit' },
+      pitch: 2,
+      place_sound: { sound_id: 'minecraft:block.stone.place' },
+      step_sound: { sound_id: 'minecraft:block.wool.step' },
+      volume: 0.00001,
+    });
+    // The format's `amethyst` is the `amethyst_block` set.
+    expect(soundSetOf(bundle.target.blocks, { sound_type: 'amethyst' })?.break).toBe(
+      'minecraft:block.amethyst_block.break',
+    );
+    // The set's own volume and pitch, unless the block gives its own; a set's missing event stays out.
+    const metal = soundSetOf(bundle.target.blocks, { sound_type: 'metal' });
+    const own = { events: { step: 'minecraft:block.wool.step' }, pitch: undefined, volume: 0.5 };
+    expect(blockSoundSetEntry(own, metal)).toMatchObject({ pitch: 1.5, volume: 0.5 });
+    const flower = soundSetOf(bundle.target.blocks, { sound_type: 'cactus_flower' });
+    expect(Object.keys(blockSoundSetEntry({ ...own, events: {} }, flower))).toEqual([
+      'break_sound',
+      'place_sound',
+      'volume',
+    ]);
+    expect(
+      soundSetOf(bundleOf('sound_type').target.blocks, { sound_type: 'stone' }),
+    ).toBeUndefined();
   });
 
   it('leaves own set type sounds to the runtime (no data file)', async () => {

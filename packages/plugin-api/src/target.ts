@@ -370,6 +370,15 @@ export interface BlockFacts {
    */
   soundModel?: 'sound_type' | 'block_sound_set';
   /**
+   * Each vanilla sound set's own events, volume and pitch ({@link SoundSetFacts}), keyed by the
+   * bare names of {@link BlockFacts.soundTypes}. Lowering fills in the events, volume and pitch a
+   * block's own sounds leave out from its `sound_type`'s set, where the game cannot do it itself
+   * (`soundModel` `block_sound_set`: the block's own entry is all the game reads). Optional: a
+   * target without them leaves those events out (silent), and the validators warn. Since 1.19.0
+   * (ADR 0105 D1, D5).
+   */
+  soundSetEvents?: Readonly<Record<string, SoundSetFacts>>;
+  /**
    * Vanilla's own tool and item pairs on vanilla blocks ({@link VanillaPairFacts}), so the
    * validators warn when a project pair on a vanilla block replaces one. Optional: a target
    * without them skips the warning. Since 1.19.0 (ADR 0105 D4, D5).
@@ -382,6 +391,28 @@ export interface BlockFacts {
    * runtime. Since 1.19.0 (ADR 0103 D5).
    */
   plantSoils?: PlantSoilFacts;
+}
+
+/**
+ * One vanilla sound set ({@link BlockFacts.soundSetEvents}): the namespaced sound event id of each
+ * event the set plays, and its volume and pitch. An event the set leaves out is silent in vanilla
+ * too (a cactus flower has no step sound). Since 1.19.0 (ADR 0105 D1, D5).
+ */
+export interface SoundSetFacts {
+  /** The sound when the block breaks. */
+  break?: string;
+  /** The sound when an entity walks on the block. */
+  step?: string;
+  /** The sound when the block is placed. */
+  place?: string;
+  /** The sound while a player mines the block. */
+  hit?: string;
+  /** The sound when an entity falls onto the block. */
+  fall?: string;
+  /** The set's volume (vanilla's default 1). */
+  volume: number;
+  /** The set's pitch (vanilla's default 1). */
+  pitch: number;
 }
 
 /**

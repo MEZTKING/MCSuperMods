@@ -21,12 +21,24 @@
  * pitch up to 4 and a volume of 0: such values are written at the nearest the entry takes (the
  * validators warn).
  *
- * The entry holds only the events the element gives: the game has no way to fill the others in
- * from the `sound_type`'s own entry, so they are silent on such a target (the validators warn).
+ * The game reads only the block's own entry and cannot borrow from its `sound_type`, so lowering
+ * fills in what the element leaves out (the events, the volume and the pitch) from the
+ * `sound_type`'s vanilla set (default `stone`), as the runtime does where it builds the sounds:
+ * {@link BlockFacts.soundSetEvents} names each set's events. An event the vanilla set lacks stays
+ * out (silent, as in vanilla). A target without the fact leaves the events out, and the
+ * validators warn that they are silent.
  *
  * @see {@link BlockFacts.soundModel}
+ * @see {@link BlockFacts.soundSetEvents}
  */
-import type { BlockFacts, Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
+import type {
+  BlockFacts,
+  Json,
+  JsonObject,
+  OutputFile,
+  SoundSetFacts,
+  Target,
+} from '@msm/plugin-api';
 import { isRecord } from './paths';
 import { nonEmptyString } from './shared';
 
@@ -93,6 +105,17 @@ export const FORMAT_SOUND_TYPES: readonly string[] = Object.freeze([
   'sculk',
 ]);
 
+/**
+ * The format's `sound_type` names whose vanilla set has another name where sounds are data
+ * (the runtime maps them the same way): `amethyst` is the `amethyst_block` set.
+ */
+export const FORMAT_SOUND_SET_ALIASES: Readonly<Record<string, string>> = Object.freeze({
+  amethyst: 'amethyst_block',
+});
+
+/** The `sound_type` the format gives a block that names none. */
+export const DEFAULT_SOUND_TYPE = 'stone';
+
 /** A block's own sounds as read from its data: the events given, and the volume and pitch. */
 export interface BlockSounds {
   events: Partial<Record<BlockSoundEvent, string>>;
@@ -122,9 +145,33 @@ export function blockSoundsOf(data: Json | undefined): BlockSounds | undefined {
 export const usesSoundSets = (blocks: BlockFacts | undefined): boolean =>
   blocks?.soundModel === 'block_sound_set';
 
-/** The events of `sounds` the element leaves to `sound_type`. */
-export const missingSoundEvents = (sounds: BlockSounds): BlockSoundEvent[] =>
-  BLOCK_SOUND_EVENTS.filter((event) => sounds.events[event] === undefined);
+/**
+ * The vanilla sound set of the block's `sound_type` (default `stone`) from the target's
+ * {@link BlockFacts.soundSetEvents}, through {@link FORMAT_SOUND_SET_ALIASES}; `undefined` when the
+ * target has no such fact or no set of that name.
+ */
+export function soundSetOf(
+  blocks: BlockFacts | undefined,
+  data: Json | undefined,
+): SoundSetFacts | undefined {
+  const sets = blocks?.soundSetEvents;
+  if (sets === undefined) return undefined;
+  const name = (isRecord(data) ? nonEmptyString(data.sound_type) : undefined) ?? DEFAULT_SOUND_TYPE;
+  const alias = FORMAT_SOUND_SET_ALIASES[name];
+  return sets[name] ?? (alias === undefined ? undefined : sets[alias]);
+}
+
+/**
+ * The events of `sounds` the element leaves to `sound_type` that nothing fills in: every one
+ * left out when `base` (the `sound_type`'s vanilla set) is unknown, none otherwise.
+ */
+export const missingSoundEvents = (
+  sounds: BlockSounds,
+  base: SoundSetFacts | undefined,
+): BlockSoundEvent[] =>
+  base === undefined
+    ? BLOCK_SOUND_EVENTS.filter((event) => sounds.events[event] === undefined)
+    : [];
 
 /** `volume` as a `block_sound_set` entry takes it. */
 export const soundSetVolume = (volume: number): number => Math.max(volume, SOUND_SET_MIN_VOLUME);
@@ -133,16 +180,23 @@ export const soundSetPitch = (pitch: number): number => Math.min(pitch, SOUND_SE
 
 /**
  * The `block_sound_set` entry of a block's own sounds: `<event>_sound` as `{ sound_id }` for each
- * event given, and `volume` and `pitch` when given (within the entry's ranges); keys sorted.
+ * event given, else the event of `base` (the `sound_type`'s vanilla set) when it has one; `volume`
+ * and `pitch` when given (within the entry's ranges), else `base`'s when not the default 1; keys
+ * sorted.
+ *
+ * @param sounds - The block's own sounds.
+ * @param base - The vanilla set of the block's `sound_type` ({@link soundSetOf}), if known.
  */
-export function blockSoundSetEntry(sounds: BlockSounds): JsonObject {
+export function blockSoundSetEntry(sounds: BlockSounds, base?: SoundSetFacts): JsonObject {
   const entry: JsonObject = {};
   for (const event of BLOCK_SOUND_EVENTS) {
-    const id = sounds.events[event];
+    const id = sounds.events[event] ?? base?.[event];
     if (id !== undefined) entry[`${event}_sound`] = { sound_id: id };
   }
-  if (sounds.pitch !== undefined) entry.pitch = soundSetPitch(sounds.pitch);
-  if (sounds.volume !== undefined) entry.volume = soundSetVolume(sounds.volume);
+  const pitch = sounds.pitch ?? (base?.pitch === 1 ? undefined : base?.pitch);
+  const volume = sounds.volume ?? (base?.volume === 1 ? undefined : base?.volume);
+  if (pitch !== undefined) entry.pitch = soundSetPitch(pitch);
+  if (volume !== undefined) entry.volume = soundSetVolume(volume);
   return Object.fromEntries(Object.entries(entry).sort(([a], [b]) => (a < b ? -1 : 1)));
 }
 
@@ -152,9 +206,11 @@ export const blockSoundSetPath = (namespace: string, path: string): string =>
 
 /**
  * The block's `block_sound_set` entry on a `block_sound_set` target, when the block has
- * `block_sounds`; nothing on a `sound_type` target, whose runtime builds the sounds.
+ * `block_sounds`, filled in from its `sound_type`'s vanilla set; nothing on a `sound_type` target,
+ * whose runtime builds the sounds.
  *
- * @param target - The target supplying {@link BlockFacts.soundModel}.
+ * @param target - The target supplying {@link BlockFacts.soundModel} and
+ *   {@link BlockFacts.soundSetEvents}.
  * @param namespace - The block id's namespace.
  * @param path - The block id's path.
  * @param data - The block data.
@@ -171,7 +227,7 @@ export function blockSoundFiles(
   return [
     {
       path: blockSoundSetPath(namespace, path),
-      contents: blockSoundSetEntry(sounds),
+      contents: blockSoundSetEntry(sounds, soundSetOf(target.blocks, data)),
       layer: 'datapack',
       schema: BLOCK_SOUND_SET_SCHEMA,
     },

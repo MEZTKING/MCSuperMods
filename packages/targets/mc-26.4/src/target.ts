@@ -7,6 +7,7 @@ import type { Target } from '@msm/plugin-api';
 import featureOrder from '../vendor/worldgen/feature-order.json' with { type: 'json' };
 import { controls } from './controls';
 import { createMigrateFrom, migrationTables } from './migrate';
+import { soundSetEvents } from './sound-sets';
 
 const ID = 'mc-26.4';
 const MC_VERSION = '26.4-snapshot-7';
@@ -854,6 +855,10 @@ export const target: Target = {
       'wood',
       'wool',
     ],
+    // soundSetEvents (ADR 0105 D1, D5; plugin API 1.19.0): the events, volume and pitch of each of the
+    // 137 sets, from the 26.4-snapshot-7 client jar's `data/minecraft/block_sound_set/*.json`
+    // (`./sound-sets.ts`); lowering fills a block's own entry from its `sound_type`'s set.
+    soundSetEvents,
     // vanillaPairs (ADR 0105 D4, D5; plugin API 1.19.0): strip, flatten and till are the rules of the
     // 26.4-snapshot-7 server jar's `data/minecraft/block_transformer/{axe,shovel,hoe}.json` (the shovel's and
     // hoe's block tags `turns_into_dirt_path` and `turns_into_farmland` expanded); wax and age are the

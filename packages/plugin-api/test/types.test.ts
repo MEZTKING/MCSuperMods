@@ -40,6 +40,7 @@ import type {
   ProjectValidator,
   ResourceFolderKey,
   RuntimeKeyFacts,
+  SoundSetFacts,
   Target,
   TargetChannel,
   TargetFacts,
@@ -607,11 +608,24 @@ describe('0.8.0 additions', () => {
     expectTypeOf<VanillaPairFacts['strip']>().toEqualTypeOf<Readonly<Record<string, string>>>();
     expectTypeOf<BlockFacts['plantSoils']>().toEqualTypeOf<PlantSoilFacts | undefined>();
     expectTypeOf<PlantSoilFacts['cane']>().toEqualTypeOf<string>();
+    expectTypeOf<BlockFacts['soundSetEvents']>().toEqualTypeOf<
+      Readonly<Record<string, SoundSetFacts>> | undefined
+    >();
+    expectTypeOf<SoundSetFacts['break']>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<SoundSetFacts['volume']>().toEqualTypeOf<number>();
     const facts: BlockFacts = {
       setTypes: [],
       woodTypes: [],
       soundTypes: ['stone', 'wood'],
       soundModel: 'block_sound_set',
+      soundSetEvents: {
+        cactus_flower: {
+          break: 'minecraft:block.cactus_flower.break',
+          place: 'minecraft:block.cactus_flower.place',
+          volume: 1,
+          pitch: 1,
+        },
+      },
       vanillaPairs: {
         strip: { 'minecraft:oak_log': 'minecraft:stripped_oak_log' },
         flatten: { 'minecraft:dirt': 'minecraft:dirt_path' },
@@ -641,6 +655,7 @@ describe('0.8.0 additions', () => {
     expect(older.soundModel).toBeUndefined();
     expect(older.vanillaPairs).toBeUndefined();
     expect(older.plantSoils).toBeUndefined();
+    expect(older.soundSetEvents).toBeUndefined();
   });
 
   it('carries optional trade, job site and trade set facts on entities (1.18.0)', () => {

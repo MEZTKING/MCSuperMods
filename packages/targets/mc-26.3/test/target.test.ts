@@ -398,7 +398,8 @@ describe('target mc-26.3', () => {
     expect(soundTypes).toHaveLength(131);
     for (const name of ['stone', 'wood', 'amethyst', 'twisting_vines', 'empty']) {
       expect(soundTypes, name).toContain(name);
-    }
+    } // The runtime builds a block's own `SoundType`, filling events from `sound_type` itself.
+    expect(target.blocks?.soundSetEvents).toBeUndefined();
   });
 
   it("lists vanilla's block pairs over registered blocks (ADR 0105 D4, D5)", async () => {

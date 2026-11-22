@@ -37,7 +37,19 @@
   },
   {
     "contents": {
+      "break_sound": {
+        "sound_id": "minecraft:block.stone.break"
+      },
+      "fall_sound": {
+        "sound_id": "minecraft:block.stone.fall"
+      },
+      "hit_sound": {
+        "sound_id": "minecraft:block.stone.hit"
+      },
       "pitch": 2,
+      "place_sound": {
+        "sound_id": "minecraft:block.stone.place"
+      },
       "step_sound": {
         "sound_id": "minecraft:block.wool.step"
       },

@@ -3,10 +3,11 @@ import { builtInTargets } from '../src/index';
 import { clientJarPath, zipEntryBytes, zipJsonEntries } from './client-jar';
 
 /**
- * `BlockFacts.soundTypes`, `soundModel`, `vanillaPairs` and `plantSoils` (ADR 0103 D5, ADR 0105
- * D5) against the client jar Fabric Loom caches: the default data pack's block transformers and
- * block tags are read (data files), and the sound type class only for its field names and types
- * (signatures, as javap without `-c` shows them; no method body is read). Skipped without a jar:
+ * `BlockFacts.soundTypes`, `soundModel`, `soundSetEvents`, `vanillaPairs` and `plantSoils` (ADR
+ * 0103 D5, ADR 0105 D1, D5) against the client jar Fabric Loom caches: the default data pack's
+ * block sound sets, block transformers and block tags are read (data files), and the sound type
+ * class only for its field names and types (signatures, as javap without `-c` shows them; no
+ * method body is read). Skipped without a jar:
  * MSM never bundles Mojang files.
  */
 const DATA = 'data/minecraft/';
@@ -102,6 +103,35 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle.target] a
         expect(bytes).toBeUndefined();
       }
     });
+
+    it.skipIf(jar === undefined)(
+      "lists each sound set's events, volume and pitch from the block sound sets",
+      async () => {
+        const files = await zipJsonEntries(jar ?? '', [`${DATA}block_sound_set/`]);
+        if (target.blocks?.soundModel !== 'block_sound_set') {
+          // `sound_type`: no sound set files; the runtime fills a block's own sounds itself.
+          expect(files.size).toBe(0);
+          expect(target.blocks?.soundSetEvents).toBeUndefined();
+          return;
+        }
+        const found: Record<string, Record<string, string | number>> = {};
+        for (const [name, value] of files) {
+          const entry = value as Json;
+          const set: Record<string, string | number> = {};
+          for (const event of ['break', 'step', 'place', 'hit', 'fall']) {
+            const sound = entry[`${event}_sound`];
+            if (sound === undefined) continue;
+            // A registry reference (as vanilla writes it) or a direct `{ sound_id }`.
+            set[event] = typeof sound === 'string' ? sound : String((sound as Json).sound_id);
+          }
+          set.volume = typeof entry.volume === 'number' ? entry.volume : 1;
+          set.pitch = typeof entry.pitch === 'number' ? entry.pitch : 1;
+          found[name.slice(`${DATA}block_sound_set/`.length, -'.json'.length)] = set;
+        }
+        expect(Object.keys(found).sort()).toEqual(target.blocks?.soundTypes);
+        expect(target.blocks?.soundSetEvents).toEqual(found);
+      },
+    );
 
     it.skipIf(jar === undefined)(
       "lists vanilla's strip, flatten, till, wax and age pairs from the block transformers",

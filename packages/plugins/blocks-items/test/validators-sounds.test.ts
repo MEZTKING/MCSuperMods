@@ -38,7 +38,10 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
   (_targetId, bundle: TargetBundle) => {
     const dataSounds = bundle.target.blocks?.soundModel === 'block_sound_set';
 
-    async function validate(elements: Element[]): Promise<Problem[]> {
+    async function validate(
+      elements: Element[],
+      target: TargetBundle['target'] = bundle.target,
+    ): Promise<Problem[]> {
       const { vanilla } = await indexesFor(bundle);
       const registry = createRegistryIndex({
         vanilla: { ...vanilla, weighed_sound_event: vanilla.sound_event ?? [] },
@@ -46,7 +49,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       });
       const results = await Promise.all(
         (plugin.contributes.validators ?? []).map((validator) =>
-          validator.validate({ elements, target: bundle.target, registry }),
+          validator.validate({ elements, target, registry }),
         ),
       );
       return results.flat();
@@ -106,12 +109,33 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ]);
     });
 
-    it('block-sounds-partial: events left out are silent where sounds are data', async () => {
+    it('block-sounds-partial: quiet where the sound type fills the events left out', async () => {
       const problems = await validate([
         block('demo:partial', { block_sounds: { step: 'minecraft:block.wool.step' } }),
+        block('demo:amethyst', {
+          sound_type: 'amethyst',
+          block_sounds: { step: 'minecraft:block.wool.step' },
+        }),
         block('demo:full', { block_sounds: everySound }),
         block('demo:none', {}),
       ]);
+      expect(withCode(problems, 'block-sounds-partial')).toEqual([]);
+    });
+
+    it('block-sounds-partial: events left out are silent without the sound set facts', async () => {
+      const { soundSetEvents: _unused, ...blocks } = bundle.target.blocks ?? {
+        setTypes: [],
+        woodTypes: [],
+      };
+      const target: TargetBundle['target'] = { ...bundle.target, blocks };
+      const problems = await validate(
+        [
+          block('demo:partial', { block_sounds: { step: 'minecraft:block.wool.step' } }),
+          block('demo:full', { block_sounds: everySound }),
+          block('demo:none', {}),
+        ],
+        target,
+      );
       expect(withCode(problems, 'block-sounds-partial')).toEqual(
         dataSounds ? [['demo:partial', '/block_sounds', 'warning']] : [],
       );
