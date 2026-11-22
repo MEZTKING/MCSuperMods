@@ -57,7 +57,9 @@ function rate(target: Target, id: string, situation: Situation, samples = 100_00
   return yes / samples;
 }
 
-describe.each(RESULTS)('B600 predicate cases ($version)', ({ pred }) => {
+// Heavy: the random cases draw 100,000 samples each, so under a loaded machine (four shared cores) the
+// default 5 s is too short (2026-11-22). An explicit timeout, never a retry.
+describe.each(RESULTS)('B600 predicate cases ($version)', { timeout: 60_000 }, ({ pred }) => {
   const target = () => targets[0] as Target;
   const asGame = (value: unknown) => (value === 1 ? 'yes' : 'no');
 
