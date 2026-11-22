@@ -1,0 +1,23 @@
+[
+  {
+    "contents": {
+      "category": "misc",
+      "default": false,
+      "format": 1,
+      "kind": "boolean"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/game_rule/my_rule.json",
+    "schema": "msm:game_rule_definition"
+  },
+  {
+    "contents": {
+      "gamerule.demo.my_rule": "My game rule"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

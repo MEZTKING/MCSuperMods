@@ -1,0 +1,21 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "formatter": "time"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/stat/caves/time_in_caves.json",
+    "schema": "msm:stat_definition"
+  },
+  {
+    "contents": {
+      "stat.demo.caves.time_in_caves": "Time in caves"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

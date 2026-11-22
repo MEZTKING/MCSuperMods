@@ -1,0 +1,27 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "icon": "example:ruby",
+      "items": [
+        "example:ruby_block",
+        "minecraft:torch",
+        "example:ruby"
+      ],
+      "order": "by_hand"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/example/creative_tab/tabs/kit.json",
+    "schema": "msm:creative_tab_definition"
+  },
+  {
+    "contents": {
+      "itemGroup.example.tabs.kit": "Starter kit"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

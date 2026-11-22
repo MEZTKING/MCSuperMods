@@ -14,6 +14,7 @@ import { builtInTargets, type TargetBundle } from '@msm/targets';
 import { describe, expect, it } from 'vitest';
 import plugin, {
   BLOCKS_ITEMS_PROBLEM_CODES,
+  CREATIVE_TAB_BY_HAND,
   CREATIVE_TAB_PROBLEM_CODES,
   creativeTabDefinition,
   creativeTabKind,
@@ -56,6 +57,21 @@ const SAMPLES: Sample[] = [
     data: { icon: 'minecraft:iron_pickaxe', title: 'example.tab.tools', display_name: 'Tools' },
   },
   { name: 'no_name', id: 'example:plain', data: { format: 1, icon: 'minecraft:stone' } },
+  {
+    name: 'by_hand',
+    id: 'example:tabs/kit',
+    data: {
+      icon: 'example:ruby',
+      order: 'by_hand',
+      items: ['example:ruby_block', 'minecraft:torch', 'example:ruby'],
+      display_name: 'Starter kit',
+    },
+  },
+  {
+    name: 'items_unused',
+    id: 'example:tabs/loose',
+    data: { icon: 'minecraft:stone', order: 'by_name', items: ['minecraft:torch'] },
+  },
 ];
 
 /** The registries of `indexes` plus the project ids of these tests. */
@@ -102,9 +118,29 @@ describe('the msm:creative_tab kind', () => {
     );
   });
 
+  it('keeps the hand order only with by_hand (ADR 0111 D7)', () => {
+    const items = ['demo:b', 'minecraft:torch', 'demo:a'];
+    expect(
+      creativeTabDefinition(tab('demo:x', { icon: 'minecraft:stone', order: 'by_hand', items })),
+    ).toEqual({ format: 1, icon: 'minecraft:stone', order: 'by_hand', items });
+    for (const order of [undefined, 'as_listed', 'by_name']) {
+      expect(
+        creativeTabDefinition(tab('demo:x', { icon: 'minecraft:stone', order, items })),
+        String(order),
+      ).not.toHaveProperty('items');
+    }
+    expect(CREATIVE_TAB_BY_HAND).toBe('by_hand');
+  });
+
   it('lists its codes with the other blocks-items codes', () => {
     expect(BLOCKS_ITEMS_PROBLEM_CODES).toContain('blocks-items.creative-tab-unknown');
-    expect(CREATIVE_TAB_PROBLEM_CODES).toEqual(['blocks-items.creative-tab-icon-unknown']);
+    expect(CREATIVE_TAB_PROBLEM_CODES).toEqual([
+      'blocks-items.creative-tab-icon-unknown',
+      'blocks-items.creative-tab-items-unused',
+      'blocks-items.creative-tab-items-missing',
+      'blocks-items.creative-tab-item-unknown',
+      'blocks-items.creative-tab-item-repeated',
+    ]);
   });
 
   it('counts items, block items, spawn eggs and vehicles as project items', () => {
@@ -239,6 +275,73 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(withCode(await validate(elements, false), 'creative-tab-icon-unknown')).toEqual([
         ['warning', 'example:d', '/icon'],
         ['warning', 'example:f', '/icon'],
+      ]);
+    });
+    it('gives zero problems for a tab ordered by hand over project and vanilla items', async () => {
+      const elements = [
+        tab('example:kit', {
+          icon: 'example:ruby',
+          order: 'by_hand',
+          items: [
+            'example:ruby_block',
+            'minecraft:torch',
+            'example:golem_spawn_egg',
+            'example:ruby',
+          ],
+        }),
+        item('example:ruby'),
+        block('example:ruby_block'),
+        entity('example:golem'),
+      ];
+      expect(await validate(elements)).toEqual([]);
+    });
+
+    it('creative-tab-items-unused and -missing: a list without by_hand, by_hand without a list', async () => {
+      const problems = await validate([
+        tab('example:a', { icon: 'minecraft:stone', order: 'by_name', items: ['minecraft:torch'] }),
+        tab('example:b', { icon: 'minecraft:stone', items: ['minecraft:torch'] }),
+        tab('example:c', { icon: 'minecraft:stone', order: 'by_hand' }),
+        tab('example:d', { icon: 'minecraft:stone', order: 'by_hand', items: [] }),
+        tab('example:e', { icon: 'minecraft:stone', order: 'as_listed' }),
+      ]);
+      expect(withCode(problems, 'creative-tab-items-unused')).toEqual([
+        ['warning', 'example:a', '/items'],
+        ['warning', 'example:b', '/items'],
+      ]);
+      expect(withCode(problems, 'creative-tab-items-missing')).toEqual([
+        ['warning', 'example:c', '/order'],
+        ['warning', 'example:d', '/order'],
+      ]);
+    });
+
+    it('creative-tab-item-unknown and -repeated: listed ids that are no item, or listed twice', async () => {
+      const elements = [
+        tab('example:kit', {
+          icon: 'minecraft:stone',
+          order: 'by_hand',
+          items: [
+            'minecraft:torch',
+            'example:missing',
+            'minecraft:not_an_item',
+            'torch',
+            'example:ruby',
+            'example:ruby',
+          ],
+        }),
+        item('example:ruby'),
+      ];
+      const problems = await validate(elements);
+      expect(withCode(problems, 'creative-tab-item-unknown')).toEqual([
+        ['warning', 'example:kit', '/items/1'],
+        ['warning', 'example:kit', '/items/2'],
+      ]);
+      expect(withCode(problems, 'creative-tab-item-repeated')).toEqual([
+        ['warning', 'example:kit', '/items/3'],
+        ['warning', 'example:kit', '/items/5'],
+      ]);
+      // Without vanilla item ids only project ids are checked.
+      expect(withCode(await validate(elements, false), 'creative-tab-item-unknown')).toEqual([
+        ['warning', 'example:kit', '/items/1'],
       ]);
     });
   },

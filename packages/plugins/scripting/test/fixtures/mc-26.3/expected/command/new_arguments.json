@@ -1,0 +1,51 @@
+[
+  {
+    "contents": {
+      "arguments": [
+        {
+          "name": "where",
+          "type": "dimension"
+        },
+        {
+          "name": "how_long",
+          "type": "time"
+        },
+        {
+          "name": "colour",
+          "type": "team_colour"
+        },
+        {
+          "name": "effect",
+          "type": "effect"
+        },
+        {
+          "name": "place",
+          "type": "structure"
+        },
+        {
+          "name": "mode",
+          "optional": true,
+          "type": "game_mode"
+        },
+        {
+          "name": "window",
+          "optional": true,
+          "type": "dialog"
+        },
+        {
+          "name": "note",
+          "optional": true,
+          "type": "message"
+        }
+      ],
+      "format": 1,
+      "function": "demo:admin/world",
+      "name": "worldtool",
+      "permission": 2
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/command/admin/world.json",
+    "schema": "msm:command_definition"
+  }
+]

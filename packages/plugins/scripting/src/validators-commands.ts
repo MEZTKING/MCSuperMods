@@ -10,8 +10,11 @@
  *   the same command lists twice. Reported on every command involved.
  * - `commands.optional-not-last` (error): a required argument after an optional one; optional
  *   arguments come only at the end.
- * - `commands.text-not-last` (error): a `text` argument that is not the last one; it takes the
- *   rest of the line.
+ * - `commands.text-not-last` (error): a `text` or `message` argument that is not the last one;
+ *   it takes the rest of the line.
+ * - `commands.unknown-argument-type` (error): an argument `type` that is not one of the target's
+ *   argument types (`TargetFacts.commands.argumentTypes`: the twelve of ADR 0096 and the 32 of
+ *   ADR 0111 D2); skipped when the target has no command facts.
  * - `commands.range-not-number` (error): `min` or `max` on an argument that is not an `integer`
  *   or a `number`.
  * - `commands.min-above-max` (error): an argument whose `min` is above its `max`.
@@ -20,13 +23,16 @@
  * - `commands.unknown-event` (error): an `event`, or a `trigger_event` action of the command's
  *   events, naming an event the command does not declare.
  * - `commands.nothing-to-run` (error, or a warning when a script subscribes to the `command`
- *   event and names the command): a command with neither `function` nor `event`. Scripts are
- *   read as text: a script subscribes when it contains `msm.events.on("command"` and names the
- *   command when it contains the command's name in quotes.
+ *   event and handles the command): a command with neither `function` nor `event`. Scripts are
+ *   read as text: a script subscribes when it contains `msm.events.on("command"`, and handles the
+ *   command when it compares a `.name` with the command's name in quotes (`e.name === "kit"`,
+ *   either way round, `==`, `!==` or `!=`) or has a `case "kit":`. A name only mentioned, as in a
+ *   log message, does not count.
  * - `commands.runs-as-player` (info): a permission 0 command (the default) that runs a function;
  *   every player can run it, and the function runs with operator rights.
- * - `commands.raw-text` (info): a `text` argument passed to a function: the text goes into the
- *   function's macro as it is typed, so a `"` or `\` in it can break a quoted `"$(name)"`.
+ * - `commands.raw-text` (info): a `text` or `message` argument passed to a function: the text
+ *   goes into the function's macro as it is typed, so a `"` or `\` in it can break a quoted
+ *   `"$(name)"`.
  */
 import type { Element, Json, JsonObject, Problem, ProjectValidator } from '@msm/plugin-api';
 import { COMMAND_KIND, SCRIPT_KIND } from './kinds';
@@ -38,6 +44,7 @@ export const COMMAND_PROBLEM_CODES = Object.freeze([
   'commands.name-clash',
   'commands.optional-not-last',
   'commands.text-not-last',
+  'commands.unknown-argument-type',
   'commands.range-not-number',
   'commands.min-above-max',
   'commands.function-and-event',
@@ -52,6 +59,12 @@ export const COMMAND_NAME_PATTERN = /^[a-z0-9_]+$/;
 
 /** The argument types `min` and `max` apply to. */
 export const RANGED_ARGUMENT_TYPES: readonly string[] = Object.freeze(['integer', 'number']);
+
+/**
+ * The argument types that take the rest of the line, so only the last argument may have them
+ * (ADR 0096 D1, ADR 0111 D2).
+ */
+export const REST_OF_LINE_ARGUMENT_TYPES: readonly string[] = Object.freeze(['text', 'message']);
 
 /** RFC 6901 escaping of one reference token. */
 const token = (key: string): string => key.replaceAll('~', '~0').replaceAll('/', '~1');
@@ -239,17 +252,42 @@ function argumentOrder(elements: readonly Element[]): Problem[] {
         );
       }
       if (optional) optionalSeen = true;
-      if (fields.type === 'text' && index < total - 1) {
+      if (
+        typeof fields.type === 'string' &&
+        REST_OF_LINE_ARGUMENT_TYPES.includes(fields.type) &&
+        index < total - 1
+      ) {
         problems.push(
           problem(
             'error',
             'commands.text-not-last',
             element,
             pointer('arguments', index, 'type'),
-            `The text argument "${text(fields.name) ?? index}" takes the rest of the line, so it must be the last argument.`,
+            `The ${fields.type === 'message' ? 'message' : 'text'} argument "${text(fields.name) ?? index}" takes the rest of the line, so it must be the last argument.`,
           ),
         );
       }
+    }
+  }
+  return problems;
+}
+
+function argumentTypes(elements: readonly Element[], known: ReadonlySet<string>): Problem[] {
+  const problems: Problem[] = [];
+  if (known.size === 0) return problems;
+  for (const element of commands(elements)) {
+    for (const { index, fields } of argumentsOf(dataOf(element))) {
+      const type = text(fields.type);
+      if (type === undefined || known.has(type)) continue;
+      problems.push(
+        problem(
+          'error',
+          'commands.unknown-argument-type',
+          element,
+          pointer('arguments', index, 'type'),
+          `The argument "${text(fields.name) ?? index}" has the type "${type}", which this Minecraft version's commands do not have. Pick another type.`,
+        ),
+      );
     }
   }
   return problems;
@@ -352,6 +390,22 @@ function eventReferences(elements: readonly Element[]): Problem[] {
 
 const SUBSCRIBE_PATTERN = /msm\s*\.\s*events\s*\.\s*on\s*\(\s*(["'])command\1/;
 
+const escapeRegExp = (value: string): string => value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * True when `source` handles the command `name`: it compares a `.name` with the name in quotes,
+ * either way round, or has a `case` for it.
+ */
+export function scriptHandlesCommand(source: string, name: string): boolean {
+  const quoted = `(["'\`])${escapeRegExp(name)}\\1`;
+  const compare = '[!=]==?';
+  return [
+    new RegExp(`\\.\\s*name\\s*${compare}\\s*${quoted}`),
+    new RegExp(`${quoted}\\s*${compare}\\s*[\\w$.?]*\\.\\s*name\\b`),
+    new RegExp(`\\bcase\\s+${quoted}\\s*:`),
+  ].some((pattern) => pattern.test(source));
+}
+
 /** The text of every script that subscribes to the `command` event. */
 function commandScripts(elements: readonly Element[]): string[] {
   const texts: string[] = [];
@@ -372,9 +426,7 @@ function nothingToRun(elements: readonly Element[]): Problem[] {
     const data = dataOf(element);
     if (text(data.function) !== undefined || text(data.event) !== undefined) continue;
     const name = text(data.name) ?? '';
-    const handled =
-      name.length > 0 &&
-      scripts.some((source) => source.includes(`"${name}"`) || source.includes(`'${name}'`));
+    const handled = name.length > 0 && scripts.some((source) => scriptHandlesCommand(source, name));
     problems.push(
       handled
         ? problem(
@@ -414,7 +466,9 @@ function playerNotes(elements: readonly Element[]): Problem[] {
       );
     }
     for (const { index, fields } of argumentsOf(data)) {
-      if (fields.type !== 'text') continue;
+      if (typeof fields.type !== 'string' || !REST_OF_LINE_ARGUMENT_TYPES.includes(fields.type)) {
+        continue;
+      }
       problems.push(
         problem(
           'info',
@@ -441,7 +495,11 @@ export const commandValidators: readonly ProjectValidator[] = Object.freeze([
   {
     id: 'msm.scripting.command-arguments',
     kinds: [COMMAND_KIND],
-    validate: ({ elements }) => [...argumentOrder(elements), ...ranges(elements)],
+    validate: ({ elements, target }) => [
+      ...argumentOrder(elements),
+      ...argumentTypes(elements, new Set(Object.keys(target.commands?.argumentTypes ?? {}))),
+      ...ranges(elements),
+    ],
   },
   {
     id: 'msm.scripting.command-actions',

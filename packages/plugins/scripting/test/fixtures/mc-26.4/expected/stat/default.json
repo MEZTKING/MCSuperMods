@@ -1,0 +1,21 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "formatter": "default"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/stat/my_stat.json",
+    "schema": "msm:stat_definition"
+  },
+  {
+    "contents": {
+      "stat.demo.my_stat": "My statistic"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

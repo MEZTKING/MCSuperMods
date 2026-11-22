@@ -81,6 +81,26 @@ const SAMPLES: Sample[] = [
       },
     },
   },
+  {
+    // ADR 0111 D2: argument types of the 1.20.0 facts.
+    name: 'new_arguments',
+    id: 'demo:admin/world',
+    data: {
+      name: 'worldtool',
+      permission: 2,
+      arguments: [
+        { name: 'where', type: 'dimension' },
+        { name: 'how_long', type: 'time' },
+        { name: 'colour', type: 'team_colour' },
+        { name: 'effect', type: 'effect' },
+        { name: 'place', type: 'structure' },
+        { name: 'mode', type: 'game_mode', optional: true },
+        { name: 'window', type: 'dialog', optional: true },
+        { name: 'note', type: 'message', optional: true },
+      ],
+      function: 'demo:admin/world',
+    },
+  },
 ];
 
 describe('the msm:command kind', () => {
@@ -186,6 +206,31 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       },
     );
 
+    it('takes every argument type of the target, eight to a command, with no problems', async () => {
+      const types = Object.keys(bundle.target.commands?.argumentTypes ?? {});
+      expect(types).toHaveLength(44);
+      const indexes = await indexesFor(bundle);
+      const elements: Element[] = [];
+      for (let start = 0; start < types.length; start += 8) {
+        const chunk = types
+          .slice(start, start + 8)
+          .filter((type) => !['text', 'message'].includes(type));
+        const data = {
+          format: 1,
+          name: `types_${start}`,
+          arguments: [...chunk, ...(start === 0 ? ['text'] : [])].map((type) => ({
+            name: `a_${type}`,
+            type,
+          })),
+          event: 'greet',
+          events: GREET,
+        };
+        expect(blockingProblems(indexes, commandKind.schema, data as Json), data.name).toEqual([]);
+        elements.push(command(`demo:types_${start}`, data));
+      }
+      expect(await validate(elements)).toEqual([]);
+    });
+
     it('reports nothing for the samples and the default together', async () => {
       const problems = await validate([
         element('msm:command', 'demo:hello', commandKind.defaultData as Json),
@@ -288,6 +333,51 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       ]);
     });
 
+    it('text-not-last: a message argument before another one', async () => {
+      const problems = await validate([
+        eventCommand('demo:a', 'one', {
+          arguments: [
+            { name: 'note', type: 'message' },
+            { name: 'who', type: 'word' },
+          ],
+        }),
+        eventCommand('demo:b', 'two', { arguments: [{ name: 'note', type: 'message' }] }),
+      ]);
+      expect(withCode(problems, 'text-not-last')).toEqual([
+        ['error', 'demo:a', '/arguments/0/type'],
+      ]);
+    });
+
+    it('unknown-argument-type: a type outside the target facts, skipped without them', async () => {
+      const elements = [
+        eventCommand('demo:a', 'one', {
+          arguments: [
+            { name: 'x', type: 'colour' },
+            { name: 'y', type: 'hex_colour' },
+            { name: 'z', type: 'vec2' },
+          ],
+        }),
+      ];
+      expect(withCode(await validate(elements), 'unknown-argument-type')).toEqual([
+        ['error', 'demo:a', '/arguments/0/type'],
+        ['error', 'demo:a', '/arguments/2/type'],
+      ]);
+      const { commands: _commands, ...bare } = bundle.target;
+      const { registries } = await indexesFor(bundle);
+      const without = (
+        await Promise.all(
+          (plugin.contributes.validators ?? []).map((validator) =>
+            validator.validate({
+              elements,
+              target: bare as typeof bundle.target,
+              registry: registries,
+            }),
+          ),
+        )
+      ).flat();
+      expect(withCode(without, 'unknown-argument-type')).toEqual([]);
+    });
+
     it('range-not-number: min or max on a type that is not a number', async () => {
       const problems = await validate([
         eventCommand('demo:a', 'one', {
@@ -349,17 +439,33 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         command('demo:a', { name: 'lonely' }),
         command('demo:b', { name: 'scripted' }),
         command('demo:c', { name: 'mentioned' }),
+        command('demo:d', { name: 'logged' }),
+        command('demo:e', { name: 'switched' }),
+        command('demo:f', { name: 'reversed' }),
+        command('demo:g', { name: 'skipped' }),
         script('demo:handler', [
           'msm.events.on("command", (e) => {',
           '  if (e.name === "scripted") msm.log.info("hi");',
+          '  msm.log.info("logged was not typed");',
+          "  switch (e.name) { case 'switched': break; }",
+          '  if ("reversed" == e.name) return;',
           '});',
         ]),
-        script('demo:other', ['msm.log.info("mentioned");']),
+        script('demo:skip', [
+          "msm.events.on('command', (event) => {",
+          "  if (event.name !== 'skipped') return;",
+          '});',
+        ]),
+        script('demo:other', ['msm.log.info("mentioned");', 'if (e.name === "mentioned") {}']),
       ]);
       expect(withCode(problems, 'nothing-to-run')).toEqual([
         ['error', 'demo:a', '/function'],
         ['warning', 'demo:b', '/function'],
         ['error', 'demo:c', '/function'],
+        ['error', 'demo:d', '/function'],
+        ['warning', 'demo:e', '/function'],
+        ['warning', 'demo:f', '/function'],
+        ['warning', 'demo:g', '/function'],
       ]);
     });
 
@@ -388,8 +494,17 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           ],
         }),
         eventCommand('demo:b', 'two', { arguments: [{ name: 'note', type: 'text' }] }),
+        command('demo:c', {
+          name: 'three',
+          function: 'demo:f',
+          permission: 2,
+          arguments: [{ name: 'note', type: 'message' }],
+        }),
       ]);
-      expect(withCode(problems, 'raw-text')).toEqual([['info', 'demo:a', '/arguments/1/type']]);
+      expect(withCode(problems, 'raw-text')).toEqual([
+        ['info', 'demo:a', '/arguments/1/type'],
+        ['info', 'demo:c', '/arguments/0/type'],
+      ]);
     });
 
     it('reports only listed codes', async () => {

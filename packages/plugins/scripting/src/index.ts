@@ -1,13 +1,15 @@
 /**
  * `@msm/plugin-scripting`: built-in MSM plugin for runtime scripts (ADRs 0031, 0032): the
  * `msm:script` kind and its lowering to `msm/<ns>/script/<path>.ts`, the `msm:command` kind
- * (ADR 0096 D1) and its lowering to `msm/<ns>/command/<path>.json`, the `scripting.*` and
- * `commands.*` project validators, the "New element" templates, and the script API description
- * with its typings generator.
+ * (ADR 0096 D1) and its lowering to `msm/<ns>/command/<path>.json`, the `msm:game_rule` and
+ * `msm:stat` kinds (ADR 0111 D5, D6) and their lowering to `msm/<ns>/game_rule/` and
+ * `msm/<ns>/stat/` with their language keys, the `scripting.*`, `commands.*` and `game-rules.*`
+ * project validators, the "New element" templates, and the script API description with its
+ * typings generator.
  */
 import { definePlugin } from '@msm/plugin-api';
 import { scriptingKinds } from './kinds';
-import { commandTemplates, scriptingTemplates } from './templates';
+import { commandTemplates, gameRuleTemplates, scriptingTemplates } from './templates';
 import { scriptingValidators } from './validators';
 import { commandValidators } from './validators-commands';
 
@@ -18,7 +20,7 @@ import { gameRuleValidators } from './validators-game-rules';
 export * from './api/index';
 export * from './kinds';
 export * from './lowering';
-export { commandTemplates, scriptingTemplates } from './templates';
+export { commandTemplates, gameRuleTemplates, scriptingTemplates } from './templates';
 export {
   findHandlerDefinitions,
   type HandlerDefinition,
@@ -33,6 +35,8 @@ export {
   commandLiterals,
   commandValidators,
   RANGED_ARGUMENT_TYPES,
+  REST_OF_LINE_ARGUMENT_TYPES,
+  scriptHandlesCommand,
 } from './validators-commands';
 
 export default definePlugin({
@@ -40,7 +44,7 @@ export default definePlugin({
   apiVersion: '^1.0.0',
   contributes: {
     elementKinds: [...scriptingKinds],
-    elementTemplates: [...scriptingTemplates, ...commandTemplates],
+    elementTemplates: [...scriptingTemplates, ...commandTemplates, ...gameRuleTemplates],
     validators: [...scriptingValidators, ...commandValidators, ...gameRuleValidators],
   },
 });

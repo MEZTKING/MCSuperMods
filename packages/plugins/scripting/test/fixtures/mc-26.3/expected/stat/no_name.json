@@ -1,0 +1,11 @@
+[
+  {
+    "contents": {
+      "format": 1
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/stat/plain.json",
+    "schema": "msm:stat_definition"
+  }
+]

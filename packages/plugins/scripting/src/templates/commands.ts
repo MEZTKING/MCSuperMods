@@ -4,7 +4,7 @@
  * report nothing; a command that teleports or reads arguments needs a function, which a template
  * cannot create (the Server helper example holds one). The tab template is an `msm:creative_tab`
  * element: the blocks-items plugin owns that kind, but its templates sit here with the commands
- * (plan B461). Only vanilla ids are named.
+ * (plan B461); the hand-ordered tab (ADR 0111 D7) joins it. Only vanilla ids are named.
  */
 import type { ElementTemplate, Json, TemplateContext } from '@msm/plugin-api';
 import { COMMAND_KIND } from '../kinds';
@@ -88,6 +88,21 @@ export const commandTemplates: readonly ElementTemplate[] = Object.freeze([
     data: (context): Json => ({
       format: 1,
       icon: 'minecraft:crafting_table',
+      display_name: title(context.path),
+    }),
+  },
+  {
+    id: 'msm_creative_tab_by_hand',
+    kind: CREATIVE_TAB_KIND,
+    category: TAB_CATEGORY,
+    title: 'Creative tab in your own order',
+    description:
+      'A tab whose items show in the order you list them, here a compass, a clock, a map and a spyglass. Change the list to your own items; items that join the tab by naming it in their "Creative tab" field follow after the list.',
+    data: (context): Json => ({
+      format: 1,
+      icon: 'minecraft:compass',
+      order: 'by_hand',
+      items: ['minecraft:compass', 'minecraft:clock', 'minecraft:map', 'minecraft:spyglass'],
       display_name: title(context.path),
     }),
   },

@@ -47,6 +47,8 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:loot_addition': 'Extra drops',
   'msm:command': 'Commands',
   'msm:creative_tab': 'Creative tabs',
+  'msm:game_rule': 'Game rules',
+  'msm:stat': 'Statistics',
   // The Studio's title (ADR 0105 D4, B516).
   'msm:vanilla_block_rules': 'Vanilla block rules',
   'minecraft:model': 'Models',

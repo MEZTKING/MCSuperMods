@@ -3,12 +3,18 @@
  * folder `script`, schema extension `msm:script`, no registry), a TypeScript source stored as
  * `{ "lines": string[] }`, one entry per line, as functions are stored; and `msm:command`
  * (ADR 0096 D1, folder `command`, no registry), a server command lowered to
- * `msm/<ns>/command/<path>.json`.
+ * `msm/<ns>/command/<path>.json`; and (ADR 0111 D5, D6) `msm:game_rule` and `msm:stat`, lowered to
+ * `msm/<ns>/game_rule/<path>.json` and `msm/<ns>/stat/<path>.json` with their language keys.
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { lowerCommand } from '../lowering/command';
 import { lowerScript } from '../lowering/script';
+import { gameRuleKind } from './game-rule';
+import { statKind } from './stat';
+
+export { GAME_RULE_KIND, GAME_RULE_REGISTRY, gameRuleKind } from './game-rule';
+export { STAT_KIND, STAT_REGISTRY, statKind } from './stat';
 
 /** Kind id of runtime scripts. */
 export const SCRIPT_KIND = 'msm:script';
@@ -60,4 +66,9 @@ export const commandKind: ElementKind = {
 };
 
 /** Every kind this plugin contributes, in order. */
-export const scriptingKinds: readonly ElementKind[] = Object.freeze([scriptKind, commandKind]);
+export const scriptingKinds: readonly ElementKind[] = Object.freeze([
+  scriptKind,
+  commandKind,
+  gameRuleKind,
+  statKind,
+]);

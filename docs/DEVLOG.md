@@ -7536,3 +7536,20 @@ Next
 
 **Next**
 - B529: register the cauldron as a block whose loot table is `<ns>:blocks/<path>_cauldron` and that needs a pickaxe as vanilla's; tint `content` for a water-like fluid's `tint`; decide whether a water-like fluid's `with: "water"` rule matches itself. B536: read the pictures at `boatTextureId`'s paths. B538 (app): count `fluidCompanionIds` and `boatCompanionIds` in the registry index and copy `boatTexturePaths`. B537/exporters: `fluidProfessionIdsOf` should list the cauldron, bottle and chest boat ids as mod-only. B538/B543: Very easy words and AI prompt lines for `FLUID_MIXING_PROBLEM_CODES` and `BOAT_PROBLEM_CODES`, the boat template in the prompt.
+## 2026-11-22 — executor — B535 scripting and tab kinds
+
+**What**
+- Kinds `msm:game_rule` (folder and registry `game_rule`) and `msm:stat` (folder `stat`, registry `custom_stat`, so a project statistic is a known id and its criterion is offered in completions) are in `scriptingKinds` (117 kinds in all). Lowering: `msm/<ns>/game_rule/<path>.json` and `msm/<ns>/stat/<path>.json` (layer `msm`, schemas `msm:game_rule_definition`/`msm:stat_definition`, `format` 1, `display_name` and `description` stripped) and the keys `gamerule.<ns>.<path>`, `gamerule.<ns>.<path>.description` and `stat.<ns>.<path>` (`/` as `.`) in `en_us`. `statCriterion(id, target)` gives `minecraft.custom:<ns>.<path>` from `TargetFacts.stats.criterionPrefix`.
+- Validators `msm.scripting.game-rules`, `msm.scripting.stats`, `msm.scripting.game-rule-names`, codes `GAME_RULE_PROBLEM_CODES`: `game-rules.min-above-max` (error), `default-out-of-range` (error), `range-on-boolean` (warning), `vanilla-clash` (error, a `minecraft:` rule or statistic with a vanilla name, from the facts), `vanilla-name` (info, another namespace), `no-name` (info).
+- Commands: `commands.unknown-argument-type` (error, against the 44 `TargetFacts.commands.argumentTypes`; skipped without facts); `text-not-last` and `raw-text` also cover `message`; `nothing-to-run` now counts a script only when it compares a `.name` with the command's name in quotes (either way round) or has a `case` for it, not when the name is merely mentioned (`scriptHandlesCommand`). A golden of eight new argument types.
+- Creative tabs (ADR 0111 D7): `items` passes through only with `order` `by_hand` (left out under another order); validator `msm.blocks-items.creative-tab-order` with `creative-tab-items-unused`, `-items-missing`, `-item-unknown` (project items, then the registry, vanilla skipped without item ids) and `-item-repeated` (all warnings) in `CREATIVE_TAB_PROBLEM_CODES`.
+- Templates (scripting 9 to 14; 279 in all): `msm_creative_tab_by_hand` (with the command templates), and `gameRuleTemplates` in `templates/game-rules.ts`: `msm_game_rule_switch`, `msm_game_rule_number` (categories "Game rules"), `msm_stat_counter`, `msm_stat_time` ("Statistics").
+- App and AI lines: sidebar headings "Game rules" and "Statistics", Very easy words for the new codes, the AI prompt's tab paragraph names `by_hand` and the two kinds, `msm_creative_tab_by_hand` in `VANILLA_PARITY_PROMPT_TEMPLATES`; the two kinds wait for examples in `KINDS_AWAITING_EXAMPLES`.
+- Verified: `pnpm lint`, `pnpm typecheck`, `turbo run test` (24 of 24; scripting 200, blocks-items 1139, exporters 1803, ai 103, app 2567).
+
+**Decisions**
+- Lang keys write the path's `/` as `.`, as commands and tabs do. A boolean rule's `min`/`max` and an unused tab list are warnings (ignored), not errors; a rule with an absent `default` is never out of range (the runtime keeps 0 within the range).
+- The kind stubs' files (`kinds/game-rule.ts`, `kinds/stat.ts`) and `src/index.ts`, `lowering/index.ts`, `templates/` were filled in as B526's stub notes said.
+
+**Next**
+- The library brief: examples for `msm:game_rule` and `msm:stat` (then drop them from `KINDS_AWAITING_EXAMPLES`). B543: the AI prompt for the game rule and statistic templates. B538: the Game rule and Statistic Studios, showing `statCriterion`. B533: the runtime reads `items` of a `by_hand` tab and the definitions above.

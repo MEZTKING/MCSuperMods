@@ -594,6 +594,9 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'commands.text-not-last': entry(
     (t) => `${t} has a "rest of the line" text that is not last. Move it to the end.`,
   ),
+  'commands.unknown-argument-type': entry(
+    (t) => `${t} asks for a kind of value this Minecraft version does not have. Pick another kind.`,
+  ),
   'commands.range-not-number': entry(
     (t) => `${t} has a lowest or highest value on something that is not a number.`,
   ),
@@ -615,6 +618,37 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   'blocks-items.creative-tab-icon-unknown': entry(
     (t) => `The creative tab ${t} shows a picture of something that does not exist. Pick another.`,
   ),
+  // The tab's own order (ADR 0111 D7).
+  'blocks-items.creative-tab-items-unused': entry(
+    (t) =>
+      `The creative tab ${t} has a list of things but is not in your own order, so the list is not used.`,
+  ),
+  'blocks-items.creative-tab-items-missing': entry(
+    (t) =>
+      `The creative tab ${t} is in your own order but lists nothing yet. Add the things in the order you want.`,
+  ),
+  'blocks-items.creative-tab-item-unknown': entry(
+    (t) => `The creative tab ${t} lists something that does not exist, so it is left out.`,
+  ),
+  'blocks-items.creative-tab-item-repeated': entry(
+    (t) => `The creative tab ${t} lists the same thing twice; it shows it once.`,
+  ),
+
+  // Game rules and statistics (ADR 0111 D5, D6) ---------------------------------------------
+  'game-rules.min-above-max': entry((t) => `${t} has a lowest value above its highest value.`),
+  'game-rules.default-out-of-range': entry(
+    (t) => `${t} starts at a number outside its lowest and highest values. Change one of them.`,
+  ),
+  'game-rules.range-on-boolean': entry(
+    (t) => `${t} is on or off, so its lowest and highest values are not used.`,
+  ),
+  'game-rules.vanilla-clash': entry(
+    (t) => `Minecraft already has a setting or count called ${t}. Give yours another name.`,
+  ),
+  'game-rules.vanilla-name': entry(
+    (t) => `Minecraft has a setting or count with the same name as ${t}; players may mix them up.`,
+  ),
+  'game-rules.no-name': entry((t) => `${t} has no name to show in the game. Give it a name.`),
 
   // Play and Share my mod ------------------------------------------------------------------
   'export.no-fabric-target': entry(

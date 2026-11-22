@@ -1,0 +1,12 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "kind": "boolean"
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/game_rule/quiet.json",
+    "schema": "msm:game_rule_definition"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "contents": {
+      "category": "mobs",
+      "default": 3,
+      "format": 1,
+      "kind": "integer",
+      "max": 10,
+      "min": 0
+    },
+    "layer": "msm",
+    "merge": null,
+    "path": "msm/demo/game_rule/mobs/max_pets.json",
+    "schema": "msm:game_rule_definition"
+  },
+  {
+    "contents": {
+      "gamerule.demo.mobs.max_pets": "Most pets",
+      "gamerule.demo.mobs.max_pets.description": "How many pets a player may keep."
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

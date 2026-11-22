@@ -8,6 +8,7 @@ import type { ElementTemplate, TemplateContext } from '@msm/plugin-api';
 import { SCRIPT_KIND } from '../kinds';
 
 export { commandTemplates } from './commands';
+export { gameRuleTemplates } from './game-rules';
 
 const CATEGORY = 'Scripts';
 

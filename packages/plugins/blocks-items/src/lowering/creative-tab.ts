@@ -2,7 +2,8 @@
  * Lowering of `msm:creative_tab` (ADR 0096 D2): the runtime definition
  * `msm/<ns>/creative_tab/<path>.json` and, with `display_name`, the language key the tab's
  * `title` names (default `itemGroup.<ns>.<path>`). Items and blocks join the tab through their
- * own `creative_tab` field, so the tab lists no items.
+ * own `creative_tab` field; with `order` `by_hand` (ADR 0111 D7) the tab's `items` list sets the
+ * order, and an item listed there joins the tab even when it names no tab itself.
  */
 import type { Element, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
@@ -11,6 +12,9 @@ import { BlocksItemsLoweringError, isRecord, splitResourceLocation } from './pat
 import { langFile, nonEmptyString } from './shared';
 
 const CREATIVE_TAB_EDITOR_FIELDS = ['display_name'] as const;
+
+/** The order whose `items` list the runtime reads (ADR 0111 D7). */
+export const CREATIVE_TAB_BY_HAND = 'by_hand';
 
 /** The runtime folder `msm/<namespace>/creative_tab/<path>.json` (ADR 0096 D2). */
 export function creativeTabPath(namespace: string, path: string): string {
@@ -36,13 +40,17 @@ function creativeTabData(element: Element): JsonObject {
 
 /**
  * The runtime creative tab definition: the element data without `display_name`, with `format`
- * set to the format this plugin writes. `icon`, `title` and `order` pass through unchanged.
+ * set to the format this plugin writes. `icon`, `title` and `order` pass through unchanged;
+ * `items` passes through in its order with `order` `by_hand` and is left out under any other
+ * order (the runtime would ignore it with a warning; the validator
+ * `blocks-items.creative-tab-items-unused` says so in the app).
  *
  * @throws {@link BlocksItemsLoweringError} If the data is not an object.
  */
 export function creativeTabDefinition(element: Element): JsonObject {
   const definition = structuredClone(creativeTabData(element));
   for (const field of CREATIVE_TAB_EDITOR_FIELDS) delete definition[field];
+  if (definition.order !== CREATIVE_TAB_BY_HAND) delete definition.items;
   definition.format = DEFINITION_FORMAT;
   return definition;
 }

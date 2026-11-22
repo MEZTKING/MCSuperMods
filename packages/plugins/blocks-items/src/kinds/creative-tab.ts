@@ -8,6 +8,7 @@ import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { lowerCreativeTab } from '../lowering/creative-tab';
 
 export {
+  CREATIVE_TAB_BY_HAND,
   creativeTabDefinition,
   creativeTabPath,
   creativeTabTitleKey,
@@ -22,7 +23,8 @@ export const CREATIVE_TAB_REGISTRY = 'creative_mode_tab';
 
 /**
  * Creative tabs (ADR 0096 D2). The default shows a diamond, lists items in the order they are
- * registered and is called "My mod".
+ * registered and is called "My mod". `order` `by_hand` with `items` (ADR 0111 D7) shows the
+ * listed items first, in that order.
  */
 export const creativeTabKind: ElementKind = {
   id: CREATIVE_TAB_KIND,

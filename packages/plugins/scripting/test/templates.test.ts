@@ -34,7 +34,19 @@ const IDS = [
   'msm_script_boss_bar_countdown',
 ];
 
-const COMMAND_IDS = ['msm_command_help', 'msm_command_hop', 'msm_creative_tab'];
+const COMMAND_IDS = [
+  'msm_command_help',
+  'msm_command_hop',
+  'msm_creative_tab',
+  'msm_creative_tab_by_hand',
+];
+
+const GAME_RULE_IDS = [
+  'msm_game_rule_switch',
+  'msm_game_rule_number',
+  'msm_stat_counter',
+  'msm_stat_time',
+];
 
 function elementId(template: ElementTemplate): ResourceLocation {
   const namespace = template.defaultNamespace ?? 'demo';
@@ -69,6 +81,7 @@ describe('scripting templates', () => {
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual([
       ...IDS,
       ...COMMAND_IDS,
+      ...GAME_RULE_IDS,
     ]);
   });
 
@@ -183,6 +196,7 @@ describe('command and creative tab templates', () => {
       ['msm:command', 'Commands'],
       ['msm:command', 'Commands'],
       ['msm:creative_tab', 'Creative tabs'],
+      ['msm:creative_tab', 'Creative tabs'],
     ]);
     for (const template of commandTemplates) {
       expect(template.title, template.id).not.toBe('');
@@ -253,11 +267,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       },
     );
 
-    it('the creative tab template fits the tab schema', async () => {
-      const template = commandTemplates[2] as ElementTemplate;
-      const data = await template.data(contextFor(template, bundle.target));
-      const indexes = await indexesFor(bundle);
-      expect(blockingProblems(indexes, MSM_SCHEMA_REFS.creativeTab, data)).toEqual([]);
-    });
+    it.each(COMMAND_IDS.slice(2).map((id) => [id] as const))(
+      '%s fits the tab schema',
+      async (id) => {
+        const template = commandTemplates.find((entry) => entry.id === id) as ElementTemplate;
+        const data = await template.data(contextFor(template, bundle.target));
+        const indexes = await indexesFor(bundle);
+        expect(blockingProblems(indexes, MSM_SCHEMA_REFS.creativeTab, data)).toEqual([]);
+      },
+    );
   },
 );

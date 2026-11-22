@@ -151,6 +151,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.weathering',
       'msm.blocks-items.item-inventory',
       'msm.blocks-items.creative-tab-icon',
+      'msm.blocks-items.creative-tab-order',
       'msm.blocks-items.fluids',
       'msm.blocks-items.plants-3',
       'msm.blocks-items.storage-2',

@@ -4,6 +4,9 @@ import { describe, expect, it } from 'vitest';
 import plugin, {
   commandKind,
   commandTemplates,
+  GAME_RULE_PROBLEM_CODES,
+  gameRuleKind,
+  gameRuleTemplates,
   lowerScript,
   SCRIPTING_PROBLEM_CODES,
   ScriptingLoweringError,
@@ -14,6 +17,7 @@ import plugin, {
   scriptPath,
   scriptText,
   splitResourceLocation,
+  statKind,
 } from '../src/index';
 import { blockingProblems, element, indexesFor, syntaxErrors, typeCheck } from './support';
 
@@ -31,8 +35,13 @@ describe('@msm/plugin-scripting', () => {
   });
 
   it('contributes msm:script with its schema and folder, without registry or preview', () => {
-    expect(kinds().map((kind) => kind.id)).toEqual(['msm:script', 'msm:command']);
-    expect(scriptingKinds).toEqual([scriptKind, commandKind]);
+    expect(kinds().map((kind) => kind.id)).toEqual([
+      'msm:script',
+      'msm:command',
+      'msm:game_rule',
+      'msm:stat',
+    ]);
+    expect(scriptingKinds).toEqual([scriptKind, commandKind, gameRuleKind, statKind]);
     expect([
       scriptKind.schema,
       scriptKind.folder,
@@ -64,13 +73,24 @@ describe('@msm/plugin-scripting', () => {
 
   it('contributes its templates and validators', () => {
     expect(plugin.contributes.elementTemplates?.map((t) => t.id)).toEqual(
-      [...scriptingTemplates, ...commandTemplates].map((t) => t.id),
+      [...scriptingTemplates, ...commandTemplates, ...gameRuleTemplates].map((t) => t.id),
     );
     expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
       ...scriptingValidators.map((v) => v.id),
       'msm.scripting.command-names',
       'msm.scripting.command-arguments',
       'msm.scripting.command-actions',
+      'msm.scripting.game-rules',
+      'msm.scripting.stats',
+      'msm.scripting.game-rule-names',
+    ]);
+    expect(GAME_RULE_PROBLEM_CODES).toEqual([
+      'game-rules.min-above-max',
+      'game-rules.default-out-of-range',
+      'game-rules.range-on-boolean',
+      'game-rules.vanilla-clash',
+      'game-rules.vanilla-name',
+      'game-rules.no-name',
     ]);
     expect(SCRIPTING_PROBLEM_CODES).toEqual([
       'scripting.unknown-handler',
