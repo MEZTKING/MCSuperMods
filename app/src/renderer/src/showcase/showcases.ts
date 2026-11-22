@@ -333,7 +333,7 @@ function vehicle(): ShowcaseClip {
   return {
     id: 'vehicle',
     title: 'A vehicle',
-    sentence: 'Something to drive, with seats and a horn.',
+    sentence: 'Something to drive, with seats and a cannon.',
     exampleId: 'example_msm_vehicle',
     make: { type: 'flows', flowIds: VEHICLE_FLOW_IDS },
     ground: FLAT,
