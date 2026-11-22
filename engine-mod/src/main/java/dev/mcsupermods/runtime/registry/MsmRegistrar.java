@@ -19,6 +19,7 @@ import dev.mcsupermods.runtime.loader.ParseResult;
 import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.loader.types.PlantFields;
+import dev.mcsupermods.runtime.registry.boat.MsmBoats;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
 import dev.mcsupermods.runtime.registry.container.StorageExtras;
 import dev.mcsupermods.runtime.registry.fluid.MsmFluids;
@@ -686,7 +687,10 @@ public final class MsmRegistrar {
             props = props.durability(c.durability().get().max()); // after the others: overrides the material's durability
         }
         Item item;
-        if (c.throwable().isPresent()) {
+        if (c.boat().isPresent()) {
+            // Boats (ADR 0110 D1, B536): vanilla's BoatItem for the project's boat type, registered with it by MsmBoats.
+            item = MsmBoats.itemFor(raw, def, props, errors, warnings);
+        } else if (c.throwable().isPresent()) {
             item = new MsmThrowableItem(id, def, throwSound(raw, c.throwable().get(), warnings), props);
         } else if (c.rangedWeapon().isPresent()) {
             item = switch (c.rangedWeapon().get().type()) {
@@ -702,7 +706,7 @@ public final class MsmRegistrar {
         }
         Item registered = Registry.register(BuiltInRegistries.ITEM, key, item);
         def.creativeTab().ifPresent(tab -> addToTab(raw, tab, registered));
-        if (c.throwable().isPresent() && c.throwable().get().dispensable()) {
+        if (c.boat().isEmpty() && c.throwable().isPresent() && c.throwable().get().dispensable()) {
             DispenserBlock.registerProjectileBehavior(registered); // ADR 0056 D3, through ProjectileItem
         }
     }

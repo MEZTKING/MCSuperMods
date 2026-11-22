@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:boat": {
+      "chest": true
+    }
+  },
+  "creative_tab": "minecraft:tools_and_utilities",
+  "format": 1,
+  "max_stack_size": 1
+}

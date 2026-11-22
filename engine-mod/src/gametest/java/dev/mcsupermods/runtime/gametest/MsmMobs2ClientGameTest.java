@@ -10,7 +10,9 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.renderer.entity.BoatRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.RaftRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -20,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -34,8 +37,8 @@ import net.minecraft.world.phys.Vec3;
  * <p>Checked on the client: the hovering mob holds 3 to 5 blocks over the pad, the roosting and playing dead flags reached
  * the client, and {@link MsmVanillaRenderer#extractRenderState} draws the roosting mob upside down and the one playing
  * dead fallen over (death time 20). Screenshot {@code msm_mobs2_hover_roost_dead_<mc>} in
- * {@code build/run/clientGameTest/screenshots/}. Boats and repainted fluids (B536, the later client briefs) add their
- * own methods here.
+ * {@code build/run/clientGameTest/screenshots/}. Then {@link #boats} (B536): project boats drawn by vanilla's renderers.
+ * Repainted fluids (the later client briefs) add their own method here.
  */
 public class MsmMobs2ClientGameTest implements FabricClientGameTest {
     private static final int Y = 100;
@@ -75,6 +78,7 @@ public class MsmMobs2ClientGameTest implements FabricClientGameTest {
             context.waitTicks(100);
             check(context, ids);
             context.takeScreenshot("msm_mobs2_hover_roost_dead_" + mc);
+            boats(context, world, mc);
         }
     }
 
@@ -159,5 +163,67 @@ public class MsmMobs2ClientGameTest implements FabricClientGameTest {
             check(state(mc, dead).deathTime >= 20.0f, "the mob playing dead is not drawn fallen over");
             check(!state(mc, hover).isUpsideDown && state(mc, hover).deathTime == 0.0f, "the hovering mob is drawn in a pose");
         });
+    }
+
+    private static final int BOAT_Z = 30;
+
+    /**
+     * Project boats (ADR 0110 D2, B536): on a pool at y 99 the test items {@code bt_maple_boat} and its chest boat,
+     * {@code bt_reed_raft} and its chest raft (pictures in the test mod's {@code textures/entity/boat/} and
+     * {@code chest_boat/}), and {@code bt_plain_boat} with vanilla's oak pictures. Checked on the client: each is drawn by
+     * vanilla's {@link BoatRenderer} (the rafts by {@link RaftRenderer}). Screenshots {@code msm_boats_<mc>}, then
+     * {@code msm_boat_riding_<mc>} with the player in the maple boat.
+     */
+    private static void boats(ClientGameTestContext context, TestSingleplayerContext world, String mc) {
+        TestServerContext server = world.getServer();
+        List<String> paths = List.of("bt_maple_boat", "bt_maple_chest_boat", "bt_reed_raft", "bt_reed_chest_raft", "bt_plain_boat");
+        int[] ids = server.computeOnServer(s -> {
+            ServerLevel level = s.overworld();
+            for (int x = -2; x <= 20; x++) {
+                for (int z = BOAT_Z - 2; z <= BOAT_Z + 12; z++) {
+                    boolean water = x >= 0 && x <= 18 && z >= BOAT_Z && z <= BOAT_Z + 10;
+                    level.setBlock(new BlockPos(x, Y - 2, z), Blocks.STONE.defaultBlockState(), 2);
+                    level.setBlock(new BlockPos(x, Y - 1, z), water ? Blocks.WATER.defaultBlockState() : Blocks.STONE.defaultBlockState(), 2);
+                    for (int y = Y; y <= Y + 8; y++) {
+                        level.setBlock(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+            }
+            int[] out = new int[paths.size()];
+            for (int i = 0; i < paths.size(); i++) {
+                EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(id(paths.get(i)));
+                check(BuiltInRegistries.ENTITY_TYPE.containsKey(id(paths.get(i))), "boat " + paths.get(i) + " is not registered");
+                Entity boat = type.create(level, EntitySpawnReason.COMMAND);
+                check(boat instanceof AbstractBoat, paths.get(i) + " is not a boat");
+                boat.snapTo(1.5 + i * 3.5, Y - 0.4, BOAT_Z + 5.5, 90f, 0f);
+                level.addFreshEntity(boat);
+                out[i] = boat.getId();
+            }
+            return out;
+        });
+        stand(context, world, 8.5, Y + 2, BOAT_Z + 12.5, 180f, 25f);
+        context.waitTicks(40);
+        context.waitFor(mc2 -> mc2.level != null && java.util.Arrays.stream(ids).allMatch(i -> mc2.level.getEntity(i) != null), 100);
+        context.runOnClient(client -> {
+            for (int i = 0; i < ids.length; i++) {
+                Entity boat = client.level.getEntity(ids[i]);
+                EntityRenderer<?, ?> renderer = client.getEntityRenderDispatcher().getRenderer(boat);
+                boolean raft = paths.get(i).contains("raft");
+                check(raft ? renderer instanceof RaftRenderer : renderer instanceof BoatRenderer,
+                        paths.get(i) + " is drawn by " + renderer.getClass().getSimpleName());
+            }
+        });
+        context.takeScreenshot("msm_boats_" + mc);
+        server.runOnServer(s -> {
+            ServerPlayer p = player(s.getPlayerList().getPlayers());
+            p.getAbilities().flying = false;
+            p.onUpdateAbilities();
+            p.startRiding(s.overworld().getEntity(ids[0]), true, true);
+        });
+        context.waitFor(client -> client.player != null && client.player.getVehicle() != null && client.player.getVehicle().getId() == ids[0], 100);
+        context.getInput().lookAt(180f, 20f);
+        context.waitTicks(20);
+        context.runOnClient(client -> client.gui.toastManager().clear());
+        context.takeScreenshot("msm_boat_riding_" + mc);
     }
 }

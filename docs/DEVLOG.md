@@ -7639,3 +7639,21 @@ Next
 - Try it: `packages/sim/src/events/actions.ts` `SIM_ACTIONS` and `packages/sim/test/events/schema-walk.test.ts` `SAMPLES` need `open_dialog` (`'onlyInMinecraft'`, sample `{ dialog: 'ev:welcome' }`); the schema walk fails until then.
 - B537: the eject's `ACTION_TYPES` (`packages/targets/mc-26.3/src/java-project/actions.ts`) lacks `open_dialog`; a Java reader as `apply_effect`'s target rule, then `Registries.DIALOG` and `ServerPlayer.openDialog`.
 - B538: `app/src/renderer/src/studios/rules/turn-into-rules.ts` could turn an `open_dialog` action back into the step (`dialog`, `who` from `target`).
+
+## 2026-11-22 — executor — B536 runtime: boats
+
+**What**
+- Boats of project woods (ADR 0110 D1, D2 as amended after B524). An item with `msm:boat` is now vanilla's boat under the item's own id: `registry/boat/MsmBoats.itemFor` registers the entity type `<item id>` as vanilla's `Boat` (a `Raft` with `raft`), sized, tracked and updated as vanilla's oak boat (bamboo raft), read from `EntityTypes` at registration, and returns `MsmBoatItem` (vanilla's `BoatItem`; the item's own `on_use`, `on_hit`, `on_use_on_block` and `while_held` events fire as on `MsmItem`). With `chest`, the companion `<wood>_chest_boat` (`_chest_raft`; `BoatParser.Boat.chestBoatId`) is registered as vanilla's `BoatItem` and a `ChestBoat` (`ChestRaft`) type. Paddling, two seats, the chest menu (27 slots) and the drops on breaking are vanilla's. `MsmBoats.register` gives every boat and chest boat item vanilla's `BoatDispenseItemBehavior`, puts the chest boat into the boat's creative tab right after it, and records the entity types in the report (`registered N boat type(s)`; 5 in the GameTest mod).
+- Client (`client/boat/BoatRenderers`): one model layer per wood, `<wood ns>:boat/<wood path>#main` and `chest_boat/<wood path>#main`, through Fabric's `ModelLayerRegistry` with vanilla's boat or raft layer definitions, and vanilla's `BoatRenderer` (`RaftRenderer` for rafts) through the `EntityRendererRegistration` seam (unchanged). Vanilla reads the picture named after the layer, `<wood ns>:textures/entity/boat/<wood path>.png` and `chest_boat/...`, which are the plugin's `boatTextureId` paths. A layer vanilla already has (for example `wood_texture: minecraft:oak`) is reused, not registered again.
+- `MsmRegistrar.registerItem` calls `MsmBoats.itemFor` first for an item with `msm:boat` (a two-line hook; the B526 stub had no item hook). A boat ignores `msm:throwable`, `msm:ranged_weapon` and a mace tool, with a warning.
+- Tests: `MsmBoatGameTest` 5 (replacing the placeholder): registration, sizes and dispenser behaviour; a boat and a raft placed on water by a real right-click and floating; two riders and a sneaking player opening the chest boat; breaking drops the boat, and the chest raft its contents; a dispenser facing water puts a project boat and a chest boat on it with nothing dropped. Test items `bt_maple_boat` (chest), `bt_reed_raft` (chest, raft), `bt_plain_boat` (vanilla oak pictures) and original striped test pictures. `MsmMobs2ClientGameTest.boats`: all five drawn by vanilla's renderers, screenshots `msm_boats_<mc>` and `msm_boat_riding_<mc>` on 26.3 and 26.4.
+- Verified: `./gradlew build` 838 GameTests (26.3), `-Pmc=26.4` 838, `-PwithoutGeckolib` 838; `runClientGameTest` on 26.3 and 26.4; `pnpm lint`, `pnpm typecheck`, `@msm/target-mc-26.3` tests 235 (it copies the GameTest definitions).
+
+**Decisions**
+- Vanilla's `Boat`, `ChestBoat`, `Raft` and `ChestRaft` are used directly with the item supplier; no `MsmBoat`/`MsmChestBoat` subclasses (nothing to override).
+- The chest boat item has no definition of its own: a plain `BoatItem`, stack 1, no events.
+- An entity type id that is taken fails the boat item; a taken chest boat id is an error and the boat comes without its chest boat.
+
+**Next**
+- The "stub until B536" comments in `MsmRuntime.java` and `client/MsmRuntimeClient.java` are stale (files closed to this brief).
+- B541: pin `registered 5 boat type(s)` only for the GameTest mod; B543 guide: dispensers place project boats as vanilla's.

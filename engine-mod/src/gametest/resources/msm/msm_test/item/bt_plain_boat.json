@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:boat": {
+      "wood_texture": "minecraft:oak"
+    }
+  },
+  "format": 1,
+  "max_stack_size": 1
+}
