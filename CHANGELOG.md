@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.4.
+
+## [1.5.4] - 2026-11-22
+
+A test build: everything since 1.5.3, with the Showcase, the rest of vanilla parity 3 batch 2's work, and live world generation: the world map, value maps, Scatter and Compare with vanilla, the Creator's Map tab, the Studios' **See it on the map** and **Walk in it**, Try it's **My world generation** ground, the **Make a world** flows and three world cards in the Showcase.
+
 ### Added
 
 - **The Creator draws your world while you answer**: the world flows and the Dimension flow open their live preview on a new **Map** tab, which shows the world your answers make (biomes, height, a side cut, the climate) and follows every answer, before anything is added to your mod.
@@ -15,13 +21,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **Minecraft's own biomes on the live map**: after you have pressed **Play** once, the world map, **Compare with vanilla** and Try it's **My world generation** show the biomes of Minecraft's own overworld and Nether where a world uses them (before that, their land is drawn in one colour and the notes say "Vanilla's biomes show here after you have pressed Play once."). The list is read from your own game on your computer and is never exported or sent anywhere.
 - **The AI helper** knows the five Make a world flows and their answers, says that the map and the ground show its changes, and tells the limits of the preview in plain words. It never receives Minecraft's own world files.
 - User guide: a new page, **The live world map**, and the worldgen, Try it, Creator, Very easy and See what you can make pages cover the world flows, the map and the ground.
-
-## [1.5.4] - 2026-11-22
-
-A test build: everything since 1.5.3, with the Showcase, the rest of vanilla parity 3 batch 2's work, and most of live world generation: the world map, value maps, Scatter and Compare with vanilla in the preview panel, Try it's **My world generation** ground and the **Make a world** flows (the maps inside the Creator and the Studios' **Walk in it** come in a later build).
-
-### Added
-
 - **Every kind of world generation now shows live** in the preview panel: noises and density functions as a **Value map** (**From above** at a chosen **Height**, or a **Side cut**); features, placed features, block providers and world additions as **Scatter** on a small patch of land (**From above**, **From the side**, with a count, and **The addition is on** to compare); **Structures** marks where spread-out structures may start; **Compare with vanilla** draws vanilla's world beside yours. Carvers say that carved caves show only in the game.
 - **Try it: My world generation**: walk in a window of your own world (48 by 48 blocks, 32 high) around a place and seed you choose. It comes in stages (land, surface, then trees, plants and ores, which are about right) and is made again in place when you edit, keeping your placed blocks where it can. **Move up**, **Move down**, **Make the land around me** and **Show on the map**.
 - **Make a world** on Home: five flows (**Islands**, **Tall mountains**, **One biome everywhere**, **Caves only**, **Empty sky with a start island**) each make a world type to choose in Minecraft's Create New World, with five examples (Coral Isles, Frost Peaks, Endless Blossom, Ember Caverns, Cloud Realm). The empty sky's start island comes with Skyblock; until then, play it in Creative.
