@@ -828,6 +828,34 @@ The user's request of 2026-11-14 ("make the art much better ... rather than usin
 - [ ] The user looks at the drawn pictures in game (a Creator Gear set, a Wood set, a mob, Surprise me) on 26.3 and 26.4, and at the vetoable defaults in ADR 0092's Status.
 - Follow-ups (ADR 0092 findings): a Windows run of the art goldens (the CI's Windows job builds only the sample plugin); the effect icon's symbol per effect; Try it's Island frame rate on a quiet machine or a hardware GPU; a `frame` input on `create_texture` for particles; the trapdoor's see-through holes in game; the example "Worn armour look" drawing its layers with the 64 by 32 armour layer recipes; the fixtures whose goldens still draw with `placeholderPng` (limit A6); a painting recipe (A2), eyes and markings on vanilla mob variants (A3), 32 by 32 recipes (A7) and an animated portal surface (A8); ADR 0093 (AI pictures) still Proposed.
 
+### Add-on after 1.0 — Vanilla parity 3 (planned)
+
+The user's golden rule (2026-11-14: anything that can be made in vanilla Minecraft Java must be possible through MSM) applied to what the coverage audit and ADR 0101's limits still list after vanilla parity 2: limits Q5, Q7, Q8, Q10, Q21 and Q25, batch 2 in the Java eject (Q28), and the other open vanilla gaps that are not client-only rendering work. Q27 (gravity and sky textures per dimension) is dropped: vanilla has neither in data, and vanilla's own way (a function with `/attribute ... minecraft:gravity`) already works through MSM. Design: [ADR 0103](adr/0103-growing-plants-and-project-flower-pots.md) (growing and climbing plants, project flower pots), [ADR 0104](adr/0104-weathering-lightning-and-storage-2.md) (weathering on more types, lightning, waterlogged, double and per-player storage), [ADR 0105](adr/0105-block-sounds-set-types-and-vanilla-block-pairs.md) (own block sounds and set types, strip, flatten, till, age and burn pairs), [ADR 0106](adr/0106-data-kinds-sweep-2-and-data-only-flows.md) (the last data and resource pack kinds, four data-only flows), [ADR 0107](adr/0107-traders-2-villager-homes-and-villager-types.md) (reputation, demand, work sites, project beds as homes, villager types), [ADR 0108](adr/0108-fluids-2-mixing-cauldrons-and-bottles.md) (mixing, cauldrons, bottles), [ADR 0109](adr/0109-mobs-2-buckets-shoulders-flight-and-habits.md) (fish buckets, both shoulders, hovering and phasing, five habits), [ADR 0110](adr/0110-boats-for-project-woods.md) (boats), [ADR 0111](adr/0111-commands-rules-game-rules-and-stats-2.md) (command arguments in Rules, more argument types, the R10 triggers, dialogs, game rules, statistics, tab order, Script API 1.7) and [ADR 0112](adr/0112-vanilla-parity-3-flows-studios-eject-try-it-and-tests.md) (flows, Studios, the eject, Try it, tests); all Proposed. Working plan: [PLAN-vanilla-parity-3.md](PLAN-vanilla-parity-3.md) (briefs B503–B546; facts H1–H16, spike questions X1–X34, limits N1–N26). Plugin API 1.19.0 and 1.20.0, Script API 1.7.
+
+Batch 1, Plants, pots, sounds and storage:
+
+- [ ] Wave 0: B503 spike (X1–X14), B504 data kinds sweep 2 and resource pack kinds, B505 scaffold and stubs.
+- [ ] Wave 1: B506 format, B507 plugin API 1.19.0 and target facts, B508 banner pattern, armour trim, glider and pot pattern flows.
+- [ ] Wave 2: B509 runtime growing plants, B510 runtime pots, weathering on more types and lightning, B511 and B512 lowering.
+- [ ] Wave 3: B513 runtime storage 2 (waterlogged, double, per-player, weathering containers), B514 runtime own sounds, set types and vanilla pairs, B515 plugin storage, sounds and pairs, B516 Block Studio 2.
+- [ ] Wave 4: B517 exporters and eject, B518 flows, templates and examples, B519 Try it.
+- [ ] Wave 5: B520 `fixtures/sample-plants-and-storage`, parity, CI and client GameTests, B521 e2e `plants-path` and `storage-2-path`.
+- [ ] Wave 6: B522 AI helper, guide and changelog, B523 close of batch 1.
+- [ ] The user checks in game (`fixtures/sample-plants-and-storage/README.md` on 26.3 and 26.4, singleplayer and a dedicated server).
+
+Batch 2, Villagers, mobs, fluids, commands and the eject:
+
+- [ ] Wave 7: B524 spike (villagers, mobs, boats: X15–X24), B525 spike (fluids, commands, game rules, statistics, events: X25–X34).
+- [ ] Wave 8: B526 scaffold and stubs, B527 format, plugin API 1.20.0 and facts.
+- [ ] Wave 9: B528 runtime villagers 2, B529 runtime fluids 2, B530 entities plugin, B531 blocks-items plugin fluids 2 and boats.
+- [ ] Wave 10: B532 runtime mobs 2, B533 runtime commands, game rules, statistics, events and Script API 1.7, B534 Rules, B535 scripting and tab kinds.
+- [ ] Wave 11: B536 runtime boats (on B524's go), B537 the eject of vanilla parity 2 batch 2 and of this plan, B538 Studios.
+- [ ] Wave 12: B539 flows, templates and examples, B540 Try it.
+- [ ] Wave 13: B541 `fixtures/sample-mobs-and-commands`, parity (also on the ejected jars), CI and client GameTests, B542 e2e `villagers-2-path`, `mobs-2-path`, `commands-2-path` and `eject-path`.
+- [ ] Wave 14: B543 AI helper, guide and changelog, B544 close of batch 2. Reserves B545 (boats to the client batch) and B546 (vanilla pairs on 26.4 by Mixin) only if their spikes say so.
+- [ ] The user checks in game (`fixtures/sample-mobs-and-commands/README.md` and the ejected `fixtures/sample-villagers-and-fluids` on 26.3 and 26.4).
+- Left for the next client batch (not vanilla data or server work): custom screens and block entity renderers (C3, C9), more than three machine slots (C4), fog colours on 26.3, held weapons and the bow pose, variants that change the model, the portal overlay (P2), particle trails, client commands, scripts in the eject (B142). Left out as not in vanilla: pipes and tanks, other buoyancies, waterlogging by a project fluid, containers on slabs or doors, hopper access to mount storage and bags, cancelling vanilla commands. Left out as brain code (limit N15): the warden, the frog's tongue, the piglin's brain, sculk vibrations of our own.
+
 ### Exit criteria
 
 Two targets supported; an external plugin works; 1.0 released.

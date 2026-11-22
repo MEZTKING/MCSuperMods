@@ -7,7 +7,7 @@ This file is for any coding agent or person picking up the work, whatever tool t
 1. `docs/HANDOFF.md`: where things stand, what is in progress, what waits on the user, what to do next. Its section "State at handover" is the most recent snapshot.
 2. The root `CLAUDE.md`: what the project is, the directory map and the golden rules.
 3. The last few entries at the end of `docs/DEVLOG.md` (append-only; newest last).
-4. The open plan, if any: none is open now. The art batch closed at B502 (its decisions, facts and limits are in ADR 0092), Try it at B403 (ADRs 0085–0087) and vanilla parity 2 at B485 (ADRs 0094–0101); their follow-ups are in `docs/ROADMAP.md`. New work starts with a plan file (`docs/PLAN-<name>.md`) and ADRs (`docs/HANDOFF.md` "Next").
+4. The open plan: `docs/PLAN-vanilla-parity-3.md` (vanilla parity 3, briefs B503–B546, ADRs 0103–0112 Proposed; written 2026-11-22, no brief started). Earlier batches are closed: the art batch at B502 (ADR 0092), Try it at B403 (ADRs 0085–0087) and vanilla parity 2 at B485 (ADRs 0094–0101); their follow-ups are in `docs/ROADMAP.md`.
 5. Before touching an area, the scoped `CLAUDE.md` in that folder (`app/`, `packages/core/`, `packages/schemas/`, `packages/plugin-api/`, `packages/plugins/`, `packages/exporters/`, `packages/targets/`, `packages/interop/`, `packages/sim/`, `engine-mod/`, `docs/`). `docs/DESIGN.md` is authoritative; decisions are in `docs/adr/`.
 
 ## Rules you must keep
