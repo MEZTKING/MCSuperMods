@@ -1,0 +1,34 @@
+[
+  {
+    "contents": {
+      "biomes": [
+        "minecraft:swamp",
+        "#minecraft:is_badlands"
+      ],
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/villager_type/moor.json",
+    "schema": "msm:villager_type_definition"
+  },
+  {
+    "contents": {
+      "villager": {
+        "hat": "partial"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/textures/entity/villager/type/moor.png.mcmeta",
+    "schema": "resource:texture_meta"
+  },
+  {
+    "contents": {
+      "villager": {
+        "hat": "partial"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/textures/entity/zombie_villager/type/moor.png.mcmeta",
+    "schema": "resource:texture_meta"
+  }
+]

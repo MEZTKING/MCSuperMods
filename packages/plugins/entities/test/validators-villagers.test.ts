@@ -55,7 +55,7 @@ const profession = (id: ResourceLocation, data: Record<string, Json>) =>
 const block = (id: ResourceLocation) => element('msm:block', id, { format: 1 });
 
 describe('villager validators', () => {
-  it('lists eight codes, apart from the entity and vehicle codes, and is contributed last', () => {
+  it('lists fourteen codes, apart from the entity and vehicle codes, and is contributed last', () => {
     expect(ENTITIES_VILLAGER_PROBLEM_CODES).toEqual([
       'entities.trade-set-unknown',
       'entities.trade-set-villager-only',
@@ -65,12 +65,18 @@ describe('villager validators', () => {
       'entities.shoulder-too-wide',
       'entities.shoulder-needs-tameable',
       'entities.storage-rows',
+      'entities.work-site-unknown',
+      'entities.work-site-without-restock',
+      'entities.gift-without-item',
+      'entities.villager-type-taken',
+      'entities.villager-type-biome-shared',
+      'entities.villager-type-texture-missing',
     ]);
     for (const code of ENTITIES_VILLAGER_PROBLEM_CODES) {
       expect(ENTITIES_PROBLEM_CODES as readonly string[]).not.toContain(code);
       expect(VEHICLE_PROBLEM_CODES as readonly string[]).not.toContain(code);
     }
-    expect(plugin.contributes.validators?.slice(-4)).toEqual([...entitiesVillagerValidators]);
+    expect(plugin.contributes.validators?.slice(-6)).toEqual([...entitiesVillagerValidators]);
   });
 
   it('reports nothing for an empty project', async () => {
@@ -297,6 +303,106 @@ describe('villager validators', () => {
       ]);
       expect(only(problems, 'entities.storage-rows')).toEqual([
         ['demo:a', 'info', '/components/msm:storage/rows'],
+      ]);
+    });
+  });
+
+  describe('work sites and gifts (ADR 0107 D1, D3)', () => {
+    const withTrader = (id: ResourceLocation, fields: Record<string, Json>) =>
+      mob(id, { 'msm:trader': { trade_sets: [], ...fields } });
+
+    it('entities.work-site-unknown: accepts vanilla and project blocks and tags', async () => {
+      const problems = await validate([
+        withTrader('demo:a', { work_site: 'minecraft:barrel' }),
+        withTrader('demo:b', { work_site: '#minecraft:logs' }),
+        withTrader('demo:c', { work_site: 'demo:stall' }),
+        block('demo:stall'),
+        withTrader('demo:d', { work_site: 'demo:nowhere' }),
+        withTrader('demo:e', { work_site: '' }),
+        withTrader('demo:f', { work_site: '#demo:no_tag' }),
+        withTrader('demo:g', { work_site: '#demo:stalls' }),
+        element('minecraft:tag/block', 'demo:stalls', { values: ['demo:stall'] }),
+        withTrader('demo:h', {}),
+      ]);
+      expect(only(problems, 'entities.work-site-unknown')).toEqual([
+        ['demo:d', 'error', '/components/msm:trader/work_site'],
+        ['demo:e', 'error', '/components/msm:trader/work_site'],
+        ['demo:f', 'error', '/components/msm:trader/work_site'],
+      ]);
+    });
+
+    it('entities.work-site-without-restock: warns unless restock is twice a day', async () => {
+      const problems = await validate([
+        withTrader('demo:a', { work_site: 'minecraft:barrel', restock: 'never' }),
+        withTrader('demo:b', { work_site: 'minecraft:barrel', restock: 'twice_a_day' }),
+        withTrader('demo:c', { work_site: 'minecraft:barrel' }),
+        withTrader('demo:d', { restock: 'never' }),
+      ]);
+      expect(only(problems, 'entities.work-site-without-restock')).toEqual([
+        ['demo:a', 'warning', '/components/msm:trader/work_site'],
+      ]);
+    });
+
+    it('entities.gift-without-item: informs about a gift value with nothing to give', async () => {
+      const problems = await validate([
+        withTrader('demo:a', { reputation: { gift: 10 } }),
+        withTrader('demo:b', { reputation: { gift: 10, gift_item: 'minecraft:emerald' } }),
+        withTrader('demo:c', { reputation: {} }),
+      ]);
+      expect(only(problems, 'entities.gift-without-item')).toEqual([
+        ['demo:a', 'info', '/components/msm:trader/reputation/gift'],
+      ]);
+    });
+  });
+
+  describe('villager types (ADR 0107 D5)', () => {
+    const type = (id: ResourceLocation, biomes: string[], villager?: string) =>
+      element('msm:villager_type', id, {
+        format: 1,
+        biomes,
+        ...(villager === undefined ? {} : { textures: { villager } }),
+      });
+
+    describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const))(
+      'entities.villager-type-taken on %s',
+      (_id, bundle) => {
+        it('refuses a vanilla id only', async () => {
+          expect(bundle.target.entities?.villagerTypes).toContain('plains');
+          const problems = await validate(
+            [
+              type('minecraft:plains', ['minecraft:plains'], 'example:entity/ruby_golem'),
+              type('minecraft:moor', ['minecraft:swamp'], 'example:entity/ruby_golem'),
+              type('demo:plains', ['minecraft:meadow'], 'example:entity/ruby_golem'),
+            ],
+            bundle,
+          );
+          expect(only(problems, 'entities.villager-type-taken')).toEqual([
+            ['minecraft:plains', 'error', undefined],
+          ]);
+        });
+      },
+    );
+
+    it('entities.villager-type-biome-shared: warns on the later type by id', async () => {
+      const problems = await validate([
+        type('demo:b', ['minecraft:desert', '#minecraft:is_jungle'], 'example:entity/ruby_golem'),
+        type('demo:a', ['minecraft:desert', 'minecraft:desert'], 'example:entity/ruby_golem'),
+        type('demo:c', ['minecraft:meadow'], 'example:entity/ruby_golem'),
+      ]);
+      expect(only(problems, 'entities.villager-type-biome-shared')).toEqual([
+        ['demo:b', 'warning', '/biomes/0'],
+      ]);
+    });
+
+    it('entities.villager-type-texture-missing: no picture, or one with no PNG', async () => {
+      const problems = await validate([
+        type('demo:a', ['minecraft:desert']),
+        type('demo:b', ['minecraft:meadow'], 'demo:entity/villager/type/b'),
+        type('demo:c', ['minecraft:taiga'], 'example:entity/ruby_golem'),
+      ]);
+      expect(only(problems, 'entities.villager-type-texture-missing')).toEqual([
+        ['demo:a', 'warning', '/textures'],
+        ['demo:b', 'warning', '/textures/villager'],
       ]);
     });
   });

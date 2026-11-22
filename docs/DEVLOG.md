@@ -7455,3 +7455,20 @@ Next
 
 **Next**
 - The main session reviews the draft and adds it to ROADMAP and HANDOFF; work starts with the spike B547 after B544 closes vanilla parity 3.
+## 2026-11-22 — executor — B530 entities plugin, batch 2
+
+**What**
+- `msm:villager_type` (ADR 0107 D5) is a kind of `@msm/plugin-entities` (in `entitiesKinds`, schema `MSM_SCHEMA_REFS.villagerType`, registry and folder `villager_type`, default `{ format: 1, biomes: [] }`). Lowering writes `msm/<ns>/villager_type/<path>.json` (biomes pass through) and, with `textures.hat`, the `.png.mcmeta` (`{ villager: { hat } }`, `resource:texture_meta`) beside `assets/<ns>/textures/entity/villager/type/<path>.png` and `zombie_villager/type/<path>.png`; `villagerTypeTexturePaths` names the fixed picture paths for the host to copy to, as for professions.
+- `msm:bucketable` (ADR 0109 D1): the component passes through; lowering adds the bucket item's item definition and `minecraft:item/generated` model (`<ns>:item/<path>_bucket`; picture `bucket_texture`, else vanilla's water or empty bucket, named) and its name under `item_name` (default `item.<ns>.<path>_bucket`; `bucket_display_name`, else "Bucket of <name>"). `bucket_display_name` and `bucket_texture` are stripped from the definition.
+- `msm:shoulder_riding` keeps `sides` (ADR 0109 D2). Trader reputation, demand and work site, hover and phase, the new goals and the dash pass through unchanged.
+- Validators: eight `entities.*` codes in `validators-mobs-2.ts` (bucketable only on `swim`, dash only on walk or amphibious, swoop only on fly, hover or phase, hover height unused, unknown barter or dig loot tables, unknown dig blocks, a collector with no owner and no note blocks, unused bucket fields) and six in `validators-villagers.ts` (unknown work site, work site without twice-a-day restock, gift without an item, a vanilla villager type id, a biome shared by two types, a missing villager picture).
+- Ten templates (`templates/mobs-2`): Bucket fish, Hovering creature, Swooping flyer, Phasing spirit, Roosting flyer, Item collector, Digger, Barterer, Dashing mount (category Entities) and Villager look (Villagers and traders). The plugin now has 4 kinds and 32 templates; 105 kinds in all.
+- Verified: entities tests 245 (goldens for both targets: `expected/mobs-2/`, ten new template goldens), lint, typecheck, `turbo run test` (every package but `@msm/exporters` and `@msm/app`, four tests outside this brief's files, see Next).
+
+**Decisions**
+- A bucket without `bucket_texture` is drawn with vanilla's bucket pictures by name (never bundled), so it never shows the missing-texture pattern. Loot table, block and work site checks skip vanilla ids when the registry index has none of that registry.
+- `villager-type-biome-shared` is a warning on the later type by id, matching the runtime's rule.
+
+**Next**
+- Four tests outside this brief's files fail until a line each is added: `@msm/app` `test/plain-problems.test.ts` (plain words for the six new villager codes), `test/ai-rules.test.ts` (the system prompt explains `gift-without-item`, `villager-type-biome-shared`, `villager-type-taken`, and whichever other new villager codes the test lists), `test/components/sidebar-potions-data-kinds.test.tsx` (a sidebar heading for `msm:villager_type`), and `@msm/exporters` `test/library.test.ts` "one per-kind example for every registered kind" fails until the library gains a `msm:villager_type` example (B539) or the kind is listed in `KINDS_AWAITING_EXAMPLES`; outside this brief's files.
+- The app's `dataRegistryIds` (`app/src/renderer/src/session/schema-context.ts`) should count a bucketable mob's `<id>_bucket` in `item`, as spawn eggs are; the Villager type Studio (B538) can use `villagerTypeTexturePaths` to copy pictures.

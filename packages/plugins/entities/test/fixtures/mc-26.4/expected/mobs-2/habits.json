@@ -1,0 +1,88 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "height": 10,
+              "targets": [
+                "minecraft:player"
+              ],
+              "type": "swoop"
+            },
+            {
+              "type": "roost",
+              "when_idle": true
+            },
+            {
+              "range": 16,
+              "type": "collect_items"
+            },
+            {
+              "dig_blocks": [
+                "#minecraft:dirt"
+              ],
+              "loot_table": "minecraft:gameplay/sniffer_digging",
+              "type": "dig_items"
+            },
+            {
+              "item": "minecraft:gold_ingot",
+              "loot_table": "minecraft:gameplay/piglin_bartering",
+              "type": "barter"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "model": "example:entity/moth_king",
+          "texture": "example:entity/moth_king"
+        },
+        "msm:movement": {
+          "hover_height": 6,
+          "mode": "hover"
+        },
+        "msm:rideable": {
+          "dash": {
+            "cooldown_ticks": 40,
+            "power": 1.5
+          },
+          "saddle": false
+        },
+        "msm:shoulder_riding": {
+          "sides": "left"
+        },
+        "msm:tameable": {
+          "items": [
+            "minecraft:apple"
+          ]
+        },
+        "msm:trader": {
+          "demand": false,
+          "reputation": {
+            "gift_item": "minecraft:emerald",
+            "hurt": 30,
+            "price_step": 10
+          },
+          "trade_sets": [
+            {
+              "trade_set": "minecraft:mason/level_1"
+            }
+          ],
+          "trade_sound": "minecraft:entity.villager.yes",
+          "work_site": "minecraft:barrel"
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.6,
+        "width": 0.6
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/moth_king.json",
+    "schema": "msm:entity_definition"
+  }
+]

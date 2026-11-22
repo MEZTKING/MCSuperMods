@@ -90,7 +90,9 @@ function companions(context: TemplateContext): Element[] {
 describe('villager templates', () => {
   it('has the ids in picker order, contributed after the vehicle templates', () => {
     expect(villagerTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(plugin.contributes.elementTemplates?.slice(-IDS.length).map((t) => t.id)).toEqual(IDS);
+    const all = plugin.contributes.elementTemplates?.map((t) => t.id) ?? [];
+    const start = all.indexOf(IDS[0] as string);
+    expect(all.slice(start, start + IDS.length)).toEqual(IDS);
     for (const template of villagerTemplates) {
       expect(template.category, template.id).toBe(VILLAGER_TEMPLATE_CATEGORY);
       expect(template.title, template.id).not.toBe('');

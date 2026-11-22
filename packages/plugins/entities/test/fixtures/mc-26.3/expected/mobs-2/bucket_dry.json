@@ -1,0 +1,60 @@
+[
+  {
+    "contents": {
+      "category": "water_ambient",
+      "components": {
+        "msm:animated_model": {
+          "model": "example:entity/sand_eel",
+          "texture": "example:entity/sand_eel"
+        },
+        "msm:bucketable": {
+          "water": false
+        },
+        "msm:movement": {
+          "mode": "swim"
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.3,
+        "width": 0.4
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/sand_eel.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.sand_eel": "Sand Eel",
+      "item.example.sand_eel_bucket": "Bucket of Sand Eel"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/sand_eel_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/sand_eel_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/sand_eel_bucket.json",
+    "schema": "resource:model"
+  }
+]

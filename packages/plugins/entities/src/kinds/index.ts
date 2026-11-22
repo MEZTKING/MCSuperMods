@@ -1,14 +1,18 @@
 /**
  * Element kinds contributed by `@msm/plugin-entities` (ADR 0028 D6): `msm:entity` (kind folder
- * `entity`), `msm:vehicle` (kind folder `vehicle`, ADR 0090; `./vehicle`) and
- * `msm:villager_profession` (kind folder `villager_profession`, ADR 0098 D2; `./profession`).
- * Element ids are the registry ids: entities and vehicles belong to the `entity_type` registry,
- * professions to `villager_profession`; the spawn egg `<id>_spawn_egg` and a vehicle's item (the
- * vehicle's own id) are derived, not elements.
+ * `entity`), `msm:vehicle` (kind folder `vehicle`, ADR 0090; `./vehicle`),
+ * `msm:villager_profession` (kind folder `villager_profession`, ADR 0098 D2; `./profession`) and
+ * `msm:villager_type` (kind folder `villager_type`, ADR 0107 D5; `./villager-type`). Element ids
+ * are the registry ids: entities and vehicles belong to the `entity_type` registry, professions
+ * to `villager_profession`, villager types to `villager_type`; the spawn egg `<id>_spawn_egg`, a
+ * vehicle's item (the vehicle's own id) and a bucketable mob's bucket `<id>_bucket` are derived,
+ * not elements.
  *
  * The entity's lowering runs the components of ADR 0098 through their own modules after
  * `lowerEntity`: `msm:trader` (`lowering/trader.ts`), `msm:storage` (`lowering/storage.ts`) and
- * `msm:shoulder_riding` (`lowering/shoulder.ts`).
+ * `msm:shoulder_riding` (`lowering/shoulder.ts`, with ADR 0109 D2's `sides`); `msm:bucketable`
+ * (ADR 0109 D1) passes through, and `lowerEntity` adds its bucket item's files
+ * (`lowering/bucket.ts`).
  */
 import type { Element, ElementKind, OutputFile, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
@@ -19,9 +23,11 @@ import { lowerStorageComponent } from '../lowering/storage';
 import { lowerTraderComponent } from '../lowering/trader';
 import { professionKind } from './profession';
 import { vehicleKind } from './vehicle';
+import { villagerTypeKind } from './villager-type';
 
 export { PROFESSION_KIND, professionKind } from './profession';
 export { VEHICLE_KIND, vehicleKind } from './vehicle';
+export { VILLAGER_TYPE_KIND, villagerTypeKind } from './villager-type';
 
 /** Kind id of custom entities. */
 export const ENTITY_KIND = 'msm:entity';
@@ -78,4 +84,5 @@ export const entitiesKinds: readonly ElementKind[] = Object.freeze([
   entityKind,
   vehicleKind,
   professionKind,
+  villagerTypeKind,
 ]);

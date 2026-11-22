@@ -1,6 +1,7 @@
 /**
  * Cross-element checks of traders, villager professions, mount storage and shoulder pets
- * (ADR 0098 D1 to D4, as amended after the B469 spike). Every validator is pure and reads only
+ * (ADR 0098 D1 to D4, as amended after the B469 spike), and of the traders' work sites and
+ * gifts and villager types (ADR 0107 D1, D3 and D5, as amended after the B524 spike). Every validator is pure and reads only
  * the project's elements, the target's facts and the registry ids. Codes:
  *
  * - `entities.trade-set-unknown` (error): a trader level's `trade_set` or a profession's
@@ -23,6 +24,20 @@
  *   or on a base other than `animal`; the pet never has an owner whose shoulder it sits on.
  * - `entities.storage-rows` (info): `msm:storage` with `needs_chest` and more than three rows,
  *   so one chest gives the mob more room than the chest itself holds.
+ * - `entities.work-site-unknown` (error): a trader's `work_site` is empty or neither a block nor
+ *   a block tag of the project or the target, so the trader never finds it and never restocks.
+ * - `entities.work-site-without-restock` (warning): `work_site` with `restock` other than
+ *   `twice_a_day`; the site is only used for those restocks.
+ * - `entities.gift-without-item` (info): `reputation.gift` without `reputation.gift_item`, so
+ *   there is nothing to give.
+ * - `entities.villager-type-taken` (error): a villager type's id is one of vanilla's
+ *   (`minecraft:` and a name in `target.entities.villagerTypes`); the runtime cannot register
+ *   it a second time.
+ * - `entities.villager-type-biome-shared` (warning): two project villager types list the same
+ *   biome or biome tag; the later one by id wins in the game.
+ * - `entities.villager-type-texture-missing` (warning): a villager type has no villager picture,
+ *   or one with no project PNG (skipped when the registry index has no textures), so its
+ *   villagers draw with the missing-texture pattern.
  *
  * The trader's `on_trade` event is checked here with the shared code `entities.unknown-event`
  * (`validators.ts` reports the other trigger fields).
@@ -34,13 +49,15 @@ import type {
   Problem,
   ProjectValidator,
   TargetFacts,
+  ValidationRegistry,
 } from '@msm/plugin-api';
-import { ENTITY_KIND, PROFESSION_KIND } from './kinds';
+import { ENTITY_KIND, PROFESSION_KIND, VILLAGER_TYPE_KIND } from './kinds';
 import { isRecord } from './lowering/paths';
 import { defaultTradeSets, hasOwnTradeSets } from './lowering/profession';
 import { SHOULDER_COMPONENT, SHOULDER_MAX_WIDTH } from './lowering/shoulder';
 import { DEFAULT_STORAGE_ROWS, STORAGE_COMPONENT } from './lowering/storage';
 import { TRADER_COMPONENT } from './lowering/trader';
+import { blockReferenceTest } from './validators-mobs-2';
 
 /** Every code the villager validators report (`entities.unknown-event` is shared, not listed). */
 export const ENTITIES_VILLAGER_PROBLEM_CODES = Object.freeze([
@@ -52,11 +69,18 @@ export const ENTITIES_VILLAGER_PROBLEM_CODES = Object.freeze([
   'entities.shoulder-too-wide',
   'entities.shoulder-needs-tameable',
   'entities.storage-rows',
+  'entities.work-site-unknown',
+  'entities.work-site-without-restock',
+  'entities.gift-without-item',
+  'entities.villager-type-taken',
+  'entities.villager-type-biome-shared',
+  'entities.villager-type-texture-missing',
 ] as const);
 
 /** Kinds read by kind string only (other plugins). */
 const BLOCK_KIND = 'msm:block';
 const TRADE_SET_KIND = 'minecraft:trade_set';
+const BLOCK_TAG_KIND = 'minecraft:tag/block';
 
 /** Rows a single vanilla chest holds. */
 const CHEST_ROWS = 3;
@@ -298,6 +322,112 @@ function storageChecks(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+function traderReputationAndSites(
+  elements: readonly Element[],
+  registry: ValidationRegistry,
+): Problem[] {
+  const blockKnown = blockReferenceTest(elements, registry);
+  const problems: Problem[] = [];
+  for (const element of ofKind(elements, ENTITY_KIND)) {
+    const trader = component(element, TRADER_COMPONENT);
+    if (trader === undefined) continue;
+    const site = trader.work_site;
+    if (typeof site === 'string') {
+      const path = pointer('components', TRADER_COMPONENT, 'work_site');
+      if (!blockKnown(site)) {
+        problems.push({
+          severity: 'error',
+          code: 'entities.work-site-unknown',
+          elementId: element.id,
+          path,
+          message:
+            site.length === 0
+              ? 'This trader restocks at a work site but names no block. Pick a block (such as minecraft:barrel) or a block tag, or remove "work_site" to restock where it stands.'
+              : `"${site}" is not a block or block tag of the project or the game, so the trader never finds its work site and never restocks. Pick a block such as minecraft:barrel, or a tag.`,
+        });
+      }
+      const restock = typeof trader.restock === 'string' ? trader.restock : 'twice_a_day';
+      if (restock !== 'twice_a_day') {
+        problems.push({
+          severity: 'warning',
+          code: 'entities.work-site-without-restock',
+          elementId: element.id,
+          path,
+          message: `A work site is where the trader goes for its twice-a-day restock, but "restock" is "${restock}", so the site is never used. Set "restock" to "twice_a_day", or remove "work_site".`,
+        });
+      }
+    }
+    const reputation = record(trader.reputation);
+    if (reputation?.gift !== undefined && reputation.gift_item === undefined) {
+      problems.push({
+        severity: 'info',
+        code: 'entities.gift-without-item',
+        elementId: element.id,
+        path: pointer('components', TRADER_COMPONENT, 'reputation', 'gift'),
+        message:
+          'Gifts raise a player\'s standing by "gift", but no "gift_item" says what to give, so nobody can give one. Pick a gift item, or remove "gift".',
+      });
+    }
+  }
+  return problems;
+}
+
+function villagerTypeChecks(
+  elements: readonly Element[],
+  target: TargetFacts,
+  registry: ValidationRegistry,
+): Problem[] {
+  const vanilla = new Set(target.entities?.villagerTypes ?? []);
+  const knowsTextures = registry.ids('texture').length > 0;
+  const types = ofKind(elements, VILLAGER_TYPE_KIND).sort((a, b) =>
+    a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
+  );
+  const firstType = new Map<string, string>();
+  const problems: Problem[] = [];
+  for (const type of types) {
+    const data = dataOf(type);
+    const colon = type.id.indexOf(':');
+    if (type.id.slice(0, colon) === 'minecraft' && vanilla.has(type.id.slice(colon + 1))) {
+      problems.push({
+        severity: 'error',
+        code: 'entities.villager-type-taken',
+        elementId: type.id,
+        message: `"${type.id}" is one of vanilla's villager types in ${target.mcVersion}, so the game cannot add it again. Give the type an id in your own namespace.`,
+      });
+    }
+    const biomes = Array.isArray(data.biomes) ? data.biomes : [];
+    biomes.forEach((biome, index) => {
+      if (typeof biome !== 'string') return;
+      const other = firstType.get(biome);
+      if (other === undefined) {
+        firstType.set(biome, type.id);
+        return;
+      }
+      if (other === type.id) return;
+      problems.push({
+        severity: 'warning',
+        code: 'entities.villager-type-biome-shared',
+        elementId: type.id,
+        path: pointer('biomes', index),
+        message: `"${biome}" is also listed by villager type "${other}"; villagers there take this type ("${type.id}"), the later one by id. Keep each biome in one type.`,
+      });
+    });
+    const villager = record(data.textures)?.villager;
+    const empty = typeof villager !== 'string' || villager.length === 0;
+    if (!empty && (!knowsTextures || registry.has('texture', villager))) continue;
+    problems.push({
+      severity: 'warning',
+      code: 'entities.villager-type-texture-missing',
+      elementId: type.id,
+      path: empty ? '/textures' : pointer('textures', 'villager'),
+      message: empty
+        ? 'This villager type has no villager picture, so its villagers draw with the missing-texture pattern. Pick or draw one (64 by 64, in the villager layout).'
+        : `Picture "${villager}" has no PNG in the project (expected under "textures/"), so villagers of this type draw with the missing-texture pattern.`,
+    });
+  }
+  return problems;
+}
+
 /** The villager validators, registered after the vehicle validators. */
 export const entitiesVillagerValidators: readonly ProjectValidator[] = Object.freeze([
   {
@@ -323,5 +453,15 @@ export const entitiesVillagerValidators: readonly ProjectValidator[] = Object.fr
     id: 'msm.entities.storage',
     kinds: [ENTITY_KIND],
     validate: ({ elements }) => storageChecks(elements),
+  },
+  {
+    id: 'msm.entities.trader-reputation',
+    kinds: [ENTITY_KIND, BLOCK_KIND, BLOCK_TAG_KIND],
+    validate: ({ elements, registry }) => traderReputationAndSites(elements, registry),
+  },
+  {
+    id: 'msm.entities.villager-type',
+    kinds: [VILLAGER_TYPE_KIND],
+    validate: ({ elements, target, registry }) => villagerTypeChecks(elements, target, registry),
   },
 ] satisfies ProjectValidator[]);

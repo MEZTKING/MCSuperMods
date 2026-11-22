@@ -5,10 +5,14 @@
  * loot table is generated; `loot_table` passes through to the runtime, and so do `base` and the
  * mob components of ADRs 0070 and 0071 (`msm:ranged_attack`, `msm:tameable`, `msm:breedable`,
  * `msm:rideable`, `msm:variants`, `msm:boss_bar`, the new movement fields, goals, animation
- * names and `renderer`).
+ * names and `renderer`), the flight modes, goals and ridden dash of ADR 0109 D3 and D4 (`hover`,
+ * `phase`, `hover_height`, `swoop`, `roost`, `collect_items`, `dig_items`, `play_dead`, `barter`
+ * with their loot table references, and `msm:rideable.dash`) unchanged. A bucketable mob
+ * (`msm:bucketable`, ADR 0109 D1) also gets its bucket item's files and name (`./bucket`).
  */
 import type { Element, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
+import { BUCKET_ELEMENT_ONLY_FIELDS, bucketItemFiles, bucketLanguageKeys } from './bucket';
 import {
   assetPath,
   definitionPath,
@@ -54,14 +58,15 @@ export function hasSpawnEgg(data: JsonObject): boolean {
 
 /**
  * The runtime entity definition: the element data without the editor-only fields
- * (`display_name`, `spawn_egg.texture`, `spawn_egg.display_name`), with `format` set to the
- * format this plugin writes.
+ * (`display_name`, `spawn_egg.texture`, `spawn_egg.display_name`, `bucket_display_name`,
+ * `bucket_texture`), with `format` set to the format this plugin writes.
  *
  * @throws {@link EntitiesLoweringError} If the data is not an object.
  */
 export function entityDefinition(element: Element): JsonObject {
   const definition = structuredClone(entityData(element));
   delete definition.display_name;
+  for (const field of BUCKET_ELEMENT_ONLY_FIELDS) delete definition[field];
   const egg = definition.spawn_egg;
   if (isRecord(egg)) {
     delete egg.texture;
@@ -113,7 +118,7 @@ function languageKeys(data: JsonObject, namespace: string, path: string): JsonOb
       keys[descriptionKey('item', namespace, spawnEggPath(path))] = eggName;
     }
   }
-  return keys;
+  return { ...keys, ...bucketLanguageKeys(data, namespace, path) };
 }
 
 /**
@@ -124,7 +129,9 @@ function languageKeys(data: JsonObject, namespace: string, path: string): JsonOb
  * and its `minecraft:item/generated` item model; for a mount with `msm:rideable` whose `saddle`
  * is not `false`, the entity's entry in the target's saddle tag (`target.entities.saddleTag`,
  * layer `datapack`, `merge: 'tag'`; ADR 0071 D7). ADR 0066 turns that entry into
- * `required: false` in vanilla data packs, since the entity id is mod-only.
+ * `required: false` in vanilla data packs, since the entity id is mod-only. A bucketable mob adds
+ * its bucket item's name to the language file and its item definition and model last
+ * (`bucketItemFiles`).
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
@@ -174,5 +181,6 @@ export function lowerEntity(element: Element, target: Target): OutputFile[] {
     const tagFile = saddleTagFile(target, element.id);
     if (tagFile !== undefined) files.push(tagFile);
   }
+  files.push(...bucketItemFiles(element, target));
   return files;
 }

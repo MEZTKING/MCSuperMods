@@ -13,6 +13,7 @@ import plugin, {
   entityKind,
   hasSpawnEgg,
   lowerEntity,
+  mob2Templates,
   professionKind,
   SPAWN_EGG_PARENT_MODEL,
   spawnEggPath,
@@ -20,6 +21,7 @@ import plugin, {
   vehicleKind,
   vehicleTemplates,
   villagerTemplates,
+  villagerTypeKind,
 } from '../src/index';
 import { blockingProblems, element, indexesFor } from './support';
 
@@ -51,8 +53,15 @@ describe('@msm/plugin-entities', () => {
       'msm:entity',
       'msm:vehicle',
       'msm:villager_profession',
+      'msm:villager_type',
     ]);
-    expect(entitiesKinds).toEqual([entityKind, vehicleKind, professionKind]);
+    expect(entitiesKinds).toEqual([entityKind, vehicleKind, professionKind, villagerTypeKind]);
+    expect([
+      villagerTypeKind.schema,
+      villagerTypeKind.folder,
+      villagerTypeKind.registry,
+      villagerTypeKind.hiddenPaths,
+    ]).toEqual([MSM_SCHEMA_REFS.villagerType, 'villager_type', 'villager_type', ['/format']]);
     expect([
       entityKind.schema,
       entityKind.folder,
@@ -88,6 +97,7 @@ describe('@msm/plugin-entities', () => {
       ...entitiesTemplates.map((t) => t.id),
       ...vehicleTemplates.map((t) => t.id),
       ...villagerTemplates.map((t) => t.id),
+      ...mob2Templates.map((t) => t.id),
     ]);
     expect(plugin.contributes.validators?.map((v) => v.id)).toEqual([
       'msm.entities.unknown-event',
@@ -104,6 +114,9 @@ describe('@msm/plugin-entities', () => {
       'msm.entities.variants',
       'msm.entities.renderer',
       'msm.entities.kind-of-mob',
+      'msm.entities.bucketable',
+      'msm.entities.flight',
+      'msm.entities.habits',
       'msm.entities.vehicle-movement',
       'msm.entities.vehicle-model',
       'msm.entities.vehicle-weapons',
@@ -113,6 +126,8 @@ describe('@msm/plugin-entities', () => {
       'msm.entities.profession',
       'msm.entities.shoulder',
       'msm.entities.storage',
+      'msm.entities.trader-reputation',
+      'msm.entities.villager-type',
     ]);
     expect(entitiesValidators).toHaveLength(8);
   });

@@ -1,0 +1,107 @@
+[
+  {
+    "contents": {
+      "base": "animal",
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "speed": 2,
+              "type": "panic"
+            },
+            {
+              "type": "wander"
+            },
+            {
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 32
+        },
+        "msm:movement": {
+          "speed": 0.09
+        },
+        "msm:rideable": {
+          "controlled_by": "anyone",
+          "dash": {
+            "cooldown_ticks": 55,
+            "power": 1
+          },
+          "passengers": 1,
+          "saddle": true,
+          "speed": 1
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 2.375,
+        "width": 1.7
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:desert"
+        ],
+        "max_group": 1,
+        "min_group": 1,
+        "rule": "animal",
+        "weight": 1
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/entity_type/can_equip_saddle.json"
+  }
+]

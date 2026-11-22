@@ -83,7 +83,8 @@ describe('vehicle validators', () => {
       expect(code).toMatch(/^vehicles\.[a-z-]+$/);
       expect(ENTITIES_PROBLEM_CODES as readonly string[]).not.toContain(code);
     }
-    expect(plugin.contributes.validators?.slice(14, 19).map((validator) => validator.id)).toEqual([
+    // After the entity, mob and ADR 0109 mob validators (8, 6 and 3).
+    expect(plugin.contributes.validators?.slice(17, 22).map((validator) => validator.id)).toEqual([
       'msm.entities.vehicle-movement',
       'msm.entities.vehicle-model',
       'msm.entities.vehicle-weapons',

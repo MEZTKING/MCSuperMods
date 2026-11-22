@@ -1,9 +1,11 @@
 /**
  * Lowering of the `msm:trader` entity component (ADR 0098 D1). The component passes through to
- * the runtime definition; lowering writes the target's trade sound (`target.entities.tradeSounds.yes`)
- * when `trade_sound` is absent, so the version fact stays in `packages/targets` and the runtime
- * reads one shape. Nothing else is written: the trade sets a trader names are ADR 0060 elements
- * (or vanilla's) and lower on their own.
+ * the runtime definition; lowering writes the target's trade sound
+ * (`target.entities.tradeSounds.yes`) when `trade_sound` is absent, so the version fact stays in
+ * `packages/targets` and the runtime reads one shape. The fields of ADR 0107 D1 to D3
+ * (`reputation`, `demand`, `work_site`) pass through unchanged, their defaults the runtime's
+ * (vanilla's numbers). Nothing else is written: the trade sets a trader names are ADR 0060
+ * elements (or vanilla's) and lower on their own.
  */
 import type { JsonObject, TargetFacts } from '@msm/plugin-api';
 import { isRecord } from './paths';

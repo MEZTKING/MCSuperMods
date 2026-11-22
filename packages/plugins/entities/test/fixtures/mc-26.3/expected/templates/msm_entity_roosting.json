@@ -1,0 +1,65 @@
+[
+  {
+    "contents": {
+      "category": "ambient",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "daylight": true,
+              "range": 8,
+              "type": "roost",
+              "when_idle": false
+            },
+            {
+              "speed": 1,
+              "type": "wander"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "fly": "fly",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 6
+        },
+        "msm:movement": {
+          "flying_speed": 0.5,
+          "hovers": false,
+          "mode": "fly",
+          "speed": 0.3
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.9,
+        "width": 0.5
+      },
+      "spawn": {
+        "biomes": [
+          "#minecraft:is_overworld"
+        ],
+        "max_group": 6,
+        "min_group": 2,
+        "weight": 10
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

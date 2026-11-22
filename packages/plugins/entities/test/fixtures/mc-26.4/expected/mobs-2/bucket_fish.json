@@ -1,0 +1,72 @@
+[
+  {
+    "contents": {
+      "category": "water_ambient",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "below_health": 0.4,
+              "type": "play_dead"
+            },
+            {
+              "type": "wander"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "model": "example:entity/minnow",
+          "texture": "example:entity/minnow"
+        },
+        "msm:bucketable": {
+          "item_name": "item.example.minnow_pail"
+        },
+        "msm:movement": {
+          "mode": "swim",
+          "speed": 1
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 0.3,
+        "width": 0.4
+      },
+      "spawn_egg": false
+    },
+    "layer": "msm",
+    "path": "msm/example/entity/minnow.json",
+    "schema": "msm:entity_definition"
+  },
+  {
+    "contents": {
+      "entity.example.minnow": "Minnow",
+      "item.example.minnow_pail": "Pail of Minnow"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/minnow_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/minnow_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/minnow_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/minnow_bucket.json",
+    "schema": "resource:model"
+  }
+]

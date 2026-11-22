@@ -1,0 +1,86 @@
+[
+  {
+    "contents": {
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "type": "wander"
+            },
+            {
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "fly": "fly",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 14
+        },
+        "msm:movement": {
+          "flying_speed": 0.3,
+          "hover_height": 4,
+          "mode": "hover",
+          "speed": 0.2
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1,
+        "width": 1
+      },
+      "spawn": {
+        "biomes": [
+          "minecraft:meadow"
+        ],
+        "max_group": 2,
+        "min_group": 1,
+        "rule": "animal",
+        "weight": 3
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]
