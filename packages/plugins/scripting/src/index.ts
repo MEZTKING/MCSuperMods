@@ -11,6 +11,10 @@ import { commandTemplates, scriptingTemplates } from './templates';
 import { scriptingValidators } from './validators';
 import { commandValidators } from './validators-commands';
 
+export { GAME_RULE_PROBLEM_CODES, gameRuleValidators } from './validators-game-rules';
+
+import { gameRuleValidators } from './validators-game-rules';
+
 export * from './api/index';
 export * from './kinds';
 export * from './lowering';
@@ -37,6 +41,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...scriptingKinds],
     elementTemplates: [...scriptingTemplates, ...commandTemplates],
-    validators: [...scriptingValidators, ...commandValidators],
+    validators: [...scriptingValidators, ...commandValidators, ...gameRuleValidators],
   },
 });

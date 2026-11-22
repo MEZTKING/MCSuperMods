@@ -9,12 +9,20 @@ import dev.mcsupermods.runtime.loader.LoadReport;
 import dev.mcsupermods.runtime.net.MsmNetworking;
 import dev.mcsupermods.runtime.registry.BlockExtras;
 import dev.mcsupermods.runtime.registry.MsmCreativeTabs;
+import dev.mcsupermods.runtime.registry.MsmGameRules;
 import dev.mcsupermods.runtime.registry.MsmRegistrar;
+import dev.mcsupermods.runtime.registry.MsmStats;
 import dev.mcsupermods.runtime.registry.VanillaPairs;
+import dev.mcsupermods.runtime.registry.boat.MsmBoats;
+import dev.mcsupermods.runtime.registry.fluid.FluidMixing;
+import dev.mcsupermods.runtime.registry.fluid.MsmCauldrons;
+import dev.mcsupermods.runtime.registry.mob.MobHabits;
+import dev.mcsupermods.runtime.registry.mob.VillagerTypes;
 import dev.mcsupermods.runtime.registry.portal.PortalIndexAttachment;
 import dev.mcsupermods.runtime.registry.portal.PortalLighting;
 import dev.mcsupermods.runtime.registry.vehicle.MsmVehicles;
 import dev.mcsupermods.runtime.registry.weathering.Lightning;
+import dev.mcsupermods.runtime.scripting.MoreEvents;
 import dev.mcsupermods.runtime.scripting.ScriptBridges;
 import dev.mcsupermods.runtime.scripting.ScriptDataAttachment;
 import net.fabricmc.api.ModInitializer;
@@ -58,6 +66,19 @@ public final class MsmRuntime implements ModInitializer {
         LOGGER.info("[{}] registered {} creative tab(s)", MOD_ID, report.creativeTabs().size());
         LOGGER.info("[{}] registered {} fluid(s)", MOD_ID, report.fluids().size());
         LOGGER.info("[{}] registered {} villager profession(s)", MOD_ID, report.professions().size());
+        // Batch 2 of vanilla parity 3: stubs until B528, B529, B532, B533 and B536 fill them in (each returns the report unchanged).
+        report = VillagerTypes.register(report); // ADR 0107 D5
+        report = MsmCauldrons.register(report); // ADR 0108 D2, D3
+        report = MsmBoats.register(report); // ADR 0110 D1
+        report = MsmGameRules.register(report); // ADR 0111 D5
+        report = MsmStats.register(report); // ADR 0111 D6
+        FluidMixing.init(); // ADR 0108 D1
+        MobHabits.init(); // ADR 0109 D4
+        MoreEvents.init(); // ADR 0111 D3
+        LOGGER.info("[{}] registered {} villager type(s)", MOD_ID, report.villagerTypes().size());
+        LOGGER.info("[{}] registered {} boat type(s)", MOD_ID, report.boats().size());
+        LOGGER.info("[{}] registered {} game rule(s)", MOD_ID, report.gameRules().size());
+        LOGGER.info("[{}] registered {} statistic(s)", MOD_ID, report.stats().size());
         // Creative tabs, items, block states, functions, biomes and entity types of other mods and data packs
         // exist only once the server runs.
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));

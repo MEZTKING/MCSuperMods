@@ -9,7 +9,9 @@
 import { COMMAND_KIND } from '@msm/plugin-scripting';
 import { lazy, Suspense } from 'react';
 import type { StudioEntry, StudioProps } from '../types';
+import { GameRuleStudio } from './GameRuleStudio';
 import { ScriptStudio } from './ScriptStudio';
+import { StatStudio } from './StatStudio';
 import { SCRIPT_KIND, scriptLinesOf } from './script-model';
 
 /** The Command Studio (ADR 0096 D1, ADR 0101 D1), a chunk of its own. */
@@ -44,4 +46,7 @@ export const studios: StudioEntry[] = [
   },
   // The Command Studio (ADR 0096 D1, ADR 0101 D1).
   { id: 'msm.scripting.command', kindId: COMMAND_KIND, component: LazyCommandStudio },
+  // The Game Rule and Statistic Studios (ADR 0111 D5, D6): stubs from B526, filled in by B535.
+  { id: 'msm.scripting.game-rule', kindId: 'msm:game_rule', component: GameRuleStudio },
+  { id: 'msm.scripting.stat', kindId: 'msm:stat', component: StatStudio },
 ];

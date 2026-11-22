@@ -13,6 +13,7 @@ import { pottedPlantExpander } from './expand-potted-plant';
 import { blocksItemsKinds } from './kinds';
 import { blocksItemsTemplates } from './templates';
 import { blocksItemsValidators } from './validators';
+import { boatValidators } from './validators-boats';
 import { containerValidators } from './validators-containers';
 import { creativeTabValidators } from './validators-creative-tabs';
 import { fluidValidators } from './validators-fluids';
@@ -153,6 +154,7 @@ export {
   TRANSPARENT_TEXTURE_CODE,
   transparentTextureProblem,
 } from './validators';
+export { BOAT_PROBLEM_CODES, boatValidators } from './validators-boats';
 export {
   CONTAINER_PROBLEM_CODES,
   containerValidators,
@@ -223,6 +225,7 @@ export default definePlugin({
       ...plants3Validators,
       ...storage2Validators,
       ...soundValidators,
+      ...boatValidators,
     ],
   },
 });

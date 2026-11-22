@@ -1,6 +1,7 @@
 package dev.mcsupermods.runtime.client;
 
 import dev.mcsupermods.runtime.MsmRuntime;
+import dev.mcsupermods.runtime.client.boat.BoatRenderers;
 import dev.mcsupermods.runtime.client.controls.ControlsClient;
 import dev.mcsupermods.runtime.client.dev.DevClient;
 import dev.mcsupermods.runtime.client.fluid.FluidClient;
@@ -56,6 +57,8 @@ public final class MsmRuntimeClient implements ClientModInitializer {
         DevClient.register();
         // Project fluids (ADR 0099 D2).
         FluidClient.init();
+        // Project boats (ADR 0110 D2): a stub until B536.
+        BoatRenderers.init();
     }
 
     /**

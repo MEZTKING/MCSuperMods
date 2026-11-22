@@ -14,6 +14,7 @@ import { ENTITY_KIND } from '../blocks-items/blocks-items-model';
 import type { StudioEntry, StudioProps } from '../types';
 import { MOB_VERY_EASY_SECTIONS, RULES_SECTION_ID } from '../very-easy';
 import { EntityStudio } from './EntityStudio';
+import { VillagerTypeStudio } from './VillagerTypeStudio';
 
 /** The Vehicle Studio (B419, ADR 0091 D1), a chunk of its own. */
 const VehicleStudio = lazy(() => import('./vehicle/VehicleStudio'));
@@ -76,4 +77,6 @@ export const studios: StudioEntry[] = [
   },
   // The Profession Studio (ADR 0098 D2, ADR 0101 D1).
   { id: 'msm.entities.profession', kindId: PROFESSION_KIND, component: LazyProfessionStudio },
+  // The Villager Type Studio (ADR 0107 D5): a stub from B526, filled in by B530.
+  { id: 'msm.entities.villager-type', kindId: 'msm:villager_type', component: VillagerTypeStudio },
 ];

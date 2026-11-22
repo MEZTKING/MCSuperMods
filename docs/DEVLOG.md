@@ -7413,3 +7413,18 @@ Next
 
 **Next**
 - Main session: copy the report's "Notes for the plan" into the plan and ADRs 0108 and 0111 (amendments), then B526.
+
+## 2026-11-22 — executor — B526 scaffold and stubs, batch 2
+
+**What**
+- Wiring and stubs only, no behaviour, for vanilla parity 3 batch 2. Engine-mod: `LoadReport` gains `villagerTypes`, `boats`, `gameRules` and `stats` (and `withVillagerTypes`, `withBoats`, `withGameRules`, `withStats`; the 13-argument constructor keeps working); `DefinitionScanner` knows the kinds `villager_type`, `game_rule` and `stat` (string literals until B527's parsers exist); `MsmRuntime` calls the stubs `VillagerTypes.register`, `MsmCauldrons.register`, `MsmBoats.register`, `MsmGameRules.register`, `MsmStats.register`, `FluidMixing.init`, `MobHabits.init` and `MoreEvents.init`, with four new log lines (all 0); `MsmRuntimeClient` calls `BoatRenderers.init`; `MsmEntityRegistrar` asks `MobBuckets.itemFor` after each mob.
+- Five Mixin stubs with empty bodies and justification comments, listed in `msm_runtime.mixins.json` (no `MixinVersions` entry): `CraftedMixin`, `ItemPickupMixin`, `ConsumeMixin`, `AdvancementMixin`, `AdvancementRewardsMixin`.
+- Eight GameTest placeholders and the client stub `MsmMobs2ClientGameTest` in the gametest `fabric.mod.json`; the parity class `SampleMobsAndCommandsParityTest` (filter `sample_mobs_and_commands_*`); `fixtures/sample-mobs-and-commands/README.md`; three skipped e2e specs.
+- Plugins: stub kinds `villager-type.ts` (entities), `game-rule.ts` and `stat.ts` (scripting); empty lowering modules `villager-type.ts`, `bucket.ts`, `boat.ts`, `cauldron.ts`, `game-rule.ts`, `stat.ts`; empty validator lists `validators-mobs-2.ts`, `validators-boats.ts`, `validators-game-rules.ts`, wired into the three plugin indexes; empty Studios `VillagerTypeStudio`, `GameRuleStudio`, `StatStudio` registered in the two `studios.tsx` files.
+
+**Decisions**
+- The three new kinds are not added to `entitiesKinds` or `scriptingKinds` yet: their schema symbols (`MSM_SCHEMA_REFS`) belong with B527's mcdoc, and B530 and B535 own those lists. Their Studio entries match kinds that do not exist yet, so they never show.
+- The init and `register(report)` hooks are called from `MsmRuntime` (as B505 did), not from `MsmRegistrar`, so `MsmRegistrar.java` is untouched; only `MsmEntityRegistrar` calls `MobBuckets`.
+
+**Next**
+- B527 (format, plugin API 1.20.0), then waves 9 and 10 fill the stubs; B530 and B535 register the three kinds once the schema symbols exist.

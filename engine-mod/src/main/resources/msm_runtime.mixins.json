@@ -5,7 +5,12 @@
   "plugin": "dev.mcsupermods.runtime.mixin.MsmMixinPlugin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "AdvancementMixin",
+    "AdvancementRewardsMixin",
     "BlockItemPlaceMixin",
+    "ConsumeMixin",
+    "CraftedMixin",
+    "ItemPickupMixin",
     "ServerExplosionMixin"
   ],
   "injectors": {

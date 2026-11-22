@@ -12,6 +12,7 @@ import { vehicleTemplates } from './templates/vehicles';
 import { villagerTemplates } from './templates/villagers';
 import { entitiesValidators } from './validators';
 import { entitiesMobValidators } from './validators-mobs';
+import { entitiesMob2Validators } from './validators-mobs-2';
 import { entitiesVehicleValidators } from './validators-vehicles';
 import { entitiesVillagerValidators } from './validators-villagers';
 
@@ -59,6 +60,7 @@ export {
 } from './templates/villagers';
 export { ENTITIES_PROBLEM_CODES, entitiesValidators } from './validators';
 export { ENTITIES_MOB_PROBLEM_CODES, entitiesMobValidators } from './validators-mobs';
+export { ENTITIES_MOB2_PROBLEM_CODES, entitiesMob2Validators } from './validators-mobs-2';
 export {
   DEFAULT_AIR_MAX_SPEED,
   entitiesVehicleValidators,
@@ -78,6 +80,7 @@ export default definePlugin({
     validators: [
       ...entitiesValidators,
       ...entitiesMobValidators,
+      ...entitiesMob2Validators,
       ...entitiesVehicleValidators,
       ...entitiesVillagerValidators,
     ],
