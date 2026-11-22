@@ -260,6 +260,6 @@ export function buildWindow(
     notes,
   };
   if (stage !== 'features') return result;
-  const placed = placeFeatures({ ...result, palette: [...result.palette] });
+  const placed = placeFeatures({ ...result, palette: [...result.palette] }, { world, window });
   return { size: placed.size, palette: placed.palette, blocks: placed.blocks, notes: placed.notes };
 }
