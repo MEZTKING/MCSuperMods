@@ -1,12 +1,21 @@
 /**
  * What Try it's hotbar and picker offer (ADR 0085 D13, B390): the project's blocks first, then
- * its spawn eggs, then (only when the client jar is set up) vanilla blocks as props for looks.
+ * its spawn eggs, then the vanilla blocks and tools the project's vanilla block rules and block
+ * transformers need (B614: the blocks as props, an axe, shovel, hoe or honeycomb, the project's
+ * items naming a transformer), then (only when the client jar is set up) vanilla blocks as props
+ * for looks.
  * Each thing carries the picture the slot shows, found in the lowered files; a thing without one
  * shows an icon instead (a spawn egg without an egg item model shows the egg icon).
  */
 
 import type { Json } from '@msm/plugin-api';
-import { type BlockCatalogue, type EntityCatalogue, readJsonFile, type SimFiles } from '@msm/sim';
+import {
+  type BlockCatalogue,
+  type EntityCatalogue,
+  readJsonFile,
+  ruleThings,
+  type SimFiles,
+} from '@msm/sim';
 import type { ResourceFolders } from '../preview/model-chain';
 import { HOTBAR_SIZE } from './input';
 
@@ -146,9 +155,12 @@ export function eggTexture(
   return undefined;
 }
 
-/** The project's things: its blocks in id order, then its spawn eggs. */
+/**
+ * The project's things: its blocks in id order, then its spawn eggs, then what its vanilla block
+ * rules and block transformers are tried with ({@link ruleHotbarThings}).
+ */
 export function projectThings(
-  blocks: Pick<BlockCatalogue, 'ids' | 'get'>,
+  blocks: Pick<BlockCatalogue, 'ids' | 'get'> & Partial<Pick<BlockCatalogue, 'target'>>,
   mobs: Pick<EntityCatalogue, 'ids' | 'get'>,
   files: SimFiles,
   folders: ResourceFolders,
@@ -173,6 +185,61 @@ export function projectThings(
       id: mob.spawnEgg,
       name: mob.spawnEggName ?? `${mob.displayName} Spawn Egg`,
       kind: 'egg',
+      ...(texture === undefined ? {} : { texture }),
+    });
+  }
+  const shown = new Set(out.map((thing) => thing.id));
+  for (const thing of ruleHotbarThings(
+    files,
+    folders,
+    blocks.target?.folders.data.block_transformer,
+  )) {
+    if (!shown.has(thing.id)) out.push(thing);
+  }
+  return out;
+}
+
+/** An item's name in plain words: its definition's `display_name`, else made from its id. */
+function itemName(files: SimFiles, id: string): string {
+  const { namespace, path } = split(id);
+  const definition = readJsonFile(files, `msm/${namespace}/item/${path}.json`);
+  if (isRecord(definition) && typeof definition.display_name === 'string') {
+    return definition.display_name;
+  }
+  return propThing(id).name;
+}
+
+/**
+ * What the project's vanilla block rules and block transformers are tried with (B614, limit
+ * 2L11): the vanilla blocks they name as props (their own pictures from the client jar when it is
+ * set up), then the tools: vanilla's (an iron axe, shovel and hoe, honeycomb) and the project's
+ * items whose `minecraft:block_transformer` names one of the project's transformers.
+ */
+export function ruleHotbarThings(
+  files: SimFiles,
+  folders: ResourceFolders,
+  transformerFolder?: string,
+): TryItThing[] {
+  const wanted = ruleThings(files, transformerFolder);
+  const out: TryItThing[] = [];
+  for (const id of wanted.blocks) {
+    if (id.startsWith('minecraft:')) out.push(propThing(id));
+  }
+  for (const id of wanted.tools) {
+    if (id.startsWith('minecraft:')) {
+      out.push({
+        id,
+        name: propThing(id).name,
+        kind: 'item',
+        texture: `minecraft:item/${split(id).path}`,
+      });
+      continue;
+    }
+    const texture = blockTexture(files, folders, id);
+    out.push({
+      id,
+      name: itemName(files, id),
+      kind: 'item',
       ...(texture === undefined ? {} : { texture }),
     });
   }

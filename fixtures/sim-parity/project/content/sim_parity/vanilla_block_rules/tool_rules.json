@@ -1,0 +1,37 @@
+{
+  "data": {
+    "flatten": [
+      {
+        "block": "minecraft:clay",
+        "into": "minecraft:dirt_path"
+      }
+    ],
+    "format": 1,
+    "strip": [
+      {
+        "block": "minecraft:basalt",
+        "into": "minecraft:polished_basalt"
+      }
+    ],
+    "till": [
+      {
+        "block": "minecraft:packed_mud",
+        "drops": "minecraft:clay_ball",
+        "into": "minecraft:mud_bricks"
+      }
+    ],
+    "wax": [
+      {
+        "block": "minecraft:end_stone",
+        "into": "minecraft:end_stone_bricks"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:tool_rules",
+  "kind": "msm:vanilla_block_rules",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Live views 2 (B614): rules for vanilla blocks tried in Try it as props. An axe strips basalt into polished basalt, a shovel flattens clay into a dirt path, a hoe tills packed mud into mud bricks (dropping a clay ball once), honeycomb waxes end stone into end stone bricks and an axe takes the wax off again. None of these blocks is used by the runtime's own GameTests' rules."
+  }
+}

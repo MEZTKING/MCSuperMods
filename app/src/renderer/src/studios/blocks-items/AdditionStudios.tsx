@@ -22,7 +22,9 @@
  *   an axe strips, a shovel flattens, a hoe tills, honeycomb waxes, that age like copper and that
  *   burn, one row per block; a row for a block Minecraft already pairs says which pair it
  *   replaces (`TargetFacts.blocks.vanillaPairs`). Blocks are picked by id in Easy and by name in
- *   the ThingPicker in Very easy.
+ *   the ThingPicker in Very easy. Its section "Try it here" (B614, ADR 0120) is the live view the
+ *   preview panel shows too: each rule's block before and after with its tool and sound, and the
+ *   blocks and tools Try it's picker offers to try them on the blocks as props.
  *
  * @packageDocumentation
  */
@@ -74,21 +76,26 @@ import { CheckField, ProblemsAt } from './parts';
 /** The live views' host (B609): loaded with the section, not with the Studio. */
 const BundleLiveView = lazy(() => import('../../liveviews/BundleLiveView'));
 
-/** "With and without": the extra drops rolled on their table (the live view, B609). */
-function WithAndWithoutSection(props: StudioProps) {
-  const { project, element, target } = props;
+/**
+ * A Studio section showing the element's live view (B609, B614): "With and without" for extra
+ * drops, "Try it here" for vanilla block rules.
+ */
+function LiveViewSection(
+  props: StudioProps & { readonly title: string; readonly testId: string; readonly what: string },
+) {
+  const { project, element, target, title, testId, what } = props;
   const host = useBlocksItemsStudioHost();
   const root = useUiStore((state) => state.snapshot?.root ?? null);
   const onSetup = useCallback(
     () =>
       useUiStore.getState().setMessage({
         kind: 'info',
-        text: 'Set up your Minecraft folder in Settings, under Game locations, to roll Minecraft’s own tables here.',
+        text: `Set up your Minecraft folder in Settings, under Game locations, to ${what}.`,
       }),
-    [],
+    [what],
   );
   return (
-    <Section title="With and without" testId="extra-drops-live">
+    <Section title={title} testId={testId}>
       <Suspense fallback={<p className="text-muted text-xs">Loading the view…</p>}>
         <BundleLiveView
           project={project}
@@ -739,7 +746,12 @@ export function ExtraDropsStudio(props: StudioProps) {
       <ProblemsAt problems={problems} pointer="" />
       {tablesSection}
       {dropsSection}
-      <WithAndWithoutSection {...props} />
+      <LiveViewSection
+        {...props}
+        title="With and without"
+        testId="extra-drops-live"
+        what="roll Minecraft’s own tables here"
+      />
     </section>
   );
 }
@@ -1008,6 +1020,12 @@ export function VanillaBlockRulesStudio(props: StudioProps) {
       </p>
       <ProblemsAt problems={problems} pointer="" />
       {VANILLA_RULE_LISTS.map(section)}
+      <LiveViewSection
+        {...props}
+        title="Try it here"
+        testId="vanilla-rules-try-it-here"
+        what="see Minecraft’s own blocks' pictures here"
+      />
     </section>
   );
 }

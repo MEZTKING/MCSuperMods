@@ -20,7 +20,7 @@ afterEach(cleanup);
 
 const folders = {} as unknown as ResourceFolders;
 
-// A kind whose view is still a stub (B614's); the loot table's is built (B609).
+// A kind routed through the live view (built by B614; the stubs said "not yet" until then).
 const table: Element = {
   id: 'demo:ruby_rule',
   kind: 'minecraft:block_transformer',
@@ -37,7 +37,7 @@ const project = {
 } as unknown as Project;
 
 describe('the live view stubs (B601)', () => {
-  it('shows a selected block transformer in the frame, saying not yet', async () => {
+  it('shows a selected block transformer in the frame through the live view route', async () => {
     render(
       <PreviewPanel
         project={project}
@@ -49,12 +49,15 @@ describe('the live view stubs (B601)', () => {
         onSetup={vi.fn()}
       />,
     );
-    await waitFor(() => expect(screen.getByTestId('live-view-not-yet')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('block-rules-used-by')).toBeTruthy());
     expect(screen.getByTestId('live-view-tag').textContent).toBe('Preview');
     expect(screen.getByTestId('live-view-fidelity').getAttribute('data-fidelity')).toBe(
       'only_in_game',
     );
-    expect(screen.getByTestId('live-view-notes').textContent).toContain('not built yet');
+    // An object without a block state provider is named, never guessed.
+    expect(screen.getByTestId('block-rules-row-0-0-unknown').textContent).toContain(
+      'a transform without a provider',
+    );
   });
 
   it('has a view for exactly the kinds that declare previewKind live_view', async () => {

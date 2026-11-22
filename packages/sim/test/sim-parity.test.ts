@@ -24,6 +24,10 @@
  * pours its liquid (`bucketPours`), then the mixing it starts runs, and a `use` with an item
  * first tries the cauldrons (`useCauldron`).
  *
+ * Live views 2 (B614): a `use` with an item first asks the project's vanilla block rules and block
+ * transformers (`VanillaBlockRules`, as `Types3Area.use` does): an axe, shovel, hoe or honeycomb
+ * on a prop. Those five scenarios await their recording in the game.
+ *
  * - `step_on`: on a pressure plate, one timers tick with the player's box standing on it; on any
  *   other block, its `msm:on_step` fires for the player (`TriggerEngine.blockSteppedOn`) with no
  *   tick, as in the GameTest.
@@ -62,6 +66,7 @@ import {
   useBlock,
   useCauldron,
   useType3,
+  VanillaBlockRules,
 } from '../src/index.js';
 import { builtInTargets, lowerFixture, REPO_ROOT } from './lower-fixture.js';
 
@@ -198,10 +203,20 @@ class ParityArea {
 
   readonly catalogue: BlockCatalogue;
   private readonly fluids: FluidCatalogue;
+  private readonly rules: VanillaBlockRules;
 
   constructor(files: SimFiles, target: Target, catalogue: BlockCatalogue) {
     this.catalogue = catalogue;
     this.fluids = readFluids(files, target);
+    this.rules = new VanillaBlockRules({
+      world: this.world,
+      catalogue: () => catalogue,
+      log: QUIET,
+      sayOnce: () => {},
+      effect: () => {},
+      give: () => {},
+    });
+    this.rules.setFiles(files);
     const shapes = catalogue;
     this.player = new PlayerController((x, y, z) => this.world.get({ x, y, z }), shapes, AWAY);
     const entities = new EntityWorld(
@@ -258,6 +273,7 @@ class ParityArea {
           return 'bone meal';
         }
         if (state !== null && block !== undefined) {
+          if (this.rules.use(pos, state, block, step.item)) return 'used (block rules)';
           const used = useType3(this.world, this.catalogue, block, state, pos, step.item);
           for (const change of used.changes)
             updateNeighbours(this.world, this.catalogue, change.pos);

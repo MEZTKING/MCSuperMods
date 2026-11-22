@@ -1,0 +1,28 @@
+{
+  "flatten": [
+    {
+      "block": "minecraft:clay",
+      "into": "minecraft:dirt_path"
+    }
+  ],
+  "format": 1,
+  "strip": [
+    {
+      "block": "minecraft:basalt",
+      "into": "minecraft:polished_basalt"
+    }
+  ],
+  "till": [
+    {
+      "block": "minecraft:packed_mud",
+      "drops": "minecraft:clay_ball",
+      "into": "minecraft:mud_bricks"
+    }
+  ],
+  "wax": [
+    {
+      "block": "minecraft:end_stone",
+      "into": "minecraft:end_stone_bricks"
+    }
+  ]
+}

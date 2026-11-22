@@ -2054,6 +2054,126 @@
       ],
       "events": [],
       "actions": []
+    },
+    {
+      "name": "vanilla_rules_axe_strips",
+      "description": "A vanilla block rule (B614): an axe strips basalt into polished basalt; an axe on stone, which no rule names, changes nothing.",
+      "steps": [
+        {"step": "place", "block": "minecraft:basalt", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "minecraft:stone", "pos": [5, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_axe",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "minecraft:polished_basalt"}]}
+        },
+        {
+          "step": "use",
+          "pos": [5, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_axe",
+          "expect": {"blocks": [{"pos": [5, 0, 3], "state": "minecraft:stone"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "vanilla_rules_shovel_flattens_with_air_above",
+      "description": "A vanilla block rule (B614): a shovel flattens clay into a dirt path, but not with a block on top of it.",
+      "steps": [
+        {"step": "place", "block": "minecraft:clay", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "minecraft:clay", "pos": [5, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [5, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_shovel",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "minecraft:dirt_path"}]}
+        },
+        {
+          "step": "use",
+          "pos": [5, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_shovel",
+          "expect": {"blocks": [{"pos": [5, 0, 3], "state": "minecraft:clay"}, {"pos": [5, 1, 3], "state": "sim_parity:base"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "vanilla_rules_hoe_tills",
+      "description": "A vanilla block rule (B614): a hoe tills packed mud into mud bricks (its clay ball drop is not checked here).",
+      "steps": [
+        {"step": "place", "block": "minecraft:packed_mud", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_hoe",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "minecraft:mud_bricks"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "vanilla_rules_honeycomb_waxes_and_axe_unwaxes",
+      "description": "A vanilla block rule (B614): honeycomb waxes end stone into end stone bricks, and an axe turns them back.",
+      "steps": [
+        {"step": "place", "block": "minecraft:end_stone", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:honeycomb",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "minecraft:end_stone_bricks"}]}
+        },
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_axe",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "minecraft:end_stone"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "vanilla_tools_on_vanilla_blocks",
+      "description": "Minecraft's own transformers on props (B614, from the target's vanilla pairs): an axe strips an oak log, a shovel flattens dirt, honeycomb waxes a copper block.",
+      "steps": [
+        {"step": "place", "block": "minecraft:oak_log", "pos": [2, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "minecraft:dirt", "pos": [4, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "minecraft:copper_block", "pos": [6, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [2, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_axe",
+          "expect": {"blocks": [{"pos": [2, 0, 3], "state": "minecraft:stripped_oak_log"}]}
+        },
+        {
+          "step": "use",
+          "pos": [4, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:iron_shovel",
+          "expect": {"blocks": [{"pos": [4, 0, 3], "state": "minecraft:dirt_path"}]}
+        },
+        {
+          "step": "use",
+          "pos": [6, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:honeycomb",
+          "expect": {"blocks": [{"pos": [6, 0, 3], "state": "minecraft:waxed_copper_block"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
     }
   ]
 }

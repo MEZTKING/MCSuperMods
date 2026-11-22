@@ -36,6 +36,57 @@ describe('Try it hotbar', () => {
     expect(things.at(-1)?.name).toBe('Golem Spawn Egg');
   });
 
+  it('adds the blocks and tools of vanilla block rules and block transformers (B614)', () => {
+    const withRules = new Map(files);
+    withRules.set(
+      `msm/${NS}/vanilla_block_rules/rules.json`,
+      JSON.stringify({
+        format: 1,
+        strip: [{ block: 'minecraft:basalt', into: 'minecraft:polished_basalt' }],
+        wax: [{ block: 'minecraft:end_stone', into: 'minecraft:end_stone_bricks' }],
+      }),
+    );
+    withRules.set(
+      `data/${NS}/block_transformer/brush.json`,
+      JSON.stringify([
+        {
+          block_state_provider: {
+            type: 'minecraft:rule_based',
+            rules: [
+              {
+                if_true: { type: 'minecraft:matching_blocks', blocks: 'minecraft:gravel' },
+                // biome-ignore lint/suspicious/noThenProperty: the game's own key
+                then: { id: 'minecraft:sand' },
+              },
+            ],
+          },
+        },
+      ]),
+    );
+    withRules.set(
+      `msm/${NS}/item/brush.json`,
+      JSON.stringify({
+        format: 1,
+        display_name: 'Brush',
+        components: { 'msm:components': { 'minecraft:block_transformer': `${NS}:brush` } },
+      }),
+    );
+    const catalogue = buildCatalogue(withRules, TARGET, quiet);
+    const things = projectThings(catalogue, mobs, withRules, folders);
+    const extra = things.slice(4).map((thing) => [thing.id, thing.kind, thing.name]);
+    expect(extra).toEqual([
+      ['minecraft:basalt', 'prop', 'Basalt'],
+      ['minecraft:end_stone', 'prop', 'End Stone'],
+      ['minecraft:gravel', 'prop', 'Gravel'],
+      ['minecraft:iron_axe', 'item', 'Iron Axe'],
+      ['minecraft:honeycomb', 'item', 'Honeycomb'],
+      [`${NS}:brush`, 'item', 'Brush'],
+    ]);
+    expect(things.find((thing) => thing.id === 'minecraft:iron_axe')?.texture).toBe(
+      'minecraft:item/iron_axe',
+    );
+  });
+
   it('finds an egg picture in the item model or the definition', () => {
     const withModel = new Map(files);
     withModel.set(

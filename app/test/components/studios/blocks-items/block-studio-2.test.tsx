@@ -16,7 +16,7 @@ import {
   type ResourceLocation,
 } from '@msm/core';
 import { builtInTargets } from '@msm/targets';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useEffect, useReducer } from 'react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { usePreferences } from '../../../../src/renderer/src/store/preferences';
@@ -546,6 +546,23 @@ describe('the Vanilla block rules Studio', () => {
       screen.getByRole('button', { name: 'Remove When you use a hoe on it, rule 1' }),
     );
     expect(read().till).toBeUndefined();
+  });
+
+  it('shows Try it here: each rule before and after, following an edit (B614)', async () => {
+    renderRules({
+      format: 1,
+      strip: [{ block: 'minecraft:basalt', into: 'minecraft:polished_basalt' }],
+    });
+    const section = screen.getByTestId('vanilla-rules-try-it-here');
+    const after = () =>
+      within(section).getByTestId('block-rules-row-strip-0-after').getAttribute('data-item');
+    await waitFor(() => expect(after()).toBe('minecraft:polished_basalt'), { timeout: 10_000 });
+    expect(within(section).getByTestId('live-view-tag').textContent).toBe('Preview');
+    commit('vanilla-rules-strip-0-into', 'minecraft:stone');
+    await waitFor(() => expect(after()).toBe('minecraft:stone'));
+    expect(within(section).getByTestId('block-rules-try-it').textContent).toContain(
+      'minecraft:iron_axe',
+    );
   });
 
   it('picks blocks by name in Very easy', () => {

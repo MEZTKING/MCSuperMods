@@ -11,13 +11,17 @@
  * - double chests and per-player chests: the screen of both halves (54 slots) and the lines on
  *   what only the game does (ADR 0104 D4, D5);
  * - once per block, what only the game does: soils, water, light, random-tick growth, touch
- *   damage, rules for vanilla blocks.
+ *   damage.
+ *
+ * Block transformers and vanilla block rules on blocks (B614) are `../vanilla-rules.ts`'s
+ * {@link VanillaBlockRules}, asked first on every use; its exports are re-exported here.
  */
 import type { WorldBox } from '../../player/collide.js';
 import type { BlockPos, BlockState, SimEffect, SimFiles, SimLog, SimOrigin } from '../../types.js';
 import type { SimWorld } from '../../world/sim-world.js';
 import type { BlockCatalogue, CatalogueBlock } from '../catalogue.js';
 import { updateNeighbours } from '../neighbours.js';
+import { VanillaBlockRules } from '../vanilla-rules.js';
 import { light3Of } from './facts.js';
 import { useType3 } from './use.js';
 
@@ -55,29 +59,25 @@ interface Tilting {
 /** The tilts of a big dripleaf in order, back to none at the end. */
 const TILTS = ['none', 'unstable', 'partial', 'full'] as const;
 
+export * from '../vanilla-rules.js';
+
 const posKey = (pos: BlockPos): string => `${pos.x},${pos.y},${pos.z}`;
-const VANILLA_RULES_PATH = /^msm\/[a-z0-9_.-]+\/vanilla_block_rules\/.+\.json$/;
 
 /** See the module comment. */
 export class Types3Area {
   private readonly host: Types3Host;
   private readonly tilting = new Map<string, Tilting>();
+  private readonly rules: VanillaBlockRules;
 
   constructor(files: SimFiles, host: Types3Host) {
     this.host = host;
+    this.rules = new VanillaBlockRules(host);
     this.setFiles(files);
   }
 
   /** New lowered files (a live edit). */
   setFiles(files: SimFiles): void {
-    for (const path of files.keys()) {
-      if (!VANILLA_RULES_PATH.test(path)) continue;
-      this.host.sayOnce(
-        'vanilla-block-rules',
-        'rules for vanilla blocks: axes, shovels, hoes and honeycomb on them, ageing and burning (the preview uses vanilla blocks as props)',
-      );
-      break;
-    }
+    this.rules.setFiles(files);
     for (const [key, one] of [...this.tilting]) {
       if (this.host.world.get(one.pos)?.name !== one.block) this.tilting.delete(key);
     }
@@ -89,10 +89,12 @@ export class Types3Area {
   }
 
   /**
-   * A right click on a block (before vanilla parity 2's uses and `msm:on_interact`): a pot, a
-   * potted plant in a project pot or a strand with berries.
+   * A right click on a block (before vanilla parity 2's uses and `msm:on_interact`): a tool on a
+   * block a rule or transformer changes (B614), a pot, a potted plant in a project pot or a
+   * strand with berries.
    */
   use(pos: BlockPos, state: BlockState, block: CatalogueBlock, item?: string): Types3UseOutcome {
+    if (this.rules.use(pos, state, block, item)) return { taken: true };
     const catalogue = this.host.catalogue();
     if (block.types3 === undefined && catalogue.pottedIn(block.id) === undefined) {
       return { taken: false };

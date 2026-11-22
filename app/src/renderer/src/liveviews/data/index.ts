@@ -16,7 +16,7 @@ const dialog: LiveViewLoader = () => import('./dialog/DialogScreen');
 const sampleLine: LiveViewLoader = () => import('./lines/SampleLine');
 const tag: LiveViewLoader = () => import('./tag/TagMembers');
 const fn: LiveViewLoader = () => import('./FunctionLines');
-const blockRules: LiveViewLoader = () => import('./BlockRules');
+const blockRules: LiveViewLoader = () => import('./block-rules/BlockRules');
 
 /** The 20 tag kinds that get the resolved members (the merchant trade tag has its own screen). */
 export const TAG_VIEW_REGISTRIES = Object.freeze([
