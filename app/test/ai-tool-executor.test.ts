@@ -116,8 +116,8 @@ describe('createToolExecutor: read tools', () => {
     const { result, value } = await fixture.call('kind_schema', { kind: 'msm:block' });
     expect(result.isError).toBe(false);
     expect(value.schema).toContain('display_name');
-    // msm:block has an allowance for its 38 block types (schema-summary.ts).
-    expect(value.schema.length).toBeLessThanOrEqual(20_200);
+    // msm:block has an allowance for its 43 block types (schema-summary.ts, 22,000 characters).
+    expect(value.schema.length).toBeLessThanOrEqual(22_200);
     expect(value.schema).toContain('case scaffolding:');
     const recipe = await fixture.call('kind_schema', { kind: 'minecraft:recipe' });
     expect(recipe.value.schema).toMatch(/crafting_shaped/);

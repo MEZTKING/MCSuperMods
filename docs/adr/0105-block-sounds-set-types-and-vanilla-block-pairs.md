@@ -28,6 +28,8 @@ Measured on both versions (evidence in `docs/reference/spikes/b503/`). These win
 - **D2.** Own set types work unregistered on both versions behind `BlockSetTypes`; the constructors differ (26.3 takes a name and a `SoundType`, 26.4 a `BlockSoundSet` key).
 - **D4 corrected.** Fabric's content registries on 26.3 have no strip, flatten or till registry (only flammability, oxidising and waxing). Strip, flatten, till and wax for vanilla blocks use one `UseBlockCallback` route on both versions, which runs before the item's own transformer; burn uses the existing `Flammability` routes; `age` uses `OxidizableBlocksRegistry` on 26.3, and on 26.4 (where vanilla's maps are immutable and oxidised copper does not random-tick) the reserve brief B546's version-only Mixin, which must also make the vanilla state random-tick. Vanilla's own strip, flatten and till pairs are data (`block_transformer/{axe,shovel,hoe}.json`), so `vanillaPairs` reads them there.
 
+- **Format as frozen (B506).** D1's field is `block_sounds` (a `portal` already has a top-level `sounds`, ADR 0077 D1): `{ break, step, place, hit, fall, volume? 0..10, pitch? 0.25..4 }`. D2's object gains `base` (a vanilla set type, default `wood`, the source of every unset default) and `can_open_by_wind_charge` (default `can_open_by_hand`); all four sounds are optional (a button or plate uses only `press` and `release`). D4's burn rules use `msm:flammable`'s `burn_odds` and `ignite_odds` (0..300) instead of `spread_odds`.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: `sound_type` stays the default for missing events; own set types as an object in the same field; one addition kind for all vanilla pairs; warnings, not errors, for overriding a vanilla pair.
