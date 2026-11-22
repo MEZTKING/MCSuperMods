@@ -1963,7 +1963,8 @@ function typeCheck(script: string): string[] {
  * its library brief lands. `minecraft:wolf_sound_variant` is not a kind at all while vanilla-mcdoc
  * lacks `step_sound` (ADR 0064 D5).
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
+// B539 adds its example (vanilla parity 3 batch 2).
+const KINDS_AWAITING_EXAMPLES: readonly string[] = ['msm:villager_type'];
 
 // Tests --------------------------------------------------------------------------------------
 

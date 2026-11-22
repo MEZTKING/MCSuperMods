@@ -422,6 +422,26 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   ),
 
   // Traders, jobs, storage and shoulder pets (ADR 0098, B476) ---------------------------------
+  'entities.work-site-unknown': entry(
+    (t) => `${t} restocks at a block that does not exist. Pick a block for its work site.`,
+  ),
+  'entities.work-site-without-restock': entry(
+    (t) => `${t} has a work site but never restocks, so it never goes there. Let it restock.`,
+  ),
+  'entities.gift-without-item': entry(
+    (t) => `${t} likes gifts but no gift is chosen. Pick the item players give it.`,
+  ),
+  'entities.villager-type-taken': entry(
+    (t) =>
+      `${t} uses the name of one of Minecraft's own villager looks. Give it a name of its own.`,
+  ),
+  'entities.villager-type-biome-shared': entry(
+    (t) =>
+      `${t} shares a biome with another villager look, so only one of them shows there. Give each its own biomes.`,
+  ),
+  'entities.villager-type-texture-missing': entry(
+    (t) => `${t} has no picture yet, so its villagers look unfinished. Draw or add its picture.`,
+  ),
   'entities.trade-set-unknown': entry(
     (t) => `${t} trades from a list of trades that does not exist. Pick other trades for it.`,
   ),

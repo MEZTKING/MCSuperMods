@@ -109,6 +109,7 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'msm:fluid': 'Liquids',
   'msm:vehicle': 'Vehicles',
   'msm:villager_profession': 'Village jobs',
+  'msm:villager_type': 'Villager looks',
   'msm:rules': 'Rule books',
   'msm:key_bind': 'Key binds',
   'msm:hud': 'On-screen elements',
