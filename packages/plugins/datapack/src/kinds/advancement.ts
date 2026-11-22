@@ -11,5 +11,7 @@ export const advancementKind: ElementKind = {
   schema: SCHEMA,
   folder: 'advancement',
   defaultData: { criteria: { requirement: { trigger: 'minecraft:tick' } } },
+  // Live views 2 (ADR 0120 D2): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   lower: (element, target) => lowerJsonData(element, target, 'advancement', SCHEMA),
 };

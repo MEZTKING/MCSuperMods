@@ -39,6 +39,27 @@ const element = (kind: string, id: `${string}:${string}`, data: Json): Element =
 
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
 
+/** The kinds of Live views 2 (ADR 0120 D1) that this plugin makes: 32 of the 34 (the rest are blocks-items'). */
+const LIVE_VIEW_KINDS: ReadonlySet<string> = new Set([
+  'minecraft:loot_table',
+  'minecraft:advancement',
+  'minecraft:predicate',
+  'minecraft:item_modifier',
+  'minecraft:function',
+  ...TAG_REGISTRIES.filter((registry) => registry !== 'villager_trade').map(
+    (registry) => `minecraft:tag/${registry}`,
+  ),
+  ...[
+    'enchantment',
+    'damage_type',
+    'chat_type',
+    'dialog',
+    'enchantment_provider',
+    'trial_spawner',
+    'block_transformer',
+  ].map((registry) => `minecraft:${registry}`),
+]);
+
 describe('@msm/plugin-datapack', () => {
   it('declares its id and API range', () => {
     expect(plugin.id).toBe('msm.datapack');
@@ -69,8 +90,11 @@ describe('@msm/plugin-datapack', () => {
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(kinds().length);
     for (const kind of kinds()) {
       expect(kind.defaultData, kind.id).toBeDefined();
-      expect(kind.previewKind, kind.id).toBeUndefined();
+      expect(kind.previewKind, kind.id).toBe(
+        LIVE_VIEW_KINDS.has(kind.id) ? 'live_view' : undefined,
+      );
     }
+    expect(LIVE_VIEW_KINDS.size).toBe(32);
   });
 
   it('builds tag kinds for any registry', async () => {

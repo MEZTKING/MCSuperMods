@@ -48,6 +48,8 @@ export function tagKind(registry: string): ElementKind {
     schema,
     folder: `tags/${registry}`,
     defaultData: { replace: false, values: [] },
+    // Live views 2 (ADR 0120 D2); the merchant trade tags already have Try it's merchant screen.
+    ...(registry === 'villager_trade' ? {} : { previewKind: 'live_view' }),
     lower: (element, target) =>
       lowerJsonData(element, target, 'tags', schema, registry).map((file) => ({
         ...file,

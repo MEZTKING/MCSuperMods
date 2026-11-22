@@ -10,5 +10,7 @@ export const functionKind: ElementKind = {
   schema: 'msm:function',
   folder: 'function',
   defaultData: { lines: ['# Written with MCSuperMods'] },
+  // Live views 2 (ADR 0120 D2): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   lower: (element, target) => lowerFunction(element, target),
 };

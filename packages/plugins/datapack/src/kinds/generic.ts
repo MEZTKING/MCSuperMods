@@ -52,6 +52,17 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
 /** A registry with a generic kind. */
 export type GenericDataRegistry = (typeof GENERIC_DATA_REGISTRIES)[number];
 
+/** The generic kinds that Live views 2 gives a view (ADR 0120 D1; the audit's batch 2 rows). */
+const LIVE_VIEW_REGISTRIES: readonly GenericDataRegistry[] = [
+  'enchantment',
+  'damage_type',
+  'chat_type',
+  'dialog',
+  'enchantment_provider',
+  'trial_spawner',
+  'block_transformer',
+];
+
 /** A mob variant that applies everywhere: one spawn condition with the lowest priority. */
 const EVERYWHERE = [{ priority: 0 }];
 
@@ -290,6 +301,8 @@ export function genericKind(registry: GenericDataRegistry): ElementKind {
     schema,
     folder: registry,
     defaultData: structuredClone(DEFAULTS[registry]),
+    // Live views 2 (ADR 0120 D2): the kinds that have a view in the registry of the app.
+    ...(LIVE_VIEW_REGISTRIES.includes(registry) ? { previewKind: 'live_view' } : {}),
     lower: (element, target) => lowerJsonData(element, target, registry, schema),
   };
 }

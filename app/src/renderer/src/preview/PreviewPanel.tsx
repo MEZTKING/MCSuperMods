@@ -38,6 +38,7 @@ const PreviewCanvas = lazy(() => import('./PreviewCanvas'));
 const ClimateMap = lazy(() => import('./ClimateMap'));
 const GeoCanvas = lazy(() => import('./geo/GeoCanvas'));
 const WorldMap = lazy(() => import('../terrain/WorldMap'));
+const BundleLiveView = lazy(() => import('../liveviews/BundleLiveView'));
 
 const PREVIEW_KINDS: readonly string[] = [
   'model',
@@ -49,6 +50,7 @@ const PREVIEW_KINDS: readonly string[] = [
   'geo_model',
   'animation',
   'entity',
+  'live_view',
 ];
 
 /** True when the panel can preview an element whose kind declares `previewKind`. */
@@ -126,7 +128,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
         ? null
         : kind === null
           ? modelFieldSubject(element, project)
-          : kind === 'climate_map' || kind === 'worldgen_map'
+          : kind === 'climate_map' || kind === 'worldgen_map' || kind === 'live_view'
             ? null
             : { data: element.data, id: element.id, previewKind: kind },
     [element, kind, project],
@@ -225,6 +227,23 @@ export function PreviewPanel(props: PreviewPanelProps) {
             />
           </Suspense>
         )}
+      </section>
+    );
+  }
+
+  if (element !== null && kind === 'live_view') {
+    return (
+      <section aria-label="Preview" className="flex flex-col gap-3">
+        <Suspense fallback={<p className="text-sm text-muted">Loading view…</p>}>
+          <BundleLiveView
+            key={`${element.kind} ${element.id}`}
+            project={project}
+            element={element}
+            vanilla={vanilla}
+            projectRoot={props.projectRoot ?? null}
+            onSetup={onSetup}
+          />
+        </Suspense>
       </section>
     );
   }

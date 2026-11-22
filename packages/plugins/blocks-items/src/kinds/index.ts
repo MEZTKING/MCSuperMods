@@ -191,6 +191,8 @@ export const lootAdditionKind: ElementKind = {
     pools: [{ rolls: 1, entries: [{ type: 'minecraft:item', name: 'minecraft:emerald' }] }],
   },
   hiddenPaths: HIDDEN,
+  // Live views 2 (ADR 0120 D2): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   lower: lowerLootAddition,
 };
 
@@ -209,6 +211,8 @@ export const vanillaBlockRulesKind: ElementKind = {
     strip: [{ block: 'minecraft:mossy_cobblestone', into: 'minecraft:cobblestone' }],
   },
   hiddenPaths: HIDDEN,
+  // Live views 2 (ADR 0120 D2): the registry in the app picks the view by element kind.
+  previewKind: 'live_view',
   lower: lowerVanillaBlockRules,
 };
 

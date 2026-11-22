@@ -8487,3 +8487,22 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 
 **Next**
 - Main session: show the user ADR 0124's vetoable defaults with the other plans'; start B650 beside Live views 2 when an executor is free (Opus at high effort, no engine-mod slot); B651 after B550, B656 after B603; add a `b650/` line to `docs/reference/spikes/README.md` when the spike reports.
+
+## 2026-11-22 — executor — B601 scaffold and stubs for Live views 2 (data)
+
+**What**
+- Made every shared registration point of batch 2 so that no later brief of the batch edits one ([`docs/PLAN-live-views.md`](PLAN-live-views.md) "Stubs first"):
+  - **App**: new `app/src/renderer/src/liveviews/` with `registry.ts` (`LiveViewProps`, `LIVE_VIEWS`, `liveViewComponent`, `hasLiveView`, `liveViewKinds`), `data/index.ts` (the 34 kinds, each a lazy import of a stub file: `RollIt`, `TryItOn`, `EnchantmentCard`, `AdvancementTree`, `DialogScreen`, `SampleLine`, `TagMembers`, `FunctionLines`, `BlockRules`), `frame/LiveViewFrame.tsx` (Preview tag, fidelity level, notes, set-up banner; `NotYet` for the stubs), `frame/fidelity.ts` (checked, about right, only in the game; `weakest`), `BundleLiveView.tsx`, `view-prefs.ts` (seed, situation, sample item and text per project root, in local storage), `client.ts` and `worker.ts` (a lane and token client over a module worker; the stub answers "not yet").
+  - **Preview panel**: `live_view` joins `PREVIEW_KINDS` and gets its own lazy route (`BundleLiveView`); nothing else changed there.
+  - **Plugins**: `previewKind: 'live_view'` on the 32 datapack kinds (loot table, advancement, predicate, item modifier, function, the 20 tag kinds other than `villager_trade`, and enchantment, damage type, chat type, dialog, enchantment provider, trial spawner, block transformer) and on `msm:loot_addition` and `msm:vanilla_block_rules`: 34 in all.
+  - **Sim**: `tags/`, `predicates/`, `loot/` each with `api.ts` and `index.ts`, the exact interface B600 reported (`Answer`, `Situation`, `ItemSample`, `EntitySample`, `Unsupported`, `EvalContext`, `PartResult`, `testPredicate`, `resolveTag`, `rollLoot`, `lootOdds` with a cancel token, `applyItemModifier`, `unsupported()`); stubs answer unknown, an empty tag or no drops, each with a "not yet" `Unsupported`. `commands/vanilla.ts` (`VANILLA_COMMANDS`, `understands`) and `commands/functions.ts` (`runFunction`, `TICK_COMMAND_CAP`; says "only in the game"). Export lines in `src/index.ts`.
+  - `fixtures/live-views/README.md`; the stub class `LiveViewsDataParityTest` (no test, not an entrypoint); the skipped `app/e2e/live-views-data-path.spec.ts`.
+- A new test file `app/test/components/liveviews/live-views-stubs.test.tsx`: a loot table in the panel shows the frame with "Not yet", the 34 kinds match the registry exactly, the worker and client stubs, `weakest`, and no file under `liveviews/` imports the session store.
+
+**Decisions**
+- Stub files are grouped by the brief that builds them (nine files for B609 to B614), not one per kind, so two briefs never share a stub.
+- `Unsupported` lives in `predicates/api.ts` and `SeededRandom` is an alias of the sim's `SimRandom`; `ResolvedTag` and `DataLookup` live in `tags/api.ts`. The stubs never silently answer: unknown or empty plus a `not_yet` note.
+- The default seed is a fixed `'1'` (views are pure and seeded); "Roll a new seed" is the user's action.
+
+**Next**
+- B603 (jar data and IPC), then wave 2: B604 and B605 fill `api.ts` bodies, B606 the commands, B607 the fixture and the parity class (it adds the `fabric.mod.json` line), B608 the frame's situation picker, item slots and the worker.
