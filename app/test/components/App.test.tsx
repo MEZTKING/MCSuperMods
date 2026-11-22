@@ -361,6 +361,7 @@ async function renderApp(
       readAsset: unavailable,
       listAssets: unavailable,
       readWorldgenFiles: unavailable,
+      readDataFiles: unavailable,
       installResourcePack: async (fileName) => {
         harness.resourceInstalls.push(fileName);
         return { path: `/resourcepacks/${fileName}` };

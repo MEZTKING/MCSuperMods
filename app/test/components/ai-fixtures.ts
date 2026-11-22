@@ -138,6 +138,7 @@ function aiTestPlatform(): PlatformAdapter {
       readAsset: unavailable,
       listAssets: unavailable,
       readWorldgenFiles: unavailable,
+      readDataFiles: unavailable,
       installResourcePack: unavailable,
       listWorlds: unavailable,
       installDataPack: unavailable,

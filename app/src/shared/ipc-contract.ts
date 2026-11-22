@@ -111,7 +111,7 @@ const assetCacheInfo = z
     dataFolders: z.array(z.string().max(256)).max(256),
     fileCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(4),
+    schemaVersion: z.literal(5),
   })
   .strict();
 /** The most worldgen files one answer may carry (both targets have about 1,300; ADR 0119 D4). */
@@ -134,6 +134,31 @@ const vanillaWorldgenFiles = z
     files: worldgenFileMap,
     fileCount: z.number().int().nonnegative().max(WORLDGEN_FILES_MAX),
     resolvedBiomeLists: z.record(z.string(), z.unknown()).nullable(),
+  })
+  .strict();
+/**
+ * The most vanilla data files one live views answer may carry (all the cache's folders together
+ * are about 5,500 on each target; ADR 0120 D11).
+ */
+export const DATA_FILES_MAX = 20_000;
+/** A `data/minecraft/` folder key such as `loot_table` or `tags/item` (`isDataFolder` in interop). */
+const dataFolderKey = z
+  .string()
+  .min(1)
+  .max(128)
+  .regex(/^[a-z0-9_]+(?:\/[a-z0-9_]+)*$/);
+const vanillaDataFiles = z
+  .object({
+    version: z.string().max(64),
+    folders: z
+      .record(dataFolderKey, z.record(z.string().min(1).max(512), z.unknown()))
+      .refine(
+        (folders) =>
+          Object.values(folders).reduce((sum, files) => sum + Object.keys(files).length, 0) <=
+          DATA_FILES_MAX,
+        { message: 'Too many data files' },
+      ),
+    fileCount: z.number().int().nonnegative().max(DATA_FILES_MAX),
   })
   .strict();
 /** A pack zip file name, as written by installs and combined exports. */
@@ -1065,6 +1090,10 @@ export const ipcContract = {
   [InvokeChannels.minecraftWorldgenFiles]: {
     request: z.object({ mcVersion }).strict(),
     response: vanillaWorldgenFiles.nullable(),
+  },
+  [InvokeChannels.minecraftDataFiles]: {
+    request: z.object({ mcVersion, folders: z.array(dataFolderKey).min(1).max(64) }).strict(),
+    response: vanillaDataFiles.nullable(),
   },
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: z

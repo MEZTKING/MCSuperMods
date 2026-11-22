@@ -13,6 +13,7 @@ import type { Element, Project } from '@msm/plugin-api';
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 import type { VanillaAssetReader } from '../preview/model-chain';
 import { DATA_VIEWS } from './data';
+import type { VanillaDataReader } from './vanilla-data';
 import type { LiveViewPrefs } from './view-prefs';
 
 /** What a view is given. Views read nothing else (no session store, no globals). */
@@ -21,8 +22,17 @@ export interface LiveViewProps {
   readonly project: Project;
   /** The element to show. */
   readonly element: Element;
-  /** Reads the extracted vanilla files, or `null` when the Minecraft folder is not set up. */
-  readonly vanilla: VanillaAssetReader | null;
+  /**
+   * Reads vanilla's data files by registry folder and id (`vanilla-data.ts`). Always given: without
+   * the Minecraft folder set up every call answers `not_set_up`, and the view shows the set-up
+   * banner only when it names a vanilla file.
+   */
+  readonly vanilla: VanillaDataReader;
+  /**
+   * Reads vanilla's pictures and models by jar path (item pictures in slots), or `null` when the
+   * Minecraft folder is not set up.
+   */
+  readonly vanillaAssets: VanillaAssetReader | null;
   /** The view choices (seed, situation, sample item, sample text). */
   readonly preferences: LiveViewPrefs;
   /** Changes part of the view choices. */

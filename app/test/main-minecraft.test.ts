@@ -85,7 +85,7 @@ describe('Minecraft service', () => {
       version: VERSION,
       fileCount: Object.keys(KEPT_ENTRIES).length,
       extractedAt: '2026-01-01T00:00:00.000Z',
-      schemaVersion: 4,
+      schemaVersion: 5,
       dataFolders: [],
     });
     expect(info.jarPath).toBe(join(minecraftDir, 'versions', VERSION, `${VERSION}.jar`));

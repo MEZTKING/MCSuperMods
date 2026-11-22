@@ -38,7 +38,7 @@ describe('asset cache', () => {
     const dir = assetCacheDir('/msm', '9.1');
     const files = extractPreviewAssets(buildSyntheticJar());
     const info = await writeAssetCache(fs, dir, files, INFO);
-    expect(info).toEqual({ ...INFO, fileCount: 8, schemaVersion: 4 });
+    expect(info).toEqual({ ...INFO, fileCount: 8, schemaVersion: 5 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);
@@ -60,7 +60,7 @@ describe('asset cache', () => {
     const fs = new MemoryInstallFileSystem();
     fs.seed('/c/cache.json', 'not json');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 5 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 6 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     // A Phase 1 cache (schema 1) has no `.png.mcmeta` sidecars, so it is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 1 }));
@@ -71,11 +71,14 @@ describe('asset cache', () => {
     // Schema 3 has no worldgen data folders (ADR 0119 D4), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 3 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    // Schema 4 has no live view data folders (ADR 0120 D11), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 4 }));
-    expect(await readAssetCacheInfo(fs, '/c')).toEqual({ ...INFO, fileCount: 1, schemaVersion: 4 });
-    // Schema 4 needs the jar path and the folder list.
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 5 }));
+    expect(await readAssetCacheInfo(fs, '/c')).toEqual({ ...INFO, fileCount: 1, schemaVersion: 5 });
+    // Schema 5 needs the jar path and the folder list.
     const { jarPath: _jarPath, ...withoutJarPath } = INFO;
-    fs.seed('/c/cache.json', JSON.stringify({ ...withoutJarPath, fileCount: 1, schemaVersion: 4 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...withoutJarPath, fileCount: 1, schemaVersion: 5 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     fs.seed('/c/cache.json', '[]');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
@@ -94,6 +97,17 @@ describe('asset cache', () => {
 });
 
 describe('outdated asset caches (ADR 0119 D4)', () => {
+  it('reads the jar path a schema 4 cache recorded (B603)', async () => {
+    const fs = new MemoryInstallFileSystem();
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 4 }));
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toEqual({
+      version: '9.1',
+      jarSha1: 'abc123',
+      jarPath: INFO.jarPath,
+      schemaVersion: 4,
+    });
+  });
+
   it('reads what a cache of an older schema recorded', async () => {
     const fs = new MemoryInstallFileSystem();
     const schema3 = {
@@ -117,7 +131,7 @@ describe('outdated asset caches (ADR 0119 D4)', () => {
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
     await writeAssetCache(fs, '/c', [], INFO);
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 5 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 6 }));
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
     fs.seed('/c/cache.json', JSON.stringify({ version: 1, jarSha1: 'x', schemaVersion: 2 }));
     expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
@@ -164,6 +178,34 @@ describe('readCachedDataFiles', () => {
     });
     expect(read.fileCount).toBe(3);
     expect(read.unreadable).toEqual(['data/minecraft/made_up/stones/broken.json']);
+    // A read of one folder keeps the ids of a read of all when the other folders are named.
+    const one = await readCachedDataFiles(fs, dir, ['made_up/stones'], { owners: FOLDERS });
+    expect(one.folders).toEqual({ 'made_up/stones': read.folders['made_up/stones'] });
+    const alone = await readCachedDataFiles(fs, dir, ['made_up/stones']);
+    expect(Object.keys(alone.folders['made_up/stones'] ?? {})).toContain('minecraft:special/shiny');
+    await expect(
+      readCachedDataFiles(fs, dir, ['made_up/stones'], { owners: ['../x'] }),
+    ).rejects.toThrow();
+  });
+
+  it('reads a folder of many files in path order whatever the read timing', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const dir = assetCacheDir('/msm', '9.1');
+    const names = Array.from({ length: 300 }, (_, index) => `n${String(index).padStart(3, '0')}`);
+    await writeAssetCache(
+      fs,
+      dir,
+      names.map((name) => ({
+        path: `data/minecraft/made_up/many/${name}.json`,
+        data: json({ name }),
+      })),
+      { ...INFO, dataFolders: ['made_up/many'] },
+    );
+    const read = await readCachedDataFiles(fs, dir, ['made_up/many']);
+    expect(read.fileCount).toBe(300);
+    expect(Object.keys(read.folders['made_up/many'] ?? {})).toEqual(
+      names.map((name) => `minecraft:${name}`),
+    );
   });
 
   it('refuses folder names that could leave the cache', async () => {

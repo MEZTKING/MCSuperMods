@@ -5,6 +5,7 @@ import {
   AI_KEY_MAX,
   AI_TEXT_MAX,
   AI_TOOL_RESULT_MAX,
+  DATA_FILES_MAX,
   EventChannels,
   EXPORT_TREE_MAX_FILES,
   type InvokeChannel,
@@ -366,10 +367,10 @@ const samples: Record<
         version: '1.0',
         jarSha1: 'ab',
         jarPath: '/home/a/.minecraft/versions/1.0/1.0.jar',
-        dataFolders: ['worldgen/noise'],
+        dataFolders: ['loot_table', 'worldgen/noise'],
         fileCount: 3,
         extractedAt: 'now',
-        schemaVersion: 4,
+        schemaVersion: 5,
       },
       {
         version: '1.0',
@@ -378,7 +379,7 @@ const samples: Record<
         dataFolders: [],
         fileCount: 3,
         extractedAt: 'now',
-        schemaVersion: 3,
+        schemaVersion: 4,
       },
     ],
   },
@@ -406,6 +407,20 @@ const samples: Record<
         resolvedBiomeLists: null,
       },
       { version: '1.0', files: {}, fileCount: 0 },
+    ],
+  },
+  [InvokeChannels.minecraftDataFiles]: {
+    request: [
+      { mcVersion: '1.0', folders: ['loot_table', 'tags/item'] },
+      { mcVersion: '1.0', folders: ['../escape'] },
+    ],
+    response: [
+      {
+        version: '1.0',
+        folders: { loot_table: { 'minecraft:blocks/made_up': { pools: [] } } },
+        fileCount: 1,
+      },
+      { version: '1.0', folders: {}, fileCount: 0, resolvedBiomeLists: null },
     ],
   },
   [InvokeChannels.minecraftInstallResourcePack]: {
@@ -971,6 +986,25 @@ describe('IPC contract', () => {
     expect(answer({ 'worldgen/noise': {} })).toBe(true);
     expect(answer({ 'worldgen/noise': many })).toBe(false);
     expect(answer({ '': {} })).toBe(false);
+  });
+
+  it('bounds the live views data answer and its folder keys (ADR 0120 D11)', () => {
+    const { request, response } = ipcContract[InvokeChannels.minecraftDataFiles];
+    const asks = (folders: unknown) => request.safeParse({ mcVersion: '1.0', folders }).success;
+    expect(asks(['advancement', 'tags/item'])).toBe(true);
+    for (const folder of ['', '/abs', 'a/../b', 'Upper', 'a//b', 'a/', 'a\\b']) {
+      expect(asks([folder]), folder).toBe(false);
+    }
+    expect(asks([])).toBe(false);
+    expect(response.safeParse(null).success).toBe(true);
+    const many = Object.fromEntries(
+      Array.from({ length: DATA_FILES_MAX + 1 }, (_, i) => [`minecraft:n${i}`, {}]),
+    );
+    const answer = (folders: unknown) =>
+      response.safeParse({ version: '1.0', folders, fileCount: 0 }).success;
+    expect(answer({ loot_table: {} })).toBe(true);
+    expect(answer({ loot_table: many })).toBe(false);
+    expect(answer({ '../x': {} })).toBe(false);
   });
 
   it('bounds Try it world ids, centres and areas', () => {

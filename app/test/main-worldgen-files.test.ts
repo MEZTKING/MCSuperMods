@@ -148,7 +148,7 @@ describe('vanilla worldgen files (ADR 0119 D4)', () => {
     // The renderer extracts again by itself; then the cache is current.
     await service.extract(VERSION);
     status = await service.status(VERSION);
-    expect(status.cache?.schemaVersion).toBe(4);
+    expect(status.cache?.schemaVersion).toBe(5);
     expect(status.cacheOutdated).toBe(false);
 
     // The jar is gone: the old cache gives the banner, as before.

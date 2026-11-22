@@ -14,13 +14,14 @@ import type { ProjectFileSystem } from '@msm/core';
 import type { Downloader, InstallEnv, InstallFileSystem, LauncherProgramEnv } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
 import { builtInTargets, targetById } from '@msm/targets';
-import type {
-  FileFilter,
-  LaunchNotice,
-  PlatformAdapter,
-  RecentProject,
-  RecentProjectView,
-  RootResult,
+import {
+  type FileFilter,
+  type LaunchNotice,
+  LIVE_VIEW_DATA_FOLDERS,
+  type PlatformAdapter,
+  type RecentProject,
+  type RecentProjectView,
+  type RootResult,
 } from '../../shared/platform';
 import { createExportsService } from './exports';
 import { createGeckolibJarService } from './geckolib-jar';
@@ -272,6 +273,11 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     dataFoldersFor: (mcVersion) =>
       builtInTargets.find((bundle) => bundle.target.mcVersion === mcVersion)?.target.worldgen
         .terrainPreview?.dataFolders ?? null,
+    // ADR 0120 D11: the live views' folders, for every built-in target's version.
+    liveViewDataFoldersFor: (mcVersion) =>
+      builtInTargets.some((bundle) => bundle.target.mcVersion === mcVersion)
+        ? LIVE_VIEW_DATA_FOLDERS
+        : null,
     resolvedBiomeLists: (mcVersion) =>
       readResolvedBiomeLists({ mcVersion, managedGameDir: playGameDir }),
     ...(deps.now === undefined ? {} : { now: deps.now }),

@@ -239,7 +239,8 @@ export function PreviewPanel(props: PreviewPanelProps) {
             key={`${element.kind} ${element.id}`}
             project={project}
             element={element}
-            vanilla={vanilla}
+            vanillaAssets={vanilla}
+            mcVersion={props.terrainSession?.target.mcVersion ?? null}
             projectRoot={props.projectRoot ?? null}
             onSetup={onSetup}
           />

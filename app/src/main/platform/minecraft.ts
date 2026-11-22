@@ -2,7 +2,8 @@
  * Minecraft installation access for the main process (ADR 0011, ADR 0019): status, client-jar
  * asset extraction into `<msmHome>/cache/assets/<version>/` from any launcher's jar store,
  * cached asset reads for the renderer, the cached vanilla worldgen files of a version in one
- * answer for the live world generation preview (ADR 0119 D4), installing resource packs into the
+ * answer for the live world generation preview (ADR 0119 D4), the cached vanilla data files of
+ * some folders in one answer for the live views (ADR 0120 D11), installing resource packs into the
  * selected game location, listing its worlds and installing data packs into a world's
  * `datapacks/` folder.
  *
@@ -28,6 +29,7 @@ import {
   joinInstallPath,
   listLauncherClientJars,
   locationPathKey,
+  mergeDataFolders,
   PREVIEW_ASSET_PATTERNS,
   pickVersionJar,
   readAssetCacheInfo,
@@ -44,6 +46,7 @@ import type {
   GameLocationList,
   MinecraftStatus,
   ResolvedBiomeListsView,
+  VanillaDataFiles,
   VanillaWorldgenFiles,
   WorldBackupList,
   WorldBackupRef,
@@ -105,6 +108,14 @@ export interface MinecraftService {
    * up for the target's folders or the target has none (ADR 0119 D4, D10).
    */
   readWorldgenFiles(mcVersion: string): Promise<VanillaWorldgenFiles | null>;
+  /**
+   * The cached vanilla files of `folders` as folder key to id to JSON (ADR 0120 D11): the live
+   * views' bulk read by folder. Each folder must be one the cache keeps (the live views' and the
+   * world generation folders); `null` when the cache is not set up for the version.
+   *
+   * @throws Error When a folder is not one the cache keeps for the version.
+   */
+  readDataFiles(mcVersion: string, folders: readonly string[]): Promise<VanillaDataFiles | null>;
   installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
   /**
    * Worlds in `<gameDir>/saves/` of the selected location that contain `level.dat`, most
@@ -157,6 +168,12 @@ export interface MinecraftServiceDeps {
    */
   dataFoldersFor?(mcVersion: string): readonly string[] | null;
   /**
+   * The `data/minecraft/` folders the live views read for `mcVersion`
+   * (`LIVE_VIEW_DATA_FOLDERS` for a built-in target), or `null`. Extracted and recorded beside
+   * {@link dataFoldersFor}'s; without this, none (ADR 0120 D11).
+   */
+  liveViewDataFoldersFor?(mcVersion: string): readonly string[] | null;
+  /**
    * The resolved biome lists of vanilla's `multi_noise` presets for `mcVersion` (reserve B592,
    * `worldgen-biome-lists.ts`), or `null`. Defaults to none.
    */
@@ -196,8 +213,12 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
   const modifiedAt = deps.modifiedAt ?? defaultModifiedAt;
   const resolveReal = deps.realpath ?? ((path: string) => realpath(path));
   const running = new Map<string, Promise<AssetCacheInfo>>();
+  /** The world generation preview's folders (read by `readWorldgenFiles`). */
   const foldersFor = (mcVersion: string): readonly string[] =>
     deps.dataFoldersFor?.(mcVersion) ?? [];
+  /** Every folder the cache keeps and records: the world generation and the live views' ones. */
+  const cacheFoldersFor = (mcVersion: string): readonly string[] =>
+    mergeDataFolders(foldersFor(mcVersion), deps.liveViewDataFoldersFor?.(mcVersion));
 
   const requireSelected = async (): Promise<GameLocation> => {
     const { selected } = await deps.locations.selected();
@@ -274,7 +295,9 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
     const dir = assetCacheDir(msmHome, mcVersion);
     const info = await readAssetCacheInfo(fs, dir);
     // A cache made for another folder list is extracted again (ADR 0119 D4).
-    if (info === null || !sameDataFolders(info.dataFolders, foldersFor(mcVersion))) return null;
+    if (info === null || !sameDataFolders(info.dataFolders, cacheFoldersFor(mcVersion))) {
+      return null;
+    }
     return { dir, info };
   };
 
@@ -288,7 +311,7 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
     const dir = assetCacheDir(msmHome, mcVersion);
     const current = await readAssetCacheInfo(fs, dir);
     if (current !== null) {
-      return sameDataFolders(current.dataFolders, foldersFor(mcVersion))
+      return sameDataFolders(current.dataFolders, cacheFoldersFor(mcVersion))
         ? null
         : { version: current.version, jarPath: current.jarPath };
     }
@@ -317,7 +340,7 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
     const jarSha1 = sha1Hex(jar);
     report('reading', 1, 1);
 
-    const dataFolders = foldersFor(mcVersion);
+    const dataFolders = cacheFoldersFor(mcVersion);
     const existing = await readAssetCacheInfo(fs, dir);
     if (
       existing !== null &&
@@ -330,7 +353,7 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
     }
 
     report('extracting', 0, 1);
-    // The preview assets, and the JSON files of the target's worldgen data folders.
+    // The preview assets, and the JSON files of the worldgen and live views' data folders.
     const files = extractPreviewAssets(jar, { dataFolders });
     report('extracting', 1, 1);
 
@@ -452,7 +475,9 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
       if (folders.length === 0) return null;
       const cache = await validCache(mcVersion);
       if (cache === null) return null;
-      const read = await readCachedDataFiles(fs, cache.dir, folders);
+      const read = await readCachedDataFiles(fs, cache.dir, folders, {
+        owners: cache.info.dataFolders,
+      });
       let resolvedBiomeLists: ResolvedBiomeListsView | null = null;
       try {
         resolvedBiomeLists = (await deps.resolvedBiomeLists?.(mcVersion)) ?? null;
@@ -465,6 +490,21 @@ export function createMinecraftService(deps: MinecraftServiceDeps): MinecraftSer
         fileCount: read.fileCount,
         resolvedBiomeLists,
       };
+    },
+
+    async readDataFiles(mcVersion, folders) {
+      const kept = new Set(cacheFoldersFor(mcVersion));
+      for (const folder of folders) {
+        if (!kept.has(folder)) {
+          throw new Error(`${JSON.stringify(folder)} is not a data folder the cache keeps.`);
+        }
+      }
+      const cache = await validCache(mcVersion);
+      if (cache === null) return null;
+      const read = await readCachedDataFiles(fs, cache.dir, folders, {
+        owners: cache.info.dataFolders,
+      });
+      return { version: cache.info.version, folders: read.folders, fileCount: read.fileCount };
     },
 
     async installResourcePack(fileName, data) {

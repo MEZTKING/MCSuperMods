@@ -259,11 +259,14 @@ export interface AssetCacheInfoView {
   jarSha1: string;
   /** The jar the files came from (schema 4). */
   jarPath: string;
-  /** The `data/minecraft/` folders kept for the world generation preview (schema 4). */
+  /**
+   * The `data/minecraft/` folders kept for the world generation preview (schema 4) and the live
+   * views (schema 5, {@link LIVE_VIEW_DATA_FOLDERS}), sorted.
+   */
   dataFolders: string[];
   fileCount: number;
   extractedAt: string;
-  schemaVersion: 4;
+  schemaVersion: 5;
 }
 
 /**
@@ -305,6 +308,61 @@ export interface VanillaWorldgenFiles {
   fileCount: number;
   /** From the runtime's dev mode after a Play of this version (B592); `null` before, or unreadable. */
   resolvedBiomeLists: ResolvedBiomeListsView | null;
+}
+
+/**
+ * The `data/minecraft/` folders of the client jar the live views read (ADR 0120 D11; the jar path
+ * list of the spike B600, 2S4), kept in the local cache beside the target's world generation
+ * folders: loot tables, advancements, predicates, enchantments and their providers, damage and
+ * chat types, dialogs, trial spawners, block transformers, the two number provider folders, and
+ * the tags of the registries the views name. Block tags and the worldgen folders come with the
+ * target's `worldgen.terrainPreview.dataFolders`, so they are not repeated here.
+ *
+ * Not a version fact: it names what the views read, by registry folder. A jar without one of
+ * these folders extracts nothing for it, and the view says the file was not found. The files
+ * stay in the user's cache: never committed, bundled, exported, written into a project or sent
+ * to the AI helper.
+ */
+export const LIVE_VIEW_DATA_FOLDERS: readonly string[] = Object.freeze([
+  'advancement',
+  'block_transformer',
+  'chat_type',
+  'context_float_provider',
+  'context_int_provider',
+  'damage_type',
+  'dialog',
+  'enchantment',
+  'enchantment_provider',
+  'loot_table',
+  'predicate',
+  'tags/banner_pattern',
+  'tags/damage_type',
+  'tags/dialog',
+  'tags/enchantment',
+  'tags/entity_type',
+  'tags/fluid',
+  'tags/game_event',
+  'tags/instrument',
+  'tags/item',
+  'tags/painting_variant',
+  'tags/point_of_interest_type',
+  'tags/potion',
+  'tags/timeline',
+  'trial_spawner',
+]);
+
+/**
+ * The cached vanilla files of some `data/minecraft/` folders of one version, in one answer (the
+ * live views' bulk read by folder, ADR 0120 D11). The files come from the user's own client jar,
+ * stay in the local cache and are never exported, written into a project or sent to the AI
+ * helper.
+ */
+export interface VanillaDataFiles {
+  /** The installed version the cache came from. */
+  version: string;
+  /** Folder key (as asked) to id (`minecraft:<path below the folder>`) to JSON. */
+  folders: WorldgenFileMapView;
+  fileCount: number;
 }
 
 /** What main knows about the Minecraft installation for one version. */
@@ -958,6 +1016,12 @@ export interface PlatformAdapter {
      * when the cache is not set up or the version's target has no `worldgen.terrainPreview`.
      */
     readWorldgenFiles(mcVersion: string): Promise<VanillaWorldgenFiles | null>;
+    /**
+     * The cached vanilla files of `folders` (each one the cache holds: the live views' and the
+     * world generation folders) in one answer (ADR 0120 D11), or `null` when the cache is not
+     * set up for the version. Throws for a folder the cache does not keep.
+     */
+    readDataFiles(mcVersion: string, folders: readonly string[]): Promise<VanillaDataFiles | null>;
     /** Writes a resource pack zip into `<gameDir>/resourcepacks/` of the selected location. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
     /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */

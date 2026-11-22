@@ -19,6 +19,7 @@ export {
   extractPreviewAssets,
   isDataFolder,
   MAX_PREVIEW_ENTRY_BYTES,
+  mergeDataFolders,
   PREVIEW_ASSET_PATTERNS,
   VANILLA_DATA_PREFIX,
 } from './extract';

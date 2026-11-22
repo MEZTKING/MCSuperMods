@@ -39,8 +39,9 @@ export interface ExtractOptions {
   patterns?: readonly RegExp[];
   /**
    * Folders under `data/minecraft/` whose JSON files are kept as well, subfolders included:
-   * the target's `worldgen.terrainPreview.dataFolders` (ADR 0119 D4, D16). The list comes from
-   * the target; this package names no folder of its own. Defaults to none.
+   * the target's `worldgen.terrainPreview.dataFolders` (ADR 0119 D4, D16) and the live views'
+   * folders (ADR 0120 D11), joined by {@link mergeDataFolders}. The lists come from the host;
+   * this package names no folder of its own. Defaults to none.
    */
   dataFolders?: readonly string[];
 }
@@ -51,6 +52,27 @@ export const VANILLA_DATA_PREFIX = 'data/minecraft/';
 /** Whether `folder` is a plain relative folder such as `worldgen/noise` (`a-z`, `0-9`, `_`, `/`). */
 export function isDataFolder(folder: string): boolean {
   return /^[a-z0-9_]+(?:\/[a-z0-9_]+)*$/.test(folder) && isProjectRelativePath(folder);
+}
+
+/**
+ * Joins folder lists (the world generation preview's, the live views') into one sorted list
+ * without duplicates, the list the cache records.
+ *
+ * @throws Error When a folder is not a plain relative folder name (lower case, digits, `_`, `/`).
+ */
+export function mergeDataFolders(
+  ...lists: readonly (readonly string[] | null | undefined)[]
+): string[] {
+  const all = new Set<string>();
+  for (const list of lists) {
+    for (const folder of list ?? []) {
+      if (!isDataFolder(folder)) {
+        throw new Error(`${JSON.stringify(folder)} is not a data folder name.`);
+      }
+      all.add(folder);
+    }
+  }
+  return [...all].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 /**

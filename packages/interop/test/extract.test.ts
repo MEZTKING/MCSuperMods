@@ -1,6 +1,11 @@
 import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { dataFolderPatterns, extractPreviewAssets, PREVIEW_ASSET_PATTERNS } from '../src/index';
+import {
+  dataFolderPatterns,
+  extractPreviewAssets,
+  mergeDataFolders,
+  PREVIEW_ASSET_PATTERNS,
+} from '../src/index';
 import { buildSyntheticJar, KEPT_ENTRIES } from './helpers/synthetic-jar';
 
 describe('extractPreviewAssets', () => {
@@ -45,6 +50,15 @@ describe('extractPreviewAssets', () => {
     expect(files).toHaveLength(10);
     expect(files.some((file) => file.path.endsWith('.txt'))).toBe(false);
     expect(files.some((file) => file.path.startsWith('data/minecraft/recipe/'))).toBe(false);
+  });
+
+  it('joins the host folder lists into one sorted list (ADR 0120 D11)', () => {
+    // Made-up lists: the host passes the target's and the live views' own.
+    expect(
+      mergeDataFolders(['made_up/b', 'tags/made_up'], null, ['made_up/a', 'made_up/b']),
+    ).toEqual(['made_up/a', 'made_up/b', 'tags/made_up']);
+    expect(mergeDataFolders()).toEqual([]);
+    expect(() => mergeDataFolders(['ok'], ['../escape'])).toThrow();
   });
 
   it('refuses data folder names that are not plain folders', () => {

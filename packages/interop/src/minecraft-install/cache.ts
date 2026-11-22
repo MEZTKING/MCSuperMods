@@ -24,9 +24,10 @@ export interface AssetCacheInfo {
    */
   jarPath: string;
   /**
-   * The `data/minecraft/` folders kept beside the preview assets (schema 4): the target's
-   * `worldgen.terrainPreview.dataFolders` at extraction time, sorted. A target whose list
-   * differs needs the cache extracted again.
+   * The `data/minecraft/` folders kept beside the preview assets (schema 4): every folder the
+   * host asked for at extraction time, sorted (the target's `worldgen.terrainPreview.dataFolders`
+   * and, from schema 5, the live views' folders). A host whose list differs needs the cache
+   * extracted again.
    */
   dataFolders: string[];
   fileCount: number;
@@ -34,14 +35,15 @@ export interface AssetCacheInfo {
   extractedAt: string;
   /**
    * Cache layout version. 2 added `.png.mcmeta` sidecars (B43), 3 the placed features, 4 the
-   * worldgen data folders with `jarPath` and `dataFolders` (B577); a cache with any other value
-   * is invalid, so it is extracted again.
+   * worldgen data folders with `jarPath` and `dataFolders` (B577), 5 the live views' data
+   * folders: loot tables, advancements, predicates, enchantments, dialogs and the other tags
+   * (B603, ADR 0120 D11); a cache with any other value is invalid, so it is extracted again.
    */
   schemaVersion: typeof ASSET_CACHE_SCHEMA_VERSION;
 }
 
 /** The current {@link AssetCacheInfo.schemaVersion}. */
-export const ASSET_CACHE_SCHEMA_VERSION = 4;
+export const ASSET_CACHE_SCHEMA_VERSION = 5;
 
 /**
  * What an older or otherwise outdated `cache.json` still tells: the version and jar it came
@@ -142,9 +144,13 @@ export interface CachedDataFiles {
 
 /**
  * Reads every cached `.json` file below `data/minecraft/<folder>/` for each folder, in
- * subfolders too, as folder key to id to JSON (the shape of `@msm/terrain`'s `WorldgenFileMap`).
- * A file below a folder that is itself in the list (a longer folder key) belongs to that
- * folder only. Ids are `minecraft:` plus the path below the folder without `.json`.
+ * subfolders too, as folder key to id to JSON (the shape of `@msm/terrain`'s `WorldgenFileMap`):
+ * the bulk read by folder of the world generation preview and the live views. A file below a
+ * folder that is itself in the list (a longer folder key) belongs to that folder only. Ids are
+ * `minecraft:` plus the path below the folder without `.json`. The files of one folder are read
+ * side by side and keyed in path order, so the answer does not depend on read timing.
+ * `options.owners` names further folders of the cache (its whole recorded list, say) whose files
+ * belong to them alone, so a read of some folders keeps the same ids as a read of all.
  *
  * @throws Error When a folder is not a plain relative folder name.
  */
@@ -152,18 +158,19 @@ export async function readCachedDataFiles(
   fs: InstallFileSystem,
   dir: string,
   dataFolders: readonly string[],
+  options: { owners?: readonly string[] } = {},
 ): Promise<CachedDataFiles> {
-  for (const folder of dataFolders) {
+  for (const folder of [...dataFolders, ...(options.owners ?? [])]) {
     if (!isDataFolder(folder)) {
       throw new Error(`${JSON.stringify(folder)} is not a data folder name.`);
     }
   }
-  const owned = new Set(dataFolders);
+  const owned = new Set([...dataFolders, ...(options.owners ?? [])]);
   const folders: Record<string, CachedDataFolder> = {};
   const unreadable: string[] = [];
   let fileCount = 0;
   const decoder = new TextDecoder('utf-8', { fatal: true });
-  const sorted = [...owned].sort();
+  const sorted = [...new Set(dataFolders)].sort();
   for (const folder of sorted) {
     const files: CachedDataFolder = {};
     folders[folder] = files;
@@ -173,18 +180,33 @@ export async function readCachedDataFiles(
       const entries = [...(await fs.readDir(absDir))].sort((a, b) =>
         a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
       );
-      for (const entry of entries) {
+      // Every JSON file of this folder at once (the cache holds a few thousand small files).
+      const reads = entries.map(async (entry) => {
+        if (entry.kind !== 'file' || !entry.name.endsWith('.json')) return null;
+        try {
+          return {
+            ok: true as const,
+            data: await fs.readFile(joinInstallPath(absDir, entry.name)),
+          };
+        } catch {
+          return { ok: false as const };
+        }
+      });
+      const read = await Promise.all(reads);
+      for (const [index, entry] of entries.entries()) {
         const path = relative === '' ? entry.name : `${relative}/${entry.name}`;
         if (entry.kind === 'directory') {
           if (owned.has(`${folder}/${path}`)) continue;
           await walk(joinInstallPath(absDir, entry.name), path);
           continue;
         }
-        if (!entry.name.endsWith('.json')) continue;
+        const bytes = read[index];
+        if (bytes === null || bytes === undefined) continue;
         const jarPath = `${VANILLA_DATA_PREFIX}${folder}/${path}`;
         try {
+          if (!bytes.ok) throw new Error('unreadable');
           files[`minecraft:${path.slice(0, -'.json'.length)}`] = JSON.parse(
-            decoder.decode(await fs.readFile(joinInstallPath(absDir, entry.name))),
+            decoder.decode(bytes.data),
           ) as unknown;
           fileCount += 1;
         } catch {

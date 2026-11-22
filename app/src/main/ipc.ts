@@ -126,6 +126,8 @@ export function createIpcHandlers(
       platform.minecraft.listAssets(req.mcVersion, req.prefix),
     [InvokeChannels.minecraftWorldgenFiles]: (req) =>
       platform.minecraft.readWorldgenFiles(req.mcVersion),
+    [InvokeChannels.minecraftDataFiles]: (req) =>
+      platform.minecraft.readDataFiles(req.mcVersion, req.folders),
     [InvokeChannels.minecraftInstallResourcePack]: (req) =>
       platform.minecraft.installResourcePack(req.fileName, req.data),
     [InvokeChannels.minecraftListWorlds]: () => platform.minecraft.listWorlds(),
