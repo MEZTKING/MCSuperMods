@@ -61,7 +61,8 @@ When you change a block in its Studio, Try it picks the change up a moment later
 
 Beside the picture:
 
-- **Grow** (or G) moves the crop, sapling, berry bush, pod or stem you point at up one stage ("<Name> grew to stage N of M", then "<Name> is fully grown"). A sapling never becomes a tree here.
+- **Grow** (or G) moves the crop, sapling, berry bush, pod or stem you point at up one stage ("<Name> grew to stage N of M", then "<Name> is fully grown"). A sapling never becomes a tree here. On the plants that grow in strands and stalks ([Block types, families and plants](block-types-and-plants.md#growing-and-climbing-plants)) **Grow** is one bone meal: a strand grows longer ("<Name> grew 2 blocks longer") or ripens its berries, bamboo and a big dripleaf grow taller, a small dripleaf grows into its big one, and a lichen spreads. Sugar cane and cactus, which bone meal does not grow, grow one block per **Grow** up to their height.
+- **Lightning** strikes the block you point at: a block that ages like copper goes back to its first stage and a few blocks around it one stage back, as lightning scrapes copper in the game. Nothing else happens.
 - **Power** (or P) turns the `powered` picture of the block you point at on or off, or its `lit` picture when it has no `powered` one ("<Name> is now powered"). It changes that block's own picture only: nothing travels to other blocks.
 - **Water** puts water into the block you point at, or takes it out, when that block can hold water ([Waterlogging](#climbing-and-water)).
 - **Explode** sets off an explosion at the block you point at. It breaks the blocks within 2.5 blocks. Your place and explosion rules hear it when they have no condition, or only "caused by".
@@ -101,6 +102,10 @@ The block types added with the vanilla parity batch ([Block types, families and 
 - **Vines, cocoa pods and stems.** A stem grows its fruit next to it, one stage at a time with **Grow**.
 - **Torches and signs on walls**, **hanging signs** (sneak while placing for the attached look), **lanterns**, **chains** and **rods** place and turn as their type says.
 - **Scaffolding** places in rows and columns, at most six blocks out from its support.
+- **Strands, stalks, lichens and dripleaves** ([Growing and climbing plants](block-types-and-plants.md#growing-and-climbing-plants)) are drawn with the game's own states: the tip and its strand, berries that light up, bamboo's stalks, leaves and shoot, every face of a lichen. A big dripleaf tips under you after its tilt times and lets you fall through. They grow only with **Grow**.
+- **Flower pots of your own** take only the plants they list (and potted plants that name them): use the pot with the plant in hand. Using a full pot gives the plant back to your hands.
+- **Double chests**: two chests of the same kind side by side join and open one 54-slot mock-up; breaking one half splits them. A chest for every player shows one store, since Try it has one player. Both halves of an ageing double chest change together.
+- **Own sounds** show as captions when you place, break and open things.
 - **Signs.** Using a sign opens the sign writing screen, marked **Mock-up**: **Line 1** to **Line 4**, **Colour**, **Glowing**, **Wax it** and **Done**. **Done** writes the text onto the sign, and a plaque shows how it reads. It is a mock-up of the game's own screen.
 
 ## Climbing and water
@@ -210,11 +215,17 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Traders pay nothing** | The merchant screen is a mock-up: no emeralds are taken, nothing is given, and prices do not change with demand or reputation. Villagers taking a job, mob storage and shoulder pets are only said. |
 | **Only the sky colour** | The **Sky** choice shows a dimension type's sky colour, not its sun, moon, clouds, fog, light, time or rules. |
 | **Nothing checks support** | Torches, vines and pods can float, and you cannot stand on scaffolding, which does not fall when what holds it is broken. |
-| **Ageing and waxing** | Doors age half by half. Honeycomb waxing and axe scraping are only in the game. |
+| **Ageing and waxing** | Doors age half by half. Honeycomb waxing and axe scraping are only in the game. **Lightning** only scrapes blocks that age: no fire, damage, thunder or charged creepers, and vanilla copper is a prop. Project rods do not attract it. |
 | **Signs and bags** | Glowing ink is drawn as a box. Bundles are not opened, and bags move no items. |
 | **Other rule parts** | Rule conditions and steps Try it does not know are said as "Only in Minecraft" and run only in the game. Local `^` coordinates count from the feet. |
 | **No survival** | No health, hunger, damage, armour, mining speed, tool wear, drops or loot. Blocks break at once and drop nothing. |
-| **Growth only with Grow** | Crops and saplings grow only when you use **Grow**. Saplings never become trees, leaves never fall and crops plant on anything. |
+| **Growth only with Grow** | Crops, saplings and the new plants grow only when you use **Grow**. Saplings never become trees, leaves never fall and crops plant on anything. Grow is one bone meal; sugar cane and cactus, which bone meal does not grow, grow one block per Grow up to their height. A strand without a bone meal count grows 1 to 4 blocks per Grow; the game picks its own number. New tips start at age 0 when the game would pick one at random. |
+| **Plants grow anywhere** | Soil, water beside cane, living in water, light levels and cactus damage are only in the game: Try it plants anywhere, draws no light and has no health. Each column's stop height is picked by Try it's own rule; the game picks its own, so a column may stop at a different height in the game. Dripleaves tilt under you but a redstone signal does not reset them. |
+| **Pots** | A plant taken from a pot goes to your hands, but planting uses up nothing, and "flowers potted" is not counted. Breaking a potted plant gives no drops (in the game the pot and the plant drop). |
+| **Double chests and private chests** | A double chest opens one 54-slot mock-up; no items move, so contents kept through ageing are not shown. A per-player chest shows one store: Try it has one player. |
+| **Own sounds are captions** | Own sounds show as captions when placing, breaking and opening; step, mining and landing sounds are only in the game. |
+| **Rules for vanilla blocks** | Rules for vanilla blocks and own flatten and till components work only in the game. A button or plate that only mobs press cannot be tested with items. |
+| **Patterns, trims and gliders** | Banner patterns on the loom, trims recoloured on armour, the glider's wings and gliding, and sherd faces on decorated pots are only in the game. |
 | **Minecraft's blocks are props** | They are drawn and solid, nothing more: chests do not open and pistons do not move. |
 | **Containers and machines are mock-ups** | Using one opens a plain window marked **Mock-up** with its title and slots (chest rows, the hopper's five, the dispenser's three by three, a machine's input, fuel and output), not Minecraft's own menu. No items move and nothing is smelted; the close button, Esc or E closes it. |
 | **Portals do not take you anywhere** | There are no other dimensions here, and frames are not checked. |

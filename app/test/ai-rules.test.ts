@@ -25,6 +25,9 @@ import {
   DEFAULT_AI_SETTINGS,
   DEFAULT_LIMITS,
   NEW_FLOW_PROMPT_IDS,
+  PLANTS_STORAGE_FLOW_ANSWERS,
+  PLANTS_STORAGE_PROMPT_CODES,
+  PLANTS_STORAGE_PROMPT_TEMPLATES,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
@@ -42,7 +45,14 @@ import {
 import { createMemoryFileSystem, type JsonObject } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
 import type { ElementTemplate, Json, TargetFacts } from '@msm/plugin-api';
-import { blocksItemsTemplates, FLUID_KIND, FLUID_PROBLEM_CODES } from '@msm/plugin-blocks-items';
+import {
+  blocksItemsTemplates,
+  FLUID_KIND,
+  FLUID_PROBLEM_CODES,
+  PLANT3_PROBLEM_CODES,
+  SOUND_PROBLEM_CODES,
+  STORAGE2_PROBLEM_CODES,
+} from '@msm/plugin-blocks-items';
 import { controlsTemplates } from '@msm/plugin-controls';
 import {
   ENTITIES_VILLAGER_PROBLEM_CODES,
@@ -706,5 +716,94 @@ describe('AI helper scenario: a lucky block made with rules (build mode)', () =>
 
     expect(session.undo()).toBe(true);
     expect(session.snapshot.project).toEqual(before);
+  });
+});
+
+describe('the system prompt names the plant, pot, storage, sound and vanilla block rule content exactly (ADR 0112 D2, batch 1)', () => {
+  const PLANT_TYPES = new Set([
+    'growing_plant',
+    'column_plant',
+    'multiface',
+    'dripleaf',
+    'flower_pot',
+  ]);
+
+  it('lists every template of the new plant types, storage options, sounds and rules', () => {
+    const batch1 = blocksItemsTemplates
+      .filter((template) => {
+        if (template.kind === 'msm:vanilla_block_rules') return true;
+        const data = templateData(template);
+        const components = (data.components ?? {}) as Record<string, Json>;
+        const container = (components['msm:container'] ?? {}) as Record<string, Json>;
+        return (
+          PLANT_TYPES.has(String(data.type)) ||
+          container.double === true ||
+          container.per_player === true ||
+          data.block_sounds !== undefined ||
+          (typeof data.set_type === 'object' && data.set_type !== null)
+        );
+      })
+      .map((template) => template.id);
+    expect([...PLANTS_STORAGE_PROMPT_TEMPLATES].sort()).toEqual(batch1.sort());
+  });
+
+  it('explains every problem code of the plant, storage and sound validators', () => {
+    expect([...PLANTS_STORAGE_PROMPT_CODES].sort()).toEqual(
+      [...PLANT3_PROBLEM_CODES, ...STORAGE2_PROBLEM_CODES, ...SOUND_PROBLEM_CODES].sort(),
+    );
+  });
+
+  it('names flow answers and choices that exist', () => {
+    for (const [starterId, answers] of Object.entries(PLANTS_STORAGE_FLOW_ANSWERS)) {
+      const starter = libraryStarters.find((entry) => entry.id === starterId);
+      expect(starter?.creator, starterId).toBeDefined();
+      const parameters = starter?.parameters?.map((entry) => entry.id) ?? [];
+      for (const answer of answers) expect(parameters, `${starterId}: ${answer}`).toContain(answer);
+    }
+    const text = systemPrompt('build');
+    const choices = (starterId: string, parameter: string): string[] => {
+      const entry = libraryStarters
+        .find((starter) => starter.id === starterId)
+        ?.parameters?.find((candidate) => candidate.id === parameter);
+      return entry !== undefined && 'choices' in entry && Array.isArray(entry.choices)
+        ? entry.choices.map((choice: { value: string }) => choice.value)
+        : [];
+    };
+    for (const [starterId, parameter] of [
+      ['cave-plants', 'kind'],
+      ['desert-plants', 'kind'],
+      ['desert-plants', 'height'],
+      ['wood-set', 'door_sounds'],
+    ] as const) {
+      const values = choices(starterId, parameter);
+      expect(values.length, `${starterId}: ${parameter}`).toBeGreaterThan(0);
+      for (const value of values) expect(text, `${starterId}: ${value}`).toContain(`"${value}"`);
+    }
+    for (const member of [
+      'rod',
+      'button',
+      'pressure_plate',
+      'fence',
+      'fence_gate',
+      'wall',
+      'chest',
+    ]) {
+      expect(choices('copper-set', 'members'), member).toContain(member);
+    }
+    for (const [starterId, parameters] of [
+      ['cave-plants', ['plant_name', 'kind', 'colour', 'berry_colour', 'light']],
+      ['desert-plants', ['plant_name', 'kind', 'colour', 'height', 'uses']],
+      ['flower-pot', ['pot_name', 'colour', 'plants', 'ingredient']],
+      ['banner-pattern', ['pattern_name', 'shape', 'colour', 'ingredient']],
+      ['armour-trim', ['trim_name', 'style', 'template_item', 'copy_block', 'colour']],
+      ['glider', ['glider_name', 'durability', 'colour', 'material']],
+      ['pot-pattern', ['pattern_name', 'picture', 'colour', 'ingredient']],
+    ] as const) {
+      const ids = libraryStarters
+        .find((entry) => entry.id === starterId)
+        ?.parameters?.map((entry) => entry.id);
+      for (const parameter of parameters)
+        expect(ids, `${starterId}: ${parameter}`).toContain(parameter);
+    }
   });
 });

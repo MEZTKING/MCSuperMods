@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   ART_RECIPE_NAMES,
+  PLANTS_STORAGE_FLOW_ANSWERS,
+  PLANTS_STORAGE_PROMPT_CODES,
+  PLANTS_STORAGE_PROMPT_TEMPLATES,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
@@ -440,7 +443,7 @@ describe('systemPrompt vanilla parity paragraphs (ADR 0101 D7)', () => {
         'msm:waxable',
         '"oxidized"',
         'honeycomb',
-        'Containers and machines cannot hold water or age',
+        'Machines cannot age',
         'msm:item_inventory',
         'sneak_use',
         'msm:bundle',
@@ -547,6 +550,118 @@ describe('systemPrompt traders, jobs, storage, shoulder pets, fluids and dimensi
       expect(text).not.toContain('dimension types cannot be edited here');
     },
   );
+});
+
+describe('systemPrompt plants, pots, storage, sounds and vanilla block rules (ADRs 0103 to 0106, ADR 0112 D2, batch 1)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the types, fields, components, kinds, flows, codes and limits in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const term of [
+        // The five types (ADR 0103 D1, D2 as frozen by B506).
+        '"growing_plant"',
+        '"column_plant"',
+        '"multiface"',
+        '"dripleaf"',
+        '"flower_pot"',
+        'max_age 0 to 25',
+        'at most 26 blocks',
+        'growth_chance',
+        'needs_water',
+        'berries { item, light }',
+        'style "cane", "cactus" or "bamboo"',
+        'min_height',
+        'blocks.plantSoils',
+        'needs_water_nearby',
+        'touch_damage',
+        'tilt_ticks [2, 10, 10]',
+        'grows_into',
+        'pot (default "minecraft:flower_pot")',
+        '"<id>_plant"',
+        '"<id>_shoot"',
+        '"<id>_stem"',
+        '"<pot path>_<plant path>"',
+        'head_berries',
+        'stem_bottom',
+        // Storage (ADR 0104 D3 to D6).
+        'double, per_player',
+        'one six-row chest',
+        'as an ender chest',
+        'rod, button, pressure_plate, fence, fence_gate and wall',
+        'lightning scrapes it back',
+        'double chests hold water by themselves',
+        'containers and machines included',
+        // Sounds, set types and pairs (ADR 0105 as frozen by B506).
+        'block_sounds',
+        'blocks.soundTypes',
+        'blocks.soundModel is "block_sound_set"',
+        'after the world is opened again',
+        'or an own set type object',
+        'can_open_by_wind_charge',
+        'arrows_press',
+        'plate_sensitivity "everything"',
+        'msm:flattenable',
+        'msm:tillable',
+        'msm:vanilla_block_rules',
+        'burn_odds and ignite_odds',
+        "replaces vanilla's and warns",
+        // Data kinds (ADR 0106 D1, D2).
+        'minecraft:decorated_pot_pattern',
+        'minecraft:block_transformer',
+        'minecraft:test_environment',
+        'minecraft:test_instance',
+        'minecraft:sulfur_cube_archetype',
+        'minecraft:context_int_provider',
+        'minecraft:context_float_provider',
+        'minecraft:post_effect',
+        'minecraft:shader',
+        'minecraft:waypoint_style',
+        'Import assets, Shaders',
+        'MSM does not check them',
+        'Wolf sound variants are not available yet',
+        // Flows (B508, B518).
+        '"Cave plants" (cave-plants',
+        '"Desert plants" (desert-plants',
+        '"Flower pot" (flower-pot',
+        '"Banner pattern" (banner-pattern',
+        '"Armour trim" (armour-trim',
+        '"Glider" (glider',
+        '"Pot pattern" (pot-pattern',
+        'fence_gate, wall and chest',
+        'vanilla items with components',
+        // The limits (plan N1 to N9, the notes of B509 to B518).
+        'export.needs-jar',
+        'export.not-in-eject',
+        'holds only the plants it lists',
+        'looks flat in it',
+        'flowers potted',
+        'lightning ignores waxed blocks',
+        'project rods do not attract it',
+        'copper golems do not wax or scrape project blocks',
+        'a double chest always holds water',
+        'follow the player, not the block',
+        'a machine cannot age',
+        'from its spawn egg',
+        'no palette file',
+      ]) {
+        expect(text, term).toContain(term);
+      }
+      for (const code of PLANTS_STORAGE_PROMPT_CODES) expect(text, code).toContain(`"${code}"`);
+      for (const id of PLANTS_STORAGE_PROMPT_TEMPLATES) expect(text, id).toContain(id);
+      for (const answer of Object.values(PLANTS_STORAGE_FLOW_ANSWERS).flat()) {
+        expect(text, answer).toContain(answer);
+      }
+      // No longer described as missing.
+      expect(text).not.toContain('Containers and machines cannot hold water or age');
+      expect(text).not.toContain('No glow lichen, kelp');
+    },
+  );
+
+  it('mentions the Try it Grow and Lightning tools', () => {
+    const text = systemPrompt('chat');
+    expect(text).toContain('Grow tool');
+    expect(text).toContain('Lightning tool');
+  });
 });
 
 describe('systemPrompt Try it line', () => {

@@ -1499,3 +1499,165 @@ describe('AI helper scenario: a merchant who sells copper (build mode)', () => {
     });
   }
 });
+
+/**
+ * The cave garden (ADRs 0103 to 0105, brief B522): the Cave plants and Flower pot flows, a chest
+ * for every player and rules for vanilla blocks from their templates, on both targets.
+ */
+const GARDEN_PROMPT = 'a cave garden with glowing vines, a pot of my own and a private chest';
+
+const GARDEN_VINES = {
+  starterId: 'cave-plants',
+  namespace: 'garden',
+  values: { plant_name: 'Glow Vine', kind: 'cave_vine' },
+} satisfies Record<string, Json>;
+
+const GARDEN_POT = {
+  starterId: 'flower-pot',
+  namespace: 'garden',
+  values: { pot_name: 'Clay Planter' },
+} satisfies Record<string, Json>;
+
+/** A template's data for `id`, read through the real executor as a model would. */
+async function gardenTemplateData(
+  targetId: string,
+  templateId: string,
+  id: string,
+): Promise<Record<string, Json>> {
+  const { session } = await openSession(targetId);
+  const execute = createToolExecutor(session, new PendingChangeset(), {
+    proposePlan: async (plan) => ({ decision: 'build_all', items: plan.items, comments: '' }),
+    checkpoint: async () => 'continue',
+  });
+  const answer = await execute(
+    {
+      requestId: 'r1',
+      toolUseId: 'toolu_template',
+      name: 'template_data',
+      input: { templateId, id },
+    },
+    new AbortController().signal,
+  );
+  expect(answer.isError, answer.content).toBe(false);
+  return (JSON.parse(answer.content) as { data: Record<string, Json> }).data;
+}
+
+const gardenScript = (chest: Record<string, Json>, rules: Record<string, Json>): AiModelScript =>
+  buildScript(
+    {
+      title: 'Cave garden',
+      items: [
+        {
+          itemId: 'vines',
+          kind: 'msm:block',
+          elementId: 'garden:glow_vine',
+          summary: 'The Cave plants flow: a vine with glowing berries.',
+        },
+        {
+          itemId: 'pot',
+          kind: 'msm:block',
+          elementId: 'garden:clay_planter',
+          summary: 'The Flower pot flow: a pot of its own for the flowers picked.',
+        },
+        {
+          itemId: 'chest',
+          kind: 'msm:block',
+          elementId: 'garden:private_chest',
+          summary: 'A chest in which every player finds their own items.',
+        },
+        {
+          itemId: 'rules',
+          kind: 'msm:vanilla_block_rules',
+          elementId: 'garden:farm_rules',
+          summary: 'Tools and fire on a few vanilla blocks.',
+        },
+      ],
+    },
+    [
+      { name: 'add_starter', input: GARDEN_VINES },
+      { name: 'add_starter', input: GARDEN_POT },
+      {
+        name: 'create_elements',
+        input: {
+          elements: [
+            { id: 'garden:private_chest', kind: 'msm:block', data: chest },
+            { id: 'garden:farm_rules', kind: 'msm:vanilla_block_rules', data: rules },
+          ],
+        },
+      },
+    ],
+    'The cave garden is ready to review: glowing vines, a clay planter for your flowers, a chest that is different for every player and rules for a few vanilla blocks. They need the Fabric mod jar, and a pot takes only the plants it lists.',
+  );
+
+describe('AI helper scenario: a cave garden (build mode)', () => {
+  for (const bundle of builtInTargets) {
+    const targetId = bundle.target.id;
+    it(`builds the Cave plants and Flower pot flows, a private chest and vanilla block rules with no errors on ${targetId}`, async () => {
+      const chest = await gardenTemplateData(
+        targetId,
+        'msm_block_player_chest',
+        'garden:private_chest',
+      );
+      const rules = await gardenTemplateData(
+        targetId,
+        'msm_vanilla_block_rules',
+        'garden:farm_rules',
+      );
+      const { session } = await openSession(targetId);
+      const before = session.snapshot.project;
+      const changeset = new PendingChangeset();
+      const client = new ScriptedModelClient(gardenScript(chest, rules));
+      const conversation = createConversation('conversation-9', 'claude-opus-5-5');
+
+      const { result, record } = await run(session, changeset, client, conversation, {
+        mode: 'build',
+        text: GARDEN_PROMPT,
+      });
+      expect(result.reason).toBe('end_turn');
+      expect(client.remaining).toBe(0);
+      expect(record.checkpoints).toBe(1);
+      expect(
+        [...record.results.entries()]
+          .filter(([, answer]) => answer.isError)
+          .map(([id, answer]) => `${id}: ${answer.content}`),
+      ).toEqual([]);
+      const system = JSON.stringify(client.requests[0]?.system);
+      expect(system).toContain('growing_plant');
+      expect(system).toContain('msm:vanilla_block_rules');
+
+      const created = createdOf(changeset);
+      expect(created.get('garden:glow_vine')?.type).toBe('growing_plant');
+      expect(created.get('garden:clay_planter')?.type).toBe('flower_pot');
+      const chestComponents = (created.get('garden:private_chest')?.components ?? {}) as Record<
+        string,
+        Json
+      >;
+      const container = (chestComponents['msm:container'] ?? {}) as Record<string, Json>;
+      expect(container.per_player).toBe(true);
+      expect([...created.values()].filter((data) => data?.mod_id !== undefined)).toHaveLength(1);
+
+      const checks = checkErrorsOf(record, conversation);
+      expect(checks.errors).toEqual([]);
+      expect(checks.count).toBe(0);
+      expectAppendOnly(client);
+
+      // One undo step, no blocking problems, and the content jar holds the vine and the rules.
+      const applied = await session.applyChangeset(changeset.items);
+      expect(applied.skipped).toEqual([]);
+      expect(session.snapshot.undoLabel).toBe(APPLY_CHANGESET_LABEL);
+      await session.flushValidation();
+      expect(session.snapshot.problems.filter((problem) => problem.severity === 'error')).toEqual(
+        [],
+      );
+      const built = await session.buildContentJar({ [SEPARATE_RUNTIME_OPTION]: true });
+      expect(built.report.ok, JSON.stringify(built.report.problems)).toBe(true);
+      if (built.data === undefined) throw new Error('no jar');
+      const entries = unzipSync(built.data);
+      const paths = Object.keys(entries);
+      expect(paths.some((path) => path.endsWith('garden/block/glow_vine.json'))).toBe(true);
+      expect(paths).toContain('msm/garden/vanilla_block_rules/farm_rules.json');
+      expect(session.undo()).toBe(true);
+      expect(session.snapshot.project).toEqual(before);
+    });
+  }
+});

@@ -7,14 +7,14 @@ Containers and machines are part of the Fabric mod: export the **Fabric mod jar*
 There are three ways to make one:
 
 - the Creator's **Storage crate** or **Machine** flow (group **Blocks**);
-- **Add element** (Ctrl+N) and a template under **Blocks**: **Storage crate**, **Small crate (1 row)**, **Item holder**, **Hopper box**, **Dispenser box**, **Grinder machine**, **Fast furnace** or **Redstone machine**;
+- **Add element** (Ctrl+N) and a template under **Blocks**: **Storage crate**, **Small crate (1 row)**, **Item holder**, **Hopper box**, **Dispenser box**, **Grinder machine**, **Fast furnace**, **Redstone machine**, **Double chest** or **Chest for every player**;
 - the **Inventory** section of the [Block Studio](blocks-and-items.md#the-block-studio), for a block you already have.
 
 ## Make a crate in the Creator
 
 Open the Creator and choose **Storage crate** under **Blocks**. The defaults make a working crate called `supply_crate`: a 3-row chest that faces you when placed and is crafted from eight planks around a chest.
 
-- **Crate**: **Crate name**, **Size** (**Small (1 row, 9 slots)**, **Medium (3 rows, 27 slots, as a chest)** or **Large (6 rows, 54 slots, as a double chest)**), **Keep contents when broken** (offered for the medium size only, see [Keep the contents](#keep-the-contents)), **Look** (**Wood (mined with an axe, as a barrel)** or **Stone (needs a pickaxe)**) and **Colour** for the drawn pictures.
+- **Crate**: **Crate name**, **Size** (**Small (1 row, 9 slots)**, **Medium (3 rows, 27 slots, as a chest)** or **Large (6 rows, 54 slots, as a double chest)**), **Keep contents when broken** (offered for the medium size only, see [Keep the contents](#keep-the-contents)), **Double chest** (two crates side by side join into one chest of six rows; it makes the crate medium, facing four ways, without the open front picture; see [Double chests](#double-chests)), **Different for every player** (each player sees their own items, as an ender chest; see [A chest for every player](#a-chest-for-every-player)), **Look** (**Wood (mined with an axe, as a barrel)** or **Stone (needs a pickaxe)**) and **Colour** for the drawn pictures. **Keep contents when broken**, **Double chest** and **Different for every player** cannot be combined: picking one turns the others off.
 - **Recipe**: **Crafted from**, with **No recipe (creative menu only)** as the last choice.
 - **Pictures**: **Front** and **Front when open**, or leave them empty for pictures drawn in the colour.
 
@@ -35,6 +35,8 @@ Selecting a `block`, `pillar`, `horizontal` or `directional` block shows **Inven
 
 - **Layout**: **Chest** (**Rows (1 to 6)** of nine slots), **Hopper (5 slots)**, **Dispenser (3 by 3)** or **No screen (holder)** (**Slots (1 to 9)**, no window: see [Holders](#holders)).
 - **Keep contents when broken**, offered only for a **Chest** of 3 rows.
+- **Double chest (two side by side join into one chest of six rows)**, offered only for a **Chest** of 3 rows: see [Double chests](#double-chests).
+- **Different for every player (each player has their own contents, like an ender chest)**, offered for any **Chest**: see [A chest for every player](#a-chest-for-every-player). Each of these three options turns the other two off, and Undo takes it back.
 - **Hoppers can use it** (on by default) and **Comparators read it** (on by default).
 - **Open sound** and **Close sound** (the barrel's by default) and the events **On open** and **On close**.
 
@@ -46,6 +48,8 @@ Selecting a `block`, `pillar`, `horizontal` or `directional` block shows **Inven
 - **Screen**: **Furnace**, **Blast furnace** or **Smoker**, which only changes the look of the window.
 - **Comparator**: **Contents**, **Progress** or **Nothing**; **Hoppers can use it**; **Light while working**; and the events **On start** and **On finish**.
 - **Recipes**: a table with an ingredient (an item, a tag such as `#minecraft:wool` or a list of items), a count, the result and its count, a time in seconds and the experience paid out. Each row added or removed is one undo step.
+
+The **Type** section of a container or machine offers **Holds water (placed underwater, it fills with water and keeps its contents)**: see [Holding water](#holding-water). **Ages like copper (over time)** in the same Studio works on containers too: see [Containers that age](#containers-that-age).
 
 The **Textures** section gains **Front when open** (containers) and **Front when working** (machines) for blocks that face the player, and the **Models** section gains `open` and `lit` slots. They show while a player has the container open and while the machine works.
 
@@ -66,6 +70,24 @@ A holder (**No screen (holder)**) has no window. Using it with an item in the ha
 
 **Keep contents when broken** makes the crate behave like a shulker box: the block item keeps what is inside, and the crate cannot be put inside another such crate, a shulker box or a bundle. Hoppers do not put such items in either. It needs a chest of exactly 3 rows, because only the shulker box window refuses these items; the option is not offered for other layouts, and **Problems** reports `blocks-items.keep-contents-layout` if the file asks for it anyway.
 
+### Double chests
+
+A **Double chest** joins a second chest of the same kind placed beside it into one chest of six rows (54 slots), as vanilla's chests do. Place one while sneaking to keep it apart. Each half keeps its own items for hoppers, comparators and when it breaks: breaking one half of a full double chest drops only that half's 27 items, and the other half is a single chest again. The **On open** and **On close** events run once for the pair.
+
+A double chest is a chest of exactly 3 rows, of the type **Simple block** or **Faces the player (four ways, like a furnace)**, and cannot also keep its contents when broken. It always holds water, as Minecraft's chests do: the Type section says "As a double chest it holds water by itself, as Minecraft's chests do, keeping its contents." instead of the **Holds water** switch. It has no **Shape** and takes no redstone settings, and it has no open front picture: it uses the closed models for its single, left and right forms.
+
+### A chest for every player
+
+**Different for every player** gives every player their own contents, like an ender chest: every block of this kind opens the same store for that player, wherever it stands (two such chests share a player's store), and the store stays with the player when they die or change dimension. Hoppers and comparators reach nothing (**Problems** notes it if you turn them on), and nothing drops when the block breaks, because the block itself holds nothing. It cannot also keep its contents or be a double chest.
+
+### Holding water
+
+**Holds water (placed underwater, it fills with water and keeps its contents)** lets a container or machine of the four block types stand in water: use a water bucket on it or place it in water. Its screen, hoppers and comparators work as before, and breaking it leaves the water. A double chest always holds water and needs no switch.
+
+### Containers that age
+
+A container can age like copper: tick **Ages like copper (over time)** in the Block Studio and give it its stages, as for any block ([Weathering and waxing](block-types-and-plants.md#weathering-and-waxing)). The items inside stay when it ages, when honeycomb waxes it and when an axe or lightning scrapes it, and both halves of a double chest change together. Give every stage the same slots: **Problems** warns (`blocks-items.ageing-container-mismatch`) when a stage is not a container or has other slots, because items that do not fit are lost. The Creator's **Copper set** makes such a chest with the piece **Chest that joins into a double chest**. Machines cannot age.
+
 ### Loot in a crate
 
 A container fills from a loot table on its first opening, as a vanilla chest does. Place one with a command such as `/setblock ~ ~ ~ <namespace>:supply_crate{LootTable:"<namespace>:chests/loot"}`. The example **Loot crate in a structure** shows it.
@@ -78,7 +100,7 @@ A machine can also take the vanilla recipe types you tick under **Recipes it use
 
 ## Templates, examples and scripts
 
-The eight templates are listed under **Blocks** in [Templates, starters and examples](templates-and-examples.md#blocks). Three examples show the finished work: **Loot crate in a structure**, **Ore crusher** (a machine with three recipes and a hopper chain) and **Shulker crate**. The sample project `fixtures/sample-machines` in the repository has nine blocks with an in-game checklist.
+The ten templates are listed under **Blocks** in [Templates, starters and examples](templates-and-examples.md#blocks). Five examples show the finished work: **Loot crate in a structure**, **Ore crusher** (a machine with three recipes and a hopper chain), **Shulker crate**, **Twin crate** (a double chest) and **Private crate** (a chest for every player). The sample projects `fixtures/sample-machines` (nine blocks) and `fixtures/sample-plants-and-storage` (a double, a private, a water-holding and an ageing crate) in the repository have in-game checklists.
 
 Scripts can read and change any container, vanilla ones included, with `world.getContainer(pos)` (Script API 1.2, runtime 1.5.1 or later); see [Scripting](scripting.md#containers-and-machines-from-scripts). Container and machine events can also run a script with `run_script`.
 
@@ -102,6 +124,11 @@ A machine recipe names a type that only the mod knows. A vanilla game cannot loa
 | `blocks-items.machine-time-range` | Warning | A time above 32767 ticks (see [Limits](#limits)). |
 | `blocks-items.machine-fuel-unused` | Info | A machine with **Redstone signal** or **Always** power has a fuel setting that does nothing. |
 | `blocks-items.component-not-for-type` | Error | A container or machine on a type that cannot have one (see [Limits](#limits)). |
+| `blocks-items.double-chest-layout` | Error | **Double chest** on a chest that does not have 3 rows, or that keeps its contents. |
+| `blocks-items.double-chest-type` | Error | **Double chest** on a block that faces any way, or on a log or pillar: a double chest faces one of four ways. |
+| `blocks-items.per-player-conflict` | Error | **Different for every player** together with **Keep contents when broken** or **Double chest**. |
+| `blocks-items.per-player-hoppers` | Info | Hoppers or comparators turned on for a chest for every player; they reach nothing. |
+| `blocks-items.ageing-container-mismatch` | Warning | A container ages into, or is waxed into, a block that is not a container with the same slots; items that do not fit are lost. |
 
 ## Limits
 
@@ -112,6 +139,10 @@ A machine recipe names a type that only the mod knows. A vanilla game cannot loa
 - **The window may flicker.** The game predicts a machine's window with the furnace's rules and the server corrects it, so shift-clicking an item or putting fuel in can briefly show the wrong result before it settles.
 - **The recipe book shows vanilla recipes.** The book button in a machine's window lists the furnace's recipes. Your machine recipes are not in the book or in recipe viewers such as JEI or REI; tell players the recipes some other way.
 - **Keep contents needs 27 slots.** Only a 3-row chest can keep its contents (see [Keep the contents](#keep-the-contents)).
+- **Double chests are 3-row chests only**, as two vanilla chests make six rows. Other layouts stay single.
+- **A chest for every player is one store per block id**, as vanilla's ender chest has one store for all ender chests: two blocks of the same id share a player's store, and its contents follow the player, not the block.
+- **A double chest always lets water in**, as vanilla's chests do; there is no switch to keep it dry.
+- **Machines cannot age**; the game loads a machine with **Ages like copper (over time)** without it and says so in the log.
 - **Only four block types.** Containers and machines are for `block`, `pillar`, `horizontal` and `directional`. Slabs, stairs, doors, fences and the other [family types](block-types-and-plants.md), crops and plants cannot be containers or machines.
 - **Client and server must match.** The game reads each side's own copy of the definitions and compares only ids. In a modpack or on a server, update the client and the server with the same mod jar, or the two can disagree about a window or a recipe.
 - **Fixed at start-up.** Adding a container or machine, or changing its layout or recipe types, needs a game restart. Recipes reload with `/reload`.
@@ -124,7 +155,10 @@ Export the **Fabric mod jar** or use **Test in Minecraft**; **Problems** must sh
 
 - find the blocks in the creative inventory and place one. Open a crate, fill it, close it, break it and pick up the contents; put a hopper beside it and a comparator beside that;
 - for a machine, put fuel and an input in, watch the arrow and flame, take the output and check the experience; open it with a hopper above and below it;
-- for a keep-contents crate, break it with items inside and check that the block item keeps them.
+- for a keep-contents crate, break it with items inside and check that the block item keeps them;
+- for a double chest, place two side by side, fill the six rows, break one half and check that only its items drop; place a third while sneaking and check that it stays single;
+- for a chest for every player, put items in with one player and open it with a second (in a LAN world or on a server): the second sees their own, empty store;
+- for a crate that holds water, place it in water, open it and break it; for an ageing chest, wait or use an axe and lightning, and check that its items stay.
 
 ## Troubleshooting
 

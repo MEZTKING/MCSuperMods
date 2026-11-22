@@ -2,20 +2,34 @@ import { useId, useState } from 'react';
 import { fieldClass, Modal } from './NewElementDialog';
 
 /** Where imported files go, under `assets/<namespace>/`. */
-export type ImportFolderChoice = 'block' | 'item' | 'custom' | 'sounds';
+export type ImportFolderChoice = 'block' | 'item' | 'custom' | 'sounds' | 'shaders';
+
+/** Whether `folder` is a safe folder path below `textures/` or `shaders/`. */
+function isSafeFolder(folder: string): boolean {
+  return /^[a-z0-9_.\-/]+$/.test(folder) && !folder.includes('//');
+}
 
 /**
- * The asset subfolder for a choice: `textures/block`, `textures/item`, `textures/<custom>` or
- * `sounds`.
+ * The asset subfolder for a choice: `textures/block`, `textures/item`, `textures/<custom>`,
+ * `sounds`, or `shaders` with an optional folder below it (`shaders/post`, ADR 0106 D2: the
+ * raw `.vsh`, `.fsh` and `.glsl` files a post effect or shader program names).
  *
- * @throws Error If a custom folder is empty or not a valid path.
+ * @throws Error If a custom folder is empty or not a valid path, or a shader folder is not
+ *   a valid path.
  */
 export function importSubfolder(choice: ImportFolderChoice, custom: string): string {
   if (choice === 'block') return 'textures/block';
   if (choice === 'item') return 'textures/item';
   if (choice === 'sounds') return 'sounds';
   const trimmed = custom.trim().replace(/^\/+|\/+$/g, '');
-  if (trimmed === '' || !/^[a-z0-9_.\-/]+$/.test(trimmed) || trimmed.includes('//')) {
+  if (choice === 'shaders') {
+    if (trimmed === '') return 'shaders';
+    if (!isSafeFolder(trimmed)) {
+      throw new Error('Enter a folder under shaders/, for example "post", or leave it empty.');
+    }
+    return `shaders/${trimmed}`;
+  }
+  if (trimmed === '' || !isSafeFolder(trimmed)) {
     throw new Error('Enter a folder under textures/, for example "entity" or "gui/icons".');
   }
   return `textures/${trimmed}`;
@@ -38,6 +52,9 @@ export function importFileFilters(subfolder: string): ImportFileFilter[] {
   if (subfolder === 'sounds' || subfolder.startsWith('sounds/')) {
     return [{ name: 'Ogg Vorbis sound', extensions: ['ogg'] }];
   }
+  if (subfolder === 'shaders' || subfolder.startsWith('shaders/')) {
+    return [{ name: 'Shader source (.vsh, .fsh, .glsl)', extensions: ['vsh', 'fsh', 'glsl'] }];
+  }
   return [
     { name: 'PNG image or animation metadata', extensions: ['png', 'mcmeta'] },
     { name: 'PNG image', extensions: ['png'] },
@@ -50,6 +67,7 @@ const CHOICES: { id: ImportFolderChoice; label: string }[] = [
   { id: 'item', label: 'Item textures (textures/item)' },
   { id: 'custom', label: 'Other textures folder' },
   { id: 'sounds', label: 'Sounds (sounds, Ogg Vorbis)' },
+  { id: 'shaders', label: 'Shaders (shaders, .vsh, .fsh and .glsl)' },
 ];
 
 /** Asks where to import, then lets the host show the file picker and import. */
@@ -120,12 +138,30 @@ export function ImportAssetsDialog(props: {
               value={entry.id}
               data-testid={`import-assets-folder-${entry.id}`}
               checked={choice === entry.id}
-              onChange={() => setChoice(entry.id)}
+              onChange={() => {
+                setChoice(entry.id);
+                // The textures and shaders folder fields are one field: start it empty.
+                setCustom('');
+              }}
             />
             {entry.label}
           </label>
         ))}
       </fieldset>
+      {choice === 'shaders' && (
+        <>
+          <label htmlFor={customId}>Folder under shaders/ (empty: shaders)</label>
+          <input
+            id={customId}
+            data-testid="import-assets-shader-folder"
+            className={fieldClass}
+            value={custom}
+            placeholder="post"
+            spellCheck={false}
+            onChange={(event) => setCustom(event.target.value)}
+          />
+        </>
+      )}
       {choice === 'custom' && (
         <>
           <label htmlFor={customId}>Folder under textures/</label>
@@ -143,6 +179,8 @@ export function ImportAssetsDialog(props: {
       <p className="text-xs text-muted">
         Files with the same name replace the existing ones. Textures must be PNG files; pick an
         animated texture together with its <code>.png.mcmeta</code> file to keep them side by side.
+        Shader files are copied as they are: MCSuperMods does not check them, so a mistake shows
+        only in the game.
       </p>
     </Modal>
   );

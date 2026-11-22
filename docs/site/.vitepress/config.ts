@@ -55,6 +55,7 @@ export default defineConfig({
           { text: 'Block types and plants', link: '/block-types-and-plants' },
           { text: 'Commands and creative tabs', link: '/commands-and-tabs' },
           { text: 'Containers and machines', link: '/containers-and-machines' },
+          { text: 'Block sounds', link: '/sounds' },
           { text: 'Portals', link: '/portals' },
           { text: 'Particles', link: '/particles' },
           { text: 'Villagers and traders', link: '/villagers-and-traders' },

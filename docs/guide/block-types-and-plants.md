@@ -1,13 +1,13 @@
 # Block types, families and plants
 
-A plain block is a cube. MCSuperMods also makes the blocks that behave like vanilla's families: logs that turn to the face you place them against, slabs, stairs, walls, fences, gates, doors, trapdoors, buttons, pressure plates and panes, and the plants: crops that grow in stages, saplings that grow a tree of your own and leaves that decay. Each one is a real vanilla block class in the game, so it connects, turns, opens and breaks the way its vanilla relative does.
+A plain block is a cube. MCSuperMods also makes the blocks that behave like vanilla's families: logs that turn to the face you place them against, slabs, stairs, walls, fences, gates, doors, trapdoors, buttons, pressure plates and panes, and the plants: crops that grow in stages, saplings that grow a tree of your own, leaves that decay, plants that grow in long strands or tall stalks, and flower pots of your own. Each one is a real vanilla block class in the game, so it connects, turns, opens and breaks the way its vanilla relative does.
 
 You make them in two ways:
 
 - the Creator's flows **Wood set**, **Stone set**, **Crop** and **Tree** (group **Blocks**) build a whole family with its recipes, tags and textures in one step;
 - the Block Studio's **Type** section turns a single block into one of the types, and templates under **Blocks** start one (a portal is a block type of its own: see [Portals](portals.md)) (see [Templates, starters and examples](templates-and-examples.md#blocks)).
 
-The twenty furniture, light, food and plant types are described in [More plants, food, furniture and lights](#more-plants-food-furniture-and-lights), with [waterlogging](#waterlogging) and [ageing like copper](#weathering-and-waxing). New blocks exist only in the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)) and need the runtime of MCSuperMods 1.5.0 or later (1.5.1 for the twenty new types); an older runtime registers every typed block as a plain cube. See [Vanilla packs](#vanilla-packs) for what the resource and data pack exports keep.
+The twenty furniture, light, food and plant types are described in [More plants, food, furniture and lights](#more-plants-food-furniture-and-lights), the kelp-like, vine-like, cane-like, cactus-like, bamboo-like, lichen-like and dripleaf-like plants in [Growing and climbing plants](#growing-and-climbing-plants), pots of your own in [Flower pots of your own](#flower-pots-of-your-own), with [waterlogging](#waterlogging) and [ageing like copper](#weathering-and-waxing). A block's own sounds and door sounds are in [Block sounds](sounds.md). New blocks exist only in the **Fabric mod jar** export ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)) and need the runtime of MCSuperMods 1.5.0 or later (1.5.1 for the twenty new types, and the runtime of this release for the growing plants, pots and the six new ageing types); an older runtime registers every typed block as a plain cube. See [Vanilla packs](#vanilla-packs) for what the resource and data pack exports keep.
 
 ## The four flows
 
@@ -50,6 +50,8 @@ Select a block and use the **Type** section of the Block Studio. The picker offe
 | **Crop**, **Sapling**, **Leaves** | The plants; see [Crops, saplings and leaves](#crops-saplings-and-leaves). |
 | **Cake**, **Berry bush**, **Tall plant**, **Potted plant**, **Vine**, **Sea pickle**, **Carpet**, **Layers**, **Pod on a log**, **Candle** | More plants and food; see [More plants, food, furniture and lights](#more-plants-food-furniture-and-lights). |
 | **Bed**, **Ladder**, **Torch**, **Lantern**, **Chain**, **Rod**, **Sign**, **Hanging sign**, **Stem**, **Scaffolding** | Furniture, lights and signs; same section. |
+| **Grows in long strands (like kelp, weeping vines and cave vines)**, **Grows tall like sugar cane (cane, cactus or bamboo)**, **Spreads over any side (like glow lichen)**, **Tips when you stand on it (like dripleaf)** | Plants that grow; see [Growing and climbing plants](#growing-and-climbing-plants). |
+| **A flower pot (takes the plants you list)** | A pot of your own; see [Flower pots of your own](#flower-pots-of-your-own). |
 | **Portal** | See [Portals](portals.md). |
 
 Changing the type keeps the name, mining, sounds, item and events, and drops the fields of the old type; it is one undoable step. The type gives the block vanilla's own shape, which turns and connects with its state, so the Studio hides **Shape** for the family types, and the types with vanilla's own redstone behaviour take no redstone fields.
@@ -57,7 +59,7 @@ Changing the type keeps the name, mining, sounds, item and events, and drops the
 The fields that appear for a type:
 
 - **Stairs**: **Base block**, whose look and strength the stairs copy (empty means stone). The base has to exist when the game starts: a block of this project or a vanilla block.
-- **Door, Trapdoor, Button, Pressure plate**: **Set type** is **Wood (oak sounds)**, **Cherry wood**, **Bamboo**, **Crimson**, **Warped**, **Iron (not opened by hand)**, **Copper**, **Gold**, **Stone** or **Polished blackstone**. It picks the sounds, whether a hand opens it and what presses it. Iron and gold doors and trapdoors open only with redstone. A button has **Press time (ticks)** (empty: 30 for wood, 20 otherwise). A pressure plate has **Weighted (the signal grows with the number of entities, like gold and iron plates)** and **Entities for the full signal**.
+- **Door, Trapdoor, Button, Pressure plate**: **Set type** is **Wood (oak sounds)**, **Cherry wood**, **Bamboo**, **Crimson**, **Warped**, **Iron (not opened by hand)**, **Copper**, **Gold**, **Stone** or **Polished blackstone**. It picks the sounds, whether a hand opens it and what presses it. Iron and gold doors and trapdoors open only with redstone. For sounds and rules of the block's own (an iron door that opens by hand, a wooden door that clangs), use **Own door sounds** in **How it sounds** ([Block sounds](sounds.md#door-trapdoor-button-and-plate-sounds)). A button has **Press time (ticks)** (empty: 30 for wood, 20 otherwise). A pressure plate has **Weighted (the signal grows with the number of entities, like gold and iron plates)** and **Entities for the full signal**.
 - **Fence gate**: **Wood type (open and close sounds)**: Oak, Spruce, Birch, Acacia, Cherry, Jungle, Dark oak, Pale oak, Poplar, Crimson, Warped, Mangrove or Bamboo.
 - **Fence**: **Connects to wooden fences** is **(from the sound type: yes/no)**, **Yes** or **No**. A fence connects to another fence only if both are wooden or both are not.
 
@@ -78,7 +80,11 @@ Fire needs two numbers, kept in the block's `msm:flammable` component in **Advan
 
 Vanilla planks are 5 and 20, logs 5 and 5, leaves 30 and 60. Mojang's own source swaps the two names; MCSuperMods' names say what they do. A block with no `msm:flammable` does not burn and lava does not ignite it. Doors, trapdoors and plates of a wooden set carry it in the flows (with 0 and 0, so lava ignites them), like vanilla's.
 
-`msm:strippable` (`into`: a block id) lets an axe turn the block into another, the way logs become stripped logs; the axis is kept when both blocks have one. Any item whose `minecraft:block_transformer` names the axe strips it, so vanilla axes, your own axes and axes of other mods work. A hoe or a shovel does not.
+`msm:strippable` (`into`: a block id) lets an axe turn the block into another, the way logs become stripped logs; the axis is kept when both blocks have one. Any item whose `minecraft:block_transformer` names the axe strips it, so vanilla axes, your own axes and axes of other mods work.
+
+`msm:flattenable` (`into`) lets a shovel make the block into another, as dirt into a path, and `msm:tillable` (`into`, and an optional `drops`, an item dropped once) lets a hoe till it, as dirt into farmland or rooted dirt into dirt with hanging roots. Both work only when there is air above the block and the click is not on its underside, as in vanilla. Write them in **Advanced (all fields)**; the sample project's `loam` flattens into `loam_path` and tills into `loam_farmland`.
+
+For Minecraft's own blocks, the same rules (and burning and ageing) are an element of their own: see [Rules for vanilla blocks](adding-to-vanilla.md#rules-for-vanilla-blocks).
 
 ## Crops, saplings and leaves
 
@@ -142,47 +148,108 @@ A sign needs one more picture: the screen you write on. Choosing the **Sign** or
 - **Crop**: **What it is** can be **Bush with berries**; **Grows on** picks the soil.
 - **Stone set**: **Make it a copper-like set that ages** (off) with **Colour it ages to**.
 - **Copper set**: see [Weathering and waxing](#weathering-and-waxing).
+- **Cave plants** (group **Blocks**): **Plant name**, **What it does** (**Hangs from the ceiling with glowing berries, as cave vines**, **Hangs down in long strands, as weeping vines**, **Grows up from the ground in long strands, as twisting vines**, **Grows up in water, as kelp** or **Spreads over any side of a block and glows, as glow lichen**), **Colour**, and under **Glow** the **Berry colour** and **How bright it glows**. A cave-vine-like plant's berries are an item named after the vine (`<id>_berries`) that you eat and plant.
+- **Desert plants** (group **Blocks**): **Plant name**, **What it does** (**Grows tall next to water, as sugar cane**, **Spiny and grows on sand, as cactus**, **A woody stalk with leaves, as bamboo** or **A big leaf that tips when you stand on it, as big dripleaf**, which also makes the small leaf that grows into it), **Colour**, **How tall** (**As tall as the vanilla plant**, **About twice as tall** or **Shorter**) and **Crafts as the vanilla plant does** (cane into sugar, cactus into green dye, bamboo into sticks).
+- **Flower pot** (group **Blocks**): see [Flower pots of your own](#flower-pots-of-your-own).
+
+## Growing and climbing plants
+
+Four types grow as vanilla's strand and stalk plants do. Pick them in the Type section (group **Plants**), start from a template under **Blocks: plants** or use the Creator's **Cave plants** and **Desert plants** flows (see [Creator flows for them](#creator-flows-for-them)). Each is a real plant in the game: it grows with random ticks and bone meal, needs the ground it grows on, and breaks when that goes.
+
+### Grows in long strands
+
+**Grows in long strands (like kelp, weeping vines and cave vines)**: the block you place is the tip; as it grows it leaves a strand behind it. Its section, **Grows in long strands**, has:
+
+- **Grows**: **Grows up (like kelp and twisting vines)** or **Grows down (like weeping and cave vines)**;
+- **Starts at age (0 to 25; empty: 25)**: it stops at age 25, so a tip placed at age 0 grows up to 26 blocks;
+- **Chance to grow (0 to 1 a random tick; empty: 0.14)**, **Bone meal adds at least** and **Bone meal adds at most** (empty: Minecraft's for the strand, one for a water plant);
+- **Lives in water (like kelp: placed only in water, breaks when the water goes)**: a water plant always grows up;
+- **Can be climbed (like vines)**;
+- **Berries (picked from the strand, like glow berries)** with **Berry item** and **Light while it has berries (0 to 15; empty: 14)**: using the strand picks the berries, and bone meal ripens them instead of growing the strand. When the berry is the plant's own item, planting it grows a new strand, as glow berries do;
+- **Grows on**: blocks or block tags the strand hangs from or stands on (empty: any block with a solid face).
+
+Pictures: **Tip (also the item)** and **Strand behind the tip (empty: the tip)**, with berries also **Tip with berries** and **Strand with berries**. The strand behind the tip is a second block, `<id>_plant` (see [Companions](#companions)).
+
+### Grows tall like sugar cane
+
+**Grows tall like sugar cane (cane, cactus or bamboo)**, section **Grows tall like sugar cane**:
+
+- **Shape**: **Cane (like sugar cane, next to water)**, **Cactus (spiny, hurts when touched)** or **Bamboo (leafy, grows from a shoot)**;
+- **Tallest stop (1 to 32; empty: 3, bamboo 16)** and **Shortest stop**: each stalk stops growing at a height picked between the two; bone meal can grow bamboo past its stop up to the tallest;
+- **Grows on** (empty: Minecraft's blocks for the shape, such as `#minecraft:supports_sugar_cane`), **Needs water beside it (like sugar cane)** and **Hurts when touched (damage 0 to 100; empty: 1 for a cactus, 0 otherwise)**.
+
+Bamboo starts as a shoot (a second block, `<id>_shoot`), grows leaves near its top and turns thick from the fourth block, as Minecraft's bamboo. Pictures: a cane's **Stalk (also the item)**; a cactus's **Sides (also the item)**, **Top** and **Bottom (empty: the top)**; a bamboo's **Stalk (also the item)**, **Small leaves**, **Large leaves** and **Shoot (empty: the stalk)**.
+
+### Spreads over any side
+
+**Spreads over any side (like glow lichen)** covers any side of the blocks around it; one block can cover several sides. Section **Spreads over any side**: **Light (0 to 15; empty: 7)**, **Spreads with bone meal** and **Holds water (placed underwater, it stays full of water)**. One **Picture**.
+
+### Tips when you stand on it
+
+**Tips when you stand on it (like dripleaf)**, section **Tips when you stand on it**, **Size**:
+
+- **Big leaf (tips when you stand on it)**: it stands on a stem (a second block, `<id>_stem`); whoever stands on the leaf tips it a little, then right over, and falls through. **Starts tipping after**, **Tips right over after** and **Drops whoever stands on it after** (ticks; empty: 2, 10 and 10). Bone meal grows it a block taller. Pictures: **Leaf from above (also the item)**, **Edge of the leaf**, **Tip of the leaf when tilted** and **Stem**.
+- **Small leaf (grows into a big one with bone meal)**: two blocks high; bone meal turns it into the big dripleaf you pick under **Grows into (your big dripleaves)**, which must be one of this project's. Pictures: **Leaf from above (also the item)**, **Edge of the leaf**, **Upper stem** and **Lower stem (empty: the upper stem)**.
+
+### What the plants drop
+
+The templates and flows give each plant vanilla's drops: vine-like strands drop only to shears or Silk Touch, or sometimes by luck; glow-lichen-like plants and small dripleaves only to shears; a cave-vine-like strand drops its berries.
+
+## Flower pots of your own
+
+**A flower pot (takes the plants you list)** is an empty pot of your own. Section **A flower pot**: using the pot with one of its plants puts the plant in, and Minecraft's own flower pot is not changed.
+
+- **Plants it takes**: **Add a plant** opens a picker with **Your plants** and **Plants Minecraft pots**; **Add any other block by id** takes any other block. Pick at least one. The section counts what it makes ("It makes 3 potted plant blocks with the pot, one for each plant."): each plant becomes a potted block of its own, `<pot>_<plant>`, that takes the pot's pictures with the plant's own. Tall plants and plants without an item do not fit.
+- Pictures: **Pot picture (empty: vanilla's pot)**, **Earth in the pot (empty: dirt)** and **Item picture (empty: the pot picture)**.
+
+A **Potted plant (a plant in a flower pot)** of your own can go into your pot too: its section has **Pot (empty: Minecraft's flower pot)** with **Your pots**. Do not also list that plant under **Plants it takes**. Breaking a potted plant drops the pot and the plant. The Creator's **Flower pot** flow (group **Blocks**) makes a pot with its recipe: **Pot name**, **Colour**, **Plants it takes** (fourteen flowers, saplings, ferns, bushes and mushrooms to tick) and **Crafted from** (**Bricks, as the vanilla pot**, **Clay balls**, **Copper ingots** or **No recipe (creative menu only)**).
 
 ## Waterlogging
 
-**Can stand in water (placed underwater, it stays full of water, like a slab)** in the Type section makes a plain block, a log or pillar, a block that faces the player or a block that faces any way hold water: use a water bucket on it, or place it in water, and it keeps its light and shape underneath. Every state is doubled with a dry and a wet form; breaking a wet block leaves a flowing source behind. Slabs, stairs, fences, walls, trapdoors, panes, ladders, lanterns, chains, candles, sea pickles, signs and scaffolding already hold water as in vanilla, and the switch is not offered for them. Rods, beds, torches and stems cannot hold water. A container or machine cannot be waterlogged: the switch is off and says so, and a block that has both is loaded dry with a warning in the game log.
+**Can stand in water (placed underwater, it stays full of water, like a slab)** in the Type section makes a plain block, a log or pillar, a block that faces the player or a block that faces any way hold water: use a water bucket on it, or place it in water, and it keeps its light and shape underneath. Every state is doubled with a dry and a wet form; breaking a wet block leaves a flowing source behind. Slabs, stairs, fences, walls, trapdoors, panes, ladders, lanterns, chains, candles, sea pickles, signs and scaffolding already hold water as in vanilla, and the switch is not offered for them. Rods, beds, torches and stems cannot hold water; kelp-like plants are always in water and lichen-like plants have their own **Holds water** switch. A container or machine has **Holds water (placed underwater, it fills with water and keeps its contents)**; a double chest always holds water ([Containers and machines](containers-and-machines.md#holding-water)).
 
 ## Weathering and waxing
 
-A block can age like copper in four stages, and honeycomb can stop it. In the Block Studio, **Ages over time, like copper** sets the **stage** (**New**, **Exposed**, **Weathered**, **Oxidised**), **Ages into** (the block of the next stage; the last stage has none) and **Waxed copy (honeycomb turns it into this)**. Three buttons build the blocks for you, each as one undo step:
+A block can age like copper in four stages, and honeycomb can stop it. In the Block Studio, **Ages like copper (over time)** sets the **stage** (**New**, **Exposed**, **Weathered**, **Oxidised**), **Ages into** (the block of the next stage; the last stage has none) and **Waxed copy (honeycomb turns it into this)**. Three buttons build the blocks for you, each as one undo step:
 
 - **Make the next stage** makes the next block (`exposed_<name>`, `weathered_<name>`, `oxidized_<name>`, named "Exposed X", "Oxidised X"), pictures copied from this one;
 - **Make a waxed copy** makes `waxed_<id>`, which never ages;
 - **Make the whole set** makes every later stage and a waxed copy of each, chained.
 
-Give each stage its own picture afterwards: the copies start with the same ones. The Creator's **Copper set** flow (group **Blocks**) does all of it: the **Metal name** ("Tin" gives 56 blocks, 28 honeycomb recipes and `tin_ingot`), **Metal colour**, **Colour it turns**, **Make an ingot**, **Pieces** (the block, cut block, cut slab, cut stairs, door, trapdoor and bars, all on by default) and **Waxed copies**.
+Give each stage its own picture afterwards: the copies start with the same ones. The Creator's **Copper set** flow (group **Blocks**) does all of it: the **Metal name** ("Tin" gives 56 blocks, 28 honeycomb recipes and `tin_ingot`), **Metal colour**, **Colour it turns**, **Make an ingot**, **Pieces** (the block, cut block, cut slab, cut stairs, door, trapdoor and bars, on by default, and **Rod, as a lightning rod**, **Button**, **Pressure plate**, **Fence**, **Fence gate**, **Wall** and **Chest that joins into a double chest**, off by default) and **Waxed copies**. The chest keeps its items as it ages and joins a chest beside it into a double chest; the fence gate makes oak gate sounds.
 
-How it behaves in the game: a project block ages at the same rate as vanilla copper. It does not age while a neighbour (project or vanilla copper) is at an earlier stage, as copper does, so a group of blocks ages in step. Honeycomb on a block waxes it, an axe scrapes it back one stage or removes the wax, and a waxed block shows the wax sounds and particles.
+How it behaves in the game: a project block ages at the same rate as vanilla copper. It does not age while a neighbour (project or vanilla copper) is at an earlier stage, as copper does, so a group of blocks ages in step. Honeycomb on a block waxes it, an axe scrapes it back one stage or removes the wax, and a waxed block shows the wax sounds and particles. Lightning scrapes project blocks as it does copper: the block it strikes goes back to its first stage, and a few blocks around it go back one stage. A pressed button or plate that ages keeps being pressed until it lets go.
 
-Weathering is offered on the plain block, log or pillar, facing blocks, slabs, stairs, doors, trapdoors, panes or bars, chains and lanterns. A door ages as one block. Containers and machines cannot age. Problems reports a stage that ages into a block that is not there, into itself or in a circle (`weathering-next-unknown`, `weathering-cycle`), stages out of order (a warning), a waxed copy that still ages or is named by two blocks, and a block that can be waxed but does not age.
+Weathering is offered on the plain block, log or pillar, facing blocks, slabs, stairs, doors, trapdoors, panes or bars, chains, lanterns, rods, buttons, pressure plates, fences, fence gates and walls, and on containers, which keep their items as they age ([Containers that age](containers-and-machines.md#containers-that-age)). A door ages as one block. Machines cannot age. Problems reports a stage that ages into a block that is not there, into itself or in a circle (`weathering-next-unknown`, `weathering-cycle`), stages out of order (a warning), a waxed copy that still ages or is named by two blocks, and a block that can be waxed but does not age.
 
 ## The limits of the new types
 
 - **Villagers do not use project beds.** Players sleep in them, set their spawn and get Sweet Dreams; a villager never claims one.
 - **A sleeping bag is a bed with the straw rule** and keeps a bed's look. Beds explode in the Nether and the End as vanilla's do.
 - **Project layers never melt** and do not pile up in snowfall: snow does not add to them, and sun and warm light do not remove them.
-- **Plants that vanilla already pots cannot be potted again**: a potted plant that names such a plant is refused; use your own sapling or berry bush. A project plant goes into vanilla's empty flower pot only; there are no pots of other materials.
+- **Plants that vanilla already pots cannot be potted again** in vanilla's pot: a potted plant that names such a plant is refused; use your own sapling or berry bush, or a [pot of your own](#flower-pots-of-your-own), which may list vanilla's plants.
+- **A pot of your own holds only the plants it lists** (and potted plants that name it). A plant in it is drawn from the plant's own block picture, so plants vanilla pots with a model of their own (cactus, bamboo, azalea and similar) look flat in it. Taking a plant out does not count towards "flowers potted".
+- **A small dripleaf needs a big dripleaf of this project** to grow into.
+- **A plant that lives in water placed by a world feature** needs a water check in that feature, or most of it breaks as it is placed (**Problems** warns).
+- **Strands keep vanilla's limits**: a tip grows at most 26 blocks from age 0; bamboo keeps vanilla's leaf stages and thickness.
+- **More companion ids are reserved**: `<id>_plant`, `<id>_shoot`, `<id>_stem` and `<pot>_<plant>` are refused as names of other blocks.
 - **Candles cannot be put on a project cake**: candles do not make a candle cake, and the cake does not take them.
 - **Project scaffolding does not join vanilla scaffolding**: its own distance counts only its own blocks.
 - **A sign sounds like its wood type**: you cannot give a sign sounds of its own, and the sound type of the block is not used.
 - **A rod gives vanilla's end rod particles** whatever picture it has.
 - **Waxed blocks**: a waxed block must not age and belongs to one block (a second block that names it is refused). Two blocks cannot age into the same block, because the axe could not tell which to scrape back to.
-- **Only the listed types age.** There are no ageing buttons, plates or fences, and lightning and copper golems do not scrape or wax project blocks: only honeycomb and axes change a stage. Project blocks do not count for the Wax On and Wax Off advancements. A block in a broken chain registers but never ages.
-- **Containers and machines hold no water** and do not weather.
+- **Only the listed types age.** Copper golems do not scrape or wax project blocks. Lightning ignores waxed blocks, its walk passes only through project blocks, and project rods do not attract it: only vanilla's lightning rod does. Project blocks do not count for the Wax On and Wax Off advancements. A block in a broken chain registers but never ages.
+- **Machines do not weather.** Containers and machines hold water; a double chest always does.
 - **Only the first stage has shape recipes** in the Copper set flow; a stone picture you choose is used for all four stages, and the sign board uses the planks picture, the hanging sign the stripped log picture.
-- **No glow lichen, kelp, cave vines, bamboo, sugar cane, cactus or dripleaf types.** Use the existing types.
 - **Restart needed.** New block types and companions are read when Minecraft starts: Play and Reload say **Restart needed** ([Playing and testing](playing-and-testing.md#restart-needed)).
-- **Not in vanilla packs.** The resource pack keeps the models, blockstates and names; every runtime feature (these types, waterlogging, ageing) needs the Fabric mod jar, and the vanilla data pack leaves their data out (see [Vanilla packs](#vanilla-packs)).
-- **Looks are in-game checks.** Pictures of the sign screen, the bed halves, the torch flame and the candle regions are built from vanilla's templates, so check how they look in the game; the Try it preview only approximates them ([Try it](try-it.md)).
+- **Not in vanilla packs.** The resource pack keeps the models, blockstates and names; every runtime feature (these types, pots, waterlogging, ageing, lightning, own sounds) needs the Fabric mod jar, and the vanilla data pack leaves their data out (see [Vanilla packs](#vanilla-packs)).
+- **Looks are in-game checks.** Pictures of the sign screen, the bed halves, the torch flame, the candle regions, the bamboo leaves, the tilting dripleaf and plants in a pot are built from vanilla's templates, so check how they look in the game; the Try it preview only approximates them ([Try it](try-it.md)).
+- **In a Java project**, listed pot plants that are missing or two blocks high are skipped with a warning in the log ([Eject to a Java project](eject.md)).
+- **A spawner takes a project mob** from its spawn egg, as for vanilla mobs.
 
 ## Problems it reports
 
-The Problems panel checks a typed block: a component the type does not allow (**Shape** or redstone on a family block), a block without textures or models, a model clashing with a generated one, a set type or wood type that the Minecraft version does not have, stairs whose base is missing or is the stairs themselves, a stripped block that does not exist, a crop whose stage heights do not match its stages or whose bone meal range is reversed, a crop with no produce, a berry or a stem fruit that is not there, a potted plant that cannot go in a pot, a torch particle that needs settings, a companion whose id is taken, a sign without its writing screen picture, a sapling whose tree does not exist or is not a tree, leaves that will decay because their trunk is not in `#minecraft:logs`, a tinted leaf with a falling particle, and a block item id another item already uses.
+The Problems panel checks a typed block: a component the type does not allow (**Shape** or redstone on a family block), a block without textures or models, a model clashing with a generated one, a set type or wood type that the Minecraft version does not have, stairs whose base is missing or is the stairs themselves, a stripped block that does not exist, a crop whose stage heights do not match its stages or whose bone meal range is reversed, a crop with no produce, a berry or a stem fruit that is not there, a potted plant that cannot go in a pot, a small dripleaf without a big dripleaf of the project to grow into (`dripleaf-grows-into-missing`, `dripleaf-grows-into-not-big`), **Grows into** on a big one or tilt timing on a small one (`dripleaf-grows-into-big`, `dripleaf-tilt-small`), a shortest stop above the tallest (`column-min-above-max`), a water plant that grows down or that a feature places without water (`water-plant-grows-down`, `water-plant-feature-dry`), bone meal settings on a plant with berries (`berries-ignore-bonemeal`), a pot plant listed twice, that does not fit or that a potted plant also pots (`pot-plant-repeated`, `pot-plant-unfit`, `pot-plant-also-potted`), a potted plant whose pot is not a flower pot (`potted-plant-pot-not-pot`), a torch particle that needs settings, a companion whose id is taken, a sign without its writing screen picture, a sapling whose tree does not exist or is not a tree, leaves that will decay because their trunk is not in `#minecraft:logs`, a tinted leaf with a falling particle, and a block item id another item already uses.
 
 ## Vanilla packs
 
@@ -191,8 +258,7 @@ The resource pack exports the models, blockstates and names. The vanilla data pa
 ## What it cannot do
 
 - **Boats** (with chest boats) are not made: they need client code and an entity of their own. Signs are made ([More plants, food, furniture and lights](#more-plants-food-furniture-and-lights)).
-- **Door, trapdoor, button and plate sounds** are vanilla's: you pick a **Set type**, you cannot give a set sounds of its own.
-- **Stripping only by players** with an axe: a dispenser or another mod that calls vanilla's transformer directly does not strip your logs.
+- **Stripping, flattening and tilling only by players** with the tool: a dispenser or another mod that calls vanilla's transformer directly does not strip your logs.
 - **Leaf tint is client-side**: the **Tint** shows in the game only, not in the app's preview. Tint sources are the four above or one colour.
 - **Villagers farm only on farmland**: a crop with another **Planted on** soil is never farmed by villagers.
 - **Tree shapes are vanilla's**: the Tree Studio combines and tunes vanilla's trunk and foliage placers and decorators; a new shape needs code.

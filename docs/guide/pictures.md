@@ -32,9 +32,9 @@ In **Very easy mode** the window is shorter. The thing being drawn is chosen fro
 
 The recipes are grouped in families:
 
-- **Blocks**: stone, polished stone, cobblestone, bricks, pillars, ores (stone or deepslate), storage blocks, planks, logs and bark, leaves, doors and trapdoors, saplings and crops, portals, dirt, grass, sand and gravel, and a plain tile. They tile, so a wall of them has no seams, and they have no outline.
-- **Items**: gems, ingots, discs, spawn eggs, tools, weapons, bows and crossbows with their pulling pictures, shields, bottles, totems, fruit, seeds and produce. Items have a dark outline.
-- **Worn and mob pictures**: the armour layers, horse and wolf armour, and skins painted on a model's boxes.
+- **Blocks**: stone, polished stone, cobblestone, bricks, pillars, ores (stone or deepslate), storage blocks, planks, logs and bark, leaves, doors and trapdoors, saplings and crops, portals, dirt, grass, sand and gravel, the growing plants (a kelp- or vine-like strand with its berries, a cane, cactus or bamboo stalk, a lichen over a face, a dripleaf's leaf and stem) and a flower pot's clay, and a plain tile. They tile, so a wall of them has no seams, and they have no outline.
+- **Items**: gems, ingots, discs, spawn eggs, tools, weapons, bows and crossbows with their pulling pictures, shields, bottles, totems, fruit, seeds and produce, a banner pattern item, a pottery sherd and a glider. Items have a dark outline.
+- **Worn and mob pictures**: the armour layers, horse and wolf armour, a banner pattern on banners and shields (drawn pale, since the game dyes it), armour trim layers (in eight greys the game recolours with each trim material), glider wings, a decorated pot face, and skins painted on a model's boxes.
 - **Icons and particles**: the effect icon and the four particle looks (spark, orb, puff and leaf).
 
 Each picture is decided by what it is, its colours, finish, detail and a number called the seed. The same choices always give the same picture, and a different seed gives a different one. Creator flows and examples pick a seed from the picture's own path, so two swords in one project differ, and the same project always draws the same pictures. Nothing is stored in the project but the PNG.
@@ -76,6 +76,7 @@ Four ways to get a picture, which you can mix:
 - **Some sample pictures stay flat.** A few pictures in the repository's sample fixtures are made by tests with the old flat patterns and are unchanged. Everything a flow, starter or example makes is drawn.
 - **16 by 16 only.** Drawn pictures are the size of Minecraft's own: 16 by 16 for blocks and items, with the worn, icon and particle sizes of the game. There are no high-resolution drawn pictures.
 - **Only particles are animated.** A drawn portal surface is one picture and does not swirl.
+- **A trim layer drawn on its own does not recolour.** The Armour trim flow writes the palette file that tells the game which greys to swap for the trim material's colours; a new trim layer drawn by the AI helper or with **Draw…** has none, so it keeps its greys. Use the flow, or add the palette yourself.
 
 ## Where next
 

@@ -29,11 +29,11 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | Heading | Tile | What it opens |
 |---|---|---|
 | | **Surprise me** | A random mod to start from (see [Surprise me](#surprise-me)) |
-| Blocks and items | **Make a block** | A new block, an ore or a stone with stairs and slabs |
+| Blocks and items | **Make a block** | A new block, an ore, stone with stairs, lights, a bed, a cake, a sign, plants, a pot or a liquid |
 | | **Make a chest or machine** | A crate that stores things, or a machine that cooks or grinds them |
-| | **Make an item** | Something to throw, or a totem that saves you |
+| | **Make an item** | Something to throw, a totem that saves you, wings to glide or a bag that holds things |
 | | **Make a tool or weapon** | A sword, a whole set of tools, or a new enchantment |
-| | **Make armour** | Helmet, chestplate, leggings and boots of a new material |
+| | **Make armour** | Helmet, chestplate, leggings and boots of a new material, or a new trim |
 | | **Make food** | Something to eat or drink |
 | | **Make a plant or tree** | A crop to grow, a tree, or a whole set of wood |
 | | **Make a recipe** | Ready-made crafting, smelting and stonecutting recipes to change |
@@ -49,7 +49,7 @@ With a mod open, Home shows **Make something** with these tiles, under headings:
 | | **Make a building** | A small village of huts and lamp posts that appears in forests |
 | | **Change drops and trades** | An extra drop from a mob, block or chest, or a new villager trade |
 | Looks and sounds | **Change how Minecraft looks** | A new skin for a wolf, cat or pig, or a new look for a vanilla item |
-| | **Make a painting** | A painting of your own picture to hang on a wall |
+| | **Make a painting or pattern** | A painting of your own picture, a pattern for banners or a picture for pots |
 | | **Make a sound or music** | A music disc with your own song, or a goat horn call |
 | | **Paint a picture** | Draw a new picture, pixel by pixel |
 | Rules and help | **Make things happen** | Rules: when something happens, do something. No code needed. |
@@ -59,7 +59,7 @@ Most tiles open the [Creator](creator.md) on the right question page, or on its 
 
 A vehicle opens on a short page, not the full Studio: **How fast**, **Needs fuel** (with **What fuel?**), **Has a cannon** (for a Tank), **How many seats** and **Colour**. In **Make things happen** the Rules offer **A player presses a key** (**Press the key you want**), **A player lets go of a key**, **A player holds a key**, **Someone gets in the vehicle**, **Someone gets out**, **The vehicle fires**, **The vehicle is destroyed** and **Show a number on screen** (**As a bar or as text?**, **Where on screen?** with a picture of nine spots and "above the hotbar"). See [Vehicles](vehicles.md), [Keys and the screen](keys-and-hud.md) and [Rules](rules.md#vehicles-keys-and-the-screen). The keys, vehicles and on-screen elements you make show under **My things**, and Things to fix explains problems in plain words.
 
-Two tiles show a short list of **pictures** when they open the Creator, so you can pick by looking. **Make a block** offers **Lights** ("Torches, lanterns, chains and candles."), **Bed** ("A bed or sleeping bag."), **Cake** ("Eat it a slice at a time."), **Sign** ("Write on it. Comes with a whole set of wood."), **Bush with berries** ("A plant to grow and pick.") and **Ages like copper** ("Blocks that slowly turn green, and stay as they are when waxed."). **Make an item** offers **A bag that holds things** ("Opens when you right-click it."). The pick opens the Creator on the right flow, and the flow's card shows the pick's words ([Block types, families and plants](block-types-and-plants.md), [Bags and bundles](blocks-and-items.md#bags-and-bundles), [The Creator](creator.md)). **Make your mod do something** opens the Custom command and Creative tab flows ([Commands and creative tabs](commands-and-tabs.md)); a command or tab you make shows under **My things** as **Command** or **Creative tab**.
+Two tiles show a short list of **pictures** when they open the Creator, so you can pick by looking. **Make a block** offers **Lights** ("Torches, lanterns, chains and candles."), **Bed** ("A bed or sleeping bag."), **Cake** ("Eat it a slice at a time."), **Sign** ("Write on it. Comes with a whole set of wood."), **Bush with berries** ("A plant to grow and pick.", then **Bush with berries** in the flow), **Ages like copper** ("Blocks that slowly turn green, and stay as they are when waxed."), **Grows in long strands** ("Vines with glowing berries, kelp, or a moss that spreads over any side."), **Grows tall like sugar cane** ("Cane, cactus, bamboo, or a leaf that tips when you stand on it.") and **A flower pot** ("A pot of your own for the flowers you pick."). **Make an item** offers **A bag that holds things** ("Opens when you right-click it."), beside the Glider flow. **Make a painting or pattern** opens the Painting, Banner pattern and Pot pattern flows, and **Make armour** the Gear set and Armour trim flows. The pick opens the Creator on the right flow, and the flow's card shows the pick's words ([Block types, families and plants](block-types-and-plants.md), [Bags and bundles](blocks-and-items.md#bags-and-bundles), [The Creator](creator.md)). **Make your mod do something** opens the Custom command and Creative tab flows ([Commands and creative tabs](commands-and-tabs.md)); a command or tab you make shows under **My things** as **Command** or **Creative tab**.
 
 In **Make things happen** the Rules also offer, in the same plain words, **A player places a block** (**Which block?**) with **Stop the placing**; **Something explodes** with **Stop the explosion** and **Keep the blocks safe**; **A player types the command** (then pick the command, shown as `/name`); **A player gets on something** and **A player gets off something** with **Ride something** and **Get off**; and the checks **Someone is riding** and **Something is facing a way** (north, east, south, west, up or down), with **The way it faces** for messages and **In front of here** for a place ([Rules](rules.md#placing-explosions-commands-and-riding)).
 
@@ -139,7 +139,7 @@ If a mistake stops the mod from being built, **Play** and **Share my mod** send 
 
 ## Try it
 
-**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)). A trader you made shows its trading screen there, and a liquid's bucket pours a pool that does not flow. Your scripts and rules run there too, in a sandbox, and say what they did in **What happened**; a pass in Try it is not a pass in the game, so press **Play** for the real check.
+**Try it** in the toolbar (or F6) opens a small test area inside MCSuperMods, with no Minecraft needed. Your blocks and spawn eggs are in the hotbar: walk or fly around, place and break blocks, open doors and watch your mobs wander. It is a quick preview, not the game: what it cannot show is listed under "What happened" with "Only in Minecraft", and **Play in Minecraft** is always at the top for the real check ([Try it](try-it.md)). A trader you made shows its trading screen there, a liquid's bucket pours a pool that does not flow, and your plants grow with **Grow**. Your scripts and rules run there too, in a sandbox, and say what they did in **What happened**; a pass in Try it is not a pass in the game, so press **Play** for the real check.
 
 ## Share my mod
 

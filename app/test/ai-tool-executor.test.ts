@@ -128,6 +128,18 @@ describe('createToolExecutor: read tools', () => {
     const dimensionType = await fixture.call('kind_schema', { kind: 'minecraft:dimension_type' });
     expect(dimensionType.value.schema).toContain('case visual/sky_color:');
     expect(dimensionType.value.schema).not.toContain('(other cases not shown)');
+    // The rules for vanilla blocks (ADR 0105 D4) are complete within the defaults (B522).
+    const rules = await fixture.call('kind_schema', { kind: 'msm:vanilla_block_rules' });
+    expect(rules.result.isError).toBe(false);
+    for (const list of ['strip?:', 'flatten?:', 'till?:', 'wax?:', 'age?:', 'burn?:']) {
+      expect(rules.value.schema).toContain(list);
+    }
+    expect(rules.value.schema).toContain('burn_odds');
+    expect(rules.value.schema).not.toContain('truncated');
+    // The batch 1 types of ADR 0103 show in msm:block.
+    for (const type of ['growing_plant', 'column_plant', 'multiface', 'dripleaf', 'flower_pot']) {
+      expect(value.schema).toContain(`case ${type}:`);
+    }
     await expectError(fixture, 'kind_schema', { kind: 'nope:kind' }, 'unknown_kind');
   });
 
@@ -266,6 +278,14 @@ describe('createToolExecutor: read tools', () => {
     expect(value.entities.vanillaJobSites).toBeDefined();
     expect(value.blocks.fluidModel).toBe(fixture.session.target.blocks?.fluidModel);
     expect(value.blocks.fluidTags.water).toContain('minecraft:water');
+    // Plugin API 1.19.0 (B522): the sound and plant facts arrive; vanilla's pairs and the
+    // 26.4 sound sets stay out.
+    expect(value.blocks.soundModel).toBe(fixture.session.target.blocks?.soundModel);
+    expect(value.blocks.soundTypes).toContain('stone');
+    expect(value.blocks.plantSoils).toEqual(fixture.session.target.blocks?.plantSoils);
+    expect(fixture.session.target.blocks?.vanillaPairs).toBeDefined();
+    expect(value.blocks.vanillaPairs).toBeUndefined();
+    expect(value.blocks.soundSetEvents).toBeUndefined();
     expect(value.worldgen.dimensionHeight).toEqual(fixture.session.target.worldgen.dimensionHeight);
     expect(value.worldgen.dimensionHeight.step).toBe(16);
     expect(value.worldgen.environmentAttributes).toContain('minecraft:visual/sky_color');

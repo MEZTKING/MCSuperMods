@@ -4,9 +4,9 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 | What | Where in the app | What you get |
 |---|---|---|
-| **Element templates** (249) | **Add element** (Ctrl+N) | One new element with useful starting content |
-| **Project starters** (60) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
-| **Examples** (164) | **Help → Examples…** | A commented project or element to open or copy |
+| **Element templates** (274) | **Add element** (Ctrl+N) | One new element with useful starting content |
+| **Project starters** (67) | **New from starter…**, or **Create…** for the flows | A new project, already filled; the flows also add to the open project |
+| **Examples** (186) | **Help → Examples…** | A commented project or element to open or copy |
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting and rules plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
@@ -74,6 +74,21 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Template | id | Kind | Notes |
 |---|---|---|---|
 | Icon font | `font_icons` | `minecraft:font` | A font with one icon: a bitmap glyph drawn from the texture `font/<name>.png`. Show it in text with `{"text": "\uE000", "font": "<namespace>:<name>"}`. See [Icon fonts](adding-to-vanilla.md#icon-fonts). |
+
+#### Shaders
+
+Screen effects and shader programs work in a plain resource pack. Their `.vsh`, `.fsh` and `.glsl` files are your own, brought in with **Import assets** (folder **Shaders**); MCSuperMods copies them as they are and does not check them ([Screen effects, shaders and waypoints](adding-to-vanilla.md#screen-effects-shaders-and-waypoints)).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Spectator view effect | `post_effect_creeper` | `minecraft:post_effect` | Replaces what you see while spectating a creeper with your own shader, then copies the result back to the screen: add shaders/post/<name>.vsh, <name>.fsh and copy.fsh (a plain copy) to the project. Works in a plain resource pack; check the look in game. |
+| Shader program | `shader_program` | `minecraft:shader` | A shader program naming your own vertex and fragment files (shaders/<name>.vsh and .fsh in the project), one sampler and no uniforms. The game does not check the GLSL until it loads. |
+
+#### Locator bar
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Waypoint style | `waypoint_style` | `minecraft:waypoint_style` | A locator bar dot that changes from the bow tie up close to the plain dot far away; use it with /waypoint modify <target> style set <id>. Draw your own dots under textures/gui/sprites/hud/locator_bar_dot/. |
 
 #### Pack
 
@@ -189,15 +204,23 @@ The id is the template's identifier (the app uses it as `template-<id>` in tests
 | Notice dialog | `dialog_notice` | `minecraft:dialog` | A message screen with one button, shown with /dialog show. |
 | Confirmation dialog | `dialog_confirmation` | `minecraft:dialog` | A yes or no question; each button can run a command. |
 | Goat horn instrument | `instrument` | `minecraft:instrument` | A goat horn call; uses a vanilla sound event, named by id. Give it to players with a goat horn recipe or loot. See [Goat horns](adding-to-vanilla.md#goat-horns). |
+| Pot pattern | `decorated_pot_pattern` | `minecraft:decorated_pot_pattern` | A decorated pot face; uses the heart sherd picture until you add your own under entity/decorated_pot/. A sherd item names it through the decorated_pot_sherds tag and its pot pattern. |
+| Block transformer | `block_transformer` | `minecraft:block_transformer` | What a tool does when used on a block, tried in order: here a moss block turns into dirt with the shovel sound. Name it minecraft:shovel to change what shovels do, or point your own item at it. |
+| Test environment | `test_environment` | `minecraft:test_environment` | Where map makers run game tests: clear weather and normal difficulty, for test instances that name it. |
+| Test instance | `test_instance` | `minecraft:test_instance` | A game test for map makers: places a structure and waits for a test block to pass. Run it with /test run. |
+| Whole-number provider | `context_int_provider` | `minecraft:context_int_provider` | A named whole number the game reads, such as a compost chance: a random number from 1 to 3. Name it after a vanilla one, such as minecraft:compostable/low, to change that value. |
+| Decimal-number provider | `context_float_provider` | `minecraft:context_float_provider` | A named decimal number the game reads, such as a cooking speed: here twice as fast. Name it after a vanilla one, such as minecraft:cooking/speed_default, to change that value. |
 
 #### Mobs
 
-New skins for vanilla animals; see [Mob skins](adding-to-vanilla.md#mob-skins).
+New skins for vanilla animals (see [Mob skins](adding-to-vanilla.md#mob-skins)), a trial spawner wave and a sulfur cube kind.
 
 | Template | id | Kind | Notes |
 |---|---|---|---|
 | Wolf variant | `wolf_variant` | `minecraft:wolf_variant` | A wolf skin that appears in taiga biomes; uses vanilla textures until you add your own. |
 | Cat variant | `cat_variant` | `minecraft:cat_variant` | A cat skin that appears in swamps; uses vanilla textures until you add your own. |
+| Trial spawner | `trial_spawner` | `minecraft:trial_spawner` | A trial spawner wave of baby zombies, like the trial chambers' small melee spawner; place a trial spawner and point its block entity at this id. |
+| Sulfur cube kind | `sulfur_cube_archetype` | `minecraft:sulfur_cube_archetype` | A sulfur cube that turns bouncy and light when fed slime balls, with the bouncy sounds. |
 
 #### Trades
 
@@ -331,6 +354,20 @@ New blocks, items and the mod metadata exist only in the **Fabric mod jar** expo
 | Melon-like stem | `msm_block_melon_stem` | `msm:block` | A stem of eight ages on farmland that grows vanilla melons beside it; the bent stem is its own companion block. |
 | Cocoa-like pod | `msm_block_cocoa_pod` | `msm:block` | A pod that grows through three ages on the side of a jungle log and drops more when ripe. |
 | Copper-like block | `msm_block_copper_block` | `msm:block` | The first of four copper stages: it ages to vanilla exposed copper in time and honeycomb waxes it. Category **Copper**; for the whole set copy the Copper roof example. |
+| Copper-like rod | `msm_block_copper_rod` | `msm:block` | A rod that faces any of six ways, as a lightning rod, and gives no light. It is the first of four copper stages: it ages to vanilla's exposed lightning rod in time, honeycomb waxes it into vanilla's waxed lightning rod, and lightning nearby scrapes it back. For a whole set, use the Copper set flow. |
+| Vine with glowing berries | `msm_block_berry_vine` | `msm:block` | Category **Blocks: plants**; see [Growing and climbing plants](block-types-and-plants.md#growing-and-climbing-plants). A vine that hangs from a ceiling and grows down, bearing berries that glow at light 14 and are picked by using it, as cave vines. The berries are its block item, edible, and plant the vine. |
+| Kelp-like water plant | `msm_block_water_strand` | `msm:block` | A plant that grows up in water a block at a time, as kelp: always under water, placed only in water, and broken when the water goes. |
+| Weeping vine | `msm_block_hanging_strand` | `msm:block` | A climbable vine that hangs from the underside of a block and grows down a block at a time, as weeping vines. |
+| Cane | `msm_block_cane` | `msm:block` | A stalk that grows three blocks tall on sand, dirt or grass with water beside it, as sugar cane. |
+| Cactus | `msm_block_cactus` | `msm:block` | A spiny column that grows three blocks tall on sand and hurts whatever touches it, as cactus. |
+| Bamboo-like stalk | `msm_block_bamboo_stalk` | `msm:block` | A woody stalk that grows from a shoot (the generated block <id>_shoot) to 12 to 16 blocks, with leaves near its top, as bamboo. |
+| Glowing lichen | `msm_block_glowing_lichen` | `msm:block` | A thin growth that covers any side of the blocks around it, glows at light 7 and spreads with bone meal, as glow lichen. |
+| Big dripleaf | `msm_block_tipping_leaf` | `msm:block` | A big leaf on a stem (the generated block <id>_stem) that tips under whoever stands on it and drops them, as big dripleaf. Bone meal grows it taller. |
+| Flower pot | `msm_block_flower_pot` | `msm:block` | An empty flower pot of its own that takes the plants it lists (here four flowers); each becomes a potted block <id>_<plant>. Vanilla pots are not changed, and other plants do not go in. |
+| Double chest | `msm_block_double_chest` | `msm:block` | A chest of 27 slots that joins a chest of its kind beside it into one double chest of 54, as vanilla chests do; sneak to keep them apart. Hoppers and comparators work with each half. |
+| Chest for every player | `msm_block_player_chest` | `msm:block` | A chest in which every player finds their own items, as an ender chest: every chest of this kind opens the same store for that player, nothing drops when it is broken, and hoppers do not reach it. |
+| Block with its own sounds | `msm_block_own_sounds` | `msm:block` | A block that sounds like amethyst when broken, walked on, placed, hit and fallen on, a little higher: each event of block_sounds replaces its sound_type event. |
+| Door with its own sounds | `msm_block_door_own_sounds` | `msm:block` | A wooden door that opens by hand but sounds like an iron door: its set type is its own (set_type base wood with the iron door sounds). |
 
 #### Items
 
@@ -396,6 +433,7 @@ Additions to vanilla content need the Fabric mod jar too; see [Adding to vanilla
 |---|---|---|---|
 | Ore in the overworld | `msm_biome_addition_overworld_ore` | `msm:biome_addition` | Generates an ore in every overworld biome, at the underground ores step. It adds the placed feature `<this id>_placed`: make that placed feature (and its feature) in the Worldgen Studio, or pick your own. Only newly generated chunks get the ore. |
 | Extra mob drop | `msm_loot_addition_mob_drop` | `msm:loot_addition` | Adds a drop to the zombie: one emerald, one time in ten, only when a player kills it. The zombie keeps its usual drops. A world data pack that replaces the zombie loot table wins. |
+| Rules for vanilla blocks | `msm_vanilla_block_rules` | `msm:vanilla_block_rules` | An axe scrapes the moss off mossy cobblestone and stone bricks, a shovel packs mud, a hoe turns a moss block into dirt and leaves a moss carpet, and huge mushroom blocks burn. None of these is a vanilla pair, so nothing vanilla does is replaced. Needs the Fabric mod jar. See [Rules for vanilla blocks](adding-to-vanilla.md#rules-for-vanilla-blocks). |
 
 #### Mod
 
@@ -430,6 +468,34 @@ Traders, village jobs, pack animals and shoulder pets need the Fabric mod jar; s
 | Pack mule | `msm_entity_pack_mule` | `msm:entity` | An animal you tame with apples and ride with a saddle. Use a chest on it to give it three rows of storage, opened with the inventory key while riding or by using it while sneaking. |
 | Shoulder pet | `msm_entity_shoulder_pet` | `msm:entity` | A small animal you tame with sweet berries. Once tamed it follows you, sits when you use it and jumps onto your shoulder when you stand still near it. |
 | Village job | `msm_villager_profession` | `msm:villager_profession` | A new job for vanilla villagers: a villager without a job takes it at a job site block of your own. Five trade levels are created for you; add trades to their trade tags. |
+
+#### Vehicles
+
+Vehicles (`msm:vehicle`) need the Fabric mod jar; see [Vehicles](vehicles.md).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Go-kart | `msm_vehicle_go_kart` | `msm:vehicle` | A small, quick one-seater with no fuel and a horn, that grips the road and climbs half a block. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Car | `msm_vehicle_car` | `msm:vehicle` | A two-seat car that runs on coal or charcoal, with a horn, a boot of one row, exhaust smoke, red and blue paint and iron-ingot repairs. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Tank | `msm_vehicle_tank` | `msm:vehicle` | A slow, tough tank that turns on the spot, with a turret that follows your view, a cannon firing fire charges (loaded with fire charges) on the fire key and a machine gun on the second key. Repaired with iron ingots; immune to fire. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Biplane | `msm_vehicle_biplane` | `msm:vehicle` | A two-seat plane on coal: forwards opens the throttle, the nose follows your view, and it lifts off above half its top speed. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Helicopter | `msm_vehicle_helicopter` | `msm:vehicle` | A two-seat helicopter on coal that hovers in place: jump climbs, the "Vehicle: descend" key sinks, and it turns with your view. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Motorboat | `msm_vehicle_motorboat` | `msm:vehicle` | A quick two-seat boat that skims the water surface, with a horn and a propeller, placed on water. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Raft | `msm_vehicle_raft` | `msm:vehicle` | A slow raft for four with a crate of one row, placed on water. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+| Hovercraft | `msm_vehicle_hovercraft` | `msm:vehicle` | A two-seat amphibious craft that drives on land and water alike, slides in the turns and is placed on either. Its model, texture and item picture are named after the vehicle and are reported missing until you add or import them (for example from Blockbench). |
+
+#### Controls and HUD
+
+Keys of your own (`msm:key_bind`) and on-screen elements (`msm:hud`) need the Fabric mod jar; see [Keys and the screen](keys-and-hud.md).
+
+| Template | id | Kind | Notes |
+|---|---|---|---|
+| Dash key | `msm_key_bind_dash` | `msm:key_bind` | Pressing Z dashes the player forward where they look, with a whoosh, at most once a second. Players can change the key in Controls. |
+| Ability key with cooldown | `msm_key_bind_ability` | `msm:key_bind` | Pressing K gives the player Strength II for ten seconds, then the key rests for thirty seconds. Change the effect to your own ability. |
+| Mana bar | `msm_hud_mana_bar` | `msm:hud` | A blue bar above the hotbar showing the player's "mana" out of 100, kept in script data. Rules and scripts fill it up and use it. |
+| Stamina bar | `msm_hud_stamina_bar` | `msm:hud` | A green bar above the hotbar showing the player's "stamina" out of 100, kept in script data. Rules and scripts drain it and fill it again. |
+| Coordinates text | `msm_hud_coordinates` | `msm:hud` | Shows the player's height (Y) in the top-left corner, read by their own game. Make copies with the stat set to x and z, each 10 pixels lower, for all three. |
+| Score counter | `msm_hud_score_counter` | `msm:hud` | Shows the player's score in the "points" scoreboard objective in the top-right corner. Create the objective in a load function (scoreboard objectives add points dummy). |
 
 #### Entity models
 
@@ -498,12 +564,15 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Custom sword | `custom-sword` | resource, data, mod | A new sword with its own name, colour, tier and durability: a handheld texture and model, a crafting recipe, its English name and the mod metadata. |
 | Gear set (Creator: Gear) | `gear-set` | resource, data, mod | Tools and armour of one new material: a sword, pickaxe, axe, shovel and hoe, a helmet, chestplate, leggings and boots (optionally a spear, mace, bow, crossbow, shield, horse armour and wolf armour), the material from a new ore or as an ingot (optionally an armour trim material), recipes or smithing upgrades, the worn armour look and the vanilla tags. |
 | Simple block (Creator: Blocks) | `simple-block` | resource, data, mod | One new block with its own name, colour, hardness, tool, light level and drops, a texture and model, and an optional recipe. |
-| Wood set (Creator: Blocks) | `wood-set` | resource, data, mod | A whole kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, leaves and a sapling that grows its own tree, with recipes, tags, stripping, burning and, if you choose, growth in the world. |
+| Wood set (Creator: Blocks) | `wood-set` | resource, data, mod | A whole kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, leaves and a sapling that grows its own tree, with recipes, tags, stripping, burning, door sounds of your choice or your own and, if you choose, growth in the world. |
 | Stone set (Creator: Blocks) | `stone-set` | resource, data, mod | A new stone with its stairs, slab and wall and, if you choose, a button, pressure plate, polished stone, bricks and a pillar, with crafting and stonecutting recipes. |
 | Crop (Creator: Blocks) | `crop` | resource, data, mod | A crop that grows in stages on farmland, planted from its own seeds or from its produce, with loot, composting, villager farming and, if you choose, wild patches. |
-| Storage crate (Creator: Blocks) | `storage-crate` | resource, data, mod | A crate with a chest window of 1, 3 or 6 rows, keeping its contents when broken if you choose, in a wood or stone look, with a crafting recipe and a closed and open front picture. |
+| Storage crate (Creator: Blocks) | `storage-crate` | resource, data, mod | A crate with a chest window of 1, 3 or 6 rows, keeping its contents when broken, joining into a double chest or different for every player if you choose, in a wood or stone look, with a crafting recipe and a closed and open front picture. |
 | Machine (Creator: Blocks) | `machine` | resource, data, mod | A grinder-like machine with a power, a speed, up to three recipes of its own and the vanilla recipe types you choose, a crafting recipe and front, working-front, side and top pictures. |
-| Copper set (Creator: Blocks) | `copper-set` | resource, data, mod | A metal that ages and can be waxed: block, cut block, slab, stairs, door, trapdoor and bars in four stages with waxed copies, honeycomb recipes and an ingot (Tin by default). |
+| Copper set (Creator: Blocks) | `copper-set` | resource, data, mod | A metal that ages and can be waxed: block, cut block, slab, stairs, door, trapdoor and bars and, if you choose, a rod, button, pressure plate, fence, fence gate, wall and a chest that joins into a double chest, in four stages with waxed copies, honeycomb recipes and an ingot (Tin by default). |
+| Cave plants (Creator: Blocks) | `cave-plants` | resource, data, mod | A plant of the caves: vines that hang from the ceiling with glowing berries, hang down or grow up in long strands, a water plant that grows up as kelp, or a lichen that spreads over any side of a block and glows. |
+| Desert plants (Creator: Blocks) | `desert-plants` | resource, data, mod | A plant that grows tall: a cane by the water, a spiny cactus, a woody bamboo stalk with leaves, or a big leaf that tips when you stand on it, with the vanilla plant's uses if you like. |
+| Flower pot (Creator: Blocks) | `flower-pot` | resource, data, mod | A flower pot of your own that takes the plants you pick, in the colour you like, with its recipe. |
 | Lights (Creator: Blocks) | `lights` | resource, data, mod | A torch with its wall form, a lantern, a chain and a candle of one look, with recipes. |
 | Bed (Creator: Blocks) | `bed` | resource, data, mod | A bed or a sleeping bag in one of sixteen colours, with a recipe. |
 | Cake (Creator: Food) | `cake` | resource, data, mod | A cake or a pie eaten a slice at a time, with a flavour recipe. |
@@ -522,6 +591,10 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Potion (Creator: Magic) | `potion` | resource, data, mod | A new potion for the brewing stand: the effect it gives (a vanilla one or a new one with its icon), how long and how strong, the ingredient that brews it, longer and stronger versions, and splash and lingering bottles with tipped arrows. |
 | Enchantment (Creator: Gear) | `enchantment` | data | A new enchantment: what it goes on, its highest level, how rare it is and what it does, offered at the enchanting table. |
 | Painting (Creator: Blocks) | `painting` | resource, data | A new painting with its title, author, size and your own picture (or a placeholder landscape), in the `minecraft:placeable` tag. |
+| Banner pattern (Creator: Blocks) | `banner-pattern` | resource, data | A new banner pattern for the loom: its shape on banners and shields, and the pattern item made from paper that offers it. Works in vanilla packs. |
+| Armour trim (Creator: Gear) | `armour-trim` | resource, data | A new armour trim: how it looks on worn armour in every trim material, the smithing template that applies it and the recipe that copies the template. Works in vanilla packs. |
+| Glider (Creator: Gear) | `glider` | resource, data | Wings to wear on your chest and glide with, as an elytra does: how they look worn and held, how long they last, the recipe and the repair item. Works in vanilla packs. |
+| Pot pattern (Creator: Blocks) | `pot-pattern` | resource, data | A new picture for decorated pots and the sherd that puts it on a pot. Works in vanilla packs. |
 | Music disc (Creator: Blocks) | `music-disc-item` | resource, data, mod | A new jukebox song and a music disc that plays it: a real disc item in the Fabric mod jar, or music disc 13 with a new look in vanilla packs. |
 | Villager trade (Creator: Worlds) | `villager-trade` | data | A new trade for a vanilla villager or the wandering trader: what it costs, what it gives and which profession and level offer it. A candidate among the villager's trades, not a certainty. |
 | Extra drop (Creator: Worlds) | `extra-drop` | mod | An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. |
@@ -544,6 +617,10 @@ Starters with questions (a name, a colour, a tier and so on) carry the **Wizard*
 | Wandering merchant (Creator: Mobs) | `wandering-merchant` | resource, data, mod | A mob that trades with you: up to three wares for emeralds, optionally the wandering trader's wares at levels 2 and 3, restocking twice a day or never, with a model, skin and spawn egg. |
 | Village job (Creator: Worlds) | `village-job` | resource, data, mod | A new job for villagers: the workbench block, the apron villagers and zombie villagers wear, what it buys and sells and, if you choose, the trades of a vanilla job at every level. |
 | Fluid (Creator: Blocks) | `fluid` | resource, data, mod | A new liquid with its bucket: water-like, lava-like or neither, its colour and pictures, how fast and far it flows, what happens to someone in it and, if you choose, lakes of it in the world. |
+| Car (Creator: Vehicles) | `vehicle-car` | resource, data, mod | A car to drive on the ground, with one to four seats, a horn, a boot, exhaust smoke and, if you choose, fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. |
+| Tank (Creator: Vehicles) | `vehicle-tank` | resource, data, mod | A slow, tough tank that turns on the spot, with a turret that follows your view and a cannon firing exploding shells, which can need loading: its boxed model, texture in your colour, paints, item picture, the shell and crafting recipes. |
+| Plane (Creator: Vehicles) | `vehicle-plane` | resource, data, mod | A biplane that takes off when it is fast enough and flies where you look, with one or two seats and fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. |
+| Boat (Creator: Vehicles) | `vehicle-boat` | resource, data, mod | A motorboat that floats on water, with two to four seats, an engine or paddle sound, a horn and, if you choose, fuel: its boxed model, texture in your colour, paints, item picture and crafting recipe. |
 | Scripted ore | `scripted_ore` | resource, data, mod | The Custom ore starter with three scripts: sneak-using ruby ore gives a bonus ruby, standing on a block of ruby heals you through a `run_script` action, and joining players are greeted. |
 | Scripted behaviour (Creator: Scripts) | `scripted-item` | resource, mod | An item that runs a script when used: it heals you, launches you upward, strikes lightning where you look or gives you an effect. The script opens in the Script Studio. |
 
@@ -588,6 +665,8 @@ The blocks and items examples and the Custom ore starter use the `msm:block`, `m
 
 Event ids are namespaced strings of your own (`<namespace>:lamp_turn_on`); each block or item declares its events under `events`, and its components name them.
 
+The plant and storage examples show the types of [Growing and climbing plants](block-types-and-plants.md#growing-and-climbing-plants) and the storage options of [Containers and machines](containers-and-machines.md): **Ember vines with glowing berries**, **Sea ribbon** (kelp-like), **Glow moss** (lichen-like), **Dune reed** (cane), **Spine cactus**, **Reed bamboo**, **Wide leaf** (a big and a small dripleaf), **Clay planter** (a pot of its own), **Bronze fittings that age** (the six new ageing types and a chest), **Twin crate** (a double chest) and **Private crate** (a chest for every player). **Rules for vanilla blocks** shows the element of [Rules for vanilla blocks](adding-to-vanilla.md#rules-for-vanilla-blocks).
+
 The entity examples and the mob starters use `msm:entity`, `msm:geo_model` and `msm:animation`, which also need the Fabric mod jar (with GeckoLib on 26.3 for mobs that use it). Each entity example is a complete mob with its model, animations, skin and, when it has one, spawn egg texture:
 
 - **Wandering creature** shows the basics: a peaceful mob with wander and look goals and a spawn egg.
@@ -619,7 +698,7 @@ Two wishes from the research are simplified: the Orchard tree's pie is eaten who
 
 ### All examples
 
-There is one example for each of the 104 element kinds, thirty-four more behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; containers and machines: a loot crate in a structure, an ore crusher and a shulker crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), sixteen **Popular ideas** (below), plus four themed starters listed again under **Starters**. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Portal, Particle, Wandering merchant, Village job, Fluid) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
+There is one example for each of the 115 element kinds, the behaviour examples (blocks and items: a tool, an event chain, a fuel log, a life-steal sword and a night-vision helmet; block types: a wood set, a stone set, a crop, a tree, a machine-like block and a vault door; growing plants and pots: ember vines with glowing berries, a sea ribbon, glow moss, a dune reed, a spine cactus, reed bamboo, a wide leaf and a clay planter; containers and machines: a loot crate in a structure, an ore crusher, a shulker crate, bronze fittings that age, a twin crate and a private crate; portals: a two-way sky portal; particles: a firefly jar; a potion brewed with your own item; entities: a hostile mob, natural spawning, a tameable pet, a rideable flying mount, an archer with a throwable, a fish school with variants, a boss with a boss bar and a mob drawn without GeckoLib; villagers: a roadside merchant with trades of its own; vehicles: a seaside; scripts: scheduled effects, an action handler, a scripted effect, a kill counter, a full set bonus, a teleport staff and a boss fight bar; rules: a guard mob), sixteen **Popular ideas** (below), plus four themed starters listed again under **Starters**: 186 in all. The three worldgen starters, the Custom mob and Scripted ore starters and the starters added with the Creator (Custom sword, Gear set, Simple block, Food, Weapon, Consumable, Totem, Enchantment, Painting, Banner pattern, Armour trim, Glider, Pot pattern, Music disc, Scripted behaviour, Dimension, Status effect, Potion, Throwable, Villager trade, Extra drop, Mob skin, Goat horn, Pet, Farm animal, Mount, Flying mob, Water mob, Boss, Storage crate, Machine, Cave plants, Desert plants, Flower pot, Portal, Particle, Car, Tank, Plane, Boat, Wandering merchant, Village job, Fluid and the others) have no gallery entry; create them with **New from starter…** or open their folders under `examples/starters/`.
 
 | Example | id | Category | Kind | What it shows |
 |---|---|---|---|---|
@@ -685,9 +764,20 @@ There is one example for each of the 104 element kinds, thirty-four more behavio
 | Cow sound variant | `example_cow_sound_variant` | Mob sounds | `minecraft:cow_sound_variant` | A cow that moos like the moody cow but steps like the classic one. |
 | Chicken sound variant | `example_chicken_sound_variant` | Mob sounds | `minecraft:chicken_sound_variant` | A chicken that clucks like the picky chicken. |
 | Custom goat horn | `example_custom_goat_horn` | Goat horns | `minecraft:instrument` | A goat horn with its own call, length and range, crafted from a goat horn and an echo shard, that goats can drop. |
+| Trial spawner wave | `example_trial_spawner` | Mob variants | `minecraft:trial_spawner` | A trial spawner configuration that sends husks and baby zombies, with its own rewards. |
 | Enchantment provider | `example_enchantment_provider` | Enchantments | `minecraft:enchantment_provider` | A rule that enchants gear like a level 5 to 20 enchanting table. |
 | Timeline: slime moons | `example_timeline` | Time | `minecraft:timeline` | A timeline that doubles the surface slime chance every other day, added to the overworld timelines. |
 | World clock | `example_world_clock` | Time | `minecraft:world_clock` | A clock of its own that timelines and dimension types can follow. |
+| Pot pattern | `example_decorated_pot_pattern` | Decorations | `minecraft:decorated_pot_pattern` | A fish picture for the sides of decorated pots, drawn on fired clay. |
+| Block transformer | `example_block_transformer` | Tools | `minecraft:block_transformer` | A rule that turns coarse dirt into a dirt path, as a shovel flattens grass. |
+| Test environment | `example_test_environment` | Game tests | `minecraft:test_environment` | Rainy weather on hard difficulty, for game tests that name it. |
+| Test instance | `example_test_instance` | Game tests | `minecraft:test_instance` | A game test that places a structure and waits for a test block to pass. |
+| Sulfur cube kind | `example_sulfur_cube_archetype` | Mob variants | `minecraft:sulfur_cube_archetype` | A sulfur cube that turns hot when fed magma cream. |
+| Whole-number provider | `example_context_int_provider` | Numbers the game reads | `minecraft:context_int_provider` | A named whole number the game can read: a random value from 2 to 4. |
+| Decimal-number provider | `example_context_float_provider` | Numbers the game reads | `minecraft:context_float_provider` | A named decimal number the game can read: always one and a half. |
+| Screen effect | `example_post_effect` | Shaders | `minecraft:post_effect` | A warm sepia tint over the whole screen, from the vanilla copy shader. |
+| Waypoint style | `example_waypoint_style` | Locator bar | `minecraft:waypoint_style` | A locator bar dot that shrinks over a long way. |
+| Shader program | `example_shader` | Shaders | `minecraft:shader` | A shader program definition naming the vanilla textured shaders. |
 | Structure template | `example_structure_template` | Structures | `minecraft:structure_template` | A small stone well, stored as JSON and exported as a structure `.nbt` file. |
 | Template pool | `example_template_pool` | Structures | `minecraft:worldgen/template_pool` | A pool that picks a flower bed or nothing, as jigsaw blocks do. |
 | Jigsaw structure | `example_structure` | Structures | `minecraft:worldgen/structure` | A lone tower in mountains and hills, built from one template. |
@@ -723,9 +813,20 @@ There is one example for each of the 104 element kinds, thirty-four more behavio
 | Silver birch tree | `example_msm_tree` | Blocks | `msm:block` | A sapling that grows a tall branching tree of vanilla birch logs and new silver leaves, and grows in forests. |
 | Crusher | `example_msm_machine_block` | Blocks | `msm:block` | A machine-like block that turns its front towards you when placed, as a furnace does. |
 | Vault door | `example_msm_iron_door` | Blocks | `msm:block` | A two-block-high metal door that opens only with a redstone signal, as an iron door, with a stone button to open it. |
+| Ember vines with glowing berries | `example_msm_ember_vines` | Blocks | `msm:block` | Vines that hang from cave ceilings and bear glowing berries you pick and eat, as cave vines, from the Cave plants flow. |
+| Sea ribbon | `example_msm_sea_ribbon` | Blocks | `msm:block` | A water plant that grows up from the sea floor a block at a time, as kelp, from the Cave plants flow. |
+| Glow moss | `example_msm_glow_moss` | Blocks | `msm:block` | A thin moss that covers any side of a block, glows softly and spreads with bone meal, as glow lichen, from the Cave plants flow. |
+| Dune reed | `example_msm_dune_reed` | Blocks | `msm:block` | A reed that grows tall by water on sand and grass and makes sugar, as sugar cane, from the Desert plants flow. |
+| Spine cactus | `example_msm_spine_cactus` | Blocks | `msm:block` | A tall spiny cactus that grows twice as high as vanilla cactus, hurts what touches it and smelts into green dye, from the Desert plants flow. |
+| Reed bamboo | `example_msm_reed_bamboo` | Blocks | `msm:block` | A woody stalk that grows from a shoot, carries leaves near its top and makes sticks, as bamboo, from the Desert plants flow. |
+| Wide leaf | `example_msm_wide_leaf` | Blocks | `msm:block` | A big leaf on a stem that tips under you, and a small one that bone meal grows into it, as big and small dripleaf, from the Desert plants flow. |
+| Clay planter | `example_msm_clay_planter` | Blocks | `msm:block` | A flower pot of its own that takes six vanilla flowers and saplings, crafted from clay, from the Flower pot flow. |
+| Bronze fittings that age | `example_msm_bronze_fittings` | Blocks | `msm:block` | A rod, a button, a pressure plate, a fence, a gate, a wall and a chest that joins into a double chest, all of a bronze that turns green as copper does, with waxed copies, from the Copper set flow. Lightning scrapes them back. |
 | Loot crate in a structure | `example_msm_loot_crate` | Blocks | `msm:block` | A stone crate with a chest screen, placed in a small room by a structure template that gives it a loot table, so it fills on the first open as a dungeon chest does. |
 | Ore crusher | `example_msm_ore_crusher` | Blocks | `msm:block` | A machine from the Machine flow that crushes raw iron, gold and copper into two ingots each, burning fuel, with a hopper chain that feeds it and empties it into a chest. |
 | Shulker crate | `example_msm_shulker_crate` | Blocks | `msm:block` | A crate that keeps its 27 slots of items when broken and carries them in its item, as a shulker box does, from the Storage crate flow. |
+| Twin crate | `example_msm_twin_crate` | Blocks | `msm:block` | A wooden crate that joins a crate beside it into one double chest of 54 slots, as vanilla chests do, from the Storage crate flow. |
+| Private crate | `example_msm_private_crate` | Blocks | `msm:block` | A stone crate in which every player finds their own items, as an ender chest, from the Storage crate flow. |
 | Firefly jar | `example_msm_firefly_jar` | Blocks | `msm:block` | A glowing firefly particle of its own, a glass jar that shows it by itself (ambient particles) and a spark wand that sends a burst of fireflies upwards (motion) with a cloud of coloured dust (an options object). |
 | Two-way sky portal | `example_msm_sky_portal` | Blocks | `msm:block` | A portal from the Portal flow to a flat sky dimension and back, in a frame of its own block, lit with flint and steel or by using a beacon block (the **Light a portal** action), with blue dust and an `On travel` function that says a line. |
 | Life-steal sword | `example_msm_life_steal_sword` | Items | `msm:item` | An iron sword that heals you by one heart each time it hits a mob. |
@@ -751,7 +852,11 @@ There is one example for each of the 104 element kinds, thirty-four more behavio
 | Script: teleport staff | `example_msm_teleport_staff` | Scripts | `msm:script` | A script that turns a breeze rod into a teleport staff: use it to blink to the block you look at, sneak-use it to mark home or, from another dimension, to go home. |
 | Script: boss fight bar | `example_msm_boss_fight_bar` | Scripts | `msm:script` | A script that summons a ravager boss with a nether star and shows its health on a boss bar to every player, with a title and a reward when it falls. |
 | Rules: a lucky block | `example_msm_rules` | Rules | `msm:rules` | A lucky block and a lucky coin made with rules, no code: breaking the block is a gamble between a few coins and a silverfish, a counter keeps score, and spending a coin gives Luck. |
+| Vehicles: a tank battle | `example_msm_vehicle` | Vehicles | `msm:vehicle` | A drivable tank with a turret that follows your view, a cannon, a shell crate and a reload line on the screen. |
+| Controls: a dash ability | `example_msm_key_bind` | Controls and HUD | `msm:key_bind` | A key (Z by default, shown in Controls) that dashes the player forward once a second, with a charge bar on screen. |
+| Controls: a score and a mana bar | `example_msm_hud` | Controls and HUD | `msm:hud` | Two HUD elements: a mana bar above the hotbar and a score line in the top-right corner, both read from the game. |
 | Rules: a guard mob | `example_msm_rules_guard_mob` | Rules | `msm:rules` | A guard made with rules, no code: every five seconds it lights up each player within 12 blocks and warns them, and it calls out when hurt. |
+| Vehicles: a seaside | `example_vehicles_seaside` | Vehicles | `msm:vehicle` | A motorboat with a horn, a four-seat raft with a crate and a dock block to tie them up at. |
 | Command: /welcome | `example_msm_command` | Commands | `msm:command` | A server command anyone can type, `/welcome` (or `/hi`), that plays a chime and answers in chat, with no function. |
 | Creative tab: Curios | `example_msm_creative_tab` | Items | `msm:creative_tab` | A tab of its own in the creative inventory with a curio block in it, listed by name. |
 | Cottage furniture and lights | `example_msm_cottage_furniture` | Blocks | `msm:block` | A straw bed, a lantern, a torch, a standing and a hanging sign, a potted plant, a rug and a cupboard that holds items. |
@@ -761,6 +866,7 @@ There is one example for each of the 104 element kinds, thirty-four more behavio
 | Server helper | `example_msm_server_helper` | Commands | `msm:command` | `/helpme` for everyone, `/hub` to jump to a lobby and `/boost` with a number for operators, with a rule book that points new players at `/helpme`. |
 | Village blacksmith job | `example_msm_villager_profession` | Villagers | `msm:villager_profession` | A blacksmith job for villagers: a villager takes it at a forge block, wears a leather apron and trades coal, iron and a toolsmith's wares as it levels up ([Villagers, traders and pets that carry things](villagers-and-traders.md)). |
 | Oil well | `example_msm_fluid` | Fluids | `msm:fluid` | Oil: a thick dark liquid that flows slowly and never refills, slows down whoever wades in, comes in a bucket and lies in lakes in deserts ([Fluids](fluids.md)). |
+| Rules for vanilla blocks | `example_msm_vanilla_block_rules` | Blocks | `msm:vanilla_block_rules` | An axe scrapes the moss off mossy cobblestone and stone bricks, a shovel packs mud, a hoe turns a moss block into dirt, and huge mushroom blocks catch fire, all for vanilla blocks. |
 | Roadside merchant | `example_msm_roadside_merchant` | Entities | `msm:entity` | A merchant by the road who sells bread and apples, then saddles and leads once you have traded with it, and rings a bell with every sale. |
 | Glowshard: a whole first mod | `example_popular_glowshard` | Popular ideas | `msm:item` | A glowing ore that generates in caves and drops shards, a block of glowshard, a sword, pickaxe, axe, shovel and hoe, a full suit of armour, an armour trim material and an advancement tab: the beginner route in one project. Inspired by: ore, tool and armour progression. |
 | Ember drake | `example_popular_ember_drake` | Popular ideas | `msm:entity` | A drake hatched from its spawn egg, tamed with raw meat, saddled and flown by its owner, that shoots fireballs at monsters and at anything that hurts it. Inspired by: dragon mounts and pets. |

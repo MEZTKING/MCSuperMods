@@ -50,7 +50,11 @@ export const KIND_SCHEMA_SUMMARY_OPTIONS: Readonly<SchemaSummaryOptions> = Objec
  *
  * Vanilla parity 3 batch 1 (B506): the five plant and pot types of ADR 0103, `block_sounds`,
  * own set types and the flattening and tilling components of ADR 0105 bring `msm:block` to
- * about 20,300 characters, so its allowance is 22,000.
+ * about 20,300 characters, so its allowance is 22,000. The addition kind
+ * `msm:vanilla_block_rules` (ADR 0105 D4, B515) shows its six lists (strip, flatten, till, wax,
+ * age, burn) within the defaults (about 600 characters). An own set type object and a chest's
+ * `double` and `per_player` sit below the default depth (`{...}`), so the system prompt spells
+ * them out (B522).
  */
 export const KIND_SCHEMA_SUMMARY_ALLOWANCES: Readonly<
   Record<string, Readonly<SchemaSummaryOptions>>

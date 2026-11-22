@@ -629,7 +629,13 @@ export function createToolExecutor(
       if (target.fabric !== undefined) facts.fabric = target.fabric;
       if (target.geckolib !== undefined) facts.geckolib = target.geckolib;
       if (target.items !== undefined) facts.items = target.items;
-      if (target.blocks !== undefined) facts.blocks = target.blocks;
+      if (target.blocks !== undefined) {
+        // Vanilla's strip, flatten, till, wax and age pairs (about 9 kB) and a target's sound
+        // sets (over a hundred) are for the validators and the lowering, not the model (plugin
+        // API 1.19.0, B522): leave them out to keep the answer small, as the key code tables.
+        const { vanillaPairs: _pairs, soundSetEvents: _soundSets, ...blocks } = target.blocks;
+        facts.blocks = blocks;
+      }
       if (target.entities !== undefined) facts.entities = target.entities;
       if (target.particles !== undefined) facts.particles = target.particles;
       if (target.dev !== undefined) facts.dev = target.dev;
