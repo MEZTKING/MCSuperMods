@@ -555,3 +555,13 @@ The order follows value and risk: everyday plants and storage first (beginner-vi
 ### Wolf sound variant (main session, 2026-11-22)
 
 - `minecraft:wolf_sound_variant` is out again (ADR 0106 amendment): kinds 114, generic data kinds 35, data pack templates 73; `KINDS_AWAITING_EXAMPLES` is empty. The `DataFolderKey` stays (plugin API 1.9.0). Wherever B504's notes above say 115 or "11 kinds", read 114 and 10.
+
+### B511 (merged 2026-11-22)
+
+- Lowering for `growing_plant`, `column_plant`, `multiface`, `dripleaf`; validator `msm.blocks-items.plants-3` with `PLANT3_PROBLEM_CODES` (`dripleaf-grows-into-missing`, `-grows-into-big`, `-tilt-small`, `-grows-into-not-big`, `column-min-above-max`, warning `water-plant-feature-dry`); B515 does not redo these. Companion clashes are covered by the existing `generated-block-clash`. The main session added the validator id to `plugin.test.ts`.
+- **B509 block states:** `berries` on tip and strand only when `berries` is set; `age` and `leaves` on bamboo; `facing`/`tilt` on the big leaf; `facing` on the stem; `facing`/`half` on the small leaf. Project bamboo and its shoot join `#minecraft:supports_bamboo`.
+- `companions.ts`: `CompanionLowering.applies?(data)`, data-dependent `blockTags`, `companionsOf(type, data?)`; `blockGeneratedBlockIds` depends on the data (`_shoot` only for bamboo, `_stem` only for big dripleaf).
+- **B516 model slots:** `growing_plant` `head`, `body`, `head_berries`, `body_berries`; `column_plant` `default`, `stalk2`–`stalk4`, `thick`–`thick4`, `leaves_small`, `leaves_large`, `shoot`; `multiface` `face`; `dripleaf` `leaf`, `partial_tilt`, `full_tilt`, `stem`, `bottom`; every type `item`. Generated model ids as the DEVLOG entry lists.
+- **Facts follow-up (B515 or the close):** add 18 vanilla model templates to `BlockFacts.modelTemplates` on both targets (cactus, eight bamboo stalks, two bamboo leaves, glow_lichen, big_dripleaf with partial and full tilt and stem, small_dripleaf top and bottom), then remove `TEMPLATES_NOT_IN_FACTS` from `plants-3.golden.test.ts`.
+- **B519:** strands from a tip with a `_plant` body and the lit berries model; bamboo's four stalks by `age` and leaves by `leaves`, the shoot; the six multiface faces; big dripleaf tilt models with the stem, small by `half`; items are flat pictures.
+- **B522 guide:** "A small dripleaf needs a big dripleaf of this project to grow into." "A plant that lives in water placed by a world feature needs a water check in that feature." "Vine-like strands drop only to shears or Silk Touch, or sometimes by luck; glow-lichen-like plants and small dripleaf only to shears."

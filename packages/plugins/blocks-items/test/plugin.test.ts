@@ -150,6 +150,7 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.item-inventory',
       'msm.blocks-items.creative-tab-icon',
       'msm.blocks-items.fluids',
+      'msm.blocks-items.plants-3',
     ]);
     expect(blocksItemsValidators).toHaveLength(23);
   });
