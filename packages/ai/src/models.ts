@@ -146,7 +146,7 @@ export function formatCost(usd: number): string {
  * tool definitions as JSON. Measured by `models.test.ts`, which fails when the measurement moves
  * more than 5 % away from this number; then set it to the measured value.
  */
-export const PROMPT_PREFIX_CHARS = 118_255;
+export const PROMPT_PREFIX_CHARS = 118_324;
 
 /**
  * Characters per token used to turn {@link PROMPT_PREFIX_CHARS} into tokens. An estimate (verify

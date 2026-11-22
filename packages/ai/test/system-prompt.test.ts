@@ -911,8 +911,11 @@ describe('the prompt in topic files (B681)', () => {
   // The SHA-256 of each run size's text taken before the split into `src/prompt/`. Wording
   // changes (B682 onwards) move these on purpose, with a line in the brief that does it.
   // B682 moved it once, on purpose (ADR 0125 D2, D6, D7): one text for both run sizes, the
-  // contradictions of F8 fixed, how to speak and the map of the app added.
-  const PINNED = '0e5f0eeb7ca5a934e322eda76e743a8b14bd29da2c7d72caa8d5891373ffa715';
+  // contradictions of F8 fixed, how to speak and the map of the app added. B683 moved it once
+  // more, for three sentences its truth test found false: Try it runs an event's run_function
+  // (B613), a script's particle count is capped at 1000 only with motion, and no mob flow
+  // offers the cube_creature preset.
+  const PINNED = '198b06477950d50d25d2ff8fdd45f691245da59d1a4603bfd96d449afb93fbc7';
 
   it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
