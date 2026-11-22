@@ -21,6 +21,22 @@ export {
 } from './registries';
 
 /**
+ * The registries the preview panel draws as a live world map (ADR 0119 D7, B582): dimensions
+ * and world presets by themselves, the rest inside a world that uses them (the panel's "Seen
+ * in"). The climate map is a tab of that view.
+ */
+export const WORLDGEN_MAP_REGISTRIES: readonly WorldgenRegistry[] = Object.freeze([
+  'dimension',
+  'worldgen/world_preset',
+  'worldgen/noise_settings',
+  'worldgen/biome',
+  'worldgen/multi_noise_biome_source_parameter_list',
+  'worldgen/flat_level_generator_preset',
+  'worldgen/material_rule',
+  'worldgen/material_condition',
+]);
+
+/**
  * Creates the kind of one registry.
  *
  * @param registry - One of {@link WORLDGEN_REGISTRIES}.
@@ -45,9 +61,7 @@ export function worldgenKind(registry: WorldgenRegistry): ElementKind {
             noiseSettingsFor(WORLDGEN_DEFAULTS[registry], target),
         }
       : {}),
-    ...(registry === 'dimension' || registry === 'worldgen/world_preset'
-      ? { previewKind: 'climate_map' }
-      : {}),
+    ...(WORLDGEN_MAP_REGISTRIES.includes(registry) ? { previewKind: 'worldgen_map' } : {}),
     lower,
   };
 }

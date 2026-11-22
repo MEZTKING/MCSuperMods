@@ -16,6 +16,7 @@ import type { Element, Project } from '@msm/plugin-api';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { RecipeGridView } from '../components/recipe-grid/RecipeGridView';
 import { Button } from '../components/ui/Button';
+import type { WorldgenSession } from '../terrain/files';
 import { ArmourPreviewView } from './ArmourPreviewView';
 import { armourPreviewOf } from './armour-preview';
 import type { PreviewKind, PreviewSubject } from './asset-source';
@@ -77,6 +78,10 @@ export interface PreviewPanelProps {
   webgl?: boolean;
   /** Moves the form to a field (RFC 6901 pointer), for the armour parts list. */
   onJumpTo?(pointer: string): void;
+  /** The project session, for the live world map (`worldgen_map`, ADR 0119). */
+  terrainSession?: WorldgenSession;
+  /** The project's folder (the world map's view is kept per project), or `null`. */
+  projectRoot?: string | null;
 }
 
 /** Kinds whose `model` field the panel previews (custom items and blocks, ADR 0047 D4). */
@@ -203,9 +208,23 @@ export function PreviewPanel(props: PreviewPanelProps) {
   if (element !== null && kind === 'worldgen_map') {
     return (
       <section aria-label="Preview" className="flex flex-col gap-3">
-        <Suspense fallback={<p className="text-sm text-muted">Loading world map…</p>}>
-          <WorldMap />
-        </Suspense>
+        {props.terrainSession === undefined ? (
+          <p role="status" className="text-sm text-muted">
+            The world map needs an open project.
+          </p>
+        ) : (
+          <Suspense fallback={<p className="text-sm text-muted">Loading world map…</p>}>
+            <WorldMap
+              key={`${element.kind} ${element.id}`}
+              session={props.terrainSession}
+              root={props.projectRoot ?? null}
+              project={project}
+              element={element}
+              vanillaReady={vanilla !== null}
+              onSetup={onSetup}
+            />
+          </Suspense>
+        )}
       </section>
     );
   }

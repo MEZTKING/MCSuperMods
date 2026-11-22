@@ -86,8 +86,17 @@ describe('@msm/plugin-worldgen', () => {
       expect(kind.folder, kind.id).toBe(registry);
       expect(kind.registry, kind.id).toBeUndefined();
       expect(kind.defaultData, kind.id).toBeDefined();
-      const climate = registry === 'dimension' || registry === 'worldgen/world_preset';
-      expect(kind.previewKind, kind.id).toBe(climate ? 'climate_map' : undefined);
+      const map = [
+        'dimension',
+        'worldgen/world_preset',
+        'worldgen/noise_settings',
+        'worldgen/biome',
+        'worldgen/multi_noise_biome_source_parameter_list',
+        'worldgen/flat_level_generator_preset',
+        'worldgen/material_rule',
+        'worldgen/material_condition',
+      ].includes(registry);
+      expect(kind.previewKind, kind.id).toBe(map ? 'worldgen_map' : undefined);
     }
   });
 

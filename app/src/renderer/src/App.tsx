@@ -2480,6 +2480,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         onJumpTo={(pointer) => {
           if (selected !== null) navigateTo(selected.id, pointer, null);
         }}
+        terrainSession={session}
+        projectRoot={snapshot.root}
       />
     ) : undefined;
   // The live preview sits beside the form when shown (ADR 0047 D4); the dock then points there
