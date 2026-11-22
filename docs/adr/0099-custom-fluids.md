@@ -59,6 +59,10 @@ Recorded 2026-11-21 at the close of vanilla parity 2 batch 2 (B485) from the cod
 - **Tests** (B475, B477, B482). `MsmFluidGameTest` (22), `MsmFluidClientGameTest` (still and flowing pictures with the tint by `assertScreenshotContains`), JUnit `FluidParserTest`; goldens for water-like, lava-like, untagged and minimal fluids on both targets; `fixtures/sample-villagers-and-fluids` with `brine` (water-like, glowing inside) and `molten_amber` (lava-like, light 12), pinned in CI as `registered 2 fluid(s)`.
 - **Open follow-ups.** Make `MsmRegistrar.checkEvents` public so fluid events get the block event checks; correct the mcdoc `light` comment (lava-like defaults to 15); sim-parity scenarios for `on_entity_inside`; in-game checks of lakes of a project fluid, swimming, burning and mixing; the D5 limits (mixing rules, cauldrons, bottles, pipes, boats, buoyancy, fog colours on 26.3, waterlogging by a project fluid); the eject.
 
+## Correction (B525, 2026-11-22)
+
+The limit "a resource pack cannot change a fluid's pictures" is wrong: a resource pack replacing the PNGs at the fluid's texture paths repaints it on both versions. Only re-pointing the liquid block's model in a pack has no effect, because `FluidClient` reads the model from the mod jar at client start. The guide says so.
+
 ## Status
 
 Accepted with findings at close B485 (2026-11-21; unreleased, awaiting the user's in-game checks), with the defaults below; the user has not yet been shown them and may still veto them. B470 answered D3 with a go on both versions and one 26.4 Mixin. Vetoable defaults as built: `behaves_like: water` by default through the vanilla fluid tag, water's flow numbers by default, lava-like light 15 (D1); a fluid's pictures from the mod's own block model, not from resource packs (D2); the 26.4 `EntityFluidMixin` with three injections (D3); no eject for fluids yet (D4).

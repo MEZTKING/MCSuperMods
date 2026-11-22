@@ -19,6 +19,15 @@
 - Two companions per fluid at most (cauldron, bottle; limit N2).
 - Mixing behaves the same on both versions once `mixing` is set; without it the old per-version behaviour stays (stated in the guide).
 
+## Amendment after the spike (B525, 2026-11-22)
+
+Measured on both versions (evidence in `docs/reference/spikes/b525/`); these win over D1 to D4 where they differ.
+
+- **D1 mixing: go on both versions, by the liquid block's own check.** The liquid block overrides `onPlace` and `neighborChanged`, looks at the five neighbours other than the one below, and on a match sets the rule's source or flowing block with the lava fizz (`LevelEvent.LAVA_FIZZ`). When `mixing` is set it never calls vanilla's code (which on 26.3 would still make obsidian) and schedules the fluid tick itself. Fluid-id rules are checked before tag rules (a project fluid in `#minecraft:water` would otherwise match the tag first). Liquids are compared by their legacy block (`Fluid.isSame` exists on 26.3 only). Lava falling into water (vanilla's stone) is optional, by a `spreadTo` override in the `MsmFluid` seam.
+- **D2 cauldrons: go, no Mixin.** A project cauldron subclasses vanilla's layered or full-only cauldron with an empty interaction dispatcher (`Dispatcher.put` is not public) and its own `useItemOn` over vanilla's public `fillBucket`/`emptyBucket` helpers; vanilla's empty cauldron takes a project bucket or bottle through `UseBlockCallback`. The layered class puts out burning entities and uses a level each time, so only water-like fluids use it unchanged; lava-like cauldrons are full-only.
+- **D3 bottles: go.** Vanilla's glass bottle fills with water from any `#minecraft:water` fluid, so the project bottle needs a `UseItemCallback` before vanilla's; the bottle is a drink (`Consumable` with the drink animation, 1.6 s default, `usingConvertsTo` the glass bottle), `finishUsingItem` the `on_drink` hook.
+- **D4 boats and packs.** Vanilla boats float and glide on water-like project fluids with no change (on 26.4 a boat loses speed near the edge of a source area: verify in game). A resource pack can repaint a project fluid by replacing its picture files at their texture paths, but not by re-pointing the liquid block's model (read from the mod jar at client start).
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: mixing only when listed; a cauldron with three levels only when `levels` is set; bottles only when `bottle` is set; the companion names `<path>_cauldron` and `<path>_bottle`.

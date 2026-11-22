@@ -28,6 +28,16 @@
 - Up to five more Mixins (D3), each with its own GameTest; none ejected.
 - Two more frozen registries (game rules, statistics; limit N1).
 
+## Amendment after the spike (B525, 2026-11-22)
+
+Measured on both versions (evidence in `docs/reference/spikes/b525/`).
+
+- **Argument types:** 32 types work on both versions and reach the client's command tree, rebuilt on `/reload`: dimension, time, team colour, hex colour, rotation, angle, UUID, objective, score holder(s), item and block predicates, effect, enchantment, biome and entity type (`ResourceArgument` over a registry the client receives), biome or tag, structure and structure or tag (key types), particle, game mode, text component, int range, identifier, team, slot, NBT compound, message, dialog and loot table (`ResourceOrIdArgument`), advancement and recipe (key types). A `ResourceArgument` over a registry the client does not receive (structures) disconnects every client, so such registries are key-only (`CommandFacts.argumentTypes` marks them).
+- **Own game rules: go, no Mixin.** Fabric's `GameRuleBuilder` (boolean and integer, with a range and a category), saved with the world, `/gamerule <ns>:<path>` (the namespace is required), Fabric's change callback; lang keys `gamerule.<ns>.<path>` and `.description`.
+- **Statistics: go.** Registered in `custom_stat` with the registered `Identifier` instance kept (a new instance throws), criterion `minecraft.custom:<ns>.<path>`, formats default, distance and time, saved per player, lang key `stat.<ns>.<path>`.
+- **Events: sleeping and waking by Fabric's `EntitySleepEvents`; crafting, picking up, eating and advancements need Mixins**, each with a justification comment and a GameTest on the real path, all on targets that exist on both versions (no `MixinVersions` entry): head of `ItemStack.onCraftedBy(Player, int)` (once per craft, covers the 2 by 2 grid, the table and furnace results); head and return of `ItemEntity.playerTouch(Player)` (taken = count before minus after, so partial pickups count); head of `Consumable.onConsume(Level, LivingEntity, ItemStack)` (once at the end, drinks too); head and return of `PlayerAdvancements.award` with the head of `AdvancementRewards.grant(ServerPlayer)` (once per completed advancement). A vanilla data route (advancements with a reward function) also counts these without Java.
+- **Dialogs: go, no Mixin.** `ServerPlayer.openDialog(Holder<Dialog>)` and `/dialog show` open a project dialog on the client.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: arguments readable only on the command's own rules; the argument types the spike confirms; Mixins where Fabric has no event; game rules of vanilla's two kinds only; `by_hand` order with unlisted items after.
