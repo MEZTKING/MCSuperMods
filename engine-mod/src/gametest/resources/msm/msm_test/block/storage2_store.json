@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:container": {
+      "on_close": "msm_test:storage2_closed",
+      "on_open": "msm_test:storage2_opened",
+      "per_player": true,
+      "rows": 3
+    }
+  },
+  "events": {
+    "msm_test:storage2_closed": {
+      "actions": []
+    },
+    "msm_test:storage2_opened": {
+      "actions": []
+    }
+  },
+  "format": 1
+}

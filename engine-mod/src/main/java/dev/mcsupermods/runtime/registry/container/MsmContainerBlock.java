@@ -161,7 +161,9 @@ public class MsmContainerBlock extends MsmBlock implements EntityBlock {
                 used = false; // an item that did not fit: only msm:on_interact below
             }
         } else {
-            if (level instanceof ServerLevel) {
+            if (level instanceof ServerLevel && storage.spec().perPlayer()) {
+                PlayerStores.open(storage, player); // the player's own store (ADR 0104 D5)
+            } else if (level instanceof ServerLevel) {
                 player.openMenu(storage); // a locked container sends its own message and opens nothing
             }
             used = true;
@@ -206,7 +208,8 @@ public class MsmContainerBlock extends MsmBlock implements EntityBlock {
         if (machineType != null) {
             return machine.map(m -> m.comparator() != BlockComponents.MachineComparator.NONE).orElse(false);
         }
-        return storageType != null && container.map(BlockComponents.Container::comparator).orElse(false);
+        // A per-player chest has no comparator output, as vanilla's ender chest (ADR 0104 D5).
+        return storageType != null && container.map(c -> c.comparator() && !c.perPlayer()).orElse(false);
     }
 
     @Override

@@ -144,16 +144,15 @@ public class MsmWeatheringGameTest {
                 "the water does not flow out"));
     }
 
+    /** Since ADR 0104 D3 and D6 (B513, limit Q8 lifted) containers hold water and weather; other types keep vanilla's water. */
     @GameTest
-    public void containersAndOtherTypesHaveNoWaterloggedProperty(GameTestHelper helper) {
-        helper.assertTrue(!block("waterlog_container").defaultBlockState().hasProperty(BlockStateProperties.WATERLOGGED),
-                "a container got waterlogged");
-        helper.assertTrue(!(block("weathering_container") instanceof ChangeOverTimeBlock<?>), "a container weathers");
+    public void containersHoldWaterAndWeatherAndOtherTypesKeepVanillasWater(GameTestHelper helper) {
+        helper.assertTrue(block("waterlog_container").defaultBlockState().hasProperty(BlockStateProperties.WATERLOGGED),
+                "a waterloggable container cannot hold water");
+        helper.assertTrue(block("weathering_container") instanceof ChangeOverTimeBlock<?>, "a weathering container does not weather");
         List<String> warnings = MsmRuntime.report().warnings();
-        helper.assertTrue(warnings.stream().anyMatch(w -> w.contains("waterlog_container") && w.contains("msm:waterloggable")),
-                "no warning for waterlog_container: " + warnings.stream().filter(w -> w.contains("waterlog_")).toList());
-        helper.assertTrue(warnings.stream().anyMatch(w -> w.contains("weathering_container") && w.contains("msm:weathering")),
-                "no warning for weathering_container");
+        helper.assertTrue(warnings.stream().noneMatch(w -> w.contains("waterlog_container") || w.contains("weathering_container")),
+                "container warnings: " + warnings.stream().filter(w -> w.contains("_container")).toList());
         List<String> errors = MsmRuntime.report().errors();
         helper.assertTrue(errors.stream().anyMatch(e -> e.contains("waterlog_slab") && e.contains("msm:waterloggable")),
                 "no error for a waterloggable slab");

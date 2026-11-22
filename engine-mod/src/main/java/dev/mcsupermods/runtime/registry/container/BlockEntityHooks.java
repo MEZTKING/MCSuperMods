@@ -24,7 +24,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
  * {@link BlockEntityType} registered with the block's own id; a keep-contents block's item is an
  * {@link MsmContainerBlockItem}. Machines (B316): a definition with {@code msm:machine} is an {@link MsmContainerBlock}
  * with vanilla's {@code lit} property, one {@link BlockEntityType} of {@link MsmMachineBlockEntity} and one recipe type
- * and serialiser ({@link MachineRecipes}), all with the block's own id.
+ * and serialiser ({@link MachineRecipes}), all with the block's own id. Double chests (B513, ADR 0104 D4): an
+ * {@link MsmDoubleChestBlock} gets one {@link BlockEntityType} of {@link MsmDoubleChestBlockEntity} with its id.
  */
 public final class BlockEntityHooks {
     private static int blockEntityTypes;
@@ -59,6 +60,29 @@ public final class BlockEntityHooks {
         if (block instanceof MsmContainerBlock machineBlock && definition.components().machine().isPresent()) {
             registerMachine(raw, machineBlock, definition.components().machine().get(), errors);
         }
+        if (block instanceof MsmDoubleChestBlock chest) {
+            registerDoubleChest(raw, chest, errors);
+        }
+    }
+
+    /**
+     * One {@link BlockEntityType} of {@link MsmDoubleChestBlockEntity} with the block's id (ADR 0104 D4). An id already in
+     * the registry is a load error: the block stays registered as a chest without a block entity (no menu, no contents).
+     */
+    private static void registerDoubleChest(RawDefinition raw, MsmDoubleChestBlock block, List<String> errors) {
+        checkSound(raw, "open_sound", block.spec().openSound(), errors);
+        checkSound(raw, "close_sound", block.spec().closeSound(), errors);
+        Identifier id = raw.id();
+        if (BuiltInRegistries.BLOCK_ENTITY_TYPE.containsKey(id)) {
+            error(errors, raw.describe() + ": components: msm:container: block entity type " + id
+                    + " is already registered; the block registers without its container");
+            return;
+        }
+        BlockEntityType<MsmDoubleChestBlockEntity> type = new BlockEntityType<>(
+                (pos, state) -> new MsmDoubleChestBlockEntity(block.storageType(), pos, state), Set.of(block));
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, type);
+        block.attachStorage(type);
+        countBlockEntityType();
     }
 
     /**

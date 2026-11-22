@@ -1,0 +1,15 @@
+{
+  "components": {
+    "msm:container": {
+      "double": true,
+      "rows": 3
+    },
+    "msm:weathering": {
+      "next": "msm_test:storage2_exposed_tin_double",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper",
+  "type": "horizontal"
+}

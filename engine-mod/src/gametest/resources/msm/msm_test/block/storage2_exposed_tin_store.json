@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:container": {
+      "per_player": true,
+      "rows": 3
+    },
+    "msm:weathering": {
+      "stage": "exposed"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

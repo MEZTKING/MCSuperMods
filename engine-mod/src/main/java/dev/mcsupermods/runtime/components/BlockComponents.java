@@ -156,20 +156,18 @@ public record BlockComponents(
     }
 
     /**
-     * The load-time rules of ADR 0094 D7 to D9 that the Codec cannot express. A container or machine cannot hold water or
-     * age (Q8; it keeps its block entity class): {@code msm:waterloggable}, {@code msm:weathering} and {@code msm:waxable}
-     * there are warnings and not applied. {@code msm:waxable} without {@code msm:weathering} is an error and not applied
-     * (only a weathering block is waxed). Problems are added to {@code errors} and {@code warnings}.
+     * The load-time rules of ADR 0094 D7 to D9 that the Codec cannot express. Since ADR 0104 D3 and D6 (B513; limit Q8
+     * lifted) a container may hold water, weather and be waxed, and a machine may hold water; a machine cannot age (it
+     * keeps its working block entity): {@code msm:weathering} and {@code msm:waxable} there are warnings and not applied.
+     * {@code msm:waxable} without {@code msm:weathering} is an error and not applied (only a weathering block is waxed).
+     * Problems are added to {@code errors} and {@code warnings}.
      */
     public BlockComponents checkAgeing(List<String> errors, List<String> warnings) {
         BlockComponents out = this;
-        if (container.isPresent() || machine.isPresent()) {
-            String holder = container.isPresent() ? "msm:container" : "msm:machine";
-            List<String> dropped = Stream.of("msm:waterloggable", "msm:weathering", "msm:waxable")
-                    .filter(present()::contains).toList();
+        if (machine.isPresent()) {
+            List<String> dropped = Stream.of("msm:weathering", "msm:waxable").filter(present()::contains).toList();
             for (String key : dropped) {
-                warnings.add("components: " + key + " is not applied on a block with " + holder
-                        + " (containers and machines cannot hold water or age)");
+                warnings.add("components: " + key + " is not applied on a block with msm:machine (machines cannot age)");
             }
             out = out.without(dropped);
         }

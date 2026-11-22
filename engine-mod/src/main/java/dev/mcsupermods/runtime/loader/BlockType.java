@@ -96,8 +96,9 @@ public enum BlockType {
             "msm:on_random_tick", "msm:on_entity_inside");
 
     /**
-     * The types that may carry {@code msm:waterloggable} (ADR 0094 D7): the {@code MsmBlock} family; the other types that
-     * vanilla waterlogs keep vanilla's own {@code waterlogged} property.
+     * The types that may carry {@code msm:waterloggable} (ADR 0094 D7): the {@code MsmBlock} family, containers and machines
+     * included since ADR 0104 D3 (B513); the other types that vanilla waterlogs keep vanilla's own {@code waterlogged}
+     * property.
      */
     public static final List<BlockType> WATERLOGGABLE_TYPES = List.of(BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL);
 

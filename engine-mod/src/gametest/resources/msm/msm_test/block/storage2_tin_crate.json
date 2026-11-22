@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:container": {
+      "rows": 3
+    },
+    "msm:waxable": {
+      "into": "msm_test:storage2_waxed_tin_crate"
+    },
+    "msm:weathering": {
+      "next": "msm_test:storage2_exposed_tin_crate",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

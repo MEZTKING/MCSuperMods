@@ -1,0 +1,9 @@
+{
+  "components": {
+    "msm:container": {
+      "per_player": true,
+      "rows": 1
+    }
+  },
+  "format": 1
+}

@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:container": {
+      "rows": 3
+    },
+    "msm:waterloggable": {},
+    "msm:weathering": {
+      "stage": "weathered"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

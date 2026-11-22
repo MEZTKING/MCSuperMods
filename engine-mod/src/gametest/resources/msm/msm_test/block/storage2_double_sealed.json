@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:container": {
+      "comparator": false,
+      "double": true,
+      "hoppers": false,
+      "rows": 3
+    }
+  },
+  "format": 1,
+  "type": "horizontal"
+}

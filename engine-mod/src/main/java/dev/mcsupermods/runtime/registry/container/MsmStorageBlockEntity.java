@@ -43,6 +43,8 @@ import net.minecraft.world.level.storage.ValueOutput;
  *   <li>Openers (D3) through {@link ContainerOpeners}: the {@code open} property, the sounds, the barrel's scheduled
  *       recheck ({@link #recheckOpen}, from the block's {@code tick}); {@code on_open} and {@code on_close} with the
  *       player as self and other.
+ *   <li>Per-player chests (ADR 0104 D5): the block entity's own slots stay empty; each player's menu shows their store in
+ *       {@link PlayerStores}, whose opening and closing count here.
  * </ul>
  */
 public class MsmStorageBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
@@ -115,19 +117,24 @@ public class MsmStorageBlockEntity extends RandomizableContainerBlockEntity impl
         return !spec.keepContents() || stack.getItem().canFitInsideContainerItems();
     }
 
+    /** Hoppers reach the block's slots with {@code hoppers: true}, never a per-player chest's (ADR 0104 D5, as the ender chest). */
+    private boolean hopperFaces() {
+        return spec.hoppers() && !spec.perPlayer();
+    }
+
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return spec.hoppers() ? allSlots : new int[0];
+        return hopperFaces() ? allSlots : new int[0];
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return spec.hoppers() && canPlaceItem(slot, stack);
+        return hopperFaces() && canPlaceItem(slot, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return spec.hoppers();
+        return hopperFaces();
     }
 
     @Override

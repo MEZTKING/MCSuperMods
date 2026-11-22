@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:container": {
+      "rows": 3
+    },
+    "msm:waterloggable": {}
+  },
+  "format": 1,
+  "type": "horizontal"
+}

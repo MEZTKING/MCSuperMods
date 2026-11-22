@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:machine": {
+      "recipe_types": [
+        "msm_test:machine_grinder"
+      ]
+    },
+    "msm:weathering": {
+      "stage": "exposed"
+    }
+  },
+  "format": 1
+}

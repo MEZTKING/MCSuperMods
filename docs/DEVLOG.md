@@ -7105,3 +7105,20 @@ Next
 
 **Next**
 - B515: the 26.4 `block_sound_set` files must match `block_sounds` and sit under the block's id. B546 if `age` on 26.4 is wanted. Guide (B522): own sounds on 26.4 change only after the world is opened again; `age` rules work on 26.3 only, and only for blocks that already age as copper does.
+## 2026-11-22 — executor — B513 runtime storage 2
+
+**What**
+- ADR 0104 D3 to D6 in `registry/container/` (with its amendment after B503). Waterlogged containers and machines: `MsmWaterloggedContainerBlock` (`MsmContainerBlock` with vanilla's `waterlogged` through `SimpleWaterloggedBlock`), made by `Waterlogging.blockFor`; block entity, menu, hopper faces, comparator and `lit` are kept, and breaking one leaves the water source.
+- Double chests: `MsmDoubleChestBlock` (vanilla's `ChestBlock`, overriding `newBlockEntity`) with `MsmDoubleChestBlockEntity` (a `ChestBlockEntity` with its own type and the block's id, registered by `BlockEntityHooks`), made by `StorageExtras.blockFor`. Two side by side join (`type` single, left, right) into one 54-slot menu. Each half keeps and drops its own 27 slots, and hoppers and comparators work per half as vanilla's. Sneak-placing keeps them apart. The chest is a `WorldlyContainerHolder` for `hoppers: false`. `on_open` and `on_close` fire once per opening of the pair. The default sounds are the barrel's, as for every MSM container.
+- Per-player storage: `PlayerStores`, the persistent Fabric attachment `msm_runtime:player_stores` (copied on death; the same object after a dimension change; saved under `fabric:attachments`). It holds one store per block family: the first weathering stage, with a waxed copy counted as its source, so ageing keeps the store. The block stays an `MsmContainerBlock` whose own slots stay empty, and it keeps `open`, the sounds and the events. No hoppers and no comparator, as the ender chest.
+- Ageing containers: `MsmWeatheringContainerBlock` (and `.Waterlogged`) and `MsmDoubleChestBlock.Weathers`. `Weathering.replace` copies the whole block entity data (`saveWithoutMetadata`, `UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS`, `loadWithComponents`): contents, custom name and lock are kept and nothing drops. `open` is reset. Both halves of a double chest change together. A container's random tick uses vanilla's `getNextState` and then this copy. Waxing, scraping and lightning go through the same route.
+- `BlockComponents.checkAgeing`: limit Q8 is lifted. Containers may hold water, weather and be waxed, and machines may hold water. A machine with `msm:weathering` or `msm:waxable` still gets a warning, and the component is not applied. `ConformanceCorpusTest.PENDING` is now empty (`container-2-`, `machine-2-` decoded).
+- `MsmStorage2GameTest` has 15 tests (the placeholder is replaced) on 15 `storage2_*.json` definitions. `MsmWeatheringGameTest`'s Q8 test now asserts the opposite (`containersHoldWaterAndWeatherAndOtherTypesKeepVanillasWater`). 746 GameTests on 26.3, 26.4 and without GeckoLib; 1225 JUnit.
+
+**Decisions**
+- A double chest is always waterloggable (vanilla's chest property), ignores `msm:shape` and `msm:redstone` (vanilla's chest shape), and keeps the barrel's default sounds.
+- The store key is the weathering family's first stage, not the block id, so a per-player chest that ages or is waxed shows the same contents.
+- Hoppers reach a double chest through the block (`WorldlyContainerHolder`, all faces or none), not through the block entity: vanilla wraps the two halves in a `CompoundContainer`, which hides a block entity's faces.
+
+**Next**
+- B515: the plugin's `checkAgeing` mirror (water on containers and machines, weathering and wax on containers, a warning on machines); a warning for `msm:shape`/`msm:redstone` on a double chest. B519: the Try it line below. B517: eject.

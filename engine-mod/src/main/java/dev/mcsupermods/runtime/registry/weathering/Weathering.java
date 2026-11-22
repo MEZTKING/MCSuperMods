@@ -8,6 +8,7 @@ import dev.mcsupermods.runtime.registry.BlockExtras;
 import dev.mcsupermods.runtime.registry.BlockSetTypes;
 import dev.mcsupermods.runtime.registry.Waterlogging;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
+import dev.mcsupermods.runtime.registry.container.MsmWeatheringContainerBlock;
 import dev.mcsupermods.runtime.registry.types.DrivenBlock;
 import dev.mcsupermods.runtime.registry.types.BlockTypes;
 import dev.mcsupermods.runtime.registry.types.FurnitureTypes;
@@ -23,20 +24,26 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BasePressurePlateBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.ChangeOverTimeBlock;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.storage.TagValueInput;
 
 /**
  * Weathering blocks (ADR 0094 D8): a block with {@code msm:weathering} becomes the weathering class of its type, a small
@@ -45,7 +52,9 @@ import net.minecraft.world.level.material.PushReaction;
  * {@code ChangeOverTimeBlock.getNextState} whether to age, so the chance and the neighbour rule are vanilla's and project
  * blocks and vanilla copper slow each other alike (measured at B440, S5). The runtime keeps its own maps ({@link Maps}):
  * vanilla's static copper maps and Fabric's registries are not used (F12). Since ADR 0104 D1 rods, buttons, pressure
- * plates, fences, fence gates and walls weather too (B510), and lightning scrapes the blocks ({@link Lightning}).
+ * plates, fences, fence gates and walls weather too (B510), and lightning scrapes the blocks ({@link Lightning}). Since ADR
+ * 0104 D6 (B513) containers weather too ({@code MsmWeatheringContainerBlock}, and double chests through
+ * {@code StorageExtras}): {@link #replace} and {@link #randomTick} keep their block entity's data.
  */
 public final class Weathering {
     private Weathering() {}
@@ -118,10 +127,23 @@ public final class Weathering {
      */
     public static Optional<Block> blockFor(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props) {
         Optional<BlockComponents.Weathering> weathering = definition.components().weathering();
-        if (weathering.isEmpty() || !BlockType.WEATHERING_TYPES.contains(definition.type()) || BlockEntityHooks.wantsBlockEntity(definition)) {
+        if (weathering.isEmpty() || !BlockType.WEATHERING_TYPES.contains(definition.type())) {
             return Optional.empty();
         }
         Stage stage = new Stage(id, age(weathering.get().stage()));
+        if (BlockEntityHooks.wantsBlockEntity(definition)) {
+            // ADR 0104 D6 (B513): a container ages keeping its contents; a double chest is StorageExtras' (it calls
+            // declare); a machine never weathers (the parser drops the component).
+            if (definition.components().machine().isPresent()
+                    || definition.components().container().map(BlockComponents.Container::doubleChest).orElse(true)) {
+                return Optional.empty();
+            }
+            Block container = Waterlogging.waterloggable(definition)
+                    ? new MsmWeatheringContainerBlock.Waterlogged(id, definition, stage, props)
+                    : new MsmWeatheringContainerBlock(id, definition, stage, props);
+            declare(id, weathering.get());
+            return Optional.of(container);
+        }
         Block block = switch (definition.type()) {
             case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL -> Waterlogging.waterloggable(definition)
                     ? new MsmWeatheringBlock.Waterlogged(id, definition, stage, props)
@@ -156,8 +178,21 @@ public final class Weathering {
             case WALL -> new MsmWeatheringWallBlock(id, definition, stage, props);
             default -> throw new IllegalStateException("type '" + definition.type().id() + "' does not weather");
         };
-        DECLARED.put(id, weathering.get().next());
+        declare(id, weathering.get());
         return Optional.of(block);
+    }
+
+    /**
+     * Records the weathering block {@code id} and its {@code next}; called by {@link #blockFor} and, for a double chest that
+     * weathers, by {@code StorageExtras}, which make the block.
+     */
+    public static void declare(Identifier id, BlockComponents.Weathering weathering) {
+        DECLARED.put(id, weathering.next());
+    }
+
+    /** The stage of the weathering block {@code id} with {@code weathering}. */
+    public static Stage stage(Identifier id, BlockComponents.Weathering weathering) {
+        return new Stage(id, age(weathering.stage()));
     }
 
     /** The registered base block of weathering stairs; stairs register after their base (ADR 0067 D4). */
@@ -186,7 +221,7 @@ public final class Weathering {
      * {@link #checkAfterRegistration}, so a block whose {@code next} is refused there can still be random-ticked; it then
      * never ages ({@link #next} is empty).
      */
-    static boolean ages(Identifier id) {
+    public static boolean ages(Identifier id) {
         return checked ? maps.next().containsKey(id) : DECLARED.getOrDefault(id, Optional.empty()).isPresent();
     }
 
@@ -210,6 +245,14 @@ public final class Weathering {
         return at;
     }
 
+    /**
+     * The first stage of the family of {@code id}: a waxed copy counts as its source, then {@link #firstStage}. A block of
+     * no family is its own; per-player storage keeps one store per family (ADR 0104 D5, D6), so ageing and waxing keep it.
+     */
+    public static Identifier familyRoot(Identifier id) {
+        return firstStage(Optional.ofNullable(maps.unwaxInto().get(id)).orElse(id));
+    }
+
     /** The maps in use (read by {@link Waxing}). */
     static Maps maps() {
         return maps;
@@ -218,10 +261,16 @@ public final class Weathering {
     /**
      * The random tick of every weathering class, after the type's own: when the tick left the block as it was, vanilla's
      * own {@code ChangeOverTimeBlock.changeOverTime} decides (chance and neighbours) and sets the next stage. The upper
-     * half of a door follows its lower half through {@code MsmWeatheringDoorBlock.updateShape}.
+     * half of a door follows its lower half through {@code MsmWeatheringDoorBlock.updateShape}. A block with a block entity
+     * (a container, ADR 0104 D6) asks vanilla's {@code getNextState} (the same chance and neighbour rule) and is
+     * {@link #replace}d keeping its data, because vanilla's own change drops the contents (measured at B503, X13).
      */
-    static void randomTick(Ageing block, BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public static void randomTick(Ageing block, BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (level.getBlockState(pos) != state) {
+            return;
+        }
+        if (state.hasBlockEntity()) {
+            block.getNextState(state, level, pos, random).ifPresent(next -> replace(level, pos, state, next));
             return;
         }
         block.changeOverTime(state, level, pos, random); // vanilla's chance, neighbour rule and setBlockAndUpdate
@@ -252,9 +301,27 @@ public final class Weathering {
 
     /**
      * Replaces {@code from} at {@code pos} with {@code to}. A two-high block (a door) has its other half replaced first,
-     * without shape updates, so the half set second keeps it; then {@code pos} with every update.
+     * without shape updates, so the half set second keeps it; then {@code pos} with every update. A block with a block
+     * entity (a container, ADR 0104 D6 and its amendment) keeps its whole data (contents, custom name, lock, loot table):
+     * it is saved, the new block is set with {@code UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS} (so nothing drops) and the data
+     * is loaded into the new block entity; {@code open} is set back to false, as the new block entity has no viewers. The
+     * other half of a double chest is replaced alike, first, so the pair stays joined and of one stage.
      */
     public static void replace(Level level, BlockPos pos, BlockState from, BlockState to) {
+        if (level.getBlockEntity(pos) != null && to.hasBlockEntity()) {
+            if (from.getBlock() instanceof ChestBlock && from.hasProperty(ChestBlock.TYPE) && from.getValue(ChestBlock.TYPE) != ChestType.SINGLE
+                    && to.hasProperty(ChestBlock.TYPE)) {
+                BlockPos other = ChestBlock.getConnectedBlockPos(pos, from);
+                BlockState otherState = level.getBlockState(other);
+                if (otherState.is(from.getBlock()) && level.getBlockEntity(other) != null) {
+                    keepingData(level, other, BlockExtras.copyProperties(otherState, to.getBlock().defaultBlockState()),
+                            Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                }
+            }
+            keepingData(level, pos, to, Block.UPDATE_ALL);
+            afterChange(level, pos, from, level.getBlockState(pos));
+            return;
+        }
         if (from.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF) && to.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
             BlockPos other = from.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER ? pos.above() : pos.below();
             BlockState otherState = level.getBlockState(other);
@@ -265,6 +332,19 @@ public final class Weathering {
         }
         level.setBlock(pos, to, Block.UPDATE_ALL);
         afterChange(level, pos, from, level.getBlockState(pos));
+    }
+
+    /** Sets {@code to} at {@code pos} with {@code flags}, moving the old block entity's data into the new one. */
+    private static void keepingData(Level level, BlockPos pos, BlockState to, int flags) {
+        BlockEntity old = level.getBlockEntity(pos);
+        CompoundTag data = old == null ? null : old.saveWithoutMetadata(level.registryAccess());
+        BlockState target = to.hasProperty(BlockStateProperties.OPEN) ? to.setValue(BlockStateProperties.OPEN, false) : to;
+        level.setBlock(pos, target, flags | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
+        BlockEntity now = level.getBlockEntity(pos);
+        if (data != null && now != null) {
+            now.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), data));
+            now.setChanged();
+        }
     }
 
     /**
