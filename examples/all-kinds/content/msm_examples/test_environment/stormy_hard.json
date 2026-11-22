@@ -1,0 +1,26 @@
+{
+  "data": {
+    "definitions": [
+      {
+        "type": "minecraft:weather",
+        "weather": "rain"
+      },
+      {
+        "difficulty": "hard",
+        "type": "minecraft:difficulty"
+      }
+    ],
+    "type": "minecraft:all_of"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:stormy_hard",
+  "kind": "minecraft:test_environment",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A test environment sets up the world before a game test runs and puts it back after: all_of applies each definition in turn, here rain and hard difficulty. A test instance uses it when its environment names msm_examples:stormy_hard. Map makers use game tests to check their contraptions with /test.",
+    "tags": [
+      "example",
+      "game-tests"
+    ]
+  }
+}

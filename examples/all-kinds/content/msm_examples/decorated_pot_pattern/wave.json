@@ -1,0 +1,16 @@
+{
+  "data": {
+    "asset_id": "msm_examples:wave_pottery_pattern"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wave",
+  "kind": "minecraft:decorated_pot_pattern",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A decorated pot pattern: asset_id names its picture, textures/entity/decorated_pot/wave_pottery_pattern.png (16 by 16), here a fish drawn by MSM on fired clay. A pot shows it on each side whose sherd carries the component minecraft:provides_pottery_pattern naming msm_examples:wave. Try /give @s minecraft:brick[minecraft:provides_pottery_pattern=\"msm_examples:wave\"] and craft a decorated pot from four of it; the Pot pattern flow adds a recipe, a name and a picture for the sherd too.",
+    "tags": [
+      "example",
+      "decorations"
+    ]
+  }
+}

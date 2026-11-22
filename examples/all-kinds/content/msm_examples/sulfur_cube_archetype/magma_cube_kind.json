@@ -1,0 +1,29 @@
+{
+  "data": {
+    "attribute_modifiers": [],
+    "items": [
+      "minecraft:magma_cream"
+    ],
+    "knockback_modifiers": {
+      "horizontal_power": 0.8,
+      "vertical_power": 0.6
+    },
+    "sound_settings": {
+      "hit_sound": "minecraft:entity.sulfur_cube.hot.hit",
+      "push_sound": "minecraft:entity.sulfur_cube.hot.push",
+      "push_sound_cooldown": 0.5,
+      "push_sound_impulse_threshold": 0.1
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:magma_cube_kind",
+  "kind": "minecraft:sulfur_cube_archetype",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A sulfur cube archetype is what a sulfur cube becomes when it swallows one of its items, here magma cream. knockback_modifiers change how far it flies when hit, and attribute_modifiers can change its attributes (none here). sound_settings name the sounds of a hit and a push, here the vanilla hot cube sounds.",
+    "tags": [
+      "example",
+      "mob-variants"
+    ]
+  }
+}

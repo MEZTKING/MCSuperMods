@@ -82,6 +82,18 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'minecraft:enchantment_provider': 'Enchantment providers',
   'minecraft:timeline': 'Timelines',
   'minecraft:world_clock': 'World clocks',
+  // Data kinds sweep 2 (ADR 0106 D1, D2; B508).
+  'minecraft:decorated_pot_pattern': 'Pot patterns',
+  'minecraft:wolf_sound_variant': 'Wolf sounds',
+  'minecraft:block_transformer': 'Block transformers',
+  'minecraft:test_environment': 'Test environments',
+  'minecraft:test_instance': 'Test instances',
+  'minecraft:sulfur_cube_archetype': 'Sulfur cube kinds',
+  'minecraft:context_int_provider': 'Whole-number providers',
+  'minecraft:context_float_provider': 'Decimal-number providers',
+  'minecraft:post_effect': 'Screen effects',
+  'minecraft:waypoint_style': 'Waypoint styles',
+  'minecraft:shader': 'Shader programs',
 };
 
 /** Groups Easy mode folds under "More": the files behind content (ADR 0047 D1). */

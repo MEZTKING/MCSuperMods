@@ -1,0 +1,21 @@
+{
+  "data": {
+    "environment": "minecraft:default",
+    "max_ticks": 200,
+    "required": true,
+    "setup_ticks": 10,
+    "structure": "minecraft:empty",
+    "type": "minecraft:block_based"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:door_check",
+  "kind": "minecraft:test_instance",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A test instance is one game test. block_based places the structure named in structure (here the vanilla empty one; save your contraption with a structure block and name it here) and passes when a test block in it set to \"accept\" gets power, failing after max_ticks. environment names a test environment, such as one of your own. Run it with /test run msm_examples:door_check.",
+    "tags": [
+      "example",
+      "game-tests"
+    ]
+  }
+}

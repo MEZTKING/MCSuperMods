@@ -14,7 +14,9 @@ import type {
 import { kindsOf } from '../content/bundle';
 import { PROBE_CONTEXT } from '../content/probe';
 import { hasFabric } from '../content/supports';
+import { ARMOUR_TRIM_PARAMETERS, armourTrimBundle } from './armour-trim';
 import { BACKPACK_PARAMETERS, backpackBundle } from './backpack';
+import { BANNER_PATTERN_PARAMETERS, bannerPatternBundle } from './banner-pattern';
 import { BED_PARAMETERS, bedBundle } from './bed';
 import { BOSS_PARAMETERS, bossBundle } from './boss';
 import { CAKE_PARAMETERS, cakeBundle } from './cake';
@@ -36,6 +38,7 @@ import { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
+import { GLIDER_PARAMETERS, gliderBundle } from './glider';
 import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 import { jigsawStructureBundle } from './jigsaw-structure';
 import { LIGHTS_PARAMETERS, lightsBundle } from './lights';
@@ -49,6 +52,7 @@ import { PAINTING_PARAMETERS, paintingBundle } from './painting';
 import { PARTICLE_PARAMETERS, particleBundle } from './particle';
 import { PET_PARAMETERS, petBundle } from './pet';
 import { PORTAL_PARAMETERS, portalBundle } from './portal';
+import { POT_PATTERN_PARAMETERS, potPatternBundle } from './pot-pattern';
 import { POTION_PARAMETERS, potionBundle } from './potion';
 import { recipePackBundle } from './recipe-pack';
 import { SCRIPTED_ITEM_PARAMETERS, scriptedItemBundle } from './scripted-item';
@@ -72,7 +76,9 @@ import { WEAPON_PARAMETERS, weaponBundle } from './weapon';
 import { WOOD_SET_PARAMETERS, woodSetBundle } from './wood-set';
 import { worldgenPackBundle } from './worldgen-pack';
 
+export { ARMOUR_TRIM_PARAMETERS, armourTrimBundle } from './armour-trim';
 export { BACKPACK_PARAMETERS, backpackBundle } from './backpack';
+export { BANNER_PATTERN_PARAMETERS, bannerPatternBundle } from './banner-pattern';
 export { BED_DYES, BED_PARAMETERS, bedBundle } from './bed';
 export { BOSS_PARAMETERS, bossBundle } from './boss';
 export { CAKE_PARAMETERS, cakeBundle } from './cake';
@@ -107,6 +113,7 @@ export { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
+export { GLIDER_PARAMETERS, gliderBundle } from './glider';
 export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
 export { hamletIds, jigsawStructureBundle, jigsawStructureContent } from './jigsaw-structure';
 export { LIGHTS_MEMBERS, LIGHTS_PARAMETERS, lightsBundle } from './lights';
@@ -130,6 +137,7 @@ export {
 export { PARTICLE_PARAMETERS, particleBundle } from './particle';
 export { PET_PARAMETERS, petBundle } from './pet';
 export { PORTAL_PARAMETERS, portalBundle } from './portal';
+export { POT_PATTERN_PARAMETERS, potPatternBundle } from './pot-pattern';
 export {
   BREWING_INGREDIENTS,
   OWN_EFFECT,
@@ -630,6 +638,66 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       creator: {
         group: 'blocks',
         blurb: 'A painting of your own picture, from 1 by 1 to 4 by 4 blocks.',
+      },
+    },
+  ),
+  starter(
+    'banner-pattern',
+    'Banner pattern',
+    'A new banner pattern for the loom: its shape on banners and shields, and the pattern item made from paper that offers it. Works in vanilla packs.',
+    'content',
+    BOTH,
+    bannerPatternBundle,
+    {
+      parameters: BANNER_PATTERN_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A banner pattern for the loom, with its pattern item.',
+      },
+    },
+  ),
+  starter(
+    'armour-trim',
+    'Armour trim',
+    'A new armour trim: how it looks on worn armour in every trim material, the smithing template that applies it and the recipe that copies the template. Works in vanilla packs.',
+    'content',
+    BOTH,
+    armourTrimBundle,
+    {
+      parameters: ARMOUR_TRIM_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'A trim for armour, applied with a smithing template.',
+      },
+    },
+  ),
+  starter(
+    'glider',
+    'Glider',
+    'Wings to wear on your chest and glide with, as an elytra does: how they look worn and held, how long they last, the recipe and the repair item. Works in vanilla packs.',
+    'content',
+    BOTH,
+    gliderBundle,
+    {
+      parameters: GLIDER_PARAMETERS,
+      creator: {
+        group: 'gear',
+        blurb: 'Wings to glide with, worn like an elytra.',
+      },
+    },
+  ),
+  starter(
+    'pot-pattern',
+    'Pot pattern',
+    'A new picture for decorated pots and the sherd that puts it on a pot. Works in vanilla packs.',
+    'content',
+    BOTH,
+    potPatternBundle,
+    {
+      parameters: POT_PATTERN_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'A picture for decorated pots, with its sherd.',
       },
     },
   ),

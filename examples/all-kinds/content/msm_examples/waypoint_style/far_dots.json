@@ -1,0 +1,23 @@
+{
+  "data": {
+    "far_distance": 512,
+    "near_distance": 32,
+    "sprites": [
+      "minecraft:default_0",
+      "minecraft:default_1",
+      "minecraft:default_2",
+      "minecraft:default_3"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:far_dots",
+  "kind": "minecraft:waypoint_style",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A waypoint style is how a player or mob shows on the locator bar. sprites are the dots from near to far, here the vanilla dots under textures/gui/sprites/hud/locator_bar_dot/. The first is used closer than near_distance and the last beyond far_distance. Try /waypoint modify @s style set msm_examples:far_dots.",
+    "tags": [
+      "example",
+      "locator-bar"
+    ]
+  }
+}

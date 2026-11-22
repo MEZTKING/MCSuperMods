@@ -441,12 +441,30 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
     ['pie', 'a pie'],
     ['seeds', 'seeds'],
     ['produce', 'a vegetable, the second colour its leaves'],
+    ['pattern_sheet', 'a banner pattern item'],
+    ['pottery_sherd', 'a pottery sherd'],
+    ['glider', 'a glider item'],
   ),
   worn: rows(
     ['armor_layer_1', 'worn helmet, chestplate and boots, 64 by 32'],
     ['armor_layer_2', 'worn leggings, 64 by 32'],
     ['horse_armor_layer', 'worn horse armour, 64 by 64'],
     ['wolf_armor_layer', 'worn wolf armour, 64 by 32'],
+    [
+      'banner_pattern',
+      'a banner pattern under textures/entity/banner, 64 by 64, drawn pale since the game dyes it, finish diamond, ring, chevrons or star',
+    ],
+    ['shield_pattern', 'the same on a shield under textures/entity/shield, 64 by 64'],
+    [
+      'trim_layer_1',
+      'an armour trim under textures/trims/entity/humanoid, 64 by 32, finish bands, edges or studs',
+    ],
+    ['trim_layer_2', 'its leggings layer under textures/trims/entity/humanoid_leggings'],
+    ['glider_wings', 'glider wings under textures/entity/equipment/wings, 64 by 32'],
+    [
+      'pot_pattern',
+      'a decorated pot face under textures/entity/decorated_pot, 16 by 16, finish sun, fish or leaf',
+    ],
   ),
   icons: rows(
     ['effect_icon', 'a status effect icon, 18 by 18, finish drop, heart, star, flame or swirl'],

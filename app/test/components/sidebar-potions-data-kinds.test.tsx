@@ -32,6 +32,18 @@ const NEW_KINDS = [
   'minecraft:world_clock',
   'minecraft:atlas',
   'minecraft:font',
+  // Data kinds sweep 2 (ADR 0106 D1, D2; B508).
+  'minecraft:decorated_pot_pattern',
+  'minecraft:wolf_sound_variant',
+  'minecraft:block_transformer',
+  'minecraft:test_environment',
+  'minecraft:test_instance',
+  'minecraft:sulfur_cube_archetype',
+  'minecraft:context_int_provider',
+  'minecraft:context_float_provider',
+  'minecraft:post_effect',
+  'minecraft:waypoint_style',
+  'minecraft:shader',
 ];
 
 describe('ElementSidebar labels for potions and the data kinds sweep', () => {

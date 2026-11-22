@@ -70,7 +70,7 @@ import {
  * wood, `L` a leaf in the second colour ({@link LEAF_GREEN} by default) and a fruit's stem
  * `S` in the same green (a brown stem would take the fruit past ten colours), `C` pastry crust.
  */
-function itemRamps(context: DrawContext): SpriteRamps {
+export function itemRamps(context: DrawContext): SpriteRamps {
   const { material, shine } = materialRamp(context.colour, context.hueShift);
   // A leaf takes three shades of a six-shade ramp, so a leaf and a fruit of one green lean
   // the same way.
@@ -140,7 +140,7 @@ const OUTLINE_LIGHTNESS = 0.22;
  * {@link OUTLINE_LIGHTNESS}, or darker when a ramp has a darker shade. It does not follow the
  * main colour (for the colours of the property tests), so a picture's painted pixels are its own.
  */
-function sharedOutline(ramps: SpriteRamps, from: string): SpriteRamps {
+export function sharedOutline(ramps: SpriteRamps, from: string): SpriteRamps {
   const all = [ramps.material, ...Object.values(ramps.parts)];
   let darkest = OUTLINE_LIGHTNESS;
   for (const ramp of all) darkest = Math.min(darkest, lightness(ramp[0] as Rgb));
@@ -162,7 +162,7 @@ function sharedOutline(ramps: SpriteRamps, from: string): SpriteRamps {
 }
 
 /** A ramp of `count` shades of `colour`, the colour itself the second lightest. */
-const shortRamp = (colour: Rgb, count: number, hueShift: number): Ramp =>
+export const shortRamp = (colour: Rgb, count: number, hueShift: number): Ramp =>
   generateRamp(colour, { count, anchor: count - 2, hueShift });
 
 /** A silhouette with some cells replaced. */

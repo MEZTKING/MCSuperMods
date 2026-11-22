@@ -133,10 +133,22 @@ const skinInfo = (width: number, height: number) => ({
   outline: false,
 });
 
+/** The entity rows of the pattern pictures (B508), tested in `art-patterns.test.ts`. */
+const PATTERN_PICTURES: readonly ArtRecipeId[] = [
+  'banner_pattern',
+  'shield_pattern',
+  'trim_layer_1',
+  'trim_layer_2',
+  'glider_wings',
+  'pot_pattern',
+];
+
 describe('every recipe and pattern is drawn (B494)', () => {
   it('has no worn, icon or particle row left as a stub', () => {
-    const rows = ART_RECIPE_INFO.filter((info) =>
-      ['entity', 'icon', 'particle'].includes(info.kind),
+    // The pattern pictures of B508 are entity rows of their own (`art-patterns.test.ts`).
+    const rows = ART_RECIPE_INFO.filter(
+      (info) =>
+        ['entity', 'icon', 'particle'].includes(info.kind) && !PATTERN_PICTURES.includes(info.id),
     );
     expect(rows.map((info) => info.id)).toEqual([...B494]);
     expect(rows.filter((info) => !info.drawn)).toEqual([]);

@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "block_state_provider": {
+        "rules": [
+          {
+            "if_true": {
+              "blocks": "minecraft:coarse_dirt",
+              "type": "minecraft:matching_blocks"
+            },
+            "then": {
+              "state": {
+                "id": "minecraft:dirt_path"
+              },
+              "type": "minecraft:simple"
+            }
+          }
+        ],
+        "type": "minecraft:rule_based"
+      },
+      "sound": "minecraft:item.shovel.flatten"
+    }
+  ],
+  "formatVersion": 1,
+  "id": "msm_examples:coarse_path",
+  "kind": "minecraft:block_transformer",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A block transformer says what using a tool on a block does: a list of transforms, tried in order, each with a block state provider whose rules pick the new block and the sound it plays. This one turns coarse dirt into a dirt path with the shovel sound. Vanilla tools read the transformers named after them, so naming one minecraft:shovel would replace what every shovel does; under a name of its own, like this one, nothing uses it yet.",
+    "tags": [
+      "example",
+      "tools"
+    ]
+  }
+}

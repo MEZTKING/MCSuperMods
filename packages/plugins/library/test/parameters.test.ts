@@ -125,6 +125,10 @@ const WIZARDS = [
   'throwable',
   'enchantment',
   'painting',
+  'banner-pattern',
+  'armour-trim',
+  'glider',
+  'pot-pattern',
   'music-disc-item',
   'dimension',
   'portal',
@@ -179,6 +183,10 @@ const FLOWS: Record<string, string> = {
   throwable: 'gear',
   enchantment: 'gear',
   painting: 'blocks',
+  'banner-pattern': 'blocks',
+  'armour-trim': 'gear',
+  glider: 'gear',
+  'pot-pattern': 'blocks',
   'music-disc-item': 'blocks',
   dimension: 'worlds',
   portal: 'worlds',
@@ -233,6 +241,10 @@ describe('wizard starters', () => {
     expect(groups('throwable')).toEqual(['Item', 'Throw', 'Hit', 'Recipe']);
     expect(groups('enchantment')).toEqual(['Enchantment', 'Effect', 'Offering']);
     expect(groups('painting')).toEqual(['Painting', 'Picture']);
+    expect(groups('banner-pattern')).toEqual(['Pattern', 'Getting it']);
+    expect(groups('armour-trim')).toEqual(['Trim', 'Template']);
+    expect(groups('glider')).toEqual(['Glider', 'Getting it']);
+    expect(groups('pot-pattern')).toEqual(['Pattern', 'Getting it']);
     expect(groups('music-disc-item')).toEqual(['Song', 'Disc']);
     expect(groups('dimension')).toEqual(['World', 'Travel']);
     expect(groups('portal')).toEqual(['Portal', 'Where it goes', 'Frame', 'Travel', 'Looks']);

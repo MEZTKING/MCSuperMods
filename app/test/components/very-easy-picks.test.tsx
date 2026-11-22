@@ -92,7 +92,7 @@ describe('Very easy picks (ADR 0101 D4)', () => {
     });
     expect(tile('item')?.action).toEqual({
       type: 'flows',
-      flowIds: ['throwable', 'totem', 'backpack'],
+      flowIds: ['throwable', 'totem', 'glider', 'backpack'],
       picks: MAKE_ITEM_PICKS,
     });
     for (const id of ['block', 'item']) {
@@ -115,6 +115,7 @@ describe('Very easy picks (ADR 0101 D4)', () => {
     expect(shown.find((entry) => entry.tile.id === 'item')?.flowIds).toEqual([
       'throwable',
       'totem',
+      'glider',
     ]);
   });
 

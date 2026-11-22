@@ -6937,3 +6937,22 @@ Next
 
 **Next**
 - B506 (format), B507 (plugin API 1.19.0), B508.
+
+## 2026-11-22 — executor — B508 data-only flows: banner pattern, armour trim, glider, pot pattern
+
+**What**
+- Four Creator flows that need no runtime (ADR 0106 D4), all working in plain vanilla packs: **Banner pattern** (`banner-pattern`: the pattern, its tag `<ns>:pattern_item/<id>`, pale banner and shield masks, a pattern item made from paper with `provides_banner_patterns`, `item_model` and `item_name`, names in every dye colour from `target.blocks.dyeColours`), **Armour trim** (`armour-trim`: the trim pattern, both trim layers drawn in eight greys with a `.png.mcmeta` naming the flow's own palette key `textures/palettes/<id>_trim_key.png`, the smithing trim and copy recipes, a template that is a chosen vanilla item with `item_model`), **Glider** (`glider`: a phantom membrane with `glider`, `equippable` on an own equipment asset whose wings layer is drawn in the elytra layout, `max_damage`, `repairable`), **Pot pattern** (`pot-pattern`: the decorated pot pattern, its face picture and a sherd that is a brick with `provides_pottery_pattern`). Each has a give function. Starters 60 to 64, Creator flows 48 to 52.
+- Art (ADR 0092): nine new drawn recipes in `art/recipes/patterns.ts` (pattern sheet, pottery sherd, glider; banner and shield pattern masks, two trim layers, glider wings, pot face), 80 to 89; goldens in `test/fixtures/art/patterns/`, `checkArtRules` passes on every look; contact sheet regenerated. `ART_RECIPE_NAMES` and the prompt rows of `@msm/ai` follow, with the frozen tool catalogue hash.
+- Examples for ten of B504's eleven kinds in `examples/data-kinds.ts` (pot pattern, block transformer, test environment and instance, sulfur cube kind, both context providers, screen effect, waypoint style, shader program); per-kind examples 104 to 114, examples 164 to 174; `examples/all-kinds` mirror updated.
+- App: sidebar labels for the eleven kinds; `projectRegistryIds` registers project item definitions under `item_definition` (an `item_model` component naming one was an unknown id); Home tiles reach the new flows (Make an item: Glider; Make armour: Armour trim; Make a painting or pattern: Banner pattern, Pot pattern).
+- Verified: library, exporters, datapack, ai tests, the app's component tests, lint, typecheck; the library's 352 vanilla data packs (every starter, wizard answer, example and mirror) loaded on a vanilla 26.3 server with no problem.
+
+**Decisions**
+- No new items in vanilla packs, so each flow's item is a vanilla item with components; recipes match item types, so a plain item of that type also works where an ingredient is named (the trim template, the sherd's brick). Stated in each flow's notes.
+- The trim layers use their own eight-grey palette key rather than the game's `trim_base` (no Mojang pixels are read); the swap relies on palettes mapping by position, lightest first (in-game check needed).
+- `minecraft:wolf_sound_variant` keeps waiting for its example: the 26.3 server refuses a wolf sound variant without `step_sound`, which the vendored 26.3 and 26.4 schemas reject as an unknown field.
+
+**Next**
+- Schema owner: teach the schemas `step_sound` on wolf sounds, then fix B504's default and template and add the example.
+- In game: the trim recolouring with the own key, the loom offering the paper pattern, the brick sherd on a pot, the glider gliding and its wings.
+- Guide (B522): the new tiles' wording in `docs/guide/very-easy.md`.

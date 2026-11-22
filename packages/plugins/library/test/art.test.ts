@@ -165,7 +165,7 @@ describe('the recipe table (ADR 0092 D7)', () => {
   it('has every recipe id once, in the order of ART_RECIPE_IDS', () => {
     expect(ART_RECIPE_INFO.map((info) => info.id)).toEqual([...ART_RECIPE_IDS]);
     expect(new Set(ART_RECIPE_IDS).size).toBe(ART_RECIPE_IDS.length);
-    expect(ART_RECIPE_IDS.length).toBe(80);
+    expect(ART_RECIPE_IDS.length).toBe(89);
   });
 
   it('gives each row a label, a kind, a size and its rules', () => {
@@ -209,7 +209,8 @@ describe('placeholder patterns map to recipes (ADR 0092 D13 (e), D14)', () => {
   it('covers all 70 patterns', () => {
     expect(PLACEHOLDER_PATTERNS).toHaveLength(70);
     expect(Object.keys(PATTERN_RECIPES).sort()).toEqual([...PLACEHOLDER_PATTERNS].sort());
-    // Recipes with no pattern of their own: terrain, the storage block and three more items.
+    // Recipes with no pattern of their own: terrain, the storage block, two more items and the
+    // pattern pictures.
     const mapped = new Set(Object.values(PATTERN_RECIPES));
     expect(ART_RECIPE_IDS.filter((id) => !mapped.has(id))).toEqual([
       'cobblestone',
@@ -222,6 +223,16 @@ describe('placeholder patterns map to recipes (ADR 0092 D13 (e), D14)', () => {
       'gravel',
       'fruit',
       'pie',
+      // The pattern pictures of the data-only flows (B508).
+      'pattern_sheet',
+      'pottery_sherd',
+      'glider',
+      'banner_pattern',
+      'shield_pattern',
+      'trim_layer_1',
+      'trim_layer_2',
+      'glider_wings',
+      'pot_pattern',
     ]);
   });
 

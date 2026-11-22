@@ -1,0 +1,23 @@
+{
+  "data": {
+    "fragment": "minecraft:core/position_tex",
+    "samplers": [
+      {
+        "name": "Sampler0"
+      }
+    ],
+    "uniforms": [],
+    "vertex": "minecraft:core/position_tex"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:program/textured",
+  "kind": "minecraft:shader",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A shader program definition names a vertex and a fragment shader (.vsh and .fsh files under shaders/), the samplers it reads and its uniforms. This one names the vanilla textured shaders. Shader files of your own go under shaders/ in the project; MSM copies them as they are without checking them, so a mistake shows only in game.",
+    "tags": [
+      "example",
+      "shaders"
+    ]
+  }
+}

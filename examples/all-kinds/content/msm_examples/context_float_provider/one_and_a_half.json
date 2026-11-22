@@ -1,0 +1,17 @@
+{
+  "data": {
+    "type": "minecraft:constant",
+    "value": 1.5
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:one_and_a_half",
+  "kind": "minecraft:context_float_provider",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A context float provider is a decimal number the game reads by name. constant always gives value. A project provider named after a vanilla one changes what the game reads there; under a name of its own, like this one, it waits for something to name it.",
+    "tags": [
+      "example",
+      "numbers-the-game-reads"
+    ]
+  }
+}

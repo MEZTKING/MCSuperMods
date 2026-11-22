@@ -1,0 +1,70 @@
+{
+  "data": {
+    "passes": [
+      {
+        "fragment_shader": "minecraft:post/blit",
+        "inputs": [
+          {
+            "sampler_name": "In",
+            "target": "minecraft:main"
+          }
+        ],
+        "output": "msm_examples:swap",
+        "uniforms": {
+          "BlitConfig": [
+            {
+              "name": "ColorModulate",
+              "type": "vec4",
+              "value": [
+                1,
+                0.86,
+                0.66,
+                1
+              ]
+            }
+          ]
+        },
+        "vertex_shader": "minecraft:core/screenquad"
+      },
+      {
+        "fragment_shader": "minecraft:post/blit",
+        "inputs": [
+          {
+            "sampler_name": "In",
+            "target": "msm_examples:swap"
+          }
+        ],
+        "output": "minecraft:main",
+        "uniforms": {
+          "BlitConfig": [
+            {
+              "name": "ColorModulate",
+              "type": "vec4",
+              "value": [
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          ]
+        },
+        "vertex_shader": "minecraft:core/screenquad"
+      }
+    ],
+    "targets": {
+      "msm_examples:swap": {}
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sepia",
+  "kind": "minecraft:post_effect",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A post effect draws passes over the finished screen. The first pass copies the screen (minecraft:main) into the target msm_examples:swap through the vanilla copy shader with a warm tint (ColorModulate multiplies red, green, blue and alpha); the second copies it back. The game uses post effects it knows by name, such as minecraft:creeper while spectating a creeper: name a project effect after one to replace it. MSM does not check shader files, so look at the result in game.",
+    "tags": [
+      "example",
+      "shaders"
+    ]
+  }
+}

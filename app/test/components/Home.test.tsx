@@ -102,7 +102,7 @@ describe('Home tiles', () => {
       'worlds: Make a building',
       'worlds: Change drops and trades',
       'looks: Change how Minecraft looks',
-      'looks: Make a painting',
+      'looks: Make a painting or pattern',
       'looks: Make a sound or music',
       'looks: Paint a picture',
       'more: Make your mod do something',

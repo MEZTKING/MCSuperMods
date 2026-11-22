@@ -88,11 +88,22 @@ export const ART_RECIPE_IDS = Object.freeze([
   'pie',
   'seeds',
   'produce',
+  // Pattern items (B508)
+  'pattern_sheet',
+  'pottery_sherd',
+  'glider',
   // Worn pictures
   'armor_layer_1',
   'armor_layer_2',
   'horse_armor_layer',
   'wolf_armor_layer',
+  // Pattern pictures (B508)
+  'banner_pattern',
+  'shield_pattern',
+  'trim_layer_1',
+  'trim_layer_2',
+  'glider_wings',
+  'pot_pattern',
   // Icons and particles
   'effect_icon',
   'particle_spark',

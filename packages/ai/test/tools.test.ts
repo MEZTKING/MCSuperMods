@@ -197,15 +197,16 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B498: create_texture draws MSM's Minecraft-like art from a recipe
-  // (with the older pattern still accepted), a second colour, a finish and a seed, and its
-  // description and add_starter's and list_starters' no longer call the pictures placeholders
-  // (ADR 0092 D15).
+  // The hash last changed with B508: create_texture's recipe list gained the nine pattern
+  // pictures of the data-only flows (ADR 0106 D4), kept equal to the library's ART_RECIPE_IDS.
+  // Before that with B498: create_texture draws MSM's Minecraft-like art from a recipe (with the
+  // older pattern still accepted), a second colour, a finish and a seed, and its description and
+  // add_starter's and list_starters' no longer call the pictures placeholders (ADR 0092 D15).
   it('has 22 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      'a8703eac69bb1d218ba02b2db5219ea55c80dc91ff438065fe6bd0c3b975f273',
+      '43bd3614217531461dc3c7e67296b5c73c7261bf9829628635c8bff9931012d6',
     );
   });
 });

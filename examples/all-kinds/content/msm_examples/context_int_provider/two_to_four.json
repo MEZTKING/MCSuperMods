@@ -1,0 +1,18 @@
+{
+  "data": {
+    "max": 4,
+    "min": 2,
+    "type": "minecraft:uniform"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:two_to_four",
+  "kind": "minecraft:context_int_provider",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A context int provider is a whole number the game reads by name, rolled each time it is read. uniform picks one from min to max. Vanilla reads providers such as minecraft:compostable/low for how likely a composter is to fill. A project provider with that name changes the value; one under a name of its own, like this one, waits for something to name it.",
+    "tags": [
+      "example",
+      "numbers-the-game-reads"
+    ]
+  }
+}

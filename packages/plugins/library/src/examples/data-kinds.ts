@@ -2,14 +2,19 @@
  * One commented example per data kind of the data kinds sweep (ADR 0064 D1): the seven mob
  * variants (the wolf one is "Snowy wolf skin", ADR 0064 D6), the four sound variants, the
  * instrument ("Custom goat horn", with its recipe and the goat horn tag), the enchantment
- * provider, the timeline and the world clock. Mob textures are generated two-tone
- * placeholders of the vanilla sizes; sound fields name vanilla sound events. All of them work
- * in a vanilla data pack.
+ * provider, the timeline and the world clock; then those of the data kinds sweep 2 (ADR 0106
+ * D1, D2; B508): the pot pattern, the block transformer, the test environment and instance,
+ * the sulfur cube archetype, the two context providers, and the resource pack's post effect,
+ * waypoint style and shader program (the wolf sound variant waits: the game requires a
+ * `step_sound` the vendored schema does not know, so no example can be valid in both). Mob textures are drawn even
+ * coats of the vanilla sizes and the pot face is drawn by the art generator (ADR 0092); sound
+ * fields name vanilla sound events. All of them work in vanilla packs.
  */
 import type { ExampleProject } from '@msm/plugin-api';
 import type { Rgb } from '../assets/png';
 import { COLOURS, element, KINDS, mobSkinTexture, rl } from '../content/bundle';
 import { mobSkinVariant, type SkinAnimal, spawnConditions } from '../content/mob-skins';
+import { drawnTexture } from '../starters/pattern-art';
 import { defineExample } from './define';
 
 const MOBS = 'Mob variants';
@@ -460,13 +465,301 @@ const otherExamples: readonly ExampleProject[] = [
   }),
 ];
 
+const SHADERS = 'Shaders';
+const TESTS = 'Game tests';
+const NUMBERS = 'Numbers the game reads';
+
+/** The examples of the data kinds sweep 2 (ADR 0106 D1, D2; B508), in kind order. */
+const sweep2Examples: readonly ExampleProject[] = [
+  defineExample({
+    id: 'example_decorated_pot_pattern',
+    title: 'Pot pattern',
+    description: 'A fish picture for the sides of decorated pots, drawn on fired clay.',
+    kind: 'minecraft:decorated_pot_pattern',
+    category: 'Decorations',
+    tags: ['decorated pot', 'sherd', 'texture'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'wave');
+      const face = 'wave_pottery_pattern';
+      return {
+        elements: [
+          element(
+            id,
+            'minecraft:decorated_pot_pattern',
+            { asset_id: rl(namespace, face) },
+            `A decorated pot pattern: asset_id names its picture, textures/entity/decorated_pot/${face}.png (16 by 16), here a fish drawn by MSM on fired clay. A pot shows it on each side whose sherd carries the component minecraft:provides_pottery_pattern naming ${id}. Try /give @s minecraft:brick[minecraft:provides_pottery_pattern="${id}"] and craft a decorated pot from four of it; the Pot pattern flow adds a recipe, a name and a picture for the sherd too.`,
+          ),
+        ],
+        assets: [
+          drawnTexture(
+            namespace,
+            `entity/decorated_pot/${face}`,
+            'pot_pattern',
+            COLOURS.sapphire,
+            'fish',
+          ),
+        ],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_block_transformer',
+    title: 'Block transformer',
+    description: 'A rule that turns coarse dirt into a dirt path, as a shovel flattens grass.',
+    kind: 'minecraft:block_transformer',
+    category: 'Tools',
+    tags: ['block transformer', 'shovel', 'tool'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'coarse_path'),
+          'minecraft:block_transformer',
+          [
+            {
+              block_state_provider: {
+                type: 'minecraft:rule_based',
+                rules: [
+                  {
+                    if_true: { type: 'minecraft:matching_blocks', blocks: 'minecraft:coarse_dirt' },
+                    // biome-ignore lint/suspicious/noThenProperty: the game's own key for what a rule gives
+                    then: { type: 'minecraft:simple', state: { id: 'minecraft:dirt_path' } },
+                  },
+                ],
+              },
+              sound: 'minecraft:item.shovel.flatten',
+            },
+          ],
+          'A block transformer says what using a tool on a block does: a list of transforms, tried in order, each with a block state provider whose rules pick the new block and the sound it plays. This one turns coarse dirt into a dirt path with the shovel sound. Vanilla tools read the transformers named after them, so naming one minecraft:shovel would replace what every shovel does; under a name of its own, like this one, nothing uses it yet.',
+        ),
+      ],
+      assets: [],
+    }),
+  }),
+  defineExample({
+    id: 'example_test_environment',
+    title: 'Test environment',
+    description: 'Rainy weather on hard difficulty, for game tests that name it.',
+    kind: 'minecraft:test_environment',
+    category: TESTS,
+    tags: ['game test', 'map making'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'stormy_hard');
+      return {
+        elements: [
+          element(
+            id,
+            'minecraft:test_environment',
+            {
+              type: 'minecraft:all_of',
+              definitions: [
+                { type: 'minecraft:weather', weather: 'rain' },
+                { type: 'minecraft:difficulty', difficulty: 'hard' },
+              ],
+            },
+            `A test environment sets up the world before a game test runs and puts it back after: all_of applies each definition in turn, here rain and hard difficulty. A test instance uses it when its environment names ${id}. Map makers use game tests to check their contraptions with /test.`,
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_test_instance',
+    title: 'Test instance',
+    description: 'A game test that places a structure and waits for a test block to pass.',
+    kind: 'minecraft:test_instance',
+    category: TESTS,
+    tags: ['game test', 'map making', 'structure'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'door_check');
+      return {
+        elements: [
+          element(
+            id,
+            'minecraft:test_instance',
+            {
+              type: 'minecraft:block_based',
+              environment: 'minecraft:default',
+              structure: 'minecraft:empty',
+              max_ticks: 200,
+              setup_ticks: 10,
+              required: true,
+            },
+            `A test instance is one game test. block_based places the structure named in structure (here the vanilla empty one; save your contraption with a structure block and name it here) and passes when a test block in it set to "accept" gets power, failing after max_ticks. environment names a test environment, such as one of your own. Run it with /test run ${id}.`,
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_sulfur_cube_archetype',
+    title: 'Sulfur cube kind',
+    description: 'A sulfur cube that turns hot when fed magma cream.',
+    kind: 'minecraft:sulfur_cube_archetype',
+    category: MOBS,
+    tags: ['sulfur cube', 'mob'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'magma_cube_kind'),
+          'minecraft:sulfur_cube_archetype',
+          {
+            items: ['minecraft:magma_cream'],
+            knockback_modifiers: { horizontal_power: 0.8, vertical_power: 0.6 },
+            attribute_modifiers: [],
+            sound_settings: {
+              hit_sound: 'minecraft:entity.sulfur_cube.hot.hit',
+              push_sound: 'minecraft:entity.sulfur_cube.hot.push',
+              push_sound_impulse_threshold: 0.1,
+              push_sound_cooldown: 0.5,
+            },
+          },
+          'A sulfur cube archetype is what a sulfur cube becomes when it swallows one of its items, here magma cream. knockback_modifiers change how far it flies when hit, and attribute_modifiers can change its attributes (none here). sound_settings name the sounds of a hit and a push, here the vanilla hot cube sounds.',
+        ),
+      ],
+      assets: [],
+    }),
+  }),
+  defineExample({
+    id: 'example_context_int_provider',
+    title: 'Whole-number provider',
+    description: 'A named whole number the game can read: a random value from 2 to 4.',
+    kind: 'minecraft:context_int_provider',
+    category: NUMBERS,
+    tags: ['number', 'compost'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'two_to_four'),
+          'minecraft:context_int_provider',
+          { type: 'minecraft:uniform', min: 2, max: 4 },
+          'A context int provider is a whole number the game reads by name, rolled each time it is read. uniform picks one from min to max. Vanilla reads providers such as minecraft:compostable/low for how likely a composter is to fill. A project provider with that name changes the value; one under a name of its own, like this one, waits for something to name it.',
+        ),
+      ],
+      assets: [],
+    }),
+  }),
+  defineExample({
+    id: 'example_context_float_provider',
+    title: 'Decimal-number provider',
+    description: 'A named decimal number the game can read: always one and a half.',
+    kind: 'minecraft:context_float_provider',
+    category: NUMBERS,
+    tags: ['number'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'one_and_a_half'),
+          'minecraft:context_float_provider',
+          { type: 'minecraft:constant', value: 1.5 },
+          'A context float provider is a decimal number the game reads by name. constant always gives value. A project provider named after a vanilla one changes what the game reads there; under a name of its own, like this one, it waits for something to name it.',
+        ),
+      ],
+      assets: [],
+    }),
+  }),
+  defineExample({
+    id: 'example_post_effect',
+    title: 'Screen effect',
+    description: 'A warm sepia tint over the whole screen, from the vanilla copy shader.',
+    kind: 'minecraft:post_effect',
+    category: SHADERS,
+    tags: ['post effect', 'shader', 'screen'],
+    build: ({ namespace }) => {
+      const swap = rl(namespace, 'swap');
+      const pass = (input: string, output: string, tint: number[]) => ({
+        vertex_shader: 'minecraft:core/screenquad',
+        fragment_shader: 'minecraft:post/blit',
+        inputs: [{ sampler_name: 'In', target: input }],
+        output,
+        uniforms: { BlitConfig: [{ name: 'ColorModulate', type: 'vec4', value: tint }] },
+      });
+      return {
+        elements: [
+          element(
+            rl(namespace, 'sepia'),
+            'minecraft:post_effect',
+            {
+              targets: { [swap]: {} },
+              passes: [
+                pass('minecraft:main', swap, [1, 0.86, 0.66, 1]),
+                pass(swap, 'minecraft:main', [1, 1, 1, 1]),
+              ],
+            },
+            `A post effect draws passes over the finished screen. The first pass copies the screen (minecraft:main) into the target ${swap} through the vanilla copy shader with a warm tint (ColorModulate multiplies red, green, blue and alpha); the second copies it back. The game uses post effects it knows by name, such as minecraft:creeper while spectating a creeper: name a project effect after one to replace it. MSM does not check shader files, so look at the result in game.`,
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_waypoint_style',
+    title: 'Waypoint style',
+    description: 'A locator bar dot that shrinks over a long way.',
+    kind: 'minecraft:waypoint_style',
+    category: 'Locator bar',
+    tags: ['waypoint', 'locator bar', 'hud'],
+    build: ({ namespace }) => {
+      const id = rl(namespace, 'far_dots');
+      return {
+        elements: [
+          element(
+            id,
+            'minecraft:waypoint_style',
+            {
+              near_distance: 32,
+              far_distance: 512,
+              sprites: [
+                'minecraft:default_0',
+                'minecraft:default_1',
+                'minecraft:default_2',
+                'minecraft:default_3',
+              ],
+            },
+            `A waypoint style is how a player or mob shows on the locator bar. sprites are the dots from near to far, here the vanilla dots under textures/gui/sprites/hud/locator_bar_dot/. The first is used closer than near_distance and the last beyond far_distance. Try /waypoint modify @s style set ${id}.`,
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_shader',
+    title: 'Shader program',
+    description: 'A shader program definition naming the vanilla textured shaders.',
+    kind: 'minecraft:shader',
+    category: SHADERS,
+    tags: ['shader', 'glsl'],
+    build: ({ namespace }) => ({
+      elements: [
+        element(
+          rl(namespace, 'program/textured'),
+          'minecraft:shader',
+          {
+            vertex: 'minecraft:core/position_tex',
+            fragment: 'minecraft:core/position_tex',
+            samplers: [{ name: 'Sampler0' }],
+            uniforms: [],
+          },
+          'A shader program definition names a vertex and a fragment shader (.vsh and .fsh files under shaders/), the samplers it reads and its uniforms. This one names the vanilla textured shaders. Shader files of your own go under shaders/ in the project; MSM copies them as they are without checking them, so a mistake shows only in game.',
+        ),
+      ],
+      assets: [],
+    }),
+  }),
+];
+
 /**
- * The per-kind examples of the data kinds sweep, in the data pack plugin's kind order: the mob
- * variants, the sound variants, then instrument, enchantment provider, timeline, world clock.
+ * The per-kind examples of the data kinds sweeps, in the data pack plugin's kind order: the mob
+ * variants, the sound variants, then instrument, enchantment provider, timeline, world clock,
+ * then seven data kinds and the three resource pack kinds of sweep 2 (B508).
  */
 export const dataKindExamples: readonly ExampleProject[] = [
   ...variantExamples,
   otherExamples[0] as ExampleProject,
   ...soundExamples,
   ...otherExamples.slice(1),
+  ...sweep2Examples,
 ];

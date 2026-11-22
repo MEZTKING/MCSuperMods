@@ -19,7 +19,7 @@ import { hashSeed, rng } from '../noise';
 import { type BoxFace, boxFaces, faceLean, SIDE_SHADE } from '../skins';
 
 /** A model box on a worn texture: `u`, `v`, width, height and depth, and what it carries. */
-interface WornBox {
+export interface WornBox {
   readonly u: number;
   readonly v: number;
   readonly w: number;
@@ -33,7 +33,7 @@ interface WornBox {
  * The humanoid boxes of the armour layers, in the player-skin layout the placeholders use:
  * head, right leg, body and right arm (the game mirrors the left ones).
  */
-const HUMANOID_ARMOUR_BOXES: readonly WornBox[] = [
+export const HUMANOID_ARMOUR_BOXES: readonly WornBox[] = [
   { u: 0, v: 0, w: 8, h: 8, d: 8, head: true },
   { u: 0, v: 16, w: 4, h: 12, d: 4 },
   { u: 16, v: 16, w: 8, h: 12, d: 4 },

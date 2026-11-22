@@ -1,7 +1,8 @@
 /**
  * Tier-B generic data kinds (ADR 0015): `minecraft:<name>` for each registry below, schema
  * `resource:<name>`, one JSON file at `data/<ns>/<target.folders.data[name]>/<path>.json`.
- * They have no templates or studios; the schema form is their editor.
+ * They have no studios; the schema form is their editor. Their templates live in
+ * `templates/registries.ts`.
  */
 import type { DataFolderKey, ElementKind, Json } from '@msm/plugin-api';
 import { lowerJsonData } from '../lowering/json-data';

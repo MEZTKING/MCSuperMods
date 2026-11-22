@@ -38,6 +38,7 @@ import {
   isProjectRelativePath,
   loadProject,
   type MemoryFileSystem,
+  mediaTypeForPath,
   type Project,
   type ProjectFileSystem,
   registerPlugin,
@@ -507,6 +508,27 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
   painting: [
     { painting_name: 'Mountain Lake', author: 'Alex', size: '4x3', colour: '#2454c4' },
     { painting_name: 'Grey Square', size: '1x1', image: pngDataUrl(32, 32) },
+  ],
+  'banner-pattern': [
+    { pattern_name: 'Sea Ring', shape: 'ring', colour: '#2454c4', ingredient: 'minecraft:ink_sac' },
+    { pattern_name: 'Arrows', shape: 'chevrons', ingredient: 'minecraft:gold_nugget' },
+  ],
+  'armour-trim': [
+    {
+      trim_name: 'Frost Rim',
+      style: 'edges',
+      template_item: 'minecraft:prismarine_shard',
+      copy_block: 'minecraft:prismarine',
+    },
+    { trim_name: 'Studded', style: 'studs', template_item: 'minecraft:flint', colour: '#606878' },
+  ],
+  glider: [
+    { glider_name: 'Leather Wings', durability: 120, material: 'minecraft:leather' },
+    { glider_name: 'Kite', durability: 2000, material: 'minecraft:paper', colour: '#f0c020' },
+  ],
+  'pot-pattern': [
+    { pattern_name: 'River Fish', picture: 'fish', ingredient: 'minecraft:lapis_lazuli' },
+    { pattern_name: 'Leaf', picture: 'leaf', colour: '#4c8a2c' },
   ],
   dimension: [
     {
@@ -1195,7 +1217,7 @@ async function buildProject(
         target = { name: asset.namespace, elements: [], assets: [] };
         project.namespaces.push(target);
       }
-      target.assets.push({ path: asset.path, mediaType: 'image/png' });
+      target.assets.push({ path: asset.path, mediaType: mediaTypeForPath(asset.path) });
     }
   }
   project.namespaces.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
@@ -1361,6 +1383,9 @@ function projectRegistryIds(
         }
       }
       if (name === 'model') add('model', element.id);
+      // An item model definition, which a `minecraft:item_model` component names (B508), as
+      // the app's registry view adds them.
+      else if (element.kind === 'minecraft:item_definition') add('item_definition', element.id);
       else if (name === 'sounds' && typeof element.data === 'object' && element.data !== null) {
         for (const key of Object.keys(element.data)) {
           if (key !== '') add('sound_event', `${namespace.name}:${key}`);
@@ -1898,22 +1923,11 @@ function typeCheck(script: string): string[] {
 
 /**
  * Kinds registered before their per-kind example exists. A new kind may wait here only until
- * its library brief lands: the data kinds sweep 2 and resource pack kinds of ADR 0106 (B504)
- * wait for B508's examples in `packages/plugins/library/src/examples/data-kinds.ts`.
+ * its library brief lands. B508 added the examples of ADR 0106's kinds but one: a vanilla
+ * server refuses a wolf sound variant without `step_sound`, which the vendored schemas of both
+ * targets do not know, so no example is valid in both until the schema learns it.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [
-  'minecraft:decorated_pot_pattern',
-  'minecraft:wolf_sound_variant',
-  'minecraft:block_transformer',
-  'minecraft:test_environment',
-  'minecraft:test_instance',
-  'minecraft:sulfur_cube_archetype',
-  'minecraft:context_int_provider',
-  'minecraft:context_float_provider',
-  'minecraft:post_effect',
-  'minecraft:waypoint_style',
-  'minecraft:shader',
-];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = ['minecraft:wolf_sound_variant'];
 
 // Tests --------------------------------------------------------------------------------------
 
@@ -1971,8 +1985,20 @@ describe('library bundles', () => {
         const slash = asset.path.lastIndexOf('/');
         expect(slash, asset.path).toBeGreaterThan(0);
         expect(isProjectRelativePath(asset.path.slice(0, slash)), asset.path).toBe(true);
-        expect(asset.path.slice(slash + 1), asset.path).toMatch(/^[a-z0-9_.-]+\.png$/);
         expect(asset.path.startsWith('textures/'), asset.path).toBe(true);
+        // A trim layer's palette sidecar (B508): JSON beside a picture of the same bundle.
+        if (asset.path.endsWith('.png.mcmeta')) {
+          const picture = asset.path.slice(0, -'.mcmeta'.length);
+          expect(
+            bundle.assets.some((other) => other.path === picture),
+            asset.path,
+          ).toBe(true);
+          expect(JSON.parse(new TextDecoder().decode(asset.bytes)), asset.path).toHaveProperty(
+            'palette',
+          );
+          continue;
+        }
+        expect(asset.path.slice(slash + 1), asset.path).toMatch(/^[a-z0-9_.-]+\.png$/);
         expect([...asset.bytes.subarray(0, 8)], asset.path).toEqual(png);
       }
     }

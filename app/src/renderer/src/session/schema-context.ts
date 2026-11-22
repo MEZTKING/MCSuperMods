@@ -404,7 +404,9 @@ function isBundleTextures(data: unknown): data is { bundle_textures: Record<stri
 }
 
 /**
- * The ids a project defines, per registry: `model` (model elements, the item models of
+ * The ids a project defines, per registry: `item_definition` (item model definition elements,
+ * which a `minecraft:item_model` component names; only when there are any), `model` (model
+ * elements, the item models of
  * entity spawn eggs with a texture and the models lowering generates for `msm:block` elements,
  * `blockGeneratedModelIds`: a typed block's `<ns>:block/<path>` models and the flat item model
  * of doors, panes, crops and saplings; an `msm:fluid`'s `<ns>:block/<path>` and
@@ -428,12 +430,15 @@ export function projectRegistryIds(
   target?: Pick<TargetFacts, 'blocks'>,
 ): Record<string, string[]> {
   const model: string[] = [];
+  const itemDefinition: string[] = [];
   const texture: string[] = [];
   const sound: string[] = [];
   const soundEvent = new Set<string>();
   for (const namespace of project.namespaces) {
     for (const element of namespace.elements) {
       if (element.kind === 'minecraft:model') model.push(element.id);
+      // An item model definition, which a `minecraft:item_model` component names (B508).
+      if (element.kind === 'minecraft:item_definition') itemDefinition.push(element.id);
       if (element.kind === BLOCK_KIND)
         model.push(...blockGeneratedModelIds(element.id, element.data));
       if (element.kind === 'msm:item' && isBundleTextures(element.data)) {
@@ -483,6 +488,9 @@ export function projectRegistryIds(
   }
   return {
     ...dataRegistryIds(project, kinds, target),
+    ...(itemDefinition.length === 0
+      ? {}
+      : { item_definition: [...new Set(itemDefinition)].sort() }),
     model: [...new Set(model)].sort(),
     sound: sound.sort(),
     texture: texture.sort(),

@@ -67,6 +67,10 @@ const STARTER_IDS = [
   'throwable',
   'enchantment',
   'painting',
+  'banner-pattern',
+  'armour-trim',
+  'glider',
+  'pot-pattern',
   'music-disc-item',
   'dimension',
   'portal',
@@ -169,6 +173,18 @@ const KIND_IDS = [
   'minecraft:enchantment_provider',
   'minecraft:timeline',
   'minecraft:world_clock',
+  // Data kinds sweep 2 (ADR 0106 D1, D2; examples B508).
+  // minecraft:wolf_sound_variant waits for a schema that knows its step_sound (B508).
+  'minecraft:decorated_pot_pattern',
+  'minecraft:block_transformer',
+  'minecraft:test_environment',
+  'minecraft:test_instance',
+  'minecraft:sulfur_cube_archetype',
+  'minecraft:context_int_provider',
+  'minecraft:context_float_provider',
+  'minecraft:post_effect',
+  'minecraft:waypoint_style',
+  'minecraft:shader',
   'minecraft:structure_template',
   'minecraft:worldgen/template_pool',
   'minecraft:worldgen/structure',
@@ -284,7 +300,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the sixty starters in order', () => {
+  it('lists the sixty-four starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -294,7 +310,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(56).fill('content'),
+      ...Array<string>(60).fill('content'),
     ]);
   });
 
@@ -700,8 +716,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 104 per-kind examples, one per built-in kind, 40 behaviour examples, 16 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(104);
+  it('has 114 per-kind examples, one per built-in kind, 40 behaviour examples, 16 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(114);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -781,7 +797,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(164);
+    expect(libraryExamples).toHaveLength(174);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -952,6 +968,13 @@ describe('every starter and example', () => {
   it('uses drawn textures, never a placeholder, with lower-case names inside a folder', () => {
     for (const entry of entries) {
       for (const asset of build(entry).assets) {
+        // A trim layer's palette sidecar (B508) is JSON beside its picture.
+        if (asset.path.endsWith('.png.mcmeta')) {
+          expect(asset.path, entry.id).toMatch(
+            /^textures\/trims\/entity\/[a-z_]+\/[a-z0-9_]+\.png\.mcmeta$/,
+          );
+          continue;
+        }
         expect(asset.path, entry.id).toMatch(/^textures\/[a-z0-9_/]+\/[a-z0-9_.-]+\.png$/);
         if (asset.path.startsWith('textures/painting/')) continue;
         expect(PLACEHOLDERS.has(Buffer.from(asset.bytes).toString('hex')), asset.path).toBe(false);
@@ -962,8 +985,15 @@ describe('every starter and example', () => {
   it('gives every texture a model or painting that uses it', () => {
     for (const entry of entries) {
       const bundle = build(entry);
-      const text = JSON.stringify(bundle.elements);
+      // A trim layer's sidecar names its palette key (B508).
+      const text =
+        JSON.stringify(bundle.elements) +
+        bundle.assets
+          .filter((asset) => asset.path.endsWith('.png.mcmeta'))
+          .map((asset) => new TextDecoder().decode(asset.bytes))
+          .join('');
       for (const asset of bundle.assets) {
+        if (asset.path.endsWith('.png.mcmeta')) continue;
         const id = `${asset.namespace}:${asset.path.replace(/^textures\//, '').replace(/\.png$/, '')}`;
         const paintingId = id.replace(':painting/', ':');
         // Equipment layers name `<ns>:<name>` for textures/entity/equipment/<layer>/<name>.png.
@@ -974,8 +1004,14 @@ describe('every starter and example', () => {
         const fileId = `${id}.png`;
         // A particle sprite `<ns>:<name>` is textures/particle/<name>.png (ADR 0080 D2).
         const spriteId = id.replace(':particle/', ':');
+        // Banner and shield masks, pot faces and trim layers are named by their pattern's
+        // asset_id, and a trim's palette key by its layers' sidecars (B508).
+        const patternId = id.replace(
+          /:(entity\/(banner|shield|decorated_pot)|trims\/entity\/[a-z_]+|palettes)\//,
+          ':',
+        );
         expect(
-          [id, paintingId, equipmentId, effectId, fileId, spriteId].some((candidate) =>
+          [id, paintingId, equipmentId, effectId, fileId, spriteId, patternId].some((candidate) =>
             text.includes(`"${candidate}"`),
           ),
           id,

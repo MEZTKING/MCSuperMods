@@ -189,9 +189,10 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'item',
     label: 'Make an item',
-    sentence: 'Something to throw, a totem that saves you, or a bag that holds things.',
+    sentence:
+      'Something to throw, a totem that saves you, wings to glide or a bag that holds things.',
     group: 'blocks',
-    action: withPicks(['throwable', 'totem'], MAKE_ITEM_PICKS),
+    action: withPicks(['throwable', 'totem', 'glider'], MAKE_ITEM_PICKS),
   },
   {
     id: 'tool',
@@ -203,9 +204,9 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'armour',
     label: 'Make armour',
-    sentence: 'Helmet, chestplate, leggings and boots of a new material.',
+    sentence: 'Helmet, chestplate, leggings and boots of a new material, or a new trim.',
     group: 'blocks',
-    action: flows('gear-set'),
+    action: flows('gear-set', 'armour-trim'),
   },
   {
     id: 'food',
@@ -314,10 +315,10 @@ export const MAKE_TILES: readonly MakeTile[] = [
   },
   {
     id: 'painting',
-    label: 'Make a painting',
-    sentence: 'A painting of your own picture to hang on a wall.',
+    label: 'Make a painting or pattern',
+    sentence: 'A painting of your own picture, a pattern for banners or a picture for pots.',
     group: 'looks',
-    action: flows('painting'),
+    action: flows('painting', 'banner-pattern', 'pot-pattern'),
   },
   {
     id: 'sound',
