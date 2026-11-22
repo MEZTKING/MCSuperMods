@@ -1,8 +1,22 @@
 name: CI
 
+# Runs sparingly (user, 2026-11-22: "use the github actions as less as possible for now"):
+# never for docs-only changes, a newer push cancels an older run of the same branch, and a
+# commit whose message has [skip ci] is not built; run it by hand before moving main.
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
