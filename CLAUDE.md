@@ -14,7 +14,7 @@ MCSuperMods (MSM): desktop mod maker for Minecraft Java (Fabric-first, vanilla p
 - `packages/targets/` — `@msm/target-*`, one folder per MC version (`mc-26.3/`, `mc-26.4/`), plus the `@msm/targets` aggregator (`all/`)
 - `packages/interop/` — `@msm/interop`, Minecraft installation, launcher instances, `level.dat` world names, Fabric test installs (`fabric/`), Blockbench import (`blockbench/`)
 - `engine-mod/` — `msm_runtime` Fabric mod (Gradle, Java 25; `-Pmc=<version>` from `versions/`); `parity/` behaviour-parity GameTest mod (separate build)
-- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, build-msm-mcdoc, new-plugin, run-fabric-server
+- `tools/` — dev scripts: check-deps, check-size, sync-mcdoc, sync-mcmeta, build-msm-mcdoc, new-plugin, run-fabric-server, check-project (checks a project folder on both targets), community-repo (syncs the examples into MEZTKING/MCSuperMods-Community)
 - `fixtures/sample-resourcepack/`, `sample-datapack/`, `sample-worldgen/`, `sample-mod/`, `sample-mob/`, `sample-creatures/`, `sample-machines/`, `sample-portals/`, `sample-particles/`, `sample-rules/`, `sample-script/`, `sample-vehicles/`, `sample-vanilla-blocks/`, `sample-villagers-and-fluids/`, `sample-plants-and-storage/`, `sample-mobs-and-commands/` — sample projects for the in-game checks; `sample-plugin/` — sample external plugin; `sim-parity/`, `worldgen-parity/` — fixtures measured on the real game
 - `examples/` — generated mirror of the library's starters and examples (golden; `UPDATE_GOLDENS=1`)
 - `.claude/agents/` — `orchestrator.md`, `executor.md`
