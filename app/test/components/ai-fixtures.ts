@@ -1,18 +1,36 @@
 /**
  * Fakes for the AI helper's renderer tests: an in-memory `AiPlatform` that records calls and
- * lets a test push run events, and a session over the fake platform whose vendored target
- * data is read from disk in either test environment.
+ * lets a test push run events, a session over the fake platform whose vendored target data is
+ * read from disk in either test environment, and one conversation in each state of the state
+ * line ({@link aiStateFixtures}).
  */
 
 /// <reference types="node" />
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import type { AiEvent, AiKeyTestResult, AiStartRequest, AiToolResult } from '@msm/ai';
+import type {
+  AiEvent,
+  AiKeyTestResult,
+  AiStartRequest,
+  AiToolResult,
+  ProposePlanInput,
+} from '@msm/ai';
 import { createMemoryFileSystem } from '@msm/core';
 import { builtInTargets, targetById } from '@msm/targets';
 import { act } from '@testing-library/react';
+import type { AiStatusState } from '../../src/renderer/src/components/ai/ai-status';
 import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import { ProjectSession } from '../../src/renderer/src/session/project-session';
+import {
+  type AiConversation,
+  addUserMessage,
+  applyEvent,
+  decidePlan,
+  newConversation,
+  reachCheckpoint,
+  showPlan,
+  startRun,
+} from '../../src/renderer/src/store/ai-store';
 import type { AiKeyStatus, AiPlatform, PlatformAdapter } from '../../src/shared/platform';
 
 const unavailable = async (): Promise<never> => {
@@ -192,4 +210,73 @@ export async function aiSession() {
   await session.newProject();
   session.addElement({ id: 'demo:greet', kind: 'minecraft:function', data: { lines: ['say hi'] } });
   return { session, platform };
+}
+
+const FIXTURE_PLAN: ProposePlanInput = {
+  title: 'Ruby tools',
+  items: [
+    { itemId: 'sword', kind: 'msm:item', elementId: 'demo:ruby_sword', summary: 'A sword.' },
+    { itemId: 'pick', kind: 'msm:item', elementId: 'demo:ruby_pickaxe', summary: 'A pickaxe.' },
+  ],
+};
+
+function withRubySword(state: AiConversation): AiConversation {
+  state.changeset.add({
+    op: 'create',
+    elementId: 'demo:ruby_sword',
+    kind: 'msm:item',
+    after: { display_name: 'Ruby Sword' },
+  });
+  state.changeset.add({
+    op: 'create',
+    elementId: 'demo:ruby_sword_model',
+    kind: 'minecraft:model',
+    after: { parent: 'minecraft:item/handheld' },
+  });
+  return { ...state, changesetItems: state.changeset.items };
+}
+
+/**
+ * One conversation in each state of the state line (ADR 0125 D1), built with the store's own
+ * transitions, for the panel's component tests in the three modes (B685). Each fixture's run
+ * started at 0 ms; `conversationStatus(fixture, 12_000)` reads 12 seconds while it works. The
+ * `run` ids are `r`, the changeset is the fixture's own.
+ */
+export function aiStateFixtures(): Record<AiStatusState, AiConversation> {
+  const asked = () =>
+    startRun(addUserMessage(newConversation('c'), 'Make ruby tools'), 'r', 'chat', 0);
+  const tool = (state: AiConversation, name: string) =>
+    applyEvent(state, 'r', {
+      type: 'tool_request',
+      request: { requestId: `q-${name}`, toolUseId: `t-${name}`, name, input: {} },
+    });
+  const planned = showPlan(asked(), FIXTURE_PLAN, 'r');
+  const stepping = reachCheckpoint(
+    decidePlan(planned, { decision: 'step', items: FIXTURE_PLAN.items, comments: '' }),
+    { completedItemIds: ['sword'], summary: 'The sword is made.' },
+    'r',
+  );
+  const ended = (state: AiConversation, event: Extract<AiEvent, { type: 'done' }>) =>
+    applyEvent(state, 'r', event);
+  return {
+    idle: newConversation('c'),
+    thinking: applyEvent(asked(), 'r', { type: 'turn_start' }, 0),
+    reading: tool(asked(), 'read_element'),
+    making: tool(withRubySword(asked()), 'create_elements'),
+    checking: tool(asked(), 'run_checks'),
+    'your-turn-plan': planned,
+    'your-turn-step': stepping,
+    ready: ended(withRubySword(asked()), { type: 'done', reason: 'end_turn' }),
+    stopped: ended(asked(), {
+      type: 'done',
+      reason: 'limit',
+      limit: { toolTurns: 24, outputTokens: 100_000 },
+    }),
+    failed: ended(asked(), {
+      type: 'done',
+      reason: 'error',
+      errorClass: 'OverloadedError',
+      message: 'Anthropic is busy just now; try again shortly.',
+    }),
+  };
 }

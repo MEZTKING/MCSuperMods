@@ -1,16 +1,33 @@
 import { type AiUsage, DEFAULT_LIMITS, type ProposePlanInput } from '@msm/ai';
+import { createMemoryFileSystem } from '@msm/core';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { PendingChangeset } from '../src/renderer/src/changeset/changeset';
+import { followSteps, thingsOf } from '../src/renderer/src/components/ai/ai-status';
+import { appliedStoredText } from '../src/renderer/src/components/ai/ai-words';
 import {
+  type AiAppliedStep,
   type AiConversation,
+  addNotice,
   addUserMessage,
   applyEvent,
+  decidePlan,
   doneNotice,
+  followAppliedNotice,
   isRunning,
+  keepGoingRequest,
   limitsFor,
   newConversation,
+  pendingPlan,
+  reachCheckpoint,
+  showPlan,
   startRun,
+  tickedItemIds,
+  tryAgainRequest,
+  typedPlanDecision,
+  typedStepDecision,
   useAiStore,
 } from '../src/renderer/src/store/ai-store';
+import { newSession } from './session-fixture';
 
 const usage = (inputTokens: number, outputTokens: number): AiUsage => ({
   inputTokens,
@@ -149,15 +166,64 @@ describe('ai-store reducers', () => {
     expect(ended.messages).toHaveLength(1);
   });
 
-  it('words each done reason', () => {
+  it('words each done reason in plain words, with the error class kept on the notice', () => {
     expect(doneNotice('end_turn')).toBeUndefined();
     expect(doneNotice('cancelled')).toBe('Stopped.');
     expect(
       doneNotice('refusal', undefined, { category: 'cyber', explanation: 'Not allowed.' }),
-    ).toBe('The model declined to continue: Not allowed.');
-    expect(doneNotice('error', 'Overloaded')).toBe('The run failed: Overloaded');
-    expect(doneNotice('no_key')).toMatch(/Settings > AI helper/);
-    expect(doneNotice('max_tokens')).toMatch(/maximum length/);
+    ).toBe('The helper would not do that. Try asking another way.');
+    expect(doneNotice('error', 'Overloaded', undefined, 'OverloadedError')).toBe(
+      'Anthropic is busy just now.',
+    );
+    expect(doneNotice('error', 'Raw text', undefined, 'BillingError')).toMatch(/no credit/);
+    expect(doneNotice('error', 'Raw text')).toBe(
+      'Something went wrong while talking to Anthropic.',
+    );
+    expect(doneNotice('no_key')).toBe('Add your Anthropic key first.');
+    expect(doneNotice('max_tokens')).toMatch(/cut off/);
+    expect(doneNotice('limit')).toBe('It paused so the cost stays small.');
+    expect(doneNotice('limit', 'The helper paused at its limit.')).toBe(
+      'The helper paused at its limit.',
+    );
+
+    let state = running();
+    state = applyEvent(state, 'run-1', {
+      type: 'done',
+      reason: 'error',
+      message: 'Your Anthropic API key was not accepted.',
+      errorClass: 'AuthenticationError',
+    });
+    expect(state.run).toMatchObject({ reason: 'error', errorClass: 'AuthenticationError' });
+    expect(state.messages.at(-1)).toMatchObject({
+      role: 'notice',
+      kind: 'error',
+      text: 'Your key was not accepted.',
+      errorClass: 'AuthenticationError',
+    });
+    state = applyEvent(running(), 'run-1', {
+      type: 'done',
+      reason: 'limit',
+      limit: { toolTurns: 24, outputTokens: 100_000 },
+    });
+    expect(state.messages.at(-1)).toMatchObject({
+      kind: 'limit',
+      limit: { toolTurns: 24, outputTokens: 100_000 },
+    });
+  });
+
+  it('records when the run and each model turn started', () => {
+    let state = startRun(addUserMessage(newConversation('c'), 'Hi'), 'r', 'chat', 1_000);
+    expect(state.run).toMatchObject({ startedAt: 1_000, turnStartedAt: 1_000, userSeq: 0 });
+    state = applyEvent(state, 'r', { type: 'turn_start' }, 5_000);
+    expect(state.run?.turnStartedAt).toBe(5_000);
+    expect(state.run?.startedAt).toBe(1_000);
+  });
+
+  it('starts a run of the size its caller gives, with that size’s limits', () => {
+    const state = startRun(newConversation('c'), 'r', 'build');
+    expect(state.run?.mode).toBe('build');
+    expect(state.run?.limits).toEqual(DEFAULT_LIMITS.build);
+    expect(startRun(newConversation('c'), 'r').run?.mode).toBe('chat');
   });
 
   it('uses the run limits once, then the mode defaults again', () => {
@@ -273,5 +339,230 @@ describe('useAiStore', () => {
     expect(fresh?.changesetItems).toEqual([]);
     fresh?.changeset.add({ op: 'create', elementId: 'demo:b', kind: 'msm:block', after: {} });
     expect(useAiStore.getState().conversations['/p']?.changesetItems).toHaveLength(1);
+  });
+});
+
+describe('the plan in the conversation', () => {
+  it('is a transcript entry at the place it was proposed, mirrored into conversation.plan', () => {
+    let state = running();
+    state = applyEvent(state, 'run-1', { type: 'text_delta', text: 'Here is a plan.' });
+    state = showPlan(state, plan, 'run-1');
+    state = applyEvent(state, 'run-1', { type: 'text_delta', text: 'late' });
+    expect(state.messages.map((message) => message.role)).toEqual([
+      'user',
+      'assistant',
+      'plan',
+      'assistant',
+    ]);
+    const entry = pendingPlan(state);
+    expect(entry?.seq).toBe(2);
+    expect(entry?.state).toBe(state.plan);
+    state = decidePlan(state, { decision: 'build_all', items: plan.items, comments: '' });
+    expect(pendingPlan(state)).toBeUndefined();
+    const decided = state.messages[2];
+    expect(decided).toMatchObject({ role: 'plan', closed: false, state: { status: 'decided' } });
+  });
+
+  it('closes a decided plan to one line once its run has ended, and cancels a waiting one', () => {
+    let state = showPlan(running(), plan, 'run-1');
+    state = decidePlan(state, { decision: 'step', items: plan.items, comments: '' });
+    state = applyEvent(state, 'run-1', { type: 'done', reason: 'end_turn' });
+    expect(state.messages.find((message) => message.role === 'plan')).toMatchObject({
+      closed: true,
+      state: { status: 'decided' },
+    });
+    let waiting = showPlan(running(), plan, 'run-1');
+    waiting = applyEvent(waiting, 'run-1', { type: 'done', reason: 'cancelled' });
+    expect(waiting.messages.find((message) => message.role === 'plan')).toMatchObject({
+      closed: true,
+      state: { status: 'cancelled' },
+    });
+  });
+
+  it('ticks a line only when the changes or the project hold its element', () => {
+    let state = showPlan(running(), plan, 'run-1');
+    state = decidePlan(state, { decision: 'build_all', items: plan.items, comments: '' });
+    // The model says both are built; nothing is proposed yet.
+    state = reachCheckpoint(state, { completedItemIds: ['ore', 'gem'], summary: 'Both.' }, 'run-1');
+    const current = state.plan;
+    if (current === null) throw new Error('No plan.');
+    expect(current.completed).toEqual(['ore', 'gem']);
+    expect(tickedItemIds(current, state)).toEqual([]);
+    state.changeset.add({
+      op: 'create',
+      elementId: 'demo:ruby_ore',
+      kind: 'msm:block',
+      after: {},
+    });
+    state = { ...state, changesetItems: state.changeset.items };
+    expect(tickedItemIds(current, state)).toEqual(['ore']);
+    expect(tickedItemIds(current, state, (id) => id === 'demo:ruby')).toEqual(['ore', 'gem']);
+  });
+
+  it('reads a typed answer to a waiting plan or step', () => {
+    const waiting = showPlan(running(), plan, 'run-1').plan;
+    if (waiting === null) throw new Error('No plan.');
+    for (const text of ['go', 'Yes', ' OK! ', 'go.']) {
+      expect(typedPlanDecision(waiting, text)).toEqual({
+        decision: 'build_all',
+        items: plan.items,
+        comments: '',
+      });
+    }
+    expect(typedPlanDecision(waiting, 'Make it blue instead ')).toEqual({
+      decision: 'revise',
+      items: plan.items,
+      comments: 'Make it blue instead',
+    });
+    expect(typedPlanDecision(waiting, 'go on, but no gem').decision).toBe('revise');
+    expect(typedStepDecision('stop')).toBe('stop');
+    expect(typedStepDecision('Stop.')).toBe('stop');
+    expect(typedStepDecision('yes please')).toBe('continue');
+  });
+
+  it('resolves a typed answer through the store like a button would', async () => {
+    const store = useAiStore.getState();
+    store.ensureConversation('/typed', () => 'c');
+    store.startRun('/typed', 'r1', 'chat');
+    const decision = store.proposePlan('/typed', plan, 'r1');
+    const conversation = useAiStore.getState().conversations['/typed'];
+    const entry = conversation === undefined ? undefined : pendingPlan(conversation);
+    if (entry === undefined) throw new Error('No waiting plan.');
+    store.appendUser('/typed', 'go');
+    store.resolvePlan('/typed', typedPlanDecision(entry.state, 'go'));
+    await expect(decision).resolves.toMatchObject({ decision: 'build_all' });
+    const after = useAiStore.getState().conversations['/typed'];
+    expect(after?.messages.map((message) => message.role)).toEqual(['plan', 'user']);
+    store.dropConversation('/typed');
+  });
+});
+
+describe('Try again and Keep going', () => {
+  const ended = (
+    reason: 'error' | 'limit' | 'refusal' | 'cancelled' | 'end_turn' | 'max_tokens',
+  ) => {
+    let state = addUserMessage(
+      newConversation('c'),
+      'Make a ruby sword',
+      ['ctx'],
+      ['data:image/png;base64,AAAA'],
+    );
+    state = startRun(state, 'r', 'build');
+    state = applyEvent(state, 'r', { type: 'text_delta', text: 'Working.' });
+    return applyEvent(state, 'r', {
+      type: 'done',
+      reason,
+      ...(reason === 'error' ? { errorClass: 'OverloadedError' } : {}),
+    });
+  };
+
+  it('sends the failed, refused or stopped run’s message again at its size', () => {
+    for (const reason of ['error', 'refusal', 'cancelled'] as const) {
+      expect(tryAgainRequest(ended(reason))).toEqual({
+        text: 'Make a ruby sword',
+        contextBlocks: ['ctx'],
+        images: ['data:image/png;base64,AAAA'],
+        size: 'build',
+      });
+    }
+    expect(tryAgainRequest(ended('end_turn'))).toBeNull();
+    expect(tryAgainRequest(ended('limit'))).toBeNull();
+    expect(tryAgainRequest(running())).toBeNull();
+  });
+
+  it('sends "continue" after a limit stop or a cut-off answer', () => {
+    expect(keepGoingRequest(ended('limit'))).toEqual({
+      text: 'continue',
+      contextBlocks: [],
+      images: [],
+      size: 'build',
+    });
+    expect(keepGoingRequest(ended('max_tokens'))?.text).toBe('continue');
+    expect(keepGoingRequest(ended('error'))).toBeNull();
+    expect(keepGoingRequest(running())).toBeNull();
+  });
+});
+
+describe('the Apply notice follows the command stack', () => {
+  it('says added, taken out again and put back through undo and redo, and lets go after an edit', async () => {
+    const { session } = newSession(createMemoryFileSystem());
+    await session.newProject();
+    const changeset = new PendingChangeset();
+    changeset.add({
+      op: 'create',
+      elementId: 'demo:ruby_sword',
+      kind: 'msm:item',
+      after: { display_name: 'Ruby Sword' },
+    });
+    changeset.add({
+      op: 'create',
+      elementId: 'demo:ruby_sword_model',
+      kind: 'minecraft:model',
+      after: { parent: 'minecraft:item/handheld' },
+    });
+    const items = changeset.items;
+    const result = await session.applyChangeset(items);
+    const label = session.snapshot.undoLabel ?? '';
+    const things = thingsOf(items.filter((item) => result.applied.includes(item.itemId)));
+    expect(things).toEqual([
+      { id: 'demo:ruby_sword', name: 'Ruby Sword', what: 'Item', op: 'added' },
+    ]);
+    const step: AiAppliedStep = {
+      label,
+      things,
+      changes: result.applied.length,
+      skipped: 0,
+      createdIds: ['demo:ruby_sword', 'demo:ruby_sword_model'],
+      phase: 'added',
+      onTop: true,
+      addedText: 'Applied 2 changes. Undo reverts them in one step.',
+    };
+    let state = addNotice(newConversation('c'), 'info', step.addedText, undefined, {
+      applied: step,
+    });
+    const seq = state.messages[0]?.seq ?? -1;
+    const follow = () => {
+      const notice = state.messages[0];
+      if (notice?.role !== 'notice' || notice.applied === undefined) throw new Error('No step.');
+      const [next] = followSteps([notice.applied], session.snapshot);
+      if (next === undefined) throw new Error('No step.');
+      state = followAppliedNotice(state, seq, next, appliedStoredText(next));
+      return state.messages[0] as Extract<AiConversation['messages'][number], { role: 'notice' }>;
+    };
+    expect(follow().applied).toMatchObject({ phase: 'added', onTop: true });
+    session.undo();
+    expect(follow()).toMatchObject({
+      text: 'Undone.',
+      applied: { phase: 'taken-out', onTop: true },
+    });
+    session.redo();
+    expect(follow()).toMatchObject({
+      text: step.addedText,
+      applied: { phase: 'put-back', onTop: true },
+    });
+    session.undo();
+    expect(follow().applied).toMatchObject({ phase: 'taken-out', onTop: true });
+    // Another edit drops the redo history: the notice stays as it was, no longer on top.
+    session.addElement({ id: 'demo:other', kind: 'minecraft:function', data: { lines: [] } });
+    expect(follow().applied).toMatchObject({ phase: 'taken-out', onTop: false });
+  });
+
+  it('gives the top to the newest of two steps with the same label', () => {
+    const base = {
+      label: 'Apply AI helper changes',
+      things: [],
+      changes: 1,
+      skipped: 0,
+      createdIds: [] as string[],
+      phase: 'added' as const,
+      onTop: true,
+      addedText: 'x',
+    };
+    const followed = followSteps([base, base], {
+      project: null,
+      undoLabel: 'Apply AI helper changes',
+      redoLabel: undefined,
+    });
+    expect(followed.map((step) => step.onTop)).toEqual([true, false]);
   });
 });

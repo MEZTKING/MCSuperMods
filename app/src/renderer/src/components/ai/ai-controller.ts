@@ -2,12 +2,16 @@
  * The AI helper's controller (ADR 0041 D3, D5, D8): glues `platform.ai` (main), the
  * conversation store (`useAiStore`), the tool executor and the project session together.
  *
- * - {@link AiController.send} starts a run: the user's message goes into the transcript, the
- *   project context block (target, namespaces, counts, the pending changeset) and any visible
- *   context blocks go with it to main, and every `tool_request` of the run is answered by the
- *   conversation's executor.
- * - {@link AiController.apply} applies the accepted change items as one undo step;
- *   {@link AiController.discard} drops them.
+ * - {@link AiController.send} starts a run of the size its caller says (ADR 0125 D2): the user's
+ *   message goes into the transcript, the project context block (target, namespaces, counts,
+ *   the view, the mod's name, what is open, the pending changeset) and any visible context
+ *   blocks go with it to main, and every `tool_request` of the run is answered by the
+ *   conversation's executor. Text sent while a plan or a step waits answers it instead.
+ * - {@link AiController.tryAgain} sends the failed run's message again;
+ *   {@link AiController.keepGoing} sends "continue" after a stop (ADR 0125 D9, D10).
+ * - {@link AiController.apply} applies the accepted change items as one undo step and says what
+ *   was made as things; its notice follows the command stack (added, taken out again, put
+ *   back: D4). {@link AiController.discard} drops them.
  * - {@link AiController.explainProblem} and {@link AiController.askAboutElement} open the panel
  *   in chat mode with a context block waiting in the input area; nothing is sent until the user
  *   presses Send.
@@ -20,6 +24,7 @@
 
 import {
   type AiEvent,
+  type AiImage,
   type AiMode,
   type AiModelId,
   type AiSettings,
@@ -34,16 +39,36 @@ import { elementContextBlock, problemContextBlock } from '../../ai/context-block
 import { projectContextOf } from '../../ai/project-context';
 import { createToolExecutor } from '../../ai/tool-executor';
 import type { ChangesetPlanOptions } from '../../changeset/changeset';
-import type { ApplyChangesetResult, ProjectSession } from '../../session/project-session';
 import {
+  APPLY_CHANGESET_LABEL,
+  type ApplyChangesetResult,
+  type ProjectSession,
+} from '../../session/project-session';
+import {
+  type AiAppliedStep,
   type AiConversation,
   addNotice,
+  followAppliedNotice,
   isRunning,
+  keepGoingRequest,
+  pendingPlan,
   recordToolResult,
+  tryAgainRequest,
+  typedPlanDecision,
+  typedStepDecision,
   useAiStore,
 } from '../../store/ai-store';
+import { usePreferences } from '../../store/preferences';
 import { useUiStore } from '../../store/ui-store';
 import type { AiPicture } from './ai-pictures';
+import { appliedStepOf, followSteps, type StackView } from './ai-status';
+import {
+  appliedStoredText,
+  applyFailedWords,
+  applyResultText,
+  DISCARDED_TEXT,
+  modelChangeWords,
+} from './ai-words';
 
 /** A context block waiting in the input area, shown as a chip with its text quoted. */
 export interface AiContextDraft {
@@ -59,6 +84,21 @@ export interface AiDraft {
   context: AiContextDraft | null;
   /** Pictures to send with the message (ADR 0048). */
   pictures?: readonly AiPicture[];
+  /** The run's size when the draft is sent (an example ask of a whole mod sets `build`). */
+  size?: AiMode;
+}
+
+/** What {@link AiController.send} may be told besides the message. */
+export interface AiSendOptions {
+  /** The run's size (ADR 0125 D2); default the deprecated conversation mode, `chat` unless set. */
+  size?: AiMode;
+}
+
+/** What Apply made: the session's result plus the things, by their display names (D4). */
+export interface AiApplyOutcome extends ApplyChangesetResult {
+  things: AiAppliedStep['things'];
+  /** The undo label the step was recorded with. */
+  label: string;
 }
 
 /** The panel's state beside the conversations. */
@@ -100,25 +140,21 @@ export function shortModelLabel(model: AiModelId): string {
   return modelInfo(model).label.replace(/^Claude /, '');
 }
 
-/** The notice after a model change while a conversation exists. */
+/** The notice after a model change while a conversation exists (today's words). */
 export function modelChangeNotice(model: AiModelId): string {
-  return `Start a new conversation to use ${shortModelLabel(model)}.`;
+  return modelChangeWords(shortModelLabel(model), 'advanced');
 }
 
-/** The notice after Apply. */
+/** The notice after Apply (today's words; the words per mode are `appliedWords`). */
 export function applyNotice(result: ApplyChangesetResult): string {
-  const applied = result.applied.length;
-  const skipped = result.skipped.length;
-  if (applied === 0) {
-    return skipped === 0
-      ? 'Nothing was applied.'
-      : `Nothing was applied: ${skipped} change${skipped === 1 ? '' : 's'} no longer fit the project.`;
-  }
-  let text = `Applied ${applied} change${applied === 1 ? '' : 's'}. Undo reverts ${applied === 1 ? 'it' : 'them'} in one step.`;
-  if (skipped > 0) {
-    text += ` ${skipped} change${skipped === 1 ? '' : 's'} no longer fit the project and ${skipped === 1 ? 'was' : 'were'} left out.`;
-  }
-  return text;
+  return applyResultText(result.applied.length, result.skipped.length);
+}
+
+/** A picture rebuilt from its `data:` URL (what Try again sends again). */
+function imageOfUrl(url: string): AiImage | null {
+  const match = /^data:(image\/(?:png|jpeg|gif|webp));base64,(.*)$/s.exec(url);
+  if (match === null) return null;
+  return { mediaType: match[1] as AiImage['mediaType'], data: match[2] as string };
 }
 
 function messageOf(error: unknown): string {
@@ -179,6 +215,7 @@ export class AiController {
       this.#ai?.onEvent((runId, event) => this.#onEvent(runId, event)) ?? (() => {});
     let root = this.root;
     const offSession = this.#session.subscribe((snapshot) => {
+      if (snapshot.root !== null) this.#followStack(snapshot.root, snapshot);
       if (snapshot.root === root) return;
       root = snapshot.root;
       for (const [runId, run] of this.#runs) {
@@ -252,7 +289,12 @@ export class AiController {
     });
   }
 
-  /** Switches the open conversation's mode (not while a run is in progress). */
+  /**
+   * Switches the open conversation's mode (not while a run is in progress).
+   *
+   * @deprecated The run's size comes from the caller of {@link send} (ADR 0125 D2); kept until
+   * the panel and `App.tsx` stop calling it (B685, B689), deleted at B693.
+   */
   setMode(mode: AiMode): void {
     const conversation = this.conversation();
     const root = this.root;
@@ -323,25 +365,65 @@ export class AiController {
   }
 
   /**
-   * Sends a message: adds it to the transcript, starts a run in main and answers its tool
-   * requests. Does nothing while a run is in progress or without a project.
+   * Whether the open conversation waits for the user's answer to a plan or a step, which typed
+   * text then gives (ADR 0125 D2).
+   */
+  awaitsAnswer(): boolean {
+    const conversation = this.conversation();
+    return (
+      conversation !== null &&
+      isRunning(conversation) &&
+      (pendingPlan(conversation) !== undefined || conversation.checkpoint !== null)
+    );
+  }
+
+  /**
+   * Answers a waiting plan or step with typed text: the text goes into the transcript, then a
+   * plan takes "go", "yes" or "ok" as Make all of it and anything else as Change the plan with
+   * the text as the comments; a step takes "stop" as Stop and anything else as Keep going.
    *
-   * @returns The run id, or `null` when nothing was sent.
+   * @returns Whether something was waiting.
+   */
+  answer(text: string): boolean {
+    const root = this.root;
+    const conversation = this.conversation();
+    if (root === null || conversation === null || text.trim() === '') return false;
+    if (!this.awaitsAnswer()) return false;
+    const store = useAiStore.getState();
+    const plan = pendingPlan(conversation);
+    store.appendUser(root, text.trim());
+    if (plan !== undefined) store.resolvePlan(root, typedPlanDecision(plan.state, text));
+    else store.resolveCheckpoint(root, typedStepDecision(text));
+    return true;
+  }
+
+  /**
+   * Sends a message: adds it to the transcript, starts a run of `options.size` in main and
+   * answers its tool requests. While a plan or step waits the text answers it instead
+   * ({@link answer}). Does nothing while a run is otherwise in progress or without a project.
+   *
+   * @returns The run id, or `null` when no run was started.
    */
   async send(
     text: string,
     contextBlocks: readonly string[] = [],
     pictures: readonly AiPicture[] = [],
+    options: AiSendOptions = {},
   ): Promise<string | null> {
     const ai = this.#ai;
     const root = this.root;
     const conversation = this.conversation();
     if (ai === undefined || root === null || conversation === null) return null;
+    if (this.awaitsAnswer()) {
+      this.answer(text);
+      return null;
+    }
     if (isRunning(conversation) || (text.trim() === '' && pictures.length === 0)) return null;
+    const size = options.size ?? conversation.mode;
     if (text.trim() === '') {
       // The API needs some text with the pictures.
       text =
-        conversation.mode === 'build'
+        size === 'build'
           ? 'Build what this picture shows.'
           : 'What does this picture show, and how could I make it?';
     }
@@ -358,7 +440,7 @@ export class AiController {
       contextBlocks,
       pictures.map((picture) => picture.url),
     );
-    store.startRun(root, runId);
+    store.startRun(root, runId, size);
     const started = useAiStore.getState().conversations[root];
     const run = started?.run;
     if (started === undefined || run == null) return null;
@@ -368,7 +450,12 @@ export class AiController {
     });
     // Registered before `start`, whose first events may arrive before it resolves.
     this.#runs.set(runId, { root, abort: new AbortController(), execute });
-    const projectBlock = projectContextBlock(projectContextOf(this.#session, started.changeset));
+    const projectBlock = projectContextBlock(
+      projectContextOf(this.#session, started.changeset, {
+        view: usePreferences.getState().mode,
+        openId: useUiStore.getState().selectedId,
+      }),
+    );
     try {
       await ai.start({
         runId,
@@ -389,15 +476,58 @@ export class AiController {
     return runId;
   }
 
-  /** Sends the open project's draft (text plus its context block) and clears it. */
+  /**
+   * Sends the open project's draft (text plus its context block, at the draft's size) and
+   * clears it; while a plan or step waits, the draft's text answers it.
+   */
   async sendDraft(): Promise<string | null> {
     const draft = this.draft();
     const conversation = this.conversation();
     const pictures = draft.pictures ?? [];
-    if (conversation === null || isRunning(conversation)) return null;
+    if (conversation === null) return null;
+    if (this.awaitsAnswer()) {
+      if (draft.text.trim() === '') return null;
+      this.setDraft(EMPTY_DRAFT);
+      this.answer(draft.text);
+      return null;
+    }
+    if (isRunning(conversation)) return null;
     if (draft.text.trim() === '' && pictures.length === 0) return null;
     this.setDraft(EMPTY_DRAFT);
-    return this.send(draft.text, draft.context === null ? [] : [draft.context.block], pictures);
+    return this.send(
+      draft.text,
+      draft.context === null ? [] : [draft.context.block],
+      pictures,
+      draft.size === undefined ? {} : { size: draft.size },
+    );
+  }
+
+  /**
+   * Try again (ADR 0125 D9): sends the message of a failed, refused or stopped run again, with
+   * its context blocks and pictures and at the run's size.
+   *
+   * @returns The new run id, or `null` when there is nothing to try again.
+   */
+  async tryAgain(): Promise<string | null> {
+    const conversation = this.conversation();
+    const resend = conversation === null ? null : tryAgainRequest(conversation);
+    if (resend === null) return null;
+    const pictures: AiPicture[] = resend.images.flatMap((url, index) => {
+      const image = imageOfUrl(url);
+      return image === null ? [] : [{ ...image, url, name: `picture ${index + 1}` }];
+    });
+    return this.send(resend.text, resend.contextBlocks, pictures, { size: resend.size });
+  }
+
+  /**
+   * Keep going (ADR 0125 D10): after a stop at the limit or a cut-off answer, sends "continue"
+   * at the run's size; limits count from zero in every run.
+   */
+  async keepGoing(): Promise<string | null> {
+    const conversation = this.conversation();
+    const resend = conversation === null ? null : keepGoingRequest(conversation);
+    if (resend === null) return null;
+    return this.send(resend.text, [], [], { size: resend.size });
   }
 
   /** Stops the open conversation's run. */
@@ -457,31 +587,63 @@ export class AiController {
 
   /**
    * Applies the accepted change items as one undo step ("Apply AI helper changes"), removes the
-   * applied ones from the changeset, marks the rest's conflicts and adds a notice.
+   * applied ones from the changeset, marks the rest's conflicts and adds a notice that names the
+   * things made and follows the command stack from then on (ADR 0125 D4).
    */
-  async apply(): Promise<ApplyChangesetResult | null> {
+  async apply(): Promise<AiApplyOutcome | null> {
     const root = this.root;
     const conversation = this.conversation();
     if (root === null || conversation === null || useAiPanelStore.getState().applying) return null;
     useAiPanelStore.setState({ applying: true });
     try {
-      const result = await this.#session.applyChangeset(conversation.changeset.items);
+      const items = conversation.changeset.items;
+      const label = APPLY_CHANGESET_LABEL;
+      const result = await this.#session.applyChangeset(items, label);
+      // Read before the changeset forgets the applied items.
+      const text = applyNotice(result);
+      const step = appliedStepOf(items, result, label, this.#session.snapshot, text);
       conversation.changeset.removeAll(result.applied);
       this.markConflicts();
       useAiStore
         .getState()
-        .update(root, (current) => addNotice(current, 'info', applyNotice(result)));
-      return result;
+        .update(root, (current) =>
+          addNotice(current, 'info', text, undefined, step === null ? {} : { applied: step }),
+        );
+      return { ...result, things: step?.things ?? [], label };
     } catch (error) {
       useAiStore
         .getState()
         .update(root, (current) =>
-          addNotice(current, 'error', `Apply failed: ${messageOf(error)}`),
+          addNotice(current, 'error', applyFailedWords(messageOf(error), 'advanced')),
         );
       return null;
     } finally {
       useAiPanelStore.setState({ applying: false });
     }
+  }
+
+  /** Follows every Apply notice of the conversation of `root` through the command stack. */
+  #followStack(root: string, stack: StackView): void {
+    const conversation = useAiStore.getState().conversations[root];
+    if (conversation === undefined) return;
+    const notices = conversation.messages
+      .flatMap((message) =>
+        message.role === 'notice' && message.applied !== undefined
+          ? [{ seq: message.seq, step: message.applied }]
+          : [],
+      )
+      .reverse();
+    if (notices.length === 0) return;
+    const followed = followSteps(
+      notices.map((notice) => notice.step),
+      stack,
+    );
+    useAiStore.getState().update(root, (current) =>
+      notices.reduce((next, notice, index) => {
+        const step = followed[index] as AiAppliedStep;
+        return followAppliedNotice(next, notice.seq, step, appliedStoredText(step));
+      }, current),
+    );
   }
 
   /** Drops every pending change item (the panel confirms first). */
@@ -490,9 +652,7 @@ export class AiController {
     const conversation = this.conversation();
     if (root === null || conversation === null || conversation.changeset.isEmpty) return;
     conversation.changeset.clear();
-    useAiStore
-      .getState()
-      .update(root, (current) => addNotice(current, 'info', 'Discarded the proposed changes.'));
+    useAiStore.getState().update(root, (current) => addNotice(current, 'info', DISCARDED_TEXT));
   }
 
   #onEvent(runId: string, event: AiEvent): void {
@@ -523,7 +683,8 @@ export class AiController {
   }
 }
 
-function findElement(project: Project, id: string) {
+function findElement(project: Project | null, id: string) {
+  if (project === null) return null;
   for (const namespace of project.namespaces) {
     const found = namespace.elements.find((element) => element.id === id);
     if (found !== undefined) return found;
