@@ -16,6 +16,10 @@ Every vanilla wood has a boat and a chest boat (bamboo a raft). The Wood set flo
 - Wood sets become complete with boats on both versions, if X24 allows.
 - The runtime gains its first use of a vanilla entity renderer for a project type.
 
+## Amendment after the spike (B524, 2026-11-22)
+
+**Go on both versions (B524, X24; evidence in `docs/reference/spikes/b524/`).** Vanilla's `Boat` and `ChestBoat` with a `BoatItem`, the oak boat's size (1.375 x 0.5625, eye 0.5625, tracking 10), and on the client a model layer `<ns>:boat/<path>#main` (and `chest_boat/<path>`) registered through Fabric's `ModelLayerRegistry` with vanilla's `BoatRenderer`, draw and ride a project boat exactly as vanilla's; textures `<ns>:textures/entity/boat/<path>.png` (128 x 64) and `chest_boat/<path>.png` (128 x 128), drawn by the art generator. No version seam. B536 runs; reserve B545 is not needed. Dispenser behaviour is to check at implementation.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: a component on items rather than a kind; chest boats by default with the Wood set's "Has boats" answer; rafts only when asked.

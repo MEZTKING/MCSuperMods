@@ -21,6 +21,16 @@ Vanilla's gossip is brain code that spreads between villagers; MSM's traders are
 - Two new saved values on trader mobs (reputation per player, demand per offer); removing `msm:trader` drops them (as ADR 0098's levels).
 - One more frozen registry (villager types; limit N1).
 
+## Amendment after the spike (B524, 2026-11-22)
+
+Measured on both versions (evidence in `docs/reference/spikes/b524/`); these win over D1 to D5 where they differ.
+
+- **D1 reputation: go.** A special price set on a project offer reaches the menu, the offers packet and the client's screen. Cost = clamp(base + demand part + special, 1, stack size). Vanilla's measured numbers are the defaults: a hit -25, a trade +2 (cap 25), a gift +25 (cap 25); daily decay 20 for negative and 2 for trading; special price = -floor(reputation x price multiplier). The store is a persistent Fabric attachment per mob, `Map<UUID, Integer>`. The runtime recomputes special prices per player at every menu open and resets them at close (vanilla resets; the runtime does not today).
+- **D2 demand: go.** `updateDemand()` before `resetUses()` at each restock gives vanilla's rule (demand may go negative); price rise = max(0, floor(base x demand x multiplier)); demand is saved and synced.
+- **D3 work site: go.** A goal searching 16 blocks, walking to the site and restocking within 2 blocks.
+- **D4 changed: joining `#minecraft:beds` is not enough.** A project bed becomes a home only when its head states map to vanilla's `home` POI type in `PoiTypes.TYPE_BY_STATE` (a mutable map, set by reflection through the `PoiTypes` seam on both versions, before any world loads; the holder taken from vanilla's red bed head). A villager then claims it and sleeps in it.
+- **D5 villager types: go.** Registered in `BuiltInRegistries.VILLAGER_TYPE`, biomes added to the mutable `VillagerType.BY_BIOME` by reflection (warn once if the field is missing); vanilla draws `<ns>:textures/entity/villager/type/<path>.png` and `zombie_villager/type/<path>.png` with no client code.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: our own reputation rather than vanilla's gossip; demand on by default; restocking at a work site only when one is named; the villager type's pictures lowered to vanilla's paths.
