@@ -1,0 +1,41 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "children": [
+            {
+              "condition": {
+                "terms": [
+                  "minecraft:tool/can_shear",
+                  "minecraft:tool/can_silk_touch"
+                ],
+                "type": "minecraft:any_of"
+              },
+              "name": "sim_parity:ribbon",
+              "type": "minecraft:item"
+            },
+            {
+              "condition": {
+                "chances": [
+                  0.33,
+                  0.55,
+                  0.77,
+                  1
+                ],
+                "enchantment": "minecraft:fortune",
+                "type": "minecraft:table_bonus"
+              },
+              "name": "sim_parity:ribbon",
+              "type": "minecraft:item"
+            }
+          ],
+          "type": "minecraft:alternatives"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "sim_parity:blocks/ribbon_plant",
+  "type": "minecraft:block"
+}

@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:container": {
+      "double": true
+    }
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "sound_type": "wood",
+  "type": "horizontal"
+}

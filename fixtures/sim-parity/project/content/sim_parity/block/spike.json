@@ -1,0 +1,28 @@
+{
+  "data": {
+    "display_name": "Parity Spike",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "soil": [
+      "minecraft:stone",
+      "sim_parity:base"
+    ],
+    "sound_type": "wool",
+    "style": "cactus",
+    "textures": {
+      "bottom": "minecraft:block/cactus_bottom",
+      "side": "minecraft:block/cactus_side",
+      "top": "minecraft:block/cactus_top"
+    },
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:spike",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

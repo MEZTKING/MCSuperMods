@@ -13,56 +13,8 @@
  */
 import type { JsonObject } from '@msm/plugin-api';
 import { FALLBACK_MODELS } from '../../preview/fallback-models';
-
-type Vec = readonly [number, number, number];
-const FACES = ['down', 'up', 'north', 'south', 'west', 'east'] as const;
-type FaceName = (typeof FACES)[number];
-
-/** The UV of a face of a box, from its size, as a model's default UV is. */
-function uvOf(face: FaceName, from: Vec, to: Vec): number[] {
-  const [x1, y1, z1] = from;
-  const [x2, y2, z2] = to;
-  switch (face) {
-    case 'down':
-    case 'up':
-      return [x1, z1, x2, z2];
-    case 'north':
-    case 'south':
-      return [x1, 16 - y2, x2, 16 - y1];
-    default:
-      return [z1, 16 - y2, z2, 16 - y1];
-  }
-}
-
-/** A box whose faces read `texture` (or one variable per face), with optional faces left out. */
-function box(
-  from: Vec,
-  to: Vec,
-  texture: string | Partial<Record<FaceName, string>>,
-  extra: JsonObject = {},
-): JsonObject {
-  const faces: JsonObject = {};
-  for (const face of FACES) {
-    const variable = typeof texture === 'string' ? texture : texture[face];
-    if (variable === undefined) continue;
-    faces[face] = { texture: `#${variable}`, uv: uvOf(face, from, to) };
-  }
-  return { from: [...from], to: [...to], faces, ...extra };
-}
-
-/** Two crossed planes reading `texture`, `height` pixels tall. */
-function cross(texture: string, height = 16, inset = 0.8): JsonObject[] {
-  const rotation = { angle: 45, axis: 'y', origin: [8, 8, 8], rescale: true };
-  return [
-    box([inset, 0, 8], [16 - inset, height, 8], { north: texture, south: texture }, { rotation }),
-    box([8, 0, inset], [8, height, 16 - inset], { east: texture, west: texture }, { rotation }),
-  ];
-}
-
-const model = (elements: JsonObject[], particle: string): JsonObject => ({
-  textures: { particle: `#${particle}` },
-  elements,
-});
+import { BLOCKS3_FALLBACK_PARENTS } from '../blocks3/fallback-parents';
+import { box, cross, model, type Vec } from '../render/model-boxes';
 
 /** A sign board on its post, turned by `angle` (the four in-between turns of a standing sign). */
 function standingSign(angle: number): JsonObject {
@@ -283,8 +235,9 @@ export const BLOCKS2_FALLBACK_PARENTS: Readonly<Record<string, JsonObject>> = Ob
   buildParents(),
 );
 
-/** MSM's fallback parents for Try it: the preview's own and the twenty types'. */
+/** MSM's fallback parents for Try it: the preview's own, the twenty types' and ADR 0103's five. */
 export const TRYIT_FALLBACK_MODELS: Readonly<Record<string, JsonObject>> = Object.freeze({
   ...FALLBACK_MODELS,
   ...BLOCKS2_FALLBACK_PARENTS,
+  ...BLOCKS3_FALLBACK_PARENTS,
 });

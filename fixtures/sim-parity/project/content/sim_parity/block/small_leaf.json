@@ -1,0 +1,26 @@
+{
+  "data": {
+    "display_name": "Parity Small Leaf",
+    "format": 1,
+    "grows_into": "sim_parity:big_leaf",
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "size": "small",
+    "sound_type": "small_dripleaf",
+    "textures": {
+      "side": "minecraft:block/small_dripleaf_side",
+      "stem_bottom": "minecraft:block/small_dripleaf_stem_bottom",
+      "stem_top": "minecraft:block/small_dripleaf_stem_top",
+      "top": "minecraft:block/small_dripleaf_top"
+    },
+    "type": "dripleaf"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:small_leaf",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

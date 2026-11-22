@@ -1,0 +1,26 @@
+{
+  "data": {
+    "display_name": "Parity Pot",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "plants": [
+      "minecraft:dandelion",
+      "minecraft:oak_sapling"
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "dirt": "minecraft:block/dirt",
+      "flowerpot": "minecraft:block/terracotta"
+    },
+    "type": "flower_pot"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:clay_pot",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

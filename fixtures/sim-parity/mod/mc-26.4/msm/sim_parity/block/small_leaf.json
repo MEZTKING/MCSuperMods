@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "grows_into": "sim_parity:big_leaf",
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "size": "small",
+  "sound_type": "small_dripleaf",
+  "type": "dripleaf"
+}

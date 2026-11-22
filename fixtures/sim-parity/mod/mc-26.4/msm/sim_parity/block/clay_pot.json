@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "plants": [
+    "minecraft:dandelion",
+    "minecraft:oak_sapling"
+  ],
+  "sound_type": "stone",
+  "type": "flower_pot"
+}

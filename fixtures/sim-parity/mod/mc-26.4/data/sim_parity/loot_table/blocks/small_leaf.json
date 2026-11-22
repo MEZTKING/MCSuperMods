@@ -1,0 +1,16 @@
+{
+  "pools": [
+    {
+      "condition": "minecraft:tool/can_shear",
+      "entries": [
+        {
+          "name": "sim_parity:small_leaf",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "sim_parity:blocks/small_leaf",
+  "type": "minecraft:block"
+}

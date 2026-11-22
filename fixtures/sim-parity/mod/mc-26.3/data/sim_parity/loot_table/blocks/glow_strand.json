@@ -1,0 +1,22 @@
+{
+  "pools": [
+    {
+      "condition": {
+        "blocks": "sim_parity:glow_strand",
+        "state": {
+          "berries": "true"
+        },
+        "type": "minecraft:match_block"
+      },
+      "entries": [
+        {
+          "name": "minecraft:glow_berries",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "sim_parity:blocks/glow_strand",
+  "type": "minecraft:block"
+}

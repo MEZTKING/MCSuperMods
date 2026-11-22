@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "soil": [
+    "minecraft:stone",
+    "sim_parity:base"
+  ],
+  "sound_type": "wool",
+  "style": "cactus",
+  "type": "column_plant"
+}

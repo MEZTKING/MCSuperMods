@@ -1,0 +1,29 @@
+{
+  "data": {
+    "display_name": "Parity Bamboo",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "soil": [
+      "minecraft:stone",
+      "sim_parity:base"
+    ],
+    "sound_type": "bamboo",
+    "style": "bamboo",
+    "textures": {
+      "large_leaves": "minecraft:block/bamboo_large_leaves",
+      "shoot": "minecraft:block/bamboo_stage0",
+      "small_leaves": "minecraft:block/bamboo_small_leaves",
+      "stalk": "minecraft:block/bamboo_stalk"
+    },
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:reed_bamboo",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

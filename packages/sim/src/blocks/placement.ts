@@ -22,6 +22,8 @@ import {
 import { type BlockChange, connectedState, isSupported, updateNeighbours } from './neighbours.js';
 import { isType2 } from './types2/facts.js';
 import { otherHalf, placeType2, waterloggedIfInWater } from './types2/placement.js';
+import { isType3 } from './types3/facts.js';
+import { otherHalf3, pairChest, placeType3 } from './types3/placement.js';
 
 /** A request to place a block: the clicked block and face, the hit point and the look. */
 export interface PlaceInput {
@@ -215,6 +217,14 @@ export function placeBlock(
       : { placed: false, reason: placing.reason };
   }
 
+  // The five types of vanilla parity 3 place by their own rules (B519).
+  if (isType3(block.type)) {
+    const placing = placeType3(world, catalogue, block, block.type, input);
+    return placing.placed
+      ? finish(world, catalogue, block, placing.sets)
+      : { placed: false, reason: placing.reason };
+  }
+
   // A slab doubles in place when its other half is clicked.
   if (
     block.type === 'slab' &&
@@ -267,6 +277,10 @@ export function placeBlock(
   if (!isSupported(world, catalogue, at, connected)) {
     return { placed: false, reason: `${block.displayName} cannot stand there` };
   }
+  // A double chest joins a single one beside it (B519, B513).
+  if (block.storage?.double === true) {
+    return finish(world, catalogue, block, pairChest(world, at, connected, input.sneak === true));
+  }
   return finish(world, catalogue, block, [{ pos: at, state: connected }]);
 }
 
@@ -309,6 +323,11 @@ export function breakBlock(
   if (type !== undefined && isType2(type)) {
     // A bed's other part, a tall plant's other half (B463).
     const other = otherHalf(world, type, pos, state);
+    if (other !== undefined) removed.push(other);
+  }
+  if (type === 'dripleaf') {
+    // A small dripleaf's other half (B519).
+    const other = otherHalf3(world, pos, state);
     if (other !== undefined) removed.push(other);
   }
   if (type === 'door') {

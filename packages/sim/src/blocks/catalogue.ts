@@ -26,6 +26,8 @@ import {
 } from './shapes.js';
 import { types2Entries } from './types2/catalogue.js';
 import { isType2, type SimBlockType2, type Types2Facts } from './types2/facts.js';
+import { types3Entries } from './types3/catalogue.js';
+import { isType3, type SimBlockType3, type Types3Facts } from './types3/facts.js';
 import { type WeatheringFacts, weatheringOf } from './weathering.js';
 
 /** The block types of the `msm:block` format (ADR 0067, 0068, 0077), in the format's order. */
@@ -54,7 +56,11 @@ export const SIM_BLOCK_TYPES = Object.freeze([
  * A block type (with the twenty of vanilla parity 2, B463), or `prop` for a block the simulation
  * only draws (ADR 0085 L10).
  */
-export type SimBlockType = (typeof SIM_BLOCK_TYPES)[number] | SimBlockType2 | 'prop';
+export type SimBlockType =
+  | (typeof SIM_BLOCK_TYPES)[number]
+  | SimBlockType2
+  | SimBlockType3
+  | 'prop';
 
 /**
  * The set types hands cannot open (ADR 0067 D2: `iron`, and `gold`, which is redstone-only
@@ -118,6 +124,17 @@ export interface CatalogueBlock extends ShapeFacts {
   readonly hasBlockstate: boolean;
   /** What the twenty types of vanilla parity 2 know beyond the state (B463). */
   readonly types2?: Types2Facts;
+  /** What the five types of vanilla parity 3 know beyond the state (B519). */
+  readonly types3?: Types3Facts;
+  /**
+   * A container's storage of vanilla parity 3 (ADR 0104 D4, D5): a double chest's two halves and
+   * a store for each player.
+   */
+  readonly storage?: { readonly double: boolean; readonly perPlayer: boolean };
+  /** The block's own sounds (`block_sounds`, ADR 0105 D1), by event: shown as captions. */
+  readonly sounds?: BlockSoundFacts;
+  /** A door's, trapdoor's, button's or plate's own set type sounds (ADR 0105 D2), by event. */
+  readonly setTypeSounds?: Readonly<Record<string, string>>;
   /** Its weathering (`msm:weathering`, B463). */
   readonly weathering?: WeatheringFacts;
   /** Whether players climb it (`#minecraft:climbable` or a climbable type, B463). */
@@ -126,6 +143,70 @@ export interface CatalogueBlock extends ShapeFacts {
   readonly liquid?: boolean;
   /** Where log lines about it point. */
   readonly origin: SimOrigin;
+}
+
+/** A block's own sounds (`block_sounds`): the sound event of each event given, with volume and pitch. */
+export interface BlockSoundFacts {
+  readonly events: Readonly<Partial<Record<'break' | 'step' | 'place' | 'hit' | 'fall', string>>>;
+  readonly volume?: number;
+  readonly pitch?: number;
+}
+
+const SOUND_EVENTS = ['break', 'step', 'place', 'hit', 'fall'] as const;
+
+/** The `block_sounds` of a definition, or `undefined` without one (ADR 0105 D1). */
+export function blockSoundsOf(definition: JsonObject): BlockSoundFacts | undefined {
+  const sounds = definition.block_sounds;
+  if (!isRecord(sounds)) return undefined;
+  const events: Partial<Record<(typeof SOUND_EVENTS)[number], string>> = {};
+  for (const event of SOUND_EVENTS) {
+    const id = nonEmpty(sounds[event]);
+    if (id !== undefined) events[event] = id;
+  }
+  return Object.freeze({
+    events: Object.freeze(events),
+    ...(typeof sounds.volume === 'number' ? { volume: sounds.volume } : {}),
+    ...(typeof sounds.pitch === 'number' ? { pitch: sounds.pitch } : {}),
+  });
+}
+
+/**
+ * A `set_type` as the catalogue reads it (ADR 0105 D2): a vanilla name, or an own set type object
+ * whose `base` (default `wood`) gives the rest. `undefined` when absent or not readable.
+ */
+export function setTypeOf(value: Json | undefined):
+  | {
+      readonly base: string;
+      readonly canOpenByHand?: boolean;
+      readonly sounds?: Readonly<Record<string, string>>;
+    }
+  | undefined {
+  const name = nonEmpty(value);
+  if (name !== undefined) return { base: name };
+  if (!isRecord(value)) return undefined;
+  const sounds: Record<string, string> = {};
+  if (isRecord(value.sounds)) {
+    for (const [event, id] of Object.entries(value.sounds)) {
+      if (typeof id === 'string' && id !== '') sounds[event] = id;
+    }
+  }
+  return {
+    base: nonEmpty(value.base) ?? 'wood',
+    ...(typeof value.can_open_by_hand === 'boolean'
+      ? { canOpenByHand: value.can_open_by_hand }
+      : {}),
+    ...(Object.keys(sounds).length > 0 ? { sounds: Object.freeze(sounds) } : {}),
+  };
+}
+
+/** A container's double chest and per-player settings, when the definition has a container. */
+function storageOf(definition: JsonObject): CatalogueBlock['storage'] {
+  const components = isRecord(definition.components) ? definition.components : {};
+  const container = components['msm:container'];
+  if (!isRecord(container)) return undefined;
+  const double = container.double === true;
+  const perPlayer = container.per_player === true;
+  return double || perPlayer ? Object.freeze({ double, perPlayer }) : undefined;
 }
 
 /** Options of {@link buildCatalogue}. */
@@ -239,8 +320,15 @@ function typeProperties(type: SimBlockType, definition: JsonObject): PropertyTab
       ) {
         table.powered = bool();
       }
+      const container = components['msm:container'];
       if (isRecord(components['msm:machine'])) table.lit = bool();
-      else if (isRecord(components['msm:container'])) table.open = bool();
+      else if (isRecord(container) && container.double === true) {
+        // A double chest is vanilla's chest family (B513): it faces four ways, has its halves
+        // and always holds water, but no `open`.
+        table.facing = facing4;
+        table.type = { values: ['single', 'left', 'right'], fallback: 'single' };
+        table.waterlogged = bool();
+      } else if (isRecord(container)) table.open = bool();
       return table;
     }
     case 'slab':
@@ -410,10 +498,30 @@ export class BlockCatalogue implements BlockShapes {
   /** Adds a project block (used by {@link buildCatalogue}). */
   addProjectBlock(block: CatalogueBlock): void {
     // Companions (a wall torch, an attached stem, B463) are blocks but not offered on their own.
-    if (!this.blocks.has(block.id) && block.types2?.companion === undefined) {
+    if (
+      !this.blocks.has(block.id) &&
+      block.types2?.companion === undefined &&
+      block.types3?.companion === undefined
+    ) {
       this.projectIds.push(block.id);
     }
     this.blocks.set(block.id, block);
+    const companion = block.types3?.companion;
+    if (companion?.kind === 'potted' && block.types3?.plant !== undefined) {
+      this.potted.set(block.id, Object.freeze({ pot: companion.of, plant: block.types3.plant }));
+    }
+  }
+
+  private readonly potted = new Map<string, { readonly pot: string; readonly plant: string }>();
+
+  /** Records that `block` is `plant` in the project pot `pot` (a `potted_plant` naming it, B519). */
+  registerPotted(block: string, pot: string, plant: string): void {
+    this.potted.set(block, Object.freeze({ pot, plant }));
+  }
+
+  /** The project pot and plant of a potted block in a project pot (B519), else `undefined`. */
+  pottedIn(id: string): { readonly pot: string; readonly plant: string } | undefined {
+    return this.potted.get(id);
   }
 
   /** The project's block ids, in path order. */
@@ -628,6 +736,19 @@ export function buildCatalogue(
   };
 
   const paths = [...files.keys()].filter((path) => DEFINITION_PATH.test(path)).sort();
+  // `potted_plant` elements whose `pot` names a project pot go in that pot (ADR 0103 D2, B519).
+  const pottedByPot = new Map<string, Map<string, string>>();
+  for (const path of paths) {
+    const definition = readJsonFile(files, path);
+    if (!isRecord(definition) || definition.type !== 'potted_plant') continue;
+    const pot = nonEmpty(definition.pot);
+    const plant = nonEmpty(definition.plant);
+    if (pot === undefined || plant === undefined || pot === 'minecraft:flower_pot') continue;
+    const match = DEFINITION_PATH.exec(path) as RegExpExecArray;
+    const map = pottedByPot.get(pot) ?? new Map<string, string>();
+    if (!map.has(plant)) map.set(plant, `${match[1]}:${match[2]}`);
+    pottedByPot.set(pot, map);
+  }
   for (const path of paths) {
     const match = DEFINITION_PATH.exec(path) as RegExpExecArray;
     const namespace = match[1] as string;
@@ -654,6 +775,32 @@ export function buildCatalogue(
       continue;
     }
     const rawType = definition.type ?? 'block';
+    const sounds = blockSoundsOf(definition);
+    if (typeof rawType === 'string' && isType3(rawType)) {
+      // The growing and climbing plants and the project pot of vanilla parity 3 (B519).
+      const potted = pottedByPot.get(id);
+      for (const entry of types3Entries({
+        id,
+        displayName,
+        type: rawType,
+        definition,
+        origin,
+        blockstateOf: (blockId) =>
+          readJsonFile(
+            files,
+            `assets/${namespace}/${blockstateFolder}/${blockId.slice(namespace.length + 1)}.json`,
+          ),
+        blockstateProperties,
+        merge: mergeProperties,
+        climbable: (blockId) => climbable.has(blockId),
+        ...(potted === undefined ? {} : { pottedElements: potted }),
+      })) {
+        catalogue.addProjectBlock(
+          sounds === undefined ? entry : Object.freeze({ ...entry, sounds }),
+        );
+      }
+      continue;
+    }
     if (typeof rawType === 'string' && isType2(rawType)) {
       // The twenty types of vanilla parity 2 and their companions (B463).
       for (const entry of types2Entries({
@@ -673,7 +820,13 @@ export function buildCatalogue(
       })) {
         const weathering = entry.id === id ? weatheringOf(definition) : undefined;
         catalogue.addProjectBlock(
-          weathering === undefined ? entry : Object.freeze({ ...entry, weathering }),
+          weathering === undefined && sounds === undefined
+            ? entry
+            : Object.freeze({
+                ...entry,
+                ...(weathering === undefined ? {} : { weathering }),
+                ...(sounds === undefined ? {} : { sounds }),
+              }),
         );
       }
       continue;
@@ -683,7 +836,9 @@ export function buildCatalogue(
       continue;
     }
     const type = rawType as (typeof SIM_BLOCK_TYPES)[number];
-    const setType = nonEmpty(definition.set_type);
+    // An own set type object names its `base` (ADR 0105 D2; the B506 note for B519).
+    const ownSetType = setTypeOf(definition.set_type);
+    const setType = ownSetType?.base;
     const woodType = nonEmpty(definition.wood_type);
     const needsSetType = ['door', 'trapdoor', 'button', 'pressure_plate'].includes(type);
     const knownSetTypes = target.blocks?.setTypes;
@@ -708,13 +863,17 @@ export function buildCatalogue(
       typeProperties(type, definition),
       blockstateProperties(blockstate),
     );
-    const shape = ['block', 'pillar', 'horizontal', 'directional'].includes(type)
-      ? shapeOf(definition)
-      : undefined;
+    // A double chest keeps the chest's own shape and ignores `msm:shape` (B513).
+    const shape =
+      ['block', 'pillar', 'horizontal', 'directional'].includes(type) &&
+      storageOf(definition)?.double !== true
+        ? shapeOf(definition)
+        : undefined;
     const maxAge = type === 'crop' ? cropMaxAge(definition) : undefined;
     const weighted = definition.weighted_max;
     const pressTicks = definition.press_ticks;
     const weathering = weatheringOf(definition);
+    const storage = storageOf(definition);
     const block: CatalogueBlock = {
       id,
       displayName,
@@ -726,11 +885,16 @@ export function buildCatalogue(
         type === 'fence_gate' ||
         ((type === 'door' || type === 'trapdoor') &&
           setType !== undefined &&
-          !HAND_CLOSED_SET_TYPES.includes(setType)),
+          (ownSetType?.canOpenByHand ?? !HAND_CLOSED_SET_TYPES.includes(setType))),
       hasBlockstate: blockstate !== undefined,
       origin,
       ...(climbable.has(id) ? { climbable: true } : {}),
       ...(weathering === undefined ? {} : { weathering }),
+      ...(sounds === undefined ? {} : { sounds }),
+      ...(storage === undefined ? {} : { storage }),
+      ...(ownSetType?.sounds !== undefined && needsSetType
+        ? { setTypeSounds: ownSetType.sounds }
+        : {}),
       ...(setType !== undefined && needsSetType ? { setType } : {}),
       ...(woodType !== undefined && type === 'fence_gate' ? { woodType } : {}),
       ...(type === 'button' && setType !== undefined
@@ -760,6 +924,10 @@ export function buildCatalogue(
         : {}),
     };
     catalogue.addProjectBlock(Object.freeze(block));
+  }
+  for (const [pot, map] of pottedByPot) {
+    if (catalogue.get(pot)?.types3?.pot === undefined) continue;
+    for (const [plant, potted] of map) catalogue.registerPotted(potted, pot, plant);
   }
   return catalogue;
 }

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "display_name": "Parity Lichen",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "glow_lichen",
+    "textures": {
+      "face": "minecraft:block/glow_lichen"
+    },
+    "type": "multiface"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:lichen",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

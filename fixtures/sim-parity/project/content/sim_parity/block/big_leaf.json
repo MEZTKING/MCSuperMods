@@ -1,0 +1,25 @@
+{
+  "data": {
+    "display_name": "Parity Big Leaf",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "size": "big",
+    "sound_type": "big_dripleaf",
+    "textures": {
+      "side": "minecraft:block/big_dripleaf_side",
+      "stem": "minecraft:block/big_dripleaf_stem",
+      "tip": "minecraft:block/big_dripleaf_tip",
+      "top": "minecraft:block/big_dripleaf_top"
+    },
+    "type": "dripleaf"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:big_leaf",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

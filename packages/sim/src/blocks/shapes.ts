@@ -16,6 +16,8 @@ import {
 } from './directions.js';
 import { isType2, type Types2Facts } from './types2/facts.js';
 import { types2Collision, types2Outline } from './types2/shapes.js';
+import { isType3, type Types3Facts } from './types3/facts.js';
+import { types3Collision, types3Outline } from './types3/shapes.js';
 
 /** A box in pixels, 0 to 16 inside the block. */
 export type PixelBox = readonly [number, number, number, number, number, number];
@@ -253,6 +255,28 @@ export interface ShapeFacts {
   readonly stageHeights?: readonly number[];
   /** The facts of the twenty types of vanilla parity 2 (B463). */
   readonly types2?: Types2Facts;
+  /** The facts of the five types of vanilla parity 3 (B519). */
+  readonly types3?: Types3Facts;
+  /** A double chest (B519): the chest's own shape, joined to its other half. */
+  readonly storage?: { readonly double: boolean };
+}
+
+/**
+ * A double chest's box (B513: vanilla's chest shape), reaching to the side of its other half: a
+ * `left` half's other half is clockwise of its facing, a `right` half's counter-clockwise.
+ */
+export function chestBoxes(state: BlockState): readonly Box[] {
+  const type = prop(state, 'type') ?? 'single';
+  const facing = prop(state, 'facing') ?? 'north';
+  const box: [number, number, number, number, number, number] = [1, 0, 1, 15, 14, 15];
+  if ((type === 'left' || type === 'right') && isHorizontal(facing)) {
+    const side = type === 'left' ? clockwise(facing) : counterClockwise(facing);
+    if (side === 'north') box[2] = 0;
+    if (side === 'south') box[5] = 16;
+    if (side === 'west') box[0] = 0;
+    if (side === 'east') box[3] = 16;
+  }
+  return boxes(box);
 }
 
 /** The `msm:shape` boxes turned to the state's axis or facing (ADR 0067 D3). */
@@ -270,6 +294,8 @@ function msmShapeBoxes(facts: ShapeFacts, state: BlockState): readonly Box[] {
 export function outlineBoxes(facts: ShapeFacts, state: BlockState): readonly Box[] {
   if (facts.shapeBoxes !== undefined) return msmShapeBoxes(facts, state);
   if (isType2(facts.type)) return types2Outline(facts.type, facts.types2, state);
+  if (isType3(facts.type)) return types3Outline(facts.type, facts.types3, state);
+  if (facts.storage?.double === true) return chestBoxes(state);
   switch (facts.type) {
     case 'slab':
       return slabBoxes(state);
@@ -311,6 +337,7 @@ export function collisionBoxes(facts: ShapeFacts, state: BlockState): readonly B
     return facts.shapeCollision === false ? NO_BOXES : msmShapeBoxes(facts, state);
   }
   if (isType2(facts.type)) return types2Collision(facts.type, facts.types2, state);
+  if (isType3(facts.type)) return types3Collision(facts.type, facts.types3, state);
   switch (facts.type) {
     case 'fence':
       return fenceBoxes(state, 24);

@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "size": "big",
+  "sound_type": "big_dripleaf",
+  "type": "dripleaf"
+}

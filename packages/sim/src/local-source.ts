@@ -59,6 +59,7 @@ import { breakBlock, placeBlock } from './blocks/placement.js';
 import { type ScreenSpec, screensFromFiles } from './blocks/screens.js';
 import { Types2Area } from './blocks/types2/area.js';
 import { EXPLODE_TOOL, EXPLOSION_RADIUS } from './blocks/types2/tools.js';
+import { Types3Area } from './blocks/types3/area.js';
 import { TIME_LAPSE_TICKS } from './blocks/weathering.js';
 import type { CommandsTarget } from './commands/catalogue.js';
 import type { ChatLine } from './commands/run.js';
@@ -66,6 +67,7 @@ import { type ControlsTarget, SimControls } from './controls/controls.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
 import type { EntityHit } from './entities/spawn.js';
+import { SimRandom } from './entities/wander.js';
 import { type Firing, PLAYER, type SimInventory } from './events/actions.js';
 import { type RuleBookInfo, readEventDefinitions } from './events/definitions.js';
 import { SimTrace, type TraceEntry } from './events/trace.js';
@@ -247,6 +249,11 @@ export class LocalWorldSource implements WorldSource {
   readonly controls: SimControls;
   /** Signs, weathering, the place and explosion rules, the chat box and bags (B463). */
   readonly parity2: Types2Area;
+  /**
+   * Vanilla parity 3, batch 1 (B519): pots and berries by hand, dripleaves tilting, the blocks'
+   * own sounds as captions, double and per-player chests.
+   */
+  readonly parity3: Types3Area;
   /** Project fluids: buckets, drawing, `on_entity_inside` (B483). */
   readonly fluids: FluidArea;
   /** Trader mobs and the merchant screen (B483). */
@@ -272,6 +279,8 @@ export class LocalWorldSource implements WorldSource {
   private screens: Map<string, ScreenSpec>;
   private screenNow: OpenScreen | null = null;
   private ticks = 0;
+  /** What the tools leave to chance: bone meal counts and the bolt's walks (B519). */
+  private readonly toolRandom: SimRandom;
   private readonly unsubscribeWorld: () => void;
   private groundKind: GroundKind = 'grid';
   private groundBlocks: GroundBlocks = emptyGround();
@@ -429,6 +438,19 @@ export class LocalWorldSource implements WorldSource {
             chatSaid: (text) => bridge.fire('player.chat', { player: PLAYER_VALUE, message: text }),
           }),
     });
+    this.toolRandom = new SimRandom(((options.seed ?? 1) ^ 0x5bd1e995) >>> 0);
+    this.parity3 = new Types3Area(this.files, {
+      world: this.world,
+      catalogue: () => this.blockCatalogue,
+      log: this.log,
+      sayOnce: (key, what, origin) => this.blockCatalogue.sayOnce(key, what, origin),
+      effect: (effect) => this.emit({ type: 'effect', effect }),
+      give: (id, count) => {
+        this.triggers.inventory.give(id, count);
+      },
+      standing: () => [this.player.box, ...this.entities.boxes()],
+      now: () => this.ticks,
+    });
     this.fluids = new FluidArea(this.files, this.target, {
       world: this.world,
       actors: () => [
@@ -525,6 +547,7 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.clear();
     this.controls.clear();
     this.parity2.clear();
+    this.parity3.clear();
     this.fluids.clear();
     this.traders.clear();
     this.emit({ type: 'entities', entities: [] });
@@ -749,7 +772,9 @@ export class LocalWorldSource implements WorldSource {
           return;
         }
         const before = this.world.get(action.pos);
-        applyTool(this.world, this.blockCatalogue, this.log, action.tool, action.pos);
+        applyTool(this.world, this.blockCatalogue, this.log, action.tool, action.pos, () =>
+          this.toolRandom.next(),
+        );
         this.triggers.powerChanged(action.pos, before, this.world.get(action.pos));
         return;
       }
@@ -773,6 +798,7 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.tick();
     this.controls.tick();
     this.parity2.tick();
+    this.parity3.tick();
     this.fluids.tick();
     this.traders.tick();
     this.scripts?.tick();
@@ -923,6 +949,7 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.setDefinitions(readEventDefinitions(files, target));
     this.controls.setFiles(files, target);
     this.parity2.setFiles(files, target);
+    this.parity3.setFiles(files);
     this.fluids.setFiles(files, target);
     this.traders.setFiles(files, target);
     const open = this.screenNow;
@@ -930,7 +957,7 @@ export class LocalWorldSource implements WorldSource {
       const spec = this.screens.get(open.block);
       if (spec === undefined || this.world.get(open.pos)?.name !== open.block)
         this.screenNow = null;
-      else this.screenNow = { ...open, spec };
+      else this.screenNow = { ...open, spec: { ...spec, ...rowsOf(open.spec) } };
     }
   }
 
@@ -953,6 +980,7 @@ export class LocalWorldSource implements WorldSource {
     this.triggers.clear();
     this.controls.clear();
     this.parity2.clear();
+    this.parity3.clear();
     this.fluids.clear();
     this.traders.clear();
     this.traceNow.clear();
@@ -1007,8 +1035,12 @@ export class LocalWorldSource implements WorldSource {
     const secondaryUse = this.player.sneaking && item !== undefined;
     if (target !== null && !secondaryUse) {
       let taken = this.openScreen(action.pos, target);
-      if (block !== undefined && this.parity2.use(action.pos, target, block, item).taken)
+      // Pots, potted plants in project pots and berries first (B519), then vanilla parity 2.
+      if (block !== undefined && this.parity3.use(action.pos, target, block, item).taken) {
         taken = true;
+      } else if (block !== undefined && this.parity2.use(action.pos, target, block, item).taken) {
+        taken = true;
+      }
       if (
         block !== undefined &&
         ['door', 'trapdoor', 'fence_gate', 'button'].includes(block.type)
@@ -1019,6 +1051,7 @@ export class LocalWorldSource implements WorldSource {
         });
         if (result.handled && result.message !== undefined) this.log.info(result.message);
         this.timers.afterUse(action.pos, result);
+        if (result.handled) this.parity3.usedByHand(action.pos, target);
         taken = result.handled;
       }
       // `{handled: false}` falls through to the block's triggers.
@@ -1078,7 +1111,12 @@ export class LocalWorldSource implements WorldSource {
     const block = this.blockCatalogue.blockFor(state.name);
     const displayName = block?.displayName ?? state.name;
     const origin: SimOrigin = block?.origin ?? { elementId: state.name };
-    this.screenNow = { pos, block: state.name, displayName, spec, origin };
+    // A double chest's halves open as one screen of both (B519).
+    const shown: ScreenSpec =
+      spec.kind === 'container'
+        ? { ...spec, rows: this.parity3.screenRows(state, spec.rows) }
+        : spec;
+    this.screenNow = { pos, block: state.name, displayName, spec: shown, origin };
     if (state.properties.open === 'false') {
       this.world.set(pos, { name: state.name, properties: { ...state.properties, open: 'true' } });
     }
@@ -1221,6 +1259,7 @@ export class LocalWorldSource implements WorldSource {
     }
     this.triggers.blockPlaced(result.pos);
     this.parity2.placed(result.pos);
+    this.parity3.placed(result.pos);
     this.traders.placed(block, result.pos, (id) => this.nameOf(id));
     return result.pos;
   }
@@ -1232,7 +1271,10 @@ export class LocalWorldSource implements WorldSource {
   /** Breaks a block as the player: `msm:on_break` fires before it goes (`playerWillDestroy`). */
   private breakNow(pos: BlockPos): void {
     if (this.screenNow !== null && samePos(this.screenNow.pos, pos)) this.closeScreen();
-    if (this.world.get(pos) !== null) this.triggers.blockBreaking(pos);
+    if (this.world.get(pos) !== null) {
+      this.triggers.blockBreaking(pos);
+      this.parity3.breaking(pos);
+    }
     breakBlock(this.world, this.blockCatalogue, pos);
   }
 
@@ -1271,6 +1313,10 @@ export class LocalWorldSource implements WorldSource {
     for (const listener of [...this.listeners]) listener(event);
   }
 }
+
+/** The rows a screen was opened with (a double chest's both halves stay as they were). */
+const rowsOf = (spec: ScreenSpec): { rows?: number } =>
+  spec.kind === 'container' ? { rows: spec.rows } : {};
 
 /** A command's argument values as event data (positions as `[x, y, z]`, ADR 0096). */
 function commandArgs(args: Readonly<Record<string, unknown>>): Record<string, EncodedValue> {

@@ -22,6 +22,7 @@ import type { BlockPos, BlockState } from '../types.js';
 import type { SimWorld } from '../world/sim-world.js';
 import type { BlockCatalogue } from './catalogue.js';
 import type { BlockChange } from './neighbours.js';
+import { chestPartner } from './types3/neighbours.js';
 
 /** The weathering stages in order (ADR 0094 D7). */
 export const WEATHERING_STAGES = Object.freeze([
@@ -211,10 +212,21 @@ export class WeatheringField {
     const changes: BlockChange[] = [];
     const aged = new Map<string, number>();
     for (const one of due) {
+      // A double chest's other half ages with it (B519, B513); it may have aged already.
+      if (this.world.get(one.pos)?.name !== one.state.name) continue;
+      const partner = chestPartner(this.world, one.pos, one.state);
       const next = agedState(this.catalogue, one.state, one.next);
       if (next === undefined || !this.world.set(one.pos, next)) continue;
       changes.push({ pos: one.pos, state: next });
       aged.set(one.next, (aged.get(one.next) ?? 0) + 1);
+      const other = partner === undefined ? null : this.world.get(partner);
+      if (partner !== undefined && other !== null) {
+        const pair = agedState(this.catalogue, other, one.next);
+        if (pair !== undefined && this.world.set(partner, pair)) {
+          changes.push({ pos: partner, state: pair });
+          aged.set(one.next, (aged.get(one.next) ?? 0) + 1);
+        }
+      }
     }
     return { changes, aged, held };
   }

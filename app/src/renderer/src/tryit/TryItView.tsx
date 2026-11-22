@@ -132,10 +132,12 @@ export const CARD_LINES = [
 export const CLOCK_SPEEDS = [0.25, 0.5, 1, 2, 4, 8] as const;
 /** The tools' hints (the Water and Explode tools, B463). */
 const TOOL_TITLES: Readonly<Record<string, string>> = {
-  grow: 'Grow the crop, sapling, bush, pod or stem you point at by one stage',
+  grow: 'Grow the plant you point at as one bone meal would (a crop, sapling or stem one stage)',
   power: 'Turn the powered or lit picture of the block you point at on or off',
   water: 'Put water into the block you point at, or take it out, when it can hold water',
   explode: 'Set off an explosion at the block you point at (your explosion rules hear it)',
+  lightning:
+    'Strike the block you point at with lightning: blocks that age go back a stage, as copper does',
 };
 /** How many vanilla props the picker lists at once. */
 const PROP_LIST_LIMIT = 60;

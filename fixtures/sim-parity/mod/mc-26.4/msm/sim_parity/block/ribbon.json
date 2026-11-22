@@ -1,0 +1,12 @@
+{
+  "bonemeal_growth": {
+    "max": 2,
+    "min": 2
+  },
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "sound_type": "grass",
+  "type": "growing_plant"
+}

@@ -7190,3 +7190,22 @@ Next
 
 **Next**
 - `mc-26.3` `test/java-project-containers.test.ts` fails two cases on main 51da6f8 already (`MsmStorageBlockEntity.java`, `ContainerOpeners.java` copied line by line); outside this brief (java-project is a parallel worker's area).
+## 2026-11-22 — executor — B519 Try it, batch 1
+
+**What**
+- `@msm/sim` learns the five types of ADR 0103 (`blocks/types3/`): catalogue entries for `growing_plant`, `column_plant`, `multiface`, `dripleaf` and `flower_pot` with the runtime's states and their companions (`<id>_plant`, `<id>_shoot`, `<id>_stem`, a pot's `<pot>_<plant path>`; companions are not offered in the picker), shapes, placing (strands on their tip, bamboo shoots, lichen faces into one block, big leaves on leaves, small dripleaf halves), neighbour rules (tip and strand turn into each other, a big leaf under a leaf becomes stem, lichen loses faces, strands, columns and stems fall without support, bamboo thickness passes down) and **Grow** as one bone meal (strands by `bonemeal_growth`, berries ripen, bamboo one or two blocks with its leaves, lichen spreads, a big leaf grows taller, a small one becomes its `grows_into`; cane and cactus grow one block to their stop as the stand-in for random ticks).
+- By hand: a project pot takes only its listed plants (and `potted_plant`s naming it) and gives the plant back; berries are picked. Big dripleaves tilt under the player by `tilt_ticks`, then 100 ticks of full tilt.
+- Storage 2: double chests pair with a single chest beside them facing the same way (not while sneaking), split when a half goes, take the chest's own shape, open one 54-slot mock-up, and age, scrape and strike together; per-player chests say they show one store.
+- Own sounds (`block_sounds`, an own set type's `sounds`) show as captions on placing, breaking and opening; an own `set_type` object is read by its `base` (the B506 note), with `can_open_by_hand`.
+- New tool **Lightning** (`LIGHTNING_TOOL`): the struck block goes back to its first stage, then three to five walks of one to eight steps scrape weathering neighbours one stage back.
+- App: MSM's own fallback parents for the 19 vanilla templates of the new types (`tryit/blocks3/fallback-parents.ts`, helpers moved to `tryit/render/model-boxes.ts`), the Lightning tool's title.
+- Fixture: nine new blocks in `fixtures/sim-parity/project` (`mod/` regenerated) and 12 scenarios in `fixtures/sim-parity/scenarios-parity-3.json`, played by `sim-parity.test.ts` on both targets; `use` there takes an `item` (`minecraft:bone_meal` is one bone meal).
+- Tests: `packages/sim/test/blocks/types3.test.ts` (13 cases per target and three helper cases), `app/test/components/tryit/blocks3.test.tsx`.
+
+**Decisions**
+- The new scenarios live in their own file until B520 adds their GameTests and records them, so `MsmSimParityGameTest.everyScenarioHasAGameTest` stays green meanwhile.
+- `local-source.ts`, `tick/growth.ts` and `tick/tools.ts` were edited outside the brief's owner list (one hook each; no parallel brief touches `packages/sim`).
+- Double chest left and right follow "a left half's other half is clockwise of its facing"; B520's recording decides.
+
+**Next**
+- B520: GameTests for `scenarios-parity-3.json` (and `item` on `use`), `-PupdateSimParity`, then merge the file into `scenarios.json`. B522: the limit lines in the B519 report.

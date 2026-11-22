@@ -1,0 +1,26 @@
+{
+  "data": {
+    "bonemeal_growth": {
+      "max": 2,
+      "min": 2
+    },
+    "display_name": "Parity Ribbon",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "body": "minecraft:block/twisting_vines_plant",
+      "head": "minecraft:block/twisting_vines"
+    },
+    "type": "growing_plant"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:ribbon",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

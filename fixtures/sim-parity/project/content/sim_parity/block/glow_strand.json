@@ -1,0 +1,28 @@
+{
+  "data": {
+    "berries": {
+      "item": "minecraft:glow_berries"
+    },
+    "direction": "down",
+    "display_name": "Parity Glow Strand",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "body": "minecraft:block/cave_vines_plant",
+      "body_berries": "minecraft:block/cave_vines_plant_lit",
+      "head": "minecraft:block/cave_vines",
+      "head_berries": "minecraft:block/cave_vines_lit"
+    },
+    "type": "growing_plant"
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:glow_strand",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

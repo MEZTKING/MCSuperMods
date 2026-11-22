@@ -17,6 +17,7 @@ import {
   offset,
   opposite,
 } from './directions.js';
+import { connected3, supported3 } from './types3/neighbours.js';
 
 /** One block set by an operation: its position and new state (`null` for air). */
 export interface BlockChange {
@@ -221,6 +222,10 @@ export function connectedState(
   state: BlockState,
 ): BlockState {
   const block = catalogue.blockFor(state.name);
+  // The five types of vanilla parity 3 and double chests (B519).
+  if (block !== undefined && (block.types3 !== undefined || block.storage?.double === true)) {
+    return connected3(world, catalogue, pos, state, block);
+  }
   switch (block?.type) {
     case 'fence':
       return crossState(world, catalogue, pos, state, (neighbour, direction) =>
@@ -255,6 +260,7 @@ export function isSupported(
   state: BlockState,
 ): boolean {
   const block = catalogue.blockFor(state.name);
+  if (block?.types3 !== undefined) return supported3(world, catalogue, pos, state, block);
   const below = neighbourAt(world, catalogue, offset(pos, 'down'));
   switch (block?.type) {
     case 'door': {

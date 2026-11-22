@@ -91,6 +91,12 @@ describe('Power', () => {
     const ctx = setUp();
     applyTool(ctx.world, ctx.catalogue, ctx.log, 'hammer', C);
     expect(ctx.log.lines.at(-1)).toBe('There is no tool called "hammer"');
-    expect(SIM_TOOLS.map((tool) => tool.label)).toEqual(['Grow', 'Power', 'Water', 'Explode']);
+    expect(SIM_TOOLS.map((tool) => tool.label)).toEqual([
+      'Grow',
+      'Power',
+      'Water',
+      'Explode',
+      'Lightning',
+    ]);
   });
 });

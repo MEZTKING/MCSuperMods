@@ -8,6 +8,8 @@ import type { BlockCatalogue } from '../blocks/catalogue.js';
 import type { BlockChange } from '../blocks/neighbours.js';
 import { isType2 } from '../blocks/types2/facts.js';
 import { growType2 } from '../blocks/types2/tools.js';
+import { isType3 } from '../blocks/types3/facts.js';
+import { growType3 } from '../blocks/types3/grow.js';
 import type { BlockPos, SimLog } from '../types.js';
 import type { SimWorld } from '../world/sim-world.js';
 
@@ -32,15 +34,17 @@ function nextValue(values: readonly string[] | undefined, current: string | unde
 }
 
 /**
- * Uses the Grow tool on a block: a crop goes one age up, a sapling one stage up. Writes one log
- * line for anything else, and an "Only in Minecraft" line for a sapling at its last stage or a
- * vanilla prop.
+ * Uses the Grow tool on a block: a crop goes one age up, a sapling one stage up; the plants of
+ * vanilla parity 2 and 3 as one bone meal grows them (B463, B519; `random` draws their counts).
+ * Writes one log line for anything else, and an "Only in Minecraft" line for a sapling at its last
+ * stage or a vanilla prop.
  */
 export function growBlock(
   world: SimWorld,
   catalogue: BlockCatalogue,
   log: SimLog,
   pos: BlockPos,
+  random: () => number = () => 0,
 ): ToolResult {
   const state = world.get(pos);
   if (state === null) {
@@ -66,6 +70,13 @@ export function growBlock(
       if (grown.onlyInMinecraft !== undefined) log.onlyInMinecraft(grown.onlyInMinecraft, origin);
       return { changed: grown.changes.length > 0, changes: grown.changes };
     }
+  }
+  if (isType3(block.type)) {
+    // Strands, columns, lichen, dripleaves and pots (B519).
+    const grown = growType3(world, catalogue, block, state, pos, random);
+    if (grown.message !== undefined) log.info(grown.message, origin);
+    if (grown.onlyInMinecraft !== undefined) log.onlyInMinecraft(grown.onlyInMinecraft, origin);
+    return { changed: grown.changes.length > 0, changes: grown.changes };
   }
   if (block.type !== 'crop' && block.type !== 'sapling') {
     log.info(`${name} does not grow`, origin);

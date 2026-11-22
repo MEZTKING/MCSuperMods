@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "item": {
+    "creative_tab": "minecraft:natural_blocks"
+  },
+  "sound_type": "glow_lichen",
+  "type": "multiface"
+}

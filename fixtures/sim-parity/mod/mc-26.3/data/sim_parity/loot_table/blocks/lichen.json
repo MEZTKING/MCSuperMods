@@ -1,0 +1,98 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "condition": "minecraft:tool/can_shear",
+          "modifier": [
+            {
+              "add": true,
+              "condition": {
+                "blocks": "sim_parity:lichen",
+                "state": {
+                  "down": "true"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "add": true,
+              "condition": {
+                "blocks": "sim_parity:lichen",
+                "state": {
+                  "up": "true"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "add": true,
+              "condition": {
+                "blocks": "sim_parity:lichen",
+                "state": {
+                  "north": "true"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "add": true,
+              "condition": {
+                "blocks": "sim_parity:lichen",
+                "state": {
+                  "south": "true"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "add": true,
+              "condition": {
+                "blocks": "sim_parity:lichen",
+                "state": {
+                  "west": "true"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "add": true,
+              "condition": {
+                "blocks": "sim_parity:lichen",
+                "state": {
+                  "east": "true"
+                },
+                "type": "minecraft:match_block"
+              },
+              "count": 1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "add": true,
+              "count": -1,
+              "type": "minecraft:set_count"
+            },
+            {
+              "type": "minecraft:explosion_decay"
+            }
+          ],
+          "name": "sim_parity:lichen",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "sim_parity:blocks/lichen",
+  "type": "minecraft:block"
+}

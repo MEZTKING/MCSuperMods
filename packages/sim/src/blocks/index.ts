@@ -7,4 +7,5 @@ export * from './placement.js';
 export * from './screens.js';
 export * from './shapes.js';
 export * from './types2/index.js';
+export * from './types3/index.js';
 export * from './weathering.js';
