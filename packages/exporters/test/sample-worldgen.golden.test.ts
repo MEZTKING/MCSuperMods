@@ -15,6 +15,12 @@
  *   reports exactly one `worldgen.feature-order` error (a real "Feature order cycle"); a copy
  *   with a placed feature moved to another step reports only a
  *   `worldgen.feature-step-differs` warning, which the game accepts.
+ *
+ * With `MSM_SAMPLE_WORLDGEN_OUT`, the data pack zip of the selected target is also written to
+ * that folder, next to `template-facts.json` (`minecraft`, `zip`, and each structure template's
+ * `id`, `size` and `blocks` as `[x, y, z, block state]` from the element, the source of truth),
+ * for the headless vanilla server check that places every template and reads its blocks back
+ * (`tools/run-fabric-server/vanilla-templates.ts`, B547 Y12). Without it that test is skipped.
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
@@ -49,9 +55,15 @@ import {
 import { builtInTargets, readVendoredJson, type TargetBundle } from '@msm/targets';
 import { unzipSync, zipSync } from 'fflate';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createZipSink, dataPackExporter, resourcePackExporter, runExport } from '../src/index';
+import {
+  createZipSink,
+  dataPackExporter,
+  packFileName,
+  resourcePackExporter,
+  runExport,
+} from '../src/index';
 import { chainWalk } from './chain-walk';
-import { defaultTarget } from './selected-target';
+import { defaultTarget, selectedTarget } from './selected-target';
 
 const update = process.env.UPDATE_GOLDENS === '1';
 
@@ -423,6 +435,38 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         );
       }
     });
+
+    const outDir = process.env.MSM_SAMPLE_WORLDGEN_OUT;
+    it.runIf(outDir !== undefined && bundle === selectedTarget())(
+      'writes the data pack zip and the template facts for the headless server check',
+      async () => {
+        const project = await loadSample();
+        const zip = await exportZip(dataPackExporter, project);
+        const name = packFileName(PROJECT_NAME, target);
+        const templates = elementsOf(project)
+          .filter((element) => element.kind === 'minecraft:structure_template')
+          .map((element) => {
+            const data = element.data as {
+              size: [number, number, number];
+              palette: string[];
+              blocks: [number, number, number, number][];
+            };
+            return {
+              id: element.id,
+              size: data.size,
+              blocks: data.blocks.map(([x, y, z, state]) => [x, y, z, data.palette[state]]),
+            };
+          })
+          .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+        expect(templates.length).toBe(3);
+        await mkdir(outDir as string, { recursive: true });
+        await writeFile(join(outDir as string, name), zip);
+        await writeFile(
+          join(outDir as string, 'template-facts.json'),
+          `${JSON.stringify({ minecraft: target.mcVersion, zip: name, templates }, null, 2)}\n`,
+        );
+      },
+    );
 
     it('resolves every link of the worldgen chain', async () => {
       const files = unzipSync(await exportZip(dataPackExporter));

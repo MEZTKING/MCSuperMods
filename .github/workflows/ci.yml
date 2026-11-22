@@ -73,11 +73,12 @@ jobs:
   # JUnit and GameTests through `./gradlew build -Pmc=<mc>`, then the samples exported for target
   # mc-<mc> with that runtime nested and started on a headless Fabric dedicated server
   # (tools/run-fabric-server; the sample script twice on one world), and the sample data pack on
-  # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts), and the library's vanilla data
-  # packs on one too (tools/run-fabric-server/vanilla-packs.ts). 26.3 also builds the ejected
-  # Java projects and runs every parity run on both the content and the ejected jars; other
-  # versions run parity on the content jars only. Every version also runs the client GameTests
-  # on a headless client (Xvfb with Mesa's EGL, B356) and keeps their screenshots.
+  # a vanilla server (tools/run-fabric-server/vanilla-datapack.ts), the sample worldgen's structure
+  # templates placed and read back on one (tools/run-fabric-server/vanilla-templates.ts), and the
+  # library's vanilla data packs on one too (tools/run-fabric-server/vanilla-packs.ts). 26.3 also
+  # builds the ejected Java projects and runs every parity run on both the content and the
+  # ejected jars; other versions run parity on the content jars only. Every version also runs the
+  # client GameTests on a headless client (Xvfb with Mesa's EGL, B356) and keeps their screenshots.
   # Action versions: setup-java and cache v6 (checked 2026-11-05).
   engine-mod:
     runs-on: ubuntu-latest
@@ -512,6 +513,22 @@ jobs:
           node tools/run-fabric-server/vanilla-datapack.ts
           --facts "$RUNNER_TEMP/sample-datapack/server-facts.json"
           --work "$RUNNER_TEMP/vanilla-datapack"
+          --cache ~/.cache/msm-fabric-server
+      # MSM's structure templates in the game (B547 Y12): the sample worldgen project's three
+      # templates, exported for this target, are placed on a vanilla dedicated server with
+      # `place template` and every block is read back with `execute if block` (the expected blocks
+      # come from the elements, not the exported files). Templates written with the palette keys of
+      # an older data version loaded but placed as air; this caught it on both versions.
+      - name: Export the sample worldgen data pack and its template facts
+        run: |
+          MSM_SAMPLE_WORLDGEN_OUT="$RUNNER_TEMP/sample-worldgen" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-worldgen.golden.test.ts
+          node -e 'const f = JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")); console.log(`${f.templates.length} templates for Minecraft ${f.minecraft} in ${f.zip}`); if (f.templates.length === 0) process.exit(1);' "$RUNNER_TEMP/sample-worldgen/template-facts.json"
+      - name: Headless vanilla server check (structure templates placed and read back)
+        run: >-
+          node tools/run-fabric-server/vanilla-templates.ts
+          --facts "$RUNNER_TEMP/sample-worldgen/template-facts.json"
+          --work "$RUNNER_TEMP/vanilla-templates"
           --cache ~/.cache/msm-fabric-server
       # Every library starter (defaults, wizard answers, minimums), example and examples/ mirror
       # project is exported for this target as the app's vanilla data pack export does it (with
@@ -1249,6 +1266,8 @@ jobs:
             ${{ runner.temp }}/fabric-server/crash-reports
             ${{ runner.temp }}/vanilla-datapack/vanilla-datapack.log
             ${{ runner.temp }}/vanilla-datapack/crash-reports
+            ${{ runner.temp }}/vanilla-templates/vanilla-templates.log
+            ${{ runner.temp }}/vanilla-templates/crash-reports
             ${{ runner.temp }}/vanilla-packs/*.log
             ${{ runner.temp }}/vanilla-packs/server/crash-reports
             ${{ runner.temp }}/fabric-server-mob/run-fabric-server.log

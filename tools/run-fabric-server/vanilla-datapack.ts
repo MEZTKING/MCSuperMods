@@ -271,7 +271,7 @@ export interface DatapackOutcome {
   counts: Record<string, number | undefined>;
 }
 
-const LOG_FAILURE =
+export const LOG_FAILURE =
   /Failed to load|Couldn't load tag|Couldn't parse|Registry loading errors|\/ERROR\]/;
 
 /**

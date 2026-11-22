@@ -1,6 +1,7 @@
 /**
  * Lowering for `minecraft:structure_template`: the element's JSON becomes a gzip vanilla
- * structure `.nbt` file with the target's `DataVersion` (ADR 0021).
+ * structure `.nbt` file with the target's `DataVersion` (ADR 0021), whose palette keys follow
+ * that data version (`paletteKeys`: `id`/`properties` on every current target).
  */
 import type { Element, OutputFile, Target } from '@msm/plugin-api';
 import { writeNbt } from '../nbt/binary';

@@ -12,6 +12,7 @@ Checked on 2026-11-05.
 | Data pack format | `126.0` | mcmeta `version.json`; asserted by `test/mcmeta.test.ts` |
 | Resource pack format | `102.0` | mcmeta `version.json`; asserted by `test/mcmeta.test.ts` |
 | `dataVersion` | `5127` | mcmeta `version.json` (`data_version`) |
+| Structure template palette keys (decided by `dataVersion`, no field of its own) | `id` and `properties`: at its data version 5127 the 26.4-snapshot-7 server reads a palette entry `{Name, Properties}` as no block (the template places as air); the game upgrades `Name` entries only in files below data version 5006. The structures plugin writes `id`/`properties` from 5006 on (`ID_PALETTE_DATA_VERSION`) | spike B547 Y12; one-block templates written each way at every data version 4990 to 5127 and every 25th from 4100, placed on the 26.4-snapshot-7 dedicated server and read back with `execute if block`, 2026-11-22; CI `vanilla-templates.ts` |
 | Java | 25 | the snapshot's client manifest (`javaVersion.majorVersion`); asserted by `test/target.test.ts` |
 | vanilla-mcdoc ref | commit `1a674539af7150444db0e2fa8fc46318f91ed86b` (build mode) | `vendor/vanilla-mcdoc/SOURCE.json` |
 | mcmeta ref | `26.4-snapshot-7`; tags `26.4-snapshot-7-summary` and `26.4-snapshot-7-registries` | `vendor/mcmeta/SOURCE.json` |

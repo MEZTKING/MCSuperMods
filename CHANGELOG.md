@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 - Five data pack forms that stop a real Minecraft server from starting are now refused before export, with plain words: a predicate or item modifier file that is a list or a bare id, a time check without its clock, a damage tag named without `#`, and a block transformer state in the old `{Name}` form.
 - The function checker no longer breaks on valid lines that use a fake player name such as `#count` in a score (`execute if score`, `scoreboard players get` and `operation`, `team join`, a score in `tellraw`), a named random sequence, a `place jigsaw` target, or a block or particle from your own mod; these lines now check cleanly, and if the checker ever stops early it says so as a note instead of failing.
+- Structures made in MCSuperMods now appear in the game. Before, every exported structure template (in data packs, mod jars and `.nbt` exports) loaded without an error but placed nothing but air, because its blocks were written in an older form that this Minecraft no longer reads. Structures you imported keep working, and old structure files still import.
 
 ## [1.5.4] - 2026-11-22
 

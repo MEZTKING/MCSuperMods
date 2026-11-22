@@ -334,9 +334,10 @@ function numbers(tag: NbtTag | undefined, length: number, where: string): number
 }
 
 /**
- * A palette entry as a block state string. Vanilla's structure files write `{ Name,
- * Properties }`; the reference pack's `region.state()` also reads `{ id, properties }` (the 26.x
- * chunk form) and a bare string, so files from newer writers and tools load too.
+ * A palette entry as a block state string. Structure files from data version
+ * {@link ID_PALETTE_DATA_VERSION} on write `{ id, properties }`, older ones `{ Name, Properties }`;
+ * both are read whatever the file's data version, and a bare string too (the reference pack's
+ * `region.state()` reads all three), so files from older games, newer writers and tools load.
  */
 function paletteEntry(tag: NbtTag, index: number): string {
   if (tag.isString() && tag.getAsString() !== '') {
@@ -456,12 +457,36 @@ const intList = (values: readonly number[]): NbtList<NbtInt> =>
   new NbtList(values.map((value) => new NbtInt(value)));
 
 /**
+ * The first data version whose structure templates name a palette entry's block and properties
+ * `id` and `properties`; files of older data versions use `Name` and `Properties`. The game
+ * upgrades an older file by its `DataVersion`, but reads a file at this data version or later as
+ * it is, so a `Name` entry there names no block and the template places as air (spike B547, Y12
+ * and "Other findings").
+ *
+ * Observed on 2026-11-22 on the dedicated servers of both MSM targets (data versions 5023 and
+ * 5127): one-block templates of `oak_log[axis=x]` written each way at every data version from
+ * 4990 to 5127, and every 25th from 4100, placed with `place template` and read back with
+ * `execute if block`. `Name` placed at 5005 and below and as air from 5006; `id` placed at every
+ * data version tried. The writer picks the form from the target's own `dataVersion` (a target
+ * fact since plugin API 0.5.0), so this boundary is a fact of the file format, not of a target.
+ */
+export const ID_PALETTE_DATA_VERSION = 5006;
+
+/** The palette entry keys for a data version: `id`/`properties` or `Name`/`Properties`. */
+export function paletteKeys(dataVersion: number): { name: string; properties: string } {
+  return dataVersion >= ID_PALETTE_DATA_VERSION
+    ? { name: 'id', properties: 'properties' }
+    : { name: 'Name', properties: 'Properties' };
+}
+
+/**
  * Writes element data as a vanilla structure template root compound: `size`, `palette`
- * (`Name` and sorted `Properties`), `blocks` (`pos`, `state`, `nbt`), `entities` (`pos`,
- * `blockPos`, `nbt`) and `DataVersion`, in that order.
+ * (the block and its sorted properties, under the keys {@link paletteKeys} gives for
+ * `dataVersion`), `blocks` (`pos`, `state`, `nbt`), `entities` (`pos`, `blockPos`, `nbt`) and
+ * `DataVersion`, in that order.
  *
  * @param data - The element data.
- * @param dataVersion - The target's data version.
+ * @param dataVersion - The target's data version; it also decides the palette keys.
  * @returns The root compound.
  * @throws {@link StructureFormatError} If the data is inconsistent.
  */
@@ -470,14 +495,15 @@ export function structureTemplateToNbt(
   dataVersion: number,
 ): NbtCompound {
   const raw = rawFromTemplate(data);
+  const keysFor = paletteKeys(dataVersion);
   const palette = raw.palette.map((entry) => {
     const state = parseBlockState(entry);
-    const compound = new NbtCompound().set('Name', new NbtString(state.name));
+    const compound = new NbtCompound().set(keysFor.name, new NbtString(state.name));
     const keys = Object.keys(state.properties).sort();
     if (keys.length > 0) {
       const properties = new NbtCompound();
       for (const key of keys) properties.set(key, new NbtString(state.properties[key] as string));
-      compound.set('Properties', properties);
+      compound.set(keysFor.properties, properties);
     }
     return compound;
   });

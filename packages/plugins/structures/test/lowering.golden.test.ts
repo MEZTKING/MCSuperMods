@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Element, ElementKind, Json, OutputFile, ResourceLocation } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
+import type { NbtCompound } from 'deepslate/nbt';
 import { describe, expect, it } from 'vitest';
 import {
   processorListKind,
@@ -220,6 +221,12 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
           await golden(url, bytes);
           const { root } = readNbt(new Uint8Array(await readFile(url)));
           expect(root.getNumber('DataVersion')).toBe(bundle.target.dataVersion);
+          // Every current target reads palette entries as id/properties at its own data version;
+          // Name/Properties there places as air (spike B547, Y12).
+          root.getList('palette', 10).forEach((entry) => {
+            expect((entry as NbtCompound).has('id')).toBe(true);
+            expect((entry as NbtCompound).has('Name')).toBe(false);
+          });
           expect(structureTemplateFromNbt(root).data).toEqual(sample.data);
           return;
         }

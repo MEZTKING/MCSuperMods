@@ -41,9 +41,11 @@ export {
 export {
   type BlockEntityData,
   type EntityData,
+  ID_PALETTE_DATA_VERSION,
   JIGSAW_BLOCK,
   type JigsawData,
   MAX_RECOMMENDED_SIZE,
+  paletteKeys,
   StructureFormatError,
   type StructureTemplateData,
   structureTemplateFromNbt,

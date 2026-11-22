@@ -11,6 +11,8 @@ The library starter "Custom biome with a jigsaw structure" (`worldgen_pack`) sav
 - a chain walk over the zip resolves every link (world preset → dimensions → dimension types and biomes → placed features → configured features; structure set → structure → biome tag → biomes; structure → start pool → pools and fallbacks → structure templates → jigsaw pools, with every jigsaw `target` named in its pool), and it fails on a copy with a pool removed;
 - a copy of the biome that lists two of its placed features in the opposite order in one step reports exactly one `worldgen.feature-order` error; a copy with a placed feature moved to another step reports only the `worldgen.feature-step-differs` warning.
 
+CI also places the three structure templates in the game on both versions (`tools/run-fabric-server/vanilla-templates.ts`, B547 Y12): the data zip goes on a vanilla dedicated server, each template is placed with `place template` and every one of its 150 blocks is read back with `execute if block`. Before that fix every block of an exported template placed as air.
+
 ## Contents
 
 | Element | Kind | Exports to |

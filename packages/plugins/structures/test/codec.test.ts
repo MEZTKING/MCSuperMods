@@ -13,6 +13,8 @@ import {
   canonicalBlockState,
   decodeVarints,
   encodeVarints,
+  ID_PALETTE_DATA_VERSION,
+  paletteKeys,
   parseBlockState,
   parseSnbt,
   printBlockState,
@@ -165,6 +167,31 @@ describe('structure template NBT', () => {
     expect(printSnbt(jigsaw)).toBe(
       '{name:"example:entrance",target:"example:street",pool:"example:streets",final_state:"minecraft:stone",joint:"rollable",placement_priority:1,selection_priority:2,id:"minecraft:jigsaw"}',
     );
+  });
+
+  it('writes palette id/properties from data version 5006 and Name/Properties before (B547 Y12)', () => {
+    expect(ID_PALETTE_DATA_VERSION).toBe(5006);
+    expect(paletteKeys(5005)).toEqual({ name: 'Name', properties: 'Properties' });
+    expect(paletteKeys(5006)).toEqual({ name: 'id', properties: 'properties' });
+    for (const dataVersion of [ID_PALETTE_DATA_VERSION, ID_PALETTE_DATA_VERSION + 1_000]) {
+      const root = structureTemplateToNbt(FULL, dataVersion);
+      const palette = root.getList('palette', 10);
+      palette.forEach((entry) => {
+        const compound = entry as NbtCompound;
+        expect(compound.has('Name')).toBe(false);
+        expect(compound.has('Properties')).toBe(false);
+        expect(compound.getString('id')).toMatch(/^minecraft:/);
+      });
+      const chest = palette.getCompound(1);
+      expect(chest.getString('id')).toBe('minecraft:chest');
+      expect(chest.getCompound('properties').getString('facing')).toBe('north');
+      const back = structureTemplateFromNbt(readNbt(writeNbt(root)).root);
+      expect(back.data).toEqual(FULL);
+      expect(back.dataVersion).toBe(dataVersion);
+    }
+    const older = structureTemplateToNbt(FULL, ID_PALETTE_DATA_VERSION - 1).getList('palette', 10);
+    expect(older.getCompound(1).getString('Name')).toBe('minecraft:chest');
+    expect(older.getCompound(1).has('id')).toBe(false);
   });
 
   it('sorts blocks by y, z, x on import and keeps the first of several palettes', () => {
