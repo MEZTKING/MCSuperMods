@@ -82,6 +82,42 @@
   },
   {
     "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/clay_pot_dandelion"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/clay_pot_dandelion.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/clay_pot_ruby_sprout"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/clay_pot_ruby_sprout.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/clay_pot_oak_sapling"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/clay_pot_oak_sapling.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
       "parent": "minecraft:item/generated",
       "textures": {
         "layer0": "example:item/clay_pot"
@@ -124,6 +160,39 @@
   },
   {
     "contents": {
+      "values": [
+        "example:clay_pot_dandelion"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:clay_pot_ruby_sprout"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:clay_pot_oak_sapling"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
       "pools": [
         {
           "bonus_rolls": 0,
@@ -144,6 +213,111 @@
     },
     "layer": "datapack",
     "path": "data/example/loot_table/blocks/clay_pot.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:clay_pot",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:dandelion",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/clay_pot_dandelion",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/clay_pot_dandelion.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:clay_pot",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_sprout",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/clay_pot_ruby_sprout",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/clay_pot_ruby_sprout.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:clay_pot",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:oak_sapling",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/clay_pot_oak_sapling",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/clay_pot_oak_sapling.json",
     "schema": "resource:loot_table"
   }
 ]

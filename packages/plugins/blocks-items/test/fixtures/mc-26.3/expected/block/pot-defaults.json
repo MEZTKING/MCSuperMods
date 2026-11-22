@@ -52,6 +52,18 @@
   },
   {
     "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/plain_pot_fern"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/plain_pot_fern.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
       "parent": "minecraft:item/generated",
       "textures": {
         "layer0": "minecraft:item/flower_pot"
@@ -76,6 +88,17 @@
     "contents": {
       "values": [
         "example:plain_pot"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:plain_pot_fern"
       ]
     },
     "layer": "datapack",

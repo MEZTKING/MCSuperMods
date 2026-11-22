@@ -20,6 +20,7 @@
 import type { Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { assetPath, dataPath, isRecord, splitResourceLocation } from '../paths';
 import { BLOCK_STATE_SCHEMA, LOOT_TABLE_SCHEMA, vanillaTagFile } from '../shared';
+import { flowerPotType } from './flower-pot';
 import { BLOCK_TYPE_LOWERINGS, type BlockTypeName, blockTypeOf } from './index';
 import type { SlotModels, TypeContext } from './models';
 
@@ -50,12 +51,14 @@ export interface CompanionLowering {
 
 /**
  * The companions of a block of `type`, in registration order; none for most types. With `data`,
- * only those the data registers ({@link CompanionLowering.applies}).
+ * only those the data registers ({@link CompanionLowering.applies}). A `flower_pot` has one potted
+ * companion per listed plant, from its data (ADR 0103 D2).
  */
 export function companionsOf(
   type: BlockTypeName,
   data?: Json | undefined,
 ): readonly CompanionLowering[] {
+  if (type === 'flower_pot') return flowerPotType.companionsFromData(data);
   const all = BLOCK_TYPE_LOWERINGS[type].companions ?? [];
   if (data === undefined) return all;
   const record = isRecord(data) ? data : {};
