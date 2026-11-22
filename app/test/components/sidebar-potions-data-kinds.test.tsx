@@ -88,3 +88,13 @@ describe('ElementSidebar labels for potions and the data kinds sweep', () => {
     expect(within(wolves).getByRole('heading', { level: 3 }).textContent).toContain('Wolf skins');
   });
 });
+
+describe('every built-in kind has a sidebar heading', () => {
+  it('labels each kind that forms a group of its own', () => {
+    const kinds = builtInPlugins.flatMap((plugin) =>
+      (plugin.contributes.elementKinds ?? []).map((kind) => kind.id),
+    );
+    const unlabelled = kinds.filter((kind) => groupOf(kind) === kind && !(kind in GROUP_LABELS));
+    expect(unlabelled).toEqual([]);
+  });
+});

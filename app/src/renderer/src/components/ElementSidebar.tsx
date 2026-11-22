@@ -95,6 +95,23 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'minecraft:post_effect': 'Screen effects',
   'minecraft:waypoint_style': 'Waypoint styles',
   'minecraft:shader': 'Shader programs',
+  // Kinds that form a group of their own and had no heading (2026-11-22).
+  'minecraft:damage_type': 'Damage types',
+  'minecraft:dimension_type': 'Dimension types',
+  'minecraft:dimension': 'Dimensions',
+  'minecraft:chat_type': 'Chat types',
+  'minecraft:banner_pattern': 'Banner patterns',
+  'minecraft:trim_pattern': 'Trim patterns',
+  'minecraft:dialog': 'Dialogs',
+  'minecraft:villager_trade': 'Villager trades',
+  'minecraft:trade_set': 'Trade sets',
+  'minecraft:trial_spawner': 'Trial spawners',
+  'msm:fluid': 'Liquids',
+  'msm:vehicle': 'Vehicles',
+  'msm:villager_profession': 'Village jobs',
+  'msm:rules': 'Rule books',
+  'msm:key_bind': 'Key binds',
+  'msm:hud': 'On-screen elements',
 };
 
 /** Groups Easy mode folds under "More": the files behind content (ADR 0047 D1). */
