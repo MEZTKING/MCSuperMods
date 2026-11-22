@@ -1,0 +1,20 @@
+{
+  "data": {
+    "amplitude_modifiers": [
+      1
+    ],
+    "base_octave": -5,
+    "octave_count": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_caverns/noise/tunnels_b",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A noise of Ember Caverns's own: the other half of the tunnels. Its lowest octave (-5) sets how large the shapes are; each further octave adds smaller detail.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

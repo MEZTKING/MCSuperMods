@@ -1,0 +1,84 @@
+{
+  "data": {
+    "default_block": "minecraft:deepslate",
+    "default_fluid": "minecraft:lava",
+    "disable_mob_generation": false,
+    "legacy_random_source": false,
+    "material_rule": {
+      "sequence": [
+        {
+          "if_true": {
+            "false_at_and_above": {
+              "above_bottom": 5
+            },
+            "random_name": "minecraft:bedrock_floor",
+            "true_at_and_below": {
+              "above_bottom": 0
+            },
+            "type": "minecraft:vertical_gradient"
+          },
+          "then_run": {
+            "result_state": "minecraft:bedrock",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": false,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "ceiling",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "if_true": {
+              "max_threshold": 9,
+              "min_threshold": 0.35,
+              "noise": "msm_examples:ember_caverns/noise/glow",
+              "type": "minecraft:noise_threshold"
+            },
+            "then_run": {
+              "result_state": "minecraft:shroomlight",
+              "type": "minecraft:block"
+            },
+            "type": "minecraft:condition"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "result_state": "minecraft:deepslate",
+          "type": "minecraft:block"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "noise": {
+      "height": 128,
+      "min_y": 0
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": "msm_examples:ember_caverns/final_density",
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": 20,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_caverns/terrain",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The land of Ember Caverns, MSM's own recipe rather than a copy of a vanilla file: deepslate caves with lakes of lava in every cave below height 20. The noise router's final_density (msm_examples:ember_caverns/final_density) carves them; sea_level 20 with default_fluid minecraft:lava makes the lakes. The surface rule (material_rule) puts bedrock at the bottom, minecraft:shroomlight in patches on the cave roofs and minecraft:deepslate everywhere else.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

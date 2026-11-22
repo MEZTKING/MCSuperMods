@@ -1,0 +1,20 @@
+{
+  "data": {
+    "amplitude_modifiers": [
+      1
+    ],
+    "base_octave": -4,
+    "octave_count": 1
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:endless_blossom/noise/detail",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A noise of Endless Blossom's own: small bumps on the slopes. Its lowest octave (-4) sets how large the shapes are; each further octave adds smaller detail.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

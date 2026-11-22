@@ -1,0 +1,76 @@
+{
+  "data": {
+    "ambient_light": 0,
+    "attributes": {
+      "minecraft:audio/ambient_sounds": {
+        "mood": {
+          "block_search_extent": 8,
+          "offset": 2,
+          "sound": "minecraft:ambient.cave",
+          "tick_delay": 6000
+        }
+      },
+      "minecraft:audio/background_music": {
+        "creative": {
+          "max_delay": 24000,
+          "min_delay": 12000,
+          "sound": "minecraft:music.creative"
+        },
+        "default": {
+          "max_delay": 24000,
+          "min_delay": 12000,
+          "sound": "minecraft:music.game"
+        }
+      },
+      "minecraft:gameplay/bed_rule": {
+        "can_set_spawn": "always",
+        "can_sleep": "when_dark",
+        "error_message": {
+          "translate": "block.minecraft.bed.no_sleep"
+        }
+      },
+      "minecraft:gameplay/nether_portal_spawns_piglin": true,
+      "minecraft:gameplay/respawn_anchor_works": false,
+      "minecraft:gameplay/straw_bed_rule": {
+        "can_set_spawn": "never",
+        "can_sleep": "when_dark",
+        "destroy_on_leave": true,
+        "error_message": {
+          "translate": "block.minecraft.bed.no_sleep"
+        }
+      },
+      "minecraft:visual/ambient_light_color": "#0a0a0a",
+      "minecraft:visual/cloud_color": "#ccffffff",
+      "minecraft:visual/cloud_height": 192.33,
+      "minecraft:visual/fog_color": "#16161c",
+      "minecraft:visual/sky_color": "#000000"
+    },
+    "coordinate_scale": 1,
+    "default_clock": "minecraft:overworld",
+    "has_ceiling": true,
+    "has_ender_dragon_fight": false,
+    "has_skylight": false,
+    "height": 128,
+    "infiniburn": "#minecraft:infiniburn_overworld",
+    "logical_height": 128,
+    "min_y": 0,
+    "monster_spawn_block_light_limit": 0,
+    "monster_spawn_light_level": {
+      "max_inclusive": 7,
+      "min_inclusive": 0,
+      "type": "minecraft:uniform"
+    },
+    "timelines": "#minecraft:in_overworld"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_caverns_type",
+  "kind": "minecraft:dimension_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The sky and rules of Ember Caverns: the overworld's rules with a ceiling and no sky light, so it is dark without torches and monsters spawn anywhere dark, from height 0 to 127 (the noise settings fill the same range). Open it in the Dimension Type Studio for the fog, light and rules.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

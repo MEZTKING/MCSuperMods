@@ -1,0 +1,181 @@
+{
+  "data": {
+    "dimensions": {
+      "minecraft:overworld": {
+        "generator": {
+          "biome_source": {
+            "biomes": [
+              {
+                "biome": "minecraft:deep_ocean",
+                "parameters": {
+                  "continentalness": [
+                    -2,
+                    -0.3
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    -2,
+                    2
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              },
+              {
+                "biome": "minecraft:ocean",
+                "parameters": {
+                  "continentalness": [
+                    -0.3,
+                    0.04
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    -2,
+                    2
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              },
+              {
+                "biome": "minecraft:beach",
+                "parameters": {
+                  "continentalness": [
+                    0.04,
+                    0.09
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    -2,
+                    2
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              },
+              {
+                "biome": "minecraft:forest",
+                "parameters": {
+                  "continentalness": [
+                    0.09,
+                    2
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    -2,
+                    0
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              },
+              {
+                "biome": "minecraft:cherry_grove",
+                "parameters": {
+                  "continentalness": [
+                    0.09,
+                    2
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    0,
+                    2
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              }
+            ],
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "msm_starter:sunny_isles/terrain",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:overworld"
+      },
+      "minecraft:the_end": {
+        "generator": {
+          "biome_source": {
+            "type": "minecraft:the_end"
+          },
+          "settings": "minecraft:end",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_end"
+      },
+      "minecraft:the_nether": {
+        "generator": {
+          "biome_source": {
+            "preset": "minecraft:nether",
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "minecraft:nether",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_nether"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sunny_isles",
+  "kind": "minecraft:worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The World Type Sunny Isles: middle-sized islands in about half sea, with many trees (grass and woods, cherry blossom), beaches around them and ocean between. Choose it under More > World Type when creating a world. The Nether and the End are the vanilla ones. Open it to see the world on the live map."
+  }
+}

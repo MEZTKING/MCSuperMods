@@ -2,7 +2,8 @@
  * The Examples gallery (ADR 0020): one commented example per registered kind, the blocks and
  * items behaviour examples (with the container and machine examples, ADR 0076 D4, the portal
  * example, ADR 0078 D4, and the firefly jar, ADR 0081 D5), the entity behaviour examples, the
- * script behaviour examples, the rules behaviour examples (ADR 0082 D11), the "Popular ideas"
+ * script behaviour examples, the rules behaviour examples (ADR 0082 D11), the world examples
+ * (ADR 0119 D11), the "Popular ideas"
  * examples, then the four content starters as complete projects.
  */
 import type { ExampleProject } from '@msm/plugin-api';
@@ -43,11 +44,13 @@ import {
 import { vehicleBehaviourExamples, vehicleKindExamples } from './vehicles';
 import { villagerBehaviourExamples, villagerFluidKindExamples } from './villagers-and-fluids';
 import { worldgenExamples } from './worldgen';
+import { worldExamples } from './worlds';
 
 export { categoryTag, defineExample, type ExampleInput } from './define';
 export { POPULAR_CATEGORY, popularExamples, popularFolder } from './popular';
 export { rulesBehaviourExamples, rulesKindExamples } from './rules';
 export { vehicleBehaviourExamples } from './vehicles';
+export { WORLDS_CATEGORY, worldExamples } from './worlds';
 
 /**
  * The script behaviour examples, then the Server helper (commands, a function and a rule book,
@@ -166,6 +169,7 @@ export const libraryExamples: readonly ExampleProject[] = Object.freeze([
   ...scriptBehaviourExamples,
   ...rulesBehaviourExamples,
   ...vehicleBehaviourExamples,
+  ...worldExamples,
   ...popularExamples,
   ...starterExamples,
 ]);

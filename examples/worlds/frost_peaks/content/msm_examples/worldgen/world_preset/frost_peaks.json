@@ -1,0 +1,104 @@
+{
+  "data": {
+    "dimensions": {
+      "minecraft:overworld": {
+        "generator": {
+          "biome_source": {
+            "biomes": [
+              {
+                "biome": "minecraft:grove",
+                "parameters": {
+                  "continentalness": [
+                    -2,
+                    2
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    -2,
+                    0
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              },
+              {
+                "biome": "minecraft:stony_peaks",
+                "parameters": {
+                  "continentalness": [
+                    -2,
+                    2
+                  ],
+                  "depth": 0,
+                  "erosion": [
+                    -2,
+                    2
+                  ],
+                  "humidity": [
+                    -2,
+                    2
+                  ],
+                  "offset": 0,
+                  "temperature": [
+                    0,
+                    2
+                  ],
+                  "weirdness": [
+                    -2,
+                    2
+                  ]
+                }
+              }
+            ],
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "msm_examples:frost_peaks/terrain",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:overworld"
+      },
+      "minecraft:the_end": {
+        "generator": {
+          "biome_source": {
+            "type": "minecraft:the_end"
+          },
+          "settings": "minecraft:end",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_end"
+      },
+      "minecraft:the_nether": {
+        "generator": {
+          "biome_source": {
+            "preset": "minecraft:nether",
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "minecraft:nether",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_nether"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_peaks",
+  "kind": "minecraft:worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The World Type Frost Peaks: jagged mountains up to about height 290, snowy above height 110, with snowy pine woods, bare stone. Choose it under More > World Type when creating a world. The Nether and the End are the vanilla ones. Open it to see the world on the live map.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

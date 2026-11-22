@@ -1,5 +1,6 @@
 /**
- * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4, ADR 0101 D4) under their headings,
+ * Home's "Make something" tiles (ADR 0083 D2, ADR 0086 D8, ADR 0091 D4, ADR 0101 D4, ADR 0119 D11)
+ * under their headings,
  * and what each opens: "Surprise me", Creator flows by flow id (the library's starters with
  * `creator`), other library starters by id, the Rule book, the picture painter or the AI helper.
  * A tile whose flows and starters are all unavailable on the project's target is hidden.
@@ -85,6 +86,52 @@ export const MAKE_ITEM_PICKS: readonly VeryEasyPick[] = [
   },
 ];
 
+/**
+ * The five worlds "Make a world" offers (ADR 0119 D11, plan "Very easy wording"), in order. The
+ * last is the bridge to Skyblock: its tile hands over to that flow once the library has it
+ * ({@link SKYBLOCK_HAND_OVER}).
+ */
+export const MAKE_WORLD_PICKS: readonly VeryEasyPick[] = [
+  {
+    id: 'islands',
+    flowId: 'world-islands',
+    label: 'Islands',
+    sentence: 'Islands in the sea, as big as you like.',
+  },
+  {
+    id: 'mountains',
+    flowId: 'world-mountains',
+    label: 'Tall mountains',
+    sentence: 'Towering peaks with snow on top.',
+  },
+  {
+    id: 'one-biome',
+    flowId: 'world-one-biome',
+    label: 'One biome everywhere',
+    sentence: 'A whole world of one biome, such as an endless cherry grove.',
+  },
+  {
+    id: 'caves',
+    flowId: 'world-caves',
+    label: 'Caves only',
+    sentence: 'Caverns and tunnels, lit by glowing rock.',
+  },
+  {
+    id: 'empty-sky',
+    flowId: 'world-empty-sky',
+    label: 'Empty sky with a start island',
+    sentence: 'Nothing but sky. The start island comes with Skyblock.',
+  },
+];
+
+/**
+ * The hand-over of "Empty sky with a start island" (ADR 0119 D11): once the library has the
+ * game modes plan's Skyblock flow (ADR 0114), "Make a world" offers that flow in its place.
+ */
+export const SKYBLOCK_HAND_OVER: Readonly<Record<string, string>> = {
+  'world-empty-sky': 'skyblock',
+};
+
 /** The flow ids of `picks`, in order, without repeats. */
 export function pickFlowIds(picks: readonly VeryEasyPick[]): string[] {
   return [...new Set(picks.map((pick) => pick.flowId))];
@@ -93,7 +140,7 @@ export function pickFlowIds(picks: readonly VeryEasyPick[]): string[] {
 /** The pick of `flowId` among the tile picks, or `undefined`. */
 export function veryEasyPickOf(
   flowId: string,
-  picks: readonly VeryEasyPick[] = [...MAKE_BLOCK_PICKS, ...MAKE_ITEM_PICKS],
+  picks: readonly VeryEasyPick[] = [...MAKE_BLOCK_PICKS, ...MAKE_ITEM_PICKS, ...MAKE_WORLD_PICKS],
 ): VeryEasyPick | undefined {
   return picks.find((pick) => pick.flowId === flowId);
 }
@@ -114,6 +161,12 @@ export type MakeTileAction =
        * pick's label and sentence on its flow's card.
        */
       readonly picks?: readonly VeryEasyPick[];
+      /**
+       * Flows offered in place of others once available (ADR 0119 D11): flow id to the flow
+       * that replaces it, in its place in the order. A replacement that is not available
+       * leaves the flow as it is.
+       */
+      readonly replacedBy?: Readonly<Record<string, string>>;
     }
   /** "Surprise me": a random mod (ADR 0086). */
   | { readonly type: 'surprise' }
@@ -299,18 +352,27 @@ export const MAKE_TILES: readonly MakeTile[] = [
     action: flows('scripted-item'),
   },
   {
+    id: 'world',
+    label: 'Make a world',
+    sentence:
+      'Islands, tall mountains, one biome everywhere, caves only or an empty sky; or a new biome.',
+    group: 'worlds',
+    // The five worlds (ADR 0119 D11) with their Very easy words, then the Dimension flow and the
+    // Custom biome starter, which this tile offered before.
+    action: {
+      type: 'flows',
+      flowIds: [...pickFlowIds(MAKE_WORLD_PICKS), 'dimension'],
+      starterIds: ['custom_biome'],
+      picks: MAKE_WORLD_PICKS,
+      replacedBy: SKYBLOCK_HAND_OVER,
+    },
+  },
+  {
     id: 'portal',
     label: 'Make a portal',
     sentence: 'A portal frame, or a whole new world to travel to.',
     group: 'worlds',
     action: flows('portal', 'dimension'),
-  },
-  {
-    id: 'world',
-    label: 'Make a world or biome',
-    sentence: 'A new world to explore, or a new biome with its own trees.',
-    group: 'worlds',
-    action: choices(['dimension'], ['custom_biome']),
   },
   {
     id: 'building',
@@ -412,7 +474,14 @@ export function shownTiles(
   for (const tile of tiles) {
     switch (tile.action.type) {
       case 'flows': {
-        const flowIds = tile.action.flowIds.filter((id) => availability.flowAvailable(id));
+        const replacedBy = tile.action.replacedBy ?? {};
+        const offered = tile.action.flowIds.map((id) => {
+          const replacement = replacedBy[id];
+          return replacement !== undefined && availability.flowAvailable(replacement)
+            ? replacement
+            : id;
+        });
+        const flowIds = [...new Set(offered)].filter((id) => availability.flowAvailable(id));
         const starterIds = (tile.action.starterIds ?? []).filter(
           (id) => availability.starterAvailable?.(id) ?? false,
         );

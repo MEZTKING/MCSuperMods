@@ -1,6 +1,7 @@
 /**
  * The worldgen element templates (ADR 0020, ADR 0022 D9), in picker order: biomes, configured
- * and placed features, dimensions, the world preset and two dimension types (ADR 0100), then one per tier-B registry. Every
+ * and placed features, dimensions, the world preset and two dimension types (ADR 0100), then one per tier-B registry,
+ * then the noise settings of whole worlds (ADR 0119 D11). Every
  * template uses only vanilla ids or ids derived from the new element's own id.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
@@ -9,6 +10,7 @@ import { biomeTemplates } from './biomes';
 import { dimensionTypeTemplates } from './dimension-types';
 import { dimensionTemplates } from './dimensions';
 import { featureTemplates } from './features';
+import { worldTemplates } from './worlds';
 
 export const worldgenTemplates: readonly ElementTemplate[] = Object.freeze([
   ...biomeTemplates,
@@ -16,4 +18,5 @@ export const worldgenTemplates: readonly ElementTemplate[] = Object.freeze([
   ...dimensionTemplates,
   ...dimensionTypeTemplates,
   ...advancedTemplates,
+  ...worldTemplates,
 ]);

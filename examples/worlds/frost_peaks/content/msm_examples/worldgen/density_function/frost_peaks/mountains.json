@@ -1,0 +1,19 @@
+{
+  "data": {
+    "noise": "msm_examples:frost_peaks/noise/mountains",
+    "type": "minecraft:noise",
+    "xz_scale": 1,
+    "y_scale": 0
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:frost_peaks/mountains",
+  "kind": "minecraft:worldgen/density_function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Where the mountains are: the mountain noise, the same at every height.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

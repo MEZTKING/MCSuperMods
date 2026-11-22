@@ -1,0 +1,38 @@
+{
+  "data": {
+    "left": {
+      "left": {
+        "axis": "y",
+        "from_coordinate": -64,
+        "from_value": 5.1917,
+        "to_coordinate": 320,
+        "to_value": -10.8083,
+        "type": "minecraft:gradient"
+      },
+      "right": {
+        "left": 2,
+        "right": "msm_starter:sunny_isles/continents",
+        "type": "minecraft:mul"
+      },
+      "type": "minecraft:add"
+    },
+    "right": {
+      "left": 0.15,
+      "right": {
+        "noise": "msm_starter:sunny_isles/noise/detail",
+        "type": "minecraft:noise",
+        "xz_scale": 1,
+        "y_scale": 1
+      },
+      "type": "minecraft:mul"
+    },
+    "type": "minecraft:add"
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sunny_isles/final_density",
+  "kind": "minecraft:worldgen/density_function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Solid where positive, air where negative: a slope that is 0 at height 60.6 and falls by one every 24 blocks upwards, plus 2 times the land noise (so land rises above the sea of height 63 where the land noise is above 0.05), plus a little 3D detail for cliffs."
+  }
+}

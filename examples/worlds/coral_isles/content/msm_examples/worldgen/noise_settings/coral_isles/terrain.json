@@ -1,0 +1,179 @@
+{
+  "data": {
+    "default_block": "minecraft:stone",
+    "default_fluid": "minecraft:water",
+    "disable_mob_generation": false,
+    "legacy_random_source": false,
+    "material_rule": {
+      "sequence": [
+        {
+          "if_true": {
+            "false_at_and_above": {
+              "above_bottom": 5
+            },
+            "random_name": "minecraft:bedrock_floor",
+            "true_at_and_below": {
+              "above_bottom": 0
+            },
+            "type": "minecraft:vertical_gradient"
+          },
+          "then_run": {
+            "result_state": "minecraft:bedrock",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "biome_is": [
+              "minecraft:beach"
+            ],
+            "type": "minecraft:biome"
+          },
+          "then_run": {
+            "sequence": [
+              {
+                "if_true": {
+                  "add_surface_depth": true,
+                  "offset": 0,
+                  "secondary_depth_range": 0,
+                  "surface_type": "floor",
+                  "type": "minecraft:stone_depth"
+                },
+                "then_run": {
+                  "result_state": "minecraft:sand",
+                  "type": "minecraft:block"
+                },
+                "type": "minecraft:condition"
+              },
+              {
+                "if_true": {
+                  "add_surface_depth": true,
+                  "offset": 0,
+                  "secondary_depth_range": 6,
+                  "surface_type": "floor",
+                  "type": "minecraft:stone_depth"
+                },
+                "then_run": {
+                  "result_state": "minecraft:sandstone",
+                  "type": "minecraft:block"
+                },
+                "type": "minecraft:condition"
+              }
+            ],
+            "type": "minecraft:sequence"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": false,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "sequence": [
+              {
+                "if_true": {
+                  "add_stone_depth": false,
+                  "offset": -1,
+                  "surface_depth_multiplier": 0,
+                  "type": "minecraft:water"
+                },
+                "then_run": {
+                  "sequence": [
+                    {
+                      "result_state": "minecraft:grass_block",
+                      "type": "minecraft:block"
+                    }
+                  ],
+                  "type": "minecraft:sequence"
+                },
+                "type": "minecraft:condition"
+              },
+              {
+                "result_state": "minecraft:sand",
+                "type": "minecraft:block"
+              }
+            ],
+            "type": "minecraft:sequence"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": true,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "sequence": [
+              {
+                "if_true": {
+                  "add_stone_depth": false,
+                  "offset": -1,
+                  "surface_depth_multiplier": 0,
+                  "type": "minecraft:water"
+                },
+                "then_run": {
+                  "result_state": "minecraft:dirt",
+                  "type": "minecraft:block"
+                },
+                "type": "minecraft:condition"
+              },
+              {
+                "result_state": "minecraft:sand",
+                "type": "minecraft:block"
+              }
+            ],
+            "type": "minecraft:sequence"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "result_state": "minecraft:stone",
+          "type": "minecraft:block"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "noise": {
+      "height": 384,
+      "min_y": -64
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": "msm_examples:coral_isles/continents",
+      "depth": 0,
+      "erosion": 0,
+      "final_density": "msm_examples:coral_isles/final_density",
+      "ridges": 0,
+      "temperature": "msm_examples:coral_isles/temperature",
+      "vegetation": 0
+    },
+    "sea_level": 63,
+    "spawn_target": [
+      {
+        "msm_examples:coral_isles/continents": [
+          0.35,
+          2
+        ]
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:coral_isles/terrain",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The land of Coral Isles, MSM's own recipe rather than a copy of a vanilla file: small islands in lots of sea. The noise router's final_density (msm_examples:coral_isles/final_density) shapes the land, its continents and temperature pick the biomes, and spawn_target starts players on an island. The surface rule (material_rule) puts bedrock at the bottom, then grass over dirt on land, sand over sandstone in deserts and on beaches, sand under water, and stone everywhere else.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

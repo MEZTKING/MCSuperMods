@@ -30,6 +30,18 @@ import { CUSTOM_COMMAND_PARAMETERS, customCommandBundle } from './custom-command
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+import {
+  WORLD_CAVES_PARAMETERS,
+  WORLD_EMPTY_SKY_PARAMETERS,
+  WORLD_ISLANDS_PARAMETERS,
+  WORLD_MOUNTAINS_PARAMETERS,
+  WORLD_ONE_BIOME_PARAMETERS,
+  worldCavesBundle,
+  worldEmptySkyBundle,
+  worldIslandsBundle,
+  worldMountainsBundle,
+  worldOneBiomeBundle,
+} from './custom-world';
 import { DESERT_PLANTS_PARAMETERS, desertPlantsBundle } from './desert-plants';
 import { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
@@ -105,6 +117,20 @@ export { CUSTOM_COMMAND_PARAMETERS, customCommandBundle } from './custom-command
 export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+export {
+  START_ISLAND_WORDS,
+  WORLD_CAVES_PARAMETERS,
+  WORLD_EMPTY_SKY_PARAMETERS,
+  WORLD_FLOW_IDS,
+  WORLD_ISLANDS_PARAMETERS,
+  WORLD_MOUNTAINS_PARAMETERS,
+  WORLD_ONE_BIOME_PARAMETERS,
+  worldCavesBundle,
+  worldEmptySkyBundle,
+  worldIslandsBundle,
+  worldMountainsBundle,
+  worldOneBiomeBundle,
+} from './custom-world';
 export {
   DESERT_PLANT_KINDS,
   DESERT_PLANTS_PARAMETERS,
@@ -794,6 +820,79 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
           'A world of its own, with the terrain, biome and sky you pick, and a key or portal to get there.',
       },
       probeValues: [{ travel: 'command' }, { terrain: 'flat' }, { travel: 'portal' }],
+    },
+  ),
+  starter(
+    'world-islands',
+    'Islands',
+    "A World Type of islands in the sea: how big they are, how much sea lies between them, what grows on them and how many trees. Its land is MSM's own recipe, so the live map draws it without your Minecraft files. Choose it under More > World Type when creating a world.",
+    'content',
+    ['datapack', 'resourcepack'],
+    worldIslandsBundle,
+    {
+      parameters: WORLD_ISLANDS_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb: 'A world of islands in the sea, with the biomes you pick.',
+      },
+    },
+  ),
+  starter(
+    'world-mountains',
+    'Tall mountains',
+    "A World Type of tall mountains: how tall, how jagged, where the snow starts and what grows on them. Its land is MSM's own recipe, so the live map draws it without your Minecraft files. Choose it under More > World Type when creating a world.",
+    'content',
+    ['datapack', 'resourcepack'],
+    worldMountainsBundle,
+    {
+      parameters: WORLD_MOUNTAINS_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb: 'A world of towering peaks, with a snow line you choose.',
+      },
+    },
+  ),
+  starter(
+    'world-one-biome',
+    'One biome everywhere',
+    'A World Type that is one biome everywhere, over gentle hills, flat land or land like the overworld. Choose it under More > World Type when creating a world.',
+    'content',
+    ['datapack', 'resourcepack'],
+    worldOneBiomeBundle,
+    {
+      parameters: WORLD_ONE_BIOME_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb: 'A whole world of one biome, such as an endless cherry grove.',
+      },
+      probeValues: [{ shape: 'overworld' }],
+    },
+  ),
+  starter(
+    'world-caves',
+    'Caves only',
+    'A World Type that is all caves: a roof or an open top, the rock, lakes of water or lava, and what glows. It has its own dimension type without daylight under the roof. Choose it under More > World Type when creating a world.',
+    'content',
+    ['datapack', 'resourcepack'],
+    worldCavesBundle,
+    {
+      parameters: WORLD_CAVES_PARAMETERS,
+      creator: { group: 'worlds', blurb: 'A world of caverns and tunnels, lit by glowing rock.' },
+    },
+  ),
+  starter(
+    'world-empty-sky',
+    'Empty sky with a start island',
+    'A World Type of empty sky, for a Skyblock: the biome of the sky. The start island, its chest and what you start with come from the Skyblock flow; until MSM has it, this makes the empty world only. Choose it under More > World Type when creating a world.',
+    'content',
+    ['datapack', 'resourcepack'],
+    worldEmptySkyBundle,
+    {
+      parameters: WORLD_EMPTY_SKY_PARAMETERS,
+      creator: {
+        group: 'worlds',
+        blurb: 'An empty world of sky; the start island comes with Skyblock.',
+      },
     },
   ),
   starter(

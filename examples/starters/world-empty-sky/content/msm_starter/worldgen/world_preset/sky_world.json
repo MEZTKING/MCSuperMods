@@ -1,0 +1,45 @@
+{
+  "data": {
+    "dimensions": {
+      "minecraft:overworld": {
+        "generator": {
+          "biome_source": {
+            "biome": "minecraft:plains",
+            "type": "minecraft:fixed"
+          },
+          "settings": "msm_starter:sky_world/terrain",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:overworld"
+      },
+      "minecraft:the_end": {
+        "generator": {
+          "biome_source": {
+            "type": "minecraft:the_end"
+          },
+          "settings": "minecraft:end",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_end"
+      },
+      "minecraft:the_nether": {
+        "generator": {
+          "biome_source": {
+            "preset": "minecraft:nether",
+            "type": "minecraft:multi_noise"
+          },
+          "settings": "minecraft:nether",
+          "type": "minecraft:noise"
+        },
+        "type": "minecraft:the_nether"
+      }
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_world",
+  "kind": "minecraft:worldgen/world_preset",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The World Type Sky World: an empty sky, all of it the plains biome. Choose it under More > World Type when creating a world. The Nether and the End are the vanilla ones. The start island, its chest and the things you start with come from the Skyblock flow; until MSM has it, this makes the empty world only. Players start in the air and fall: play it in Creative, or build a start island with the Structure Studio. Open it to see the world on the live map."
+  }
+}

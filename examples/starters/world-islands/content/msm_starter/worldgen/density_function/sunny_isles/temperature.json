@@ -1,0 +1,15 @@
+{
+  "data": {
+    "noise": "msm_starter:sunny_isles/noise/temperature",
+    "type": "minecraft:noise",
+    "xz_scale": 1,
+    "y_scale": 0
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sunny_isles/temperature",
+  "kind": "minecraft:worldgen/density_function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "How warm it is: the temperature noise, the same at every height. The biome list spreads the island biomes over it."
+  }
+}

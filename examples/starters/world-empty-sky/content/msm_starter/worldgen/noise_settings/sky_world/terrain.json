@@ -1,0 +1,35 @@
+{
+  "data": {
+    "default_block": "minecraft:stone",
+    "default_fluid": "minecraft:air",
+    "disable_mob_generation": false,
+    "legacy_random_source": false,
+    "material_rule": {
+      "result_state": "minecraft:stone",
+      "type": "minecraft:block"
+    },
+    "noise": {
+      "height": 384,
+      "min_y": -64
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": "msm_starter:sky_world/final_density",
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": -64,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "msm_starter:sky_world/terrain",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The land of Sky World, MSM's own recipe rather than a copy of a vanilla file: an empty world: final_density (msm_starter:sky_world/final_density) is air everywhere, sea_level is at the bottom and default_fluid is air, so there is no water either."
+  }
+}

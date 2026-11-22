@@ -1,0 +1,16 @@
+{
+  "data": {
+    "generator.msm_examples.coral_isles": "Coral Isles"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:en_us",
+  "kind": "minecraft:lang",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The English name of the World Type button. Install the resource pack too, or the screen shows the raw key.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

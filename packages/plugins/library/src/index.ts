@@ -104,6 +104,8 @@ export {
   scriptBehaviourExamples,
   starterExamples,
   vehicleBehaviourExamples,
+  WORLDS_CATEGORY,
+  worldExamples,
 } from './examples/index';
 export {
   BREWING_INGREDIENTS,
@@ -130,6 +132,7 @@ export {
   POTION_PARAMETERS,
   SCRIPTED_ITEM_PARAMETERS,
   SIMPLE_BLOCK_PARAMETERS,
+  START_ISLAND_WORDS,
   STATUS_EFFECT_PARAMETERS,
   STONE_SET_MEMBERS,
   STONE_SET_PARAMETERS,
@@ -142,6 +145,7 @@ export {
   WEAPON_TYPES,
   WOOD_SET_MEMBERS,
   WOOD_SET_PARAMETERS,
+  WORLD_FLOW_IDS,
 } from './starters/index';
 
 const plugin: Readonly<Plugin> = definePlugin({

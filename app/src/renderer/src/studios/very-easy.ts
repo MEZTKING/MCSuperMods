@@ -154,13 +154,14 @@ export const GAME_RULE_VERY_EASY_SECTIONS: readonly string[] = ['game-rule-gener
 export const STAT_VERY_EASY_SECTIONS: readonly string[] = ['stat-general'];
 
 /**
- * The Very easy picks of "Make a block" and "Make an item" (ADR 0101 D4). They live with the
+ * The Very easy picks of "Make a block", "Make an item" (ADR 0101 D4) and "Make a world" (ADR 0119 D11). They live with the
  * Home tiles they feed (`components/home/tiles.ts`, which must stay free of React for the Node
  * build) and are re-exported here.
  */
 export {
   MAKE_BLOCK_PICKS,
   MAKE_ITEM_PICKS,
+  MAKE_WORLD_PICKS,
   pickFlowIds,
   type VeryEasyPick,
   veryEasyPickOf,

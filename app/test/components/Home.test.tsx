@@ -97,8 +97,8 @@ describe('Home tiles', () => {
       'magic: Make a potion or effect',
       'magic: Make sparkles',
       'magic: Make a magic wand',
+      'worlds: Make a world',
       'worlds: Make a portal',
-      'worlds: Make a world or biome',
       'worlds: Make a building',
       'worlds: Change drops and trades',
       'looks: Change how Minecraft looks',
@@ -156,8 +156,16 @@ describe('Home tiles', () => {
     expect(ids).toContain('building');
     expect(ids).not.toContain('recipe');
     expect(ids).not.toContain('surprise');
+    // Every flow is available here, Skyblock too, so it takes the empty sky's place (B586).
     expect(shown.find((entry) => entry.tile.id === 'world')).toMatchObject({
-      flowIds: ['dimension'],
+      flowIds: [
+        'world-islands',
+        'world-mountains',
+        'world-one-biome',
+        'world-caves',
+        'skyblock',
+        'dimension',
+      ],
       starterIds: ['custom_biome'],
     });
   });

@@ -33,6 +33,8 @@ import {
   scriptBehaviourExamples,
   starterExamples,
   vehicleBehaviourExamples,
+  WORLDS_CATEGORY,
+  worldExamples,
 } from '../src/index';
 import { TINTABLE_GREY } from '../src/starters/wood-set';
 
@@ -76,6 +78,11 @@ const STARTER_IDS = [
   'pot-pattern',
   'music-disc-item',
   'dimension',
+  'world-islands',
+  'world-mountains',
+  'world-one-biome',
+  'world-caves',
+  'world-empty-sky',
   'portal',
   'villager-trade',
   'village-job',
@@ -308,7 +315,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the sixty-nine starters in order', () => {
+  it('lists the seventy-four starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -318,7 +325,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(65).fill('content'),
+      ...Array<string>(70).fill('content'),
     ]);
   });
 
@@ -724,7 +731,7 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 118 per-kind examples, one per built-in kind, 56 behaviour examples, 17 popular ideas and 4 starter projects', () => {
+  it('has 118 per-kind examples, one per built-in kind, 56 behaviour examples, 5 worlds, 17 popular ideas and 4 starter projects', () => {
     expect(kindExamples).toHaveLength(118);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
@@ -794,6 +801,12 @@ describe('examples', () => {
     expect(rulesBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_rules_guard_mob',
     ]);
+    expect(worldExamples.map((example) => example.id)).toEqual(
+      ['coral_isles', 'frost_peaks', 'endless_blossom', 'ember_caverns', 'cloud_realm'].map(
+        (id) => `example_world_${id}`,
+      ),
+    );
+    for (const example of worldExamples) expect(example.category).toBe(WORLDS_CATEGORY);
     expect(vehicleBehaviourExamples.map((example) => example.id)).toEqual([
       'example_vehicles_seaside',
     ]);
@@ -822,7 +835,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(195);
+    expect(libraryExamples).toHaveLength(200);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -1109,7 +1122,7 @@ describe('structure and worldgen content', () => {
     entry.requiresKinds.some((kind) => WORLDGEN_KINDS.has(kind)),
   );
 
-  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes and four popular ideas', () => {
+  it('covers the worldgen starters, the 21 structure and worldgen examples, the generating ores, the trees and wild crops, the fluid lakes, the five worlds and four popular ideas', () => {
     expect(worldgenEntries.map((entry) => entry.id)).toEqual([
       'custom_ore',
       'wood-set',
@@ -1117,6 +1130,11 @@ describe('structure and worldgen content', () => {
       'tree',
       'fluid',
       'dimension',
+      'world-islands',
+      'world-mountains',
+      'world-one-biome',
+      'world-caves',
+      'world-empty-sky',
       'portal',
       'custom_biome',
       'jigsaw_structure',
@@ -1134,6 +1152,11 @@ describe('structure and worldgen content', () => {
       'example_msm_loot_crate',
       'example_msm_ore_crusher',
       'example_msm_sky_portal',
+      'example_world_coral_isles',
+      'example_world_frost_peaks',
+      'example_world_endless_blossom',
+      'example_world_ember_caverns',
+      'example_world_cloud_realm',
       'example_popular_glowshard',
       'example_popular_sunken_crypt',
       'example_popular_amber_realm',

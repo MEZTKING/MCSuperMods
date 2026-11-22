@@ -1,0 +1,81 @@
+{
+  "data": {
+    "left": {
+      "axis": "y",
+      "from_coordinate": 0,
+      "from_value": 2,
+      "to_coordinate": 10,
+      "to_value": -2,
+      "type": "minecraft:gradient"
+    },
+    "right": {
+      "left": {
+        "left": {
+          "left": 0.2,
+          "right": {
+            "left": -1,
+            "right": {
+              "noise": "msm_examples:ember_caverns/noise/caverns",
+              "type": "minecraft:noise",
+              "xz_scale": 1,
+              "y_scale": 1.6
+            },
+            "type": "minecraft:mul"
+          },
+          "type": "minecraft:add"
+        },
+        "right": {
+          "left": {
+            "left": 5,
+            "right": {
+              "left": {
+                "input": {
+                  "noise": "msm_examples:ember_caverns/noise/tunnels_a",
+                  "type": "minecraft:noise",
+                  "xz_scale": 1,
+                  "y_scale": 1
+                },
+                "type": "minecraft:abs"
+              },
+              "right": {
+                "input": {
+                  "noise": "msm_examples:ember_caverns/noise/tunnels_b",
+                  "type": "minecraft:noise",
+                  "xz_scale": 1,
+                  "y_scale": 1
+                },
+                "type": "minecraft:abs"
+              },
+              "type": "minecraft:max"
+            },
+            "type": "minecraft:mul"
+          },
+          "right": -0.35,
+          "type": "minecraft:add"
+        },
+        "type": "minecraft:min"
+      },
+      "right": {
+        "axis": "y",
+        "from_coordinate": 104,
+        "from_value": -2,
+        "to_coordinate": 120,
+        "to_value": 2,
+        "type": "minecraft:gradient"
+      },
+      "type": "minecraft:max"
+    },
+    "type": "minecraft:max"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_caverns/final_density",
+  "kind": "minecraft:worldgen/density_function",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Solid where positive, air where negative: caverns where the cavern noise is above 0.2, tunnels where both tunnel noises are near 0, always solid in the bottom ten layers, and solid in the top layers (a roof from height 104 up).",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "amplitude_modifiers": [
+      1,
+      0.5
+    ],
+    "base_octave": -6,
+    "octave_count": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_caverns/noise/caverns",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A noise of Ember Caverns's own: the big caverns, where it is high. Its lowest octave (-6) sets how large the shapes are; each further octave adds smaller detail.",
+    "tags": [
+      "example",
+      "worlds"
+    ]
+  }
+}

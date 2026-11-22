@@ -20,7 +20,8 @@
  * `examples/blocks-items/` (the blocks and items behaviour examples), `examples/entities/`
  * (the entity behaviour examples), `examples/scripts/` (the script behaviour examples),
  * `examples/rules/` (the Rules examples, ADR 0082 D11), `examples/popular/<name>/` (each
- * "Popular ideas" example as a project of its own) and `examples/starters/<starter id>/`
+ * "Popular ideas" example as a project of its own), `examples/worlds/<name>/` (each world example
+ * of the Make a world flows, ADR 0119 D11, as a project of its own) and `examples/starters/<starter id>/`
  * (each content starter). It is a golden: set
  * `UPDATE_GOLDENS=1` to rewrite it from the current library.
  */
@@ -83,6 +84,7 @@ import libraryPlugin, {
   rulesBehaviourExamples,
   rulesKindExamples,
   scriptBehaviourExamples,
+  worldExamples,
 } from '@msm/plugin-library';
 import modelsAnimPlugin from '@msm/plugin-models-anim';
 import resourcePackPlugin from '@msm/plugin-resourcepack';
@@ -549,6 +551,59 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { pattern_name: 'River Fish', picture: 'fish', ingredient: 'minecraft:lapis_lazuli' },
     { pattern_name: 'Leaf', picture: 'leaf', colour: '#4c8a2c' },
   ],
+  'world-islands': [
+    {
+      world_name: 'Big Lands',
+      island_size: 'large',
+      sea: 'little',
+      biomes: ['flowers', 'snowy'],
+      trees: 'few',
+    },
+    {
+      world_name: 'Every Isle',
+      island_size: 'small',
+      sea: 'lots',
+      biomes: ['grass', 'flowers', 'cherry', 'jungle', 'dry', 'snowy', 'mushroom'],
+      trees: 'many',
+    },
+  ],
+  'world-mountains': [
+    {
+      world_name: 'Round Hills',
+      height: 'tall',
+      jagged: 'smooth',
+      snow_line: 'none',
+      biomes: ['cherry'],
+    },
+    {
+      world_name: 'Every Peak',
+      height: 'tallest',
+      jagged: 'jagged',
+      snow_line: 'high',
+      biomes: ['meadow', 'cherry', 'pine', 'snowy_pine', 'stony', 'windswept'],
+    },
+  ],
+  'world-one-biome': [
+    { world_name: 'Red Mesa', biome: 'minecraft:badlands', shape: 'flat' },
+    { world_name: 'Old Land', biome: 'minecraft:desert', shape: 'overworld' },
+  ],
+  'world-caves': [
+    {
+      world_name: 'Open Caves',
+      top: 'open',
+      rock: 'minecraft:tuff',
+      lakes: 'lava',
+      glow: 'shroomlight',
+    },
+    {
+      world_name: 'Dry Dark',
+      top: 'roof',
+      rock: 'minecraft:deepslate',
+      lakes: 'none',
+      glow: 'none',
+    },
+  ],
+  'world-empty-sky': [{ world_name: 'Blank Sky', biome: 'minecraft:snowy_plains' }],
   dimension: [
     {
       dimension_name: 'Frost Caves',
@@ -1226,6 +1281,11 @@ const MIRRORED_STARTERS = [
   'painting',
   'music-disc-item',
   'dimension',
+  'world-islands',
+  'world-mountains',
+  'world-one-biome',
+  'world-caves',
+  'world-empty-sky',
   'portal',
   'particle',
   'status-effect',
@@ -1941,6 +2001,13 @@ const MIRROR: readonly MirrorProject[] = [
         buildEntry(example, 'msm_examples', example.title),
       ]),
   })),
+  ...worldExamples.map((example) => ({
+    folder: `worlds/${example.id.replace(/^example_world_/, '')}`,
+    build: () =>
+      buildProject(example.title, 'msm_examples', [
+        buildEntry(example, 'msm_examples', example.title),
+      ]),
+  })),
   ...MIRRORED_STARTERS.map((id) => ({
     folder: `starters/${id}`,
     build: () => {
@@ -2492,6 +2559,41 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         for (const choice of parameter.choices) {
           if (choice.value !== 'none')
             expect(effects.has(choice.value.slice(10)), choice.value).toBe(true);
+        }
+      }
+    });
+
+    it('the Make a world flows offer only biomes and blocks the target has (ADR 0119 D11)', () => {
+      const vanilla = (registry: string) => new Set(context.vanilla[registry] ?? []);
+      for (const id of [
+        'world-islands',
+        'world-mountains',
+        'world-one-biome',
+        'world-caves',
+        'world-empty-sky',
+      ]) {
+        const flow = starterById(id);
+        const answers: Record<string, Json>[] = [
+          {},
+          ...(WIZARD_ALTERNATIVES[id] ?? []),
+          minimumValues(flow),
+        ];
+        for (const parameter of flow.parameters ?? []) {
+          if (parameter.type !== 'choice') continue;
+          for (const choice of parameter.choices) answers.push({ [parameter.id]: choice.value });
+        }
+        for (const values of answers) {
+          const text = JSON.stringify(buildEntry(flow, 'demo', 'Flow', bundle.target, values));
+          for (const match of text.matchAll(/"biome(?:_is)?":(?:\[)?"minecraft:([a-z_]+)"/g)) {
+            expect(vanilla('worldgen/biome').has(match[1] as string), `${id} ${match[1]}`).toBe(
+              true,
+            );
+          }
+          for (const match of text.matchAll(
+            /"(?:result_state|default_block|default_fluid)":"minecraft:([a-z_]+)"/g,
+          )) {
+            expect(vanilla('block').has(match[1] as string), `${id} ${match[1]}`).toBe(true);
+          }
         }
       }
     });

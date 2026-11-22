@@ -46,6 +46,10 @@ const IDS = [
   'block_state_provider',
   'material_condition',
   'material_rule',
+  'noise_settings_islands',
+  'noise_settings_mountains',
+  'noise_settings_caves',
+  'noise_settings_empty',
 ];
 
 const CATEGORIES = new Set(['Biomes', 'Features', 'Dimensions', 'Worldgen (advanced)']);
