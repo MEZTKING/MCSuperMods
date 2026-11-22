@@ -8387,3 +8387,17 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 - The migration drops the field whenever this target has none, not only when the previous target had it, so a stand-in previous target in tests behaves as the real one.
 
 **Next:** ADR 0037 D3 could note that `migrateFrom` also reshapes noise settings (the orchestrator's call). The test still skips mod mirror projects on a non-default target ("noise settings fields of the default target" was one reason); with the migration in place they could be tried on 26.4.
+## 2026-11-22 — executor — B589 e2e: the live world generation path
+
+**What:** `app/e2e/worldgen-live-path.spec.ts` (B576's skipped stub made real), three tests over a copy of `fixtures/worldgen-parity/mc-26.3` (no client jar) with a Marker Block (plugins `msm.resourcepack`, `msm.blocks-items` added) and a Poppy patch `simple_block` feature:
+- **The map** (no WebGL; the map is a 2D canvas, colours read with `getImageData`): the `source_multi_noise` dimension's biomes in the preview panel (`terrain-state` `data-pass="fine"`, `data-drawing="no"`, more than one colour); on `plain`, Compare with vanilla disabled with `terrain-compare-set-up`, a typed seed makes a new world, Height draws; the noise settings form's `sea_level` 48 to 40 redraws the map with the first (coarse) picture within 250 ms after the debounce (`data-edit-ms` minus `data-debounce-ms`); Side cut draws and names the new sea level; a density function's Value map (`terrain-value-state`) and the feature's Scatter (`terrain-scatter-state` `data-placed` > 0) draw.
+- **Try it** (SwiftShader): the Biome Studio's **See it on the map** (`studio-map`, Height, a place on land found from the hover line and typed into X and Z), **Walk in it** opens Try it with `tryit-ground-generated` checked; the land arrives in stages (`data-terrain-ms` <= `data-surface-ms` <= `data-features-ms`, stage `features`, reason `new`) and is drawn (`readPixels`); a Marker Block placed on the land is still pointed at after a sea level edit made while Try it was closed (`data-reason="edit"`, the next `data-runs`).
+- **Very easy** (SwiftShader, new install): the card "A world of islands" mounts one canvas with more than one colour; Make a world > Islands opens the Creator on `creator-tab-map` (selected), the map draws and follows **How much sea?**; Create opens the World Type with its live map, at the same seed.
+- Verified: `pnpm build`; the spec green three runs in a row under `xvfb-run -a` (57.9 s, 1.0 min, 1.0 min; tests about 16 s, 22 to 25 s and 18 to 20 s); the full e2e run (80 passed, 14.3 min); `pnpm lint`, `pnpm typecheck`. Measured in the runs: map edit to the first picture 189 to 200 ms (39 to 50 ms after the 150 ms debounce); ground stages terrain 314 to 325 ms, surface 526 to 546 ms, features 686 to 723 ms; ground edit 770 to 824 ms.
+
+**Decisions:**
+- Every map gets a fixed seed first: a new view rolls a random seed, and with it the Try it test once found only sea in the view (the player then sinks through the water to the area's floor, as the sim does for water).
+- The first-run card opens under the ground picker on Walk in it; the test applies the ground first, then closes the card (not treated as a bug: the picker is usable and the card stays).
+- The world type made from Very easy is checked through the editor (its notes and live map), not the disk: Very easy does not save on Create.
+
+**Next:** the close adds the e2e line to `app/CLAUDE.md` (44 spec files). No app bug found.
