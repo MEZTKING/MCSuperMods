@@ -1,0 +1,64 @@
+{
+  "data": {
+    "arguments": [
+      {
+        "name": "where",
+        "type": "dimension"
+      },
+      {
+        "name": "wait",
+        "type": "time"
+      },
+      {
+        "name": "colour",
+        "type": "hex_colour"
+      },
+      {
+        "name": "facing",
+        "type": "rotation"
+      },
+      {
+        "name": "who",
+        "type": "uuid"
+      },
+      {
+        "name": "holding",
+        "type": "item_predicate"
+      },
+      {
+        "name": "standing_on",
+        "type": "block_predicate"
+      },
+      {
+        "name": "note",
+        "optional": true,
+        "type": "message"
+      }
+    ],
+    "event": "msm_sample_mobs:signal",
+    "events": {
+      "msm_sample_mobs:signal": {
+        "actions": [
+          {
+            "dialog": "msm_sample_mobs:welcome",
+            "type": "open_dialog"
+          },
+          {
+            "count": 1,
+            "item": "minecraft:compass",
+            "type": "give_item"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "name": "signal",
+    "permission": 2
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:signal",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

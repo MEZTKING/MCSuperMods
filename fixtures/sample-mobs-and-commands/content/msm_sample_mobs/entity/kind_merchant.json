@@ -1,0 +1,69 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.3,
+            "type": "panic"
+          },
+          {
+            "speed": 0.6,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/kind_merchant_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/kind_merchant",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_sample_mobs:entity/kind_merchant",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "speed": 0.25
+      },
+      "msm:trader": {
+        "demand": true,
+        "levels": false,
+        "reputation": {
+          "gift_item": "minecraft:poppy"
+        },
+        "trade_sets": [
+          {
+            "trade_set": "msm_sample_mobs:kind_merchant/level_1"
+          }
+        ],
+        "work_site": "minecraft:barrel"
+      }
+    },
+    "display_name": "Kind Merchant",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "display_name": "Kind Merchant Spawn Egg",
+      "texture": "msm_sample_mobs:item/kind_merchant_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:kind_merchant",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

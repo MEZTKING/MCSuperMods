@@ -1,0 +1,29 @@
+{
+  "data": {
+    "colour": "lime",
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Straw Mat",
+    "format": 1,
+    "item": {
+      "creative_tab": "msm_sample_mobs:mobs_tab",
+      "max_stack_size": 1
+    },
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "bed": "msm_sample_mobs:block/straw_mat"
+    },
+    "type": "bed"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:straw_mat",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

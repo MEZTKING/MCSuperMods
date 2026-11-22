@@ -1,0 +1,19 @@
+{
+  "data": {
+    "biomes": [
+      "minecraft:swamp",
+      "minecraft:mangrove_swamp"
+    ],
+    "format": 1,
+    "textures": {
+      "villager": "msm_sample_mobs:entity/villager/type/fen",
+      "zombie_villager": "msm_sample_mobs:entity/zombie_villager/type/fen"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:fen",
+  "kind": "msm:villager_type",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

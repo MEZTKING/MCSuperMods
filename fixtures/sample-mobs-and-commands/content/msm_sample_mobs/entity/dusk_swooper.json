@@ -1,0 +1,53 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "height": 5,
+            "must_see": false,
+            "type": "swoop"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/dusk_swooper_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/dusk_swooper",
+        "renderer": "vanilla",
+        "sit": "sit",
+        "texture": "msm_sample_mobs:entity/dusk_swooper",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 2
+      },
+      "msm:health": {
+        "max": 12
+      },
+      "msm:movement": {
+        "mode": "fly",
+        "speed": 0.5
+      }
+    },
+    "display_name": "Dusk Swooper",
+    "format": 1,
+    "size": {
+      "height": 0.5,
+      "width": 0.8
+    },
+    "spawn_egg": {
+      "display_name": "Dusk Swooper Spawn Egg",
+      "texture": "msm_sample_mobs:item/dusk_swooper_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:dusk_swooper",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "data": {
+    "bucket_texture": "msm_sample_mobs:item/pond_carp_bucket",
+    "category": "water_creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1,
+            "type": "wander"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/pond_carp_animations",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/pond_carp",
+        "renderer": "vanilla",
+        "swim": "swim",
+        "texture": "msm_sample_mobs:entity/pond_carp",
+        "walk": "walk"
+      },
+      "msm:bucketable": {},
+      "msm:health": {
+        "max": 6
+      },
+      "msm:movement": {
+        "mode": "swim",
+        "speed": 1
+      }
+    },
+    "display_name": "Pond Carp",
+    "format": 1,
+    "size": {
+      "height": 0.4,
+      "width": 0.5
+    },
+    "spawn_egg": {
+      "display_name": "Pond Carp Spawn Egg",
+      "texture": "msm_sample_mobs:item/pond_carp_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:pond_carp",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

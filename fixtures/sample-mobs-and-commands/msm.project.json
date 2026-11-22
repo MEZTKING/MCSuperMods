@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "name": "MSM Sample Mobs and Commands",
+  "namespaces": [
+    "msm_sample_mobs"
+  ],
+  "plugins": [
+    "msm.resourcepack",
+    "msm.datapack",
+    "msm.blocks-items",
+    "msm.entities",
+    "msm.models-anim",
+    "msm.scripting"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

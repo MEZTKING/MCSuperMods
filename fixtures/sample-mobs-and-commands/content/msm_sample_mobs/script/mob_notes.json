@@ -1,0 +1,53 @@
+{
+  "data": {
+    "lines": [
+      "import { msm } from \"msm:runtime\";",
+      "",
+      "// Script API 1.7 (runtime 1.5.3) in the mobs and commands sample: the six new events, a",
+      "// command's arguments, game rules and statistics.",
+      "const NS = \"msm_sample_mobs\";",
+      "",
+      "msm.events.on(\"item.picked_up\", (e) => {",
+      "  e.player.sendMessage(\"You picked up \" + e.count + \" \" + e.item.id + \".\");",
+      "});",
+      "",
+      "msm.events.on(\"player.ate\", (e) => {",
+      "  e.player.sendMessage(\"You ate \" + e.item.id + \".\");",
+      "});",
+      "",
+      "msm.events.on(\"item.crafted\", (e) => {",
+      "  e.player.sendMessage(\"You crafted \" + e.count + \" \" + e.item.id + \".\");",
+      "});",
+      "",
+      "msm.events.on(\"player.slept\", (e) => {",
+      "  e.player.sendMessage(\"Sleep well.\");",
+      "});",
+      "",
+      "msm.events.on(\"player.woke\", (e) => {",
+      "  e.player.sendMessage(\"Good morning.\");",
+      "});",
+      "",
+      "msm.events.on(\"player.advancement\", (e) => {",
+      "  e.player.sendMessage(\"Well done: \" + e.advancement + \".\");",
+      "});",
+      "",
+      "// /tally <count> <team> <effect> <mode> <span> <kind>: says what was typed, the game rules,",
+      "// and adds the count to the carp caught statistic.",
+      "msm.actions.define(\"msm_sample_mobs:tally\", (e) => {",
+      "  if (e.player === undefined || e.args === undefined) return;",
+      "  const args = e.args;",
+      "  const count = Number(args.count);",
+      "  const total = e.player.addStat(NS + \":carp_caught\", count);",
+      "  const calm = e.world.gameRule(NS + \":calm_nights\");",
+      "  const bonus = e.world.gameRule(NS + \":merchant_bonus\");",
+      "  e.player.sendMessage(\"Tally: \" + count + \" \" + String(args.team) + \" \" + String(args.effect) + \" \" + String(args.mode) + \" \" + String(args.kind) + \"; calm \" + String(calm) + \", bonus \" + String(bonus) + \", carp caught \" + total + \".\");",
+      "});"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:mob_notes",
+  "kind": "msm:script",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

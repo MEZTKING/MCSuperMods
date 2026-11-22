@@ -268,6 +268,19 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-plants-and-storage.golden.test.ts
           test -f "$RUNNER_TEMP/sample-plants/msm_sample_plants.jar"
           cat "$RUNNER_TEMP/sample-plants/fabric-facts.json"
+      # Mobs and commands of vanilla parity 3, batch 2 (ADRs 0107-0111, B541): a trader with
+      # reputation, demand and a work site, a bed villagers take as a home, a villager type, a
+      # water-like and a lava-like fluid with mixing, cauldrons and a bottle, eleven mobs with a fish
+      # bucket, hovering, phasing, swooping, roosting, the habits, a dash and a right-shoulder pet,
+      # a boat and its chest boat, two commands with the new argument types and a dialog, two game
+      # rules, two statistics, a hand-ordered tab and a Script API 1.7 script. The mobs use the
+      # runtime's vanilla renderer, so the content jar needs no GeckoLib on any version.
+      - name: Export the sample mobs and commands with the real runtime
+        run: |
+          MSM_SAMPLE_MOBS_COMMANDS_OUT="$RUNNER_TEMP/sample-mobs-commands" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-mobs-and-commands.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-mobs-commands/msm_sample_mobs.jar"
+          cat "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -434,6 +447,30 @@ jobs:
           --expect-line '[msm_runtime] pot msm_sample_plants:clay_planter: registered 3 potted plant(s) of 3 listed; 0 wait for their plant'
           --expect-line '[msm_runtime] registered 6 vanilla block rule(s) from 1 file(s)'
           --forbid-line 'so the block makes no sound'
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The sample mobs and commands (B541): the bed and the planks (2 blocks), their items, the
+      # boat, the twelve spawn eggs and the fish bucket (16 items), the twelve mobs, the script, and
+      # the lines of batch 2: two fluids with two cauldrons and one bottle, the villager type, the
+      # boat and its chest boat, two game rules, two statistics, two commands and the tab; a
+      # dedicated server loads no client class (the boat and fluid renderers are client code).
+      - name: Headless Fabric server check (sample mobs and commands)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-mobs-commands/msm_sample_mobs.jar"
+          --facts "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json"
+          --expect-line '[msm_runtime] registered blocks by type: block 1, bed 1'
+          --expect-line '[msm_runtime] registered 2 fluid(s)'
+          --expect-line '[msm_runtime] registered 2 fluid cauldron(s) and 1 fluid bottle(s)'
+          --expect-line '[msm_runtime] registered 1 villager type(s)'
+          --expect-line '[msm_runtime] registered 2 boat type(s)'
+          --expect-line '[msm_runtime] registered 2 game rule(s)'
+          --expect-line '[msm_runtime] registered 2 statistic(s)'
+          --expect-line '[msm_runtime] registered 2 command(s)'
+          --expect-line '[msm_runtime] registered 1 creative tab(s)'
           --forbid-line NoClassDefFoundError
           --forbid-line 'Mixin apply'
           --forbid-line MixinTransformerError
@@ -637,6 +674,79 @@ jobs:
           node tools/run-fabric-server/index.ts
           --jar "$MSM_EJECTED_PLANTS_JAR"
           --facts "$RUNNER_TEMP/sample-plants/fabric-facts.json" --no-runtime
+          --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # Batch 2 as Java projects (B537, B537b, B541): the sample villagers and fluids, the sample mobs
+      # and commands (their trader and shoulder pet are generated only by the eject of 2c; the script
+      # never is), and the hand-made lowered files of vanilla-parity-3-batch-2.test.ts, generated
+      # and built for 26.3. The mobs draw with GeckoLib in a Java project.
+      - name: Export batch 2 as Java projects
+        if: matrix.mc == '26.3'
+        run: |
+          MSM_SAMPLE_VILLAGERS_JAVA_OUT="$RUNNER_TEMP/java/sample-villagers" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-villagers-and-fluids.java.golden.test.ts
+          MSM_SAMPLE_MOBS_COMMANDS_JAVA_OUT="$RUNNER_TEMP/java/sample-mobs-commands" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-mobs-and-commands.java.golden.test.ts
+          MSM_VANILLA_PARITY_3_BATCH_2_JAVA_OUT="$RUNNER_TEMP/java/vanilla-parity-3-batch-2" \
+            pnpm --filter @msm/exporters exec vitest run test/vanilla-parity-3-batch-2.test.ts
+          test -x "$RUNNER_TEMP/java/sample-villagers/gradlew"
+          test -x "$RUNNER_TEMP/java/sample-mobs-commands/gradlew"
+          test -x "$RUNNER_TEMP/java/vanilla-parity-3-batch-2/gradlew"
+      - name: Build the ejected sample villagers and fluids
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-villagers
+        run: ./gradlew build --no-daemon
+      - name: Build the ejected sample mobs and commands
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-mobs-commands
+        run: ./gradlew build --no-daemon
+      - name: Build the ejected batch 2 test project
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/vanilla-parity-3-batch-2
+        run: ./gradlew build --no-daemon
+      - name: Find the ejected batch 2 jars
+        if: matrix.mc == '26.3'
+        run: |
+          for pair in sample-villagers:VILLAGERS sample-mobs-commands:MOBS_COMMANDS vanilla-parity-3-batch-2:BATCH_2; do
+            folder="${pair%%:*}"
+            mapfile -t jars < <(ls "$RUNNER_TEMP/java/$folder"/build/libs/*.jar | grep -v -e '-sources\.jar$')
+            if [ "${#jars[@]}" -ne 1 ]; then
+              echo "::error::Expected one ejected $folder jar, found ${#jars[@]}: ${jars[*]}"
+              exit 1
+            fi
+            echo "Ejected $folder jar: ${jars[0]}"
+            echo "MSM_EJECTED_${pair##*:}_JAR=${jars[0]}" >> "$GITHUB_ENV"
+          done
+      # The ejected jars start without msm_runtime; their mobs draw with GeckoLib (cached by the mob
+      # export), so it goes into mods/ beside them; no client class may load on a dedicated server.
+      - name: Headless Fabric server check (ejected sample villagers and fluids)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_VILLAGERS_JAR"
+          --facts "$RUNNER_TEMP/sample-villagers/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
+          --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      - name: Headless Fabric server check (ejected sample mobs and commands)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_MOBS_COMMANDS_JAR"
+          --facts "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
+          --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      - name: Headless Fabric server check (ejected batch 2 test project)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_BATCH_2_JAR"
+          --facts "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
           --forbid-line NoClassDefFoundError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
@@ -900,8 +1010,9 @@ jobs:
       # bench and losing it when the bench breaks; the pack mule's chest, store, inventory key, saving
       # and drops; the sugar glider perching and jumping down when its owner is hurt; brine and molten
       # amber flowing by their numbers, sources, buckets, a dispenser, light and what they do to
-      # entities. Black-box, on the content jar of every version only: the eject leaves batch 2 out
-      # (B478 warns and strips it), so there is no ejected run.
+      # entities. Black-box, on the content jar of every version and, since B541, on the 26.3 ejected
+      # jar (the eject covers professions, fluids and storage since B537 and B537b, traders and
+      # shoulder pets since the eject of 2c).
       - name: Parity GameTests (sample villagers and fluids, content jar)
         run: >-
           node tools/run-fabric-server/index.ts
@@ -914,14 +1025,26 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-villagers-content.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample villagers and fluids, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_VILLAGERS_JAR"
+          --facts "$RUNNER_TEMP/sample-villagers/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
+          --forbid-line NoClassDefFoundError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_villagers_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-villagers-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # Plants and storage (B520, SamplePlantsAndStorageParityTest, 20 tests: registration, items
       # and tags; the sea ribbon, glow vine and climbing ivy; the reed, cactus and bamboo; the moss
       # and the wide leaves; the clay planter; bronze ageing, waxing, scraping and lightning on the
       # six types; the twin, bronze, private and sea crates; the chime stone's and creaky door's own
       # sounds; loam flattened and tilled) on the content jar of every version and on the 26.3
       # ejected jar; SamplePlantsAndStorageRulesParityTest (2 tests: the rules for vanilla blocks)
-      # on content jars only, as the eject leaves the rules out: sample_plants_and_storage_* matches
-      # both classes, sample_plants_and_storage_parity_test_* only the first.
+      # on both too since B541 (the eject writes the rules since B537): sample_plants_and_storage_*
+      # matches both classes.
       - name: Parity GameTests (sample plants and storage, content jar)
         run: >-
           node tools/run-fabric-server/index.ts
@@ -941,8 +1064,41 @@ jobs:
           --jar "$MSM_EJECTED_PLANTS_JAR"
           --facts "$RUNNER_TEMP/sample-plants/fabric-facts.json" --no-runtime
           --forbid-line NoClassDefFoundError
-          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_plants_and_storage_parity_test_*'
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_plants_and_storage_*'
           --report "$RUNNER_TEMP/parity-reports/sample-plants-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      # Mobs and commands (B541): SampleMobsAndCommandsParityTest (24 tests: registration; the fish
+      # bucket beside vanilla's cod bucket; hovering, phasing, swooping, roosting; the collector,
+      # digger, playing dead, bartering, the dash cooldown; the bed as a home and the villager type;
+      # mixing of both fluids; both cauldrons; the bottle; the boats; the game rules; the
+      # statistics; /signal's argument types and dialog; the tab's order) on the content jar of
+      # every version and on the 26.3 ejected jar; SampleMobsAndCommandsTradersParityTest (2: the
+      # trader's reputation, the right-shoulder pet) and SampleMobsAndCommandsScriptParityTest (5:
+      # the Script API 1.7 events and /tally) on content jars only: sample_mobs_and_commands_*
+      # matches the three classes, sample_mobs_and_commands_parity_test_* only the first.
+      - name: Parity GameTests (sample mobs and commands, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-mobs-commands/msm_sample_mobs.jar"
+          --facts "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json"
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mobs_and_commands_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-mobs-commands-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample mobs and commands, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_MOBS_COMMANDS_JAR"
+          --facts "$RUNNER_TEMP/sample-mobs-commands/fabric-facts.json" --no-runtime
+          --extra ~/.cache/msm-fabric-server/geckolib.jar
+          --forbid-line NoClassDefFoundError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_mobs_and_commands_parity_test_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-mobs-commands-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
@@ -1027,6 +1183,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-mobs-commands-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-mobs-commands/msm_sample_mobs.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -1044,6 +1206,8 @@ jobs:
             ${{ runner.temp }}/java/sample-rules/build/libs/*.jar
             ${{ runner.temp }}/java/sample-vanilla-blocks/build/libs/*.jar
             ${{ runner.temp }}/java/sample-plants/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-villagers/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-mobs-commands/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7

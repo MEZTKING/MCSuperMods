@@ -1,0 +1,29 @@
+{
+  "data": {
+    "behaves_like": "lava",
+    "bucket_display_name": "Bucket of Hot Tar",
+    "cauldron": {},
+    "cauldron_display_name": "Cauldron of Hot Tar",
+    "display_name": "Hot Tar",
+    "format": 1,
+    "light": 10,
+    "mixing": [
+      {
+        "flowing": "minecraft:basalt",
+        "source": "minecraft:blackstone",
+        "with": "water"
+      }
+    ],
+    "textures": {
+      "bucket": "msm_sample_mobs:item/hot_tar_bucket",
+      "flowing": "msm_sample_mobs:block/hot_tar_flow",
+      "still": "msm_sample_mobs:block/hot_tar_still"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:hot_tar",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

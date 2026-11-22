@@ -1,0 +1,15 @@
+{
+  "data": {
+    "amount": 2,
+    "trades": [
+      "msm_sample_mobs:kind_merchant/beef",
+      "msm_sample_mobs:kind_merchant/bread"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:kind_merchant/level_1",
+  "kind": "minecraft:trade_set",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

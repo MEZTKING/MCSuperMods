@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "level=1": {
+      "model": "msm_test:block/mix_goo_cauldron_level1"
+    },
+    "level=2": {
+      "model": "msm_test:block/mix_goo_cauldron_level2"
+    },
+    "level=3": {
+      "model": "msm_test:block/mix_goo_cauldron_full"
+    }
+  }
+}

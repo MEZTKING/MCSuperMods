@@ -38,6 +38,7 @@ import net.minecraft.world.phys.Vec3;
  * the client, and {@link MsmVanillaRenderer#extractRenderState} draws the roosting mob upside down and the one playing
  * dead fallen over (death time 20). Screenshot {@code msm_mobs2_hover_roost_dead_<mc>} in
  * {@code build/run/clientGameTest/screenshots/}. Then {@link #boats} (B536): project boats drawn by vanilla's renderers.
+ * Then {@link #batchTwoLooks} (B541): a villager of a project type, a project cauldron and pets on both shoulders.
  * Repainted fluids (the later client briefs) add their own method here.
  */
 public class MsmMobs2ClientGameTest implements FabricClientGameTest {
@@ -78,6 +79,7 @@ public class MsmMobs2ClientGameTest implements FabricClientGameTest {
             context.waitTicks(100);
             check(context, ids);
             context.takeScreenshot("msm_mobs2_hover_roost_dead_" + mc);
+            batchTwoLooks(context, world, mc);
             boats(context, world, mc);
         }
     }
@@ -162,6 +164,150 @@ public class MsmMobs2ClientGameTest implements FabricClientGameTest {
             check(dead.getEntityData().get(((MsmMob) dead).playingDeadData()), "the playing dead flag did not reach the client");
             check(state(mc, dead).deathTime >= 20.0f, "the mob playing dead is not drawn fallen over");
             check(!state(mc, hover).isUpsideDown && state(mc, hover).deathTime == 0.0f, "the hovering mob is drawn in a pose");
+        });
+    }
+
+    /** Where {@link #batchTwoLooks} builds: open stone east of the mobs, west of nothing else. */
+    private static final int LOOK_X = 40;
+
+    private static int count(java.nio.file.Path path, java.util.function.IntPredicate rgb) {
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(path);
+                com.mojang.blaze3d.platform.NativeImage image = com.mojang.blaze3d.platform.NativeImage.read(in)) {
+            int n = 0;
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    if (rgb.test(image.getPixel(x, y) & 0xFFFFFF)) {
+                        n++;
+                    }
+                }
+            }
+            return n;
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+    }
+
+    /** The test villager type's cyan robe ({@code textures/entity/villager/type/vt_blossom.png}, 0x00C8D2), as shaded. */
+    private static boolean cyan(int rgb) {
+        int r = (rgb >> 16) & 255;
+        int g = (rgb >> 8) & 255;
+        int b = rgb & 255;
+        return r < 40 && g > 70 && b > 70 && Math.abs(g - b) < 40;
+    }
+
+    /** The missing texture's magenta. */
+    private static boolean magenta(int rgb) {
+        int r = (rgb >> 16) & 255;
+        int g = (rgb >> 8) & 255;
+        int b = rgb & 255;
+        return r > 200 && b > 200 && g < 40;
+    }
+
+    /**
+     * The looks of batch 2 that need no picture of their own beyond the test mod's (B541, ADR 0112 D4):
+     *
+     * <ul>
+     *   <li>a plains villager, then the same villager given the project type {@code vt_blossom} (ADR 0107 D5): its type
+     *       picture ({@code msm_test:textures/entity/villager/type/vt_blossom.png}, a cyan robe) replaces the plains
+     *       clothes, so the second screenshot holds cyan and the first none ({@code msm_villager_type_<mc>});</li>
+     *   <li>beside it vanilla's water cauldron and the project cauldron {@code mix_goo_cauldron} at level 3 (ADR 0108 D2;
+     *       the test mod's block state and models as the lowering writes them, over vanilla's templates): no missing
+     *       texture is drawn. The project cauldron's content is the fluid's still picture untinted (no block colour
+     *       provider), the open check of B531, so the screenshot shows it grey beside vanilla's blue water;</li>
+     *   <li>two {@code shoulder_pet}s on both of the player's shoulders (ADR 0109 D2), checked on the client at the two
+     *       shoulders, seen from the front ({@code msm_shoulders_<mc>}).</li>
+     * </ul>
+     */
+    private static void batchTwoLooks(ClientGameTestContext context, TestSingleplayerContext world, String mc) {
+        TestServerContext server = world.getServer();
+        int villagerId = server.computeOnServer(s -> {
+            ServerLevel level = s.overworld();
+            for (int x = LOOK_X - 2; x <= LOOK_X + 14; x++) {
+                for (int z = -2; z <= 14; z++) {
+                    level.setBlock(new BlockPos(x, Y - 1, z), Blocks.STONE.defaultBlockState(), 2);
+                    for (int y = Y; y <= Y + 6; y++) {
+                        level.setBlock(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+            }
+            level.setBlock(new BlockPos(LOOK_X + 2, Y, 4), Blocks.WATER_CAULDRON.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL, 3), 2);
+            net.minecraft.world.level.block.Block goo = BuiltInRegistries.BLOCK.getValue(id("mix_goo_cauldron"));
+            check(BuiltInRegistries.BLOCK.containsKey(id("mix_goo_cauldron")), "no mix_goo_cauldron");
+            level.setBlock(new BlockPos(LOOK_X + 4, Y, 4), goo.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL, 3), 2);
+            net.minecraft.world.entity.npc.villager.Villager villager = net.minecraft.world.entity.EntityTypes.VILLAGER.create(level, EntitySpawnReason.COMMAND);
+            check(villager != null, "no villager");
+            villager.snapTo(LOOK_X + 7.5, Y, 4.5, 0f, 0f);
+            villager.setYHeadRot(0f);
+            villager.yBodyRot = 0f;
+            villager.setNoAi(true);
+            villager.setSilent(true);
+            level.addFreshEntity(villager);
+            return villager.getId();
+        });
+        stand(context, world, LOOK_X + 5.5, Y, 9.5, 180f, 15f);
+        context.waitTicks(20);
+        int before = count(context.takeScreenshot("msm_villager_plains_" + mc), MsmMobs2ClientGameTest::cyan);
+        server.runOnServer(s -> {
+            var villager = (net.minecraft.world.entity.npc.villager.Villager) s.overworld().getEntity(villagerId);
+            check(villager != null, "the villager is gone");
+            var type = BuiltInRegistries.VILLAGER_TYPE.wrapAsHolder(BuiltInRegistries.VILLAGER_TYPE.getValue(id("vt_blossom")));
+            villager.setVillagerData(villager.getVillagerData().withType(type));
+        });
+        context.waitTicks(10);
+        boolean synced = context.computeOnClient(client -> client.level.getEntity(villagerId)
+                instanceof net.minecraft.world.entity.npc.villager.Villager v && v.getVillagerData().type().is(id("vt_blossom")));
+        check(synced, "the client's villager is not of the type vt_blossom");
+        java.nio.file.Path shot = context.takeScreenshot("msm_villager_type_" + mc);
+        int after = count(shot, MsmMobs2ClientGameTest::cyan);
+        check(before < 10, "cyan on a plains villager: " + before + " pixels");
+        check(after > 60, "the vt_blossom picture was not drawn: " + after + " cyan pixels (" + before + " before)");
+        int missing = count(shot, MsmMobs2ClientGameTest::magenta);
+        check(missing < 20, "the missing texture is drawn (the cauldrons?): " + missing + " magenta pixels");
+
+        // Two pets on both shoulders, seen from the front.
+        int[] pets = server.computeOnServer(s -> {
+            ServerLevel level = s.overworld();
+            ServerPlayer owner = player(s.getPlayerList().getPlayers());
+            owner.getAbilities().flying = false;
+            owner.onUpdateAbilities();
+            owner.snapTo(LOOK_X + 5.5, Y, 9.5, 180f, 0f);
+            owner.setOnGround(true);
+            int[] out = new int[2];
+            for (int i = 0; i < 2; i++) {
+                Mob pet = spawn(level, "shoulder_pet", new Vec3(LOOK_X + 4.5 + 2 * i, Y, 8.5), true);
+                ((net.minecraft.world.entity.TamableAnimal) pet).tame(owner);
+                check(((MsmMob) pet).driver().shoulder().perch(owner), "pet " + i + " did not perch: "
+                        + ((MsmMob) pet).driver().shoulder().refusal(owner));
+                out[i] = pet.getId();
+            }
+            return out;
+        });
+        context.runOnClient(client -> client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT));
+        context.waitTicks(20);
+        context.runOnClient(client -> {
+            for (int id : pets) {
+                Entity pet = client.level.getEntity(id);
+                check(pet != null, "a pet is not on the client");
+                check(pet.position().distanceTo(client.player.position()) < 1.6 && pet.getY() > client.player.getY() + 1.0,
+                        "a pet is not on a shoulder on the client: " + pet.position() + ", player " + client.player.position());
+            }
+            Entity a = client.level.getEntity(pets[0]);
+            Entity b = client.level.getEntity(pets[1]);
+            check(a.position().distanceTo(b.position()) > 0.4, "both pets sit on one shoulder on the client");
+            client.gui.toastManager().clear();
+        });
+        context.takeScreenshot("msm_shoulders_" + mc);
+        context.runOnClient(client -> client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+        server.runOnServer(s -> {
+            for (int id : pets) {
+                Entity pet = s.overworld().getEntity(id);
+                if (pet != null) {
+                    ((MsmMob) pet).driver().shoulder().unperch();
+                    pet.discard();
+                }
+            }
         });
     }
 

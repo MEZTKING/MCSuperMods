@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2,
+        "resistance": 2,
+        "tool": "axe"
+      },
+      "msm:flammable": {
+        "burn_odds": 5,
+        "ignite_odds": 20
+      }
+    },
+    "display_name": "Larch Planks",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "model": "msm_sample_mobs:block/larch_planks",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:larch_planks",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

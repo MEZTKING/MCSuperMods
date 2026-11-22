@@ -1,0 +1,18 @@
+{
+  "data": {
+    "category": "player",
+    "default": 2,
+    "description": "How many extra emeralds a merchant gives back, from 0 to 5.",
+    "display_name": "Merchant bonus",
+    "format": 1,
+    "kind": "integer",
+    "max": 5,
+    "min": 0
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:merchant_bonus",
+  "kind": "msm:game_rule",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

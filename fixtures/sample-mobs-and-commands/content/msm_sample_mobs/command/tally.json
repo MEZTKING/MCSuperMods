@@ -1,0 +1,51 @@
+{
+  "data": {
+    "arguments": [
+      {
+        "max": 64,
+        "min": 0,
+        "name": "count",
+        "type": "integer"
+      },
+      {
+        "name": "team",
+        "type": "team_colour"
+      },
+      {
+        "name": "effect",
+        "type": "effect"
+      },
+      {
+        "name": "mode",
+        "type": "game_mode"
+      },
+      {
+        "name": "span",
+        "type": "int_range"
+      },
+      {
+        "name": "kind",
+        "type": "entity_type"
+      }
+    ],
+    "event": "msm_sample_mobs:tally",
+    "events": {
+      "msm_sample_mobs:tally": {
+        "actions": [
+          {
+            "handler": "msm_sample_mobs:tally",
+            "type": "run_script"
+          }
+        ]
+      }
+    },
+    "format": 1,
+    "name": "tally"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:tally",
+  "kind": "msm:command",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

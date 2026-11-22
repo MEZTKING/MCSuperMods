@@ -1,0 +1,16 @@
+{
+  "data": {
+    "category": "mobs",
+    "default": false,
+    "description": "Whether the sample mobs stay calm at night.",
+    "display_name": "Calm nights",
+    "format": 1,
+    "kind": "boolean"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:calm_nights",
+  "kind": "msm:game_rule",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

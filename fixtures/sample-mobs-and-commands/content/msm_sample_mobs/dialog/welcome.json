@@ -1,0 +1,22 @@
+{
+  "data": {
+    "action": {
+      "label": "Thanks"
+    },
+    "body": {
+      "contents": "This dialog was opened by /signal, a command made with MCSuperMods.",
+      "type": "minecraft:plain_message"
+    },
+    "title": {
+      "color": "gold",
+      "text": "Mobs and commands"
+    },
+    "type": "minecraft:notice"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:welcome",
+  "kind": "minecraft:dialog",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "dig_blocks": [
+              "minecraft:moss_block",
+              "#minecraft:wool"
+            ],
+            "interval_ticks": 60,
+            "loot_table": "minecraft:gameplay/sniffer_digging",
+            "type": "dig_items"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/truffle_hog_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/truffle_hog",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "sit": "sit",
+        "swim": "swim",
+        "texture": "msm_sample_mobs:entity/truffle_hog",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 14
+      },
+      "msm:movement": {
+        "speed": 0.25
+      }
+    },
+    "display_name": "Truffle Hog",
+    "format": 1,
+    "size": {
+      "height": 0.9,
+      "width": 0.9
+    },
+    "spawn_egg": {
+      "display_name": "Truffle Hog Spawn Egg",
+      "texture": "msm_sample_mobs:item/truffle_hog_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:truffle_hog",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "range": 16,
+            "speed": 1.2,
+            "type": "collect_items"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/trinket_magpie_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/trinket_magpie",
+        "renderer": "vanilla",
+        "sit": "sit",
+        "texture": "msm_sample_mobs:entity/trinket_magpie",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 8
+      },
+      "msm:movement": {
+        "speed": 0.3
+      }
+    },
+    "display_name": "Trinket Magpie",
+    "format": 1,
+    "size": {
+      "height": 0.6,
+      "width": 0.4
+    },
+    "spawn_egg": {
+      "display_name": "Trinket Magpie Spawn Egg",
+      "texture": "msm_sample_mobs:item/trinket_magpie_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:trinket_magpie",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

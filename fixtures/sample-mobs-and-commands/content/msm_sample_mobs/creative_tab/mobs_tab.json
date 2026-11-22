@@ -1,0 +1,21 @@
+{
+  "data": {
+    "display_name": "Sample Mobs",
+    "format": 1,
+    "icon": "msm_sample_mobs:larch_boat",
+    "items": [
+      "msm_sample_mobs:pond_carp_bucket",
+      "msm_sample_mobs:maple_syrup_bottle",
+      "msm_sample_mobs:larch_chest_boat",
+      "msm_sample_mobs:larch_boat",
+      "minecraft:water_bucket"
+    ],
+    "order": "by_hand"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:mobs_tab",
+  "kind": "msm:creative_tab",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

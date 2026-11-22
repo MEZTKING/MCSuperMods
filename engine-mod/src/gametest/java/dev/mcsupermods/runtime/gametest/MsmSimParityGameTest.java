@@ -31,6 +31,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -469,6 +470,23 @@ public class MsmSimParityGameTest {
         play(helper, "double_chest_pairs_and_splits");
     }
 
+    // Vanilla parity 3, batch 2 (B540; recorded by B541)
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void fluidCauldronFillsAndEmpties(GameTestHelper helper) {
+        play(helper, "fluid_cauldron_fills_and_empties");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void lavaLikeCauldronIsFullOnly(GameTestHelper helper) {
+        play(helper, "lava_like_cauldron_is_full_only");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void fluidSourceMixesWithLava(GameTestHelper helper) {
+        play(helper, "fluid_source_mixes_with_lava");
+    }
+
     // The file and the fixture
 
     @GameTest
@@ -687,7 +705,12 @@ public class MsmSimParityGameTest {
             switch (step.get("step").getAsString()) {
                 case "place" -> {
                     look(step);
-                    click(step, new ItemStack(item(step.get("block").getAsString(), where), 64));
+                    Item held = item(step.get("block").getAsString(), where);
+                    if (held instanceof BucketItem) {
+                        pour(step, new ItemStack(held));
+                    } else {
+                        click(step, new ItemStack(held, 64));
+                    }
                 }
                 case "use" -> {
                     look(step);
@@ -733,6 +756,34 @@ public class MsmSimParityGameTest {
             player.setItemInHand(InteractionHand.MAIN_HAND, stack);
             player.gameMode.useItemOn(player, level, stack, InteractionHand.MAIN_HAND, new BlockHitResult(hit, face, at, false));
             player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        }
+
+        /**
+         * A bucket poured as the game pours it (B541): its own use, which aims from the player's eye, so the player stands
+         * one and a half blocks out from the clicked face and looks at the hit point, then goes back out of the way.
+         */
+        private void pour(JsonObject step, ItemStack stack) {
+            BlockPos at = abs(step.getAsJsonArray("pos"));
+            Direction face = face(step.has("face") ? step.get("face").getAsString() : "up");
+            Vec3 hit;
+            if (step.has("hit")) {
+                JsonArray h = step.getAsJsonArray("hit");
+                hit = Vec3.atLowerCornerOf(at).add(h.get(0).getAsDouble(), h.get(1).getAsDouble(), h.get(2).getAsDouble());
+            } else {
+                hit = Vec3.atCenterOf(at).add(face.getStepX() * 0.5, face.getStepY() * 0.5, face.getStepZ() * 0.5);
+            }
+            Vec3 eye = hit.add(face.getStepX() * 1.5, face.getStepY() * 1.5, face.getStepZ() * 1.5);
+            Vec3 to = hit.subtract(eye);
+            float yaw = (float) (Math.toDegrees(Math.atan2(to.z, to.x)) - 90.0);
+            float pitch = (float) -Math.toDegrees(Math.atan2(to.y, Math.sqrt(to.x * to.x + to.z * to.z)));
+            player.setPos(eye.x, eye.y - player.getEyeHeight(), eye.z);
+            player.setYRot(yaw);
+            player.setYHeadRot(yaw);
+            player.setXRot(pitch);
+            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+            player.gameMode.useItem(player, level, stack, InteractionHand.MAIN_HAND);
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            park();
         }
 
         private static Direction face(String name) {

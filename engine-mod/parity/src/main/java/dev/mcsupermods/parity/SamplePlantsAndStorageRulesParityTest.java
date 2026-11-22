@@ -16,9 +16,9 @@ import net.minecraft.world.level.block.Blocks;
 
 /**
  * Behaviour parity of the rules for vanilla blocks in {@code fixtures/sample-plants-and-storage} ({@code farm_rules},
- * ADR 0105 D4; B520), on content jars only: the Java project eject leaves {@code msm:vanilla_block_rules} out (B517,
- * {@code export.not-in-eject}), so the ejected run's filter {@code sample_plants_and_storage_parity_test_*} does not match
- * this class, while a content jar's {@code sample_plants_and_storage_*} does. Vanilla and Fabric API only.
+ * ADR 0105 D4; B520), on the content jars and, since B541, on the 26.3 ejected jar too: the Java project eject writes the
+ * rules since B537 ({@code ModVanillaBlockRules}), so both runs use the filter {@code sample_plants_and_storage_*}, which
+ * matches this class and {@link SamplePlantsAndStorageParityTest}. Vanilla and Fabric API only.
  *
  * <p>Covered: an axe strips mossy cobblestone and mossy stone bricks, a shovel flattens mud into packed mud, a hoe tills a
  * moss block into dirt and drops a moss carpet, vanilla's own pairs are untouched, and brown mushroom blocks burn where

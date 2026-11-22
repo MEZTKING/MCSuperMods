@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample mobs and commands: a merchant who remembers you, a villager bed and look, maple syrup and hot tar with cauldrons and a bottle, eleven mobs with buckets, flight and habits, a larch boat, two commands, game rules, statistics, a tab in its own order and a script.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_mobs",
+    "name": "MSM Sample Mobs and Commands",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

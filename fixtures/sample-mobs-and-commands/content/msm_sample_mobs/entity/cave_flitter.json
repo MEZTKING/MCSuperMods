@@ -1,0 +1,51 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "daylight": false,
+            "range": 8,
+            "type": "roost",
+            "when_idle": true
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/cave_flitter_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/cave_flitter",
+        "renderer": "vanilla",
+        "sit": "sit",
+        "texture": "msm_sample_mobs:entity/cave_flitter",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 6
+      },
+      "msm:movement": {
+        "mode": "fly",
+        "speed": 0.3
+      }
+    },
+    "display_name": "Cave Flitter",
+    "format": 1,
+    "size": {
+      "height": 0.9,
+      "width": 0.5
+    },
+    "spawn_egg": {
+      "display_name": "Cave Flitter Spawn Egg",
+      "texture": "msm_sample_mobs:item/cave_flitter_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:cave_flitter",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

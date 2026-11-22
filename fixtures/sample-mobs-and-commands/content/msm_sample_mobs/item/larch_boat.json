@@ -1,0 +1,25 @@
+{
+  "data": {
+    "boat_textures": {
+      "boat": "msm_sample_mobs:entity/boat/larch",
+      "chest_boat": "msm_sample_mobs:entity/chest_boat/larch",
+      "chest_boat_item": "msm_sample_mobs:item/larch_chest_boat"
+    },
+    "chest_boat_display_name": "Larch Boat with Chest",
+    "components": {
+      "msm:boat": {
+        "chest": true
+      }
+    },
+    "creative_tab": "msm_sample_mobs:mobs_tab",
+    "display_name": "Larch Boat",
+    "format": 1,
+    "model": "msm_sample_mobs:item/larch_boat"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:larch_boat",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

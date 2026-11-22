@@ -1,0 +1,55 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "must_see": false,
+            "targets": [
+              "minecraft:pig"
+            ],
+            "type": "melee_attack"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/shade_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/shade",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "texture": "msm_sample_mobs:entity/shade",
+        "walk": "walk"
+      },
+      "msm:attack": {
+        "damage": 2
+      },
+      "msm:health": {
+        "max": 14
+      },
+      "msm:movement": {
+        "mode": "phase",
+        "speed": 0.3
+      }
+    },
+    "display_name": "Shade",
+    "format": 1,
+    "size": {
+      "height": 0.8,
+      "width": 0.4
+    },
+    "spawn_egg": {
+      "display_name": "Shade Spawn Egg",
+      "texture": "msm_sample_mobs:item/shade_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:shade",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

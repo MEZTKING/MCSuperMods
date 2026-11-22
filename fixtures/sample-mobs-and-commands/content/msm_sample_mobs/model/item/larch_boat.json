@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:item/generated",
+    "textures": {
+      "layer0": "msm_sample_mobs:item/larch_boat"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:item/larch_boat",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

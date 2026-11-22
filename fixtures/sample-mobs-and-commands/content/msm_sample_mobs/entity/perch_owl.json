@@ -1,0 +1,53 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/perch_owl_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/perch_owl",
+        "renderer": "vanilla",
+        "sit": "sit",
+        "texture": "msm_sample_mobs:entity/perch_owl",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 8
+      },
+      "msm:movement": {
+        "speed": 0.3
+      },
+      "msm:shoulder_riding": {
+        "sides": "right"
+      },
+      "msm:tameable": {
+        "chance": 1,
+        "defends_owner": false,
+        "follows_owner": true,
+        "items": [
+          "minecraft:wheat_seeds"
+        ],
+        "sit": true
+      }
+    },
+    "display_name": "Perch Owl",
+    "format": 1,
+    "size": {
+      "height": 0.6,
+      "width": 0.5
+    },
+    "spawn_egg": {
+      "display_name": "Perch Owl Spawn Egg",
+      "texture": "msm_sample_mobs:item/perch_owl_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:perch_owl",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

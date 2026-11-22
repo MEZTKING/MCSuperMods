@@ -1,0 +1,51 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "from_ground": true,
+            "item": "minecraft:gold_ingot",
+            "loot_table": "minecraft:gameplay/piglin_bartering",
+            "ticks": 20,
+            "type": "barter"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_sample_mobs:entity/gold_haggler_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_sample_mobs:entity/gold_haggler",
+        "renderer": "vanilla",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_sample_mobs:entity/gold_haggler",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 16
+      },
+      "msm:movement": {
+        "speed": 0.3
+      }
+    },
+    "display_name": "Gold Haggler",
+    "format": 1,
+    "size": {
+      "height": 0.9,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "display_name": "Gold Haggler Spawn Egg",
+      "texture": "msm_sample_mobs:item/gold_haggler_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:gold_haggler",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

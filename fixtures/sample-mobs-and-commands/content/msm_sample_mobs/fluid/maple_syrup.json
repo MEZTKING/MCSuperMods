@@ -1,0 +1,46 @@
+{
+  "data": {
+    "behaves_like": "water",
+    "bottle": {
+      "effects": [
+        {
+          "amplifier": 0,
+          "effect": "minecraft:speed",
+          "seconds": 10
+        }
+      ],
+      "food": {
+        "can_always_eat": true,
+        "nutrition": 2,
+        "saturation": 0.4
+      }
+    },
+    "bottle_display_name": "Bottle of Maple Syrup",
+    "bucket_display_name": "Bucket of Maple Syrup",
+    "cauldron": {
+      "levels": true
+    },
+    "cauldron_display_name": "Cauldron of Maple Syrup",
+    "display_name": "Maple Syrup",
+    "format": 1,
+    "mixing": [
+      {
+        "flowing": "minecraft:brown_terracotta",
+        "source": "minecraft:honeycomb_block",
+        "with": "lava"
+      }
+    ],
+    "textures": {
+      "bucket": "msm_sample_mobs:item/maple_syrup_bucket",
+      "flowing": "msm_sample_mobs:block/maple_syrup_flow",
+      "still": "msm_sample_mobs:block/maple_syrup_still"
+    },
+    "tint": 11887901
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:maple_syrup",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

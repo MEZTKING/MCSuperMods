@@ -44,8 +44,8 @@ import net.minecraft.world.phys.Vec3;
  * Behaviour parity over {@code fixtures/sample-plants-and-storage} (ADRs 0103 to 0105, ADR 0112 D4; B520), written against
  * vanilla and Fabric API only, so the same tests run against the content jar (the runtime's classes, B509 to B514) and
  * the ejected jar (the generated ones, B517). Run with {@code --gametest-filter msm_parity_tests:sample_plants_and_storage_parity_test_*}
- * (or {@code sample_plants_and_storage_*} on a content jar, which also runs {@link SamplePlantsAndStorageRulesParityTest}:
- * the rules for vanilla blocks are not ejected).
+ * alone, or {@code sample_plants_and_storage_*} (CI on both jars since B541), which also runs
+ * {@link SamplePlantsAndStorageRulesParityTest} (the rules for vanilla blocks are ejected since B537).
  *
  * <p>Black box, as {@code SampleVanillaBlocksParityTest}: states are set and tested with {@code setblock} and
  * {@code execute if block} (their names are the format's), light with {@code getLightEmission}, uses through

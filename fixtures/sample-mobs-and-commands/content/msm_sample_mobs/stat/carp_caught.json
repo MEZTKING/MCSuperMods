@@ -1,0 +1,13 @@
+{
+  "data": {
+    "display_name": "Carp caught",
+    "format": 1,
+    "formatter": "default"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_mobs:carp_caught",
+  "kind": "msm:stat",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}
