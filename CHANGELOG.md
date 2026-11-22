@@ -6,7 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.4.
+### Added
+
+- **The Creator draws your world while you answer**: the world flows and the Dimension flow open their live preview on a new **Map** tab, which shows the world your answers make (biomes, height, a side cut, the climate) and follows every answer, before anything is added to your mod.
+- **See it on the map** and **Walk in it** in the Biome, Placed Feature, Tree and Dimension Type Studios: the live map of a world of yours that uses the element (**Seen in** when there are several), and Try it's **My world generation** ground on it.
+- **Walk in it** under the world map in the preview panel opens Try it on your world at the map's seed and place.
+- **See what you can make** has three new cards, now thirteen: **A world of islands**, **A world of tall mountains** and **A world of caves**, with clips that look round land made from the Coral Isles, Frost Peaks and Ember Caverns examples; **Make this** opens the Islands, Tall mountains or Caves only flow.
+- **The AI helper** knows the five Make a world flows and their answers, says that the map and the ground show its changes, and tells the limits of the preview in plain words. It never receives Minecraft's own world files.
+- User guide: a new page, **The live world map**, and the worldgen, Try it, Creator, Very easy and See what you can make pages cover the world flows, the map and the ground.
 
 ## [1.5.4] - 2026-11-22
 

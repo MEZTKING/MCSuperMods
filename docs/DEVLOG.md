@@ -8359,3 +8359,18 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 - The world cards' drawn still (before a clip has played, reduced motion, no WebGL) is the plain tint: the world examples have no pictures. Their taken still replaces it once played.
 
 **Next:** the close of the live world generation plan: ADR 0118 D12 and its tables (13 cards), `docs/guide/showcase.md` (the three cards), `app/CLAUDE.md`'s showcase line ("the ten cards"). Follow-ups: a drawn still for world cards (a small map picture) in `drawn-still.ts`; `generatedNotes` says "Trees, plants and ores are about right here" even when a world's biomes are vanilla's and nothing grows without the jar (the islands' trees); a Cloud Realm card once Skyblock's start island exists.
+
+## 2026-11-22 — executor — B590 AI helper, guide and changelog (live worldgen)
+
+**What:**
+- AI helper (`packages/ai/src/system-prompt.ts`, the only `@msm/ai` file naming worldgen): a new `WORLDS` paragraph with the five Make a world flows (ids, `world_name`, every answer and choice value), the World Type wiring, the live map's labels (Preview tab, Biomes, Height, Side cut, Climate, Seed, Seen in, Find it, Value map, Scatter, Structures, Compare with vanilla, the Creator's Map tab, See it on the map, Walk in it, My world generation) with "say that the map and the ground show the change", and limits WL1–WL17 in plain words, without version literals (check-deps refuses them outside `packages/targets`). It never names a vanilla file or path and tells the helper it never receives Minecraft's world files. `NEW_FLOW_PROMPT_IDS` gains the five flows; new export `WORLD_FLOW_ANSWERS`. The Try it line no longer says world generation is missing. Tests: `packages/ai/test/system-prompt.test.ts` (flows, labels, limits, no `data/minecraft/`, no worldgen JSON path, no `noise_router`), `app/test/ai-rules.test.ts` (the flows' questions and every choice value pinned against the library).
+- Guide: new `docs/guide/live-world.md` (the map, the controls, Seen in, value maps, Scatter, Structures, Compare, the Creator and Studios, Walk in it, without the jar, the notes, limits); `worldgen.md` (Make a world in a few questions with every question and answer, the four noise settings templates, See it on the map, Climate as a tab); `try-it.md` (ground **My world generation**, its section and limit row); `creator.md` (five flow rows, the Map tab, Make a world); `very-easy.md` (tile **Make a world** and its five pictures); `showcase.md` (thirteen cards, the three world cards, Island Mod, Mountain Mod, Cave Mod); `README.md` index and the site sidebar.
+- `CHANGELOG.md` `[Unreleased]`: the Creator's Map tab, See it on the map and Walk in it in the Studios, Walk in it on the map, the three world cards, the AI helper, the guide.
+- Verified: `pnpm lint`, `pnpm typecheck`, `@msm/ai` tests (111), app AI tests and WhatsNew (21 files, 232 tests), `pnpm --filter @msm/site build` (no dead links; output deleted), no emojis.
+
+**Decisions:**
+- B592 has not landed (`worldgen-biome-lists.ts` is still the stub), so the guide and the prompt say that vanilla's overworld and Nether show one biome and that reading the list after a Play comes later, although the app's notes already say "after you have pressed Play once".
+- The guide calls it the Tree Studio (as `block-types-and-plants.md` does), not the Tree Feature Studio.
+- "Walk in it" at the end of the Dimension flow (plan section (d)) is not in the code, so the guide does not mention it.
+
+**Next:** the close (B591): `docs/CLAUDE.md`'s guide page list gains `live-world.md`; the app's WL7 note promises biomes after Play while B592 is unmerged (reword or land B592); the root `CLAUDE.md` counts.

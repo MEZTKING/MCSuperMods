@@ -1,12 +1,35 @@
 # Worldgen
 
-This guide shows how to make a custom biome with its own features, reach it through a World Type, and check where it sits in the climate. It assumes you know the basics from [Getting started](getting-started.md). Structures (jigsaw pieces, pools and structure sets) have their own guide: [Structures](structures.md).
+This guide shows how to make a world of your own in a few questions, make a custom biome with its own features, reach it through a World Type, and see it all live on a map. It assumes you know the basics from [Getting started](getting-started.md). Structures (jigsaw pieces, pools and structure sets) have their own guide: [Structures](structures.md).
 
 Worldgen elements are listed in the sidebar's **Worldgen** group, with their registry in front of the name (`biome`, `placed_feature`, `world_preset`, `dimension` and so on). Biome and world preset tags are in the **Tags** group.
 
+Every worldgen element shows live in the **Preview** tab: dimensions and World Types as a map of the world from above and a side cut, density functions and noises as a value map, features as a scatter on a patch of land, redrawn as you edit. [The live world map](live-world.md) explains it, and [Try it](try-it.md#my-world-generation) lets you walk in your world.
+
+## Make a world in a few questions
+
+**Make a world** on Home (in Very easy mode) and the Creator's **Worlds** group offer five flows. Each makes a **World Type**: you choose it under **More > World Type** when you create a world in Minecraft.
+
+| Flow | Questions | What you get |
+|---|---|---|
+| **Islands** | **How big are the islands?** (Small: a short swim apart, Medium, Large: room for a village), **How much sea?** (A little: mostly land, Some: about half sea, Lots: islands far apart), **What grows on the islands?** (one or more of Grass and woods, Flowers, Cherry blossom, Jungle, Sand and dry grass, Snow, Mushrooms (no monsters)), **Trees** (Few, Many) | Islands in the sea, with beaches and deep ocean between them |
+| **Tall mountains** | **How tall?** (Tall: up to about height 180, Very tall: about height 240, As tall as the world allows: about height 290), **How jagged?** (Smooth and rounded, Rugged, Jagged: sharp spikes and cliffs), **Where does the snow start?** (Low: snow on the high hills too, Halfway up, Only on the highest peaks, No snow), **What grows on the mountains?** (Meadows, Cherry blossom, Pine woods, Snowy pine woods, Bare stone, Windswept hills) | Towering peaks, each biome on its own mountains from the coldest to the warmest |
+| **One biome everywhere** | **Which biome?** (thirteen, from Cherry grove to Mushroom fields (no monsters)), **What shape is the land?** (Gentle hills, Flat land, Like the overworld (its preview needs Minecraft's own files)) | The whole world is that biome, with its plants, trees and mobs |
+| **Caves only** | **Roof or open top?** (A roof of rock over everything, Open to the sky, with land on top), **What is the rock?** (Stone, Deepslate: darker and harder, Tuff, Andesite, Blackstone), **Lakes at the bottom** (Water, Lava, No lakes), **What glows?** (Glowstone on the cave roofs, Shroomlight on the cave roofs, Nothing glows: bring torches) | Caverns and tunnels, with a dimension type of its own that has no daylight under a roof |
+| **Empty sky with a start island** | **Which biome?** (Plains, Forest, Cherry grove, Snowy plains, Desert, Mushroom fields (no monsters)) | An empty world of sky |
+
+Every flow also asks for a **Name** (the World Type's name on Create New World). The land of each world is MCSuperMods' own recipe (its own noises, density functions and noise settings, not a copy of Minecraft's), so the Creator's **Map** tab draws it while you answer, without your Minecraft folder; only **Like the overworld** uses the overworld's own land and needs your Minecraft folder to preview. The Nether and the End of these World Types are vanilla's.
+
+Good to know:
+
+- **Empty sky with a start island**: the start island, its chest and the things you start with come from the Skyblock flow; until MCSuperMods has it, this makes the empty world only. Players start in the air and fall: play it in Creative, or build a start island with the Structure Studio.
+- **Caves only** with a roof: players start on top of the rock roof and dig down.
+- Each flow has an example under **Help > Examples…**, category **Worlds**: Coral Isles, Frost Peaks, Endless Blossom, Ember Caverns and Cloud Realm. Three of them are cards in [See what you can make](showcase.md).
+- The templates **Noise settings: islands**, **Noise settings: tall mountains**, **Noise settings: caves only** and **Noise settings: empty sky** (category **Worldgen (advanced)**) are the same land on their own, to build on.
+
 ## Start from a starter
 
-Click the arrow next to **New** and choose **New from starter…**. Under Themed content there are two worldgen starters:
+Click the arrow next to **New** and choose **New from starter…**. Under Themed content there are two biome starters:
 
 - **Custom biome**: the Amber Woods biome with its own tree and copper ore, a World Type that offers it, and English names for both.
 - **Custom biome with a jigsaw structure**: the same biome plus a jigsaw hamlet that generates in it and in every vanilla forest. This is the project in [`fixtures/sample-worldgen/`](https://github.com/MEZTKING/MCSuperMods/blob/main/fixtures/sample-worldgen/README.md).
@@ -31,6 +54,7 @@ Select a biome to open the Biome Studio. **Advanced (all fields)** switches to t
 
 - **Climate**: **Temperature**, **Downfall**, **Precipitation** and **Temperature modifier**. Temperature also decides snow and the colour of grass and leaves when you do not set them.
 - **Colours**: seven colour pickers, for the water, grass, foliage and dry foliage colours and the sky, fog and water fog colours, plus the **Grass colour modifier**. In Minecraft 26.3 the sky, fog and water fog colours are stored as `minecraft:visual/*` attributes of the biome, not as effects; the Studio writes them in the right place. Clear a colour to fall back to the game's default.
+- **See it on the map** opens a live map of a world of yours that uses the biome (**Hide the map** closes it), and **Walk in it** opens it in [Try it](try-it.md#my-world-generation). The Placed Feature, Tree and Dimension Type Studios have the same line ([The live world map](live-world.md#in-the-creator-and-the-studios)).
 - **Features**: one list of placed features for each of the eleven generation steps, named from the target (Raw generation, Lakes, Local modifications, … Vegetal decoration, Top layer modification). Features run step by step and, within a step, in list order. See [Features and steps](#features-and-steps).
 - **Spawns**: the mobs that spawn naturally, one list per category (monster, creature, ambient and so on), each entry with an entity, a weight and a minimum and maximum count. In 26.3 they are stored in the `minecraft:gameplay/natural_mob_spawns` attribute. **Spawn costs** follows below them.
 - **Carvers**: the cave and canyon carvers.
@@ -58,14 +82,14 @@ Both checks treat an id without a namespace as `minecraft:`, as the game does, s
 
 ## The climate map
 
-Select a world preset or a dimension whose biome source is `multi_noise` with an explicit biome list, then open the **Preview** tab. The climate map shows which biome wins at each point of the climate space. No vanilla assets are needed.
+Select a world preset or a dimension whose biome source is `multi_noise` with an explicit biome list, open the **Preview** tab and choose **Climate**. The climate map shows which biome wins at each point of the climate space. No vanilla assets are needed.
 
 - Choose the **Horizontal axis** and **Vertical axis** from temperature, humidity, continentalness, erosion, depth and weirdness (temperature against humidity by default).
 - The **Fixed parameters** sliders set the other four.
 - Hover the map to see which biome wins there; the list below it gives each biome's colour (its grass colour or sky colour when set).
 - For a world preset with several such dimensions, **Dimension** picks one.
 
-The map shows the climate points only, not real terrain: the game's noise decides where each climate actually occurs. A noise-sampled map is not available yet.
+The climate map shows the climate points only, not real terrain: the game's noise decides where each climate actually occurs. To see where your biomes really lie, use the **Biomes** tab beside it ([The live world map](live-world.md)).
 
 ## A sky and rules of your own (dimension types)
 
@@ -95,7 +119,7 @@ A dimension type is a data pack file, so it works in a vanilla data pack and in 
 
 ## Other worldgen elements
 
-Dimensions (**Multi-noise overworld**, **Single-biome dimension**) and the elements under **Worldgen (advanced)** (noise settings, density functions, noise, carvers, flat level presets, multi-noise parameter lists, block state providers, material conditions and rules) use the general form with templates. Each template is a minimal valid file to build on. To get players into a dimension of your own, use the Creator's Dimension or Portal flow: a key item, a portal block (Fabric mod jar) or a travel function (see [Portals](portals.md)).
+Dimensions (**Multi-noise overworld**, **Single-biome dimension**) and the elements under **Worldgen (advanced)** (noise settings, density functions, noise, carvers, flat level presets, multi-noise parameter lists, block state providers, material conditions and rules) use the general form with templates. Each template is a minimal valid file to build on, and each shows live in the **Preview** tab ([The live world map](live-world.md)). To get players into a dimension of your own, use the Creator's Dimension or Portal flow: a key item, a portal block (Fabric mod jar) or a travel function (see [Portals](portals.md)).
 
 ## Check it in the game
 
@@ -103,6 +127,7 @@ The full in-game check of the sample biome, World Type and hamlet is in the [sam
 
 ## Where next
 
+- [The live world map](live-world.md): the map, the side cut, value maps, Scatter, Compare with vanilla and the limits.
 - [Structures](structures.md): jigsaw structures and how they generate.
 - [Templates, starters and examples](templates-and-examples.md).
 - [Known limitations](https://github.com/MEZTKING/MCSuperMods/blob/main/README.md#known-limitations).

@@ -1,8 +1,8 @@
 # See what you can make
 
-**See what you can make** is a row of ten cards that show, in a few seconds each, what a mod can do: a set of wood, a pet, a crop, a machine, a vehicle, a portal, sparkles, a trader, a liquid and a lucky block. Each card has a picture, a sentence and two buttons. It is the quickest way to find a first thing to make, and the cards are made from the same examples as **Help → Examples…** ([Templates and examples](templates-and-examples.md#examples-gallery)).
+**See what you can make** is a row of thirteen cards that show, in a few seconds each, what a mod can do: a set of wood, a pet, a crop, a machine, a vehicle, a portal, sparkles, a trader, a liquid, a lucky block and three worlds of your own (islands, tall mountains and caves). Each card has a picture, a sentence and two buttons. It is the quickest way to find a first thing to make, and the cards are made from the same examples as **Help → Examples…** ([Templates and examples](templates-and-examples.md#examples-gallery)).
 
-## The ten cards
+## The thirteen cards
 
 | Card | Its sentence | Make this opens |
 |---|---|---|
@@ -16,6 +16,11 @@
 | **A trader** | Someone who sells you things for emeralds. | The Wandering merchant flow |
 | **A liquid of your own** | A liquid with its own bucket, lakes and feel. | The Fluid flow |
 | **Rules: a lucky block** | Make things happen without code: break it and see. | Nothing: it shows **See the example** as its main button, because an empty rule book teaches nothing |
+| **A world of islands** | Your own world: small sandy islands in a wide sea. | The Islands flow |
+| **A world of tall mountains** | Your own world: snowy peaks as tall as the sky allows. | The Tall mountains flow |
+| **A world of caves** | Your own world: caves under a roof of rock, with lava lakes. | The Caves only flow |
+
+The three world cards come after the first ten, on the next row when the strip wraps. Their clips look slowly round land made from the examples Coral Isles, Frost Peaks and Ember Caverns ([Worldgen](worldgen.md#make-a-world-in-a-few-questions)).
 
 A card whose flow your Minecraft version does not offer shows only **See the example**, and a card whose example does not work on your version is not shown.
 
@@ -31,7 +36,7 @@ A card whose flow your Minecraft version does not offer shows only **See the exa
 **Make this** starts the card's flow, the same one the Home tile of that name opens:
 
 - With a mod open, the flow opens in that mod.
-- In Very easy with no mod, a small window asks only **What is your mod called?**, already filled in for the card (Elm Mod, Fox Mod, Onion Mod, Crusher Mod, Tank Mod, Sky Mod, Firefly Mod, Merchant Mod or Oil Mod). Change the name if you like and press **Start**, and the flow opens once the mod is made ([Very easy mode](very-easy.md#start-a-new-mod)).
+- In Very easy with no mod, a small window asks only **What is your mod called?**, already filled in for the card (Elm Mod, Fox Mod, Onion Mod, Crusher Mod, Tank Mod, Sky Mod, Firefly Mod, Merchant Mod, Oil Mod, Island Mod, Mountain Mod or Cave Mod). Change the name if you like and press **Start**, and the flow opens once the mod is made ([Very easy mode](very-easy.md#start-a-new-mod)).
 - In Easy and Advanced with no mod, New project opens with the card's starter chosen and goes on to its questions.
 
 You answer the flow's few questions and **Create** adds the thing to your mod ([The Creator](creator.md)). After that, **Play** or **Try it** shows it ([Playing and testing](playing-and-testing.md), [Try it](try-it.md)).
@@ -61,6 +66,7 @@ Every card shows a **Preview** tag. A picture is a short clip, about 8 to 12 sec
 - Mobs only wander or stand in a clip. No merchant or machine screen is shown, and clips are silent. Try it plays sounds.
 - Minecraft's own blocks look plain in clips, for now even when your Minecraft folder is set up ([Getting started](getting-started.md)): terrain and wood are drawn by MCSuperMods and the rest are plain cubes. MCSuperMods never ships Minecraft's pictures. The clips prefer your kind of blocks and terrain.
 - Each clip follows its example: if the example changes, so does the clip.
+- The world cards' land is worked out from their example's own files, as Try it's **My world generation** ground does ([Try it](try-it.md#my-world-generation)), and never from your Minecraft, so every computer shows the same land. Trees, plants and ores are about right, and carved caves show only in the game; the captions say so ("Its jungle trees grow in the game.", "Its caves are carved in the game."). Before a world card's clip has played, its still is a plain colour.
 - Only the built-in examples have cards; a plugin cannot add one.
 - A card shows only where its example works on your Minecraft version: the open mod's version, or the default one when no mod is open.
 - A slow computer plays a clip more slowly, so it may take longer than 12 seconds.

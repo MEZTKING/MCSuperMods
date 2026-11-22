@@ -2,11 +2,11 @@
 
 **Try it** is a small test area inside MCSuperMods. You walk or fly around in it, put down and break your blocks, see how they look in every state, open your doors, grow your crops, hatch your mobs and watch your particles. It opens at once, needs no Minecraft, no launcher and no account, and it changes as you edit.
 
-It is a preview, not the game. A strip across the top always says **Preview, not the real game.**, with a **Play in Minecraft** button for the real check ([Playing and testing](playing-and-testing.md)). Walking is roughly right, mobs only wander, commands are checked and logged but not carried out in the world, your scripts run in a closed-off sandbox with the game's own parts left out, and redstone, survival and world generation are not there. The full list is under [Limits](#limits).
+It is a preview, not the game. A strip across the top always says **Preview, not the real game.**, with a **Play in Minecraft** button for the real check ([Playing and testing](playing-and-testing.md)). Walking is roughly right, mobs only wander, commands are checked and logged but not carried out in the world, your scripts run in a closed-off sandbox with the game's own parts left out, redstone and survival are not there, and your own world generation shows only on its own ground, about right. The full list is under [Limits](#limits).
 
 ## What it is
 
-- An area of 48 by 48 blocks, 32 high. It starts on a plain grid floor; you can start on a flat world, a quick landscape or an area of one of your own worlds instead ([Grounds](#grounds)). You stand in the middle.
+- An area of 48 by 48 blocks, 32 high. It starts on a plain grid floor; you can start on a flat world, a quick landscape, an area of one of your own worlds or the land your own world generation makes instead ([Grounds](#grounds)). You stand in the middle.
 - Your project's blocks and spawn eggs are in the hotbar. Minecraft's own blocks can be placed too, for looks only.
 - A clock runs the area 20 times a second, as the game does: buttons let go, pressure plates spring back, mobs wander and particles fly. You can pause it and step it.
 - **What happened** lists what the area did, and what it could not do ("Only in Minecraft: …").
@@ -89,8 +89,23 @@ What the area stands on. Choose it in the first-run card (**Start on:**) or with
   - **Seed**: the same seed always makes the same world; **New seed** picks another.
   - **Presets**: Classic flat, Island, Hills and Sandbox. **Save as my preset** keeps your settings under a name, on this computer for you, not in the project.
 - **From my world**: an area copied from one of your own saves. Pick a world from the list (its picture, name, game folder and when it was last played; worlds that cannot be read are greyed out with the reason), then the centre: **The world spawn**, or **Here:** with a block X and Z. The area is 48 by 48 around the centre and 32 high, from 8 blocks below the ground there. Your save is only read, never changed, and a world that is open in Minecraft can still be read. What was left out (chests' contents, signs, mobs, chunks not generated yet) is listed in **What happened**.
+- **My world generation**: "The land your own world makes, around where you stand." See [My world generation](#my-world-generation).
 
 Minecraft's blocks in a ground are props (see [Limits](#limits)). With your Minecraft folder set up they show their real pictures; without it the terrain (stone, dirt, grass, sand, gravel, cobblestone) and the wood (planks, logs, leaves) show as MCSuperMods' own drawn pictures and other blocks are plain coloured cubes, and the panel says so with a **Set it up** link. Water and lava are always drawn as plain see-through blocks.
+
+### My world generation
+
+This ground is a window of the world one of your dimensions or World Types makes, worked out from your files as the [live world map](live-world.md) is. Make a world first (**Make a world** on Home, a world flow or the Dimension flow in the Creator); until then the tab says "Your project has no dimension or world type yet. Make one (Make a world, or the Dimension flow) and it shows here."
+
+- **Choose the ground**: pick the world from the list (a dimension, or one of the dimensions a World Type names, shown as "Overworld of" and its name), then the **Seed** (type one, **Roll a new seed** or **Seed of one of my worlds**) and the place (**X**, **Z**, **Go to spawn**). The seed and place are the world map's too. The window is 48 by 48 blocks and 32 high (3 by 3 chunks), placed so that the land at the middle sits a third of the way up; tall land is cut at the top. **Use this ground** makes it.
+- **Walk in it** on the map or in the Biome, Placed Feature, Tree and Dimension Type Studios opens Try it straight on this ground, at the map's seed and place.
+- The land comes in stages, each shown as soon as it is ready: "Making the land…" (stone, water and air), "Laying the surface…" (grass, sand, snow and the rest) and "Placing trees, plants and ores…" (with your biome additions).
+- **Edit while you stand in it.** Change the world (its noise settings, a biome, a feature) and the land is made again in place, a moment later, with you still standing where you were (lifted onto the land if it grew over you). Blocks you placed stay where they still fit; the rest are counted in **What happened**, for example "2 blocks you placed are gone: the new land fills their places".
+- In the side panel under the **Preview** tag: **Move up** and **Move down** move the window 16 blocks, **Make the land around me** makes a new window around where you stand, and **Show on the map** opens the world in the editor with its map on your place. The window's place is shown: "X -16 to 31, Z 0 to 47, heights 40 to 71."
+- **What this ground leaves out** lists what the land cannot show: "Trees, plants and ores are about right here; the game places them exactly.", "Carved caves and buildings show only in the game.", "Land the game shapes around buildings is not drawn either.", and when it applies "The land goes higher than this window: Move up to see the top.", "The End is about right here.", "Biome borders are about right on this version." and every part the preview cannot work out yet.
+- The strip at the top adds "The land is a preview worked out from your files."
+- When the world names Minecraft's own land files and your Minecraft folder is not set up, the panel says "This world uses Minecraft's own land files. Set up your Minecraft folder to see it here." with **Set up Minecraft folder**.
+- **Clear the area** gives the land back as it was made, without your changes.
 
 ## Signs, beds and the new blocks
 
@@ -244,6 +259,7 @@ Try it runs MCSuperMods' own simulation, not Minecraft. What it cannot show:
 | **Pictures** | Animated pictures show their first frame; pictures larger than 16 by 16 are cut down to 16 by 16. |
 | **Other plugins' blocks** | A block from a third-party plugin is drawn from its files, but its own behaviour does not run. |
 | **Grounds from your worlds** | Only the Overworld, and only saves from Minecraft 1.18 on (open an older world once in 1.18 or later). Chests' contents, signs and other block entities, and mobs and items, are not copied. Another mod's blocks are left out. Its Minecraft blocks are props like any other. |
+| **Your own world is a window** | **My world generation** shows 48 by 48 blocks, 32 high; taller land is cut. Trees, plants and ores are about right, carved caves, buildings and the land shaped around them are not there, and the End and biome borders on 26.4-snapshot-7 are about right. Vanilla's overworld and Nether show one biome. Old chunks are not blended, and mobs, light and weather do not come from the biome. See [The live world map](live-world.md#limits). |
 | **Quick worlds are not Minecraft's world generation** | Their hills, islands, valleys and trees are MCSuperMods' own simple shapes, made to look natural around your blocks, not to match a real seed. |
 
 The tests check what Try it does (counts, states, what you point at), and that it draws something, not exactly how it looks. If a picture looks wrong in Try it but right in the game, the game is right.

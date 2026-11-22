@@ -44,6 +44,7 @@ import {
   VILLAGERS_FLUIDS_FLOW_ANSWERS,
   VILLAGERS_FLUIDS_PROMPT_CODES,
   VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
+  WORLD_FLOW_ANSWERS,
 } from '@msm/ai';
 import { createMemoryFileSystem, type JsonObject } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
@@ -869,6 +870,29 @@ describe('the system prompt names the plant, pot, storage, sound and vanilla blo
         ?.parameters?.map((entry) => entry.id);
       for (const parameter of parameters)
         expect(ids, `${starterId}: ${parameter}`).toContain(parameter);
+    }
+  });
+});
+
+describe('the AI helper and the world flows (ADR 0119 D11, B590)', () => {
+  it('names the five flows, their answers and every choice of them', () => {
+    const text = systemPrompt('build');
+    for (const [starterId, answers] of Object.entries(WORLD_FLOW_ANSWERS)) {
+      const starter = libraryStarters.find((entry) => entry.id === starterId);
+      expect(starter?.creator, starterId).toBeDefined();
+      expect(text, starterId).toContain(`"${starter?.title}" (${starterId}: world_name`);
+      const parameters = starter?.parameters ?? [];
+      // Every question but the name is named, with every value it offers.
+      expect(
+        parameters.map((entry) => entry.id).filter((id) => id !== 'world_name'),
+        starterId,
+      ).toEqual([...answers]);
+      for (const parameter of parameters) {
+        if (!('choices' in parameter) || !Array.isArray(parameter.choices)) continue;
+        for (const choice of parameter.choices as { value: string }[]) {
+          expect(text, `${starterId}: ${choice.value}`).toContain(`"${choice.value}"`);
+        }
+      }
     }
   });
 });

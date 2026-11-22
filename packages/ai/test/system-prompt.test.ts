@@ -18,6 +18,7 @@ import {
   VILLAGERS_FLUIDS_FLOW_ANSWERS,
   VILLAGERS_FLUIDS_PROMPT_CODES,
   VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
+  WORLD_FLOW_ANSWERS,
 } from '../src/index';
 
 describe('systemPrompt', () => {
@@ -805,6 +806,75 @@ describe('systemPrompt textures (ADR 0092 D15)', () => {
       expect(text).toContain('never copied, traced or recoloured');
       expect(text).toContain('Draw...');
       expect(text).not.toMatch(/placeholder/i);
+    }
+  });
+});
+
+describe('systemPrompt worlds and the live world map (ADR 0119, B590)', () => {
+  it.each(['chat', 'build'] as const)(
+    'names the five world flows and their answers in %s mode',
+    (mode) => {
+      const text = systemPrompt(mode);
+      for (const [flow, title] of [
+        ['world-islands', 'Islands'],
+        ['world-mountains', 'Tall mountains'],
+        ['world-one-biome', 'One biome everywhere'],
+        ['world-caves', 'Caves only'],
+        ['world-empty-sky', 'Empty sky with a start island'],
+      ] as const) {
+        expect(text, flow).toContain(`"${title}" (${flow}: world_name`);
+        expect(NEW_FLOW_PROMPT_IDS[flow]).toBe('world_name');
+        for (const answer of WORLD_FLOW_ANSWERS[flow])
+          expect(text, `${flow}: ${answer}`).toContain(answer);
+      }
+      expect(text).toContain('"Make a world"');
+    },
+  );
+
+  it('says the map shows the changes, with the labels of the app', () => {
+    const text = systemPrompt('build');
+    for (const label of [
+      'Preview tab',
+      '"Biomes", "Height", "Side cut" and "Climate"',
+      '"Seed of one of my worlds"',
+      '"Compare with vanilla"',
+      '"Value map"',
+      '"Scatter"',
+      '"See it on the map" and "Walk in it"',
+      '"My world generation"',
+      '"Make the land around me"',
+      'say that the map and the ground show the change',
+    ]) {
+      expect(text, label).toContain(label);
+    }
+  });
+
+  it('states the limits in plain words', () => {
+    const text = systemPrompt('chat');
+    for (const limit of [
+      "not the game's generator",
+      'Play is the real check',
+      'trees, plants and ores are about right',
+      'carved caves and ravines, buildings and the land the game shapes around buildings are not drawn',
+      'show their real land with one biome',
+      'the End is about right',
+      'biome borders are only about right (the map says so)',
+      'debug worlds are only in the game',
+    ]) {
+      expect(text, limit).toContain(limit);
+    }
+    // Try it's ground is there now.
+    expect(text).not.toContain('world generation and other dimensions are not there');
+  });
+
+  it('never carries a vanilla worldgen file or path (ADR 0119 D2)', () => {
+    for (const mode of ['chat', 'build'] as const) {
+      const text = systemPrompt(mode);
+      expect(text).toContain("You never receive Minecraft's own world generation files");
+      expect(text).not.toMatch(/data\/minecraft\//);
+      expect(text).not.toMatch(/worldgen\/[a-z_/]+\.json/);
+      expect(text).not.toContain('noise_router');
+      expect(text).not.toContain('"final_density":');
     }
   });
 });
