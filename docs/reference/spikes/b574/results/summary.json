@@ -1,0 +1,482 @@
+{
+ "26.3 checker": {
+  "biomeCells": 24576,
+  "biomeMatchPct": 100.0,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 99.0,
+   "exactColumnPct": 46.6,
+   "exactColumnIgnoringCarvedPct": 78.5,
+   "heightExactPct": 91.5,
+   "heightOff1Pct": 2.8,
+   "heightOff2to7Pct": 4.1,
+   "heightOff8PlusPct": 1.6,
+   "top4ExactPct": 95.0,
+   "cellsSolidOnlyInGame": 371,
+   "cellsSolidOnlyInPreview": 4165,
+   "cellsFluidDiffers": 1354,
+   "underground": {
+    "cells": 158550,
+    "carvedInGamePct": 1.8,
+    "solidOnlyInGamePct": 0.1,
+    "waterDiffersPct": 1.1,
+    "lavaDiffersPct": 0.0
+   },
+   "msPerColumn": 8.6
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 98.7,
+   "exactColumnPct": 31.8,
+   "exactColumnIgnoringCarvedPct": 71.4,
+   "heightExactPct": 88.7,
+   "heightOff1Pct": 2.9,
+   "heightOff2to7Pct": 5.9,
+   "heightOff8PlusPct": 2.5,
+   "top4ExactPct": 68.9,
+   "cellsSolidOnlyInGame": 506,
+   "cellsSolidOnlyInPreview": 5190,
+   "cellsFluidDiffers": 1741,
+   "underground": {
+    "cells": 150278,
+    "carvedInGamePct": 2.2,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 1.6,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 7.5
+  }
+ },
+ "26.3 climate dims": {
+  "biomeCells": 169680,
+  "biomeMatchPct": 100.0,
+  "terrain": {
+   "columns": 10752,
+   "cellMatchPct": 98.7,
+   "exactColumnPct": 38.0,
+   "exactColumnIgnoringCarvedPct": 73.0,
+   "heightExactPct": 88.6,
+   "heightOff1Pct": 4.6,
+   "heightOff2to7Pct": 4.9,
+   "heightOff8PlusPct": 1.8,
+   "top4ExactPct": 91.8,
+   "cellsSolidOnlyInGame": 4119,
+   "cellsSolidOnlyInPreview": 33432,
+   "cellsFluidDiffers": 14938,
+   "underground": {
+    "cells": 1096932,
+    "carvedInGamePct": 1.8,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 2.0,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 12.1
+  },
+  "full": {
+   "columns": 10752,
+   "cellMatchPct": 98.6,
+   "exactColumnPct": 37.4,
+   "exactColumnIgnoringCarvedPct": 74.6,
+   "heightExactPct": 90.1,
+   "heightOff1Pct": 2.4,
+   "heightOff2to7Pct": 4.8,
+   "heightOff8PlusPct": 2.7,
+   "top4ExactPct": 64.7,
+   "cellsSolidOnlyInGame": 3337,
+   "cellsSolidOnlyInPreview": 39642,
+   "cellsFluidDiffers": 14969,
+   "underground": {
+    "cells": 1060642,
+    "carvedInGamePct": 1.9,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 2.2,
+    "lavaDiffersPct": 0.2
+   },
+   "msPerColumn": 11.3
+  }
+ },
+ "26.3 overworld": {
+  "biomeCells": null,
+  "biomeMatchPct": null,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 98.9,
+   "exactColumnPct": 43.1,
+   "exactColumnIgnoringCarvedPct": 72.6,
+   "heightExactPct": 93.5,
+   "heightOff1Pct": 2.1,
+   "heightOff2to7Pct": 2.5,
+   "heightOff8PlusPct": 1.8,
+   "top4ExactPct": 94.6,
+   "cellsSolidOnlyInGame": 846,
+   "cellsSolidOnlyInPreview": 3918,
+   "cellsFluidDiffers": 1627,
+   "underground": {
+    "cells": 173186,
+    "carvedInGamePct": 1.6,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 1.5,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 9.6
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 98.5,
+   "exactColumnPct": 31.2,
+   "exactColumnIgnoringCarvedPct": 68.9,
+   "heightExactPct": 94.3,
+   "heightOff1Pct": 1.0,
+   "heightOff2to7Pct": 2.5,
+   "heightOff8PlusPct": 2.2,
+   "top4ExactPct": 72.5,
+   "cellsSolidOnlyInGame": 922,
+   "cellsSolidOnlyInPreview": 5615,
+   "cellsFluidDiffers": 2515,
+   "underground": {
+    "cells": 169885,
+    "carvedInGamePct": 2.3,
+    "solidOnlyInGamePct": 0.3,
+    "waterDiffersPct": 2.1,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 9.7
+  }
+ },
+ "26.3 the_end": {
+  "biomeCells": 24076,
+  "biomeMatchPct": 61.0,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 87.5,
+   "exactColumnPct": 21.4,
+   "exactColumnIgnoringCarvedPct": 91.1,
+   "heightExactPct": 50.8,
+   "heightOff1Pct": 12.7,
+   "heightOff2to7Pct": 28.5,
+   "heightOff8PlusPct": 8.0,
+   "top4ExactPct": 98.4,
+   "cellsSolidOnlyInGame": 713,
+   "cellsSolidOnlyInPreview": 23893,
+   "cellsFluidDiffers": 0,
+   "underground": {
+    "cells": 35774,
+    "carvedInGamePct": 12.0,
+    "solidOnlyInGamePct": 0.3,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 0.0
+   },
+   "msPerColumn": 0.8
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 84.5,
+   "exactColumnPct": 25.5,
+   "exactColumnIgnoringCarvedPct": 98.1,
+   "heightExactPct": 76.8,
+   "heightOff1Pct": 5.6,
+   "heightOff2to7Pct": 13.5,
+   "heightOff8PlusPct": 4.1,
+   "top4ExactPct": 99.9,
+   "cellsSolidOnlyInGame": 808,
+   "cellsSolidOnlyInPreview": 29583,
+   "cellsFluidDiffers": 0,
+   "underground": {
+    "cells": 43639,
+    "carvedInGamePct": 8.6,
+    "solidOnlyInGamePct": 0.4,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 0.0
+   },
+   "msPerColumn": 0.5
+  }
+ },
+ "26.3 the_nether": {
+  "biomeCells": null,
+  "biomeMatchPct": null,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 94.8,
+   "exactColumnPct": 53.7,
+   "exactColumnIgnoringCarvedPct": 97.5,
+   "heightExactPct": 100.0,
+   "heightOff1Pct": 0.0,
+   "heightOff2to7Pct": 0.0,
+   "heightOff8PlusPct": 0.0,
+   "top4ExactPct": 99.8,
+   "cellsSolidOnlyInGame": 137,
+   "cellsSolidOnlyInPreview": 10008,
+   "cellsFluidDiffers": 0,
+   "underground": {
+    "cells": 175097,
+    "carvedInGamePct": 3.5,
+    "solidOnlyInGamePct": 0.1,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 2.0
+   },
+   "msPerColumn": 0.5
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 93.4,
+   "exactColumnPct": 41.1,
+   "exactColumnIgnoringCarvedPct": 82.3,
+   "heightExactPct": 100.0,
+   "heightOff1Pct": 0.0,
+   "heightOff2to7Pct": 0.0,
+   "heightOff8PlusPct": 0.0,
+   "top4ExactPct": 97.2,
+   "cellsSolidOnlyInGame": 1204,
+   "cellsSolidOnlyInPreview": 11844,
+   "cellsFluidDiffers": 16,
+   "underground": {
+    "cells": 174989,
+    "carvedInGamePct": 5.5,
+    "solidOnlyInGamePct": 0.5,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 1.2
+   },
+   "msPerColumn": 0.4
+  }
+ },
+ "26.4 checker": {
+  "biomeCells": 24576,
+  "biomeMatchPct": 67.9,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 99.0,
+   "exactColumnPct": 46.6,
+   "exactColumnIgnoringCarvedPct": 78.5,
+   "heightExactPct": 91.5,
+   "heightOff1Pct": 2.8,
+   "heightOff2to7Pct": 4.1,
+   "heightOff8PlusPct": 1.6,
+   "top4ExactPct": 95.0,
+   "cellsSolidOnlyInGame": 371,
+   "cellsSolidOnlyInPreview": 4165,
+   "cellsFluidDiffers": 1354,
+   "underground": {
+    "cells": 158550,
+    "carvedInGamePct": 1.8,
+    "solidOnlyInGamePct": 0.1,
+    "waterDiffersPct": 1.1,
+    "lavaDiffersPct": 0.0
+   },
+   "msPerColumn": 9.0
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 98.7,
+   "exactColumnPct": 31.8,
+   "exactColumnIgnoringCarvedPct": 71.4,
+   "heightExactPct": 88.8,
+   "heightOff1Pct": 2.9,
+   "heightOff2to7Pct": 5.9,
+   "heightOff8PlusPct": 2.5,
+   "top4ExactPct": 68.8,
+   "cellsSolidOnlyInGame": 506,
+   "cellsSolidOnlyInPreview": 5190,
+   "cellsFluidDiffers": 1741,
+   "underground": {
+    "cells": 150292,
+    "carvedInGamePct": 2.2,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 1.6,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 7.9
+  }
+ },
+ "26.4 climate dims": {
+  "biomeCells": 169680,
+  "biomeMatchPct": 66.8,
+  "terrain": {
+   "columns": 10752,
+   "cellMatchPct": 98.7,
+   "exactColumnPct": 38.1,
+   "exactColumnIgnoringCarvedPct": 73.0,
+   "heightExactPct": 88.7,
+   "heightOff1Pct": 4.6,
+   "heightOff2to7Pct": 5.0,
+   "heightOff8PlusPct": 1.8,
+   "top4ExactPct": 91.8,
+   "cellsSolidOnlyInGame": 4115,
+   "cellsSolidOnlyInPreview": 33418,
+   "cellsFluidDiffers": 14938,
+   "underground": {
+    "cells": 1096932,
+    "carvedInGamePct": 1.8,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 2.0,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 12.2
+  },
+  "full": {
+   "columns": 10752,
+   "cellMatchPct": 98.6,
+   "exactColumnPct": 37.4,
+   "exactColumnIgnoringCarvedPct": 74.6,
+   "heightExactPct": 90.2,
+   "heightOff1Pct": 2.4,
+   "heightOff2to7Pct": 4.8,
+   "heightOff8PlusPct": 2.6,
+   "top4ExactPct": 64.7,
+   "cellsSolidOnlyInGame": 3337,
+   "cellsSolidOnlyInPreview": 39656,
+   "cellsFluidDiffers": 14969,
+   "underground": {
+    "cells": 1060740,
+    "carvedInGamePct": 1.9,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 2.2,
+    "lavaDiffersPct": 0.2
+   },
+   "msPerColumn": 11.3
+  }
+ },
+ "26.4 overworld": {
+  "biomeCells": null,
+  "biomeMatchPct": null,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 98.9,
+   "exactColumnPct": 43.3,
+   "exactColumnIgnoringCarvedPct": 72.8,
+   "heightExactPct": 93.9,
+   "heightOff1Pct": 2.1,
+   "heightOff2to7Pct": 2.5,
+   "heightOff8PlusPct": 1.6,
+   "top4ExactPct": 91.5,
+   "cellsSolidOnlyInGame": 795,
+   "cellsSolidOnlyInPreview": 3923,
+   "cellsFluidDiffers": 1628,
+   "underground": {
+    "cells": 173233,
+    "carvedInGamePct": 1.6,
+    "solidOnlyInGamePct": 0.2,
+    "waterDiffersPct": 1.5,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 9.7
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 98.5,
+   "exactColumnPct": 31.1,
+   "exactColumnIgnoringCarvedPct": 68.9,
+   "heightExactPct": 94.4,
+   "heightOff1Pct": 1.0,
+   "heightOff2to7Pct": 2.5,
+   "heightOff8PlusPct": 2.1,
+   "top4ExactPct": 71.7,
+   "cellsSolidOnlyInGame": 974,
+   "cellsSolidOnlyInPreview": 5610,
+   "cellsFluidDiffers": 2479,
+   "underground": {
+    "cells": 169945,
+    "carvedInGamePct": 2.3,
+    "solidOnlyInGamePct": 0.3,
+    "waterDiffersPct": 2.1,
+    "lavaDiffersPct": 0.1
+   },
+   "msPerColumn": 9.3
+  }
+ },
+ "26.4 the_end": {
+  "biomeCells": 24076,
+  "biomeMatchPct": 41.0,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 87.5,
+   "exactColumnPct": 21.4,
+   "exactColumnIgnoringCarvedPct": 91.1,
+   "heightExactPct": 50.8,
+   "heightOff1Pct": 12.7,
+   "heightOff2to7Pct": 28.5,
+   "heightOff8PlusPct": 8.0,
+   "top4ExactPct": 98.4,
+   "cellsSolidOnlyInGame": 713,
+   "cellsSolidOnlyInPreview": 23893,
+   "cellsFluidDiffers": 0,
+   "underground": {
+    "cells": 35774,
+    "carvedInGamePct": 12.0,
+    "solidOnlyInGamePct": 0.3,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 0.0
+   },
+   "msPerColumn": 0.6
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 84.5,
+   "exactColumnPct": 25.5,
+   "exactColumnIgnoringCarvedPct": 98.1,
+   "heightExactPct": 76.8,
+   "heightOff1Pct": 5.6,
+   "heightOff2to7Pct": 13.5,
+   "heightOff8PlusPct": 4.1,
+   "top4ExactPct": 99.9,
+   "cellsSolidOnlyInGame": 808,
+   "cellsSolidOnlyInPreview": 29583,
+   "cellsFluidDiffers": 0,
+   "underground": {
+    "cells": 43639,
+    "carvedInGamePct": 8.6,
+    "solidOnlyInGamePct": 0.4,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 0.0
+   },
+   "msPerColumn": 0.6
+  }
+ },
+ "26.4 the_nether": {
+  "biomeCells": null,
+  "biomeMatchPct": null,
+  "terrain": {
+   "columns": 1536,
+   "cellMatchPct": 94.7,
+   "exactColumnPct": 53.0,
+   "exactColumnIgnoringCarvedPct": 97.5,
+   "heightExactPct": 100.0,
+   "heightOff1Pct": 0.0,
+   "heightOff2to7Pct": 0.0,
+   "heightOff8PlusPct": 0.0,
+   "top4ExactPct": 95.3,
+   "cellsSolidOnlyInGame": 137,
+   "cellsSolidOnlyInPreview": 10353,
+   "cellsFluidDiffers": 0,
+   "underground": {
+    "cells": 175097,
+    "carvedInGamePct": 3.5,
+    "solidOnlyInGamePct": 0.1,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 2.0
+   },
+   "msPerColumn": 0.4
+  },
+  "full": {
+   "columns": 1536,
+   "cellMatchPct": 93.0,
+   "exactColumnPct": 40.2,
+   "exactColumnIgnoringCarvedPct": 81.8,
+   "heightExactPct": 100.0,
+   "heightOff1Pct": 0.0,
+   "heightOff2to7Pct": 0.0,
+   "heightOff8PlusPct": 0.0,
+   "top4ExactPct": 90.4,
+   "cellsSolidOnlyInGame": 1246,
+   "cellsSolidOnlyInPreview": 12458,
+   "cellsFluidDiffers": 16,
+   "underground": {
+    "cells": 174997,
+    "carvedInGamePct": 5.5,
+    "solidOnlyInGamePct": 0.6,
+    "waterDiffersPct": 0.0,
+    "lavaDiffersPct": 1.2
+   },
+   "msPerColumn": 0.3
+  }
+ }
+}

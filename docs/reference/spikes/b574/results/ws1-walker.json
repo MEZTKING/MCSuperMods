@@ -1,0 +1,341 @@
+{
+ "26.3": {
+  "types": {
+   "density_function": {
+    "old_blended_noise": 3,
+    "cache": 32,
+    "max": 11,
+    "slice": 1,
+    "mul": 64,
+    "sub": 19,
+    "clamp": 18,
+    "distance_to_point": 1,
+    "end_outer_islands": 1,
+    "add": 70,
+    "min": 18,
+    "noise": 65,
+    "gradient": 29,
+    "abs": 12,
+    "interval_select": 3,
+    "range_choice": 21,
+    "interpolated": 17,
+    "cube": 2,
+    "lerp": 29,
+    "blend_alpha": 9,
+    "spline": 9,
+    "squeeze": 7,
+    "blend_density": 7,
+    "square": 3,
+    "beardifier": 7,
+    "blend_offset": 3,
+    "negate": 1,
+    "find_top_surface": 3,
+    "quarter_negative": 6,
+    "div": 3,
+    "half_negative": 3,
+    "shift_a": 1,
+    "shift_b": 1
+   },
+   "material_rule": {
+    "condition": 163,
+    "block": 91,
+    "sequence": 49,
+    "ore_vein": 2,
+    "bandlands": 2
+   },
+   "material_condition": {
+    "vertical_gradient": 3,
+    "not": 14,
+    "y_above": 23,
+    "biome": 48,
+    "noise_threshold": 43,
+    "hole": 6,
+    "steep": 5,
+    "above_preliminary_surface": 1,
+    "stone_depth": 6,
+    "water": 2
+   },
+   "chunk_generator": {
+    "noise": 16,
+    "debug": 1,
+    "flat": 4
+   },
+   "biome_source": {
+    "multi_noise": 9,
+    "the_end": 6,
+    "fixed": 1
+   }
+  },
+  "unsupported": {
+   "material_condition:hole": [
+    "material_rule minecraft:nether",
+    "material_rule minecraft:nether",
+    "material_rule minecraft:nether",
+    "material_rule minecraft:overworld/surface",
+    "material_rule minecraft:overworld/surface"
+   ],
+   "material_condition:steep": [
+    "material_rule minecraft:overworld/biome_surface/frozen_peaks",
+    "material_rule minecraft:overworld/biome_surface/jagged_peaks",
+    "material_rule minecraft:overworld/biome_surface/snowy_slopes",
+    "material_rule minecraft:overworld/under_biome_surface/frozen_peaks",
+    "material_rule minecraft:overworld/under_biome_surface/snowy_slopes"
+   ],
+   "material_rule:ore_vein": [
+    "material_rule minecraft:overworld/copper_ore_vein",
+    "material_rule minecraft:overworld/iron_ore_vein"
+   ],
+   "material_rule:bandlands": [
+    "material_rule minecraft:overworld/surface",
+    "material_rule minecraft:overworld/surface"
+   ],
+   "biome_source:multi_noise.preset=minecraft:overworld": [
+    "world_preset minecraft:amplified minecraft:overworld",
+    "world_preset minecraft:large_biomes minecraft:overworld",
+    "world_preset minecraft:normal minecraft:overworld"
+   ],
+   "biome_source:multi_noise.preset=minecraft:nether": [
+    "world_preset minecraft:amplified minecraft:the_nether",
+    "world_preset minecraft:debug_all_block_states minecraft:the_nether",
+    "world_preset minecraft:flat minecraft:the_nether",
+    "world_preset minecraft:large_biomes minecraft:the_nether",
+    "world_preset minecraft:normal minecraft:the_nether"
+   ],
+   "chunk_generator:debug": [
+    "world_preset minecraft:debug_all_block_states minecraft:overworld"
+   ],
+   "chunk_generator:flat": [
+    "world_preset minecraft:flat minecraft:overworld",
+    "world_preset minecraft:flat_all_dimensions minecraft:overworld",
+    "world_preset minecraft:flat_all_dimensions minecraft:the_end",
+    "world_preset minecraft:flat_all_dimensions minecraft:the_nether"
+   ]
+  },
+  "ignored": {
+   "material_condition:y_above.add_stone_depth": {
+    "count": 23,
+    "where": [
+     "material_rule minecraft:nether",
+     "material_rule minecraft:nether",
+     "material_rule minecraft:nether"
+    ]
+   },
+   "material_condition:water.add_stone_depth": {
+    "count": 2,
+    "where": [
+     "material_condition minecraft:not_under_deep_water",
+     "material_condition minecraft:not_underwater"
+    ]
+   },
+   "noise_settings.debug_functions": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_settings.disable_mob_generation": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_settings.spawn_target": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_router.chunk_surface_level": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   }
+  }
+ },
+ "26.4-snapshot-7": {
+  "types": {
+   "density_function": {
+    "old_blended_noise": 3,
+    "cache": 32,
+    "max": 11,
+    "slice": 1,
+    "mul": 64,
+    "sub": 19,
+    "clamp": 18,
+    "distance_to_point": 1,
+    "end_outer_islands": 1,
+    "add": 70,
+    "min": 18,
+    "noise": 65,
+    "gradient": 29,
+    "abs": 12,
+    "interval_select": 3,
+    "range_choice": 21,
+    "upscale": 17,
+    "cube": 2,
+    "lerp": 29,
+    "blend_alpha": 9,
+    "spline": 9,
+    "squeeze": 7,
+    "blend_density": 7,
+    "square": 3,
+    "beardifier": 7,
+    "blend_offset": 3,
+    "negate": 1,
+    "find_top_surface": 3,
+    "quarter_negative": 6,
+    "div": 3,
+    "half_negative": 3,
+    "shift_a": 1,
+    "shift_b": 1
+   },
+   "material_rule": {
+    "condition": 171,
+    "block": 100,
+    "sequence": 51,
+    "ore_vein": 2,
+    "bandlands": 2
+   },
+   "material_condition": {
+    "vertical_gradient": 3,
+    "not": 14,
+    "y_above": 23,
+    "biome": 51,
+    "noise_threshold": 48,
+    "hole": 6,
+    "steep": 5,
+    "above_preliminary_surface": 1,
+    "stone_depth": 6,
+    "water": 2
+   },
+   "chunk_generator": {
+    "noise": 16,
+    "debug": 1,
+    "flat": 4
+   },
+   "biome_source": {
+    "multi_noise": 9,
+    "the_end": 6,
+    "fixed": 1
+   }
+  },
+  "unsupported": {
+   "density_function:upscale": [
+    "density_function minecraft:overworld/caves/noodle",
+    "density_function minecraft:overworld/caves/noodle",
+    "density_function minecraft:overworld/caves/noodle",
+    "density_function minecraft:overworld/caves/noodle",
+    "density_function minecraft:overworld/chunk_surface_level"
+   ],
+   "material_condition:hole": [
+    "material_rule minecraft:nether",
+    "material_rule minecraft:nether",
+    "material_rule minecraft:nether",
+    "material_rule minecraft:overworld/surface",
+    "material_rule minecraft:overworld/surface"
+   ],
+   "material_condition:steep": [
+    "material_rule minecraft:overworld/biome_surface/frozen_peaks",
+    "material_rule minecraft:overworld/biome_surface/jagged_peaks",
+    "material_rule minecraft:overworld/biome_surface/snowy_slopes",
+    "material_rule minecraft:overworld/under_biome_surface/frozen_peaks",
+    "material_rule minecraft:overworld/under_biome_surface/snowy_slopes"
+   ],
+   "material_rule:ore_vein": [
+    "material_rule minecraft:overworld/copper_ore_vein",
+    "material_rule minecraft:overworld/iron_ore_vein"
+   ],
+   "material_rule:bandlands": [
+    "material_rule minecraft:overworld/surface",
+    "material_rule minecraft:overworld/surface"
+   ],
+   "biome_source:multi_noise.preset=minecraft:overworld": [
+    "world_preset minecraft:amplified minecraft:overworld",
+    "world_preset minecraft:large_biomes minecraft:overworld",
+    "world_preset minecraft:normal minecraft:overworld"
+   ],
+   "biome_source:multi_noise.preset=minecraft:nether": [
+    "world_preset minecraft:amplified minecraft:the_nether",
+    "world_preset minecraft:debug_all_block_states minecraft:the_nether",
+    "world_preset minecraft:flat minecraft:the_nether",
+    "world_preset minecraft:large_biomes minecraft:the_nether",
+    "world_preset minecraft:normal minecraft:the_nether"
+   ],
+   "chunk_generator:debug": [
+    "world_preset minecraft:debug_all_block_states minecraft:overworld"
+   ],
+   "chunk_generator:flat": [
+    "world_preset minecraft:flat minecraft:overworld",
+    "world_preset minecraft:flat_all_dimensions minecraft:overworld",
+    "world_preset minecraft:flat_all_dimensions minecraft:the_end",
+    "world_preset minecraft:flat_all_dimensions minecraft:the_nether"
+   ]
+  },
+  "ignored": {
+   "material_condition:y_above.add_stone_depth": {
+    "count": 23,
+    "where": [
+     "material_rule minecraft:nether",
+     "material_rule minecraft:nether",
+     "material_rule minecraft:nether"
+    ]
+   },
+   "material_condition:water.add_stone_depth": {
+    "count": 2,
+    "where": [
+     "material_condition minecraft:not_under_deep_water",
+     "material_condition minecraft:not_underwater"
+    ]
+   },
+   "noise_settings.debug_functions": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_settings.disable_mob_generation": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_settings.spawn_target": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_settings missing default_block": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   },
+   "noise_router.chunk_surface_level": {
+    "count": 7,
+    "where": [
+     "noise_settings minecraft:amplified",
+     "noise_settings minecraft:caves",
+     "noise_settings minecraft:end"
+    ]
+   }
+  }
+ }
+}

@@ -8041,3 +8041,20 @@ Next
 
 **Next**
 - B544: CI's three parity steps now expect 26 on the ejected mobs jar; watch the cave flitter test, and if it still misses, look at `RoostGoal`'s idle chance or let the test start the roost itself.
+
+## 2026-11-22 — executor — B574 spike: deepslate against the real game
+
+**What**
+- Spike for the live world generation plan (WS1–WS18), report and evidence in `docs/reference/spikes/b574/` (README, `results/`, `spike-src/`, a picture of MSM's own map). Real worlds from the vanilla dedicated server for four seeds on 26.3 and 26.4-snapshot-7, with eight test dimensions of MSM's own (one climate parameter each, a mixed list, a checkerboard) and a 26.4 fixture for `upscale` and `domain_warp`; read back with the reference pack's `region.py` and compared with deepslate 0.27.2 in Node; speeds also in a `blob:` worker in Electron 45 under the app's CSP.
+- Results: deepslate is a go with ten fixes (two field renames, 26.4's missing default block and `upscale`, the `interval_select` fix, our own surface pass with a biome per cell, the unknown-type walker, presets reported, one world per worker, a cell grid for speed). 26.3 biomes exact on 169,680 cells; terrain 98.7–98.9 % of cells, surface height exact 88.6–93.5 %; the End and 26.4's biome layout are approximate; the Height map is about ten times over budget; a bigger Try it area is a no-go. Plan notes "B574" give the numbers.
+- Throwaway files: none were created in the repository (no e2e spec or interop test was needed: the worker was measured in a standalone Electron window); scratch worlds, server folders and extracted vanilla files deleted.
+
+**Decisions**
+- Worlds were made on the vanilla server, not the Fabric one: no mod is needed to generate and save chunks, and the cached server jars are what CI uses.
+- Biome parity was measured on dimensions with MSM's own parameter lists over vanilla's noise settings, because vanilla's overworld and Nether lists are not data (WS9); the overworld's own biomes were read back from the world to drive its surface rules.
+- Structure starts were read from chunk `References`, as no chunk held a `starts` entry.
+
+**Next**
+- The main session records the go and no-go list in ADR 0119 (D3, D8, D13, D14 and the reserves) and decides the plugin API fact for B577 (data folders and approximate parts per target).
+- `docs/reference/spikes/README.md` gains a `b574/` line (outside this brief's files).
+- B576 stubs `packages/terrain/src/api.ts` from the README's interface.

@@ -1,0 +1,87 @@
+{
+ "26.3": {
+  "minecraft:amplified": {
+   "ok": true,
+   "ms": 375,
+   "blocks": 8
+  },
+  "minecraft:caves": {
+   "ok": true,
+   "ms": 28,
+   "blocks": 8
+  },
+  "minecraft:end": {
+   "ok": true,
+   "ms": 61,
+   "blocks": 2
+  },
+  "minecraft:floating_islands": {
+   "ok": true,
+   "ms": 27,
+   "blocks": 4
+  },
+  "minecraft:large_biomes": {
+   "ok": true,
+   "ms": 197,
+   "blocks": 6
+  },
+  "minecraft:nether": {
+   "ok": true,
+   "ms": 14,
+   "blocks": 4
+  },
+  "minecraft:overworld": {
+   "ok": true,
+   "ms": 284,
+   "blocks": 8
+  },
+  "filesParsed": 169,
+  "parseErrors": []
+ },
+ "26.4-snapshot-7": {
+  "minecraft:amplified": {
+   "ok": true,
+   "ms": 293,
+   "blocks": 8
+  },
+  "minecraft:caves": {
+   "ok": true,
+   "ms": 20,
+   "blocks": 8
+  },
+  "minecraft:end": {
+   "ok": true,
+   "ms": 33,
+   "blocks": 2
+  },
+  "minecraft:floating_islands": {
+   "ok": true,
+   "ms": 24,
+   "blocks": 4
+  },
+  "minecraft:large_biomes": {
+   "ok": true,
+   "ms": 305,
+   "blocks": 6
+  },
+  "minecraft:nether": {
+   "ok": true,
+   "ms": 23,
+   "blocks": 4
+  },
+  "minecraft:overworld": {
+   "ok": true,
+   "ms": 335,
+   "blocks": 8
+  },
+  "filesParsed": 172,
+  "parseErrors": []
+ },
+ "fixes": {
+  "renamedRouter": 14,
+  "renamedStoneDepth": 50,
+  "upscaleMapped": 18,
+  "upscaleUnmapped": 0,
+  "defaultBlockAdded": 7
+ }
+}

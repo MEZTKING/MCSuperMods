@@ -1,0 +1,216 @@
+{
+ "26.3": {
+  "files": 1271,
+  "bytes": 2023403,
+  "largest": 53538,
+  "extractMs": {
+   "median": 29,
+   "worst": 51
+  },
+  "terrainSubset": {
+   "files": 265,
+   "bytes": 727352
+  },
+  "byFolder": {
+   "dimension_type": {
+    "files": 4,
+    "bytes": 6420
+   },
+   "tags/worldgen/biome": {
+    "files": 86,
+    "bytes": 13942
+   },
+   "tags/worldgen/feature": {
+    "files": 1,
+    "bytes": 276
+   },
+   "tags/worldgen/flat_level_generator_preset": {
+    "files": 1,
+    "bytes": 284
+   },
+   "tags/worldgen/structure": {
+    "files": 33,
+    "bytes": 3040
+   },
+   "tags/worldgen/world_preset": {
+    "files": 2,
+    "bytes": 246
+   },
+   "worldgen/biome": {
+    "files": 67,
+    "bytes": 288500
+   },
+   "worldgen/block_state_provider": {
+    "files": 8,
+    "bytes": 3306
+   },
+   "worldgen/carver": {
+    "files": 4,
+    "bytes": 3336
+   },
+   "worldgen/density_function": {
+    "files": 55,
+    "bytes": 328221
+   },
+   "worldgen/feature": {
+    "files": 240,
+    "bytes": 321555
+   },
+   "worldgen/flat_level_generator_preset": {
+    "files": 9,
+    "bytes": 4709
+   },
+   "worldgen/material_condition": {
+    "files": 8,
+    "bytes": 1051
+   },
+   "worldgen/material_rule": {
+    "files": 42,
+    "bytes": 58834
+   },
+   "worldgen/multi_noise_biome_source_parameter_list": {
+    "files": 2,
+    "bytes": 71
+   },
+   "worldgen/noise": {
+    "files": 64,
+    "bytes": 6392
+   },
+   "worldgen/noise_settings": {
+    "files": 7,
+    "bytes": 26207
+   },
+   "worldgen/placed_feature": {
+    "files": 273,
+    "bytes": 179255
+   },
+   "worldgen/processor_list": {
+    "files": 40,
+    "bytes": 68898
+   },
+   "worldgen/structure": {
+    "files": 52,
+    "bytes": 24104
+   },
+   "worldgen/structure_set": {
+    "files": 21,
+    "bytes": 7882
+   },
+   "worldgen/template_pool": {
+    "files": 245,
+    "bytes": 669927
+   },
+   "worldgen/world_preset": {
+    "files": 7,
+    "bytes": 6947
+   }
+  }
+ },
+ "26.4-snapshot-7": {
+  "files": 1325,
+  "bytes": 2086702,
+  "largest": 53538,
+  "extractMs": {
+   "median": 28,
+   "worst": 30
+  },
+  "terrainSubset": {
+   "files": 269,
+   "bytes": 741752
+  },
+  "byFolder": {
+   "dimension_type": {
+    "files": 4,
+    "bytes": 6514
+   },
+   "tags/worldgen/biome": {
+    "files": 89,
+    "bytes": 14443
+   },
+   "tags/worldgen/feature": {
+    "files": 1,
+    "bytes": 276
+   },
+   "tags/worldgen/flat_level_generator_preset": {
+    "files": 1,
+    "bytes": 284
+   },
+   "tags/worldgen/structure": {
+    "files": 33,
+    "bytes": 3040
+   },
+   "tags/worldgen/world_preset": {
+    "files": 2,
+    "bytes": 246
+   },
+   "worldgen/biome": {
+    "files": 68,
+    "bytes": 294959
+   },
+   "worldgen/block_state_provider": {
+    "files": 8,
+    "bytes": 3306
+   },
+   "worldgen/carver": {
+    "files": 4,
+    "bytes": 3336
+   },
+   "worldgen/density_function": {
+    "files": 55,
+    "bytes": 330899
+   },
+   "worldgen/feature": {
+    "files": 261,
+    "bytes": 351296
+   },
+   "worldgen/flat_level_generator_preset": {
+    "files": 9,
+    "bytes": 4709
+   },
+   "worldgen/material_condition": {
+    "files": 8,
+    "bytes": 1051
+   },
+   "worldgen/material_rule": {
+    "files": 44,
+    "bytes": 61942
+   },
+   "worldgen/multi_noise_biome_source_parameter_list": {
+    "files": 2,
+    "bytes": 71
+   },
+   "worldgen/noise": {
+    "files": 65,
+    "bytes": 6534
+   },
+   "worldgen/noise_settings": {
+    "files": 7,
+    "bytes": 28126
+   },
+   "worldgen/placed_feature": {
+    "files": 299,
+    "bytes": 197912
+   },
+   "worldgen/processor_list": {
+    "files": 40,
+    "bytes": 68898
+   },
+   "worldgen/structure": {
+    "files": 52,
+    "bytes": 24104
+   },
+   "worldgen/structure_set": {
+    "files": 21,
+    "bytes": 7882
+   },
+   "worldgen/template_pool": {
+    "files": 245,
+    "bytes": 669927
+   },
+   "worldgen/world_preset": {
+    "files": 7,
+    "bytes": 6947
+   }
+  }
+ }
+}

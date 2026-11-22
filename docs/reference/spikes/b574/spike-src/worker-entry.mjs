@@ -1,0 +1,22 @@
+import { fillRegistries, makeWorld, buildChunk, ds } from './engine-core.mjs';
+import './fastinterp-core.mjs';
+self.onmessage = (e) => {
+  const { files, mix } = e.data;
+  const t0 = performance.now();
+  fillRegistries(files);
+  const runs = (n, f) => { const t = []; for (let i = 0; i < n; i++) { const a = performance.now(); f(i); t.push(performance.now() - a); } t.sort((a, b) => a - b); return { median: +t[Math.floor(n / 2)].toFixed(1), worst: +t[n - 1].toFixed(1) }; };
+  const out = { fill: +(performance.now() - t0).toFixed(1) };
+  const mk = (src) => makeWorld(files, { generator: { type: 'minecraft:noise', settings: 'minecraft:overworld', biome_source: src } }, 0n);
+  let a = performance.now(); const w = mk(mix); out.world = +(performance.now() - a).toFixed(1);
+  const fx = mk({ type: 'minecraft:fixed', biome: 'minecraft:plains' });
+  out.biome64 = runs(5, (i) => { for (let x = 0; x < 64; x++) for (let z = 0; z < 64; z++) w.gen.computeBiome(w.rs, (i * 999 + x * 16) >> 2, 16, (z * 16) >> 2); });
+  out.biome256 = runs(5, (i) => { for (let x = 0; x < 256; x++) for (let z = 0; z < 256; z++) w.gen.computeBiome(w.rs, (i * 999 + x * 4) >> 2, 16, z); });
+  out.fixed256 = runs(5, (i) => { for (let x = 0; x < 256; x++) for (let z = 0; z < 256; z++) fx.gen.computeBiome(fx.rs, x, 16, z); });
+  out.prelim256 = runs(5, (i) => { for (let x = 0; x < 256; x++) for (let z = 0; z < 256; z++) w.rs.router.chunkSurfaceLevel.compute(ds.DensityFunction.context(i * 3000 + x * 4, 0, z * 4)); });
+  out.sideCut256 = runs(5, (i) => { for (let x = 0; x < 256; x++) { const f = new Array(384); w.gen.iterateNoiseColumn(w.rs, 7000 + i * 300 + x, 0, f, undefined); } });
+  const bc = new Map(); const biomeAt = (x, y, z) => { const k = `${x >> 2},${y >> 2},${z >> 2}`; let b = bc.get(k); if (!b) { b = w.gen.computeBiome(w.rs, x >> 2, y >> 2, z >> 2); bc.set(k, b); } return b; };
+  out.chunks9 = runs(5, (i) => { for (let c = 0; c < 9; c++) buildChunk(w, 300 + i * 5 + (c % 3), 300 + Math.floor(c / 3), biomeAt); });
+  out.chunks16 = runs(3, (i) => { for (let c = 0; c < 16; c++) buildChunk(w, 500 + i * 5 + (c % 4), 500 + Math.floor(c / 4), biomeAt); });
+  out.heapMB = performance.memory ? +(performance.memory.usedJSHeapSize / 1e6).toFixed(0) : null;
+  self.postMessage(out);
+};
