@@ -6,8 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.4.
+
+## [1.5.4] - 2026-11-22
+
+A test build: everything since 1.5.3, with the Showcase, the rest of vanilla parity 3 batch 2's work, and the first part of live world generation (the world map in the preview panel; Try it's generated ground and the Make a world flows come in a later build).
+
 ### Added
 
+- **Live world map** (a preview): a dimension, world preset, noise setting, biome, biome list, flat preset or surface rule now shows a map in the preview panel, worked out from your files the way the game does it and redrawn as you edit: **Biomes**, **Height**, **Side cut** and, for dimensions and presets, **Climate**. Choose the **Seed** (type one, **Roll a new seed**, or **Seed of one of my worlds**), move with **X**, **Z**, **Go to spawn**, zoom, drag or the keys, and hover for the biome and height. **Seen in** shows a part inside one of your dimensions or a plain world built around it; a biome lights up with its share of the view and **Find it**. Minecraft's own world files are read from your game and never exported. Notes say what is only about right (the End, and biome borders on 26.4-snapshot-7) and what is not drawn yet (carved caves, buildings, trees and ores on the map).
 - **See what you can make**: ten cards that show what a mod can do, each with a short moving picture: a set of wood, a pet, plants that grow, a machine, a vehicle, a portal, sparkles, a trader, a liquid of your own and a lucky block made with Rules. They are on **Home** in Very easy mode (with no mod open, and in a new mod until it has things; after that behind **Show what you can make**), in a strip at the top of **New project**, and in **Help > Examples…** beside a showcased example (**What it looks like**). The palette has "Showcase: see what you can make". See [See what you can make](docs/guide/showcase.md).
 - **Make this** on a card opens the Creator on the flow that makes that thing, so you make your own with your own name and colour; with no mod open in Very easy it first asks **What is your mod called?**, already filled in ("Elm Mod"). **See the example** opens the finished example as a new mod, or copies it into the open one.
 - The moving pictures are drawn live by **Try it** from the examples themselves: nothing is filmed or downloaded, every clip carries a **Preview** tag, plays no sound and says in its caption what only happens in the game. Minecraft's own blocks in a clip are MCSuperMods' drawings and plain cubes.
@@ -19,10 +26,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- A roosting mob that hangs when idle now always roosts within about eight seconds under a ceiling (still at a random moment before that).
+- A yes-or-no game rule with lowest or highest values is now an error (the game refuses it), not a warning.
+- The download is about 5 MB smaller: the Minecraft facts MCSuperMods carries are stored compressed.
 - The AI helper no longer says that prices never change, that fluids cannot mix or fill cauldrons, that a player carries one shoulder pet, or that traders, storage, shoulder pets and fluids are left out of the Java project.
 
 ### Fixed
 
+- Java project export: the warning about events it leaves out now names all six such events, not two.
+- The Command Studio's colour argument says "such as ff8800, without the #".
 - Java project export: a command now checks every typed value before it runs, as in the Fabric mod jar, so a dimension that does not exist is refused instead of the command running anyway.
 
 ## [1.5.3] - 2026-11-22
