@@ -67,11 +67,15 @@ In **Make things happen** the Rules also offer, in the same plain words, **A pla
 
 In the Creator, **Pick for me** fills in every question with random answers that work; change any of them before you press **Create**.
 
+## Draw it for me
+
+Next to a picture, **Draw it for me** draws it in a Minecraft-like style: pick a **Colour**, pick one of the six variations (**New looks** shows six more) and **Use this picture**. The mod's own things are already drawn when they are made, so this is for choosing another look; **Edit > Undo** puts the old picture back. A mob has **Draw its skin**. MCSuperMods draws the pictures itself and never copies them from Minecraft ([Drawing pictures](pictures.md)).
+
 ## Surprise me
 
 Not sure what to make? **Surprise me** makes a small random mod to start from. It is the first tile on Home, a button on Home when no mod is open, **File > Surprise Me…**, and "Surprise me: make a random mod" in the command palette, in every mode.
 
-A surprise has a theme, such as Ruby, Frost, Ember, Moss, Sky or Void, and three to five things named after it: always an ore with its gem (or a set of tools and armour with its ore), then a few of a block, a weapon, a food, a mob or pet, a potion or effect, a plant or tree, sparkles and a portal. Sometimes it also has a rule, for example "When a player breaks Ruby Ore, 25 times in 100 an extra Ruby drops." The pictures are placeholders in the theme's colours: paint over them later.
+Every picture in a surprise is drawn in a Minecraft-like style ([Drawing pictures](pictures.md)). A surprise has a theme, such as Ruby, Frost, Ember, Moss, Sky or Void, and three to five things named after it: always an ore with its gem (or a set of tools and armour with its ore), then a few of a block, a weapon, a food, a mob or pet, a potion or effect, a plant or tree, sparkles and a portal. Sometimes it also has a rule, for example "When a player breaks Ruby Ore, 25 times in 100 an extra Ruby drops." The pictures are placeholders in the theme's colours: paint over them later.
 
 The **Surprise me** window shows everything before anything is made: each thing with its pictures and what it makes, and the rule. Then:
 

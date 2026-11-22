@@ -10,7 +10,7 @@ MCSuperMods ships three kinds of ready-made content. All of it is checked in CI:
 
 Templates come from the resource pack, data pack, structures, worldgen, blocks and items, entities, models and animations, scripting and rules plugins, starters and examples from the built-in library plugin. Third-party plugins can add their own through the same plugin API ([ADR 0020](https://github.com/MEZTKING/MCSuperMods/blob/main/docs/adr/0020-templates-starters-examples.md)).
 
-No starter or example contains Mojang files. Textures are small placeholder images that MCSuperMods draws itself; the music disc plays a track from your own copy of the game.
+No starter or example contains Mojang files. Textures are small pictures that MCSuperMods draws itself in a Minecraft-like style ([Drawing pictures](pictures.md)); the music disc plays a track from your own copy of the game.
 
 ## Element templates
 
@@ -836,7 +836,7 @@ Copy a folder somewhere else before opening it, so your edits do not change the 
 
 ## Replacing the placeholders
 
-**Textures.** Starters and examples draw 16×16 placeholder textures: ore specks, a gem, a disc or a plain colour. To use your own, paint a PNG with the same file name and choose **Import assets** on the toolbar. Pick the namespace and **Block textures** or **Item textures**, then the file. Importing a file with an existing name replaces the placeholder; the models keep pointing at it. For the Custom ore starter these are `ruby_ore.png` and `ruby_block.png` (block textures) and `ruby.png` (item textures); for the Switch lamp, `lamp.png` and `lamp_lit.png` (block textures); for the music disc, `my_song_disc.png` (item textures).
+**Textures.** Starters and examples draw 16×16 textures in a Minecraft-like style: an ore, a gem, a disc, planks or a tool, from MCSuperMods' own recipes (flows draw their pictures now; see [Drawing pictures](pictures.md)). To use your own, paint a PNG with the same file name and choose **Import assets** on the toolbar. Pick the namespace and **Block textures** or **Item textures**, then the file. Importing a file with an existing name replaces the placeholder; the models keep pointing at it. For the Custom ore starter these are `ruby_ore.png` and `ruby_block.png` (block textures) and `ruby.png` (item textures); for the Switch lamp, `lamp.png` and `lamp_lit.png` (block textures); for the music disc, `my_song_disc.png` (item textures).
 
 **The music disc sound.** Export your track as Ogg Vorbis (`.ogg`; Audacity can do this), then:
 

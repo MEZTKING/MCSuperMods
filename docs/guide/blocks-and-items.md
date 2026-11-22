@@ -15,7 +15,7 @@ To set the mod's name, version, authors and licence, add **Mod metadata** from t
 
 ## The Block Studio
 
-Selecting a block opens the Block Studio. Empty fields use the game's defaults. **Advanced (all fields)** at the top shows every field of the element as a plain form, and **Raw JSON** edits the same data as text.
+Selecting a block opens the Block Studio. Empty fields use the game's defaults. **Advanced (all fields)** at the top shows every field of the element as a plain form, and **Raw JSON** edits the same data as text. Each picture row and texture slot has **Draw…** beside **Make with AI**: it draws the picture in a Minecraft-like style, without a key ([Drawing pictures](pictures.md)).
 
 - **Appearance**: **Model** is the block model shown in the world and in the hand, for example `minecraft:block/stone` or a model of your own project (the arrow button next to it opens your model). **Display name** is the name players see.
 - **Mining**: **Hardness** (how long the block takes to mine; default 1.5) and **Resistance** (against explosions; default 6). **Tool** makes the block mine fast with that tool (pickaxe, axe, shovel or hoe). **Minimum tier** is the weakest tool tier that still gets drops, for example `iron` for an iron pickaxe or better. A tool or a minimum tier also means the block drops nothing when mined by hand. **Requires the right tool for drops** sets that on its own, without a tool or tier.

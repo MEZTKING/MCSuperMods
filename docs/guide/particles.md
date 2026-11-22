@@ -15,7 +15,7 @@ There are three ways to make one:
 Open the Creator and choose **Particle** under **Magic**. The defaults make a working particle called `golden_spark`, shown around a new block called `golden_spark_block`. The answers:
 
 - **Particle**: **Particle name** (ids derive from it: Golden Spark gives `golden_spark`).
-- **Look**: **Look** (**Spark**, **Orb**, **Puff**, **Leaf** or **My own picture (below)**), **My own picture** (one PNG, 8 by 8 like vanilla's particles and at most 64 by 64 pixels; leave it empty for a placeholder spark), **Colour**, **Size** (**Small**, **Medium** or **Large**) and **Glows** (the particle is drawn at full brightness in the dark).
+- **Look**: **Look** (**Spark**, **Orb**, **Puff**, **Leaf** or **My own picture (below)**), **My own picture** (one PNG, 8 by 8 like vanilla's particles and at most 64 by 64 pixels; leave it empty for a drawn spark), **Colour**, **Size** (**Small**, **Medium** or **Large**) and **Glows** (the particle is drawn at full brightness in the dark).
 - **Life and movement**: **How long** (**Short (half a second)**, **Medium (one second)** or **Long (two seconds)**), **Movement** (**Floats up**, **Drifts** or **Falls**) and **Fades out** (see-through towards the end of its life).
 - **Show it**: **Around a new block** (the block shows the particle by itself), **When an item is used** (a new item sends a burst of it) or **Only the particle (use it with /particle)**.
 
@@ -29,6 +29,7 @@ Selecting a particle in the sidebar (heading **Particles**) opens the Particle S
 
 A particle has one to 64 frames, each a picture under `textures/particle/`. Each frame row has **Paint this picture** (the texture editor), move up, move down and remove. Under the list:
 
+- **Draw frames…** draws all four frames of a spark, orb, puff or leaf in your colour in one step and replaces the frame list; one **Undo** brings the old frames back ([Drawing pictures](pictures.md#particle-frames)).
 - **Add a frame** adds a frame and opens the painter on a new 8 by 8 picture (**New picture**).
 - **Split a strip into frames**: pick **Picture to split into frames** (a strip or a grid of frames, such as a sprite sheet), then **Frames (empty: square frames)** and **Columns** if needed. One undoable step writes one picture per frame and adds them to the list.
 - **Animation**: **Once over its life** (the frames run from first to last across the particle's lifetime), **Loop** (with **Ticks per frame**) or **A random frame** (each particle picks one and keeps it). It matters only with more than one frame.

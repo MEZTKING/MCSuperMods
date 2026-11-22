@@ -6780,3 +6780,18 @@ Next
 **Next**
 - `list_starters`' description (`packages/ai/src/tools/read.ts`, not an owner file) still says "placeholder textures"; once B497 has switched the flows it should change too, which moves the catalogue pin a second time.
 - ADR 0093 D4's last sentence ("the quantiser is self-contained") is out of date for B502's close.
+
+## 2026-11-22 — executor — B501 art guide, changelog and status lines
+
+**What**
+- New guide page `docs/guide/pictures.md` ("Drawing pictures"): **Draw…** (Very easy **Draw it for me**) and its window (**What is it?**, **Colour** with the ten theme swatches and **The thing's colour**, **Second colour**, **Finish**, **Detail**, six variations, **New looks**, **Use this picture**), the recipe families, seeds in plain words, **Draw a skin** with its greyed-out reasons, **Draw frames…**, **New texture…** with **Start from**, how drawing sits beside painting, Picture to texture and Make with AI, and limits A1 to A8 in plain words. Labels were checked against `components/art/`, `SkinSection.tsx`, `NewTextureDialog.tsx`, `ParticleStudio.tsx` and `NO_VANILLA_GROUND_TEXT`.
+- Lines in `creator.md`, `blocks-and-items.md`, `entities-and-models.md`, `particles.md`, `very-easy.md` (a new "Draw it for me" section), `ai-helper.md`, `ai-pictures.md`, `templates-and-examples.md` (flows draw their pictures now) and `try-it.md` (the Grounds paragraph and the limits row: terrain and wood are MSM's own drawn pictures without the Minecraft folder, other blocks plain cubes). Index row in `docs/guide/README.md`, sidebar entry in `docs/site/.vitepress/config.ts`, page list in `docs/CLAUDE.md`.
+- `CHANGELOG.md` `[Unreleased]`: the work-in-progress line replaced by the user-facing lines; `[1.5.2]` untouched. Status lines of the root, `docs/`, `app/` and `packages/plugins/` CLAUDE.md (root 70, docs 44, app 52, plugins 55 lines).
+- Checks: `vitepress build` of the docs site passes (dead links fail it); `pnpm lint`; no emojis.
+
+**Decisions**
+- Labels use the real ellipsis character as the code does (**Draw…**).
+- `first-mod.md`, `getting-started.md`, `adding-to-vanilla.md`, `block-types-and-plants.md` and `containers-and-machines.md` still say "placeholder textures"; they are not owner files, so left for B502.
+
+**Next**
+- B502 close: those leftover "placeholder" lines; ADR 0092 findings.

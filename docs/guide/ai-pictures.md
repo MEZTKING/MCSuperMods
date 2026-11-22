@@ -37,6 +37,8 @@ Only the description you type (and the style you pick) goes to the service, with
 - the **Creator**: the picture fields (not mob skins);
 - the **texture painter**.
 
+**Draw…** sits beside it on the same fields and makes a picture in a Minecraft-like style without a key ([Drawing pictures](pictures.md)).
+
 Without a key the button reads **Set up AI pictures in Settings** and opens Settings. In Very easy mode it reads **Make it with AI**.
 
 The window that opens has:

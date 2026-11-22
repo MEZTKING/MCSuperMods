@@ -8,7 +8,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Added
 
-- Work in progress: drawn pictures in a Minecraft style made by MCSuperMods itself.
+- **Drawn pictures in a Minecraft-like style**: every picture the Creator, the starters, the examples and Surprise me make is now drawn by MCSuperMods in a style close to Minecraft's: a few shades of each colour that lean warm in the light and cool in the shadow, light from the top left, clumpy texture, a dark outline round items, and bricks, planks, bark, leaves, ores, tools and armour that look like what they are. The pictures are MCSuperMods' own drawings, never copied or recoloured from Minecraft's textures. They need no key and no internet. See [Drawing pictures](docs/guide/pictures.md).
+- **Draw…** beside **Make with AI** (Very easy mode: **Draw it for me**) on the Creator's picture fields, the Block and Item Studios' pictures and texture slots, the texture painter and **New texture…**: pick what it is, a **Colour**, a **Second colour**, a **Finish** and the **Detail**, look at six variations, press **New looks** for six more and **Use this picture**. One **Undo** puts the old picture back. The Particle Studio's **Draw frames…** draws all four frames at once, and **New texture…** can **Start from** a **Drawn picture**.
+- **Draw a skin** in the Entity Studio (Very easy mode: **Draw its skin**) draws a skin on the boxes of the mob's own model, as **Fur**, **Scales**, **Smooth**, **Stone** or **Slime**. It is greyed out, with the reason, for a model whose faces are mapped one by one.
+- The AI helper draws its textures with the same recipes (it can ask for any of 80 kinds of picture, a second colour, a finish and a seed), and AI pictures' clean-up uses the same shades as drawn pictures.
+- **Try it** draws Minecraft's terrain (stone, dirt, grass, sand, gravel, cobblestone) and wood (planks, logs, leaves) as MCSuperMods' own pictures when your Minecraft folder is not set up, instead of plain coloured cubes. Other blocks stay plain cubes, and the panel still says so.
+
+### Changed
+
+- Projects you made before keep the pictures they have: nothing is redrawn by itself. Only what flows, starters and examples make from now on is drawn. Paintings keep their placeholder landscape, vanilla mob variant skins get an even coat, and drawn pictures are 16 by 16.
 
 ## [1.5.2] - 2026-11-21
 

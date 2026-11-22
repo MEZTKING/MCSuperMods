@@ -35,7 +35,7 @@ Nothing leaves your computer until you press **Send**. Then MCSuperMods sends to
 
 Textures, other files and file paths are never sent, except pictures you add to a message yourself. The key stays in MCSuperMods' main process (the part that talks to Anthropic) and is never given to the window you work in. Conversations are kept in memory only, one per project: closing MCSuperMods forgets them.
 
-The helper's placeholder textures are drawn on your computer, like the Creator's; the model only asks for a pattern and a colour.
+The helper's textures are drawn on your computer, like the Creator's; the model only asks for a picture kind, a colour and a few choices. MCSuperMods drew their pictures in a Minecraft-like style; you can redraw them with Draw… or paint over them ([Drawing pictures](pictures.md)).
 
 ## Open the helper
 
@@ -78,7 +78,7 @@ Build makes whole content from one prompt. Switch to **Build**, describe what yo
 4. **Summary.** The run ends with a short summary of what it made and what to do next.
 5. **Review and Apply**, as below.
 
-After applying, export as usual: the resource and data packs, and the **Fabric mod jar** when the content has new blocks, items or mobs ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)). Replace the placeholder textures with your own by importing textures with the same names (see [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders)).
+After applying, export as usual: the resource and data packs, and the **Fabric mod jar** when the content has new blocks, items or mobs ([Blocks and items](blocks-and-items.md#export-a-fabric-mod-jar)). Redraw the drawn textures with **Draw…**, or replace them with your own by importing textures with the same names (see [Replacing the placeholders](templates-and-examples.md#replacing-the-placeholders)).
 
 ## When MCSuperMods cannot do it yet
 
