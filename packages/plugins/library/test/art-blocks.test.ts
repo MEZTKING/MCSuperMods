@@ -105,7 +105,7 @@ const owned = [...B492.map((id) => artRecipeInfo(id)), artRecipeInfo('block')];
 describe('every block recipe is drawn (B492)', () => {
   it('has no block row left as a stub', () => {
     expect(blocks.filter((info) => !info.drawn).map((info) => info.id)).toEqual([]);
-    expect(blocks).toHaveLength(32);
+    expect(blocks).toHaveLength(37);
   });
 
   it('leaves no block pattern on the placeholder fallback', () => {

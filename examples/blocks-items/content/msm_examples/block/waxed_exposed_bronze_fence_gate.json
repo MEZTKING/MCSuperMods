@@ -1,0 +1,35 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Exposed Bronze Fence Gate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_examples:block/exposed_bronze"
+    },
+    "type": "fence_gate",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:waxed_exposed_bronze_fence_gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Exposed Bronze Fence Gate: exposed bronze fence gate under wax, which never ages. An axe scrapes the wax off and gives msm_examples:exposed_bronze_fence_gate back.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

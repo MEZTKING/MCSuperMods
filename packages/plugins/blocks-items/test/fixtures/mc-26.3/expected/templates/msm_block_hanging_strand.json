@@ -1,0 +1,201 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "direction": "down",
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "grass",
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/weeping_vines"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/weeping_vines_plant"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_plant.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample_plant"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample_plant.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/weeping_vines"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "terms": [
+                      "minecraft:tool/can_shear",
+                      "minecraft:tool/can_silk_touch"
+                    ],
+                    "type": "minecraft:any_of"
+                  },
+                  "name": "demo:sample",
+                  "type": "minecraft:item"
+                },
+                {
+                  "condition": {
+                    "chances": [
+                      0.33,
+                      0.55,
+                      0.77,
+                      1
+                    ],
+                    "enchantment": "minecraft:fortune",
+                    "type": "minecraft:table_bonus"
+                  },
+                  "name": "demo:sample",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "terms": [
+                      "minecraft:tool/can_shear",
+                      "minecraft:tool/can_silk_touch"
+                    ],
+                    "type": "minecraft:any_of"
+                  },
+                  "name": "demo:sample",
+                  "type": "minecraft:item"
+                },
+                {
+                  "condition": {
+                    "chances": [
+                      0.33,
+                      0.55,
+                      0.77,
+                      1
+                    ],
+                    "enchantment": "minecraft:fortune",
+                    "type": "minecraft:table_bonus"
+                  },
+                  "name": "demo:sample",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample_plant",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample_plant.json"
+  }
+]

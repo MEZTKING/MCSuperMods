@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Glow Moss",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "light": 7,
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "texture": "msm_examples:block/glow_moss"
+    },
+    "type": "multiface"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:glow_moss",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Glow Moss spreads over any face of the blocks around it, as glow lichen (type multiface): place it on a wall, floor or ceiling and place more on the same block to cover more faces. It glows at light 7, bone meal spreads it to faces nearby, and it holds water. Only shears pick it up (the loot preset gives one item per face it covers). The pictures are drawn by MSM.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

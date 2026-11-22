@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "misc",
+    "ingredients": [
+      "msm_examples:dune_reed"
+    ],
+    "result": {
+      "id": "minecraft:sugar"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sugar_from_dune_reed",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "One dune reed makes sugar, as sugar cane does.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

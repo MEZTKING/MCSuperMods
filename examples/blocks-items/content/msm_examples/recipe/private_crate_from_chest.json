@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "C": "minecraft:chest",
+      "X": "minecraft:ender_pearl"
+    },
+    "pattern": [
+      "XXX",
+      "XCX",
+      "XXX"
+    ],
+    "result": {
+      "id": "msm_examples:private_crate"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:private_crate_from_chest",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight ender pearls around a chest make one private crate. Element ids are unique across kinds, so the recipe has a name of its own.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

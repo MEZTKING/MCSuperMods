@@ -1,0 +1,28 @@
+{
+  "data": {
+    "category": "building",
+    "key": {
+      "#": "msm_examples:bronze_ingot"
+    },
+    "pattern": [
+      "###",
+      "###",
+      "###"
+    ],
+    "result": {
+      "id": "msm_examples:bronze_block"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_block_from_bronze_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Nine ingots make a block.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

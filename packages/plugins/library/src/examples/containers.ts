@@ -1,7 +1,8 @@
 /**
  * Container and machine examples (ADR 0076 D4): a loot crate placed by a structure template, an
  * ore crusher fed and emptied by a hopper chain, and a crate that keeps its contents when
- * broken. Each is built from the Storage crate or Machine Creator flow with answers of its own,
+ * broken, and (vanilla parity 3, ADR 0104 D4, D5; B518) a crate that joins into a double chest
+ * and one whose contents differ for every player. Each is built from the Storage crate or Machine Creator flow with answers of its own,
  * without the pack and mod elements (an example is copied into a project that has them
  * already), plus the hand-written pieces around it. Their ids differ from the other block
  * examples', so the `examples/blocks-items` mirror holds them all in one project.
@@ -198,6 +199,32 @@ export const containerExamples: readonly ExampleProject[] = [
       crate_name: 'Shulker Crate',
       keep_contents: true,
       colour: hexFromRgb(COLOURS.violet),
+    }),
+  }),
+  defineExample({
+    id: 'example_msm_twin_crate',
+    title: 'Twin crate',
+    description:
+      'A wooden crate that joins a crate beside it into one double chest of 54 slots, as vanilla chests do, from the Storage crate flow.',
+    kind: KINDS.block,
+    category: BLOCKS,
+    tags: ['container', 'double chest', 'mod'],
+    build: fromFlow(storageCrateBundle, { crate_name: 'Twin Crate', double: true }),
+  }),
+  defineExample({
+    id: 'example_msm_private_crate',
+    title: 'Private crate',
+    description:
+      'A stone crate in which every player finds their own items, as an ender chest, from the Storage crate flow.',
+    kind: KINDS.block,
+    category: BLOCKS,
+    tags: ['container', 'per player', 'ender chest', 'mod'],
+    build: fromFlow(storageCrateBundle, {
+      crate_name: 'Private Crate',
+      per_player: true,
+      look: 'stone',
+      colour: hexFromRgb(COLOURS.violet),
+      ingredient: 'minecraft:ender_pearl',
     }),
   }),
 ];

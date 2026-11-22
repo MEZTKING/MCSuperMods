@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "msm_examples:bronze_ingot",
+      "C": "minecraft:chest"
+    },
+    "pattern": [
+      "###",
+      "#C#",
+      "###"
+    ],
+    "result": {
+      "id": "msm_examples:bronze_chest"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_chest_from_bronze_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Eight ingots around a chest make a chest of the metal.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

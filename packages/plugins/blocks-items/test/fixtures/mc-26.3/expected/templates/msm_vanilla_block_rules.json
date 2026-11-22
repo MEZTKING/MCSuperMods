@@ -1,0 +1,44 @@
+[
+  {
+    "contents": {
+      "burn": [
+        {
+          "block": "minecraft:brown_mushroom_block",
+          "burn_odds": 5,
+          "ignite_odds": 5
+        },
+        {
+          "block": "minecraft:red_mushroom_block",
+          "burn_odds": 5,
+          "ignite_odds": 5
+        }
+      ],
+      "flatten": [
+        {
+          "block": "minecraft:mud",
+          "into": "minecraft:packed_mud"
+        }
+      ],
+      "format": 1,
+      "strip": [
+        {
+          "block": "minecraft:mossy_cobblestone",
+          "into": "minecraft:cobblestone"
+        },
+        {
+          "block": "minecraft:mossy_stone_bricks",
+          "into": "minecraft:stone_bricks"
+        }
+      ],
+      "till": [
+        {
+          "block": "minecraft:moss_block",
+          "drops": "minecraft:moss_carpet",
+          "into": "minecraft:dirt"
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/vanilla_block_rules/sample.json"
+  }
+]

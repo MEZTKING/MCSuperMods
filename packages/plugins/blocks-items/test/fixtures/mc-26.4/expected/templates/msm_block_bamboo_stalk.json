@@ -1,0 +1,319 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 1,
+          "requires_tool": false,
+          "resistance": 1
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "bamboo",
+      "style": "bamboo",
+      "type": "column_plant"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo1_age0",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo2_age0",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stalk2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo3_age0",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stalk3.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo4_age0",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stalk4.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo1_age1",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_thick.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo2_age1",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_thick2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo3_age1",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_thick3.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo4_age1",
+      "textures": {
+        "all": "minecraft:block/bamboo_stalk",
+        "particle": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_thick4.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo_small_leaves",
+      "textures": {
+        "particle": "minecraft:block/bamboo_small_leaves",
+        "texture": "minecraft:block/bamboo_small_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_leaves_small.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo_large_leaves",
+      "textures": {
+        "particle": "minecraft:block/bamboo_large_leaves",
+        "texture": "minecraft:block/bamboo_large_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_leaves_large.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/bamboo_stage0"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_shoot.json"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": [
+            {
+              "model": "demo:block/sample"
+            },
+            {
+              "model": "demo:block/sample_stalk2"
+            },
+            {
+              "model": "demo:block/sample_stalk3"
+            },
+            {
+              "model": "demo:block/sample_stalk4"
+            }
+          ],
+          "when": {
+            "age": "0"
+          }
+        },
+        {
+          "apply": [
+            {
+              "model": "demo:block/sample_thick"
+            },
+            {
+              "model": "demo:block/sample_thick2"
+            },
+            {
+              "model": "demo:block/sample_thick3"
+            },
+            {
+              "model": "demo:block/sample_thick4"
+            }
+          ],
+          "when": {
+            "age": "1"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_leaves_small"
+          },
+          "when": {
+            "leaves": "small"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample_leaves_large"
+          },
+          "when": {
+            "leaves": "large"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample_shoot"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample_shoot.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/supports_bamboo.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_shoot"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/supports_bamboo.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample_shoot",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample_shoot.json"
+  }
+]

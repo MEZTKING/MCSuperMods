@@ -68,7 +68,26 @@ export const COPPER_SET_MEMBERS = Object.freeze([
   { value: 'door', label: 'Door' },
   { value: 'trapdoor', label: 'Trapdoor' },
   { value: 'bars', label: 'Bars' },
+  // Vanilla parity 3 (ADR 0104 D1, B518): the six more types that age, and a chest.
+  { value: 'rod', label: 'Rod, as a lightning rod' },
+  { value: 'button', label: 'Button' },
+  { value: 'pressure_plate', label: 'Pressure plate' },
+  { value: 'fence', label: 'Fence' },
+  { value: 'fence_gate', label: 'Fence gate' },
+  { value: 'wall', label: 'Wall' },
+  { value: 'chest', label: 'Chest that joins into a double chest' },
 ] as const);
+
+/** The pieces a new Copper set starts with: the first seven, as before vanilla parity 3. */
+export const COPPER_SET_DEFAULT_MEMBERS: readonly string[] = Object.freeze([
+  'block',
+  'cut',
+  'slab',
+  'stairs',
+  'door',
+  'trapdoor',
+  'bars',
+]);
 
 /** A piece's value. */
 type Member = (typeof COPPER_SET_MEMBERS)[number]['value'];
@@ -121,10 +140,10 @@ export const COPPER_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze(
     id: 'members',
     label: 'Pieces',
     description:
-      'Each piece comes in all four stages. The cut pieces are crafted and stonecut from the block.',
+      'Each piece comes in all four stages. The cut pieces are crafted and stonecut from the block. The chest keeps its items as it ages and joins a chest beside it into a double chest.',
     group: 'Pieces',
     type: 'set',
-    default: COPPER_SET_MEMBERS.map((member) => member.value),
+    default: [...COPPER_SET_DEFAULT_MEMBERS],
     choices: COPPER_SET_MEMBERS.map(({ value, label }) => ({ value, label })),
     min: 1,
   },
@@ -299,6 +318,15 @@ const MEMBER_NOTES: Readonly<Record<Member, string>> = {
   door: 'A two-block-high door that opens by hand or with redstone, as copper doors.',
   trapdoor: 'A trapdoor that opens by hand or with redstone.',
   bars: 'Bars that join each other, walls and solid blocks, as iron bars do.',
+  rod: 'A rod that faces any of six ways, as a lightning rod; it gives no light (msm:light_emitter 0). Lightning that strikes near the metal scrapes it back a stage, as it does copper.',
+  button: 'A button that gives a short redstone pulse, as a stone button.',
+  pressure_plate: 'A pressure plate that mobs and players press, as a stone plate.',
+  fence: 'A fence that joins other fences of its kind, walls and solid blocks.',
+  fence_gate:
+    'A fence gate that opens by hand or with redstone; it plays the oak gate sounds, the only gate sounds a fence gate takes.',
+  wall: 'A wall that joins other walls and solid blocks and is too high to jump over.',
+  chest:
+    'A chest of 27 slots that joins a chest of the same stage beside it into a double chest of 54, as vanilla chests do (sneak to keep them apart). Ageing, waxing, scraping and lightning keep its items, and both halves change together. Hoppers and comparators work with each half.',
 };
 
 export function copperSetBundle(context: BundleContext): ContentBundle {
@@ -322,6 +350,13 @@ export function copperSetBundle(context: BundleContext): ContentBundle {
     door: `${m}_door`,
     trapdoor: `${m}_trapdoor`,
     bars: `${m}_bars`,
+    rod: `${m}_rod`,
+    button: `${m}_button`,
+    pressure_plate: `${m}_pressure_plate`,
+    fence: `${m}_fence`,
+    fence_gate: `${m}_fence_gate`,
+    wall: `${m}_wall`,
+    chest: `${m}_chest`,
   };
   const names: Record<Member, string> = {
     block: `Block of ${name.display}`,
@@ -331,6 +366,13 @@ export function copperSetBundle(context: BundleContext): ContentBundle {
     door: `${name.display} Door`,
     trapdoor: `${name.display} Trapdoor`,
     bars: `${name.display} Bars`,
+    rod: `${name.display} Rod`,
+    button: `${name.display} Button`,
+    pressure_plate: `${name.display} Pressure Plate`,
+    fence: `${name.display} Fence`,
+    fence_gate: `${name.display} Fence Gate`,
+    wall: `${name.display} Wall`,
+    chest: `${name.display} Chest`,
   };
   const blocks: ContentBundleElement[] = [];
   const models: ContentBundleElement[] = [];
@@ -343,7 +385,7 @@ export function copperSetBundle(context: BundleContext): ContentBundle {
     pictures.push({ id: textureId, draw });
     return textureId;
   };
-  const block = (member: Member, data: JsonObject): void => {
+  const block = (member: Member, data: JsonObject, more: JsonObject = {}): void => {
     blocks.push(
       element(
         id(paths[member]),
@@ -355,7 +397,7 @@ export function copperSetBundle(context: BundleContext): ContentBundle {
           loot: 'self',
           item: { creative_tab: 'minecraft:building_blocks' },
           ...data,
-          components: { 'msm:breakable': { ...COPPER_BREAKABLE } },
+          components: { 'msm:breakable': { ...COPPER_BREAKABLE }, ...more },
         },
         `${MEMBER_NOTES[member]} Mined with a stone pickaxe or better, as copper.`,
       ),
@@ -403,6 +445,56 @@ export function copperSetBundle(context: BundleContext): ContentBundle {
   if (has('bars')) {
     const texture = picture(paths.bars, (stage) => agedBarsPng(colour, patina, stage));
     block('bars', { type: 'pane', sound_type: 'copper', textures: { all: texture } });
+  }
+  // The pieces of vanilla parity 3 (ADR 0104 D1): drawn from the block's picture, which is
+  // drawn for them when the block itself is not chosen.
+  const plateTexture = (): string => {
+    const textureId = id(`block/${paths.block}`);
+    if (!textures.includes(textureId)) {
+      picture(paths.block, (stage) => agedPlatePng(colour, patina, stage, false));
+    }
+    return textureId;
+  };
+  if (has('rod')) {
+    block(
+      'rod',
+      { type: 'rod', textures: { texture: plateTexture() } },
+      { 'msm:light_emitter': { level: 0 } },
+    );
+  }
+  if (has('button')) {
+    block('button', { type: 'button', set_type: 'copper', textures: { texture: plateTexture() } });
+  }
+  if (has('pressure_plate')) {
+    block('pressure_plate', {
+      type: 'pressure_plate',
+      set_type: 'copper',
+      textures: { texture: plateTexture() },
+    });
+  }
+  if (has('fence')) block('fence', { type: 'fence', textures: { texture: plateTexture() } });
+  if (has('fence_gate')) {
+    block('fence_gate', {
+      type: 'fence_gate',
+      wood_type: 'oak',
+      textures: { texture: plateTexture() },
+    });
+  }
+  if (has('wall')) block('wall', { type: 'wall', textures: { texture: plateTexture() } });
+  if (has('chest')) {
+    const front = picture(`${paths.chest}_front`, (stage) =>
+      agedPlatePng(colour, patina, stage, true),
+    );
+    const side = plateTexture();
+    block(
+      'chest',
+      {
+        type: 'horizontal',
+        item: { creative_tab: 'minecraft:functional_blocks' },
+        textures: { front, side, top: side },
+      },
+      { 'msm:container': { layout: 'chest', rows: 3, double: true } },
+    );
   }
 
   const family = ageFamily({
@@ -575,6 +667,74 @@ function copperRecipes(
       shaped('trapdoor', ingot, 'redstone', ['##', '##'], 1, 'Four ingots make a trapdoor.');
     if (has('bars'))
       shaped('bars', ingot, 'misc', ['###', '###'], 16, 'Six ingots make sixteen bars.');
+    if (has('rod'))
+      shaped('rod', ingot, 'redstone', ['#', '#', '#'], 1, 'Three ingots in a column make a rod.');
+    if (has('button')) {
+      out.push(
+        element(
+          id(`${paths.button}_from_${ingot.slice(namespace.length + 1)}`),
+          KINDS.recipe,
+          {
+            type: 'minecraft:crafting_shapeless',
+            category: 'redstone',
+            ingredients: [ingot],
+            result: { id: id(paths.button) },
+          },
+          'An ingot makes a button.',
+        ),
+      );
+    }
+    if (has('pressure_plate'))
+      shaped(
+        'pressure_plate',
+        ingot,
+        'redstone',
+        ['##'],
+        1,
+        'Two ingots side by side make a plate.',
+      );
+    if (has('chest')) {
+      out.push(
+        element(
+          id(`${paths.chest}_from_${ingot.slice(namespace.length + 1)}`),
+          KINDS.recipe,
+          {
+            type: 'minecraft:crafting_shaped',
+            category: 'misc',
+            key: { '#': ingot, C: 'minecraft:chest' },
+            pattern: ['###', '#C#', '###'],
+            result: { id: id(paths.chest) },
+          },
+          'Eight ingots around a chest make a chest of the metal.',
+        ),
+      );
+    }
+    for (const [member, pattern, count] of [
+      ['fence', ['#S#', '#S#'], 3],
+      ['fence_gate', ['S#S', 'S#S'], 1],
+    ] as const) {
+      if (!has(member)) continue;
+      out.push(
+        element(
+          id(`${paths[member]}_from_${ingot.slice(namespace.length + 1)}`),
+          KINDS.recipe,
+          {
+            type: 'minecraft:crafting_shaped',
+            category: 'redstone',
+            key: { '#': ingot, S: 'minecraft:stick' },
+            pattern: [...pattern],
+            result: result(member, count),
+          },
+          member === 'fence'
+            ? 'Four ingots and two sticks make three fences.'
+            : 'Two ingots between four sticks make a fence gate.',
+        ),
+      );
+    }
+  }
+  if (has('wall') && has('block')) {
+    shaped('wall', id(paths.block), 'misc', ['###', '###'], 6, 'Six blocks make six walls.');
+    cut('wall', 'block', 1);
   }
   return out;
 }

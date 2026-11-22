@@ -1,0 +1,251 @@
+[
+  {
+    "contents": {
+      "berries": {
+        "item": "demo:sample_berries",
+        "light": 14
+      },
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "direction": "down",
+      "format": 1,
+      "item": {
+        "components": {
+          "msm:components": {
+            "minecraft:consumable": {},
+            "minecraft:food": {
+              "nutrition": 2,
+              "saturation": 0.4
+            }
+          }
+        },
+        "creative_tab": "minecraft:food_and_drinks",
+        "id": "demo:sample_berries"
+      },
+      "sound_type": "grass",
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/cave_vines"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/cave_vines_plant"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_plant.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/cave_vines_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_berries.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/cave_vines_plant_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_plant_berries.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "berries=false": {
+          "model": "demo:block/sample"
+        },
+        "berries=true": {
+          "model": "demo:block/sample_berries"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "berries=false": {
+          "model": "demo:block/sample_plant"
+        },
+        "berries=true": {
+          "model": "demo:block/sample_plant_berries"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample_plant.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/glow_berries"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_berries.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_berries",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_berries.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "item.demo.sample_berries": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cave_vines.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cave_vines.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "blocks": "demo:sample",
+            "state": {
+              "berries": "true"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "demo:sample_berries",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "blocks": "demo:sample_plant",
+            "state": {
+              "berries": "true"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "demo:sample_berries",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample_plant",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample_plant.json"
+  }
+]

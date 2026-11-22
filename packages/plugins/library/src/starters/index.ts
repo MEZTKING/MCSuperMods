@@ -20,6 +20,7 @@ import { BANNER_PATTERN_PARAMETERS, bannerPatternBundle } from './banner-pattern
 import { BED_PARAMETERS, bedBundle } from './bed';
 import { BOSS_PARAMETERS, bossBundle } from './boss';
 import { CAKE_PARAMETERS, cakeBundle } from './cake';
+import { CAVE_PLANTS_PARAMETERS, cavePlantsBundle } from './cave-plants';
 import { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
 import { COPPER_SET_PARAMETERS, copperSetBundle } from './copper-set';
 import { CREATIVE_TAB_PARAMETERS, creativeTabBundle } from './creative-tab';
@@ -29,10 +30,12 @@ import { CUSTOM_COMMAND_PARAMETERS, customCommandBundle } from './custom-command
 import { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 import { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 import { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
+import { DESERT_PLANTS_PARAMETERS, desertPlantsBundle } from './desert-plants';
 import { DIMENSION_PARAMETERS, dimensionBundle } from './dimension';
 import { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 import { EXTRA_DROP_PARAMETERS, extraDropBundle } from './extra-drop';
 import { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
+import { FLOWER_POT_PARAMETERS, flowerPotBundle } from './flower-pot';
 import { FLUID_PARAMETERS, fluidBundle } from './fluid';
 import { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 import { FOOD_PARAMETERS, foodBundle } from './food';
@@ -82,6 +85,7 @@ export { BANNER_PATTERN_PARAMETERS, bannerPatternBundle } from './banner-pattern
 export { BED_DYES, BED_PARAMETERS, bedBundle } from './bed';
 export { BOSS_PARAMETERS, bossBundle } from './boss';
 export { CAKE_PARAMETERS, cakeBundle } from './cake';
+export { CAVE_PLANT_KINDS, CAVE_PLANTS_PARAMETERS, cavePlantsBundle } from './cave-plants';
 export { CONSUMABLE_PARAMETERS, consumableBundle } from './consumable';
 export {
   AGE_STAGES,
@@ -100,6 +104,11 @@ export { CUSTOM_MOB_PARAMETERS, customMobBundle } from './custom-mob';
 export { CUSTOM_ORE_PARAMETERS, customOreBundle } from './custom-ore';
 export { CUSTOM_SWORD_PARAMETERS, customSwordBundle } from './custom-sword';
 export {
+  DESERT_PLANT_KINDS,
+  DESERT_PLANTS_PARAMETERS,
+  desertPlantsBundle,
+} from './desert-plants';
+export {
   DIMENSION_PARAMETERS,
   dimensionBundle,
   dimensionContent,
@@ -108,6 +117,7 @@ export {
 export { ENCHANTMENT_PARAMETERS, enchantmentBundle } from './enchantment';
 export { EXTRA_DROP_PARAMETERS, EXTRA_DROP_TABLES, extraDropBundle } from './extra-drop';
 export { FARM_ANIMAL_PARAMETERS, farmAnimalBundle } from './farm-animal';
+export { FLOWER_POT_PARAMETERS, FLOWER_POT_PLANTS, flowerPotBundle } from './flower-pot';
 export { FLUID_PARAMETERS, fluidBundle, fluidIds } from './fluid';
 export { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 export { FOOD_PARAMETERS, foodBundle } from './food';
@@ -384,9 +394,51 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     },
   ),
   starter(
+    'cave-plants',
+    'Cave plants',
+    'A plant of the caves: vines that hang from the ceiling with glowing berries, hang down or grow up in long strands, a water plant that grows up as kelp, or a lichen that spreads over any side of a block and glows. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    cavePlantsBundle,
+    {
+      parameters: CAVE_PLANTS_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'Vines with glowing berries, long strands, kelp or a glowing lichen.',
+      },
+    },
+  ),
+  starter(
+    'desert-plants',
+    'Desert plants',
+    "A plant that grows tall: a cane by the water, a spiny cactus, a woody bamboo stalk with leaves, or a big leaf that tips when you stand on it, with the vanilla plant's uses if you like. New blocks need the Fabric mod jar export.",
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    desertPlantsBundle,
+    {
+      parameters: DESERT_PLANTS_PARAMETERS,
+      creator: {
+        group: 'blocks',
+        blurb: 'Sugar cane, cactus, bamboo or a dripleaf of your own.',
+      },
+    },
+  ),
+  starter(
+    'flower-pot',
+    'Flower pot',
+    'A flower pot of your own that takes the plants you pick, in the colour you like, with its recipe. New blocks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'datapack', 'msm'],
+    flowerPotBundle,
+    {
+      parameters: FLOWER_POT_PARAMETERS,
+      creator: { group: 'blocks', blurb: 'A pot that holds the plants you pick.' },
+    },
+  ),
+  starter(
     'copper-set',
     'Copper set',
-    'A new metal that ages as copper does: a block, a cut block with its slab and stairs, a door, a trapdoor and bars, each in four stages that slowly turn the colour you pick, with waxed copies that stay as they are, honeycomb and axe rules, an ingot and the recipes. New blocks need the Fabric mod jar export.',
+    'A new metal that ages as copper does: a block, a cut block with its slab and stairs, a door, a trapdoor and bars, and if you choose a rod, a button, a pressure plate, a fence, a fence gate, a wall and a chest that joins into a double chest, each in four stages that slowly turn the colour you pick, with waxed copies that stay as they are, honeycomb and axe rules, an ingot and the recipes. New blocks need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     copperSetBundle,

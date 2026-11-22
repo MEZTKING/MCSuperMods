@@ -1,0 +1,29 @@
+{
+  "data": {
+    "category": "redstone",
+    "key": {
+      "#": "msm_examples:bronze_ingot",
+      "S": "minecraft:stick"
+    },
+    "pattern": [
+      "#S#",
+      "#S#"
+    ],
+    "result": {
+      "count": 3,
+      "id": "msm_examples:bronze_fence"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_fence_from_bronze_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Four ingots and two sticks make three fences.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

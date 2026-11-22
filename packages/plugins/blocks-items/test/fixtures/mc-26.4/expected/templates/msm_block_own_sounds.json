@@ -1,0 +1,114 @@
+[
+  {
+    "contents": {
+      "block_sounds": {
+        "break": "minecraft:block.amethyst_block.break",
+        "fall": "minecraft:block.amethyst_block.fall",
+        "hit": "minecraft:block.amethyst_block.hit",
+        "pitch": 1.2,
+        "place": "minecraft:block.amethyst_block.place",
+        "step": "minecraft:block.amethyst_block.step",
+        "volume": 1
+      },
+      "components": {
+        "msm:breakable": {
+          "hardness": 1.5,
+          "requires_tool": true,
+          "resistance": 6
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:building_blocks"
+      },
+      "sound_type": "stone"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "minecraft:block/calcite"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "minecraft:block/calcite",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "break_sound": {
+        "sound_id": "minecraft:block.amethyst_block.break"
+      },
+      "fall_sound": {
+        "sound_id": "minecraft:block.amethyst_block.fall"
+      },
+      "hit_sound": {
+        "sound_id": "minecraft:block.amethyst_block.hit"
+      },
+      "pitch": 1.2,
+      "place_sound": {
+        "sound_id": "minecraft:block.amethyst_block.place"
+      },
+      "step_sound": {
+        "sound_id": "minecraft:block.amethyst_block.step"
+      },
+      "volume": 1
+    },
+    "layer": "datapack",
+    "path": "data/demo/block_sound_set/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]

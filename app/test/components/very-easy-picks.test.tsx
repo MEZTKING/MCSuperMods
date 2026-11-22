@@ -58,6 +58,9 @@ describe('Very easy picks (ADR 0101 D4)', () => {
       'Sign',
       'Bush with berries',
       'Ages like copper',
+      'Grows in long strands',
+      'Grows tall like sugar cane',
+      'A flower pot',
     ]);
     expect(MAKE_ITEM_PICKS.map((pick) => pick.label)).toEqual(['A bag that holds things']);
     for (const pick of [...MAKE_BLOCK_PICKS, ...MAKE_ITEM_PICKS]) {
@@ -87,6 +90,9 @@ describe('Very easy picks (ADR 0101 D4)', () => {
         'wood-set',
         'crop',
         'copper-set',
+        'cave-plants',
+        'desert-plants',
+        'flower-pot',
       ],
       picks: MAKE_BLOCK_PICKS,
     });
@@ -102,7 +108,16 @@ describe('Very easy picks (ADR 0101 D4)', () => {
   });
 
   it('hides the picks whose flows the library does not offer', () => {
-    const missing = new Set(['lights', 'bed', 'cake', 'copper-set', 'backpack']);
+    const missing = new Set([
+      'lights',
+      'bed',
+      'cake',
+      'copper-set',
+      'backpack',
+      'cave-plants',
+      'desert-plants',
+      'flower-pot',
+    ]);
     const shown = shownTiles({ flowAvailable: (id) => !missing.has(id), rules: true, ai: true });
     expect(shown.find((entry) => entry.tile.id === 'block')?.flowIds).toEqual([
       'simple-block',

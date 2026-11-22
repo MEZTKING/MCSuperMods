@@ -1,0 +1,36 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.4,
+        "resistance": 0.4
+      }
+    },
+    "display_name": "Spine Cactus",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "max_height": 6,
+    "sound_type": "wool",
+    "style": "cactus",
+    "textures": {
+      "bottom": "msm_examples:block/spine_cactus_top",
+      "side": "msm_examples:block/spine_cactus_side",
+      "top": "msm_examples:block/spine_cactus_top"
+    },
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:spine_cactus",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Spine Cactus grows tall a block at a time (type column_plant, style cactus), as cactus: it stands on sand, breaks when a block is placed beside it and hurts whatever touches it. It grows by itself to 6 blocks (max_height), taller than the vanilla plant. The pictures are drawn by MSM.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

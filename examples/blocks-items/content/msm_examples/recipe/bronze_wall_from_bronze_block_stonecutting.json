@@ -1,0 +1,20 @@
+{
+  "data": {
+    "ingredient": "msm_examples:bronze_block",
+    "result": {
+      "id": "msm_examples:bronze_wall"
+    },
+    "type": "minecraft:stonecutting"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_wall_from_bronze_block_stonecutting",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The stonecutter turns one bronze block into one bronze wall.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

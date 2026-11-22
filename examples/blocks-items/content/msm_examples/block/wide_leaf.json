@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "requires_tool": false,
+        "resistance": 0.1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Wide Leaf",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "size": "big",
+    "sound_type": "grass",
+    "textures": {
+      "side": "msm_examples:block/wide_leaf_side",
+      "stem": "msm_examples:block/wide_leaf_stem",
+      "tip": "msm_examples:block/wide_leaf_side",
+      "top": "msm_examples:block/wide_leaf_top"
+    },
+    "type": "dripleaf"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:wide_leaf",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Wide Leaf is a big leaf on a stem (type dripleaf, size big), as big dripleaf: stand on it and it tips a little, then fully, then drops you, and springs back when you step off. Bone meal grows it a block taller; the stem below the leaf is the generated block msm_examples:wide_leaf_stem. It drops itself.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

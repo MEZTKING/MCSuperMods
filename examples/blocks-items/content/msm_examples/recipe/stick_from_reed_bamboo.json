@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "msm_examples:reed_bamboo"
+    },
+    "pattern": [
+      "#",
+      "#"
+    ],
+    "result": {
+      "id": "minecraft:stick"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:stick_from_reed_bamboo",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Two reed bamboos one above the other make a stick, as bamboo does.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

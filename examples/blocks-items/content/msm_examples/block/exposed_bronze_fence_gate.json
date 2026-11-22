@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_examples:waxed_exposed_bronze_fence_gate"
+      },
+      "msm:weathering": {
+        "next": "msm_examples:weathered_bronze_fence_gate",
+        "stage": "exposed"
+      }
+    },
+    "display_name": "Exposed Bronze Fence Gate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_examples:block/exposed_bronze"
+    },
+    "type": "fence_gate",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:exposed_bronze_fence_gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Exposed Bronze Fence Gate: on random ticks it slowly ages into the weathered stage, msm_examples:weathered_bronze_fence_gate, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_examples:waxed_exposed_bronze_fence_gate. An axe scrapes it back a stage.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

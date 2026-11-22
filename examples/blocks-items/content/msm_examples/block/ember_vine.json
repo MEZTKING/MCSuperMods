@@ -1,0 +1,51 @@
+{
+  "data": {
+    "berries": {
+      "item": "msm_examples:ember_vine_berries",
+      "light": 14
+    },
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "direction": "down",
+    "display_name": "Ember Vine",
+    "format": 1,
+    "item": {
+      "components": {
+        "msm:components": {
+          "minecraft:consumable": {},
+          "minecraft:food": {
+            "nutrition": 2,
+            "saturation": 0.4
+          }
+        }
+      },
+      "creative_tab": "minecraft:food_and_drinks",
+      "id": "msm_examples:ember_vine_berries"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "body": "msm_examples:block/ember_vine_plant",
+      "body_berries": "msm_examples:block/ember_vine_plant_berries",
+      "head": "msm_examples:block/ember_vine",
+      "head_berries": "msm_examples:block/ember_vine_berries",
+      "item": "msm_examples:item/ember_vine_berries"
+    },
+    "type": "growing_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:ember_vine",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Ember Vine hangs from the underside of a block and grows down a block at a time from its tip (type growing_plant, direction down), as cave vines. Now and then a block of it bears berries (berries) that glow at light 14; use it to pick them, or bone meal it to ripen them. Its block item is the berries, msm_examples:ember_vine_berries: eating one restores 2 hunger, and placing one under a block plants the vine, as glow berries do. Players climb it, and bees grow its berries (the tag #minecraft:cave_vines). Breaking a block with berries drops them; otherwise it drops nothing. The strand behind the tip is the generated block msm_examples:ember_vine_plant. The pictures are drawn by MSM.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

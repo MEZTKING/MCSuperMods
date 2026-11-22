@@ -1,0 +1,19 @@
+{
+  "data": {
+    "creative_tab": "minecraft:ingredients",
+    "display_name": "Bronze Ingot",
+    "format": 1,
+    "model": "msm_examples:item/bronze_ingot"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_ingot",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The bronze ingot: nine make a block, and the door, trapdoor and bars are crafted from ingots.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

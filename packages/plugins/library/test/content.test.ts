@@ -49,6 +49,9 @@ const STARTER_IDS = [
   'stone-set',
   'crop',
   'tree',
+  'cave-plants',
+  'desert-plants',
+  'flower-pot',
   'copper-set',
   'lights',
   'bed',
@@ -223,6 +226,7 @@ const KIND_IDS = [
   'msm:creative_tab',
   'msm:villager_profession',
   'msm:fluid',
+  'msm:vanilla_block_rules',
 ];
 
 /**
@@ -299,7 +303,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the sixty-four starters in order', () => {
+  it('lists the sixty-seven starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -309,7 +313,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(60).fill('content'),
+      ...Array<string>(63).fill('content'),
     ]);
   });
 
@@ -715,8 +719,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 114 per-kind examples, one per built-in kind, 40 behaviour examples, 16 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(114);
+  it('has 115 per-kind examples, one per built-in kind, 51 behaviour examples, 16 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(115);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -735,9 +739,20 @@ describe('examples', () => {
       'example_msm_tree',
       'example_msm_machine_block',
       'example_msm_iron_door',
+      'example_msm_ember_vines',
+      'example_msm_sea_ribbon',
+      'example_msm_glow_moss',
+      'example_msm_dune_reed',
+      'example_msm_spine_cactus',
+      'example_msm_reed_bamboo',
+      'example_msm_wide_leaf',
+      'example_msm_clay_planter',
+      'example_msm_bronze_fittings',
       'example_msm_loot_crate',
       'example_msm_ore_crusher',
       'example_msm_shulker_crate',
+      'example_msm_twin_crate',
+      'example_msm_private_crate',
       'example_msm_sky_portal',
       'example_msm_firefly_jar',
       'example_msm_cottage_furniture',
@@ -796,7 +811,7 @@ describe('examples', () => {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(174);
+    expect(libraryExamples).toHaveLength(186);
   });
 
   it('reuses the starter builders for the starter projects', () => {

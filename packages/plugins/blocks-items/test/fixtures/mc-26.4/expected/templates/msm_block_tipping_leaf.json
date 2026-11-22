@@ -1,0 +1,250 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.1,
+          "requires_tool": false,
+          "resistance": 0.1
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "size": "big",
+      "sound_type": "grass",
+      "type": "dripleaf"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf",
+      "textures": {
+        "particle": "minecraft:block/big_dripleaf_top",
+        "side": "minecraft:block/big_dripleaf_side",
+        "stem": "minecraft:block/big_dripleaf_stem",
+        "tip": "minecraft:block/big_dripleaf_tip",
+        "top": "minecraft:block/big_dripleaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf_partial_tilt",
+      "textures": {
+        "particle": "minecraft:block/big_dripleaf_top",
+        "side": "minecraft:block/big_dripleaf_side",
+        "stem": "minecraft:block/big_dripleaf_stem",
+        "tip": "minecraft:block/big_dripleaf_tip",
+        "top": "minecraft:block/big_dripleaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_partial_tilt.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf_full_tilt",
+      "textures": {
+        "particle": "minecraft:block/big_dripleaf_top",
+        "side": "minecraft:block/big_dripleaf_side",
+        "stem": "minecraft:block/big_dripleaf_stem",
+        "tip": "minecraft:block/big_dripleaf_tip",
+        "top": "minecraft:block/big_dripleaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_full_tilt.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf_stem",
+      "textures": {
+        "particle": "minecraft:block/big_dripleaf_stem",
+        "stem": "minecraft:block/big_dripleaf_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_stem.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,tilt=full": {
+          "model": "demo:block/sample_full_tilt",
+          "y": 90
+        },
+        "facing=east,tilt=none": {
+          "model": "demo:block/sample",
+          "y": 90
+        },
+        "facing=east,tilt=partial": {
+          "model": "demo:block/sample_partial_tilt",
+          "y": 90
+        },
+        "facing=east,tilt=unstable": {
+          "model": "demo:block/sample",
+          "y": 90
+        },
+        "facing=north,tilt=full": {
+          "model": "demo:block/sample_full_tilt"
+        },
+        "facing=north,tilt=none": {
+          "model": "demo:block/sample"
+        },
+        "facing=north,tilt=partial": {
+          "model": "demo:block/sample_partial_tilt"
+        },
+        "facing=north,tilt=unstable": {
+          "model": "demo:block/sample"
+        },
+        "facing=south,tilt=full": {
+          "model": "demo:block/sample_full_tilt",
+          "y": 180
+        },
+        "facing=south,tilt=none": {
+          "model": "demo:block/sample",
+          "y": 180
+        },
+        "facing=south,tilt=partial": {
+          "model": "demo:block/sample_partial_tilt",
+          "y": 180
+        },
+        "facing=south,tilt=unstable": {
+          "model": "demo:block/sample",
+          "y": 180
+        },
+        "facing=west,tilt=full": {
+          "model": "demo:block/sample_full_tilt",
+          "y": 270
+        },
+        "facing=west,tilt=none": {
+          "model": "demo:block/sample",
+          "y": 270
+        },
+        "facing=west,tilt=partial": {
+          "model": "demo:block/sample_partial_tilt",
+          "y": 270
+        },
+        "facing=west,tilt=unstable": {
+          "model": "demo:block/sample",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "demo:block/sample_stem",
+          "y": 90
+        },
+        "facing=north": {
+          "model": "demo:block/sample_stem"
+        },
+        "facing=south": {
+          "model": "demo:block/sample_stem",
+          "y": 180
+        },
+        "facing=west": {
+          "model": "demo:block/sample_stem",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample_stem.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/big_dripleaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:sample"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/axe.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample_stem",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample_stem.json"
+  }
+]

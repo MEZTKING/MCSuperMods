@@ -25,7 +25,6 @@ import plugin, {
   MOD_ID_PATTERN,
   machineOf,
   modIdFromNamespace,
-  VANILLA_BLOCK_RULES_KIND,
 } from '../src/index';
 import { BLOCK_KIND } from '../src/kinds';
 import {
@@ -104,6 +103,20 @@ const IDS = [
   'msm_block_scaffold',
   'msm_block_copper_block',
   'msm_block_waterlogged_lamp',
+  'msm_block_berry_vine',
+  'msm_block_water_strand',
+  'msm_block_hanging_strand',
+  'msm_block_cane',
+  'msm_block_cactus',
+  'msm_block_bamboo_stalk',
+  'msm_block_glowing_lichen',
+  'msm_block_tipping_leaf',
+  'msm_block_flower_pot',
+  'msm_block_double_chest',
+  'msm_block_player_chest',
+  'msm_block_own_sounds',
+  'msm_block_door_own_sounds',
+  'msm_block_copper_rod',
   'msm_item_food',
   'msm_item_tool',
   'msm_item_tool_custom_material',
@@ -128,6 +141,7 @@ const IDS = [
   'msm_mod',
   'msm_biome_addition_overworld_ore',
   'msm_loot_addition_mob_drop',
+  'msm_vanilla_block_rules',
   'msm_particle_glowing_spark',
   'msm_particle_falling_petal',
   'msm_particle_smoke_puff',
@@ -236,9 +250,8 @@ describe('blocks-items templates', () => {
   });
 
   it('covers every kind with a title, description and category', () => {
-    // Creative tab templates come with the command templates (plan B461), not from this plugin;
-    // the vanilla block rules templates come with B518 (plan vanilla parity 3, wave 4).
-    const without: string[] = [CREATIVE_TAB_KIND, VANILLA_BLOCK_RULES_KIND];
+    // Creative tab templates come with the command templates (plan B461), not from this plugin.
+    const without: string[] = [CREATIVE_TAB_KIND];
     expect(new Set(blocksItemsTemplates.map((t) => t.kind))).toEqual(
       new Set(blocksItemsKinds.map((kind) => kind.id).filter((id) => !without.includes(id))),
     );

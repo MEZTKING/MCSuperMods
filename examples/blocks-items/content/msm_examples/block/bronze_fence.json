@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_examples:waxed_bronze_fence"
+      },
+      "msm:weathering": {
+        "next": "msm_examples:exposed_bronze_fence",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Bronze Fence",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_examples:block/bronze_block"
+    },
+    "type": "fence"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_fence",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A fence that joins other fences of its kind, walls and solid blocks. Mined with a stone pickaxe or better, as copper. Bronze Fence: on random ticks it slowly ages into the exposed stage, msm_examples:exposed_bronze_fence, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_examples:waxed_bronze_fence.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -48,6 +48,12 @@ export const ART_RECIPE_IDS = Object.freeze([
   'grass_side',
   'sand',
   'gravel',
+  // Plants and pots (B518)
+  'strand',
+  'stalk',
+  'lichen',
+  'dripleaf',
+  'pot',
   // Items
   'gem',
   'ingot',

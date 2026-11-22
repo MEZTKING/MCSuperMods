@@ -7226,3 +7226,24 @@ Next
 
 **Next**
 - B520: point `MSM_VANILLA_PARITY_3_JAVA_OUT` (or a `sample-plants-and-storage` Java golden) at CI's ejected build and parity. B527: a `JavaProjectInput` field for `vanilla_block_rules`, then lift its `export.not-in-eject`.
+## 2026-11-22 — executor — B518 flows, templates and examples, batch 1
+
+**What**
+- Creator flows (ADR 0112 D2, ADR 0103): **Cave plants** (`cave-plants`: vines with glowing berries as cave vines, weeping and twisting strands, a kelp-like water plant, a glow-lichen-like `multiface`), **Desert plants** (`desert-plants`: cane, cactus and bamboo `column_plant`s with "How tall" and the vanilla uses as recipes, a big `dripleaf` with its small one) and **Flower pot** (`flower-pot`: a project `flower_pot` taking the vanilla plants picked, a recipe of three in a V). Starters 64 to 67, Creator flows 52 to 55.
+- New answers: the Copper set's rod (no light), button, pressure plate, fence, fence gate, wall and a chest that joins into a double chest, each in four stages with waxed copies and recipes (the default pieces are unchanged); the Storage crate's **Double chest** and **Different for every player** (and Ender pearls as an ingredient); the Wood set's **Door and trapdoor sounds** (iron, copper or barrel sounds through an own set type) and **Own door sound** (an .ogg through project sound events `block.<w>_door.open` and `.close`).
+- Art (ADR 0092): five new drawn block recipes in `library/src/art/recipes/blocks-plants-3.ts`: `strand` (body, tip, berries, berrytip), `stalk` (cane, cactus, cactustop, bamboo, leaves), `lichen`, `dripleaf` (top, side, stem) and `pot`; 89 to 94 recipes, 14 goldens in `test/fixtures/art/plants/`, the contact sheet regenerated. The AI helper's recipe list and prompt rows follow (`ART_RECIPE_NAMES`, tool catalogue hash `5666afad…`), and `msm_block_copper_rod` joins `VANILLA_PARITY_PROMPT_TEMPLATES` (an app test lists every ageing template there).
+- Templates (blocks-items, 15 more): berry vine, kelp-like water plant, weeping vine, cane, cactus, bamboo-like stalk, glowing lichen, big dripleaf, flower pot, double chest, chest for every player, block with its own sounds, door with its own sounds, copper-like rod, and `msm_vanilla_block_rules` (the kind's exclusion in `templates.test.ts` is gone).
+- Examples (174 to 186): Ember vines, Sea ribbon, Glow moss, Dune reed, Spine cactus, Reed bamboo, Wide leaf, Clay planter, Bronze fittings (block-types), Twin crate and Private crate (containers), and the per-kind example of `msm:vanilla_block_rules` (per-kind 114 to 115; `KINDS_AWAITING_EXAMPLES` empty in the exporters' library test). The `examples/` mirror regenerated once (only new files; no existing file changed).
+- Home: "Make a block" offers the picks "Grows in long strands", "Grows tall like sugar cane" and "A flower pot".
+- Tests: library (2117), blocks-items (1074), exporters' library test on both targets with zero problems (1298), ai (100), app (2539); `pnpm lint` and `pnpm typecheck` pass. `@msm/target-mc-26.3` fails two Java line-by-line checks (`container/MsmStorageBlockEntity.java`, `ContainerOpeners.java`) already at 51da6f8; B517 owns them.
+
+**Decisions**
+- The Copper set's default pieces stay the seven of batch 1, so existing projects and the mirror do not change; the new pieces are opt-in and the Bronze fittings example shows them.
+- A Copper set fence gate plays the oak gate sounds (`wood_type` is required and names only wood); the rod carries `msm:light_emitter` 0, since a rod glows by default.
+- A double crate is `horizontal` and has no open front (vanilla's chest family has no open state); a player's own store wins over Double chest and Keep contents.
+- The flower pot's earth and item picture are vanilla's (`minecraft:block/dirt`, `minecraft:item/flower_pot`, from the player's game); only the clay is drawn.
+- Pictures a model samples in parts (cactus, bamboo, dripleaf edge, pot) are patterned over the whole face, since vanilla's UV regions were not read (ADR 0092 D12).
+
+**Next**
+- B522: guide labels and the Very easy words above; the cave-vine berries item shows the vine's name.
+- B520/B519: the new examples in game and in Try it.

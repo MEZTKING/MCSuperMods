@@ -41,6 +41,12 @@
  * and `textures.hanging_gui` name, and the app's `blocks-items.sign-gui-picture-missing` warning
  * stays clear.
  *
+ * Door sounds (ADR 0105 D2, B518): "Door and trapdoor sounds" keeps the kind of wood's or gives
+ * the door and trapdoor a set type of their own (`set_type` `{ base, sounds }`) with vanilla's
+ * iron, copper or barrel sounds; a sound file of your own replaces them, through the project
+ * sound events `block.<w>_door.open` and `.close` (closing at a lower pitch). Buttons and plates
+ * keep the kind of wood's sounds.
+ *
  * Members that need others: the sapling, the tree and "Grows in the world" need the log and the
  * leaves (the tree is made of them); the recipes of stairs, slab, fence, gate, door, trapdoor,
  * button and plate need the planks; wood and stripped wood are crafted from their logs.
@@ -50,6 +56,7 @@ import type {
   ContentBundle,
   ContentBundleAsset,
   ContentBundleElement,
+  Json,
   JsonObject,
   ResourceLocation,
   StarterParameter,
@@ -72,7 +79,9 @@ import {
   rl,
 } from '../content/bundle';
 import {
+  audioValue,
   booleanValue,
+  decodeOggDataUrl,
   hexFromRgb,
   imageValue,
   NAME_MAX_LENGTH,
@@ -117,6 +126,40 @@ const SET_TYPES: readonly { value: string; label: string; sound: string }[] = [
   { value: 'crimson', label: 'Crimson', sound: 'nether_wood' },
   { value: 'warped', label: 'Warped', sound: 'nether_wood' },
 ];
+
+/**
+ * The door and trapdoor sounds (ADR 0105 D2): the kind of wood's, or vanilla sound events of
+ * another door family in a set type of the set's own (door events, trapdoor events).
+ */
+const DOOR_SOUNDS: readonly {
+  value: string;
+  label: string;
+  door?: readonly [string, string];
+  trapdoor?: readonly [string, string];
+}[] = [
+  { value: 'wood', label: 'As the kind of wood' },
+  {
+    value: 'iron',
+    label: 'Heavy metal, as an iron door',
+    door: ['minecraft:block.iron_door.open', 'minecraft:block.iron_door.close'],
+    trapdoor: ['minecraft:block.iron_trapdoor.open', 'minecraft:block.iron_trapdoor.close'],
+  },
+  {
+    value: 'copper',
+    label: 'Light metal, as a copper door',
+    door: ['minecraft:block.copper_door.open', 'minecraft:block.copper_door.close'],
+    trapdoor: ['minecraft:block.copper_trapdoor.open', 'minecraft:block.copper_trapdoor.close'],
+  },
+  {
+    value: 'barrel',
+    label: 'A soft thud, as a barrel',
+    door: ['minecraft:block.barrel.open', 'minecraft:block.barrel.close'],
+    trapdoor: ['minecraft:block.barrel.open', 'minecraft:block.barrel.close'],
+  },
+];
+
+/** The largest door sound file the flow accepts, in bytes (4 MB, as the Goat horn's). */
+const DOOR_SOUND_MAX_BYTES = 4 * 1024 * 1024;
 
 /** The fence gate wood types (ADR 0067 D2): their open and close sounds. */
 const WOOD_TYPES: readonly { value: string; label: string }[] = [
@@ -242,6 +285,26 @@ export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     type: 'choice',
     default: 'oak',
     choices: WOOD_TYPES.map((entry) => ({ ...entry })),
+  },
+  {
+    id: 'door_sounds',
+    label: 'Door and trapdoor sounds',
+    description:
+      'What the door and trapdoor sound like when they open and close: as the kind of wood, or as another kind of door. A sound file of your own below replaces this.',
+    group: 'Members',
+    type: 'choice',
+    default: 'wood',
+    choices: DOOR_SOUNDS.map(({ value, label }) => ({ value, label })),
+  },
+  {
+    id: 'door_sound_file',
+    label: 'Own door sound',
+    description:
+      'Your own sound for the door and trapdoor as an Ogg Vorbis file (.ogg, at most 4 MB): it plays as they open, and a little lower as they close. Leave it empty for the sounds above.',
+    group: 'Members',
+    type: 'audio',
+    default: null,
+    maxBytes: DOOR_SOUND_MAX_BYTES,
   },
   {
     id: 'signs',
@@ -478,6 +541,29 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
   const logMembers = (['log', 'wood', 'stripped_log', 'stripped_wood'] as const).filter(has);
   const signs = booleanValue(values, 'signs');
   const hangingSigns = booleanValue(values, 'hanging_signs');
+  const doorSounds = DOOR_SOUNDS.find(
+    (entry) => entry.value === stringValue(values, 'door_sounds'),
+  );
+  const ownDoorFile =
+    has('door') || has('trapdoor')
+      ? decodeOggDataUrl(audioValue(values, 'door_sound_file') ?? '')
+      : null;
+  const doorEvent = `block.${name.id}_door`;
+  /** The door's or trapdoor's `set_type`: the kind of wood's name, or a set type of its own. */
+  const openingSetType = (member: 'door' | 'trapdoor'): Json => {
+    const pair =
+      ownDoorFile !== null
+        ? ([rl(namespace, `${doorEvent}.open`), rl(namespace, `${doorEvent}.close`)] as const)
+        : doorSounds?.[member];
+    if (pair === undefined) return setType.value;
+    return { base: setType.value, sounds: { open: pair[0], close: pair[1] } };
+  };
+  const doorSoundWords =
+    ownDoorFile !== null
+      ? ` Its set type is its own (set_type base ${setType.value}): it opens and closes with your sound file through the project sound events ${namespace}:${doorEvent}.open and .close.`
+      : doorSounds?.door !== undefined
+        ? ` Its set type is its own (set_type base ${setType.value}) with ${doorSounds.value === 'iron' ? 'an' : 'a'} ${doorSounds.value === 'barrel' ? 'barrel' : `${doorSounds.value} door`}'s opening and closing sounds.`
+        : '';
 
   const elements: ContentBundleElement[] = [];
   const used = new Set<string>();
@@ -668,7 +754,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
       'door',
       {
         type: 'door',
-        set_type: setType.value,
+        set_type: openingSetType('door'),
         sound_type: sound,
         loot: 'self',
         item: { ...buildingTab },
@@ -678,7 +764,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
           'msm:flammable': { ...LAVA_ONLY_FIRE },
         },
       },
-      `A two-block-high ${name.lower} door that opens by hand or with redstone. Breaking either half drops one door. msm:flammable with odds of 0 lets lava set it alight as vanilla wooden doors, while fire does not spread to it.`,
+      `A two-block-high ${name.lower} door that opens by hand or with redstone. Breaking either half drops one door. msm:flammable with odds of 0 lets lava set it alight as vanilla wooden doors, while fire does not spread to it.${doorSoundWords}`,
     );
   }
   if (has('trapdoor')) {
@@ -686,7 +772,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
       'trapdoor',
       {
         type: 'trapdoor',
-        set_type: setType.value,
+        set_type: openingSetType('trapdoor'),
         sound_type: sound,
         loot: 'self',
         item: { ...buildingTab },
@@ -696,7 +782,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
           'msm:flammable': { ...LAVA_ONLY_FIRE },
         },
       },
-      `A ${name.lower} trapdoor that opens by hand or with redstone.`,
+      `A ${name.lower} trapdoor that opens by hand or with redstone.${doorSoundWords}`,
     );
   }
   if (has('button')) {
@@ -893,6 +979,28 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
     );
   }
 
+  // The own door sound (ADR 0105 D2): one file, opening as it is and closing a little lower.
+  const soundAssets: ContentBundleAsset[] = [];
+  if (ownDoorFile !== null) {
+    const file = rl(namespace, `block/${name.id}_door`);
+    elements.push(
+      element(
+        rl(namespace, 'sounds'),
+        KINDS.sounds,
+        {
+          [`${doorEvent}.close`]: { sounds: [{ name: file, pitch: 0.9 }] },
+          [`${doorEvent}.open`]: { sounds: [{ name: file }] },
+        },
+        `Defines the sound events ${namespace}:${doorEvent}.open and .close that the ${name.lower} door and trapdoor play: your file sounds/block/${name.id}_door.ogg in this namespace, a little lower when closing (pitch 0.9).`,
+      ),
+    );
+    soundAssets.push({
+      namespace,
+      path: `sounds/block/${name.id}_door.ogg`,
+      bytes: ownDoorFile.bytes,
+    });
+  }
+
   const contents = `${name.lower} ${has('log') ? 'logs, ' : ''}planks and building blocks`;
   return {
     elements: [
@@ -916,6 +1024,7 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
           ),
       ),
       ...extraAssets,
+      ...soundAssets,
     ],
   };
 }

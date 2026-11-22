@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Dune Reed",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "style": "cane",
+    "textures": {
+      "all": "msm_examples:block/dune_reed"
+    },
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:dune_reed",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Dune Reed grows tall a block at a time (type column_plant, style cane), as sugar cane: it stands on sand, dirt or grass with water beside its base, and breaking a block breaks the ones above. The pictures are drawn by MSM.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

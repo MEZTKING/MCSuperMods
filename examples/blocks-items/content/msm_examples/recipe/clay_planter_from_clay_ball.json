@@ -1,0 +1,27 @@
+{
+  "data": {
+    "category": "misc",
+    "key": {
+      "#": "minecraft:clay_ball"
+    },
+    "pattern": [
+      "# #",
+      " # "
+    ],
+    "result": {
+      "id": "msm_examples:clay_planter"
+    },
+    "type": "minecraft:crafting_shaped"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:clay_planter_from_clay_ball",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Three clay balls in a V make clay planter, as three bricks make a flower pot.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

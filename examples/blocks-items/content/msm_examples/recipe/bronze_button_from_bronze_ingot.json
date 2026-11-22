@@ -1,0 +1,23 @@
+{
+  "data": {
+    "category": "redstone",
+    "ingredients": [
+      "msm_examples:bronze_ingot"
+    ],
+    "result": {
+      "id": "msm_examples:bronze_button"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_button_from_bronze_ingot",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An ingot makes a button.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

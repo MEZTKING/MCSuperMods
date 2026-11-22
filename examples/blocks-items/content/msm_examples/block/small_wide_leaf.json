@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "requires_tool": false,
+        "resistance": 0.1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Small Wide Leaf",
+    "format": 1,
+    "grows_into": "msm_examples:wide_leaf",
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "size": "small",
+    "sound_type": "grass",
+    "textures": {
+      "side": "msm_examples:block/wide_leaf_side",
+      "stem_top": "msm_examples:block/wide_leaf_stem",
+      "top": "msm_examples:block/wide_leaf_top"
+    },
+    "type": "dripleaf"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:small_wide_leaf",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Small wide leaf, two blocks high, as small dripleaf: bone meal turns it into wide leaf (grows_into), two to four blocks tall. Only shears pick it up.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

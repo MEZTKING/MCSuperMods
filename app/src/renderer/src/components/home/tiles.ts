@@ -54,6 +54,25 @@ export const MAKE_BLOCK_PICKS: readonly VeryEasyPick[] = [
     label: 'Ages like copper',
     sentence: 'Blocks that slowly turn green, and stay as they are when waxed.',
   },
+  // Vanilla parity 3 (ADR 0112 D2, plan "Very easy wording"; B518).
+  {
+    id: 'cave-plants',
+    flowId: 'cave-plants',
+    label: 'Grows in long strands',
+    sentence: 'Vines with glowing berries, kelp, or a moss that spreads over any side.',
+  },
+  {
+    id: 'desert-plants',
+    flowId: 'desert-plants',
+    label: 'Grows tall like sugar cane',
+    sentence: 'Cane, cactus, bamboo, or a leaf that tips when you stand on it.',
+  },
+  {
+    id: 'flower-pot',
+    flowId: 'flower-pot',
+    label: 'A flower pot',
+    sentence: 'A pot of your own for the flowers you pick.',
+  },
 ];
 
 /** The new kinds of item "Make an item" offers (ADR 0101 D4). */
@@ -174,7 +193,8 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'block',
     label: 'Make a block',
-    sentence: 'A new block, an ore, stone with stairs, lights, a bed, a cake, a sign or a liquid.',
+    sentence:
+      'A new block, an ore, stone with stairs, lights, a bed, a cake, a sign, plants, a pot or a liquid.',
     group: 'blocks',
     // The Very easy picks (ADR 0101 D4) follow the first three; flows not in the library are hidden.
     action: withPicks(['simple-block', 'custom_ore', 'stone-set', 'fluid'], MAKE_BLOCK_PICKS),

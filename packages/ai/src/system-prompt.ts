@@ -261,6 +261,7 @@ export const VANILLA_PARITY_PROMPT_TEMPLATES = Object.freeze([
   'msm_block_cocoa_pod',
   'msm_block_scaffold',
   'msm_block_copper_block',
+  'msm_block_copper_rod',
   'msm_block_waterlogged_lamp',
   'msm_item_satchel',
   'msm_item_pouch',
@@ -400,6 +401,14 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
     ['grass_side', 'a grass side'],
     ['sand', 'sand'],
     ['gravel', 'gravel'],
+    [
+      'strand',
+      'a kelp- or vine-like strand, finish body, tip, berries or berrytip, the second colour its berries',
+    ],
+    ['stalk', 'a plant stalk, finish cane, cactus, cactustop, bamboo or leaves'],
+    ['lichen', 'a lichen over a face, the second colour its glowing specks'],
+    ['dripleaf', 'a dripleaf, finish top, side or stem'],
+    ['pot', 'the clay of a flower pot'],
   ),
   items: rows(
     ['gem', 'a gem'],

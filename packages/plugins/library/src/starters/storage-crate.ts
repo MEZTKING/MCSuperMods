@@ -7,6 +7,13 @@
  * look, a crafting recipe (eight of a material around a vanilla chest) and pictures for the
  * front and the open front.
  *
+ * Vanilla parity 3 (ADR 0104 D4, D5; B518): **Double chest** makes a medium crate a chest that
+ * joins a crate beside it into one of six rows, as vanilla's chests; it then faces four ways
+ * (`horizontal`, as a chest) and has no open front, since vanilla's chest family has no such
+ * state. **Different for every player** gives each player their own contents, as an ender chest:
+ * nothing drops when it is broken and hoppers do not reach it. Neither goes with keeping the
+ * contents, nor with each other (the player's own store wins).
+ *
  * Ids derive from `crate_name`: `supply_crate`, its textures `block/supply_crate`,
  * `block/supply_crate_front` and `block/supply_crate_front_open`, and the recipe
  * `supply_crate_from_chest`. Containers need the Fabric mod jar export.
@@ -85,6 +92,7 @@ const INGREDIENTS: readonly { value: string; label: string }[] = [
   { value: 'look', label: 'The material of its look (planks or cobblestone)' },
   { value: 'minecraft:iron_ingot', label: 'Iron ingots' },
   { value: 'minecraft:copper_ingot', label: 'Copper ingots' },
+  { value: 'minecraft:ender_pearl', label: 'Ender pearls' },
   { value: 'none', label: 'No recipe (creative menu only)' },
 ];
 
@@ -141,6 +149,24 @@ export const STORAGE_CRATE_PARAMETERS: readonly StarterParameter[] = Object.free
     default: false,
   },
   {
+    id: 'double',
+    label: 'Double chest',
+    description:
+      'Two crates side by side join into one chest of six rows, as vanilla chests do (sneak to keep them apart). Makes the crate medium (3 rows), facing four ways, without the open front picture.',
+    group: 'Crate',
+    type: 'boolean',
+    default: false,
+  },
+  {
+    id: 'per_player',
+    label: 'Different for every player',
+    description:
+      'Each player sees their own items in it, as an ender chest: every crate of this kind opens the same store for that player, nothing drops when it is broken, and hoppers and comparators do not reach it.',
+    group: 'Crate',
+    type: 'boolean',
+    default: false,
+  },
+  {
     id: 'look',
     label: 'Look',
     description: 'Its sounds, how it is mined and the drawn pictures.',
@@ -192,9 +218,13 @@ export function storageCrateBundle(context: BundleContext): ContentBundle {
   const colour = rgbFromHex(stringValue(values, 'colour'), COLOURS.wood);
   const look = LOOKS.find((entry) => entry.value === stringValue(values, 'look')) ?? LOOKS[0];
   if (look === undefined) throw new Error('No crate look.');
-  const rows = rowsOf(stringValue(values, 'size'));
+  // A player's own store (ADR 0104 D5) goes with neither keeping the contents nor a double chest.
+  const perPlayer = booleanValue(values, 'per_player');
+  // A double chest (ADR 0104 D4) is a medium chest that does not keep its contents.
+  const double = booleanValue(values, 'double') && !perPlayer;
+  const rows = double ? 3 : rowsOf(stringValue(values, 'size'));
   // Only the 27 slots of the shulker box screen can keep their contents (ADR 0074 D6).
-  const keeps = booleanValue(values, 'keep_contents') && rows === 3;
+  const keeps = booleanValue(values, 'keep_contents') && rows === 3 && !double && !perPlayer;
   const chosen = stringValue(values, 'ingredient');
   const ingredient = chosen === 'look' ? look.material : chosen;
   const ingredientLabel =
@@ -209,6 +239,13 @@ export function storageCrateBundle(context: BundleContext): ContentBundle {
   const frontOpen = rl(namespace, `block/${id}_front_open`);
   const container: JsonObject = { layout: 'chest', rows };
   if (keeps) container.keep_contents = true;
+  if (double) container.double = true;
+  if (perPlayer) container.per_player = true;
+  const kindWords = double
+    ? ' Two side by side join into a double chest of 54 slots (container double), and each half keeps its own 27 slots for hoppers, comparators and drops.'
+    : perPlayer
+      ? ' Each player sees their own items in it (container per_player), as an ender chest: every crate of this id opens the same store for that player, kept when they die or change dimension; hoppers and comparators do not reach it, and breaking it drops only the crate.'
+      : '';
 
   const elements: ContentBundleElement[] = [
     packElement(namespace, `${projectName}: ${name.lower}`, PACK_NOTES),
@@ -219,17 +256,34 @@ export function storageCrateBundle(context: BundleContext): ContentBundle {
       {
         format: 1,
         display_name: name.display,
-        type: 'directional',
+        type: double ? 'horizontal' : 'directional',
         sound_type: look.sound,
         loot: 'self',
         item: { creative_tab: 'minecraft:functional_blocks' },
-        textures: { all: side, front, front_open: frontOpen },
+        textures: double ? { front, side, top: side } : { all: side, front, front_open: frontOpen },
         components: {
           'msm:breakable': { ...look.breakable },
           'msm:container': container,
         },
       },
-      `A crate with ${rows * 9} slots in a vanilla chest screen of ${rows} row${rows === 1 ? '' : 's'} (msm:container, layout chest). It faces any of six directions, as a barrel does, and shows textures.front_open while a player has it open (the block state open). Hoppers fill it from above and the sides and empty it from below, and comparators read how full it is; "hoppers": false or "comparator": false turn that off. ${keeps ? 'keep_contents makes it keep its items when broken, as a shulker box does: the loot table copies them into the dropped item, and the screen is the shulker box screen, which refuses other crates and shulker boxes.' : 'Breaking it drops its contents and the crate.'} The open and close sounds are a barrel's unless open_sound and close_sound name others; on_open and on_close run events. Containers need the Fabric mod jar export.`,
+      [
+        `A crate with ${rows * 9} slots in a vanilla chest screen of ${rows} row${rows === 1 ? '' : 's'} (msm:container, layout chest).`,
+        double
+          ? 'It faces one of four directions, as a chest does.'
+          : 'It faces any of six directions, as a barrel does, and shows textures.front_open while a player has it open (the block state open).',
+        kindWords.trim(),
+        perPlayer
+          ? ''
+          : 'Hoppers fill it from above and the sides and empty it from below, and comparators read how full it is; "hoppers": false or "comparator": false turn that off.',
+        keeps
+          ? 'keep_contents makes it keep its items when broken, as a shulker box does: the loot table copies them into the dropped item, and the screen is the shulker box screen, which refuses other crates and shulker boxes.'
+          : perPlayer
+            ? ''
+            : 'Breaking it drops its contents and the crate.',
+        "The open and close sounds are a barrel's unless open_sound and close_sound name others; on_open and on_close run events. Containers need the Fabric mod jar export.",
+      ]
+        .filter((sentence) => sentence !== '')
+        .join(' '),
     ),
   ];
   if (ingredient !== 'none') {
@@ -250,6 +304,8 @@ export function storageCrateBundle(context: BundleContext): ContentBundle {
   }
   const assets = [pictureTexture(namespace, `block/${id}`, null, look.pattern, colour)];
   for (const picture of PICTURES) {
+    // A double chest has no open front (vanilla's chest family has no open state).
+    if (double && picture.suffix === '_front_open') continue;
     assets.push(
       pictureTexture(
         namespace,

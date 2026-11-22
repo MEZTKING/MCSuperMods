@@ -1,0 +1,42 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_examples:waxed_bronze_fence_gate"
+      },
+      "msm:weathering": {
+        "next": "msm_examples:exposed_bronze_fence_gate",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Bronze Fence Gate",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_examples:block/bronze_block"
+    },
+    "type": "fence_gate",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bronze_fence_gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A fence gate that opens by hand or with redstone; it plays the oak gate sounds, the only gate sounds a fence gate takes. Mined with a stone pickaxe or better, as copper. Bronze Fence Gate: on random ticks it slowly ages into the exposed stage, msm_examples:exposed_bronze_fence_gate, by copper's own chance, and a lower-stage neighbour holds it back. Honeycomb waxes it into msm_examples:waxed_bronze_fence_gate.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

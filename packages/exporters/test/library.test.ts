@@ -758,6 +758,9 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       wood_name: 'Driftwood',
       members: ['planks', 'stairs', 'slab', 'door', 'sapling', 'leaves'],
     },
+    // ADR 0105 D2 (B518): door sounds of another family, and a sound file of its own.
+    { wood_name: 'Iron Bark', door_sounds: 'iron' },
+    { wood_name: 'Echo Wood', door_sound_file: songDataUrl(), members: ['planks', 'trapdoor'] },
     { members: ['log', 'leaves', 'sapling', 'stripped_log', 'wood'], grows: true },
     // ADR 0101 D2: no signs, or signs without hanging signs.
     { wood_name: 'Larch', signs: false, hanging_signs: false },
@@ -837,6 +840,36 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
   'copper-set': [
     { metal_name: 'Bronze', colour: '#b07838', members: ['block', 'cut', 'stairs'], waxed: false },
     { metal_name: 'Zinc', ingot: false, members: ['slab', 'door', 'trapdoor', 'bars'] },
+    // ADR 0104 D1 (B518): the six more types that age and the chest, with and without the block.
+    {
+      metal_name: 'Pewter',
+      members: ['block', 'rod', 'button', 'pressure_plate', 'fence', 'fence_gate', 'wall', 'chest'],
+    },
+    { metal_name: 'Nickel', members: ['rod', 'chest', 'wall'], waxed: false, ingot: false },
+  ],
+  // ADR 0103 D1, D2 (B518): every kind of cave and desert plant, heights, uses, pot plants.
+  'cave-plants': [
+    { plant_name: 'Dusk Vine', kind: 'weeping', colour: '#8a2a3a' },
+    { plant_name: 'Sky Vine', kind: 'twisting', colour: '#2a8a8a' },
+    { plant_name: 'Sea Lace', kind: 'kelp' },
+    { plant_name: 'Lamp Moss', kind: 'lichen', light: 12 },
+    { plant_name: 'Dim Berry Vine', berry_colour: '#c41c34', light: 3 },
+  ],
+  'desert-plants': [
+    { plant_name: 'Sand Spike', kind: 'cactus', height: 'shorter', uses: false },
+    { plant_name: 'River Cane', kind: 'cane', height: 'taller' },
+    { plant_name: 'Tall Reed', kind: 'bamboo', height: 'taller' },
+    { plant_name: 'Low Reed', kind: 'bamboo', height: 'shorter', uses: false },
+    { plant_name: 'Tip Leaf', kind: 'dripleaf', colour: '#4c8a2c' },
+  ],
+  'flower-pot': [
+    {
+      pot_name: 'Copper Pot',
+      plants: ['minecraft:red_mushroom', 'minecraft:brown_mushroom', 'minecraft:dead_bush'],
+      ingredient: 'minecraft:copper_ingot',
+      colour: '#b07838',
+    },
+    { pot_name: 'Window Box', plants: ['minecraft:lily_of_the_valley'], ingredient: 'none' },
   ],
   lights: [
     {
@@ -965,6 +998,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { crate_name: 'Treasure Box', keep_contents: true, ingredient: 'none' },
     { crate_name: 'Pouch Crate', size: 'small', keep_contents: true, colour: '#28a060' },
+    // ADR 0104 D4, D5 (B518): a double chest, a player's own store, and both chosen at once.
+    { crate_name: 'Twin Bin', double: true, size: 'large', keep_contents: true },
+    { crate_name: 'Own Box', per_player: true, ingredient: 'minecraft:ender_pearl' },
+    { crate_name: 'Both Box', per_player: true, double: true, look: 'stone' },
   ],
   // ADR 0076 D2: every power, speeds, vanilla recipe types with and without its own, pictures.
   machine: [
@@ -1926,10 +1963,7 @@ function typeCheck(script: string): string[] {
  * its library brief lands. `minecraft:wolf_sound_variant` is not a kind at all while vanilla-mcdoc
  * lacks `step_sound` (ADR 0064 D5).
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [
-  // B515 registers the kind; B518 (vanilla parity 3, wave 4) adds its template and example.
-  'msm:vanilla_block_rules',
-];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 // Tests --------------------------------------------------------------------------------------
 

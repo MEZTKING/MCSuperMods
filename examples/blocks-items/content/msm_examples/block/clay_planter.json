@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Clay Planter",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "plants": [
+      "minecraft:dandelion",
+      "minecraft:poppy",
+      "minecraft:allium",
+      "minecraft:cornflower",
+      "minecraft:oak_sapling",
+      "minecraft:birch_sapling"
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "item": "minecraft:item/flower_pot",
+      "pot": "msm_examples:block/clay_planter"
+    },
+    "type": "flower_pot"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:clay_planter",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "An empty flower pot (type flower_pot) that takes dandelion, poppy, allium, cornflower, oak sapling, birch sapling: use it with one of them to put the plant in, and it becomes the generated potted block msm_examples:clay_planter_<plant> (for example msm_examples:clay_planter_dandelion). Use a potted pot with an empty hand to take the plant out; breaking it drops the pot and the plant. Other plants do not go in, and vanilla's own flower pot is not changed. Its clay is drawn by MSM; the earth is vanilla's dirt and the item picture vanilla's pot.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

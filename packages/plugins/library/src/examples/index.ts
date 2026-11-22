@@ -13,6 +13,7 @@ import {
   musicDiscBundle,
   recipePackBundle,
 } from '../starters/index';
+import { vanillaBlockRulesKindExample } from './block-types';
 import {
   behaviourExamples as blocksItemsBehaviourExamples,
   blocksItemsExamples,
@@ -77,7 +78,8 @@ const [particleDescriptionExample, particleTypeExample] = particleKindExamples a
  * data pack, tags, registries, the data kinds sweep, structures, worldgen, blocks and items
  * (the particle type last), entities, models and animations, scripts, rules (the lucky block,
  * ADR 0082 D11), the vehicle, key bind and HUD examples (ADR 0091 D3), the command and creative
- * tab examples (B461), and the villager profession and fluid examples (B481).
+ * tab examples (B461), the villager profession and fluid examples (B481), and the rules for
+ * vanilla blocks (B518).
  */
 export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...resourcePackExamples,
@@ -96,6 +98,7 @@ export const kindExamples: readonly ExampleProject[] = Object.freeze([
   ...vehicleKindExamples,
   ...vanillaParityKindExamples,
   ...villagerFluidKindExamples,
+  vanillaBlockRulesKindExample,
 ]);
 
 /**

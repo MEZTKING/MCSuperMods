@@ -15,6 +15,16 @@ import { clusteredField, hashSeed, quantise, rng } from '../noise';
 import { generateRamp } from '../ramp';
 import { cropStage, sapling } from './blocks-plants';
 import {
+  DRIPLEAF_FINISHES,
+  dripleaf,
+  lichen,
+  pot,
+  STALK_FINISHES,
+  STRAND_FINISHES,
+  stalk,
+  strand,
+} from './blocks-plants-3';
+import {
   blockFront,
   bricks,
   cobblestone,
@@ -488,4 +498,34 @@ export const BLOCK_RECIPES: readonly ArtRecipeEntry[] = Object.freeze([
     { id: 'gravel', label: 'Gravel', kind: 'block', fallback: 'stone', tiles: true },
     gravel,
   ),
+  recipeEntry(
+    {
+      id: 'strand',
+      label: 'Strand',
+      kind: 'block',
+      fallback: 'sapling',
+      colours: 2,
+      finishes: STRAND_FINISHES,
+    },
+    strand,
+  ),
+  recipeEntry(
+    { id: 'stalk', label: 'Stalk', kind: 'block', fallback: 'sapling', finishes: STALK_FINISHES },
+    stalk,
+  ),
+  recipeEntry(
+    { id: 'lichen', label: 'Lichen', kind: 'block', fallback: 'leaves', colours: 2 },
+    lichen,
+  ),
+  recipeEntry(
+    {
+      id: 'dripleaf',
+      label: 'Dripleaf',
+      kind: 'block',
+      fallback: 'leaves',
+      finishes: DRIPLEAF_FINISHES,
+    },
+    dripleaf,
+  ),
+  recipeEntry({ id: 'pot', label: 'Flower pot', kind: 'block', fallback: 'plain' }, pot),
 ]);

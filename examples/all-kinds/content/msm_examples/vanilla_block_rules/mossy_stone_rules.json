@@ -1,0 +1,51 @@
+{
+  "data": {
+    "burn": [
+      {
+        "block": "minecraft:brown_mushroom_block",
+        "burn_odds": 5,
+        "ignite_odds": 5
+      },
+      {
+        "block": "minecraft:red_mushroom_block",
+        "burn_odds": 5,
+        "ignite_odds": 5
+      }
+    ],
+    "flatten": [
+      {
+        "block": "minecraft:mud",
+        "into": "minecraft:packed_mud"
+      }
+    ],
+    "format": 1,
+    "strip": [
+      {
+        "block": "minecraft:mossy_cobblestone",
+        "into": "minecraft:cobblestone"
+      },
+      {
+        "block": "minecraft:mossy_stone_bricks",
+        "into": "minecraft:stone_bricks"
+      }
+    ],
+    "till": [
+      {
+        "block": "minecraft:moss_block",
+        "drops": "minecraft:moss_carpet",
+        "into": "minecraft:dirt"
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:mossy_stone_rules",
+  "kind": "msm:vanilla_block_rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Rules for vanilla blocks (msm:vanilla_block_rules), as the additions add to vanilla content: an axe used on mossy cobblestone or mossy stone bricks scrapes them into the plain blocks (strip), a shovel used on mud with air above packs it (flatten), a hoe used on a moss block turns it into dirt and drops a moss carpet on top (till), and fire spreads to huge mushroom blocks and burns them away (burn, with the odds of msm:flammable). None of these pairs is vanilla's own, so nothing replaces a vanilla rule. Rules for vanilla blocks need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

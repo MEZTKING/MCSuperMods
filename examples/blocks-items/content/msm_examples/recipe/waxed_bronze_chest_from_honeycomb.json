@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_examples:bronze_chest",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_examples:waxed_bronze_chest"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:waxed_bronze_chest_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Bronze Chest and a honeycomb in the crafting grid make waxed bronze chest, as vanilla waxes copper.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

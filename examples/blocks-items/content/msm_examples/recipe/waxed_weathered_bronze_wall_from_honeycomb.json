@@ -1,0 +1,24 @@
+{
+  "data": {
+    "category": "building",
+    "ingredients": [
+      "msm_examples:weathered_bronze_wall",
+      "minecraft:honeycomb"
+    ],
+    "result": {
+      "id": "msm_examples:waxed_weathered_bronze_wall"
+    },
+    "type": "minecraft:crafting_shapeless"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:waxed_weathered_bronze_wall_from_honeycomb",
+  "kind": "minecraft:recipe",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Weathered Bronze Wall and a honeycomb in the crafting grid make waxed weathered bronze wall, as vanilla waxes copper.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 1,
+        "requires_tool": false,
+        "resistance": 1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Reed Bamboo",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:natural_blocks"
+    },
+    "loot": "self",
+    "sound_type": "bamboo",
+    "style": "bamboo",
+    "textures": {
+      "leaves_large": "msm_examples:block/reed_bamboo_leaves",
+      "leaves_small": "msm_examples:block/reed_bamboo_leaves",
+      "shoot": "msm_examples:block/reed_bamboo_shoot",
+      "stalk": "msm_examples:block/reed_bamboo"
+    },
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:reed_bamboo",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Reed Bamboo is a woody stalk (type column_plant, style bamboo), as bamboo: placed, it is a shoot (the generated block msm_examples:reed_bamboo_shoot) that grows into a stalk with leaves near its top and thickens as it grows. Bone meal grows it one or two blocks. The pictures are drawn by MSM.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

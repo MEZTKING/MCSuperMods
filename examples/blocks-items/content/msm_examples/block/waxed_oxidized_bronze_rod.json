@@ -1,0 +1,37 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:light_emitter": {
+        "level": 0
+      }
+    },
+    "display_name": "Waxed Oxidised Bronze Rod",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:building_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_examples:block/oxidized_bronze"
+    },
+    "type": "rod"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:waxed_oxidized_bronze_rod",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Oxidised Bronze Rod: oxidised bronze rod under wax, which never ages. An axe scrapes the wax off and gives msm_examples:oxidized_bronze_rod back.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "min_tier": "stone",
+        "resistance": 6,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "double": true,
+        "layout": "chest",
+        "rows": 3
+      }
+    },
+    "display_name": "Waxed Weathered Bronze Chest",
+    "format": 1,
+    "item": {
+      "creative_tab": "minecraft:functional_blocks"
+    },
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "front": "msm_examples:block/weathered_bronze_chest_front",
+      "side": "msm_examples:block/weathered_bronze",
+      "top": "msm_examples:block/weathered_bronze"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:waxed_weathered_bronze_chest",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Waxed Weathered Bronze Chest: weathered bronze chest under wax, which never ages. An axe scrapes the wax off and gives msm_examples:weathered_bronze_chest back.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

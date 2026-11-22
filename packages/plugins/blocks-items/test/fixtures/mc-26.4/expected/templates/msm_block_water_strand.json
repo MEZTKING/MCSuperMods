@@ -1,0 +1,135 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0,
+          "resistance": 0
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "needs_water": true,
+      "sound_type": "grass",
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/kelp"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "minecraft:block/kelp_plant"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample_plant.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/sample_plant"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample_plant.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/kelp"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample_plant",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample_plant.json"
+  }
+]

@@ -1,0 +1,315 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:breakable": {
+          "hardness": 0.2,
+          "resistance": 0.2
+        }
+      },
+      "format": 1,
+      "item": {
+        "creative_tab": "minecraft:natural_blocks"
+      },
+      "sound_type": "grass",
+      "type": "multiface"
+    },
+    "layer": "msm",
+    "path": "msm/demo/block/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/glow_lichen",
+      "textures": {
+        "glow_lichen": "minecraft:block/glow_lichen",
+        "particle": "minecraft:block/glow_lichen"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/sample.json"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "demo:block/sample"
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample"
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "up": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "x": 90
+          },
+          "when": {
+            "down": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "demo:block/sample",
+            "uvlock": true,
+            "x": 90
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/sample.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:block/glow_lichen"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample.json"
+  },
+  {
+    "contents": {
+      "block.demo.sample": "Sample"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": "minecraft:tool/can_shear",
+              "modifier": [
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "down": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "up": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "north": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "south": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "west": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "demo:sample",
+                    "state": {
+                      "east": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "count": -1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "demo:sample",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/sample",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/sample.json"
+  }
+]
