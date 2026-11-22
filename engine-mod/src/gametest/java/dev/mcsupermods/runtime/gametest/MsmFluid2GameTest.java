@@ -430,7 +430,9 @@ public class MsmFluid2GameTest {
         EventListener listener = new EventListener() {
             @Override
             public void onEvent(Identifier from, Identifier event, int depth, EventContext ctx) {
-                if (from.equals(owner)) {
+                // Only the bottle's on_drink event: the listener is global, and other tests running
+                // in parallel fire the same fluid's on_entity_inside (msm_test:goo_inside).
+                if (from.equals(owner) && event.equals(id("drunk"))) {
                     fired.add(event + (ctx.player() == p ? " by the drinker" : " by " + ctx.player()));
                 }
             }
