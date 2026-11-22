@@ -1,26 +1,51 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
+  APP_MAP_LABELS,
+  APP_MAP_TILES,
   ART_RECIPE_NAMES,
+  MOB_VARIANT_PROMPT_KINDS,
   MOBS_COMMANDS_FLOW_ANSWERS,
   MOBS_COMMANDS_PROMPT_CODES,
   MOBS_COMMANDS_PROMPT_TEMPLATES,
+  MORE_DATA_PROMPT_KINDS,
+  MORE_TAG_PROMPT_KINDS,
   NEW_FLOW_PROMPT_IDS,
+  PLAN_FIRST_ABOVE,
   PLANTS_STORAGE_FLOW_ANSWERS,
   PLANTS_STORAGE_PROMPT_CODES,
   PLANTS_STORAGE_PROMPT_TEMPLATES,
+  PROMPT_CONTEXT_LINES,
+  PROMPT_FLOWS,
+  PROMPT_KINDS,
+  PROMPT_NOT_AVAILABLE,
+  PROMPT_VIEWS,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
+  RULES_PROMPT_LIMITS,
   RULES_PROMPT_PLAIN_STEPS,
   RULES_PROMPT_TEMPLATES,
+  recipeInWords,
+  SCRIPT_API_PROMPT_VERSIONS,
   systemPrompt,
   TEXTURE_PROMPT_RECIPES,
+  TOOL_CATALOGUE,
+  TRY_IT_PROMPT_AREA,
+  TRY_IT_PROMPT_COMMANDS,
+  TRY_IT_PROMPT_GROUNDS,
+  TRY_IT_PROMPT_LABELS,
+  TRY_IT_PROMPT_SCRIPT_SECONDS,
+  TRY_IT_PROMPT_TICK_COMMANDS,
+  TRY_IT_PROMPT_TOOLS,
+  toolParams,
+  VANILLA_PACK_FLOWS,
   VILLAGERS_FLUIDS_FLOW_ANSWERS,
   VILLAGERS_FLUIDS_PROMPT_CODES,
   VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
   WORLD_FLOW_ANSWERS,
 } from '../src/index';
+import { countWord } from '../src/prompt/core';
 
 describe('systemPrompt', () => {
   it.each(['chat', 'build'] as const)('is identical across calls in %s mode', (mode) => {
@@ -36,14 +61,16 @@ describe('systemPrompt', () => {
     }
   });
 
-  it('states the rules and the build procedure', () => {
-    const build = systemPrompt('build');
-    expect(build).toContain('propose_plan');
-    expect(build).toContain('checkpoint');
-    expect(build).toContain('run_checks');
-    expect(build).toContain('msm:mod');
-    expect(build).toContain('British English');
-    expect(systemPrompt('chat')).not.toContain('Mode: build');
+  it('states the rules and how to work, small asks directly and big ones planned (ADR 0125 D2)', () => {
+    const text = systemPrompt();
+    expect(text).toContain('propose_plan');
+    expect(text).toContain('checkpoint');
+    expect(text).toContain('run_checks');
+    expect(text).toContain('msm:mod');
+    expect(text).toContain('British English');
+    expect(text).toContain(`up to ${countWord(PLAN_FIRST_ABOVE)} main things`);
+    expect(text).toContain(`A whole mod, or more than ${countWord(PLAN_FIRST_ABOVE)} main things`);
+    expect(text).toContain('No propose_plan or checkpoint.');
   });
 });
 
@@ -792,12 +819,12 @@ describe('systemPrompt textures (ADR 0092 D15)', () => {
   it('lists every drawn recipe once, in words', () => {
     const rows = Object.values(TEXTURE_PROMPT_RECIPES).flat();
     expect(rows.map(([id]) => id).sort()).toEqual([...ART_RECIPE_NAMES].sort());
-    for (const mode of ['chat', 'build'] as const) {
-      const text = systemPrompt(mode);
-      for (const [id, words] of rows) {
-        expect(text, id).toContain(id === words ? id : `${id} (${words})`);
-      }
-    }
+    const text = systemPrompt();
+    for (const row of rows) expect(text, row[0]).toContain(recipeInWords(row));
+    // Words that only repeat the id are left out; the others stay.
+    expect(recipeInWords(['sword', 'a sword'])).toBe('sword');
+    expect(recipeInWords(['door_top', 'a door top'])).toBe('door_top');
+    expect(recipeInWords(['knife', 'a throwing knife'])).toBe('knife (a throwing knife)');
   });
 
   it('says MSM draws the pictures in a Minecraft-like style and never calls them placeholders', () => {
@@ -805,7 +832,7 @@ describe('systemPrompt textures (ADR 0092 D15)', () => {
       const text = systemPrompt(mode);
       expect(text).toContain('Minecraft-like style');
       expect(text).toContain('never copied, traced or recoloured');
-      expect(text).toContain('Draw...');
+      expect(text).toContain('"Draw…"');
       expect(text).not.toMatch(/placeholder/i);
     }
   });
@@ -883,14 +910,13 @@ describe('systemPrompt worlds and the live world map (ADR 0119, B590)', () => {
 describe('the prompt in topic files (B681)', () => {
   // The SHA-256 of each run size's text taken before the split into `src/prompt/`. Wording
   // changes (B682 onwards) move these on purpose, with a line in the brief that does it.
-  const PINNED = {
-    chat: '92d53d7f7d5dc443606b4908488fcd98d11933d140a7fa5aba2c4784763c6b65',
-    build: '0a7583ddae9a2eb5e81c4f3c04d6deefa964d50f50a0bf7c37cdee724bd46750',
-  } as const;
+  // B682 moved it once, on purpose (ADR 0125 D2, D6, D7): one text for both run sizes, the
+  // contradictions of F8 fixed, how to speak and the map of the app added.
+  const PINNED = '0e5f0eeb7ca5a934e322eda76e743a8b14bd29da2c7d72caa8d5891373ffa715';
 
-  it.each(['chat', 'build'] as const)('%s text hashes to the pinned value', (mode) => {
+  it.each(['chat', 'build'] as const)('the %s run gets the pinned text', (mode) => {
     const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
-    expect(hash).toBe(PINNED[mode]);
+    expect(hash).toBe(PINNED);
   });
 
   it('writes the optional context lines only when given', () => {
@@ -914,5 +940,173 @@ describe('the prompt in topic files (B681)', () => {
     expect(full).toContain('Mod: My Mod');
     expect(full).toContain('Open: Ruby (a:ruby, msm:item)');
     expect(full.filter((l) => !/^(View|Mod|Open): /.test(l))).toEqual(plain);
+  });
+});
+
+describe('the prompt made true (B682, ADR 0125 D2, D6, D7)', () => {
+  const text = systemPrompt();
+
+  it('is one text for both run sizes and tells the user to switch nothing (D2)', () => {
+    expect(systemPrompt('chat')).toBe(systemPrompt('build'));
+    expect(systemPrompt()).toBe(systemPrompt('build'));
+    expect(text).not.toMatch(/Mode: (chat|build)/);
+    expect(text).not.toMatch(/build mode|chat mode|switch to/i);
+  });
+
+  it('stays within its size budget of 96,000 characters (ADR 0125 D7)', () => {
+    expect(text.length).toBeLessThanOrEqual(96_000);
+  });
+
+  it('F8 a: boats are the msm:boat component, never "not available"', () => {
+    expect(text).toContain('boats of vanilla\'s kind are the "msm:boat" component');
+    expect(text).not.toMatch(/Boats[^.]*not available/i);
+    expect(text).toContain('Shelves are not available');
+  });
+
+  it('F8 b: block.place is an event of Script API 1.6, which has its paragraph', () => {
+    expect(text).not.toContain('Still missing');
+    expect(text).not.toMatch(/block\.place[^.]*missing/);
+    const at = text.indexOf('- Script API 1.6 adds');
+    expect(at).toBeGreaterThan(text.indexOf('- Script API 1.5 adds'));
+    const paragraph = text.slice(at, text.indexOf('\n', at));
+    for (const event of SCRIPT_API_PROMPT_VERSIONS['1.6'].events) {
+      expect(paragraph, event).toContain(event);
+    }
+    expect(paragraph).toContain('block.place before a player places a block');
+    expect(text).toContain('Changing a damage amount from a script is not available');
+  });
+
+  it('F8 c: an effect is brewed through an msm:potion that names it', () => {
+    expect(text).not.toContain('Effects are not brewable');
+    expect(text).toContain('to brew it, propose an "msm:potion" that names it');
+  });
+
+  it("F8 d: Try it's chat box runs the game's commands and the project's functions (B606)", () => {
+    expect(text).not.toContain('not carried out');
+    const at = text.indexOf('- Try it (');
+    const paragraph = text.slice(at, text.indexOf('\n', at));
+    expect(paragraph).toContain(TRY_IT_PROMPT_COMMANDS.join(', '));
+    expect(paragraph).toContain('"#minecraft:load"');
+    expect(paragraph).toContain('"#minecraft:tick"');
+    expect(paragraph).toContain(`at most ${TRY_IT_PROMPT_TICK_COMMANDS} commands a tick`);
+    expect(paragraph).toContain(
+      `${TRY_IT_PROMPT_AREA.x} by ${TRY_IT_PROMPT_AREA.z} blocks and ${TRY_IT_PROMPT_AREA.y} high`,
+    );
+    expect(paragraph).toContain(`a call over ${TRY_IT_PROMPT_SCRIPT_SECONDS} seconds`);
+    expect(paragraph).toContain("an event's run_function action");
+    for (const word of [
+      ...TRY_IT_PROMPT_GROUNDS,
+      ...TRY_IT_PROMPT_TOOLS,
+      ...Object.values(TRY_IT_PROMPT_LABELS),
+    ]) {
+      expect(paragraph, word).toContain(`"${word}"`);
+    }
+  });
+
+  it('writes every "not available" only from PROMPT_NOT_AVAILABLE (D7)', () => {
+    const ids = PROMPT_NOT_AVAILABLE.map((entry) => entry.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    let rest = text;
+    for (const entry of PROMPT_NOT_AVAILABLE) {
+      expect(entry.things.length, entry.id).toBeGreaterThan(0);
+      expect(text.split(entry.sentence).length - 1, entry.id).toBe(1);
+      rest = rest.replace(entry.sentence, '');
+    }
+    expect(rest).not.toMatch(/not available|still missing|not offered/i);
+  });
+
+  it('says how to speak by the View, Mod and Open lines, and never "the changeset" (D6)', () => {
+    for (const view of PROMPT_VIEWS) expect(text, view).toContain(`"${view}"`);
+    for (const line of PROMPT_CONTEXT_LINES) expect(text, line).toContain(`"${line}"`);
+    expect(text).toContain('"this" or "it" means');
+    expect(text).toContain('no ids, kind ids, file paths, field names or JSON unless asked');
+    expect(text).not.toMatch(/the changeset|in the changeset/);
+    expect(text).not.toMatch(/placeholder/i);
+    expect(text).not.toContain('Apply');
+    // The context block writes the lines the prompt explains.
+    const block = projectContextBlock({
+      targetId: 't',
+      mcVersion: '1',
+      namespaces: [],
+      kindCounts: {},
+      hasModElement: false,
+      pendingSummary: '',
+      view: 'easy',
+      modName: 'Gem Mod',
+      open: { id: 'a:b', kind: 'msm:item', name: 'B' },
+    });
+    for (const line of PROMPT_CONTEXT_LINES) expect(block).toMatch(new RegExp(`^${line} `, 'm'));
+  });
+
+  it('names every label of the app map, quoted (D6)', () => {
+    const labels = Object.values(APP_MAP_LABELS).flatMap((value) =>
+      typeof value === 'string' ? [value] : [...value],
+    );
+    for (const label of [...labels, ...APP_MAP_TILES]) {
+      expect(text, label).toMatch(
+        label === APP_MAP_LABELS.aiPictureService
+          ? new RegExp(label)
+          : new RegExp(`"${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
+      );
+    }
+  });
+
+  it('names every flow, parameter and kind of its fact lists (D7)', () => {
+    for (const [id, flow] of Object.entries(PROMPT_FLOWS)) {
+      expect(text, id).toContain(flow.title);
+      for (const parameter of flow.parameters)
+        expect(text, `${id}: ${parameter}`).toContain(parameter);
+    }
+    for (const kind of PROMPT_KINDS)
+      expect(text, kind).toMatch(new RegExp(`(?<![a-z_/:])${kind}(?![a-z_/])`));
+    for (const words of [
+      ...Object.values(MOB_VARIANT_PROMPT_KINDS),
+      ...Object.values(MORE_DATA_PROMPT_KINDS),
+      ...Object.values(MORE_TAG_PROMPT_KINDS),
+    ]) {
+      expect(text, words).toContain(words);
+    }
+    for (const id of VANILLA_PACK_FLOWS) expect(PROMPT_FLOWS[id], id).toBeDefined();
+  });
+
+  it('names every Script API version and every event of its table (D7)', () => {
+    for (const [version, entry] of Object.entries(SCRIPT_API_PROMPT_VERSIONS)) {
+      if (version !== '1.0') expect(text, version).toContain(`Script API ${version} `);
+      for (const event of entry.events)
+        expect(text, event).toMatch(new RegExp(`\\b${event.replace('.', '\\.')}\\b`));
+      // A member by its name; a type or an alias (no dot) is left to the app's truth test.
+      for (const member of entry.members.filter((path) => path.includes('.'))) {
+        expect(text, member).toContain(member.split('.').at(-1) ?? member);
+      }
+    }
+    const events = Object.values(SCRIPT_API_PROMPT_VERSIONS).flatMap((entry) => entry.events);
+    expect(new Set(events).size).toBe(events.length);
+  });
+
+  it('writes its counts from constants (D7)', () => {
+    const counted = [
+      ...text.matchAll(
+        /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)( more)? (?:[a-z]+ )?(kinds|flows|templates|recipes|triggers|steps|conditions)\b/gi,
+      ),
+    ].map((m) => m[0]);
+    expect(counted.sort()).toEqual(
+      [
+        `${countWord(Object.keys(MORE_TAG_PROMPT_KINDS).length)} more tag kinds`,
+        `${countWord(VANILLA_PACK_FLOWS.length).replace(/^./, (c) => c.toUpperCase())} flows`,
+        `${RULES_PROMPT_LIMITS.steps} steps`,
+        `${countWord(Object.keys(WORLD_FLOW_ANSWERS).length)} flows`,
+      ].sort(),
+    );
+  });
+
+  it('keeps "placeholder" out of the tool descriptions and names the plan threshold', () => {
+    for (const tool of TOOL_CATALOGUE) {
+      expect(tool.description, tool.name).not.toMatch(/placeholder|changeset/i);
+    }
+    // The schemas' descriptions too (the enum's values are pattern names, not words).
+    const params = JSON.stringify(toolParams()).replace(/"enum":\[[^\]]*\]/g, '');
+    expect(params).not.toMatch(/placeholder/i);
+    const plan = TOOL_CATALOGUE.find((tool) => tool.name === 'propose_plan');
+    expect(plan?.description).toContain(`more than ${countWord(PLAN_FIRST_ABOVE)} main things`);
   });
 });

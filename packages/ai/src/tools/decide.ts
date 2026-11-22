@@ -37,7 +37,7 @@ export const proposePlanInput = z.object({
     )
     .max(100)
     .optional()
-    .describe('Placeholder textures the plan needs.'),
+    .describe('Pictures the plan needs, drawn with create_texture.'),
   notes: z.string().max(2000).optional(),
 });
 
@@ -69,7 +69,7 @@ export const DECIDE_TOOLS = [
     group: 'decide',
     input: proposePlanInput,
     description:
-      'Shows the user a build plan and waits for their answer. In build mode call it first, before any proposal. List one item per main element in dependency order (the msm:mod element and blocks before items, items before recipes and loot tables), with the textures the plan needs. Returns { decision: "build_all" | "step" | "revise", items, comments }: build the returned items (the user may have removed or edited some); on "revise", change the plan according to the comments and call propose_plan again.',
+      'Shows the user a build plan and waits for their answer. For a whole mod or more than three main things, call it first, before any proposal; never for a small ask. List one item per main element in dependency order (the msm:mod element and blocks before items, items before recipes and loot tables), with the pictures the plan needs. Returns { decision: "build_all" | "step" | "revise", items, comments }: build the returned items (the user may have removed or edited some); on "revise", change the plan according to the comments and call propose_plan again.',
   },
   {
     name: 'checkpoint',

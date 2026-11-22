@@ -197,7 +197,9 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B539: create_texture's recipe list gained the boat, the boat
+  // The hash last changed with B682: propose_plan is called first only for a whole mod or more
+  // than three main things (ADR 0125 D2), and no description says "placeholder" or "changeset"
+  // (D13). Before that with B539: create_texture's recipe list gained the boat, the boat
   // bodies and the villager clothes (ADR 0110, ADR 0107 D5, ADR 0112 D2). Before that with B518:
   // create_texture's recipe list gained the strand, stalk,
   // lichen, dripleaf and pot of the plant flows (ADR 0103, ADR 0112 D2). Before that with B508: create_texture's recipe list gained the nine pattern
@@ -209,7 +211,7 @@ describe('tool catalogue is frozen (ADR 0055 D11)', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '2a1b26cc7359236079b2c6c5fa52ff86d32ae7584eb031df310c7eeb5df1333b',
+      '876e9238d5d821a8299a3ee9ee05f4c0d5dc10980320e932571deae622c3263d',
     );
   });
 });

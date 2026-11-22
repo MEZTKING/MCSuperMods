@@ -1,7 +1,7 @@
 /**
  * The system prompt and the volatile project context block (ADR 0041 D3, D6).
  *
- * `systemPrompt(mode)` is pure: no dates, no project content, no settings values, so the text is
+ * `systemPrompt()` is pure: no dates, no project content, no settings values, so the text is
  * byte-identical across runs and the cached prefix (tools, then system) holds. Everything that
  * changes goes into `projectContextBlock`, which the loop sends at the start of the run's user
  * message, after the cache breakpoint.
@@ -13,9 +13,12 @@ import type { AiMode } from './protocol';
 // Every name this file exported before B681 still comes from here; the text lives in `prompt/`.
 export * from './prompt';
 
-/** The system prompt of a mode; identical text on every call. */
-export function systemPrompt(mode: AiMode): string {
-  return assemblePrompt(mode);
+/**
+ * The system prompt; identical text on every call and for both run sizes (ADR 0125 D2): the
+ * size of a run chooses only its effort and limits, so the cached prefix holds when it changes.
+ */
+export function systemPrompt(_size?: AiMode): string {
+  return assemblePrompt();
 }
 
 /** The volatile facts about the project sent with each run. */

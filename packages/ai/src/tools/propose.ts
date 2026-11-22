@@ -240,7 +240,7 @@ export const createTextureInput = z
       .enum(PLACEHOLDER_PATTERN_NAMES)
       .optional()
       .describe(
-        'Older name for what to draw, still accepted: a placeholder pattern, drawn with its recipe (egg is spawn_egg; every other pattern has the recipe of the same name). Give recipe instead; recipe wins when both are given.',
+        'Older name for what to draw, still accepted: a pattern name, drawn with its recipe (egg is spawn_egg; every other pattern has the recipe of the same name). Give recipe instead; recipe wins when both are given.',
       ),
     colour: hexColour
       .optional()
@@ -294,7 +294,7 @@ export const PROPOSE_TOOLS = [
     group: 'propose',
     input: createElementsInput,
     description:
-      'Proposes new elements (1 to 64 per call; batch related elements, for example a block with its item, loot table and recipes, in one call). Each needs an unused id "namespace:path" outside the reserved "minecraft" and "msm" namespaces, a kind from list_kinds and data matching the kind\'s schema. The host checks every element and returns, per element, whether it was added to the changeset and its problems; fix the rejected ones and call again. Run run_checks after every batch.',
+      'Proposes new elements (1 to 64 per call; batch related elements, for example a block with its item, loot table and recipes, in one call). Each needs an unused id "namespace:path" outside the reserved "minecraft" and "msm" namespaces, a kind from list_kinds and data matching the kind\'s schema. The host checks every element and returns, per element, whether it was added to the proposed changes and its problems; fix the rejected ones and call again. Run run_checks after every batch.',
   },
   {
     name: 'update_element',

@@ -57,7 +57,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The checks report no errors for the wand with the fix. Review the change and press Apply to fix the problem."
+          "text": "The checks report no errors for the wand with the fix. I have proposed the fix; nothing is in your mod until you add it."
         }
       ],
       "stopReason": "end_turn",

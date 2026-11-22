@@ -1,4 +1,6 @@
-/** The textures topic (moved from system-prompt.ts, B681; wording unchanged). */
+/** The textures topic (B681; the app's picture buttons by their labels, B682). */
+import { APP_MAP_LABELS } from './app-map';
+
 /** A recipe id and its words in the prompt. */
 type PromptRecipe = readonly [id: string, words: string];
 
@@ -137,8 +139,14 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
   ),
 });
 
-const recipes = (entries: readonly PromptRecipe[]): string =>
-  entries.map(([id, words]) => (id === words ? id : `${id} (${words})`)).join(', ');
+/**
+ * How the prompt writes one recipe: its id, then its words in brackets unless they only repeat
+ * the id ("a sword" for `sword`, "a door top" for `door_top`).
+ */
+export const recipeInWords = ([id, words]: PromptRecipe): string =>
+  words.replace(/^an? /, '') === id.replaceAll('_', ' ') ? id : `${id} (${words})`;
+
+const recipes = (entries: readonly PromptRecipe[]): string => entries.map(recipeInWords).join(', ');
 
 /** How textures are made (ADR 0092 D15): drawn by MSM, never copied, and the recipes. */
-export const TEXTURES = `- Textures come only from create_texture, which draws them in MSM in a Minecraft-like style (a few hue-shifted shades of each colour, light from the top left, a dark outline on items): MSM's own drawings, never copied, traced or recoloured from Mojang's textures. Give a recipe, the main colour and, where it takes one, a second colour (accent), a finish and a seed for another variation; the size follows the recipe. Blocks, 16 by 16 under textures/block: ${recipes(TEXTURE_PROMPT_RECIPES.blocks)}. Items, 16 by 16 under textures/item: ${recipes(TEXTURE_PROMPT_RECIPES.items)}. Worn pictures under textures/entity/equipment (humanoid, humanoid_leggings, horse_body, wolf_body): ${recipes(TEXTURE_PROMPT_RECIPES.worn)}. Icons and particles: ${recipes(TEXTURE_PROMPT_RECIPES.icons)} (particles are 8 by 8 under textures/particle; each call draws the first of four frames). Pick the recipe for what the thing is (a frost sword is "sword" in a pale blue, its ore "ore" in the same colour) and use one colour across a set. A trim layer you draw has no palette file, so it does not recolour with the trim material: prefer the Armour trim flow, which writes one. Tell the user the pictures were drawn by MSM and that they can redraw them with Draw... or paint over them.`;
+export const TEXTURES = `- Textures come only from create_texture, which draws them in MSM in a Minecraft-like style (a few hue-shifted shades of each colour, light from the top left, a dark outline on items): MSM's own drawings, never copied, traced or recoloured from Mojang's textures. Give a recipe, the main colour and, where it takes one, a second colour (accent), a finish and a seed for another variation; the size follows the recipe. Blocks, 16 by 16 under textures/block: ${recipes(TEXTURE_PROMPT_RECIPES.blocks)}. Items, 16 by 16 under textures/item: ${recipes(TEXTURE_PROMPT_RECIPES.items)}. Worn pictures under textures/entity/equipment (humanoid, humanoid_leggings, horse_body, wolf_body): ${recipes(TEXTURE_PROMPT_RECIPES.worn)}. Icons and particles: ${recipes(TEXTURE_PROMPT_RECIPES.icons)} (particles are 8 by 8 under textures/particle; each call draws the first of four frames). Pick the recipe for what the thing is (a frost sword is "sword" in a pale blue, its ore "ore" in the same colour) and use one colour across a set. A trim layer you draw has no palette file, so it does not recolour with the trim material: prefer the Armour trim flow, which writes one. Tell the user the pictures were drawn by MSM and that they can redraw them with "${APP_MAP_LABELS.draw}" or paint over them, or make one with "${APP_MAP_LABELS.makeWithAi}" (see the app, below).`;

@@ -8,7 +8,7 @@
         },
         {
           "type": "text",
-          "text": "Here is a plan for the ruby tools mod. Nothing changes until you apply the proposed changes."
+          "text": "Here is a plan for the ruby tools mod. Nothing is in your mod until you add what I propose."
         },
         {
           "type": "tool_use",
@@ -61,15 +61,15 @@
               {
                 "namespace": "ruby",
                 "path": "item/ruby_pickaxe",
-                "purpose": "The ruby pickaxe's placeholder texture."
+                "purpose": "The ruby pickaxe's picture."
               },
               {
                 "namespace": "ruby",
                 "path": "item/ruby_axe",
-                "purpose": "The ruby axe's placeholder texture."
+                "purpose": "The ruby axe's picture."
               }
             ],
-            "notes": "The starters bring their own placeholder textures. Blocks, items and the mob need the Fabric mod jar export."
+            "notes": "The starters bring their own pictures, drawn by MSM. Blocks, items and the mob need the Fabric mod jar export."
           }
         }
       ],
@@ -258,7 +258,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The ruby tools mod is ready to review: ruby ore with rubies and a block of ruby, a ruby sword, pickaxe and axe with their recipes, a loot table for the block of ruby and the Ruby Golem. The textures are placeholders to replace later. Export the Fabric mod jar to try the blocks, items and the mob in game."
+          "text": "The ruby tools mod is ready to review: ruby ore with rubies and a block of ruby, a ruby sword, pickaxe and axe with their recipes, a loot table for the block of ruby and the Ruby Golem. MSM drew the pictures; you can redraw them with Draw… or paint over them. Export the Fabric mod jar to try the blocks, items and the mob in game."
         }
       ],
       "stopReason": "end_turn",
