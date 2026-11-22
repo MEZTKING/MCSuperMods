@@ -640,7 +640,7 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) => `${t} starts at a number outside its lowest and highest values. Change one of them.`,
   ),
   'game-rules.range-on-boolean': entry(
-    (t) => `${t} is on or off, so its lowest and highest values are not used.`,
+    (t) => `${t} is on or off, so it cannot have lowest and highest values. Remove them.`,
   ),
   'game-rules.vanilla-clash': entry(
     (t) => `Minecraft already has a setting or count called ${t}. Give yours another name.`,

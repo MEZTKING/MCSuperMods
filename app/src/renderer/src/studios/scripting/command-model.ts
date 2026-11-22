@@ -93,7 +93,7 @@ export const ARGUMENT_TYPE_LABELS: Readonly<Record<ArgumentType, string>> = Obje
   dimension: 'A dimension',
   time: 'A length of time (such as 5s or 2d)',
   team_colour: 'A colour name',
-  hex_colour: 'A colour code (such as #FF8800)',
+  hex_colour: 'A colour code (such as ff8800, without the #)',
   rotation: 'A facing (sideways and up or down)',
   angle: 'An angle',
   uuid: 'A UUID',

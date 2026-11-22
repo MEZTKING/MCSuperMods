@@ -8124,3 +8124,9 @@ Next
 - Launch B576 (Sonnet), then B577 (Opus), each from the commit of this entry.
 - At B550's start, or in the next docs pass: ADR 0113 D8 and `docs/PLAN-live-views.md` "Versions" to the swapped numbers; HANDOFF's live world generation paragraph ("ADR 0119 not yet amended") at the next handover.
 - The user's veto points added by the amendment are listed in ADR 0119's Status.
+
+## 2026-11-22 — executor — three small findings of vanilla parity 3 batch 2
+
+What: `game-rules.range-on-boolean` is now an error (the runtime's parser and the Java eject refuse a boolean game rule with `min` or `max`); its plain-words entry and the test follow. The Java eject's `export.not-in-eject` now names `item.crafted`, `item.picked_up`, `player.ate` and `player.advancement` as well as `block.place` and `world.explosion` (`MIXIN_EVENTS` and its pattern in `packages/exporters/src/java-project/index.ts`; new `mixin-events.test.ts`; the sample-mobs golden test expects four warnings). The Command Studio label for `hex_colour` reads "A colour code (such as ff8800, without the #)", with the guide line and a label test.
+Decisions: kept the existing code name; exported `MIXIN_EVENTS` for the test.
+Next: the other open follow-ups in docs/HANDOFF.md.

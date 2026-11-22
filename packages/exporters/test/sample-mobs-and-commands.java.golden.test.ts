@@ -7,7 +7,7 @@
  * shoulder riding (eject 2c), the larch boat and its chest boat, the two commands with their
  * argument types and the dialog action, the game rules, the statistics and the hand-ordered tab.
  *
- * No `export.not-in-eject` warning; the script and `/tally`'s `run_script` action are not ejected
+ * `export.not-in-eject` names the script's four newer Mixin events (one warning each); the script and `/tally`'s `run_script` action are not ejected
  * (scripts never are, ADR 0033), with their own warnings.
  *
  * - The export succeeds without errors or warnings other than those and project ids the vanilla
@@ -69,6 +69,7 @@ const PKG = `src/main/java/${NAMESPACE}`;
 const EXPECTED_WARNINGS: ReadonlySet<string> = new Set([
   'schema.unknown-id',
   'export.scripts-not-ejected',
+  'export.not-in-eject',
 ]);
 const unexpected = (problem: Problem): boolean =>
   problem.severity === 'error' ||
@@ -99,7 +100,9 @@ describe.each(
     expect(ok).toBe(true);
     const fileOf = (code: string): (string | undefined)[] =>
       problems.filter((problem) => problem.code === code).map((problem) => problem.file);
-    expect(fileOf('export.not-in-eject')).toEqual([]);
+    expect(fileOf('export.not-in-eject')).toEqual(
+      Array(4).fill(`msm/${NAMESPACE}/script/mob_notes.ts`),
+    );
     expect(fileOf('export.scripts-not-ejected').sort()).toEqual([
       `msm/${NAMESPACE}/command/tally.json`,
       `msm/${NAMESPACE}/script/mob_notes.ts`,

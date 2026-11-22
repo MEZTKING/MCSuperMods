@@ -266,8 +266,8 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         rule('demo:c', { kind: 'integer', min: 0 }),
       ]);
       expect(withCode(problems, 'range-on-boolean')).toEqual([
-        ['warning', 'demo:a', '/min'],
-        ['warning', 'demo:a', '/max'],
+        ['error', 'demo:a', '/min'],
+        ['error', 'demo:a', '/max'],
       ]);
     });
 

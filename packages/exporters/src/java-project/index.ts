@@ -105,13 +105,18 @@ type ListedKind = (typeof LISTED_KINDS)[number];
  * The script events that need the runtime's Mixins (ADR 0096 D3, D6): a script subscribing to one
  * also gets `export.not-in-eject`, because the eject has neither scripts nor the Mixins.
  */
-const MIXIN_EVENTS: Readonly<Record<string, string>> = {
+export const MIXIN_EVENTS: Readonly<Record<string, string>> = {
   'block.place': 'block placement',
   'world.explosion': 'explosion',
+  'item.crafted': 'crafting',
+  'item.picked_up': 'item pick-up',
+  'player.ate': 'eating',
+  'player.advancement': 'advancement',
 };
 
 /** `msm.events.on("<event>"` (any quote) in a script's text. */
-const MIXIN_EVENT_PATTERN = /\.on\(\s*["'`](block\.place|world\.explosion)["'`]/g;
+const MIXIN_EVENT_PATTERN =
+  /\.on\(\s*["'`](block\.place|world\.explosion|item\.crafted|item\.picked_up|player\.ate|player\.advancement)["'`]/g;
 
 /** The Mixin events a script's text subscribes to, sorted. */
 export function mixinEventsOf(text: string): string[] {

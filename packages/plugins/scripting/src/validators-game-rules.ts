@@ -7,8 +7,8 @@
  * - `game-rules.min-above-max` (error): an integer game rule whose `min` is above its `max`.
  * - `game-rules.default-out-of-range` (error): an integer game rule whose `default` is below its
  *   `min` or above its `max`.
- * - `game-rules.range-on-boolean` (warning): `min` or `max` on a `boolean` game rule; an on or
- *   off rule has no range, so they are ignored.
+ * - `game-rules.range-on-boolean` (error): `min` or `max` on a `boolean` game rule; an on or
+ *   off rule has no range, and the runtime's parser and the Java eject refuse it.
  * - `game-rules.vanilla-clash` (error): a game rule or statistic in the `minecraft` namespace
  *   whose name vanilla already has; the game refuses to register it twice.
  * - `game-rules.vanilla-name` (info): a game rule or statistic in another namespace with a
@@ -69,11 +69,11 @@ function ranges(elements: readonly Element[]): Problem[] {
         if (data[bound] === undefined) continue;
         problems.push(
           problem(
-            'warning',
+            'error',
             'game-rules.range-on-boolean',
             element,
             `/${bound}`,
-            `An on or off game rule has no ${bound === 'min' ? 'lowest' : 'highest'} value, so "${bound}" is ignored. Remove it, or make the rule a number.`,
+            `An on or off game rule has no ${bound === 'min' ? 'lowest' : 'highest'} value, so "${bound}" is not allowed. Remove it, or make the rule a number.`,
           ),
         );
       }
