@@ -222,7 +222,15 @@ const blockedTestStatus: TestInMinecraftStatus = {
 };
 
 async function renderApp(
-  options: { plugins?: readonly Plugin[]; launchNotice?: LaunchNotice; ai?: AiPlatform } = {},
+  options: {
+    plugins?: readonly Plugin[];
+    launchNotice?: LaunchNotice;
+    ai?: AiPlatform;
+    /** Start with no project open (Very easy's no-mod Home). */
+    noProject?: boolean;
+    /** Where new mods go (`project.defaultParent`, Very easy's name-only New). */
+    defaultParent?: string;
+  } = {},
 ): Promise<Harness> {
   let listener: ((command: MenuCommand) => void) | null = null;
   let recentListener: ((root: string) => void) | null = null;
@@ -453,6 +461,9 @@ async function renderApp(
       clearRecent: async () => {
         harness.recent = [];
       },
+      ...(options.defaultParent === undefined
+        ? {}
+        : { defaultParent: async () => options.defaultParent ?? '' }),
     },
     fs: createMemoryFileSystem(),
     ...(options.ai === undefined ? {} : { ai: options.ai }),
@@ -490,7 +501,7 @@ async function renderApp(
     },
     smokeReady: () => {},
   };
-  await session.newProject();
+  if (options.noProject !== true) await session.newProject();
   await session.schemas();
   render(<App session={session} bridge={bridge} />);
   await waitFor(() =>
@@ -1892,5 +1903,105 @@ describe('App warnings for exported ids (ADR 0102 D5)', () => {
         ),
       ).toBe(false),
     );
+  });
+});
+
+describe('App showcase (ADR 0118 D1, D10; B569)', () => {
+  afterEach(() => {
+    usePreferences.setState({ showcaseOpen: false, showcaseClips: true });
+  });
+
+  /** The starter title of a library flow, as the Creator shows it. */
+  function flowTitle(harness: Harness, id: string): string {
+    const starter = harness.session.library.starters.find((entry) => entry.id === id);
+    if (starter === undefined) throw new Error(`no flow ${id}`);
+    return starter.title;
+  }
+
+  it('shows the cards on the Home of a mod with no things, and Make this opens the flow', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    const showcase = await screen.findByTestId('home-showcase');
+    expect(within(showcase).getByText('See what you can make')).toBeTruthy();
+    expect(within(showcase).getByTestId('showcase-card-wood-set')).toBeTruthy();
+    expect(within(showcase).getByTestId('showcase-card-rules')).toBeTruthy();
+    // The Rules card has See the example as its main button, no Make this.
+    expect(within(showcase).queryByTestId('showcase-make-rules')).toBeNull();
+    await user.click(within(showcase).getByTestId('showcase-make-crop'));
+    const creator = await screen.findByTestId('creator-dialog');
+    expect(creator.textContent).toContain(flowTitle(harness, 'crop'));
+  });
+
+  it('folds to a link once the mod has things and remembers the choice', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await screen.findByTestId('home-showcase');
+    act(() => {
+      harness.session.addElement({ id: 'demo:lamp', kind: 'msm:block', data: {} });
+    });
+    const show = await screen.findByTestId('home-showcase-show');
+    expect(show.textContent).toBe('Show what you can make');
+    expect(screen.queryByTestId('home-showcase')).toBeNull();
+    await user.click(show);
+    expect(await screen.findByTestId('home-showcase')).toBeTruthy();
+    expect(usePreferences.getState().showcaseOpen).toBe(true);
+    await user.click(screen.getByTestId('home-showcase-hide'));
+    expect(await screen.findByTestId('home-showcase-show')).toBeTruthy();
+    expect(usePreferences.getState().showcaseOpen).toBe(false);
+  });
+
+  it('See the example copies the Rules example into the open mod and shows its Rule book', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await user.click(await screen.findByTestId('showcase-example-rules'));
+    await waitFor(() => expect(harness.session.snapshot.undoLabel).toMatch(/^Copy example /));
+    await waitFor(() => {
+      const id = useUiStore.getState().selectedId ?? '';
+      const element = harness.session.snapshot.project?.namespaces
+        .flatMap((namespace) => namespace.elements)
+        .find((entry) => entry.id === id);
+      expect(element?.kind).toBe('msm:rules');
+    });
+  });
+
+  it('without a mod, Make this asks for a name prefilled from the card, then opens the flow', async () => {
+    usePreferences.setState({ mode: 'very-easy', modeChosen: true });
+    const harness = await renderApp({ noProject: true, defaultParent: '/docs/MCSuperMods' });
+    const user = userEvent.setup();
+    const home = await screen.findByTestId('home');
+    expect(within(home).getByTestId('home-new')).toBeTruthy();
+    const showcase = within(home).getByTestId('home-showcase');
+    await user.click(within(showcase).getByTestId('showcase-make-wood-set'));
+    const name = (await screen.findByTestId('new-mod-name')) as HTMLInputElement;
+    expect(name.value).toBe('Elm Mod');
+    await user.click(screen.getByTestId('new-mod-dialog-submit'));
+    await waitFor(() => expect(harness.session.snapshot.project).not.toBeNull());
+    const creator = await screen.findByTestId('creator-dialog');
+    expect(creator.textContent).toContain(flowTitle(harness, 'wood-set'));
+  });
+
+  it('puts the strip in New project, where Make this goes on to the flow wizard', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await harness.menu('newProjectFromStarter');
+    const strip = await screen.findByTestId('new-project-showcase');
+    expect(within(strip).getByText('See what you can make')).toBeTruthy();
+    await user.click(within(strip).getByTestId('showcase-make-crop'));
+    expect(await screen.findByTestId('wizard-step-2')).toBeTruthy();
+    expect(screen.queryByTestId('new-project-showcase')).toBeNull();
+  });
+
+  it('shows a showcased example clip card in the Examples gallery detail pane', async () => {
+    const harness = await renderApp();
+    const user = userEvent.setup();
+    await harness.menu('examples');
+    await user.type(await screen.findByTestId('examples-search'), 'Onion crop');
+    await user.click(await screen.findByTestId('example-example_msm_crop'));
+    const clip = await screen.findByTestId('example-detail-clip');
+    expect(within(clip).getByTestId('showcase-card-crop')).toBeTruthy();
+    expect(within(clip).getByTestId('showcase-make-crop')).toBeTruthy();
   });
 });

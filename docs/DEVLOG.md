@@ -7834,3 +7834,22 @@ Next
 
 **Next**
 - B542 e2e candidates: Villager look and Game rule flows, Wood set boats, the Custom command's game rule; B543 AI prompt paragraphs for the two flows (`NEW_FLOW_PROMPT_IDS`) and the new answers, guide labels from the report.
+## 2026-11-22 — executor — B569 Showcase on Home, New project and Examples
+
+**What**
+- Very easy's Home (ADR 0118 D1): **See what you can make** under the three buttons without a mod; with a mod, between the Make tiles and My things, open while the mod has no things and folded to a **Show what you can make** link after that (with **Hide what you can make** to fold it again; the choice is the preference `showcaseOpen`). Home takes the gallery as a prop (`showcase`, `showcaseOpen`, `onShowcaseOpenChange`).
+- New project dialog: the strip **See what you can make** above the starter list (`renderShowcase`, scrolling sideways); its **Make this** selects the card's flow starter (the first offered one, so the vehicle card picks the Car) and goes on to its wizard; `startWith` does the same when the dialog opens from a card. **See the example** opens the example as a new project.
+- **Make this** elsewhere (`App.tsx` `makeShowcase`, ADR 0118 D10): in an open mod, the card's flow as its Home tile opens it (`openTile`, through the same tile availability as Home's tiles); with no mod in Very easy, the name-only New prefilled from the card ("Elm Mod", `showcaseModName` in `showcases.ts`), then the flow once the mod is open; with no mod in Easy or Advanced, New project on the flow's starter. **See the example** (`seeShowcaseExample`): a new project from the example without a mod, else a copy in the open mod (the Examples gallery's copy, now one shared `copyExample`), showing the copied Rule book for the Rules card.
+- Examples gallery: a showcased example's detail pane shows its clip card under the heading "What it looks like" (`renderClip`, `example-detail-clip`).
+- Settings: a Showcase section with the switch **Play showcase clips** ("Moving pictures on Home and in New project. Off shows still pictures."), the preference `showcaseClips` (default on), passed to the gallery as `playClips`. The palette: "Showcase: see what you can make" (`showcase`; Home with the gallery open in Very easy, else New project), no `app/src/shared/` change.
+- The gallery gets `showcasesFor(target, session.library.examples)` (one memo per target), the session's registry with the built-in plugins as `deps`, the extracted jar as `vanilla`, `visible` false while a dialog, the palette or Try it covers Home. `showcases.test.ts` re-run after B540: all ten clips pass unchanged.
+- Tests: `app/test/components/showcase/entry-points.test.tsx` (11: Home both states and the fold, the strip choosing a starter, `startWith`, the prefilled name, the detail pane, the setting, the stored preferences, the palette); `App.test.tsx` "App showcase" (6, over the real library: the cards on an empty mod's Home and Make this into the Crop flow, the fold, See the example of the Rules card showing its Rule book, the no-mod Very easy path into the Wood set flow, the New project strip into the Crop wizard, the Examples detail pane); `renderApp` gains `noProject` and `defaultParent`.
+
+**Decisions**
+- The library's examples are the built-in plugins', so clips lower with the session's registry and `builtInPlugins` (the session keeps its plugin list private).
+- No vanilla block states are passed (`vanillaBlockstates` left out): vanilla props in clips draw as the fallback cubes even with the jar; Try it's per-id loading would need a stable shared map (follow-up).
+- A card whose flow is not offered on the target falls back to See the example.
+
+**Next**
+- B570: test ids `home-showcase`, `home-showcase-show`, `home-showcase-hide`, `new-project-showcase`, `example-detail-clip`, `settings-showcase-clips`, palette `command-showcase`, and the cards' (`showcase-card-<id>`, `showcase-make-<id>`, `showcase-example-<id>`, `showcase-picture-<id>`).
+- B571: the labels above.

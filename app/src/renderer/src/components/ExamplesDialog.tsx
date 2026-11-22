@@ -3,14 +3,16 @@
  * search box (title, kind, category and tags), a kind filter and a detail pane that shows
  * what the example adds and its notes. "Open as new project" hands the example to the host,
  * which builds it into a new folder; "Copy into my project" adds it to the open project under
- * a chosen namespace and shows what was added and what was skipped.
+ * a chosen namespace and shows what was added and what was skipped. A showcased example's
+ * detail pane also shows its clip card (ADR 0118 D1; B569), given by the host
+ * (`example-detail-clip`).
  *
  * @packageDocumentation
  */
 
 import type { ContentBundle, ExampleProject, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import { categorySlug, fieldClass } from './NewElementDialog';
 import { Button } from './ui/Button';
 
@@ -37,6 +39,8 @@ export interface ExamplesDialogProps {
   onOpenAsProject(example: ExampleProject): void;
   /** Adds the example to the open project under `namespace`. */
   onCopy(example: ExampleProject, namespace: string): Promise<CopyExampleResult>;
+  /** The showcase clip card of a showcased example, or `null` (ADR 0118 D1). */
+  renderClip?(example: ExampleProject): ReactNode;
 }
 
 /** Whether an example matches a search text: title, kind, category or a tag contains it. */
@@ -137,6 +141,7 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
   const [chosenId, setChosenId] = useState<string | null>(null);
   // The selection follows the filters: a hidden example gives way to the first visible one.
   const selected = visible.find((example) => example.id === chosenId) ?? visible[0];
+  const clip = selected === undefined ? null : (props.renderClip?.(selected) ?? null);
 
   const targets = copyNamespaces(props.namespaces);
   const [namespaceChoice, setNamespaceChoice] = useState<string | null>(null);
@@ -329,6 +334,7 @@ export function ExamplesDialog(props: ExamplesDialogProps) {
                     {selected.title}
                   </h3>
                   <p className="text-sm">{selected.description}</p>
+                  {clip !== null && <div data-testid="example-detail-clip">{clip}</div>}
                   <p className="text-xs text-muted">
                     <code className="font-mono">{selected.kind}</code> · {selected.category}
                     {(selected.tags ?? []).length > 0 && ` · ${(selected.tags ?? []).join(', ')}`}

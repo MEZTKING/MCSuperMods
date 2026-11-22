@@ -654,3 +654,25 @@ export function showcasesFor(
     return example !== undefined && (example.supports?.(target) ?? true);
   });
 }
+
+/**
+ * The name **Make this** offers for a new mod when none is open (ADR 0118 D10: "Elm Mod"), from
+ * the card's example; a card not listed here gets "My Mod".
+ */
+const MOD_NAMES: Readonly<Record<string, string>> = {
+  'wood-set': 'Elm Mod',
+  pet: 'Fox Mod',
+  crop: 'Onion Mod',
+  machine: 'Crusher Mod',
+  vehicle: 'Tank Mod',
+  portal: 'Sky Mod',
+  sparkles: 'Firefly Mod',
+  trader: 'Merchant Mod',
+  fluid: 'Oil Mod',
+  rules: 'Lucky Mod',
+};
+
+/** The mod name a card's **Make this** prefills when no mod is open (B569). */
+export function showcaseModName(clip: ShowcaseClip): string {
+  return MOD_NAMES[clip.id] ?? 'My Mod';
+}

@@ -4,11 +4,17 @@
  * helper) and "My things" (one card per set or thing); without one it offers a new mod (a name
  * only, ADR 0083 D6), opening one, "Surprise me" (ADR 0086) and the recent mods. Presentational: the host does the work.
  *
+ * The showcase **See what you can make** (ADR 0118 D1; B569), built by the host, sits under
+ * the buttons without a mod, and between the Make tiles and My things with one: open while the
+ * mod has no things, folded to a **Show what you can make** link after that (the fold is the
+ * host's preference). Test ids: `home-showcase`, `home-showcase-show`, `home-showcase-hide`.
+ *
  * @packageDocumentation
  */
 
 import type { Project } from '@msm/core';
 import { Dices, FilePlus, FolderOpen } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { RecentProjectView } from '../../../../shared/platform';
 import type { ThingPictures } from '../thing-picker/ThingPicker';
 import { Button } from '../ui/Button';
@@ -38,6 +44,53 @@ export interface HomeProps {
   onOpenProject(): void;
   recentProjects?: readonly RecentProjectView[];
   onOpenRecent?(root: string): void;
+  /** The showcase gallery (**See what you can make**); absent shows none. */
+  showcase?: ReactNode;
+  /** Whether the showcase stays open for a mod that has things (default folded). */
+  showcaseOpen?: boolean;
+  /** Opens or folds the showcase of a mod that has things. */
+  onShowcaseOpenChange?(open: boolean): void;
+}
+
+/** The link that opens the folded showcase (ADR 0118 D1). */
+export const SHOW_SHOWCASE = 'Show what you can make';
+/** The link that folds it again. */
+export const HIDE_SHOWCASE = 'Hide what you can make';
+
+const linkClass =
+  'self-start cursor-pointer text-accent text-sm underline-offset-2 hover:underline';
+
+/** The showcase of a Home with a mod: open while it has no things, else folded (ADR 0118 D1). */
+function ModShowcase(props: HomeProps) {
+  if (props.showcase === undefined || props.showcase === null) return null;
+  if (props.cards.length === 0) {
+    return <div data-testid="home-showcase">{props.showcase}</div>;
+  }
+  if (props.showcaseOpen !== true) {
+    return (
+      <button
+        type="button"
+        data-testid="home-showcase-show"
+        className={linkClass}
+        onClick={() => props.onShowcaseOpenChange?.(true)}
+      >
+        {SHOW_SHOWCASE}
+      </button>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-1" data-testid="home-showcase">
+      {props.showcase}
+      <button
+        type="button"
+        data-testid="home-showcase-hide"
+        className={linkClass}
+        onClick={() => props.onShowcaseOpenChange?.(false)}
+      >
+        {HIDE_SHOWCASE}
+      </button>
+    </div>
+  );
 }
 
 /** Home. */
@@ -76,6 +129,11 @@ export function Home(props: HomeProps) {
             Not sure what to make? Surprise me makes a random mod to start from.
           </p>
         )}
+        {props.showcase !== undefined && props.showcase !== null && (
+          <div className="w-full max-w-5xl" data-testid="home-showcase">
+            {props.showcase}
+          </div>
+        )}
         {recent.length > 0 && props.onOpenRecent !== undefined && (
           <section aria-labelledby="home-recent-heading" className="flex flex-col gap-1">
             <h2 id="home-recent-heading" className="text-center font-medium text-sm">
@@ -108,6 +166,7 @@ export function Home(props: HomeProps) {
       className="flex min-h-0 flex-col gap-5 overflow-auto p-4"
     >
       <MakeTiles tiles={props.tiles} onTile={props.onTile} />
+      <ModShowcase {...props} />
       <MyThings
         project={props.project}
         cards={props.cards}

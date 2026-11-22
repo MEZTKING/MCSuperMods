@@ -6,12 +6,16 @@
  * Creating hands the choice to the host, which asks for an empty folder and creates the
  * project there.
  *
+ * The host may add the showcase strip **See what you can make** above the starter list (ADR
+ * 0118 D1, D10; B569): its **Make this** selects the card's flow starter and goes on to its
+ * wizard. Test id `new-project-showcase`.
+ *
  * @packageDocumentation
  */
 
 import type { Json, OutputLayer, ProjectStarter, TargetFacts } from '@msm/plugin-api';
 import { Dialog } from 'radix-ui';
-import { type FormEvent, useId, useState } from 'react';
+import { type FormEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Button } from './ui/Button';
 import { StarterWizard, TargetSelect } from './wizard/StarterWizard';
 import {
@@ -66,6 +70,13 @@ export interface NewProjectDialogProps {
    * "or Create something with the Creator" (`new-project-open-creator`). Hidden when absent.
    */
   onOpenCreator?(): void;
+  /**
+   * The showcase strip above the starter list (ADR 0118 D1). `choose` selects the first of the
+   * flow starters it is given that the list offers and goes on to its wizard.
+   */
+  renderShowcase?(choose: (flowIds: readonly string[]) => void): ReactNode;
+  /** Flow starters to choose at once when the dialog opens (as `choose`), e.g. from a card. */
+  startWith?: readonly string[];
 }
 
 /** The id of the host's own blank entry, offered when no plugin contributes a blank starter. */
@@ -149,6 +160,22 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
   const hintId = useId();
   const total = 1 + wizardSteps(starter?.parameters).length + (wizard ? 1 : 0);
 
+  /** Selects the first offered starter of `flowIds`; one with questions goes on to the wizard. */
+  const choose = (flowIds: readonly string[]): void => {
+    const option = flowIds
+      .map((id) => options.find((entry) => entry.id === id))
+      .find((entry) => entry !== undefined);
+    if (option === undefined) return;
+    setSelectedId(option.id);
+    if (hasParameters(option.starter)) setStage('wizard');
+  };
+  const chooseRef = useRef(choose);
+  chooseRef.current = choose;
+  const startWith = props.startWith;
+  useEffect(() => {
+    if (startWith !== undefined) chooseRef.current(startWith);
+  }, [startWith]);
+
   const create = (): void => {
     const request: NewProjectRequest = {
       starterId: starter?.id ?? null,
@@ -199,6 +226,14 @@ export function NewProjectDialog(props: NewProjectDialogProps) {
             />
           ) : (
             <form onSubmit={submitList} className="flex flex-col gap-1.5">
+              {props.renderShowcase !== undefined && (
+                <div
+                  className="mb-1 [&_ul]:flex-nowrap [&_ul]:overflow-x-auto [&_ul]:pb-1"
+                  data-testid="new-project-showcase"
+                >
+                  {props.renderShowcase(choose)}
+                </div>
+              )}
               {total > 1 && (
                 <p className="text-xs text-muted" data-testid="wizard-progress">
                   Step 1 of {total}
@@ -344,6 +379,8 @@ export function modFolder(parent: string, name: string): string {
 export interface NewModDialogProps {
   /** Where new mods go (`<Documents>/MCSuperMods`, or the last folder used). */
   parent: string;
+  /** The name to start with (a showcase card's, "Elm Mod"); default empty. */
+  initialName?: string;
   /** Asks for another parent folder; resolves with it, or `null` when cancelled. */
   onChangeFolder?(): Promise<string | null>;
   onCancel(): void;
@@ -357,7 +394,7 @@ export interface NewModDialogProps {
  * is the default one.
  */
 export function NewModDialog(props: NewModDialogProps) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(props.initialName ?? '');
   const [parent, setParent] = useState(props.parent);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

@@ -11,6 +11,7 @@ import type {
   WorldBackupsPlatform,
 } from '../../../shared/platform';
 import type { ExternalPluginState } from '../plugins/external-plugins';
+import { usePreferences } from '../store/preferences';
 import { AiSettingsSection } from './ai/AiSettingsSection';
 import { AiPicturesSettingsSection } from './ai-pictures/AiPicturesSettingsSection';
 import {
@@ -396,6 +397,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
   const folderId = useId();
   const progressId = useId();
   const autoCheckId = useId();
+  const showcaseClipsId = useId();
+  const showcaseClips = usePreferences((state) => state.showcaseClips);
   const jarSource = props.jarSource ?? null;
   const manualRoots = props.manualRoots ?? [];
   const saveSettings = props.save;
@@ -679,6 +682,23 @@ export function SettingsDialog(props: SettingsDialogProps) {
               The installed Windows app looks for a new release shortly after it starts and
               downloads it in the background. It installs only when you choose Restart to update.
               Help, Check for Updates works either way.
+            </p>
+
+            <h3 className="mt-3 font-semibold">Showcase</h3>
+            <div className="flex items-center gap-1.5">
+              <input
+                id={showcaseClipsId}
+                type="checkbox"
+                data-testid="settings-showcase-clips"
+                checked={showcaseClips}
+                onChange={(event) =>
+                  usePreferences.getState().setShowcaseClips(event.target.checked)
+                }
+              />
+              <label htmlFor={showcaseClipsId}>Play showcase clips</label>
+            </div>
+            <p className="text-xs text-muted">
+              Moving pictures on Home and in New project. Off shows still pictures.
             </p>
 
             {props.worldBackups !== undefined && (

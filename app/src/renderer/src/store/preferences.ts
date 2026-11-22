@@ -1,6 +1,6 @@
 /**
- * View preferences (ADR 0047, ADR 0083 D1): the Very easy, Easy or Advanced mode and the
- * collapsed sidebar groups. Kept in the renderer's local storage: they change no file, and a
+ * View preferences (ADR 0047, ADR 0083 D1, ADR 0118 D1, D8): the Very easy, Easy or Advanced
+ * mode, the collapsed sidebar groups and the showcase's setting and fold. Kept in the renderer's local storage: they change no file, and a
  * fresh profile (test runs) starts in Advanced mode, today's interface; a brand-new install is
  * moved to Very easy by the Welcome (`App.tsx`). Storage failures are ignored.
  *
@@ -45,6 +45,8 @@ interface StoredPreferences {
   mode?: UiMode;
   collapsed?: string[];
   centrePreview?: boolean;
+  showcaseClips?: boolean;
+  showcaseOpen?: boolean;
 }
 
 /** The preferences store's shape. */
@@ -56,6 +58,18 @@ export interface PreferencesState {
   collapsed: ReadonlySet<string>;
   /** Whether the editor shows the live preview beside the form (ADR 0047 D4). */
   centrePreview: boolean;
+  /**
+   * The setting **Play showcase clips** (ADR 0118 D8): clips on Home and in New project play by
+   * themselves. Default on; off shows still pictures.
+   */
+  showcaseClips: boolean;
+  /**
+   * Whether Home shows **See what you can make** for a mod that already has things (ADR 0118
+   * D1): folded to a **Show what you can make** link by default, remembered once opened.
+   */
+  showcaseOpen: boolean;
+  setShowcaseClips(on: boolean): void;
+  setShowcaseOpen(open: boolean): void;
   toggleCentrePreview(): void;
   setMode(mode: UiMode): void;
   toggleCollapsed(key: string): void;
@@ -72,7 +86,12 @@ function readStored(): StoredPreferences {
   }
 }
 
-function writeStored(state: Pick<PreferencesState, 'mode' | 'collapsed' | 'centrePreview'>): void {
+function writeStored(
+  state: Pick<
+    PreferencesState,
+    'mode' | 'collapsed' | 'centrePreview' | 'showcaseClips' | 'showcaseOpen'
+  >,
+): void {
   try {
     globalThis.localStorage?.setItem(
       STORAGE_KEY,
@@ -80,6 +99,8 @@ function writeStored(state: Pick<PreferencesState, 'mode' | 'collapsed' | 'centr
         mode: state.mode,
         collapsed: [...state.collapsed].sort(),
         centrePreview: state.centrePreview,
+        showcaseClips: state.showcaseClips,
+        showcaseOpen: state.showcaseOpen,
       }),
     );
   } catch {
@@ -98,6 +119,16 @@ export const usePreferences = create<PreferencesState>((set, get) => ({
       : [],
   ),
   centrePreview: stored.centrePreview !== false,
+  showcaseClips: stored.showcaseClips !== false,
+  showcaseOpen: stored.showcaseOpen === true,
+  setShowcaseClips(on) {
+    set({ showcaseClips: on });
+    writeStored(get());
+  },
+  setShowcaseOpen(open) {
+    set({ showcaseOpen: open });
+    writeStored(get());
+  },
   toggleCentrePreview() {
     set({ centrePreview: !get().centrePreview });
     writeStored(get());

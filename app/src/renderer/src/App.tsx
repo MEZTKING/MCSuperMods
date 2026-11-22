@@ -6,7 +6,7 @@ import {
   type Reference,
   type ResourceLocation,
 } from '@msm/core';
-import type { Target } from '@msm/plugin-api';
+import type { ExampleProject, Target } from '@msm/plugin-api';
 import { RULES_KIND } from '@msm/plugin-rules';
 import { Toast, Tooltip } from 'radix-ui';
 import {
@@ -76,7 +76,7 @@ import { Home } from './components/home/Home';
 import { type MakeChoice, MakeChooser } from './components/home/MakeChooser';
 import { RenameThingDialog } from './components/home/MyThings';
 import { copyData, copyId, type ThingCard, thingCards } from './components/home/things';
-import { type ShownTile, shownTiles } from './components/home/tiles';
+import { type MakeTile, type ShownTile, shownTiles } from './components/home/tiles';
 import {
   ImportAssetsDialog,
   importFileFilters,
@@ -114,6 +114,7 @@ import { WhatsNewDialog } from './components/WhatsNewDialog';
 import { WishlistDialog } from './components/WishlistDialog';
 import { WorldPickerDialog } from './components/WorldPickerDialog';
 import type { ChangeOptions } from './forms';
+import { builtInPlugins } from './plugins/built-in';
 import { PreviewPanel, type VanillaAssetReader } from './preview';
 import { closeRequestHandlers } from './session/close-requests';
 import { namespaceFromFolderName } from './session/element-defaults';
@@ -148,6 +149,9 @@ import type {
 import { createRenderLowering } from './session/render-lowering';
 import { kindRegistry } from './session/schema-context';
 import { type CommandSource, createCommandDeduper, shortcutFor } from './shortcuts';
+import type { ShowcaseClip } from './showcase/clip';
+import { ShowcaseGallery } from './showcase/ShowcaseGallery';
+import { showcaseModName, showcasesFor } from './showcase/showcases';
 import { connectPlay, usePlayStore } from './store/play-store';
 import { type UiMode, usePreferences } from './store/preferences';
 import { useUiStore } from './store/ui-store';
@@ -235,7 +239,11 @@ type ImportMode = 'structure' | 'blockbench';
 type DialogState =
   | { type: 'namespace' }
   | { type: 'element' }
-  | { type: 'new-project' }
+  | {
+      type: 'new-project';
+      /** Flow starters to choose at once (a showcase card's **Make this**, ADR 0118 D10). */
+      startWith?: readonly string[];
+    }
   | { type: 'examples' }
   | {
       type: 'creator';
@@ -243,7 +251,14 @@ type DialogState =
       flowIds?: readonly string[];
       picks?: readonly VeryEasyPick[];
     }
-  | { type: 'new-mod'; parent: string }
+  | {
+      type: 'new-mod';
+      parent: string;
+      /** The name to start with (a showcase card's, "Elm Mod"). */
+      name?: string;
+      /** What to open once the mod is made (a showcase card's **Make this**, ADR 0118 D10). */
+      afterwards?: ShownTile;
+    }
   | { type: 'surprise' }
   | { type: 'make-choice'; title: string; choices: readonly MakeChoice[] }
   | { type: 'rename-thing'; id: ResourceLocation; name: string }
@@ -672,8 +687,8 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   const veryEasy = uiMode === 'very-easy';
   // The plain-language words for Rule cards and "Things to fix" (ADR 0083 D5).
   const plainWords = useMemo(() => plainProblemWords(project), [project]);
-  const homeTiles = useMemo(() => {
-    if (target === null) return [];
+  const tileAvailability = useMemo(() => {
+    if (target === null) return null;
     const available = new Set(
       creatorFlows(session.library.starters, target)
         .filter((flow) => flow.unavailable === null)
@@ -688,13 +703,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         )
         .map((starter) => starter.id),
     );
-    return shownTiles({
-      flowAvailable: (id) => available.has(id),
-      starterAvailable: (id) => starters.has(id),
+    return {
+      flowAvailable: (id: string) => available.has(id),
+      starterAvailable: (id: string) => starters.has(id),
       rules: session.registry.get(RULES_KIND) !== undefined,
       ai: aiController !== null,
-    });
+    };
   }, [session, target, aiController]);
+  const homeTiles = useMemo(
+    () => (tileAvailability === null ? [] : shownTiles(tileAvailability)),
+    [tileAvailability],
+  );
   const homeCards = useMemo(() => thingCards(project, flowTitles), [project, flowTitles]);
   const aiConversationModel = useAiPanelStore((state) =>
     snapshot.root === null ? null : (state.models[snapshot.root] ?? null),
@@ -1746,6 +1765,167 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
         buildWithAi();
     }
   };
+  // Showcase (ADR 0118 D1, D10; B569) ----------------------------------------------------
+
+  const showcaseClips = usePreferences((state) => state.showcaseClips);
+  const showcaseOpen = usePreferences((state) => state.showcaseOpen);
+  const showcaseList = useMemo(
+    () => (target === null ? [] : showcasesFor(target, session.library.examples)),
+    [session, target],
+  );
+  /** Each showcased example's card, as a one-card list kept between renders. */
+  const showcaseByExample = useMemo(
+    () => new Map(showcaseList.map((clip) => [clip.exampleId, [clip]] as const)),
+    [showcaseList],
+  );
+  // The library's examples are the built-in plugins', so they lower with the built-in plugins.
+  const showcaseDeps = useMemo(
+    () => ({ registry: session.registry, plugins: builtInPlugins }),
+    [session],
+  );
+  /** A card's **Make this** as a Home tile, or `null` when nothing of it is offered here. */
+  const showcaseTile = (clip: ShowcaseClip): ShownTile | null => {
+    if (clip.make.type === 'example' || tileAvailability === null) return null;
+    const tile: MakeTile = {
+      id: `showcase-${clip.id}`,
+      label: clip.title,
+      sentence: clip.sentence,
+      group: 'start',
+      action: clip.make,
+    };
+    return shownTiles(tileAvailability, [tile])[0] ?? null;
+  };
+  // A tile to open once the mod a card's Make this started is open (ADR 0118 D10).
+  const [pendingTile, setPendingTile] = useState<ShownTile | null>(null);
+  const openTileRef = useRef(openTile);
+  openTileRef.current = openTile;
+  useEffect(() => {
+    if (pendingTile === null || project === null) return;
+    setPendingTile(null);
+    openTileRef.current(pendingTile);
+  }, [pendingTile, project]);
+  /**
+   * **Make this** (ADR 0118 D10): in the open mod, the card's flow as its Home tile would open
+   * it; with no mod, Very easy asks for the mod's name (prefilled from the card) and opens the
+   * flow once it is made, as Surprise me does; Easy and Advanced open New project on the
+   * flow's starter.
+   */
+  const makeShowcase = (clip: ShowcaseClip): void => {
+    const shown = showcaseTile(clip);
+    if (shown === null) {
+      seeShowcaseExample(clip);
+      return;
+    }
+    if (project !== null) {
+      setDialog(null);
+      openTile(shown);
+      return;
+    }
+    if (uiMode !== 'very-easy' && shown.flowIds.length > 0) {
+      setDialog({ type: 'new-project', startWith: shown.flowIds });
+      return;
+    }
+    const name = showcaseModName(clip);
+    const ask = bridge.project.defaultParent;
+    const fallback = (): void => {
+      setDialog(null);
+      void openWith('New mod', () => session.newProject()).then(() => {
+        if (session.snapshot.project !== null) setPendingTile(shown);
+      });
+    };
+    if (ask === undefined) {
+      fallback();
+      return;
+    }
+    ask().then(
+      (parent) =>
+        parent === ''
+          ? fallback()
+          : setDialog({ type: 'new-mod', parent, name, afterwards: shown }),
+      fallback,
+    );
+  };
+  /** Copies an example into the open mod (the Examples gallery's Copy into my project). */
+  const copyExample = async (example: ExampleProject, namespace: string) => {
+    const result = await session.addBundle(example, {
+      namespace,
+      label: `Copy example ${example.title}`,
+    });
+    if (result.assets.length > 0) setAssetRevision((revision) => revision + 1);
+    const skipped = result.duplicates.length + result.skippedAssets.length;
+    const merged = mergedPhrase(result.merged);
+    setMessage({
+      kind: 'info',
+      text:
+        `Copied "${example.title}" into ${namespace}: ${result.added.length} element(s), ${result.assets.length} asset(s)` +
+        (merged === '' ? '' : `; merged into ${merged}`) +
+        (skipped > 0 ? `; ${skipped} already in the project and skipped.` : '.'),
+    });
+    return result;
+  };
+  /**
+   * **See the example** (ADR 0118 D10): a new mod made from it when none is open, else a copy in
+   * the open mod, showing its Rule book when it has one (the Rules card).
+   */
+  const seeShowcaseExample = (clip: ShowcaseClip): void => {
+    const example = session.library.examples.find((entry) => entry.id === clip.exampleId);
+    if (example === undefined) return;
+    setDialog(null);
+    if (project === null) {
+      void openWith(`New project from example "${example.title}"`, () =>
+        session.newProject({ bundle: example }),
+      );
+      return;
+    }
+    if (ownNamespace === undefined) {
+      setMessage({ kind: 'error', text: 'The mod has no namespace of its own; add one first.' });
+      return;
+    }
+    copyExample(example, ownNamespace).then(
+      (result) => {
+        const added = new Set(result.added);
+        const book = session.snapshot.project?.namespaces
+          .flatMap((entry) => entry.elements)
+          .find((element) => element.kind === RULES_KIND && added.has(element.id));
+        const first = book?.id ?? result.added[0];
+        if (first !== undefined) navigateTo(first, null);
+      },
+      (error: unknown) =>
+        setMessage({ kind: 'error', text: `Copy example ${example.title}: ${messageOf(error)}` }),
+    );
+  };
+  /** The showcase gallery with its heading, for Home, New project and the Examples gallery. */
+  const showcaseGallery = (
+    clips: readonly ShowcaseClip[],
+    visible: boolean,
+    onMake: (clip: ShowcaseClip) => void,
+    onSeeExample: (clip: ShowcaseClip) => void,
+    heading = 'See what you can make',
+  ) =>
+    target === null || clips.length === 0 ? null : (
+      <ShowcaseGallery
+        heading={heading}
+        clips={clips}
+        examples={session.library.examples}
+        target={target}
+        deps={showcaseDeps}
+        vanilla={vanilla}
+        playClips={showcaseClips}
+        visible={visible}
+        onMake={onMake}
+        onSeeExample={onSeeExample}
+      />
+    );
+  /** The palette's "Showcase": Home's gallery in Very easy, else New project's strip. */
+  const showShowcase = (): void => {
+    if (usePreferences.getState().mode === 'very-easy') {
+      goHome();
+      usePreferences.getState().setShowcaseOpen(true);
+      return;
+    }
+    setDialog({ type: 'new-project' });
+  };
+
   const renameThing = (card: ThingCard): void => {
     if (card.main.kind === RULES_KIND) {
       // A rule book has no shown name of its own: the id rename.
@@ -2009,6 +2189,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
     reloadGame: project === null || !canReloadGame ? null : reloadGame,
     tryIt: project === null ? null : () => handlers.tryIt(),
     home: goHome,
+    showcase: showShowcase,
     veryEasyMode: uiMode === 'very-easy' ? null : handlers.modeVeryEasy,
     easyMode: uiMode === 'easy' ? null : handlers.modeEasy,
     advancedMode: uiMode === 'advanced' ? null : handlers.modeAdvanced,
@@ -2377,6 +2558,14 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onOpenProject={handlers.open}
                 recentProjects={recentProjects}
                 onOpenRecent={openRecent}
+                showcase={showcaseGallery(
+                  showcaseList,
+                  dialog === null && !tryItOpen && !paletteOpen,
+                  makeShowcase,
+                  seeShowcaseExample,
+                )}
+                showcaseOpen={showcaseOpen}
+                onShowcaseOpenChange={(open) => usePreferences.getState().setShowcaseOpen(open)}
               />
             ),
           }
@@ -2620,6 +2809,21 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 {...(project === null
                   ? {}
                   : { onOpenCreator: () => setDialog({ type: 'creator' }) })}
+                {...(dialog.startWith === undefined ? {} : { startWith: dialog.startWith })}
+                {...(showcaseList.length === 0
+                  ? {}
+                  : {
+                      renderShowcase: (choose: (flowIds: readonly string[]) => void) =>
+                        showcaseGallery(
+                          showcaseList,
+                          true,
+                          (clip) => {
+                            const shown = showcaseTile(clip);
+                            if (shown !== null) choose(shown.flowIds);
+                          },
+                          seeShowcaseExample,
+                        ),
+                    })}
                 onCreate={({ starterId, targetId, values }) => {
                   // The dialog closes first; `newProject` then asks for the folder.
                   setDialog(null);
@@ -2674,23 +2878,22 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                   );
                 }}
                 onCopy={async (example, namespace) => {
-                  const result = await session.addBundle(example, {
-                    namespace,
-                    label: `Copy example ${example.title}`,
-                  });
-                  if (result.assets.length > 0) setAssetRevision((revision) => revision + 1);
-                  const skipped = result.duplicates.length + result.skippedAssets.length;
-                  const merged = mergedPhrase(result.merged);
-                  setMessage({
-                    kind: 'info',
-                    text:
-                      `Copied "${example.title}" into ${namespace}: ${result.added.length} element(s), ${result.assets.length} asset(s)` +
-                      (merged === '' ? '' : `; merged into ${merged}`) +
-                      (skipped > 0 ? `; ${skipped} already in the project and skipped.` : '.'),
-                  });
+                  const result = await copyExample(example, namespace);
                   const first = result.added[0];
                   if (first !== undefined) select(first);
                   return result;
+                }}
+                renderClip={(example) => {
+                  const clips = showcaseByExample.get(example.id);
+                  return clips === undefined
+                    ? null
+                    : showcaseGallery(
+                        clips,
+                        true,
+                        makeShowcase,
+                        seeShowcaseExample,
+                        'What it looks like',
+                      );
                 }}
               />
             )}
@@ -2954,6 +3157,7 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
             {dialog?.type === 'new-mod' && (
               <NewModDialog
                 parent={dialog.parent}
+                {...(dialog.name === undefined ? {} : { initialName: dialog.name })}
                 onChangeFolder={() =>
                   bridge.dialogs.pickDirectory({ title: 'Choose where your mods are saved' })
                 }
@@ -2961,8 +3165,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
                 onCreate={async (folder) => {
                   const outcome = await session.newProject({ folder });
                   if (outcome.ok) {
+                    const afterwards = dialog.afterwards;
                     setDialog(null);
                     await openWith('New mod', async () => outcome);
+                    if (afterwards !== undefined) setPendingTile(afterwards);
                     return null;
                   }
                   if ('cancelled' in outcome) return null;
