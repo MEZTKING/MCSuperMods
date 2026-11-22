@@ -408,6 +408,36 @@ describe('Waterlogging switch', () => {
     expect(box.parentElement?.textContent).toContain('Holds water');
     expect(screen.getByTestId('block-waterlogged-storage')).toBeTruthy();
   });
+
+  it('says a double chest holds water by itself and offers no switch (B521)', () => {
+    const chest = (container: Record<string, Json>) => ({
+      components: { 'msm:container': container },
+    });
+    expect(waterloggingState('horizontal', chest({ double: true }))).toBe('double-chest');
+    expect(waterloggingState('block', chest({ layout: 'chest', rows: 3, double: true }))).toBe(
+      'double-chest',
+    );
+    // The runtime turns "double" off for other rows and for chests that keep their contents.
+    expect(waterloggingState('horizontal', chest({ double: true, rows: 6 }))).toBe('storage');
+    expect(waterloggingState('horizontal', chest({ double: true, keep_contents: true }))).toBe(
+      'storage',
+    );
+    expect(waterloggingState('horizontal', chest({ per_player: true }))).toBe('storage');
+    // A machine wins over a container.
+    expect(
+      waterloggingState('horizontal', {
+        components: { 'msm:container': { double: true }, 'msm:machine': {} },
+      }),
+    ).toBe('storage');
+    renderOnStack(
+      block({ type: 'horizontal', components: { 'msm:container': { double: true } } }),
+      schema,
+    );
+    expect(screen.getByTestId('block-waterlogged-double-chest').textContent).toContain(
+      'holds water by itself',
+    );
+    expect(screen.queryByTestId('block-waterlogged')).toBeNull();
+  });
 });
 
 describe("sign's writing screen picture", () => {

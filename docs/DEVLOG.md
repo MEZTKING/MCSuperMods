@@ -7264,3 +7264,17 @@ Next
 
 **Next**
 - Suggested: the Block Studio's "Sound type" choices from the target's `blocks.soundTypes`, so every vanilla name can be picked.
+## 2026-11-22 — executor — B521 e2e, batch 1
+
+**What**
+- `app/e2e/plants-path.spec.ts` (B505's placeholder filled): a new install in Very easy runs "Make a block"'s picks "Grows in long strands" (Cave plants) and "A flower pot" (Flower pot) with their defaults; nothing to fix, My things lists both. In Advanced the vine's strand section and companion, the pot's five plants and count, allium added from the ThingPicker's "Plants Minecraft pots", "How it sounds" writing the pot's own break and place sounds and a pitch of 1.5; the "Vanilla block rules" Studio from the template `msm_vanilla_block_rules` with a strip rule for an oak log (the "replaces" note names Stripped oak log) and an ageing rule. The Fabric mod jar on 26.3 and, after Upgrade project target, on 26.4: the vine, its strand and berries, a potted block state for each of the six plants, the potted allium's model naming the pot's and the plant's pictures, the pot's `block_sounds`, the rules file; on 26.4 `data/<ns>/block_sound_set/clay_planter.json` with the own sounds and the stone step filled in.
+- `app/e2e/storage-2-path.spec.ts`: in a blank project the Storage crate flow with "Double chest" and with "Different for every player", and the Copper set with its chest (four stages, waxed copies); no problem at all. The Inventory section: per-player turns Double chest off and Undo takes it back; the bronze chest ages into the exposed one; Holds water on the private crate. Saved data and the jar: `double`, `per_player`, the weathering and `msm:waterloggable`; double chests' block states for `type=single|left|right` without `open`, the private crate's with its open front.
+- App fix found by the storage path: the Type section offered "Holds water" (off) on a double chest, though a double chest is vanilla's chest family at runtime, always holds water and ignores `msm:waterloggable`. `waterloggingState` now answers `double-chest` and the switch shows the note `block-waterlogged-double-chest` instead; unit test in `block-types-b452.test.tsx`.
+- `app/CLAUDE.md` e2e line: 39 spec files, the two paths.
+
+**Decisions**
+- "A double, per-player, waterlogged copper chest" is covered across three blocks, since per-player storage excludes a double chest (ADR 0104 D5) and a double chest always holds water: the twin crate (double), the private crate (per-player, Holds water) and the bronze chest (double, ageing).
+- The storage path exports on the default target only; the plants path covers both targets because the sounds differ by version.
+
+**Next**
+- B522 guide: a double chest's Type section says "As a double chest it holds water by itself, as Minecraft's chests do, keeping its contents."

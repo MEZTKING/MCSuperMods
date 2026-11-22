@@ -7,6 +7,10 @@
  * B516 (ADR 0104 D3, ADR 0112 D1): storage and machines hold water too, as vanilla's chests do,
  * keeping their contents, screen and hoppers; their switch reads **Holds water**.
  *
+ * B521: a double chest is vanilla's chest family at runtime, which always holds water and
+ * ignores `msm:waterloggable` (ADR 0104 D4), so it says so instead of offering a switch that
+ * would do nothing.
+ *
  * @packageDocumentation
  */
 
@@ -44,6 +48,8 @@ export type WaterloggingState =
   | 'storage'
   /** A note: the type holds water by itself. */
   | 'own'
+  /** A note: a double chest holds water by itself, as vanilla's chests (ADR 0104 D4). */
+  | 'double-chest'
   /** Nothing (the type never holds water and has no component to remove). */
   | 'none';
 
@@ -52,8 +58,25 @@ export function waterloggingState(type: BlockTypeName, data: Json | undefined): 
   if (SELF_WATERLOGGED_TYPES.includes(type)) return 'own';
   const allowed = WATERLOGGABLE_BLOCK_TYPES.includes(type);
   if (!allowed) return hasWaterloggable(data) ? 'switch' : 'none';
-  if (containerOf(data) !== undefined || machineOf(data) !== undefined) return 'storage';
+  if (machineOf(data) !== undefined) return 'storage';
+  const container = containerOf(data);
+  if (container !== undefined) return isDoubleChest(container) ? 'double-chest' : 'storage';
   return 'switch';
+}
+
+/**
+ * Whether a container (no machine) is a double chest at runtime: the `chest` layout with 3 rows,
+ * `double` and no `keep_contents`, as the runtime and the plugin's lowering take it.
+ */
+function isDoubleChest(container: { [key: string]: Json | undefined }): boolean {
+  const layout = container.layout ?? 'chest';
+  const rows = container.rows ?? 3;
+  return (
+    container.double === true &&
+    layout === 'chest' &&
+    rows === 3 &&
+    container.keep_contents !== true
+  );
 }
 
 /** The data with `msm:waterloggable` added (`on`) or removed, in one edit. */
@@ -88,6 +111,13 @@ export function WaterloggingSwitch(props: WaterloggingSwitchProps) {
     return (
       <p className="text-muted text-xs" data-testid="block-waterlogged-own">
         It can stand in water by itself, as in Minecraft.
+      </p>
+    );
+  }
+  if (state === 'double-chest') {
+    return (
+      <p className="text-muted text-xs" data-testid="block-waterlogged-double-chest">
+        As a double chest it holds water by itself, as Minecraft's chests do, keeping its contents.
       </p>
     );
   }
