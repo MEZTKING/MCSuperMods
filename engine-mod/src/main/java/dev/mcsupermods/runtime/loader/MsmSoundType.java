@@ -7,26 +7,31 @@ import static dev.mcsupermods.runtime.loader.MsmCodecs.optional;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.resources.Identifier;
 
 /**
- * Block sound types ({@code ::msm::definition::SoundType}). Each constant names a vanilla
- * {@code SoundType} field of the same name in upper case (all 40 checked against the 26.3 jar);
- * the registrar maps them, so parsing needs no game bootstrap.
+ * A block's sound type ({@code sound_type}, {@code ::msm::definition::SoundType}): any vanilla sound type name of the
+ * Minecraft version, in lower case ({@code BlockFacts.soundTypes} in the app: 131 on 26.3, 137 on 26.4). Parsing takes
+ * any name, so it needs no game bootstrap; the registrar resolves it through the version seam {@code registry/BlockSounds}
+ * (26.3: the vanilla {@code SoundType} constant of that name; 26.4: the {@code block_sound_set} key, {@code amethyst}
+ * being {@code amethyst_block}), and a name the version lacks is a load error that skips the block.
+ *
+ * @param serialName the name as written
  */
-public enum MsmSoundType {
-    STONE, WOOD, GRAVEL, GRASS, METAL, GLASS, WOOL, SAND, SNOW, LADDER, ANVIL, SLIME_BLOCK, HONEY_BLOCK,
-    CORAL_BLOCK, BAMBOO, BAMBOO_WOOD, CHERRY_WOOD, NETHER_WOOD, NETHERRACK, NETHER_BRICKS, NETHER_ORE, BASALT,
-    BONE_BLOCK, SOUL_SAND, SOUL_SOIL, AMETHYST, AMETHYST_CLUSTER, CALCITE, TUFF, DEEPSLATE, DEEPSLATE_BRICKS,
-    DEEPSLATE_TILES, POLISHED_DEEPSLATE, COPPER, MUD, MUD_BRICKS, PACKED_MUD, MOSS, LANTERN, SCULK;
+public record MsmSoundType(String serialName) {
+    /** The default of most blocks. */
+    public static final MsmSoundType STONE = new MsmSoundType("stone");
+    /** The default of portal blocks (ADR 0077 D1). */
+    public static final MsmSoundType GLASS = new MsmSoundType("glass");
+    public static final MsmSoundType WOOD = new MsmSoundType("wood");
 
-    public String serialName() {
-        return name().toLowerCase(Locale.ROOT);
+    public MsmSoundType {
+        Objects.requireNonNull(serialName, "serialName");
     }
 
-    public static final Codec<MsmSoundType> CODEC = MsmCodecs.named("sound_type", values(), MsmSoundType::serialName);
+    public static final Codec<MsmSoundType> CODEC = Codec.STRING.xmap(MsmSoundType::new, MsmSoundType::serialName);
 
     /**
      * A block's own sounds ({@code block_sounds}, {@code ::msm::definition::BlockSounds}, ADR 0105 D1; closed): each sound

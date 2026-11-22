@@ -428,7 +428,8 @@ describe('the 26.3 generator and vanilla parity 3, batch 1 (B517)', () => {
     expect(modBlocks.indexOf('potted(POT_LISTED')).toBeGreaterThan(
       modBlocks.indexOf('POT_CLAY.addPotted'),
     );
-    // Own sounds and set types.
+    // Own sounds and set types; any 26.3 sound type, not only the format's suggested names.
+    expect(modBlocks).toContain('.sound(SoundType.GLOW_LICHEN)');
     expect(modBlocks).toContain(
       '.sound(ModBlocks.ownSounds(Identifier.fromNamespaceAndPath("msm_test", "sound_own"), SoundType.STONE, Float.NaN, Float.NaN,',
     );

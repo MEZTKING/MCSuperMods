@@ -3694,7 +3694,7 @@
           }
         },
         {
-          "desc": "Sounds for breaking, placing and stepping; defaults to `stone`.",
+          "desc": "Sounds for breaking, placing and stepping: a vanilla sound type name of the target\n(`SoundType`); defaults to `stone`.",
           "key": "sound_type",
           "kind": "pair",
           "optional": true,
@@ -11055,6 +11055,18 @@
       "kind": "struct"
     },
     "::msm::definition::SoundType": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "reference",
+          "path": "::msm::definition::SoundTypeName"
+        },
+        {
+          "kind": "string"
+        }
+      ]
+    },
+    "::msm::definition::SoundTypeName": {
       "enumKind": "string",
       "kind": "enum",
       "values": [
@@ -25607,5 +25619,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:eb755096fb194e098b040a2511c48ae252e1b10f378e3db718f8432a75f143e1"
+  "ref": "msm-mcdoc:sha256:1eb028c90c5927e7c8c805884d0bb15b170b3b2b301d1d704952361e3129bf28"
 }

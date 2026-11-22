@@ -18,8 +18,16 @@ use super::controls::HudCommon
 use super::controls::KeyBindCommon
 use super::vehicle::VehicleCommon
 
-/// A vanilla `SoundType` constant in lower case (verify the list at implementation).
-enum(string) SoundType {
+/// A block's sound type: any vanilla sound type name of the target in lower case (vanilla
+/// parity: on 26.3 the `SoundType` constants, 131 names; on 26.4 the `block_sound_set` entries,
+/// 137 names, `amethyst` being `amethyst_block`). The list per target is
+/// `BlockFacts.soundTypes`, which the blocks-items validator `sound-type-unknown` checks; the
+/// runtime refuses a block whose name its version lacks. `SoundTypeName` holds the common names
+/// the editor suggests.
+type SoundType = (SoundTypeName | string)
+
+/// Common vanilla sound type names, suggested by the editor (every target has them).
+enum(string) SoundTypeName {
 	Stone = "stone",
 	Wood = "wood",
 	Gravel = "gravel",
@@ -132,7 +140,8 @@ struct BlockCommon {
 	/// same in every state. Each type adds its own fields, selected by this value.
 	type?: BlockType,
 	...msm:block_type[[type]],
-	/// Sounds for breaking, placing and stepping; defaults to `stone`.
+	/// Sounds for breaking, placing and stepping: a vanilla sound type name of the target
+	/// (`SoundType`); defaults to `stone`.
 	sound_type?: SoundType,
 	/// The block's own sounds (ADR 0105 D1): each event given replaces that event of
 	/// `sound_type`, which gives the rest. On targets whose sounds are data (26.4) a change shows

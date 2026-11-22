@@ -173,6 +173,43 @@ public class MsmOwnSoundsGameTest {
         });
     }
 
+    /**
+     * A {@code sound_type} outside the format's first 40 names (B520 follow-up): any vanilla sound type of the version
+     * registers, here {@code glow_lichen}, and the block plays vanilla glow lichen's place sound.
+     */
+    @GameTest
+    public void aBlockWithTheGlowLichenSoundTypePlacesWithGlowLichensSound(GameTestHelper helper) {
+        Block lichen = block("sound_glow_lichen");
+        helper.assertTrue(lichen != Blocks.AIR, "sound_glow_lichen is not registered: " + MsmRuntime.report().errors());
+        helper.assertTrue(BlockSoundCheck.hasSound(lichen.defaultBlockState(), "glow_lichen"), "sound_type glow_lichen");
+        Identifier expected = BlockSoundCheck.placeSound(helper.getLevel(), Blocks.GLOW_LICHEN.defaultBlockState());
+        helper.assertValueEqual(BlockSoundCheck.placeSound(helper.getLevel(), lichen.defaultBlockState()), expected,
+                "place sound of sound_glow_lichen");
+        Ears ears = new Ears(helper, new BlockPos(1, 2, 1));
+        try {
+            ServerPlayer player = player(helper);
+            helper.setBlock(new BlockPos(1, 0, 1), Blocks.STONE);
+            ears.heard();
+            helper.assertTrue(use(helper, player, new ItemStack(lichen.asItem()), new BlockPos(1, 0, 1), Direction.UP)
+                    .consumesAction(), "the block was not placed");
+            helper.assertBlockPresent(lichen, new BlockPos(1, 1, 1));
+            assertHeard(helper, ears.heard(), expected, "place (glow lichen's sound)");
+        } finally {
+            ears.close();
+        }
+        helper.succeed();
+    }
+
+    /** A {@code sound_type} the version lacks is a load error that skips the block (and only that block). */
+    @GameTest
+    public void anUnknownSoundTypeIsALoadErrorThatSkipsTheBlock(GameTestHelper helper) {
+        helper.assertFalse(BuiltInRegistries.BLOCK.containsKey(id("unknown_sound_type")), "unknown_sound_type was registered");
+        List<String> errors = MsmRuntime.report().errors();
+        helper.assertTrue(errors.stream().anyMatch(e -> e.contains("block/unknown_sound_type.json") && e.contains("\"squeaky\"")
+                && e.contains("not a sound type")), "no error for unknown_sound_type: " + errors);
+        helper.succeed();
+    }
+
     @GameTest
     public void aDoorWithBlockSoundsAndAVanillaSetTypePlacesWithItsOwnSound(GameTestHelper helper) {
         Ears ears = new Ears(helper, new BlockPos(1, 2, 1));

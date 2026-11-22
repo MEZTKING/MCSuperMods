@@ -57,10 +57,9 @@ export const SOUND_SET_MAX_PITCH = 2;
 export const SOUND_SET_MIN_VOLUME = 0.00001;
 
 /**
- * The format's own `sound_type` names (the mcdoc enum `SoundType`, ADR 0025 D5): the runtime maps
- * each onto the target's own sound type or sound set (`amethyst` is `amethyst_block` where sounds
- * are data), so the validators check a target's {@link BlockFacts.soundTypes} only for names
- * outside this list.
+ * The common `sound_type` names the editor suggests (the mcdoc enum `SoundTypeName`, ADR 0025 D5),
+ * which every target has (`amethyst` is `amethyst_block` where sounds are data). `sound_type`
+ * takes any name of the target's {@link BlockFacts.soundTypes}; the validators check that list.
  */
 export const FORMAT_SOUND_TYPES: readonly string[] = Object.freeze([
   'stone',

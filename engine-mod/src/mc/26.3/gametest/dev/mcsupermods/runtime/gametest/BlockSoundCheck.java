@@ -1,5 +1,7 @@
 package dev.mcsupermods.runtime.gametest;
 
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -15,10 +17,16 @@ final class BlockSoundCheck {
         return state.getSoundType() == soundType(msmSoundType);
     }
 
+    /** The sound event a block state plays when placed. */
+    static Identifier placeSound(LevelReader level, BlockState state) {
+        return state.getSoundType().getPlaceSound().location();
+    }
+
     private static SoundType soundType(String msmSoundType) {
         return switch (msmSoundType) {
             case "stone" -> SoundType.STONE;
             case "amethyst" -> SoundType.AMETHYST;
+            case "glow_lichen" -> SoundType.GLOW_LICHEN;
             default -> throw new IllegalArgumentException("No test mapping for sound_type " + msmSoundType);
         };
     }

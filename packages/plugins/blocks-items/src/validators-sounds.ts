@@ -15,8 +15,9 @@
  *   others are silent there instead of the `sound_type`'s.
  * - `blocks-items.block-sounds-range` (warning): on such a target, a `pitch` above 2 or a
  *   `volume` of 0, which the game's entry does not take; lowering writes the nearest it takes.
- * - `blocks-items.sound-type-unknown` (error): a `sound_type` that is neither one of the format's
- *   names (which the runtime maps on every target) nor one of the target's own `soundTypes`.
+ * - `blocks-items.sound-type-unknown` (error): a `sound_type` that is not one of the target's own
+ *   `soundTypes` (every vanilla sound type of the version; the format's `amethyst` counts as
+ *   `amethyst_block` where the target names it so), which the runtime refuses.
  * - `blocks-items.set-type-field-unused` (info): a setting of an own set type the block's type
  *   never uses (door sounds on a button, `plate_sensitivity` on a door, and so on).
  * - `blocks-items.vanilla-pair-override` (warning): a strip, flatten, till, wax or age rule for a
@@ -48,7 +49,7 @@ import { isRecord } from './lowering/paths';
 import {
   BLOCK_SOUNDS_FIELD,
   blockSoundsOf,
-  FORMAT_SOUND_TYPES,
+  FORMAT_SOUND_SET_ALIASES,
   missingSoundEvents,
   SOUND_SET_MAX_PITCH,
   soundSetOf,
@@ -229,7 +230,9 @@ function unknownSoundTypes(elements: readonly Element[], target: TargetFacts): P
   if (facts === undefined) return [];
   return blocks(elements).flatMap(({ element, data }): Problem[] => {
     const name = text(data.sound_type);
-    if (name === undefined || FORMAT_SOUND_TYPES.includes(name) || facts.includes(name)) return [];
+    if (name === undefined || facts.includes(name)) return [];
+    const alias = FORMAT_SOUND_SET_ALIASES[name];
+    if (alias !== undefined && facts.includes(alias)) return [];
     return [
       {
         severity: 'error',

@@ -7247,3 +7247,20 @@ Next
 **Next**
 - B522: guide labels and the Very easy words above; the cave-vine berries item shows the vine's name.
 - B520/B519: the new examples in game and in Try it.
+
+## 2026-11-22 — executor — every vanilla sound type in sound_type
+
+**What**
+- Bug (CI run 44988128993, both engine-mod jobs): `fixtures/sim-parity` blocks with `sound_type` `big_dripleaf`, `glow_lichen` and `small_dripleaf` passed the app (real vanilla sound types) but the runtime knew only the format's 40 names, skipped the blocks, and their loot tables then failed the whole `sim_parity` data pack, so `runGameTest` failed.
+- Format (vanilla parity): `::msm::definition::SoundType` is now `(SoundTypeName | string)`, any vanilla sound type name of the target; the 40 names stay as the enum `SoundTypeName`, which the Block Studio still offers as its choices. `symbols.json` regenerated (541 types). Corpus: `block-bad-sound-type.json` (`squeaky`) is structurally valid now and moved to `valid/block-sound-type-unlisted-name.json`; new `valid/block-sound-type-glow-lichen.json` and `invalid/block-sound-type-number.json` (`schema.no-union-match`).
+- Runtime: `loader/MsmSoundType` is a record of the name (constants `STONE`, `GLASS`, `WOOD`), parsed without bootstrap. The `registry/BlockSounds` seam resolves it per version from vanilla's own public static fields: 26.3 every `SoundType` constant by lower-case name (131), 26.4 every `BlockSoundSets` key by path (137) with `amethyst` to `amethyst_block`. An unknown name is a load error that skips the block (`sound_type "x" is not a sound type of this Minecraft version (26.x); the block is skipped`).
+- Plugin: `blocks-items.sound-type-unknown` is an error for any name outside the target's `soundTypes` (through `FORMAT_SOUND_SET_ALIASES`), not only names outside the 40; `FORMAT_SOUND_TYPES` documents the editor's suggestions.
+- Java eject (26.3): the `sound_type` reader takes every 26.3 name; the list moved from `target.ts` into `packages/targets/mc-26.3/src/sound-types.ts`, shared by the target facts and `java-project/blocks.ts`.
+- GameTests (`MsmOwnSoundsGameTest`): `aBlockWithTheGlowLichenSoundTypePlacesWithGlowLichensSound` (block `sound_glow_lichen` registers, has the glow lichen sound type and plays vanilla glow lichen's place sound when a player places it) and `anUnknownSoundTypeIsALoadErrorThatSkipsTheBlock` (`unknown_sound_type.json`, listed in `MsmSpikeGameTest`'s expected errors); the `BlockSoundCheck` seams gain `glow_lichen` and `placeSound`. 759 GameTests per variant, on 26.3, 26.4 and without GeckoLib, the `sim_parity` data pack loading.
+
+**Decisions**
+- Parsing accepts any string, as the mcdoc does; whether the version has the name is the registrar's check, so the corpus stays identical on both sides.
+- The Block Studio's "Sound type" picker still lists only the 40 suggestions (no app change in this brief); other names work through Raw JSON and the advanced form.
+
+**Next**
+- Suggested: the Block Studio's "Sound type" choices from the target's `blocks.soundTypes`, so every vanilla name can be picked.

@@ -34,6 +34,7 @@
  */
 
 import type { DefinitionInput } from '@msm/plugin-api';
+import { SOUND_TYPES } from '../sound-types';
 import {
   type EventOwnerKind,
   type Events,
@@ -154,50 +155,6 @@ import {
   weatheringInterface,
   weatheringMembers,
 } from './weathering';
-
-/** The block sound types (`::msm::definition::SoundType`), each a `SoundType` constant. */
-export const SOUND_TYPES = [
-  'stone',
-  'wood',
-  'gravel',
-  'grass',
-  'metal',
-  'glass',
-  'wool',
-  'sand',
-  'snow',
-  'ladder',
-  'anvil',
-  'slime_block',
-  'honey_block',
-  'coral_block',
-  'bamboo',
-  'bamboo_wood',
-  'cherry_wood',
-  'nether_wood',
-  'netherrack',
-  'nether_bricks',
-  'nether_ore',
-  'basalt',
-  'bone_block',
-  'soul_sand',
-  'soul_soil',
-  'amethyst',
-  'amethyst_cluster',
-  'calcite',
-  'tuff',
-  'deepslate',
-  'deepslate_bricks',
-  'deepslate_tiles',
-  'polished_deepslate',
-  'copper',
-  'mud',
-  'mud_bricks',
-  'packed_mud',
-  'moss',
-  'lantern',
-  'sculk',
-] as const;
 
 /**
  * A sign's or hanging sign's sound line (B457a): the sounds of its `wood_type`, as the runtime gives them

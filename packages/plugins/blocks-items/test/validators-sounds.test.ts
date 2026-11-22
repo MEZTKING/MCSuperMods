@@ -162,19 +162,35 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       );
     });
 
-    it("sound-type-unknown: names outside the format's list and the target's own", async () => {
+    it("sound-type-unknown: any name outside the target's own", async () => {
       const own = bundle.target.blocks?.soundTypes ?? [];
       const onlyHere = own.find(
         (name) => name === 'twisting_vines' || name === 'chiseled_soulshale',
       );
+      const elsewhere = ['twisting_vines', 'chiseled_soulshale'].find(
+        (name) => !own.includes(name),
+      );
       const problems = await validate([
         block('demo:amethyst', { sound_type: 'amethyst' }),
+        block('demo:lichen', { sound_type: 'glow_lichen' }),
+        block('demo:leaf', { sound_type: 'big_dripleaf' }),
         block('demo:made_up', { sound_type: 'made_up_sound' }),
         ...(onlyHere === undefined ? [] : [block('demo:own', { sound_type: onlyHere })]),
+        ...(elsewhere === undefined ? [] : [block('demo:other', { sound_type: elsewhere })]),
       ]);
       expect(withCode(problems, 'sound-type-unknown')).toEqual([
         ['demo:made_up', '/sound_type', 'error'],
+        ...(elsewhere === undefined ? [] : [['demo:other', '/sound_type', 'error']]),
       ]);
+    });
+
+    it("sound-type-unknown: every name of the target's own list is accepted", async () => {
+      const own = bundle.target.blocks?.soundTypes ?? [];
+      expect(own.length).toBeGreaterThan(100);
+      const problems = await validate(
+        own.map((name, index) => block(`demo:s${String(index)}` as Id, { sound_type: name })),
+      );
+      expect(withCode(problems, 'sound-type-unknown')).toEqual([]);
     });
 
     it('set-type-field-unused: settings the type never uses', async () => {
