@@ -487,6 +487,33 @@ public class MsmSimParityGameTest {
         play(helper, "fluid_source_mixes_with_lava");
     }
 
+    // Live views 2 (B614; recorded by the B614 follow-up)
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void vanillaRulesAxeStrips(GameTestHelper helper) {
+        play(helper, "vanilla_rules_axe_strips");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void vanillaRulesShovelFlattensWithAirAbove(GameTestHelper helper) {
+        play(helper, "vanilla_rules_shovel_flattens_with_air_above");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void vanillaRulesHoeTills(GameTestHelper helper) {
+        play(helper, "vanilla_rules_hoe_tills");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void vanillaRulesHoneycombWaxesAndAxeUnwaxes(GameTestHelper helper) {
+        play(helper, "vanilla_rules_honeycomb_waxes_and_axe_unwaxes");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void vanillaToolsOnVanillaBlocks(GameTestHelper helper) {
+        play(helper, "vanilla_tools_on_vanilla_blocks");
+    }
+
     // The file and the fixture
 
     @GameTest

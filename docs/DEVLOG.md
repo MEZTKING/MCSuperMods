@@ -8889,3 +8889,15 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B611: a dialog view can read `functions.state.dialog`. B616: test ids `function-line-mark` (`data-line`, `data-runs`), `function-run-summary` (`data-runs`, `data-lines`), `function-not-run`, `function-run-in-tryit`, `function-run-values`, `function-view-line`, `function-view-summary`, `function-view-self-run`. B617: the words "Runs in Try it", "Only in the game", "Run in Try it", "Values for the macro lines", "The rest are said in What happened"; `docs/guide/try-it.md` still says functions run only in the game (lines 142 and 230). B618: `packages/sim/CLAUDE.md` "Contents" wants a line for the function engine and the `run_function` action.
+## 2026-11-22 — executor — Recording B614's five sim-parity scenarios in the game
+
+**What**
+- Ran `./gradlew runGameTest -PupdateSimParity` on 26.3 and `-Pmc=26.4`: the game agreed with every expectation of `vanilla_rules_axe_strips`, `vanilla_rules_shovel_flattens_with_air_above`, `vanilla_rules_hoe_tills`, `vanilla_rules_honeycomb_waxes_and_axe_unwaxes` and `vanilla_tools_on_vanilla_blocks` on both versions; `scenarios.json` was rewritten byte for byte as before. No sim change was needed.
+- `MsmSimParityGameTest` gained the five GameTests (B614 had added the scenarios but no methods, so `everyScenarioHasAGameTest` failed). `MsmVanillaPairsGameTest.rulesFilesReport...` counted rules used globally (8 / 7); the fixture's `tool_rules` adds four, so it now expects 12 / 11.
+- `./gradlew build` on both versions: 850 GameTests each, all passed. `@msm/sim` tests 1031 passed. README line of the fixture updated.
+
+**Decisions**
+- The rules-used count in `MsmVanillaPairsGameTest` is a global counter, so the fixture's four rules are added to it rather than isolating the count.
+
+**Next**
+- Follow-ups from B614 stand (passthrough `minecraft:block_transformer` in the runtime, clicked face, sneaking).

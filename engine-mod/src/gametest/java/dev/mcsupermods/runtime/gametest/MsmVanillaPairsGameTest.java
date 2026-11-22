@@ -152,8 +152,9 @@ public class MsmVanillaPairsGameTest {
         helper.assertFalse(MsmRuntime.report().errors().stream().anyMatch(e -> e.contains("vanilla_block_rules/")),
                 "rules errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BlockExtras.lateWarnings().isEmpty(), "unknown targets after start-up: " + BlockExtras.lateWarnings());
-        // strip 2 (one replaced, both used) + flatten 1 + till 2 + wax 1 + burn 1 (+ age 1 where it works).
-        helper.assertValueEqual(BlockExtras.rulesUsed(), VanillaPairs.agesVanillaBlocks() ? 8 : 7, "rules used");
+        // strip 2 (one replaced, both used) + flatten 1 + till 2 + wax 1 + burn 1 (+ age 1 where it works),
+        // and the sim_parity fixture's tool_rules (strip, flatten, till and wax: 4).
+        helper.assertValueEqual(BlockExtras.rulesUsed(), VanillaPairs.agesVanillaBlocks() ? 12 : 11, "rules used");
         helper.succeed();
     }
 
