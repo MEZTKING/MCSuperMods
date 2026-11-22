@@ -99,6 +99,7 @@ const EXACT: Readonly<Record<string, Rgba>> = {
   lava: rgb(0xd5641a),
   bubble_column: rgb(0x3f76e4, 150),
   obsidian: rgb(0x15111f),
+  lodestone: rgb(0x7c7e84),
   netherrack: rgb(0x6f3534),
   moss_block: rgb(0x596d2d),
   glass: rgb(0xd8ecf2, 90),

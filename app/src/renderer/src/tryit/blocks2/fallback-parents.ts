@@ -14,6 +14,7 @@
 import type { JsonObject } from '@msm/plugin-api';
 import { FALLBACK_MODELS } from '../../preview/fallback-models';
 import { BLOCKS3_FALLBACK_PARENTS } from '../blocks3/fallback-parents';
+import { COMMON_FALLBACK_PARENTS } from '../fallback-parents-common';
 import { box, cross, model, type Vec } from '../render/model-boxes';
 
 /** A sign board on its post, turned by `angle` (the four in-between turns of a standing sign). */
@@ -235,9 +236,13 @@ export const BLOCKS2_FALLBACK_PARENTS: Readonly<Record<string, JsonObject>> = Ob
   buildParents(),
 );
 
-/** MSM's fallback parents for Try it: the preview's own, the twenty types' and ADR 0103's five. */
+/**
+ * MSM's fallback parents for Try it: the preview's own, the common block types' and whole models
+ * (B565's list), the twenty types' and ADR 0103's five.
+ */
 export const TRYIT_FALLBACK_MODELS: Readonly<Record<string, JsonObject>> = Object.freeze({
   ...FALLBACK_MODELS,
+  ...COMMON_FALLBACK_PARENTS,
   ...BLOCKS2_FALLBACK_PARENTS,
   ...BLOCKS3_FALLBACK_PARENTS,
 });

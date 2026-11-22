@@ -7657,3 +7657,19 @@ Next
 **Next**
 - The "stub until B536" comments in `MsmRuntime.java` and `client/MsmRuntimeClient.java` are stale (files closed to this brief).
 - B541: pin `registered 5 boat type(s)` only for the GameTest mod; B543 guide: dispensers place project boats as vanilla's.
+
+## 2026-11-22 — executor — Try it fallback parents for the common block types (B565's seam)
+
+**What**
+- New `app/src/renderer/src/tryit/fallback-parents-common.ts`: MSM's own box models for every vanilla template the blocks-items lowering names that had no fallback: `slab`, `slab_top`, `stairs`, `inner_stairs`, `outer_stairs`, the eight `door_*`, `fence_post`/`side`/`inventory`, the four `template_fence_gate*`, `template_orientable_trapdoor_*` and `template_trapdoor_*` (bottom, top, open), `button`, `button_pressed`, `button_inventory`, `pressure_plate_up`/`down`, `template_wall_post`/`side`/`side_tall`, `wall_inventory`, the five `template_glass_pane_*`, `crop`, `leaves`, `cube_column_horizontal`, `orientable`, `orientable_with_bottom`, `orientable_vertical`, `template_cauldron_level1`/`level2`/`full`, `nether_portal_ns`/`ew`, and the empty root `block/block`. Shapes follow `@msm/sim`'s `blocks/shapes.ts` and the turns of the lowered block states (stairs and doors face east, gates south, the rest north); texture variables are the lowered models' (`#top`/`#side`/`#bottom`, `#texture`, `#wall`, `#edge`/`#pane`, `#crop`, `#all`, `#end`, `#front`, `#content`…). No Mojang model or texture was opened (ADR 0092 D12).
+- Whole vanilla models named as a block's `model` by MSM's templates, examples and fixtures (`glass`, `lodestone`, `stone`, `barrel`, `observer`, … 25 in all) are MSM's fallback cubes from `render/fallback-colours.ts` (`smooth_stone_slab` the bottom half); `lodestone` got a colour there. Registered in `TRYIT_FALLBACK_MODELS` (`blocks2/fallback-parents.ts`).
+- Verified: `pnpm lint`, `pnpm typecheck`, app 2572 tests (269 files), sim 655, `pnpm build`, check-size (renderer 16.8 of 18 MB, `app.asar` 29.9 of 32 MB), e2e `tryit-path` 7 of 7 under `xvfb-run -a`.
+- Test `app/test/components/tryit/fallback-parents-common.test.ts`: lowers one element of every `BLOCK_TYPES` entry (with variants) and fluids with cauldrons and fails if a `minecraft:block/` parent has no fallback; scans the plugins' sources, `examples/` and `fixtures/` for named vanilla parents and whole models; resolves every face of every lowered model through the fallbacks; prepares a scene of all the blocks with `prepareTryItResources` (no jar) with no missing definition, model or texture.
+
+**Decisions**
+- A new file rather than the blocks2/blocks3 ones, so B540's wave 12 edits there do not collide.
+- Explicit whole-model entries, not a generic "any `minecraft:block/<x>` is that block's fallback cube" rule in `render/resources.ts` (not a fallback file this wave).
+
+**Next**
+- Generic whole-model fallback in `render/resources.ts` (B540 or B573), so a user's own `model: "minecraft:block/<anything>"` draws without the jar.
+- Vanilla textures named directly (the cauldron's pictures, a potted vanilla plant's picture, templates' `minecraft:block/stone` textures) still need the jar; a fallback-colour picture for `minecraft:block/<x>` texture ids would cover them.
