@@ -71,7 +71,14 @@ public enum BlockType {
     SIGN("sign", FurnitureFields.fields("sign")),
     HANGING_SIGN("hanging_sign", FurnitureFields.fields("hanging_sign")),
     STEM("stem", FurnitureFields.fields("stem")),
-    SCAFFOLDING("scaffolding", FurnitureFields.fields("scaffolding"));
+    SCAFFOLDING("scaffolding", FurnitureFields.fields("scaffolding")),
+    // The five growing, climbing and potted plant types of batch 3 (ADR 0103 D1, D2). Stubs from B505: no fields yet
+    // (B506 freezes them), and BlockTypes answers "not yet" for a block of these types until B509 and B510.
+    GROWING_PLANT("growing_plant", List.of()),
+    COLUMN_PLANT("column_plant", List.of()),
+    MULTIFACE("multiface", List.of()),
+    DRIPLEAF("dripleaf", List.of()),
+    FLOWER_POT("flower_pot", List.of());
 
     /**
      * Components allowed only on {@link #BLOCK}, {@link #PILLAR}, {@link #HORIZONTAL} and {@link #DIRECTIONAL} (ADR 0067 D3;
@@ -552,7 +559,8 @@ public enum BlockType {
             case PORTAL -> Portal.CODEC;
             case CAKE, BERRY_BUSH, TALL_PLANT, POTTED_PLANT, VINE, SEA_PICKLE, CARPET, LAYERS, COCOA, CANDLE -> PlantFields.codec(id);
             case BED, LADDER, TORCH, LANTERN, CHAIN, ROD, SIGN, HANGING_SIGN, STEM, SCAFFOLDING -> FurnitureFields.codec(id);
-            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, WALL, FENCE, PANE -> MapCodec.unit(None.INSTANCE);
+            case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, WALL, FENCE, PANE, GROWING_PLANT, COLUMN_PLANT, MULTIFACE, DRIPLEAF,
+                    FLOWER_POT -> MapCodec.unit(None.INSTANCE);
         };
         return (MapCodec<Fields>) codec;
     }

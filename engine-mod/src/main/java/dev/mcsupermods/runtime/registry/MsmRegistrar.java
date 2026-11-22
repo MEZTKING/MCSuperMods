@@ -20,6 +20,7 @@ import dev.mcsupermods.runtime.loader.PotionDefinition;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.loader.types.PlantFields;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
+import dev.mcsupermods.runtime.registry.container.StorageExtras;
 import dev.mcsupermods.runtime.registry.fluid.MsmFluids;
 import dev.mcsupermods.runtime.registry.inventory.ItemInventories;
 import dev.mcsupermods.runtime.registry.mob.MsmProfessions;
@@ -524,6 +525,7 @@ public final class MsmRegistrar {
                 .strength(breakable.hardness(), breakable.resistance())
                 .lightLevel(state -> light);
         props = BlockSounds.apply(props, def.soundType()); // version seam (ADR 0038 D2)
+        props = OwnSounds.soundTypeFor(id, def, props); // own block sounds (ADR 0105 D1): a stub until B514
         if (breakable.requiresTool()) {
             props = props.requiresCorrectToolForDrops();
         }
@@ -543,6 +545,7 @@ public final class MsmRegistrar {
         // Weathering (ADR 0094 D8) and waterlogging (D7) classes first; each answers empty for a block without its component.
         final BlockBehaviour.Properties blockProps = props;
         Block created = Weathering.blockFor(id, def, blockProps)
+                .or(() -> StorageExtras.blockFor(id, def, blockProps)) // double and per-player chests (ADR 0104 D4, D5): a stub until B513
                 .or(() -> Waterlogging.blockFor(id, def, blockProps))
                 .orElseGet(() -> BlockTypes.create(id, def, blockProps, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
         Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey, created);

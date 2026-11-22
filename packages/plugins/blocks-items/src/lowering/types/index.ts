@@ -53,12 +53,16 @@ import { candleType } from './candle';
 import { carpetType } from './carpet';
 import { chainType } from './chain';
 import { cocoaType } from './cocoa';
+import { columnPlantType } from './column-plant';
 import { companionBlockstateFiles, companionTagFiles } from './companions';
 import { cropType } from './crop';
 import { directionalType } from './directional';
 import { doorType } from './door';
+import { dripleafType } from './dripleaf';
 import { fenceType } from './fence';
 import { fenceGateType } from './fence-gate';
+import { flowerPotType } from './flower-pot';
+import { growingPlantType } from './growing-plant';
 import { hangingSignType } from './hanging-sign';
 import { horizontalType } from './horizontal';
 import { ladderType } from './ladder';
@@ -76,6 +80,7 @@ import {
   type TypeLowering,
   textureLookup,
 } from './models';
+import { multifaceType } from './multiface';
 import { paneType } from './pane';
 import { pillarType } from './pillar';
 import { portalType } from './portal';
@@ -145,6 +150,11 @@ export const BLOCK_TYPES = Object.freeze([
   'hanging_sign',
   'stem',
   'scaffolding',
+  'growing_plant',
+  'column_plant',
+  'multiface',
+  'dripleaf',
+  'flower_pot',
 ] as const);
 
 /** A block type name. */
@@ -190,6 +200,11 @@ export const BLOCK_TYPE_LOWERINGS: Readonly<Record<BlockTypeName, TypeLowering>>
   hanging_sign: hangingSignType,
   stem: stemType,
   scaffolding: scaffoldingType,
+  growing_plant: growingPlantType,
+  column_plant: columnPlantType,
+  multiface: multifaceType,
+  dripleaf: dripleafType,
+  flower_pot: flowerPotType,
 });
 
 /** The slot that names the block item's model on every type. */

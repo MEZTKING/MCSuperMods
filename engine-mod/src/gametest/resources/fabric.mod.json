@@ -59,7 +59,13 @@
       "dev.mcsupermods.runtime.gametest.MsmTraderGameTest",
       "dev.mcsupermods.runtime.gametest.MsmProfessionGameTest",
       "dev.mcsupermods.runtime.gametest.MsmMobStorageGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmFluidGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmFluidGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmGrowingPlantGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmFlowerPotGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmWeathering2GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmStorage2GameTest",
+      "dev.mcsupermods.runtime.gametest.MsmOwnSoundsGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmVanillaPairsGameTest"
     ],
     "fabric-client-gametest": [
       "dev.mcsupermods.runtime.gametest.MsmParticleClientGameTest",
@@ -67,7 +73,8 @@
       "dev.mcsupermods.runtime.gametest.MsmControlsClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVehicleClientGameTest",
       "dev.mcsupermods.runtime.gametest.MsmVanillaBlocksClientGameTest",
-      "dev.mcsupermods.runtime.gametest.MsmFluidClientGameTest"
+      "dev.mcsupermods.runtime.gametest.MsmFluidClientGameTest",
+      "dev.mcsupermods.runtime.gametest.MsmPlants3ClientGameTest"
     ]
   },
   "depends": {

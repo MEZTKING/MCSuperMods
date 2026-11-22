@@ -118,6 +118,12 @@ const PICTURES: Readonly<Record<BlockTypeName, Picture>> = {
   scaffolding: Construction,
   sign: Signpost,
   hanging_sign: Scroll,
+  // Placeholders from B505; B516 draws their own.
+  growing_plant: Sprout,
+  column_plant: Sprout,
+  multiface: LeafyGreen,
+  dripleaf: LeafyGreen,
+  flower_pot: Sprout,
 };
 
 /** The picture of a block type, hidden from screen readers (the label says the type). */

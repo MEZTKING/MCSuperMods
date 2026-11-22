@@ -128,6 +128,8 @@ public final class BlockTypes {
                     PlantTypes.create(id, definition, props, warn);
             case BED, LADDER, TORCH, LANTERN, CHAIN, ROD, SIGN, HANGING_SIGN, STEM, SCAFFOLDING ->
                     FurnitureTypes.create(id, definition, props, warn);
+            case GROWING_PLANT, COLUMN_PLANT, MULTIFACE, DRIPLEAF -> GrowingPlantTypes.create(id, definition, props, warn);
+            case FLOWER_POT -> PotTypes.create(id, definition, props, warn);
             case BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL -> MsmBlock.create(id, definition, props);
         };
     }

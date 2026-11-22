@@ -6922,3 +6922,18 @@ Next
 
 **Next**
 - Main session: copy the report's "Notes for the plan" into the plan and ADRs 0103–0105 (amendments), then B505.
+
+## 2026-11-22 — executor — B505 scaffold and stubs, vanilla parity 3 batch 1
+
+**What**
+- Wiring only, no behaviour. Runtime: five `BlockType` entries (`growing_plant`, `column_plant`, `multiface`, `dripleaf`, `flower_pot`, no fields yet); `BlockTypes.create` calls the stubs `GrowingPlantTypes` and `PotTypes` (both throw "not yet supported"); `MsmRegistrar` asks `StorageExtras.blockFor` (after weathering, before waterlogging) and `OwnSounds.soundTypeFor` (after `BlockSounds.apply`), both no-ops; `MsmRuntime` calls `VanillaPairs.register(report)` and `Lightning.init()` after `BlockExtras.register()`. New seam twins `VanillaPairs` and `OwnSounds` in `src/mc/26.3` and `26.4`; plain stubs `registry/container/StorageExtras` and `registry/weathering/Lightning`.
+- Tests: six placeholder GameTest classes and the client stub `MsmPlants3ClientGameTest` registered in the gametest `fabric.mod.json`; `SamplePlantsAndStorageParityTest` registered in the parity `fabric.mod.json`.
+- Plugin: the five types in `BLOCK_TYPES` and `BLOCK_TYPE_LOWERINGS` with empty modules `growing-plant.ts`, `column-plant.ts`, `multiface.ts`, `dripleaf.ts`, `flower-pot.ts`; empty `validators-plants-3.ts`, `validators-storage-2.ts`, `validators-sounds.ts` listed in the plugin; Studio placeholders (labels, empty slots, icons) so the exhaustive records compile; `fixtures/sample-plants-and-storage/README.md`; skipped e2e `plants-path.spec.ts` and `storage-2-path.spec.ts`.
+
+**Decisions**
+- No new definition kind and no `LoadReport` field: batch 1 adds block types only, so `DefinitionScanner` and `LoadReport` are untouched; the "new log lines at 0" are therefore none yet (B514 adds the vanilla-pair count when it has a number).
+- `OwnSounds` is a version seam returning the properties (a `SoundType` does not exist on 26.4), not a bare sound type.
+- The three Studio files outside the brief are edited minimally because `BlockTypeName` grew; the picker groups were not changed, so the new types are not offered.
+
+**Next**
+- B506 (format), B507 (plugin API 1.19.0), B508.

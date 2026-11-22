@@ -20,7 +20,10 @@ import { furnitureValidators } from './validators-furniture';
 import { inventoryValidators } from './validators-inventory';
 import { particleValidators } from './validators-particles';
 import { plants2Validators } from './validators-plants-2';
+import { plants3Validators } from './validators-plants-3';
 import { portalValidators } from './validators-portals';
+import { soundValidators } from './validators-sounds';
+import { storage2Validators } from './validators-storage-2';
 import { blockTypeValidators } from './validators-types';
 import { weatheringValidators } from './validators-weathering';
 
@@ -175,6 +178,7 @@ export {
   SPAWN_PARTICLE_ACTION,
 } from './validators-particles';
 export { PLANT2_PROBLEM_CODES, plants2Validators } from './validators-plants-2';
+export { PLANT3_PROBLEM_CODES, plants3Validators } from './validators-plants-3';
 export {
   DEFAULT_PORTAL_IGNITER,
   DEFAULT_PORTAL_RETURN_TO,
@@ -186,6 +190,8 @@ export {
   PORTAL_TYPE,
   portalValidators,
 } from './validators-portals';
+export { SOUND_PROBLEM_CODES, soundValidators } from './validators-sounds';
+export { STORAGE2_PROBLEM_CODES, storage2Validators } from './validators-storage-2';
 export {
   BLOCK_TYPE_PROBLEM_CODES,
   blockTypeValidators,
@@ -214,6 +220,9 @@ export default definePlugin({
       ...inventoryValidators,
       ...creativeTabValidators,
       ...fluidValidators,
+      ...plants3Validators,
+      ...storage2Validators,
+      ...soundValidators,
     ],
   },
 });

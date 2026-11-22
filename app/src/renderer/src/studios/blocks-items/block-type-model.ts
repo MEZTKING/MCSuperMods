@@ -160,6 +160,12 @@ export const BLOCK_TYPE_LABELS: Readonly<Record<BlockTypeName, string>> = Object
   hanging_sign: 'Hanging sign',
   stem: 'Stem (grows a fruit, like melons)',
   scaffolding: 'Scaffolding',
+  // Placeholders from B505; B516 words them and adds them to the groups.
+  growing_plant: 'Growing plant',
+  column_plant: 'Column plant',
+  multiface: 'Multiface plant',
+  dripleaf: 'Dripleaf',
+  flower_pot: 'Flower pot',
 });
 
 /** The bed rules in words (ADR 0094 D2; the names are the target's `blocks.bedRules` keys). */
@@ -445,6 +451,12 @@ export const TEXTURE_SLOTS: Readonly<Record<BlockTypeName, readonly TextureSlot[
       { key: 'side', label: 'Sides' },
       { key: 'bottom', label: 'Bottom (also the sides when not standing)' },
     ],
+    // Placeholders from B505; B516 fills in the slots.
+    growing_plant: [],
+    column_plant: [],
+    multiface: [],
+    dripleaf: [],
+    flower_pot: [],
   },
 );
 
