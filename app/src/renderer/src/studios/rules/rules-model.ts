@@ -321,6 +321,8 @@ export function newValue(id: string): JsonObject {
       return { a: 1, b: 1, op: '+', value: id };
     case 'counter':
       return { counter: 'count', scope: 'world', value: id };
+    case 'command_argument':
+      return { name: '', value: id };
     default:
       return { value: id };
   }
@@ -457,6 +459,9 @@ export function offeredValues(
     (entry) =>
       (!options.veryEasy || entry.veryEasy) &&
       allows(scope, entry.needsActor) &&
+      // A reading for some triggers only ("What the player typed", ADR 0111 D1).
+      (entry.triggers === undefined ||
+        (scope.trigger !== undefined && entry.triggers.includes(scope.trigger.id))) &&
       (options.plainOnly !== true || entry.plain) &&
       (entry.words !== true || options.text === true),
   );

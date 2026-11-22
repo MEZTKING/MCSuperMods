@@ -21,7 +21,11 @@ const isObject = (value: Json | undefined): value is JsonObject =>
 
 const objectOf = (value: Json | undefined): JsonObject => (isObject(value) ? value : {});
 
-/** The argument types of the format (ADR 0096 D1), in the order the picker lists them. */
+/**
+ * The argument types of the format, in the order the picker lists them: the twelve of ADR 0096
+ * D1, then the 32 of ADR 0111 D2 (as amended after the spike) in the target facts' order. The
+ * picker offers those the target's `commands.argumentTypes` has ({@link offeredArgumentTypes}).
+ */
 export const ARGUMENT_TYPES = [
   'word',
   'text',
@@ -35,6 +39,38 @@ export const ARGUMENT_TYPES = [
   'block_position',
   'item',
   'block',
+  'dimension',
+  'time',
+  'team_colour',
+  'hex_colour',
+  'rotation',
+  'angle',
+  'uuid',
+  'objective',
+  'score_holder',
+  'score_holders',
+  'item_predicate',
+  'block_predicate',
+  'effect',
+  'enchantment',
+  'biome',
+  'biome_or_tag',
+  'structure',
+  'structure_or_tag',
+  'entity_type',
+  'particle',
+  'game_mode',
+  'text_component',
+  'int_range',
+  'identifier',
+  'team',
+  'slot',
+  'nbt',
+  'message',
+  'dialog',
+  'loot_table',
+  'advancement',
+  'recipe',
 ] as const;
 
 /** An argument type. */
@@ -54,7 +90,51 @@ export const ARGUMENT_TYPE_LABELS: Readonly<Record<ArgumentType, string>> = Obje
   block_position: 'A block position (x y z)',
   item: 'An item',
   block: 'A block',
+  dimension: 'A dimension',
+  time: 'A length of time (such as 5s or 2d)',
+  team_colour: 'A colour name',
+  hex_colour: 'A colour code (such as #FF8800)',
+  rotation: 'A facing (sideways and up or down)',
+  angle: 'An angle',
+  uuid: 'A UUID',
+  objective: 'A scoreboard objective',
+  score_holder: 'One score holder',
+  score_holders: 'One or more score holders',
+  item_predicate: 'An item test (an item or # and a tag)',
+  block_predicate: 'A block test (a block or # and a tag)',
+  effect: 'An effect',
+  enchantment: 'An enchantment',
+  biome: 'A biome',
+  biome_or_tag: 'A biome or # and a biome tag',
+  structure: 'A structure',
+  structure_or_tag: 'A structure or # and a structure tag',
+  entity_type: 'A kind of mob',
+  particle: 'A particle',
+  game_mode: 'A game mode',
+  text_component: 'A text component (JSON text)',
+  int_range: 'A range of whole numbers (such as 1..5)',
+  identifier: 'An id (such as minecraft:stone)',
+  team: 'A team',
+  slot: 'An inventory slot',
+  nbt: 'NBT data',
+  message: 'A chat message (the rest of the line)',
+  dialog: 'A dialog',
+  loot_table: 'A loot table',
+  advancement: 'An advancement',
+  recipe: 'A recipe',
 });
+
+/**
+ * The argument types the picker offers on a target: the target's `commands.argumentTypes` in its
+ * order, those this list names (a type it does not know yet stays offered by its own name), or
+ * the whole list without facts.
+ */
+export function offeredArgumentTypes(
+  facts: { argumentTypes?: Readonly<Record<string, unknown>> } | undefined,
+): string[] {
+  const types = facts?.argumentTypes;
+  return types === undefined ? [...ARGUMENT_TYPES] : Object.keys(types);
+}
 
 /** The plain words of argument type `type` (the type itself when it is unknown). */
 export function argumentTypeLabel(type: Json | undefined): string {

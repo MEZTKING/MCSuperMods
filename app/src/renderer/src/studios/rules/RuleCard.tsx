@@ -26,6 +26,7 @@ import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { ConditionList } from './ConditionList';
 import { type BookEdit, BookEditContext, useBookEdit, useRulesEnv } from './env';
+import { IdMenu } from './id-pickers';
 import { ChipPopover, chipClass, MenuList, ProblemLines } from './parts';
 import {
   asObject,
@@ -64,6 +65,21 @@ export const TRIGGER_GROUP_LABELS: Readonly<Record<TriggerGroup, string>> = {
   world: 'The world',
   any: 'Any block, item or mob',
 };
+
+/**
+ * Whether a trigger whose optional subject is any item, vanilla or the project's (the crafting,
+ * picking up and eating triggers of ADR 0111 D3), is offered in the Rules section of a thing of
+ * `kind`: an item's own section names it as the subject.
+ */
+export function takesAnySubject(entry: TriggerEntry, kind: string): boolean {
+  return (
+    entry.subjectOptional &&
+    entry.definition === undefined &&
+    entry.subjectKinds.length === 0 &&
+    entry.subject === 'item' &&
+    kind === 'msm:item'
+  );
+}
 
 /** The thing sort of a trigger's subject. */
 const SUBJECT_SORTS: Readonly<Record<string, ThingSort>> = {
@@ -280,7 +296,8 @@ function WhenRow(props: {
       (!env.mode.veryEasy || entry.veryEasy) &&
       (fixed === undefined ||
         (entry.subjectKinds.includes(fixed.kind) &&
-          (entry.id === props.triggerId || !lacksTriggerList(entry, fixedData)))),
+          (entry.id === props.triggerId || !lacksTriggerList(entry, fixedData))) ||
+        takesAnySubject(entry, fixed.kind)),
   );
   const triggerChip = (label: string) => (
     <ChipPopover
@@ -371,6 +388,50 @@ function elementData(project: Project, id: string): Json | undefined {
 
 /** The thing a trigger is about: a project thing (definition triggers) or any thing (`any_`). */
 function SubjectChip(props: {
+  pointer: string;
+  trigger: TriggerEntry;
+  fixed: RuleCardProps['fixedSubject'];
+}) {
+  const { trigger } = props;
+  if (trigger.subject === 'advancement') {
+    return <AdvancementSubjectChip pointer={props.pointer} trigger={trigger} />;
+  }
+  return <ThingSubjectChip {...props} />;
+}
+
+/** The advancement a trigger is about (ADR 0111 D3), or any advancement when left out. */
+function AdvancementSubjectChip(props: { pointer: string; trigger: TriggerEntry }) {
+  const env = useRulesEnv();
+  const { book } = useBookEdit();
+  const raw = getAt(book, props.pointer);
+  const subject = typeof raw === 'string' ? raw : undefined;
+  const invalid = (env.problems.get(props.pointer)?.length ?? 0) > 0;
+  const words = subject !== undefined ? env.name(subject) : 'any advancement';
+  return (
+    <ChipPopover
+      label={words}
+      ariaLabel={`Thing: ${words}`}
+      className={chipClass({
+        invalid,
+        empty: subject === undefined && !props.trigger.subjectOptional,
+        muted: subject === undefined && props.trigger.subjectOptional,
+      })}
+      testId="rules-chip-subject"
+      pointer={props.pointer}
+      invalid={invalid}
+    >
+      <IdMenu
+        pointer={props.pointer}
+        type="advancement"
+        label="Advancement"
+        {...(props.trigger.subjectOptional ? { anyLabel: 'Any advancement' } : {})}
+      />
+    </ChipPopover>
+  );
+}
+
+/** The thing a trigger is about, picked in the ThingPicker. */
+function ThingSubjectChip(props: {
   pointer: string;
   trigger: TriggerEntry;
   fixed: RuleCardProps['fixedSubject'];

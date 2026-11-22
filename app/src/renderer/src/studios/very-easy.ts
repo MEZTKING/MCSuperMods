@@ -79,6 +79,8 @@ export const ITEM_VERY_EASY_SECTIONS: readonly string[] = [
   'item-tool',
   'item-throwable',
   'item-inventory',
+  // B538 (ADR 0112 D1): boats.
+  'item-boat',
 ];
 
 /** The Effect Studio's sections in Very easy. */
@@ -114,10 +116,42 @@ export const MOB_VERY_EASY_SECTIONS: readonly string[] = [
   'entity-storage',
   'entity-shoulder',
   'entity-trader',
+  // B538 (ADR 0112 D1): fish buckets and the habits.
+  'entity-bucket',
+  'entity-habits',
   'entity-boss-bar',
   'entity-spawning',
   'entity-spawn-egg',
 ];
+
+/** The Profession Studio's sections in Very easy (ADR 0112 D1): the job, its pictures and trades. */
+export const PROFESSION_VERY_EASY_SECTIONS: readonly string[] = [
+  'profession-job',
+  'profession-pictures',
+  'profession-trades',
+];
+
+/** The Villager look Studio's sections in Very easy (ADR 0107 D5, ADR 0112 D1). */
+export const VILLAGER_TYPE_VERY_EASY_SECTIONS: readonly string[] = [
+  'villager-type-biomes',
+  'villager-type-pictures',
+];
+
+/** The Fluid Studio's sections in Very easy (ADR 0112 D1). */
+export const FLUID_VERY_EASY_SECTIONS: readonly string[] = [
+  'fluid-preview',
+  'fluid-liquid',
+  'fluid-flow',
+  'fluid-pictures',
+  'fluid-mixing',
+  'fluid-cauldron-bottle',
+];
+
+/** The Game rule Studio's sections in Very easy (ADR 0111 D5, ADR 0112 D1). */
+export const GAME_RULE_VERY_EASY_SECTIONS: readonly string[] = ['game-rule-general'];
+
+/** The Statistic Studio's sections in Very easy (ADR 0111 D6, ADR 0112 D1). */
+export const STAT_VERY_EASY_SECTIONS: readonly string[] = ['stat-general'];
 
 /**
  * The Very easy picks of "Make a block" and "Make an item" (ADR 0101 D4). They live with the

@@ -10,8 +10,10 @@ import { ExportProblemCodes } from '@msm/exporters';
 import {
   BLOCK_TYPE_PROBLEM_CODES,
   BLOCKS_ITEMS_PROBLEM_CODES,
+  BOAT_PROBLEM_CODES,
   CONTAINER_PROBLEM_CODES,
   CREATIVE_TAB_PROBLEM_CODES,
+  FLUID_MIXING_PROBLEM_CODES,
   FLUID_PROBLEM_CODES,
   FURNITURE_PROBLEM_CODES,
   INVENTORY_PROBLEM_CODES,
@@ -22,12 +24,13 @@ import {
 } from '@msm/plugin-blocks-items';
 import { CONTROLS_PROBLEM_CODES } from '@msm/plugin-controls';
 import {
+  ENTITIES_MOB2_PROBLEM_CODES,
   ENTITIES_PROBLEM_CODES,
   ENTITIES_VILLAGER_PROBLEM_CODES,
   VEHICLE_PROBLEM_CODES,
 } from '@msm/plugin-entities';
 import { RULES_PROBLEM_CODES } from '@msm/plugin-rules';
-import { COMMAND_PROBLEM_CODES } from '@msm/plugin-scripting';
+import { COMMAND_PROBLEM_CODES, GAME_RULE_PROBLEM_CODES } from '@msm/plugin-scripting';
 import { describe, expect, it } from 'vitest';
 import { HUD_PICTURE_MISSING_CODE } from '../src/renderer/src/session/hud-pictures';
 import {
@@ -67,6 +70,11 @@ const BEGINNER_CODES: readonly string[] = [
   // Kept apart by the plugin (B476); worded for Very easy by B480.
   ...ENTITIES_VILLAGER_PROBLEM_CODES,
   ...FLUID_PROBLEM_CODES,
+  // Vanilla parity 3 batch 2 (B530, B531, B535; worded by B538).
+  ...FLUID_MIXING_PROBLEM_CODES,
+  ...BOAT_PROBLEM_CODES,
+  ...ENTITIES_MOB2_PROBLEM_CODES,
+  ...GAME_RULE_PROBLEM_CODES,
   ...VEHICLE_PROBLEM_CODES,
   ...CONTROLS_PROBLEM_CODES,
   CONTROLS_NEEDS_JAR_CODE,

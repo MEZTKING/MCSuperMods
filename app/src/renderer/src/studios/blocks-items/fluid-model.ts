@@ -129,3 +129,24 @@ export function pictureAssetPath(texture: string): string {
   const path = colon < 0 ? texture : texture.slice(colon + 1);
   return `assets/${namespace}/textures/${path}.png`;
 }
+
+/** Words for the two tags a mixing rule's `with` may name (ADR 0108 D1). */
+export const MIXING_WITH_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  water: 'Water (any water-like liquid)',
+  lava: 'Lava (any lava-like liquid)',
+});
+
+/** The mixing rules of fluid data (`mixing`), objects only. */
+export function mixingRulesOf(data: Json | undefined): { [key: string]: Json }[] {
+  const list = asObject(data).mixing;
+  return Array.isArray(list) ? list.map((rule) => ({ ...asObject(rule) })) : [];
+}
+
+/** `rules` with rule `index` replaced by `rule`. */
+export function withMixingRule(
+  rules: readonly { [key: string]: Json }[],
+  index: number,
+  rule: { [key: string]: Json },
+): { [key: string]: Json }[] {
+  return rules.map((entry, at) => (at === index ? rule : entry));
+}

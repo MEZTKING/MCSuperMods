@@ -6,7 +6,8 @@
  * - "Name": the name and up to four aliases (other names that run the same command).
  * - "What the player types after it": the argument rows (name, kind of value in plain words,
  *   lowest and highest for numbers, "May be left out"), added, removed and moved up or down;
- *   each change of the list is one undo step.
+ *   each change of the list is one undo step. The kinds of value are the target's argument types
+ *   (ADR 0111 D2, B538: the twelve of ADR 0096 and 32 more).
  * - "Who can use it": the permission level in plain words.
  * - "What it does": the steps of an event (edited in the shared events editor below), a
  *   function, or nothing when a script listens for it; switching is one undo step.
@@ -33,11 +34,10 @@ import { IdField, NumberField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import {
-  ARGUMENT_TYPE_LABELS,
-  ARGUMENT_TYPES,
   aliasesOf,
   aliasUsages,
   argumentsOf,
+  argumentTypeLabel,
   type CommandRuns,
   commandRuns,
   commandUsage,
@@ -45,6 +45,7 @@ import {
   isRangedType,
   MAX_ALIASES,
   MAX_ARGUMENTS,
+  offeredArgumentTypes,
   PERMISSION_LABELS,
   permissionOf,
   RUNS_LABELS,
@@ -94,10 +95,13 @@ function WordsSelect(props: {
   );
 }
 
-const TYPE_OPTIONS = ARGUMENT_TYPES.map((type) => ({
-  value: type,
-  label: ARGUMENT_TYPE_LABELS[type],
-}));
+/** The type picker's options on a target (ADR 0111 D2: the target's argument types). */
+function typeOptions(target: StudioProps['target']): { value: string; label: string }[] {
+  return offeredArgumentTypes(target.commands).map((type) => ({
+    value: type,
+    label: argumentTypeLabel(type),
+  }));
+}
 
 const PERMISSION_OPTIONS = PERMISSION_LABELS.map((label, level) => ({
   value: String(level),
@@ -163,7 +167,7 @@ export default function CommandStudio(props: StudioProps) {
                 {typeof argument.name === 'string' ? argument.name : ''}
               </span>
               <span className="text-muted">
-                : {ARGUMENT_TYPE_LABELS[argument.type as keyof typeof ARGUMENT_TYPE_LABELS] ?? ''}
+                : {argumentTypeLabel(argument.type)}
                 {argument.optional === true ? ', may be left out' : ''}
               </span>
             </li>
@@ -253,7 +257,7 @@ export default function CommandStudio(props: StudioProps) {
                 <WordsSelect
                   label={`${row} is`}
                   value={type}
-                  options={TYPE_OPTIONS}
+                  options={typeOptions(props.target)}
                   testId={`command-argument-${index}-type`}
                   onChange={(next) => {
                     const list = [...args];

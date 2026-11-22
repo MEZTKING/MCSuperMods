@@ -16,6 +16,7 @@ import type { StudioEntry, StudioProps } from '../types';
 import {
   BLOCK_VERY_EASY_SECTIONS,
   EFFECT_VERY_EASY_SECTIONS,
+  FLUID_VERY_EASY_SECTIONS,
   ITEM_VERY_EASY_SECTIONS,
   POTION_VERY_EASY_SECTIONS,
 } from '../very-easy';
@@ -131,5 +132,11 @@ export const studios: StudioEntry[] = [
     component: LazyCreativeTabStudio,
   },
   // The Fluid Studio (ADR 0099 D1, ADR 0101 D1).
-  { id: 'msm.blocks-items.fluid', kindId: FLUID_KIND, component: LazyFluidStudio },
+  {
+    id: 'msm.blocks-items.fluid',
+    kindId: FLUID_KIND,
+    component: LazyFluidStudio,
+    // Its Very easy list (ADR 0112 D1, B538).
+    veryEasy: FLUID_VERY_EASY_SECTIONS,
+  },
 ];

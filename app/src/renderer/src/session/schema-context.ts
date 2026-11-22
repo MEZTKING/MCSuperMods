@@ -13,12 +13,22 @@ import {
   blockItemIdOf,
   blockStateFlag,
   blockTypeOf,
+  boatChestId,
+  boatCompanionIds,
+  boatOf,
   bundleModelIds,
   fluidBucketId,
+  fluidCauldronHasLevels,
+  fluidCompanionIds,
   fluidRegistryIds,
   potionVariantIds,
 } from '@msm/plugin-blocks-items';
-import { defaultTradeSets, vehicleItemPicture } from '@msm/plugin-entities';
+import {
+  BUCKETABLE_COMPONENT,
+  bucketItemId,
+  defaultTradeSets,
+  vehicleItemPicture,
+} from '@msm/plugin-entities';
 import {
   BUILT_IN_EXTENSIONS,
   createRegistryIndex,
@@ -193,7 +203,12 @@ function sortedRecord(map: Map<string, string[]>): Record<string, string[]> {
  * An `msm:fluid` element (registry `fluid`, ADR 0099 D1) also registers its liquid block under
  * its own id in `block`, its bucket `<id>_bucket` in `item` and, on a target that keeps still and
  * flowing liquid apart (`fluidModel: 'two_fluids'`, only when `target` is given), its
- * `<ns>:flowing_<path>` in `fluid`. An `msm:villager_profession` element (ADR 0098 D2) also
+ * `<ns>:flowing_<path>` in `fluid`; with `cauldron` and `bottle` (ADR 0108 D2, D3) also its
+ * cauldron `<id>_cauldron` in `block` and its bottle `<id>_bottle` in `item`
+ * (`fluidCompanionIds`). An `msm:entity` with `msm:bucketable` (ADR 0109 D1) also registers its
+ * bucket `<id>_bucket` in `item`. An `msm:item` with `msm:boat` (ADR 0110 D1) also registers its
+ * own id in `entity_type` and, with `chest`, its chest boat (`boatCompanionIds`) in `item` and
+ * `entity_type`. An `msm:villager_profession` element (ADR 0098 D2) also
  * registers a `point_of_interest_type` of its id and, without `trade_sets`, the five trade sets
  * lowering writes (`defaultTradeSets`) in `trade_set` and their tags in `tag/villager_trade`.
  * Only registries with at least one id appear. Sorted,
@@ -233,6 +248,12 @@ export function dataRegistryIds(
         if (element.kind === ENTITY_KIND && entityHasSpawnEgg(element.data)) {
           add(ITEM_REGISTRY, spawnEggId(element.id));
         }
+        if (element.kind === ENTITY_KIND && entityIsBucketable(element.data)) {
+          add(ITEM_REGISTRY, bucketItemId(element.id));
+        }
+        if (element.kind === ITEM_KIND_ID) {
+          for (const [registry, id] of boatExtraIds(element)) add(registry, id);
+        }
         if (element.kind === VEHICLE_KIND) add(ITEM_REGISTRY, element.id);
         if (element.kind === POTION_KIND) {
           for (const id of potionRegistryIds(element)) add(registered, id);
@@ -243,6 +264,7 @@ export function dataRegistryIds(
         }
         if (element.kind === FLUID_KIND) {
           for (const [registry, id] of fluidExtraIds(element.id, target)) add(registry, id);
+          for (const [registry, id] of fluidCompanionExtraIds(element)) add(registry, id);
         }
         if (element.kind === PROFESSION_KIND) {
           for (const [registry, id] of professionExtraIds(element)) add(registry, id);
@@ -272,6 +294,8 @@ const ENTITY_KIND = 'msm:entity';
 const POTION_KIND = 'msm:potion';
 const VEHICLE_KIND = 'msm:vehicle';
 const FLUID_KIND = 'msm:fluid';
+const ITEM_KIND_ID = 'msm:item';
+const ENTITY_TYPE_REGISTRY = 'entity_type';
 const PROFESSION_KIND = 'msm:villager_profession';
 const RECIPE_TYPE_REGISTRY = 'recipe_type';
 
@@ -293,6 +317,56 @@ function fluidExtraIds(
   } catch {
     return [];
   }
+}
+
+/**
+ * The cauldron and bottle ids an `msm:fluid` element adds (ADR 0108 D2, D3;
+ * `fluidCompanionIds`). Nothing for an unsafe id.
+ */
+function fluidCompanionExtraIds(element: Element): [string, string][] {
+  try {
+    const ids = fluidCompanionIds(element.id, element.data);
+    return [
+      ...(ids.block ?? []).map((id): [string, string] => [BLOCK_REGISTRY, id]),
+      ...(ids.item ?? []).map((id): [string, string] => [ITEM_REGISTRY, id]),
+    ];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The ids an `msm:item` with `msm:boat` adds (ADR 0110 D1): its own id as an entity type and,
+ * with `chest`, the chest boat as an item and an entity type (`boatCompanionIds`). Nothing for
+ * an item without the component or with an unsafe id.
+ */
+function boatExtraIds(element: Element): [string, string][] {
+  if (boatOf(element.data) === undefined) return [];
+  try {
+    const out: [string, string][] = [[ENTITY_TYPE_REGISTRY, element.id]];
+    for (const id of boatCompanionIds(element.id, element.data)) {
+      out.push([ITEM_REGISTRY, id], [ENTITY_TYPE_REGISTRY, id]);
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Whether an `msm:entity` element has `msm:bucketable` (ADR 0109 D1), so lowering writes its
+ * bucket item `<id>_bucket`.
+ *
+ * @param data - The entity element's data.
+ */
+export function entityIsBucketable(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return false;
+  const components = (data as { components?: unknown }).components;
+  if (typeof components !== 'object' || components === null || Array.isArray(components)) {
+    return false;
+  }
+  const bucketable = (components as Record<string, unknown>)[BUCKETABLE_COMPONENT];
+  return typeof bucketable === 'object' && bucketable !== null && !Array.isArray(bucketable);
 }
 
 /**
@@ -470,10 +544,26 @@ export function projectRegistryIds(
         const ns = element.id.slice(0, colon);
         const path = element.id.slice(colon + 1);
         if (colon > 0) model.push(`${ns}:block/${path}`, `${ns}:item/${path}_bucket`);
+        if (colon > 0) model.push(...fluidCompanionModelIds(ns, path, element.data));
       }
       if (element.kind === ENTITY_KIND) {
         const eggModel = spawnEggModelId(element.id, element.data);
         if (eggModel !== undefined) model.push(eggModel);
+        // The bucket's flat item model lowering writes (ADR 0109 D1, `bucketItemFiles`).
+        const colon = element.id.indexOf(':');
+        if (colon > 0 && entityIsBucketable(element.data)) {
+          model.push(`${element.id.slice(0, colon)}:item/${element.id.slice(colon + 1)}_bucket`);
+        }
+      }
+      if (element.kind === ITEM_KIND_ID && boatOf(element.data)?.chest === true) {
+        // The chest boat's flat item model lowering writes (ADR 0110 D1).
+        try {
+          const chest = boatChestId(element.id, element.data);
+          const colon = chest.indexOf(':');
+          model.push(`${chest.slice(0, colon)}:item/${chest.slice(colon + 1)}`);
+        } catch {
+          // An unsafe id: the schema reports it.
+        }
       }
       if (element.kind === 'minecraft:sounds') {
         for (const key of soundEventKeys(element.data)) soundEvent.add(`${namespace.name}:${key}`);
@@ -496,6 +586,25 @@ export function projectRegistryIds(
     texture: texture.sort(),
     [WEIGHED_SOUND_EVENT]: [...soundEvent].sort(),
   };
+}
+
+/**
+ * The models a fluid's cauldron and bottle generate (ADR 0108 D2, D3): the cauldron's
+ * `<ns>:block/<path>_cauldron` (full only) or its three levels `_cauldron_level1`, `_level2` and
+ * `_full`, and the bottle's `<ns>:item/<path>_bottle`.
+ */
+function fluidCompanionModelIds(ns: string, path: string, data: Json | undefined): string[] {
+  const out: string[] = [];
+  const object = typeof data === 'object' && data !== null && !Array.isArray(data) ? data : {};
+  if (typeof object.cauldron === 'object' && object.cauldron !== null) {
+    const base = `${ns}:block/${path}_cauldron`;
+    if (fluidCauldronHasLevels(data)) out.push(`${base}_level1`, `${base}_level2`, `${base}_full`);
+    else out.push(base);
+  }
+  if (typeof object.bottle === 'object' && object.bottle !== null) {
+    out.push(`${ns}:item/${path}_bottle`);
+  }
+  return out;
 }
 
 const KIND_PREFIX_MSM = 'msm:';

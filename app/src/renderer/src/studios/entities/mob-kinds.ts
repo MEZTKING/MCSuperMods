@@ -58,8 +58,15 @@ export const MOB_BASE_LABELS: Readonly<Record<MobBase, string>> = Object.freeze(
   monster: 'Monster (enemy)',
 });
 
-/** The movement modes (ADR 0070 D3). */
-export const MOVEMENT_MODES = Object.freeze(['walk', 'fly', 'swim', 'amphibious'] as const);
+/** The movement modes (ADR 0070 D3; `hover` and `phase`, ADR 0109 D3). */
+export const MOVEMENT_MODES = Object.freeze([
+  'walk',
+  'fly',
+  'swim',
+  'amphibious',
+  'hover',
+  'phase',
+] as const);
 export type MovementMode = (typeof MOVEMENT_MODES)[number];
 
 /** The words the Studio shows for each movement mode. */
@@ -68,7 +75,12 @@ export const MOVEMENT_MODE_LABELS: Readonly<Record<MovementMode, string>> = Obje
   fly: 'Flies',
   swim: 'Swims (lives in water)',
   amphibious: 'Walks and swims',
+  hover: 'Hovers (floats above the ground)',
+  phase: 'Flies through walls while charging',
 });
+
+/** The modes that fly: `fly` and the two flight modes of ADR 0109 D3. */
+export const FLYING_MODES: readonly MovementMode[] = Object.freeze(['fly', 'hover', 'phase']);
 
 /** One entry of the "Kind of mob" picker: the five values it writes together. */
 export interface MobKind {

@@ -3,7 +3,10 @@
  * or off, the number of levels, levelling up and restocking, the trade sound and the on-trade
  * event, and per level where its trades come from: the mob's own trades, edited in the trade
  * editor (ADR 0060's villager trade, trade set and tag elements, `trade-model.ts`), or a
- * villager's trade set picked from the target's list. Switching the trader on, changing the
+ * villager's trade set picked from the target's list. Batch 2 of vanilla parity 3 (ADR 0107
+ * D1–D3, B538): "Remembers how you treat it" (`reputation`: hurt costs, trade and gift gains, the
+ * gift item, how fast it forgives and the price step), "Prices rise with demand" (`demand`) and
+ * "Restocks at" (`work_site`, a block or block tag). Switching the trader on, changing the
  * number of levels and every trade edit are one undo step each through the host's
  * `applyChanges`.
  *
@@ -39,7 +42,26 @@ import {
 
 type JsonObject = { [key: string]: Json };
 
-const FIELDS = ['trade_sets', 'levels', 'restock', 'trade_sound', 'on_trade'] as const;
+const FIELDS = [
+  'trade_sets',
+  'levels',
+  'restock',
+  'trade_sound',
+  'on_trade',
+  'reputation',
+  'demand',
+  'work_site',
+] as const;
+
+/** The reputation fields with their labels and vanilla's numbers (ADR 0107 D1 as amended). */
+export const REPUTATION_FIELDS: readonly { key: string; label: string; fallback: string }[] =
+  Object.freeze([
+    { key: 'hurt', label: 'Hurt costs', fallback: '25' },
+    { key: 'trade', label: 'Trade gains', fallback: '2' },
+    { key: 'gift', label: 'Gift gains', fallback: '25' },
+    { key: 'decay_per_day', label: 'Recovers per day', fallback: '20' },
+    { key: 'price_step', label: 'Price step', fallback: "each offer's own" },
+  ]);
 const RESTOCKS = ['twice_a_day', 'never'] as const;
 const RESTOCK_LABELS: Readonly<Record<string, string>> = {
   twice_a_day: 'Twice a day',
@@ -52,6 +74,78 @@ const OWN = '';
 export interface TraderSectionProps extends MobSectionProps {
   /** The target, for vanilla's trade sets and the default trade sound. */
   target: Target;
+}
+
+/** "Remembers how you treat it": `reputation` on or off and its numbers (ADR 0107 D1). */
+function ReputationFields(props: {
+  tools: ReturnType<typeof componentTools>;
+  suggest: MobSectionProps['suggest'];
+  problems: MobSectionProps['problems'];
+}) {
+  const { tools } = props;
+  const on = tools.value.reputation !== undefined;
+  const reputation =
+    typeof tools.value.reputation === 'object' &&
+    tools.value.reputation !== null &&
+    !Array.isArray(tools.value.reputation)
+      ? (tools.value.reputation as JsonObject)
+      : {};
+  return (
+    <div
+      className="flex flex-col gap-1 rounded border border-border p-2"
+      data-testid="entity-trader-reputation"
+    >
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          data-testid="entity-trader-reputation-on"
+          checked={on}
+          onChange={(event) => tools.setField('reputation', event.target.checked ? {} : undefined)}
+        />
+        Remembers how you treat it
+      </label>
+      {on && (
+        <>
+          <p className="text-muted text-xs">
+            Each player has a score with this mob: hurting it makes prices dearer for that player,
+            trades and gifts make them cheaper. Empty numbers use a villager's.
+          </p>
+          <div className="flex flex-wrap items-end gap-2">
+            {REPUTATION_FIELDS.map((field) => (
+              <NumberField
+                key={field.key}
+                label={`${field.label} (empty: ${field.fallback})`}
+                value={reputation[field.key]}
+                integer
+                allowEmpty
+                testId={`entity-trader-reputation-${field.key.replace(/_/g, '-')}`}
+                onCommit={(next) => tools.setField(['reputation', field.key], next, true)}
+              />
+            ))}
+          </div>
+          <IdField
+            label="Gift item (empty: no gifts)"
+            value={typeof reputation.gift_item === 'string' ? reputation.gift_item : ''}
+            registry="item"
+            suggest={props.suggest}
+            testId="entity-trader-reputation-gift-item"
+            onCommit={(text) =>
+              tools.setField(['reputation', 'gift_item'], text === '' ? undefined : text)
+            }
+          />
+          {(['hurt', 'trade', 'gift', 'decay_per_day', 'price_step', 'gift_item'] as const).map(
+            (key) => (
+              <ProblemsAt
+                key={key}
+                problems={props.problems}
+                pointer={tools.pointer('reputation', key)}
+              />
+            ),
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 /** The "Trader" section. */
@@ -180,6 +274,34 @@ export default function TraderSection(props: TraderSectionProps) {
             testId="entity-trader-levels-on"
             onChange={(next) => tools.setField('levels', next)}
           />
+          <DefaultCheck
+            label="Prices rise with demand"
+            value={tools.value.demand}
+            fallback
+            testId="entity-trader-demand"
+            onChange={(next) => tools.setField('demand', next)}
+          />
+          <p className="text-muted text-xs">
+            An offer traded a lot costs more after the next restock, as a villager's does.
+          </p>
+          {(typeof tools.value.restock !== 'string' || tools.value.restock === 'twice_a_day') && (
+            <>
+              <IdField
+                label="Restocks at (a block, or # and a block tag)"
+                value={typeof tools.value.work_site === 'string' ? tools.value.work_site : ''}
+                registry="block"
+                suggest={props.suggest}
+                testId="entity-trader-work-site"
+                onCommit={(text) => tools.setField('work_site', text === '' ? undefined : text)}
+              />
+              <p className="text-muted text-xs">
+                {typeof tools.value.work_site === 'string' && tools.value.work_site !== ''
+                  ? 'When it runs out it walks to the nearest such block within 16 blocks and restocks there.'
+                  : 'Empty restocks where it stands.'}
+              </p>
+            </>
+          )}
+          <ReputationFields tools={tools} suggest={props.suggest} problems={props.problems} />
           <IdField
             label="Trade sound"
             value={sound}

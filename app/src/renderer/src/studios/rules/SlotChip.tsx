@@ -2,7 +2,9 @@
  * A chip: one blank of a rule's sentence (ADR 0082 D1). Every chip is a button whose accessible
  * name says what the blank is and what it holds ("Item: Ruby"); it opens the editor its slot
  * type needs: the ThingPicker for things, a menu for choices, who and places, the number and
- * reading editor, the text editor or the counter picker. A chip with a problem is marked and
+ * reading editor, the text editor or the counter picker, and (batch 2, B538) the id menus of
+ * dialogs, game rules, statistics and advancements, the command's arguments and a game rule's
+ * value (`id-pickers.tsx`). A chip with a problem is marked and
  * points at the problem lines under its row.
  *
  * @packageDocumentation
@@ -21,6 +23,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { useBookEdit, useRulesEnv } from './env';
+import { ArgumentMenu, GameRuleValueEditor, IdMenu } from './id-pickers';
 import { ChipPopover, chipClass, MenuList, ProblemLines } from './parts';
 import { HudMenu, WeaponSelect } from './project-pickers';
 import {
@@ -168,6 +171,28 @@ export function SlotChip(props: SlotChipProps) {
       return (
         <ChipPopover {...common}>
           <WeaponSelect pointer={pointer} label={label} />
+        </ChipPopover>
+      );
+    // Batch 2 (ADR 0111 D1, D3–D6; B538).
+    case 'dialog':
+    case 'game_rule':
+    case 'stat':
+    case 'advancement':
+      return (
+        <ChipPopover {...common}>
+          <IdMenu pointer={pointer} type={slot.type} label={label} />
+        </ChipPopover>
+      );
+    case 'argument':
+      return (
+        <ChipPopover {...common}>
+          <ArgumentMenu pointer={pointer} label={label} />
+        </ChipPopover>
+      );
+    case 'game_rule_value':
+      return (
+        <ChipPopover {...common}>
+          <GameRuleValueEditor pointer={pointer} slot={slot} label={label} scope={props.scope} />
         </ChipPopover>
       );
     default:

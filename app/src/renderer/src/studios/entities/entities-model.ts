@@ -42,11 +42,15 @@ export interface GoalSpec {
   type: string;
   label: string;
   fields: readonly GoalField[];
+  /** A habit of ADR 0109 (B538): its fields are edited in the Mob Studio's Habits section. */
+  habit?: boolean;
 }
 
 /**
  * The goal types with their fields and defaults: the six of format v1 (ADR 0028 D3) and
- * `ranged_attack`, `tempt`, `panic` and `leap_at_target` (ADR 0070 D5).
+ * `ranged_attack`, `tempt`, `panic` and `leap_at_target` (ADR 0070 D5), then the flight goals
+ * and habits of ADR 0109 (`swoop`, `roost`, `collect_items`, `dig_items`, `play_dead`, `barter`),
+ * whose fields the Habits section edits.
  */
 export const GOALS: readonly GoalSpec[] = Object.freeze([
   {
@@ -130,6 +134,13 @@ export const GOALS: readonly GoalSpec[] = Object.freeze([
     label: 'Leap at target',
     fields: [{ key: 'height', label: 'Leap height', type: 'float', defaultValue: 0.4 }],
   },
+  // The flight goals and habits of ADR 0109 D3, D4: edited in the Habits section (B538).
+  { type: 'swoop', label: 'Swoops', fields: [], habit: true },
+  { type: 'roost', label: 'Roosts', fields: [], habit: true },
+  { type: 'collect_items', label: 'Collects items', fields: [], habit: true },
+  { type: 'dig_items', label: 'Digs up items', fields: [], habit: true },
+  { type: 'play_dead', label: 'Plays dead', fields: [], habit: true },
+  { type: 'barter', label: 'Barters', fields: [], habit: true },
 ] satisfies GoalSpec[]);
 
 /** The spec of goal `type`, or `undefined` for an unknown type. */

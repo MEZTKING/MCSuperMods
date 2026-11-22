@@ -64,6 +64,13 @@ const SLOT_LABELS: Readonly<Record<string, string>> = {
   bar: 'Boss bar',
   hud: 'On screen',
   weapon: 'Weapon',
+  // Batch 2 (ADR 0111; B538).
+  dialog: 'Dialog',
+  game_rule: 'Game rule',
+  stat: 'Statistic',
+  value: 'Value',
+  name: 'Typed for',
+  axis: 'Part',
 };
 
 const capitalise = (text: string): string =>
@@ -107,6 +114,18 @@ export function emptyWords(slot: SlotSpec): string {
       return 'the first weapon';
     case 'text':
       return 'type some text';
+    case 'dialog':
+      return 'pick a dialog';
+    case 'game_rule':
+      return 'pick a game rule';
+    case 'stat':
+      return 'pick a statistic';
+    case 'advancement':
+      return 'pick an advancement';
+    case 'argument':
+      return 'pick what the player typed';
+    case 'game_rule_value':
+      return 'set the value';
     default:
       return `set ${slotLabel(slot).toLowerCase()}`;
   }
@@ -166,7 +185,15 @@ function bareSlotWords(
     case 'vehicle':
     case 'hud':
     case 'command':
+    case 'dialog':
+    case 'game_rule':
+    case 'stat':
+    case 'advancement':
       return typeof raw === 'string' ? (context.names(raw) ?? raw) : undefined;
+    case 'argument':
+      return typeof raw === 'string' ? `"${raw.replace(/_/g, ' ')}"` : undefined;
+    case 'game_rule_value':
+      return typeof raw === 'boolean' ? String(raw) : valueSentence(raw, context);
     case 'particle': {
       const id = typeof raw === 'string' ? raw : asObject(raw)?.type;
       return typeof id === 'string' ? (context.names(id) ?? id) : undefined;

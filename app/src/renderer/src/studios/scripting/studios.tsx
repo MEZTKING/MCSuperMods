@@ -1,7 +1,8 @@
 /**
  * The scripting Studios (B137b), discovered by `studios/studio-registry.ts`: the Script Studio
  * for `msm:script` (TypeScript in Monaco, ADR 0032 D5), and the Command Studio for
- * `msm:command` (ADR 0096 D1).
+ * `msm:command` (ADR 0096 D1), and the Game rule and Statistic Studios for `msm:game_rule` and
+ * `msm:stat` (ADR 0111 D5, D6; B538).
  *
  * @packageDocumentation
  */
@@ -9,9 +10,8 @@
 import { COMMAND_KIND } from '@msm/plugin-scripting';
 import { lazy, Suspense } from 'react';
 import type { StudioEntry, StudioProps } from '../types';
-import { GameRuleStudio } from './GameRuleStudio';
+import { GAME_RULE_VERY_EASY_SECTIONS, STAT_VERY_EASY_SECTIONS } from '../very-easy';
 import { ScriptStudio } from './ScriptStudio';
-import { StatStudio } from './StatStudio';
 import { SCRIPT_KIND, scriptLinesOf } from './script-model';
 
 /** The Command Studio (ADR 0096 D1, ADR 0101 D1), a chunk of its own. */
@@ -32,6 +32,42 @@ function LazyCommandStudio(props: StudioProps) {
   );
 }
 
+/** The Game rule Studio (ADR 0111 D5, ADR 0112 D1), a chunk of its own. */
+const GameRuleStudio = lazy(() => import('./GameRuleStudio'));
+
+/** The Statistic Studio (ADR 0111 D6, ADR 0112 D1), a chunk of its own. */
+const StatStudio = lazy(() => import('./StatStudio'));
+
+/** The Game rule Studio behind its loading fallback. */
+function LazyGameRuleStudio(props: StudioProps) {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-muted text-xs" data-testid="game-rule-studio-loading">
+          Loading the Game rule Studio…
+        </p>
+      }
+    >
+      <GameRuleStudio {...props} />
+    </Suspense>
+  );
+}
+
+/** The Statistic Studio behind its loading fallback. */
+function LazyStatStudio(props: StudioProps) {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-muted text-xs" data-testid="stat-studio-loading">
+          Loading the Statistic Studio…
+        </p>
+      }
+    >
+      <StatStudio {...props} />
+    </Suspense>
+  );
+}
+
 /** The Script Studio's entry id. */
 export const SCRIPT_STUDIO_ID = 'msm.scripting.script';
 
@@ -46,7 +82,17 @@ export const studios: StudioEntry[] = [
   },
   // The Command Studio (ADR 0096 D1, ADR 0101 D1).
   { id: 'msm.scripting.command', kindId: COMMAND_KIND, component: LazyCommandStudio },
-  // The Game Rule and Statistic Studios (ADR 0111 D5, D6): stubs from B526, filled in by B535.
-  { id: 'msm.scripting.game-rule', kindId: 'msm:game_rule', component: GameRuleStudio },
-  { id: 'msm.scripting.stat', kindId: 'msm:stat', component: StatStudio },
+  // The Game rule and Statistic Studios (ADR 0111 D5, D6, ADR 0112 D1; B538).
+  {
+    id: 'msm.scripting.game-rule',
+    kindId: 'msm:game_rule',
+    component: LazyGameRuleStudio,
+    veryEasy: GAME_RULE_VERY_EASY_SECTIONS,
+  },
+  {
+    id: 'msm.scripting.stat',
+    kindId: 'msm:stat',
+    component: LazyStatStudio,
+    veryEasy: STAT_VERY_EASY_SECTIONS,
+  },
 ];

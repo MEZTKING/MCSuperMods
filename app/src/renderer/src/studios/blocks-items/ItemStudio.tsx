@@ -5,7 +5,8 @@
  * cooldown, `msm:throwable` (B205, ADR 0056 D1: damage, speed, gravity, spread, hold to
  * throw, what happens after the throw, cooldown, sound, dispensers and the two hit events), and
  * the events editor shared with the Block Studio, with its "Triggers" section (B239, ADR 0061
- * D1: on hit, on use on a block, while held, while worn) and "Fuel and compost" (ADR 0060 D4).
+ * D1: on hit, on use on a block, while held, while worn) and "Fuel and compost" (ADR 0060 D4),
+ * and the Boat section (B538, ADR 0110 D1: `BoatSection.tsx`).
  * Choices come from the schema; everything
  * else stays behind "Advanced (all fields)".
  */
@@ -19,6 +20,7 @@ import { projectHandlers } from '../scripting/script-model';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
+import { BoatSection } from './BoatSection';
 import {
   asObject,
   choicesAt,
@@ -442,6 +444,15 @@ export function ItemStudio(props: StudioProps) {
       <ItemInventorySection
         data={element.data}
         events={events}
+        problems={problems}
+        suggest={suggest}
+        set={set}
+        replace={(next) => onChange('', next)}
+      />
+      <BoatSection
+        project={project}
+        element={element}
+        target={props.target}
         problems={problems}
         suggest={suggest}
         set={set}

@@ -11,7 +11,8 @@
  * - Stats: `msm:health` and `msm:movement`; Movement: the mode and its fields (ADR 0070 D3).
  * - Ranged attack, Taming, Breeding, Riding, Variants and Boss bar sections (ADR 0070 D4,
  *   ADR 0071 D1–D5), each in its own file; Storage, Shoulder and the lazy Trader section with
- *   its trade editor (ADR 0098 D1, D3, D4; B480).
+ *   its trade editor (ADR 0098 D1, D3, D4; B480), and the Bucket and Habits sections (ADR 0109
+ *   D1, D3, D4; B538).
  * - Sounds (ADR 0057 D6): ambient, hurt, death and step sound pickers over the sound event
  *   ids, the project's own sounds first (ADR 0057 D3), and the ambient interval.
  * - Attack: `msm:attack` on or off, damage, knockback, the on-attack event.
@@ -56,6 +57,7 @@ import type { StudioProps } from '../types';
 import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
 import { BossBarSection } from './BossBarSection';
 import { BreedingSection } from './BreedingSection';
+import { BucketSection } from './BucketSection';
 import {
   ANIMATION_KIND,
   animationNames,
@@ -69,6 +71,7 @@ import {
   newSpawn,
   projectTextureIds,
 } from './entities-model';
+import { HabitsSection } from './HabitsSection';
 import { ChoiceField, MobKindSection } from './MobKindSection';
 import { MovementSection } from './MovementSection';
 import {
@@ -144,7 +147,7 @@ function GoalTypeSelect(props: { value: string; onChange(type: string): void }) 
         value={props.value}
         onChange={(event) => props.onChange(event.target.value)}
       >
-        {GOALS.map((entry) => (
+        {GOALS.filter((entry) => entry.habit !== true).map((entry) => (
           <option key={entry.type} value={entry.type}>
             {entry.label}
           </option>
@@ -255,6 +258,8 @@ function GoalRow(props: {
       </div>
       {spec === undefined ? (
         <p className="text-muted text-xs">Unknown goal type; edit it under Advanced.</p>
+      ) : spec.habit === true ? (
+        <p className="text-muted text-xs">Set what it does in the Habits section.</p>
       ) : (
         spec.fields.length > 0 && (
           <div className="flex flex-wrap items-end gap-2">{spec.fields.map(field)}</div>
@@ -965,11 +970,13 @@ export function EntityStudio(props: StudioProps) {
       {attackSection}
       <RangedSection {...mobProps} projectileItems={target.entities?.projectileItems} />
       {behaviour}
+      <HabitsSection {...mobProps} />
       <TamingSection {...mobProps} />
       <BreedingSection {...mobProps} />
       <RidingSection {...mobProps} />
       <StorageSection {...mobProps} />
       <ShoulderSection {...mobProps} />
+      <BucketSection {...mobProps} />
       <Suspense
         fallback={
           <p className="text-muted text-xs" data-testid="entity-trader-loading">

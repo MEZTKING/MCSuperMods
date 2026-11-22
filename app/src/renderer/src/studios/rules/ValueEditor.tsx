@@ -15,7 +15,13 @@ import { Button, iconButtonClass } from '../../components/ui/Button';
 import { inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { useBookEdit, useRulesEnv } from './env';
-import { WeaponSelect } from './project-pickers';
+import {
+  argumentWords,
+  commandArgumentsOf,
+  isPositionArgument,
+  readableArgument,
+} from './id-pickers';
+import { ruleSubjectAt, WeaponSelect } from './project-pickers';
 import {
   asArray,
   asObject,
@@ -23,6 +29,7 @@ import {
   countersOf,
   getAt,
   isPlainText,
+  type JsonObject,
   newValue,
   offeredCounterScopes,
   offeredValues,
@@ -131,6 +138,16 @@ export function NumberEditor(props: {
       change(setCounter(next, props.pointer, 'count', scope));
       return;
     }
+    if (choice === 'command_argument') {
+      // The first argument of the rule's command that Rules can read (ADR 0111 D1).
+      const first = commandArgumentsOf(env.project, ruleSubjectAt(book, props.pointer)).find(
+        (argument) => readableArgument(argument.type),
+      );
+      const reading: JsonObject = { ...newValue(choice), name: first?.name ?? '' };
+      if (first !== undefined && isPositionArgument(first.type)) reading.axis = 'y';
+      change(setAt(book, props.pointer, reading));
+      return;
+    }
     change(setAt(book, props.pointer, newValue(choice)));
   };
 
@@ -210,6 +227,8 @@ function ReadingFields(props: { pointer: string; kind: string; scope: RuleScope 
       return <CounterEditor pointer={props.pointer} scope={props.scope} />;
     case 'vehicle_ammo':
       return <WeaponSelect pointer={at('weapon')} />;
+    case 'command_argument':
+      return <CommandArgumentFields pointer={props.pointer} />;
     case 'player_position': {
       const axis = asObject(getAt(book, props.pointer))?.axis;
       return (
@@ -271,6 +290,77 @@ function ReadingFields(props: { pointer: string; kind: string; scope: RuleScope 
     default:
       return <p className="text-muted">{entry.label}</p>;
   }
+}
+
+/**
+ * "What the player typed" (ADR 0111 D1): which argument of the rule's command, and for a place
+ * which part of it (x, y or z).
+ */
+function CommandArgumentFields(props: { pointer: string }) {
+  const env = useRulesEnv();
+  const { book, change } = useBookEdit();
+  const nameId = useId();
+  const axisId = useId();
+  const reading = asObject(getAt(book, props.pointer));
+  const name = typeof reading?.name === 'string' ? reading.name : '';
+  const args = commandArgumentsOf(env.project, ruleSubjectAt(book, props.pointer)).filter(
+    (argument) => readableArgument(argument.type),
+  );
+  const picked = args.find((argument) => argument.name === name);
+  const axis = reading?.axis;
+  return (
+    <div className="flex flex-col gap-1" data-testid="rules-command-argument">
+      {args.length === 0 ? (
+        <p className="text-xs text-muted">
+          The command has nothing Rules can read typed after it yet. Add a number, a word or a place
+          in its Studio.
+        </p>
+      ) : (
+        <span className="flex items-center gap-1.5">
+          <label htmlFor={nameId}>Typed for</label>
+          <select
+            id={nameId}
+            className={inputClass}
+            data-testid="rules-command-argument-name"
+            value={name}
+            onChange={(event) => {
+              const next = args.find((argument) => argument.name === event.target.value);
+              let book2 = setAt(book, `${props.pointer}/name`, event.target.value);
+              if (next !== undefined && !isPositionArgument(next.type)) {
+                book2 = setAt(book2, `${props.pointer}/axis`, undefined);
+              } else if (next !== undefined && typeof axis !== 'string') {
+                book2 = setAt(book2, `${props.pointer}/axis`, 'y');
+              }
+              change(book2);
+            }}
+          >
+            {picked === undefined && <option value={name}>Pick what was typed</option>}
+            {args.map((argument) => (
+              <option key={argument.name} value={argument.name}>
+                {argumentWords(argument)}
+              </option>
+            ))}
+          </select>
+        </span>
+      )}
+      {picked !== undefined && isPositionArgument(picked.type) && (
+        <span className="flex items-center gap-1.5">
+          <label htmlFor={axisId}>Part</label>
+          <select
+            id={axisId}
+            className={inputClass}
+            data-testid="rules-command-argument-axis"
+            value={typeof axis === 'string' ? axis : 'y'}
+            onChange={(event) => change(setAt(book, `${props.pointer}/axis`, event.target.value))}
+          >
+            <option value="x">x (east and west)</option>
+            <option value="y">y (height)</option>
+            <option value="z">z (north and south)</option>
+          </select>
+        </span>
+      )}
+    </div>
+  );
 }
 
 const SCOPE_WORDS: Record<'player' | 'mob' | 'world', string> = {

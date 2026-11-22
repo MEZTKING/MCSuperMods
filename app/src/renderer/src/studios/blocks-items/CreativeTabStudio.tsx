@@ -3,7 +3,11 @@
  * lazily:
  *
  * - "Tab": the title (`/display_name`), the icon (an item, the project's own offered first) and
- *   the order (`/order`: as the mod adds them, or by name).
+ *   the order (`/order`: as the mod adds them, by name, or in your own order).
+ * - "Your own order" (ADR 0111 D7, B538), with `order` `by_hand`: the hand order (`/items`), any
+ *   items of the project or of Minecraft, moved up and down or taken out; picking "In your own
+ *   order" starts it from the tab's members, one undo step. Things in the tab but not listed
+ *   follow after.
  * - "What is in it": the project's items, block items and spawn eggs whose `creative_tab` names
  *   this tab, in the order the game shows them. "Add" and "Take out" set or clear the thing's
  *   `creative_tab` through the host as one undo step; "Add everything without a tab" adds every
@@ -14,7 +18,7 @@
  * @packageDocumentation
  */
 
-import { Plus, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
 import { useId, useState } from 'react';
 import { thingName, thingWords } from '../../components/thing-picker/thing-sources';
 import { Button, iconButtonClass } from '../../components/ui/Button';
@@ -25,15 +29,20 @@ import type { StudioProps } from '../types';
 import { AdvancedToggle, Section } from '../worldgen/parts';
 import { asObject, pathSetter, pointerOf, withProjectIds } from './blocks-items-model';
 import {
+  handOrderOf,
+  movedItem,
   TAB_ORDER_LABELS,
   TAB_ORDERS,
   type TabCandidate,
+  type TabOrder,
   tabCandidates,
   tabMembers,
   tabMembershipItems,
   tabMembershipLabel,
   tabNonMembers,
   tabOrderOf,
+  withHandOrder,
+  withTabOrder,
 } from './creative-tab-model';
 import { useBlocksItemsStudioHost } from './host';
 import { ProblemsAt, TextField } from './parts';
@@ -78,7 +87,8 @@ export default function CreativeTabStudio(props: StudioProps) {
   }
 
   const order = tabOrderOf(element.data);
-  const members = tabMembers(project, element.id, order);
+  const handOrder = handOrderOf(element.data);
+  const members = tabMembers(project, element.id, order, handOrder);
   const others = tabNonMembers(project, element.id);
   const loose = others.filter((candidate) => candidate.tab === undefined);
   const ownItems = tabCandidates(project).map((candidate) => candidate.itemId);
@@ -153,7 +163,10 @@ export default function CreativeTabStudio(props: StudioProps) {
           data-testid="creative-tab-order"
           value={order}
           onChange={(event) =>
-            set(['order'], event.target.value === 'as_listed' ? undefined : event.target.value)
+            onChange(
+              '',
+              withTabOrder(project, element.id, element.data, event.target.value as TabOrder),
+            )
           }
         >
           {TAB_ORDERS.map((value) => (
@@ -164,6 +177,87 @@ export default function CreativeTabStudio(props: StudioProps) {
         </select>
       </div>
       {at(['order'])}
+      {at(['items'])}
+    </Section>
+  );
+
+  const setHandOrder = (next: readonly string[]) => onChange('', withHandOrder(element.data, next));
+  const unlisted = members.filter((member) => !handOrder.includes(member.itemId));
+  const handSection = order === 'by_hand' && (
+    <Section title="Your own order" testId="creative-tab-hand-order">
+      <p className="text-muted text-xs">
+        The tab shows these first, in this order. Anything you name here joins the tab, even
+        Minecraft's own items.
+      </p>
+      {handOrder.length === 0 ? (
+        <p className="text-muted text-xs" data-testid="creative-tab-hand-empty">
+          Nothing listed yet. Add the things in the order you want.
+        </p>
+      ) : (
+        <ol className="flex flex-col gap-1">
+          {handOrder.map((id, index) => {
+            const label = thingName(project, id, 'item');
+            return (
+              <li
+                key={`${id}:${index}`}
+                className="flex items-center gap-2 text-sm"
+                data-testid={`creative-tab-hand-${index}`}
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {index + 1}. {label}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Move ${label} up`}
+                  className={iconButtonClass}
+                  disabled={index === 0}
+                  data-testid={`creative-tab-hand-${index}-up`}
+                  onClick={() => setHandOrder(movedItem(handOrder, index, index - 1))}
+                >
+                  <ArrowUp size={12} aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Move ${label} down`}
+                  className={iconButtonClass}
+                  disabled={index === handOrder.length - 1}
+                  data-testid={`creative-tab-hand-${index}-down`}
+                  onClick={() => setHandOrder(movedItem(handOrder, index, index + 1))}
+                >
+                  <ArrowDown size={12} aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Take ${label} out of the order`}
+                  className={iconButtonClass}
+                  data-testid={`creative-tab-hand-${index}-remove`}
+                  onClick={() => setHandOrder(handOrder.filter((_, at) => at !== index))}
+                >
+                  <X size={12} aria-hidden />
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <IdField
+        label="Add an item to the order"
+        value=""
+        registry="item"
+        suggest={withProjectIds(suggest, 'item', ownItems)}
+        testId="creative-tab-hand-add"
+        onCommit={(value) => {
+          if (value !== '') setHandOrder([...handOrder, value]);
+        }}
+      />
+      {unlisted.length > 0 && (
+        <p className="text-muted text-xs" data-testid="creative-tab-hand-after">
+          Then, in the order the mod adds them: {unlisted.map((member) => member.name).join(', ')}.
+        </p>
+      )}
+      {handOrder.map((_, index) => (
+        <ProblemsAt key={index} problems={problems} pointer={pointerOf(['items', index])} />
+      ))}
     </Section>
   );
 
@@ -273,6 +367,7 @@ export default function CreativeTabStudio(props: StudioProps) {
       <ProblemsAt problems={problems} pointer="" />
       {preview}
       {general}
+      {handSection}
       {membersSection}
     </section>
   );

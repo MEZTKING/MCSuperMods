@@ -5,7 +5,8 @@
  * change items that move things into or out of a tab, applied by the host as one undo step.
  * No DOM, so it runs in Node tests.
  *
- * Tab field paths (B456): `/icon`, `/order`, `/display_name`.
+ * Tab field paths (B456): `/icon`, `/order`, `/display_name`; with `order` `by_hand` (ADR 0111
+ * D7, B538) `/items/i`, the hand order.
  *
  * @packageDocumentation
  */
@@ -23,7 +24,7 @@ const isObject = (value: Json | undefined): value is JsonObject =>
 const namespaced = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
 
 /** The tab orders of the format, with their plain words. */
-export const TAB_ORDERS = ['as_listed', 'by_name'] as const;
+export const TAB_ORDERS = ['as_listed', 'by_name', 'by_hand'] as const;
 
 /** A tab order. */
 export type TabOrder = (typeof TAB_ORDERS)[number];
@@ -32,12 +33,64 @@ export type TabOrder = (typeof TAB_ORDERS)[number];
 export const TAB_ORDER_LABELS: Readonly<Record<TabOrder, string>> = Object.freeze({
   as_listed: 'In the order the mod adds them',
   by_name: 'By name, A to Z',
+  by_hand: 'In your own order',
 });
 
 /** The order of tab data `data` (`as_listed` when absent or unknown). */
 export function tabOrderOf(data: Json | undefined): TabOrder {
   const order = isObject(data) ? data.order : undefined;
-  return order === 'by_name' ? 'by_name' : 'as_listed';
+  return order === 'by_name' || order === 'by_hand' ? order : 'as_listed';
+}
+
+/** The hand order of tab data (`items`, ids only), or `[]`. */
+export function handOrderOf(data: Json | undefined): string[] {
+  const items = isObject(data) ? data.items : undefined;
+  return Array.isArray(items)
+    ? items.filter((id): id is string => typeof id === 'string').map(namespaced)
+    : [];
+}
+
+/**
+ * Tab data with `order` set to `order`: `by_hand` also starts the hand order (`items`) from the
+ * tab's members in the order they show now when it has none; another order drops `items` (the
+ * runtime ignores it there with a warning).
+ */
+export function withTabOrder(
+  project: Project,
+  tabId: string,
+  data: Json | undefined,
+  order: TabOrder,
+): JsonObject {
+  const object: JsonObject = isObject(data) ? { ...data } : {};
+  if (order === 'as_listed') delete object.order;
+  else object.order = order;
+  if (order !== 'by_hand') {
+    delete object.items;
+    return object;
+  }
+  if (handOrderOf(data).length === 0) {
+    const members = tabMembers(project, tabId, tabOrderOf(data)).map((member) => member.itemId);
+    if (members.length > 0) object.items = members;
+    else delete object.items;
+  }
+  return object;
+}
+
+/** Tab data with the hand order `items` (removed when empty). */
+export function withHandOrder(data: Json | undefined, items: readonly string[]): JsonObject {
+  const object: JsonObject = isObject(data) ? { ...data } : {};
+  if (items.length === 0) delete object.items;
+  else object.items = [...items];
+  return object;
+}
+
+/** `items` with the entry at `from` moved to `to` (unchanged when either is out of range). */
+export function movedItem(items: readonly string[], from: number, to: number): string[] {
+  if (from < 0 || from >= items.length || to < 0 || to >= items.length) return [...items];
+  const next = [...items];
+  const [entry] = next.splice(from, 1);
+  next.splice(to, 0, entry as string);
+  return next;
 }
 
 /** One project thing that registers an item and may join a creative tab. */
@@ -115,13 +168,29 @@ export function tabCandidates(project: Project): TabCandidate[] {
 
 /**
  * The tab's members in the order the game shows them: the project's order for `as_listed`
- * (verify at implementation against the runtime's registration order), by name for `by_name`.
+ * (verify at implementation against the runtime's registration order), by name for `by_name`,
+ * and for `by_hand` those in `handOrder` first in its order, then the others.
  */
-export function tabMembers(project: Project, tabId: string, order: TabOrder): TabCandidate[] {
+export function tabMembers(
+  project: Project,
+  tabId: string,
+  order: TabOrder,
+  handOrder: readonly string[] = [],
+): TabCandidate[] {
   const members = tabCandidates(project).filter((candidate) => candidate.tab === tabId);
-  return order === 'by_name'
-    ? [...members].sort((a, b) => a.name.localeCompare(b.name, 'en'))
-    : members;
+  if (order === 'by_name') return [...members].sort((a, b) => a.name.localeCompare(b.name, 'en'));
+  if (order === 'by_hand') {
+    // Listed members first in the hand order, then the rest in registration order (ADR 0111 D7).
+    const rank = (candidate: TabCandidate) => {
+      const at = handOrder.indexOf(candidate.itemId);
+      return at < 0 ? handOrder.length : at;
+    };
+    return members
+      .map((member, index) => ({ member, index }))
+      .sort((a, b) => rank(a.member) - rank(b.member) || a.index - b.index)
+      .map((entry) => entry.member);
+  }
+  return members;
 }
 
 /** The candidates that can be added: not in this tab yet. */

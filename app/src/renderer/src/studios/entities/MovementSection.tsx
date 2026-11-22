@@ -1,7 +1,8 @@
 /**
  * The Entity Studio's "Movement" section (B297, ADR 0070 D3): the movement mode and the fields
  * that belong to it (flying speed and hovering for `fly`; air breathing and drying out for
- * `swim`) and the step height. Speed, follow range, knockback resistance, "Swims" and "Fire
+ * `swim`; the hover height for `hover`, ADR 0109 D3; `phase` flies through blocks while it
+ * charges) and the step height. Speed, follow range, knockback resistance, "Swims" and "Fire
  * immune" stay in the Stats section.
  *
  * @packageDocumentation
@@ -14,7 +15,13 @@ import { ProblemsAt } from '../blocks-items/parts';
 import { NumberField } from '../structures/pickers';
 import { Section } from '../worldgen/parts';
 import { ChoiceField, DefaultCheck } from './MobKindSection';
-import { MOVEMENT_MODE_LABELS, MOVEMENT_MODES, type MobSectionProps, modeOf } from './mob-kinds';
+import {
+  FLYING_MODES,
+  MOVEMENT_MODE_LABELS,
+  MOVEMENT_MODES,
+  type MobSectionProps,
+  modeOf,
+} from './mob-kinds';
 
 const MOVEMENT = 'msm:movement';
 const FIELDS = [
@@ -24,7 +31,11 @@ const FIELDS = [
   'breathes_air',
   'dry_out_ticks',
   'step_height',
+  'hover_height',
 ] as const;
+
+/** The hover height a `hover` mob keeps when none is set (ADR 0109 D3). */
+export const DEFAULT_HOVER_HEIGHT = 4;
 
 /** The "Movement" section. */
 export function MovementSection(props: MobSectionProps) {
@@ -58,13 +69,22 @@ export function MovementSection(props: MobSectionProps) {
           testId="entity-movement-mode"
           onChange={(value) => setMovement('mode', value === 'walk' ? undefined : value)}
         />
-        {mode === 'fly' && (
+        {FLYING_MODES.includes(mode) && (
           <NumberField
             label="Flying speed"
             value={movement.flying_speed}
             allowEmpty
             testId="entity-flying-speed"
             onCommit={(value) => setMovement('flying_speed', value, true)}
+          />
+        )}
+        {mode === 'hover' && (
+          <NumberField
+            label="Hover height (blocks)"
+            value={movement.hover_height}
+            allowEmpty
+            testId="entity-hover-height"
+            onCommit={(value) => setMovement('hover_height', value, true)}
           />
         )}
         {mode === 'swim' && !breathesAir && (
@@ -110,7 +130,11 @@ export function MovementSection(props: MobSectionProps) {
             ? 'Swimming mobs live in water and need a speed near 1. Without breathing air they flop on land and lose health after 300 ticks by default.'
             : mode === 'amphibious'
               ? 'Amphibious mobs walk on land and swim in water, breathing both.'
-              : 'Walking mobs stay on the ground.'}{' '}
+              : mode === 'hover'
+                ? `Hovering mobs float above the ground below them, as a ghast or a blaze, and take no fall damage. An empty hover height keeps ${DEFAULT_HOVER_HEIGHT} blocks.`
+                : mode === 'phase'
+                  ? 'This mob flies, and passes through walls while it charges at what it attacks, as a vex. Give it an attack under Behaviour.'
+                  : 'Walking mobs stay on the ground.'}{' '}
         An empty step height keeps 0.6 blocks.
       </p>
       {FIELDS.map((key) => (

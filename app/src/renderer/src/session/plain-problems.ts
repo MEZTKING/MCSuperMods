@@ -650,6 +650,69 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
   ),
   'game-rules.no-name': entry((t) => `${t} has no name to show in the game. Give it a name.`),
 
+  // Fish buckets, flight and habits (ADR 0109, B530) ----------------------------------------
+  'entities.bucketable-needs-swim': entry(
+    (t) => `${t} can be caught in a bucket, but only a mob that swims can. Make it swim.`,
+  ),
+  'entities.bucket-fields-unused': entry(
+    (t) =>
+      `${t} has a bucket name or picture but cannot be caught in a bucket, so they are not used.`,
+  ),
+  'entities.dash-needs-walk': entry(
+    (t) => `${t} dashes when ridden, but only a mob that walks can dash. Make it walk.`,
+  ),
+  'entities.swoop-needs-flight': entry(
+    (t) => `${t} swoops, but only a mob that flies or hovers can. Make it fly.`,
+  ),
+  'entities.hover-height-unused': entry(
+    (t) => `${t} has a hover height but does not hover, so the height is not used.`,
+  ),
+  'entities.habit-loot-table-unknown': entry(
+    (t) => `${t} drops things from a list that does not exist, so it drops nothing. Pick another.`,
+  ),
+  'entities.dig-block-unknown': entry(
+    (t) => `${t} digs on a block that does not exist, so it never digs there. Pick another block.`,
+  ),
+  'entities.collect-without-owner': entry(
+    (t) =>
+      `${t} collects items but has no owner and no note block to bring them to. Let it be tamed.`,
+  ),
+
+  // Boats and cauldrons (ADR 0110, ADR 0108 D2, B531) ---------------------------------------
+  'blocks-items.boat-chest-clash': entry(
+    (t) =>
+      `The chest boat of ${t} has the same name as another thing in your mod. Rename one of them.`,
+  ),
+  'blocks-items.boat-planks-missing': entry(
+    (t) => `${t} is made from planks your mod does not have, so it cannot be crafted. Add them.`,
+  ),
+  'blocks-items.boat-texture-missing': entry(
+    (t) => `${t} has no boat picture yet, so it looks unfinished. Draw or add its picture.`,
+  ),
+  'blocks-items.boat-fields-unused': entry(
+    (t) => `${t} has boat pictures or a chest boat name it does not use.`,
+  ),
+  'blocks-items.cauldron-id-clash': entry(
+    (t) => `The cauldron of ${t} has the same name as another cauldron. Rename the liquid.`,
+  ),
+  'blocks-items.cauldron-levels-ignored': entry(
+    (t) => `${t} is like lava, so its cauldron is always full and does not fill in levels.`,
+  ),
+
+  // Mixing liquids (ADR 0108 D1, B531) --------------------------------------------------------
+  'blocks-items.fluid-mixing-empty': entry(
+    (t) => `A mixing rule of ${t} does not say what it becomes. Pick a block for it.`,
+  ),
+  'blocks-items.fluid-mixing-self': entry(
+    (t) => `A mixing rule of ${t} mixes it with itself, which never happens. Pick another liquid.`,
+  ),
+  'blocks-items.fluid-mixing-duplicate': entry(
+    (t) => `${t} mixes with the same liquid twice; only the first rule is used.`,
+  ),
+  'blocks-items.fluid-mixing-liquid-result': entry(
+    (t) => `${t} becomes a liquid when it mixes, so the two may keep on mixing. Pick a block.`,
+  ),
+
   // Play and Share my mod ------------------------------------------------------------------
   'export.no-fabric-target': entry(
     () => 'This mod is for a Minecraft without Fabric, so it cannot be played or shared as a mod.',

@@ -137,7 +137,8 @@ describe('Command Studio helpers', () => {
   });
 
   it('names every argument type and permission level in plain words', () => {
-    expect(ARGUMENT_TYPES).toHaveLength(12);
+    // The twelve of ADR 0096 D1 and the 32 of ADR 0111 D2 (B538).
+    expect(ARGUMENT_TYPES).toHaveLength(44);
     for (const type of ARGUMENT_TYPES) {
       expect(ARGUMENT_TYPE_LABELS[type]).toMatch(/^[A-Z]/);
       expect(ARGUMENT_TYPE_LABELS[type]).not.toMatch(/_/);

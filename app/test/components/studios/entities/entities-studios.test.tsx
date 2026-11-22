@@ -176,7 +176,7 @@ describe('Entity Studio helpers', () => {
     ).toBe(false);
   });
 
-  it('lists the ten goal types and starts list goals with players', () => {
+  it('lists the ten goal types and the six habits and starts list goals with players', () => {
     expect(GOALS.map((goal) => goal.type)).toEqual([
       'wander',
       'look_at_player',
@@ -188,7 +188,14 @@ describe('Entity Studio helpers', () => {
       'tempt',
       'panic',
       'leap_at_target',
+      'swoop',
+      'roost',
+      'collect_items',
+      'dig_items',
+      'play_dead',
+      'barter',
     ]);
+    expect(GOALS.filter((goal) => goal.habit === true)).toHaveLength(6);
     expect(newGoal('tempt')).toEqual({ type: 'tempt', items: ['minecraft:wheat'] });
     expect(newGoal('ranged_attack')).toEqual({
       type: 'ranged_attack',

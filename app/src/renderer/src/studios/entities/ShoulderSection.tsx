@@ -1,7 +1,8 @@
 /**
  * The Mob Studio's "Shoulder" section (ADR 0098 D4 as amended after the spike, ADR 0101 D1):
  * `msm:shoulder_riding` on or off, with what the pet needs (an animal that can be tamed, no
- * wider than 0.7 blocks) said in words next to the switch.
+ * wider than 0.7 blocks) said in words next to the switch, and which shoulder it takes (ADR 0109
+ * D2: the left, the right or whichever is free, as the player sees it).
  *
  * @packageDocumentation
  */
@@ -9,7 +10,7 @@
 import { SHOULDER_COMPONENT, SHOULDER_MAX_WIDTH } from '@msm/plugin-entities';
 import { asObject } from '../blocks-items/blocks-items-model';
 import { Section } from '../worldgen/parts';
-import { componentTools, FieldProblems } from './MobKindSection';
+import { ChoiceField, componentTools, FieldProblems } from './MobKindSection';
 import { baseOf, type MobSectionProps } from './mob-kinds';
 
 /** What a mob still lacks to sit on a shoulder, in words; empty when it can. */
@@ -26,6 +27,16 @@ export function shoulderNeeds(data: MobSectionProps['data']): string[] {
   }
   return needs;
 }
+
+/** The shoulder sides of `msm:shoulder_riding.sides` (ADR 0109 D2), in the picker's order. */
+export const SHOULDER_SIDE_CHOICES: readonly string[] = Object.freeze(['either', 'left', 'right']);
+
+/** Each side in plain words, as the player sees it. */
+export const SHOULDER_SIDE_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  either: 'Whichever is free (the right first)',
+  left: 'The left shoulder',
+  right: 'The right shoulder',
+});
 
 /** The "Shoulder" section. */
 export function ShoulderSection(props: MobSectionProps) {
@@ -47,8 +58,17 @@ export function ShoulderSection(props: MobSectionProps) {
           <p className="text-muted text-xs" data-testid="entity-shoulder-how">
             The tamed pet jumps onto its owner's shoulder when the owner stands near it. It jumps
             down when the owner is hurt, sneaks, sleeps, rides, swims or flies, and waits five
-            seconds before jumping up again. One shoulder pet per player.
+            seconds before jumping up again. A player carries two pets at most, one on each
+            shoulder; parrots keep their own shoulders.
           </p>
+          <ChoiceField
+            label="Shoulder"
+            value={typeof tools.value.sides === 'string' ? tools.value.sides : 'either'}
+            choices={SHOULDER_SIDE_CHOICES}
+            labels={SHOULDER_SIDE_LABELS}
+            testId="entity-shoulder-side"
+            onChange={(next) => tools.setField('sides', next === 'either' ? undefined : next)}
+          />
           {needs.length > 0 && (
             <ul className="text-warning text-xs" data-testid="entity-shoulder-needs">
               {needs.map((need) => (
@@ -58,7 +78,7 @@ export function ShoulderSection(props: MobSectionProps) {
           )}
         </>
       )}
-      <FieldProblems problems={props.problems} component={SHOULDER_COMPONENT} keys={[]} />
+      <FieldProblems problems={props.problems} component={SHOULDER_COMPONENT} keys={['sides']} />
     </Section>
   );
 }
