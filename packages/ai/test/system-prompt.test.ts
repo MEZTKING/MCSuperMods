@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ART_RECIPE_NAMES,
   projectContextBlock,
   RULES_PROMPT_CANCELLABLE,
   RULES_PROMPT_IDS,
   RULES_PROMPT_PLAIN_STEPS,
   RULES_PROMPT_TEMPLATES,
   systemPrompt,
+  TEXTURE_PROMPT_RECIPES,
   VILLAGERS_FLUIDS_FLOW_ANSWERS,
   VILLAGERS_FLUIDS_PROMPT_CODES,
   VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
@@ -553,6 +555,29 @@ describe('systemPrompt Try it line', () => {
       const text = systemPrompt(mode);
       expect(text).toContain('Never tell a user that Try it proved');
       expect(text).toContain('Play in Minecraft');
+    }
+  });
+});
+
+describe('systemPrompt textures (ADR 0092 D15)', () => {
+  it('lists every drawn recipe once, in words', () => {
+    const rows = Object.values(TEXTURE_PROMPT_RECIPES).flat();
+    expect(rows.map(([id]) => id).sort()).toEqual([...ART_RECIPE_NAMES].sort());
+    for (const mode of ['chat', 'build'] as const) {
+      const text = systemPrompt(mode);
+      for (const [id, words] of rows) {
+        expect(text, id).toContain(id === words ? id : `${id} (${words})`);
+      }
+    }
+  });
+
+  it('says MSM draws the pictures in a Minecraft-like style and never calls them placeholders', () => {
+    for (const mode of ['chat', 'build'] as const) {
+      const text = systemPrompt(mode);
+      expect(text).toContain('Minecraft-like style');
+      expect(text).toContain('never copied, traced or recoloured');
+      expect(text).toContain('Draw...');
+      expect(text).not.toMatch(/placeholder/i);
     }
   });
 });

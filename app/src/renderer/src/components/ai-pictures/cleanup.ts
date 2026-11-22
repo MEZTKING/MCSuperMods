@@ -10,17 +10,18 @@
  *    centred square.
  * 3. Downscaling averages each target pixel's area (alpha-weighted), or takes the commonest
  *    colour of the area for pictures that are already pixel art; never a bilinear blur.
- * 4. The colours are quantised per hue cluster to a ramp of N shades (default 6), shifted
- *    towards blue in the shadows and towards yellow in the light, as vanilla's ramps are.
- *    Each pixel keeps its rank in its cluster, so a darker pixel never becomes lighter than a
- *    lighter one: the picture's light (the prompts ask for the top left) is never inverted.
+ * 4. The colours are quantised per hue cluster to a ramp of N shades (default 6) from the drawn
+ *    art's `generateRamp` (ADR 0092 D15), with the drawn art's hue shift: cooler in the
+ *    shadows, warmer in the light, as vanilla's ramps are, so AI and drawn pictures share one
+ *    palette rule. Each pixel keeps its rank in its cluster, so a darker pixel never becomes
+ *    lighter than a lighter one: the picture's light (the prompts ask for the top left) is
+ *    never inverted.
  * 5. Items and tools may get a one-pixel dark outline outside the shape.
- *
- * Kept self-contained (the vanilla ramp generator of the art prototype may replace step 4).
  *
  * @packageDocumentation
  */
 
+import { minecraftArt } from '@msm/plugin-library';
 import type { AiPictureStyle } from '../../../../shared/ai-pictures';
 import { addOutline, fitRect, removeBackground } from '../texture-editor/image-convert';
 import type { Rgba, RgbaImage } from '../texture-editor/pixels';
@@ -271,8 +272,11 @@ function hueToward(hue: number, target: number, amount: number): number {
 /** Below this saturation a pixel counts as grey. */
 const GREY_SATURATION = 0.12;
 
-/** How far (degrees) the ends of a ramp turn towards blue and yellow. */
+/** How far (degrees) the outline turns towards blue. */
 const HUE_SHIFT = 14;
+
+/** The most shades `generateRamp` draws in one ramp. */
+const MAX_RAMP_SHADES = 8;
 
 /** One quantised ramp, darkest first. */
 export interface Ramp {
@@ -311,9 +315,10 @@ function clusterHues(hues: readonly number[]): number[] {
 
 /**
  * Quantises the visible pixels in place: each pixel joins the nearest hue cluster (or the
- * greys), each cluster is split by lightness rank into at most `shades` equal groups, and each
- * group takes its ramp colour: its mean lightness, the cluster's hue turned towards blue in
- * the dark and towards yellow in the light. Returns the ramps.
+ * greys), each cluster is split by lightness rank into at most `shades` equal groups (8 at
+ * most), and each group takes the shade of its rank in a `generateRamp` ramp of the cluster's
+ * colour, anchored on the middle group's lightness: darkest group, darkest shade. Returns the
+ * ramps.
  */
 export function quantise(image: RgbaImage, shades: number = DEFAULT_SHADES): Ramp[] {
   const pixels: { at: number; h: number; s: number; l: number }[] = [];
@@ -357,21 +362,33 @@ export function quantise(image: RgbaImage, shades: number = DEFAULT_SHADES): Ram
       ? ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360
       : (centres[cluster] as number);
     const meanSaturation = saturation / members.length;
-    const count = Math.min(shades, members.length);
+    const count = Math.min(shades, MAX_RAMP_SHADES, members.length);
+    const bounds = (level: number) => ({
+      from: Math.floor((level * members.length) / count),
+      to: Math.floor(((level + 1) * members.length) / count),
+    });
+    // The ramp's anchor: the cluster's hue and saturation at the middle group's lightness.
+    const anchor = Math.floor((count - 1) / 2);
+    const middle = bounds(anchor);
+    let anchorLight = 0;
+    for (let index = middle.from; index < middle.to; index += 1) {
+      anchorLight += members[index]?.l ?? 0;
+    }
+    anchorLight /= Math.max(1, middle.to - middle.from);
+    const anchorColour = fromHsl(hue, meanSaturation, anchorLight);
+    const shadesOf =
+      count === 1
+        ? [anchorColour]
+        : minecraftArt.generateRamp(anchorColour, {
+            count,
+            anchor,
+            hueShift: minecraftArt.ART_HUE_SHIFT,
+          });
     const colours: Rgba[] = [];
     for (let level = 0; level < count; level += 1) {
-      const from = Math.floor((level * members.length) / count);
-      const to = Math.floor(((level + 1) * members.length) / count);
-      let light = 0;
-      for (let index = from; index < to; index += 1) light += members[index]?.l ?? 0;
-      light /= Math.max(1, to - from);
-      const t = count === 1 ? 0.5 : level / (count - 1);
-      const shift = (grey ? HUE_SHIFT / 3 : HUE_SHIFT) * Math.abs(t - 0.5) * 2;
-      const shifted = t < 0.5 ? hueToward(hue, 240, shift) : hueToward(hue, 60, shift);
-      const sat = Math.min(1, meanSaturation * (1.12 - 0.24 * t));
-      const [r, g, b] = fromHsl(shifted, sat, light);
-      const colour: Rgba = [r, g, b, 255];
-      colours.push(colour);
+      const [r, g, b] = shadesOf[level] ?? anchorColour;
+      colours.push([r, g, b, 255]);
+      const { from, to } = bounds(level);
       for (let index = from; index < to; index += 1) {
         const member = members[index];
         if (member !== undefined) image.data.set([r, g, b], member.at);

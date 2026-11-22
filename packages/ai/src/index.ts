@@ -98,6 +98,7 @@ export {
   RULES_PROMPT_PLAIN_STEPS,
   RULES_PROMPT_TEMPLATES,
   systemPrompt,
+  TEXTURE_PROMPT_RECIPES,
   VANILLA_PARITY_PROMPT_TEMPLATES,
   VEHICLE_PROMPT_TEMPLATES,
   VILLAGERS_FLUIDS_FLOW_ANSWERS,
@@ -128,12 +129,14 @@ export type {
 export type { NoteMissingFeatureInput } from './tools/note';
 export {
   type AddStarterInput,
+  ART_RECIPE_NAMES,
   CREATE_ELEMENTS_MAX,
   type CreateElementsInput,
   type CreateTextureInput,
   type DeleteElementInput,
   PLACEHOLDER_PATTERN_NAMES,
   type RenameElementInput,
+  TEXTURE_SEED_MAX,
   type UpdateElementInput,
 } from './tools/propose';
 export type {

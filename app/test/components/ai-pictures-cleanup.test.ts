@@ -1,3 +1,4 @@
+import { minecraftArt } from '@msm/plugin-library';
 import { describe, expect, it } from 'vitest';
 import {
   cleanUpPicture,
@@ -160,6 +161,61 @@ describe('AI picture clean-up', () => {
     const [lightHue] = toHsl(light[0], light[1], light[2]);
     expect(darkHue).toBeGreaterThan(120);
     expect(lightHue).toBeLessThan(120);
+  });
+
+  it("quantises to the drawn art's ramps (ADR 0092 D15), keeping the rank order", () => {
+    for (const hue of [10, 120, 210, 300]) {
+      const width = 60;
+      const data = new Uint8ClampedArray(width * 4);
+      for (let x = 0; x < width; x += 1) {
+        const [r, g, b] = fromHsl(hue, 0.6, 0.15 + (0.7 * x) / width);
+        data.set([r, g, b, 255], x * 4);
+      }
+      const image = { width, height: 1, data };
+      const [ramp] = quantise(image, 6);
+      const colours = (ramp?.colours ?? []).map(
+        ([r, g, b]) => [r, g, b] as [number, number, number],
+      );
+      expect(colours).toHaveLength(6);
+      // The same ramp the drawn art makes of its anchor shade (the third of six).
+      const drawn = minecraftArt.generateRamp(colours[2] ?? [0, 0, 0], {
+        count: 6,
+        anchor: 2,
+        hueShift: minecraftArt.ART_HUE_SHIFT,
+      });
+      colours.forEach((colour, index) => {
+        for (let channel = 0; channel < 3; channel += 1) {
+          expect(
+            Math.abs((colour[channel] ?? 0) - (drawn[index]?.[channel] ?? 0)),
+          ).toBeLessThanOrEqual(2);
+        }
+      });
+      // Darker ranks take darker shades (OKLab lightness), never the other way round.
+      const lightness = colours.map((colour) => minecraftArt.rgbToOklch(colour)[0]);
+      for (let index = 1; index < lightness.length; index += 1) {
+        expect(lightness[index]).toBeGreaterThan(lightness[index - 1] ?? 1);
+      }
+      for (let x = 1; x < width; x += 1) {
+        const at = (x: number) =>
+          minecraftArt.rgbToOklch([
+            data[x * 4] ?? 0,
+            data[x * 4 + 1] ?? 0,
+            data[x * 4 + 2] ?? 0,
+          ])[0];
+        expect(at(x)).toBeGreaterThanOrEqual(at(x - 1));
+      }
+    }
+  });
+
+  it('caps a ramp at eight shades, as the drawn art does', () => {
+    const width = 80;
+    const data = new Uint8ClampedArray(width * 4);
+    for (let x = 0; x < width; x += 1) {
+      const [r, g, b] = fromHsl(200, 0.6, 0.1 + (0.8 * x) / width);
+      data.set([r, g, b, 255], x * 4);
+    }
+    const ramps = quantise({ width, height: 1, data }, 12);
+    expect(ramps[0]?.colours).toHaveLength(8);
   });
 
   it('keeps two hues apart, each with its own ramp', () => {

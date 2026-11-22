@@ -355,6 +355,114 @@ const VILLAGERS_AND_FLUIDS = `- Traders: the "msm:trader" component on an "msm:e
 /** What Try it, the in-app preview, can and cannot show, so the helper never calls it a proof (B402). */
 const TRY_IT = `- Try it (the "Try it" button in the toolbar, or F6) is a small test area inside the app, run by MSM's own simulation, not Minecraft. It shows how blocks, spawn eggs, particles, portals, vehicles, keys and on-screen elements look and behave roughly, and "What happened" lists what the project's rules, events and scripts did, with what only the game can do said as "Only in Minecraft". It cannot prove a behaviour: mobs only wander (no health, attacks or drops), walking is approximate, redstone, survival, loot, light, flowing liquids, world generation and other dimensions are not there (the project's own sounds play; Minecraft's own sounds are only named), commands are checked and logged but not carried out in the world, and scripts and logic rules run in a sandbox where whatever needs the game is only said (a call over 2 seconds is stopped; a rule's chance follows "Run every time" or a seeded roll, not the game's random). Never tell a user that Try it proved, tested or confirmed a behaviour. Say what it showed, and that the real check is Play in Minecraft.`;
 
+/** A recipe id and its words in the prompt. */
+type PromptRecipe = readonly [id: string, words: string];
+
+const rows = (...entries: PromptRecipe[]): readonly PromptRecipe[] => Object.freeze(entries);
+
+/**
+ * The drawn recipes of `create_texture` in words, by family (ADR 0092 D15), for the system
+ * prompt. Every id of `ART_RECIPE_NAMES` is here once; a test keeps the two in step.
+ */
+export const TEXTURE_PROMPT_RECIPES: Readonly<
+  Record<'blocks' | 'items' | 'worn' | 'icons', readonly PromptRecipe[]>
+> = Object.freeze({
+  blocks: rows(
+    ['plain', 'a plain block'],
+    ['stone', 'stone'],
+    ['cobblestone', 'cobblestone'],
+    ['polished_stone', 'polished stone'],
+    ['bricks', 'bricks'],
+    ['pillar_side', 'a pillar side'],
+    ['pillar_top', 'a pillar top'],
+    ['ore', 'ore speckles on stone'],
+    ['deepslate_ore', 'ore on deepslate'],
+    ['block', 'a storage block, finish gem, metal or rough'],
+    ['block_front', 'a furnace-like front'],
+    ['bark', 'a log side'],
+    ['log_top', 'a log end'],
+    ['stripped_log', 'a stripped log side'],
+    ['stripped_log_top', 'a stripped log end'],
+    ['planks', 'planks'],
+    ['door_top', 'a door top'],
+    ['door_bottom', 'a door bottom'],
+    ['trapdoor', 'a trapdoor'],
+    ['leaves', 'leaves'],
+    ['sapling', 'a sapling, also its item'],
+    ['crop_stage0', 'crop sprouts'],
+    ['crop_stage1', 'a young crop'],
+    ['crop_stage2', 'a growing crop'],
+    ['crop_stage3', 'a ripe crop, the second colour its fruit'],
+    ['portal', 'a see-through portal surface'],
+    ['portal_frame', 'a portal frame'],
+    ['dirt', 'dirt'],
+    ['grass_top', 'a grass top'],
+    ['grass_side', 'a grass side'],
+    ['sand', 'sand'],
+    ['gravel', 'gravel'],
+  ),
+  items: rows(
+    ['gem', 'a gem'],
+    ['ingot', 'an ingot'],
+    ['disc', 'a music disc, the second colour its label'],
+    ['spawn_egg', 'a spawn egg, the second colour its spots'],
+    ['sword', 'a sword'],
+    ['pickaxe', 'a pickaxe'],
+    ['axe', 'an axe'],
+    ['shovel', 'a shovel'],
+    ['hoe', 'a hoe'],
+    ['spear', 'a spear'],
+    ['mace', 'a mace'],
+    ['knife', 'a throwing knife'],
+    ['boomerang', 'a boomerang'],
+    ['ball', 'a ball'],
+    ['bow', 'a bow'],
+    ['bow_pulling_0', 'a bow pulled a little'],
+    ['bow_pulling_1', 'further'],
+    ['bow_pulling_2', 'all the way'],
+    ['crossbow', 'a crossbow'],
+    ['crossbow_pulling_0', 'a crossbow pulled a little'],
+    ['crossbow_pulling_1', 'further'],
+    ['crossbow_pulling_2', 'all the way'],
+    ['crossbow_arrow', 'a crossbow with a bolt'],
+    ['crossbow_firework', 'a crossbow with a rocket'],
+    ['shield', 'a shield'],
+    ['bottle', 'a bottle'],
+    ['flask', 'a flask'],
+    ['totem', 'a totem'],
+    ['smithing_template', 'a smithing template'],
+    ['horse_armor', 'horse armour'],
+    ['wolf_armor', 'wolf armour'],
+    ['helmet', 'a helmet'],
+    ['chestplate', 'a chestplate'],
+    ['leggings', 'leggings'],
+    ['boots', 'boots'],
+    ['fruit', 'a fruit, the second colour its leaf'],
+    ['pie', 'a pie'],
+    ['seeds', 'seeds'],
+    ['produce', 'a vegetable, the second colour its leaves'],
+  ),
+  worn: rows(
+    ['armor_layer_1', 'worn helmet, chestplate and boots, 64 by 32'],
+    ['armor_layer_2', 'worn leggings, 64 by 32'],
+    ['horse_armor_layer', 'worn horse armour, 64 by 64'],
+    ['wolf_armor_layer', 'worn wolf armour, 64 by 32'],
+  ),
+  icons: rows(
+    ['effect_icon', 'a status effect icon, 18 by 18, finish drop, heart, star, flame or swirl'],
+    ['particle_spark', 'a spark'],
+    ['particle_orb', 'a glowing orb'],
+    ['particle_puff', 'a puff of smoke'],
+    ['particle_leaf', 'a falling leaf'],
+  ),
+});
+
+const recipes = (entries: readonly PromptRecipe[]): string =>
+  entries.map(([id, words]) => (id === words ? id : `${id} (${words})`)).join(', ');
+
+/** How textures are made (ADR 0092 D15): drawn by MSM, never copied, and the recipes. */
+const TEXTURES = `- Textures come only from create_texture, which draws them in MSM in a Minecraft-like style (a few hue-shifted shades of each colour, light from the top left, a dark outline on items): MSM's own drawings, never copied, traced or recoloured from Mojang's textures. Give a recipe, the main colour and, where it takes one, a second colour (accent), a finish and a seed for another variation; the size follows the recipe. Blocks, 16 by 16 under textures/block: ${recipes(TEXTURE_PROMPT_RECIPES.blocks)}. Items, 16 by 16 under textures/item: ${recipes(TEXTURE_PROMPT_RECIPES.items)}. Worn pictures under textures/entity/equipment (humanoid, humanoid_leggings, horse_body, wolf_body): ${recipes(TEXTURE_PROMPT_RECIPES.worn)}. Icons and particles: ${recipes(TEXTURE_PROMPT_RECIPES.icons)} (particles are 8 by 8 under textures/particle; each call draws the first of four frames). Pick the recipe for what the thing is (a frost sword is "sword" in a pale blue, its ore "ore" in the same colour) and use one colour across a set. Tell the user the pictures were drawn by MSM and that they can redraw them with Draw... or paint over them.`;
+
 const CORE = `You are the AI helper inside MCSuperMods (MSM), a desktop mod maker for Minecraft Java Edition. An MSM project is a set of typed elements, each with an id "namespace:path", a kind and JSON data validated against the game's own schemas. "minecraft:" kinds (recipes, loot tables, tags, models, block states, worldgen and so on) map one to one to resource pack and data pack files. "msm:" kinds (msm:block, msm:item, msm:entity, msm:script, models and animations) are higher-level: they are exported in a Fabric mod jar together with MSM's runtime, and a project that uses them needs exactly one "msm:mod" element holding the mod's metadata. MSM checks every element and lists problems; an error blocks export.
 
 You work only through the tools. You can read the project, the kinds and their schemas, the templates, the starters, the target's facts and the script API, and you can propose changes. Proposals (create_elements, update_element, delete_element, rename_element, create_texture, add_starter) collect in a changeset that the user reviews and applies as one undoable step. You never change the project yourself.
@@ -364,7 +472,7 @@ Rules:
 - Every id is "namespace:path" in lower case. Use the project's namespace unless the user names another; never create elements in the "minecraft" or "msm" namespaces.
 - Before writing data for a kind you have not used in this conversation, read its schema (kind_schema) or a template (list_templates, template_data). Never invent fields or values the schema does not have.
 - Prefer a starter (list_starters, add_starter) when one matches the request, then adjust its elements.
-- Textures come only from create_texture, which draws placeholder images. Mojang assets are never copied. Tell the user that textures are placeholders to replace.
+${TEXTURES}
 - Batch related elements in one create_elements call. Call run_checks after every batch of proposals, fix every error it reports, and call it again before you finish.
 - When a tool returns an error, read it, correct your input and try again; do not ask the user to fix tool errors.
 - When MSM cannot build what the user asks exactly (no component, action or script API call does it), do not pretend it can and do not stop at "no". First try the other routes MSM has: the vanilla component passthrough "msm:components", data pack functions and commands, a script (read the script API), or the Java project export for code MSM does not cover. Propose the closest working version, say plainly what it does not do, and call note_missing_feature with what is missing, so it lands in the project's Wishlist.
@@ -395,10 +503,10 @@ const CHAT = `Mode: chat. Answer the user's questions about their project, Minec
 
 const BUILD = `Mode: build. The user wants whole content made from one request. Follow this procedure:
 1. Read what you need: project_summary, list_starters, list_kinds, and the schemas or templates of the kinds you will use.
-2. Call propose_plan before any proposal: one item per main element, in dependency order (the msm:mod element first if the project has none and the plan uses "msm:" kinds, blocks before their items, items before recipes, loot tables and tags), with the placeholder textures the plan needs. Wait for the answer.
+2. Call propose_plan before any proposal: one item per main element, in dependency order (the msm:mod element first if the project has none and the plan uses "msm:" kinds, blocks before their items, items before recipes, loot tables and tags), with the textures the plan needs. Wait for the answer.
 3. On "revise", change the plan according to the comments and call propose_plan again. On "build_all" or "step", build the returned items (the user may have removed or edited some) in dependency order.
 4. For each item: propose its elements and textures in batches (create_elements, add_starter, create_texture), call run_checks, fix every error, then call checkpoint with the completed item ids, the next item id and a one-sentence summary. On "stop", stop proposing.
-5. Finish with a short summary: what the changeset contains, any warnings left, which textures are placeholders, and that nothing is applied until the user clicks Apply.`;
+5. Finish with a short summary: what the changeset contains, any warnings left, which textures MSM drew (the user can redraw them with Draw... or paint over them), and that nothing is applied until the user clicks Apply.`;
 
 /** The system prompt of a mode; identical text on every call. */
 export function systemPrompt(mode: AiMode): string {

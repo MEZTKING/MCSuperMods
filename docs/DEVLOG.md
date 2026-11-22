@@ -6762,3 +6762,21 @@ Next
 **Next**
 - The side panel's hint (`NO_VANILLA_GROUND_TEXT` in `TryItView.tsx`) and `docs/guide/try-it.md` (Grounds paragraph and the Limits row) still say Minecraft's blocks are "plain coloured cubes"; they should say the terrain and wood are MSM's own drawn pictures and the rest plain cubes (B501 or B402, whoever owns the files).
 - Re-measure the Island frame rate on a quiet machine or a hardware GPU.
+
+## 2026-11-21 — executor — B498 AI helper and AI pictures on the drawn art
+
+**What**
+- `create_texture` (ADR 0092 D15, `packages/ai/src/tools/propose.ts`): takes `recipe` (any of the 80 drawn recipe ids, hand-kept as `ART_RECIPE_NAMES` like `PLACEHOLDER_PATTERN_NAMES`), the older `pattern` (still accepted; a recipe wins when both are given; one of the two is required), `colour`, `accent`, `finish` and `seed` (integer 0 to 999 999, `TEXTURE_SEED_MAX`). Its description says MSM draws the picture in a Minecraft-like style, never copied, traced or recoloured, and that the user can redraw it (Draw...) or paint over it; `add_starter`'s no longer says "placeholder textures". The catalogue's pinned hash changed once (`4aae627f...`).
+- The app's executor (`app/src/renderer/src/ai/tool-executor.ts`) draws with `artFramePngs` (a particle recipe's first frame), maps a pattern through `PATTERN_RECIPES`, checks the finish against the recipe (new error code `unknown_finish`), and defaults the seed to `hashSeed(namespace, <texture path without textures/ and .png>, recipe)`. The result adds `recipe`, `seed` and `size` ("16x16", "18x18", "8x8", "64x32").
+- System prompt: a `TEXTURES` line replaces the placeholder rule and lists every recipe in words by family (`TEXTURE_PROMPT_RECIPES`); the build procedure no longer speaks of placeholders. The `TRY_IT` line is unchanged.
+- AI pictures' clean-up (`components/ai-pictures/cleanup.ts`, ADR 0093 D4 step 4): each hue cluster is still split into N groups by lightness rank, and the groups now take the shades of `minecraftArt.generateRamp` of the cluster's colour at the middle group's lightness, with `ART_HUE_SHIFT` (12); at most 8 shades a ramp. The outline rule is unchanged.
+- Tests: `app/test/ai-art-scenario.test.ts` (build mode, "frost tools and a frost ore": an ore, its shard and five tools by hand, seven `create_texture` calls with recipes; the proposed PNGs are decoded and pass `checkArtRules`, run_checks reports no errors, one undo step); `ai-tool-executor.test.ts` (recipes, sizes, default seed, finishes, the older pattern); `ai-patterns.test.ts` (recipe ids in step with `ART_RECIPE_IDS`); `ai-pictures-cleanup.test.ts` (ramps match `generateRamp` within 2 per channel for four hues, OKLab order, the 8-shade cap; the earlier tests unchanged and green); `packages/ai` tools and system-prompt tests.
+- Checks: `pnpm lint`, `pnpm typecheck`, AI tests 100, app tests 2504 (262 files), `pnpm build` and `dist:dir`: renderer 16.3 MB of 18, `app.asar` 29.2 MB of 32.
+
+**Decisions**
+- Particles: `create_texture` writes one picture, the recipe's first frame, as before; no `frame` input was added (not in the brief).
+- The default seed hashes the texture path inside the namespace (`item/frost_sword`), so two textures of one recipe differ and the same call always gives the same bytes.
+
+**Next**
+- `list_starters`' description (`packages/ai/src/tools/read.ts`, not an owner file) still says "placeholder textures"; once B497 has switched the flows it should change too, which moves the catalogue pin a second time.
+- ADR 0093 D4's last sentence ("the quantiser is self-contained") is out of date for B502's close.

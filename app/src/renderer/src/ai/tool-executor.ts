@@ -43,7 +43,17 @@ import {
   type ResourceLocation,
 } from '@msm/core';
 import type { StarterParameter } from '@msm/plugin-api';
-import { PLACEHOLDER_PATTERNS, type PlaceholderPattern, placeholderPng } from '@msm/plugin-library';
+import {
+  ART_RECIPE_IDS,
+  type ArtRecipeId,
+  artFramePngs,
+  artRecipeInfo,
+  DEFAULT_COLOUR,
+  hashSeed,
+  PATTERN_RECIPES,
+  PLACEHOLDER_PATTERNS,
+  type PlaceholderPattern,
+} from '@msm/plugin-library';
 import {
   bundleToNewItems,
   type ChangeItem,
@@ -102,8 +112,10 @@ export const ToolErrorCodes = {
   schemasUnavailable: 'schemas_unavailable',
   /** A `create_texture` path that is not a safe path under `textures/`. */
   invalidTexturePath: 'invalid_texture_path',
-  /** A `create_texture` pattern the library does not know. */
+  /** A `create_texture` recipe or pattern the library does not know. */
   unknownPattern: 'unknown_pattern',
+  /** A `create_texture` finish the recipe does not offer. */
+  unknownFinish: 'unknown_finish',
   /** The starter id is not in `list_starters`. */
   unknownStarter: 'unknown_starter',
   /** The starter does not support the project's target. */
@@ -212,6 +224,29 @@ function page<T>(
 }
 
 /** The `#rrggbb` colour as RGB. */
+/**
+ * The recipe `create_texture` draws (ADR 0092 D15): `recipe` when given, else the older
+ * `pattern` through `PATTERN_RECIPES` (ADR 0092 D14).
+ */
+function drawnRecipe(recipe: string | undefined, pattern: string | undefined): ArtRecipeId {
+  if (recipe !== undefined) {
+    if ((ART_RECIPE_IDS as readonly string[]).includes(recipe)) return recipe as ArtRecipeId;
+    throw new ToolError(
+      ToolErrorCodes.unknownPattern,
+      `Unknown recipe ${JSON.stringify(recipe)}; use one of ${ART_RECIPE_IDS.join(', ')}.`,
+    );
+  }
+  if (pattern !== undefined && (PLACEHOLDER_PATTERNS as readonly string[]).includes(pattern)) {
+    return PATTERN_RECIPES[pattern as PlaceholderPattern];
+  }
+  throw new ToolError(
+    ToolErrorCodes.unknownPattern,
+    pattern === undefined
+      ? `Give a recipe; use one of ${ART_RECIPE_IDS.join(', ')}.`
+      : `Unknown pattern ${JSON.stringify(pattern)}; give a recipe instead, one of ${ART_RECIPE_IDS.join(', ')}.`,
+  );
+}
+
 function rgbOf(colour: string): [number, number, number] {
   return [1, 3, 5].map((at) => Number.parseInt(colour.slice(at, at + 2), 16)) as [
     number,
@@ -827,7 +862,7 @@ export function createToolExecutor(
       };
     },
 
-    create_texture: async ({ namespace, path, pattern, colour }) => {
+    create_texture: async ({ namespace, path, recipe, pattern, colour, accent, finish, seed }) => {
       const state = scratch();
       if (!isValidNamespace(namespace)) {
         throw new ToolError(
@@ -850,17 +885,26 @@ export function createToolExecutor(
           `${JSON.stringify(path)} is not a texture path under textures/; use a path such as "block/ruby_ore" or "item/ruby".`,
         );
       }
-      if (!(PLACEHOLDER_PATTERNS as readonly string[]).includes(pattern)) {
+      const drawn = drawnRecipe(recipe, pattern);
+      const info = artRecipeInfo(drawn);
+      if (finish !== undefined && !info.finishes.includes(finish)) {
         throw new ToolError(
-          ToolErrorCodes.unknownPattern,
-          `Unknown pattern ${JSON.stringify(pattern)}; use one of ${PLACEHOLDER_PATTERNS.join(', ')}.`,
+          ToolErrorCodes.unknownFinish,
+          info.finishes.length === 0
+            ? `The recipe ${drawn} has no finishes; leave finish out.`
+            : `The recipe ${drawn} has no finish ${JSON.stringify(finish)}; use one of ${info.finishes.join(', ')}.`,
         );
       }
       const assetPath = `textures/${inner}.png`;
-      const bytes = placeholderPng(
-        pattern as PlaceholderPattern,
-        colour === undefined ? {} : { colour: rgbOf(colour) },
-      );
+      const variation = seed ?? hashSeed(namespace, inner, drawn);
+      // One picture: a particle recipe's first frame (ADR 0092 D15; the size follows the recipe).
+      const bytes = artFramePngs({
+        recipe: drawn,
+        colour: colour === undefined ? DEFAULT_COLOUR : rgbOf(colour),
+        accent: accent === undefined ? undefined : rgbOf(accent),
+        finish,
+        seed: variation,
+      })[0] as Uint8Array;
       const slash = assetPath.lastIndexOf('/');
       const reason = assetImportError(assetPath.slice(0, slash), assetPath.slice(slash + 1), bytes);
       if (reason !== undefined) {
@@ -881,6 +925,9 @@ export function createToolExecutor(
           itemId: item?.itemId,
           file: `assets/${namespace}/${assetPath}`,
           textureId: `${namespace}:${inner}`,
+          recipe: drawn,
+          seed: variation,
+          size: `${info.width}x${info.height}`,
         },
       };
     },

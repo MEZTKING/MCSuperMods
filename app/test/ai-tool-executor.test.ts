@@ -1,5 +1,6 @@
 import type { AiToolResult, CheckpointInput, PlanDecision, ProposePlanInput } from '@msm/ai';
 import { createMemoryFileSystem, type Json, type Project } from '@msm/core';
+import { artFramePngs, artPng, hashSeed } from '@msm/plugin-library';
 import { describe, expect, it } from 'vitest';
 import { createToolExecutor, type DecisionHost } from '../src/renderer/src/ai/tool-executor';
 import { PendingChangeset } from '../src/renderer/src/changeset/changeset';
@@ -427,7 +428,7 @@ describe('createToolExecutor: proposals', () => {
     );
   });
 
-  it('create_texture proposes a placeholder PNG under textures/', async () => {
+  it('create_texture proposes a PNG under textures/', async () => {
     const fixture = await setup();
     const { value } = await fixture.call('create_texture', {
       namespace: 'demo',
@@ -466,6 +467,98 @@ describe('createToolExecutor: proposals', () => {
       { namespace: 'demo', path: 'block/x', pattern: 'stripes' },
       'invalid_input',
     );
+  });
+
+  it('create_texture draws a recipe in MSM art, sized by the recipe (ADR 0092 D15)', async () => {
+    const fixture = await setup();
+    const { value } = await fixture.call('create_texture', {
+      namespace: 'demo',
+      path: 'item/frost_sword',
+      recipe: 'sword',
+      colour: '#7fd4f0',
+      seed: 4,
+    });
+    expect(value).toMatchObject({
+      file: 'assets/demo/textures/item/frost_sword.png',
+      textureId: 'demo:item/frost_sword',
+      recipe: 'sword',
+      seed: 4,
+      size: '16x16',
+    });
+    const sword = fixture.changeset.items[0]?.asset?.bytes;
+    expect(sword).toEqual(artFramePngs({ recipe: 'sword', colour: [127, 212, 240], seed: 4 })[0]);
+
+    // Without a seed: the picture's own, from the namespace, path and recipe.
+    const own = await fixture.call('create_texture', {
+      namespace: 'demo',
+      path: 'block/frost_block',
+      recipe: 'block',
+      colour: '#7fd4f0',
+      finish: 'metal',
+    });
+    const seed = hashSeed('demo', 'block/frost_block', 'block');
+    expect(own.value).toMatchObject({ recipe: 'block', seed });
+    expect(fixture.changeset.items[1]?.asset?.bytes).toEqual(
+      artFramePngs({ recipe: 'block', colour: [127, 212, 240], finish: 'metal', seed })[0],
+    );
+
+    // Sizes follow the recipe: an effect icon is 18 by 18, a particle one 8 by 8 frame.
+    const icon = await fixture.call('create_texture', {
+      namespace: 'demo',
+      path: 'mob_effect/chill',
+      recipe: 'effect_icon',
+      finish: 'star',
+    });
+    expect(icon.value).toMatchObject({ size: '18x18' });
+    const spark = await fixture.call('create_texture', {
+      namespace: 'demo',
+      path: 'particle/frost_spark',
+      recipe: 'particle_spark',
+    });
+    expect(spark.value).toMatchObject({ size: '8x8' });
+
+    await expectError(
+      fixture,
+      'create_texture',
+      { namespace: 'demo', path: 'item/x', recipe: 'sword', finish: 'metal' },
+      'unknown_finish',
+    );
+    await expectError(
+      fixture,
+      'create_texture',
+      { namespace: 'demo', path: 'block/y', recipe: 'block', finish: 'glass' },
+      'unknown_finish',
+    );
+    await expectError(
+      fixture,
+      'create_texture',
+      { namespace: 'demo', path: 'item/z' },
+      'invalid_input',
+    );
+  });
+
+  it('create_texture still takes the older pattern, drawn with its recipe (ADR 0092 D14)', async () => {
+    const fixture = await setup();
+    const { value } = await fixture.call('create_texture', {
+      namespace: 'demo',
+      path: 'item/frost_egg',
+      pattern: 'egg',
+      colour: '#7fd4f0',
+      accent: '#203040',
+    });
+    const seed = hashSeed('demo', 'item/frost_egg', 'spawn_egg');
+    expect(value).toMatchObject({ recipe: 'spawn_egg', seed });
+    expect(fixture.changeset.items[0]?.asset?.bytes).toEqual(
+      artPng('egg', { colour: [127, 212, 240], accent: [32, 48, 64], seed }),
+    );
+    // A recipe wins over a pattern.
+    const both = await fixture.call('create_texture', {
+      namespace: 'demo',
+      path: 'item/frost_gem',
+      recipe: 'gem',
+      pattern: 'sword',
+    });
+    expect(both.value).toMatchObject({ recipe: 'gem' });
   });
 
   it('add_starter turns the Custom ore starter into items, with alternative values', async () => {

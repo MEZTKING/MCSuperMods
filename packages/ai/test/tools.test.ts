@@ -31,7 +31,15 @@ const EXAMPLES: { [N in AiToolName]: AiToolInputs[N] } = {
   update_element: { id: 'ruby_tools:ruby', data: { name: 'Polished ruby' } },
   delete_element: { id: 'ruby_tools:ruby' },
   rename_element: { from: 'ruby_tools:ruby', to: 'ruby_tools:red_gem' },
-  create_texture: { namespace: 'ruby_tools', path: 'item/ruby', pattern: 'gem', colour: '#d0103a' },
+  create_texture: {
+    namespace: 'ruby_tools',
+    path: 'item/ruby',
+    recipe: 'gem',
+    colour: '#d0103a',
+    accent: '#f0e0a0',
+    finish: 'gem',
+    seed: 3,
+  },
   add_starter: { starterId: 'custom-mob', namespace: 'ruby_tools', values: { name: 'Ruby Golem' } },
   run_checks: { scope: 'pending' },
   propose_plan: {
@@ -117,8 +125,31 @@ describe('tool catalogue', () => {
     expect(parseToolInput('create_texture', { ...EXAMPLES.create_texture, pattern: 'x' }).ok).toBe(
       false,
     );
+    expect(parseToolInput('create_texture', { ...EXAMPLES.create_texture, recipe: 'x' }).ok).toBe(
+      false,
+    );
     expect(parseToolInput('run_checks', { scope: 'pending', extra: 1 }).ok).toBe(true);
     expect(parseToolInput('shell', {})).toEqual({ ok: false, error: { UNKNOWN_TOOL: 'shell' } });
+  });
+
+  it('create_texture takes a recipe or the older pattern, a seed in range and a finish', () => {
+    const base = { namespace: 'frost', path: 'item/frost_sword' };
+    expect(parseToolInput('create_texture', { ...base, recipe: 'sword' }).ok).toBe(true);
+    expect(parseToolInput('create_texture', { ...base, pattern: 'egg' }).ok).toBe(true);
+    expect(parseToolInput('create_texture', base).ok).toBe(false);
+    expect(parseToolInput('create_texture', { ...base, recipe: 'sword', seed: -1 }).ok).toBe(false);
+    expect(parseToolInput('create_texture', { ...base, recipe: 'sword', seed: 1.5 }).ok).toBe(
+      false,
+    );
+    expect(parseToolInput('create_texture', { ...base, recipe: 'sword', seed: 1_000_000 }).ok).toBe(
+      false,
+    );
+    expect(parseToolInput('create_texture', { ...base, recipe: 'block', finish: 'Metal' }).ok).toBe(
+      false,
+    );
+    expect(parseToolInput('create_texture', { ...base, recipe: 'gem', accent: 'red' }).ok).toBe(
+      false,
+    );
   });
 
   it('caps create_elements at 64 elements', () => {
@@ -166,13 +197,14 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B354: create_texture gained the four particle patterns (and its
-  // description names the portal ones) and list_starters names the Particle flow (ADR 0081 D3).
+  // The hash last changed with B498: create_texture draws MSM's Minecraft-like art from a recipe
+  // (with the older pattern still accepted), a second colour, a finish and a seed, and its
+  // description and add_starter's no longer call the pictures placeholders (ADR 0092 D15).
   it('has 22 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      'da796d9f11aa2249b18de71de6a8a3aeba94df00aa94af59d01ee0a6c6a0b6de',
+      '4aae627f5c3388c5674c3beec16149e708a6734e4ba1bd46713c2cb513c69163',
     );
   });
 });
