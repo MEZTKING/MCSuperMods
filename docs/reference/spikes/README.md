@@ -15,6 +15,10 @@ The decisions taken from them are in the ADR amendments, which win over anything
 
 - `b574/`: the live world generation spike (WS1–WS18 of the live world generation plan, since closed into ADR 0119: deepslate 0.27.2 against real worlds of the vanilla server on 26.3 and 26.4-snapshot-7, speed in a worker, what it lacks, the jar paths; a go with ten fixes). Its README has the answers; the decisions and what the built code reached are in ADR 0119.
 
-The DEVLOG entries "B469" and "B470" of 2026-11-15 and "B503", "B524", "B525", "B565" and "B574" of 2026-11-22 describe how each spike was run.
+- `b547/`: the game modes spike (Y1–Y16 of `docs/PLAN-game-modes.md`: void worlds, `dimension_origin` start structures, first join, the void Nether and End, one block, teams, areas and maps on vanilla servers and a client GameTest, both versions). It found that MSM's exported structure templates placed as air on 26.x.
+- `b600/`: the Live views 2 (data) spike (2S1–2S15 of `docs/PLAN-live-views.md`: loot odds against 10,000 game rolls, tags, predicates, advancement layout, dialogs, death lines, enchantment costs, on both versions; a go for ADR 0120).
+- `b650/`: the search spike (SQ1–SQ16 of `docs/PLAN-search.md`: the corpus, index and query times in a worker, typo methods, the stemmer, 82 draft queries, answers from words, Ctrl/Cmd+K beside Monaco, the guide's packaging; a go for ADR 0124 with a lazy plugin search data entry).
+
+The DEVLOG entries "B469" and "B470" of 2026-11-15 and "B503", "B524", "B525", "B565", "B574", "B547", "B600" and "B650" of 2026-11-22 describe how each spike was run.
 
 The drawn art of ADR 0092 (the contact sheet and the numbers chosen for the generator) is not spike evidence and lives in `docs/reference/art/` (see its README).
