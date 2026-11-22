@@ -1,0 +1,2232 @@
+{
+  "harnessLoadMs": 40,
+  "targets": {
+    "mc-26.3": {
+      "plays": {
+        "wood-set": {
+          "mountAt": 4444.5,
+          "areaMs": 93,
+          "lowerMs": 46.69999999925494,
+          "lowerCached": false,
+          "scriptsMs": 0.20000000298023224,
+          "firstFrameAt": 5500,
+          "frames": 477,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 116.4,
+              "colours": 2167,
+              "bytes": 31822
+            },
+            {
+              "tick": 120,
+              "ms": 35,
+              "colours": 2572,
+              "bytes": 35906
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 197.20000000298023,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 1055.5,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (6 kinds) are props here: drawn and solid, nothing more"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 46.74093994108989,
+            "frames": 439,
+            "worstGapMs": 314.1000000014901,
+            "medianGapMs": 18.799999997019768,
+            "p95GapMs": 31.600000001490116,
+            "over50": 5
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "pet": {
+          "mountAt": 16003.10000000149,
+          "areaMs": 30.200000002980232,
+          "lowerMs": 16.899999998509884,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 16389.60000000149,
+          "frames": 538,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 51,
+              "colours": 1984,
+              "bytes": 32954
+            },
+            {
+              "tick": 100,
+              "ms": 14.1,
+              "colours": 2023,
+              "bytes": 34862
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 123.69999999925494,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 386.5,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (6 kinds) are props here: drawn and solid, nothing more",
+            "t4 [info] You spawned Ember Fox.",
+            "t4 [onlyInMinecraft] Ember Fox's goals (leap at target, melee attack, look at player, look around), melee attacks, breeding and babies, taming, texture variants and natural spawning; in the preview it only wanders",
+            "t24 [info] You spawned Ember Fox."
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 54.601409709127886,
+            "frames": 496,
+            "worstGapMs": 185.10000000149012,
+            "medianGapMs": 16.899999998509884,
+            "p95GapMs": 27,
+            "over50": 1
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "crop": {
+          "mountAt": 26546.5,
+          "areaMs": 14.399999998509884,
+          "lowerMs": 2.400000002235174,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 26743.300000000745,
+          "frames": 600,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 43.9,
+              "colours": 1787,
+              "bytes": 32822
+            },
+            {
+              "tick": 200,
+              "ms": 18.9,
+              "colours": 1783,
+              "bytes": 28778
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 76.20000000298023,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 196.80000000074506,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Farmland is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Water is a vanilla block; here it is a prop for looks only",
+            "t4 [info] showcase:onion is not a block or a spawn egg of the project",
+            "t8 [onlyInMinecraft] Onion is planted only on #showcase:onion_soil; the preview plants it on anything",
+            "t49 [info] Onion grew to stage 2 of 8",
+            "t51 [info] Onion grew to stage 2 of 8",
+            "t53 [info] Onion grew to stage 2 of 8",
+            "t55 [info] Onion grew to stage 2 of 8",
+            "t57 [info] Onion grew to stage 2 of 8",
+            "t59 [info] Onion grew to stage 2 of 8",
+            "t61 [info] Onion grew to stage 2 of 8",
+            "t63 [info] Onion grew to stage 2 of 8",
+            "t69 [info] Onion grew to stage 3 of 8",
+            "t71 [info] Onion grew to stage 3 of 8",
+            "t73 [info] Onion grew to stage 3 of 8",
+            "t75 [info] Onion grew to stage 3 of 8",
+            "t77 [info] Onion grew to stage 3 of 8",
+            "t79 [info] Onion grew to stage 3 of 8",
+            "t81 [info] Onion grew to stage 3 of 8",
+            "t83 [info] Onion grew to stage 3 of 8",
+            "t89 [info] Onion grew to stage 4 of 8",
+            "t91 [info] Onion grew to stage 4 of 8",
+            "t93 [info] Onion grew to stage 4 of 8",
+            "t95 [info] Onion grew to stage 4 of 8",
+            "t97 [info] Onion grew to stage 4 of 8",
+            "t99 [info] Onion grew to stage 4 of 8",
+            "t101 [info] Onion grew to stage 4 of 8",
+            "t103 [info] Onion grew to stage 4 of 8",
+            "t109 [info] Onion grew to stage 5 of 8",
+            "t111 [info] Onion grew to stage 5 of 8",
+            "t113 [info] Onion grew to stage 5 of 8",
+            "t115 [info] Onion grew to stage 5 of 8",
+            "t117 [info] Onion grew to stage 5 of 8",
+            "t119 [info] Onion grew to stage 5 of 8",
+            "t121 [info] Onion grew to stage 5 of 8",
+            "t123 [info] Onion grew to stage 5 of 8",
+            "t129 [info] Onion grew to stage 6 of 8",
+            "t131 [info] Onion grew to stage 6 of 8",
+            "t133 [info] Onion grew to stage 6 of 8",
+            "t135 [info] Onion grew to stage 6 of 8",
+            "t137 [info] Onion grew to stage 6 of 8",
+            "t139 [info] Onion grew to stage 6 of 8",
+            "t141 [info] Onion grew to stage 6 of 8",
+            "t143 [info] Onion grew to stage 6 of 8",
+            "t149 [info] Onion grew to stage 7 of 8",
+            "t151 [info] Onion grew to stage 7 of 8",
+            "t153 [info] Onion grew to stage 7 of 8",
+            "t155 [info] Onion grew to stage 7 of 8",
+            "t157 [info] Onion grew to stage 7 of 8",
+            "t159 [info] Onion grew to stage 7 of 8",
+            "t161 [info] Onion grew to stage 7 of 8",
+            "t163 [info] Onion grew to stage 7 of 8",
+            "t169 [info] Onion grew to stage 8 of 8",
+            "t171 [info] Onion grew to stage 8 of 8",
+            "t173 [info] Onion grew to stage 8 of 8",
+            "t175 [info] Onion grew to stage 8 of 8",
+            "t177 [info] Onion grew to stage 8 of 8",
+            "t179 [info] Onion grew to stage 8 of 8",
+            "t181 [info] Onion grew to stage 8 of 8",
+            "t183 [info] Onion grew to stage 8 of 8"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 53.20247425925041,
+            "frames": 542,
+            "worstGapMs": 135.19999999925494,
+            "medianGapMs": 17,
+            "p95GapMs": 29,
+            "over50": 4
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "machine": {
+          "mountAt": 38006.70000000298,
+          "areaMs": 9.899999998509884,
+          "lowerMs": 8.199999999254942,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 38240.60000000149,
+          "frames": 531,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 52.9,
+              "colours": 1967,
+              "bytes": 33898
+            },
+            {
+              "tick": 100,
+              "ms": 24,
+              "colours": 1933,
+              "bytes": 31190
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 130.89999999850988,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 233.89999999850988,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Hopper is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Chest is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Oak Log is a vanilla block; here it is a prop for looks only",
+            "t49 [info] Ore Crusher is now lit"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 52.73646082199282,
+            "frames": 480,
+            "worstGapMs": 198.19999999925494,
+            "medianGapMs": 17.699999999254942,
+            "p95GapMs": 27.200000002980232,
+            "over50": 2
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "vehicle": {
+          "mountAt": 48504.60000000149,
+          "areaMs": 12.799999997019768,
+          "lowerMs": 42.600000001490116,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 48750.400000002235,
+          "frames": 602,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 43.1,
+              "colours": 1348,
+              "bytes": 22502
+            },
+            {
+              "tick": 100,
+              "ms": 25.8,
+              "colours": 1581,
+              "bytes": 32746
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 77.89999999850988,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 245.80000000074506,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] Reload shows a vehicle's reload time: weapons are only in the game, so the preview shows only what an action sets",
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t4 [onlyInMinecraft] Tank's weapon fires only in the game (the fire keys, ammunition and shots)",
+            "t4 [onlyInMinecraft] Tank explodes when destroyed only in the game",
+            "t4 [onlyInMinecraft] Tank's immunity to some damage counts only in the game",
+            "t4 [onlyInMinecraft] Tank's engine sound plays only in the game",
+            "t4 [onlyInMinecraft] Tank's dashboard shows its weapons as always ready: ammunition and reloading count only in the game",
+            "t4 [onlyInMinecraft] Tank is solid only in the game: in the preview you and the mobs walk through vehicles",
+            "t19 [info] You got into Tank: W and S drive, A and D steer; Shift gets out."
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 54.34460992208305,
+            "frames": 552,
+            "worstGapMs": 115.60000000149012,
+            "medianGapMs": 17.399999998509884,
+            "p95GapMs": 25.600000001490116,
+            "over50": 1
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "portal": {
+          "mountAt": 60045.800000000745,
+          "areaMs": 13.5,
+          "lowerMs": 3,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 60247.900000002235,
+          "frames": 582,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 48.2,
+              "colours": 1525,
+              "bytes": 26874
+            },
+            {
+              "tick": 200,
+              "ms": 29.2,
+              "colours": 2050,
+              "bytes": 31190
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 100.39999999850988,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 202.10000000149012,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t84 [trigger] You used Sky Gate Beacon, so its event \"showcase:sky_gate_beacon_used\" ran.",
+            "t84 [onlyInMinecraft] light the frame of Sky Gate",
+            "t87 [onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 52.11976708671575,
+            "frames": 530,
+            "worstGapMs": 203.40000000223517,
+            "medianGapMs": 17.799999997019768,
+            "p95GapMs": 27.5,
+            "over50": 3
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "sparkles": {
+          "mountAt": 71543.40000000224,
+          "areaMs": 20.100000001490116,
+          "lowerMs": 5.099999997764826,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 71746.30000000075,
+          "frames": 527,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 53.1,
+              "colours": 1683,
+              "bytes": 26866
+            },
+            {
+              "tick": 130,
+              "ms": 22.2,
+              "colours": 1706,
+              "bytes": 26258
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 148,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 202.89999999850988,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Oak Log is a vanilla block; here it is a prop for looks only",
+            "t1 [onlyInMinecraft] the particle showcase:firefly_glow stopping on blocks; here it passes through them",
+            "t119 [trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+            "t119 [action] Showed 12 Firefly Glow particles.",
+            "t119 [onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot",
+            "t119 [action] Showed 24 Dust particles.",
+            "t119 [action] Played sound Chime.",
+            "t169 [trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+            "t169 [action] Showed 12 Firefly Glow particles.",
+            "t169 [action] Showed 24 Dust particles.",
+            "t169 [action] Played sound Chime."
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 51.34384091006526,
+            "frames": 474,
+            "worstGapMs": 230.30000000074506,
+            "medianGapMs": 18.300000000745058,
+            "p95GapMs": 26.100000001490116,
+            "over50": 1
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "trader": {
+          "mountAt": 82070.60000000149,
+          "areaMs": 62.20000000298023,
+          "lowerMs": 7.899999998509884,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 82400.60000000149,
+          "frames": 518,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 48.9,
+              "colours": 2272,
+              "bytes": 33150
+            },
+            {
+              "tick": 100,
+              "ms": 19.1,
+              "colours": 2136,
+              "bytes": 31986
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 166.80000000074506,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 330,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (6 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Dirt Path is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Bell is a vanilla block; here it is a prop for looks only",
+            "t4 [info] You spawned Roadside Merchant.",
+            "t4 [onlyInMinecraft] Roadside Merchant's goals (panic, look at player, look around); in the preview it only wanders",
+            "t204 [info] You spawned Roadside Merchant."
+          ],
+          "mobs": 1,
+          "fps": {
+            "fps": 50.92562236355257,
+            "frames": 467,
+            "worstGapMs": 251.5,
+            "medianGapMs": 18.199999999254942,
+            "p95GapMs": 27.5,
+            "over50": 3
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "fluid": {
+          "mountAt": 92684.5,
+          "areaMs": 32.100000001490116,
+          "lowerMs": 5.800000000745058,
+          "lowerCached": false,
+          "scriptsMs": 0.19999999925494194,
+          "firstFrameAt": 92934.80000000075,
+          "frames": 593,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 45.9,
+              "colours": 345,
+              "bytes": 28374
+            },
+            {
+              "tick": 160,
+              "ms": 22.5,
+              "colours": 465,
+              "bytes": 32906
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 504.69999999925494,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 250.30000000074506,
+          "tick": 6,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (4 kinds) are props here: drawn and solid, nothing more",
+            "t50 [info] You poured Oil from Bucket of Oil at 24, 8, 24.",
+            "t50 [onlyInMinecraft] Oil flows (spreading a block every 1 second, up to 3 blocks out, finding a way down 2 blocks away); in the preview it stays where you pour it",
+            "t50 [onlyInMinecraft] Bucket of Oil empties when you pour it and fills again from a source"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 50.82328046327006,
+            "frames": 539,
+            "worstGapMs": 633.1999999992549,
+            "medianGapMs": 17.199999999254942,
+            "p95GapMs": 27,
+            "over50": 3
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "rules": {
+          "mountAt": 104708.30000000075,
+          "areaMs": 41.30000000074506,
+          "lowerMs": 32.100000001490116,
+          "lowerCached": false,
+          "scriptsMs": 0.20000000298023224,
+          "firstFrameAt": 105225.80000000075,
+          "frames": 461,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 167.3,
+              "colours": 1744,
+              "bytes": 30486
+            },
+            {
+              "tick": 80,
+              "ms": 26.6,
+              "colours": 1874,
+              "bytes": 32262
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 105,
+          "errors": [],
+          "transpiled": [
+            686.6999999992549
+          ],
+          "firstRuleMs": 3521.199999999255,
+          "firstRuleTick": 60,
+          "firstFrameMs": 517.5,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t59 [trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+            "t59 [action] Rule \"Open a lucky block\" ran as a script.",
+            "t60 [action] Rule \"Open a lucky block\" set its counter lucky_blocks to 1.",
+            "t60 [action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+            "t60 [action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+            "t60 [onlyInMinecraft] World.dropItem, used by rule \"Open a lucky block\"",
+            "t60 [action] Rule \"Open a lucky block\" played sound Levelup.",
+            "t60 [onlyInMinecraft] Player.showActionBar, used by rule \"Open a lucky block\"",
+            "t60 [action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 1\"",
+            "t139 [trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+            "t139 [action] Rule \"Open a lucky block\" ran as a script.",
+            "t140 [action] Rule \"Open a lucky block\" set its counter lucky_blocks to 2.",
+            "t140 [action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+            "t140 [action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+            "t140 [action] Rule \"Open a lucky block\" played sound Levelup.",
+            "t140 [action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 2\""
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 46.82644879511907,
+            "frames": 432,
+            "worstGapMs": 188.5,
+            "medianGapMs": 19.300000000745058,
+            "p95GapMs": 34.69999999925494,
+            "over50": 3
+          },
+          "audio": [
+            0,
+            0
+          ]
+        }
+      },
+      "fps640": {
+        "wood-set": {
+          "fps": {
+            "fps": 40.50799211736369,
+            "frames": 186,
+            "worstGapMs": 282.79999999701977,
+            "medianGapMs": 22.5,
+            "p95GapMs": 35.399999998509884,
+            "over50": 1
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "pet": {
+          "fps": {
+            "fps": 46.01162839337193,
+            "frames": 221,
+            "worstGapMs": 86,
+            "medianGapMs": 20.300000000745058,
+            "p95GapMs": 32.599999997764826,
+            "over50": 1
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "crop": {
+          "fps": {
+            "fps": 46.215939271015465,
+            "frames": 222,
+            "worstGapMs": 46.099999997764826,
+            "medianGapMs": 19.800000000745058,
+            "p95GapMs": 35.399999998509884,
+            "over50": 0
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "machine": {
+          "fps": {
+            "fps": 47.30309563179673,
+            "frames": 227,
+            "worstGapMs": 67.69999999925494,
+            "medianGapMs": 19.600000001490116,
+            "p95GapMs": 32.600000001490116,
+            "over50": 1
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "vehicle": {
+          "fps": {
+            "fps": 50.8937960042061,
+            "frames": 243,
+            "worstGapMs": 41.400000002235174,
+            "medianGapMs": 18.099999997764826,
+            "p95GapMs": 29.800000000745058,
+            "over50": 0
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "portal": {
+          "fps": {
+            "fps": 42.941944175459106,
+            "frames": 205,
+            "worstGapMs": 128,
+            "medianGapMs": 21,
+            "p95GapMs": 37.100000001490116,
+            "over50": 4
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "sparkles": {
+          "fps": {
+            "fps": 45.80215954075613,
+            "frames": 222,
+            "worstGapMs": 75,
+            "medianGapMs": 20.199999999254942,
+            "p95GapMs": 33.80000000074506,
+            "over50": 1
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "trader": {
+          "fps": {
+            "fps": 49.270458870797206,
+            "frames": 234,
+            "worstGapMs": 44.19999999925494,
+            "medianGapMs": 18.600000001490116,
+            "p95GapMs": 31.399999998509884,
+            "over50": 0
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "fluid": {
+          "fps": {
+            "fps": 47.08949105511366,
+            "frames": 225,
+            "worstGapMs": 67.30000000074506,
+            "medianGapMs": 19.5,
+            "p95GapMs": 33.30000000074506,
+            "over50": 2
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "rules": {
+          "fps": {
+            "fps": 46.71630273834066,
+            "frames": 225,
+            "worstGapMs": 61.099999997764826,
+            "medianGapMs": 20.599999997764826,
+            "p95GapMs": 31.5,
+            "over50": 1
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        }
+      },
+      "churn": {
+        "memBefore": {
+          "used": 46466954,
+          "total": 145666062
+        },
+        "memAfter": {
+          "used": 35214644,
+          "total": 130681596
+        },
+        "gpuBefore": {
+          "Browser": 201,
+          "GPU": 163,
+          "Utility": 87,
+          "Tab": 284
+        },
+        "gpuAfter": {
+          "Browser": 200,
+          "GPU": 167,
+          "Utility": 87,
+          "Tab": 301
+        },
+        "mounts": [
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 367,
+            "areaMs": 70,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 344.9000000022352,
+            "areaMs": 63,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 274.29999999701977,
+            "areaMs": 22,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 238.5,
+            "areaMs": 17,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 243.90000000223517,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 207.5,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 191.69999999925494,
+            "areaMs": 20,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 355.30000000074506,
+            "areaMs": 22,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 316.9000000022352,
+            "areaMs": 19,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 198.69999999925494,
+            "areaMs": 21,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 315.3999999985099,
+            "areaMs": 60,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 268.5,
+            "areaMs": 27,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 240.19999999925494,
+            "areaMs": 39,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 204.39999999850988,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 212.80000000074506,
+            "areaMs": 13,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 195.80000000074506,
+            "areaMs": 14,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 199.39999999850988,
+            "areaMs": 21,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 241.79999999701977,
+            "areaMs": 20,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 276.9000000022352,
+            "areaMs": 23,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 240.59999999776483,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 263,
+            "areaMs": 22,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 310.1000000014901,
+            "areaMs": 43,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 178.69999999925494,
+            "areaMs": 11,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 204.80000000074506,
+            "areaMs": 18,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 189.10000000149012,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 195.69999999925494,
+            "areaMs": 8,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 182.89999999850988,
+            "areaMs": 17,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 265,
+            "areaMs": 24,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 308.8999999985099,
+            "areaMs": 53,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 220.39999999850988,
+            "areaMs": 20,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 267,
+            "areaMs": 23,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 278.8999999985099,
+            "areaMs": 24,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 171.80000000074506,
+            "areaMs": 8,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 160.80000000074506,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 153.69999999925494,
+            "areaMs": 8,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 165.30000000074506,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 171.80000000074506,
+            "areaMs": 12,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 236.69999999925494,
+            "areaMs": 23,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 261.6000000014901,
+            "areaMs": 24,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 180.70000000298023,
+            "areaMs": 14,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 236.5,
+            "areaMs": 21,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 233.30000000074506,
+            "areaMs": 17,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 178.29999999701977,
+            "areaMs": 14,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 181.40000000223517,
+            "areaMs": 18,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 196.89999999850988,
+            "areaMs": 8,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 197.59999999776483,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 215.59999999776483,
+            "areaMs": 12,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 288.0999999977648,
+            "areaMs": 31,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 244.10000000149012,
+            "areaMs": 32,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 238.69999999925494,
+            "areaMs": 20,
+            "lowerCached": true
+          }
+        ]
+      }
+    },
+    "mc-26.4": {
+      "plays": {
+        "wood-set": {
+          "mountAt": 208977.70000000298,
+          "areaMs": 34.099999997764826,
+          "lowerMs": 14.5,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 209326.30000000075,
+          "frames": 441,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 46.2,
+              "colours": 2167,
+              "bytes": 31822
+            },
+            {
+              "tick": 120,
+              "ms": 24.7,
+              "colours": 2575,
+              "bytes": 35906
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 237.40000000223517,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 348.5999999977648,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (6 kinds) are props here: drawn and solid, nothing more"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 42.44957765903453,
+            "frames": 395,
+            "worstGapMs": 386.1000000014901,
+            "medianGapMs": 21.300000000745058,
+            "p95GapMs": 34.099999997764826,
+            "over50": 6
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "pet": {
+          "mountAt": 219780.80000000075,
+          "areaMs": 29.899999998509884,
+          "lowerMs": 8.5,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 220090.30000000075,
+          "frames": 479,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 42.2,
+              "colours": 1984,
+              "bytes": 32954
+            },
+            {
+              "tick": 100,
+              "ms": 31.5,
+              "colours": 2020,
+              "bytes": 34946
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 211.59999999776483,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 309.5,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (6 kinds) are props here: drawn and solid, nothing more",
+            "t4 [info] You spawned Ember Fox.",
+            "t4 [onlyInMinecraft] Ember Fox's goals (leap at target, melee attack, look at player, look around), melee attacks, breeding and babies, taming, texture variants and natural spawning; in the preview it only wanders",
+            "t24 [info] You spawned Ember Fox.",
+            "t204 [info] You spawned Ember Fox."
+          ],
+          "mobs": 1,
+          "fps": {
+            "fps": 46.96012203094356,
+            "frames": 432,
+            "worstGapMs": 309.5,
+            "medianGapMs": 19.5,
+            "p95GapMs": 31.699999999254942,
+            "over50": 1
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "crop": {
+          "mountAt": 230426.20000000298,
+          "areaMs": 27.100000001490116,
+          "lowerMs": 2.399999998509884,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 230638.20000000298,
+          "frames": 549,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 48.7,
+              "colours": 1794,
+              "bytes": 32822
+            },
+            {
+              "tick": 200,
+              "ms": 24.7,
+              "colours": 1797,
+              "bytes": 28918
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 94.5,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 212,
+          "tick": 3,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Farmland is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Water is a vanilla block; here it is a prop for looks only",
+            "t4 [info] showcase:onion is not a block or a spawn egg of the project",
+            "t8 [onlyInMinecraft] Onion is planted only on #showcase:onion_soil; the preview plants it on anything",
+            "t49 [info] Onion grew to stage 2 of 8",
+            "t51 [info] Onion grew to stage 2 of 8",
+            "t53 [info] Onion grew to stage 2 of 8",
+            "t55 [info] Onion grew to stage 2 of 8",
+            "t57 [info] Onion grew to stage 2 of 8",
+            "t59 [info] Onion grew to stage 2 of 8",
+            "t61 [info] Onion grew to stage 2 of 8",
+            "t63 [info] Onion grew to stage 2 of 8",
+            "t69 [info] Onion grew to stage 3 of 8",
+            "t71 [info] Onion grew to stage 3 of 8",
+            "t73 [info] Onion grew to stage 3 of 8",
+            "t75 [info] Onion grew to stage 3 of 8",
+            "t77 [info] Onion grew to stage 3 of 8",
+            "t79 [info] Onion grew to stage 3 of 8",
+            "t81 [info] Onion grew to stage 3 of 8",
+            "t83 [info] Onion grew to stage 3 of 8",
+            "t89 [info] Onion grew to stage 4 of 8",
+            "t91 [info] Onion grew to stage 4 of 8",
+            "t93 [info] Onion grew to stage 4 of 8",
+            "t95 [info] Onion grew to stage 4 of 8",
+            "t97 [info] Onion grew to stage 4 of 8",
+            "t99 [info] Onion grew to stage 4 of 8",
+            "t101 [info] Onion grew to stage 4 of 8",
+            "t103 [info] Onion grew to stage 4 of 8",
+            "t109 [info] Onion grew to stage 5 of 8",
+            "t111 [info] Onion grew to stage 5 of 8",
+            "t113 [info] Onion grew to stage 5 of 8",
+            "t115 [info] Onion grew to stage 5 of 8",
+            "t117 [info] Onion grew to stage 5 of 8",
+            "t119 [info] Onion grew to stage 5 of 8",
+            "t121 [info] Onion grew to stage 5 of 8",
+            "t123 [info] Onion grew to stage 5 of 8",
+            "t129 [info] Onion grew to stage 6 of 8",
+            "t131 [info] Onion grew to stage 6 of 8",
+            "t133 [info] Onion grew to stage 6 of 8",
+            "t135 [info] Onion grew to stage 6 of 8",
+            "t137 [info] Onion grew to stage 6 of 8",
+            "t139 [info] Onion grew to stage 6 of 8",
+            "t141 [info] Onion grew to stage 6 of 8",
+            "t143 [info] Onion grew to stage 6 of 8",
+            "t149 [info] Onion grew to stage 7 of 8",
+            "t151 [info] Onion grew to stage 7 of 8",
+            "t153 [info] Onion grew to stage 7 of 8",
+            "t155 [info] Onion grew to stage 7 of 8",
+            "t157 [info] Onion grew to stage 7 of 8",
+            "t159 [info] Onion grew to stage 7 of 8",
+            "t161 [info] Onion grew to stage 7 of 8",
+            "t163 [info] Onion grew to stage 7 of 8",
+            "t169 [info] Onion grew to stage 8 of 8",
+            "t171 [info] Onion grew to stage 8 of 8",
+            "t173 [info] Onion grew to stage 8 of 8",
+            "t175 [info] Onion grew to stage 8 of 8",
+            "t177 [info] Onion grew to stage 8 of 8",
+            "t179 [info] Onion grew to stage 8 of 8",
+            "t181 [info] Onion grew to stage 8 of 8",
+            "t183 [info] Onion grew to stage 8 of 8"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 49.13543386488153,
+            "frames": 498,
+            "worstGapMs": 150.79999999701977,
+            "medianGapMs": 18.699999999254942,
+            "p95GapMs": 33.20000000298023,
+            "over50": 1
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "machine": {
+          "mountAt": 241830.80000000075,
+          "areaMs": 13.800000000745058,
+          "lowerMs": 4.300000000745058,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 242081.20000000298,
+          "frames": 473,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 42.1,
+              "colours": 1963,
+              "bytes": 33910
+            },
+            {
+              "tick": 100,
+              "ms": 46.6,
+              "colours": 1933,
+              "bytes": 31190
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 106.5,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 250.40000000223517,
+          "tick": 4,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Hopper is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Chest is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Oak Log is a vanilla block; here it is a prop for looks only",
+            "t49 [info] Ore Crusher is now lit"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 46.58283214871515,
+            "frames": 427,
+            "worstGapMs": 165.80000000074506,
+            "medianGapMs": 20.299999997019768,
+            "p95GapMs": 31.100000001490116,
+            "over50": 3
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "vehicle": {
+          "mountAt": 252411.5,
+          "areaMs": 31.299999997019768,
+          "lowerMs": 65.20000000298023,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 252783,
+          "frames": 512,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 44.9,
+              "colours": 1344,
+              "bytes": 22458
+            },
+            {
+              "tick": 100,
+              "ms": 21.9,
+              "colours": 1577,
+              "bytes": 32702
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 107.5,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 371.5,
+          "tick": 3,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] Reload shows a vehicle's reload time: weapons are only in the game, so the preview shows only what an action sets",
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t4 [onlyInMinecraft] Tank's weapon fires only in the game (the fire keys, ammunition and shots)",
+            "t4 [onlyInMinecraft] Tank explodes when destroyed only in the game",
+            "t4 [onlyInMinecraft] Tank's immunity to some damage counts only in the game",
+            "t4 [onlyInMinecraft] Tank's engine sound plays only in the game",
+            "t4 [onlyInMinecraft] Tank's dashboard shows its weapons as always ready: ammunition and reloading count only in the game",
+            "t4 [onlyInMinecraft] Tank is solid only in the game: in the preview you and the mobs walk through vehicles",
+            "t19 [info] You got into Tank: W and S drive, A and D steer; Shift gets out."
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 46.64624443030608,
+            "frames": 470,
+            "worstGapMs": 153.80000000074506,
+            "medianGapMs": 20.399999998509884,
+            "p95GapMs": 31.099999997764826,
+            "over50": 1
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "portal": {
+          "mountAt": 263925.80000000075,
+          "areaMs": 12.699999999254942,
+          "lowerMs": 1.800000000745058,
+          "lowerCached": false,
+          "scriptsMs": 0,
+          "firstFrameAt": 264162.5,
+          "frames": 511,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 40.2,
+              "colours": 1508,
+              "bytes": 26706
+            },
+            {
+              "tick": 200,
+              "ms": 29.6,
+              "colours": 2051,
+              "bytes": 31202
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 77.79999999701977,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 236.69999999925494,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t84 [trigger] You used Sky Gate Beacon, so its event \"showcase:sky_gate_beacon_used\" ran.",
+            "t84 [onlyInMinecraft] light the frame of Sky Gate",
+            "t87 [onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 45.73305664014812,
+            "frames": 466,
+            "worstGapMs": 132.60000000149012,
+            "medianGapMs": 19.699999999254942,
+            "p95GapMs": 32.80000000074506,
+            "over50": 5
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "sparkles": {
+          "mountAt": 275496.90000000224,
+          "areaMs": 11.400000002235174,
+          "lowerMs": 1.800000000745058,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 275727.80000000075,
+          "frames": 448,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 42.4,
+              "colours": 1683,
+              "bytes": 26866
+            },
+            {
+              "tick": 130,
+              "ms": 38.8,
+              "colours": 1706,
+              "bytes": 26274
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 160.90000000223517,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 230.89999999850988,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Oak Log is a vanilla block; here it is a prop for looks only",
+            "t1 [onlyInMinecraft] the particle showcase:firefly_glow stopping on blocks; here it passes through them",
+            "t119 [trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+            "t119 [action] Showed 12 Firefly Glow particles.",
+            "t119 [onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot",
+            "t119 [action] Showed 24 Dust particles.",
+            "t119 [action] Played sound Chime.",
+            "t169 [trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+            "t169 [action] Showed 12 Firefly Glow particles.",
+            "t169 [action] Showed 24 Dust particles.",
+            "t169 [action] Played sound Chime."
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 43.750816246578864,
+            "frames": 403,
+            "worstGapMs": 240.60000000149012,
+            "medianGapMs": 21.199999999254942,
+            "p95GapMs": 33.600000001490116,
+            "over50": 2
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "trader": {
+          "mountAt": 286050,
+          "areaMs": 56.80000000074506,
+          "lowerMs": 21.800000000745058,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 286489.5,
+          "frames": 458,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 42.9,
+              "colours": 2280,
+              "bytes": 33122
+            },
+            {
+              "tick": 100,
+              "ms": 26.6,
+              "colours": 2142,
+              "bytes": 31950
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 151.5,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 439.5,
+          "tick": 6,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (6 kinds) are props here: drawn and solid, nothing more",
+            "t0 [onlyInMinecraft] Dirt Path is a vanilla block; here it is a prop for looks only",
+            "t0 [onlyInMinecraft] Bell is a vanilla block; here it is a prop for looks only",
+            "t4 [info] You spawned Roadside Merchant.",
+            "t4 [onlyInMinecraft] Roadside Merchant's goals (panic, look at player, look around); in the preview it only wanders",
+            "t204 [info] You spawned Roadside Merchant."
+          ],
+          "mobs": 1,
+          "fps": {
+            "fps": 44.84402551321014,
+            "frames": 413,
+            "worstGapMs": 261.8999999985099,
+            "medianGapMs": 19.899999998509884,
+            "p95GapMs": 34.69999999925494,
+            "over50": 3
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "fluid": {
+          "mountAt": 296811.30000000075,
+          "areaMs": 39.19999999925494,
+          "lowerMs": 3.5,
+          "lowerCached": false,
+          "scriptsMs": 0.10000000149011612,
+          "firstFrameAt": 297140.30000000075,
+          "frames": 494,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 49.5,
+              "colours": 345,
+              "bytes": 28374
+            },
+            {
+              "tick": 160,
+              "ms": 33.4,
+              "colours": 465,
+              "bytes": 32906
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 187.79999999701977,
+          "errors": [],
+          "transpiled": [],
+          "firstFrameMs": 329,
+          "tick": 5,
+          "loops": 1,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (4 kinds) are props here: drawn and solid, nothing more",
+            "t50 [info] You poured Oil from Bucket of Oil at 24, 8, 24.",
+            "t50 [onlyInMinecraft] Oil flows (spreading a block every 1 second, up to 3 blocks out, finding a way down 2 blocks away); in the preview it stays where you pour it",
+            "t50 [onlyInMinecraft] Bucket of Oil empties when you pour it and fills again from a source"
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 43.95150585528128,
+            "frames": 448,
+            "worstGapMs": 277.5,
+            "medianGapMs": 21,
+            "p95GapMs": 33,
+            "over50": 6
+          },
+          "audio": [
+            0,
+            0
+          ]
+        },
+        "rules": {
+          "mountAt": 308453.6000000015,
+          "areaMs": 11.699999999254942,
+          "lowerMs": 2.599999997764826,
+          "lowerCached": false,
+          "scriptsMs": 0.09999999776482582,
+          "firstFrameAt": 308720.1000000015,
+          "frames": 440,
+          "captures": [
+            {
+              "tick": 0,
+              "ms": 45.5,
+              "colours": 1752,
+              "bytes": 30578
+            },
+            {
+              "tick": 80,
+              "ms": 27.7,
+              "colours": 1884,
+              "bytes": 32398
+            }
+          ],
+          "late": {
+            "colours": 1
+          },
+          "canvas": {
+            "width": 160,
+            "height": 90
+          },
+          "maxRebuildMs": 11.800000000745058,
+          "errors": [],
+          "transpiled": [
+            15.100000001490116
+          ],
+          "firstRuleMs": 3165.5,
+          "firstRuleTick": 60,
+          "firstFrameMs": 266.5,
+          "tick": 199,
+          "loops": 0,
+          "lines": [
+            "t0 [onlyInMinecraft] The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+            "t59 [trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+            "t59 [action] Rule \"Open a lucky block\" ran as a script.",
+            "t60 [action] Rule \"Open a lucky block\" set its counter lucky_blocks to 1.",
+            "t60 [action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+            "t60 [action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+            "t60 [onlyInMinecraft] World.dropItem, used by rule \"Open a lucky block\"",
+            "t60 [action] Rule \"Open a lucky block\" played sound Levelup.",
+            "t60 [onlyInMinecraft] Player.showActionBar, used by rule \"Open a lucky block\"",
+            "t60 [action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 1\"",
+            "t139 [trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+            "t139 [action] Rule \"Open a lucky block\" ran as a script.",
+            "t140 [action] Rule \"Open a lucky block\" set its counter lucky_blocks to 2.",
+            "t140 [action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+            "t140 [action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+            "t140 [action] Rule \"Open a lucky block\" played sound Levelup.",
+            "t140 [action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 2\""
+          ],
+          "mobs": 0,
+          "fps": {
+            "fps": 44.69413517416309,
+            "frames": 394,
+            "worstGapMs": 55.100000001490116,
+            "medianGapMs": 21.100000001490116,
+            "p95GapMs": 35,
+            "over50": 2
+          },
+          "audio": [
+            0,
+            0
+          ]
+        }
+      },
+      "fps640": {
+        "wood-set": {
+          "fps": {
+            "fps": 42.06275763438392,
+            "frames": 201,
+            "worstGapMs": 204.10000000149012,
+            "medianGapMs": 22.099999997764826,
+            "p95GapMs": 31.599999997764826,
+            "over50": 1
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "pet": {
+          "fps": {
+            "fps": 41.622649482357915,
+            "frames": 198,
+            "worstGapMs": 47.600000001490116,
+            "medianGapMs": 23,
+            "p95GapMs": 35.80000000074506,
+            "over50": 0
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "crop": {
+          "fps": {
+            "fps": 42.366660374568525,
+            "frames": 203,
+            "worstGapMs": 60.5,
+            "medianGapMs": 21.399999998509884,
+            "p95GapMs": 38.80000000074506,
+            "over50": 3
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "machine": {
+          "fps": {
+            "fps": 41.17069840862863,
+            "frames": 194,
+            "worstGapMs": 44.29999999701977,
+            "medianGapMs": 23,
+            "p95GapMs": 38,
+            "over50": 0
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "vehicle": {
+          "fps": {
+            "fps": 42.763709542190114,
+            "frames": 205,
+            "worstGapMs": 59.29999999701977,
+            "medianGapMs": 21.5,
+            "p95GapMs": 37.399999998509884,
+            "over50": 3
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "portal": {
+          "fps": {
+            "fps": 38.10365879329006,
+            "frames": 182,
+            "worstGapMs": 130.5,
+            "medianGapMs": 24.100000001490116,
+            "p95GapMs": 39.30000000074506,
+            "over50": 5
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "sparkles": {
+          "fps": {
+            "fps": 37.88199441294088,
+            "frames": 180,
+            "worstGapMs": 45.599999997764826,
+            "medianGapMs": 25.699999999254942,
+            "p95GapMs": 39.30000000074506,
+            "over50": 0
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "trader": {
+          "fps": {
+            "fps": 36.946332812583414,
+            "frames": 176,
+            "worstGapMs": 80.5,
+            "medianGapMs": 26.099999997764826,
+            "p95GapMs": 42.19999999925494,
+            "over50": 2
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "fluid": {
+          "fps": {
+            "fps": 39.78409066470414,
+            "frames": 186,
+            "worstGapMs": 81.39999999850988,
+            "medianGapMs": 23.5,
+            "p95GapMs": 40.100000001490116,
+            "over50": 2
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        },
+        "rules": {
+          "fps": {
+            "fps": 39.17108920900901,
+            "frames": 187,
+            "worstGapMs": 54,
+            "medianGapMs": 23.899999998509884,
+            "p95GapMs": 39.80000000074506,
+            "over50": 2
+          },
+          "canvas": {
+            "width": 320,
+            "height": 180
+          }
+        }
+      },
+      "churn": {
+        "memBefore": {
+          "used": 29411318,
+          "total": 105105646
+        },
+        "memAfter": {
+          "used": 35033651,
+          "total": 123705323
+        },
+        "gpuBefore": {
+          "Browser": 201,
+          "GPU": 177,
+          "Utility": 87,
+          "Tab": 276
+        },
+        "gpuAfter": {
+          "Browser": 201,
+          "GPU": 180,
+          "Utility": 87,
+          "Tab": 285
+        },
+        "mounts": [
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 563.5,
+            "areaMs": 80,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 414.3999999985099,
+            "areaMs": 66,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 211.10000000149012,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 338.5,
+            "areaMs": 20,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 268.4000000022352,
+            "areaMs": 21,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 269.69999999925494,
+            "areaMs": 20,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 281.9000000022352,
+            "areaMs": 16,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 290.9000000022352,
+            "areaMs": 38,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 299.5999999977648,
+            "areaMs": 50,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 304.30000000074506,
+            "areaMs": 29,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 353.1000000014901,
+            "areaMs": 47,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 384.69999999925494,
+            "areaMs": 45,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 211.70000000298023,
+            "areaMs": 11,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 236.09999999776483,
+            "areaMs": 12,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 258.20000000298023,
+            "areaMs": 18,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 209.5,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 218.89999999850988,
+            "areaMs": 20,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 289.4000000022352,
+            "areaMs": 38,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 312.69999999925494,
+            "areaMs": 27,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 303.9000000022352,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 289.9000000022352,
+            "areaMs": 40,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 298.5,
+            "areaMs": 34,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 189.69999999925494,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 259.19999999925494,
+            "areaMs": 35,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 213.69999999925494,
+            "areaMs": 11,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 213.90000000223517,
+            "areaMs": 28,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 215.10000000149012,
+            "areaMs": 13,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 310.29999999701977,
+            "areaMs": 29,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 297.69999999925494,
+            "areaMs": 29,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 224.69999999925494,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 298.29999999701977,
+            "areaMs": 45,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 327.5,
+            "areaMs": 52,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 206.30000000074506,
+            "areaMs": 14,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 204.69999999925494,
+            "areaMs": 12,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 253.69999999925494,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 209.10000000149012,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 290.5,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 312.3999999985099,
+            "areaMs": 36,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 395.5,
+            "areaMs": 22,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 239,
+            "areaMs": 32,
+            "lowerCached": true
+          },
+          {
+            "clip": "wood-set",
+            "firstFrameMs": 291.20000000298023,
+            "areaMs": 36,
+            "lowerCached": true
+          },
+          {
+            "clip": "pet",
+            "firstFrameMs": 336.9000000022352,
+            "areaMs": 33,
+            "lowerCached": true
+          },
+          {
+            "clip": "crop",
+            "firstFrameMs": 211.39999999850988,
+            "areaMs": 9,
+            "lowerCached": true
+          },
+          {
+            "clip": "machine",
+            "firstFrameMs": 200.10000000149012,
+            "areaMs": 10,
+            "lowerCached": true
+          },
+          {
+            "clip": "vehicle",
+            "firstFrameMs": 226.39999999850988,
+            "areaMs": 15,
+            "lowerCached": true
+          },
+          {
+            "clip": "portal",
+            "firstFrameMs": 260.19999999925494,
+            "areaMs": 26,
+            "lowerCached": true
+          },
+          {
+            "clip": "sparkles",
+            "firstFrameMs": 229.89999999850988,
+            "areaMs": 17,
+            "lowerCached": true
+          },
+          {
+            "clip": "trader",
+            "firstFrameMs": 294.70000000298023,
+            "areaMs": 23,
+            "lowerCached": true
+          },
+          {
+            "clip": "fluid",
+            "firstFrameMs": 401.29999999701977,
+            "areaMs": 53,
+            "lowerCached": true
+          },
+          {
+            "clip": "rules",
+            "firstFrameMs": 396.79999999701977,
+            "areaMs": 20,
+            "lowerCached": true
+          }
+        ]
+      }
+    }
+  },
+  "loadStart": [
+    6.75,
+    10.85,
+    10.27
+  ],
+  "cpus": 4,
+  "warnings": [],
+  "loadEnd": [
+    7.9,
+    8.54,
+    9.31
+  ]
+}

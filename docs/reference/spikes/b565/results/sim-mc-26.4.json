@@ -1,0 +1,1662 @@
+[
+  {
+    "clip": "wood-set",
+    "scriptsMs": 0,
+    "setupMs": 27.7,
+    "playMs": 5,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":30}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 10,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":8,\"z\":25},\"face\":\"up\",\"block\":\"./elm_planks\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 18,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":24,\"y\":8,\"z\":25},\"face\":\"up\",\"block\":\"./elm_planks\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 26,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":9,\"z\":25},\"face\":\"up\",\"block\":\"./elm_planks\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 34,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":24,\"y\":9,\"z\":25},\"face\":\"up\",\"block\":\"./elm_planks\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 42,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":10,\"z\":25},\"face\":\"up\",\"block\":\"./elm_slab\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 50,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":24,\"y\":10,\"z\":25},\"face\":\"up\",\"block\":\"./elm_slab\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 60,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":23,\"y\":8,\"z\":25},\"face\":\"up\",\"item\":\"./elm_door\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 100,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":23,\"y\":9,\"z\":25},\"face\":\"south\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 150,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":23,\"y\":9,\"z\":25},\"face\":\"south\"}",
+        "ok": true,
+        "lines": []
+      }
+    ],
+    "allLines": [],
+    "snapshots": [
+      {
+        "tick": 120,
+        "states": [
+          "22,9,25 elm_planks",
+          "24,9,25 elm_planks",
+          "22,10,25 elm_planks",
+          "24,10,25 elm_planks",
+          "22,11,25 elm_slab{\"type\":\"bottom\"}",
+          "24,11,25 elm_slab{\"type\":\"bottom\"}",
+          "23,9,25 elm_door{\"facing\":\"north\",\"half\":\"lower\",\"hinge\":\"left\",\"open\":\"true\"}",
+          "23,10,25 elm_door{\"facing\":\"north\",\"half\":\"upper\",\"hinge\":\"left\",\"open\":\"true\"}",
+          "21,9,21 elm_log{\"axis\":\"y\"}",
+          "21,10,21 elm_log{\"axis\":\"y\"}",
+          "21,11,21 elm_log{\"axis\":\"y\"}",
+          "21,12,21 elm_slab{\"type\":\"bottom\"}",
+          "25,9,21 elm_log{\"axis\":\"y\"}",
+          "25,10,21 elm_log{\"axis\":\"y\"}",
+          "25,11,21 elm_log{\"axis\":\"y\"}",
+          "25,12,21 elm_slab{\"type\":\"bottom\"}",
+          "21,9,25 elm_log{\"axis\":\"y\"}",
+          "21,10,25 elm_log{\"axis\":\"y\"}",
+          "21,11,25 elm_log{\"axis\":\"y\"}",
+          "21,12,25 elm_slab{\"type\":\"bottom\"}",
+          "25,9,25 elm_log{\"axis\":\"y\"}",
+          "25,10,25 elm_log{\"axis\":\"y\"}",
+          "25,11,25 elm_log{\"axis\":\"y\"}",
+          "25,12,25 elm_slab{\"type\":\"bottom\"}",
+          "22,9,21 elm_planks",
+          "22,10,21 elm_planks",
+          "23,9,21 elm_planks",
+          "23,10,21 elm_planks",
+          "24,9,21 elm_planks",
+          "24,10,21 elm_planks",
+          "21,9,22 elm_planks",
+          "21,10,22 elm_planks",
+          "25,9,22 elm_planks",
+          "25,10,22 elm_planks",
+          "21,9,23 elm_planks",
+          "21,10,23 elm_planks",
+          "25,9,23 elm_planks",
+          "25,10,23 elm_planks",
+          "21,9,24 elm_planks",
+          "21,10,24 elm_planks",
+          "25,9,24 elm_planks",
+          "25,10,24 elm_planks",
+          "22,11,21 elm_planks",
+          "23,11,21 elm_planks",
+          "24,11,21 elm_planks",
+          "21,11,22 elm_planks",
+          "25,11,22 elm_planks",
+          "21,11,23 elm_planks",
+          "25,11,23 elm_planks",
+          "21,11,24 elm_planks",
+          "25,11,24 elm_planks",
+          "22,12,21 elm_slab{\"type\":\"bottom\"}",
+          "23,12,21 elm_slab{\"type\":\"bottom\"}",
+          "24,12,21 elm_slab{\"type\":\"bottom\"}",
+          "21,12,22 elm_slab{\"type\":\"bottom\"}",
+          "25,12,22 elm_slab{\"type\":\"bottom\"}",
+          "21,12,23 elm_slab{\"type\":\"bottom\"}",
+          "25,12,23 elm_slab{\"type\":\"bottom\"}",
+          "21,12,24 elm_slab{\"type\":\"bottom\"}",
+          "25,12,24 elm_slab{\"type\":\"bottom\"}",
+          "22,12,22 elm_slab{\"type\":\"bottom\"}",
+          "22,12,23 elm_slab{\"type\":\"bottom\"}",
+          "22,12,24 elm_slab{\"type\":\"bottom\"}",
+          "22,12,25 elm_slab{\"type\":\"bottom\"}",
+          "23,12,22 elm_slab{\"type\":\"bottom\"}",
+          "23,12,23 elm_slab{\"type\":\"bottom\"}",
+          "23,12,24 elm_slab{\"type\":\"bottom\"}",
+          "23,12,25 elm_slab{\"type\":\"bottom\"}",
+          "24,12,22 elm_slab{\"type\":\"bottom\"}",
+          "24,12,23 elm_slab{\"type\":\"bottom\"}",
+          "24,12,24 elm_slab{\"type\":\"bottom\"}",
+          "24,12,25 elm_slab{\"type\":\"bottom\"}"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 200,
+        "states": [
+          "22,9,25 elm_planks",
+          "24,9,25 elm_planks",
+          "22,10,25 elm_planks",
+          "24,10,25 elm_planks",
+          "22,11,25 elm_slab{\"type\":\"bottom\"}",
+          "24,11,25 elm_slab{\"type\":\"bottom\"}",
+          "23,9,25 elm_door{\"facing\":\"north\",\"half\":\"lower\",\"hinge\":\"left\",\"open\":\"false\"}",
+          "23,10,25 elm_door{\"facing\":\"north\",\"half\":\"upper\",\"hinge\":\"left\",\"open\":\"false\"}",
+          "21,9,21 elm_log{\"axis\":\"y\"}",
+          "21,10,21 elm_log{\"axis\":\"y\"}",
+          "21,11,21 elm_log{\"axis\":\"y\"}",
+          "21,12,21 elm_slab{\"type\":\"bottom\"}",
+          "25,9,21 elm_log{\"axis\":\"y\"}",
+          "25,10,21 elm_log{\"axis\":\"y\"}",
+          "25,11,21 elm_log{\"axis\":\"y\"}",
+          "25,12,21 elm_slab{\"type\":\"bottom\"}",
+          "21,9,25 elm_log{\"axis\":\"y\"}",
+          "21,10,25 elm_log{\"axis\":\"y\"}",
+          "21,11,25 elm_log{\"axis\":\"y\"}",
+          "21,12,25 elm_slab{\"type\":\"bottom\"}",
+          "25,9,25 elm_log{\"axis\":\"y\"}",
+          "25,10,25 elm_log{\"axis\":\"y\"}",
+          "25,11,25 elm_log{\"axis\":\"y\"}",
+          "25,12,25 elm_slab{\"type\":\"bottom\"}",
+          "22,9,21 elm_planks",
+          "22,10,21 elm_planks",
+          "23,9,21 elm_planks",
+          "23,10,21 elm_planks",
+          "24,9,21 elm_planks",
+          "24,10,21 elm_planks",
+          "21,9,22 elm_planks",
+          "21,10,22 elm_planks",
+          "25,9,22 elm_planks",
+          "25,10,22 elm_planks",
+          "21,9,23 elm_planks",
+          "21,10,23 elm_planks",
+          "25,9,23 elm_planks",
+          "25,10,23 elm_planks",
+          "21,9,24 elm_planks",
+          "21,10,24 elm_planks",
+          "25,9,24 elm_planks",
+          "25,10,24 elm_planks",
+          "22,11,21 elm_planks",
+          "23,11,21 elm_planks",
+          "24,11,21 elm_planks",
+          "21,11,22 elm_planks",
+          "25,11,22 elm_planks",
+          "21,11,23 elm_planks",
+          "25,11,23 elm_planks",
+          "21,11,24 elm_planks",
+          "25,11,24 elm_planks",
+          "22,12,21 elm_slab{\"type\":\"bottom\"}",
+          "23,12,21 elm_slab{\"type\":\"bottom\"}",
+          "24,12,21 elm_slab{\"type\":\"bottom\"}",
+          "21,12,22 elm_slab{\"type\":\"bottom\"}",
+          "25,12,22 elm_slab{\"type\":\"bottom\"}",
+          "21,12,23 elm_slab{\"type\":\"bottom\"}",
+          "25,12,23 elm_slab{\"type\":\"bottom\"}",
+          "21,12,24 elm_slab{\"type\":\"bottom\"}",
+          "25,12,24 elm_slab{\"type\":\"bottom\"}",
+          "22,12,22 elm_slab{\"type\":\"bottom\"}",
+          "22,12,23 elm_slab{\"type\":\"bottom\"}",
+          "22,12,24 elm_slab{\"type\":\"bottom\"}",
+          "22,12,25 elm_slab{\"type\":\"bottom\"}",
+          "23,12,22 elm_slab{\"type\":\"bottom\"}",
+          "23,12,23 elm_slab{\"type\":\"bottom\"}",
+          "23,12,24 elm_slab{\"type\":\"bottom\"}",
+          "23,12,25 elm_slab{\"type\":\"bottom\"}",
+          "24,12,22 elm_slab{\"type\":\"bottom\"}",
+          "24,12,23 elm_slab{\"type\":\"bottom\"}",
+          "24,12,24 elm_slab{\"type\":\"bottom\"}",
+          "24,12,25 elm_slab{\"type\":\"bottom\"}"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": [
+      "22,9,25 showcase:elm_planks{}",
+      "24,9,25 showcase:elm_planks{}",
+      "22,10,25 showcase:elm_planks{}",
+      "24,10,25 showcase:elm_planks{}",
+      "22,11,25 showcase:elm_slab{\"type\":\"bottom\"}",
+      "24,11,25 showcase:elm_slab{\"type\":\"bottom\"}",
+      "23,9,25 showcase:elm_door{\"facing\":\"north\",\"half\":\"lower\",\"hinge\":\"left\",\"open\":\"false\"}",
+      "23,10,25 showcase:elm_door{\"facing\":\"north\",\"half\":\"upper\",\"hinge\":\"left\",\"open\":\"false\"}"
+    ]
+  },
+  {
+    "clip": "pet",
+    "scriptsMs": 0,
+    "setupMs": 29.8,
+    "playMs": 6,
+    "problems": [],
+    "records": [
+      {
+        "tick": 5,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":23,\"y\":8,\"z\":24},\"face\":\"up\",\"item\":\"./ember_fox_spawn_egg\"}",
+        "ok": true,
+        "lines": [
+          "[info] You spawned Ember Fox.",
+          "[onlyInMinecraft] Ember Fox's goals (leap at target, melee attack, look at player, look around), melee attacks, breeding and babies, taming, texture variants and natural spawning; in the preview it only wanders"
+        ]
+      },
+      {
+        "tick": 25,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":26,\"y\":8,\"z\":25},\"face\":\"up\",\"item\":\"./ember_fox_spawn_egg\"}",
+        "ok": true,
+        "lines": [
+          "[info] You spawned Ember Fox."
+        ]
+      }
+    ],
+    "allLines": [
+      "t4 [info] You spawned Ember Fox.",
+      "t4 [onlyInMinecraft] Ember Fox's goals (leap at target, melee attack, look at player, look around), melee attacks, breeding and babies, taming, texture variants and natural spawning; in the preview it only wanders",
+      "t24 [info] You spawned Ember Fox."
+    ],
+    "snapshots": [
+      {
+        "tick": 100,
+        "states": [],
+        "mobs": 2,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 200,
+        "states": [],
+        "mobs": 2,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": []
+  },
+  {
+    "clip": "crop",
+    "scriptsMs": 0,
+    "setupMs": 9.7,
+    "playMs": 7,
+    "problems": [],
+    "records": [
+      {
+        "tick": 5,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":20,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion\"}",
+        "ok": true,
+        "lines": [
+          "[info] showcase:onion is not a block or a spawn egg of the project"
+        ]
+      },
+      {
+        "tick": 9,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":21,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": [
+          "[onlyInMinecraft] Onion is planted only on #showcase:onion_soil; the preview plants it on anything"
+        ]
+      },
+      {
+        "tick": 13,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":22,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 17,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":23,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 21,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":24,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 25,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":25,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 29,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":26,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 33,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":27,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 37,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":28,\"y\":3,\"z\":24},\"face\":\"up\",\"item\":\"./onion_crop\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 50,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 52,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 54,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 56,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 58,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 60,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 62,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 64,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 2 of 8"
+        ]
+      },
+      {
+        "tick": 70,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 72,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 74,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 76,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 78,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 80,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 82,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 84,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 3 of 8"
+        ]
+      },
+      {
+        "tick": 90,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 92,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 94,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 96,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 98,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 100,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 102,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 104,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 4 of 8"
+        ]
+      },
+      {
+        "tick": 110,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 112,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 114,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 116,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 118,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 120,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 122,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 124,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 5 of 8"
+        ]
+      },
+      {
+        "tick": 130,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 132,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 134,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 136,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 138,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 140,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 142,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 144,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 6 of 8"
+        ]
+      },
+      {
+        "tick": 150,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 152,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 154,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 156,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 158,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 160,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 162,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 164,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 7 of 8"
+        ]
+      },
+      {
+        "tick": 170,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":21,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 172,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 174,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":23,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 176,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 178,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":25,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 180,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":26,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 182,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":27,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      },
+      {
+        "tick": 184,
+        "step": "{\"type\":\"tool\",\"tool\":\"grow\",\"pos\":{\"x\":28,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Onion grew to stage 8 of 8"
+        ]
+      }
+    ],
+    "allLines": [
+      "t4 [info] showcase:onion is not a block or a spawn egg of the project",
+      "t8 [onlyInMinecraft] Onion is planted only on #showcase:onion_soil; the preview plants it on anything",
+      "t49 [info] Onion grew to stage 2 of 8",
+      "t51 [info] Onion grew to stage 2 of 8",
+      "t53 [info] Onion grew to stage 2 of 8",
+      "t55 [info] Onion grew to stage 2 of 8",
+      "t57 [info] Onion grew to stage 2 of 8",
+      "t59 [info] Onion grew to stage 2 of 8",
+      "t61 [info] Onion grew to stage 2 of 8",
+      "t63 [info] Onion grew to stage 2 of 8",
+      "t69 [info] Onion grew to stage 3 of 8",
+      "t71 [info] Onion grew to stage 3 of 8",
+      "t73 [info] Onion grew to stage 3 of 8",
+      "t75 [info] Onion grew to stage 3 of 8",
+      "t77 [info] Onion grew to stage 3 of 8",
+      "t79 [info] Onion grew to stage 3 of 8",
+      "t81 [info] Onion grew to stage 3 of 8",
+      "t83 [info] Onion grew to stage 3 of 8",
+      "t89 [info] Onion grew to stage 4 of 8",
+      "t91 [info] Onion grew to stage 4 of 8",
+      "t93 [info] Onion grew to stage 4 of 8",
+      "t95 [info] Onion grew to stage 4 of 8",
+      "t97 [info] Onion grew to stage 4 of 8",
+      "t99 [info] Onion grew to stage 4 of 8",
+      "t101 [info] Onion grew to stage 4 of 8",
+      "t103 [info] Onion grew to stage 4 of 8",
+      "t109 [info] Onion grew to stage 5 of 8",
+      "t111 [info] Onion grew to stage 5 of 8",
+      "t113 [info] Onion grew to stage 5 of 8",
+      "t115 [info] Onion grew to stage 5 of 8",
+      "t117 [info] Onion grew to stage 5 of 8",
+      "t119 [info] Onion grew to stage 5 of 8",
+      "t121 [info] Onion grew to stage 5 of 8",
+      "t123 [info] Onion grew to stage 5 of 8",
+      "t129 [info] Onion grew to stage 6 of 8",
+      "t131 [info] Onion grew to stage 6 of 8",
+      "t133 [info] Onion grew to stage 6 of 8",
+      "t135 [info] Onion grew to stage 6 of 8",
+      "t137 [info] Onion grew to stage 6 of 8",
+      "t139 [info] Onion grew to stage 6 of 8",
+      "t141 [info] Onion grew to stage 6 of 8",
+      "t143 [info] Onion grew to stage 6 of 8",
+      "t149 [info] Onion grew to stage 7 of 8",
+      "t151 [info] Onion grew to stage 7 of 8",
+      "t153 [info] Onion grew to stage 7 of 8",
+      "t155 [info] Onion grew to stage 7 of 8",
+      "t157 [info] Onion grew to stage 7 of 8",
+      "t159 [info] Onion grew to stage 7 of 8",
+      "t161 [info] Onion grew to stage 7 of 8",
+      "t163 [info] Onion grew to stage 7 of 8",
+      "t169 [info] Onion grew to stage 8 of 8",
+      "t171 [info] Onion grew to stage 8 of 8",
+      "t173 [info] Onion grew to stage 8 of 8",
+      "t175 [info] Onion grew to stage 8 of 8",
+      "t177 [info] Onion grew to stage 8 of 8",
+      "t179 [info] Onion grew to stage 8 of 8",
+      "t181 [info] Onion grew to stage 8 of 8",
+      "t183 [info] Onion grew to stage 8 of 8"
+    ],
+    "snapshots": [
+      {
+        "tick": 200,
+        "states": [
+          "21,4,24 onion_crop{\"age\":\"7\"}",
+          "22,4,24 onion_crop{\"age\":\"7\"}",
+          "23,4,24 onion_crop{\"age\":\"7\"}",
+          "24,4,24 onion_crop{\"age\":\"7\"}",
+          "25,4,24 onion_crop{\"age\":\"7\"}",
+          "26,4,24 onion_crop{\"age\":\"7\"}",
+          "27,4,24 onion_crop{\"age\":\"7\"}",
+          "28,4,24 onion_crop{\"age\":\"7\"}"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 220,
+        "states": [
+          "21,4,24 onion_crop{\"age\":\"7\"}",
+          "22,4,24 onion_crop{\"age\":\"7\"}",
+          "23,4,24 onion_crop{\"age\":\"7\"}",
+          "24,4,24 onion_crop{\"age\":\"7\"}",
+          "25,4,24 onion_crop{\"age\":\"7\"}",
+          "26,4,24 onion_crop{\"age\":\"7\"}",
+          "27,4,24 onion_crop{\"age\":\"7\"}",
+          "28,4,24 onion_crop{\"age\":\"7\"}"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": [
+      "21,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "22,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "23,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "24,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "25,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "26,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "27,4,24 showcase:onion_crop{\"age\":\"7\"}",
+      "28,4,24 showcase:onion_crop{\"age\":\"7\"}"
+    ]
+  },
+  {
+    "clip": "machine",
+    "scriptsMs": 0,
+    "setupMs": 9.9,
+    "playMs": 2,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":20}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 10,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":24,\"y\":3,\"z\":24},\"face\":\"up\",\"block\":\"./ore_crusher\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 50,
+        "step": "{\"type\":\"tool\",\"tool\":\"power\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[info] Ore Crusher is now lit"
+        ]
+      },
+      {
+        "tick": 60,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":24,\"y\":4,\"z\":24},\"state\":\"./ore_crusher[facing=south,lit=true]\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 180,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":24,\"y\":4,\"z\":24},\"state\":\"./ore_crusher[facing=south,lit=false]\"}",
+        "ok": true,
+        "lines": []
+      }
+    ],
+    "allLines": [
+      "t49 [info] Ore Crusher is now lit"
+    ],
+    "snapshots": [
+      {
+        "tick": 100,
+        "states": [
+          "24,4,24 ore_crusher{\"facing\":\"south\",\"lit\":\"true\"}"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 200,
+        "states": [
+          "24,4,24 ore_crusher{\"facing\":\"south\",\"lit\":\"false\"}"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": [
+      "24,4,24 showcase:ore_crusher{\"facing\":\"south\",\"lit\":\"false\"}"
+    ]
+  },
+  {
+    "clip": "vehicle",
+    "scriptsMs": 0,
+    "setupMs": 12.9,
+    "playMs": 6,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":30}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 5,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":24,\"y\":3,\"z\":30},\"face\":\"up\",\"item\":\"./tank\"}",
+        "ok": true,
+        "lines": [
+          "[onlyInMinecraft] Tank's weapon fires only in the game (the fire keys, ammunition and shots)",
+          "[onlyInMinecraft] Tank explodes when destroyed only in the game",
+          "[onlyInMinecraft] Tank's immunity to some damage counts only in the game",
+          "[onlyInMinecraft] Tank's engine sound plays only in the game",
+          "[onlyInMinecraft] Tank's dashboard shows its weapons as always ready: ammunition and reloading count only in the game",
+          "[onlyInMinecraft] Tank is solid only in the game: in the preview you and the mobs walk through vehicles"
+        ]
+      },
+      {
+        "tick": 20,
+        "step": "{\"type\":\"useVehicle\",\"index\":0}",
+        "ok": true,
+        "lines": [
+          "[info] You got into Tank: W and S drive, A and D steer; Shift gets out."
+        ]
+      },
+      {
+        "tick": 30,
+        "step": "{\"type\":\"drive\",\"forward\":1,\"strafe\":0}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 75,
+        "step": "{\"type\":\"drive\",\"forward\":1,\"strafe\":1}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 105,
+        "step": "{\"type\":\"drive\",\"forward\":1,\"strafe\":0}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 135,
+        "step": "{\"type\":\"drive\",\"forward\":0,\"strafe\":0}",
+        "ok": true,
+        "lines": []
+      }
+    ],
+    "allLines": [
+      "t4 [onlyInMinecraft] Tank's weapon fires only in the game (the fire keys, ammunition and shots)",
+      "t4 [onlyInMinecraft] Tank explodes when destroyed only in the game",
+      "t4 [onlyInMinecraft] Tank's immunity to some damage counts only in the game",
+      "t4 [onlyInMinecraft] Tank's engine sound plays only in the game",
+      "t4 [onlyInMinecraft] Tank's dashboard shows its weapons as always ready: ammunition and reloading count only in the game",
+      "t4 [onlyInMinecraft] Tank is solid only in the game: in the preview you and the mobs walk through vehicles",
+      "t19 [info] You got into Tank: W and S drive, A and D steer; Shift gets out."
+    ],
+    "snapshots": [
+      {
+        "tick": 100,
+        "states": [],
+        "mobs": 0,
+        "vehicles": [
+          {
+            "x": 28.4,
+            "z": 17.7,
+            "yaw": 258
+          }
+        ],
+        "particles": 0,
+        "emitted": 0,
+        "riding": 1
+      },
+      {
+        "tick": 220,
+        "states": [],
+        "mobs": 0,
+        "vehicles": [
+          {
+            "x": 41.6,
+            "z": 17.6,
+            "yaw": 270
+          }
+        ],
+        "particles": 0,
+        "emitted": 0,
+        "riding": 1
+      }
+    ],
+    "finalStates": []
+  },
+  {
+    "clip": "portal",
+    "scriptsMs": 0,
+    "setupMs": 9.7,
+    "playMs": 19,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":0}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 5,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":3,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 10,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":23,\"y\":3,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 15,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":24,\"y\":3,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 20,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":25,\"y\":3,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 25,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":4,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 30,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":25,\"y\":4,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 35,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":5,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 40,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":25,\"y\":5,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 45,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":6,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 50,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":25,\"y\":6,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 55,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":7,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 60,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":25,\"y\":7,\"z\":24},\"face\":\"up\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 65,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":22,\"y\":8,\"z\":24},\"face\":\"east\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 70,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":23,\"y\":8,\"z\":24},\"face\":\"east\",\"block\":\"./sky_gate_frame\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 75,
+        "step": "{\"type\":\"place\",\"pos\":{\"x\":20,\"y\":3,\"z\":25},\"face\":\"up\",\"block\":\"./sky_gate_beacon\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 85,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":20,\"y\":4,\"z\":25},\"face\":\"up\"}",
+        "ok": true,
+        "lines": [
+          "[trigger] You used Sky Gate Beacon, so its event \"showcase:sky_gate_beacon_used\" ran.",
+          "[onlyInMinecraft] light the frame of Sky Gate"
+        ]
+      },
+      {
+        "tick": 87,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":23,\"y\":5,\"z\":24},\"state\":\"./sky_gate[axis=x]\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 87,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":24,\"y\":5,\"z\":24},\"state\":\"./sky_gate[axis=x]\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 87,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":23,\"y\":6,\"z\":24},\"state\":\"./sky_gate[axis=x]\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 87,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":24,\"y\":6,\"z\":24},\"state\":\"./sky_gate[axis=x]\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 87,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":23,\"y\":7,\"z\":24},\"state\":\"./sky_gate[axis=x]\"}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 87,
+        "step": "{\"type\":\"set\",\"pos\":{\"x\":24,\"y\":7,\"z\":24},\"state\":\"./sky_gate[axis=x]\"}",
+        "ok": true,
+        "lines": []
+      }
+    ],
+    "allLines": [
+      "t84 [trigger] You used Sky Gate Beacon, so its event \"showcase:sky_gate_beacon_used\" ran.",
+      "t84 [onlyInMinecraft] light the frame of Sky Gate",
+      "t87 [onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot"
+    ],
+    "snapshots": [
+      {
+        "tick": 200,
+        "states": [
+          "22,4,24 sky_gate_frame",
+          "23,4,24 sky_gate_frame",
+          "24,4,24 sky_gate_frame",
+          "25,4,24 sky_gate_frame",
+          "22,5,24 sky_gate_frame",
+          "25,5,24 sky_gate_frame",
+          "22,6,24 sky_gate_frame",
+          "25,6,24 sky_gate_frame",
+          "22,7,24 sky_gate_frame",
+          "25,7,24 sky_gate_frame",
+          "22,8,24 sky_gate_frame",
+          "25,8,24 sky_gate_frame",
+          "23,8,24 sky_gate_frame",
+          "20,4,25 sky_gate_beacon",
+          "23,5,24 sky_gate{\"axis\":\"x\"}",
+          "23,6,24 sky_gate{\"axis\":\"x\"}",
+          "24,5,24 sky_gate{\"axis\":\"x\"}",
+          "24,6,24 sky_gate{\"axis\":\"x\"}",
+          "23,7,24 sky_gate{\"axis\":\"x\"}",
+          "24,7,24 sky_gate{\"axis\":\"x\"}",
+          "24,8,24 sky_gate_frame"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 456,
+        "emitted": 2736,
+        "riding": null
+      },
+      {
+        "tick": 220,
+        "states": [
+          "22,4,24 sky_gate_frame",
+          "23,4,24 sky_gate_frame",
+          "24,4,24 sky_gate_frame",
+          "25,4,24 sky_gate_frame",
+          "22,5,24 sky_gate_frame",
+          "25,5,24 sky_gate_frame",
+          "22,6,24 sky_gate_frame",
+          "25,6,24 sky_gate_frame",
+          "22,7,24 sky_gate_frame",
+          "25,7,24 sky_gate_frame",
+          "22,8,24 sky_gate_frame",
+          "25,8,24 sky_gate_frame",
+          "23,8,24 sky_gate_frame",
+          "20,4,25 sky_gate_beacon",
+          "23,5,24 sky_gate{\"axis\":\"x\"}",
+          "23,6,24 sky_gate{\"axis\":\"x\"}",
+          "24,5,24 sky_gate{\"axis\":\"x\"}",
+          "24,6,24 sky_gate{\"axis\":\"x\"}",
+          "23,7,24 sky_gate{\"axis\":\"x\"}",
+          "24,7,24 sky_gate{\"axis\":\"x\"}",
+          "24,8,24 sky_gate_frame"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 456,
+        "emitted": 3216,
+        "riding": null
+      }
+    ],
+    "finalStates": [
+      "22,4,24 showcase:sky_gate_frame{}",
+      "23,4,24 showcase:sky_gate_frame{}",
+      "24,4,24 showcase:sky_gate_frame{}",
+      "25,4,24 showcase:sky_gate_frame{}",
+      "22,5,24 showcase:sky_gate_frame{}",
+      "25,5,24 showcase:sky_gate_frame{}",
+      "22,6,24 showcase:sky_gate_frame{}",
+      "25,6,24 showcase:sky_gate_frame{}",
+      "22,7,24 showcase:sky_gate_frame{}",
+      "25,7,24 showcase:sky_gate_frame{}",
+      "22,8,24 showcase:sky_gate_frame{}",
+      "25,8,24 showcase:sky_gate_frame{}",
+      "23,8,24 showcase:sky_gate_frame{}",
+      "20,4,25 showcase:sky_gate_beacon{}",
+      "23,5,24 showcase:sky_gate{\"axis\":\"x\"}",
+      "23,6,24 showcase:sky_gate{\"axis\":\"x\"}",
+      "24,5,24 showcase:sky_gate{\"axis\":\"x\"}",
+      "24,6,24 showcase:sky_gate{\"axis\":\"x\"}",
+      "23,7,24 showcase:sky_gate{\"axis\":\"x\"}",
+      "24,7,24 showcase:sky_gate{\"axis\":\"x\"}",
+      "24,8,24 showcase:sky_gate_frame{}"
+    ]
+  },
+  {
+    "clip": "sparkles",
+    "scriptsMs": 0,
+    "setupMs": 11,
+    "playMs": 6,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":0}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 120,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":24,\"y\":5,\"z\":24},\"face\":\"south\",\"item\":\"./spark_wand\"}",
+        "ok": true,
+        "lines": [
+          "[trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+          "[action] Showed 12 Firefly Glow particles.",
+          "[onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot",
+          "[action] Showed 24 Dust particles.",
+          "[action] Played sound Chime."
+        ]
+      },
+      {
+        "tick": 170,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":24,\"y\":5,\"z\":24},\"face\":\"south\",\"item\":\"./spark_wand\"}",
+        "ok": true,
+        "lines": [
+          "[trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+          "[action] Showed 12 Firefly Glow particles.",
+          "[action] Showed 24 Dust particles.",
+          "[action] Played sound Chime."
+        ]
+      }
+    ],
+    "allLines": [
+      "t1 [onlyInMinecraft] the particle showcase:firefly_glow stopping on blocks; here it passes through them",
+      "t119 [trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+      "t119 [action] Showed 12 Firefly Glow particles.",
+      "t119 [onlyInMinecraft] how the vanilla particle minecraft:dust looks; the preview shows a small dot",
+      "t119 [action] Showed 24 Dust particles.",
+      "t119 [action] Played sound Chime.",
+      "t169 [trigger] You used Spark Wand, so its event \"showcase:spark_wand_used\" ran.",
+      "t169 [action] Showed 12 Firefly Glow particles.",
+      "t169 [action] Showed 24 Dust particles.",
+      "t169 [action] Played sound Chime."
+    ],
+    "snapshots": [
+      {
+        "tick": 130,
+        "states": [
+          "24,5,24 firefly_jar",
+          "21,5,24 firefly_jar",
+          "27,5,24 firefly_jar"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 92,
+        "emitted": 162,
+        "riding": null
+      },
+      {
+        "tick": 200,
+        "states": [
+          "24,5,24 firefly_jar",
+          "21,5,24 firefly_jar",
+          "27,5,24 firefly_jar"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 57,
+        "emitted": 252,
+        "riding": null
+      }
+    ],
+    "finalStates": [
+      "24,5,24 showcase:firefly_jar{}"
+    ]
+  },
+  {
+    "clip": "trader",
+    "scriptsMs": 0,
+    "setupMs": 26.8,
+    "playMs": 3,
+    "problems": [],
+    "records": [
+      {
+        "tick": 5,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":24,\"y\":8,\"z\":25},\"face\":\"up\",\"item\":\"./roadside_merchant_spawn_egg\"}",
+        "ok": true,
+        "lines": [
+          "[info] You spawned Roadside Merchant.",
+          "[onlyInMinecraft] Roadside Merchant's goals (panic, look at player, look around); in the preview it only wanders"
+        ]
+      }
+    ],
+    "allLines": [
+      "t4 [info] You spawned Roadside Merchant.",
+      "t4 [onlyInMinecraft] Roadside Merchant's goals (panic, look at player, look around); in the preview it only wanders"
+    ],
+    "snapshots": [
+      {
+        "tick": 100,
+        "states": [],
+        "mobs": 1,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 200,
+        "states": [],
+        "mobs": 1,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": []
+  },
+  {
+    "clip": "fluid",
+    "scriptsMs": 0,
+    "setupMs": 26.2,
+    "playMs": 3,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":40}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 5,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":23,\"y\":8,\"z\":23}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 9,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":23,\"y\":8,\"z\":24}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 13,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":23,\"y\":8,\"z\":25}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 17,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":24,\"y\":8,\"z\":23}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 21,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":24,\"y\":8,\"z\":24}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 25,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":24,\"y\":8,\"z\":25}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 29,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":25,\"y\":8,\"z\":23}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 33,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":25,\"y\":8,\"z\":24}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 37,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":25,\"y\":8,\"z\":25}}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 51,
+        "step": "{\"type\":\"use\",\"pos\":{\"x\":24,\"y\":7,\"z\":24},\"face\":\"up\",\"item\":\"./oil_bucket\"}",
+        "ok": true,
+        "lines": [
+          "[info] You poured Oil from Bucket of Oil at 24, 8, 24.",
+          "[onlyInMinecraft] Oil flows (spreading a block every 1 second, up to 3 blocks out, finding a way down 2 blocks away); in the preview it stays where you pour it",
+          "[onlyInMinecraft] Bucket of Oil empties when you pour it and fills again from a source"
+        ]
+      }
+    ],
+    "allLines": [
+      "t50 [info] You poured Oil from Bucket of Oil at 24, 8, 24.",
+      "t50 [onlyInMinecraft] Oil flows (spreading a block every 1 second, up to 3 blocks out, finding a way down 2 blocks away); in the preview it stays where you pour it",
+      "t50 [onlyInMinecraft] Bucket of Oil empties when you pour it and fills again from a source"
+    ],
+    "snapshots": [
+      {
+        "tick": 160,
+        "states": [
+          "24,8,24 oil"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 220,
+        "states": [
+          "24,8,24 oil"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": [
+      "24,8,24 showcase:oil{}"
+    ]
+  },
+  {
+    "clip": "rules",
+    "scriptsMs": 0,
+    "setupMs": 11.4,
+    "playMs": 8,
+    "problems": [],
+    "records": [
+      {
+        "tick": 1,
+        "step": "{\"type\":\"look\",\"yaw\":180,\"pitch\":20}",
+        "ok": true,
+        "lines": []
+      },
+      {
+        "tick": 60,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":24,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+          "[action] Rule \"Open a lucky block\" ran as a script.",
+          "[action] Rule \"Open a lucky block\" set its counter lucky_blocks to 1.",
+          "[action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+          "[action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+          "[onlyInMinecraft] World.dropItem, used by rule \"Open a lucky block\"",
+          "[action] Rule \"Open a lucky block\" played sound Levelup.",
+          "[onlyInMinecraft] Player.showActionBar, used by rule \"Open a lucky block\"",
+          "[action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 1\""
+        ]
+      },
+      {
+        "tick": 140,
+        "step": "{\"type\":\"break\",\"pos\":{\"x\":22,\"y\":4,\"z\":24}}",
+        "ok": true,
+        "lines": [
+          "[trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+          "[action] Rule \"Open a lucky block\" ran as a script.",
+          "[action] Rule \"Open a lucky block\" set its counter lucky_blocks to 2.",
+          "[action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+          "[action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+          "[action] Rule \"Open a lucky block\" played sound Levelup.",
+          "[action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 2\""
+        ]
+      }
+    ],
+    "allLines": [
+      "t59 [trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+      "t59 [action] Rule \"Open a lucky block\" ran as a script.",
+      "t59 [action] Rule \"Open a lucky block\" set its counter lucky_blocks to 1.",
+      "t59 [action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+      "t59 [action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+      "t59 [onlyInMinecraft] World.dropItem, used by rule \"Open a lucky block\"",
+      "t59 [action] Rule \"Open a lucky block\" played sound Levelup.",
+      "t59 [onlyInMinecraft] Player.showActionBar, used by rule \"Open a lucky block\"",
+      "t59 [action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 1\"",
+      "t139 [trigger] You broke Lucky Block, which starts rule \"Open a lucky block\".",
+      "t139 [action] Rule \"Open a lucky block\" ran as a script.",
+      "t139 [action] Rule \"Open a lucky block\" set its counter lucky_blocks to 2.",
+      "t139 [action] Rule \"Open a lucky block\" rolled its 60 per cent chance: it came up (\"Run every time\" is on).",
+      "t139 [action] Rule \"Open a lucky block\" checked its \"if\": true, so its \"then\" steps ran.",
+      "t139 [action] Rule \"Open a lucky block\" played sound Levelup.",
+      "t139 [action] Rule \"Open a lucky block\" says to you: \"Lucky blocks opened: 2\""
+    ],
+    "snapshots": [
+      {
+        "tick": 80,
+        "states": [
+          "22,4,24 lucky_block",
+          "26,4,24 lucky_block"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      },
+      {
+        "tick": 200,
+        "states": [
+          "26,4,24 lucky_block"
+        ],
+        "mobs": 0,
+        "vehicles": [],
+        "particles": 0,
+        "emitted": 0,
+        "riding": null
+      }
+    ],
+    "finalStates": []
+  }
+]

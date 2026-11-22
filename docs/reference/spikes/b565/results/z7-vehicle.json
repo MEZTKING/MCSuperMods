@@ -1,0 +1,24 @@
+{
+  "placed": {
+    "x": 24.5,
+    "z": 30.5,
+    "yaw": 180
+  },
+  "riding": 1,
+  "afterForwardWithTurningLook": {
+    "x": 24.5,
+    "z": 23.75,
+    "yaw": 180
+  },
+  "afterForwardWithStrafeRight": {
+    "x": 29.4,
+    "z": 19.1,
+    "yaw": 270
+  },
+  "afterCoasting": {
+    "x": 33.13,
+    "z": 19.1,
+    "yaw": 270
+  },
+  "lookTurn": 0
+}

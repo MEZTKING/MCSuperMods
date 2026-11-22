@@ -1,0 +1,12 @@
+{
+  "far": {
+    "name": "showcase:elm_planks",
+    "properties": {}
+  },
+  "inside": null,
+  "broken": null,
+  "lines": [
+    "The ground's Minecraft blocks (3 kinds) are props here: drawn and solid, nothing more",
+    "Elm Planks was not placed: you or a mob stand where it would go."
+  ]
+}

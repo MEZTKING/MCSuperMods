@@ -7607,3 +7607,19 @@ Next
 
 **Next**
 - The `open_dialog` action (schema, `Action` codec, corpus, `EventRunner`) needs an owner; Rules can open dialogs through `Player.openDialog` meanwhile. B541 pins `registered 4 game rule(s)` and `registered 4 statistic(s)` only for the GameTest mod (fixtures will differ). B537's eject needs the 32 types' macro values above. B544 decides the release for the 1.7 Since lines.
+## 2026-11-22 — executor — B565 Showcase measurements
+
+**What**
+- Measured Z1–Z13 of `docs/PLAN-showcase.md` on mc-26.3 and mc-26.4 for the ten showcase examples: a Vitest over the sim and lowering (Z1, Z6–Z12) and an e2e in the real app under SwiftShader (Z2–Z5, Z9, Z13) that mounted each clip as a `TryItScene` over a `TryItArea` through a temporary lazy harness. Evidence, the ten clip scripts (`clips.json`), raw numbers, ten stills and copies of the spike files in `docs/reference/spikes/b565/`. The spike's app files and the temporary line in `main.tsx` were deleted; nothing under `app/src/` changed.
+- Results: all ten examples lower with no problem (1–46 ms); mount to first frame median 179–337 ms warm, worst 564 ms, 1,056 ms for the first mount of a session; 42–55 fps at a 320 by 180 box with Smaller picture; 50 mounts with no WebGL context warning, JS heap within 6 MB and the GPU process within 4 MB of the start; the still works only inside `onFrameDrawn` (blank outside), 23–50 ms; no reach check on actions; vehicles steer by `strafe`, not the look's yaw, and `driverCamera` works as the clip's camera; portals filled by `set`; the lucky block's rule runs in the worker 0.7 s after mount at the latest; crops plant with the crop block's id, not the produce; the Power tool lights the crusher; the oil pours into a dug pit; an area without `audio` plays nothing.
+- Verified: `pnpm lint`, `pnpm typecheck` green after the throwaway files were removed.
+
+**Decisions**
+- ADR 0118 D13: go on all three budgets; clips play by themselves.
+- Reserve B573 is not needed for its listed seams (Z5, Z6, Z7, Z13 all work as Try it is).
+- Found outside Z1–Z13: without the client jar, blocks on vanilla template parents with no MSM fallback (slab, stairs, door, fence, gate, trapdoor, button, plate, leaves, crop, orientable) and whole vanilla models (glass, lodestone) draw as the missing texture, so the wood set, crop and machine clips (and the firefly jar, the portal's beacon) look broken there. Recorded as a seam for the main session to place (B573 or another brief).
+
+**Next**
+- Main session: add the README line for `b565/` in `docs/reference/spikes/README.md`; decide on the fallback-parents seam.
+- B566: lower the bundle without `withTypedBlockModels` (it makes 53 lowering conflicts for the wood set); keep the bundle for `bundleAssetReader`; add a `look` step (placed blocks face the player's look); name vehicles and mobs by order, not id; wait for `area.source.scripts?.loaded` before the first step; the loop restart costs one 76–505 ms rebuild.
+- B567: use the action sequences in `docs/reference/spikes/b565/README.md`; the pet and trader clips need a camera that follows the first mob; the Rules card's caption cannot say "Dropped 3 Lucky Coin" (`World.dropItem` is only in Minecraft).

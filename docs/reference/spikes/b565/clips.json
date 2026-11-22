@@ -1,0 +1,3140 @@
+[
+  {
+    "id": "wood-set",
+    "exampleId": "example_msm_wood_set",
+    "ground": {
+      "kind": "quick",
+      "options": {
+        "shape": "flat",
+        "layers": [
+          {
+            "block": "minecraft:grass_block[snowy=false]",
+            "thickness": 1
+          },
+          {
+            "block": "minecraft:dirt",
+            "thickness": 3
+          },
+          {
+            "block": "minecraft:stone",
+            "thickness": 4
+          },
+          {
+            "block": "minecraft:bedrock",
+            "thickness": 1
+          }
+        ],
+        "water": false,
+        "waterLevel": 4,
+        "trees": "few",
+        "seed": 11
+      }
+    },
+    "player": {
+      "x": 23.5,
+      "y": 9,
+      "z": 29.5
+    },
+    "setup": [
+      {
+        "pos": {
+          "x": 21,
+          "y": 9,
+          "z": 21
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 10,
+          "z": 21
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 11,
+          "z": 21
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 9,
+          "z": 21
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 10,
+          "z": 21
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 11,
+          "z": 21
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 9,
+          "z": 25
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 10,
+          "z": 25
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 11,
+          "z": 25
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 9,
+          "z": 25
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 10,
+          "z": 25
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 11,
+          "z": 25
+        },
+        "state": "./elm_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 9,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 9,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 9,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 9,
+          "z": 22
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 9,
+          "z": 22
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 9,
+          "z": 23
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 9,
+          "z": 23
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 9,
+          "z": 24
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 9,
+          "z": 24
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 10,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 10,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 10,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 10,
+          "z": 22
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 10,
+          "z": 22
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 10,
+          "z": 23
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 10,
+          "z": 23
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 10,
+          "z": 24
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 10,
+          "z": 24
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 11,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 11,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 11,
+          "z": 21
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 11,
+          "z": 22
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 11,
+          "z": 22
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 11,
+          "z": 23
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 11,
+          "z": 23
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 11,
+          "z": 24
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 11,
+          "z": 24
+        },
+        "state": "./elm_planks"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 12,
+          "z": 21
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 12,
+          "z": 22
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 12,
+          "z": 23
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 12,
+          "z": 24
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 12,
+          "z": 25
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 12,
+          "z": 21
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 12,
+          "z": 22
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 12,
+          "z": 23
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 12,
+          "z": 24
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 12,
+          "z": 25
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 12,
+          "z": 21
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 12,
+          "z": 22
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 12,
+          "z": 23
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 12,
+          "z": 24
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 12,
+          "z": 25
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 12,
+          "z": 21
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 12,
+          "z": 22
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 12,
+          "z": 23
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 12,
+          "z": 24
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 12,
+          "z": 25
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 12,
+          "z": 21
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 12,
+          "z": 22
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 12,
+          "z": 23
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 12,
+          "z": 24
+        },
+        "state": "./elm_slab[type=bottom]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 12,
+          "z": 25
+        },
+        "state": "./elm_slab[type=bottom]"
+      }
+    ],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 30
+        }
+      },
+      {
+        "tick": 10,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 8,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./elm_planks"
+        }
+      },
+      {
+        "tick": 18,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 24,
+            "y": 8,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./elm_planks"
+        }
+      },
+      {
+        "tick": 26,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 9,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./elm_planks"
+        }
+      },
+      {
+        "tick": 34,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 24,
+            "y": 9,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./elm_planks"
+        }
+      },
+      {
+        "tick": 42,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 10,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./elm_slab"
+        }
+      },
+      {
+        "tick": 50,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 24,
+            "y": 10,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./elm_slab"
+        }
+      },
+      {
+        "tick": 60,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 23,
+            "y": 8,
+            "z": 25
+          },
+          "face": "up",
+          "item": "./elm_door"
+        }
+      },
+      {
+        "tick": 100,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 23,
+            "y": 9,
+            "z": 25
+          },
+          "face": "south"
+        }
+      },
+      {
+        "tick": 150,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 23,
+            "y": 9,
+            "z": 25
+          },
+          "face": "south"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 23.5,
+          "y": 11.5,
+          "z": 33
+        },
+        "yaw": 180,
+        "pitch": 12
+      },
+      {
+        "tick": 120,
+        "eye": {
+          "x": 30.5,
+          "y": 12.5,
+          "z": 31.5
+        },
+        "yaw": 150,
+        "pitch": 15
+      },
+      {
+        "tick": 200,
+        "eye": {
+          "x": 31.5,
+          "y": 13,
+          "z": 27.5
+        },
+        "yaw": 120,
+        "pitch": 18
+      }
+    ],
+    "length": 200,
+    "stillAt": 120,
+    "expect": []
+  },
+  {
+    "id": "pet",
+    "exampleId": "example_msm_tameable_pet",
+    "ground": {
+      "kind": "quick",
+      "options": {
+        "shape": "flat",
+        "layers": [
+          {
+            "block": "minecraft:grass_block[snowy=false]",
+            "thickness": 1
+          },
+          {
+            "block": "minecraft:dirt",
+            "thickness": 3
+          },
+          {
+            "block": "minecraft:stone",
+            "thickness": 4
+          },
+          {
+            "block": "minecraft:bedrock",
+            "thickness": 1
+          }
+        ],
+        "water": false,
+        "waterLevel": 4,
+        "trees": "few",
+        "seed": 11
+      }
+    },
+    "player": {
+      "x": 36.5,
+      "y": 9,
+      "z": 36.5
+    },
+    "setup": [],
+    "steps": [
+      {
+        "tick": 5,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 23,
+            "y": 8,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./ember_fox_spawn_egg"
+        }
+      },
+      {
+        "tick": 25,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 26,
+            "y": 8,
+            "z": 25
+          },
+          "face": "up",
+          "item": "./ember_fox_spawn_egg"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 24.5,
+          "y": 11.5,
+          "z": 31
+        },
+        "yaw": 180,
+        "pitch": 20
+      },
+      {
+        "tick": 200,
+        "eye": {
+          "x": 28.5,
+          "y": 11.5,
+          "z": 31
+        },
+        "yaw": 200,
+        "pitch": 20
+      }
+    ],
+    "length": 200,
+    "stillAt": 100,
+    "expect": []
+  },
+  {
+    "id": "crop",
+    "exampleId": "example_msm_crop",
+    "ground": {
+      "kind": "flat"
+    },
+    "player": {
+      "x": 24.5,
+      "y": 4,
+      "z": 30.5
+    },
+    "setup": [
+      {
+        "pos": {
+          "x": 20,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 20,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 26,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 26,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 27,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 27,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      },
+      {
+        "pos": {
+          "x": 28,
+          "y": 3,
+          "z": 24
+        },
+        "state": "minecraft:farmland[moisture=7]"
+      },
+      {
+        "pos": {
+          "x": 28,
+          "y": 3,
+          "z": 25
+        },
+        "state": "minecraft:water[level=0]"
+      }
+    ],
+    "steps": [
+      {
+        "tick": 5,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 20,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion"
+        }
+      },
+      {
+        "tick": 9,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 21,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 13,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 22,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 17,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 23,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 21,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 24,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 25,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 25,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 29,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 26,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 33,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 27,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 37,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 28,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./onion_crop"
+        }
+      },
+      {
+        "tick": 50,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 52,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 54,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 56,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 58,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 60,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 62,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 64,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 70,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 72,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 74,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 76,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 78,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 80,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 82,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 84,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 90,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 92,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 94,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 96,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 98,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 100,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 102,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 104,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 110,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 112,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 114,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 116,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 118,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 120,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 122,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 124,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 130,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 132,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 134,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 136,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 138,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 140,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 142,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 144,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 150,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 152,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 154,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 156,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 158,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 160,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 162,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 164,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 170,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 21,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 172,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 174,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 23,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 176,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 178,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 180,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 26,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 182,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 27,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 184,
+        "step": {
+          "type": "tool",
+          "tool": "grow",
+          "pos": {
+            "x": 28,
+            "y": 4,
+            "z": 24
+          }
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 18.5,
+          "y": 6,
+          "z": 28.5
+        },
+        "yaw": 200,
+        "pitch": 25
+      },
+      {
+        "tick": 220,
+        "eye": {
+          "x": 28.5,
+          "y": 6,
+          "z": 28.5
+        },
+        "yaw": 160,
+        "pitch": 25
+      }
+    ],
+    "length": 220,
+    "stillAt": 200,
+    "expect": []
+  },
+  {
+    "id": "machine",
+    "exampleId": "example_msm_ore_crusher",
+    "ground": {
+      "kind": "flat"
+    },
+    "player": {
+      "x": 24.5,
+      "y": 4,
+      "z": 30.5
+    },
+    "setup": [
+      {
+        "pos": {
+          "x": 24,
+          "y": 5,
+          "z": 24
+        },
+        "state": "minecraft:hopper[facing=down,enabled=true]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 4,
+          "z": 24
+        },
+        "state": "minecraft:chest[facing=south,type=single,waterlogged=false]"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 4,
+          "z": 24
+        },
+        "state": "minecraft:oak_log[axis=y]"
+      }
+    ],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 20
+        }
+      },
+      {
+        "tick": 10,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 24,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./ore_crusher"
+        }
+      },
+      {
+        "tick": 50,
+        "step": {
+          "type": "tool",
+          "tool": "power",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 60,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          },
+          "state": "./ore_crusher[facing=south,lit=true]"
+        }
+      },
+      {
+        "tick": 180,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          },
+          "state": "./ore_crusher[facing=south,lit=false]"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 22.5,
+          "y": 6.5,
+          "z": 28.5
+        },
+        "yaw": 200,
+        "pitch": 22
+      },
+      {
+        "tick": 200,
+        "eye": {
+          "x": 26.5,
+          "y": 6.5,
+          "z": 28.5
+        },
+        "yaw": 160,
+        "pitch": 22
+      }
+    ],
+    "length": 200,
+    "stillAt": 100,
+    "expect": []
+  },
+  {
+    "id": "vehicle",
+    "exampleId": "example_msm_vehicle",
+    "ground": {
+      "kind": "flat"
+    },
+    "player": {
+      "x": 24.5,
+      "y": 4,
+      "z": 34.5
+    },
+    "setup": [],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 30
+        }
+      },
+      {
+        "tick": 5,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 24,
+            "y": 3,
+            "z": 30
+          },
+          "face": "up",
+          "item": "./tank"
+        }
+      },
+      {
+        "tick": 20,
+        "step": {
+          "type": "useVehicle",
+          "index": 0
+        }
+      },
+      {
+        "tick": 30,
+        "step": {
+          "type": "drive",
+          "forward": 1,
+          "strafe": 0
+        }
+      },
+      {
+        "tick": 75,
+        "step": {
+          "type": "drive",
+          "forward": 1,
+          "strafe": 1
+        }
+      },
+      {
+        "tick": 105,
+        "step": {
+          "type": "drive",
+          "forward": 1,
+          "strafe": 0
+        }
+      },
+      {
+        "tick": 135,
+        "step": {
+          "type": "drive",
+          "forward": 0,
+          "strafe": 0
+        }
+      }
+    ],
+    "camera": "driver",
+    "length": 220,
+    "stillAt": 100,
+    "expect": []
+  },
+  {
+    "id": "portal",
+    "exampleId": "example_msm_sky_portal",
+    "ground": {
+      "kind": "flat"
+    },
+    "player": {
+      "x": 23.5,
+      "y": 4,
+      "z": 29.5
+    },
+    "setup": [],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 0
+        }
+      },
+      {
+        "tick": 5,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 10,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 23,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 15,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 24,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 20,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 25,
+            "y": 3,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 25,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 30,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 25,
+            "y": 4,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 35,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 5,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 40,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 25,
+            "y": 5,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 45,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 6,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 50,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 25,
+            "y": 6,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 55,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 7,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 60,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 25,
+            "y": 7,
+            "z": 24
+          },
+          "face": "up",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 65,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 22,
+            "y": 8,
+            "z": 24
+          },
+          "face": "east",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 70,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 23,
+            "y": 8,
+            "z": 24
+          },
+          "face": "east",
+          "block": "./sky_gate_frame"
+        }
+      },
+      {
+        "tick": 75,
+        "step": {
+          "type": "place",
+          "pos": {
+            "x": 20,
+            "y": 3,
+            "z": 25
+          },
+          "face": "up",
+          "block": "./sky_gate_beacon"
+        }
+      },
+      {
+        "tick": 85,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 20,
+            "y": 4,
+            "z": 25
+          },
+          "face": "up"
+        }
+      },
+      {
+        "tick": 87,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 23,
+            "y": 5,
+            "z": 24
+          },
+          "state": "./sky_gate[axis=x]"
+        }
+      },
+      {
+        "tick": 87,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 24,
+            "y": 5,
+            "z": 24
+          },
+          "state": "./sky_gate[axis=x]"
+        }
+      },
+      {
+        "tick": 87,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 23,
+            "y": 6,
+            "z": 24
+          },
+          "state": "./sky_gate[axis=x]"
+        }
+      },
+      {
+        "tick": 87,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 24,
+            "y": 6,
+            "z": 24
+          },
+          "state": "./sky_gate[axis=x]"
+        }
+      },
+      {
+        "tick": 87,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 23,
+            "y": 7,
+            "z": 24
+          },
+          "state": "./sky_gate[axis=x]"
+        }
+      },
+      {
+        "tick": 87,
+        "step": {
+          "type": "set",
+          "pos": {
+            "x": 24,
+            "y": 7,
+            "z": 24
+          },
+          "state": "./sky_gate[axis=x]"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 23.5,
+          "y": 7,
+          "z": 32
+        },
+        "yaw": 180,
+        "pitch": 8
+      },
+      {
+        "tick": 220,
+        "eye": {
+          "x": 27.5,
+          "y": 7,
+          "z": 31
+        },
+        "yaw": 155,
+        "pitch": 8
+      }
+    ],
+    "length": 220,
+    "stillAt": 200,
+    "expect": []
+  },
+  {
+    "id": "sparkles",
+    "exampleId": "example_msm_firefly_jar",
+    "ground": {
+      "kind": "flat"
+    },
+    "player": {
+      "x": 24.5,
+      "y": 4,
+      "z": 26.5
+    },
+    "setup": [
+      {
+        "pos": {
+          "x": 21,
+          "y": 4,
+          "z": 24
+        },
+        "state": "minecraft:oak_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 21,
+          "y": 5,
+          "z": 24
+        },
+        "state": "./firefly_jar"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 4,
+          "z": 24
+        },
+        "state": "minecraft:oak_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 5,
+          "z": 24
+        },
+        "state": "./firefly_jar"
+      },
+      {
+        "pos": {
+          "x": 27,
+          "y": 4,
+          "z": 24
+        },
+        "state": "minecraft:oak_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 27,
+          "y": 5,
+          "z": 24
+        },
+        "state": "./firefly_jar"
+      }
+    ],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 0
+        }
+      },
+      {
+        "tick": 120,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 24,
+            "y": 5,
+            "z": 24
+          },
+          "face": "south",
+          "item": "./spark_wand"
+        }
+      },
+      {
+        "tick": 170,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 24,
+            "y": 5,
+            "z": 24
+          },
+          "face": "south",
+          "item": "./spark_wand"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 24.5,
+          "y": 6.5,
+          "z": 31
+        },
+        "yaw": 180,
+        "pitch": 10
+      },
+      {
+        "tick": 200,
+        "eye": {
+          "x": 24.5,
+          "y": 6.2,
+          "z": 30
+        },
+        "yaw": 180,
+        "pitch": 8
+      }
+    ],
+    "length": 200,
+    "stillAt": 130,
+    "expect": []
+  },
+  {
+    "id": "trader",
+    "exampleId": "example_msm_roadside_merchant",
+    "ground": {
+      "kind": "quick",
+      "options": {
+        "shape": "flat",
+        "layers": [
+          {
+            "block": "minecraft:grass_block[snowy=false]",
+            "thickness": 1
+          },
+          {
+            "block": "minecraft:dirt",
+            "thickness": 3
+          },
+          {
+            "block": "minecraft:stone",
+            "thickness": 4
+          },
+          {
+            "block": "minecraft:bedrock",
+            "thickness": 1
+          }
+        ],
+        "water": false,
+        "waterLevel": 4,
+        "trees": "few",
+        "seed": 11
+      }
+    },
+    "player": {
+      "x": 36.5,
+      "y": 9,
+      "z": 36.5
+    },
+    "setup": [
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 14
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 14
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 15
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 15
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 16
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 16
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 17
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 17
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 18
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 18
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 19
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 19
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 20
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 20
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 21
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 21
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 22
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 22
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 23
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 23
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 24
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 24
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 25
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 25
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 26
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 26
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 27
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 27
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 28
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 28
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 29
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 29
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 30
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 30
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 31
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 31
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 32
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 32
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 33
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 33
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 22,
+          "y": 8,
+          "z": 34
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 23,
+          "y": 8,
+          "z": 34
+        },
+        "state": "minecraft:dirt_path"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 9,
+          "z": 24
+        },
+        "state": "minecraft:oak_log[axis=y]"
+      },
+      {
+        "pos": {
+          "x": 25,
+          "y": 10,
+          "z": 24
+        },
+        "state": "minecraft:bell[attachment=floor,facing=south,powered=false]"
+      }
+    ],
+    "steps": [
+      {
+        "tick": 5,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 24,
+            "y": 8,
+            "z": 25
+          },
+          "face": "up",
+          "item": "./roadside_merchant_spawn_egg"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 23,
+          "y": 11.5,
+          "z": 31
+        },
+        "yaw": 175,
+        "pitch": 15
+      },
+      {
+        "tick": 200,
+        "eye": {
+          "x": 26,
+          "y": 11.5,
+          "z": 31
+        },
+        "yaw": 185,
+        "pitch": 15
+      }
+    ],
+    "length": 200,
+    "stillAt": 100,
+    "expect": []
+  },
+  {
+    "id": "fluid",
+    "exampleId": "example_msm_fluid",
+    "ground": {
+      "kind": "quick",
+      "options": {
+        "shape": "flat",
+        "layers": [
+          {
+            "block": "minecraft:sand",
+            "thickness": 3
+          },
+          {
+            "block": "minecraft:sandstone",
+            "thickness": 3
+          },
+          {
+            "block": "minecraft:stone",
+            "thickness": 2
+          },
+          {
+            "block": "minecraft:bedrock",
+            "thickness": 1
+          }
+        ],
+        "water": false,
+        "waterLevel": 4,
+        "trees": "none",
+        "seed": 1
+      }
+    },
+    "player": {
+      "x": 24.5,
+      "y": 9,
+      "z": 29.5
+    },
+    "setup": [],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 40
+        }
+      },
+      {
+        "tick": 5,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 23,
+            "y": 8,
+            "z": 23
+          }
+        }
+      },
+      {
+        "tick": 9,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 23,
+            "y": 8,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 13,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 23,
+            "y": 8,
+            "z": 25
+          }
+        }
+      },
+      {
+        "tick": 17,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 24,
+            "y": 8,
+            "z": 23
+          }
+        }
+      },
+      {
+        "tick": 21,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 24,
+            "y": 8,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 25,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 24,
+            "y": 8,
+            "z": 25
+          }
+        }
+      },
+      {
+        "tick": 29,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 25,
+            "y": 8,
+            "z": 23
+          }
+        }
+      },
+      {
+        "tick": 33,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 25,
+            "y": 8,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 37,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 25,
+            "y": 8,
+            "z": 25
+          }
+        }
+      },
+      {
+        "tick": 51,
+        "step": {
+          "type": "use",
+          "pos": {
+            "x": 24,
+            "y": 7,
+            "z": 24
+          },
+          "face": "up",
+          "item": "./oil_bucket"
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 24.5,
+          "y": 12.5,
+          "z": 29.5
+        },
+        "yaw": 180,
+        "pitch": 35
+      },
+      {
+        "tick": 220,
+        "eye": {
+          "x": 27.5,
+          "y": 12.5,
+          "z": 28.5
+        },
+        "yaw": 150,
+        "pitch": 35
+      }
+    ],
+    "length": 220,
+    "stillAt": 160,
+    "expect": []
+  },
+  {
+    "id": "rules",
+    "exampleId": "example_msm_rules",
+    "ground": {
+      "kind": "flat"
+    },
+    "player": {
+      "x": 24.5,
+      "y": 4,
+      "z": 28.5
+    },
+    "setup": [
+      {
+        "pos": {
+          "x": 22,
+          "y": 4,
+          "z": 24
+        },
+        "state": "./lucky_block"
+      },
+      {
+        "pos": {
+          "x": 24,
+          "y": 4,
+          "z": 24
+        },
+        "state": "./lucky_block"
+      },
+      {
+        "pos": {
+          "x": 26,
+          "y": 4,
+          "z": 24
+        },
+        "state": "./lucky_block"
+      }
+    ],
+    "steps": [
+      {
+        "tick": 1,
+        "step": {
+          "type": "look",
+          "yaw": 180,
+          "pitch": 20
+        }
+      },
+      {
+        "tick": 60,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 24,
+            "y": 4,
+            "z": 24
+          }
+        }
+      },
+      {
+        "tick": 140,
+        "step": {
+          "type": "break",
+          "pos": {
+            "x": 22,
+            "y": 4,
+            "z": 24
+          }
+        }
+      }
+    ],
+    "camera": [
+      {
+        "tick": 0,
+        "eye": {
+          "x": 24.5,
+          "y": 6.5,
+          "z": 30
+        },
+        "yaw": 180,
+        "pitch": 18
+      },
+      {
+        "tick": 200,
+        "eye": {
+          "x": 25.5,
+          "y": 6.5,
+          "z": 29.5
+        },
+        "yaw": 170,
+        "pitch": 18
+      }
+    ],
+    "length": 200,
+    "stillAt": 80,
+    "expect": []
+  }
+]
