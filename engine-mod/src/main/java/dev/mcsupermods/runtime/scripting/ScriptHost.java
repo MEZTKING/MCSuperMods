@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -50,6 +51,8 @@ public final class ScriptHost {
     private static final int RECENT_LOGS = 1024;
 
     private static volatile ScriptHost current;
+    /** Sees every {@code msm.log} line of every host; set only by GameTests ({@link #observeLogs}), null otherwise. */
+    private static volatile BiConsumer<ScriptHost, String> logObserver;
     /** {@code run_script} handlers logged as undefined while no host runs (once per handler id). */
     private static final Set<Identifier> UNDEFINED_WITHOUT_HOST = ConcurrentHashMap.newKeySet();
 
@@ -617,6 +620,19 @@ public final class ScriptHost {
             recentLogs.removeFirst();
         }
         recentLogs.addLast(line);
+        BiConsumer<ScriptHost, String> observer = logObserver;
+        if (observer != null) {
+            observer.accept(this, line);
+        }
+    }
+
+    /**
+     * Test hook: {@code observer} is called with the host and each {@code msm.log} line as {@link #recentLogs()} keeps
+     * it ({@code <script id>: <text>}), on the thread that logged it. The GameTests set it at mod initialisation to keep
+     * every line from server start, which the bounded {@link #recentLogs()} cannot promise; the runtime never sets it.
+     */
+    public static void observeLogs(BiConsumer<ScriptHost, String> observer) {
+        logObserver = observer;
     }
 
     // ---- report and diagnostics ------------------------------------------------------------------------

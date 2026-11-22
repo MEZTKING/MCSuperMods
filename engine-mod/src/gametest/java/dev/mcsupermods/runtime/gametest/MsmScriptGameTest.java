@@ -159,7 +159,7 @@ public class MsmScriptGameTest {
     }
 
     private static long logged(ScriptHost host, String line) {
-        return host.recentLogs().stream().filter(line::equals).count();
+        return ScriptLogs.of(host).stream().filter(line::equals).count();
     }
 
     private static void assertLogged(GameTestHelper helper, ScriptHost host, String line) {
@@ -167,7 +167,7 @@ public class MsmScriptGameTest {
     }
 
     private static List<String> tail(ScriptHost host) {
-        List<String> logs = host.recentLogs();
+        List<String> logs = ScriptLogs.of(host);
         return logs.subList(Math.max(0, logs.size() - 12), logs.size());
     }
 
@@ -269,7 +269,7 @@ public class MsmScriptGameTest {
         Pattern line = Pattern.compile(Pattern.quote(EVENTS) + "server\\.tick (\\d+) at (\\d+) in minecraft:overworld");
         helper.runAfterDelay(45, () -> {
             List<long[]> seen = new ArrayList<>();
-            for (String log : host.recentLogs()) {
+            for (String log : ScriptLogs.of(host)) {
                 Matcher m = line.matcher(log);
                 if (m.matches() && Long.parseLong(m.group(2)) >= start) {
                     seen.add(new long[] {Long.parseLong(m.group(1)), Long.parseLong(m.group(2))});
@@ -845,7 +845,7 @@ public class MsmScriptGameTest {
         ScriptHost host = host(helper);
         act(host, "msm_test:data_storage_limit", EventContext.forBlock(helper.getLevel(), helper.absolutePos(AT), null));
         String prefix = DATA + "storage limit RangeError: msm.storage of namespace msm_test would hold ";
-        helper.assertTrue(host.recentLogs().stream().anyMatch(l -> l.startsWith(prefix)
+        helper.assertTrue(ScriptLogs.of(host).stream().anyMatch(l -> l.startsWith(prefix)
                 && l.endsWith(" bytes, over its limit of 1048576; the old value stays | small")), "not logged: " + prefix + "; recent: " + tail(host));
         helper.assertValueEqual(String.valueOf(storage(helper).get("msm_test", "huge")), "\"small\"", "stored value");
         assertNoDataErrors(helper, host);
@@ -1215,7 +1215,7 @@ public class MsmScriptGameTest {
     private static List<Long> playerTicks(ScriptHost host, String series, String name, long since) {
         Pattern line = Pattern.compile(Pattern.quote(PLAYER_EVENTS + "player.tick/" + series + " " + name + " at ") + "(\\d+)");
         List<Long> out = new ArrayList<>();
-        for (String log : host.recentLogs()) {
+        for (String log : ScriptLogs.of(host)) {
             Matcher m = line.matcher(log);
             if (m.matches() && Long.parseLong(m.group(1)) >= since) {
                 out.add(Long.parseLong(m.group(1)));
@@ -1335,7 +1335,7 @@ public class MsmScriptGameTest {
                 + Pattern.quote(" source minecraft:player_attack attacker minecraft:player direct minecraft:player health ")
                 + "([0-9.]+)");
         double[] seen = null;
-        for (String log : host.recentLogs()) {
+        for (String log : ScriptLogs.of(host)) {
             Matcher m = line.matcher(log);
             if (m.matches()) {
                 seen = new double[] {Double.parseDouble(m.group(1)), Double.parseDouble(m.group(2))};
@@ -1356,7 +1356,7 @@ public class MsmScriptGameTest {
     }
 
     private static List<String> startingWith(ScriptHost host, String prefix) {
-        return host.recentLogs().stream().filter(l -> l.startsWith(prefix)).toList();
+        return ScriptLogs.of(host).stream().filter(l -> l.startsWith(prefix)).toList();
     }
 
     /**
@@ -1378,7 +1378,7 @@ public class MsmScriptGameTest {
         String damagedLine = PLAYER_EVENTS + "entity.damaged msm-ev-dmg-kill amount 5" + tail;
         List<String> killLines = startingWith(host, PLAYER_EVENTS + "entity.damaged msm-ev-dmg-kill ");
         helper.assertValueEqual(killLines, List.of(damagedLine), "entity.damaged for the killing blow");
-        List<String> logs = host.recentLogs();
+        List<String> logs = ScriptLogs.of(host);
         int damagedAt = logs.indexOf(damagedLine);
         int deathAt = logs.indexOf(PLAYER_EVENTS + "entity.death msm-ev-dmg-kill");
         helper.assertTrue(damagedAt >= 0 && deathAt > damagedAt, "entity.damaged at " + damagedAt + ", entity.death at " + deathAt);

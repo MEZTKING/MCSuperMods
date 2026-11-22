@@ -50,7 +50,13 @@ function biomeSourceType(target: string, id: string): string {
   return (json.generator?.biome_source?.type ?? '').replace(/^minecraft:/, '');
 }
 
-describe('worldgen parity fixture (ADR 0119 D13)', () => {
+// Heavy: each dimension's test makes three worlds (one per seed) and samples 200 biome cells and
+// 100 whole columns in each; the files and expectations are read once per target, so the time is
+// the engine's own work. `markers` evaluates `old_blended_noise` outside `interpolated` (every block)
+// and `upscale_cubic` reads 64 corners per block: 2.3 s and 1.5 s locally under load 3.7 on 4 cores
+// (2026-11-22), 7.3 s and 5.3 s on CI's runner, past the default 5 s. An explicit timeout, never a
+// retry, sized to that worst case with room for a slower runner.
+describe('worldgen parity fixture (ADR 0119 D13)', { timeout: 30_000 }, () => {
   it('is format 1 with three seeds', () => {
     expect(expectations.format).toBe(1);
     expect(expectations.seeds).toHaveLength(3);

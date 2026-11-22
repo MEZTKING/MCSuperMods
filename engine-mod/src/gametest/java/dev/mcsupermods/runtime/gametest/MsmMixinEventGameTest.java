@@ -61,7 +61,7 @@ public class MsmMixinEventGameTest {
     /** Every api16.js log line that starts with {@code start}, without the script prefix. */
     private static List<String> lines(GameTestHelper helper, String start) {
         String prefix = "msm_test:api16: " + start;
-        return host(helper).recentLogs().stream().filter(l -> l.startsWith(prefix)).map(l -> l.substring("msm_test:api16: ".length()))
+        return ScriptLogs.of(host(helper)).stream().filter(l -> l.startsWith(prefix)).map(l -> l.substring("msm_test:api16: ".length()))
                 .toList();
     }
 

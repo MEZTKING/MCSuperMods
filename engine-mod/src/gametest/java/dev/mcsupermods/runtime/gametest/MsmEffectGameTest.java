@@ -235,7 +235,7 @@ public class MsmEffectGameTest {
         cow.addEffect(new MobEffectInstance(scripted, 400, 1));
         String line = "msm_test:effects: probe minecraft:cow same=true has=true level=2 speed=0 removed=true again=false after=false";
         helper.runAfterDelay(15, () -> {
-            helper.assertTrue(host.recentLogs().contains(line), "not logged: '" + line + "'; recent: " + host.recentLogs()
+            helper.assertTrue(ScriptLogs.of(host).contains(line), "not logged: '" + line + "'; recent: " + ScriptLogs.of(host)
                     + "; errors: " + host.handlerErrors());
             helper.assertFalse(cow.hasEffect(scripted), "removeEffect left the effect");
             cow.discard();

@@ -61,7 +61,7 @@ public class MsmScriptApi17GameTest {
     static List<String> lines(GameTestHelper helper, String start, ServerPlayer player) {
         String prefix = SCRIPT + start + player.getName().getString() + " ";
         List<String> out = new ArrayList<>();
-        for (String line : host(helper).recentLogs()) {
+        for (String line : ScriptLogs.of(host(helper))) {
             if (line.startsWith(prefix)) {
                 out.add(line.substring(prefix.length()));
             }
@@ -71,7 +71,7 @@ public class MsmScriptApi17GameTest {
 
     /** The last api17.js log line that starts with {@code start}, without the prefix and start, or null. */
     static String logged(GameTestHelper helper, String start) {
-        List<String> logs = host(helper).recentLogs();
+        List<String> logs = ScriptLogs.of(host(helper));
         for (int i = logs.size() - 1; i >= 0; i--) {
             if (logs.get(i).startsWith(SCRIPT + start)) {
                 return logs.get(i).substring(SCRIPT.length() + start.length());

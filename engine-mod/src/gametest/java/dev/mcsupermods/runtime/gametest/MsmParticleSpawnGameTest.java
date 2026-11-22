@@ -323,7 +323,7 @@ public class MsmParticleSpawnGameTest {
         ScriptHost host = host(helper);
         host.action(id("particles"), id("particles"), id("particles_errors"),
                 EventContext.forBlock(helper.getLevel(), helper.absolutePos(AT), null));
-        List<String> logs = host.recentLogs();
+        List<String> logs = ScriptLogs.of(host);
         String line = null;
         for (int i = logs.size() - 1; i >= 0 && line == null; i--) {
             if (logs.get(i).startsWith(LOG + "errors ")) {

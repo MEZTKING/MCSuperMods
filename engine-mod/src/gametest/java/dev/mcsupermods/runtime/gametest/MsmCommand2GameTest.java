@@ -296,7 +296,7 @@ public class MsmCommand2GameTest {
             ScriptHost host = ScriptHost.current();
             helper.assertTrue(host != null, "no ScriptHost");
             String prefix = "msm_test:api16: command msm_test:cmd_types msm_types " + p.getStringUUID() + " ";
-            String line = host.recentLogs().stream().filter(l -> l.startsWith(prefix)).reduce((x, y) -> y).orElse(null);
+            String line = ScriptLogs.of(host).stream().filter(l -> l.startsWith(prefix)).reduce((x, y) -> y).orElse(null);
             eq(helper, line == null ? null : line.substring(prefix.length()), "{\"dim\":\"minecraft:the_nether\",\"time\":400,\"colour\":\"red\","
                     + "\"hex\":\"#FF8800\",\"rot\":[90,0],\"biome\":\"#minecraft:is_forest\",\"mode\":\"creative\",\"range\":{\"min\":2}} true",
                     "the command event's args");

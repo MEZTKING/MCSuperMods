@@ -246,8 +246,8 @@ public class MsmDevModeGameTest {
             helper.assertFalse(dev.scripts().stream().anyMatch(s -> s.id().getNamespace().equals("msm_test_b") && s.id().getPath().equals("outside")),
                     "a script outside the session was read");
             ScriptHost host = ScriptHost.detached(server);
-            helper.assertTrue(host.recentLogs().contains("msm_test:util: util from the dev overlay"), "logs: " + host.recentLogs());
-            helper.assertTrue(host.recentLogs().contains("msm_test:util: util evaluated"), "logs: " + host.recentLogs());
+            helper.assertTrue(ScriptLogs.of(host).contains("msm_test:util: util from the dev overlay"), "logs: " + ScriptLogs.of(host));
+            helper.assertTrue(ScriptLogs.of(host).contains("msm_test:util: util evaluated"), "logs: " + ScriptLogs.of(host));
             helper.assertValueEqual(snapshot(), before, "dev folder after the scans");
         } finally {
             deleteTree(ROOT.resolve("overlay"));

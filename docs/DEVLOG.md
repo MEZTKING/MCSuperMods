@@ -8311,3 +8311,16 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 - `TryItView.tsx` (not in the brief's list) gains the hook call, the `generated` branch of `applyGround`, the strip's line, the panel and the picker prop (32 lines); `packages/sim/src/grounds/index.ts` exports the new module. `local-source.ts` is unchanged: stages and edits go in through `SimWorld.set` with the catalogue's states.
 
 **Next:** B585 (`terrain/files.ts`: `tags/block`, biome additions and the feature facts for the ground's features), B587 (**Walk in it** on the map: set the view's seed and place and open Try it on this ground), B588 (clip ground `generated`), B589 (e2e over the `tryit-generated-*` test ids).
+
+## 2026-11-22 — executor — CI fixes: terrain parity timeout, evicted script log lines
+
+**What:**
+- `@msm/terrain` `test/parity.test.ts`: `markers` (both targets) and `upscale_cubic` (26.4) passed the default 5 s on CI's runner (7.3 s, 6.0 s, 5.3 s). Cause: real engine work, not the scorer. The lowered files and `expectations.json` are already read once per target; each dimension's test makes three worlds (one per seed, which it must) and samples 200 biome cells and 100 whole columns in each. `markers` evaluates `old_blended_noise` outside `interpolated` (every block), `upscale_cubic` reads 64 corners per block (profile: `Upscale.compute`/`corner` 36 %, Perlin sampling 30 %). Locally under load 3.7 on 4 cores: `markers` 2.3 s and 1.5 s, `upscale_cubic` 1.5 s, the others 0.1 to 1.1 s. Hoisting the corner-column lookups in `Upscale.compute` measured no gain and was reverted. The describe now has an explicit `{ timeout: 30_000 }` with the measurements in a comment, as `test/vanilla.test.ts` does.
+- engine-mod GameTests: lines logged once at script load or server start (sandbox, regex, require, `server.started`, `schedule(5) at load`) were read from `ScriptHost.recentLogs()`, a 1024-line ring; one GameTest run logs about 5,300 script lines (mostly `events.js`'s `server.tick` every 20 ticks and `player.join`), so whether they were still there depended on test order and timing (26.4 failed five tests on CI). `ScriptHost` gains a test hook `observeLogs(BiConsumer<ScriptHost, String>)` called from `remember` (null in production; the ring is unchanged); the GameTest mod's new `main` entrypoint `gametest/ScriptLogs` installs it at mod initialisation and keeps every line per host, never dropped. Every `recentLogs()` reader in the GameTests (`MsmScriptGameTest`, `MsmEffectGameTest`, `MsmContainerScriptGameTest`, `MsmDevModeGameTest`, `MsmParticleSpawnGameTest`, `MsmMixinEventGameTest`, `MsmCommand2GameTest`, `MsmScriptApi14`/`15`/`16`/`17GameTest`) reads `ScriptLogs.of(host)` instead. The engine-mod `CLAUDE.md` trap about the evicted log now points there.
+- Verified: `./gradlew build` 26.3, `-Pmc=26.4` and `-PwithoutGeckolib`, each "All 843 required tests passed"; `pnpm --filter @msm/terrain test` 139 passed, 6 skipped; `pnpm lint`; `pnpm typecheck`.
+
+**Decisions:**
+- Per host, as `recentLogs()` keeps lines (detached hosts have their own record), so counts such as "util evaluated once" keep their meaning. A `WeakHashMap` lets finished detached hosts go.
+- The `events` test script's tick logging is left as it is: the record removes the dependence on eviction, and `serverTickRunsEvery20Ticks` reads those lines.
+
+**Next:** none from this fix.

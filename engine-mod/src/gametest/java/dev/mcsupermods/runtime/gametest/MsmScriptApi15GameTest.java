@@ -67,7 +67,7 @@ public class MsmScriptApi15GameTest {
 
     /** The last {@code msm.log} line of api15.js that starts with {@code start}, without the script prefix. */
     private static String logged(GameTestHelper helper, String start) {
-        List<String> logs = host(helper).recentLogs();
+        List<String> logs = ScriptLogs.of(host(helper));
         for (int i = logs.size() - 1; i >= 0; i--) {
             if (logs.get(i).startsWith(SCRIPT + start)) {
                 return logs.get(i).substring(SCRIPT.length() + start.length());

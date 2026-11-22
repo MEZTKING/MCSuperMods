@@ -7,6 +7,9 @@
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
+    "main": [
+      "dev.mcsupermods.runtime.gametest.ScriptLogs"
+    ],
     "fabric-gametest": [
       "dev.mcsupermods.runtime.gametest.MsmSpikeGameTest",
       "dev.mcsupermods.runtime.gametest.MsmRuntimeGameTest",

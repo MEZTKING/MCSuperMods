@@ -53,7 +53,7 @@ public class MsmContainerScriptGameTest {
 
     /** The last line the script logged that starts with {@code prefix}, without the script's name. */
     private static String last(GameTestHelper helper, ScriptHost host, String prefix) {
-        List<String> logs = host.recentLogs();
+        List<String> logs = ScriptLogs.of(host);
         for (int i = logs.size() - 1; i >= 0; i--) {
             if (logs.get(i).startsWith(LOG + prefix)) {
                 return logs.get(i).substring(LOG.length());
