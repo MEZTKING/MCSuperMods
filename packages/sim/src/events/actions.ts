@@ -11,7 +11,7 @@
  * | `apply_effect`, `damage`, `heal` | a log line and a chip; what they do is said once |
  * | `launch` | pushes the player or the mob by its vector, with a chip |
  * | `show_hud`, `hide_hud`, `set_hud` | the player's HUD in the area (B429), drawn by the view |
- * | `light_portal`, `run_function`, `explode` | "Only in Minecraft" |
+ * | `light_portal`, `open_dialog`, `run_function`, `explode` | "Only in Minecraft" |
  * | `run_script` | the handler in the area's scripts when they run (B400), else "Only in Minecraft" |
  *
  * Whom an action affects follows the runtime's `self` and `other` (`EffectTarget`): `self` is
@@ -50,6 +50,7 @@ export const SIM_ACTIONS: Readonly<Record<string, ActionHandling>> = Object.free
   damage: 'chip',
   heal: 'chip',
   light_portal: 'onlyInMinecraft',
+  open_dialog: 'onlyInMinecraft',
   explode: 'onlyInMinecraft',
   show_hud: 'runs',
   hide_hud: 'runs',

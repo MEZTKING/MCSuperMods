@@ -36,6 +36,7 @@ const SAMPLES: Readonly<Record<string, JsonObject>> = {
   damage: { amount: 2 },
   heal: { amount: 2 },
   light_portal: { portal: 'ev:gate' },
+  open_dialog: { dialog: 'ev:welcome' },
   explode: { power: 2 },
   show_hud: { hud: 'ev:mana' },
   hide_hud: { hud: 'ev:mana' },
