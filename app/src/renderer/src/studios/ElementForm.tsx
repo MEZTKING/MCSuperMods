@@ -242,6 +242,14 @@ export const BUILT_IN_STUDIOS: readonly StudioEntry[] = Object.freeze([
         onChange={props.onChange}
         suggest={props.suggest}
         problems={props.problems}
+        live={{
+          project: props.project,
+          element: props.element,
+          mcVersion: props.target.mcVersion,
+          registryIds: props.context
+            .registries(props.project, props.element.kind)
+            .ids(props.element.kind.slice(TAG_KIND_PREFIX.length)),
+        }}
       />
     ),
   },

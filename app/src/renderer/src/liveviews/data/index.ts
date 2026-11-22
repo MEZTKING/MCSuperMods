@@ -14,7 +14,7 @@ const enchantment: LiveViewLoader = () => import('./EnchantmentCard');
 const advancement: LiveViewLoader = () => import('./AdvancementTree');
 const dialog: LiveViewLoader = () => import('./DialogScreen');
 const sampleLine: LiveViewLoader = () => import('./SampleLine');
-const tag: LiveViewLoader = () => import('./TagMembers');
+const tag: LiveViewLoader = () => import('./tag/TagMembers');
 const fn: LiveViewLoader = () => import('./FunctionLines');
 const blockRules: LiveViewLoader = () => import('./BlockRules');
 

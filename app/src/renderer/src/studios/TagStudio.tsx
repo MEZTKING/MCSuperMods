@@ -1,14 +1,16 @@
 /**
  * Tag Studio: edits a tag file (`{ replace?, values: (id | { id, required })[] }`) as a
  * `replace` switch and an ordered entry list with id and `#tag` suggestions. Presentational:
- * props and callbacks only.
+ * props and callbacks only. With {@link TagStudioProps.live} it shows **Everything in it**
+ * beside the editor (B612): the live view of the tag resolved as the game loads it, again
+ * 150 ms after each edit (`liveviews/data/tag/TagMembers.tsx`, loaded when first shown).
  *
  * @packageDocumentation
  */
 
-import type { Json } from '@msm/core';
+import type { Element, Json, Project } from '@msm/core';
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { Button, iconButtonClass } from '../components/ui/Button';
 import {
   type ChangeOptions,
@@ -20,6 +22,14 @@ import {
   ProblemList,
   type SuggestIds,
 } from '../forms';
+import { createVanillaDataReader, NOT_SET_UP_VANILLA_DATA } from '../liveviews/vanilla-data';
+import { DEFAULT_PREFS } from '../liveviews/view-prefs';
+import { useUiStore } from '../store/ui-store';
+import { useBlocksItemsStudioHost } from './blocks-items/host';
+
+const TagMembersView = lazy(() =>
+  import('../liveviews/data/tag/TagMembers').then((module) => ({ default: module.TagMembersView })),
+);
 
 type JsonObject = { [key: string]: Json };
 
@@ -46,6 +56,75 @@ export function writeTagEntry(entry: TagEntry): Json {
   return entry.required ? entry.id : { id: entry.id, required: false };
 }
 
+/** What the Tag Studio needs to show the tag live beside the editor (B612). */
+export interface TagStudioLive {
+  readonly project: Project;
+  readonly element: Element;
+  /** The project's Minecraft version (vanilla's tags are read for it), or `null`. */
+  readonly mcVersion: string | null;
+  /** Every id of the tag's registry (the session's registry index), or `null` while loading. */
+  readonly registryIds: readonly string[] | null;
+}
+
+/** The words shown when the Minecraft folder is asked for from the Studio. */
+export const TAG_SET_UP_WORDS =
+  'Open Settings and choose your Minecraft folder to see Minecraft’s own tags here.';
+
+/** Splits a jar path `assets/<ns>/<rest>` for the host's project asset reader. */
+function projectAssetPath(path: string): { namespace: string; rest: string } | null {
+  const match = /^assets\/([^/]+)\/(.+)$/.exec(path);
+  return match === null ? null : { namespace: match[1] as string, rest: match[2] as string };
+}
+
+/** The live view beside the editor. */
+function TagLive({ live }: { live: TagStudioLive }) {
+  const host = useBlocksItemsStudioHost();
+  const vanillaAssets = host?.modelPreview?.vanilla ?? null;
+  const readAsset = host?.modelPreview?.readProjectAsset;
+  const { mcVersion } = live;
+  const cacheReady = vanillaAssets !== null;
+  const vanilla = useMemo(
+    () =>
+      cacheReady && mcVersion !== null
+        ? createVanillaDataReader({ mcVersion })
+        : NOT_SET_UP_VANILLA_DATA,
+    [cacheReady, mcVersion],
+  );
+  const readProject = useMemo(
+    () =>
+      readAsset === undefined
+        ? undefined
+        : (path: string) => {
+            const parts = projectAssetPath(path);
+            return parts === null
+              ? Promise.resolve(null)
+              : readAsset(parts.namespace, parts.rest).catch(() => null);
+          },
+    [readAsset],
+  );
+  return (
+    <aside
+      aria-label="Everything in it"
+      data-testid="tag-studio-live"
+      className="min-w-72 flex-1 rounded border border-border p-2"
+    >
+      <Suspense fallback={<p className="text-sm text-muted">Loading view…</p>}>
+        <TagMembersView
+          project={live.project}
+          element={live.element}
+          vanilla={vanilla}
+          vanillaAssets={vanillaAssets}
+          registryIds={live.registryIds}
+          {...(readProject === undefined ? {} : { readProject })}
+          preferences={DEFAULT_PREFS}
+          onPreferences={() => {}}
+          onSetup={() => useUiStore.getState().setMessage({ kind: 'info', text: TAG_SET_UP_WORDS })}
+        />
+      </Suspense>
+    </aside>
+  );
+}
+
 export interface TagStudioProps {
   data: Json;
   /** The registry the tag lists (`item`, `block`, ...); `#` entries are `tag/<registry>` ids. */
@@ -54,9 +133,22 @@ export interface TagStudioProps {
   /** Registry ids starting with a prefix, e.g. `suggest('item', 'minecraft:st')`. */
   suggest?: SuggestIds;
   problems?: readonly FormProblem[];
+  /** Shows the tag live beside the editor; without it, the editor alone. */
+  live?: TagStudioLive;
 }
 
-export function TagStudio({ data, registry, onChange, suggest, problems }: TagStudioProps) {
+export function TagStudio(props: TagStudioProps) {
+  const editor = <TagEditor {...props} />;
+  if (props.live === undefined) return editor;
+  return (
+    <div className="flex flex-wrap items-start gap-3">
+      <div className="min-w-72 flex-1">{editor}</div>
+      <TagLive live={props.live} />
+    </div>
+  );
+}
+
+function TagEditor({ data, registry, onChange, suggest, problems }: TagStudioProps) {
   const tag: JsonObject =
     typeof data === 'object' && data !== null && !Array.isArray(data) ? data : {};
   const values: Json[] = Array.isArray(tag.values) ? tag.values : [];
