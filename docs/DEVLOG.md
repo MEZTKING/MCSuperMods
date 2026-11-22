@@ -7040,3 +7040,20 @@ Next
 - Wire `companionsOf(type, data)` (patch in the B512 report), then `UPDATE_GOLDENS=1` for `pot-clay` and `pot-defaults`.
 - B515: validators for pots (plant ids, companion clashes, a plant both listed and potted by a `potted_plant` naming the pot, `pot` naming a `flower_pot`).
 - B517: a pot and the six weathering types in `vanilla-parity-3.test.ts`.
+## 2026-11-22 — executor — B510 project pots, weathering on six more types, lightning
+
+**What**
+- Project flower pots (ADR 0103 D2 and its amendment): new `registry/types/MsmFlowerPotBlock` (a plain `Block`, never a vanilla `FlowerPotBlock`) is both the empty pot (`type: "flower_pot"`, `PotTypes.create`) with its own plant-to-pot map and each potted block in it (`potted_plant` whose `pot` is a project pot, `PotTypes.potted`), which adds itself to its pot's map when made. Use matches vanilla's pot as observed beside it in survival and creative (the result, the block left, the hand and the "flowers potted" statistic, which counts only potting); shape and path-finding are asked of vanilla's own pot; pick block gives the plant. Refused, as a load error for the file: a second potted block for one plant in one pot, a `pot` that is not a project pot, a missing or two-block plant. Vanilla's pot and its map are untouched.
+- Weathering on `rod`, `button`, `pressure_plate` (plain and weighted), `fence`, `fence_gate` and `wall` (ADR 0104 D1): `BlockType.WEATHERING_TYPES` extended, six small subclasses in `registry/weathering/`, `Weathering.blockFor` cases. Each ages at vanilla copper's rate (0.0436 per random tick at the first stage beside copper's 0.0436, both versions) and keeps every state property; waxing, unwaxing and scraping as the other types. A pressed button or plate that changes stage (ageing, waxing, scraping, lightning) gets its let-go tick scheduled again (`Weathering.afterChange`), since the game does not run the old block's tick for the new one.
+- Lightning (ADR 0104 D2 and its amendment): `Lightning.init()` registers a Fabric `ServerEntityEvents.ENTITY_LOAD` listener (no Mixin). The struck block goes to its first stage; from it, or from the block a struck rod stands on, 3 to 5 random walks of 1 to 8 steps each take a project weathering block within one block one stage back, with vanilla's scrape particles. Measured beside vanilla's bolt on vanilla oxidized copper, 12 bolts each: neighbours changed per bolt 11.0 vanilla and 11.4 project (26.3), 10.0 and 9.4 (26.4). Waxed blocks, first stages and walks through vanilla blocks are left alone; vanilla's own bolt still cleans vanilla copper.
+- Tests: `MsmFlowerPotGameTest` (5) and `MsmWeathering2GameTest` (6) replace B505's placeholders; fixtures `msm_test:pot_*` and `weathering2_*`, pot loot tables. `weathering-2-` removed from `ConformanceCorpusTest.PENDING`. 720 GameTests per variant (26.3, 26.4, without GeckoLib), 1222 JUnit; `./gradlew build`, `-Pmc=26.4`, `-PwithoutGeckolib`.
+- X14 (spawners) needed no fix.
+
+**Decisions**
+- The potted block in a project pot is a second constructor of `MsmFlowerPotBlock`, not a new `MsmPottedPlantBlock` (that name is the existing vanilla-pot class); `PlantTypes`'s `potted_plant` case sends a non-vanilla `pot` to `PotTypes.potted` (one branch, outside the brief's owner files).
+- Only potted blocks fill a pot's map: a `plants` entry without its companion is not taken (the lowering makes the companions).
+- Lightning walks start on a struck project weathering block, vanilla weathering copper or a lightning rod; a struck project rod's walks start from the block it stands on.
+
+**Next**
+- B512: the companions `<pot>_<plant>` as `potted_plant` with `pot` set, and the pot's and potted blocks' loot.
+- Guide (B522): taking a plant out of a pot does not count as potting; lightning ignores waxed blocks.

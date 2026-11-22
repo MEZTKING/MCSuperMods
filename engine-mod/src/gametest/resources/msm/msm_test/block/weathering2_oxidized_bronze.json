@@ -1,0 +1,12 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "msm_test:weathering2_waxed_oxidized_bronze"
+    },
+    "msm:weathering": {
+      "stage": "oxidized"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

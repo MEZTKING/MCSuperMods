@@ -60,8 +60,10 @@ public final class PlantTypes {
                     props.randomTicks().noCollision().pushReaction(PushReaction.POPPED));
             case TALL_PLANT -> new MsmTallPlantBlock(id, definition,
                     props.noCollision().offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.POPPED));
-            case POTTED_PLANT -> new MsmPottedPlantBlock(id, definition, plant(definition),
-                    props.noOcclusion().pushReaction(PushReaction.POPPED));
+            // A plant in a project pot (ADR 0103 D2, B510) is that pot's own block, never a FlowerPotBlock.
+            case POTTED_PLANT -> ((PlantFields.PottedPlant) definition.typeFields()).pot().equals(PlantFields.PottedPlant.VANILLA_POT)
+                    ? new MsmPottedPlantBlock(id, definition, plant(definition), props.noOcclusion().pushReaction(PushReaction.POPPED))
+                    : PotTypes.potted(id, definition, props.noOcclusion().pushReaction(PushReaction.POPPED));
             case VINE -> {
                 BlockBehaviour.Properties p = props.replaceable().noCollision().pushReaction(PushReaction.POPPED);
                 yield new MsmVineBlock(id, definition, ((PlantFields.Vine) definition.typeFields()).spreads() ? p.randomTicks() : p);

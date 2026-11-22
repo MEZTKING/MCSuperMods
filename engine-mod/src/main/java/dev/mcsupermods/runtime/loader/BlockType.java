@@ -103,10 +103,11 @@ public enum BlockType {
 
     /**
      * The types that may carry {@code msm:weathering} and {@code msm:waxable} (ADR 0094 D8, D9): the types vanilla's copper
-     * comes in apart from bulbs.
+     * comes in apart from bulbs, and since ADR 0104 D1 rods (vanilla's lightning rod), buttons, pressure plates, fences,
+     * fence gates and walls (vanilla has no copper ones; the same subclass makes the set whole).
      */
     public static final List<BlockType> WEATHERING_TYPES = List.of(BLOCK, PILLAR, HORIZONTAL, DIRECTIONAL, SLAB, STAIRS, DOOR, TRAPDOOR,
-            PANE, CHAIN, LANTERN);
+            PANE, CHAIN, LANTERN, ROD, BUTTON, PRESSURE_PLATE, FENCE, FENCE_GATE, WALL);
 
     /** Every type's own top-level field names, in a stable order; the definition's known top-level keys include these. */
     public static final List<String> ALL_FIELDS;

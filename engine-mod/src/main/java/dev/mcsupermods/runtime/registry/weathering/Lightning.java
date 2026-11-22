@@ -1,12 +1,108 @@
 package dev.mcsupermods.runtime.registry.weathering;
 
+import dev.mcsupermods.runtime.registry.BlockExtras;
+import java.util.Optional;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.level.block.LevelEvent;
+import net.minecraft.world.level.block.LightningRodBlock;
+import net.minecraft.world.level.block.RodBlock;
+import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
+
 /**
- * Lightning on project weathering blocks (ADR 0104 D2 and its amendment after B503): a Fabric
- * {@code ServerEntityEvents.ENTITY_LOAD} listener scrapes them when a bolt spawns. A stub from B505: B510 fills it in.
+ * Lightning on project weathering blocks (ADR 0104 D2 and its amendment after B503). Vanilla's bolt cleans only vanilla's
+ * copper (its maps hold vanilla blocks), so a Fabric {@code ServerEntityEvents.ENTITY_LOAD} listener, which runs for a bolt
+ * on the tick it is added and before it strikes (B503, X5; no Mixin), applies the rule measured beside vanilla copper:
+ * <ul>
+ *   <li>the struck block (the one just under the bolt) goes to its first stage;</li>
+ *   <li>from the struck block, or from the block a struck rod stands on, a few short random walks each take a project
+ *       weathering block next to the walk (up to one block away on each axis) one stage back, with vanilla's scrape
+ *       particles: 3 to 5 walks of 1 to 8 steps, which changed 4 to 19 cells of a 7 by 7 floor as vanilla's bolt does
+ *       (measured at B503 and in {@code MsmWeathering2GameTest}).</li>
+ * </ul>
+ * Walks start when the struck block is a project weathering block, a vanilla weathering copper block or a lightning rod,
+ * and pass only through project blocks (vanilla's own walk takes vanilla copper). Waxed copies, and the first stage, are
+ * left alone. Visual-only bolts cannot be told apart (vanilla has no getter) and count alike. The rule is written from
+ * observation; nothing of vanilla's code is used.
  */
 public final class Lightning {
     private Lightning() {}
 
-    /** Registers the listener; nothing yet. */
-    public static void init() {}
+    /** The fewest and most walks per strike. */
+    static final int MIN_WALKS = 3;
+    static final int MAX_WALKS = 5;
+    /** The most steps of one walk. */
+    static final int MAX_STEPS = 8;
+    /** Random cells tried around a walk's cell before the walk stops. */
+    static final int TRIES = 10;
+
+    /** Registers the listener; called once from {@code MsmRuntime} after {@code BlockExtras.register()}. */
+    public static void init() {
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+            if (entity instanceof LightningBolt bolt && bolt.tickCount == 0) {
+                strike(level, struckPos(bolt.position()), level.getRandom());
+            }
+        });
+    }
+
+    /** The block a bolt at {@code at} strikes: the one its foot stands in, just below its position. */
+    static BlockPos struckPos(Vec3 at) {
+        return BlockPos.containing(at.x, at.y - 1.0E-6, at.z);
+    }
+
+    /** Applies the rule to the block at {@code struck}; public for the GameTests, which strike without a bolt too. */
+    public static void strike(ServerLevel level, BlockPos struck, RandomSource random) {
+        BlockState state = level.getBlockState(struck);
+        Identifier id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        boolean project = Weathering.isWeathering(id);
+        if (project) {
+            Identifier first = Weathering.firstStage(id);
+            if (!first.equals(id) && BuiltInRegistries.BLOCK.containsKey(first)) {
+                Weathering.replace(level, struck, state,
+                        BlockExtras.copyProperties(state, BuiltInRegistries.BLOCK.getValue(first).defaultBlockState()));
+            }
+        }
+        boolean rod = state.getBlock() instanceof RodBlock && state.hasProperty(BlockStateProperties.FACING);
+        if (!project && !(state.getBlock() instanceof WeatheringCopper) && !(state.getBlock() instanceof LightningRodBlock)) {
+            return;
+        }
+        BlockPos start = rod ? struck.relative(state.getValue(BlockStateProperties.FACING).getOpposite()) : struck;
+        int walks = MIN_WALKS + random.nextInt(MAX_WALKS - MIN_WALKS + 1);
+        for (int w = 0; w < walks; w++) {
+            BlockPos at = start;
+            int steps = 1 + random.nextInt(MAX_STEPS);
+            for (int s = 0; s < steps && at != null; s++) {
+                at = step(level, at, random);
+            }
+        }
+    }
+
+    /** One step of a walk: a project weathering block with an earlier stage near {@code from}, scraped; null when none is found. */
+    private static BlockPos step(ServerLevel level, BlockPos from, RandomSource random) {
+        for (int t = 0; t < TRIES; t++) {
+            BlockPos at = from.offset(random.nextInt(3) - 1, random.nextInt(3) - 1, random.nextInt(3) - 1);
+            BlockState state = level.getBlockState(at);
+            Identifier id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            if (!Weathering.isWeathering(id)) {
+                continue;
+            }
+            Optional<Identifier> back = Weathering.previous(id).filter(BuiltInRegistries.BLOCK::containsKey);
+            if (back.isEmpty()) {
+                continue;
+            }
+            Weathering.replace(level, at, state,
+                    BlockExtras.copyProperties(state, BuiltInRegistries.BLOCK.getValue(back.get()).defaultBlockState()));
+            level.levelEvent(null, LevelEvent.PARTICLES_SCRAPE, at, 0);
+            return at;
+        }
+        return null;
+    }
 }

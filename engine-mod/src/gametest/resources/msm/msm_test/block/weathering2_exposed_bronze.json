@@ -1,0 +1,10 @@
+{
+  "components": {
+    "msm:weathering": {
+      "next": "msm_test:weathering2_weathered_bronze",
+      "stage": "exposed"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper"
+}

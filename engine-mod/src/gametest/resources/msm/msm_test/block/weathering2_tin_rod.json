@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:waxable": {
+      "into": "msm_test:weathering2_waxed_tin_rod"
+    },
+    "msm:weathering": {
+      "next": "msm_test:weathering2_exposed_tin_rod",
+      "stage": "unaffected"
+    }
+  },
+  "format": 1,
+  "sound_type": "copper",
+  "type": "rod"
+}

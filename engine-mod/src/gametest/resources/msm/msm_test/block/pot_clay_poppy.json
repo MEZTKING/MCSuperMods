@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "item": false,
+  "plant": "minecraft:poppy",
+  "pot": "msm_test:pot_clay",
+  "type": "potted_plant"
+}

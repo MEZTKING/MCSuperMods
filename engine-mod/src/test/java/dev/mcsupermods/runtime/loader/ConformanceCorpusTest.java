@@ -45,11 +45,11 @@ class ConformanceCorpusTest {
      * and {@code shoulder-} by B479 ({@code StorageParser} through {@code EntityComponents}).
      * Vanilla parity 3 batch 1's format (B506) decodes every new field, but two load rules are the runtime's until its
      * briefs change them: {@code container-2-} and {@code machine-2-} (a waterlogged or weathering container or machine,
-     * ADR 0104 D3, D6) still get {@code checkAgeing}'s warning until B513, and {@code weathering-2-} (weathering on rods,
-     * buttons, plates, fences, gates and walls, ADR 0104 D1) is still refused by {@code BlockType.allows} until B510
-     * extends {@code WEATHERING_TYPES}. Each of those briefs removes its prefixes here.
+     * ADR 0104 D3, D6) still get {@code checkAgeing}'s warning until B513, which removes its prefixes here;
+     * {@code weathering-2-} (weathering on rods, buttons, plates, fences, gates and walls, ADR 0104 D1) is decoded since
+     * B510 extended {@code WEATHERING_TYPES}.
      */
-    private static final List<String> PENDING = List.of("container-2-", "machine-2-", "weathering-2-");
+    private static final List<String> PENDING = List.of("container-2-", "machine-2-");
 
     private static boolean pending(String name) {
         return PENDING.stream().anyMatch(name::startsWith);

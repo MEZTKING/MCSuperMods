@@ -1,0 +1,23 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "name": "msm_test:pot_clay",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "name": "minecraft:poppy",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:block"
+}

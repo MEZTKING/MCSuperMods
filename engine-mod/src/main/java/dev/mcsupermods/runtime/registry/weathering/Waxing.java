@@ -32,7 +32,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
  * (an item whose {@code block_transformer} is {@code minecraft:axe}) unwaxes a waxed copy back into its one source, or
  * scrapes a weathering block one stage back. Only project blocks are touched: vanilla copper keeps vanilla's own rules,
  * also when a project block names it as {@code next} or {@code into}. Shared state properties are copied; the other half of
- * a door follows. Lightning does not scrape project blocks (limit Q6).
+ * a door follows. Lightning scrapes project blocks too, since ADR 0104 D2 ({@link Lightning}; limit Q6 lifted at B510).
  */
 public final class Waxing {
     private Waxing() {}

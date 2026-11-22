@@ -9,6 +9,7 @@ import dev.mcsupermods.runtime.registry.BlockSetTypes;
 import dev.mcsupermods.runtime.registry.Waterlogging;
 import dev.mcsupermods.runtime.registry.container.BlockEntityHooks;
 import dev.mcsupermods.runtime.registry.types.DrivenBlock;
+import dev.mcsupermods.runtime.registry.types.BlockTypes;
 import dev.mcsupermods.runtime.registry.types.FurnitureTypes;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +27,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BasePressurePlateBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.ChangeOverTimeBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -41,7 +44,8 @@ import net.minecraft.world.level.material.PushReaction;
  * {@link WeatheringCopper.WeatherState} ages ({@link Ageing}). Its random tick asks vanilla's own
  * {@code ChangeOverTimeBlock.getNextState} whether to age, so the chance and the neighbour rule are vanilla's and project
  * blocks and vanilla copper slow each other alike (measured at B440, S5). The runtime keeps its own maps ({@link Maps}):
- * vanilla's static copper maps and Fabric's registries are not used (F12).
+ * vanilla's static copper maps and Fabric's registries are not used (F12). Since ADR 0104 D1 rods, buttons, pressure
+ * plates, fences, fence gates and walls weather too (B510), and lightning scrapes the blocks ({@link Lightning}).
  */
 public final class Weathering {
     private Weathering() {}
@@ -88,6 +92,14 @@ public final class Weathering {
         }
     }
 
+    /**
+     * A button or pressure plate that weathers: how long it stays pressed, so a pressed one that changes stage (ageing,
+     * waxing, scraping or lightning) still lets go; the tick scheduled for the old block is not run for the new one.
+     */
+    interface Pressed {
+        int pressedTicks();
+    }
+
     /** Vanilla's age of an MSM stage. */
     public static WeatheringCopper.WeatherState age(BlockComponents.WeatheringStage stage) {
         return switch (stage) {
@@ -126,6 +138,22 @@ public final class Weathering {
                 yield new MsmWeatheringLanternBlock(id, definition, stage, definition.components().lightEmitter().isPresent()
                         ? p : p.lightLevel(state -> FurnitureTypes.LANTERN_LIGHT));
             }
+            // ADR 0104 D1 (B510): the properties FurnitureTypes and BlockTypes add for these types are already in props,
+            // apart from the rod's (FurnitureTypes adds them when it makes the rod), so they are added here.
+            case ROD -> new MsmWeatheringRodBlock(id, definition, stage, definition.components().lightEmitter().isPresent()
+                    ? props.forceSolidOff().noOcclusion() : props.forceSolidOff().noOcclusion().lightLevel(state -> FurnitureTypes.ROD_LIGHT));
+            case BUTTON -> new MsmWeatheringButtonBlock(id, definition, stage, setType(definition),
+                    ((BlockType.Button) definition.typeFields()).pressTicks(), props);
+            case PRESSURE_PLATE -> {
+                Optional<Integer> weightedMax = ((BlockType.PressurePlate) definition.typeFields()).weightedMax();
+                yield weightedMax.isPresent()
+                        ? new MsmWeatheringPressurePlateBlock.Weighted(id, definition, stage, weightedMax.get(), setType(definition), props)
+                        : new MsmWeatheringPressurePlateBlock(id, definition, stage, setType(definition), props);
+            }
+            case FENCE -> new MsmWeatheringFenceBlock(id, definition, stage, props);
+            case FENCE_GATE -> new MsmWeatheringFenceGateBlock(id, definition, stage,
+                    BlockTypes.woodType(((BlockType.FenceGate) definition.typeFields()).woodType()), props);
+            case WALL -> new MsmWeatheringWallBlock(id, definition, stage, props);
             default -> throw new IllegalStateException("type '" + definition.type().id() + "' does not weather");
         };
         DECLARED.put(id, weathering.get().next());
@@ -138,7 +166,12 @@ public final class Weathering {
     }
 
     private static net.minecraft.world.level.block.state.properties.BlockSetType setType(BlockDefinition definition) {
-        return BlockSetTypes.of(((BlockType.Opening) definition.typeFields()).setType());
+        return BlockSetTypes.of(switch (definition.typeFields()) {
+            case BlockType.Opening o -> o.setType();
+            case BlockType.Button b -> b.setType();
+            case BlockType.PressurePlate p -> p.setType();
+            default -> throw new IllegalArgumentException("type '" + definition.type().id() + "' has no set_type");
+        });
     }
 
     /** The block {@code id} ages into, when it ages and its {@code next} is registered. */
@@ -167,6 +200,16 @@ public final class Weathering {
         return DECLARED.containsKey(id);
     }
 
+    /** The first stage of the project weathering block {@code id}: {@link #previous} followed to its end ({@code id} itself when none). */
+    static Identifier firstStage(Identifier id) {
+        Identifier at = id;
+        Set<Identifier> seen = new HashSet<>();
+        for (Optional<Identifier> back = previous(at); back.isPresent() && seen.add(at); back = previous(at)) {
+            at = back.get();
+        }
+        return at;
+    }
+
     /** The maps in use (read by {@link Waxing}). */
     static Maps maps() {
         return maps;
@@ -182,6 +225,29 @@ public final class Weathering {
             return;
         }
         block.changeOverTime(state, level, pos, random); // vanilla's chance, neighbour rule and setBlockAndUpdate
+        BlockState now = level.getBlockState(pos);
+        if (now != state) {
+            afterChange(level, pos, state, now);
+        }
+    }
+
+    /**
+     * After a pressed button or plate became another block (ageing, waxing, scraping, lightning; ADR 0104 D1): the tick that
+     * lets it go was scheduled for the old block, which the game does not run for the new one, so it is scheduled again
+     * with the press time of whichever of the two is a weathering button or plate (a waxed copy is a plain one).
+     */
+    static void afterChange(Level level, BlockPos pos, BlockState from, BlockState to) {
+        Block block = to.getBlock();
+        if (!(block instanceof ButtonBlock || block instanceof BasePressurePlateBlock)) {
+            return;
+        }
+        boolean pressed = to.hasProperty(BlockStateProperties.POWERED) && to.getValue(BlockStateProperties.POWERED)
+                || to.hasProperty(BlockStateProperties.POWER) && to.getValue(BlockStateProperties.POWER) > 0;
+        if (!pressed || level.getBlockTicks().hasScheduledTick(pos, block)) {
+            return;
+        }
+        int ticks = block instanceof Pressed p ? p.pressedTicks() : from.getBlock() instanceof Pressed p ? p.pressedTicks() : 1;
+        level.scheduleTick(pos, block, ticks);
     }
 
     /**
@@ -198,6 +264,7 @@ public final class Weathering {
             }
         }
         level.setBlock(pos, to, Block.UPDATE_ALL);
+        afterChange(level, pos, from, level.getBlockState(pos));
     }
 
     /**
