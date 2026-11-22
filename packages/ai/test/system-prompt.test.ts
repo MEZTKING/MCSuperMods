@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   ART_RECIPE_NAMES,
@@ -876,5 +877,42 @@ describe('systemPrompt worlds and the live world map (ADR 0119, B590)', () => {
       expect(text).not.toContain('noise_router');
       expect(text).not.toContain('"final_density":');
     }
+  });
+});
+
+describe('the prompt in topic files (B681)', () => {
+  // The SHA-256 of each run size's text taken before the split into `src/prompt/`. Wording
+  // changes (B682 onwards) move these on purpose, with a line in the brief that does it.
+  const PINNED = {
+    chat: '92d53d7f7d5dc443606b4908488fcd98d11933d140a7fa5aba2c4784763c6b65',
+    build: '0a7583ddae9a2eb5e81c4f3c04d6deefa964d50f50a0bf7c37cdee724bd46750',
+  } as const;
+
+  it.each(['chat', 'build'] as const)('%s text hashes to the pinned value', (mode) => {
+    const hash = createHash('sha256').update(systemPrompt(mode)).digest('hex');
+    expect(hash).toBe(PINNED[mode]);
+  });
+
+  it('writes the optional context lines only when given', () => {
+    const base = {
+      targetId: 'mc-test',
+      mcVersion: '1.0',
+      namespaces: ['a'],
+      kindCounts: {},
+      hasModElement: true,
+      pendingSummary: '',
+    };
+    const plain = projectContextBlock(base).split('\n');
+    const full = projectContextBlock({
+      ...base,
+      view: 'very-easy',
+      modName: 'My Mod',
+      open: { id: 'a:ruby', kind: 'msm:item', name: 'Ruby' },
+    }).split('\n');
+    expect(full.length).toBe(plain.length + 3);
+    expect(full).toContain('View: very-easy');
+    expect(full).toContain('Mod: My Mod');
+    expect(full).toContain('Open: Ruby (a:ruby, msm:item)');
+    expect(full.filter((l) => !/^(View|Mod|Open): /.test(l))).toEqual(plain);
   });
 });

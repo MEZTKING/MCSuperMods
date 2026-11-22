@@ -8794,3 +8794,18 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 - Start wave 0 now, beside Live views 2's wave 4: B680 (the run's engine) and B681 (the prompt in topic files, hashes unchanged). Tell B615's executor the nine points before it reports.
 - The plan is not yet named among the open plans in `docs/CLAUDE.md` and the root `CLAUDE.md` (other sessions have those files open); add one line each at the next close.
 - Ask the user about ADR 0125's vetoable defaults, and whether reserve B694 (a self-check that runs six asks with their key and writes a report) may be built: no test has ever run the real model.
+
+## 2026-11-22 — executor — B681 the prompt in topic files
+
+**What**
+- Split `packages/ai/src/system-prompt.ts` into one file per topic under `packages/ai/src/prompt/` (`core`, `textures`, `effects`, `vanilla-additions`, `scripts`, `blocks`, `containers`, `portals`, `particles`, `mobs`, `vehicles`, `vanilla-parity`, `villagers-fluids`, `plants-storage`, `mobs-commands`, `rules`, `worlds`, `try-it`, `modes`, and `index.ts` which assembles them in the old order). `system-prompt.ts` re-exports every name it exported before and keeps `systemPrompt` and `projectContextBlock`.
+- The text is byte for byte unchanged: SHA-256 of `systemPrompt('chat')` is 92d53d7f7d5dc443606b4908488fcd98d11933d140a7fa5aba2c4784763c6b65 (89,650 characters) and of `'build'` 0a7583ddae9a2eb5e81c4f3c04d6deefa964d50f50a0bf7c37cdee724bd46750 (90,470), both taken before the move and now pinned in `packages/ai/test/system-prompt.test.ts`.
+- `AiProjectContext` gains optional `view`, `modName` and `open`; `projectContextBlock` writes `View:`, `Mod:` and `Open: name (id, kind)` lines (after `Target:`) only when given.
+
+**Decisions**
+- Inline paragraphs became exported constants named for their topic. Script API 1.1 and 1.4 sit in `scripts.ts`, 1.2 in `containers.ts`, 1.3 in `particles.ts`, 1.5 in `vehicles.ts`; the assembled order is unchanged.
+- The `list` helper moved to `core.ts` (shared by several topics). `NEW_FLOW_PROMPT_IDS` lives in `vanilla-parity.ts`.
+- `packages/ai/src/index.ts` was not touched (B680 owns it); new names reach it only through `system-prompt.ts`'s `export *`.
+
+**Next**
+- B682 changes wording per topic file and moves the two pinned hashes once, on purpose.

@@ -1,6 +1,6 @@
 # @msm/ai
 
-The AI helper's logic without Electron ([ADR 0041](../../docs/adr/0041-ai-helper.md)): the protocol shared by main, preload and renderer, the tool catalogue, the agent loop over a `ModelClient` seam, run limits and cost, the system prompt, the model table and a scripted client for tests.
+The AI helper's logic without Electron ([ADR 0041](../../docs/adr/0041-ai-helper.md)): the protocol shared by main, preload and renderer, the tool catalogue, the agent loop over a `ModelClient` seam, run limits and cost, the system prompt (one file per topic under `src/prompt/`), the model table and a scripted client for tests.
 
 ## Entry points
 
