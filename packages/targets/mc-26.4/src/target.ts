@@ -11,6 +11,8 @@ import { soundSetEvents } from './sound-sets';
 
 const ID = 'mc-26.4';
 const MC_VERSION = '26.4-snapshot-7';
+/** noise_settings lost default_block (`until 26.4` in the vendored mcdoc; ADR 0036 D8). */
+const NOISE_SETTINGS_DEFAULT_BLOCK = false;
 
 /** The decoration step names, in the order the game runs them (`worldgen.featureSteps`). */
 const FEATURE_STEPS = [
@@ -212,8 +214,7 @@ export const target: Target = {
       skyColour: 'minecraft:visual/sky_color',
       naturalMobSpawns: 'minecraft:gameplay/natural_mob_spawns',
     },
-    // noise_settings lost default_block (`until 26.4` in the vendored mcdoc; ADR 0036 D8).
-    noiseSettingsDefaultBlock: false,
+    noiseSettingsDefaultBlock: NOISE_SETTINGS_DEFAULT_BLOCK,
     vanillaFeatureOrder,
     // dimensionHeight (ADR 0100 D5): the vendored mcdoc's `DimensionType` ranges, `min_y`
     // -2032 to 2031 and `height` 16 to 4064, both `divisible_by` 16, so the highest block is
@@ -1771,6 +1772,7 @@ export const target: Target = {
   // is gone, block sounds are the data-driven `block_sound_set` registry; entity renderers
   // register through the client registry), so the java-project exporter reports
   // export.no-java-project-target for this target (ADR 0037 D2).
-  // Moving a project from mc-26.3: removed ids and known renames (ADR 0037 D3).
-  migrateFrom: createMigrateFrom(migrationTables(ID, MC_VERSION)),
+  // Moving a project from mc-26.3: removed ids and known renames (ADR 0037 D3), and noise
+  // settings reshaped without default_block (ADR 0036 D8).
+  migrateFrom: createMigrateFrom(migrationTables(ID, MC_VERSION, NOISE_SETTINGS_DEFAULT_BLOCK)),
 };

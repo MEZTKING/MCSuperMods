@@ -55,6 +55,7 @@ import type {
   Plugin,
   Problem,
   ProjectStarter,
+  Target,
   TargetFacts,
 } from '@msm/plugin-api';
 import blocksItemsPlugin, {
@@ -1396,6 +1397,35 @@ async function reload(fs: ProjectFileSystem): Promise<Project> {
   const { project, problems } = await loadProject(fs, registry);
   expect(problems).toEqual([]);
   return project;
+}
+
+/**
+ * `project` moved to `target` as the app's Upgrade project target does it (ADR 0037 D4): the
+ * target's `migrateFrom` report, expected to have no problems, with every `update` change's
+ * data and every `remove` applied and the targets set to `[target.id]`. A project already on
+ * `target` comes back unchanged.
+ */
+function upgraded(project: Project, target: Target): Project {
+  const current = project.targets[0];
+  if (current === undefined || current === target.id) return project;
+  const previous = targetById(current)?.target;
+  if (previous === undefined) throw new Error(`No built-in target ${current}`);
+  const report = target.migrateFrom?.(previous, project) ?? { changes: [], problems: [] };
+  expect(report.problems, `${project.name}: ${current} to ${target.id}`).toEqual([]);
+  const next = structuredClone(project);
+  next.targets = [target.id];
+  for (const change of report.changes) {
+    for (const namespace of next.namespaces) {
+      const index = namespace.elements.findIndex((element) => element.id === change.elementId);
+      if (index < 0) continue;
+      if (change.kind === 'remove') namespace.elements.splice(index, 1);
+      else if (change.data !== undefined) {
+        const element = namespace.elements[index];
+        if (element !== undefined) element.data = structuredClone(change.data);
+      }
+    }
+  }
+  return next;
 }
 
 // Registry ids, as the app's schema context derives them --------------------------------------
@@ -3458,7 +3488,11 @@ describe('vanilla server data packs', () => {
       }[] = [];
       for (const entry of cases) {
         const built = await entry.build();
-        const project = await reload(built.fs);
+        // A mirror project is written for the default target; on another target it is exported
+        // as the app exports it after Upgrade project target (ADR 0037 D4), e.g. its noise
+        // settings without `default_block` where the target's have none (ADR 0036 D8).
+        const loaded = await reload(built.fs);
+        const project = entry.mirror === true ? upgraded(loaded, bundle.target) : loaded;
         const ids = projectRegistryIds(project, bundle.target);
         const registries = createRegistryIndex({ vanilla: context.vanilla, project: ids });
         // As the app's session: a project with mod content exports without its potions and

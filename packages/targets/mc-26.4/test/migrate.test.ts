@@ -201,6 +201,98 @@ describe('migrateFrom (mc-26.3 → this target)', () => {
     expect(report.problems.map((problem) => problem.path)).toEqual(['/sound']);
   });
 
+  it('drops default_block from noise settings, inline ones included (ADR 0036 D8)', () => {
+    expect(target.worldgen.noiseSettingsDefaultBlock).toBe(false);
+    const settings = { default_block: 'minecraft:stone', default_fluid: 'minecraft:water' };
+    const inline = () => ({
+      generator: { type: 'minecraft:noise', settings: structuredClone(settings) },
+    });
+    const project: Project = {
+      formatVersion: 1,
+      name: 'Noise',
+      namespaces: [
+        {
+          name: 'test',
+          elements: [
+            element('test:terrain', 'minecraft:worldgen/noise_settings', settings),
+            element('test:dim', 'minecraft:dimension', inline()),
+            element('test:preset', 'minecraft:worldgen/world_preset', {
+              dimensions: {
+                'minecraft:overworld': inline(),
+                'minecraft:the_nether': {
+                  generator: { type: 'minecraft:noise', settings: 'minecraft:nether' },
+                },
+              },
+            }),
+            element('test:by_id', 'minecraft:dimension', {
+              generator: { type: 'minecraft:noise', settings: 'test:terrain' },
+            }),
+            element('test:other', 'test:any', { default_block: 'minecraft:stone' }),
+            element('test:done', 'minecraft:worldgen/noise_settings', { sea_level: 63 }),
+          ],
+          assets: [],
+        },
+      ],
+      targets: [PREVIOUS_ID],
+      plugins: [],
+      settings: {},
+    };
+    const before = structuredClone(project);
+    const report = target.migrateFrom?.(previous, project);
+    expect(project).toEqual(before);
+    expect(report?.problems).toEqual([]);
+    const changes = report?.changes ?? [];
+    expect(changes.map((change) => [change.elementId, change.kind])).toEqual([
+      ['test:terrain', 'update'],
+      ['test:dim', 'update'],
+      ['test:preset', 'update'],
+    ]);
+    expect(changes[0]?.data).toEqual({ default_fluid: 'minecraft:water' });
+    expect(changes[0]?.description).toContain('/default_block');
+    expect(changes[1]?.data).toEqual({
+      generator: { type: 'minecraft:noise', settings: { default_fluid: 'minecraft:water' } },
+    });
+    expect(changes[2]?.data).toEqual({
+      dimensions: {
+        'minecraft:overworld': {
+          generator: { type: 'minecraft:noise', settings: { default_fluid: 'minecraft:water' } },
+        },
+        'minecraft:the_nether': {
+          generator: { type: 'minecraft:noise', settings: 'minecraft:nether' },
+        },
+      },
+    });
+    expect(changes[2]?.description).toContain(
+      '/dimensions/minecraft:overworld/generator/settings/default_block',
+    );
+  });
+
+  it('keeps default_block on a target whose noise settings have it', () => {
+    const migrate = createMigrateFrom({
+      ...migrationTables(target.id, target.mcVersion),
+      noiseSettingsDefaultBlock: true,
+    });
+    const project: Project = {
+      formatVersion: 1,
+      name: 'Kept',
+      namespaces: [
+        {
+          name: 'test',
+          elements: [
+            element('test:terrain', 'minecraft:worldgen/noise_settings', {
+              default_block: 'minecraft:stone',
+            }),
+          ],
+          assets: [],
+        },
+      ],
+      targets: [PREVIOUS_ID],
+      plugins: [],
+      settings: {},
+    };
+    expect(migrate(previous, project)).toEqual({ changes: [], problems: [] });
+  });
+
   it('ignores ids of other namespaces and plain strings that only look alike', () => {
     const project: Project = {
       formatVersion: 1,

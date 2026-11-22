@@ -47,15 +47,32 @@ function files(
   });
 }
 
-function build(project: WorldgenFileMap, seed = 0n, window: ColumnWindow = WINDOW) {
+type Grid = ReturnType<typeof buildColumns>;
+
+/**
+ * The world of `project` and its window at the surface and features stages. Each stage is built
+ * when first read (in the order read): most tests only look at the features, and building the
+ * surface grid as well about doubled their time.
+ */
+function build(
+  project: WorldgenFileMap,
+  seed = 0n,
+  window: ColumnWindow = WINDOW,
+): { readonly surface: Grid; readonly features: Grid } {
   const world = createTerrainWorld(input(project, seed));
+  let surface: Grid | undefined;
+  let features: Grid | undefined;
   return {
-    surface: buildColumns(world, window, 'surface'),
-    features: buildColumns(world, window, 'features'),
+    get surface() {
+      surface ??= buildColumns(world, window, 'surface');
+      return surface;
+    },
+    get features() {
+      features ??= buildColumns(world, window, 'features');
+      return features;
+    },
   };
 }
-
-type Grid = ReturnType<typeof buildColumns>;
 
 /** Every position (window coordinates) whose block's id is `id`. */
 function find(grid: Grid, id: string): [number, number, number][] {
@@ -109,7 +126,16 @@ beforeEach(() => {
   forgetRegistries();
 });
 
-describe('placement by the data', () => {
+// Heavy: each test makes one to three worlds and builds a 3 by 3 chunk window (48 by 128 by 48)
+// through the terrain, surface and features stages. "Same placements for the same seed" builds
+// three: 0.76 to 0.93 s locally on 4 cores (2026-11-22) and 5.2 s on CI's runner, past the default
+// 5 s, before `build` stopped making the surface grid nobody read (now 0.33 to 0.42 s alone, up to
+// 0.9 s with the whole suite running); "a biome addition's features" takes up to 0.85 s. CI ran
+// about 5.7 times slower than this machine, so an explicit timeout, never a retry, sized to that
+// worst case with room for a slower runner.
+const HEAVY = { timeout: 30_000 };
+
+describe('placement by the data', HEAVY, () => {
   it('keeps the count of a chain within what it allows, chunk by chunk', () => {
     const { surface, features } = build(
       files({ 9: ['msm:glow'] }, { 'msm:glow': SURFACE_GLOWSTONE }),
@@ -284,7 +310,7 @@ const GOLD = {
   ],
 };
 
-describe('the first feature types', () => {
+describe('the first feature types', HEAVY, () => {
   it('grows trees from their own trunk and crown fields', () => {
     const project = files({ 9: ['msm:trees'] }, { 'msm:trees': TREES });
     const { surface, features } = build(project);
@@ -542,7 +568,7 @@ describe('the first feature types', () => {
   });
 });
 
-describe('notes and additions', () => {
+describe('notes and additions', HEAVY, () => {
   it('reports every type it leaves out by name, and missing files', () => {
     const project = files(
       { 1: ['msm:lake'], 2: ['msm:geode', 'msm:missing'] },

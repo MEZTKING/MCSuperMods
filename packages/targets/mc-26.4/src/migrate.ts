@@ -1,7 +1,10 @@
 /**
  * `migrateFrom` of this target (ADR 0037 D3): moving a project from `mc-26.3` reports every
  * id that the 26.4 registries no longer have and applies known renames whose replacement takes
- * the same fields. Pure: the project is never changed; the host applies the report.
+ * the same fields. It also drops `default_block` from noise settings, which this target's noise
+ * settings do not have (ADR 0036 D8: no noise settings data is
+ * valid on both targets, so the data is reshaped for the new target as `defaultDataFor` shapes
+ * new elements). Pure: the project is never changed; the host applies the report.
  */
 import type {
   Json,
@@ -38,6 +41,57 @@ export interface MigrationTables {
   moved: Readonly<Record<string, string>>;
   stillRegistered: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>>;
   renames: readonly KnownRename[];
+  /**
+   * This target's `worldgen.noiseSettingsDefaultBlock` fact (absent means the field exists).
+   * When it is `false`, `default_block` is dropped from noise settings elements and from noise
+   * settings written inline in dimensions and world presets.
+   */
+  noiseSettingsDefaultBlock?: boolean;
+}
+
+/** The noise settings field this target's schema dropped (ADR 0036 D8). */
+const DEFAULT_BLOCK = 'default_block';
+
+type JsonObject = { [key: string]: Json };
+
+function isObject(value: Json | undefined): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * The noise settings objects inside `data` of an element of `kind`, as pointer segments: the
+ * element itself for noise settings, and `generator.settings` where it is written inline (an
+ * object, not an id) for a dimension or each dimension of a world preset.
+ */
+function noiseSettingsPaths(kind: string, data: Json): (string | number)[][] {
+  if (kind === 'minecraft:worldgen/noise_settings') return [[]];
+  const inline = (dimension: Json | undefined, segments: string[]): (string | number)[][] => {
+    if (!isObject(dimension)) return [];
+    const generator = dimension.generator;
+    return isObject(generator) && isObject(generator.settings)
+      ? [[...segments, 'generator', 'settings']]
+      : [];
+  };
+  if (kind === 'minecraft:dimension') return inline(data, []);
+  if (kind === 'minecraft:worldgen/world_preset' && isObject(data)) {
+    const dimensions = data.dimensions;
+    if (!isObject(dimensions)) return [];
+    return Object.keys(dimensions).flatMap((name) =>
+      inline(dimensions[name], ['dimensions', name]),
+    );
+  }
+  return [];
+}
+
+/** The value at `segments` inside `root`, or `undefined`. */
+function valueAt(root: Json, segments: readonly (string | number)[]): Json | undefined {
+  let node: Json | undefined = root;
+  for (const segment of segments) {
+    if (Array.isArray(node) && typeof segment === 'number') node = node[segment];
+    else if (isObject(node) && typeof segment === 'string') node = node[segment];
+    else return undefined;
+  }
+  return node;
 }
 
 interface RemovedEntry {
@@ -128,6 +182,7 @@ export function createMigrateFrom(
 ): (previous: Target, project: Project) => MigrationReport {
   const lookup = buildLookup(tables);
   return (previous, project) => {
+    const dropDefaultBlock = tables.noiseSettingsDefaultBlock === false;
     if (previous.id === tables.toTargetId) return { changes: [], problems: [] };
     if (previous.id !== tables.fromTargetId) {
       return {
@@ -168,11 +223,28 @@ export function createMigrateFrom(
             path: pointer(match.segments),
           });
         }
+        const dropped: string[] = [];
+        if (dropDefaultBlock) {
+          for (const segments of noiseSettingsPaths(element.kind, element.data)) {
+            const settings = valueAt(data ?? element.data, segments);
+            if (!isObject(settings) || !(DEFAULT_BLOCK in settings)) continue;
+            data = data ?? structuredClone(element.data);
+            delete (valueAt(data, segments) as JsonObject)[DEFAULT_BLOCK];
+            dropped.push(pointer([...segments, DEFAULT_BLOCK]));
+          }
+        }
         if (data !== undefined) {
+          const parts: string[] = [];
+          if (renamed.length > 0) parts.push(`Renamed ${renamed.join(', ')}`);
+          if (dropped.length > 0) {
+            parts.push(
+              `Removed ${dropped.join(', ')}, which noise settings no longer have (the surface rules choose the stone)`,
+            );
+          }
           changes.push({
             elementId: element.id,
             kind: 'update',
-            description: `Renamed ${renamed.join(', ')} for Minecraft ${tables.toVersion}.`,
+            description: `${parts.join('; ')} for Minecraft ${tables.toVersion}.`,
             data,
           });
         }
@@ -182,9 +254,18 @@ export function createMigrateFrom(
   };
 }
 
-/** The tables of this target: from `mc-26.3`, with the removed-id data of `removed-ids.ts`. */
-export function migrationTables(toTargetId: string, toVersion: string): MigrationTables {
+/**
+ * The tables of this target: from `mc-26.3`, with the removed-id data of `removed-ids.ts`.
+ *
+ * @param noiseSettingsDefaultBlock - This target's `worldgen.noiseSettingsDefaultBlock` fact.
+ */
+export function migrationTables(
+  toTargetId: string,
+  toVersion: string,
+  noiseSettingsDefaultBlock?: boolean,
+): MigrationTables {
   return {
+    ...(noiseSettingsDefaultBlock === undefined ? {} : { noiseSettingsDefaultBlock }),
     fromTargetId: 'mc-26.3',
     toTargetId,
     toVersion,
