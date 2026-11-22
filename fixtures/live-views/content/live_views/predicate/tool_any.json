@@ -1,0 +1,13 @@
+{
+  "data": {
+    "predicate": {},
+    "type": "minecraft:match_tool"
+  },
+  "formatVersion": 1,
+  "id": "live_views:tool_any",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "match_tool with no test."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "minecraft:stone",
+      "minecraft:stone",
+      "#live_views:plain"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:dupes",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Duplicates."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "data": {
+    "type": "minecraft:killed_by_player"
+  },
+  "formatVersion": 1,
+  "id": "live_views:killed_by_player",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "killed_by_player."
+  }
+}

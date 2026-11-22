@@ -1,0 +1,27 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "condition": {
+              "chance": 0.25,
+              "type": "minecraft:random_chance"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:random_chance",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "An entry with random_chance."
+  }
+}

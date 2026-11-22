@@ -1,0 +1,45 @@
+{
+  "data": {
+    "modifier": {
+      "type": "minecraft:explosion_decay"
+    },
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": [
+              {
+                "count": {
+                  "max": 2,
+                  "min": -6,
+                  "type": "minecraft:uniform"
+                },
+                "type": "minecraft:set_count"
+              },
+              {
+                "limit": {
+                  "min": 0
+                },
+                "type": "minecraft:limit_count"
+              },
+              {
+                "type": "minecraft:explosion_decay"
+              }
+            ],
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks/light_gray_wool",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A count that may be below zero, limited, with explosion_decay on the entry and the table."
+  }
+}

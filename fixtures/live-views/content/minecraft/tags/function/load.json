@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "live_views:on_load"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:load",
+  "kind": "minecraft:tag/function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Runs the fixture's load function."
+  }
+}

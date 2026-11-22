@@ -1,0 +1,15 @@
+{
+  "data": {
+    "functions": [
+      "live_views:mod_set_count"
+    ],
+    "type": "minecraft:sequence"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_ref",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A modifier named by id."
+  }
+}

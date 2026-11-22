@@ -1,0 +1,17 @@
+{
+  "data": {
+    "count": {
+      "max": 3,
+      "min": 1,
+      "type": "minecraft:uniform"
+    },
+    "type": "minecraft:set_count"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_count_uniform",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_count 1 to 3."
+  }
+}

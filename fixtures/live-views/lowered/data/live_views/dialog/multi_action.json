@@ -1,0 +1,56 @@
+{
+  "actions": [
+    {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "One",
+      "width": 150
+    },
+    {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "Two",
+      "width": 150
+    },
+    {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "Three",
+      "width": 150
+    },
+    {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "Four",
+      "width": 100
+    },
+    {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "Five",
+      "width": 300
+    }
+  ],
+  "body": {
+    "contents": "A plain message body of a few words.",
+    "type": "minecraft:plain_message",
+    "width": 200
+  },
+  "columns": 2,
+  "exit_action": {
+    "label": "Back",
+    "width": 200
+  },
+  "title": "Many",
+  "type": "minecraft:multi_action"
+}

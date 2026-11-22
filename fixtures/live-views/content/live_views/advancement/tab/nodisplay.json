@@ -1,0 +1,17 @@
+{
+  "data": {
+    "criteria": {
+      "c0": {
+        "trigger": "minecraft:impossible"
+      }
+    },
+    "parent": "live_views:tab/c"
+  },
+  "formatVersion": 1,
+  "id": "live_views:tab/nodisplay",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "An advancement of the fixture (task)."
+  }
+}

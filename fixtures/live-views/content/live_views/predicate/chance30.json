@@ -1,0 +1,13 @@
+{
+  "data": {
+    "chance": 0.3,
+    "type": "minecraft:random_chance"
+  },
+  "formatVersion": 1,
+  "id": "live_views:chance30",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "random_chance 0.3."
+  }
+}

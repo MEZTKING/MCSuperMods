@@ -1,0 +1,13 @@
+{
+  "button_width": 200,
+  "columns": 1,
+  "dialogs": [
+    "live_views:notice",
+    "live_views:confirmation"
+  ],
+  "exit_action": {
+    "label": "Back"
+  },
+  "title": "List",
+  "type": "minecraft:dialog_list"
+}

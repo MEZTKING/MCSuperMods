@@ -1,0 +1,19 @@
+{
+  "data": {
+    "predicate": {
+      "position": {
+        "y": {
+          "min": 100
+        }
+      }
+    },
+    "type": "minecraft:location_check"
+  },
+  "formatVersion": 1,
+  "id": "live_views:high",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "location_check position."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "modifier": {
+    "add": true,
+    "count": 1,
+    "type": "minecraft:set_count"
+  },
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": {
+            "count": 3,
+            "type": "minecraft:set_count"
+          },
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

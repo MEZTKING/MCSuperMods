@@ -1,0 +1,14 @@
+{
+  "data": {
+    "values": [
+      "live_views:spike_curse"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:curse",
+  "kind": "minecraft:tag/enchantment",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Merges a curse into vanilla's tag."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "values": [
+      "minecraft:diamond_sword",
+      "minecraft:iron_sword"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:spiky",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "What the fixture's enchantments go on."
+  }
+}

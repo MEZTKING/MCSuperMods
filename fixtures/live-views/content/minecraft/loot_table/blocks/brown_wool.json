@@ -1,0 +1,40 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "condition": {
+              "blocks": "minecraft:brown_wool",
+              "type": "minecraft:match_block"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      },
+      {
+        "entries": [
+          {
+            "condition": {
+              "blocks": "minecraft:stone",
+              "type": "minecraft:match_block"
+            },
+            "name": "minecraft:stick",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks/brown_wool",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "match_block: the mined block, and another block."
+  }
+}

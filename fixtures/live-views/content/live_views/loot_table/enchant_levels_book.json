@@ -1,0 +1,27 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "levels": 30,
+              "type": "minecraft:enchant_with_levels"
+            },
+            "name": "minecraft:book",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:enchant_levels_book",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "enchant_with_levels on a book, every enchantment."
+  }
+}

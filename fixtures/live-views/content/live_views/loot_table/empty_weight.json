@@ -1,0 +1,28 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "type": "minecraft:empty",
+            "weight": 1
+          },
+          {
+            "name": "minecraft:stone",
+            "type": "minecraft:item",
+            "weight": 3
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:empty_weight",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "An empty entry with a weight."
+  }
+}

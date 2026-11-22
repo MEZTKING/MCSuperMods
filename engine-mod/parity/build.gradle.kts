@@ -173,3 +173,62 @@ tasks.register<Exec>("worldgenVanilla") {
     environment("MSM_WORLDGEN_VANILLA_OUT", measured.absolutePath)
     environment("MSM_WORLDGEN_MINECRAFT", minecraft)
 }
+
+// The live views parity fixture (ADR 0120 D9, B607): fixtures/live-views/lowered/data as a mod jar of its own, loaded
+// only by liveViewsParity, so its wool loot tables, merged and replaced vanilla tags and load function are never
+// active in another parity run. One data pack serves every version (the data format is the same on both targets).
+val liveViewsFixture: Directory = layout.projectDirectory.dir("../../fixtures/live-views")
+
+val liveViewsFixtureJar = tasks.register<Jar>("liveViewsFixtureJar") {
+    group = "build"
+    description = "The live views parity fixture's data pack as a mod jar of its own (only liveViewsParity loads it)."
+    val version = project.version
+    archiveBaseName = "msm_live_views_fixture"
+    archiveVersion = version.toString()
+    destinationDirectory = layout.buildDirectory.dir("live-views-fixture")
+    inputs.property("version", version)
+    from(layout.projectDirectory.dir("src/live-views-fixture")) {
+        include("fabric.mod.json")
+        expand("version" to version)
+    }
+    from(liveViewsFixture.dir("lowered")) {
+        include("data/**")
+    }
+}
+
+// LiveViewsDataParityTest on a production GameTest server (B607): tools/run-fabric-server runs this jar's
+// live_views_data_parity_test_* tests with the fixture jar as the mod under test, and the tests check this version's
+// section of fixtures/live-views/expectations.json (or, with -PupdateLiveViewsParity, rewrite it). Needs node and JDK 25.
+tasks.register<Exec>("liveViewsParity") {
+    group = "verification"
+    description = "Measures the live views parity fixture on the real game and checks (or with -PupdateLiveViewsParity rewrites) its expectations."
+    dependsOn(tasks.jar, liveViewsFixtureJar)
+    val jarFile = tasks.jar.flatMap { it.archiveFile }
+    val fixtureJarFile = liveViewsFixtureJar.flatMap { it.archiveFile }
+    val repository = layout.projectDirectory.dir("../..").asFile
+    val expectations = liveViewsFixture.file("expectations.json").asFile
+    val work = layout.buildDirectory.dir("live-views-parity-server").get().asFile
+    val report = layout.buildDirectory.file("live-views-parity-report.xml").get().asFile
+    val minecraft = fact("minecraft_version")
+    val loader = fact("loader_version")
+    val fabricApi = fact("fabric_api_version")
+    val update = providers.gradleProperty("updateLiveViewsParity").isPresent
+    inputs.file(jarFile)
+    inputs.file(fixtureJarFile)
+    outputs.upToDateWhen { false }
+    workingDir = repository
+    executable = "node"
+    argumentProviders.add(CommandLineArgumentProvider {
+        listOf(
+            "tools/run-fabric-server/index.ts",
+            "--jar", fixtureJarFile.get().asFile.absolutePath, "--no-runtime",
+            "--gametest", jarFile.get().asFile.absolutePath,
+            "--gametest-filter", "msm_parity_tests:live_views_data_parity_test_*",
+            "--minecraft", minecraft, "--loader", loader, "--fabric-api", fabricApi,
+            "--work", work.absolutePath, "--report", report.absolutePath,
+        )
+    })
+    environment("MSM_LIVE_VIEWS_EXPECTATIONS", expectations.absolutePath)
+    environment("MSM_LIVE_VIEWS_TARGET", "mc-$mc")
+    if (update) environment("MSM_LIVE_VIEWS_UPDATE", "1")
+}

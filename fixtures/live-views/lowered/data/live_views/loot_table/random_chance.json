@@ -1,0 +1,18 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "condition": {
+            "chance": 0.25,
+            "type": "minecraft:random_chance"
+          },
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

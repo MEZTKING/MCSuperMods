@@ -1,0 +1,39 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "name": "minecraft:stone",
+            "type": "minecraft:item",
+            "weight": 1
+          },
+          {
+            "name": "minecraft:dirt",
+            "type": "minecraft:item",
+            "weight": 2
+          },
+          {
+            "name": "minecraft:sand",
+            "type": "minecraft:item",
+            "weight": 3
+          },
+          {
+            "name": "minecraft:gravel",
+            "type": "minecraft:item",
+            "weight": 4
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:weights",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Item entries picked by weight (1, 2, 3, 4)."
+  }
+}

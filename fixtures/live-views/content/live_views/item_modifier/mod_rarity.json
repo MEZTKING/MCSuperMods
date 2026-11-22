@@ -1,0 +1,15 @@
+{
+  "data": {
+    "components": {
+      "minecraft:rarity": "epic"
+    },
+    "type": "minecraft:set_components"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_rarity",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_components rarity."
+  }
+}

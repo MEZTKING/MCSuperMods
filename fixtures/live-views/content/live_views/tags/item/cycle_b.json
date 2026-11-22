@@ -1,0 +1,15 @@
+{
+  "data": {
+    "values": [
+      "#live_views:cycle_a",
+      "minecraft:dirt"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:cycle_b",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The other half of a cycle."
+  }
+}

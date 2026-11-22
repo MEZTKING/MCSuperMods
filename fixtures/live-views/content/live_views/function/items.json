@@ -1,0 +1,16 @@
+{
+  "data": {
+    "lines": [
+      "give @s minecraft:diamond 5",
+      "clear @s minecraft:diamond 2",
+      "give @s minecraft:apple"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:items",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Items: give and clear."
+  }
+}

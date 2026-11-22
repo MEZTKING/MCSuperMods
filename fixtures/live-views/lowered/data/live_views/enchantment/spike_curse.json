@@ -1,0 +1,21 @@
+{
+  "anvil_cost": 2,
+  "description": {
+    "text": "Curse of Spikes"
+  },
+  "max_cost": {
+    "base": 25,
+    "per_level_above_first": 8
+  },
+  "max_level": 1,
+  "min_cost": {
+    "base": 5,
+    "per_level_above_first": 8
+  },
+  "primary_items": "#live_views:spiky",
+  "slots": [
+    "mainhand"
+  ],
+  "supported_items": "#live_views:spiky",
+  "weight": 2
+}

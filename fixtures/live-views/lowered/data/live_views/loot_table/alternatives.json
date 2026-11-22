@@ -1,0 +1,27 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "children": [
+            {
+              "condition": {
+                "chance": 0.5,
+                "type": "minecraft:random_chance"
+              },
+              "name": "minecraft:stone",
+              "type": "minecraft:item"
+            },
+            {
+              "name": "minecraft:dirt",
+              "type": "minecraft:item"
+            }
+          ],
+          "type": "minecraft:alternatives"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

@@ -1,0 +1,17 @@
+{
+  "data": {
+    "lines": [
+      "scoreboard objectives add lv_score dummy",
+      "scoreboard players set @s lv_score 3",
+      "scoreboard players add @s lv_score 4",
+      "scoreboard players remove @s lv_score 2"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:scores",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Scores: set, add, remove."
+  }
+}

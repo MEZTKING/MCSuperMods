@@ -1,0 +1,31 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "n": 5,
+                "p": 0.3,
+                "type": "minecraft:binomial"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:count_binomial",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_count, binomial."
+  }
+}

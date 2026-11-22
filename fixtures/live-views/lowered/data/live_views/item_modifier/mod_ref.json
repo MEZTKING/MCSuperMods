@@ -1,0 +1,6 @@
+{
+  "functions": [
+    "live_views:mod_set_count"
+  ],
+  "type": "minecraft:sequence"
+}

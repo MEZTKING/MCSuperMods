@@ -1,0 +1,15 @@
+{
+  "formatVersion": 1,
+  "name": "Live Views Parity",
+  "namespaces": [
+    "minecraft",
+    "live_views"
+  ],
+  "plugins": [
+    "msm.datapack"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.3"
+  ]
+}

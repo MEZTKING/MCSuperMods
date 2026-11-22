@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "minecraft:stone",
+      {
+        "id": "#live_views:not_a_tag",
+        "required": true
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:with_missing",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A required tag that does not exist: the whole tag is dropped."
+  }
+}

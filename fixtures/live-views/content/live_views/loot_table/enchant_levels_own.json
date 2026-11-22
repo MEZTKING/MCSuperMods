@@ -1,0 +1,32 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "levels": {
+                "max": 30,
+                "min": 5,
+                "type": "minecraft:uniform"
+              },
+              "options": "#live_views:own",
+              "type": "minecraft:enchant_with_levels"
+            },
+            "name": "minecraft:diamond_sword",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:enchant_levels_own",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "enchant_with_levels limited to the fixture's own enchantments."
+  }
+}

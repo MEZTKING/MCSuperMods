@@ -1,0 +1,17 @@
+{
+  "data": {
+    "name": {
+      "color": "gold",
+      "text": "Fixture Sword"
+    },
+    "target": "custom_name",
+    "type": "minecraft:set_name"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_set_name",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_name as a custom name."
+  }
+}

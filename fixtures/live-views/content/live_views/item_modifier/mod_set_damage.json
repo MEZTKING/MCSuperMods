@@ -1,0 +1,13 @@
+{
+  "data": {
+    "damage": 0.5,
+    "type": "minecraft:set_damage"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_set_damage",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_damage: half the durability left."
+  }
+}

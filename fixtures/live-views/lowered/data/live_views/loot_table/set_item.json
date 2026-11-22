@@ -1,0 +1,28 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": [
+            {
+              "count": 2,
+              "type": "minecraft:set_count"
+            },
+            {
+              "condition": {
+                "chance": 0.5,
+                "type": "minecraft:random_chance"
+              },
+              "item": "minecraft:emerald",
+              "type": "minecraft:set_item"
+            }
+          ],
+          "name": "minecraft:stone",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

@@ -1,0 +1,25 @@
+{
+  "body": {
+    "contents": "A plain message body of a few words.",
+    "type": "minecraft:plain_message",
+    "width": 200
+  },
+  "no": {
+    "action": {
+      "command": "say hi",
+      "type": "minecraft:run_command"
+    },
+    "label": "No",
+    "width": 150
+  },
+  "title": "Confirm",
+  "type": "minecraft:confirmation",
+  "yes": {
+    "action": {
+      "command": "say hi",
+      "type": "minecraft:run_command"
+    },
+    "label": "Yes",
+    "width": 150
+  }
+}

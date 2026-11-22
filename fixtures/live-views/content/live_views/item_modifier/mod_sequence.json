@@ -1,0 +1,23 @@
+{
+  "data": {
+    "functions": [
+      {
+        "count": 3,
+        "type": "minecraft:set_count"
+      },
+      {
+        "name": "Three",
+        "target": "item_name",
+        "type": "minecraft:set_name"
+      }
+    ],
+    "type": "minecraft:sequence"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_sequence",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A sequence of set_count and set_name."
+  }
+}

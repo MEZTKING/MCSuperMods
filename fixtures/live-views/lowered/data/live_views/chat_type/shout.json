@@ -1,0 +1,21 @@
+{
+  "chat": {
+    "parameters": [
+      "sender",
+      "target",
+      "content"
+    ],
+    "style": {
+      "bold": true,
+      "color": "red"
+    },
+    "translation_key": "live_views.shout"
+  },
+  "narration": {
+    "parameters": [
+      "sender",
+      "content"
+    ],
+    "translation_key": "live_views.shout.narrate"
+  }
+}

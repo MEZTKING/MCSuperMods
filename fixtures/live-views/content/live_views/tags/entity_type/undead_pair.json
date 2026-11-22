@@ -1,0 +1,15 @@
+{
+  "data": {
+    "values": [
+      "minecraft:zombie",
+      "minecraft:skeleton"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:undead_pair",
+  "kind": "minecraft:tag/entity_type",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "An entity type tag."
+  }
+}

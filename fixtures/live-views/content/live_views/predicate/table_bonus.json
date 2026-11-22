@@ -1,0 +1,16 @@
+{
+  "data": {
+    "chances": [
+      1.0
+    ],
+    "enchantment": "minecraft:fortune",
+    "type": "minecraft:table_bonus"
+  },
+  "formatVersion": 1,
+  "id": "live_views:table_bonus",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "table_bonus, always."
+  }
+}

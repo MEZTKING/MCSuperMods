@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "minecraft:white_wool",
+      "minecraft:orange_wool",
+      "#minecraft:wool"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:soft",
+  "kind": "minecraft:tag/block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A block tag naming a vanilla block tag."
+  }
+}

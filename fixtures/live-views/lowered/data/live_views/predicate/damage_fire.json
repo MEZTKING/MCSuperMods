@@ -1,0 +1,11 @@
+{
+  "predicate": {
+    "tags": [
+      {
+        "expected": true,
+        "id": "#minecraft:is_fire"
+      }
+    ]
+  },
+  "type": "minecraft:damage_source_properties"
+}

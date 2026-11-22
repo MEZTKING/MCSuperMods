@@ -1,0 +1,18 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": {
+            "options": "#live_views:own",
+            "type": "minecraft:enchant_randomly"
+          },
+          "name": "minecraft:book",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

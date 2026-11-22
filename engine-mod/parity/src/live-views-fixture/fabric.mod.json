@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_live_views_fixture",
+  "version": "${version}",
+  "name": "MSM live views parity fixture",
+  "description": "The data pack of fixtures/live-views (MSM's own loot tables, predicates, item modifiers, tags, enchantments, advancements, dialogs and functions, ADR 0120 D9) as mod data, for the parity build's liveViewsParity task only (B607); never loaded with the other parity GameTests.",
+  "license": "MIT",
+  "environment": "*"
+}

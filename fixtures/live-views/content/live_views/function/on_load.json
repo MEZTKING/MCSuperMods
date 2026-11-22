@@ -1,0 +1,15 @@
+{
+  "data": {
+    "lines": [
+      "scoreboard objectives add lv_load dummy",
+      "scoreboard players set #loaded lv_load 1"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:on_load",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The load function (minecraft:load)."
+  }
+}

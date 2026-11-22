@@ -1,0 +1,15 @@
+{
+  "data": {
+    "replace": true,
+    "values": [
+      "minecraft:stone"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "minecraft:wool",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Replaces vanilla's tag."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "term": {
+      "chance": 0.0,
+      "type": "minecraft:random_chance"
+    },
+    "type": "minecraft:inverted"
+  },
+  "formatVersion": 1,
+  "id": "live_views:inverted_zero",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "inverted."
+  }
+}

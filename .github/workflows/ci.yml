@@ -1138,6 +1138,15 @@ jobs:
       - name: Worldgen parity GameTest (fixtures/worldgen-parity)
         working-directory: engine-mod
         run: ./gradlew -p parity worldgenParity -Pmc=${{ matrix.mc }} --no-daemon
+      # Live views parity (B607, ADR 0120 D9): LiveViewsDataParityTest rolls each loot table of
+      # fixtures/live-views 10,000 times (blocks mined, mobs killed, blocks blown up), tests each
+      # predicate in set-up situations, applies each item modifier, resolves each tag, runs each
+      # function and reads the advancement tree on the real server, with the fixture's lowered data
+      # pack as a mod jar of its own, and compares with expectations.json (rates within B600's 2L1
+      # tolerance). `-PupdateLiveViewsParity` rewrites the file. Under a minute a version.
+      - name: Live views parity GameTest (fixtures/live-views)
+        working-directory: engine-mod
+        run: ./gradlew -p parity liveViewsParity -Pmc=${{ matrix.mc }} --no-daemon
       # The engine over the Loom cache jar's vanilla settings against the real game (ADR 0119 D13,
       # WS5 and WS6; turned on by B581): worldgenVanilla measures MSM's own test dimensions over
       # vanilla's noise settings (fixtures/worldgen-parity/vanilla) into a file that is never

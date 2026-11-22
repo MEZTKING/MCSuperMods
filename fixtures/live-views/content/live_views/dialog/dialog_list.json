@@ -1,0 +1,22 @@
+{
+  "data": {
+    "button_width": 200,
+    "columns": 1,
+    "dialogs": [
+      "live_views:notice",
+      "live_views:confirmation"
+    ],
+    "exit_action": {
+      "label": "Back"
+    },
+    "title": "List",
+    "type": "minecraft:dialog_list"
+  },
+  "formatVersion": 1,
+  "id": "live_views:dialog_list",
+  "kind": "minecraft:dialog",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A dialog_list dialog."
+  }
+}

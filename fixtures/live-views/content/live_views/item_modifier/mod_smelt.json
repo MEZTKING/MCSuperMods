@@ -1,0 +1,12 @@
+{
+  "data": {
+    "type": "minecraft:furnace_smelt"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_smelt",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "furnace_smelt."
+  }
+}

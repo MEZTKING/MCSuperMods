@@ -1,0 +1,32 @@
+{
+  "data": {
+    "modifier": {
+      "add": true,
+      "count": 1,
+      "type": "minecraft:set_count"
+    },
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": 3,
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:table_modifier",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "An entry modifier, then a table modifier."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "entity": "this",
+    "scores": {
+      "lv_pred": {
+        "min": 5
+      }
+    },
+    "type": "minecraft:entity_scores"
+  },
+  "formatVersion": 1,
+  "id": "live_views:score5",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "entity_scores."
+  }
+}

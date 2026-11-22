@@ -1,0 +1,9 @@
+{
+  "values": [
+    "minecraft:stone",
+    {
+      "id": "#live_views:not_a_tag",
+      "required": true
+    }
+  ]
+}

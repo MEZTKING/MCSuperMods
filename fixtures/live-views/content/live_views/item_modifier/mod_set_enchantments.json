@@ -1,0 +1,16 @@
+{
+  "data": {
+    "enchantments": {
+      "live_views:spike": 2,
+      "minecraft:sharpness": 3
+    },
+    "type": "minecraft:set_enchantments"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_set_enchantments",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_enchantments."
+  }
+}

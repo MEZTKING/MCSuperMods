@@ -1,0 +1,35 @@
+{
+  "anvil_cost": 2,
+  "description": {
+    "translate": "enchantment.live_views.spike"
+  },
+  "effects": {
+    "minecraft:damage": [
+      {
+        "effect": {
+          "type": "minecraft:add",
+          "value": {
+            "base": 1.0,
+            "per_level_above_first": 0.5,
+            "type": "minecraft:linear"
+          }
+        }
+      }
+    ]
+  },
+  "max_cost": {
+    "base": 25,
+    "per_level_above_first": 8
+  },
+  "max_level": 5,
+  "min_cost": {
+    "base": 5,
+    "per_level_above_first": 8
+  },
+  "primary_items": "#live_views:spiky",
+  "slots": [
+    "mainhand"
+  ],
+  "supported_items": "#live_views:spiky",
+  "weight": 10
+}

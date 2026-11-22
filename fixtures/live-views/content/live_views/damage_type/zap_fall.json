@@ -1,0 +1,15 @@
+{
+  "data": {
+    "death_message_type": "fall_variants",
+    "exhaustion": 0.1,
+    "message_id": "live_views_zap_fall",
+    "scaling": "never"
+  },
+  "formatVersion": 1,
+  "id": "live_views:zap_fall",
+  "kind": "minecraft:damage_type",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A damage type with death_message_type fall_variants."
+  }
+}

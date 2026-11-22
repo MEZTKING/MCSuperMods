@@ -1,0 +1,23 @@
+{
+  "criteria": {
+    "c0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:block/stone",
+    "description": {
+      "text": "A fixture step."
+    },
+    "frame": "task",
+    "hidden": true,
+    "icon": {
+      "id": "minecraft:stone"
+    },
+    "show_toast": true,
+    "title": {
+      "text": "hidden_root/root"
+    }
+  }
+}

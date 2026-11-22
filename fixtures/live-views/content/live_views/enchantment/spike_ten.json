@@ -1,0 +1,30 @@
+{
+  "data": {
+    "anvil_cost": 2,
+    "description": {
+      "translate": "enchantment.live_views.spike_ten"
+    },
+    "max_cost": {
+      "base": 6,
+      "per_level_above_first": 3
+    },
+    "max_level": 12,
+    "min_cost": {
+      "base": 1,
+      "per_level_above_first": 3
+    },
+    "primary_items": "#live_views:spiky",
+    "slots": [
+      "mainhand"
+    ],
+    "supported_items": "#live_views:spiky",
+    "weight": 5
+  },
+  "formatVersion": 1,
+  "id": "live_views:spike_ten",
+  "kind": "minecraft:enchantment",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Twelve levels (names beyond ten)."
+  }
+}

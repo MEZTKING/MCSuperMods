@@ -1,0 +1,26 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "condition": {
+              "type": "minecraft:survives_explosion"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks/gray_wool",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "survives_explosion."
+  }
+}

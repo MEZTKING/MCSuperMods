@@ -1,0 +1,31 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "count": {
+                "max": 5,
+                "min": 2,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_count"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:count_uniform",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_count, uniform."
+  }
+}

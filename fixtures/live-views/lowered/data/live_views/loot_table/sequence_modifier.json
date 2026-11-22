@@ -1,0 +1,24 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": {
+            "functions": [
+              {
+                "count": 2,
+                "type": "minecraft:set_count"
+              },
+              "live_views:mod_count_uniform_add"
+            ],
+            "type": "minecraft:sequence"
+          },
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

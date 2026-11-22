@@ -1,0 +1,31 @@
+{
+  "data": {
+    "terms": [
+      {
+        "chance": 1.0,
+        "type": "minecraft:random_chance"
+      },
+      {
+        "terms": [
+          {
+            "chance": 0.0,
+            "type": "minecraft:random_chance"
+          },
+          {
+            "chance": 0.5,
+            "type": "minecraft:random_chance"
+          }
+        ],
+        "type": "minecraft:any_of"
+      }
+    ],
+    "type": "minecraft:all_of"
+  },
+  "formatVersion": 1,
+  "id": "live_views:all_any",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "all_of and any_of."
+  }
+}

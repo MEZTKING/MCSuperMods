@@ -1,0 +1,28 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:ore_drops",
+              "type": "minecraft:apply_bonus"
+            },
+            "name": "minecraft:diamond",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks/white_wool",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "apply_bonus ore_drops (the fixture's own table for white wool)."
+  }
+}

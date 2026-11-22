@@ -1,0 +1,15 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": "live_views:mod_count_uniform",
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

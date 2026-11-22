@@ -1,0 +1,14 @@
+{
+  "functions": [
+    {
+      "count": 3,
+      "type": "minecraft:set_count"
+    },
+    {
+      "name": "Three",
+      "target": "item_name",
+      "type": "minecraft:set_name"
+    }
+  ],
+  "type": "minecraft:sequence"
+}

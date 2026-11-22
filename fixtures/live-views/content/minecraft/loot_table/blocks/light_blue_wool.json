@@ -1,0 +1,33 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "condition": {
+              "chances": [
+                0.1,
+                0.3,
+                0.6,
+                0.9
+              ],
+              "enchantment": "minecraft:fortune",
+              "type": "minecraft:table_bonus"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:block"
+  },
+  "formatVersion": 1,
+  "id": "minecraft:blocks/light_blue_wool",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "table_bonus."
+  }
+}

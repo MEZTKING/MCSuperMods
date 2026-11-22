@@ -1,0 +1,17 @@
+{
+  "data": {
+    "condition": {
+      "chance": 0.0,
+      "type": "minecraft:random_chance"
+    },
+    "count": 9,
+    "type": "minecraft:set_count"
+  },
+  "formatVersion": 1,
+  "id": "live_views:mod_never",
+  "kind": "minecraft:item_modifier",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A condition that fails."
+  }
+}

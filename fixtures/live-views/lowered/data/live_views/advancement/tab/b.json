@@ -1,0 +1,23 @@
+{
+  "criteria": {
+    "c0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "text": "A fixture step."
+    },
+    "frame": "goal",
+    "hidden": false,
+    "icon": {
+      "id": "minecraft:stone"
+    },
+    "show_toast": true,
+    "title": {
+      "text": "tab/b"
+    }
+  },
+  "parent": "live_views:tab/root"
+}

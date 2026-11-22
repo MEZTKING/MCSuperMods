@@ -8686,3 +8686,20 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - B618 close: the guide brief takes the words ("Everything in it", "comes from", "not found", "optional", "What changed", "Show all", "Listed in this tag", "Taken out"). A settings opener in the Studio hosts would let the Studio's banner open Settings directly.
+## 2026-11-22 — executor — B607 the live views parity fixture and its measured expectations
+
+**What**
+- New `fixtures/live-views/`: `make_fixture.py` writes the MSM project `live_views` (132 elements, MSM's own, written from the data format and B600's findings): 32 loot tables and 10 wool block tables with the fixture's own pools, 19 predicates, 12 item modifiers, 17 tags (merging into `minecraft:logs` and `minecraft:curse`, replacing `minecraft:wool`, the `minecraft:load` function tag, four broken on purpose), 3 enchantments, 19 advancements, 5 dialogs, 3 damage types, a chat type, a trial spawner, a block transformer and 9 functions; and `lowered/data/`, its data pack. One project (target 26.3) serves both targets: the format is the same.
+- `expectations.json` (format 1, about 250 KB, both targets): sections `loot`, `mined`, `killed` (10,000 rolls each by `loot insert`), `exploded` (2,000 blasts), `predicates`, `modifiers`, `enchantments` (costs, names as keys, the enchanting table's picks at a seed), `tags`, `functions` (scores, tags, inventory, effects and blocks after each run), `advancements` (tree and columns) and `registries` (ids, death and chat lines, the load function). Every case carries its situation in `@msm/sim`'s `Situation` shape. The README documents the keys and the tolerance.
+- `engine-mod/parity/`: `LiveViewsDataParityTest` (11 GameTests, `live_views_data_parity_test_*`), its `fabric.mod.json` entrypoint line, `src/live-views-fixture/fabric.mod.json`, and in `build.gradle.kts` the tasks `liveViewsFixtureJar` (the lowered data pack as a mod jar of its own, as worldgen's) and `liveViewsParity` (`-PupdateLiveViewsParity` rewrites the version's sections). CI's `engine-mod` job runs it on both versions after the worldgen parity step.
+- `packages/exporters/test/live-views-fixture.test.ts`: the project loads with no problem; its export for every built-in target has no error (mcfunction checked with the offline checker; the only warnings are the tags' deliberately missing ids) and equals `lowered/data/` file for file.
+- Verified: two update runs and a check run on each version, all 11 tests green; between two runs of the game the largest difference was 1.83 points for rolls and 2.75 for explosions on 26.3, 2.35 and 3.5 on 26.4 (inside the five-deviation allowance; enchanting picks at a seed and every exact section identical); the measured work is about 34 s a version, the whole check 1 min 42 s with Gradle and the server start; `./gradlew -p parity build` on both versions; `pnpm lint`, `pnpm typecheck`, the exporters tests above.
+
+**Decisions**
+- The fixture's data runs in a jar of its own (as worldgen's B581), since its wool tables and tag changes must not reach other parity runs; that needed the two Gradle tasks in `engine-mod/parity/build.gradle.kts`, outside the brief's file list.
+- The game-side check allows B600's 2 points (3 for explosions) or five standard deviations of the difference of two samples, whichever is larger: two runs of the game differ by chance too, and 2 points alone would fail a run in a few.
+- Advancement rows (`y`) are not recorded: the game orders siblings anew on every server start (found on the second run); columns, parents and children are. Situation positions keep only the height: GameTests are placed at random x and z.
+- The checker found the fixture's first `branch` function stored into an objective it never added; fixed before measuring.
+
+**Next**
+- B609, B610, B613 play `expectations.json` through `@msm/sim` (B613 owns `live-views-parity.test.ts`); B611 reads `advancements` and `registries.lines`; B612 reads `tags`.

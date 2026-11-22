@@ -1,0 +1,32 @@
+{
+  "data": {
+    "criteria": {
+      "c0": {
+        "trigger": "minecraft:impossible"
+      }
+    },
+    "display": {
+      "announce_to_chat": false,
+      "description": {
+        "text": "A fixture step."
+      },
+      "frame": "task",
+      "hidden": false,
+      "icon": {
+        "id": "minecraft:stone"
+      },
+      "show_toast": true,
+      "title": {
+        "text": "tab/under_nodisplay"
+      }
+    },
+    "parent": "live_views:tab/nodisplay"
+  },
+  "formatVersion": 1,
+  "id": "live_views:tab/under_nodisplay",
+  "kind": "minecraft:advancement",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "An advancement of the fixture (task)."
+  }
+}

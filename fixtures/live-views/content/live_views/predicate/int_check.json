@@ -1,0 +1,17 @@
+{
+  "data": {
+    "test": {
+      "max": 5,
+      "min": 3
+    },
+    "type": "minecraft:int_value_check",
+    "value": 4
+  },
+  "formatVersion": 1,
+  "id": "live_views:int_check",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "int_value_check."
+  }
+}

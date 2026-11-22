@@ -1,0 +1,8 @@
+{
+  "condition": {
+    "chance": 0.0,
+    "type": "minecraft:random_chance"
+  },
+  "count": 9,
+  "type": "minecraft:set_count"
+}

@@ -1,0 +1,31 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "damage": {
+                "max": 0.6,
+                "min": 0.2,
+                "type": "minecraft:uniform"
+              },
+              "type": "minecraft:set_damage"
+            },
+            "name": "minecraft:diamond_sword",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:set_damage",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "set_damage from a uniform float."
+  }
+}

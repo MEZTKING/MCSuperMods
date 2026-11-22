@@ -1,0 +1,34 @@
+{
+  "data": {
+    "body": {
+      "contents": "A plain message body of a few words.",
+      "type": "minecraft:plain_message",
+      "width": 200
+    },
+    "no": {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "No",
+      "width": 150
+    },
+    "title": "Confirm",
+    "type": "minecraft:confirmation",
+    "yes": {
+      "action": {
+        "command": "say hi",
+        "type": "minecraft:run_command"
+      },
+      "label": "Yes",
+      "width": 150
+    }
+  },
+  "formatVersion": 1,
+  "id": "live_views:confirmation",
+  "kind": "minecraft:dialog",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A confirmation dialog."
+  }
+}

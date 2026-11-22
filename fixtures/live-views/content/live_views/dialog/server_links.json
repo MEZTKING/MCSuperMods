@@ -1,0 +1,15 @@
+{
+  "data": {
+    "button_width": 150,
+    "columns": 2,
+    "title": "Links",
+    "type": "minecraft:server_links"
+  },
+  "formatVersion": 1,
+  "id": "live_views:server_links",
+  "kind": "minecraft:dialog",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A server_links dialog."
+  }
+}

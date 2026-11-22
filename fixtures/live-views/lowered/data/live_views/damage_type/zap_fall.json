@@ -1,0 +1,6 @@
+{
+  "death_message_type": "fall_variants",
+  "exhaustion": 0.1,
+  "message_id": "live_views_zap_fall",
+  "scaling": "never"
+}

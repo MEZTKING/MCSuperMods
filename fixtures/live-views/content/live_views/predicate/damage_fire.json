@@ -1,0 +1,20 @@
+{
+  "data": {
+    "predicate": {
+      "tags": [
+        {
+          "expected": true,
+          "id": "#minecraft:is_fire"
+        }
+      ]
+    },
+    "type": "minecraft:damage_source_properties"
+  },
+  "formatVersion": 1,
+  "id": "live_views:damage_fire",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "damage_source_properties with a damage tag."
+  }
+}

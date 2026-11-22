@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "#live_views:plain",
+      "minecraft:sand",
+      "#minecraft:logs"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:tags_inside",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Tags inside a tag."
+  }
+}

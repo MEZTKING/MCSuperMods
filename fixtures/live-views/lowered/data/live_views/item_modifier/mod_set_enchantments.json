@@ -1,0 +1,7 @@
+{
+  "enchantments": {
+    "live_views:spike": 2,
+    "minecraft:sharpness": 3
+  },
+  "type": "minecraft:set_enchantments"
+}

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "raining": true,
+    "type": "minecraft:weather_check"
+  },
+  "formatVersion": 1,
+  "id": "live_views:raining",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "weather_check raining."
+  }
+}

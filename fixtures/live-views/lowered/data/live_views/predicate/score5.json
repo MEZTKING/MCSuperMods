@@ -1,0 +1,9 @@
+{
+  "entity": "this",
+  "scores": {
+    "lv_pred": {
+      "min": 5
+    }
+  },
+  "type": "minecraft:entity_scores"
+}

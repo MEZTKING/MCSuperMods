@@ -1,0 +1,22 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "modifier": {
+            "count": {
+              "n": 5,
+              "p": 0.3,
+              "type": "minecraft:binomial"
+            },
+            "type": "minecraft:set_count"
+          },
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

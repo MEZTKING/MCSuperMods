@@ -1,0 +1,16 @@
+{
+  "data": {
+    "values": [
+      "live_views:spike",
+      "live_views:spike_curse",
+      "live_views:spike_ten"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:own",
+  "kind": "minecraft:tag/enchantment",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The fixture's own enchantments."
+  }
+}

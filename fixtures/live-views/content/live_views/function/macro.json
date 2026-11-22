@@ -1,0 +1,16 @@
+{
+  "data": {
+    "lines": [
+      "scoreboard objectives add lv_macro dummy",
+      "$scoreboard players set @s lv_macro $(n)",
+      "$give @s minecraft:$(item) $(count)"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:macro",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A macro function."
+  }
+}

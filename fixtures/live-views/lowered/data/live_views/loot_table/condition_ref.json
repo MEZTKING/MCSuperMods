@@ -1,0 +1,15 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "condition": "live_views:chance30",
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:generic"
+}

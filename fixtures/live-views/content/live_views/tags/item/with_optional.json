@@ -1,0 +1,22 @@
+{
+  "data": {
+    "values": [
+      "minecraft:stone",
+      {
+        "id": "live_views:not_an_item",
+        "required": false
+      },
+      {
+        "id": "#live_views:not_a_tag",
+        "required": false
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:with_optional",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Optional entries that do not exist."
+  }
+}

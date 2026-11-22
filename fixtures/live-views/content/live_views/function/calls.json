@@ -1,0 +1,16 @@
+{
+  "data": {
+    "lines": [
+      "function live_views:scores",
+      "function live_views:items",
+      "tag @s add lv_nested"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:calls",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Calls other functions."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "count": {
+    "max": 3,
+    "min": 1,
+    "type": "minecraft:uniform"
+  },
+  "type": "minecraft:set_count"
+}

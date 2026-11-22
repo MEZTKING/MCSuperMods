@@ -1,0 +1,24 @@
+{
+  "pools": [
+    {
+      "entries": [
+        {
+          "condition": {
+            "chances": [
+              0.1,
+              0.3,
+              0.6,
+              0.9
+            ],
+            "enchantment": "minecraft:fortune",
+            "type": "minecraft:table_bonus"
+          },
+          "name": "minecraft:apple",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "type": "minecraft:block"
+}

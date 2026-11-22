@@ -1,0 +1,16 @@
+{
+  "data": {
+    "entity": "this",
+    "predicate": {
+      "minecraft:entity_type": "minecraft:player"
+    },
+    "type": "minecraft:entity_properties"
+  },
+  "formatVersion": 1,
+  "id": "live_views:is_player",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "entity_properties type."
+  }
+}

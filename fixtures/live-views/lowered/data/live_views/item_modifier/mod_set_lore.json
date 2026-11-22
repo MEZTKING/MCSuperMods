@@ -1,0 +1,10 @@
+{
+  "lore": [
+    {
+      "text": "Line one"
+    },
+    "Line two"
+  ],
+  "mode": "append",
+  "type": "minecraft:set_lore"
+}

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "terms": [
+      "live_views:chance30"
+    ],
+    "type": "minecraft:all_of"
+  },
+  "formatVersion": 1,
+  "id": "live_views:ref_chance",
+  "kind": "minecraft:predicate",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A predicate named by id."
+  }
+}

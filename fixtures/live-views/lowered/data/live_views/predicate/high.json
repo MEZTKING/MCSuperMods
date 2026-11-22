@@ -1,0 +1,10 @@
+{
+  "predicate": {
+    "position": {
+      "y": {
+        "min": 100
+      }
+    }
+  },
+  "type": "minecraft:location_check"
+}

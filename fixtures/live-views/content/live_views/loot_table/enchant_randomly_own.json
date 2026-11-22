@@ -1,0 +1,27 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "options": "#live_views:own",
+              "type": "minecraft:enchant_randomly"
+            },
+            "name": "minecraft:book",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:enchant_randomly_own",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "enchant_randomly limited to the fixture's own enchantments."
+  }
+}

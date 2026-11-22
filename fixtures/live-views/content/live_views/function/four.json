@@ -1,0 +1,14 @@
+{
+  "data": {
+    "lines": [
+      "return 4"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "live_views:four",
+  "kind": "minecraft:function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Returns 4."
+  }
+}

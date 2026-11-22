@@ -1,0 +1,33 @@
+{
+  "data": {
+    "pools": [
+      {
+        "entries": [
+          {
+            "modifier": {
+              "functions": [
+                {
+                  "count": 2,
+                  "type": "minecraft:set_count"
+                },
+                "live_views:mod_count_uniform_add"
+              ],
+              "type": "minecraft:sequence"
+            },
+            "name": "minecraft:apple",
+            "type": "minecraft:item"
+          }
+        ],
+        "rolls": 1
+      }
+    ],
+    "type": "minecraft:generic"
+  },
+  "formatVersion": 1,
+  "id": "live_views:sequence_modifier",
+  "kind": "minecraft:loot_table",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A sequence modifier with a modifier id inside."
+  }
+}
