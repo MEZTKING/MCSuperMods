@@ -1,0 +1,85 @@
+{
+  "data": {
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "speed": 1.3,
+            "type": "panic"
+          },
+          {
+            "from_ground": true,
+            "item": "minecraft:gold_ingot",
+            "loot_table": "minecraft:gameplay/piglin_bartering",
+            "ticks": 120,
+            "type": "barter"
+          },
+          {
+            "speed": 0.6,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/fair_trader_animations",
+        "attack": "attack",
+        "idle": "idle",
+        "model": "msm_examples:entity/fair_trader",
+        "renderer": "auto",
+        "shoot": "shoot",
+        "sit": "sit",
+        "texture": "msm_examples:entity/fair_trader",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 20
+      },
+      "msm:movement": {
+        "speed": 0.4
+      },
+      "msm:trader": {
+        "demand": true,
+        "levels": true,
+        "reputation": {
+          "gift": 10,
+          "gift_item": "minecraft:poppy"
+        },
+        "restock": "twice_a_day",
+        "trade_sets": [
+          {
+            "trade_set": "minecraft:wandering_trader/common"
+          },
+          {
+            "trade_set": "minecraft:wandering_trader/uncommon"
+          }
+        ],
+        "work_site": "minecraft:barrel"
+      }
+    },
+    "display_name": "Fair Trader",
+    "format": 1,
+    "size": {
+      "height": 1.95,
+      "width": 0.6
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/fair_trader_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fair_trader",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A trader with a memory. msm:trader opens the villager trading screen with the wandering trader's common wares, then its rare ones as players trade. reputation keeps a value for each player: each trade adds 2 (up to 25), each poppy given to it (used on it) adds 10 (gift, up to 25) and each hit takes 25 away; the value changes every price for that player and fades a little each day. It is never shared with other mobs. demand true raises the price of a trade bought out after the next restock, as with villagers. work_site makes it walk to the nearest barrel within 16 blocks to restock, twice a day. The barter goal takes a gold ingot handed to it or dropped near it and drops a roll of vanilla's piglin bartering loot after six seconds. It does not spawn on its own: use its spawn egg.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

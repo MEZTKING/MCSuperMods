@@ -40,6 +40,7 @@ import { portalBundle } from '../starters/portal';
 import { storageCrateBundle } from '../starters/storage-crate';
 import { throwableBundle } from '../starters/throwable';
 import { treeBundle } from '../starters/tree';
+import { woodSetBundle } from '../starters/wood-set';
 import { defineExample } from './define';
 import { presetMob } from './entities';
 import { RULES_KIND } from './rules';
@@ -57,6 +58,8 @@ const EMBER = COLOURS.ruby;
 const PLUM = COLOURS.violet;
 const MOSS = COLOURS.jade;
 const CANVAS = COLOURS.wood;
+/** Willow wood: a pale green-grey (B539). */
+const WILLOW: Rgb = [150, 160, 112];
 
 /** Rule book data with its counters. */
 const book = (rules: Json[], counters: Json[] = []): Json => ({ counters, format: 1, rules });
@@ -1949,7 +1952,34 @@ export const popularExamples: readonly ExampleProject[] = [
     ['vehicle', 'rideable', 'flying', 'script', 'fuel'],
     biplane,
   ),
+  popular(
+    'willow_boats',
+    'Willow boats',
+    'A willow wood set with a boat and a chest boat of its own wood, paddled as vanilla boats and crafted from willow planks.',
+    'boats of every wood',
+    KINDS.item,
+    ['boat', 'wood set', 'chest boat'],
+    willowBoats,
+  ),
 ];
+
+// Willow boats (ADR 0110; B539) --------------------------------------------------------------
+
+/**
+ * Willow boats: the Wood set flow's log, planks, stairs and slab of a pale green willow and its
+ * "Has boats" answer, a boat and a chest boat drawn in the wood's colour.
+ */
+function willowBoats(context: BundleContext): ContentBundle {
+  return flow(woodSetBundle, context, {
+    wood_name: 'Willow',
+    colour: hexFromRgb(WILLOW),
+    members: ['log', 'planks', 'stairs', 'slab'],
+    signs: false,
+    hanging_signs: false,
+    boats: true,
+    grows: false,
+  });
+}
 
 /** The mirror folder of a popular example: its id without the `example_popular_` prefix. */
 export function popularFolder(example: ExampleProject): string {

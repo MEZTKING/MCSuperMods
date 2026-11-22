@@ -11,14 +11,23 @@
  * need the Fabric mod jar export.
  */
 import type { ContentBundleElement, ExampleProject, Json, ResourceLocation } from '@msm/plugin-api';
+import { artLookPng } from '../art/draw';
 import type { Rgb } from '../assets/png';
-import { COLOURS, element, itemModel, KINDS, rl, texture } from '../content/bundle';
+import { artSeed, COLOURS, element, itemModel, KINDS, rl, texture } from '../content/bundle';
 import { hasFabric } from '../content/supports';
 import { defineExample } from './define';
 
 const COMMAND_KIND = 'msm:command';
 const CREATIVE_TAB_KIND = 'msm:creative_tab';
 const RULES_KIND = 'msm:rules';
+const VILLAGER_TYPE_KIND = 'msm:villager_type';
+const GAME_RULE_KIND = 'msm:game_rule';
+const STAT_KIND = 'msm:stat';
+const FLUID_KIND = 'msm:fluid';
+
+/** The Blossom villagers' clothes: cherry blossom pink with a cream hem and sash. */
+const BLOSSOM_PINK: Rgb = [214, 120, 150];
+const BLOSSOM_CREAM: Rgb = [232, 220, 180];
 
 const BLOCKS = 'Blocks';
 const ITEMS = 'Items';
@@ -116,6 +125,149 @@ export const vanillaParityKindExamples: readonly ExampleProject[] = [
           ),
         ],
         assets: [texture(namespace, 'block/curio_block', 'gem', COLOURS.violet, COLOURS.frost)],
+      };
+    },
+  }),
+  // Vanilla parity 3, batch 2 (ADR 0107 D5, ADR 0111 D5, D6; B539) ----------------------------
+  defineExample({
+    id: 'example_msm_villager_type',
+    title: 'Villager look: Blossom villagers',
+    description:
+      'Villagers born or spawned in cherry groves wear pink clothes with a cream hem and sash, and so do zombie villagers there.',
+    kind: VILLAGER_TYPE_KIND,
+    category: 'Villagers',
+    tags: ['villager', 'villager type', 'biome', 'mod'],
+    supports: hasFabric,
+    build: ({ namespace }) => {
+      const villager = rl(namespace, 'entity/villager/type/blossom');
+      const zombie = rl(namespace, 'entity/zombie_villager/type/blossom');
+      const picture = artLookPng({
+        recipe: 'villager_robe',
+        colour: BLOSSOM_PINK,
+        accent: BLOSSOM_CREAM,
+        finish: 'sash',
+        seed: artSeed(namespace, 'entity/villager/type/blossom', 'villager_robe'),
+      });
+      return {
+        elements: [
+          element(
+            rl(namespace, 'blossom'),
+            VILLAGER_TYPE_KIND,
+            {
+              format: 1,
+              biomes: ['minecraft:cherry_grove'],
+              textures: { villager: villager, zombie_villager: zombie },
+            },
+            `A villager type: the look of the villagers of some biomes, as vanilla's plains, desert or taiga villagers. "biomes" lists biome ids and tags (#-prefixed); villagers born or spawned there get this type. The pictures in "textures" are drawn over the villager's skin and under its job's apron, 64 by 64 in the villager layout; they already sit where the game reads them (entity/villager/type/ and entity/zombie_villager/type/), so the game draws them with no code of the mod's. A type has no name and brings no trades of its own. ${JAR_ONLY}`,
+          ),
+        ],
+        assets: [
+          { namespace, path: 'textures/entity/villager/type/blossom.png', bytes: picture },
+          { namespace, path: 'textures/entity/zombie_villager/type/blossom.png', bytes: picture },
+        ],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_game_rule',
+    title: 'Game rule: Sparkle trails',
+    description:
+      'A world setting of your own, on in a new world, that a rule reads to decide whether sneaking players leave sparkles; switch it off with /gamerule.',
+    kind: GAME_RULE_KIND,
+    category: COMMANDS,
+    tags: ['game rule', 'world setting', 'rules', 'mod'],
+    supports: hasFabric,
+    build: ({ namespace }) => {
+      const rule = rl(namespace, 'sparkle_trails');
+      return {
+        elements: [
+          element(
+            rule,
+            GAME_RULE_KIND,
+            {
+              format: 1,
+              kind: 'boolean',
+              default: true,
+              category: 'mobs',
+              display_name: 'Sparkle trails',
+              description: 'Whether players leave a trail of sparkles while they sneak.',
+            },
+            `A game rule: a world setting registered with the mod and saved with each world. "kind" is boolean (on or off) or integer (a whole number, with "min" and "max"); "default" is its value in a new world; "category" is the group of the game rule screen it is listed in; "display_name" and "description" are its words there. Players set it with /gamerule ${rule} false. A rule reads it with "The game rule is" and changes it with "Set a game rule". ${JAR_ONLY}`,
+          ),
+          element(
+            rl(namespace, 'sparkle_trails_rules'),
+            RULES_KIND,
+            {
+              counters: [],
+              format: 1,
+              rules: [
+                {
+                  do: [
+                    {
+                      count: 4,
+                      particle: 'minecraft:end_rod',
+                      step: 'spawn_particles',
+                      where: 'player',
+                    },
+                  ],
+                  key: 'sparkle_trail',
+                  name: 'Sparkles while sneaking',
+                  only_if: {
+                    conditions: [
+                      { condition: 'game_rule', game_rule: rule, value: true },
+                      { condition: 'player_sneaking' },
+                    ],
+                    match: 'all',
+                  },
+                  when: { options: { interval_seconds: 1 }, trigger: 'player_every' },
+                },
+              ],
+            },
+            'Every second, a player who is sneaking leaves sparkles behind while the game rule is on. Rules that read a game rule run through a script, so they need the Fabric mod jar export.',
+          ),
+        ],
+        assets: [],
+      };
+    },
+  }),
+  defineExample({
+    id: 'example_msm_stat',
+    title: 'Statistic: Bells rung',
+    description:
+      'A count of your own in the Statistics screen: how many times each player has rung a bell, kept by a rule.',
+    kind: STAT_KIND,
+    category: COMMANDS,
+    tags: ['statistic', 'scoreboard', 'rules', 'mod'],
+    supports: hasFabric,
+    build: ({ namespace }) => {
+      const stat = rl(namespace, 'bells_rung');
+      return {
+        elements: [
+          element(
+            stat,
+            STAT_KIND,
+            { format: 1, formatter: 'default', display_name: 'Bells rung' },
+            `A statistic: a number counted for each player, shown in the Statistics screen and saved with the world. "formatter" says how it is shown: default (a plain number), distance (centimetres shown as metres and kilometres) or time (ticks shown as seconds, minutes, hours and days). A scoreboard objective follows it with the criterion minecraft.custom:${namespace}.bells_rung. A rule adds to it with "Add to a statistic" and checks it with "The statistic is at least". ${JAR_ONLY}`,
+          ),
+          element(
+            rl(namespace, 'bells_rung_rules'),
+            RULES_KIND,
+            {
+              counters: [],
+              format: 1,
+              rules: [
+                {
+                  do: [{ amount: 1, stat, step: 'add_to_stat' }],
+                  key: 'count_bells',
+                  name: 'Count the bells',
+                  when: { subject: 'minecraft:bell', trigger: 'any_block_used' },
+                },
+              ],
+            },
+            'Each time a player uses a bell, 1 is added to their Bells rung statistic.',
+          ),
+        ],
+        assets: [],
       };
     },
   }),
@@ -694,12 +846,67 @@ const serverHelper = defineExample({
   },
 });
 
+// Berry juice (ADR 0108; B539) ----------------------------------------------------------------
+
+/** Berry juice: a water-like liquid with a cauldron, a bottle to drink and a mixing rule. */
+const berryJuice = defineExample({
+  id: 'example_msm_berry_juice',
+  title: 'Berry juice',
+  description:
+    'A pink juice you pour into cauldrons and scoop into bottles that feed and heal you, which sets into pink terracotta where lava touches it.',
+  kind: FLUID_KIND,
+  category: BLOCKS,
+  tags: ['fluid', 'cauldron', 'bottle', 'mixing', 'mod'],
+  supports: hasFabric,
+  build: ({ namespace }) => {
+    const juice = rl(namespace, 'berry_juice');
+    return {
+      elements: [
+        element(
+          juice,
+          FLUID_KIND,
+          {
+            format: 1,
+            behaves_like: 'water',
+            tint: 0xd04a7c,
+            display_name: 'Berry Juice',
+            bucket_display_name: 'Bucket of Berry Juice',
+            cauldron_display_name: 'Cauldron of Berry Juice',
+            bottle_display_name: 'Bottle of Berry Juice',
+            mixing: [
+              {
+                with: 'lava',
+                source: 'minecraft:pink_terracotta',
+                flowing: 'minecraft:pink_terracotta',
+              },
+            ],
+            cauldron: { levels: true },
+            bottle: {
+              food: { nutrition: 3, saturation: 0.6, can_always_eat: true },
+              effects: [{ effect: 'minecraft:regeneration', seconds: 5 }],
+            },
+            textures: {
+              still: 'minecraft:block/water_still',
+              flowing: 'minecraft:block/water_flow',
+              overlay: 'minecraft:block/water_overlay',
+              bucket: 'minecraft:item/water_bucket',
+            },
+          },
+          `A water-like liquid with a cauldron and a bottle. "cauldron" with "levels" true makes ${juice}_cauldron: its bucket fills an empty cauldron, which then holds three levels as water's does, and a glass bottle takes one level (or fills from a source) as the bottle ${juice}_bottle, drunk in 1.6 seconds as a potion: "bottle" gives it food and five seconds of Regeneration. "mixing" turns a source or flowing juice into pink terracotta where lava touches it, with lava's fizz. It is drawn with vanilla's moving water under the tint, and its bucket and bottle with vanilla's pictures (named, never bundled). ${JAR_ONLY}`,
+        ),
+      ],
+      assets: [],
+    };
+  },
+});
+
 /** The block and item behaviour examples of this brief, for the blocks and items mirror. */
 export const vanillaParityBehaviourExamples: readonly ExampleProject[] = [
   cottageFurniture,
   orchardAndPie,
   copperRoof,
   adventurersSatchel,
+  berryJuice,
 ];
 
 /** The Server helper example, for the scripts mirror. */

@@ -44,6 +44,11 @@ import {
   type Rgb,
 } from '../src/index';
 
+// Heavy property tests (B539, plan "Watch" under B537): each draws a recipe at 12 colours, 4 seeds,
+// every finish and 3 details (hundreds of pictures, the boat bodies 128 pixels wide), which takes
+// a few seconds alone and more than vitest's 5 s default when every package's tests run at once.
+const HEAVY_TIMEOUT = 60_000;
+
 const here = dirname(fileURLToPath(import.meta.url));
 const goldens = join(here, 'fixtures', 'art', 'existing');
 const sheetFile = join(here, '..', '..', '..', '..', 'docs', 'reference', 'art', 'sheet.png');
@@ -165,7 +170,7 @@ describe('the recipe table (ADR 0092 D7)', () => {
   it('has every recipe id once, in the order of ART_RECIPE_IDS', () => {
     expect(ART_RECIPE_INFO.map((info) => info.id)).toEqual([...ART_RECIPE_IDS]);
     expect(new Set(ART_RECIPE_IDS).size).toBe(ART_RECIPE_IDS.length);
-    expect(ART_RECIPE_IDS.length).toBe(94);
+    expect(ART_RECIPE_IDS.length).toBe(98);
   });
 
   it('gives each row a label, a kind, a size and its rules', () => {
@@ -233,12 +238,18 @@ describe('placeholder patterns map to recipes (ADR 0092 D13 (e), D14)', () => {
       'pattern_sheet',
       'pottery_sherd',
       'glider',
+      // The boat item (B539).
+      'boat',
       'banner_pattern',
       'shield_pattern',
       'trim_layer_1',
       'trim_layer_2',
       'glider_wings',
       'pot_pattern',
+      // The boat bodies and the villager clothes (B539).
+      'boat_layer',
+      'chest_boat_layer',
+      'villager_robe',
     ]);
   });
 
@@ -301,14 +312,18 @@ describe('placeholder patterns map to recipes (ADR 0092 D13 (e), D14)', () => {
 });
 
 describe.each(drawn)('the drawn recipe $id (ADR 0092 D8, D13 (b))', (info) => {
-  it('follows every pixel rule over 12 colours, 4 seeds, every finish and detail', () => {
+  it('follows every pixel rule over 12 colours, 4 seeds, every finish and detail', {
+    timeout: HEAVY_TIMEOUT,
+  }, () => {
     for (const look of looks(info)) {
       const problems = checkArtRules(artPixels(look), info);
       expect(problems, JSON.stringify(look)).toEqual([]);
     }
   });
 
-  it('gives the same bytes for the same look and other bytes for other seeds', () => {
+  it('gives the same bytes for the same look and other bytes for other seeds', {
+    timeout: HEAVY_TIMEOUT,
+  }, () => {
     for (const colour of TEST_COLOURS) {
       for (const finish of finishesOf(info)) {
         for (const detail of DETAILS) {
@@ -422,8 +437,11 @@ describe('speed (ADR 0092 D17)', () => {
         );
       }
       // D17 sets 2 ms for a 16 by 16 recipe; the worn layers have 8 to 16 times its pixels
-      // and encoding a 64 by 64 PNG alone takes about 1.2 ms, so they get twice the time.
-      const factor = info.width * info.height > 18 * 18 ? 2 : 1;
+      // and encoding a 64 by 64 PNG alone takes about 1.2 ms, so they get twice the time. The
+      // boat bodies (B539) are two and four times a 64 by 64 layer, and get two and four times
+      // that again: their cost is the encoding, which grows with the pixels.
+      const pixels = info.width * info.height;
+      const factor = pixels > 64 * 64 ? (2 * pixels) / (64 * 64) : pixels > 18 * 18 ? 2 : 1;
       // The budget holds for the fastest batch of single draws and of six, in CPU time: the
       // fastest batch leaves out one-off costs such as a garbage collection.
       expect(Math.min(...one)).toBeLessThan(2 * factor);
@@ -565,11 +583,14 @@ function contactSheet(): { png: Uint8Array; width: number; height: number } {
   const gap = 4;
   const margin = 12;
   const maxWidth = 2048;
+  // Pictures wider than 64 pixels (the boat bodies, B539) are drawn at half the scale, so four of
+  // them fit in a row of the sheet.
+  const scaleOf = (info: ArtRecipeInfo): number => (info.width > 64 ? scale / 2 : scale);
   const tiles = ART_RECIPE_INFO.map((info) => {
     const pictures = colours.map((colour) => artPixels({ recipe: info.id, colour, seed: 0 }));
-    const frameWidth = info.width * scale;
+    const frameWidth = info.width * scaleOf(info);
     const width = pictures.length * info.frames * (frameWidth + gap) - gap;
-    return { info, pictures, width, height: info.height * scale };
+    return { info, pictures, width, height: info.height * scaleOf(info) };
   });
   // Shelf packing.
   const placed: { tile: (typeof tiles)[number]; x: number; y: number }[] = [];
@@ -592,13 +613,14 @@ function contactSheet(): { png: Uint8Array; width: number; height: number } {
   for (let i = 0; i < width * height; i += 1) data.set([196, 196, 200, 255], i * 4);
   for (const { tile, x: x0, y: y0 } of placed) {
     const { info } = tile;
+    const tileScale = scaleOf(info);
     let left = x0;
     for (const picture of tile.pictures) {
       for (let frame = 0; frame < info.frames; frame += 1) {
-        for (let py = 0; py < info.height * scale; py += 1) {
-          for (let px = 0; px < info.width * scale; px += 1) {
-            const sx = Math.floor(px / scale);
-            const sy = Math.floor(py / scale);
+        for (let py = 0; py < info.height * tileScale; py += 1) {
+          for (let px = 0; px < info.width * tileScale; px += 1) {
+            const sx = Math.floor(px / tileScale);
+            const sy = Math.floor(py / tileScale);
             const i = ((frame * info.height + sy) * info.width + sx) * 4;
             const alpha = (picture.data[i + 3] ?? 0) / 255;
             const o = ((y0 + py) * width + left + px) * 4;
@@ -608,7 +630,7 @@ function contactSheet(): { png: Uint8Array; width: number; height: number } {
             }
           }
         }
-        left += info.width * scale + gap;
+        left += info.width * tileScale + gap;
       }
     }
   }

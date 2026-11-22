@@ -11,8 +11,9 @@
  * Ids derive from `job_name`. New jobs need the Fabric mod jar export; the vanilla data pack
  * keeps the trades and tags.
  *
- * Limits (ADR 0098 D6): no new villager types (biome looks); zombie villagers keep the job's
- * picture only.
+ * New biome looks for villagers are the Villager look flow's (`villager-look.ts`, ADR 0107 D5);
+ * villagers of a job restock at its workbench, as vanilla's do at theirs, and since ADR 0107 D4
+ * they also sleep in the project's own beds. Zombie villagers keep the job's picture only.
  */
 import type {
   BundleContext,

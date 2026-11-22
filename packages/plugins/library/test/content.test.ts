@@ -79,6 +79,7 @@ const STARTER_IDS = [
   'portal',
   'villager-trade',
   'village-job',
+  'villager-look',
   'extra-drop',
   'mob-skin',
   'goat-horn',
@@ -104,6 +105,7 @@ const STARTER_IDS = [
   'scripted-item',
   'custom-command',
   'creative-tab',
+  'game-rule',
 ];
 
 /**
@@ -224,6 +226,9 @@ const KIND_IDS = [
   'msm:hud',
   'msm:command',
   'msm:creative_tab',
+  'msm:villager_type',
+  'msm:game_rule',
+  'msm:stat',
   'msm:villager_profession',
   'msm:fluid',
   'msm:vanilla_block_rules',
@@ -303,7 +308,7 @@ const PLACEHOLDERS = new Set([
 ]);
 
 describe('project starters', () => {
-  it('lists the sixty-seven starters in order', () => {
+  it('lists the sixty-nine starters in order', () => {
     expect(libraryStarters.map((starter) => starter.id)).toEqual(STARTER_IDS);
   });
 
@@ -313,7 +318,7 @@ describe('project starters', () => {
       'pack',
       'pack',
       'pack',
-      ...Array<string>(63).fill('content'),
+      ...Array<string>(65).fill('content'),
     ]);
   });
 
@@ -719,8 +724,8 @@ describe('project starters', () => {
 });
 
 describe('examples', () => {
-  it('has 115 per-kind examples, one per built-in kind, 51 behaviour examples, 16 popular ideas and 4 starter projects', () => {
-    expect(kindExamples).toHaveLength(115);
+  it('has 118 per-kind examples, one per built-in kind, 56 behaviour examples, 17 popular ideas and 4 starter projects', () => {
+    expect(kindExamples).toHaveLength(118);
     expect(kindExamples.map((example) => example.kind)).toEqual(KIND_IDS);
     expect(starterExamples.map((example) => example.id)).toEqual(
       ['custom_ore', 'recipe_pack', 'music_disc', 'function_starter'].map((id) => `starter_${id}`),
@@ -759,6 +764,7 @@ describe('examples', () => {
       'example_msm_orchard_pie',
       'example_msm_copper_roof',
       'example_msm_adventurers_satchel',
+      'example_msm_berry_juice',
     ]);
     expect(entityBehaviourExamples.map((example) => example.id)).toEqual([
       'example_msm_hostile_mob',
@@ -769,6 +775,10 @@ describe('examples', () => {
       'example_msm_fish_school',
       'example_msm_boss_bar',
       'example_msm_vanilla_renderer',
+      'example_msm_bucket_minnow',
+      'example_msm_hovering_wisp',
+      'example_msm_fetching_finch',
+      'example_msm_fair_trader',
       'example_msm_roadside_merchant',
     ]);
     expect(scriptBehaviourExamples.map((example) => example.id)).toEqual([
@@ -805,13 +815,14 @@ describe('examples', () => {
         'go_kart',
         'mini_tank',
         'biplane',
+        'willow_boats',
       ].map((id) => `example_popular_${id}`),
     );
     for (const example of popularExamples) {
       expect(example.category).toBe(POPULAR_CATEGORY);
       expect(example.description, example.id).toMatch(/ Inspired by: [a-z][^.]*\.$/);
     }
-    expect(libraryExamples).toHaveLength(186);
+    expect(libraryExamples).toHaveLength(195);
   });
 
   it('reuses the starter builders for the starter projects', () => {
@@ -855,7 +866,9 @@ describe('every starter and example', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('declares exactly the kinds its bundle uses', () => {
+  // This test and the texture test below build every starter and example (with their probes),
+  // more than vitest's 5 s default under a full parallel run (B539, plan "Watch" under B537).
+  it('declares exactly the kinds its bundle uses', { timeout: 30_000 }, () => {
     for (const entry of entries) {
       const used = new Set(build(entry).elements.map((element) => element.kind));
       // A choice that builds other content adds its kinds (`probeValues`).
@@ -903,6 +916,16 @@ describe('every starter and example', () => {
         for (const element of build(entry, 'demo', { igniter: 'key' }).elements) {
           used.add(element.kind);
         }
+      }
+      // The Wood set's boats, the Custom command's own game rule and the Game rule flow's
+      // statistic (B539).
+      for (const [id, values] of [
+        ['wood-set', { boats: true }],
+        ['custom-command', { own_rule: true }],
+        ['game-rule', { counts: true }],
+      ] as const) {
+        if (entry.id !== id) continue;
+        for (const element of build(entry, 'demo', values).elements) used.add(element.kind);
       }
       // The Particle flow's item answer (ADR 0081 D3).
       if (entry.id === 'particle') {
@@ -996,7 +1019,7 @@ describe('every starter and example', () => {
     }
   });
 
-  it('gives every texture a model or painting that uses it', () => {
+  it('gives every texture a model or painting that uses it', { timeout: 30_000 }, () => {
     for (const entry of entries) {
       const bundle = build(entry);
       // A trim layer's sidecar names its palette key (B508).

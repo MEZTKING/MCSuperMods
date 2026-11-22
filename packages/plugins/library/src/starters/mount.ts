@@ -5,8 +5,10 @@
  * flying (a round flyer always flies). Base `animal`, `msm:rideable`, optional `msm:tameable`,
  * renderer `auto`, extra variants. If chosen it carries a chest (`msm:storage`, ADR 0098 D3,
  * ADR 0101 D2): one to six rows opened with the inventory key while riding or by using it while
- * sneaking, from the start or once a chest is put on it. Ids derive from `mount_name`. New mobs
- * need the Fabric mod jar export.
+ * sneaking, from the start or once a chest is put on it. If chosen a walking mount dashes
+ * (ADR 0109 D4, B539: `msm:rideable` `dash`, camel-like): the rider holds jump to fill the bar
+ * and lets go to leap forward, so it has no jump of its own. Ids derive from `mount_name`. New
+ * mobs need the Fabric mod jar export.
  */
 import type { BundleContext, ContentBundle, JsonObject, StarterParameter } from '@msm/plugin-api';
 import { COLOURS } from '../content/bundle';
@@ -69,6 +71,15 @@ export const MOUNT_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     0.7,
     { min: 0, max: 1.5, step: 0.1 },
   ),
+  {
+    id: 'dashes',
+    label: 'Dashes forward',
+    description:
+      'Hold jump to fill the bar and let go to dash forward, about seven blocks at a full bar, as a camel does. It then has no jump. Not for flying mounts.',
+    group: 'Behaviour',
+    type: 'boolean',
+    default: false,
+  },
   {
     id: 'owner_only',
     label: 'Only its owner can ride it',
@@ -135,6 +146,8 @@ export function mountBundle(context: BundleContext): ContentBundle {
   const carries = booleanValue(values, 'carries_chest');
   const rows = Math.max(1, Math.min(6, Math.round(numberValue(values, 'chest_rows'))));
   const needsChest = booleanValue(values, 'needs_chest');
+  // A dash is a leap along the ground (`entities.dash-needs-walk`).
+  const dashes = !flies && booleanValue(values, 'dashes');
 
   const components: JsonObject = {
     'msm:health': { max: numberValue(values, 'health') },
@@ -145,7 +158,7 @@ export function mountBundle(context: BundleContext): ContentBundle {
       saddle,
       controlled_by: ownerOnly ? 'owner' : 'anyone',
       speed: 1,
-      jump,
+      ...(dashes ? { dash: { power: 1, cooldown_ticks: 55 } } : { jump }),
       passengers: 1,
       ...(saddleBone === undefined ? {} : { saddle_bone: saddleBone }),
     },
@@ -173,7 +186,7 @@ export function mountBundle(context: BundleContext): ContentBundle {
   const steer = saddle
     ? 'once it wears a vanilla saddle (shown by the saddle bone)'
     : 'without a saddle (the saddle bone stays hidden)';
-  const notes = `A mount: msm:rideable lets a player get on with an empty hand and steer it ${steer}${ownerOnly ? ', but only its owner (controlled_by owner): msm:tameable tames it one time in five with an apple, golden apple or golden carrot' : ''}. ${flies ? 'It flies (mode fly): the rider steers along the view and rises while holding jump; it takes no fall damage.' : `It walks${jump > 0 ? ` and jumps with the jump bar at strength ${jump}` : ''}, stepping up full blocks (step_height 1).`} Its ridden speed is its movement speed (${speed}); sneaking dismounts.${carries ? ` msm:storage gives it ${rows} row${rows === 1 ? '' : 's'} of storage${needsChest ? ' once a player uses a chest on it' : ''}: the rider opens it with the inventory key, and ${ownerOnly ? 'its owner' : 'anyone'} by using it while sneaking. What it carries is saved with it and dropped when it dies${needsChest ? ', with the chest' : ''}.` : ''} ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns in ${spawn.words} in groups of two to four (rule animal: on grass in daylight).`}`;
+  const notes = `A mount: msm:rideable lets a player get on with an empty hand and steer it ${steer}${ownerOnly ? ', but only its owner (controlled_by owner): msm:tameable tames it one time in five with an apple, golden apple or golden carrot' : ''}. ${flies ? 'It flies (mode fly): the rider steers along the view and rises while holding jump; it takes no fall damage.' : `It walks${dashes ? ' and dashes: dash makes the jump bar a charged leap forward, about seven blocks at a full bar, with a wait of 55 ticks before the next' : jump > 0 ? ` and jumps with the jump bar at strength ${jump}` : ''}, stepping up full blocks (step_height 1).`} Its ridden speed is its movement speed (${speed}); sneaking dismounts.${carries ? ` msm:storage gives it ${rows} row${rows === 1 ? '' : 's'} of storage${needsChest ? ' once a player uses a chest on it' : ''}: the rider opens it with the inventory key, and ${ownerOnly ? 'its owner' : 'anyone'} by using it while sneaking. What it carries is saved with it and dropped when it dies${needsChest ? ', with the chest' : ''}.` : ''} ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns in ${spawn.words} in groups of two to four (rule animal: on grass in daylight).`}`;
 
   return mobFlowBundle({
     context,

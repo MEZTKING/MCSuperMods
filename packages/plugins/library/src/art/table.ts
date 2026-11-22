@@ -1,12 +1,13 @@
 /**
  * The recipe table (ADR 0092 D7): every recipe's row, in family order (blocks, items and the
- * pattern items, worn pictures and the pattern pictures, icons and particles), joined from the family files under `recipes/`.
+ * pattern items and the boat, worn pictures, the pattern pictures, the boat bodies and the villager clothes, icons and particles), joined from the family files under `recipes/`.
  *
  * @packageDocumentation
  */
 
 import type { ArtRecipeEntry, ArtRecipeId, ArtRecipeInfo } from './info';
 import { BLOCK_RECIPES } from './recipes/blocks';
+import { BOAT_ITEM_RECIPES, LOOK_ENTITY_RECIPES } from './recipes/boats-villagers';
 import { ICON_RECIPES } from './recipes/icons';
 import { ITEM_RECIPES } from './recipes/items';
 import { PATTERN_ENTITY_RECIPES, PATTERN_ITEM_RECIPES } from './recipes/patterns';
@@ -17,8 +18,10 @@ export const ART_TABLE: readonly ArtRecipeEntry[] = Object.freeze([
   ...BLOCK_RECIPES,
   ...ITEM_RECIPES,
   ...PATTERN_ITEM_RECIPES,
+  ...BOAT_ITEM_RECIPES,
   ...WORN_RECIPES,
   ...PATTERN_ENTITY_RECIPES,
+  ...LOOK_ENTITY_RECIPES,
   ...ICON_RECIPES,
 ]);
 

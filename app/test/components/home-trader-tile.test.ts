@@ -12,13 +12,13 @@ import {
 const traderTile = () => MAKE_TILES.find((tile) => tile.id === 'trader');
 
 describe('Make a trader tile (ADR 0101 D4)', () => {
-  it('sits under Creatures after the pets and opens the Wandering merchant and Village job flows', () => {
+  it('sits under Creatures after the pets and opens the Wandering merchant, Village job and Villager look flows', () => {
     expect(traderTile()).toEqual({
       id: 'trader',
       label: 'Make a trader',
-      sentence: 'A mob that trades with you, or a new job for villagers.',
+      sentence: 'A mob that trades with you, a new job for villagers, or new clothes for them.',
       group: 'creatures',
-      action: { type: 'flows', flowIds: ['wandering-merchant', 'village-job'] },
+      action: { type: 'flows', flowIds: ['wandering-merchant', 'village-job', 'villager-look'] },
     });
     expect(TRADER_FLOW_ID).toBe('wandering-merchant');
     const ids = MAKE_TILES.map((tile) => tile.id);
@@ -40,6 +40,7 @@ describe('Make a trader tile (ADR 0101 D4)', () => {
     expect(withFlow.find((entry) => entry.tile.id === 'trader')?.flowIds).toEqual([
       TRADER_FLOW_ID,
       'village-job',
+      'villager-look',
     ]);
   });
 });

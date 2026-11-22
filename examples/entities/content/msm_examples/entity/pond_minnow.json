@@ -1,0 +1,79 @@
+{
+  "data": {
+    "category": "water_ambient",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "below_health": 0.5,
+            "ticks": 200,
+            "type": "play_dead"
+          },
+          {
+            "distance": 6,
+            "from": [
+              "minecraft:player"
+            ],
+            "speed": 1.4,
+            "sprint_speed": 1.2,
+            "type": "flee"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/pond_minnow_animations",
+        "idle": "idle",
+        "model": "msm_examples:entity/pond_minnow",
+        "renderer": "auto",
+        "scale": 0.6,
+        "swim": "swim",
+        "texture": "msm_examples:entity/pond_minnow",
+        "walk": "walk"
+      },
+      "msm:bucketable": {},
+      "msm:health": {
+        "max": 4
+      },
+      "msm:movement": {
+        "breathes_air": false,
+        "dry_out_ticks": 300,
+        "mode": "swim",
+        "speed": 1
+      }
+    },
+    "display_name": "Pond Minnow",
+    "format": 1,
+    "size": {
+      "height": 0.3,
+      "width": 0.3
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_river"
+      ],
+      "max_group": 5,
+      "min_group": 3,
+      "placement": "in_water",
+      "rule": "water_animal",
+      "weight": 8
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/pond_minnow_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:pond_minnow",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A fish you can catch. msm:bucketable lets a player use a water bucket on it: the minnow goes into the bucket item msm_examples:pond_minnow_bucket (\"Bucket of Pond Minnow\", made for you, stacking to 1), which keeps its name and health and lets it out again with the water. It has no bucket_texture, so the bucket is drawn as vanilla's water bucket. Only swimmers (mode swim) can be caught. play_dead makes it lie still and heal for 200 ticks when a hit leaves it below half its health, as an axolotl. It spawns in rivers in schools of three to five.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

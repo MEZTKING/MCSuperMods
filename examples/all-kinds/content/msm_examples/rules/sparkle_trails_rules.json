@@ -1,0 +1,50 @@
+{
+  "data": {
+    "counters": [],
+    "format": 1,
+    "rules": [
+      {
+        "do": [
+          {
+            "count": 4,
+            "particle": "minecraft:end_rod",
+            "step": "spawn_particles",
+            "where": "player"
+          }
+        ],
+        "key": "sparkle_trail",
+        "name": "Sparkles while sneaking",
+        "only_if": {
+          "conditions": [
+            {
+              "condition": "game_rule",
+              "game_rule": "msm_examples:sparkle_trails",
+              "value": true
+            },
+            {
+              "condition": "player_sneaking"
+            }
+          ],
+          "match": "all"
+        },
+        "when": {
+          "options": {
+            "interval_seconds": 1
+          },
+          "trigger": "player_every"
+        }
+      }
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sparkle_trails_rules",
+  "kind": "msm:rules",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "Every second, a player who is sneaking leaves sparkles behind while the game rule is on. Rules that read a game rule run through a script, so they need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

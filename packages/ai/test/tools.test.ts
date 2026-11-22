@@ -197,7 +197,9 @@ function order(group: string): number {
 }
 
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
-  // The hash last changed with B518: create_texture's recipe list gained the strand, stalk,
+  // The hash last changed with B539: create_texture's recipe list gained the boat, the boat
+  // bodies and the villager clothes (ADR 0110, ADR 0107 D5, ADR 0112 D2). Before that with B518:
+  // create_texture's recipe list gained the strand, stalk,
   // lichen, dripleaf and pot of the plant flows (ADR 0103, ADR 0112 D2). Before that with B508: create_texture's recipe list gained the nine pattern
   // pictures of the data-only flows (ADR 0106 D4), kept equal to the library's ART_RECIPE_IDS.
   // Before that with B498: create_texture draws MSM's Minecraft-like art from a recipe (with the
@@ -207,7 +209,7 @@ describe('tool catalogue is frozen (ADR 0055 D11)', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '5666afad3f1fe1d5d16f5e06c431c974787fdf53b299816dc56f21fcc4654bcb',
+      '2a1b26cc7359236079b2c6c5fa52ff86d32ae7584eb031df310c7eeb5df1333b',
     );
   });
 });

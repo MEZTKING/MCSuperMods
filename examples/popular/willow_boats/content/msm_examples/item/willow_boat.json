@@ -1,0 +1,30 @@
+{
+  "data": {
+    "boat_textures": {
+      "boat": "msm_examples:entity/boat/willow",
+      "chest_boat": "msm_examples:entity/chest_boat/willow",
+      "chest_boat_item": "msm_examples:item/willow_chest_boat"
+    },
+    "chest_boat_display_name": "Willow Boat with Chest",
+    "components": {
+      "msm:boat": {
+        "chest": true
+      }
+    },
+    "creative_tab": "minecraft:tools_and_utilities",
+    "display_name": "Willow Boat",
+    "format": 1,
+    "model": "msm_examples:item/willow_boat"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:willow_boat",
+  "kind": "msm:item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A willow boat (msm:boat) you place on water and paddle as vanilla's, with room for two; chest true adds the chest boat msm_examples:willow_chest_boat, a boat with a chest you open while sitting in it. Both stack to 1 and are crafted as vanilla's: five willow planks in a U make the boat, and the boat with a chest makes the chest boat. The game draws them with textures/entity/boat/willow.png and textures/entity/chest_boat/willow.png, drawn in the wood's colour; the chest boat item shows msm_examples:item/willow_chest_boat. Boats need the Fabric mod jar export.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

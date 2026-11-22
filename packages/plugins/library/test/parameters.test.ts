@@ -137,6 +137,7 @@ const WIZARDS = [
   'portal',
   'villager-trade',
   'village-job',
+  'villager-look',
   'extra-drop',
   'mob-skin',
   'goat-horn',
@@ -155,6 +156,7 @@ const WIZARDS = [
   'scripted-item',
   'custom-command',
   'creative-tab',
+  'game-rule',
 ];
 
 /** The Creator flows (ADR 0043 D1) and their groups. */
@@ -198,6 +200,7 @@ const FLOWS: Record<string, string> = {
   portal: 'worlds',
   'villager-trade': 'worlds',
   'village-job': 'worlds',
+  'villager-look': 'worlds',
   'extra-drop': 'worlds',
   'mob-skin': 'mobs',
   'goat-horn': 'gear',
@@ -214,6 +217,7 @@ const FLOWS: Record<string, string> = {
   'vehicle-plane': 'vehicles',
   'vehicle-boat': 'vehicles',
   'scripted-item': 'scripts',
+  'game-rule': 'scripts',
 };
 
 describe('wizard starters', () => {
@@ -278,6 +282,8 @@ describe('wizard starters', () => {
     expect(groups('backpack')).toEqual(['Bag', 'Recipes']);
     expect(groups('custom-command')).toEqual(['Command', 'What it does']);
     expect(groups('creative-tab')).toEqual(['Tab', 'First block']);
+    expect(groups('villager-look')).toEqual(['Look']);
+    expect(groups('game-rule')).toEqual(['Rule', 'Using it']);
   });
 
   it('lists the Creator flows with their groups and blurbs (ADR 0043 D1)', () => {

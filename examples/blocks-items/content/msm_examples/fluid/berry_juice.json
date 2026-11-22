@@ -1,0 +1,51 @@
+{
+  "data": {
+    "behaves_like": "water",
+    "bottle": {
+      "effects": [
+        {
+          "effect": "minecraft:regeneration",
+          "seconds": 5
+        }
+      ],
+      "food": {
+        "can_always_eat": true,
+        "nutrition": 3,
+        "saturation": 0.6
+      }
+    },
+    "bottle_display_name": "Bottle of Berry Juice",
+    "bucket_display_name": "Bucket of Berry Juice",
+    "cauldron": {
+      "levels": true
+    },
+    "cauldron_display_name": "Cauldron of Berry Juice",
+    "display_name": "Berry Juice",
+    "format": 1,
+    "mixing": [
+      {
+        "flowing": "minecraft:pink_terracotta",
+        "source": "minecraft:pink_terracotta",
+        "with": "lava"
+      }
+    ],
+    "textures": {
+      "bucket": "minecraft:item/water_bucket",
+      "flowing": "minecraft:block/water_flow",
+      "overlay": "minecraft:block/water_overlay",
+      "still": "minecraft:block/water_still"
+    },
+    "tint": 13650556
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:berry_juice",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A water-like liquid with a cauldron and a bottle. \"cauldron\" with \"levels\" true makes msm_examples:berry_juice_cauldron: its bucket fills an empty cauldron, which then holds three levels as water's does, and a glass bottle takes one level (or fills from a source) as the bottle msm_examples:berry_juice_bottle, drunk in 1.6 seconds as a potion: \"bottle\" gives it food and five seconds of Regeneration. \"mixing\" turns a source or flowing juice into pink terracotta where lava touches it, with lava's fizz. It is drawn with vanilla's moving water under the tint, and its bucket and bottle with vanilla's pictures (named, never bundled). It needs the Fabric mod jar export; the vanilla packs keep only its models, pictures and language keys.",
+    "tags": [
+      "example",
+      "blocks"
+    ]
+  }
+}

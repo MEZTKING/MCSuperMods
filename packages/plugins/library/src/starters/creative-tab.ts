@@ -5,6 +5,10 @@
  * and spawn eggs join the tab by naming it in their own `creative_tab`; the Creative tab
  * Studio lists them and adds more. Extra tabs open on the creative inventory's second page.
  *
+ * "In my own order" (ADR 0111 D7, B539) sets `order` `by_hand` with an `items` list: the first
+ * block (or the icon, without one) first, then the vanilla items picked to go in the tab; the
+ * tab's other items follow in the order they are registered.
+ *
  * Ids derive from `tab_name`: the tab `my_blocks`, the first block `my_blocks_block`.
  */
 import type {
@@ -26,6 +30,7 @@ import {
   nameForms,
   readValues,
   rgbFromHex,
+  setValue,
   stringValue,
 } from '../content/parameters';
 
@@ -40,6 +45,15 @@ const ICONS: readonly { value: string; label: string }[] = [
   { value: 'minecraft:bricks', label: 'Bricks' },
   { value: 'minecraft:golden_apple', label: 'Golden apple' },
   { value: 'minecraft:nether_star', label: 'Nether star' },
+];
+
+/** Vanilla items a hand-ordered tab can list beside the first block. */
+const EXTRA_ITEMS: readonly { value: string; label: string }[] = [
+  { value: 'minecraft:torch', label: 'Torch' },
+  { value: 'minecraft:lantern', label: 'Lantern' },
+  { value: 'minecraft:bricks', label: 'Bricks' },
+  { value: 'minecraft:glass', label: 'Glass' },
+  { value: 'minecraft:flower_pot', label: 'Flower pot' },
 ];
 
 /** Sky blue, the first block's default colour. */
@@ -75,7 +89,18 @@ export const CREATIVE_TAB_PARAMETERS: readonly StarterParameter[] = Object.freez
     choices: [
       { value: 'as_listed', label: 'As listed in the project' },
       { value: 'by_name', label: 'By name' },
+      { value: 'by_hand', label: 'In my own order' },
     ],
+  },
+  {
+    id: 'extra_items',
+    label: 'Vanilla items in the tab',
+    description:
+      'With "In my own order": vanilla items listed in the tab after the first block, in this order.',
+    group: 'Tab',
+    type: 'set',
+    default: [],
+    choices: EXTRA_ITEMS.map((entry) => ({ ...entry })),
   },
   {
     id: 'first_block',
@@ -108,6 +133,10 @@ export function creativeTabBundle(context: BundleContext): ContentBundle {
   const order = stringValue(values, 'order');
   const tabData: JsonObject = { format: 1, icon, display_name: name.display };
   if (order !== 'as_listed') tabData.order = order;
+  const extras = (setValue(values, 'extra_items') as readonly string[]).filter((value) =>
+    EXTRA_ITEMS.some((entry) => entry.value === value),
+  );
+  if (order === 'by_hand') tabData.items = [withBlock ? blockId : icon, ...extras];
   const elements: ContentBundleElement[] = [
     packElement(namespace, `${projectName}: the ${name.display} tab`, PACK_NOTES),
     modElement(namespace, projectName, `Adds the ${name.display} creative tab.`),
@@ -115,7 +144,7 @@ export function creativeTabBundle(context: BundleContext): ContentBundle {
       tab,
       CREATIVE_TAB_KIND,
       tabData,
-      `The ${name.display} tab of the creative inventory (on its second page, after vanilla's tabs), showing ${icon}. Items, block items and spawn eggs join it by naming ${tab} as their creative tab, ${order === 'by_name' ? 'sorted by name' : 'in the order the project lists them'}.`,
+      `The ${name.display} tab of the creative inventory (on its second page, after vanilla's tabs), showing ${icon}. Items, block items and spawn eggs join it by naming ${tab} as their creative tab, ${order === 'by_name' ? 'sorted by name' : order === 'by_hand' ? `in your own order: first the items listed in items (${(tabData.items as string[]).join(', ')}), any item not otherwise in the tab joining it, then the tab's other items in the order they are registered` : 'in the order the project lists them'}.`,
     ),
   ];
   const assets: ContentBundleAsset[] = [];

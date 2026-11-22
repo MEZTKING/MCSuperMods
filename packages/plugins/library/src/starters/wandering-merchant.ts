@@ -9,8 +9,15 @@
  * chosen, rare spawns. Ids derive from `merchant_name`. New mobs need the Fabric mod jar export;
  * the vanilla data pack keeps the trades and the trade set.
  *
- * Limits (ADR 0098 D6, B474): no gossip, reputation or price changes; offers refill at the mob
- * twice a day (or never), without a workstation.
+ * Since ADR 0107 and ADR 0109 (B539), if chosen: it remembers how each player treats it
+ * (`reputation`: trades and a gift it likes make that player's prices lower, hitting it makes
+ * them higher, and it forgets a little each day), its prices rise with heavy buying as a
+ * villager's do (`demand`, on unless turned off), it restocks at a block near it instead of where
+ * it stands (`work_site`), and it barters for gold as a piglin does (the `barter` goal with
+ * vanilla's piglin bartering loot).
+ *
+ * Limits (ADR 0107 limit N10): its memory of a player is its own and is never shared with other
+ * mobs, as vanilla's gossip is.
  */
 import type {
   BundleContext,
@@ -137,8 +144,58 @@ export const WANDERING_MERCHANT_PARAMETERS: readonly StarterParameter[] = Object
     default: 'twice_a_day',
     choices: [
       { value: 'twice_a_day', label: 'Twice a day' },
+      { value: 'work_site', label: 'Twice a day, at a block near it' },
       { value: 'never', label: 'Never: each trade runs out for good' },
     ],
+  },
+  {
+    id: 'work_site',
+    label: 'Restocks at its work site',
+    description:
+      'The block it walks to, within 16 blocks, to restock, as a villager at its workstation; only with "Twice a day, at a block near it".',
+    group: 'Trades',
+    type: 'string',
+    default: 'minecraft:barrel',
+    pattern: ITEM_PATTERN,
+    maxLength: 96,
+  },
+  {
+    id: 'demand',
+    label: 'Prices rise when you buy a lot',
+    description:
+      'As with villagers: a trade bought out costs more after the next restock, and settles again when you buy less.',
+    group: 'Trades',
+    type: 'boolean',
+    default: true,
+  },
+  {
+    id: 'remembers',
+    label: 'Remembers how you treat it',
+    description:
+      'Trading and gifts make its prices lower for you, hitting it makes them higher; it forgets a little each day.',
+    group: 'Trades',
+    type: 'boolean',
+    default: false,
+  },
+  {
+    id: 'gift',
+    label: 'A gift it likes',
+    description:
+      'An item you give it by using it on the merchant, which makes your prices lower; leave it empty for no gifts.',
+    group: 'Trades',
+    type: 'string',
+    default: 'minecraft:sweet_berries',
+    pattern: OPTIONAL_ITEM_PATTERN,
+    maxLength: 96,
+  },
+  {
+    id: 'barters',
+    label: 'Barters for gold',
+    description:
+      'Hand it a gold ingot, or drop one near it, and after a moment it gives you something back, as a piglin does.',
+    group: 'Behaviour',
+    type: 'boolean',
+    default: false,
   },
   behaviourNumber('health', 'Health', 'Maximum health in half hearts; a villager has 20.', 20, {
     min: 2,
@@ -202,7 +259,17 @@ export function wanderingMerchantBundle(context: BundleContext): ContentBundle {
   const wares = readWares(values);
   const uses = wholeNumber(numberValue(values, 'uses'), 1, 64);
   const vanillaWares = booleanValue(values, 'vanilla_wares');
-  const restock = stringValue(values, 'restock') === 'never' ? 'never' : 'twice_a_day';
+  const restockAnswer = stringValue(values, 'restock');
+  const restock = restockAnswer === 'never' ? 'never' : 'twice_a_day';
+  const workSite =
+    restockAnswer === 'work_site'
+      ? itemId(stringValue(values, 'work_site').trim() || 'barrel')
+      : '';
+  const demand = booleanValue(values, 'demand');
+  const remembers = booleanValue(values, 'remembers');
+  const giftAnswer = stringValue(values, 'gift').trim();
+  const gift = remembers && giftAnswer !== '' ? itemId(giftAnswer) : '';
+  const barters = booleanValue(values, 'barters');
   const spawn = spawnChoice(values, LAND_SPAWNS);
   const id = name.id;
 
@@ -237,10 +304,28 @@ export function wanderingMerchantBundle(context: BundleContext): ContentBundle {
   const components: JsonObject = {
     'msm:health': { max: wholeNumber(numberValue(values, 'health'), 2, 100) },
     'msm:movement': { speed: numberValue(values, 'speed') },
-    'msm:trader': { trade_sets: levels, levels: true, restock },
+    'msm:trader': {
+      trade_sets: levels,
+      levels: true,
+      restock,
+      ...(demand ? {} : { demand: false }),
+      ...(remembers ? { reputation: gift === '' ? {} : { gift_item: gift } } : {}),
+      ...(workSite === '' ? {} : { work_site: workSite }),
+    },
     'msm:ai_goals': {
       goals: [
         { type: 'panic', speed: 1.3 },
+        ...(barters
+          ? [
+              {
+                type: 'barter',
+                item: 'minecraft:gold_ingot',
+                loot_table: 'minecraft:gameplay/piglin_bartering',
+                ticks: 120,
+                from_ground: true,
+              },
+            ]
+          : []),
         { type: 'wander', speed: 0.6 },
         { type: 'look_at_player', distance: 8 },
         { type: 'look_around' },
@@ -253,7 +338,7 @@ export function wanderingMerchantBundle(context: BundleContext): ContentBundle {
         `${ware.count} ${ware.item} for ${ware.emeralds} emerald${ware.emeralds === 1 ? '' : 's'}`,
     )
     .join(', ');
-  const notes = `A merchant: msm:trader opens the villager trading screen when a player uses it with an empty hand. Its first level offers its own wares from ${tradeSet} (${wareWords})${vanillaWares ? `; trading earns it experience, which unlocks the wandering trader's common wares (${WANDERING_TRADER_SETS[0]}) and then its rare ones (${WANDERING_TRADER_SETS[1]})` : ''}. ${restock === 'never' ? 'Its trades never restock.' : 'Its trades restock twice a day, without a workstation.'} It does not trade while it is a baby, hurt and fleeing, or ridden, and keeps its offers when the world is saved. ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns now and then on its own in ${spawn.words} (rule animal: on grass in daylight).`}`;
+  const notes = `A merchant: msm:trader opens the villager trading screen when a player uses it with an empty hand. Its first level offers its own wares from ${tradeSet} (${wareWords})${vanillaWares ? `; trading earns it experience, which unlocks the wandering trader's common wares (${WANDERING_TRADER_SETS[0]}) and then its rare ones (${WANDERING_TRADER_SETS[1]})` : ''}. ${restock === 'never' ? 'Its trades never restock.' : workSite === '' ? 'Its trades restock twice a day, without a workstation.' : `Its trades restock twice a day at its work site: it walks to the nearest ${workSite} within 16 blocks and restocks once it is within 2 blocks of it (work_site), as a villager at its workstation.`}${demand ? '' : ' Demand is off (demand false): buying a trade out never raises its price.'}${remembers ? ` It remembers each player (reputation, vanilla's numbers): each trade lowers that player's prices a little and each hit raises them${gift === '' ? '' : `, and a gift of ${gift} (used on it) lowers them`}; the memory fades a little each day and is never shared with other mobs.` : ''}${barters ? ' The barter goal takes a gold ingot handed to it or dropped near it and, after six seconds, drops a roll of minecraft:gameplay/piglin_bartering, as a piglin.' : ''} It does not trade while it is a baby, hurt and fleeing, or ridden, and keeps its offers when the world is saved. ${spawn.biomes.length === 0 ? 'It never spawns on its own: use its spawn egg.' : `It spawns now and then on its own in ${spawn.words} (rule animal: on grass in daylight).`}`;
 
   return mobFlowBundle({
     context,

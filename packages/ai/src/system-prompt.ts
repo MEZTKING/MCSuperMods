@@ -319,6 +319,7 @@ export const NEW_FLOW_PROMPT_IDS = Object.freeze({
  */
 export const VILLAGERS_FLUIDS_PROMPT_TEMPLATES = Object.freeze([
   'msm_entity_wandering_merchant',
+  'msm_entity_fair_trader',
   'msm_entity_pack_mule',
   'msm_entity_shoulder_pet',
   'msm_villager_profession',
@@ -557,6 +558,7 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
     ['pattern_sheet', 'a banner pattern item'],
     ['pottery_sherd', 'a pottery sherd'],
     ['glider', 'a glider item'],
+    ['boat', 'a boat item in the wood colour, finish boat or chest (a chest boat)'],
   ),
   worn: rows(
     ['armor_layer_1', 'worn helmet, chestplate and boots, 64 by 32'],
@@ -577,6 +579,15 @@ export const TEXTURE_PROMPT_RECIPES: Readonly<
     [
       'pot_pattern',
       'a decorated pot face under textures/entity/decorated_pot, 16 by 16, finish sun, fish or leaf',
+    ],
+    [
+      'boat_layer',
+      'a boat under textures/entity/boat/<wood>, 128 by 64, boards of the wood colour edge to edge',
+    ],
+    ['chest_boat_layer', 'the same for a chest boat under textures/entity/chest_boat, 128 by 128'],
+    [
+      'villager_robe',
+      'a villager look under textures/entity/villager/type, 64 by 64, the second colour its hem, finish hem or sash',
     ],
   ),
   icons: rows(

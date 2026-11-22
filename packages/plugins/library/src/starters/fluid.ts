@@ -11,9 +11,14 @@
  * `fluid_name`. Fluids need the Fabric mod jar export; the vanilla packs keep only the pictures,
  * models and language keys.
  *
- * Limits (ADR 0099 D5 and its amendment): mixing with water differs between the targets, no
- * cauldrons, bottles, boats or waterlogging with it, and `like neither` behaves differently on
- * each target.
+ * Since ADR 0108 (B539), if chosen: where water touches it (lava, for a water-like liquid) it
+ * turns into a block, as lava turns into obsidian and cobblestone (`mixing`, the same on both
+ * targets once a rule is given), and it fills cauldrons and glass bottles (`cauldron` with three
+ * levels and `bottle`, drunk like a potion and giving the effect picked for someone in it; a
+ * lava-like liquid's cauldron fills all at once and it has no bottle).
+ *
+ * Limits (ADR 0099 D5, ADR 0108): no boats on it or waterlogging with it, and `like neither`
+ * behaves differently on each target.
  */
 import type {
   BundleContext,
@@ -75,6 +80,20 @@ const EFFECTS: readonly { value: string; label: string }[] = [
   { value: 'minecraft:slowness', label: 'They slow down' },
   { value: 'minecraft:levitation', label: 'They float up' },
   { value: 'minecraft:poison', label: 'They are poisoned' },
+];
+
+/** What the liquid turns into where the other liquid touches it: a source, then flowing. */
+const MIXES: readonly { value: string; label: string; source?: string; flowing?: string }[] = [
+  { value: 'none', label: 'Nothing' },
+  {
+    value: 'obsidian',
+    label: 'Obsidian and cobblestone, as lava',
+    source: 'minecraft:obsidian',
+    flowing: 'minecraft:cobblestone',
+  },
+  { value: 'stone', label: 'Stone', source: 'minecraft:stone', flowing: 'minecraft:stone' },
+  { value: 'basalt', label: 'Basalt', source: 'minecraft:basalt', flowing: 'minecraft:basalt' },
+  { value: 'mud', label: 'Mud', source: 'minecraft:mud', flowing: 'minecraft:mud' },
 ];
 
 /** Where lakes of it can generate. */
@@ -161,6 +180,15 @@ export const FLUID_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     choices: EFFECTS.map(({ value, label }) => ({ value, label })),
   },
   {
+    id: 'cauldron',
+    label: 'Fills cauldrons and bottles',
+    description:
+      'Pour it into a cauldron with its bucket, and fill glass bottles from it to drink; a bottle gives the effect above. A lava-like liquid fills a cauldron all at once and has no bottle.',
+    group: 'Fluid',
+    type: 'boolean',
+    default: false,
+  },
+  {
     id: 'speed',
     label: 'How fast does it flow?',
     group: 'Flowing',
@@ -189,6 +217,16 @@ export const FLUID_PARAMETERS: readonly StarterParameter[] = Object.freeze([
       { value: 'yes', label: 'Yes' },
       { value: 'no', label: 'No' },
     ],
+  },
+  {
+    id: 'mixes_into',
+    label: 'Mixes with water into',
+    description:
+      'What it turns into where water touches it, as lava turns into obsidian and cobblestone. A liquid that behaves like water mixes with lava instead.',
+    group: 'Flowing',
+    type: 'choice',
+    default: 'none',
+    choices: MIXES.map(({ value, label }) => ({ value, label })),
   },
   {
     id: 'lakes',
@@ -262,6 +300,9 @@ export function fluidBundle(context: BundleContext): ContentBundle {
     (LAKE_PLACES[0] as (typeof LAKE_PLACES)[number]);
   const rarity = Math.max(4, Math.round(numberValue(values, 'lake_rarity')));
   const ids = fluidIds(namespace, name.id);
+  const mix = MIXES.find((entry) => entry.value === stringValue(values, 'mixes_into'));
+  const mixWith = behaviour.value === 'water' ? 'lava' : 'water';
+  const cauldron = booleanValue(values, 'cauldron');
 
   // Water's numbers are 5, 4, 1 and infinite, lava's 30, 2, 2 and not (ADR 0099 D1).
   const usual = lavaLike
@@ -297,6 +338,22 @@ export function fluidBundle(context: BundleContext): ContentBundle {
     ...(moving ? { tint: tintOf(colour) } : {}),
     textures,
   };
+  if (mix?.source !== undefined) {
+    data.mixing = [{ with: mixWith, source: mix.source, flowing: mix.flowing ?? mix.source }];
+  }
+  if (cauldron) {
+    data.cauldron_display_name = `${name.display} Cauldron`;
+    if (lavaLike) {
+      data.cauldron = {};
+    } else {
+      data.cauldron = { levels: true };
+      data.bottle_display_name = `Bottle of ${name.display}`;
+      data.bottle =
+        effect !== undefined && effect.value !== 'none'
+          ? { effects: [{ effect: effect.value, seconds: 30 }] }
+          : {};
+    }
+  }
   if (effect !== undefined && effect.value !== 'none') {
     data.on_entity_inside = ids.inside;
     data.events = {
@@ -324,7 +381,7 @@ export function fluidBundle(context: BundleContext): ContentBundle {
       ids.fluid,
       FLUID_KIND,
       data,
-      `A new liquid with its block (${ids.fluid}) and its bucket (${ids.bucket}), made from this one element. ${how}. It flows one block every ${flow.tick_delay} ticks (tick_delay), finds slopes up to ${flow.slope_distance} blocks away (slope_distance) and loses ${flow.drop_off} level${flow.drop_off === 1 ? '' : 's'} with every block it flows (drop_off); ${flow.infinite ? 'a gap between two pools fills up for good (infinite)' : 'it never makes new sources'}.${light > 0 ? ` It gives light of level ${light}.` : ''} ${lookWords}; the bucket has a picture of its own.${data.on_entity_inside === undefined ? '' : ` Anyone in it gets ${effect?.label.toLowerCase().replace(/^they /, '')} for three seconds: on_entity_inside names the event ${ids.inside}, declared in events, fired at most every ten ticks for each one inside.`} Fluids need the Fabric mod jar export.`,
+      `A new liquid with its block (${ids.fluid}) and its bucket (${ids.bucket}), made from this one element. ${how}. It flows one block every ${flow.tick_delay} ticks (tick_delay), finds slopes up to ${flow.slope_distance} blocks away (slope_distance) and loses ${flow.drop_off} level${flow.drop_off === 1 ? '' : 's'} with every block it flows (drop_off); ${flow.infinite ? 'a gap between two pools fills up for good (infinite)' : 'it never makes new sources'}.${light > 0 ? ` It gives light of level ${light}.` : ''} ${lookWords}; the bucket has a picture of its own.${mix?.source === undefined ? '' : ` Where ${mixWith} touches it, a source turns into ${mix.source} and flowing ${name.lower} into ${mix.flowing ?? mix.source}, with lava's fizz (mixing).`}${!cauldron ? '' : lavaLike ? ` Its bucket fills an empty cauldron, which becomes ${ids.fluid}_cauldron, full at once as lava's is (cauldron), and the bucket takes it back.` : ` Its bucket fills an empty cauldron, which becomes ${ids.fluid}_cauldron with three levels as water's has (cauldron levels true); a glass bottle takes one level, or fills from a source, giving ${ids.fluid}_bottle, drunk in 1.6 seconds as a potion${effect !== undefined && effect.value !== 'none' ? ` and giving ${effect.value} for 30 seconds (bottle effects)` : ''}.`}${data.on_entity_inside === undefined ? '' : ` Anyone in it gets ${effect?.label.toLowerCase().replace(/^they /, '')} for three seconds: on_entity_inside names the event ${ids.inside}, declared in events, fired at most every ten ticks for each one inside.`} Fluids need the Fabric mod jar export.`,
     ),
   ];
   const assets: ContentBundleAsset[] = [

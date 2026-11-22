@@ -40,6 +40,7 @@ import { FLUID_PARAMETERS, fluidBundle } from './fluid';
 import { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 import { FOOD_PARAMETERS, foodBundle } from './food';
 import { functionStarterBundle } from './function-starter';
+import { GAME_RULE_PARAMETERS, gameRuleBundle } from './game-rule';
 import { GEAR_SET_PARAMETERS, gearSetBundle } from './gear-set';
 import { GLIDER_PARAMETERS, gliderBundle } from './glider';
 import { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
@@ -72,6 +73,7 @@ import { VEHICLE_CAR_PARAMETERS, vehicleCarBundle } from './vehicle-car';
 import { VEHICLE_PLANE_PARAMETERS, vehiclePlaneBundle } from './vehicle-plane';
 import { VEHICLE_TANK_PARAMETERS, vehicleTankBundle } from './vehicle-tank';
 import { VILLAGE_JOB_PARAMETERS, villageJobBundle } from './village-job';
+import { VILLAGER_LOOK_PARAMETERS, villagerLookBundle } from './villager-look';
 import { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 import { WANDERING_MERCHANT_PARAMETERS, wanderingMerchantBundle } from './wandering-merchant';
 import { WATER_MOB_PARAMETERS, waterMobBundle } from './water-mob';
@@ -122,6 +124,7 @@ export { FLUID_PARAMETERS, fluidBundle, fluidIds } from './fluid';
 export { FLYING_MOB_PARAMETERS, flyingMobBundle } from './flying-mob';
 export { FOOD_PARAMETERS, foodBundle } from './food';
 export { functionStarterBundle } from './function-starter';
+export { GAME_RULE_CATEGORIES, GAME_RULE_PARAMETERS, gameRuleBundle } from './game-rule';
 export { GEAR_SET_PARAMETERS, gearSetBundle, gearSetIds, nearestTrimPalette } from './gear-set';
 export { GLIDER_PARAMETERS, gliderBundle } from './glider';
 export { GOAT_HORN_PARAMETERS, goatHornBundle } from './goat-horn';
@@ -188,6 +191,12 @@ export {
   villageJobBundle,
   villageJobIds,
 } from './village-job';
+export {
+  VILLAGER_LOOK_PARAMETERS,
+  VILLAGER_LOOK_PLACES,
+  villagerLookBundle,
+  villagerLookIds,
+} from './villager-look';
 export { VILLAGER_TRADE_PARAMETERS, villagerTradeBundle } from './villager-trade';
 export {
   MERCHANT_WARE_SLOTS,
@@ -335,7 +344,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'wood-set',
     'Wood set',
-    'A whole new kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, sign, hanging sign, leaves and a sapling that grows its own tree, with the vanilla recipes, tags, stripping, burning and composting, and if you choose the tree growing in the world. New blocks need the Fabric mod jar export.',
+    'A whole new kind of wood: log, wood, stripped log and wood, planks, stairs, slab, fence, fence gate, door, trapdoor, button, pressure plate, sign, hanging sign, leaves and a sapling that grows its own tree, with the vanilla recipes, tags, stripping, burning and composting, and if you choose the tree growing in the world and a boat and chest boat of the wood. New blocks need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     woodSetBundle,
@@ -345,6 +354,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
         group: 'blocks',
         blurb: 'A whole wood set from log to sapling, with its tree, recipes and tags.',
       },
+      probeValues: [{ boats: true }],
     },
   ),
   starter(
@@ -477,7 +487,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'fluid',
     'Fluid',
-    'A new liquid with its bucket: whether it behaves like water or lava, its colour and pictures, how fast and far it flows, whether two pools make a new one, what happens to someone in it and, if you choose, lakes of it in the world. Fluids need the Fabric mod jar export.',
+    'A new liquid with its bucket: whether it behaves like water or lava, its colour and pictures, how fast and far it flows, whether two pools make a new one, what happens to someone in it and, if you choose, what it turns into where water touches it, a cauldron and a bottle of it and lakes of it in the world. Fluids need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     fluidBundle,
@@ -829,6 +839,19 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
     },
   ),
   starter(
+    'villager-look',
+    'Villager look',
+    'A new look for villagers and zombie villagers of the biomes you pick: clothes in your colours, drawn over the villager where the game reads them. It brings no trades of its own. Villager looks need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    villagerLookBundle,
+    {
+      supports: hasFabric,
+      parameters: VILLAGER_LOOK_PARAMETERS,
+      creator: { group: 'worlds', blurb: 'New clothes for the villagers of a biome.' },
+    },
+  ),
+  starter(
     'extra-drop',
     'Extra drop',
     'An extra item in the loot of a vanilla mob, block or chest, with a count, a chance and, for mobs, whether a player must make the kill. The vanilla drops stay. Extra drops need the Fabric mod jar export.',
@@ -942,7 +965,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'pet',
     'Pet',
-    'An animal players tame with a food, which then sits when told, follows its owner, defends them, has babies and, if you choose, rides on your shoulder: its model (four-legged, bird, round flyer or two-legged), animations, skin, variants and spawn egg, and the mod metadata. New mobs need the Fabric mod jar export.',
+    'An animal players tame with a food, which then sits when told, follows its owner, defends them, has babies and, if you choose, rides on either shoulder, brings you items or digs things up: its model (four-legged, bird, round flyer or two-legged), animations, skin, variants and spawn egg, and the mod metadata. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'msm'],
     petBundle,
@@ -974,7 +997,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'mount',
     'Mount',
-    'A mob players ride and steer, with or without a saddle: its speed and jump, whether only its owner may ride it, whether it flies and whether it carries a chest, with its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'A mob players ride and steer, with or without a saddle: its speed and jump, whether only its owner may ride it, whether it flies, dashes or carries a chest, with its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'datapack', 'msm'],
     mountBundle,
@@ -988,7 +1011,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'wandering-merchant',
     'Wandering merchant',
-    "A mob that trades with you: what it sells and for how many emeralds, whether it also sells the wandering trader's wares, how often it restocks and where it turns up, with its model, skin and spawn egg. New mobs need the Fabric mod jar export.",
+    "A mob that trades with you: what it sells and for how many emeralds, whether it also sells the wandering trader's wares, how often and where it restocks, whether it remembers how you treat it or barters for gold and where it turns up, with its model, skin and spawn egg. New mobs need the Fabric mod jar export.",
     'content',
     ['resourcepack', 'datapack', 'msm'],
     wanderingMerchantBundle,
@@ -1001,7 +1024,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'flying-mob',
     'Flying mob',
-    'A mob that flies about and hovers, peaceful, neutral, hostile or shooting a projectile at players: its model (round flyer or bird), animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'A mob that flies about, floats above the ground or flies through walls, peaceful, neutral, hostile, swooping or shooting a projectile at players, and if you choose hangs under blocks by day: its model (round flyer or bird), animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'msm'],
     flyingMobBundle,
@@ -1015,7 +1038,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'water-mob',
     'Water mob',
-    'A fish that swims in schools, a dolphin-like swimmer or an axolotl-like amphibian, peaceful, neutral or hostile, spawning in oceans, rivers or swamps: its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
+    'A fish that swims in schools, a dolphin-like swimmer or an axolotl-like amphibian, peaceful, neutral or hostile, spawning in oceans, rivers or swamps, and if you choose caught in a bucket or playing dead when hurt: its model, animations, skin, variants and spawn egg. New mobs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'msm'],
     waterMobBundle,
@@ -1125,7 +1148,7 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
   starter(
     'custom-command',
     'Custom command',
-    'A new command players type, such as /heal: who may use it, what it does (heal, an effect, an item or a launch) and the message it says back. Commands need the Fabric mod jar export.',
+    'A new command players type, such as /heal: who may use it, what it does (heal, an effect, an item or a launch), the message it says back and, if you choose, a game rule that turns it on and off. Commands need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'msm'],
     customCommandBundle,
@@ -1133,12 +1156,13 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       supports: hasFabric,
       parameters: CUSTOM_COMMAND_PARAMETERS,
       creator: { group: 'scripts', blurb: 'A command players type that does something.' },
+      probeValues: [{ own_rule: true }],
     },
   ),
   starter(
     'creative-tab',
     'Creative tab',
-    'A tab of your own in the creative inventory, with its title, icon and order, and a first block listed in it. Creative tabs need the Fabric mod jar export.',
+    'A tab of your own in the creative inventory, with its title, icon and order (by hand if you like), and a first block listed in it. Creative tabs need the Fabric mod jar export.',
     'content',
     ['resourcepack', 'msm'],
     creativeTabBundle,
@@ -1146,6 +1170,20 @@ export const libraryStarters: readonly ProjectStarter[] = Object.freeze([
       supports: hasFabric,
       parameters: CREATIVE_TAB_PARAMETERS,
       creator: { group: 'scripts', blurb: 'Your own tab in the creative inventory.' },
+    },
+  ),
+  starter(
+    'game-rule',
+    'Game rule',
+    'A world setting of your own that is on or off or holds a number, set with /gamerule and saved with each world, and if you choose a rule that greets players while it is on and counts the greetings as a statistic. Game rules need the Fabric mod jar export.',
+    'content',
+    ['resourcepack', 'msm'],
+    gameRuleBundle,
+    {
+      supports: hasFabric,
+      parameters: GAME_RULE_PARAMETERS,
+      creator: { group: 'scripts', blurb: 'A world setting of your own, set with /gamerule.' },
+      probeValues: [{ counts: true }],
     },
   ),
 ]);

@@ -800,4 +800,214 @@ export const entityBehaviourExamples: readonly ExampleProject[] = [
         },
       }),
   }),
+  // Mobs 2 (ADR 0109, ADR 0107; B539) --------------------------------------------------------
+  defineExample({
+    id: 'example_msm_bucket_minnow',
+    supports: hasFabric,
+    title: 'Minnow you catch in a bucket',
+    description:
+      'A little river fish you catch with a water bucket and let out again, which plays dead when badly hurt.',
+    kind: KINDS.entity,
+    category: 'Entities',
+    tags: ['msm:bucketable', 'play_dead', 'swim', 'mod'],
+    build: ({ namespace }) =>
+      presetMob({
+        namespace,
+        name: 'pond_minnow',
+        preset: 'fish',
+        colour: COLOURS.jade,
+        scale: 0.6,
+        entity: {
+          display_name: 'Pond Minnow',
+          category: 'water_ambient',
+          spawn: {
+            biomes: ['#minecraft:is_river'],
+            weight: 8,
+            min_group: 3,
+            max_group: 5,
+            placement: 'in_water',
+            rule: 'water_animal',
+          },
+        },
+        components: {
+          'msm:health': { max: 4 },
+          'msm:movement': { speed: 1, mode: 'swim', breathes_air: false, dry_out_ticks: 300 },
+          'msm:bucketable': {},
+          'msm:ai_goals': {
+            goals: [
+              { type: 'play_dead', below_health: 0.5, ticks: 200 },
+              {
+                type: 'flee',
+                from: ['minecraft:player'],
+                distance: 6,
+                speed: 1.4,
+                sprint_speed: 1.2,
+              },
+              { type: 'wander', speed: 1 },
+            ],
+          },
+        },
+        notes: {
+          entity: `A fish you can catch. msm:bucketable lets a player use a water bucket on it: the minnow goes into the bucket item ${namespace}:pond_minnow_bucket ("Bucket of Pond Minnow", made for you, stacking to 1), which keeps its name and health and lets it out again with the water. It has no bucket_texture, so the bucket is drawn as vanilla's water bucket. Only swimmers (mode swim) can be caught. play_dead makes it lie still and heal for 200 ticks when a hit leaves it below half its health, as an axolotl. It spawns in rivers in schools of three to five.`,
+          model: 'The fish preset model, drawn at 0.6 times its size.',
+          animations: 'The fish preset animations: idle, walk (a flop on land) and swim.',
+        },
+      }),
+  }),
+  defineExample({
+    id: 'example_msm_hovering_wisp',
+    supports: hasFabric,
+    title: 'Hovering wisp that roosts',
+    description:
+      'A gentle wisp that floats four blocks above the ground at night and hangs under a block through the day, as a bat.',
+    kind: KINDS.entity,
+    category: 'Entities',
+    tags: ['hover', 'roost', 'ambient', 'mod'],
+    build: ({ namespace }) =>
+      presetMob({
+        namespace,
+        name: 'meadow_wisp',
+        preset: 'flyer',
+        colour: COLOURS.frost,
+        scale: 0.6,
+        entity: {
+          display_name: 'Meadow Wisp',
+          category: 'ambient',
+          spawn: {
+            biomes: ['minecraft:meadow', 'minecraft:flower_forest'],
+            weight: 6,
+            min_group: 1,
+            max_group: 3,
+          },
+        },
+        components: {
+          'msm:health': { max: 6 },
+          'msm:movement': { speed: 0.2, mode: 'hover', flying_speed: 0.3, hover_height: 4 },
+          'msm:ai_goals': {
+            goals: [
+              { type: 'roost', daylight: true, when_idle: false, range: 8 },
+              { type: 'wander', speed: 1 },
+              { type: 'look_around' },
+            ],
+          },
+        },
+        notes: {
+          entity:
+            'A hovering creature. mode hover keeps it floating hover_height (4) blocks above the first block with a shape below it, as a ghast or a blaze, with no gravity and no fall damage; wander drifts it about at that height. roost makes it hang upside down under a block within 8 blocks above it through the day (daylight true), as a bat, letting go when a player comes near. The ambient category spawns it in meadows and flower forests.',
+          model: 'The round flyer preset model, drawn at 0.6 times its size.',
+          animations: 'The round flyer preset animations: idle, walk, fly, attack and shoot.',
+        },
+      }),
+  }),
+  defineExample({
+    id: 'example_msm_fetching_finch',
+    supports: hasFabric,
+    title: 'Finch that fetches and rides your shoulder',
+    description:
+      'A small bird you tame with seeds: give it an item and it brings you more of the same, and it rides on your left shoulder, leaving the right one for another pet.',
+    kind: KINDS.entity,
+    category: 'Entities',
+    tags: ['collect_items', 'msm:shoulder_riding', 'msm:tameable', 'mod'],
+    build: ({ namespace }) =>
+      presetMob({
+        namespace,
+        name: 'fetching_finch',
+        preset: 'bird',
+        colour: COLOURS.amber,
+        scale: 0.5,
+        entity: {
+          display_name: 'Fetching Finch',
+          base: 'animal',
+          category: 'creature',
+          spawn: {
+            biomes: ['#minecraft:is_forest'],
+            weight: 4,
+            min_group: 1,
+            max_group: 2,
+            rule: 'animal',
+          },
+        },
+        components: {
+          'msm:health': { max: 6 },
+          'msm:movement': { speed: 0.2, mode: 'fly', flying_speed: 0.4, hovers: true },
+          'msm:tameable': {
+            items: ['minecraft:wheat_seeds'],
+            chance: 0.33,
+            sit: true,
+            follows_owner: true,
+            defends_owner: false,
+          },
+          'msm:shoulder_riding': { sides: 'left' },
+          'msm:ai_goals': {
+            goals: [
+              { type: 'collect_items', speed: 1, range: 32, note_blocks: true },
+              { type: 'wander', speed: 1 },
+              { type: 'look_at_player', distance: 8 },
+            ],
+          },
+        },
+        notes: {
+          entity:
+            "A fetching pet. msm:tameable tames it one time in three with wheat seeds. collect_items makes it an item collector, as an allay: give it an item (use it with the item) and it picks up more of the same within 32 blocks and brings them to its owner, or to a note block it heard play; use it with an empty hand to take the item back. msm:shoulder_riding lets it perch on its owner's shoulder; sides left keeps it to the left one, so a second pet (or a parrot) can take the right. It is small (scale 0.5), as a shoulder pet must be.",
+          model: 'The bird preset model, drawn at half its size.',
+          animations: 'The bird preset animations: idle, walk, sit, fly and attack.',
+        },
+      }),
+  }),
+  defineExample({
+    id: 'example_msm_fair_trader',
+    supports: hasFabric,
+    title: 'Fair trader who remembers you',
+    description:
+      'A travelling trader whose prices drop for players who trade with it or bring it flowers and rise for those who hit it, who restocks at a barrel and barters for gold.',
+    kind: KINDS.entity,
+    category: 'Entities',
+    tags: ['msm:trader', 'reputation', 'work_site', 'barter', 'mod'],
+    build: ({ namespace }) =>
+      presetMob({
+        namespace,
+        name: 'fair_trader',
+        preset: 'biped',
+        colour: COLOURS.violet,
+        entity: {
+          display_name: 'Fair Trader',
+          category: 'creature',
+        },
+        components: {
+          'msm:health': { max: 20 },
+          'msm:movement': { speed: 0.4 },
+          'msm:trader': {
+            trade_sets: [
+              { trade_set: 'minecraft:wandering_trader/common' },
+              { trade_set: 'minecraft:wandering_trader/uncommon' },
+            ],
+            levels: true,
+            restock: 'twice_a_day',
+            reputation: { gift_item: 'minecraft:poppy', gift: 10 },
+            demand: true,
+            work_site: 'minecraft:barrel',
+          },
+          'msm:ai_goals': {
+            goals: [
+              { type: 'panic', speed: 1.3 },
+              {
+                type: 'barter',
+                item: 'minecraft:gold_ingot',
+                loot_table: 'minecraft:gameplay/piglin_bartering',
+                ticks: 120,
+                from_ground: true,
+              },
+              { type: 'wander', speed: 0.6 },
+              { type: 'look_at_player', distance: 8 },
+            ],
+          },
+        },
+        notes: {
+          entity:
+            "A trader with a memory. msm:trader opens the villager trading screen with the wandering trader's common wares, then its rare ones as players trade. reputation keeps a value for each player: each trade adds 2 (up to 25), each poppy given to it (used on it) adds 10 (gift, up to 25) and each hit takes 25 away; the value changes every price for that player and fades a little each day. It is never shared with other mobs. demand true raises the price of a trade bought out after the next restock, as with villagers. work_site makes it walk to the nearest barrel within 16 blocks to restock, twice a day. The barter goal takes a gold ingot handed to it or dropped near it and drops a roll of vanilla's piglin bartering loot after six seconds. It does not spawn on its own: use its spawn egg.",
+          model: 'The two-legged preset model.',
+          animations: 'The two-legged preset animations: idle, walk, sit, attack and shoot.',
+        },
+      }),
+  }),
 ];

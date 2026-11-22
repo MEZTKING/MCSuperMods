@@ -1,0 +1,18 @@
+{
+  "data": {
+    "values": [
+      "msm_examples:willow_log"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:willow_logs",
+  "kind": "minecraft:tag/item",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "The willow logs as items, as vanilla's #minecraft:oak_logs: the planks recipe takes any of them.",
+    "tags": [
+      "example",
+      "popular-ideas"
+    ]
+  }
+}

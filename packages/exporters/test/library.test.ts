@@ -62,12 +62,14 @@ import blocksItemsPlugin, {
   blockItemIdOf,
   blockStateFlag,
   blockTypeOf,
+  boatCompanionIds,
   bundleModelIds,
+  fluidCompanionIds,
   signGuiTexturePath,
 } from '@msm/plugin-blocks-items';
 import controlsPlugin from '@msm/plugin-controls';
 import dataPackPlugin from '@msm/plugin-datapack';
-import entitiesPlugin from '@msm/plugin-entities';
+import entitiesPlugin, { bucketItemId } from '@msm/plugin-entities';
 import libraryPlugin, {
   behaviourExamples,
   EXTRA_DROP_TABLES,
@@ -265,6 +267,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { pet_name: 'Pocket Fox', shoulder: true },
     { pet_name: 'Perch Bird', preset: 'bird', shoulder: true, sits: false },
     { pet_name: 'Puff Ball', preset: 'flyer', shoulder: true, babies: false },
+    // ADR 0109 D2, D4 (B539): a shoulder side, fetching and digging.
+    { pet_name: 'Left Kit', shoulder: true, shoulder_side: 'left', fetches: true },
+    { pet_name: 'Right Owl', preset: 'bird', shoulder: true, shoulder_side: 'right', digs: true },
+    { pet_name: 'Truffle Pig', digs: true, fetches: true, defends: false },
   ],
   'farm-animal': [
     {
@@ -305,6 +311,9 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       needs_chest: false,
     },
     { mount_name: 'Loyal Mule', carries_chest: true, owner_only: true, chest_rows: 2 },
+    // ADR 0109 D4 (B539): a dash, and a dash asked of a flyer (left out).
+    { mount_name: 'Sand Strider', dashes: true, owner_only: true },
+    { mount_name: 'Glide Ray', preset: 'flyer', dashes: true },
   ],
   'flying-mob': [
     {
@@ -318,6 +327,12 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { mob_name: 'Hail Moth', behaviour: 'shooter', projectile: 'minecraft:arrow' },
     { mob_name: 'Fire Moth', behaviour: 'shooter', projectile: 'minecraft:fire_charge' },
     { mob_name: 'Egg Moth', behaviour: 'shooter', projectile: 'minecraft:egg' },
+    // ADR 0109 D3 (B539): hovering, phasing, swooping and roosting.
+    { mob_name: 'Float Wisp', flight: 'hover', roosts: true },
+    { mob_name: 'Wall Ghost', flight: 'phase', behaviour: 'hostile' },
+    { mob_name: 'Dusk Diver', behaviour: 'hostile', swoops: true, roosts: true },
+    { mob_name: 'Sky Diver', flight: 'hover', behaviour: 'hostile', swoops: true },
+    { mob_name: 'Hover Gun', flight: 'hover', behaviour: 'shooter', swoops: true },
   ],
   'water-mob': [
     {
@@ -339,6 +354,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
       variant_count: 1,
       variant_1_biome: 'swamps',
     },
+    // ADR 0109 D1, D4 (B539): buckets for swimmers (none for an amphibian), playing dead.
+    { mob_name: 'Creek Darter', bucket: true, plays_dead: true },
+    { mob_name: 'Bucket Dolphin', kind: 'dolphin', bucket: true },
+    { mob_name: 'Bog Newt', kind: 'amphibian', bucket: true, plays_dead: true },
   ],
   boss: [
     {
@@ -765,6 +784,10 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     // ADR 0101 D2: no signs, or signs without hanging signs.
     { wood_name: 'Larch', signs: false, hanging_signs: false },
     { wood_name: 'Ash', hanging_signs: false, wood_type: 'birch' },
+    // ADR 0110 (B539): boats, and boats asked without the planks (left out).
+    { wood_name: 'Maple', boats: true },
+    { wood_name: 'Reed Wood', boats: true, members: ['planks'], signs: false },
+    { wood_name: 'No Plank', boats: true, members: ['log', 'leaves'], hanging_signs: false },
   ],
   'stone-set': [
     {
@@ -897,10 +920,22 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     { command_name: 'zoom', action: 'effect', effect: 'minecraft:speed', seconds: 60 },
     { command_name: 'snack', action: 'item', item: 'minecraft:cookie', count: 8, who: 'operators' },
     { command_name: 'hop', action: 'launch', message: '' },
+    // ADR 0111 D5 (B539): its own game rule, for every action.
+    { command_name: 'mend', own_rule: true },
+    { command_name: 'dash', own_rule: true, action: 'effect', who: 'operators' },
+    { command_name: 'loaf', own_rule: true, action: 'item', count: 3, message: '' },
+    { command_name: 'jump', own_rule: true, action: 'launch' },
   ],
   'creative-tab': [
     { tab_name: 'Gems', icon: 'minecraft:emerald', order: 'by_name' },
     { tab_name: 'Empty Tab', first_block: false },
+    // ADR 0111 D7 (B539): a hand order, with and without the first block.
+    {
+      tab_name: 'Hand Tab',
+      order: 'by_hand',
+      extra_items: ['minecraft:lantern', 'minecraft:torch'],
+    },
+    { tab_name: 'Bare Hand Tab', order: 'by_hand', first_block: false, icon: 'minecraft:bricks' },
   ],
   // ADR 0101 D2 (batch 2, B481): every look, ware slot, level and restock answer of the
   // Wandering merchant; every vanilla job and none for the Village job; every behaviour, look,
@@ -921,6 +956,18 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { merchant_name: 'Sky Trader', preset: 'bird', ware_3: 'minecraft:feather' },
     { merchant_name: 'Cube Seller', preset: 'cube_creature', spawn_biomes: 'badlands' },
+    // ADR 0107 D1 to D3, ADR 0109 D4 (B539): reputation with and without a gift, no demand,
+    // restocking at a work site, bartering.
+    {
+      merchant_name: 'Fair Seller',
+      remembers: true,
+      gift: 'poppy',
+      demand: false,
+      restock: 'work_site',
+      work_site: 'minecraft:lectern',
+      barters: true,
+    },
+    { merchant_name: 'Plain Seller', remembers: true, gift: '', restock: 'work_site' },
   ],
   'village-job': [
     {
@@ -960,6 +1007,28 @@ const WIZARD_ALTERNATIVES: Readonly<Record<string, readonly Record<string, Json>
     },
     { fluid_name: 'Ghost Mist', behaves_like: 'none', picture: pngDataUrl(16, 16), lakes: true },
     { fluid_name: 'Pond Water', sources: 'no', effect: 'minecraft:regeneration' },
+    // ADR 0108 (B539): mixing, cauldrons and bottles on each behaviour.
+    { fluid_name: 'Hot Tar', behaves_like: 'lava', mixes_into: 'obsidian', cauldron: true },
+    {
+      fluid_name: 'Berry Tea',
+      mixes_into: 'stone',
+      cauldron: true,
+      effect: 'minecraft:speed',
+    },
+    { fluid_name: 'Fog Juice', behaves_like: 'none', mixes_into: 'mud', cauldron: true },
+    { fluid_name: 'Lava Slurry', behaves_like: 'lava', mixes_into: 'basalt' },
+  ],
+  // The Villager look and Game rule flows (ADR 0112 D2, B539).
+  'villager-look': [
+    { look_name: 'Moss Folk', place: 'dark_forest', colour: '#2a6a3a', sash: false },
+    { look_name: 'Desert Rose', place: 'badlands', trim_colour: '#c41c34' },
+    { look_name: 'Spore Folk', place: 'mushroom' },
+  ],
+  'game-rule': [
+    { rule_name: 'Bonus Hearts', kind: 'number', number_default: 5, number_max: 20, counts: true },
+    { rule_name: 'Quiet Start', starts_on: false, greets: false, category: 'misc' },
+    { rule_name: 'Odd Range', kind: 'number', number_min: 8, number_max: 2, number_default: 99 },
+    { rule_name: 'Count Me', counts: true, greeting: '', description: '' },
   ],
   // ADR 0069 D1: vanilla logs and leaves, every tree shape, a tinted leaf, pictures.
   tree: [
@@ -1381,6 +1450,43 @@ function projectRegistryIds(
           for (const slot of Object.keys(pictures) as (keyof typeof models)[]) {
             if (models[slot] !== undefined) add('model', models[slot]);
           }
+        }
+      }
+      // The companions lowering writes for batch 2 of vanilla parity 3 (B539), as the app's
+      // registry view adds them (B538): a bucketable mob's bucket item and its flat model
+      // (ADR 0109 D1), a boat's entity type and its chest boat with its item model (ADR 0110),
+      // and a fluid's cauldron with its models and its bottle with its model (ADR 0108).
+      if (element.kind === 'msm:entity' && typeof element.data === 'object') {
+        const components = (element.data as { components?: Record<string, unknown> } | null)
+          ?.components;
+        if (components?.['msm:bucketable'] !== undefined) {
+          const bucket = bucketItemId(element.id);
+          add('item', bucket);
+          add('model', bucket.replace(':', ':item/'));
+        }
+      }
+      if (element.kind === 'msm:item') {
+        const chests = boatCompanionIds(element.id, element.data as Json);
+        const components = (element.data as { components?: Record<string, unknown> } | null)
+          ?.components;
+        if (components?.['msm:boat'] !== undefined) add('entity_type', element.id);
+        for (const id of chests) {
+          add('item', id);
+          add('entity_type', id);
+          add('model', id.replace(':', ':item/'));
+        }
+      }
+      if (element.kind === 'msm:fluid') {
+        const companions = fluidCompanionIds(element.id, element.data as Json);
+        for (const id of companions.block ?? []) {
+          add('block', id);
+          for (const suffix of ['', '_level1', '_level2', '_full']) {
+            add('model', `${id.replace(':', ':block/')}${suffix}`);
+          }
+        }
+        for (const id of companions.item ?? []) {
+          add('item', id);
+          add('model', id.replace(':', ':item/'));
         }
       }
       if (name === 'entity_type' && typeof element.data === 'object' && element.data !== null) {
@@ -1963,13 +2069,7 @@ function typeCheck(script: string): string[] {
  * its library brief lands. `minecraft:wolf_sound_variant` is not a kind at all while vanilla-mcdoc
  * lacks `step_sound` (ADR 0064 D5).
  */
-// B539 adds its example (vanilla parity 3 batch 2).
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [
-  'msm:villager_type',
-  // B535 registers the game rule and statistic kinds; their examples come with the library brief.
-  'msm:game_rule',
-  'msm:stat',
-];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 // Tests --------------------------------------------------------------------------------------
 

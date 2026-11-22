@@ -47,6 +47,13 @@
  * sound events `block.<w>_door.open` and `.close` (closing at a lower pitch). Buttons and plates
  * keep the kind of wood's sounds.
  *
+ * Boats (ADR 0110, B539): "Has boats" adds `<w>_boat`, an `msm:item` with `msm:boat` and a chest
+ * boat (`<w>_chest_boat`, made by lowering with both recipes from the planks and the vanilla boat
+ * tags), its item models and the four pictures the art generator draws in the wood's colour: the
+ * boat and chest boat items and the 128 by 64 and 128 by 128 pictures the game draws the boats
+ * with, saved where it reads them (`textures/entity/boat/<w>.png` and
+ * `textures/entity/chest_boat/<w>.png`). Boats need the planks.
+ *
  * Members that need others: the sapling, the tree and "Grows in the world" need the log and the
  * leaves (the tree is made of them); the recipes of stairs, slab, fence, gate, door, trapdoor,
  * button and plate need the planks; wood and stripped wood are crafted from their logs.
@@ -61,6 +68,8 @@ import type {
   ResourceLocation,
   StarterParameter,
 } from '@msm/plugin-api';
+import { artLookPng } from '../art/draw';
+import type { ArtRecipeId } from '../art/info';
 import type { PlaceholderPattern, Rgb } from '../assets/png';
 import {
   hangingSignGuiPng,
@@ -69,8 +78,10 @@ import {
   signItemPng,
 } from '../assets/vanilla-parity/index';
 import {
+  artSeed,
   COLOURS,
   element,
+  itemModel,
   KINDS,
   modElement,
   PACK_NOTES,
@@ -325,6 +336,15 @@ export const WOOD_SET_PARAMETERS: readonly StarterParameter[] = Object.freeze([
     default: true,
   },
   {
+    id: 'boats',
+    label: 'Has boats',
+    description:
+      'A boat and a chest boat of this wood that you paddle as vanilla boats, crafted from five planks (the chest boat from the boat and a chest). They need the planks.',
+    group: 'Members',
+    type: 'boolean',
+    default: false,
+  },
+  {
     id: 'leaf_tint',
     label: 'Leaf colour in the world',
     description:
@@ -540,6 +560,8 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
   const grows = hasTree && booleanValue(values, 'grows');
   const logMembers = (['log', 'wood', 'stripped_log', 'stripped_wood'] as const).filter(has);
   const signs = booleanValue(values, 'signs');
+  // A boat is crafted from the planks (`blocks-items.boat-planks-missing` without them).
+  const boats = booleanValue(values, 'boats') && has('planks');
   const hangingSigns = booleanValue(values, 'hanging_signs');
   const doorSounds = DOOR_SOUNDS.find(
     (entry) => entry.value === stringValue(values, 'door_sounds'),
@@ -874,6 +896,58 @@ export function woodSetBundle(context: BundleContext): ContentBundle {
           components: { 'msm:breakable': { ...SIGN_BREAKABLE } },
         },
         `A ${name.lower} hanging sign: under a block it hangs on two chains (on one bar when the block above is too narrow), and placed against a side it becomes the generated wall hanging sign ${ids.hangingSign}_wall on a bracket. Its board is drawn from the stripped log; the writing screen shows textures/gui/hanging_signs/${path}.png, which the flow saves. It stacks to 16.`,
+      ),
+    );
+  }
+
+  // Boats (ADR 0110; B539) -----------------------------------------------------------------
+  // One item with `msm:boat` and its chest boat; lowering writes both recipes from the planks
+  // `<w>_planks`, the tags and the chest boat item. The pictures the game draws the boats with
+  // sit where it reads them, `entity/boat/<w>` and `entity/chest_boat/<w>`.
+  if (boats) {
+    const boat = rl(namespace, `${name.id}_boat`);
+    const boatPath = boat.slice(namespace.length + 1);
+    const chestItem = rl(namespace, `item/${name.id}_chest_boat`);
+    const drawn = (path: string, recipe: ArtRecipeId, finish?: string): void => {
+      extraAssets.push({
+        namespace,
+        path: `textures/${path}.png`,
+        bytes: artLookPng({
+          recipe,
+          colour: woodColour,
+          ...(finish === undefined ? {} : { finish }),
+          seed: artSeed(namespace, path, recipe),
+        }),
+      });
+    };
+    drawn(`item/${boatPath}`, 'boat', 'boat');
+    drawn(`item/${name.id}_chest_boat`, 'boat', 'chest');
+    drawn(`entity/boat/${name.id}`, 'boat_layer');
+    drawn(`entity/chest_boat/${name.id}`, 'chest_boat_layer');
+    elements.push(
+      element(
+        boat,
+        KINDS.item,
+        {
+          format: 1,
+          display_name: `${name.display} Boat`,
+          chest_boat_display_name: `${name.display} Boat with Chest`,
+          model: rl(namespace, `item/${boatPath}`),
+          creative_tab: 'minecraft:tools_and_utilities',
+          components: { 'msm:boat': { chest: true } },
+          boat_textures: {
+            boat: rl(namespace, `entity/boat/${name.id}`),
+            chest_boat: rl(namespace, `entity/chest_boat/${name.id}`),
+            chest_boat_item: chestItem,
+          },
+        },
+        `A ${name.lower} boat (msm:boat) you place on water and paddle as vanilla's, with room for two; chest true adds the chest boat ${namespace}:${name.id}_chest_boat, a boat with a chest you open while sitting in it. Both stack to 1 and are crafted as vanilla's: five ${name.lower} planks in a U make the boat, and the boat with a chest makes the chest boat. The game draws them with textures/entity/boat/${name.id}.png and textures/entity/chest_boat/${name.id}.png, drawn in the wood's colour; the chest boat item shows ${chestItem}. Boats need the Fabric mod jar export.`,
+      ),
+      itemModel(
+        namespace,
+        boatPath,
+        'minecraft:item/generated',
+        `The ${name.lower} boat item: a flat picture, textures/item/${boatPath}.png.`,
       ),
     );
   }

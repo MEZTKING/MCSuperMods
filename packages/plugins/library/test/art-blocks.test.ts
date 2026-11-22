@@ -28,6 +28,11 @@ import {
   type Rgb,
 } from '../src/index';
 
+// Heavy property tests (B539, plan "Watch" under B537): each draws a recipe at 12 colours, 4 seeds,
+// every finish and 3 details (hundreds of pictures, the boat bodies 128 pixels wide), which takes
+// a few seconds alone and more than vitest's 5 s default when every package's tests run at once.
+const HEAVY_TIMEOUT = 60_000;
+
 const here = dirname(fileURLToPath(import.meta.url));
 const goldens = join(here, 'fixtures', 'art', 'blocks');
 const update = process.env.UPDATE_GOLDENS === '1';
@@ -128,7 +133,9 @@ describe('every block recipe is drawn (B492)', () => {
 });
 
 describe.each(owned)('the block recipe $id (ADR 0092 D8)', (info) => {
-  it('follows every pixel rule over 12 colours, 4 seeds, every finish and detail', () => {
+  it('follows every pixel rule over 12 colours, 4 seeds, every finish and detail', {
+    timeout: HEAVY_TIMEOUT,
+  }, () => {
     for (const look of looks(info)) {
       expect(checkArtRules(artPixels(look), info), JSON.stringify(look)).toEqual([]);
     }

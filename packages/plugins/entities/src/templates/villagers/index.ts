@@ -1,6 +1,7 @@
 /**
  * "New element" templates of ADR 0098 (category "Villagers and traders"): a wandering merchant
- * (`msm:trader` with vanilla's wandering trader sets), a pack mule (`msm:storage` that needs a
+ * (`msm:trader` with vanilla's wandering trader sets), a trader who remembers each player
+ * (ADR 0107 D1 to D3, B539: `reputation` with a gift, `demand` and a `work_site`), a pack mule (`msm:storage` that needs a
  * chest, ridden by its owner), a shoulder pet (`msm:shoulder_riding` on a small tamed animal) and
  * a village job (`msm:villager_profession`). They use vanilla ids only, plus ids derived from the
  * new element's own id: the mobs' model `<ns>:entity/<path>`, animation set
@@ -70,6 +71,37 @@ export const villagerTemplates: readonly ElementTemplate[] = Object.freeze([
           ],
           levels: true,
           restock: 'twice_a_day',
+        },
+        'msm:animated_model': mobModel(context, []),
+      },
+    }),
+  },
+  {
+    id: 'msm_entity_fair_trader',
+    kind: ENTITY_KIND,
+    category: VILLAGER_TEMPLATE_CATEGORY,
+    title: 'Trader who remembers you',
+    description: `A trader whose prices follow how each player treats it, as a villager's do: trades and a gift of flowers make them lower, hitting it makes them higher, and it forgets a little each day. A trade bought out costs more after the next restock, and it restocks twice a day at the nearest barrel. With a spawn egg. ${MODEL_NOTE}`,
+    data: (context) => ({
+      format: 1,
+      display_name: displayName(context.path),
+      category: 'creature',
+      size: { width: 0.6, height: 1.95 },
+      spawn_egg: { texture: eggTexture(context) },
+      components: {
+        'msm:health': { max: 20 },
+        'msm:movement': { speed: 0.3 },
+        'msm:ai_goals': { goals: structuredClone(LOOKING_ABOUT) },
+        'msm:trader': {
+          trade_sets: [
+            { trade_set: 'minecraft:wandering_trader/common' },
+            { trade_set: 'minecraft:wandering_trader/uncommon' },
+          ],
+          levels: true,
+          restock: 'twice_a_day',
+          reputation: { gift_item: '#minecraft:small_flowers' },
+          demand: true,
+          work_site: 'minecraft:barrel',
         },
         'msm:animated_model': mobModel(context, []),
       },

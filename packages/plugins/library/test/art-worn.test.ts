@@ -51,6 +51,11 @@ import {
   type SkinBox,
 } from '../src/index';
 
+// Heavy property tests (B539, plan "Watch" under B537): each draws a recipe at 12 colours, 4 seeds,
+// every finish and 3 details (hundreds of pictures, the boat bodies 128 pixels wide), which takes
+// a few seconds alone and more than vitest's 5 s default when every package's tests run at once.
+const HEAVY_TIMEOUT = 60_000;
+
 const here = dirname(fileURLToPath(import.meta.url));
 const goldens = join(here, 'fixtures', 'art', 'worn');
 const update = process.env.UPDATE_GOLDENS === '1';
@@ -141,6 +146,10 @@ const PATTERN_PICTURES: readonly ArtRecipeId[] = [
   'trim_layer_2',
   'glider_wings',
   'pot_pattern',
+  // The boat bodies and villager clothes of B539 (`art-boats-villagers.test.ts`).
+  'boat_layer',
+  'chest_boat_layer',
+  'villager_robe',
 ];
 
 describe('every recipe and pattern is drawn (B494)', () => {
@@ -177,7 +186,9 @@ describe('every recipe and pattern is drawn (B494)', () => {
 });
 
 describe.each(owned)('the recipe $id (ADR 0092 D8)', (info) => {
-  it('follows every pixel rule over 12 colours, 4 seeds, every finish and detail', () => {
+  it('follows every pixel rule over 12 colours, 4 seeds, every finish and detail', {
+    timeout: HEAVY_TIMEOUT,
+  }, () => {
     for (const look of looks(info)) {
       expect(checkArtRules(artPixels(look), info), JSON.stringify(look)).toEqual([]);
     }

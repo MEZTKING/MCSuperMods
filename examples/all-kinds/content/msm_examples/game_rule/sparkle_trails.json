@@ -1,0 +1,21 @@
+{
+  "data": {
+    "category": "mobs",
+    "default": true,
+    "description": "Whether players leave a trail of sparkles while they sneak.",
+    "display_name": "Sparkle trails",
+    "format": 1,
+    "kind": "boolean"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:sparkle_trails",
+  "kind": "msm:game_rule",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A game rule: a world setting registered with the mod and saved with each world. \"kind\" is boolean (on or off) or integer (a whole number, with \"min\" and \"max\"); \"default\" is its value in a new world; \"category\" is the group of the game rule screen it is listed in; \"display_name\" and \"description\" are its words there. Players set it with /gamerule msm_examples:sparkle_trails false. A rule reads it with \"The game rule is\" and changes it with \"Set a game rule\". It needs the Fabric mod jar export; the vanilla packs keep only its models, pictures and language keys.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

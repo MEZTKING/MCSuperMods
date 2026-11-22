@@ -1,0 +1,91 @@
+[
+  {
+    "contents": {
+      "category": "creature",
+      "components": {
+        "msm:ai_goals": {
+          "goals": [
+            {
+              "type": "wander"
+            },
+            {
+              "type": "look_at_player"
+            },
+            {
+              "type": "look_around"
+            }
+          ]
+        },
+        "msm:animated_model": {
+          "animations": "demo:entity/sample_animations",
+          "idle": "idle",
+          "model": "demo:entity/sample",
+          "renderer": "auto",
+          "texture": "demo:entity/sample",
+          "walk": "walk"
+        },
+        "msm:health": {
+          "max": 20
+        },
+        "msm:movement": {
+          "speed": 0.3
+        },
+        "msm:trader": {
+          "demand": true,
+          "levels": true,
+          "reputation": {
+            "gift_item": "#minecraft:small_flowers"
+          },
+          "restock": "twice_a_day",
+          "trade_sets": [
+            {
+              "trade_set": "minecraft:wandering_trader/common"
+            },
+            {
+              "trade_set": "minecraft:wandering_trader/uncommon"
+            }
+          ],
+          "trade_sound": "minecraft:entity.villager.yes",
+          "work_site": "minecraft:barrel"
+        }
+      },
+      "format": 1,
+      "size": {
+        "height": 1.95,
+        "width": 0.6
+      },
+      "spawn_egg": {}
+    },
+    "layer": "msm",
+    "path": "msm/demo/entity/sample.json"
+  },
+  {
+    "contents": {
+      "entity.demo.sample": "Sample",
+      "item.demo.sample_spawn_egg": "Sample Spawn Egg"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/sample_spawn_egg",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/sample_spawn_egg.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "demo:item/sample_spawn_egg"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/sample_spawn_egg.json"
+  }
+]

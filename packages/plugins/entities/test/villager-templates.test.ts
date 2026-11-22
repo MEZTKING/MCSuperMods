@@ -34,6 +34,7 @@ const UPDATE = process.env.UPDATE_GOLDENS === '1';
 
 const IDS = [
   'msm_entity_wandering_merchant',
+  'msm_entity_fair_trader',
   'msm_entity_pack_mule',
   'msm_entity_shoulder_pet',
   'msm_villager_profession',

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "display_name": "Bells rung",
+    "format": 1,
+    "formatter": "default"
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:bells_rung",
+  "kind": "msm:stat",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A statistic: a number counted for each player, shown in the Statistics screen and saved with the world. \"formatter\" says how it is shown: default (a plain number), distance (centimetres shown as metres and kilometres) or time (ticks shown as seconds, minutes, hours and days). A scoreboard objective follows it with the criterion minecraft.custom:msm_examples.bells_rung. A rule adds to it with \"Add to a statistic\" and checks it with \"The statistic is at least\". It needs the Fabric mod jar export; the vanilla packs keep only its models, pictures and language keys.",
+    "tags": [
+      "example",
+      "commands"
+    ]
+  }
+}

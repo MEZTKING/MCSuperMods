@@ -1,0 +1,88 @@
+{
+  "data": {
+    "base": "animal",
+    "category": "creature",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "note_blocks": true,
+            "range": 32,
+            "speed": 1,
+            "type": "collect_items"
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "distance": 8,
+            "type": "look_at_player"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/fetching_finch_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_examples:entity/fetching_finch",
+        "renderer": "auto",
+        "scale": 0.5,
+        "sit": "sit",
+        "texture": "msm_examples:entity/fetching_finch",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 6
+      },
+      "msm:movement": {
+        "flying_speed": 0.4,
+        "hovers": true,
+        "mode": "fly",
+        "speed": 0.2
+      },
+      "msm:shoulder_riding": {
+        "sides": "left"
+      },
+      "msm:tameable": {
+        "chance": 0.33,
+        "defends_owner": false,
+        "follows_owner": true,
+        "items": [
+          "minecraft:wheat_seeds"
+        ],
+        "sit": true
+      }
+    },
+    "display_name": "Fetching Finch",
+    "format": 1,
+    "size": {
+      "height": 0.45,
+      "width": 0.25
+    },
+    "spawn": {
+      "biomes": [
+        "#minecraft:is_forest"
+      ],
+      "max_group": 2,
+      "min_group": 1,
+      "rule": "animal",
+      "weight": 4
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/fetching_finch_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:fetching_finch",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A fetching pet. msm:tameable tames it one time in three with wheat seeds. collect_items makes it an item collector, as an allay: give it an item (use it with the item) and it picks up more of the same within 32 blocks and brings them to its owner, or to a note block it heard play; use it with an empty hand to take the item back. msm:shoulder_riding lets it perch on its owner's shoulder; sides left keeps it to the left one, so a second pet (or a parrot) can take the right. It is small (scale 0.5), as a shoulder pet must be.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

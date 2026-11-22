@@ -1,0 +1,74 @@
+{
+  "data": {
+    "category": "ambient",
+    "components": {
+      "msm:ai_goals": {
+        "goals": [
+          {
+            "daylight": true,
+            "range": 8,
+            "type": "roost",
+            "when_idle": false
+          },
+          {
+            "speed": 1,
+            "type": "wander"
+          },
+          {
+            "type": "look_around"
+          }
+        ]
+      },
+      "msm:animated_model": {
+        "animations": "msm_examples:entity/meadow_wisp_animations",
+        "attack": "attack",
+        "fly": "fly",
+        "idle": "idle",
+        "model": "msm_examples:entity/meadow_wisp",
+        "renderer": "auto",
+        "scale": 0.6,
+        "shoot": "shoot",
+        "texture": "msm_examples:entity/meadow_wisp",
+        "walk": "walk"
+      },
+      "msm:health": {
+        "max": 6
+      },
+      "msm:movement": {
+        "flying_speed": 0.3,
+        "hover_height": 4,
+        "mode": "hover",
+        "speed": 0.2
+      }
+    },
+    "display_name": "Meadow Wisp",
+    "format": 1,
+    "size": {
+      "height": 0.5,
+      "width": 0.5
+    },
+    "spawn": {
+      "biomes": [
+        "minecraft:meadow",
+        "minecraft:flower_forest"
+      ],
+      "max_group": 3,
+      "min_group": 1,
+      "weight": 6
+    },
+    "spawn_egg": {
+      "texture": "msm_examples:item/meadow_wisp_spawn_egg"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:meadow_wisp",
+  "kind": "msm:entity",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A hovering creature. mode hover keeps it floating hover_height (4) blocks above the first block with a shape below it, as a ghast or a blaze, with no gravity and no fall damage; wander drifts it about at that height. roost makes it hang upside down under a block within 8 blocks above it through the day (daylight true), as a bat, letting go when a player comes near. The ambient category spawns it in meadows and flower forests.",
+    "tags": [
+      "example",
+      "entities"
+    ]
+  }
+}

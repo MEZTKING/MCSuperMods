@@ -98,6 +98,8 @@ export const ART_RECIPE_IDS = Object.freeze([
   'pattern_sheet',
   'pottery_sherd',
   'glider',
+  // The boat item (B539)
+  'boat',
   // Worn pictures
   'armor_layer_1',
   'armor_layer_2',
@@ -110,6 +112,10 @@ export const ART_RECIPE_IDS = Object.freeze([
   'trim_layer_2',
   'glider_wings',
   'pot_pattern',
+  // Boat bodies and villager clothes (B539)
+  'boat_layer',
+  'chest_boat_layer',
+  'villager_robe',
   // Icons and particles
   'effect_icon',
   'particle_spark',

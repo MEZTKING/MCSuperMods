@@ -1,0 +1,23 @@
+{
+  "data": {
+    "biomes": [
+      "minecraft:cherry_grove"
+    ],
+    "format": 1,
+    "textures": {
+      "villager": "msm_examples:entity/villager/type/blossom",
+      "zombie_villager": "msm_examples:entity/zombie_villager/type/blossom"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_examples:blossom",
+  "kind": "msm:villager_type",
+  "meta": {
+    "createdAt": "2026-11-04T00:00:00.000Z",
+    "notes": "A villager type: the look of the villagers of some biomes, as vanilla's plains, desert or taiga villagers. \"biomes\" lists biome ids and tags (#-prefixed); villagers born or spawned there get this type. The pictures in \"textures\" are drawn over the villager's skin and under its job's apron, 64 by 64 in the villager layout; they already sit where the game reads them (entity/villager/type/ and entity/zombie_villager/type/), so the game draws them with no code of the mod's. A type has no name and brings no trades of its own. It needs the Fabric mod jar export; the vanilla packs keep only its models, pictures and language keys.",
+    "tags": [
+      "example",
+      "villagers"
+    ]
+  }
+}

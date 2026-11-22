@@ -149,11 +149,13 @@ describe('wizard model', () => {
         else expect(error).toBe('Enter a value.');
       }
     }
-    // The Wandering merchant's second and third wares may be left empty (B481).
+    // The Wandering merchant's second and third wares may be left empty (B481), and so may the
+    // gift it likes (no gifts, B539).
     expect(optional).toEqual([
       expect.stringMatching(/crop.*\.seeds_name$/),
       'wandering-merchant.ware_2',
       'wandering-merchant.ware_3',
+      'wandering-merchant.gift',
     ]);
   });
 

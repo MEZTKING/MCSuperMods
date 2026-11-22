@@ -266,9 +266,9 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'trader',
     label: 'Make a trader',
-    sentence: 'A mob that trades with you, or a new job for villagers.',
+    sentence: 'A mob that trades with you, a new job for villagers, or new clothes for them.',
     group: 'creatures',
-    action: flows(TRADER_FLOW_ID, 'village-job'),
+    action: flows(TRADER_FLOW_ID, 'village-job', 'villager-look'),
   },
   {
     id: 'vehicle',
@@ -357,9 +357,9 @@ export const MAKE_TILES: readonly MakeTile[] = [
   {
     id: 'commands',
     label: 'Make your mod do something',
-    sentence: 'A command players type, or a creative tab of your own.',
+    sentence: 'A command players type, a creative tab of your own, or a setting for each world.',
     group: 'more',
-    action: flows('custom-command', 'creative-tab'),
+    action: flows('custom-command', 'creative-tab', 'game-rule'),
   },
   {
     id: 'rules',
