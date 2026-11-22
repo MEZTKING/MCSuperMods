@@ -39,6 +39,13 @@ import net.minecraft.world.phys.Vec3;
  * owner), and one that ends more than 0.25 blocks (squared 0.0625) from where the server's own move put it; the same on
  * 26.3 and 26.4-snapshot-7.
  *
+ * <p>The dash (ADR 0109 D4 as amended after B524, {@code dash} of {@code msm:rideable}, camel-like): the jump bar charges a
+ * forward leap instead of a jump. The rider's client takes the bar's scale in {@link #onPlayerJump} and leaps in
+ * {@link #tickRidden} on the ground ({@link #dash}: {@link #DASH_SPEED} times {@code power} times the scale along the mob's
+ * facing, {@link #DASH_LIFT} times the scale upwards; about 7 blocks at a full bar with {@code power} 1); the server hears
+ * the release in {@link #handleStartJump}. Both sides then wait {@code cooldown_ticks}, during which the bar is not shown
+ * ({@link #canJump}) and vanilla's bar shows the cooldown ({@link #getJumpCooldown}).
+ *
  * <p>Renderers: {@link #saddleBone()} names the bone drawn only while {@link #saddleBoneVisible()} (the saddle slot is
  * vanilla synched equipment, so both sides agree).
  */
@@ -48,6 +55,10 @@ public final class MobRiding {
     /** The happy ghast's rise while jump is held, and its backwards factor. */
     private static final float RISE = 0.5f;
     private static final float BACKWARDS_FLYING = -0.5f;
+    /** The dash's forward speed at a full bar and {@code power} 1, in blocks a tick (B524: about 7 blocks). */
+    public static final double DASH_SPEED = 1.6;
+    /** The dash's lift at a full bar, in blocks a tick. */
+    public static final double DASH_LIFT = 0.3;
 
     private final MsmMob mob;
     private final EntityDefinition definition;
@@ -56,6 +67,10 @@ public final class MobRiding {
     private final EntityComponents.MovementMode mode;
     /** The jump bar's scale, from {@link #onPlayerJump} on the rider's client, used by {@link #tickRidden} on the ground. */
     private float pendingJump;
+    /** The bar's scale for a dash, as {@link #pendingJump} for a jump. */
+    private float pendingDash;
+    /** Ticks until the next dash, on both sides. */
+    private int dashCooldown;
 
     MobRiding(MsmMob mob, EntityDefinition definition) {
         this.mob = mob;
@@ -189,10 +204,47 @@ public final class MobRiding {
         body.yBodyRot = body.getYRot();
         body.yHeadRot = body.getYRot();
         if (body.isLocalInstanceAuthoritative() && body.onGround()) {
-            if (pendingJump > 0) {
+            if (pendingDash > 0) {
+                dash(pendingDash);
+            } else if (pendingJump > 0) {
                 jump(pendingJump, input);
             }
             pendingJump = 0;
+            pendingDash = 0;
+        }
+    }
+
+    /**
+     * The dash at the bar's {@code scale} (0 to 1): forward along the mob's facing and a little up, then the cooldown. Runs
+     * where the mob is moved (the rider's client); public for the GameTests.
+     */
+    public void dash(float scale) {
+        Optional<EntityComponents.RideDash> dash = dash();
+        if (dash.isEmpty()) {
+            return;
+        }
+        PathfinderMob body = body();
+        Vec3 look = Vec3.directionFromRotation(0, body.getYRot());
+        double power = DASH_SPEED * dash.get().power() * scale;
+        body.setDeltaMovement(body.getDeltaMovement().add(look.x * power, DASH_LIFT * scale, look.z * power));
+        body.needsSync = true;
+        dashCooldown = dash.get().cooldownTicks();
+    }
+
+    /** {@code dash} of {@code msm:rideable}, when present. */
+    public Optional<EntityComponents.RideDash> dash() {
+        return rideable == null ? Optional.empty() : rideable.dash();
+    }
+
+    /** Ticks until the next dash. */
+    public int dashCooldown() {
+        return dashCooldown;
+    }
+
+    /** After vanilla's {@code tick}, on both sides: the dash cooldown runs down. */
+    void tick() {
+        if (dashCooldown > 0) {
+            dashCooldown--;
         }
     }
 
@@ -255,26 +307,45 @@ public final class MobRiding {
 
     // Jump bar (PlayerRideableJumping)
 
-    /** On the rider's client: the bar's charge (0 to 90 and over) to a scale through vanilla's default curve. */
+    /**
+     * On the rider's client: the bar's charge (0 to 90 and over) to a scale through vanilla's default curve, for the dash
+     * when the mount has one, else for the jump.
+     */
     public void onPlayerJump(int strength) {
         if (!canJump()) {
             return;
         }
-        pendingJump = ((PlayerRideableJumping) mob).getPlayerJumpPendingScale(Math.max(0, strength));
+        float scale = ((PlayerRideableJumping) mob).getPlayerJumpPendingScale(Math.max(0, strength));
+        if (dash().isPresent()) {
+            pendingDash = scale;
+        } else {
+            pendingJump = scale;
+        }
     }
 
     /**
-     * A jump bar for {@code walk} and {@code amphibious} mounts with {@code jump} above 0 while steerable; {@code fly} and
-     * {@code swim} mounts rise with the jump key instead, so they show no bar.
+     * A jump bar for {@code walk} and {@code amphibious} mounts with {@code jump} above 0 or a {@code dash} while steerable
+     * (a dash only once its cooldown is over); {@code fly} and {@code swim} mounts rise with the jump key instead, so they
+     * show no bar.
      */
     public boolean canJump() {
-        return rideable != null && rideable.jump() > 0
+        return rideable != null && (rideable.jump() > 0 || rideable.dash().isPresent())
                 && (mode == EntityComponents.MovementMode.WALK || mode == EntityComponents.MovementMode.AMPHIBIOUS)
-                && steerable();
+                && steerable() && (rideable.dash().isEmpty() || dashCooldown == 0);
     }
 
-    /** On the server when the rider releases the bar; the jump itself comes with the rider's movement. Nothing more. */
-    public void handleStartJump(int strength) {}
+    /**
+     * On the server when the rider releases the bar; the jump or dash itself comes with the rider's movement. A dash starts
+     * its cooldown here too, so the server's {@link #canJump} agrees with the rider's.
+     */
+    public void handleStartJump(int strength) {
+        dash().ifPresent(d -> dashCooldown = d.cooldownTicks());
+    }
+
+    /** Vanilla's jump bar shows the dash cooldown ({@code PlayerRideableJumping.getJumpCooldown}). */
+    public int getJumpCooldown() {
+        return dashCooldown;
+    }
 
     /** {@code PlayerRideableJumping.handleStopJump}. */
     public void handleStopJump() {}
@@ -282,6 +353,11 @@ public final class MobRiding {
     /** The jump bar's pending scale, until the next ridden tick on the ground (read by the GameTests). */
     public float pendingJump() {
         return pendingJump;
+    }
+
+    /** The bar's pending dash scale, as {@link #pendingJump}. */
+    public float pendingDash() {
+        return pendingDash;
     }
 
     // Renderers

@@ -45,6 +45,12 @@ public interface MsmMob extends AnimationTarget, Merchant {
     /** The body class's triggered animation accessor ({@code DATA_ANIM}, ADR 0072 D2). */
     EntityDataAccessor<Integer> animData();
 
+    /** The body class's roosting flag ({@code DATA_ROOSTING}, ADR 0109 D3 as amended). */
+    EntityDataAccessor<Boolean> roostingData();
+
+    /** The body class's playing dead flag ({@code DATA_PLAYING_DEAD}, ADR 0109 D4, D5). */
+    EntityDataAccessor<Boolean> playingDeadData();
+
     /** Replaces the protected {@code moveControl} and {@code lookControl} fields (ADR 0070 D3); {@code null} keeps one. */
     void setControls(MoveControl move, LookControl look);
 

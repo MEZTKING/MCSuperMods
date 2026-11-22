@@ -1,0 +1,27 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "range": 16.0,
+          "speed": 1.2,
+          "type": "collect_items"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "speed": 0.3
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.6,
+    "width": 0.4
+  },
+  "spawn_egg": false
+}

@@ -313,25 +313,29 @@ public class MsmMobStorageGameTest {
     }
 
     @GameTest(maxTicks = 40)
-    public void damageOrLeavingTakesThePetOffAndOnlyOneSits(GameTestHelper helper) {
+    public void damageOrLeavingTakesThePetsOffAndTwoSitAtMost(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         MsmAnimal first = helper.spawnWithNoFreeWill(type("shoulder_pet"), MID);
         MsmAnimal second = helper.spawnWithNoFreeWill(type("shoulder_pet"), MID.north());
+        MsmAnimal third = helper.spawnWithNoFreeWill(type("shoulder_pet"), MID.west());
         ServerPlayer owner = player(helper, MID.east());
         first.tame(owner);
         second.tame(owner);
+        third.tame(owner);
         helper.assertTrue(shoulder(first).perch(owner), "perch refused: " + shoulder(first).refusal(owner));
-        helper.assertValueEqual(shoulder(second).refusal(owner), "another pet is on that shoulder", "one pet per player");
-        helper.assertFalse(shoulder(second).perch(owner), "a second pet perched");
+        // ADR 0109 D2: a second pet takes the other shoulder; a third has none.
+        helper.assertTrue(shoulder(second).perch(owner), "the second shoulder refused: " + shoulder(second).refusal(owner));
+        helper.assertValueEqual(shoulder(third).refusal(owner), "both shoulders are taken", "two pets per player");
+        helper.assertFalse(shoulder(third).perch(owner), "a third pet perched");
         helper.assertTrue(owner.hurtServer(level, level.damageSources().fellOutOfWorld(), 1.0f), "the owner was not hurt");
-        helper.assertFalse(shoulder(first).perched(), "damage kept the pet on");
-        helper.assertFalse(first.isNoGravity(), "NoGravity stayed after damage");
-        helper.assertTrue(shoulder(second).perch(owner), "the second pet could not perch once the first left: "
-                + shoulder(second).refusal(owner));
+        helper.assertFalse(shoulder(first).perched() || shoulder(second).perched(), "damage kept a pet on");
+        helper.assertFalse(first.isNoGravity() || second.isNoGravity(), "NoGravity stayed after damage");
+        helper.assertTrue(shoulder(third).perch(owner), "the third pet could not perch once the others left: "
+                + shoulder(third).refusal(owner));
         helper.getLevel().getServer().getPlayerList().remove(owner);
         helper.runAfterDelay(2, () -> {
-            helper.assertFalse(shoulder(second).perched(), "the pet stayed perched after its owner left");
-            helper.assertFalse(second.isNoGravity() || second.noPhysics, "the flags stayed after the owner left");
+            helper.assertFalse(shoulder(third).perched(), "the pet stayed perched after its owner left");
+            helper.assertFalse(third.isNoGravity() || third.noPhysics, "the flags stayed after the owner left");
             helper.succeed();
         });
     }

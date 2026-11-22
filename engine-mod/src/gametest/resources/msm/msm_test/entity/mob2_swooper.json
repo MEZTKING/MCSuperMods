@@ -1,0 +1,31 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "height": 5.0,
+          "must_see": false,
+          "type": "swoop"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:attack": {
+      "damage": 2.0
+    },
+    "msm:movement": {
+      "mode": "fly",
+      "speed": 0.5
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.5,
+    "width": 0.8
+  },
+  "spawn_egg": false
+}

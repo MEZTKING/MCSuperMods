@@ -1,0 +1,24 @@
+{
+  "category": "water_creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:bucketable": {
+      "item_name": "item.msm_test.dry_fish_bucket",
+      "water": false
+    },
+    "msm:movement": {
+      "breathes_air": true,
+      "mode": "swim",
+      "speed": 1.0
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.4,
+    "width": 0.5
+  },
+  "spawn_egg": false
+}

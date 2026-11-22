@@ -3,8 +3,10 @@ package dev.mcsupermods.runtime.registry.mob;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.goals.PerchOnOwnerGoal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
+import dev.mcsupermods.runtime.loader.StorageParser;
 import dev.mcsupermods.runtime.registry.MsmAnimal;
 import dev.mcsupermods.runtime.registry.MsmMob;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -27,22 +29,34 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Shoulder pets (ADR 0098 D4 as amended after the B469 spike, {@code msm:shoulder_riding}): a tamed {@code animal} pet
- * with {@code msm:tameable} perches on its owner's shoulder. It is not a passenger (a player cannot be a vehicle on the
- * server): the perched flag ({@link MsmAnimal#DATA_PERCHED}, synched and saved as {@code Perched}) makes both sides put
- * the pet at the owner's position plus {@link #offset} every tick, with no gravity ({@code NoGravity}, its earlier
- * value kept in {@code PerchNoGravity}), no physics and no pushing.
+ * Shoulder pets (ADR 0098 D4 as amended after the B469 spike, {@code msm:shoulder_riding}; both shoulders since ADR 0109
+ * D2 as amended after B524): a tamed {@code animal} pet with {@code msm:tameable} perches on one of its owner's
+ * shoulders. It is not a passenger (a player cannot be a vehicle on the server): the perched flag
+ * ({@link MsmAnimal#DATA_PERCHED}, synched and saved as {@code Perched}) and the side ({@link MsmAnimal#DATA_PERCH_LEFT},
+ * synched and saved as {@code PerchSide}) make both sides put the pet at the owner's position plus
+ * {@link #offset(Player, Side)} every tick, with no gravity ({@code NoGravity}, its earlier value kept in
+ * {@code PerchNoGravity}), no physics and no pushing.
+ *
+ * <p>Sides are named by the player's own view: {@link Side#RIGHT} is the player's right (seen from behind, the side of
+ * vanilla's right parrot; the only side before ADR 0109), {@link Side#LEFT} the mirror image. {@code sides} picks one,
+ * or {@code either} (the default) takes the free one, the right first. A player carries at most two pets, one per side
+ * (the server's {@link #PERCHED} index). Vanilla's parrots keep their own shoulders (they take the left first): a side
+ * holding a parrot is not free, and every tick a perched pet moves to the side the parrots leave free (when its
+ * {@code sides} allows), or gets off when there is none.
  *
  * <p>The pet gets on by its goal ({@link PerchOnOwnerGoal}: tamed, not ordered to sit, not riding or leashed, the
  * owner within {@link #START_RANGE} blocks, standing on the ground, not sneaking, sleeping, riding, swimming, flying,
- * gliding or a spectator, no other pet on that owner, and {@link #COOLDOWN} ticks after it last left). It leaves when
+ * gliding or a spectator, a free side it may take, and {@link #COOLDOWN} ticks after it last left). It leaves when
  * the owner takes damage that a shield does not block (Fabric's {@code AFTER_DAMAGE}), sneaks, sleeps, rides, swims or is in water, glides with an
  * elytra, becomes a spectator, changes dimension (the owner is no longer in the pet's level), leaves the game
- * ({@code DISCONNECT}, or no owner found) or dies, and when the pet itself rides, is leashed or is no longer tamed.
- * One pet per player (the server's {@link #PERCHED} index); a parrot keeps vanilla's own shoulder.
+ * ({@code DISCONNECT}, or no owner found) or dies, when no side is left for it, and when the pet itself rides, is
+ * leashed or is no longer tamed.
  */
 public final class MobShoulder {
-    /** The shoulder: this far to the owner's left of the body axis ({@code -x} turned by the body yaw), in blocks. */
+    /**
+     * The shoulder: this far to the side of the owner's body axis, in blocks: the right is {@code -x} turned by the body
+     * yaw (the player's right as they see it), the left {@code +x}.
+     */
     public static final double SIDE = 0.4;
     /** The shoulder: this far below the top of the owner's box (1.35 above the feet standing, lower while sneaking). */
     public static final double BELOW_TOP = 0.45;
@@ -53,8 +67,48 @@ public final class MobShoulder {
     /** The goal perches the pet this near, in blocks. */
     public static final double PERCH_REACH = 1.5;
 
-    /** Server: owner UUID to the pet perched on that owner. */
-    private static final Map<UUID, MsmMob> PERCHED = new ConcurrentHashMap<>();
+    /** A shoulder, named by the player's own view. */
+    public enum Side {
+        LEFT, RIGHT;
+
+        public Side other() {
+            return this == LEFT ? RIGHT : LEFT;
+        }
+
+        public String serialName() {
+            return this == LEFT ? "left" : "right";
+        }
+    }
+
+    /** The two seats of one owner (server). */
+    private static final class Seats {
+        volatile MsmMob left;
+        volatile MsmMob right;
+
+        MsmMob get(Side side) {
+            return side == Side.LEFT ? left : right;
+        }
+
+        void set(Side side, MsmMob pet) {
+            if (side == Side.LEFT) {
+                left = pet;
+            } else {
+                right = pet;
+            }
+        }
+
+        void remove(MsmMob pet) {
+            if (left == pet) {
+                left = null;
+            }
+            if (right == pet) {
+                right = null;
+            }
+        }
+    }
+
+    /** Server: owner UUID to the pets perched on that owner. */
+    private static final Map<UUID, Seats> PERCHED = new ConcurrentHashMap<>();
     /** Entity types already warned about an unusable component. */
     private static final Set<Identifier> WARNED = ConcurrentHashMap.newKeySet();
 
@@ -62,6 +116,8 @@ public final class MobShoulder {
     private final EntityDefinition definition;
     /** The component on a tamed-capable {@code animal} body. */
     private final boolean enabled;
+    /** The sides the pet may take, in the order it tries them. */
+    private final List<Side> allowed;
     private int cooldown;
     private boolean noGravityBefore;
 
@@ -70,6 +126,12 @@ public final class MobShoulder {
         this.definition = definition;
         boolean present = definition != null && definition.components().shoulderRiding().isPresent();
         this.enabled = present && mob.asMob() instanceof MsmAnimal && definition.components().tameable().isPresent();
+        StorageParser.ShoulderSide sides = present ? definition.components().shoulderRiding().get().sides() : StorageParser.ShoulderSide.EITHER;
+        this.allowed = switch (sides) {
+            case LEFT -> List.of(Side.LEFT);
+            case RIGHT -> List.of(Side.RIGHT);
+            case EITHER -> List.of(Side.RIGHT, Side.LEFT);
+        };
         if (present && !enabled) {
             // Not mob.definitionId(): the driver building this module is not assigned to the body yet.
             Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(mob.asMob().getType());
@@ -97,28 +159,89 @@ public final class MobShoulder {
         return enabled && body().getEntityData().get(MsmAnimal.DATA_PERCHED);
     }
 
+    /** The side the pet sits on (meaningful while {@link #perched()}; both sides read the synched flag). */
+    public Side side() {
+        return enabled && body().getEntityData().get(MsmAnimal.DATA_PERCH_LEFT) ? Side.LEFT : Side.RIGHT;
+    }
+
+    /** The sides {@code sides} allows, in the order the pet tries them. */
+    public List<Side> allowedSides() {
+        return allowed;
+    }
+
     /** Ticks until the pet may perch again. */
     public int cooldown() {
         return cooldown;
     }
 
-    /** The pet's place relative to the owner's feet: {@link #SIDE} to the left, {@link #BELOW_TOP} under the box's top. */
+    /** The place on the owner's right shoulder ({@link #offset(Player, Side)}), the only side before ADR 0109. */
     public static Vec3 offset(Player owner) {
-        return new Vec3(-SIDE, owner.getBbHeight() - BELOW_TOP, 0).yRot(-owner.yBodyRot * Mth.DEG_TO_RAD);
+        return offset(owner, Side.RIGHT);
     }
 
-    /** The pet perched on {@code owner}, or null (server). */
-    public static MsmMob perchedOn(Player owner) {
-        MsmMob pet = PERCHED.get(owner.getUUID());
+    /** The pet's place relative to the owner's feet: {@link #SIDE} to that side, {@link #BELOW_TOP} under the box's top. */
+    public static Vec3 offset(Player owner, Side side) {
+        double x = side == Side.RIGHT ? -SIDE : SIDE;
+        return new Vec3(x, owner.getBbHeight() - BELOW_TOP, 0).yRot(-owner.yBodyRot * Mth.DEG_TO_RAD);
+    }
+
+    /** The pet perched on {@code owner}'s {@code side}, or null (server). */
+    public static MsmMob perchedOn(Player owner, Side side) {
+        Seats seats = PERCHED.get(owner.getUUID());
+        if (seats == null) {
+            return null;
+        }
+        MsmMob pet = seats.get(side);
         if (pet == null) {
             return null;
         }
         Entity body = pet.asMob();
-        if (body.isRemoved() || !pet.driver().shoulder().perched()) {
-            PERCHED.remove(owner.getUUID(), pet);
+        if (body.isRemoved() || !pet.driver().shoulder().perched() || pet.driver().shoulder().side() != side) {
+            seats.remove(pet);
             return null;
         }
         return pet;
+    }
+
+    /** A pet perched on {@code owner}, the right shoulder's first, or null (server). */
+    public static MsmMob perchedOn(Player owner) {
+        MsmMob right = perchedOn(owner, Side.RIGHT);
+        return right != null ? right : perchedOn(owner, Side.LEFT);
+    }
+
+    /** Whether vanilla has a parrot on that shoulder of {@code owner}. */
+    public static boolean parrotOn(Player owner, Side side) {
+        return (side == Side.LEFT ? owner.getShoulderParrotLeft() : owner.getShoulderParrotRight()).isPresent();
+    }
+
+    /** Whether {@code side} holds neither a parrot nor another pet (server; on the client only the parrots are known). */
+    private boolean free(Player owner, Side side) {
+        if (parrotOn(owner, side)) {
+            return false;
+        }
+        if (!(owner.level() instanceof ServerLevel)) {
+            return true;
+        }
+        MsmMob other = perchedOn(owner, side);
+        return other == null || other == mob;
+    }
+
+    /** The first side the pet may take on {@code owner} now, or null. */
+    public Side freeSide(Player owner) {
+        for (Side side : allowed) {
+            if (free(owner, side)) {
+                return side;
+            }
+        }
+        return null;
+    }
+
+    /** Why no allowed side is free (assumes {@link #freeSide} is null). */
+    private String takenReason(Player owner) {
+        if (allowed.size() > 1) {
+            return "both shoulders are taken";
+        }
+        return parrotOn(owner, allowed.getFirst()) ? "a parrot sits on that shoulder" : "another pet is on that shoulder";
     }
 
     /** Why the owner cannot carry a pet now, or null. */
@@ -178,8 +301,8 @@ public final class MobShoulder {
         if (!owner.onGround() || owner.getAbilities().flying) {
             return "the owner is not on the ground";
         }
-        if (pet.level() instanceof ServerLevel && perchedOn(owner) != null) {
-            return "another pet is on that shoulder";
+        if (freeSide(owner) == null) {
+            return takenReason(owner);
         }
         return null;
     }
@@ -202,14 +325,16 @@ public final class MobShoulder {
         if (!(pet.level() instanceof ServerLevel) || refusal(owner) != null) {
             return false;
         }
+        Side side = freeSide(owner);
         noGravityBefore = pet.isNoGravity();
+        pet.getEntityData().set(MsmAnimal.DATA_PERCH_LEFT, side == Side.LEFT);
         pet.getEntityData().set(MsmAnimal.DATA_PERCHED, true);
         pet.setNoGravity(true);
         pet.noPhysics = true;
         pet.getNavigation().stop();
         pet.setTarget(null);
-        PERCHED.put(owner.getUUID(), mob);
-        place(pet, owner);
+        PERCHED.computeIfAbsent(owner.getUUID(), u -> new Seats()).set(side, mob);
+        place(pet, owner, side);
         return true;
     }
 
@@ -228,11 +353,17 @@ public final class MobShoulder {
         pet.setDeltaMovement(Vec3.ZERO);
         pet.resetFallDistance();
         cooldown = COOLDOWN;
-        PERCHED.values().remove(mob);
+        forget(mob);
     }
 
-    private static void place(MsmAnimal pet, Player owner) {
-        Vec3 at = owner.position().add(offset(owner));
+    private static void forget(MsmMob pet) {
+        for (Seats seats : PERCHED.values()) {
+            seats.remove(pet);
+        }
+    }
+
+    private static void place(MsmAnimal pet, Player owner, Side side) {
+        Vec3 at = owner.position().add(offset(owner, side));
         pet.setPos(at.x, at.y, at.z);
         pet.setDeltaMovement(Vec3.ZERO);
         pet.setYRot(owner.yBodyRot);
@@ -256,9 +387,8 @@ public final class MobShoulder {
         if (ownerRefusal != null) {
             return ownerRefusal;
         }
-        MsmMob other = perchedOn(owner);
-        if (other != null && other != mob) {
-            return "another pet is on that shoulder";
+        if (freeSide(owner) == null) {
+            return takenReason(owner);
         }
         return null;
     }
@@ -281,10 +411,20 @@ public final class MobShoulder {
                 return;
             }
             Player owner = (Player) pet.getOwner();
-            PERCHED.putIfAbsent(owner.getUUID(), mob);
-            place(pet, owner);
+            Side side = side();
+            if (!free(owner, side)) {
+                // A parrot (or, after a load, another pet) took this side: move to the side left free.
+                side = freeSide(owner);
+                forget(mob);
+                pet.getEntityData().set(MsmAnimal.DATA_PERCH_LEFT, side == Side.LEFT);
+            }
+            Seats seats = PERCHED.computeIfAbsent(owner.getUUID(), u -> new Seats());
+            if (seats.get(side) == null) {
+                seats.set(side, mob);
+            }
+            place(pet, owner, side);
         } else if (perched() && pet.getOwner() instanceof Player owner && owner.level() == pet.level()) {
-            place(pet, owner);
+            place(pet, owner, side());
         }
     }
 
@@ -329,7 +469,7 @@ public final class MobShoulder {
     }
 
     void remove(Entity.RemovalReason reason) {
-        PERCHED.values().remove(mob);
+        forget(mob);
     }
 
     void addAdditionalSaveData(ValueOutput output) {
@@ -340,6 +480,7 @@ public final class MobShoulder {
         output.putBoolean("Perched", perched);
         if (perched) {
             output.putBoolean("PerchNoGravity", noGravityBefore);
+            output.putString("PerchSide", side().serialName());
         }
         if (cooldown > 0) {
             output.putInt("ShoulderCooldown", cooldown);
@@ -354,6 +495,8 @@ public final class MobShoulder {
         boolean perched = input.getBooleanOr("Perched", false);
         noGravityBefore = input.getBooleanOr("PerchNoGravity", false);
         cooldown = Math.max(0, input.getIntOr("ShoulderCooldown", 0));
+        boolean left = input.getString("PerchSide").map("left"::equals).orElse(false);
+        body().getEntityData().set(MsmAnimal.DATA_PERCH_LEFT, left && allowed.contains(Side.LEFT) || !allowed.contains(Side.RIGHT));
         body().getEntityData().set(MsmAnimal.DATA_PERCHED, perched);
         body().noPhysics = perched;
     }
@@ -374,9 +517,11 @@ public final class MobShoulder {
         }
 
         private static void leave(Player owner) {
-            MsmMob pet = perchedOn(owner);
-            if (pet != null) {
-                pet.driver().shoulder().unperch();
+            for (Side side : Side.values()) {
+                MsmMob pet = perchedOn(owner, side);
+                if (pet != null) {
+                    pet.driver().shoulder().unperch();
+                }
             }
         }
     }

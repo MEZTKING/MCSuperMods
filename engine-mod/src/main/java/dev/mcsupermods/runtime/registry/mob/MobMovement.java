@@ -7,6 +7,8 @@ import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.registry.MsmMob;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
@@ -26,7 +28,10 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
+import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
@@ -41,6 +46,13 @@ import net.minecraft.world.phys.Vec3;
  * breathes both. Never overrides or calls {@code travelFlying}, {@code checkFallDamage} or {@code jumpInLiquid} (their
  * signatures differ between 26.3 and 26.4; plan limit M9): flight avoids fall damage through {@link #causeFallDamage}.
  * Every class and member used here is the same on both versions ({@code SmoothSwimmingLookControl} is only constructed).
+ *
+ * <p>ADR 0109 D3 as amended after B524: {@code hover} flies as {@code fly} but holds {@code hover_height} blocks over the
+ * ground below ({@link HoverMoveControl}: the top of the first block with a collision shape, or the surface of a liquid,
+ * scanning down; a damped controller, so it settles without bobbing), following the wanted height only while it has a
+ * target (so it can reach what it fights). {@code phase} flies as {@code fly} and passes through blocks
+ * ({@code noPhysics} around vanilla's tick) while its {@code PhaseChargeGoal} charges, and until it is out of the block it
+ * ended in, so it never suffocates in a wall it went into.
  */
 public final class MobMovement {
     /** A bee's flying move control: max turn 20 (vanilla {@code Bee}). */
@@ -54,9 +66,16 @@ public final class MobMovement {
     static final int SWIM_WANDER_INTERVAL = 40;
     /** Vanilla {@code LivingEntity.shouldTakeDrowningDamage}: air at or below this hurts, then the air restarts at 0. */
     static final int DROWNING_AIR = -20;
+    /** {@code hover}: how far down the ground is looked for beyond the hover height, in blocks. */
+    static final int HOVER_SCAN = 32;
+    /** {@code hover}: the share of the height error closed each tick, and the fastest climb or sink, in blocks a tick. */
+    static final double HOVER_GAIN = 0.1;
+    static final double HOVER_MAX_SPEED = 0.2;
 
     private final MsmMob mob;
     private final EntityComponents.Movement movement;
+    /** {@code phase}: set by its charge goal while it charges. */
+    private boolean charging;
 
     MobMovement(MsmMob mob, EntityDefinition definition) {
         this.mob = mob;
@@ -81,9 +100,9 @@ public final class MobMovement {
         PathfinderMob self = mob.asMob();
         switch (movement.mode()) {
             case WALK -> {}
-            // HOVER and PHASE (ADR 0109 D3, B527's format) fly until B532 builds them.
             case FLY, HOVER, PHASE -> {
-                mob.setControls(new FlyingMoveControl<>(self, FLY_MAX_TURN, movement.hovers()), null);
+                mob.setControls(movement.mode() == MovementMode.HOVER ? new HoverMoveControl(self, movement.hoverHeight())
+                        : new FlyingMoveControl<>(self, FLY_MAX_TURN, movement.hovers()), null);
                 self.setNoGravity(true);
                 // A bee's and a parrot's path costs: no fire, no water.
                 self.setPathfindingMalus(PathType.FIRE, -1.0f);
@@ -211,6 +230,97 @@ public final class MobMovement {
                 }
                 self.setAirSupply(air);
             }
+        }
+    }
+
+    /** {@code phase}: whether the charge goal is charging now. */
+    public boolean charging() {
+        return charging;
+    }
+
+    /** {@code phase}: the charge goal starts and ends a charge. */
+    public void setCharging(boolean charging) {
+        this.charging = charging;
+    }
+
+    /** Whether the mob passes through blocks this tick: a {@code phase} mob charging, or still inside the block it charged into. */
+    public boolean phasing() {
+        if (movement.mode() != MovementMode.PHASE) {
+            return false;
+        }
+        PathfinderMob self = mob.asMob();
+        return charging || !self.level().noCollision(self, self.getBoundingBox());
+    }
+
+    /** Vanilla's {@code tick}; a phasing mob runs it without physics (ADR 0109 D3 as amended: vex-like, B524). */
+    public void tick(Runnable vanilla) {
+        PathfinderMob self = mob.asMob();
+        if (self.noPhysics || !phasing()) {
+            vanilla.run();
+            return;
+        }
+        self.noPhysics = true;
+        try {
+            vanilla.run();
+        } finally {
+            self.noPhysics = false;
+        }
+    }
+
+    /**
+     * The y of the ground under {@code from}: the top of the first block with a collision shape, or the surface of the first
+     * liquid, scanning down at most {@code depth} blocks from {@code from} itself; {@code NaN} when there is none.
+     */
+    public static double groundBelow(Level level, BlockPos from, int depth) {
+        BlockPos.MutableBlockPos p = from.mutable();
+        for (int i = 0; i <= depth && p.getY() >= level.getMinY(); i++) {
+            BlockState state = level.getBlockState(p);
+            var shape = state.getCollisionShape(level, p);
+            if (!shape.isEmpty()) {
+                return p.getY() + shape.max(Direction.Axis.Y);
+            }
+            FluidState fluid = state.getFluidState();
+            if (!fluid.isEmpty()) {
+                return p.getY() + fluid.getHeight(level, p);
+            }
+            p.move(0, -1, 0);
+        }
+        return Double.NaN;
+    }
+
+    /**
+     * {@code hover}'s move control: vanilla's flying control for the way there, at the mob's own height unless it has a
+     * target; then the climb or sink to {@code hover_height} over the ground, a fixed share of the error each tick up to
+     * {@link #HOVER_MAX_SPEED}, which settles without overshooting.
+     */
+    public static final class HoverMoveControl extends FlyingMoveControl<PathfinderMob> {
+        private final double height;
+
+        HoverMoveControl(PathfinderMob mob, double height) {
+            super(mob, FLY_MAX_TURN, true);
+            this.height = height;
+        }
+
+        /** The height the mob wants now: the wanted one while it has a target, else {@code hover_height} over the ground. */
+        public double aimY() {
+            if (operation == MoveControl.Operation.MOVE_TO && mob.getTarget() != null) {
+                return wantedY;
+            }
+            double ground = groundBelow(mob.level(), mob.blockPosition(), HOVER_SCAN + (int) Math.ceil(height));
+            return Double.isNaN(ground) ? mob.getY() : ground + height;
+        }
+
+        @Override
+        public void tick() {
+            double aim = aimY();
+            if (operation == MoveControl.Operation.MOVE_TO) {
+                wantedY = mob.getY(); // the flying control steers on the level; the height is ours
+            }
+            super.tick();
+            mob.setYya(0.0f);
+            double vy = Math.clamp((aim - mob.getY()) * HOVER_GAIN, -HOVER_MAX_SPEED, HOVER_MAX_SPEED);
+            var motion = mob.getDeltaMovement();
+            mob.setDeltaMovement(motion.x, vy, motion.z);
         }
     }
 

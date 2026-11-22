@@ -231,13 +231,24 @@ public class MsmVanillaRenderer extends MobRenderer<Mob, MsmVanillaRenderState, 
         try {
             mob.driver().variants().texture().ifPresent(id -> state.texture = textureLocation(id));
             state.flying = moving && !entity.onGround() && !entity.isInWater()
-                    && mob.driver().movement().mode() == EntityComponents.MovementMode.FLY;
+                    && mob.driver().movement().mode().flies();
             state.saddled = mob.driver().riding().saddleBoneVisible();
             state.triggered = triggered(entity, mob);
+            // ADR 0109 D3, D5 as amended after B524: one synched flag each. Roosting is vanilla's upside-down flip; playing
+            // dead is vanilla's fallen-over death pose (the death time at its end), without the red hurt tint.
+            if (entity.getEntityData().get(mob.roostingData())) {
+                state.isUpsideDown = true;
+            }
+            if (entity.getEntityData().get(mob.playingDeadData())) {
+                state.deathTime = Math.max(state.deathTime, PLAY_DEAD_DEATH_TIME);
+            }
         } catch (RuntimeException e) {
             warn(entity.getType() + ": the vanilla renderer could not read the mob's state (" + e + ")");
         }
     }
+
+    /** The death time that draws a mob playing dead lying on its side (vanilla's fall-over ends at 20 ticks). */
+    static final float PLAY_DEAD_DEATH_TIME = 20.0f;
 
     /** Below this squared distance per tick a mob counts as standing (for {@code fly} and {@code swim}). */
     static final double MOVING_SQUARED = 1.0E-6;

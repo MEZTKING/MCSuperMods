@@ -1,0 +1,32 @@
+{
+  "category": "water_creature",
+  "components": {
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:bucketable": {},
+    "msm:movement": {
+      "mode": "swim",
+      "speed": 1.0
+    },
+    "msm:variants": {
+      "variants": [
+        {
+          "id": "gold",
+          "texture": "msm_test:entity/golem"
+        },
+        {
+          "id": "silver",
+          "texture": "msm_test:entity/golem"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.4,
+    "width": 0.5
+  },
+  "spawn_egg": false
+}

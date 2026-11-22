@@ -1,0 +1,30 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "daylight": false,
+          "range": 8,
+          "type": "roost",
+          "when_idle": true
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "renderer": "vanilla",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:movement": {
+      "mode": "fly",
+      "speed": 0.3
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.5
+  },
+  "spawn_egg": false
+}

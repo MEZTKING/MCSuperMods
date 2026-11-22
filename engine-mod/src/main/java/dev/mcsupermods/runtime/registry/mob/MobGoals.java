@@ -2,7 +2,14 @@ package dev.mcsupermods.runtime.registry.mob;
 
 import dev.mcsupermods.runtime.components.EntityComponents;
 import dev.mcsupermods.runtime.components.Goal;
+import dev.mcsupermods.runtime.goals.BarterGoal;
+import dev.mcsupermods.runtime.goals.CollectItemsGoal;
+import dev.mcsupermods.runtime.goals.DigForItemsGoal;
 import dev.mcsupermods.runtime.goals.FollowTypesGoal;
+import dev.mcsupermods.runtime.goals.PhaseChargeGoal;
+import dev.mcsupermods.runtime.goals.PlayDeadGoal;
+import dev.mcsupermods.runtime.goals.RoostGoal;
+import dev.mcsupermods.runtime.goals.SwoopGoal;
 import dev.mcsupermods.runtime.loader.EntityDefinition;
 import dev.mcsupermods.runtime.registry.MsmMob;
 import java.util.List;
@@ -37,6 +44,12 @@ import net.minecraft.world.item.ItemStack;
  * {@code wander} asks {@link MobMovement#wanderGoal} (movement modes, ADR 0070 D3) and {@code ranged_attack} hands
  * over to {@link MobRanged#addGoals} (ADR 0070 D4, D5), so those briefs edit only their modules. The goals of the
  * components (ADR 0071 D1, D2: follow owner, sit, defend, breed, follow parent) are the taming and breeding modules'.
+ *
+ * <p>ADR 0109 D3, D4: a {@code phase} mob's {@code melee_attack} is {@link PhaseChargeGoal} (straight through walls)
+ * instead of vanilla's melee goal; {@code swoop} is {@link SwoopGoal} with the target goals of {@code melee_attack}
+ * (without {@code msm:attack} it adds nothing, as {@code melee_attack}); {@code roost}, {@code collect_items},
+ * {@code dig_items}, {@code play_dead} and {@code barter} (its ground part, with {@code from_ground}) are the goals of
+ * {@link MobHabits}. {@code play_dead} defaults to priority 0, so it can take over from any running goal.
  */
 public final class MobGoals {
     private final MsmMob mob;
@@ -71,6 +84,18 @@ public final class MobGoals {
                 || tags.stream().anyMatch(stack::is));
     }
 
+    /** {@code retaliate} and {@code targets} of {@code melee_attack} and {@code swoop}: vanilla's target goals. */
+    private static void addTargetGoals(PathfinderMob self, GoalSelector targetSelector, boolean retaliate, List<Identifier> targets,
+            boolean mustSee) {
+        if (retaliate) {
+            targetSelector.addGoal(1, new HurtByTargetGoal(self));
+        }
+        if (!targets.isEmpty()) {
+            Predicate<LivingEntity> types = ofTypes(targets);
+            targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(self, LivingEntity.class, mustSee, (target, level) -> types.test(target)));
+        }
+    }
+
     /** Runs inside the {@code Mob} constructor; the body passes its protected selectors. */
     public void registerGoals(GoalSelector goalSelector, GoalSelector targetSelector) {
         if (definition == null) {
@@ -95,15 +120,10 @@ public final class MobGoals {
                     if (c.attack().isEmpty()) {
                         continue; // ADR 0028 D2: without msm:attack the goal is a no-op
                     }
-                    goalSelector.addGoal(priority, new MeleeAttackGoal(self, m.speed(), true));
-                    if (m.retaliate()) {
-                        targetSelector.addGoal(1, new HurtByTargetGoal(self));
-                    }
-                    if (!m.targets().isEmpty()) {
-                        Predicate<LivingEntity> types = ofTypes(m.targets());
-                        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(self, LivingEntity.class, m.mustSee(),
-                                (target, level) -> types.test(target)));
-                    }
+                    goalSelector.addGoal(priority, c.movementOrDefault().mode() == EntityComponents.MovementMode.PHASE
+                            ? new PhaseChargeGoal(self, mob.driver().movement(), m.speed())
+                            : new MeleeAttackGoal(self, m.speed(), true));
+                    addTargetGoals(self, targetSelector, m.retaliate(), m.targets(), m.mustSee());
                 }
                 case Goal.Flee f -> {
                     Predicate<LivingEntity> types = ofTypes(f.from());
@@ -121,13 +141,23 @@ public final class MobGoals {
                 case Goal.Tempt t -> goalSelector.addGoal(priority, new TemptGoal(self, t.speed(), ofItems(t.items()), t.scared()));
                 case Goal.Panic p -> goalSelector.addGoal(priority, new PanicGoal(self, p.speed()));
                 case Goal.LeapAtTarget l -> goalSelector.addGoal(priority, new LeapAtTargetGoal(self, l.height()));
-                // ADR 0109 D3, D4: in the format since B527; B532 builds swoop, roost and the habits.
-                case Goal.Swoop g -> {}
-                case Goal.Roost g -> {}
-                case Goal.CollectItems g -> {}
-                case Goal.DigItems g -> {}
-                case Goal.PlayDead g -> {}
-                case Goal.Barter g -> {}
+                case Goal.Swoop g -> {
+                    if (c.attack().isEmpty()) {
+                        continue;
+                    }
+                    goalSelector.addGoal(priority, new SwoopGoal(self, g.speed(), g.height(), g.mustSee()));
+                    addTargetGoals(self, targetSelector, g.retaliate(), g.targets(), g.mustSee());
+                }
+                case Goal.Roost g -> goalSelector.addGoal(priority, new RoostGoal(self, mob.driver().habits(), g,
+                        c.movementOrDefault().mode().flies()));
+                case Goal.CollectItems g -> goalSelector.addGoal(priority, new CollectItemsGoal(self, mob.driver().habits(), g));
+                case Goal.DigItems g -> goalSelector.addGoal(priority, new DigForItemsGoal(self, mob.driver().habits(), g));
+                case Goal.PlayDead g -> goalSelector.addGoal(goal.priority().orElse(0), new PlayDeadGoal(self, mob.driver().habits()));
+                case Goal.Barter g -> {
+                    if (g.fromGround()) {
+                        goalSelector.addGoal(priority, new BarterGoal(self, mob.driver().habits(), 1.0));
+                    }
+                }
             }
         }
         mob.driver().taming().addGoals(goalSelector, targetSelector);

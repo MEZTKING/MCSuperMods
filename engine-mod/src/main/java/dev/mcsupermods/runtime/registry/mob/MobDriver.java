@@ -38,7 +38,8 @@ import net.minecraft.world.level.storage.ValueOutput;
  * The behaviour every {@code msm/<ns>/entity/*.json} mob shares, whatever body class carries it (ADR 0070 D2, the
  * pattern of {@code BlockBehaviourDriver}): events, triggers, sounds and the loot table here, each feature in one
  * module ({@link MobGoals}, {@link MobMovement}, {@link MobRanged}, {@link MobTaming}, {@link MobBreeding},
- * {@link MobRiding}, {@link MobTrader}, {@link MobStorage}, {@link MobShoulder}, {@link MobVariants}, {@link MobBossBar}, {@link MobAnimations}). One driver per entity, built on
+ * {@link MobRiding}, {@link MobTrader}, {@link MobStorage}, {@link MobShoulder}, {@link MobBuckets}, {@link MobHabits},
+ * {@link MobVariants}, {@link MobBossBar}, {@link MobAnimations}). One driver per entity, built on
  * first use from the definition of the entity's type: {@code defineSynchedData}, {@code createNavigation} and
  * {@code registerGoals} run inside the vanilla constructors, before any field of the body is assigned, so the body
  * keeps the driver in a field without initialiser and builds it lazily. Building touches nothing but the type.
@@ -61,6 +62,8 @@ public final class MobDriver {
     private final MobTrader trader;
     private final MobStorage storage;
     private final MobShoulder shoulder;
+    private final MobBuckets buckets;
+    private final MobHabits habits;
     private final MobVariants variants;
     private final MobBossBar bossBar;
     private final MobAnimations animations;
@@ -79,6 +82,8 @@ public final class MobDriver {
         this.trader = new MobTrader(mob, definition);
         this.storage = new MobStorage(mob, definition);
         this.shoulder = new MobShoulder(mob, definition);
+        this.buckets = new MobBuckets(mob, definition);
+        this.habits = new MobHabits(mob, definition);
         this.variants = new MobVariants(mob, definition);
         this.bossBar = new MobBossBar(mob, definition);
         this.animations = new MobAnimations(mob, definition);
@@ -138,6 +143,14 @@ public final class MobDriver {
         return shoulder;
     }
 
+    public MobBuckets buckets() {
+        return buckets;
+    }
+
+    public MobHabits habits() {
+        return habits;
+    }
+
     public MobVariants variants() {
         return variants;
     }
@@ -162,6 +175,13 @@ public final class MobDriver {
         builder.define(anim, 0);
     }
 
+    /** Defines the body class's two habit flags (roosting, playing dead), both false. Static, as {@link #defineSynchedData}. */
+    public static void defineHabitData(SynchedEntityData.Builder builder, EntityDataAccessor<Boolean> roosting,
+            EntityDataAccessor<Boolean> playingDead) {
+        builder.define(roosting, false);
+        builder.define(playingDead, false);
+    }
+
     /** After vanilla's {@code onSyncedDataUpdated}, on both sides. */
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         variants.onSyncedDataUpdated(accessor);
@@ -177,6 +197,8 @@ public final class MobDriver {
         trader.addAdditionalSaveData(output);
         storage.addAdditionalSaveData(output);
         shoulder.addAdditionalSaveData(output);
+        buckets.addAdditionalSaveData(output);
+        habits.addAdditionalSaveData(output);
     }
 
     /** After vanilla's {@code readAdditionalSaveData}. */
@@ -187,11 +209,13 @@ public final class MobDriver {
         trader.readAdditionalSaveData(input);
         storage.readAdditionalSaveData(input);
         shoulder.readAdditionalSaveData(input);
+        buckets.readAdditionalSaveData(input);
+        habits.readAdditionalSaveData(input);
     }
 
-    /** Vanilla keeps the mob unless a module needs it kept (tamed mobs, bosses). */
+    /** Vanilla keeps the mob unless a module needs it kept (tamed mobs, bosses, mobs from a bucket). */
     public boolean requiresCustomPersistence(boolean vanilla) {
-        return bossBar.requiresCustomPersistence(taming.requiresCustomPersistence(vanilla));
+        return buckets.requiresCustomPersistence(bossBar.requiresCustomPersistence(taming.requiresCustomPersistence(vanilla)));
     }
 
     // Events and triggers
@@ -217,6 +241,7 @@ public final class MobDriver {
         if (hurt && mob.asMob().isAlive()) {
             definition().components().onHurt().ifPresent(c -> fire(level, c.event(), source.getEntity() instanceof Player p ? p : null));
         }
+        habits.hurtServer(level, hurt);
         return hurt;
     }
 
@@ -229,6 +254,7 @@ public final class MobDriver {
         if (!wasDead && dead) {
             storage.die();
             shoulder.die();
+            habits.die();
         }
     }
 
@@ -238,19 +264,29 @@ public final class MobDriver {
         shoulder.remove(reason);
     }
 
-    /** After vanilla's {@code tick}, on both sides (the {@code animal} body only: shoulder pets). */
-    public void tick() {
+    /**
+     * Vanilla's {@code tick}, on both sides, with the movement around it (a {@code phase} mob passes through blocks while it
+     * charges), then the modules (shoulder pets, the dash cooldown, roosting).
+     */
+    public void tick(Runnable vanilla) {
+        movement.tick(vanilla);
         shoulder.tick();
+        riding.tick();
+        habits.tick();
     }
 
     /**
      * {@code mobInteract} in the order of ADR 0071 D1, with batch 2's modules (ADR 0098): mount storage first (a chest
      * on a {@code needs_chest} mob, and a sneaking use opening the store: sneaking beats feeding, the sit toggle and
-     * trading, as a donkey's inventory does), then breeding food, the owner's sit toggle, mounting, trading on a plain
-     * use, then {@code msm:on_interact} (which, when present, answers every right click as before); otherwise vanilla's.
+     * trading, as a donkey's inventory does), then a bucket (ADR 0109 D1), breeding food, the owner's sit toggle,
+     * mounting, trading on a plain use, the habits (ADR 0109 D4), then {@code msm:on_interact} (which, when present,
+     * answers every right click as before); otherwise vanilla's.
      */
     public InteractionResult mobInteract(Player player, InteractionHand hand, Supplier<InteractionResult> vanilla) {
         InteractionResult result = storage.mobInteract(player, hand);
+        if (result == null) {
+            result = buckets.mobInteract(player, hand); // ADR 0109 D1: a (water) bucket takes the mob before any feeding
+        }
         if (result == null) {
             result = breeding.mobInteract(player, hand);
         }
@@ -266,6 +302,9 @@ public final class MobDriver {
         }
         if (result == null) {
             result = shoulder.mobInteract(player, hand);
+        }
+        if (result == null) {
+            result = habits.mobInteract(player, hand); // ADR 0109 D4: giving a collector its item, handing a barterer its item
         }
         if (result != null) {
             return result;
@@ -294,6 +333,7 @@ public final class MobDriver {
         }
         bossBar.customServerAiStep(level);
         trader.customServerAiStep(level);
+        habits.customServerAiStep(level);
     }
 
     /** The same stagger as {@code MsmItem.due} (package-private there): due when game time plus entity id hits the interval. */

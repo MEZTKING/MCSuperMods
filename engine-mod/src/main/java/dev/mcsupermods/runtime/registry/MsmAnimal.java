@@ -1,7 +1,9 @@
 package dev.mcsupermods.runtime.registry;
 
 import dev.mcsupermods.runtime.registry.mob.MobDriver;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -12,6 +14,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -32,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -43,11 +47,17 @@ import net.minecraft.world.phys.Vec3;
  * 0071 D1 and D2. {@code canBeABaby} and {@code setAgeLocked} are never overridden (their access differs between
  * 26.3 and 26.4). Registered from B286 on.
  */
-public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob, PlayerRideableJumping {
+public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob, PlayerRideableJumping, Bucketable {
     public static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> DATA_ANIM = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.INT);
+    /** Hanging under a block ({@code roost}, ADR 0109 D3 as amended): the renderer draws the mob upside down. */
+    public static final EntityDataAccessor<Boolean> DATA_ROOSTING = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.BOOLEAN);
+    /** Playing dead ({@code play_dead}, ADR 0109 D4, D5): the renderer draws the mob on its side. */
+    public static final EntityDataAccessor<Boolean> DATA_PLAYING_DEAD = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.BOOLEAN);
     /** A shoulder pet sits on its owner's shoulder (ADR 0098 D4 as amended; {@code MobShoulder}); false for every other animal. */
     public static final EntityDataAccessor<Boolean> DATA_PERCHED = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.BOOLEAN);
+    /** Which shoulder a perched pet sits on (ADR 0109 D2): true for the owner's left, as the owner sees it. */
+    public static final EntityDataAccessor<Boolean> DATA_PERCH_LEFT = SynchedEntityData.defineId(MsmAnimal.class, EntityDataSerializers.BOOLEAN);
 
     /** No initialiser: assigned during the super constructor by {@link #driver()}, and Java must not reset it. */
     private MobDriver driver;
@@ -76,6 +86,16 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
     }
 
     @Override
+    public EntityDataAccessor<Boolean> roostingData() {
+        return DATA_ROOSTING;
+    }
+
+    @Override
+    public EntityDataAccessor<Boolean> playingDeadData() {
+        return DATA_PLAYING_DEAD;
+    }
+
+    @Override
     public void setControls(MoveControl move, LookControl look) {
         if (move != null) {
             moveControl = move;
@@ -91,7 +111,9 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         MobDriver.defineSynchedData(builder, DATA_VARIANT, DATA_ANIM);
+        MobDriver.defineHabitData(builder, DATA_ROOSTING, DATA_PLAYING_DEAD);
         builder.define(DATA_PERCHED, false);
+        builder.define(DATA_PERCH_LEFT, false);
     }
 
     @Override
@@ -137,8 +159,7 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
 
     @Override
     public void tick() {
-        super.tick();
-        driver().tick();
+        driver().tick(super::tick);
     }
 
     // Shoulder pets (ADR 0098 D4): a perched pet is not pushed, pushes nothing and does not suffocate in a low ceiling.
@@ -266,6 +287,11 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
         driver().riding().handleStopJump();
     }
 
+    @Override
+    public int getJumpCooldown() {
+        return driver().riding().getJumpCooldown();
+    }
+
     // Events and triggers
 
     @Override
@@ -294,6 +320,51 @@ public class MsmAnimal extends TamableAnimal implements MsmMob, RangedAttackMob,
     public void remove(RemovalReason reason) {
         super.remove(reason);
         driver().remove(reason);
+    }
+
+    // Habits (ADR 0109 D4)
+
+    @Override
+    public boolean canBeSeenAsEnemy() {
+        return driver().habits().canBeSeenAsEnemy(super.canBeSeenAsEnemy());
+    }
+
+    @Override
+    public void updateDynamicGameEventListener(BiConsumer<DynamicGameEventListener<?>, ServerLevel> consumer) {
+        super.updateDynamicGameEventListener(consumer);
+        driver().habits().updateDynamicGameEventListener(consumer);
+    }
+
+    // Fish buckets (ADR 0109 D1): every body is Bucketable; only a mob with msm:bucketable is ever taken.
+
+    @Override
+    public boolean fromBucket() {
+        return driver().buckets().fromBucket();
+    }
+
+    @Override
+    public void setFromBucket(boolean fromBucket) {
+        driver().buckets().setFromBucket(fromBucket);
+    }
+
+    @Override
+    public void saveToBucketTag(ItemStack stack) {
+        driver().buckets().saveToBucketTag(stack);
+    }
+
+    @Override
+    public void loadFromBucketTag(CompoundTag tag) {
+        driver().buckets().loadFromBucketTag(tag);
+    }
+
+    @Override
+    public ItemStack getBucketItemStack() {
+        return driver().buckets().getBucketItemStack();
+    }
+
+    @Override
+    public SoundEvent getPickupSound() {
+        return driver().buckets().getPickupSound();
     }
 
     // Sounds and loot

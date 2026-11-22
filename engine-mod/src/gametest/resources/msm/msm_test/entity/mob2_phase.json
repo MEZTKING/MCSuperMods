@@ -1,0 +1,30 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "must_see": false,
+          "type": "melee_attack"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:attack": {
+      "damage": 2.0
+    },
+    "msm:movement": {
+      "mode": "phase",
+      "speed": 0.3
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.8,
+    "width": 0.4
+  },
+  "spawn_egg": false
+}

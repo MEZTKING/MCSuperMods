@@ -1,0 +1,33 @@
+{
+  "category": "creature",
+  "components": {
+    "msm:ai_goals": {
+      "goals": [
+        {
+          "ticks": 60,
+          "type": "play_dead"
+        },
+        {
+          "type": "wander"
+        }
+      ]
+    },
+    "msm:animated_model": {
+      "model": "msm_test:entity/golem",
+      "renderer": "vanilla",
+      "texture": "msm_test:entity/golem"
+    },
+    "msm:health": {
+      "max": 20.0
+    },
+    "msm:movement": {
+      "speed": 0.3
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 0.9,
+    "width": 0.6
+  },
+  "spawn_egg": false
+}
