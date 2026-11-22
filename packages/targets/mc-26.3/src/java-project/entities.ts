@@ -16,7 +16,13 @@
  * component goals after the definition's own, a wild tameable animal that never breeds, and
  * `PlayerRideableJumping` on rideable mobs. A `sounds` id that is not registered keeps the
  * vanilla sound and is warned about once the server has started, as the runtime's
- * `MsmEntityRegistrar.checkAfterStart`. Minecraft 26.3 and GeckoLib 5, Mojang names.
+ * `MsmEntityRegistrar.checkAfterStart`. Batch 2 (ADR 0098 D5, ADR 0109; B537b): mount storage
+ * (`entity/MobStorage`), fish buckets (`Bucketable` on the mob, `<id>_bucket` as vanilla's
+ * `MobBucketItem` or the shared `DryBucketItem`), hovering (`HoverMoveControl`), phasing
+ * (`PhaseChargeGoal`, a tick without physics), the dash and the habit goals over the shared
+ * `MobHabits` (copied from the runtime, `templates/mob-habits-java.ts`); traders and shoulder
+ * riding are not ejected (the exporter drops them with `export.not-in-eject`).
+ * Minecraft 26.3 and GeckoLib 5, Mojang names.
  *
  * @packageDocumentation
  */
@@ -82,6 +88,8 @@ const ENTITY_COMPONENTS = [
   'msm:tameable',
   'msm:breedable',
   'msm:rideable',
+  'msm:bucketable',
+  'msm:storage',
 ];
 export const CATEGORIES = [
   'monster',
@@ -120,7 +128,14 @@ const GOAL_TYPES = [
   'tempt',
   'panic',
   'leap_at_target',
+  'swoop',
+  'roost',
+  'collect_items',
+  'dig_items',
+  'play_dead',
+  'barter',
 ];
+
 /** `base` (ADR 0070 D1): the vanilla class each generated entity extends. */
 const BASES = ['mob', 'animal', 'monster'] as const;
 type Base = (typeof BASES)[number];
@@ -129,7 +144,11 @@ const BASE_CLASSES: Record<Base, string> = {
   animal: 'net.minecraft.world.entity.TamableAnimal',
   monster: 'net.minecraft.world.entity.monster.Monster',
 };
-const MOVEMENT_MODES = ['walk', 'fly', 'swim', 'amphibious'] as const;
+const MOVEMENT_MODES = ['walk', 'fly', 'swim', 'amphibious', 'hover', 'phase'] as const;
+/** The modes that fly (`MovementMode.flies`, ADR 0109 D3): `hover` and `phase` fly as `fly` does, with their own extras. */
+function fliesIn(mode: MovementMode): boolean {
+  return mode === 'fly' || mode === 'hover' || mode === 'phase';
+}
 type MovementMode = (typeof MOVEMENT_MODES)[number];
 const RENDERERS = ['auto', 'geckolib', 'vanilla'] as const;
 const BOSS_BAR_COLOURS = ['pink', 'blue', 'red', 'green', 'yellow', 'purple', 'white'] as const;
@@ -178,6 +197,9 @@ const FOLLOW_PARENT_SPEED = 1.25;
 const VANILLA_GROW_UP_TICKS = 24000;
 /** Distance between seats, front to back, in blocks at scale 1 (`MobRiding.SEAT_SPACING`). */
 const SEAT_SPACING = 0.7;
+/** The dash's forward speed at a full bar and power 1, and its lift, in blocks a tick (`MobRiding.DASH_SPEED`, `DASH_LIFT`). */
+const DASH_SPEED = 1.6;
+const DASH_LIFT = 0.3;
 
 interface Spawn {
   biomes: string[];
@@ -236,6 +258,8 @@ interface EntitySpec {
     breathesAir: boolean;
     dryOutTicks: number;
     stepHeight: number | undefined;
+    /** `hover_height` (ADR 0109 D3), in blocks. */
+    hoverHeight: number;
   };
   readonly ranged: RangedAttack | undefined;
   readonly variants: Variants | undefined;
@@ -254,6 +278,28 @@ interface EntitySpec {
   readonly onSpawn: string | undefined;
   readonly events: Events;
   readonly sounds: Sounds | undefined;
+  /** `msm:bucketable` on a `swim` mob (ADR 0109 D1); `undefined` otherwise (the runtime drops it on other modes). */
+  readonly bucketable: { itemName: string | undefined; water: boolean } | undefined;
+  /** The first goal of each habit (ADR 0109 D4), as `MobHabits` reads them; `undefined` without any. */
+  readonly habits: Habits | undefined;
+  /** `msm:storage` (ADR 0098 D5), with the runtime's defaults. */
+  readonly storage:
+    | {
+        rows: number;
+        needsChest: boolean;
+        openSound: string | undefined;
+        closeSound: string | undefined;
+      }
+    | undefined;
+}
+
+/** The first goal of each habit, with the runtime's defaults (`components.Goal`). */
+interface Habits {
+  readonly roost?: { daylight: boolean; whenIdle: boolean; range: number };
+  readonly playDead?: { belowHealth: number; ticks: number; regenerates: boolean };
+  readonly collect?: { speed: number; range: number; noteBlocks: boolean };
+  readonly dig?: { digBlocks: string[]; lootTable: string; intervalTicks: number; speed: number };
+  readonly barter?: { item: string; lootTable: string; ticks: number; fromGround: boolean };
 }
 
 /** `msm:ranged_attack` (ADR 0070 D4) with the runtime's defaults. */
@@ -325,6 +371,8 @@ interface Rideable {
   readonly passengers: number;
   readonly riderOffset: readonly [number, number, number] | undefined;
   readonly saddleBone: string | undefined;
+  /** `dash` (ADR 0109 D4, camel-like): power and cooldown ticks; `undefined` without one. */
+  readonly dash: { power: number; cooldownTicks: number } | undefined;
   readonly onMount: string | undefined;
 }
 
@@ -556,9 +604,12 @@ function readRideable(component: Reader | undefined, events: Events): Rideable |
       'rider_offset',
       'saddle_bone',
       'on_mount',
+      'dash',
     ],
     'msm:rideable field',
   );
+  const dash = component.object('dash');
+  dash?.onlyKeys(['power', 'cooldown_ticks'], 'dash field');
   let riderOffset: Rideable['riderOffset'];
   if (component.has('rider_offset')) {
     const raw = component.value.rider_offset;
@@ -581,6 +632,19 @@ function readRideable(component: Reader | undefined, events: Events): Rideable |
     riderOffset,
     saddleBone: component.optionalString('saddle_bone'),
     onMount: onMount === undefined ? undefined : eventMethod(component, events, onMount),
+    dash:
+      dash === undefined
+        ? undefined
+        : {
+            power: inRange(dash, 'power', dash.number('power', 1), 0.1, 5),
+            cooldownTicks: inRange(
+              dash,
+              'cooldown_ticks',
+              dash.integer('cooldown_ticks', 55),
+              0,
+              1200,
+            ),
+          },
   };
 }
 
@@ -703,6 +767,7 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
       'breathes_air',
       'dry_out_ticks',
       'step_height',
+      'hover_height',
     ],
     'msm:movement field',
   );
@@ -774,6 +839,11 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
       breathesAir: movement?.boolean('breathes_air', false) ?? false,
       dryOutTicks,
       stepHeight,
+      hoverHeight: (() => {
+        const height = movement?.number('hover_height', 4) ?? 4;
+        if (movement !== undefined) inRange(movement, 'hover_height', height, 0.5, 32);
+        return height;
+      })(),
     },
     ranged: readRanged(components.object('msm:ranged_attack'), events, throwables),
     variants: readVariants(components.object('msm:variants')),
@@ -803,6 +873,107 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
     onSpawn: eventOf(components.object('msm:on_spawn'), events),
     events,
     sounds: readSounds(reader),
+    bucketable: readBucketable(components.object('msm:bucketable'), mode),
+    habits: readHabits(goals),
+    storage: readStorage(components.object('msm:storage')),
+  };
+}
+
+/** `msm:storage` (ADR 0098 D5, the runtime's `StorageParser.Storage`). */
+function readStorage(component: Reader | undefined): EntitySpec['storage'] {
+  if (component === undefined) return undefined;
+  component.onlyKeys(['rows', 'needs_chest', 'open_sound', 'close_sound'], 'msm:storage field');
+  const sound = (key: string): string | undefined => {
+    const id = component.optionalString(key);
+    if (id !== undefined && !SOUND_ID.test(id)) component.fail(`${key} '${id}' is not an id`);
+    return id === undefined ? undefined : fullId(id);
+  };
+  return {
+    rows: inRange(component, 'rows', component.integer('rows', 3), 1, 6),
+    needsChest: component.boolean('needs_chest', false),
+    openSound: sound('open_sound'),
+    closeSound: sound('close_sound'),
+  };
+}
+
+/** `msm:bucketable` (ADR 0109 D1), only on a `swim` mob: the runtime drops it on every other mode. */
+function readBucketable(component: Reader | undefined, mode: string): EntitySpec['bucketable'] {
+  if (component === undefined) return undefined;
+  component.onlyKeys(['item_name', 'water'], 'msm:bucketable field');
+  const itemName = component.optionalString('item_name');
+  const water = component.boolean('water', true);
+  return mode === 'swim' ? { itemName, water } : undefined;
+}
+
+/** The first goal of each habit, with the runtime's defaults and ranges (`components.Goal`). */
+function readHabits(goals: readonly Reader[]): Habits | undefined {
+  const first = (type: string): Reader | undefined =>
+    goals.find((goal) => goal.optionalString('type') === type);
+  const roost = first('roost');
+  const playDead = first('play_dead');
+  const collect = first('collect_items');
+  const dig = first('dig_items');
+  const barter = first('barter');
+  if ([roost, playDead, collect, dig, barter].every((goal) => goal === undefined)) return undefined;
+  return {
+    ...(roost === undefined ? {} : { roost: readRoost(roost) }),
+    ...(playDead === undefined ? {} : { playDead: readPlayDead(playDead) }),
+    ...(collect === undefined ? {} : { collect: readCollect(collect) }),
+    ...(dig === undefined ? {} : { dig: readDig(dig) }),
+    ...(barter === undefined ? {} : { barter: readBarter(barter) }),
+  };
+}
+
+function readRoost(goal: Reader): NonNullable<Habits['roost']> {
+  goal.onlyKeys(['type', 'priority', 'daylight', 'when_idle', 'range'], 'roost field');
+  return {
+    daylight: goal.boolean('daylight', true),
+    whenIdle: goal.boolean('when_idle', false),
+    range: inRange(goal, 'range', goal.integer('range', 8), 1, 16),
+  };
+}
+
+function readPlayDead(goal: Reader): NonNullable<Habits['playDead']> {
+  goal.onlyKeys(['type', 'priority', 'below_health', 'ticks', 'regenerates'], 'play_dead field');
+  return {
+    belowHealth: inRange(goal, 'below_health', goal.number('below_health', 0.5), 0.01, 1),
+    ticks: inRange(goal, 'ticks', goal.integer('ticks', 200), 20, 1200),
+    regenerates: goal.boolean('regenerates', true),
+  };
+}
+
+function readCollect(goal: Reader): NonNullable<Habits['collect']> {
+  goal.onlyKeys(['type', 'priority', 'speed', 'range', 'note_blocks'], 'collect_items field');
+  return {
+    speed: inRange(goal, 'speed', goal.number('speed', 1), 0),
+    range: inRange(goal, 'range', goal.number('range', 32), 1, 64),
+    noteBlocks: goal.boolean('note_blocks', true),
+  };
+}
+
+function readDig(goal: Reader): NonNullable<Habits['dig']> {
+  goal.onlyKeys(
+    ['type', 'priority', 'dig_blocks', 'loot_table', 'interval_ticks', 'speed'],
+    'dig_items field',
+  );
+  const digBlocks = idsOrTags(goal, 'dig_blocks', true);
+  if (digBlocks.length > 64) goal.fail('dig_blocks has more than 64 entries');
+  return {
+    digBlocks,
+    lootTable: fullId(goal.requiredString('loot_table')),
+    intervalTicks: inRange(goal, 'interval_ticks', goal.integer('interval_ticks', 240), 20),
+    speed: inRange(goal, 'speed', goal.number('speed', 1), 0),
+  };
+}
+
+function readBarter(goal: Reader): NonNullable<Habits['barter']> {
+  goal.onlyKeys(['type', 'priority', 'item', 'loot_table', 'ticks', 'from_ground'], 'barter field');
+  const item = goal.requiredString('item');
+  return {
+    item: item.startsWith('#') ? `#${fullId(item.slice(1))}` : fullId(item),
+    lootTable: fullId(goal.requiredString('loot_table')),
+    ticks: inRange(goal, 'ticks', goal.integer('ticks', 120), 1, 1200),
+    fromGround: goal.boolean('from_ground', true),
   };
 }
 
@@ -855,11 +1026,13 @@ export function generateEntities(
       name,
       `${name}_KEY`,
       `${name}_SPAWN_EGG`,
+      `${name}_BUCKET`,
+      `${name}_BUCKET_KEY`,
     ]);
     const entityClass = classNames.take(className(path, 'Entity'), (n) => [`entity.${n}`], '');
     const modelClass = classNames.take(className(path, 'Model'), (n) => [`client.entity.${n}`], '');
     names.push({ spec, field, entityClass, modelClass });
-    writeEntityClass(context, spec, entityClass);
+    writeEntityClass(context, spec, entityClass, field);
     const type = file.use(`${packageOf(context, 'entity')}.${entityClass}`);
 
     const fabricEntityType = file.use(
@@ -904,6 +1077,11 @@ export function generateEntities(
       if (!context.projectTabs.has(spec.spawnEgg.creativeTab)) {
         register.push(tabLine(file, spec.spawnEgg.creativeTab, `${field}_SPAWN_EGG`));
       }
+    }
+    if (spec.bucketable !== undefined) {
+      body.push(...bucketItemLines(context, file, spec, field));
+      // MobBuckets.itemFor: in Tools and Utilities.
+      register.push(tabLine(file, 'minecraft:tools_and_utilities', `${field}_BUCKET`));
     }
     if (spec.spawn !== undefined) register.push(...spawnLines(file, spec, field));
   }
@@ -1047,9 +1225,18 @@ function spawnLines(file: JavaFile, spec: EntitySpec, field: string): string[] {
 }
 
 /** The steps of a right click before `msm:on_interact` (ADR 0071 D1), as `MobDriver.mobInteract`. */
-type InteractStep = 'breedingInteract' | 'tamingInteract' | 'ridingInteract';
+type InteractStep =
+  | 'storageInteract'
+  | 'bucketInteract'
+  | 'breedingInteract'
+  | 'tamingInteract'
+  | 'ridingInteract'
+  | 'habitsInteract';
 
 const INTERACT_STEP_NAMES: Record<InteractStep, string> = {
+  storageInteract: 'mount storage (a chest, or a sneaking use opening the store)',
+  bucketInteract: 'a bucket',
+  habitsInteract: "the habits (a collector's or barterer's item)",
   breedingInteract: 'the breeding food',
   tamingInteract: "the taming food and the owner's sit toggle",
   ridingInteract: 'mounting',
@@ -1057,9 +1244,14 @@ const INTERACT_STEP_NAMES: Record<InteractStep, string> = {
 
 function interactSteps(spec: EntitySpec): InteractStep[] {
   const steps: InteractStep[] = [];
+  if (spec.storage !== undefined) steps.push('storageInteract');
+  if (spec.bucketable !== undefined) steps.push('bucketInteract');
   if (spec.breedable !== undefined) steps.push('breedingInteract');
   if (spec.tameable !== undefined) steps.push('tamingInteract');
   if (spec.rideable !== undefined) steps.push('ridingInteract');
+  if (spec.habits?.collect !== undefined || spec.habits?.barter !== undefined) {
+    steps.push('habitsInteract');
+  }
   return steps;
 }
 
@@ -1098,7 +1290,12 @@ function triggerable(spec: EntitySpec): Map<string, string[]> {
   return out;
 }
 
-function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: string): void {
+function writeEntityClass(
+  context: GenerationContext,
+  spec: EntitySpec,
+  name: string,
+  field: string,
+): void {
   const file = new JavaFile(packageOf(context, 'entity'), spec.input.path);
   const baseClass = file.use(BASE_CLASSES[spec.base]);
   const geoEntity = file.use('com.geckolib.animatable.GeoEntity');
@@ -1143,6 +1340,14 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     );
     return name;
   };
+  /** A static `HabitGoal` record of one habit goal entry, built before any instance. */
+  const habitField = (field: string, record: string, args: string[]): string => {
+    const name = predicateFields.take(field);
+    predicates.push(
+      `private static final HabitGoal.${record} ${name} = new HabitGoal.${record}(${args.join(', ')});`,
+    );
+    return name;
+  };
   /** The target goals of `melee_attack` and `ranged_attack`: retaliate (1) and targets (2). */
   const targetGoals = (goal: Reader, n: number, field: string): void => {
     if (goal.boolean('retaliate', false)) {
@@ -1164,7 +1369,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     }
   };
   // ADR 0070 D3: swimmers and amphibious mobs never float (the runtime removes the goal again).
-  if (spec.movement.swims && (mode === 'walk' || mode === 'fly')) {
+  if (spec.movement.swims && (mode === 'walk' || fliesIn(mode))) {
     goalLines.push(
       `goalSelector.addGoal(0, new ${file.use('net.minecraft.world.entity.ai.goal.FloatGoal')}(this));`,
     );
@@ -1180,7 +1385,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
         // MobMovement.wanderGoal: the mode decides the goal.
         let strollGoal: string;
         let extra = '';
-        if (mode === 'fly') {
+        if (fliesIn(mode)) {
           strollGoal = file.use('net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal');
         } else if (mode === 'swim') {
           strollGoal = file.use('net.minecraft.world.entity.ai.goal.RandomSwimmingGoal');
@@ -1221,11 +1426,100 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
           );
           break;
         }
-        const meleeGoal = file.use('net.minecraft.world.entity.ai.goal.MeleeAttackGoal');
-        goalLines.push(
-          `goalSelector.addGoal(${priority}, new ${meleeGoal}(this, ${javaFloat(goal.number('speed', 1))}, true));`,
-        );
+        if (mode === 'phase') {
+          // ADR 0109 D3: a phase mob charges straight through walls (the runtime's PhaseChargeGoal).
+          context.mobShared.add('PhaseChargeGoal');
+          goalLines.push(
+            `goalSelector.addGoal(${priority}, new PhaseChargeGoal(this, this, ${javaFloat(goal.number('speed', 1))}));`,
+          );
+        } else {
+          const meleeGoal = file.use('net.minecraft.world.entity.ai.goal.MeleeAttackGoal');
+          goalLines.push(
+            `goalSelector.addGoal(${priority}, new ${meleeGoal}(this, ${javaFloat(goal.number('speed', 1))}, true));`,
+          );
+        }
         targetGoals(goal, n, 'MELEE_TARGETS');
+        break;
+      }
+      case 'swoop': {
+        goal.onlyKeys(
+          ['type', 'priority', 'speed', 'height', 'targets', 'must_see', 'retaliate'],
+          'swoop field',
+        );
+        const speed = inRange(goal, 'speed', goal.number('speed', 1), 0);
+        const height = inRange(goal, 'height', goal.number('height', 12), 2, 32);
+        if (spec.attack === undefined) {
+          goalLines.push(
+            `// swoop (goal ${n + 1}) left out: without msm:attack the goal does nothing (as msm_runtime).`,
+          );
+          break;
+        }
+        context.mobShared.add('SwoopGoal');
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new SwoopGoal(this, ${javaFloat(speed)}, ${javaFloat(height)}, ${goal.boolean('must_see', true)}));`,
+        );
+        targetGoals(goal, n, 'SWOOP_TARGETS');
+        break;
+      }
+      case 'roost': {
+        const roost = readRoost(goal);
+        const field = habitField(`ROOST_${n + 1}`, 'Roost', [
+          String(roost.daylight),
+          String(roost.whenIdle),
+          javaInt(roost.range),
+        ]);
+        context.mobShared.add('RoostGoal');
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new RoostGoal(this, habits(), ${field}, ${fliesIn(mode)}));`,
+        );
+        break;
+      }
+      case 'collect_items': {
+        const collect = readCollect(goal);
+        const field = habitField(`COLLECT_ITEMS_${n + 1}`, 'CollectItems', [
+          javaFloat(collect.speed),
+          javaFloat(collect.range),
+          String(collect.noteBlocks),
+        ]);
+        context.mobShared.add('CollectItemsGoal');
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new CollectItemsGoal(this, habits(), ${field}));`,
+        );
+        break;
+      }
+      case 'dig_items': {
+        const dig = readDig(goal);
+        const field = habitField(`DIG_ITEMS_${n + 1}`, 'DigItems', [
+          `${file.use('java.util.List')}.of(${dig.digBlocks.map(javaString).join(', ')})`,
+          identifierExpression(file, dig.lootTable),
+          javaInt(dig.intervalTicks),
+          javaFloat(dig.speed),
+        ]);
+        context.mobShared.add('DigForItemsGoal');
+        goalLines.push(
+          `goalSelector.addGoal(${priority}, new DigForItemsGoal(this, habits(), ${field}));`,
+        );
+        break;
+      }
+      case 'play_dead': {
+        readPlayDead(goal);
+        context.mobShared.add('PlayDeadGoal');
+        // play_dead defaults to priority 0, so it can take over from any running goal (ADR 0109 D4).
+        goalLines.push(
+          `goalSelector.addGoal(${goal.has('priority') ? priority : 0}, new PlayDeadGoal(this, habits()));`,
+        );
+        break;
+      }
+      case 'barter': {
+        const barter = readBarter(goal);
+        if (!barter.fromGround) {
+          goalLines.push(
+            `// barter (goal ${n + 1}): from_ground false, so it only takes its item from a player's hand.`,
+          );
+          break;
+        }
+        context.mobShared.add('BarterGoal');
+        goalLines.push(`goalSelector.addGoal(${priority}, new BarterGoal(this, habits(), 1.0));`);
         break;
       }
       case 'ranged_attack': {
@@ -1318,7 +1612,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       );
     }
     if (t.followsOwner) {
-      if (mode === 'walk' || mode === 'fly') {
+      if (mode === 'walk' || fliesIn(mode)) {
         goalLines.push(
           `goalSelector.addGoal(${after}, new ${file.use('net.minecraft.world.entity.ai.goal.FollowOwnerGoal')}(this, ${javaFloat(t.follow.speed)}, ${javaFloat(t.follow.startDistance)}, ${javaFloat(t.follow.stopDistance)}));`,
         );
@@ -1362,6 +1656,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       `private ${file.use('net.minecraft.server.level.ServerBossEvent')} bossEvent;`,
     );
   }
+  members.push(...batch2Fields(context, file, spec, name));
   members.push(
     '',
     `private final ${instanceCache} cache = ${geckoLibUtil}.createInstanceCache(this);`,
@@ -1383,7 +1678,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   );
   const extraAttributes: string[] = [];
   if (usesTempt) extraAttributes.push(`.add(${attributes}.TEMPT_RANGE, ${javaFloat(TEMPT_RANGE)})`);
-  if (mode === 'fly') {
+  if (fliesIn(mode)) {
     extraAttributes.push(
       `.add(${attributes}.FLYING_SPEED, ${javaFloat(spec.movement.flyingSpeed)})`,
     );
@@ -1491,24 +1786,37 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
-  if (spec.onHurt !== undefined) {
+  if (spec.onHurt !== undefined || spec.habits !== undefined) {
+    const lines = ['boolean hurt = super.hurtServer(level, source, amount);'];
+    if (spec.onHurt !== undefined) {
+      lines.push(
+        'if (hurt && isAlive()) {',
+        `    ${fireCall(spec.onHurt, fireArgs(`source.getEntity() instanceof ${player()} p ? p : null`))}`,
+        '}',
+      );
+    }
+    if (spec.habits !== undefined) lines.push('habits().hurtServer(level, hurt);');
+    lines.push('return hurt;');
     members.push(
       '',
-      '/** msm:on_hurt: after damage is applied when the entity survives (a lethal hit fires msm:on_death). */',
+      spec.onHurt === undefined
+        ? '/** The habits after damage (a roosting mob lets go; play_dead). */'
+        : spec.habits === undefined
+          ? '/** msm:on_hurt: after damage is applied when the entity survives (a lethal hit fires msm:on_death). */'
+          : '/** msm:on_hurt: after damage is applied when the entity survives (a lethal hit fires msm:on_death); then the habits. */',
       '@Override',
       `public boolean hurtServer(${serverLevel()} level, ${damageSource()} source, float amount) {`,
-      '    boolean hurt = super.hurtServer(level, source, amount);',
-      '    if (hurt && isAlive()) {',
-      `        ${fireCall(spec.onHurt, fireArgs(`source.getEntity() instanceof ${player()} p ? p : null`))}`,
-      '    }',
-      '    return hurt;',
+      ...indent(lines),
       '}',
     );
   }
-  if (spec.onDeath !== undefined || spec.bossBar !== undefined) {
+  const dropsOnDeath = spec.habits !== undefined || spec.storage !== undefined;
+  if (spec.onDeath !== undefined || spec.bossBar !== undefined || dropsOnDeath) {
     const lines =
       spec.onDeath === undefined
-        ? ['super.die(source);']
+        ? !dropsOnDeath
+          ? ['super.die(source);']
+          : ['boolean wasDead = dead;', 'super.die(source);']
         : [
             'boolean wasDead = dead;',
             'super.die(source);',
@@ -1516,6 +1824,15 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
             `    ${fireCall(spec.onDeath, fireArgs(`source.getEntity() instanceof ${player()} p ? p : null`))}`,
             '}',
           ];
+    if (dropsOnDeath) {
+      // As MobDriver.die: the store's contents, then what the habits hold or carry, drop once it dies.
+      lines.push(
+        'if (!wasDead && dead) {',
+        ...(spec.storage === undefined ? [] : ['    mobStorage.die();']),
+        ...(spec.habits === undefined ? [] : ['    habits().die();']),
+        '}',
+      );
+    }
     if (spec.bossBar !== undefined) {
       lines.push(
         'if (bossEvent != null) {',
@@ -1526,11 +1843,13 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
     }
     members.push(
       '',
-      spec.onDeath === undefined
-        ? '/** The boss bar empties and goes. */'
-        : spec.bossBar === undefined
-          ? '/** msm:on_death: once, on the logical server. */'
-          : '/** msm:on_death: once, on the logical server; then the boss bar empties and goes. */',
+      spec.onDeath === undefined && spec.bossBar === undefined
+        ? '/** What the mob stores, holds or carries drops where it died. */'
+        : spec.onDeath === undefined
+          ? '/** The boss bar empties and goes. */'
+          : spec.bossBar === undefined
+            ? '/** msm:on_death: once, on the logical server. */'
+            : '/** msm:on_death: once, on the logical server; then the boss bar empties and goes. */',
       '@Override',
       `public void die(${damageSource()} source) {`,
       ...indent(lines),
@@ -1572,7 +1891,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
       '}',
     );
   }
-  if (spec.onTick !== undefined || spec.bossBar !== undefined) {
+  if (spec.onTick !== undefined || spec.bossBar !== undefined || spec.habits !== undefined) {
     const lines = ['super.customServerAiStep(level);'];
     let doc = '';
     if (spec.onTick !== undefined) {
@@ -1591,6 +1910,13 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
           ? 'The boss bar: name, progress and, with a range, its players (as the wither, in the AI step)'
           : `${doc}; then the boss bar`;
       lines.push('tickBossBar(level);');
+    }
+    if (spec.habits !== undefined) {
+      doc =
+        doc === ''
+          ? "The habits' countdowns (playing dead, digging, bartering)"
+          : `${doc}; then the habits' countdowns`;
+      lines.push('habits().customServerAiStep(level);');
     }
     members.push(
       '',
@@ -1654,6 +1980,7 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   if (spec.rideable !== undefined) {
     members.push(...ridingMembers(file, spec, spec.rideable, fireArgs));
   }
+  members.push(...batch2Members(context, file, spec, field));
   if (spec.sounds !== undefined) members.push(...soundMembers(file, spec.sounds));
   if (spec.lootTable !== undefined) {
     const resourceKey = file.use('net.minecraft.resources.ResourceKey');
@@ -1770,6 +2097,14 @@ function writeEntityClass(context: GenerationContext, spec: EntitySpec, name: st
   if (spec.rideable !== undefined) {
     interfaces.push(file.use('net.minecraft.world.entity.PlayerRideableJumping'));
   }
+  if (spec.bucketable !== undefined) {
+    interfaces.push(file.use('net.minecraft.world.entity.Bucketable'));
+  }
+  if (spec.movement.mode === 'phase') interfaces.push('PhaseChargeGoal.Charging');
+  if (spec.storage !== undefined) {
+    interfaces.push(file.use('net.minecraft.world.entity.HasCustomInventoryScreen'));
+  }
+  mergeSaveAndSync(file, members, spec);
   const kind = { mob: '', animal: ' (base animal)', monster: ' (base monster)' }[spec.base];
   const lines = [
     `/** The entity {@code ${spec.input.id}}${kind}, animated with GeckoLib. */`,
@@ -1790,9 +2125,15 @@ function movementConstructor(file: JavaFile, spec: EntitySpec): string[] {
     case 'walk':
       return [];
     case 'fly':
+    case 'hover':
+    case 'phase':
       return [
-        "// msm:movement mode fly: a bee's flight (no gravity; a bee's and a parrot's path costs).",
-        `moveControl = new ${file.use('net.minecraft.world.entity.ai.control.FlyingMoveControl')}<>(this, ${javaInt(FLY_MAX_TURN)}, ${spec.movement.hovers});`,
+        spec.movement.mode === 'fly'
+          ? "// msm:movement mode fly: a bee's flight (no gravity; a bee's and a parrot's path costs)."
+          : `// msm:movement mode ${spec.movement.mode}: ${spec.movement.mode === 'hover' ? `hovers ${spec.movement.hoverHeight} blocks over the ground` : 'flies through walls while it charges'} (ADR 0109 D3); otherwise a bee's flight.`,
+        spec.movement.mode === 'hover'
+          ? `moveControl = new HoverMoveControl(this, ${javaFloat(spec.movement.hoverHeight)});`
+          : `moveControl = new ${file.use('net.minecraft.world.entity.ai.control.FlyingMoveControl')}<>(this, ${javaInt(FLY_MAX_TURN)}, ${spec.movement.hovers});`,
         'setNoGravity(true);',
         `setPathfindingMalus(${pathType()}.FIRE, -1.0f);`,
         `setPathfindingMalus(${pathType()}.FIRE_IN_NEIGHBOR, -1.0f);`,
@@ -1832,7 +2173,7 @@ function movementMembers(file: JavaFile, spec: EntitySpec): string[] {
   const level = file.use('net.minecraft.world.level.Level');
   const pathNavigation = file.use('net.minecraft.world.entity.ai.navigation.PathNavigation');
   const members: string[] = [''];
-  if (mode === 'fly') {
+  if (fliesIn(mode)) {
     const flying = file.use('net.minecraft.world.entity.ai.navigation.FlyingPathNavigation');
     const damageSource = file.use('net.minecraft.world.damagesource.DamageSource');
     members.push(
@@ -2659,10 +3000,26 @@ function ridingMembers(
   const attributes = file.use('net.minecraft.world.entity.ai.attributes.Attributes');
   const { mode } = spec.movement;
   const animal = spec.base === 'animal';
-  const canJump = rideable.jump > 0 && (mode === 'walk' || mode === 'amphibious');
+  const { dash } = rideable;
+  const canJump =
+    (rideable.jump > 0 || dash !== undefined) && (mode === 'walk' || mode === 'amphibious');
+  // ADR 0109 D4: with a dash the bar charges the dash instead of the jump (MobRiding.onPlayerJump).
+  const dashes = canJump && dash !== undefined;
   const steerable = rideable.saddle ? 'isSaddled()' : undefined;
   const members: string[] = [];
-  if (canJump) {
+  if (dashes) {
+    members.push(
+      '',
+      `/** dash: the forward speed at a full bar and power 1, and the lift, in blocks a tick (MobRiding.DASH_SPEED, DASH_LIFT). */`,
+      `private static final double DASH_SPEED = ${javaFloat(DASH_SPEED)};`,
+      `private static final double DASH_LIFT = ${javaFloat(DASH_LIFT)};`,
+      '',
+      "/** The bar's scale for a dash, from onPlayerJump on the rider's client, used by tickRidden on the ground. */",
+      'private float pendingDash;',
+      '/** Ticks until the next dash, on both sides. */',
+      'private int dashCooldown;',
+    );
+  } else if (canJump) {
     members.push(
       '',
       "/** The jump bar's scale, from onPlayerJump on the rider's client, used by tickRidden on the ground. */",
@@ -2792,7 +3149,16 @@ function ridingMembers(
     'yBodyRot = getYRot();',
     'yHeadRot = getYRot();',
   ];
-  if (canJump) {
+  if (dashes) {
+    ridden.push(
+      'if (isLocalInstanceAuthoritative() && onGround()) {',
+      '    if (pendingDash > 0) {',
+      '        dash(pendingDash);',
+      '    }',
+      '    pendingDash = 0;',
+      '}',
+    );
+  } else if (canJump) {
     ridden.push(
       'if (isLocalInstanceAuthoritative() && onGround()) {',
       '    if (pendingJump > 0) {',
@@ -2804,13 +3170,25 @@ function ridingMembers(
   }
   members.push(
     '',
-    `/** The mob faces the rider's view (half the pitch, as horses)${canJump ? ', then a pending jump on the ground' : ''}. */`,
+    `/** The mob faces the rider's view (half the pitch, as horses)${dashes ? ', then a pending dash on the ground' : canJump ? ', then a pending jump on the ground' : ''}. */`,
     '@Override',
     `protected void tickRidden(${player} rider, ${vec3} input) {`,
     ...indent(ridden),
     '}',
   );
-  if (canJump) {
+  if (dashes) {
+    members.push(
+      '',
+      "/** The dash at the bar's scale (0 to 1): forward along the mob's facing and a little up, then the cooldown (where the mob is moved). */",
+      'public void dash(float scale) {',
+      `    ${vec3} look = ${vec3}.directionFromRotation(0, getYRot());`,
+      `    double power = DASH_SPEED * ${javaFloat(dash.power)} * scale;`,
+      '    setDeltaMovement(getDeltaMovement().add(look.x * power, DASH_LIFT * scale, look.z * power));',
+      '    needsSync = true;',
+      `    dashCooldown = ${javaInt(dash.cooldownTicks)};`,
+      '}',
+    );
+  } else if (canJump) {
     members.push(
       '',
       "/** The horse's jump: jump_strength times the bar's scale and the block's jump factor, plus jump boost. */",
@@ -2879,7 +3257,40 @@ function ridingMembers(
     '}',
   );
   // Jump bar.
-  if (canJump) {
+  if (dashes) {
+    members.push(
+      '',
+      "/** On the rider's client: the bar's charge to a scale through vanilla's default curve, for the dash. */",
+      '@Override',
+      'public void onPlayerJump(int strength) {',
+      '    if (!canJump()) {',
+      '        return;',
+      '    }',
+      '    pendingDash = getPlayerJumpPendingScale(Math.max(0, strength));',
+      '}',
+      '',
+      `/** A jump bar while ${steerable === undefined ? 'ridden (no saddle needed)' : 'saddled'} and the dash cooldown is over. */`,
+      '@Override',
+      'public boolean canJump() {',
+      `    return ${steerable === undefined ? '' : `${steerable} && `}dashCooldown == 0;`,
+      '}',
+      '',
+      '/** On the server when the rider releases the bar: the dash starts its cooldown here too, so both sides agree. */',
+      '@Override',
+      'public void handleStartJump(int strength) {',
+      `    dashCooldown = ${javaInt(dash.cooldownTicks)};`,
+      '}',
+      '',
+      "/** Vanilla's jump bar shows the dash cooldown. */",
+      '@Override',
+      'public int getJumpCooldown() {',
+      '    return dashCooldown;',
+      '}',
+      '',
+      '@Override',
+      'public void handleStopJump() {}',
+    );
+  } else if (canJump) {
     members.push(
       '',
       "/** On the rider's client: the bar's charge to a scale through vanilla's default curve. */",
@@ -2912,15 +3323,17 @@ function ridingMembers(
       '}',
     );
   }
-  members.push(
-    '',
-    "/** On the server when the rider releases the bar; the jump itself comes with the rider's movement. */",
-    '@Override',
-    'public void handleStartJump(int strength) {}',
-    '',
-    '@Override',
-    'public void handleStopJump() {}',
-  );
+  if (!dashes) {
+    members.push(
+      '',
+      "/** On the server when the rider releases the bar; the jump itself comes with the rider's movement. */",
+      '@Override',
+      'public void handleStartJump(int strength) {}',
+      '',
+      '@Override',
+      'public void handleStopJump() {}',
+    );
+  }
   if (rideable.saddleBone !== undefined) {
     members.push(
       '',
@@ -3020,4 +3433,455 @@ function soundMembers(file: JavaFile, sounds: Sounds): string[] {
     );
   }
   return members;
+}
+
+/**
+ * The fields of batch 2's mob parts (ADR 0109; B537b): the synched roosting and playing dead flags
+ * and the lazily made `MobHabits` (goals are registered inside the `Mob` constructor, before field
+ * initialisers run, so the field has none), the `phase` charge flag and the fish bucket flag.
+ */
+function batch2Fields(
+  context: GenerationContext,
+  file: JavaFile,
+  spec: EntitySpec,
+  name: string,
+): string[] {
+  const out: string[] = [];
+  if (spec.habits !== undefined) {
+    const accessor = file.use('net.minecraft.network.syncher.EntityDataAccessor');
+    const synched = file.use('net.minecraft.network.syncher.SynchedEntityData');
+    const serializers = file.use('net.minecraft.network.syncher.EntityDataSerializers');
+    context.mobShared.add('MobHabits');
+    context.mobShared.add('HabitGoal');
+    out.push(
+      '',
+      '/** Synched habit flags (ADR 0109 D3, D4): hanging under a block, and playing dead. */',
+      `private static final ${accessor}<Boolean> DATA_ROOSTING = ${synched}.defineId(${name}.class, ${serializers}.BOOLEAN);`,
+      `private static final ${accessor}<Boolean> DATA_PLAYING_DEAD = ${synched}.defineId(${name}.class, ${serializers}.BOOLEAN);`,
+      '/** Made on first use: registerGoals runs in the Mob constructor, before this class sets its fields. */',
+      'private MobHabits habits;',
+    );
+  }
+  if (spec.movement.mode === 'phase') {
+    out.push(
+      '',
+      '/** phase: set by its charge goal while it charges. */',
+      'private boolean charging;',
+    );
+  }
+  if (spec.storage !== undefined) {
+    const { rows, needsChest, openSound, closeSound } = spec.storage;
+    context.mobShared.add('MobStorage');
+    const optional = file.use('java.util.Optional');
+    const sound = (id: string | undefined) =>
+      id === undefined
+        ? `${optional}.empty()`
+        : `${optional}.of(${identifierExpression(file, id)})`;
+    out.push(
+      '',
+      '/** msm:storage (ADR 0098 D5): the store, its contents saved with the mob. */',
+      `private static final MobStorage.Storage STORAGE = new MobStorage.Storage(${javaInt(rows)}, ${needsChest}, ${sound(openSound)}, ${sound(closeSound)});`,
+      `private final MobStorage mobStorage = new MobStorage(this, ${spec.tameable !== undefined}, STORAGE);`,
+    );
+  }
+  if (spec.bucketable !== undefined) {
+    out.push(
+      '',
+      "/** msm:bucketable: whether the mob came from a bucket (it then stays, as vanilla's fish). */",
+      'private boolean fromBucket;',
+    );
+  }
+  return out;
+}
+
+/** The `MobHabits` record argument of one habit, or `null` without it. */
+function habitArgument(record: string, args: readonly string[] | undefined): string {
+  return args === undefined ? 'null' : `new HabitGoal.${record}(${args.join(', ')})`;
+}
+
+/**
+ * The members of batch 2's mob parts (ADR 0109; B537b), as the runtime's `MobHabits`, `MobMovement`
+ * (`phase`), `MobBuckets` and the tick of `MobDriver`: the habits' accessor and hooks, the charge
+ * flag and the phasing tick, the dash cooldown, and the fish bucket's `Bucketable` methods and
+ * right click step.
+ */
+function batch2Members(
+  context: GenerationContext,
+  file: JavaFile,
+  spec: EntitySpec,
+  field: string,
+): string[] {
+  const out: string[] = [];
+  const habits = spec.habits;
+  if (habits !== undefined) {
+    const { roost, playDead, collect, dig, barter } = habits;
+    const list = (values: readonly string[]) =>
+      `${file.use('java.util.List')}.of(${values.map(javaString).join(', ')})`;
+    const args = [
+      'this',
+      javaString(spec.input.id),
+      'DATA_ROOSTING',
+      'DATA_PLAYING_DEAD',
+      String(fliesIn(spec.movement.mode)),
+      habitArgument(
+        'Roost',
+        roost && [String(roost.daylight), String(roost.whenIdle), javaInt(roost.range)],
+      ),
+      habitArgument(
+        'PlayDead',
+        playDead && [
+          javaFloat(playDead.belowHealth),
+          javaInt(playDead.ticks),
+          String(playDead.regenerates),
+        ],
+      ),
+      habitArgument(
+        'CollectItems',
+        collect && [javaFloat(collect.speed), javaFloat(collect.range), String(collect.noteBlocks)],
+      ),
+      habitArgument(
+        'DigItems',
+        dig && [
+          list(dig.digBlocks),
+          identifierExpression(file, dig.lootTable),
+          javaInt(dig.intervalTicks),
+          javaFloat(dig.speed),
+        ],
+      ),
+      habitArgument(
+        'Barter',
+        barter && [
+          javaString(barter.item),
+          identifierExpression(file, barter.lootTable),
+          javaInt(barter.ticks),
+          String(barter.fromGround),
+        ],
+      ),
+    ];
+    const interactionResult = file.use('net.minecraft.world.InteractionResult');
+    const interactionHand = file.use('net.minecraft.world.InteractionHand');
+    const player = file.use('net.minecraft.world.entity.player.Player');
+    out.push(
+      '',
+      '/** The habits of ADR 0109 D4 (the first goal of each), made on first use. */',
+      'public MobHabits habits() {',
+      '    if (habits == null) {',
+      `        habits = new MobHabits(${args.slice(0, 5).join(', ')},`,
+      ...args.slice(5).map((arg, i) => `                ${arg}${i === 4 ? ');' : ','}`),
+      '    }',
+      '    return habits;',
+      '}',
+    );
+    if (collect !== undefined || barter !== undefined) {
+      out.push(
+        '',
+        "/** The habits' step of a right click: giving a collector its item or taking it back, handing a barterer its item. Null passes on. */",
+        `private ${interactionResult} habitsInteract(${player} player, ${interactionHand} hand) {`,
+        '    return habits().mobInteract(player, hand);',
+        '}',
+      );
+    }
+    if (playDead !== undefined) {
+      out.push(
+        '',
+        "/** play_dead: a mob playing dead is not seen as an enemy, as an axolotl's. */",
+        '@Override',
+        'public boolean canBeSeenAsEnemy() {',
+        '    return habits().canBeSeenAsEnemy(super.canBeSeenAsEnemy());',
+        '}',
+      );
+    }
+    if (collect?.noteBlocks === true) {
+      const biConsumer = file.use('java.util.function.BiConsumer');
+      const listener = file.use('net.minecraft.world.level.gameevent.DynamicGameEventListener');
+      const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+      out.push(
+        '',
+        '/** collect_items with note_blocks: the collector hears note blocks within 16 blocks. */',
+        '@Override',
+        `public void updateDynamicGameEventListener(${biConsumer}<${listener}<?>, ${serverLevel}> consumer) {`,
+        '    super.updateDynamicGameEventListener(consumer);',
+        '    habits().updateDynamicGameEventListener(consumer);',
+        '}',
+      );
+    }
+  }
+  if (spec.storage !== undefined) {
+    const interactionResult = file.use('net.minecraft.world.InteractionResult');
+    const interactionHand = file.use('net.minecraft.world.InteractionHand');
+    const player = file.use('net.minecraft.world.entity.player.Player');
+    out.push(
+      '',
+      '/** The first step of a right click: a chest adds the store (needs_chest), a sneaking use opens it. Null passes on. */',
+      `private ${interactionResult} storageInteract(${player} player, ${interactionHand} hand) {`,
+      '    return mobStorage.mobInteract(player, hand);',
+      '}',
+      '',
+      '/** The rider pressing the inventory key opens the store. */',
+      '@Override',
+      `public void openCustomInventoryScreen(${player} player) {`,
+      '    mobStorage.openCustomInventoryScreen(player);',
+      '}',
+    );
+  }
+  const phase = spec.movement.mode === 'phase';
+  if (phase) {
+    context.mobShared.add('PhaseChargeGoal');
+    out.push(
+      '',
+      '/** phase: the charge goal starts and ends a charge. */',
+      '@Override',
+      'public void setCharging(boolean charging) {',
+      '    this.charging = charging;',
+      '}',
+      '',
+      '/** Whether the mob passes through blocks this tick: charging, or still inside the block it charged into. */',
+      'public boolean phasing() {',
+      '    return charging || !level().noCollision(this, getBoundingBox());',
+      '}',
+    );
+  }
+  if (spec.movement.mode === 'hover') context.mobShared.add('HoverMoveControl');
+  const dashes =
+    spec.rideable?.dash !== undefined &&
+    (spec.movement.mode === 'walk' || spec.movement.mode === 'amphibious');
+  const roosts = habits?.roost !== undefined;
+  if (phase || dashes || roosts) {
+    const lines: string[] = [];
+    if (phase) {
+      lines.push(
+        '// A phasing mob runs vanilla tick without physics (ADR 0109 D3 as amended: vex-like).',
+        'if (noPhysics || !phasing()) {',
+        '    super.tick();',
+        '} else {',
+        '    noPhysics = true;',
+        '    try {',
+        '        super.tick();',
+        '    } finally {',
+        '        noPhysics = false;',
+        '    }',
+        '}',
+      );
+    } else {
+      lines.push('super.tick();');
+    }
+    if (dashes) lines.push('if (dashCooldown > 0) {', '    dashCooldown--;', '}');
+    if (roosts) lines.push('habits().tick();');
+    out.push(
+      '',
+      `/** Vanilla's tick${phase ? ' (without physics while phasing)' : ''}${dashes ? ', then the dash cooldown runs down' : ''}${roosts ? ', then a roosting mob stays where it hangs' : ''}; on both sides. */`,
+      '@Override',
+      'public void tick() {',
+      ...indent(lines),
+      '}',
+    );
+  }
+  const bucket = spec.bucketable;
+  if (bucket !== undefined) {
+    const itemStack = file.use('net.minecraft.world.item.ItemStack');
+    const bucketable = file.use('net.minecraft.world.entity.Bucketable');
+    const compoundTag = file.use('net.minecraft.nbt.CompoundTag');
+    const soundEvent = file.use('net.minecraft.sounds.SoundEvent');
+    const soundEvents = file.use('net.minecraft.sounds.SoundEvents');
+    const interactionResult = file.use('net.minecraft.world.InteractionResult');
+    const interactionHand = file.use('net.minecraft.world.InteractionHand');
+    const player = file.use('net.minecraft.world.entity.player.Player');
+    const items = file.use('net.minecraft.world.item.Items');
+    const modEntities = file.use(`${context.input.javaPackage}.ModEntities`);
+    const save = [`${bucketable}.saveDefaultDataToBucketTag(this, stack);`];
+    const load = [`${bucketable}.loadDefaultDataFromBucketTag(this, tag);`];
+    if (spec.variants !== undefined) {
+      const customData = file.use('net.minecraft.world.item.component.CustomData');
+      const dataComponents = file.use('net.minecraft.core.component.DataComponents');
+      save.push(
+        `${customData}.update(${dataComponents}.BUCKET_ENTITY_DATA, stack, tag -> tag.putString("Variant", variantId()));`,
+      );
+      load.push('tag.getString("Variant").ifPresent(this::setVariantById);');
+    }
+    const take = bucket.water
+      ? [
+          `if (!held.is(${items}.WATER_BUCKET)) {`,
+          '    return null;',
+          '}',
+          `return ${bucketable}.bucketMobPickup(player, hand, this).orElse(null);`,
+        ]
+      : [
+          `if (!held.is(${items}.BUCKET) || !isAlive()) {`,
+          '    return null;',
+          '}',
+          'playSound(getPickupSound(), 1.0f, 1.0f);',
+          `${itemStack} bucket = getBucketItemStack();`,
+          'saveToBucketTag(bucket);',
+          `player.setItemInHand(hand, ${file.use('net.minecraft.world.item.ItemUtils')}.createFilledResult(held, player, bucket, false));`,
+          `if (level() instanceof ${file.use('net.minecraft.server.level.ServerLevel')}) {`,
+          '    discard();',
+          '}',
+          `return ${interactionResult}.SUCCESS;`,
+        ];
+    out.push(
+      '',
+      '@Override',
+      'public boolean fromBucket() {',
+      '    return fromBucket;',
+      '}',
+      '',
+      '@Override',
+      'public void setFromBucket(boolean from) {',
+      '    fromBucket = from;',
+      '}',
+      '',
+      `/** Vanilla's default bucket data (name, health, persistence and the other mob flags)${spec.variants === undefined ? '' : ', plus the variant id'}. */`,
+      '@Override',
+      `public void saveToBucketTag(${itemStack} stack) {`,
+      ...indent(save),
+      '}',
+      '',
+      '@Override',
+      `public void loadFromBucketTag(${compoundTag} tag) {`,
+      ...indent(load),
+      '}',
+      '',
+      '@Override',
+      `public ${itemStack} getBucketItemStack() {`,
+      `    return new ${itemStack}(${modEntities}.${field}_BUCKET);`,
+      '}',
+      '',
+      '@Override',
+      `public ${soundEvent} getPickupSound() {`,
+      `    return ${soundEvents}.BUCKET_FILL_FISH;`,
+      '}',
+      '',
+      bucket.water
+        ? '/** The first step of a right click (ADR 0109 D1): a water bucket takes the mob, as a fish. Null passes on. */'
+        : '/** The first step of a right click (ADR 0109 D1): an empty bucket takes the mob (it lives without water). Null passes on. */',
+      `private ${interactionResult} bucketInteract(${player} player, ${interactionHand} hand) {`,
+      `    ${itemStack} held = player.getItemInHand(hand);`,
+      ...indent(take),
+      '}',
+    );
+  }
+  return out;
+}
+
+/**
+ * Adds batch 2's synched data, saved data and persistence to the entity's members (ADR 0109; the
+ * runtime's `MobDriver`): into the methods the variants, boss bar or taming already wrote, else as
+ * new overrides.
+ */
+function mergeSaveAndSync(file: JavaFile, members: string[], spec: EntitySpec): void {
+  const habits = spec.habits !== undefined;
+  const bucket = spec.bucketable !== undefined;
+  const storage = spec.storage !== undefined;
+  if (!habits && !bucket && !storage) return;
+  const extend = (header: string, doc: string, open: string, lines: string[]): void => {
+    const at = members.findIndex((line) => line.includes(header));
+    if (at >= 0) {
+      const close = members.indexOf('}', at);
+      members.splice(close, 0, ...indent(lines));
+      return;
+    }
+    members.push('', doc, '@Override', open, ...indent(lines), '}');
+  };
+  if (habits) {
+    const synched = file.use('net.minecraft.network.syncher.SynchedEntityData');
+    extend(
+      'void defineSynchedData(',
+      '/** The habit flags (ADR 0109 D3, D4). */',
+      `protected void defineSynchedData(${synched}.Builder builder) {`,
+      [
+        'super.defineSynchedData(builder);',
+        'builder.define(DATA_ROOSTING, false);',
+        'builder.define(DATA_PLAYING_DEAD, false);',
+      ].slice(members.some((line) => line.includes('void defineSynchedData(')) ? 1 : 0),
+    );
+  }
+  const valueOutput = file.use('net.minecraft.world.level.storage.ValueOutput');
+  const valueInput = file.use('net.minecraft.world.level.storage.ValueInput');
+  const saving = members.some((line) => line.includes('void addAdditionalSaveData('));
+  const save = [
+    ...(saving ? [] : ['super.addAdditionalSaveData(output);']),
+    ...(storage ? ['mobStorage.addAdditionalSaveData(output);'] : []),
+    ...(bucket ? ['output.putBoolean("FromBucket", fromBucket);'] : []),
+    ...(habits ? ['habits().addAdditionalSaveData(output);'] : []),
+  ];
+  extend(
+    'void addAdditionalSaveData(',
+    `/** Saved with the mob: ${[storage ? 'the store' : undefined, bucket ? 'FromBucket' : undefined, habits ? "the habits' state" : undefined].filter((part) => part !== undefined).join(' and ')}. */`,
+    `protected void addAdditionalSaveData(${valueOutput} output) {`,
+    save,
+  );
+  const reading = members.some((line) => line.includes('void readAdditionalSaveData('));
+  const read = [
+    ...(reading ? [] : ['super.readAdditionalSaveData(input);']),
+    ...(storage ? ['mobStorage.readAdditionalSaveData(input);'] : []),
+    ...(bucket ? ['fromBucket = input.getBooleanOr("FromBucket", false);'] : []),
+    ...(habits ? ['habits().readAdditionalSaveData(input);'] : []),
+  ];
+  extend(
+    'void readAdditionalSaveData(',
+    '/** Reads what addAdditionalSaveData saved. */',
+    `protected void readAdditionalSaveData(${valueInput} input) {`,
+    read,
+  );
+  if (bucket) {
+    const at = members.findIndex((line) => line.includes('boolean requiresCustomPersistence()'));
+    if (at >= 0) {
+      const ret = members.findIndex((line, i) => i > at && line.trimStart().startsWith('return '));
+      members[ret] = (members[ret] as string).replace(/return (.*);$/, 'return $1 || fromBucket;');
+    } else {
+      members.push(
+        '',
+        "/** A mob from a bucket stays (vanilla's fish rule). */",
+        '@Override',
+        'public boolean requiresCustomPersistence() {',
+        '    return super.requiresCustomPersistence() || fromBucket;',
+        '}',
+      );
+    }
+  }
+}
+
+/**
+ * The bucket item of a bucketable mob (ADR 0109 D1), as `MobBuckets.itemFor`: `<id>_bucket`, one
+ * per stack with empty bucket data, named by `item_name` when given; vanilla's `MobBucketItem`
+ * (releasing places water) or, with `water: false`, the shared `DryBucketItem`.
+ */
+function bucketItemLines(
+  context: GenerationContext,
+  file: JavaFile,
+  spec: EntitySpec,
+  field: string,
+): string[] {
+  const bucket = spec.bucketable;
+  if (bucket === undefined) return [];
+  const registry = file.use('net.minecraft.core.Registry');
+  const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
+  const registries = file.use('net.minecraft.core.registries.Registries');
+  const resourceKey = file.use('net.minecraft.resources.ResourceKey');
+  const item = file.use('net.minecraft.world.item.Item');
+  const dataComponents = file.use('net.minecraft.core.component.DataComponents');
+  const customData = file.use('net.minecraft.world.item.component.CustomData');
+  const properties = [
+    `new ${item}.Properties().setId(${field}_BUCKET_KEY).stacksTo(1).component(${dataComponents}.BUCKET_ENTITY_DATA, ${customData}.EMPTY)`,
+  ];
+  if (bucket.itemName !== undefined) {
+    properties[0] += `.overrideDescription(${javaString(bucket.itemName)})`;
+  }
+  let made: string;
+  if (bucket.water) {
+    const mobBucket = file.use('net.minecraft.world.item.MobBucketItem');
+    const fluids = file.use('net.minecraft.world.level.material.Fluids');
+    const soundEvents = file.use('net.minecraft.sounds.SoundEvents');
+    made = `new ${mobBucket}(${field}, ${fluids}.WATER, ${soundEvents}.BUCKET_EMPTY_FISH, ${properties[0]})`;
+  } else {
+    context.mobShared.add('DryBucketItem');
+    const dry = file.use(`${packageOf(context, 'entity')}.DryBucketItem`);
+    made = `new ${dry}(${field}, ${properties[0]})`;
+  }
+  return [
+    `/** msm:bucketable: the bucket that takes {@code ${spec.input.id}}. */`,
+    `public static final ${resourceKey}<${item}> ${field}_BUCKET_KEY = ${resourceKey}.create(${registries}.ITEM, ${identifierExpression(file, `${spec.input.id}_bucket`)});`,
+    `public static final ${item} ${field}_BUCKET = ${registry}.register(${builtIn}.ITEM, ${field}_BUCKET_KEY,`,
+    `        ${made});`,
+  ];
 }

@@ -30,7 +30,6 @@ import {
 } from '../fabric-content-jar/index';
 import { EXPORT_MANIFEST_FILE, exportManifest } from '../manifest';
 import { ExportProblemCodes } from '../problem-codes';
-import { chestBoatIdOf, modOnlyIdsOf, vanillaSafeDataFiles } from '../vanilla-packs/mod-only';
 import { comparePaths } from '../zip';
 import {
   buildGradle,
@@ -102,103 +101,37 @@ const LISTED_KINDS = [
 ] as const;
 type ListedKind = (typeof LISTED_KINDS)[number];
 
-/** The item component of boats (ADR 0110), which the eject leaves out until the runtime's boats are mirrored. */
-const BOAT_COMPONENT = 'msm:boat';
-
 /**
- * Entity components of batch 2 (ADR 0098 D5) the eject leaves out: the mob itself is still
- * generated, one warning per entity names the components it loses.
+ * Entity components of batch 2 (ADR 0098 D5, ADR 0107, ADR 0109 D2) the eject leaves out: the mob
+ * itself is still generated, one warning per entity names the components it loses. Mount storage,
+ * fish buckets, the habits, hovering, phasing and the dash are generated (B537b).
  */
 const NOT_IN_EJECT_COMPONENTS: Readonly<Record<string, string>> = {
   'msm:trader': 'trader',
-  'msm:storage': 'storage',
   'msm:shoulder_riding': 'shoulder riding',
-  'msm:bucketable': 'fish bucket',
 };
 
-/** The goals of ADR 0109 D4 the eject leaves out (the mob keeps its other goals). */
-const NOT_IN_EJECT_GOALS: Readonly<Record<string, string>> = {
-  swoop: 'swooping',
-  roost: 'roosting',
-  collect_items: 'collecting items',
-  dig_items: 'digging up items',
-  play_dead: 'playing dead',
-  barter: 'bartering',
-};
-
-/** The movement modes of ADR 0109 D3 the eject leaves out: the mob flies instead (the runtime's stand-in before B532). */
-const NOT_IN_EJECT_MODES: Readonly<Record<string, string>> = {
-  hover: 'hovering',
-  phase: 'flying through walls',
-};
-
-/**
- * `definition` without what {@link notInEjectComponentsOf} names: the components of
- * {@link NOT_IN_EJECT_COMPONENTS}, the goals of {@link NOT_IN_EJECT_GOALS}, the movement modes of
- * {@link NOT_IN_EJECT_MODES} (as `fly`, without `hover_height`) and `msm:rideable.dash`; the
- * generator rejects them.
- */
+/** `definition` without the components of {@link NOT_IN_EJECT_COMPONENTS}; the generator rejects them. */
 function withoutBatch2Components(definition: JsonObject): JsonObject {
   const components = definition.components;
   if (!isObject(components) || notInEjectComponentsOf(definition).length === 0) return definition;
   const kept: JsonObject = {};
   for (const [key, value] of Object.entries(components)) {
-    if (key in NOT_IN_EJECT_COMPONENTS) continue;
-    if (key === 'msm:ai_goals' && isObject(value) && Array.isArray(value.goals)) {
-      kept[key] = {
-        ...value,
-        goals: value.goals.filter(
-          (goal) =>
-            !(isObject(goal) && typeof goal.type === 'string' && goal.type in NOT_IN_EJECT_GOALS),
-        ),
-      };
-    } else if (key === 'msm:movement' && isObject(value)) {
-      const { hover_height: _height, ...rest } = value;
-      kept[key] =
-        typeof value.mode === 'string' && value.mode in NOT_IN_EJECT_MODES
-          ? { ...rest, mode: 'fly' }
-          : rest;
-    } else if (key === 'msm:rideable' && isObject(value)) {
-      const { dash: _dash, ...rest } = value;
-      kept[key] = rest;
-    } else {
-      kept[key] = value;
-    }
+    if (!(key in NOT_IN_EJECT_COMPONENTS)) kept[key] = value;
   }
   return { ...definition, components: kept };
 }
 
 /**
  * What an entity definition has that the eject leaves out, in a fixed order, in plain words: the
- * components of batch 2 of vanilla parity 2 and the fish bucket (`msm:trader`, ...), the habits'
- * goals, hovering and phasing, and the dash.
+ * trader and shoulder riding components of batch 2 of vanilla parity 2.
  */
 export function notInEjectComponentsOf(definition: JsonObject): string[] {
   const components = definition.components;
   if (!isObject(components)) return [];
-  const out = Object.keys(NOT_IN_EJECT_COMPONENTS)
+  return Object.keys(NOT_IN_EJECT_COMPONENTS)
     .filter((key) => key in components)
     .map((key) => `${NOT_IN_EJECT_COMPONENTS[key]} (${key})`);
-  const goals = components['msm:ai_goals'];
-  if (isObject(goals) && Array.isArray(goals.goals)) {
-    const types = new Set(
-      goals.goals.flatMap((goal) =>
-        isObject(goal) && typeof goal.type === 'string' ? [goal.type] : [],
-      ),
-    );
-    for (const [type, words] of Object.entries(NOT_IN_EJECT_GOALS)) {
-      if (types.has(type)) out.push(`${words} (goal ${type})`);
-    }
-  }
-  const movement = components['msm:movement'];
-  if (isObject(movement) && typeof movement.mode === 'string') {
-    const words = NOT_IN_EJECT_MODES[movement.mode];
-    if (words !== undefined)
-      out.push(`${words} (movement mode ${movement.mode}; it flies instead)`);
-  }
-  const rideable = components['msm:rideable'];
-  if (isObject(rideable) && rideable.dash !== undefined) out.push('the dash (msm:rideable dash)');
-  return out;
 }
 
 /**
@@ -447,10 +380,9 @@ async function loadWrapper(
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
  * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
- * (ADR 0088 D10, ADR 0090 D14), per boat item (`msm:boat`, ADR 0110; its recipes are left out and
- * its tag entries made optional, as in a vanilla pack), per mob with a trader, storage, shoulder
- * riding or fish bucket component, a habit goal, hovering or phasing, or a dash (one warning per
- * mob, naming them; the mob is generated without them, ADR 0098 D5, ADR 0109), and per script and
+ * (ADR 0088 D10, ADR 0090 D14), per mob with a trader or shoulder riding component (one warning
+ * per mob, naming them; the mob is generated without them, ADR 0098 D5, ADR 0109 D2; boats, mount
+ * storage, fish buckets, the habits, hovering, phasing and the dash are generated, B537b), and per script and
  * Mixin event it listens to (`block.place`, `world.explosion`; ADR 0096 D6); command, creative tab,
  * villager profession, fluid, villager type, game rule, statistic and vanilla block rules
  * definitions go to the generator (ADR 0096 D6, ADR 0112 D3; B537); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
@@ -488,8 +420,6 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
       const items: DefinitionInput[] = [];
       const entities: DefinitionInput[] = [];
       const lists = new Map<ListedKind, DefinitionInput[]>(LISTED_KINDS.map((kind) => [kind, []]));
-      /** Boat items left out, and their chest companions (their recipes and tags are made safe below). */
-      const leftOutItems: string[] = [];
       const scripts: string[] = [];
       const resources: OutputFile[] = [];
       let provided: OutputFile | undefined;
@@ -589,19 +519,6 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
             });
           }
         }
-        const itemComponents = definition.components;
-        if (kind === 'item' && isObject(itemComponents) && BOAT_COMPONENT in itemComponents) {
-          const id = `${match[1]}:${match[3]}`;
-          const chest = chestBoatIdOf(id, definition);
-          leftOutItems.push(id, ...(chest === undefined ? [] : [chest]));
-          problems.report({
-            severity: 'warning',
-            code: ExportProblemCodes.notInEject,
-            file: file.path,
-            message: `${id} is a boat${chest === undefined ? '' : ` (with its chest boat ${chest})`}, which the Java project does not include yet (it needs the runtime's boat code); its recipes are left out and its tag entries made optional. Export the Fabric mod jar to use it.`,
-          });
-          continue;
-        }
         const entry: DefinitionInput = {
           id: `${match[1]}:${match[3]}`,
           path: file.path,
@@ -611,21 +528,6 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
         else if (kind === 'item') items.push(entry);
         else if (kind === 'entity') entities.push(entry);
         else lists.get(kind as ListedKind)?.push(entry);
-      }
-      if (leftOutItems.length > 0) {
-        // The boats are mod-only here: recipes naming them are left out, tag entries made optional.
-        const kept = resources.filter((file) => file.layer === 'datapack');
-        const safe = vanillaSafeDataFiles(
-          kept,
-          modOnlyIdsOf({ item: leftOutItems }),
-          target.folders.data,
-        );
-        if (safe.files !== kept) {
-          const others = resources.filter((file) => file.layer !== 'datapack');
-          resources.length = 0;
-          resources.push(...others, ...safe.files);
-          resources.sort((a, b) => comparePaths(a.path, b.path));
-        }
       }
       const listed = (kind: ListedKind): DefinitionInput[] => lists.get(kind) ?? [];
       const optionalList = <K extends string>(key: K, kind: ListedKind) =>

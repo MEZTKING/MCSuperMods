@@ -22,6 +22,7 @@ import { classPath, type GenerationContext, packageOf } from './context';
 import type { EntityNames } from './entities';
 import { identifierExpression, indent, JavaFile, javaFloat } from './java';
 import { type ParticleEntry, particleProviderLines } from './particles';
+import { boatRenderersJava } from './templates/boats-java';
 import { geoModelBaseJava } from './templates/geo-model-base-java';
 
 /**
@@ -41,6 +42,7 @@ export function generateClient(
   leafTints: readonly LeafTintEntry[] = [],
   particles: readonly ParticleEntry[] = [],
   fluids = false,
+  boats = false,
 ): string {
   const clientPackage = packageOf(context, 'client');
   const modelPackage = packageOf(context, 'client.entity');
@@ -58,6 +60,7 @@ export function generateClient(
     leafTints.length > 0 ? 'the leaves in msm/<namespace>/block/*.json' : undefined,
     particles.length > 0 ? 'the msm/<namespace>/particle/*.json definitions' : undefined,
     fluids ? 'the msm/<namespace>/fluid/*.json definitions' : undefined,
+    boats ? 'the msm:boat components' : undefined,
   ]);
   const file = new JavaFile(clientPackage, source);
   const initializer = file.use('net.fabricmc.api.ClientModInitializer');
@@ -70,6 +73,21 @@ export function generateClient(
       '// Fluids (ADR 0099 D2): their still, flowing and overlay pictures and their tint.',
       `${renderers}.init();`,
     );
+  }
+  if (boats) {
+    const boatRenderers = file.use(`${packageOf(context, 'client.boat')}.BoatRenderers`);
+    body.push(
+      "// Project boats (ADR 0110 D2): vanilla's boat renderers over their own model layers.",
+      `${boatRenderers}.init();`,
+    );
+    context.files.push({
+      path: classPath(context, 'client.boat', 'BoatRenderers'),
+      contents: boatRenderersJava(
+        packageOf(context, 'client.boat'),
+        packageOf(context, 'boat'),
+        context.input.modId,
+      ),
+    });
   }
   if (throwables) {
     const thrownRenderer = file.use('net.minecraft.client.renderer.entity.ThrownItemRenderer');
@@ -108,9 +126,9 @@ export function generateClient(
     if (body.length > 0) body.push('');
     body.push(...particleProviderLines(context, file, particles));
   }
-  const renders = entities.length > 0 || throwables;
+  const renders = entities.length > 0 || throwables || boats;
   const lines = [
-    `/** Client entrypoint: ${joined([throwables ? "vanilla's thrown item renderer" : undefined, entities.length > 0 ? 'a GeckoLib renderer per entity type' : undefined, leafTints.length > 0 ? 'leaf tints' : undefined, particles.length > 0 ? 'a particle provider per particle type' : undefined])}. */`,
+    `/** Client entrypoint: ${joined([throwables ? "vanilla's thrown item renderer" : undefined, entities.length > 0 ? 'a GeckoLib renderer per entity type' : undefined, leafTints.length > 0 ? 'leaf tints' : undefined, particles.length > 0 ? 'a particle provider per particle type' : undefined, boats ? "vanilla's boat renderers" : undefined])}. */`,
     `public final class ${name} implements ${initializer} {`,
     ...(renders
       ? [

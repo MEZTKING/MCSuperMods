@@ -51,7 +51,7 @@ import { generateBlocks } from './blocks';
 import { generateClient } from './client';
 import { generateCommands } from './commands';
 import { BLOCK_ENTITY_CLASS_NAMES, generateBlockEntities } from './containers';
-import type { GenerationContext } from './context';
+import { classPath, type GenerationContext, packageOf } from './context';
 import { generateCreativeTabs, projectTabIds } from './creative-tabs';
 import { generateEffects } from './effects';
 import { generateEntities } from './entities';
@@ -68,8 +68,23 @@ import { generatePotions } from './potions';
 import { generateProfessions } from './professions';
 import { generateSounds } from './sounds';
 import { actionsJava } from './templates/actions-java';
+import { modBoatsJava } from './templates/boats-java';
 import { cooldownMapJava } from './templates/cooldown-map-java';
 import { followTypesGoalJava } from './templates/follow-types-goal-java';
+import { hoverMoveControlJava } from './templates/hover-move-control-java';
+import {
+  barterGoalJava,
+  collectItemsGoalJava,
+  digForItemsGoalJava,
+  dryBucketItemJava,
+  habitGoalJava,
+  mobHabitsJava,
+  mobStorageJava,
+  phaseChargeGoalJava,
+  playDeadGoalJava,
+  roostGoalJava,
+  swoopGoalJava,
+} from './templates/mob-habits-java';
 import { rangedAttackGoalJava } from './templates/ranged-attack-goal-java';
 import { throwableItemJava } from './templates/throwable-item-java';
 import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
@@ -115,6 +130,8 @@ export function generateJavaProject(input: JavaProjectInput): {
     usesCooldownMap: false,
     usesVanillaComponents: false,
     usesFollowGoal: false,
+    usesBoats: false,
+    mobShared: new Set(),
   };
   const throwables = input.items.some((item) => {
     const components = item.definition.components;
@@ -129,6 +146,21 @@ export function generateJavaProject(input: JavaProjectInput): {
   classNames.reserve(
     'entity.FollowTypesGoal',
     'entity.MobRangedAttackGoal',
+    // The shared mob classes of batch 2 (ADR 0109; B537b).
+    ...[
+      'MobHabits',
+      'HabitGoal',
+      'SwoopGoal',
+      'RoostGoal',
+      'CollectItemsGoal',
+      'DigForItemsGoal',
+      'PlayDeadGoal',
+      'BarterGoal',
+      'PhaseChargeGoal',
+      'HoverMoveControl',
+      'DryBucketItem',
+      'MobStorage',
+    ].map((name) => `entity.${name}`),
     'client.entity.GeoModelBase',
     'effect.MobEffectBase',
     ...BLOCK_ENTITY_CLASS_NAMES,
@@ -199,6 +231,14 @@ export function generateJavaProject(input: JavaProjectInput): {
   // game rules, statistics, then mixing (ADR 0112 D3); the rules for vanilla blocks after them (ADR 0105 D4).
   const villagerTypes = generateVillagerTypes(context);
   if (villagerTypes !== undefined) registrations.push(villagerTypes);
+  // Boats after every item, as the runtime's MsmBoats.register (ADR 0110 D1).
+  if (context.usesBoats) {
+    registrations.push('boat.ModBoats');
+    context.files.push({
+      path: classPath(context, 'boat', 'ModBoats'),
+      contents: modBoatsJava(packageOf(context, 'boat'), input.modId),
+    });
+  }
   if (fluids?.after.includes('fluid.FluidCauldrons') === true)
     registrations.push('fluid.FluidCauldrons');
   const gameRules = generateGameRules(context);
@@ -220,7 +260,8 @@ export function generateJavaProject(input: JavaProjectInput): {
     !throwables &&
     leafTints.length === 0 &&
     particleTypes.length === 0 &&
-    fluids === undefined
+    fluids === undefined &&
+    !context.usesBoats
       ? undefined
       : generateClient(
           context,
@@ -229,6 +270,7 @@ export function generateJavaProject(input: JavaProjectInput): {
           leafTints,
           particleTypes,
           fluids !== undefined,
+          context.usesBoats,
         );
   writeParticleSpecFiles(context);
   if (context.usesActions) {
@@ -271,6 +313,27 @@ export function generateJavaProject(input: JavaProjectInput): {
       path: `${context.javaRoot}/entity/FollowTypesGoal.java`,
       contents: followTypesGoalJava(`${input.javaPackage}.entity`),
     });
+  }
+  // The shared mob classes of batch 2 (ADR 0109; B537b), in the entity package.
+  const entityPackage = `${input.javaPackage}.entity`;
+  const mobShared: Record<string, () => string> = {
+    MobHabits: () => mobHabitsJava(entityPackage, input.modId),
+    HabitGoal: () => habitGoalJava(entityPackage),
+    SwoopGoal: () => swoopGoalJava(entityPackage),
+    RoostGoal: () => roostGoalJava(entityPackage),
+    CollectItemsGoal: () => collectItemsGoalJava(entityPackage),
+    DigForItemsGoal: () => digForItemsGoalJava(entityPackage),
+    PlayDeadGoal: () => playDeadGoalJava(entityPackage),
+    BarterGoal: () => barterGoalJava(entityPackage),
+    PhaseChargeGoal: () => phaseChargeGoalJava(entityPackage),
+    HoverMoveControl: () => hoverMoveControlJava(entityPackage),
+    DryBucketItem: () => dryBucketItemJava(entityPackage),
+    MobStorage: () => mobStorageJava(entityPackage),
+  };
+  for (const name of [...context.mobShared].sort()) {
+    const make = mobShared[name];
+    if (make === undefined) throw new Error(`no shared mob class ${name}`);
+    context.files.push({ path: `${context.javaRoot}/entity/${name}.java`, contents: make() });
   }
   if (entities?.usesRangedGoal === true) {
     context.files.push({

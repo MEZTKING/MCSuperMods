@@ -362,20 +362,84 @@ public class ModCocoaBlock extends CocoaBlock {
 }
 
 function bedJava(javaPackage: string): string {
-  return `${HEADER('bed block (MsmBedBlock)', javaPackage)}
+  return `${HEADER('bed block (MsmBedBlock) and the PoiTypes.addHome seam', javaPackage)}
+import java.lang.reflect.Field;
+import java.util.Map;
+import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.BedRule;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import org.slf4j.LoggerFactory;
 
-/** A bed (ADR 0094 D2): vanilla's bed, following the straw bed rule attribute with {@code rule: straw_bed}. */
+/**
+ * A bed (ADR 0094 D2): vanilla's bed, following the straw bed rule attribute with {@code rule: straw_bed}. Villagers
+ * claim and sleep in it (ADR 0107 D4 as amended after the B524 spike): the constructor makes every head state a
+ * {@code minecraft:home} point of interest, during registration, before any world loads. If that fails the bed still
+ * works for players and one warning says villagers will not use it.
+ */
 public class ModBedBlock extends BedBlock {
+    private static boolean homesWarned;
+
     private final boolean strawRule;
 
     public ModBedBlock(DyeColor colour, boolean strawRule, Properties properties) {
         super(colour, properties);
         this.strawRule = strawRule;
+        becomeHome();
+    }
+
+    /** Joins vanilla's home point of interest (ADR 0107 D4); warns once when it cannot. */
+    private void becomeHome() {
+        try {
+            addHome(this);
+        } catch (IllegalStateException e) {
+            if (!homesWarned) {
+                homesWarned = true;
+                LoggerFactory.getLogger(ModBedBlock.class).warn("villagers will not claim or sleep in project beds: {}",
+                        e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Makes every head state of {@code bed} a villager home (the runtime's 26.3 {@code PoiTypes.addHome}): joining
+     * {@code #minecraft:beds} is not enough, vanilla's home point of interest type knows only its own beds. The head
+     * states are put into vanilla's private, mutable state map ({@code PoiTypes.TYPE_BY_STATE}) with the holder of
+     * vanilla's red bed head. States that already have a type are left alone. Returns the number of states added; throws
+     * {@link IllegalStateException} when the map or the home type cannot be reached.
+     */
+    @SuppressWarnings("unchecked")
+    public static int addHome(Block bed) {
+        Holder<PoiType> home = net.minecraft.world.entity.ai.village.poi.PoiTypes.forState(
+                Blocks.BED.red().defaultBlockState().setValue(BedBlock.PART, BedPart.HEAD))
+                .orElseThrow(() -> new IllegalStateException("vanilla's red bed has no point of interest type"));
+        Map<BlockState, Holder<PoiType>> map;
+        try {
+            Field field = net.minecraft.world.entity.ai.village.poi.PoiTypes.class.getDeclaredField("TYPE_BY_STATE");
+            field.setAccessible(true);
+            map = (Map<BlockState, Holder<PoiType>>) field.get(null);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new IllegalStateException("PoiTypes.TYPE_BY_STATE cannot be reached (" + e + ")", e);
+        }
+        int added = 0;
+        for (BlockState state : bed.getStateDefinition().getPossibleStates()) {
+            if (state.getValue(BedBlock.PART) == BedPart.HEAD && !map.containsKey(state)) {
+                try {
+                    map.put(state, home);
+                } catch (UnsupportedOperationException e) {
+                    throw new IllegalStateException("PoiTypes.TYPE_BY_STATE cannot be changed (" + e + ")", e);
+                }
+                added++;
+            }
+        }
+        return added;
     }
 
     @Override

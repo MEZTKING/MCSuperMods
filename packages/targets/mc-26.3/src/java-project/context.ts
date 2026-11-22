@@ -53,6 +53,13 @@ export interface GenerationContext {
   usesVanillaComponents: boolean;
   /** Set when an entity uses the `follow` goal. */
   usesFollowGoal: boolean;
+  /** Set when an item has `msm:boat` (`boat/ModBoats.java` and the client's `BoatRenderers` are then written). */
+  usesBoats: boolean;
+  /**
+   * The shared mob classes of batch 2 (ADR 0109; B537b) a generated entity uses, by simple name in the `entity`
+   * package (`MobHabits`, `HabitGoal`, the habit goals, `PhaseChargeGoal`, `HoverMoveControl`, `DryBucketItem`).
+   */
+  readonly mobShared: Set<string>;
 }
 
 /** The file path of a class in a sub-package (`''` for the mod package itself). */

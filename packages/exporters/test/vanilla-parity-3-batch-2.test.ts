@@ -6,10 +6,11 @@
  *   job site, a villager type, game rules, a statistic, rules for vanilla blocks, a command with
  *   the new argument types and an `open_dialog` event, and a hand-ordered creative tab are
  *   generated with no error and no `export.not-in-eject`;
- * - a boat item (and its chest boat) is left out with one `export.not-in-eject` (B536 brings the
- *   runtime's boats): its recipes are left out and its tag entries become optional;
- * - a mob with a fish bucket, the swoop goal, hovering and a dash is generated without them, with
- *   one `export.not-in-eject` naming them.
+ * - a boat item and its chest boat are generated as the runtime's (`boat/ModBoats`, the client's
+ *   `BoatRenderers`; B537b): its recipe and tag entry stay as they are;
+ * - a hovering mob with the swoop and roost goals and a fish (swim) with a bucket and a dash are
+ *   generated with them (`HoverMoveControl`, `SwoopGoal`, `MobHabits`, the bucket item; B537b);
+ *   only a mob with a trader, storage or shoulder riding still gets one `export.not-in-eject`.
  *
  * With `MSM_VANILLA_PARITY_3_BATCH_2_JAVA_OUT` set, the tree is written there with the engine-mod
  * Gradle wrapper for `./gradlew build` (JDK 25; B541 wires it into CI).
@@ -129,14 +130,42 @@ const FILES = [
     components: {
       ...animated,
       'msm:movement': { mode: 'hover', hover_height: 4 },
+      'msm:attack': { damage: 2 },
       'msm:ai_goals': {
         goals: [
-          { type: 'swoop', priority: 2 },
+          { type: 'swoop', priority: 2, targets: ['minecraft:chicken'] },
+          { type: 'roost', priority: 3 },
           { type: 'look_around', priority: 5 },
         ],
       },
-      'msm:rideable': { dash: { power: 1 } },
+    },
+  }),
+  msm('entity/carp', {
+    format: 1,
+    category: 'water_creature',
+    size: { width: 0.5, height: 0.4 },
+    components: {
+      ...animated,
+      'msm:movement': { mode: 'swim' },
       'msm:bucketable': {},
+    },
+  }),
+  msm('entity/runner', {
+    format: 1,
+    category: 'creature',
+    size: { width: 1.2, height: 1.6 },
+    components: {
+      ...animated,
+      'msm:rideable': { saddle: false, dash: { power: 1 } },
+    },
+  }),
+  msm('entity/peddler', {
+    format: 1,
+    category: 'creature',
+    size: { width: 0.6, height: 1.9 },
+    components: {
+      ...animated,
+      'msm:trader': { trade_sets: [{ trade_set: 'demo:peddler/level_1' }] },
     },
   }),
 ];
@@ -168,15 +197,8 @@ describe.each(
       report.problems.filter((p) => p.code === ExportProblemCodes.javaGenerationFailed),
     ).toEqual([]);
     const leftOut = report.problems.filter((p) => p.code === ExportProblemCodes.notInEject);
-    expect(leftOut.map((p) => p.file)).toEqual([
-      'msm/demo/entity/glider.json',
-      'msm/demo/item/woods/ash_boat.json',
-    ]);
-    expect(leftOut[0]?.message).toContain('fish bucket (msm:bucketable)');
-    expect(leftOut[0]?.message).toContain('swooping (goal swoop)');
-    expect(leftOut[0]?.message).toContain('hovering (movement mode hover; it flies instead)');
-    expect(leftOut[0]?.message).toContain('the dash');
-    expect(leftOut[1]?.message).toContain('demo:woods/ash_chest_boat');
+    expect(leftOut.map((p) => p.file)).toEqual(['msm/demo/entity/peddler.json']);
+    expect(leftOut[0]?.message).toContain('trader (msm:trader)');
     const files = sink.files();
     if (out !== undefined) {
       const { mkdir } = await import('node:fs/promises');
@@ -203,19 +225,27 @@ describe.each(
     );
     expect(text('ModCommands.java')).toContain('Actions.openDialog(OWNER,');
     expect(text('ModCreativeTabs.java')).toContain('handOrder(members, KIT_HAND)');
-    const glider = [...files.keys()].find((path) => path.endsWith('/GliderEntity.java'));
-    expect(glider).toBeDefined();
-    expect(utf8.decode(files.get(glider as string) as Uint8Array)).toContain('FlyingMoveControl');
-    // The boat's recipe is left out and its tag entry made optional.
-    const resources = [...files.keys()].filter((path) =>
-      path.startsWith('src/main/resources/data/'),
+    const glider = text('entity/GliderEntity.java');
+    expect(glider).toContain('moveControl = new HoverMoveControl(this, 4.0f);');
+    expect(glider).toContain('new SwoopGoal(this, 1.0f, 12.0f, true)');
+    expect(glider).toContain('new RoostGoal(this, habits(), ROOST_2, true)');
+    expect(text('entity/MobHabits.java')).toContain('public final class MobHabits');
+    const carp = text('entity/CarpEntity.java');
+    expect(carp).toContain('Bucketable.bucketMobPickup(player, hand, this)');
+    expect(text('ModEntities.java')).toContain('new MobBucketItem(CARP, Fluids.WATER');
+    expect(text('entity/RunnerEntity.java')).toContain('dashCooldown = 55;');
+    expect(text('ModItems.java')).toContain('ModBoats.itemFor(');
+    expect(text('boat/ModBoats.java')).toContain('new BoatDispenseItemBehavior(boat.boat())');
+    expect(text('client/boat/BoatRenderers.java')).toContain(
+      'ModelLayerRegistry.registerModelLayer',
     );
-    expect(resources).not.toContain('src/main/resources/data/demo/recipe/woods/ash_boat.json');
+    // The boat's recipe and tag entry stay as they are: the Java project has the boat.
+    expect(files.has('src/main/resources/data/demo/recipe/woods/ash_boat.json')).toBe(true);
     const tag = JSON.parse(
       utf8.decode(
         files.get('src/main/resources/data/minecraft/tags/item/chest_boats.json') as Uint8Array,
       ),
     ) as { values: Json[] };
-    expect(tag.values).toEqual([{ id: 'demo:woods/ash_chest_boat', required: false }]);
+    expect(tag.values).toEqual(['demo:woods/ash_chest_boat']);
   });
 });

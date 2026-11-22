@@ -211,7 +211,7 @@ describe.each(
     expect(warned.map((problem) => problem.file)).toEqual(['msm/demo/entity/merchant.json']);
     expect(warned.every((problem) => problem.severity === 'warning')).toBe(true);
     expect(warned[0]?.message).toContain(
-      'trader (msm:trader), storage (msm:storage), shoulder riding (msm:shoulder_riding)',
+      'trader (msm:trader), shoulder riding (msm:shoulder_riding),',
     );
     const paths = [...sink.files().keys()];
     expect(paths.some((path) => path.endsWith('/ModProfessions.java'))).toBe(true);

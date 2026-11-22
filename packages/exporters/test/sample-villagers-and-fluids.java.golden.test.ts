@@ -2,8 +2,9 @@
  * Golden over the Java project eject of `fixtures/sample-villagers-and-fluids` (ADR 0033, ADRs 0098
  * to 0101, ADR 0112 D3, plan B537): the glassblower profession and its job site, the brine and
  * molten amber fluids with their liquid blocks, buckets, mixing and renderers, and the dimension
- * type. The pedlar's trades, the pack mule's storage and the sugar glider's shoulder riding are
- * left out with one `export.not-in-eject` warning per mob (the mobs themselves are generated).
+ * type, and the pack mule's storage (`entity/MobStorage`, B537b). The pedlar's trades and the
+ * sugar glider's shoulder riding are left out with one `export.not-in-eject` warning per mob (the
+ * mobs themselves are generated).
  *
  * - The export succeeds without errors or warnings other than project ids the vanilla registries
  *   do not know and those; the project's files and contents hash to the value pinned in
@@ -66,7 +67,7 @@ const meta = {
 };
 const NAMESPACE = 'msm_sample_villagers';
 const PKG = `src/main/java/${NAMESPACE}`;
-/** Warnings the eject may give: project ids, and the mobs' trader, storage and shoulder riding. */
+/** Warnings the eject may give: project ids, and the mobs' trader and shoulder riding. */
 const EXPECTED_WARNINGS: ReadonlySet<string> = new Set([
   'schema.unknown-id',
   'export.not-in-eject',
@@ -127,11 +128,7 @@ describe.each(
       problems
         .filter((problem) => problem.code === 'export.not-in-eject')
         .map((problem) => problem.file),
-    ).toEqual([
-      `msm/${NAMESPACE}/entity/pack_mule.json`,
-      `msm/${NAMESPACE}/entity/pedlar.json`,
-      `msm/${NAMESPACE}/entity/sugar_glider.json`,
-    ]);
+    ).toEqual([`msm/${NAMESPACE}/entity/pedlar.json`, `msm/${NAMESPACE}/entity/sugar_glider.json`]);
     const paths = [...files.keys()];
     for (const path of [
       'build.gradle.kts',
@@ -144,6 +141,7 @@ describe.each(
       `${PKG}/fluid/FluidMixing.java`,
       `${PKG}/fluid/BrineFluidEvents.java`,
       `${PKG}/client/fluid/FluidRenderers.java`,
+      `${PKG}/entity/MobStorage.java`,
     ]) {
       expect(paths, path).toContain(path);
     }

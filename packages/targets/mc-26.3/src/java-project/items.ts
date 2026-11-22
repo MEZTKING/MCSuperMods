@@ -19,6 +19,10 @@
  * when `dispensable`. The item triggers of ADR 0061 D1 (`msm:on_hit` from `hurtEnemy`,
  * `msm:on_use_on_block` from `useOn`, `msm:while_held` and `msm:while_worn` from `inventoryTick`
  * with the shared `TickLimiter`) give the item its own class, as `MsmItem`'s shared handlers.
+ * Boats (ADR 0110 D1, B537b): an item with `msm:boat` is vanilla's `BoatItem` (or a generated
+ * subclass with its events, as `MsmBoatItem`) made by the shared `boat/ModBoats.itemFor`, which
+ * registers its boat entity type and the chest boat; `msm:throwable`, `msm:ranged_weapon` and a
+ * mace are ignored on a boat, as the runtime does.
  * Minecraft 26.3, Mojang names.
  *
  * @packageDocumentation
@@ -68,6 +72,7 @@ const ITEM_COMPONENTS = [
   'msm:components',
   'msm:item_inventory',
   'msm:bundle',
+  'msm:boat',
 ];
 
 /** `msm:while_held` hands (`HeldHand`) and the slot test of each, as `MsmItem.inventoryTickWithEvent`. */
@@ -273,6 +278,56 @@ interface ItemSpec {
   readonly bag: BagSpec | undefined;
   /** `msm:bundle` (ADR 0095 D4). */
   readonly bundle: boolean;
+  /** `msm:boat` (ADR 0110 D1). */
+  readonly boat: BoatSpec | undefined;
+}
+
+/** A parsed `msm:boat` (ADR 0110 D1, as the runtime's `BoatParser.Boat`). */
+interface BoatSpec {
+  readonly raft: boolean;
+  /** The chest boat's id (`BoatParser.Boat.chestBoatId`), or `undefined` without one. */
+  readonly chestId: string | undefined;
+  /** The wood the pictures are named after (`BoatParser.Boat.woodOf`). */
+  readonly wood: string;
+  /** The components the runtime ignores on a boat (`MsmBoats.ignoredComponents`). */
+  readonly ignored: readonly string[];
+}
+
+/** The item's id without a `_boat` or `_raft` ending (the runtime's `BoatParser.wood`). */
+function boatWood(id: string): string {
+  const { namespace, path } = splitId(id);
+  for (const ending of ['_boat', '_raft']) {
+    if (path.endsWith(ending) && path.length > ending.length) {
+      return `${namespace}:${path.slice(0, -ending.length)}`;
+    }
+  }
+  return `${namespace}:${path}`;
+}
+
+const ID_PATTERN = /^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/;
+
+function readBoat(boat: Reader, components: Reader | undefined, id: string): BoatSpec {
+  boat.onlyKeys(['chest', 'raft', 'wood_texture'], 'msm:boat field');
+  const raft = boat.boolean('raft', false);
+  const texture = boat.optionalString('wood_texture');
+  if (texture !== undefined && !ID_PATTERN.test(texture)) {
+    boat.fail(`wood_texture '${texture}' is not an id`);
+  }
+  const wood = boatWood(id);
+  const ignored: string[] = [];
+  if (components?.has('msm:throwable') === true) ignored.push('msm:throwable');
+  if (components?.has('msm:ranged_weapon') === true) ignored.push('msm:ranged_weapon');
+  if (components?.object('msm:tool')?.optionalString('type') === 'mace') {
+    ignored.push('msm:tool (mace)');
+  }
+  return {
+    raft,
+    chestId: boat.boolean('chest', false)
+      ? `${wood}${raft ? '_chest_raft' : '_chest_boat'}`
+      : undefined,
+    wood: texture === undefined ? wood : texture.includes(':') ? texture : `minecraft:${texture}`,
+    ignored,
+  };
 }
 
 /** A parsed `msm:item_inventory`, with the runtime's defaults. */
@@ -409,7 +464,10 @@ function readItem(input: DefinitionInput): ItemSpec {
   checkFormat(reader);
   const components = reader.object('components');
   components?.onlyKeys(ITEM_COMPONENTS, 'component');
-  const throwable = components?.object('msm:throwable');
+  const boatReader = components?.object('msm:boat');
+  const boat = boatReader === undefined ? undefined : readBoat(boatReader, components, input.id);
+  // A boat ignores msm:throwable, msm:ranged_weapon and a mace (MsmBoats.ignoredComponents).
+  const throwable = boat === undefined ? components?.object('msm:throwable') : undefined;
   // ADR 0061 D1: on_hit, while_held and while_worn may run with a mob as the actor.
   const actor = ['msm:on_hit', 'msm:while_held', 'msm:while_worn'].some(
     (name) => components?.has(name) === true,
@@ -425,7 +483,15 @@ function readItem(input: DefinitionInput): ItemSpec {
   tool?.onlyKeys(['type', 'tier', 'attack_damage', 'attack_speed'], 'msm:tool field');
   const armor = components?.object('msm:armor');
   armor?.onlyKeys(['slot', 'material'], 'msm:armor field');
-  const exclusive = EXCLUSIVE_COMPONENTS.filter((name) => components?.has(name) === true);
+  const exclusive = EXCLUSIVE_COMPONENTS.filter(
+    (name) =>
+      components?.has(name) === true &&
+      !(
+        boat !== undefined &&
+        (name === 'msm:ranged_weapon' || name === 'msm:tool') &&
+        boat.ignored.some((i) => i.startsWith(name))
+      ),
+  );
   if (exclusive.length > 1) {
     reader.fail(
       `${exclusive.slice(0, 2).join(' and ')} on one item cannot be ejected (the runtime applies none of them)`,
@@ -465,7 +531,10 @@ function readItem(input: DefinitionInput): ItemSpec {
             saturation: food.requiredNumber('saturation'),
             canAlwaysEat: food.boolean('can_always_eat', false),
           },
-    tool: tool === undefined ? undefined : readTool(tool),
+    tool:
+      tool === undefined || boat?.ignored.includes('msm:tool (mace)') === true
+        ? undefined
+        : readTool(tool),
     armor: armor === undefined ? undefined : readArmor(armor),
     durability: durability?.requiredInteger('max'),
     onUse:
@@ -477,7 +546,7 @@ function readItem(input: DefinitionInput): ItemSpec {
           },
     events,
     consumable: consumable === undefined ? undefined : readConsumable(consumable),
-    ranged: ranged === undefined ? undefined : readRanged(ranged),
+    ranged: ranged === undefined || boat !== undefined ? undefined : readRanged(ranged),
     shield: shield === undefined ? undefined : readShield(shield),
     deathProtection:
       deathProtection === undefined
@@ -510,6 +579,7 @@ function readItem(input: DefinitionInput): ItemSpec {
       if (bundle !== undefined) inventoryConflicts(bundle, components, 'msm:bundle');
       return bundle !== undefined;
     })(),
+    boat,
   };
 }
 
@@ -1143,7 +1213,29 @@ export function generateItems(
     const materials: string[] = [];
     const base = gearBase(spec);
     let type: string;
-    if (spec.throwable !== undefined) {
+    /** The boat's `ModBoats.itemFor(...)` call around the item's constructor (ADR 0110 D1). */
+    let boatCall: string | undefined;
+    if (spec.boat !== undefined) {
+      const { boat } = spec;
+      context.usesBoats = true;
+      if (spec.onUse !== undefined || hasTriggers(spec.triggers)) {
+        const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
+        writeItemClass(context, spec, name, 'net.minecraft.world.item.BoatItem');
+        type = file.use(`${packageOf(context, 'item')}.${name}`);
+      } else {
+        type = file.use('net.minecraft.world.item.BoatItem');
+      }
+      const boats = file.use(`${packageOf(context, 'boat')}.ModBoats`);
+      const chest = boat.chestId === undefined ? 'null' : identifierExpression(file, boat.chestId);
+      const tab =
+        spec.creativeTab === undefined ? 'null' : identifierExpression(file, spec.creativeTab);
+      if (boat.ignored.length > 0) {
+        materials.push(
+          `// msm:boat: ${boat.ignored.join(', ')} ignored; using a boat item places the boat (as the runtime).`,
+        );
+      }
+      boatCall = `${boats}.itemFor(${identifierExpression(file, id)}, ${String(boat.raft)}, ${chest}, ${identifierExpression(file, boat.wood)}, ${tab}, boat -> new ${type}(boat, `;
+    } else if (spec.throwable !== undefined) {
       const name = classNames.take(className(path, 'Item'), (n) => [`item.${n}`], '');
       writeThrowableItemClass(context, spec, spec.throwable, name);
       type = file.use(`${packageOf(context, 'item')}.${name}`);
@@ -1345,13 +1437,15 @@ export function generateItems(
       props.push(`        .durability(${javaInt(spec.durability)}) // ${note}`);
     }
     const last = props.length - 1;
-    props[last] = closeLine(props[last] as string, '));');
+    props[last] = closeLine(props[last] as string, boatCall === undefined ? '));' : ')));');
     body.push(
       '',
       ...materials,
       `/** {@code ${id}} (${spec.input.path}). */`,
       `public static final ${resourceKey}<${itemType}> ${field}_KEY = ${resourceKey}.create(${registries}.ITEM, ${identifierExpression(file, id)});`,
-      `public static final ${type} ${field} = ${registry}.register(${builtIn}.ITEM, ${field}_KEY, new ${type}(${open}`,
+      boatCall === undefined
+        ? `public static final ${type} ${field} = ${registry}.register(${builtIn}.ITEM, ${field}_KEY, new ${type}(${open}`
+        : `public static final ${type} ${field} = ${registry}.register(${builtIn}.ITEM, ${field}_KEY, ${boatCall}${open}`,
       ...props,
     );
     // A project tab lists its own members (ModCreativeTabs, ADR 0096 D2).
@@ -1448,11 +1542,22 @@ function writeItemClass(
       id === undefined ? 'null' : identifierExpression(file, id);
     superArgs = `, ${superType}.Layout.${bag.layout}, ${javaInt(bag.rows)}, ${String(bag.sneakUse)}, ${sound(bag.openSound)}, ${sound(bag.closeSound)}`;
   }
-  members.push(
-    `public ${name}(${itemType}.Properties properties) {`,
-    `    super(properties${superArgs});`,
-    '}',
-  );
+  if (spec.boat !== undefined) {
+    // As the runtime's MsmBoatItem: vanilla's BoatItem for the project's boat type.
+    const entityType = file.use('net.minecraft.world.entity.EntityType');
+    const abstractBoat = file.use('net.minecraft.world.entity.vehicle.boat.AbstractBoat');
+    members.push(
+      `public ${name}(${entityType}<? extends ${abstractBoat}> boat, ${itemType}.Properties properties) {`,
+      '    super(boat, properties);',
+      '}',
+    );
+  } else {
+    members.push(
+      `public ${name}(${itemType}.Properties properties) {`,
+      `    super(properties${superArgs});`,
+      '}',
+    );
+  }
   for (const [method, event, when] of [
     ['onOpened', bag?.onOpen, 'opens'],
     ['onClosed', bag?.onClose, 'closes'],
