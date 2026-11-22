@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "set_type": {
+    "base": "wood",
+    "can_open_by_hand": false
+  },
+  "sound_type": "wood",
+  "type": "door"
+}

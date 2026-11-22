@@ -55,6 +55,12 @@ public record LoadReport(
                 hudElements, vehicles, commands, creativeTabs, fluids, professions, errors, concat(warnings, more));
     }
 
+    /** This report plus errors and warnings of a later start-up step (the vanilla block rules, ADR 0105 D4; own sounds). */
+    public LoadReport withProblems(List<String> moreErrors, List<String> moreWarnings) {
+        return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions, keyBinds,
+                hudElements, vehicles, commands, creativeTabs, fluids, professions, concat(errors, moreErrors), concat(warnings, moreWarnings));
+    }
+
     /** This report with the key binds registered (ADR 0088 D3) and their errors and warnings added. */
     public LoadReport withKeyBinds(List<Identifier> ids, List<String> moreErrors, List<String> moreWarnings) {
         return new LoadReport(filesRead, definitions, blocks, items, entities, effects, potions, sounds, particles, biomeAdditions, lootAdditions,

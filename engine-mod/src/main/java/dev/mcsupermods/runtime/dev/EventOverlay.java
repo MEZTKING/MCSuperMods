@@ -53,7 +53,7 @@ public final class EventOverlay {
      * live with a type fixed at start; HUD elements (ADR 0089 D3) are indexed by both sides at start. An overlay for one needs a restart. Keep in step with {@code DefinitionScanner}.
      */
     public static final List<String> KINDS_WITHOUT_EVENTS = List.of("potion", "particle", "biome_addition", "loot_addition", "vehicle", "hud",
-            "creative_tab");
+            "creative_tab", "vanilla_block_rules");
 
     /** One applied overlay: {@code original} is the installed definition's events, matched at fire time. */
     record Entry(String kind, Identifier id, Events original, Events replacement) {}

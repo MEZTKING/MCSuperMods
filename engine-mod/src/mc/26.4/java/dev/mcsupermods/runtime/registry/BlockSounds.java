@@ -19,7 +19,7 @@ final class BlockSounds {
         return properties.sound(soundSet(type));
     }
 
-    private static ResourceKey<BlockSoundSet> soundSet(MsmSoundType type) {
+    static ResourceKey<BlockSoundSet> soundSet(MsmSoundType type) {
         return switch (type) {
             case STONE -> BlockSoundSets.STONE;
             case WOOD -> BlockSoundSets.WOOD;

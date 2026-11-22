@@ -15,7 +15,7 @@ final class BlockSounds {
         return properties.sound(soundType(type));
     }
 
-    private static SoundType soundType(MsmSoundType type) {
+    static SoundType soundType(MsmSoundType type) {
         return switch (type) {
             case STONE -> SoundType.STONE;
             case WOOD -> SoundType.WOOD;

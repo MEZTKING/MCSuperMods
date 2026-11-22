@@ -1,0 +1,11 @@
+{
+  "block_sounds": {
+    "break": "minecraft:block.anvil.break",
+    "fall": "minecraft:block.anvil.fall",
+    "hit": "minecraft:block.anvil.hit",
+    "place": "minecraft:block.anvil.place",
+    "step": "msm_test:chime"
+  },
+  "format": 1,
+  "sound_type": "stone"
+}

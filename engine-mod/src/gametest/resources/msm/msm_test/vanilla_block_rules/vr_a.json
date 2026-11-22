@@ -1,0 +1,53 @@
+{
+  "age": [
+    {
+      "block": "minecraft:oxidized_copper_grate",
+      "next": "msm_test:vp_ancient"
+    }
+  ],
+  "burn": [
+    {
+      "block": "minecraft:smooth_basalt",
+      "burn_odds": 5,
+      "ignite_odds": 20
+    }
+  ],
+  "flatten": [
+    {
+      "block": "minecraft:snow_block",
+      "into": "msm_test:vp_flat"
+    },
+    {
+      "block": "msm_test:tools_dirt",
+      "into": "msm_test:vp_stripped"
+    }
+  ],
+  "format": 1,
+  "strip": [
+    {
+      "block": "minecraft:bone_block",
+      "into": "msm_test:vp_flat"
+    },
+    {
+      "block": "msm_test:no_such_block",
+      "into": "msm_test:vp_stripped"
+    }
+  ],
+  "till": [
+    {
+      "block": "minecraft:mycelium",
+      "drops": "minecraft:brown_mushroom",
+      "into": "msm_test:vp_tilled"
+    },
+    {
+      "block": "minecraft:coarse_dirt",
+      "into": "msm_test:vp_tilled"
+    }
+  ],
+  "wax": [
+    {
+      "block": "minecraft:calcite",
+      "into": "msm_test:vp_waxed"
+    }
+  ]
+}

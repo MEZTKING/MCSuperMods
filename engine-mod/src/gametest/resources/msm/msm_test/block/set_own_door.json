@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "set_type": {
+    "base": "wood",
+    "sounds": {
+      "close": "minecraft:block.anvil.land",
+      "open": "msm_test:chime"
+    }
+  },
+  "sound_type": "wood",
+  "type": "door"
+}

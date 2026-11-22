@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "set_type": {
+    "base": "iron",
+    "can_open_by_hand": true,
+    "sounds": {
+      "open": "msm_test:no_such_sound"
+    }
+  },
+  "sound_type": "metal",
+  "type": "trapdoor"
+}

@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:flattenable": {
+      "into": "msm_test:vp_flat"
+    },
+    "msm:tillable": {
+      "drops": "minecraft:stick",
+      "into": "msm_test:vp_tilled"
+    }
+  },
+  "format": 1,
+  "sound_type": "gravel"
+}

@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "set_type": {
+    "arrows_press": true,
+    "base": "stone",
+    "sounds": {
+      "press": "msm_test:chime",
+      "release": "minecraft:block.anvil.land"
+    }
+  },
+  "type": "button"
+}

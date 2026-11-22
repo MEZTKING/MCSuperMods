@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "strip": [
+    {
+      "block": "minecraft:bone_block",
+      "into": "msm_test:vp_stripped"
+    }
+  ]
+}
