@@ -43,6 +43,8 @@ A test build: everything since 1.5.3, with the Showcase, the rest of vanilla par
 
 ### Fixed
 
+- **Upgrade project target** to 26.4-snapshot-7 now removes `default_block` from noise settings (as elements and written inside dimensions and world presets), which that version does not have; before, the upgraded project's export stopped on it.
+
 - Java project export: the warning about events it leaves out now names all six such events, not two.
 - The Command Studio's colour argument says "such as ff8800, without the #".
 - Java project export: a command now checks every typed value before it runs, as in the Fabric mod jar, so a dimension that does not exist is refused instead of the command running anyway.
