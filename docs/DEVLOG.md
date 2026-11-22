@@ -7727,3 +7727,19 @@ Next
 
 **Next**
 - Watch the next full parallel `turbo run test` for either file.
+## 2026-11-22 — executor — B566 Showcase clip format, player and example files
+
+**What**
+- New `app/src/renderer/src/showcase/` (ADR 0118 D4, D5): `clip.ts` (the clip format as data: `ShowcaseClip`, `ClipGround`, `ClipBlock`, `ClipSpawn`, `ClipStep` with `ClipAction` and `ClipExpect`, `ClipCaption`, `CameraKey`, `ClipCamera` (keys, the driver's view, or following the first mob), `ShowcaseMake`; ids written `./name`; `validateClip(clip, ids)` in plain words), `camera-path.ts` (smoothstep between keys, yaw the short way round, `lookAt`), `clip-player.ts` (`ClipPlayer`: a silent `TryItArea` over the example's files, the ground and setup before the first frame, the clock paused and stepped one tick at a time with the held `move` and `look`, steps at their ticks, mobs and vehicles by order, nothing before the scripts have loaded (gives up after 10 s of frames), each step's expected block states and "What happened" lines checked, `restart()` by Clear and the setup again with `loops` counting for the still, the camera and the captions of the moment), `example-files.ts` (`exampleFiles(example, target, { registry, plugins })`: built for namespace `showcase`, laid over an empty project, lowered with the expanders and without `withTypedBlockModels`, `SimFiles`, rule books, the example's own ids and a bundle picture reader; cached as a promise by example and target, a failed build not kept), `showcases.ts` (`ShowcaseList`, `SHOWCASES` with clip 1 "A set of wood" from B565's sequence, each step with its expected states, and `showcasesFor(target, examples)`).
+- Tests in `app/test/components/showcase/` (30): `clip`, `camera-path`, `example-files`, `clip-player` (clip 1 to its end on mc-26.3 and mc-26.4 with no problem and every expectation met; the restart; whole ticks from elapsed time; captions and camera; mobs and vehicles by order with the follow and driver cameras and a held `move`; waiting for the lucky block's scripts and playing without them after the limit) and `tryit-contract` (run-time and type-checked uses of `TryItArea`, `TryItScene`, `LocalWorldSource`, the grounds, `driverCamera`, the frustum test and `fluidLooks`).
+- Verified: `pnpm lint`, `pnpm typecheck`, `@msm/app` tests 2602 (274 files), `pnpm build`; check-size renderer 16.8 of 18 MB (unchanged: nothing imports the folder yet; its own code is about 15 kB minified); `app.asar` not measured (no `dist:dir`).
+
+**Decisions**
+- Tests live in `app/test/components/showcase/`, not `app/test/showcase/`: `test/` outside `components/` is type-checked by the node project, which has no DOM library, and the player imports Try it's renderer modules.
+- Clip 1's steps give no "What happened" line in the preview (placing and doors are silent), so its expectations are block states; `ClipExpect` also takes a line with a `within` window for B567's rules, crop and vehicle clips.
+- No `ProjectSession` method: lowering needs only the session's `registry` and the plugins, passed in as `deps`.
+- No particle-count asserts (B565: particle lifetimes are not seeded).
+
+**Next**
+- B567: clips 2 to 10 in `showcases.ts` with B565's sequences; the pet and trader clips use camera `follow`; the crop's subject is `./onion_crop`; its tests go in `app/test/components/showcase/showcases.test.ts`.
+- B568: `ClipView` passes `player.camera()`, `player.alpha` as `partialTick`, `player.advance(elapsed)` in `onFrame`, scripts from `window.msm.scripting` with `SCRIPT_API`, and `fluidLooks`; shows the still while `player.loops` has just grown; keeps the player's `area` for the canvas's `grid`, `particles`, `mobs` and `vehicles`.
