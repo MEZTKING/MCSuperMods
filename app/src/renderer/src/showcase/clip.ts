@@ -44,11 +44,33 @@ export interface ClipPoint {
   readonly z: number;
 }
 
-/** The ground a clip plays on (Try it's grounds, B405). */
+/**
+ * A window of one of the example's worlds, made by the terrain engine as Try it's ground "My
+ * world generation" makes it (ADR 0119 D12, B588): the area is the 48 by 32 by 48 window around
+ * `centre`, on whole chunks, with the surface there a third of the way up, unless `bottom` names
+ * the window's lowest block (a cave world's surface is its roof). The clip starts once the land
+ * has arrived in full (its three stages); until then the card shows its still.
+ */
+export interface ClipGeneratedGround {
+  readonly kind: 'generated';
+  /** The example's World Type, relative (`./coral_isles`); omitted for a dimension of its own. */
+  readonly preset?: string;
+  /** The dimension: of the World Type (`minecraft:overworld`), else the example's own. */
+  readonly dimension: string;
+  /** The seed, a whole number as text (the world map's seed box). */
+  readonly seed: string;
+  /** The block the window is centred on, in world blocks. */
+  readonly centre: { readonly x: number; readonly z: number };
+  /** The window's lowest block in world blocks; default by the surface at `centre`. */
+  readonly bottom?: number;
+}
+
+/** The ground a clip plays on (Try it's grounds, B405; `generated`, B588). */
 export type ClipGround =
   | { readonly kind: 'grid' }
   | { readonly kind: 'flat' }
-  | { readonly kind: 'quick'; readonly options: Partial<QuickWorldOptions> };
+  | { readonly kind: 'quick'; readonly options: Partial<QuickWorldOptions> }
+  | ClipGeneratedGround;
 
 /** A block state put in place by the setup, for example `./elm_log[axis=y]`. */
 export interface ClipBlock {
@@ -262,6 +284,23 @@ export function validateClip(clip: ShowcaseClip, ids?: ClipIds): string[] {
     const { shape, trees } = clip.ground.options;
     if (shape !== undefined && !SHAPES.has(shape)) add('ground', `unknown shape ${shape}`);
     if (trees !== undefined && !TREES.has(trees)) add('ground', `unknown trees ${trees}`);
+  }
+  if (clip.ground.kind === 'generated') {
+    const ground = clip.ground;
+    if (!/^-?\d+$/.test(ground.seed))
+      add('ground', `the seed "${ground.seed}" is not a whole number`);
+    if (!Number.isInteger(ground.centre.x) || !Number.isInteger(ground.centre.z)) {
+      add('ground', 'the centre must be a whole block');
+    }
+    if (ground.bottom !== undefined && !Number.isInteger(ground.bottom)) {
+      add('ground', 'the bottom must be a whole block');
+    }
+    if (ground.preset !== undefined && !/^(\.\/|[a-z0-9_.-]+:)[a-z0-9_./-]+$/.test(ground.preset)) {
+      add('ground', `"${ground.preset}" is not an id (write ./name or minecraft:name)`);
+    }
+    if (!/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(clipId(ground.dimension))) {
+      add('ground', `"${ground.dimension}" is not a dimension id`);
+    }
   }
   if (!inArea(clip.player)) add('player', `${at(clip.player)} is outside the area`);
   clip.setup.forEach((block, index) => {

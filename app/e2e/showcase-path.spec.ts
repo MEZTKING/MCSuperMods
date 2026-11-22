@@ -3,7 +3,7 @@
  * Home and in the New project dialog.
  *
  * 1. Under SwiftShader WebGL, a brand-new install (`MSM_E2E_NEW_INSTALL`): Very easy's Home with
- *    no mod shows the ten cards. Hovering a card mounts exactly one canvas, in that card, and
+ *    no mod shows the cards (the ten, then the world cards). Hovering a card mounts exactly one canvas, in that card, and
  *    its picture has more than one colour (WebGL `readPixels`, as `tryit-path` reads it);
  *    hovering another card still leaves one canvas, now in that card. With reduced motion
  *    (`page.emulateMedia`) no canvas is mounted and every card shows its still until a card's
@@ -26,7 +26,7 @@ import { type LaunchedApp, launchApp } from './fixtures';
 
 const WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] as const;
 
-/** The ten cards, in the plan's order (ADR 0118 "The first showcases"). */
+/** The ten cards in the plan's order (ADR 0118 "The first showcases"), then the world cards (B588). */
 const CARD_IDS = [
   'wood-set',
   'pet',
@@ -38,6 +38,9 @@ const CARD_IDS = [
   'trader',
   'fluid',
   'rules',
+  'world-islands',
+  'world-mountains',
+  'world-caves',
 ] as const;
 
 const NO_MOVING_PICTURES = 'This computer cannot show moving pictures here.';
@@ -170,14 +173,14 @@ async function makeWoodSet(window: Page, showcase: Locator, msmHome: string): Pr
   await expect(creator.getByTestId('creator-back')).toBeVisible();
 }
 
-test('showcase: ten cards on Home, one clip at a time, reduced motion, the setting and Make this', async () => {
+test('showcase: the cards on Home, one clip at a time, reduced motion, the setting and Make this', async () => {
   test.setTimeout(150_000);
   setEnv('MSM_E2E_NEW_INSTALL', '1');
   const launched = await launch('home', WEBGL_ARGS);
   const { window } = launched;
   const home = await veryEasyHome(window);
 
-  // Ten cards under the buttons. ---------------------------------------------------------------
+  // The cards under the buttons. ---------------------------------------------------------------
   const showcase = home.getByTestId('home-showcase');
   await expect(showcase).toBeVisible();
   await expect(showcase.getByRole('heading', { name: 'See what you can make' })).toBeVisible();

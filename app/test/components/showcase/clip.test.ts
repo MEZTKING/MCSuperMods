@@ -129,3 +129,38 @@ describe('validateClip', () => {
     ]);
   });
 });
+
+describe('a generated ground (B588)', () => {
+  const islands = SHOWCASES.find((clip) => clip.id === 'world-islands') as ShowcaseClip;
+  const ground = islands.ground as Extract<ShowcaseClip['ground'], { kind: 'generated' }>;
+
+  it('accepts the world cards against their examples on both targets', async () => {
+    for (const clip of SHOWCASES.filter((one) => one.ground.kind === 'generated')) {
+      for (const target of TARGETS) {
+        const files = await filesOf(clip.exampleId, target);
+        expect(validateClip(clip, files.ids), `${clip.id} ${target.id}`).toEqual([]);
+      }
+    }
+  });
+
+  it('rejects a seed, a centre, a bottom or an id that cannot be a world', () => {
+    const bad: ShowcaseClip = {
+      ...islands,
+      ground: {
+        ...ground,
+        seed: 'twelve',
+        centre: { x: 1.5, z: 0 },
+        bottom: 54.5,
+        preset: 'Coral Isles',
+        dimension: 'overworld',
+      },
+    };
+    expect(validateClip(bad)).toEqual([
+      'world-islands ground: the seed "twelve" is not a whole number',
+      'world-islands ground: the centre must be a whole block',
+      'world-islands ground: the bottom must be a whole block',
+      'world-islands ground: "Coral Isles" is not an id (write ./name or minecraft:name)',
+      'world-islands ground: "overworld" is not a dimension id',
+    ]);
+  });
+});

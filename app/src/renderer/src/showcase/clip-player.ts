@@ -13,6 +13,12 @@
  * - At the end the area is cleared (the ground comes back), the setup is put in place again and
  *   the clip starts over; {@link ClipPlayer.loops} grows, so the view can show the still while
  *   the one rebuild of the restart is drawn (76–505 ms, B565 Z3).
+ * - A `generated` ground (B588, ADR 0119 D12) is Try it's "My world generation" over the
+ *   example's own world files (`TryItArea.useGenerated` with a link over the lowered files, no
+ *   vanilla file): the land arrives in its three stages from the showcase's own terrain worker
+ *   ({@link showcaseTerrainClient}; one clip plays at a time), then, with the ground's `bottom`,
+ *   the window moves to it. Nothing is set up or stepped before the land is in full
+ *   ({@link ClipPlayer.ready}); the view keeps the still over the picture meanwhile.
  *
  * Part of the showcase's lazy chunk (it builds a Try it area).
  *
@@ -27,14 +33,23 @@ import {
   quickWorld,
   scriptSources,
 } from '@msm/sim';
+import { hashText, stableKey, TerrainClient, type WorldgenFileMap } from '../terrain/client';
+import { additionAndId, factsOf, folderAndId, type TerrainFilesState } from '../terrain/files';
 import type { CameraPose } from '../tryit/render/camera';
-import { TryItArea, type TryItScripts, type WhatHappenedEntry } from '../tryit/session-source';
+import {
+  type GeneratedSpec,
+  type GroundTerrainLink,
+  TryItArea,
+  type TryItScripts,
+  type WhatHappenedEntry,
+} from '../tryit/session-source';
 import { driverCamera } from '../tryit/vehicles/camera';
 import { cameraAt, lookAt } from './camera-path';
 import {
   type ClipAction,
   type ClipCaption,
   type ClipExpect,
+  type ClipGeneratedGround,
   type ClipPoint,
   clipId,
   clipIdOf,
@@ -63,6 +78,11 @@ export interface ClipPlayerOptions {
   readonly vanillaBlockstates?: ReadonlyMap<string, string>;
   /** The area's seed (mobs, ambient particles). Default 1. */
   readonly seed?: number;
+  /**
+   * The terrain worker's client for a `generated` ground; default {@link showcaseTerrainClient}
+   * (tests pass one over the engine in their own thread).
+   */
+  readonly terrain?: GroundTerrainLink['client'];
 }
 
 /** What one step did in the current loop. */
@@ -104,6 +124,11 @@ export class ClipPlayer {
   private problemsNow: string[] = [];
   private followed: { position: ClipPoint; previous: ClipPoint } | null = null;
   private readonly needsScripts: boolean;
+  /** A generated ground's setup waits for the land (B588). */
+  private setUpWaiting = false;
+  /** A generated ground with a `bottom` has moved its window there. */
+  private moved = false;
+  private readonly readyChecks = new Set<() => void>();
 
   constructor(options: ClipPlayerOptions) {
     this.clip = options.clip;
@@ -124,8 +149,13 @@ export class ClipPlayer {
     this.needsScripts = options.scripts !== undefined && scriptSources(example.files).length > 0;
     this.area.clock.pause();
     this.area.setRunEveryTime(true);
-    this.area.loadGround(this.clip.ground.kind, groundOf(this.clip), `Clip: ${this.clip.title}`);
-    this.setUp();
+    if (this.clip.ground.kind === 'generated') {
+      this.setUpWaiting = true;
+      this.startGenerated(this.clip.ground, example, options.terrain ?? showcaseTerrainClient());
+    } else {
+      this.area.loadGround(this.clip.ground.kind, groundOf(this.clip), `Clip: ${this.clip.title}`);
+      this.setUp();
+    }
   }
 
   /** The clip tick reached (0 before the first step; the length at the end of a loop). */
@@ -138,20 +168,42 @@ export class ClipPlayer {
     return this.loopCount;
   }
 
-  /** Whether the clip can play: its scripts have loaded, or it has none. */
+  /**
+   * Whether the clip can play: a generated ground's land is in, in full and at its `bottom`
+   * (never given up on), and its scripts have loaded, or it has none.
+   */
   get ready(): boolean {
+    if (!this.groundIn) return false;
     return !this.needsScripts || this.gaveUpWaiting || this.area.source.scripts?.loaded === true;
+  }
+
+  /**
+   * Whether the clip's ground is in: always, but for a generated ground still arriving, or one
+   * the engine could make only in part (a clip never shows a world with parts left out).
+   */
+  get groundIn(): boolean {
+    const ground = this.clip.ground;
+    if (ground.kind !== 'generated') return true;
+    const state = this.area.generated?.state;
+    return (
+      state?.status === 'ready' &&
+      (state.summary?.unsupported.length ?? 0) === 0 &&
+      (ground.bottom === undefined || this.moved)
+    );
   }
 
   /** Resolves once {@link ready}. */
   whenReady(): Promise<void> {
     if (this.ready) return Promise.resolve();
     return new Promise((resolve) => {
-      const stop = this.area.subscribe(() => {
+      const check = (): void => {
         if (!this.ready) return;
         stop();
+        this.readyChecks.delete(check);
         resolve();
-      });
+      };
+      const stop = this.area.subscribe(check);
+      this.readyChecks.add(check);
     });
   }
 
@@ -181,6 +233,10 @@ export class ClipPlayer {
    */
   stepTick(): boolean {
     if (!this.ready) return false;
+    if (this.setUpWaiting) {
+      this.setUpWaiting = false;
+      this.setUp();
+    }
     if (this.tickNow >= this.clip.length) {
       this.restart();
       return true;
@@ -203,6 +259,8 @@ export class ClipPlayer {
    * {@link MAX_TICKS_PER_FRAME}; the rest is dropped, so a slow frame slows the clip).
    */
   advance(elapsedMs: number): void {
+    // The land is waited for without a limit: a clip never plays on a ground that is not there.
+    if (!this.groundIn) return;
     if (!this.ready) {
       this.waitedMs += elapsedMs;
       if (this.waitedMs < SCRIPT_WAIT_MS) return;
@@ -277,6 +335,51 @@ export class ClipPlayer {
   /** Stops the area; the player is not used afterwards. */
   dispose(): void {
     this.area.dispose();
+  }
+
+  /**
+   * Starts a generated ground (B588): the land from the example's files in its stages, then the
+   * move to `bottom`. A ground that cannot be made is a problem; the clip then never starts.
+   */
+  private startGenerated(
+    ground: ClipGeneratedGround,
+    example: ExampleFiles,
+    client: GroundTerrainLink['client'],
+  ): void {
+    const spec: GeneratedSpec = {
+      source:
+        ground.preset === undefined
+          ? { dimension: clipId(ground.dimension) }
+          : { preset: clipId(ground.preset), dimension: clipId(ground.dimension) },
+      seed: ground.seed,
+      centre: ground.centre,
+      label: this.clip.title,
+      elementId: clipId(ground.preset ?? ground.dimension),
+    };
+    const failed = (error: unknown): void => {
+      if (this.area.generated === null) return;
+      this.problemsNow.push(
+        `The land could not be made: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    };
+    this.area.useGenerated(groundLink(example, client), spec).then(() => {
+      const controller = this.area.generated;
+      const window = this.area.generatedWindow;
+      const left = controller?.state.summary?.unsupported ?? [];
+      if (left.length > 0) {
+        this.problemsNow.push(
+          `The land could not be made in full: ${left.map((part) => part.type).join(', ')}.`,
+        );
+        return;
+      }
+      if (ground.bottom === undefined || controller === null || window === null) return;
+      const done = (): void => {
+        this.moved = true;
+        for (const check of [...this.readyChecks]) check();
+      };
+      if (window.y0 === ground.bottom) done();
+      else void controller.move(ground.bottom - window.y0).then(done, failed);
+    }, failed);
   }
 
   /** Puts the setup in place and the player at its spot, from tick 0. */
@@ -471,9 +574,71 @@ export class ClipPlayer {
   }
 }
 
+let sharedClient: TerrainClient | null = null;
+
+/**
+ * The showcase's own terrain worker client, made on first use and kept for the session (one clip
+ * plays at a time, so its worker holds one world: a later clip of the same world is warm). It is
+ * not the open mod's map client, so a clip and the map never take turns in one worker.
+ */
+export function showcaseTerrainClient(): TerrainClient {
+  sharedClient ??= new TerrainClient();
+  return sharedClient;
+}
+
+const terrainFiles = new WeakMap<ExampleFiles, TerrainFilesState>();
+
+/**
+ * The example's world files as the terrain worker reads them (`terrain/files.ts`'s folders and
+ * ids, from the lowered files), with no vanilla file: an example drawn by a clip draws without
+ * the jar (ADR 0119 D10, D11). Made once per lowered example.
+ */
+export function exampleTerrainFiles(example: ExampleFiles): TerrainFilesState {
+  const known = terrainFiles.get(example);
+  if (known !== undefined) return known;
+  const facts = factsOf(example.target);
+  const folders = [...new Set([...facts.dataFolders, 'dimension'])];
+  const project: Record<string, Record<string, unknown>> = {};
+  for (const [path, contents] of example.files) {
+    if (typeof contents !== 'string' || !path.endsWith('.json')) continue;
+    const where = folderAndId(path, folders) ?? additionAndId(path);
+    if (where === null) continue;
+    try {
+      project[where.folder] ??= {};
+      (project[where.folder] as Record<string, unknown>)[where.id] = JSON.parse(contents);
+    } catch {
+      // A file that is not JSON is not a world file.
+    }
+  }
+  const map: WorldgenFileMap = project;
+  const state: TerrainFilesState = {
+    target: example.target,
+    facts,
+    project: map,
+    vanilla: null,
+    vanillaKey: null,
+    needsSetUp: facts.dataFolders.length > 0,
+    filesHash: hashText(`showcase:${example.exampleId}|${stableKey(facts)}|${stableKey(map)}`),
+    problems: [],
+  };
+  terrainFiles.set(example, state);
+  return state;
+}
+
+/** A generated ground's link over the example's files, which never change. */
+function groundLink(example: ExampleFiles, client: GroundTerrainLink['client']): GroundTerrainLink {
+  const state = exampleTerrainFiles(example);
+  return {
+    client,
+    subscribe: () => () => undefined,
+    getSnapshot: () => ({ state, error: null }),
+  };
+}
+
 function groundOf(clip: ShowcaseClip): GroundBlocks | undefined {
   switch (clip.ground.kind) {
     case 'grid':
+    case 'generated':
       return undefined;
     case 'flat':
       return flatGround();

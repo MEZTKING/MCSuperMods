@@ -2,7 +2,7 @@
  * The showcase list (ADR 0118 D3, D12): the cards of **See what you can make**, in order, each a
  * clip drawn from a library example by id, with Home's own Make this actions. The list belongs
  * to the app, as Home's tiles do (`components/home/tiles.ts`); the examples stay in the library
- * unchanged (B566 card 1, B567 cards 2 to 10).
+ * unchanged (B566 card 1, B567 cards 2 to 10, B588 the world cards 11 to 13).
  *
  * The clip scripts follow B565's measured action sequences
  * (`docs/reference/spikes/b565/README.md`, `clips.json`). Captions say what only happens in the
@@ -625,7 +625,136 @@ function rules(): ShowcaseClip {
   };
 }
 
-/** The showcase cards, in order: blocks, creatures and plants before machines and logic. */
+/**
+ * The world cards (B588, ADR 0119 D12): a window of a world example's own land, made by the
+ * terrain engine from the example's files alone (no Minecraft file), as Try it's ground "My world
+ * generation" makes it. Each clip is a slow look round, with no steps: the land is the subject.
+ * Their seed is the world map's example seed, 12345; places were picked from its map.
+ *
+ * Endless Blossom is left out: its cherry trees are the game's own (vanilla biome features), so
+ * without the jar it draws as plain green hills. Cloud Realm is all air until Skyblock's start
+ * island (B586).
+ */
+const WORLD_SEED = '12345';
+
+/**
+ * Card 11: a sandy island and its lagoon (the window's west is the island, the east the sea).
+ * The jungle and savanna trees are the game's own, so they grow only in the game.
+ */
+function islands(): ShowcaseClip {
+  return {
+    id: 'world-islands',
+    title: 'A world of islands',
+    sentence: 'Your own world: small sandy islands in a wide sea.',
+    exampleId: 'example_world_coral_isles',
+    make: { type: 'flows', flowIds: ['world-islands'] },
+    ground: {
+      kind: 'generated',
+      preset: './coral_isles',
+      dimension: 'minecraft:overworld',
+      seed: WORLD_SEED,
+      centre: { x: -200, z: -168 },
+      bottom: 54,
+    },
+    player: v(mid(12), 18, mid(20)),
+    setup: [],
+    steps: [],
+    camera: {
+      type: 'keys',
+      keys: [
+        { tick: 0, eye: v(46, 21, 42), yaw: 125, pitch: 14 },
+        { tick: 110, eye: v(45, 19, 24), yaw: 100, pitch: 10 },
+        { tick: 200, eye: v(42, 20, 6), yaw: 70, pitch: 12 },
+      ],
+    },
+    captions: [
+      { start: 5, end: 100, text: 'Islands rise out of a wide sea' },
+      { start: 105, end: 195, text: 'Its jungle trees grow in the game.' },
+    ],
+    stillAt: 110,
+    length: 200,
+  };
+}
+
+/** Card 12: a snowy summit (the window's south), the slopes falling away to the north. */
+function mountains(): ShowcaseClip {
+  return {
+    id: 'world-mountains',
+    title: 'A world of tall mountains',
+    sentence: 'Your own world: snowy peaks as tall as the sky allows.',
+    exampleId: 'example_world_frost_peaks',
+    make: { type: 'flows', flowIds: ['world-mountains'] },
+    ground: {
+      kind: 'generated',
+      preset: './frost_peaks',
+      dimension: 'minecraft:overworld',
+      seed: WORLD_SEED,
+      centre: { x: 216, z: -164 },
+      bottom: 272,
+    },
+    player: v(mid(28), 31, mid(40)),
+    setup: [],
+    steps: [],
+    camera: {
+      type: 'keys',
+      keys: [
+        { tick: 0, eye: v(4, 32, 8), yaw: -45, pitch: 16 },
+        { tick: 110, eye: v(14, 32, 2), yaw: -20, pitch: 18 },
+        { tick: 200, eye: v(32, 32, 1), yaw: 10, pitch: 16 },
+      ],
+    },
+    captions: [
+      { start: 5, end: 100, text: 'Snowy peaks as tall as the world allows' },
+      { start: 105, end: 195, text: 'Its caves are carved in the game.' },
+    ],
+    stillAt: 110,
+    length: 200,
+  };
+}
+
+/**
+ * Card 13: a cavern over a lava lake at the bottom of the caves (the window's north-east is
+ * open over the lava), the shroomlight glowing along its edge. The rock roof is higher up.
+ */
+function caves(): ShowcaseClip {
+  return {
+    id: 'world-caves',
+    title: 'A world of caves',
+    sentence: 'Your own world: caves under a roof of rock, with lava lakes.',
+    exampleId: 'example_world_ember_caverns',
+    make: { type: 'flows', flowIds: ['world-caves'] },
+    ground: {
+      kind: 'generated',
+      preset: './ember_caverns',
+      dimension: 'minecraft:overworld',
+      seed: WORLD_SEED,
+      centre: { x: 0, z: 0 },
+      bottom: 12,
+    },
+    player: v(mid(44), 20, mid(6)),
+    setup: [],
+    steps: [],
+    camera: {
+      type: 'keys',
+      keys: [
+        { tick: 0, eye: v(46, 13, 3), yaw: 60, pitch: 10 },
+        { tick: 110, eye: v(44, 12, 5), yaw: 45, pitch: 12 },
+        { tick: 200, eye: v(40, 13, 3), yaw: 30, pitch: 10 },
+      ],
+    },
+    captions: [
+      { start: 5, end: 100, text: 'Caves under a roof of rock' },
+      { start: 105, end: 195, text: 'Lava lakes glow at the bottom' },
+    ],
+    stillAt: 110,
+    length: 200,
+  };
+}
+
+/**
+ * The showcase cards, in order: blocks, creatures and plants before machines and logic (the
+ * first ten, ADR 0118 D12), then the world cards (B588), which wrap onto the gallery's next row.
+ */
 export const SHOWCASES: ShowcaseList = Object.freeze([
   woodSet(),
   pet(),
@@ -637,6 +766,9 @@ export const SHOWCASES: ShowcaseList = Object.freeze([
   trader(),
   fluid(),
   rules(),
+  islands(),
+  mountains(),
+  caves(),
 ]);
 
 /**
@@ -670,6 +802,9 @@ const MOD_NAMES: Readonly<Record<string, string>> = {
   trader: 'Merchant Mod',
   fluid: 'Oil Mod',
   rules: 'Lucky Mod',
+  'world-islands': 'Island Mod',
+  'world-mountains': 'Mountain Mod',
+  'world-caves': 'Cave Mod',
 };
 
 /** The mod name a card's **Make this** prefills when no mod is open (B569). */

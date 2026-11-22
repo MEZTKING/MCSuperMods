@@ -11,7 +11,8 @@
  * - The still is taken inside `onFrameDrawn` once the clip reaches `stillAt` (B565 Z5: later
  *   the canvas is blank), once per clip per session (`still-cache.ts`).
  * - The still (taken or drawn) covers the picture until the first frame and while the one
- *   rebuild of a loop's restart is drawn (`player.loops` has just grown).
+ *   rebuild of a loop's restart is drawn (`player.loops` has just grown); for a clip on a
+ *   generated ground, until its land is in (`player.groundIn`, B588).
  * - With `once`, the clip ends at its first restart (`onEnd`), for the play button under
  *   reduced motion or with clips turned off.
  * - The player and its area are disposed on unmount; the canvas then loses its WebGL context.
@@ -163,7 +164,8 @@ export function ClipView(props: ClipViewProps) {
   };
 
   const onFrameDrawn = (): void => {
-    if (player === null) return;
+    // A generated ground's land is still arriving: the still stays over it (B588).
+    if (player === null || !player.groundIn) return;
     if (coverLeft.current < 0) {
       // The first frame is drawn: the still comes off.
       coverLeft.current = 0;

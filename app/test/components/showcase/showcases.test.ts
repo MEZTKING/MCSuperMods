@@ -5,11 +5,19 @@
  * expected, no problem and no "Only in Minecraft" line it does not expect; and the clip's
  * subject (its first project block, or its first mob or vehicle) is in the camera's view at
  * `stillAt`.
+ *
+ * The world cards (B588, ADR 0119 D12) play on a generated ground: the real terrain engine over
+ * the example's own files, in a worker run in the test's thread. Their land is in, in full, before
+ * the first tick; the ground's notes are the expected ones on each target; the camera never sits
+ * inside the land; and at `stillAt` each block the card is about (sand, water and grass; snow;
+ * lava and shroomlight) is the first thing a line from the eye meets somewhere in the view.
  */
 
+import type { Target } from '@msm/plugin-api';
 import { libraryExamples, libraryStarters } from '@msm/plugin-library';
 import { SCRIPT_API } from '@msm/plugin-scripting';
 import { type CompiledScript, inProcessRunner, type ScriptModuleFn } from '@msm/sim';
+import * as terrain from '@msm/terrain';
 import { mat4 } from 'gl-matrix';
 import ts from 'typescript';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -17,7 +25,14 @@ import { creatorFlows } from '../../../src/renderer/src/components/creator/creat
 import { VEHICLE_FLOW_IDS } from '../../../src/renderer/src/components/home/tiles';
 import { type ShowcaseClip, validateClip } from '../../../src/renderer/src/showcase/clip';
 import { ClipPlayer } from '../../../src/renderer/src/showcase/clip-player';
-import { SHOWCASES, showcasesFor } from '../../../src/renderer/src/showcase/showcases';
+import type { ExampleFiles } from '../../../src/renderer/src/showcase/example-files';
+import {
+  SHOWCASES,
+  showcaseModName,
+  showcasesFor,
+} from '../../../src/renderer/src/showcase/showcases';
+import { TerrainClient } from '../../../src/renderer/src/terrain/client';
+import { GENERATED_WORDS } from '../../../src/renderer/src/tryit/grounds';
 import {
   boxInFrustum,
   type CameraPose,
@@ -28,6 +43,7 @@ import type {
   TranspileOutcome,
   TryItScripts,
 } from '../../../src/renderer/src/tryit/session-source';
+import { type LocalWorker, localWorker } from '../terrain/fake-engine';
 import { filesOf, TARGETS } from './showcase-fixture';
 
 /** The "Only in Minecraft" lines each clip may give (parts of the line), from B565's runs. */
@@ -42,7 +58,39 @@ const ONLY_IN_MINECRAFT: Readonly<Record<string, readonly string[]>> = {
   trader: ["Roadside Merchant's goals"],
   fluid: ['in the preview it stays where you pour it', 'Bucket of Oil empties'],
   rules: ['World.dropItem', 'Player.showActionBar'],
+  'world-islands': [],
+  'world-mountains': [],
+  'world-caves': [],
 };
+
+/** The world cards (B588), in order. */
+const WORLD_CARDS = ['world-islands', 'world-mountains', 'world-caves'] as const;
+
+/** What each world card is about: every one of these blocks is seen at `stillAt`. */
+const WORLD_SUBJECTS: Readonly<Record<string, readonly string[]>> = {
+  'world-islands': ['minecraft:sand', 'minecraft:water', 'minecraft:grass_block'],
+  'world-mountains': ['minecraft:snow_block', 'minecraft:stone'],
+  'world-caves': ['minecraft:lava', 'minecraft:shroomlight', 'minecraft:deepslate'],
+};
+
+/**
+ * The generated ground's notes for each world card: the three lines every generated ground
+ * gives, the borders line where the target's biome layout is about right (26.4), and the cut top
+ * for the caves (their rock roof is above the window).
+ */
+function worldNotes(id: string, target: Target): string[] {
+  const always = [GENERATED_WORDS.aboutRight, GENERATED_WORDS.carved, GENERATED_WORDS.shaped];
+  const borders = target.worldgen.terrainPreview?.approximate.includes('biome_layout') === true;
+  switch (id) {
+    case 'world-islands':
+    case 'world-mountains':
+      return borders ? [...always, GENERATED_WORDS.borders] : always;
+    case 'world-caves':
+      return [...always, GENERATED_WORDS.cut];
+    default:
+      return [];
+  }
+}
 
 /** Words of an info line that says an action did not work. */
 const FAILED = /\bnot\b|cannot|can't|nothing|no such/i;
@@ -79,6 +127,83 @@ afterEach(() => {
   for (const player of players.splice(0)) player.dispose();
 });
 
+/**
+ * A clip's player, ready to play: a generated ground's land comes from the real engine in a
+ * worker run in the test's thread, which is run until the land is in.
+ */
+async function readyPlayer(clip: ShowcaseClip, example: ExampleFiles): Promise<ClipPlayer> {
+  let local: LocalWorker | null = null;
+  const terrainClient =
+    clip.ground.kind === 'generated'
+      ? new TerrainClient({
+          createWorker: () => {
+            local = localWorker(terrain);
+            return local.worker;
+          },
+        })
+      : undefined;
+  const player = new ClipPlayer({
+    clip,
+    example,
+    scripts: SCRIPTS,
+    ...(terrainClient === undefined ? {} : { terrain: terrainClient }),
+  });
+  players.push(player);
+  if (terrainClient !== undefined) {
+    for (let i = 0; i < 400 && !player.groundIn; i += 1) {
+      await (local as LocalWorker | null)?.flush();
+      await new Promise((done) => setTimeout(done, 0));
+      if (player.problems.length > 0) break;
+    }
+    expect(player.problems, clip.id).toEqual([]);
+    expect(player.groundIn, `${clip.id}: the land is in`).toBe(true);
+  }
+  await player.whenReady();
+  return player;
+}
+
+/** The block a line from `eye` to the middle of `cell` meets first, or `null` for none. */
+function firstMet(
+  player: ClipPlayer,
+  eye: { x: number; y: number; z: number },
+  cell: { x: number; y: number; z: number },
+): string | null {
+  const world = player.area.source.world;
+  const to = { x: cell.x + 0.5, y: cell.y + 0.5, z: cell.z + 0.5 };
+  const length = Math.hypot(to.x - eye.x, to.y - eye.y, to.z - eye.z);
+  const steps = Math.ceil(length / 0.05);
+  let last = '';
+  for (let i = 1; i <= steps; i += 1) {
+    const t = i / steps;
+    const at = {
+      x: Math.floor(eye.x + (to.x - eye.x) * t),
+      y: Math.floor(eye.y + (to.y - eye.y) * t),
+      z: Math.floor(eye.z + (to.z - eye.z) * t),
+    };
+    const key = `${at.x},${at.y},${at.z}`;
+    if (key === last) continue;
+    last = key;
+    const state = world.get(at);
+    if (state !== null && state.name !== 'minecraft:air') return state.name;
+  }
+  return null;
+}
+
+/** Whether a block named `name` is seen from `pose`: in the view and met first from the eye. */
+function seesBlock(player: ClipPlayer, pose: CameraPose, name: string): boolean {
+  const world = player.area.source.world;
+  for (let y = 0; y < world.sizeY; y += 1) {
+    for (let z = 0; z < world.sizeZ; z += 1) {
+      for (let x = 0; x < world.sizeX; x += 1) {
+        if (world.get({ x, y, z })?.name !== name) continue;
+        if (!inView(pose, [x, y, z, x + 1, y + 1, z + 1])) continue;
+        if (firstMet(player, pose.eye, { x, y, z }) === name) return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** The subject's box at the moment: the first mob or vehicle, or the first project block. */
 function subjectBox(
   player: ClipPlayer,
@@ -113,7 +238,7 @@ function subjectBox(
 }
 
 describe('the showcase list', () => {
-  it('has the ten cards of the plan, in order', () => {
+  it('has the ten cards of the plan, then the three world cards, in order', () => {
     expect(SHOWCASES.map((clip) => [clip.title, clip.exampleId])).toEqual([
       ['A set of wood', 'example_msm_wood_set'],
       ['A pet', 'example_msm_tameable_pet'],
@@ -125,6 +250,9 @@ describe('the showcase list', () => {
       ['A trader', 'example_msm_roadside_merchant'],
       ['A liquid of your own', 'example_msm_fluid'],
       ['Rules: a lucky block', 'example_msm_rules'],
+      ['A world of islands', 'example_world_coral_isles'],
+      ['A world of tall mountains', 'example_world_frost_peaks'],
+      ['A world of caves', 'example_world_ember_caverns'],
     ]);
     expect(new Set(SHOWCASES.map((clip) => clip.id)).size).toBe(SHOWCASES.length);
   });
@@ -141,7 +269,28 @@ describe('the showcase list', () => {
       { type: 'flows', flowIds: ['wandering-merchant'] },
       { type: 'flows', flowIds: ['fluid'] },
       { type: 'example' },
+      { type: 'flows', flowIds: ['world-islands'] },
+      { type: 'flows', flowIds: ['world-mountains'] },
+      { type: 'flows', flowIds: ['world-caves'] },
     ]);
+  });
+
+  it('plays the world cards on a generated ground of their example, named in plain words', () => {
+    const worlds = SHOWCASES.filter((clip) => clip.ground.kind === 'generated');
+    expect(worlds.map((clip) => clip.id)).toEqual([...WORLD_CARDS]);
+    expect(worlds.map((clip) => [clip.sentence, showcaseModName(clip)])).toEqual([
+      ['Your own world: small sandy islands in a wide sea.', 'Island Mod'],
+      ['Your own world: snowy peaks as tall as the sky allows.', 'Mountain Mod'],
+      ['Your own world: caves under a roof of rock, with lava lakes.', 'Cave Mod'],
+    ]);
+    for (const clip of worlds) {
+      expect(clip.steps, clip.id).toEqual([]);
+      // What only the game does is said as "… in the game" (ADR 0118 D11).
+      expect(clip.captions.length, clip.id).toBeGreaterThan(0);
+    }
+    expect(worlds[0]?.captions.map((caption) => caption.text)).toContain(
+      'Its jungle trees grow in the game.',
+    );
   });
 
   it('says what it shows in plain words, with no ids', () => {
@@ -179,16 +328,30 @@ describe('every clip', () => {
         const example = await filesOf(clip.exampleId, target);
         expect(example.problems).toEqual([]);
         expect(validateClip(clip, example.ids)).toEqual([]);
-        const player = new ClipPlayer({ clip, example, scripts: SCRIPTS });
-        players.push(player);
-        await player.whenReady();
+        const player = await readyPlayer(clip, example);
+        const generated = clip.ground.kind === 'generated';
         let subject: ReturnType<typeof subjectBox> = null;
         let pose: CameraPose | null = null;
+        const seen: string[] = [];
+        const inLand: number[] = [];
         while (player.tick < clip.length) {
           player.stepTick();
+          if (generated) {
+            const eye = player.camera().eye;
+            const at = { x: Math.floor(eye.x), y: Math.floor(eye.y), z: Math.floor(eye.z) };
+            const state = player.area.source.world.get(at);
+            if (state !== null && state.name !== 'minecraft:air') inLand.push(player.tick);
+          }
           if (player.tick === clip.stillAt) {
-            subject = subjectBox(player);
             pose = player.camera();
+            if (generated) {
+              const still = pose;
+              for (const name of WORLD_SUBJECTS[clip.id] ?? []) {
+                if (seesBlock(player, still, name)) seen.push(name);
+              }
+            } else {
+              subject = subjectBox(player);
+            }
           }
         }
         expect(player.problems).toEqual([]);
@@ -204,10 +367,17 @@ describe('every clip', () => {
             (line.kind === 'info' && FAILED.test(line.text)),
         );
         expect(unexpected.map((line) => `${line.kind}: ${line.text}`)).toEqual([]);
-        // The subject is in view at the still.
-        expect(subject, 'no subject at stillAt').not.toBeNull();
-        expect(pose).not.toBeNull();
-        if (subject !== null && pose !== null) expect(inView(pose, subject)).toBe(true);
+        if (generated) {
+          // The land, the notes and the subject (B588).
+          expect(player.area.generated?.state.notes).toEqual(worldNotes(clip.id, target));
+          expect(inLand, 'ticks with the camera inside the land').toEqual([]);
+          expect(seen).toEqual(WORLD_SUBJECTS[clip.id]);
+        } else {
+          // The subject is in view at the still.
+          expect(subject, 'no subject at stillAt').not.toBeNull();
+          expect(pose).not.toBeNull();
+          if (subject !== null && pose !== null) expect(inView(pose, subject)).toBe(true);
+        }
         // Both targets give the same lines (index 0 is the first target).
         if (index === 0)
           firstLines.set(
@@ -226,9 +396,7 @@ describe('a loop', () => {
     if (target === undefined) throw new Error('no target');
     for (const clip of SHOWCASES) {
       const example = await filesOf(clip.exampleId, target);
-      const player = new ClipPlayer({ clip, example, scripts: SCRIPTS });
-      players.push(player);
-      await player.whenReady();
+      const player = await readyPlayer(clip, example);
       player.playToEnd();
       player.stepTick();
       expect(player.loops, clip.id).toBe(1);
