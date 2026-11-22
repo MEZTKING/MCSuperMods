@@ -16,6 +16,7 @@ import { Button, iconButtonClass } from '../../components/ui/Button';
 import { IdInput, idSuggestions, inputClass, ProblemList } from '../../forms';
 import { defaultObject, resolveNode, stripMinecraft, structShape } from '../../forms/schema-utils';
 import type { StudioProps } from '../types';
+import { MapLine } from './MapLine';
 import { AdvancedToggle, Section, SubForm } from './parts';
 import {
   blockProvider,
@@ -361,6 +362,13 @@ export function TreeFeatureStudio(props: StudioProps) {
       className="flex flex-col gap-4"
     >
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="tree-advanced-toggle" />
+      <MapLine
+        project={project}
+        target={props.target}
+        element={props.element}
+        mode="host"
+        words="A world of yours where this tree grows; in Try it, trees are about right."
+      />
       <Section title="Trunk" testId="tree-trunk-section">
         <PlacerPart field="trunk_placer" label="Trunk shape" choices={trunkPlacers} props={props} />
         <ProviderPart

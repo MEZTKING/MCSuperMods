@@ -98,6 +98,7 @@ import Scatter, { BIOME_ADDITION_KIND } from './Scatter';
 import SideCut from './SideCut';
 import ValueMap from './ValueMap';
 import { type TerrainMode, type TerrainView, useTerrainView } from './view-store';
+import { walkIn } from './walk-in';
 
 const ClimateMap = lazy(() => import('../preview/ClimateMap'));
 
@@ -485,6 +486,11 @@ export interface WorldMapProps {
   worlds?: TryItWorldsPlatform | null;
   /** Test hook: the client of vanilla's world for Compare with vanilla. */
   compareClient?: TerrainClient;
+  /**
+   * Whether the map offers **Walk in it** for a world of the project (B587; default true). The
+   * Creator's map (nothing made yet) and the Studios' (their own line has it) leave it out.
+   */
+  walkIn?: boolean;
 }
 
 /** Kinds drawn as a Value map (B585). */
@@ -1028,6 +1034,19 @@ function WorldMapView(props: WorldMapProps & { terrain: TerrainSessionHandle }) 
             {...(props.worlds === undefined ? {} : { worlds: props.worlds })}
           />
           <PositionControls view={view} onChange={setView} />
+          {props.walkIn !== false && !host.plain && (
+            <div className="flex items-center gap-2">
+              <Button
+                data-testid="terrain-walk-in"
+                onClick={() => walkIn(props.root, project, host.key)}
+              >
+                Walk in it
+              </Button>
+              <span className="text-xs text-muted">
+                Opens Try it on this world, at this seed and place.
+              </span>
+            </div>
+          )}
           {banner ? (
             <SetUpBanner onSetup={onSetup} />
           ) : worldError !== null ? (

@@ -8324,3 +8324,21 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 - The `events` test script's tick logging is left as it is: the record removes the dependence on eviction, and `serverTickRunsEvery20Ticks` reads those lines.
 
 **Next:** none from this fix.
+## 2026-11-22 — executor — B587 live maps in the Creator and the Studios (live worldgen)
+
+**What:**
+- `components/creator/CreatorPreview.tsx`: a **Map** tab, first, for a flow whose bundle makes a world preset or a dimension (`bundleWorld`, `CREATOR_MAP_TAB`); the preview opens on it once per world the flow makes and draws the world the answers make, from the bundle laid over the project in memory (`bundlePreviewProject`, ADR 0118's pattern; nothing written), redrawn after every answer. Test ids `creator-tab-map`, `creator-map`, `creator-map-view`.
+- New `terrain/LiveMap.tsx` (a lazy chunk): `MemoryWorldgenSession` (a `WorldgenSession` over a project held in memory, `set(project, target)`), `builtInKinds()` (the built-in plugins' kinds, registered once), `memoryTerrain(owner)` (one `TerrainFiles` and one worker client for the Creator and one for the Studios, so neither pushes the preview panel's or Try it's world out of their worker), `projectHosts`, `hostElement`, and the view: `element` mode (the element's own map) or `host` mode (a world of the project that uses the element, **Seen in** when there are several, else "No world of yours uses this yet…"). The map keeps its Preview tag, notes and set-up banner.
+- New `studios/worldgen/MapLine.tsx`: the Biome, Placed Feature, Tree Feature and Dimension Type Studios each show **See it on the map** (opens the live map inline; **Hide the map**) and **Walk in it** with one plain line (`worldNaming` finds the first world naming the element while the map is closed). Test ids `studio-map-line`, `studio-see-map`, `studio-walk-in-it`, `studio-map`, `studio-map-seen-in`, `studio-map-none`, `studio-map-loading`.
+- New `terrain/walk-in.ts` (`walkIn`, `viewKeyOf`): keeps the project's view (seed and place), leaves the element as the Try it button does, and opens Try it with its ground picker on **My world generation** over the given world. Wiring outside the brief's list: `tryit/tryit-store.ts` (`groundRequest`, `walkIn`, `clearGroundRequest`), `tryit/TryItView.tsx` (opens the picker on the request once the area is ready and starts it on the requested world; 22 lines), `terrain/WorldMap.tsx` (**Walk in it** under the position controls for a world of the project, test id `terrain-walk-in`; prop `walkIn` false in `LiveMap`).
+- Tests: `app/test/components/terrain/live-map.test.tsx` (9), `app/test/components/studios/worldgen/map-line.test.tsx` (3), `app/test/components/creator-world-map.test.tsx` (4: the Map tab, a new project per answer, the real Islands flow through the built-in kinds and `TerrainFiles`), one line test in each Studio's test file.
+
+**Verified:** `pnpm lint`, `pnpm typecheck`, app tests (307 files, 2894 tests; the terrain, studios, Try it and Creator tests again after the last change), `pnpm build`, `dist:dir`, check-size from an empty `app/out`: `app.asar` 27,431,212 bytes (26.2 of 32 MB), renderer 18,418,032 bytes (17.6 of 19 MB), new chunk `LiveMap` 2.9 kB, `WorldMap` 80.7 kB; e2e `smoke`, `creator-path` (8, the Dimension flow included) and `worldgen-path` under `xvfb-run -a`.
+
+**Decisions:**
+- The Creator and the Studios hold no project session (`CreatorPreview` and `StudioProps` get none, and `CreatorDialog.tsx`, `App.tsx` and `types.ts` are not this brief's), so they lower with the built-in plugins' kinds; worldgen kinds are all built in, and a third-party plugin's kinds are not drawn there.
+- The Map tab is the preview's own (`CreatorTab` stays as it is in `creator-model.ts`); the dialog keeps whatever tab it is given.
+- The set-up banner's button in the Creator and the Studios puts a status line pointing to Settings, Game locations (neither can open the Settings dialog).
+- For a world preset seen as a host, the map shows the preset's dimension picker starting on its first dimension.
+
+**Next:** B589 (e2e over the `creator-map*`, `studio-map*`, `studio-walk-in-it` and `terrain-walk-in` test ids), the guide brief (labels: "Map", "See it on the map", "Hide the map", "Walk in it", "No world of yours uses this yet").

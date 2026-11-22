@@ -43,6 +43,13 @@ function writeStored(state: Pick<TryItState, 'cardSeen' | 'smaller'>): void {
   }
 }
 
+/** What {@link TryItState.groundRequest} asks for. */
+export interface GroundRequest {
+  readonly kind: 'generated';
+  /** The world's key as the picker lists it (`dimension:<id>`, `preset:<id>:<dim>`), or `null`. */
+  readonly sourceKey: string | null;
+}
+
 /** The Try it store's shape. */
 export interface TryItState {
   /** Whether the view is shown in the editor area. */
@@ -59,7 +66,16 @@ export interface TryItState {
   smaller: boolean | null;
   /** Whether the first-run card was closed once. */
   cardSeen: boolean;
+  /**
+   * A ground the view should open its picker on once the area is ready (B587: a Studio's
+   * **Walk in it** asks for My world generation on one of the project's worlds), or `null`.
+   */
+  groundRequest: GroundRequest | null;
   openView(): void;
+  /** Opens the view with the ground picker on My world generation (`sourceKey`: the world). */
+  walkIn(sourceKey: string | null): void;
+  /** Forgets the request once the view has opened its picker. */
+  clearGroundRequest(): void;
   close(): void;
   toggle(): void;
   setArea(area: TryItArea, root: string | null): void;
@@ -81,8 +97,15 @@ export const useTryItStore = create<TryItState>((set, get) => ({
   selected: 0,
   smaller: typeof stored.smaller === 'boolean' ? stored.smaller : null,
   cardSeen: stored.cardSeen === true,
+  groundRequest: null,
   openView() {
     set({ open: true });
+  },
+  walkIn(sourceKey) {
+    set({ open: true, groundRequest: { kind: 'generated', sourceKey } });
+  },
+  clearGroundRequest() {
+    set({ groundRequest: null });
   },
   close() {
     set({ open: false });
@@ -97,7 +120,14 @@ export const useTryItStore = create<TryItState>((set, get) => ({
   },
   reset() {
     get().area?.dispose();
-    set({ open: false, area: null, areaRoot: null, slots: {}, selected: 0 });
+    set({
+      open: false,
+      area: null,
+      areaRoot: null,
+      slots: {},
+      selected: 0,
+      groundRequest: null,
+    });
   },
   setSlot(index, id) {
     set({ slots: { ...get().slots, [index]: id } });

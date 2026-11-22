@@ -18,6 +18,7 @@ import {
   SpawningSection,
   TimeSection,
 } from './dimension-type-sections';
+import { MapLine } from './MapLine';
 import { AdvancedToggle } from './parts';
 import { asObject, writeAt } from './worldgen-model';
 
@@ -92,6 +93,13 @@ export default function DimensionTypeStudio(props: StudioProps) {
         A dimension type holds a dimension's sky, light, time and rules. A dimension uses it through
         its type; open or reload a world to see a change.
       </p>
+      <MapLine
+        project={props.project}
+        target={target}
+        element={element}
+        mode="host"
+        words="A world of this type; its Side cut draws the lowest and highest blocks."
+      />
       <SkySection {...sections} />
       <LightSection {...sections} />
       <TimeSection {...sections} />

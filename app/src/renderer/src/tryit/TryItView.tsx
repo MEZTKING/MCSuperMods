@@ -372,6 +372,15 @@ export default function TryItView(props: TryItViewProps) {
   const vanillaStatesRef = useRef(vanillaStates);
   vanillaStatesRef.current = vanillaStates;
   const [groundsOpen, setGroundsOpen] = useState<GroundKind | null>(null);
+  // A Studio's Walk in it (B587): open the picker on My world generation, on its world.
+  const groundRequest = useTryItStore((state) => state.groundRequest);
+  const [requestedSource, setRequestedSource] = useState<string | null>(null);
+  useEffect(() => {
+    if (groundRequest === null || area === null) return;
+    useTryItStore.getState().clearGroundRequest();
+    setRequestedSource(groundRequest.sourceKey);
+    setGroundsOpen(groundRequest.kind);
+  }, [groundRequest, area]);
   // The chat box (B463): closed, or open with its first line.
   const [chat, setChat] = useState<ChatState>(null);
   const [lastQuick, setLastQuick] = useState<QuickWorldOptions | undefined>(undefined);
@@ -1153,10 +1162,21 @@ export default function TryItView(props: TryItViewProps) {
                     : { vanilla: (path: string) => vanilla.readAsset(path).catch(() => null) }
                 }
                 texturesFolder={area.target.folders.resource.textures}
-                generated={generated.picker}
+                generated={
+                  generated.picker === null || requestedSource === null
+                    ? generated.picker
+                    : {
+                        ...generated.picker,
+                        initial:
+                          generated.picker.sources.find(
+                            (source) => source.key === requestedSource,
+                          ) ?? generated.picker.initial,
+                      }
+                }
                 onApply={applyGround}
                 onClose={() => {
                   setGroundsOpen(null);
+                  setRequestedSource(null);
                   wrapperRef.current?.focus({ preventScroll: true });
                 }}
               />

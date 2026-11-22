@@ -14,6 +14,7 @@ import { IdInput, idSuggestions, inputClass, ProblemList } from '../../forms';
 import { discriminatorKeys } from '../../forms/StructEditor';
 import { defaultObject, resolveNode, stripMinecraft, structShape } from '../../forms/schema-utils';
 import type { StudioProps } from '../types';
+import { MapLine } from './MapLine';
 import { AdvancedToggle, Section, SubForm } from './parts';
 import { asObject, fieldOf, humanise, listItem, moved, placedFeatureUses } from './worldgen-model';
 
@@ -79,6 +80,13 @@ export function PlacedFeatureStudio(props: StudioProps) {
         checked={advanced}
         onChange={setAdvanced}
         testId="placed-feature-advanced-toggle"
+      />
+      <MapLine
+        project={project}
+        target={target}
+        element={element}
+        mode="host"
+        words="A world of yours that grows it; in Try it, trees, plants and ores are about right."
       />
       <Section title="Feature" testId="placed-feature-feature-section">
         {feature === undefined || typeof feature === 'string' ? (

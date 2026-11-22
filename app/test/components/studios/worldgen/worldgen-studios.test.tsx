@@ -149,6 +149,14 @@ describe('Biome Studio', () => {
   const biome = () =>
     element('demo:glade', 'minecraft:worldgen/biome', templateData('biome_temperate_forest'));
 
+  it('offers See it on the map and Walk in it (B587)', () => {
+    render(<BiomeStudio {...propsFor(biome(), projectWith())} />);
+    expect(screen.getByTestId('studio-map-line')).toBeTruthy();
+    expect(screen.getByTestId('studio-see-map').textContent).toBe('See it on the map');
+    expect(screen.getByTestId('studio-see-map').getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByTestId('studio-walk-in-it').textContent).toBe('Walk in it');
+  });
+
   it('names every decoration step from the target and shows the colours', () => {
     render(<BiomeStudio {...propsFor(biome(), projectWith())} />);
     expect(screen.getByTestId('biome-studio')).toBeTruthy();
@@ -254,6 +262,14 @@ describe('Placed Feature Studio', () => {
       'minecraft:worldgen/placed_feature',
       templateData('placed_feature_ore', 'demo:ruby_ore'),
     );
+
+  it('offers See it on the map and Walk in it (B587)', () => {
+    render(<PlacedFeatureStudio {...propsFor(placed(), projectWith())} />);
+    expect(screen.getByTestId('studio-map-line')).toBeTruthy();
+    expect(screen.getByTestId('studio-see-map').textContent).toBe('See it on the map');
+    expect(screen.getByTestId('studio-see-map').getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByTestId('studio-walk-in-it').textContent).toBe('Walk in it');
+  });
 
   it('edits the configured feature and lists where the feature is used', () => {
     const onChange = vi.fn();

@@ -23,6 +23,7 @@ import { childPointer, isJsonObject, parsePointer, valueAt } from '../../forms/p
 import { defaultValue, flattenUnion, resolveNode, structShape } from '../../forms/schema-utils';
 import type { StudioProps } from '../types';
 import { ColourField } from './ColourField';
+import { MapLine } from './MapLine';
 import { AdvancedToggle, IdList, Section, SubForm } from './parts';
 import {
   asObject,
@@ -522,6 +523,13 @@ export function BiomeStudio(props: StudioProps) {
   return (
     <section aria-label="Biome Studio" data-testid="biome-studio" className="flex flex-col gap-4">
       <AdvancedToggle checked={advanced} onChange={setAdvanced} testId="biome-advanced-toggle" />
+      <MapLine
+        project={props.project}
+        target={target}
+        element={element}
+        mode="element"
+        words="Where this biome lies in a world of yours, or a plain world of it."
+      />
       {climate}
       {colours}
       {featureSection}

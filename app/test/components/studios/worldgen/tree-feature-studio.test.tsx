@@ -195,6 +195,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     const tree = () =>
       element('demo:maple_tree', FEATURE, templateData(bundle, 'feature_sapling_tree'));
 
+    it('offers See it on the map and Walk in it (B587)', () => {
+      render(<TreeFeatureStudio {...propsFor(tree(), projectWith(leavesBlock()))} />);
+      expect(screen.getByTestId('studio-map-line')).toBeTruthy();
+      expect(screen.getByTestId('studio-see-map').textContent).toBe('See it on the map');
+      expect(screen.getByTestId('studio-see-map').getAttribute('aria-expanded')).toBe('false');
+      expect(screen.getByTestId('studio-walk-in-it').textContent).toBe('Walk in it');
+    });
+
     it('offers exactly the vendored placer types', () => {
       render(<TreeFeatureStudio {...propsFor(tree(), projectWith(leavesBlock()))} />);
       const trunk = screen.getByTestId('tree-trunk_placer-type') as HTMLSelectElement;

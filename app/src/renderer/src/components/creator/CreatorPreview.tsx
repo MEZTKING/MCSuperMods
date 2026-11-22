@@ -4,7 +4,9 @@
  * texture as a `data:` image and draw the chosen one with the deepslate preview (typed blocks
  * with the models their textures make), and Blocks also shows the whole set as a row of blocks
  * (`SetPreview`, B272); Recipes draws
- * crafting grids; Armour shows the two layer textures and the humanoid armour geometry in the
+ * crafting grids; Map (B587, ADR 0119 D11) draws the world a world or dimension flow makes,
+ * live as the answers change (`terrain/LiveMap.tsx`, a lazy chunk; from the bundle in memory,
+ * never written to disk), with the map's Preview tag and notes; Armour shows the two layer textures and the humanoid armour geometry in the
  * geo renderer, and horse and wolf armour layers as flat textures; Stats puts the numbers in
  * words (weapons, armour, food, consumables with their effects); Card shows paintings on a wall
  * and enchantment cards (ADR 0044 D6); Elements lists what Create will do.
@@ -16,9 +18,10 @@
  */
 
 import type { Project } from '@msm/core';
-import type { ContentBundle } from '@msm/plugin-api';
+import type { ContentBundle, Element } from '@msm/plugin-api';
+import { targetById } from '@msm/targets';
 import { Tabs } from 'radix-ui';
-import { lazy, type ReactNode, Suspense, useMemo, useState } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { CreatorPlan } from '../../changeset/creator-sets';
 import {
   bundleAssetBytes,
@@ -37,6 +40,7 @@ import {
 import type { GeoScene } from '../../preview/geo/subject';
 import type { ResourceFolders, VanillaAssetReader } from '../../preview/model-chain';
 import { hasWebGL } from '../../preview/webgl';
+import { useUiStore } from '../../store/ui-store';
 import { RecipeGridView } from '../recipe-grid/RecipeGridView';
 import { tabTriggerClass } from '../ui/Button';
 import { CreatorCards } from './CreatorCards';
@@ -114,6 +118,74 @@ function EffectTable(props: { name: string; effects: readonly EffectRow[] }) {
 }
 
 const PreviewCanvas = lazy(() => import('../../preview/PreviewCanvas'));
+const LiveMap = lazy(() => import('../../terrain/LiveMap'));
+
+/** The Map tab (B587): shown first for a flow that makes a world preset or a dimension. */
+export const CREATOR_MAP_TAB = { id: 'map', label: 'Map' } as const;
+
+/** The kinds a world or dimension flow makes, in the order the Map tab looks for them. */
+const WORLD_KINDS = ['minecraft:worldgen/world_preset', 'minecraft:dimension'] as const;
+
+/** The world a bundle makes (its first world preset, else its first dimension), or `null`. */
+export function bundleWorld(bundle: ContentBundle): { kind: string; id: string } | null {
+  for (const kind of WORLD_KINDS) {
+    const entry = bundle.elements.find((element) => element.kind === kind);
+    if (entry !== undefined) return { kind, id: entry.id };
+  }
+  return null;
+}
+
+/** The Map tab: the world the flow makes, drawn from the bundle laid over the project. */
+function WorldTab(props: {
+  bundle: ContentBundle;
+  project: Project;
+  world: { kind: string; id: string };
+  vanillaReady: boolean;
+}) {
+  const root = useUiStore((state) => state.snapshot?.root ?? null);
+  const preview = useMemo(
+    () => bundlePreviewProject(props.project, props.bundle),
+    [props.project, props.bundle],
+  );
+  const element = useMemo((): Element | null => {
+    for (const namespace of preview.namespaces) {
+      for (const entry of namespace.elements) {
+        if (entry.kind === props.world.kind && entry.id === props.world.id) return entry;
+      }
+    }
+    return null;
+  }, [preview, props.world.kind, props.world.id]);
+  const targetId = props.project.targets[0];
+  const target = targetId === undefined ? undefined : targetById(targetId)?.target;
+  if (element === null || target === undefined) {
+    return <Empty>This flow's world cannot be drawn here.</Empty>;
+  }
+  return (
+    <div className="flex flex-col gap-2" data-testid="creator-map">
+      <p className="text-xs text-muted">
+        The world your answers make, drawn before anything is made. It changes as you answer.
+      </p>
+      <Suspense fallback={<Empty>Loading the map…</Empty>}>
+        <LiveMap
+          owner="creator"
+          project={preview}
+          target={target}
+          element={element}
+          mode="element"
+          root={root}
+          vanillaReady={props.vanillaReady}
+          onSetup={() =>
+            useUiStore.getState().setMessage({
+              kind: 'info',
+              text: 'Set up your Minecraft folder in Settings, under Game locations, to see this world here.',
+            })
+          }
+          testId="creator-map-view"
+        />
+      </Suspense>
+    </div>
+  );
+}
 const GeoCanvas = lazy(() => import('../../preview/geo/GeoCanvas'));
 
 /** Props of {@link CreatorPreview}. */
@@ -368,25 +440,49 @@ export function CreatorPreview(props: CreatorPreviewProps) {
   };
   const recipes = bundleRecipes(bundle);
   const stats = bundleStats(bundle, props.vanillaTools);
+  // A world or dimension flow opens on its Map (once per world it makes).
+  const world = bundleWorld(bundle);
+  const worldKey = world === null ? null : `${world.kind} ${world.id}`;
+  const mapShown = useRef<string | null>(null);
+  const { onTabChange } = props;
+  useEffect(() => {
+    if (worldKey === null || mapShown.current === worldKey) return;
+    mapShown.current = worldKey;
+    // The dialog keeps the tab as it is given; the Map tab is this preview's own.
+    onTabChange(CREATOR_MAP_TAB.id as unknown as CreatorTab);
+  }, [worldKey, onTabChange]);
+  const tabs: readonly { id: string; label: string }[] =
+    world === null ? CREATOR_TABS : [CREATOR_MAP_TAB, ...CREATOR_TABS];
+  const tab: string = world === null && (props.tab as string) === 'map' ? 'elements' : props.tab;
   return (
     <Tabs.Root
-      value={props.tab}
+      value={tab}
       onValueChange={(value) => props.onTabChange(value as CreatorTab)}
       className="flex min-h-0 min-w-0 flex-1 flex-col"
     >
       <Tabs.List aria-label="Preview" className="flex flex-wrap border-b border-border">
-        {CREATOR_TABS.map((tab) => (
+        {tabs.map((entry) => (
           <Tabs.Trigger
-            key={tab.id}
-            value={tab.id}
+            key={entry.id}
+            value={entry.id}
             className={tabTriggerClass}
-            data-testid={`creator-tab-${tab.id}`}
+            data-testid={`creator-tab-${entry.id}`}
           >
-            {tab.label}
+            {entry.label}
           </Tabs.Trigger>
         ))}
       </Tabs.List>
       <div className="min-h-0 flex-1 overflow-auto p-2">
+        {world !== null && (
+          <Tabs.Content value={CREATOR_MAP_TAB.id}>
+            <WorldTab
+              bundle={bundle}
+              project={props.project}
+              world={world}
+              vanillaReady={props.vanilla !== null}
+            />
+          </Tabs.Content>
+        )}
         <Tabs.Content value="items">
           <PieceGallery type="item" {...props} webgl={webgl} />
         </Tabs.Content>

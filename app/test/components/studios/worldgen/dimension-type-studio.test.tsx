@@ -182,6 +182,14 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     const moon = () =>
       element('demo:moon', DIMENSION_TYPE_KIND, templateData(bundle, 'dimension_type_moon'));
 
+    it('offers See it on the map and Walk in it (B587)', () => {
+      render(<DimensionTypeStudio {...propsFor(moon())} />);
+      expect(screen.getByTestId('studio-map-line')).toBeTruthy();
+      expect(screen.getByTestId('studio-see-map').textContent).toBe('See it on the map');
+      expect(screen.getByTestId('studio-see-map').getAttribute('aria-expanded')).toBe('false');
+      expect(screen.getByTestId('studio-walk-in-it').textContent).toBe('Walk in it');
+    });
+
     it('shows the six sections and the sky swatch', () => {
       render(<DimensionTypeStudio {...propsFor(moon())} />);
       for (const id of ['sky', 'light', 'time', 'rules', 'height', 'spawning']) {
