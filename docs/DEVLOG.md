@@ -7882,3 +7882,20 @@ Next
 
 **Next**
 - B572 close: nothing left for the sidebar line; the README row is added.
+
+## 2026-11-22 — executor — B542 e2e, batch 2
+
+**What**
+- `app/e2e/villagers-2-path.spec.ts` (was B526's skipped placeholder), under SwiftShader: a new install in Very easy; "Make a trader" runs the Villager look flow (Meadow Folk, meadows) and the Wandering merchant flow with "Remembers how you treat it", the sweet berry gift and "Twice a day, at a block near it"; Things to fix is empty. Advanced: the Villager look Studio shows the biome, Minecraft's own looks and both pictures in place, and a hat is picked; the Trader section reads the flow's answers, takes "Hurt costs" 30 and "Price step" 10, and turning the memory off and Undo keep the numbers. Try it: a gift raises the standing to 25, and the merchant mock-up then shows the name tag's 5 emeralds crossed out for 3. The jar holds the trader's `reputation` and `work_site`, the look's definition and both pictures with their hat `.mcmeta`.
+- `app/e2e/mobs-2-path.spec.ts`: in a blank project, the Water mob flow with a bucket and playing dead, the Flying mob flow hovering and the Wood set flow with boats; the Bucket section (a named bucket), the "Plays dead" habit, the swimmer warning when moved to walking (taken back by Undo), the hover height; the Boat section with its pictures in place, the chest boat named, "Has a chest boat" off and Undo. Try it: the darter's bucket lets it out with its water and a water bucket catches it again. The jar holds `msm:bucketable`, the bucket item and its name, the hover movement, the boat's definition, both recipes, vanilla's boat and chest boat tags, the chest boat item and the two boat pictures.
+- `app/e2e/commands-2-path.spec.ts`: in a blank project, the Custom command flow with "Its own game rule", the Game rule flow with its statistic and the Creative tab flow "In my own order" with a torch and a lantern; the Command Studio adds a whole number "amount" (1 to 20, usage `/heal <amount>`); the Rule book Studio sets the heal step's amount to "What the player typed" for amount and adds "Set a game rule" (Welcome Message to false); the Game rule Studio turned into a whole number gives the two misfit errors and Undo takes it back; the Statistic Studio's criterion; the tab's hand order with the lantern moved up. The jar holds the command's argument and the script's `argNumber(args, "amount", 0)`, `world.setGameRule(...)` and `world.gameRule(...)`, both game rules with their names, the statistic and the tab's order.
+- `app/CLAUDE.md`: the e2e line names the three specs (42 spec files; the line said 39).
+- Verified: each of the three specs green three times under `xvfb-run -a` after `pnpm build` (8 to 26 s each); the full e2e run green once (73 tests in 12.3 min); `pnpm lint`, `pnpm typecheck`.
+
+**Decisions**
+- No app change was needed: every step went through the UI as built by B538 to B540.
+- `app/e2e/eject-path.spec.ts` (the plan's line for a trader and a fluid in the eject) was left alone: the orchestrator's brief named only the three specs and the eject worker is mirroring traders now (B537b: traders are not ejected yet).
+- With a game rule turned into a whole number, the Problems panel also shows "The command does nothing" on `/heal`, since the broken book no longer gives the command its event; the spec counts only the two game rule errors.
+
+**Next**
+- The eject worker (or B544): the eject-path check for a trader and a fluid once traders are ejected.
