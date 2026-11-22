@@ -13,7 +13,8 @@ public class ContainerChestBlockEntity extends StorageBlockEntity {
     public static final ContainerSpec SPEC = new ContainerSpec(ContainerSpec.Layout.CHEST, 2, 1,
             false, true, true, // keep_contents, hoppers, comparator
             Optional.empty(), Optional.empty(), // open_sound, close_sound (absent: a barrel's)
-            Optional.of(Identifier.fromNamespaceAndPath("msm_test", "container_opened")), Optional.of(Identifier.fromNamespaceAndPath("msm_test", "container_closed"))); // on_open, on_close
+            Optional.of(Identifier.fromNamespaceAndPath("msm_test", "container_opened")), Optional.of(Identifier.fromNamespaceAndPath("msm_test", "container_closed")), // on_open, on_close
+            false); // per_player
 
     public ContainerChestBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTAINER_CHEST, pos, state, SPEC);

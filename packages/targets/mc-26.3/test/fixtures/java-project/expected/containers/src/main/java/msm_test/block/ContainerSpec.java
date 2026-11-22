@@ -8,11 +8,12 @@ import net.minecraft.resources.Identifier;
  * The settings of an {@code msm:container} block (ADR 0074 D1) with the defaults applied: {@code rows} of a
  * {@code chest} (default 3), {@code size} of a {@code none} holder (default 1), {@code keep_contents} (a 3-row chest
  * only), {@code hoppers} and {@code comparator} (default true), the open and close sounds (absent: a barrel's) and the
- * {@code on_open} and {@code on_close} events.
+ * {@code on_open} and {@code on_close} events, and {@code per_player} (ADR 0104 D5: each player sees their own store,
+ * {@link PlayerStores}; no hoppers or comparator, as vanilla's ender chest).
  */
 public record ContainerSpec(Layout layout, int rows, int size, boolean keepContents, boolean hoppers, boolean comparator,
         Optional<Identifier> openSound, Optional<Identifier> closeSound, Optional<Identifier> onOpen,
-        Optional<Identifier> onClose) {
+        Optional<Identifier> onClose, boolean perPlayer) {
     /** The vanilla screen: a chest of {@code rows} rows (a shulker box with keep-contents), a hopper, a dispenser, none. */
     public enum Layout {
         CHEST,

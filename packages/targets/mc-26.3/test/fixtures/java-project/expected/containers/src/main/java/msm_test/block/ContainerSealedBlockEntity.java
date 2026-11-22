@@ -12,7 +12,8 @@ public class ContainerSealedBlockEntity extends StorageBlockEntity {
     public static final ContainerSpec SPEC = new ContainerSpec(ContainerSpec.Layout.CHEST, 3, 1,
             false, false, false, // keep_contents, hoppers, comparator
             Optional.empty(), Optional.empty(), // open_sound, close_sound (absent: a barrel's)
-            Optional.empty(), Optional.empty()); // on_open, on_close
+            Optional.empty(), Optional.empty(), // on_open, on_close
+            false); // per_player
 
     public ContainerSealedBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTAINER_SEALED, pos, state, SPEC);

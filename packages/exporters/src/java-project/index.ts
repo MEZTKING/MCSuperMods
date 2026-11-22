@@ -83,6 +83,12 @@ const NOT_IN_EJECT_KINDS: Readonly<Record<string, { label: string; reason: strin
     reason: "it needs the runtime's point of interest and profession registration",
   },
   fluid: { label: 'fluid', reason: "it needs the runtime's fluid and bucket code" },
+  // ADR 0105 D4: the generator's input has no field for these files yet (plugin API 1.20.0, B527).
+  vanilla_block_rules: {
+    label: 'file of rules for vanilla blocks',
+    reason:
+      'the Java project cannot yet change what an axe, shovel, hoe or honeycomb does to vanilla blocks, or how they age and burn',
+  },
 };
 
 /**
@@ -359,7 +365,8 @@ async function loadWrapper(
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
  * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
- * (ADR 0088 D10, ADR 0090 D14), per villager profession and fluid (ADR 0098 D5, ADR 0099 D4), per mob
+ * (ADR 0088 D10, ADR 0090 D14), per villager profession and fluid (ADR 0098 D5, ADR 0099 D4), per
+ * file of rules for vanilla blocks (`msm:vanilla_block_rules`, ADR 0105 D4; B517), per mob
  * with a trader, storage or shoulder riding component (one warning per mob, ADR 0098 D5), and per script and Mixin event it listens to (`block.place`,
  * `world.explosion`; ADR 0096 D6); command and creative tab definitions go to the generator
  * (ADR 0096 D6); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws

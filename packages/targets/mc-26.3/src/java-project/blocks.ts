@@ -54,6 +54,7 @@ import {
   type LeafTint,
   PILLAR_TURNS,
   plantMembers,
+  projectPotOf,
   readType,
   type TypeSpec,
   typeKeys,
@@ -65,12 +66,24 @@ import {
   type BlockEntityMembers,
   type ContainerInfo,
   containerBlockMembers,
+  containerSpecLines,
+  fireEventMembers,
+  newBlockEntityMembers,
   readContainer,
   writeBlockEventsFile,
   writeContainerFiles,
+  writeDoubleChestEntityClass,
+  writeStorage2Files,
   writeStorageEntityClass,
 } from './containers';
 import { classPath, type GenerationContext, packageOf } from './context';
+import {
+  listedPlants,
+  plant3Classes,
+  plant3Companion,
+  plant3LightFromState,
+  plant3Properties,
+} from './growing-plants';
 import { closeLine } from './items';
 import {
   identifierExpression,
@@ -102,7 +115,20 @@ import {
   writePortalFiles,
 } from './portals';
 import { blockItemId, checkFormat, type Reader, readDefinition } from './read';
+import {
+  type BlockSoundsSpec,
+  ownSetTypeExpression,
+  ownSoundsExpression,
+  ownSoundsHelpers,
+  readBlockSounds,
+  readFlattenable,
+  readTillable,
+  type ToolPair,
+  toolPairLines,
+} from './sounds-and-pairs';
 import { blockStrippingJava } from './templates/block-stripping-java';
+import { plantClassJava } from './templates/growing-plants-java';
+import { lightningJava } from './templates/lightning-java';
 import { DRIVER_CLASSES, driverClassJava } from './templates/vanilla-blocks-java';
 import {
   companionExpression,
@@ -114,11 +140,13 @@ import {
   VANILLA_BLOCK_CLASS_NAMES,
 } from './vanilla-types';
 import {
+  agesKeeping,
   blockWaxingJava,
   readWaterloggable,
   readWaxable,
   readWeathering,
   WEATHER_TICK,
+  WEATHER_TICK_KEEPING,
   type WeatheringSpec,
   waterloggedPlacement,
   waterlogMembers,
@@ -189,7 +217,15 @@ function signSoundLine(
 /** Item rarities, each a `Rarity` constant. */
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic'] as const;
 
-const BLOCK_KEYS = ['format', 'sound_type', 'loot_table', 'item', 'components', 'events'];
+const BLOCK_KEYS = [
+  'format',
+  'sound_type',
+  'block_sounds',
+  'loot_table',
+  'item',
+  'components',
+  'events',
+];
 const BLOCK_COMPONENTS = [
   'msm:breakable',
   'msm:light_emitter',
@@ -209,6 +245,8 @@ const BLOCK_COMPONENTS = [
   'msm:waterloggable',
   'msm:weathering',
   'msm:waxable',
+  'msm:flattenable',
+  'msm:tillable',
 ];
 
 /** `msm:shape` fields (`::msm::definition::Shape`); the editor-only `preset` is not one. */
@@ -287,6 +325,12 @@ interface BlockSpec {
   readonly onEat: string | undefined;
   /** Whether the definition sets `item.max_stack_size` (beds and signs default to 1 and 16). */
   readonly stackSet: boolean;
+  /** `block_sounds` (ADR 0105 D1). */
+  readonly blockSounds: BlockSoundsSpec | undefined;
+  /** `msm:flattenable` (ADR 0105 D3). */
+  readonly flatten: ToolPair | undefined;
+  /** `msm:tillable` (ADR 0105 D3). */
+  readonly till: ToolPair | undefined;
 }
 
 /**
@@ -423,12 +467,31 @@ function readBlock(input: DefinitionInput): BlockSpec {
   strippable?.onlyKeys(['into'], 'msm:strippable field');
   const into = strippable?.requiredString('into');
   const ambient = components?.object('msm:ambient_particles');
-  // A container or machine holds no water and does not age (the runtime drops both with a warning).
-  const entityBlock = containerComponent !== undefined || machineComponent !== undefined;
-  const waterlogComponent = entityBlock ? undefined : components?.object('msm:waterloggable');
-  const weatheringComponent = entityBlock ? undefined : components?.object('msm:weathering');
-  const waxableComponent = entityBlock ? undefined : components?.object('msm:waxable');
+  // ADR 0104 D3, D6 (B513): a container or machine may hold water and a container may age; a machine does not
+  // age (the runtime drops msm:weathering and msm:waxable there with a warning).
+  const ageless = machineComponent !== undefined;
+  const container =
+    containerComponent === undefined ? undefined : readContainer(containerComponent, firedEvent);
+  if (container?.doubleChest === true) {
+    // A double chest is vanilla's chest family: four ways, its own shape, its own water (ADR 0104 D4, B515).
+    if (type.type !== 'block' && type.type !== 'horizontal') {
+      components?.fail(
+        `a double chest must be a block or horizontal block, not '${type.type}' (vanilla's chest faces four ways)`,
+      );
+    }
+    for (const key of ['msm:shape', 'msm:redstone']) {
+      if (components?.has(key) === true) {
+        components.fail(`${key} does not apply to a double chest (it keeps vanilla's chest shape)`);
+      }
+    }
+  }
+  const waterlogComponent =
+    container?.doubleChest === true ? undefined : components?.object('msm:waterloggable');
+  const weatheringComponent = ageless ? undefined : components?.object('msm:weathering');
+  const waxableComponent = ageless ? undefined : components?.object('msm:waxable');
   const onEat = type.parity?.cake?.onEat;
+  const flattenComponent = components?.object('msm:flattenable');
+  const tillComponent = components?.object('msm:tillable');
   if (into !== undefined && !/^([a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(into)) {
     strippable?.fail(`into '${into}' is not a block id`);
   }
@@ -503,8 +566,7 @@ function readBlock(input: DefinitionInput): BlockSpec {
             method: eventMethod(inside, events, inside.requiredString('event')),
             cooldown: insideCooldown,
           },
-    container:
-      containerComponent === undefined ? undefined : readContainer(containerComponent, firedEvent),
+    container,
     machine:
       machineComponent === undefined
         ? undefined
@@ -525,6 +587,9 @@ function readBlock(input: DefinitionInput): BlockSpec {
         : readWeathering(weatheringComponent, type.type),
     waxInto: waxableComponent === undefined ? undefined : readWaxable(waxableComponent),
     onEat: onEat === undefined ? undefined : eventMethod(reader, events, onEat),
+    blockSounds: readBlockSounds(reader),
+    flatten: flattenComponent === undefined ? undefined : readFlattenable(flattenComponent),
+    till: tillComponent === undefined ? undefined : readTillable(tillComponent),
     stackSet:
       typeof rawItem === 'object' &&
       rawItem !== null &&
@@ -558,6 +623,97 @@ function needsClass(spec: BlockSpec): boolean {
     spec.weathering !== undefined ||
     spec.onEat !== undefined
   );
+}
+
+/** The `ModBlocks` field of a potted plant's project pot, for its constructor (ADR 0103 D2). */
+function potFieldOf(spec: BlockSpec, fieldOf: ReadonlyMap<string, string>): { potField?: string } {
+  const pot = projectPotOf(spec.type);
+  const field = pot === undefined ? undefined : fieldOf.get(pot);
+  return field === undefined ? {} : { potField: field };
+}
+
+/**
+ * The `ModBlocks` helpers of project pots (ADR 0103 D2, `PotTypes`): `plantBlock` (a potted plant's plant, which must be
+ * registered and one block high, else the start-up stops where the runtime skips it) and `potted` (a listed plant's
+ * potted companion; a plant that is missing, two blocks high or potted already is skipped with a warning, as the runtime
+ * reports a load error).
+ */
+function potHelpers(file: JavaFile, context: GenerationContext): string[] {
+  const identifier = file.use('net.minecraft.resources.Identifier');
+  const blockType = file.use('net.minecraft.world.level.block.Block');
+  const builtIn = file.use('net.minecraft.core.registries.BuiltInRegistries');
+  const blocks = file.use('net.minecraft.world.level.block.Blocks');
+  const doublePlant = file.use('net.minecraft.world.level.block.DoublePlantBlock');
+  const pot = file.use(`${context.input.javaPackage}.block.type.ModFlowerPotBlock`);
+  const registry = file.use('net.minecraft.core.Registry');
+  const registries = file.use('net.minecraft.core.registries.Registries');
+  const resourceKey = file.use('net.minecraft.resources.ResourceKey');
+  const properties = file.use('net.minecraft.world.level.block.state.BlockBehaviour', 'Properties');
+  const logger = file.use('org.slf4j.LoggerFactory');
+  return [
+    '',
+    "/** A potted plant's plant in a project pot (ADR 0103 D2): a registered block one block high. */",
+    `public static ${blockType} plantBlock(${identifier} id) {`,
+    `    ${blockType} plant = ${builtIn}.BLOCK.getValue(id);`,
+    `    if (!${builtIn}.BLOCK.containsKey(id) || plant == ${blocks}.AIR) {`,
+    '        throw new IllegalStateException("plant " + id + " is not a registered block");',
+    '    }',
+    `    if (plant instanceof ${doublePlant}) {`,
+    '        throw new IllegalStateException("plant " + id + " is two blocks high and cannot be potted");',
+    '    }',
+    '    return plant;',
+    '}',
+    '',
+    '/** Registers the potted companion {@code id} of {@code pot} holding the listed plant {@code plantId} (B510b). */',
+    `private static void potted(${pot} pot, ${identifier} id, ${identifier} plantId) {`,
+    `    ${blockType} plant = ${builtIn}.BLOCK.getValue(plantId);`,
+    '    String problem = null;',
+    `    if (plant == ${blocks}.AIR) {`,
+    '        problem = "is not a registered block";',
+    `    } else if (plant instanceof ${doublePlant}) {`,
+    '        problem = "is two blocks high and cannot be potted";',
+    `    } else if (${builtIn}.BLOCK.containsKey(id)) {`,
+    '        problem = "has the potted id " + id + ", which is already registered";',
+    '    } else if (pot.pottedFor(plant).isPresent()) {',
+    '        problem = "is already potted in the pot";',
+    '    }',
+    '    if (problem != null) {',
+    `        ${logger}.getLogger("${context.input.modId}").warn("pot {}: plants: {} {}; the potted plant {} is skipped", BuiltInRegistries.BLOCK.getKey(pot), plantId, problem, id);`,
+    '        return;',
+    '    }',
+    `    ${resourceKey}<${blockType}> key = ${resourceKey}.create(${registries}.BLOCK, id);`,
+    `    ${pot} companion = ${registry}.register(${builtIn}.BLOCK, key, new ${pot}(plant, pot, ${properties}.ofFullCopy(pot).setId(key)));`,
+    '    pot.addPotted(plant, companion);',
+    '}',
+  ];
+}
+
+/**
+ * The own set type of a door, trapdoor, button or plate (ADR 0105 D2): `set_type` as an object, or a vanilla one on a
+ * block with `block_sounds` (the vanilla classes take their block sounds from the set type), as `BlockSetTypes.of`.
+ */
+function setTypeOf(spec: BlockSpec, modPackage: string): { setType?: (file: JavaFile) => string } {
+  const ts = spec.type;
+  if (ts.setType === undefined || (ts.ownSet === undefined && spec.blockSounds === undefined)) {
+    return {};
+  }
+  return {
+    setType: (file) => {
+      const modBlocks = file.use(`${modPackage}.ModBlocks`);
+      const sounds =
+        spec.blockSounds === undefined
+          ? undefined
+          : ownSoundsExpression(file, modBlocks, spec.input.id, spec.soundType, spec.blockSounds);
+      return ownSetTypeExpression(
+        file,
+        modBlocks,
+        spec.input.id,
+        ts.setType as string,
+        ts.ownSet,
+        sounds,
+      );
+    },
+  };
 }
 
 function tracksPower(spec: BlockSpec): boolean {
@@ -667,6 +823,10 @@ export function generateBlocks(
   let usesTorchParticle = false;
   let usesWoodType = false;
   let usesPottedPlant = false;
+  let usesOwnSounds = false;
+  let usesPotPlants = false;
+  const plantClasses = new Set<string>();
+  const potLines: string[] = [];
   const nearPlane = (): string => {
     usesNearPlane = true;
     return 'ModBlocks::nearPlaneIntersectsOutline';
@@ -694,9 +854,11 @@ export function generateBlocks(
         (n) => (hasEntity ? [`block.${n}`, `block.${n}Entity`] : [`block.${n}`]),
         '',
       );
-      writeBlockClass(context, spec, name, field);
+      writeBlockClass(context, spec, name, field, fieldOf);
       type = file.use(`${packageOf(context, 'block')}.${name}`);
-      if (spec.container !== undefined) {
+      if (spec.container?.doubleChest === true) {
+        writeDoubleChestEntityClass(context, spec.input.id, `${name}Entity`, field);
+      } else if (spec.container !== undefined) {
         writeStorageEntityClass(context, spec.input.id, `${name}Entity`, field, spec.container);
       }
       if (spec.machine !== undefined) {
@@ -706,16 +868,38 @@ export function generateBlocks(
       if (hasEntity)
         blockEntities.push({ blockId: spec.input.id, field, entityClass: `${name}Entity` });
     } else {
-      type = file.use(familyClass(spec.type, pkg).fqcn);
+      const family = familyClass(spec.type, pkg);
+      type = file.use(family.fqcn, ...(family.nested === undefined ? [] : [family.nested]));
       args = constructorArguments(file, spec.type, pkg, {
         blockId: spec.input.id,
         seedId: spec.itemId,
+        ...setTypeOf(spec, pkg),
+        ...potFieldOf(spec, fieldOf),
       });
     }
     const parity = spec.type.parity;
+    // A potted plant in a project pot (ADR 0103 D2): the pot's own class, added to the pot's map.
+    const projectPot =
+      parity?.type === 'potted_plant' && parity.pot !== 'minecraft:flower_pot'
+        ? parity.pot
+        : undefined;
+    if (projectPot !== undefined) {
+      const potField = fieldOf.get(projectPot);
+      const potSpec = specs.find((s) => s.input.id === projectPot);
+      if (potField === undefined || potSpec?.type.plant3?.type !== 'flower_pot') {
+        spec.reader.fail(
+          `pot ${projectPot} is not a flower_pot block of the project (vanilla's minecraft:flower_pot or a block of type flower_pot); the runtime skips the potted plant`,
+        );
+      }
+      usesPotPlants = true;
+      plantClasses.add('ModFlowerPotBlock');
+      extras.push(
+        `${potField}.addPotted(${field}.plant(), ${field}); // the pot takes the plant (ADR 0103 D2)`,
+      );
+    }
     if (parity?.type === 'torch') usesTorchParticle = true;
     if (parity?.type === 'sign' || parity?.type === 'hanging_sign') usesWoodType = true;
-    if (parity?.type === 'potted_plant') usesPottedPlant = true;
+    if (parity?.type === 'potted_plant' && projectPot === undefined) usesPottedPlant = true;
     if (spec.type.type === 'stairs') {
       const base = spec.type.baseBlock ?? 'minecraft:stone';
       const baseField = fieldOf.get(base);
@@ -729,18 +913,36 @@ export function generateBlocks(
       `${properties}.of()`,
       `        .setId(${field}_KEY)`,
       `        .strength(${javaFloat(spec.hardness)}, ${javaFloat(spec.resistance)})`,
-      signSoundLine(file, parity) ?? `        .sound(${soundType}.${spec.soundType})`,
+      signSoundLine(file, parity) ??
+        (spec.blockSounds === undefined
+          ? `        .sound(${soundType}.${spec.soundType})`
+          : `        .sound(${ownSoundsExpression(file, 'ModBlocks', spec.input.id, spec.soundType, spec.blockSounds)}) // block_sounds`),
     ];
+    if (spec.blockSounds !== undefined || spec.type.ownSet !== undefined) usesOwnSounds = true;
     if (spec.machine !== undefined) {
       props.push(machineLightLine(type, spec.machine, spec.light ?? 0));
-    } else if (spec.light !== undefined && !lightFromState(spec.type.type)) {
+    } else if (
+      spec.light !== undefined &&
+      !lightFromState(spec.type.type) &&
+      !(spec.type.plant3 !== undefined && plant3LightFromState(spec.type.plant3))
+    ) {
       props.push(`        .lightLevel(state -> ${javaInt(spec.light)})`);
     }
     if (spec.requiresTool) props.push('        .requiresCorrectToolForDrops()');
+    if (spec.container?.doubleChest === true) {
+      props.push(
+        "        .noOcclusion() // double chest: vanilla's chest shape is smaller than a cube",
+      );
+    }
     if (spec.shape !== undefined) props.push(...shapeProperties(spec.shape));
     props.push(...typeProperties(file, spec.type, nearPlane));
     if (parity !== undefined) {
       props.push(...parityProperties(file, parity, spec.light !== undefined, pkg));
+    }
+    const plant3 = spec.type.plant3;
+    if (plant3 !== undefined) {
+      props.push(...plant3Properties(file, plant3, spec.light));
+      for (const name of plant3Classes(plant3)) plantClasses.add(name);
     }
     if (spec.flammable !== undefined && spec.type.type !== 'leaves') {
       props.push(
@@ -813,6 +1015,43 @@ export function generateBlocks(
         );
       }
     }
+    // ADR 0103 D4: the strand, shoot or stem right after its element, with the element's properties.
+    const plantCompanion = plant3 === undefined ? undefined : plant3Companion(plant3, pkg);
+    if (plantCompanion !== undefined) {
+      companion = fields.take(constantName(`${path}${plantCompanion.suffix}`), (name) => [
+        name,
+        `${name}_KEY`,
+      ]);
+      const companionId = `${spec.input.id}${plantCompanion.suffix}`;
+      if (projectBlocks.has(companionId)) {
+        spec.reader.fail(
+          `the generated block ${companionId} (its ${plantCompanion.kind}) is also a block of the project (blocks-items.generated-block-clash; the runtime skips the element)`,
+        );
+      }
+      const companionType = file.use(
+        plantCompanion.fqcn,
+        ...(plantCompanion.nested === undefined ? [] : [plantCompanion.nested]),
+      );
+      body.push(
+        `/** {@code ${companionId}}: the ${plantCompanion.kind} of {@code ${spec.input.id}} (ADR 0103 D4), no item of its own. */`,
+        `public static final ${resourceKey}<${blockType}> ${companion}_KEY = ${resourceKey}.create(${registries}.BLOCK, ${identifierExpression(file, companionId)});`,
+        `public static final ${companionType} ${companion} = ${registry}.register(${builtIn}.BLOCK, ${companion}_KEY, ${plantCompanion.construct(file, field, `${properties}.ofFullCopy(${field}).setId(${companion}_KEY)`)});`,
+      );
+      extras.push(plantCompanion.attach(field, companion));
+    }
+    if (plant3?.type === 'flower_pot') {
+      usesPotPlants = true;
+      for (const [potted, plant] of listedPlants(spec.input.id, plant3.plants)) {
+        if (projectBlocks.has(potted)) {
+          spec.reader.fail(
+            `the generated block ${potted} (the potted ${plant}) is also a block of the project (blocks-items.generated-block-clash)`,
+          );
+        }
+        potLines.push(
+          `potted(${field}, ${identifierExpression(file, potted)}, ${identifierExpression(file, plant)}); // plants: ${plant}`,
+        );
+      }
+    }
     if (spec.waxInto !== undefined || spec.weathering !== undefined) {
       waxing.push(
         ...waxingLines(file, field, spec.input.id, spec.weathering, spec.waxInto, projectBlocks),
@@ -848,6 +1087,7 @@ export function generateBlocks(
         `BlockStripping.add(${field}, ${identifierExpression(file, spec.strippable)}); // msm:strippable`,
       );
     }
+    extras.push(...toolPairLines(file, field, spec.flatten, spec.till));
     if (spec.item !== undefined) {
       const item = file.use('net.minecraft.world.item.Item');
       // A keep-contents container's item cannot go inside container items, as a shulker box (ADR 0074 D6).
@@ -859,7 +1099,8 @@ export function generateBlocks(
               ...(ownItem.nested === undefined ? [] : [ownItem.nested]),
             ].join('.')
           : file.use(
-              spec.type.type === 'door'
+              spec.type.type === 'door' ||
+                (spec.type.plant3?.type === 'dripleaf' && !spec.type.plant3.big)
                 ? 'net.minecraft.world.item.DoubleHighBlockItem'
                 : spec.container?.keepContents === true
                   ? `${packageOf(context, 'block')}.ContainerBlockItem`
@@ -916,10 +1157,26 @@ export function generateBlocks(
     }
   }
   if (specs.some((spec) => spec.container !== undefined)) writeContainerFiles(context);
+  const perPlayer = specs.some((spec) => spec.container?.perPlayer === true);
+  const doubleChest = specs.some((spec) => spec.container?.doubleChest === true);
+  // ContainerOpeners knows the per-player store, so every project with containers has PlayerStores (and BlockWaxing).
+  const containers = specs.some((spec) => spec.container !== undefined);
+  if (containers || doubleChest) {
+    writeStorage2Files(context, { perPlayer: containers, doubleChest });
+  }
+  if (perPlayer) {
+    extras.push(
+      "PlayerStores.register(); // each player's own store of the per-player chests (ADR 0104 D5)",
+    );
+    file.use(`${packageOf(context, 'block')}.PlayerStores`);
+  }
   if (specs.some((spec) => spec.type.portal !== undefined)) writePortalFiles(context);
   if (machines.length > 0) writeMachineFiles(context);
   if (blockEntities.length > 0) writeBlockEventsFile(context);
-  const strips = specs.some((spec) => spec.strippable !== undefined);
+  const strips = specs.some(
+    (spec) =>
+      spec.strippable !== undefined || spec.flatten !== undefined || spec.till !== undefined,
+  );
   if (strips) {
     extras.push('BlockStripping.register();');
     context.files.push({
@@ -927,13 +1184,19 @@ export function generateBlocks(
       contents: blockStrippingJava(context.input.javaPackage),
     });
   }
-  // Waxing and scraping after stripping, so an axe strips first (ADR 0094 D9, B449).
-  if (specs.some((spec) => spec.weathering !== undefined || spec.waxInto !== undefined)) {
-    extras.push(...waxing, 'BlockWaxing.register();');
+  // Waxing and scraping after stripping, so an axe strips first (ADR 0094 D9, B449); lightning after it (ADR 0104 D2).
+  const weathers = specs.some((spec) => spec.weathering !== undefined);
+  const waxes = weathers || specs.some((spec) => spec.waxInto !== undefined);
+  if (waxes) extras.push(...waxing, 'BlockWaxing.register();');
+  if (waxes || containers) {
     context.files.push({
       path: classPath(context, '', 'BlockWaxing'),
       contents: blockWaxingJava(pkg),
     });
+  }
+  if (weathers) {
+    extras.push('Lightning.init(); // lightning scrapes these weathering blocks (ADR 0104 D2)');
+    context.files.push({ path: classPath(context, '', 'Lightning'), contents: lightningJava(pkg) });
   }
   const drivers = new Set(
     specs.flatMap((spec) =>
@@ -948,6 +1211,14 @@ export function generateBlocks(
       contents: driverClassJava(driver, packageOf(context, 'block.type')) as string,
     });
   }
+  for (const name of [...plantClasses].sort()) {
+    context.files.push({
+      path: classPath(context, 'block.type', name),
+      contents: plantClassJava(name, packageOf(context, 'block.type')),
+    });
+  }
+  // A project pot's listed plants after every block (ADR 0103 D2, B510b): the plants are registered by then.
+  extras.push(...potLines);
   const helpers: string[] = [];
   const headFields: string[] = [];
   if (treeChecks.length > 0) {
@@ -1066,6 +1337,8 @@ export function generateBlocks(
       '}',
     );
   }
+  if (usesOwnSounds) helpers.push(...ownSoundsHelpers(file, context.input.modId));
+  if (usesPotPlants) helpers.push(...potHelpers(file, context));
   if (usesStairsBase) {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     const identifier = file.use('net.minecraft.resources.Identifier');
@@ -1213,6 +1486,7 @@ function writeBlockClass(
   spec: BlockSpec,
   name: string,
   field: string,
+  fieldOf: ReadonlyMap<string, string> = new Map(),
 ): void {
   const javaPackage = packageOf(context, 'block');
   const file = new JavaFile(javaPackage, spec.input.path);
@@ -1221,14 +1495,21 @@ function writeBlockClass(
   const actions = noteActions(context, file, spec.events);
   const power = tracksPower(spec);
   const ts = spec.type;
+  // A double chest is vanilla's chest family (ADR 0104 D4): its own facing, water and shape.
+  const doubleChest = spec.container?.doubleChest === true;
   const superClass = file.use(
-    ts.portal === undefined
-      ? familyClass(ts, context.input.javaPackage).fqcn
-      : `${packageOf(context, 'portal')}.PortalBlock`,
+    doubleChest
+      ? `${javaPackage}.DoubleChestBlock`
+      : ts.portal === undefined
+        ? familyClass(ts, context.input.javaPackage).fqcn
+        : `${packageOf(context, 'portal')}.PortalBlock`,
+    ...(familyClass(ts, context.input.javaPackage).nested === undefined || doubleChest
+      ? []
+      : [familyClass(ts, context.input.javaPackage).nested as string]),
   );
   const water = spec.waterlogged;
-  const facing = isFacing(ts);
-  const open = spec.container !== undefined;
+  const facing = isFacing(ts) && !doubleChest;
+  const open = spec.container !== undefined && !doubleChest;
   const lit = spec.machine !== undefined;
 
   const members: string[] = [];
@@ -1359,7 +1640,16 @@ function writeBlockClass(
     if (members.length > 0) members.push('');
     members.push(...portalSpecField(file, ts.portal, packageOf(context, 'portal')));
   }
-  if (ts.type === 'stairs') {
+  if (doubleChest && spec.container !== undefined) {
+    if (members.length > 0) members.push('');
+    members.push(
+      `/** The msm:container of {@code ${spec.input.id}}: a double chest of 3 rows a half (ADR 0104 D4). */`,
+      ...containerSpecLines(file, spec.container),
+      '',
+      `public ${name}(${properties} properties) {`,
+      `    super(SPEC, () -> ${file.use(`${context.input.javaPackage}.ModBlockEntities`)}.${field}, properties);`,
+    );
+  } else if (ts.type === 'stairs') {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     members.push(
       '',
@@ -1371,6 +1661,8 @@ function writeBlockClass(
       ...constructorArguments(file, ts, context.input.javaPackage, {
         blockId: spec.input.id,
         seedId: spec.itemId,
+        ...setTypeOf(spec, context.input.javaPackage),
+        ...potFieldOf(spec, fieldOf),
       }),
       'properties',
     ].join(', ');
@@ -1431,9 +1723,10 @@ function writeBlockClass(
     members.push(...shapeMembers(file, spec.shape, blockState(), blockPos(), shapeReturn));
   }
 
-  // A container or machine fires msm:on_interact after its menu or holder (blockEntityMembers below).
-  const hasEntity = spec.container !== undefined || spec.machine !== undefined;
-  if (!hasEntity && spec.onInteract !== undefined && !isShaped(ts)) {
+  // A container or machine fires msm:on_interact after its menu or holder (blockEntityMembers below);
+  // a double chest after vanilla's chest menu.
+  const hasEntity = (spec.container !== undefined && !doubleChest) || spec.machine !== undefined;
+  if (!hasEntity && spec.onInteract !== undefined && (!isShaped(ts) || doubleChest)) {
     const interactionResult = file.use('net.minecraft.world.InteractionResult');
     const hit = file.use('net.minecraft.world.phys.BlockHitResult');
     members.push(
@@ -1491,10 +1784,11 @@ function writeBlockClass(
   }
   const keepContents = spec.container?.keepContents === true;
   const triggers = triggerMembers(context, file, spec, keepContents);
+  const keeping = agesKeeping(ts.type, spec.container !== undefined);
   if (spec.weathering !== undefined && spec.onRandomTick !== undefined) {
     // One randomTick: the block ages (vanilla's changeOverTime) where super's tick would run.
     const at = triggers.indexOf('    super.randomTick(state, level, pos, random);');
-    if (at >= 0) triggers[at] = `    ${WEATHER_TICK}`;
+    if (at >= 0) triggers[at] = `    ${keeping ? WEATHER_TICK_KEEPING : WEATHER_TICK}`;
   }
   members.push(...triggers);
   if (spec.weathering !== undefined) {
@@ -1505,6 +1799,12 @@ function writeBlockClass(
         spec.onRandomTick !== undefined,
         ts.type === 'door',
         file.use(`${context.input.javaPackage}.BlockWaxing`),
+        keeping,
+        ts.type === 'button'
+          ? javaInt(ts.pressTicks ?? 20)
+          : ts.type === 'pressure_plate'
+            ? 'getPressedTime()'
+            : undefined,
       ),
     );
   }
@@ -1524,7 +1824,10 @@ function writeBlockClass(
   }
   if (
     spec.onRandomTick !== undefined &&
-    (ts.type === 'berry_bush' || ts.type === 'cocoa' || ts.type === 'stem')
+    (ts.type === 'berry_bush' ||
+      ts.type === 'cocoa' ||
+      ts.type === 'stem' ||
+      ts.plant3 !== undefined)
   ) {
     const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
     members.push(
@@ -1537,7 +1840,14 @@ function writeBlockClass(
     );
   }
   let entity: BlockEntityMembers | undefined;
-  if (hasEntity) {
+  if (doubleChest && spec.container !== undefined) {
+    const fired = [spec.container.onOpen, spec.container.onClose].filter((e) => e !== undefined);
+    entity = {
+      interfaces: fired.length > 0 ? ['BlockEvents'] : [],
+      members: [...newBlockEntityMembers(file, `${name}Entity`), ...fireEventMembers(file, fired)],
+    };
+    members.push(...entity.members);
+  } else if (hasEntity) {
     const parts = {
       entityClass: `${name}Entity`,
       typeField: field,
@@ -1643,6 +1953,9 @@ function writeBlockClass(
     ...(entity?.interfaces ?? []),
     ...(water ? [file.use('net.minecraft.world.level.block.SimpleWaterloggedBlock')] : []),
     ...(spec.weathering !== undefined ? [weatheringInterface(file)] : []),
+    ...(spec.weathering !== undefined && (ts.type === 'button' || ts.type === 'pressure_plate')
+      ? [`${file.use(`${context.input.javaPackage}.BlockWaxing`)}.Pressed`]
+      : []),
   ];
   const lines = [
     `/** The block {@code ${spec.input.id}}. */`,

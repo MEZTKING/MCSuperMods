@@ -68,7 +68,7 @@ export const PARITY_FIELDS: Readonly<Record<ParityType, readonly string[]>> = {
   chain: [],
   sign: ['wood_type'],
   hanging_sign: ['wood_type'],
-  potted_plant: ['plant'],
+  potted_plant: ['plant', 'pot'],
   candle: [],
   sea_pickle: [],
   vine: ['spreads'],
@@ -153,6 +153,8 @@ export interface ParitySpec {
   readonly woodType?: string;
   /** `potted_plant`: the plant block id. */
   readonly plant?: string;
+  /** `potted_plant`: the pot (ADR 0103 D2; default vanilla's `minecraft:flower_pot`). */
+  readonly pot?: string;
   /** `stem`: the fruit block and the two tags, without `#`. */
   readonly stem?: { readonly fruit: string; readonly soil: string; readonly fruitSoil: string };
   /** `vine`. */
@@ -255,7 +257,11 @@ export function readParity(reader: Reader, type: ParityType): ParitySpec {
       return { type, woodType: wood.toUpperCase() };
     }
     case 'potted_plant':
-      return { type, plant: fullId(reader, 'plant', reader.requiredString('plant')) };
+      return {
+        type,
+        plant: fullId(reader, 'plant', reader.requiredString('plant')),
+        pot: fullId(reader, 'pot', reader.string('pot', 'minecraft:flower_pot')),
+      };
     case 'stem':
       return {
         type,

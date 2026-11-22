@@ -39,8 +39,9 @@ import { ExportProblemCodes } from '../problem-codes';
 export const NEEDS_JAR = ExportProblemCodes.needsJar;
 
 /**
- * The infos of a vanilla pack export of a project with commands or creative tabs (ADR 0096 D1,
- * D2): one {@link NEEDS_JAR} per `msm:command` and `msm:creative_tab` element, as the host adds
+ * The infos of a vanilla pack export of a project with commands, creative tabs or rules for
+ * vanilla blocks (ADR 0096 D1, D2; ADR 0105 D4, B517): one {@link NEEDS_JAR} per `msm:command`,
+ * `msm:creative_tab` and `msm:vanilla_block_rules` element, as the host adds
  * `controls.needs-jar` for key binds. Pure; the elements' order is kept.
  *
  * @param elements - The project's elements (id, kind and data).
@@ -64,6 +65,13 @@ export function needsJarNotes(
         code: NEEDS_JAR,
         elementId: element.id,
         message: `The command /${name} works only in the Fabric mod jar: a vanilla data pack cannot add commands, so the vanilla packs leave it out.`,
+      });
+    } else if (element.kind === 'msm:vanilla_block_rules') {
+      out.push({
+        severity: 'info',
+        code: NEEDS_JAR,
+        elementId: element.id,
+        message: `The rules for vanilla blocks in ${element.id} work only in the Fabric mod jar: a vanilla data pack cannot change what tools do to vanilla blocks, or how they age and burn, so the vanilla packs leave them out.`,
       });
     } else if (element.kind === 'msm:creative_tab') {
       out.push({
@@ -176,7 +184,13 @@ export function commandLiteralsOf(
  * and the probe of brief B346 (2026-11-14, vanilla servers of both supported targets, one
  * fresh world per case) found that a dimension type or a timeline track of
  * `minecraft:visual/ambient_particles` naming an unknown particle type fails the whole pack
- * ("Unknown registry key in ... particle_type", "Failed to load datapacks").
+ * ("Unknown registry key in ... particle_type", "Failed to load datapacks"). The data kinds of
+ * ADR 0106 joined after the probe of brief B517 (2026-11-22, vanilla servers of both supported
+ * targets): a block transformer naming an unknown block, a sulfur cube archetype naming an unknown
+ * item and a test instance naming a missing test environment each fail the whole pack ("Errors in
+ * registry ...", "Unbound values in registry ... test_environment"); test environments are taken
+ * with them, as they name game rules and functions of their own. The two context providers are
+ * reloadable registries, not world data folders (B507), and stay out.
  */
 export const FATAL_DATA_FOLDERS: readonly DataFolderKey[] = Object.freeze([
   'recipe',
@@ -194,6 +208,10 @@ export const FATAL_DATA_FOLDERS: readonly DataFolderKey[] = Object.freeze([
   'dimension',
   'dimension_type',
   'timeline',
+  'block_transformer',
+  'sulfur_cube_archetype',
+  'test_environment',
+  'test_instance',
 ] satisfies DataFolderKey[]);
 
 /**

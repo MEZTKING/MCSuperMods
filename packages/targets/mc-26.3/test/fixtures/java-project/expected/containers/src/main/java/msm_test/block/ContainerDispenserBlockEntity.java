@@ -13,7 +13,8 @@ public class ContainerDispenserBlockEntity extends StorageBlockEntity {
     public static final ContainerSpec SPEC = new ContainerSpec(ContainerSpec.Layout.DISPENSER, 3, 1,
             false, true, true, // keep_contents, hoppers, comparator
             Optional.of(Identifier.fromNamespaceAndPath("minecraft", "block.chest.open")), Optional.of(Identifier.fromNamespaceAndPath("minecraft", "block.chest.close")), // open_sound, close_sound (absent: a barrel's)
-            Optional.empty(), Optional.empty()); // on_open, on_close
+            Optional.empty(), Optional.empty(), // on_open, on_close
+            false); // per_player
 
     public ContainerDispenserBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTAINER_DISPENSER, pos, state, SPEC);

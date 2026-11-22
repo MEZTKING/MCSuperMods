@@ -13,7 +13,8 @@ public class ContainerHolderBlockEntity extends StorageBlockEntity {
     public static final ContainerSpec SPEC = new ContainerSpec(ContainerSpec.Layout.NONE, 3, 2,
             false, true, true, // keep_contents, hoppers, comparator
             Optional.empty(), Optional.empty(), // open_sound, close_sound (absent: a barrel's)
-            Optional.of(Identifier.fromNamespaceAndPath("msm_test", "holder_opened")), Optional.empty()); // on_open, on_close
+            Optional.of(Identifier.fromNamespaceAndPath("msm_test", "holder_opened")), Optional.empty(), // on_open, on_close
+            false); // per_player
 
     public ContainerHolderBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CONTAINER_HOLDER, pos, state, SPEC);

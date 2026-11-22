@@ -44,10 +44,21 @@
  * @packageDocumentation
  */
 
+import {
+  isPlant3Type,
+  PLANT_3_FIELDS,
+  PLANT_3_TYPES,
+  type Plant3Spec,
+  type Plant3Type,
+  plant3Arguments,
+  plant3Class,
+  readPlant3,
+} from './growing-plants';
 import type { JavaFile } from './java';
 import { identifierExpression, javaFloat, javaInt, javaString } from './java';
 import { PORTAL_FIELDS, type PortalInfo, readPortal } from './portals';
 import type { Reader } from './read';
+import { type OwnSetSpec, readOwnSetType } from './sounds-and-pairs';
 import {
   isParityType,
   PARITY_FIELDS,
@@ -85,7 +96,7 @@ export type BuildingType = (typeof BUILDING_TYPES)[number];
 export type PlantType = (typeof PLANT_TYPES)[number];
 
 /** Every block type (ADR 0067 D1, ADR 0068, ADR 0077, ADR 0094). */
-export type BlockTypeName = BuildingType | PlantType | 'portal' | ParityType;
+export type BlockTypeName = BuildingType | PlantType | 'portal' | ParityType | Plant3Type;
 
 /** The types that keep a fixed or rotating shape and their own `powered` state (ADR 0067 D3). */
 const SHAPED_TYPES: readonly BlockTypeName[] = ['block', 'pillar', 'horizontal', 'directional'];
@@ -114,6 +125,7 @@ const TYPE_FIELDS: Readonly<Record<string, readonly string[]>> = {
   leaves: ['tint', 'particle_chance', 'falling_particle'],
   portal: PORTAL_FIELDS,
   ...PARITY_FIELDS,
+  ...PLANT_3_FIELDS,
 };
 
 /** MSM set type names (`BlockType.SetType`) to the 26.3 `BlockSetType` constant (`BlockSetTypes`). */
@@ -192,8 +204,10 @@ export interface TypeSpec {
   readonly type: BlockTypeName;
   /** `stairs`: the base block id (default `minecraft:stone`). */
   readonly baseBlock?: string;
-  /** Doors, trapdoors, buttons, plates: the `BlockSetType` constant. */
+  /** Doors, trapdoors, buttons, plates: the `BlockSetType` constant (of the own set type's `base`). */
   readonly setType?: string;
+  /** An own set type (`set_type` as an object, ADR 0105 D2). */
+  readonly ownSet?: OwnSetSpec;
   /** Buttons: ticks pressed (default 30 for the wooden set types, else 20). */
   readonly pressTicks?: number;
   /** Pressure plates: a weighted plate up to this many entities. */
@@ -207,6 +221,8 @@ export interface TypeSpec {
   readonly portal?: PortalInfo;
   /** The ADR 0094 types: their fields (`vanilla-types.ts`). */
   readonly parity?: ParitySpec;
+  /** The ADR 0103 types: their fields (`growing-plants.ts`). */
+  readonly plant3?: Plant3Spec;
 }
 
 /** The top-level keys a definition of `type` may have besides the shared ones. */
@@ -227,6 +243,7 @@ export function readType(reader: Reader, components: Reader | undefined): TypeSp
     ...PLANT_TYPES,
     'portal',
     ...VANILLA_PARITY_TYPES,
+    ...PLANT_3_TYPES,
   ];
   if (!all.includes(raw)) {
     reader.fail(`type '${raw}' is not one of ${all.join(', ')}`);
@@ -242,6 +259,7 @@ export function readType(reader: Reader, components: Reader | undefined): TypeSp
     }
   }
   if (isParityType(type)) return { type, parity: readParity(reader, type) };
+  if (isPlant3Type(type)) return { type, plant3: readPlant3(reader, type) };
   switch (type) {
     case 'stairs': {
       const base = reader.string('base_block', 'minecraft:stone');
@@ -267,19 +285,20 @@ export function readType(reader: Reader, components: Reader | undefined): TypeSp
     }
     case 'door':
     case 'trapdoor':
-      return { type, setType: setType(reader) };
+      return { type, ...setType(reader) };
     case 'button': {
-      const set = reader.requiredString('set_type');
-      const pressTicks = reader.integer('press_ticks', WOODEN_SET_TYPES.includes(set) ? 30 : 20);
+      const set = setType(reader);
+      const base = set.ownSet?.baseName ?? reader.requiredString('set_type');
+      const pressTicks = reader.integer('press_ticks', WOODEN_SET_TYPES.includes(base) ? 30 : 20);
       if (pressTicks < 1 || pressTicks > 200) reader.fail('press_ticks must be 1 to 200');
-      return { type, setType: setType(reader), pressTicks };
+      return { type, ...set, pressTicks };
     }
     case 'pressure_plate': {
       const weighted = reader.has('weighted_max') ? reader.integer('weighted_max', 1) : undefined;
       if (weighted !== undefined && weighted < 1) reader.fail('weighted_max must be at least 1');
       return weighted === undefined
-        ? { type, setType: setType(reader) }
-        : { type, setType: setType(reader), weightedMax: weighted };
+        ? { type, ...setType(reader) }
+        : { type, ...setType(reader), weightedMax: weighted };
     }
     default:
       return { type };
@@ -395,13 +414,32 @@ function readLeaves(reader: Reader): LeavesSpec {
   };
 }
 
-function setType(reader: Reader): string {
+/** `set_type`: a vanilla name, or an own set type object (ADR 0105 D2) over its `base`. */
+function setType(reader: Reader): { setType: string; ownSet?: OwnSetSpec } {
+  const own = reader.stringOrObject('set_type');
+  if (own !== undefined && typeof own !== 'string') {
+    const spec = readOwnSetType(own, Object.keys(SET_TYPES));
+    return { setType: SET_TYPES[spec.baseName] as string, ownSet: spec };
+  }
+  return { setType: vanillaSetType(reader) };
+}
+
+function vanillaSetType(reader: Reader): string {
   const set = reader.requiredString('set_type');
   const constant = SET_TYPES[set];
   if (constant === undefined) {
     reader.fail(`set_type '${set}' is not one of ${Object.keys(SET_TYPES).join(', ')}`);
   }
   return constant;
+}
+
+/** The project pot of a `potted_plant` whose `pot` is not vanilla's flower pot (ADR 0103 D2), else `undefined`. */
+export function projectPotOf(spec: TypeSpec): string | undefined {
+  return spec.parity?.type === 'potted_plant' &&
+    spec.parity.pot !== undefined &&
+    spec.parity.pot !== 'minecraft:flower_pot'
+    ? spec.parity.pot
+    : undefined;
 }
 
 /** Whether the type keeps `msm:shape` and `msm:redstone` (the `MsmBlock` types). */
@@ -420,6 +458,8 @@ export interface FamilyClass {
   readonly fqcn: string;
   /** Whether its constructor is protected (a generated subclass is then always written). */
   readonly protectedConstructor: boolean;
+  /** A nested class of {@link FamilyClass.fqcn}, such as `Water`. */
+  readonly nested?: string;
 }
 
 /**
@@ -429,8 +469,15 @@ export interface FamilyClass {
  * @param javaPackage - The mod's package.
  */
 export function familyClass(spec: TypeSpec, javaPackage = ''): FamilyClass {
+  if (projectPotOf(spec) !== undefined) {
+    // A potted plant in a project pot is the pot's own class (ADR 0103 D2).
+    return { fqcn: `${javaPackage}.block.type.ModFlowerPotBlock`, protectedConstructor: false };
+  }
   if (spec.parity !== undefined) {
     return { fqcn: parityClass(spec.parity.type, javaPackage), protectedConstructor: false };
+  }
+  if (spec.plant3 !== undefined) {
+    return { ...plant3Class(spec.plant3, javaPackage), protectedConstructor: false };
   }
   const block = (name: string, protectedConstructor = false): FamilyClass => ({
     fqcn: `net.minecraft.world.level.block.${name}`,
@@ -496,8 +543,23 @@ export function constructorArguments(
   file: JavaFile,
   spec: TypeSpec,
   modPackage: string,
-  ids?: { readonly blockId: string; readonly seedId: string },
+  ids?: {
+    readonly blockId: string;
+    readonly seedId: string;
+    /** The block's own set type expression (`ModBlocks.ownSetType(...)`), when it has one. */
+    readonly setType?: (file: JavaFile) => string;
+    /** The `ModBlocks` field of a potted plant's project pot (ADR 0103 D2). */
+    readonly potField?: string;
+  },
 ): string[] {
+  if (spec.plant3 !== undefined) return plant3Arguments(file, spec.plant3, modPackage);
+  if (projectPotOf(spec) !== undefined) {
+    const modBlocks = file.use(`${modPackage}.ModBlocks`);
+    return [
+      `${modBlocks}.plantBlock(${identifierExpression(file, spec.parity?.plant ?? 'minecraft:air')})`,
+      `${modBlocks}.${ids?.potField ?? 'POT'}`,
+    ];
+  }
   if (spec.parity !== undefined) {
     return parityArguments(
       file,
@@ -507,6 +569,7 @@ export function constructorArguments(
       file.use(`${modPackage}.ModBlocks`),
     );
   }
+  const set = (): string => ids?.setType?.(file) ?? `${file.use(BLOCK_SET_TYPE)}.${spec.setType}`;
   const noAmbientSound = (): string =>
     `${file.use('net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer')}.noAmbientSound()`;
   switch (spec.type) {
@@ -533,13 +596,11 @@ export function constructorArguments(
     }
     case 'door':
     case 'trapdoor':
-      return [`${file.use(BLOCK_SET_TYPE)}.${spec.setType}`];
+      return [set()];
     case 'button':
-      return [`${file.use(BLOCK_SET_TYPE)}.${spec.setType}`, javaInt(spec.pressTicks ?? 20)];
+      return [set(), javaInt(spec.pressTicks ?? 20)];
     case 'pressure_plate':
-      return spec.weightedMax === undefined
-        ? [`${file.use(BLOCK_SET_TYPE)}.${spec.setType}`]
-        : [javaInt(spec.weightedMax), `${file.use(BLOCK_SET_TYPE)}.${spec.setType}`];
+      return spec.weightedMax === undefined ? [set()] : [javaInt(spec.weightedMax), set()];
     default:
       return [];
   }

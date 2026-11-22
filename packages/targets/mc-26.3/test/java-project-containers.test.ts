@@ -127,6 +127,7 @@ const RENAMES: readonly (readonly [string, string])[] = [
   ['spec.menu(machineId)', 'spec.menu()'],
   ['spec.recipeTypes(machineId)', 'spec.recipeTypes()'],
   ['MsmRuntime.', ''],
+  ['Weathering.familyRoot', 'BlockWaxing.familyRoot'],
   // Events: the block's generated fireEvent instead of the runtime's EventRunner.
   ['instanceof MsmContainerBlock block', 'instanceof BlockEvents block'],
   [
@@ -171,6 +172,13 @@ const DIFFERENCES: Readonly<Record<string, readonly (readonly [string, string])[
     ['    @Override\n    public Optional<Integer> time()', '    public Optional<Integer> time()'],
     ['    @Override\n    public float experience()', '    public float experience()'],
   ],
+  // The attachment and logger are the mod's own (B517).
+  PlayerStores: [
+    [
+      'public final class PlayerStores {\n',
+      'public final class PlayerStores {\n    private static final String MOD_ID = "msm_test";\n    private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);\n',
+    ],
+  ],
   MachineRecipes: [
     [
       '    private static final Set<String> LOGGED = ConcurrentHashMap.newKeySet();\n',
@@ -204,6 +212,7 @@ const COPIES: readonly (readonly [string, string])[] = [
   ['container/ContainerOpeners.java', 'block/ContainerOpeners.java'],
   ['container/HolderInteraction.java', 'block/HolderInteraction.java'],
   ['container/MsmContainerBlockItem.java', 'block/ContainerBlockItem.java'],
+  ['container/PlayerStores.java', 'block/PlayerStores.java'],
   ['machine/MsmMachineBlockEntity.java', 'block/MachineBlockEntity.java'],
   ['machine/MachineData.java', 'block/MachineData.java'],
   ['machine/MsmFurnaceMenu.java', 'block/MachineFurnaceMenu.java'],

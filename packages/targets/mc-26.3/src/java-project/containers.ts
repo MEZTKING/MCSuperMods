@@ -16,6 +16,11 @@ import { classPath, type GenerationContext, packageOf } from './context';
 import { identifierExpression, indent, JavaFile, javaInt, javaString } from './java';
 import type { Reader } from './read';
 import {
+  doubleChestBlockEntityJava,
+  doubleChestBlockJava,
+  playerStoresJava,
+} from './templates/storage-2-java';
+import {
   blockEventsJava,
   containerBlockItemJava,
   containerMenusJava,
@@ -31,6 +36,8 @@ const CONTAINER_KEYS = [
   'rows',
   'size',
   'keep_contents',
+  'double',
+  'per_player',
   'hoppers',
   'comparator',
   'open_sound',
@@ -57,12 +64,15 @@ export const BLOCK_ENTITY_CLASS_NAMES: readonly string[] = [
   'block.ContainerMenus',
   'block.ContainerOpeners',
   'block.ContainerSpec',
+  'block.DoubleChestBlock',
+  'block.DoubleChestBlockEntity',
   'block.HolderInteraction',
   'block.MachineBlockEntity',
   'block.MachineData',
   'block.MachineFurnaceMenu',
   'block.MachineResultSlot',
   'block.MachineSpec',
+  'block.PlayerStores',
   'block.StorageBlockEntity',
 ];
 
@@ -79,6 +89,10 @@ export interface ContainerInfo {
   readonly rows: number;
   readonly size: number;
   readonly keepContents: boolean;
+  /** `double` (ADR 0104 D4): a `DoubleChestBlock`, vanilla's chest family. */
+  readonly doubleChest: boolean;
+  /** `per_player` (ADR 0104 D5): each player's own store in `PlayerStores`. */
+  readonly perPlayer: boolean;
   readonly hoppers: boolean;
   readonly comparator: boolean;
   readonly openSound: string | undefined;
@@ -123,6 +137,25 @@ export function readContainer(
       `keep_contents needs layout 'chest' with 3 rows (the runtime turns it off with a load error)`,
     );
   }
+  // ADR 0104 D4, D5 (BlockComponents.checkContainer): the runtime turns these off with a load error.
+  if (component.has('double') && layout !== 'CHEST') {
+    component.fail(`double is only for layout 'chest', not '${layout.toLowerCase()}'`);
+  }
+  if (component.has('per_player') && layout !== 'CHEST') {
+    component.fail(`per_player is only for layout 'chest', not '${layout.toLowerCase()}'`);
+  }
+  const doubleChest = component.boolean('double', false);
+  const perPlayer = component.boolean('per_player', false);
+  if (doubleChest && (rows !== 3 || keepContents)) {
+    component.fail(
+      'double needs 3 rows and no keep_contents (the runtime turns it off with a load error)',
+    );
+  }
+  if (perPlayer && (keepContents || doubleChest)) {
+    component.fail(
+      `per_player is not allowed with ${keepContents ? 'keep_contents' : 'double'} (the runtime turns it off with a load error)`,
+    );
+  }
   const sound = (key: string): string | undefined => {
     const value = component.optionalString(key);
     return value === undefined ? undefined : namespacedId(component, key, value);
@@ -136,6 +169,8 @@ export function readContainer(
     rows,
     size,
     keepContents,
+    doubleChest,
+    perPlayer,
     hoppers: component.boolean('hoppers', true),
     comparator: component.boolean('comparator', true),
     openSound: sound('open_sound'),
@@ -341,7 +376,9 @@ export function containerBlockMembers(
       info.layout === 'CHEST'
         ? info.keepContents
           ? 'the shulker box menu (keep-contents)'
-          : `a chest menu of ${info.rows} row(s)`
+          : info.perPlayer
+            ? `the player's own store in a chest menu of ${info.rows} row(s) (per_player)`
+            : `a chest menu of ${info.rows} row(s)`
         : info.layout === 'HOPPER'
           ? 'the hopper menu'
           : 'the dispenser menu';
@@ -354,9 +391,17 @@ export function containerBlockMembers(
       '    if (storage == null) {',
       `        return ${parts.onInteract === undefined ? `${interactionResult}.PASS` : 'interact(level, pos, player)'};`,
       '    }',
-      `    if (level instanceof ${serverLevel}) {`,
-      '        player.openMenu(storage); // a locked container sends its own message and opens nothing',
-      '    }',
+      ...(info.perPlayer
+        ? [
+            `    if (level instanceof ${serverLevel}) {`,
+            "        PlayerStores.open(storage, player); // the player's own store (ADR 0104 D5)",
+            '    }',
+          ]
+        : [
+            `    if (level instanceof ${serverLevel}) {`,
+            '        player.openMenu(storage); // a locked container sends its own message and opens nothing',
+            '    }',
+          ]),
       ...interactLine,
       `    return ${interactionResult}.SUCCESS;`,
       '}',
@@ -376,7 +421,8 @@ export function containerBlockMembers(
     '    }',
     '}',
   );
-  if (info.comparator) {
+  // A per-player chest has no comparator output, as vanilla's ender chest (ADR 0104 D5).
+  if (info.comparator && !info.perPlayer) {
     const direction = file.use('net.minecraft.core.Direction');
     const menu = file.use('net.minecraft.world.inventory.AbstractContainerMenu');
     members.push(
@@ -425,12 +471,13 @@ export function containerBlockMembers(
 }
 
 /** The `new ContainerSpec(...)` of a container block. */
-function containerSpecLines(file: JavaFile, info: ContainerInfo): string[] {
+export function containerSpecLines(file: JavaFile, info: ContainerInfo): string[] {
   return [
     `public static final ContainerSpec SPEC = new ContainerSpec(ContainerSpec.Layout.${info.layout}, ${javaInt(info.rows)}, ${javaInt(info.size)},`,
     `        ${info.keepContents}, ${info.hoppers}, ${info.comparator}, // keep_contents, hoppers, comparator`,
     `        ${optionalId(file, info.openSound)}, ${optionalId(file, info.closeSound)}, // open_sound, close_sound (absent: a barrel's)`,
-    `        ${optionalId(file, info.onOpen?.id)}, ${optionalId(file, info.onClose?.id)}); // on_open, on_close`,
+    `        ${optionalId(file, info.onOpen?.id)}, ${optionalId(file, info.onClose?.id)}, // on_open, on_close`,
+    `        ${info.perPlayer}); // per_player`,
   ];
 }
 
@@ -476,6 +523,56 @@ export function writeContainerFiles(context: GenerationContext): void {
   add('ContainerOpeners', containerOpenersJava(blockPackage));
   add('HolderInteraction', holderInteractionJava(blockPackage));
   add('ContainerBlockItem', containerBlockItemJava(blockPackage));
+}
+
+/** Writes the shared classes of storage 2 that are used (ADR 0104 D4, D5): `PlayerStores`, the double chest pair. */
+export function writeStorage2Files(
+  context: GenerationContext,
+  used: { readonly perPlayer: boolean; readonly doubleChest: boolean },
+): void {
+  const blockPackage = packageOf(context, 'block');
+  const add = (name: string, contents: string): void => {
+    context.files.push({ path: classPath(context, 'block', name), contents });
+  };
+  if (used.doubleChest) {
+    add('DoubleChestBlock', doubleChestBlockJava(blockPackage));
+    add('DoubleChestBlockEntity', doubleChestBlockEntityJava(blockPackage));
+  }
+  if (used.perPlayer) {
+    add(
+      'PlayerStores',
+      playerStoresJava(blockPackage, context.input.javaPackage, context.input.modId),
+    );
+  }
+}
+
+/**
+ * Writes `block/<Name>BlockEntity.java` of a double chest (ADR 0104 D4): a `DoubleChestBlockEntity` of the block's own
+ * type.
+ */
+export function writeDoubleChestEntityClass(
+  context: GenerationContext,
+  blockId: string,
+  entityClass: string,
+  typeField: string,
+): void {
+  const javaPackage = packageOf(context, 'block');
+  const file = new JavaFile(javaPackage, `the msm:container of ${blockId}`);
+  const blockPos = file.use('net.minecraft.core.BlockPos');
+  const blockState = file.use('net.minecraft.world.level.block.state.BlockState');
+  const types = file.use(`${context.input.javaPackage}.ModBlockEntities`);
+  const lines = [
+    `/** The block entity of {@code ${blockId}}, a double chest: vanilla's chest block entity of its own type (ADR 0104 D4). */`,
+    `public class ${entityClass} extends DoubleChestBlockEntity {`,
+    `    public ${entityClass}(${blockPos} pos, ${blockState} state) {`,
+    `        super(${types}.${typeField}, pos, state);`,
+    '    }',
+    '}',
+  ];
+  context.files.push({
+    path: classPath(context, 'block', entityClass),
+    contents: file.render(lines),
+  });
 }
 
 /** Writes `block/BlockEvents.java` (containers and machines both use it). */

@@ -45,11 +45,14 @@ final class ContainerOpeners extends ContainerOpenersCounter {
     @Override
     protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previous, int now) {}
 
-    /** Whether {@code player}'s open menu shows this container: any of its slots belongs to the block entity. */
+    /**
+     * Whether {@code player}'s open menu shows this container: any of its slots belongs to the block entity, or to the
+     * player's own store seen through it (a per-player chest, ADR 0104 D5).
+     */
     @Override
     public boolean isOwnContainer(Player player) {
         for (Slot slot : player.containerMenu.slots) {
-            if (slot.container == owner) {
+            if (slot.container == owner || slot.container instanceof PlayerStores.Store store && store.block() == owner) {
                 return true;
             }
         }

@@ -24,11 +24,12 @@ import net.minecraft.resources.Identifier;
  * The settings of an {@code msm:container} block (ADR 0074 D1) with the defaults applied: {@code rows} of a
  * {@code chest} (default 3), {@code size} of a {@code none} holder (default 1), {@code keep_contents} (a 3-row chest
  * only), {@code hoppers} and {@code comparator} (default true), the open and close sounds (absent: a barrel's) and the
- * {@code on_open} and {@code on_close} events.
+ * {@code on_open} and {@code on_close} events, and {@code per_player} (ADR 0104 D5: each player sees their own store,
+ * {@link PlayerStores}; no hoppers or comparator, as vanilla's ender chest).
  */
 public record ContainerSpec(Layout layout, int rows, int size, boolean keepContents, boolean hoppers, boolean comparator,
         Optional<Identifier> openSound, Optional<Identifier> closeSound, Optional<Identifier> onOpen,
-        Optional<Identifier> onClose) {
+        Optional<Identifier> onClose, boolean perPlayer) {
     /** The vanilla screen: a chest of {@code rows} rows (a shulker box with keep-contents), a hopper, a dispenser, none. */
     public enum Layout {
         CHEST,
@@ -116,6 +117,8 @@ import net.minecraft.world.level.storage.ValueOutput;
  *   <li>Openers (D3) through {@link ContainerOpeners}: the {@code open} property, the sounds, the barrel's scheduled
  *       recheck ({@link #recheckOpen}, from the block's {@code tick}); {@code on_open} and {@code on_close} with the
  *       player as self and other.
+ *   <li>Per-player chests (ADR 0104 D5): the block entity's own slots stay empty; each player's menu shows their store in
+ *       {@link PlayerStores}, whose opening and closing count here.
  * </ul>
  */
 public class StorageBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
@@ -188,19 +191,24 @@ public class StorageBlockEntity extends RandomizableContainerBlockEntity impleme
         return !spec.keepContents() || stack.getItem().canFitInsideContainerItems();
     }
 
+    /** Hoppers reach the block's slots with {@code hoppers: true}, never a per-player chest's (ADR 0104 D5, as the ender chest). */
+    private boolean hopperFaces() {
+        return spec.hoppers() && !spec.perPlayer();
+    }
+
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return spec.hoppers() ? allSlots : new int[0];
+        return hopperFaces() ? allSlots : new int[0];
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return spec.hoppers() && canPlaceItem(slot, stack);
+        return hopperFaces() && canPlaceItem(slot, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return spec.hoppers();
+        return hopperFaces();
     }
 
     @Override
@@ -362,11 +370,14 @@ final class ContainerOpeners extends ContainerOpenersCounter {
     @Override
     protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previous, int now) {}
 
-    /** Whether {@code player}'s open menu shows this container: any of its slots belongs to the block entity. */
+    /**
+     * Whether {@code player}'s open menu shows this container: any of its slots belongs to the block entity, or to the
+     * player's own store seen through it (a per-player chest, ADR 0104 D5).
+     */
     @Override
     public boolean isOwnContainer(Player player) {
         for (Slot slot : player.containerMenu.slots) {
-            if (slot.container == owner) {
+            if (slot.container == owner || slot.container instanceof PlayerStores.Store store && store.block() == owner) {
                 return true;
             }
         }
