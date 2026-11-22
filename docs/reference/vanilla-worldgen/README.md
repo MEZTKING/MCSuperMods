@@ -16,6 +16,7 @@ tools/ore_counts.py              ores per chunk per type from a region folder
 tools/nbt.py                     structure templates: size, palette, blocks, chest loot tables
 tools/jar_data.py                list/print/grep the data pack inside any Minecraft jar
 tools/feature_indices.txt        the feature order per decoration step (the index setFeatureSeed uses), 171 entries
+tools/structure_pieces.py        dump every piece of every structure start in a generated world (id, box, rotation); reads only
 ```
 
 Python 3.10+, no dependencies. Everything reads the player's own files (a world this machine generated, or a jar the player
@@ -45,3 +46,7 @@ has); nothing is bundled.
    low in a forest.
 2. Use **full-status chunks only** — below `minecraft:full` a chunk has terrain and no features.
 3. State the **chunk set** with every average. The same plant measurement reads tens of percent apart on two sets.
+
+## The 2026-11-22 edition (what MSM kept)
+
+The user sent a newer edition of this pack on 2026-11-22. Its notes, tables and tools above are unchanged; it adds `tools/structure_pieces.py` (kept: it only reads a world's saved structure starts). It also brings `docs/COMBAT-NUMBERS.md`, `docs/FINDINGS-2026-11-18.md`, `docs/NAME-HASHES.md`, `docs/VANILLA-SAVE-FORMAT.md` and `tools/client_jar.py`, which are **not** kept here: those documents say they were read from Minecraft's own (decompiled) code and classes, and the tool prints method bytecode (`javap -c`). MSM's clean-room rule (no Mojang method body read, decompiled or transcribed; numbers only from observation and vanilla's data) stays as it is, by the user's choice of 2026-11-22. Where MSM needs one of those facts, a spike measures it in the game.
