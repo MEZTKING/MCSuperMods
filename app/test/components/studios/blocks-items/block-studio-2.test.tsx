@@ -66,6 +66,7 @@ import type { SchemaContextState } from '../../../../src/renderer/src/studios/us
 import { BLOCK_VERY_EASY_SECTIONS } from '../../../../src/renderer/src/studios/very-easy';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { projectOf, renderOnStack, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
@@ -86,7 +87,11 @@ const VANILLA: Record<string, string[]> = {
 let schema: SchemaContextState;
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex(), VANILLA);
-});
+  await preloadChunks(
+    () => import('../../../../src/renderer/src/studios/blocks-items/InventorySection'),
+    () => import('../../../../src/renderer/src/studios/blocks-items/SoundsSection'),
+  );
+}, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
   usePreferences.setState({ mode: 'easy' as never });
@@ -352,7 +357,9 @@ describe('storage', () => {
       block({ model: 'minecraft:block/barrel', components: { 'msm:container': {} } }),
       schema,
     );
-    fireEvent.click(await screen.findByTestId('block-container-double'));
+    fireEvent.click(
+      await screen.findByTestId('block-container-double', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS }),
+    );
     expect(read(data).components).toEqual({ 'msm:container': { double: true } });
     fireEvent.click(screen.getByTestId('block-container-per-player'));
     expect(read(data).components).toEqual({ 'msm:container': { per_player: true } });
@@ -414,7 +421,7 @@ describe('the Sounds section', () => {
 
   it("sets a block's own sounds and a door's own set type in undo steps", async () => {
     const { stack, data } = renderOnStack(block({ type: 'door', set_type: 'iron' }), schema);
-    await screen.findByTestId('block-sounds');
+    await screen.findByTestId('block-sounds', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
     commit('block-sound-break', 'minecraft:block.wood.step');
     expect(read(data).block_sounds).toEqual({ break: 'minecraft:block.wood.step' });
     fireEvent.click(screen.getByTestId('block-own-set-type-on'));
@@ -440,7 +447,11 @@ describe('the Sounds section', () => {
   it('picks sounds by name in Very easy', async () => {
     usePreferences.setState({ mode: 'very-easy' as never });
     const { data } = renderOnStack(block({ model: 'minecraft:block/stone' }), schema);
-    const chip = await screen.findByTestId('block-sound-step');
+    const chip = await screen.findByTestId(
+      'block-sound-step',
+      {},
+      { timeout: LAZY_CHUNK_TIMEOUT_MS },
+    );
     expect(chip.tagName).toBe('BUTTON');
     expect(chip.textContent).toBe('the stone sound');
     fireEvent.click(chip);

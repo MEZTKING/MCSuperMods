@@ -27,6 +27,9 @@ function everythingBook() {
   return book(rules, [...counters.values()]);
 }
 
+// The TypeScript compiler's first program build is slow, far more so with the whole monorepo's tests running at once.
+const TYPECHECK_TIMEOUT_MS = 60_000;
+
 describe('generated scripts', () => {
   const scripts: { name: string; source: string }[] = [];
   if (defaultTarget !== undefined) {
@@ -45,32 +48,44 @@ describe('generated scripts', () => {
     expect(scripts.length).toBeGreaterThan(30);
   });
 
-  it('reports type errors (the check is real)', () => {
-    expect(check('import { msm } from "msm:runtime";\nmsm.nothing();\n')).toHaveLength(1);
-    expect(check('import { msm } from "msm:runtime";\nmsm.players().length;\n')).toEqual([]);
-  });
+  it(
+    'reports type errors (the check is real)',
+    () => {
+      expect(check('import { msm } from "msm:runtime";\nmsm.nothing();\n')).toHaveLength(1);
+      expect(check('import { msm } from "msm:runtime";\nmsm.players().length;\n')).toEqual([]);
+    },
+    TYPECHECK_TIMEOUT_MS,
+  );
 
-  it('compiles one book using every step, condition and value into one script', () => {
-    if (defaultTarget === undefined) return;
-    const result = compileRuleBook(everythingBook(), PROJECT, defaultTarget.target);
-    // The plain light_portal sample cannot share a trigger with rules that need a script.
-    expect(result.problems.map((problem) => problem.code)).toEqual(['rules.needs-plain']);
-    expect(result.script).not.toBeNull();
-    const source = (result.script ?? []).join('\n');
-    const problems = check(source);
-    expect(problems).toEqual([]);
-    const { js, errors } = transpile(source);
-    expect(errors).toEqual([]);
-    expect(withoutComments(js)).not.toMatch(/=>|\bclass\b|\blet\b|\bconst\b|`/);
-  });
-
-  for (const { name, source } of scripts) {
-    it(`${name} type-checks and transpiles to ES5`, () => {
-      expect(check(source)).toEqual([]);
+  it(
+    'compiles one book using every step, condition and value into one script',
+    () => {
+      if (defaultTarget === undefined) return;
+      const result = compileRuleBook(everythingBook(), PROJECT, defaultTarget.target);
+      // The plain light_portal sample cannot share a trigger with rules that need a script.
+      expect(result.problems.map((problem) => problem.code)).toEqual(['rules.needs-plain']);
+      expect(result.script).not.toBeNull();
+      const source = (result.script ?? []).join('\n');
+      const problems = check(source);
+      expect(problems).toEqual([]);
       const { js, errors } = transpile(source);
       expect(errors).toEqual([]);
       expect(withoutComments(js)).not.toMatch(/=>|\bclass\b|\blet\b|\bconst\b|`/);
-      expect(js).toContain('// rule:sample');
-    });
+    },
+    TYPECHECK_TIMEOUT_MS,
+  );
+
+  for (const { name, source } of scripts) {
+    it(
+      `${name} type-checks and transpiles to ES5`,
+      () => {
+        expect(check(source)).toEqual([]);
+        const { js, errors } = transpile(source);
+        expect(errors).toEqual([]);
+        expect(withoutComments(js)).not.toMatch(/=>|\bclass\b|\blet\b|\bconst\b|`/);
+        expect(js).toContain('// rule:sample');
+      },
+      TYPECHECK_TIMEOUT_MS,
+    );
   }
 });

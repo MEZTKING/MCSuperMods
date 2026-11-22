@@ -7714,3 +7714,16 @@ Next
 **Next**
 - Boats in the eject now that B536 is merged; then the mob parts above (bucket, shoulders, traders with reputation and demand, storage, habits, hover, phase, dash).
 - B541: wire the two `*_JAVA_OUT` variables into CI; `SamplePlantsAndStorageRulesParityTest` can now run against the ejected jar.
+
+## 2026-11-22 — executor — heavy tests under load
+
+**What**
+- `packages/plugins/rules/test/typecheck.test.ts`: the tests that run the TypeScript compiler (`check`) now carry an explicit 60 s per-test timeout (`TYPECHECK_TIMEOUT_MS`, with a comment); the package-wide timeout is unchanged.
+- `app/test/components/studios/blocks-items/block-studio-2.test.tsx`: `beforeAll` preloads the lazy `InventorySection` and `SoundsSection` chunks with `preloadChunks`; the `findByTestId` waits for them use `LAZY_CHUNK_TIMEOUT_MS`.
+- Verified: neither failure reproduced here under 8 or 16 busy loops (4 cores), so the causes are from reading the code; each file then passed 10 separate runs under 8 busy loops plus other workers' load.
+
+**Decisions**
+- Sounds chunk preloaded too: its two async tests wait on the same kind of lazy section.
+
+**Next**
+- Watch the next full parallel `turbo run test` for either file.
