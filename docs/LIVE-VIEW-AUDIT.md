@@ -8,7 +8,7 @@ Written by brief B575 of [the live world generation plan](PLAN-live-worldgen.md)
 - **Live view today** comes from `previewKind` (`app/src/renderer/src/preview/PreviewPanel.tsx`: `model`, `block_definition`, `item_definition`, `structure`, `climate_map`, `geo_model`, `animation`, `entity`, plus the `model` field of `msm:block` and `msm:item`, the armour figure and the recipe picture), the Studio registry (`studios/*/studios.tsx` and `ElementForm.tsx`'s built-in Studios, with each Studio's own Preview section), and Try it (`app/src/renderer/src/tryit/`, `packages/sim/src/`: the files each catalogue reads).
 - **Checked in the running app** (`pnpm build`, then the built app under `xvfb-run -a` with SwiftShader WebGL, driven by a throwaway Playwright script outside the repository; `app/out` deleted afterwards). Copies of `fixtures/sample-worldgen` (with a dimension, noise settings, a density function and a noise added in the copy), `sample-mod`, `sample-datapack`, `sample-particles`, `sample-villagers-and-fluids` and `sample-vehicles` were opened; each element was selected and the preview panel, the editor's side preview and the Studio's preview sections were read. For a sample, the element's data was replaced through Raw JSON and Apply, and the time until the preview's text or pixels changed was measured. Try it was opened on `sample-villagers-and-fluids`. Without the client jar (as in CI), so vanilla models draw with the missing texture.
 - **Measured** (time from Apply to a changed preview, SwiftShader, one run each): the climate map of a dimension 0.20 and 0.25 s; the recipe picture 16 ms; the Particle Studio preview 9 ms; the Potion Studio preview 34 and 105 ms; a block's model preview 68 and 146 ms. Try it opened in 0.76 s with the project's job block, three spawn eggs and two buckets in the hotbar, and lowers the project again 300 ms after an edit (`LOWER_DEBOUNCE_MS`, `tryit/session-source.ts`; the edits themselves are covered by `e2e/tryit-path.spec.ts`). Edits to kinds without a view (biome, noise settings, density function, noise, loot table) changed nothing on screen, as expected. A few Raw JSON replacements did not take in the script (Monaco focus), so the effect and armour rows rest on the code (both views read the element directly).
-- **Verdicts.** *Has one*: a view that follows edits without a button, an export or the game. *Needs one*, with its batch: **this plan** (`docs/PLAN-live-worldgen.md`, brief named), **Live views 2: data**, **Live views 3: looks**, **Live views 4: assembled structures** (the ROADMAP ideas of the plan's section (e)). *Exempt*: nothing to see, with the reason. A row whose view covers only part of what the player sees keeps *Has one* when the main thing is shown, and names the rest in the note.
+- **Verdicts.** *Has one*: a view that follows edits without a button, an export or the game. *Needs one*, with its batch: **this plan** (`docs/PLAN-live-worldgen.md`, brief named), **Live views 2: data**, **Live views 3: looks**, **Live views 4: assembled structures** (the ROADMAP ideas of the plan's section (e)). *Exempt*: nothing to see, with the reason. A row whose view covers only part of what the player sees keeps *Has one* when the main thing is shown, and names the rest in the note. Since 2026-11-22 each *Needs one: Live views 2, 3 or 4* row also names the brief of [`docs/PLAN-live-views.md`](PLAN-live-views.md) that covers it (batch 2 data B600–B618, batch 3 looks and sounds B619–B633, batch 4 assembled structures B634–B645).
 
 ## Count
 
@@ -24,80 +24,80 @@ Written by brief B575 of [the live world generation plan](PLAN-live-worldgen.md)
 | `minecraft:block_definition` | Which model each block state shows | Preview panel 3D (`block_definition`); Try it | yes, at once | Has one |  |
 | `minecraft:item_definition` | How an item looks in hand and in slots | Preview panel 3D (`item_definition`); Try it hotbar | yes, at once | Has one |  |
 | `minecraft:lang` | Every name and line of text | Try it names (hotbar, picker, What happened, chat feedback read `en_us.json`) | yes, Try it lowers the project again 300 ms after an edit | Has one | Only `en_us` is read; other languages show nowhere. |
-| `minecraft:sounds` *checked* | Sounds and their subtitles | None in the panel or a Studio (no play button); Try it plays a project sound only when the simulation fires its event, vanilla sounds stay a caption | only through Try it events | Needs one: Live views 3 (looks) | A play button per event, with the subtitle. |
+| `minecraft:sounds` *checked* | Sounds and their subtitles | None in the panel or a Studio (no play button); Try it plays a project sound only when the simulation fires its event, vanilla sounds stay a caption | only through Try it events | Needs one: Live views 3 (looks), B622 | A play button per event, with the subtitle. |
 | `minecraft:pack_mcmeta` | The pack name and description in the pack list | Pack settings form | — | Exempt | Settings, not content: ADR 0119 D1 names pack settings exempt. |
 | `minecraft:equipment` *checked* | The worn armour layers | Preview panel armour figure (`ArmourPreviewView`) | yes, at once | Has one |  |
 | `minecraft:atlas` | Nothing directly: which pictures are stitched together | Schema form | — | Exempt | An atlas list: ADR 0119 D1 names it exempt. |
-| `minecraft:font` | Letters on screen | Schema form | — | Needs one: Live views 3 (looks) | Sample text drawn with the font. |
-| `minecraft:particle` | The sprites of a vanilla-style particle type | Schema form (the Particle Studio is for `msm:particle`) | — | Needs one: Live views 3 (looks) | The frames played as the Particle Studio plays its own. |
-| `minecraft:post_effect` | Whole-screen effects (spectator mob views, glowing outlines) | Schema form | — | Needs one: Live views 3 (looks) | The effect on a still frame. |
-| `minecraft:waypoint_style` | The locator bar icons | Schema form | — | Needs one: Live views 3 (looks) | The icon strip at each distance. |
-| `minecraft:shader` | How the game draws things | Raw file, unchecked (ADR 0106) | — | Needs one: Live views 3 (looks) | The shader on a still frame. |
+| `minecraft:font` | Letters on screen | Schema form | — | Needs one: Live views 3 (looks), B624 | Sample text drawn with the font. |
+| `minecraft:particle` | The sprites of a vanilla-style particle type | Schema form (the Particle Studio is for `msm:particle`) | — | Needs one: Live views 3 (looks), B625 | The frames played as the Particle Studio plays its own. |
+| `minecraft:post_effect` | Whole-screen effects (spectator mob views, glowing outlines) | Schema form | — | Needs one: Live views 3 (looks), B629 | The effect on a still frame. |
+| `minecraft:waypoint_style` | The locator bar icons | Schema form | — | Needs one: Live views 3 (looks), B625 | The icon strip at each distance. |
+| `minecraft:shader` | How the game draws things | Raw file, unchecked (ADR 0106) | — | Needs one: Live views 3 (looks), B629 | The shader on a still frame. |
 
 ### Data pack (`@msm/plugin-datapack`): 62 kinds
 
 | Kind | What a player sees or hears | Live view today | Follows an edit | Verdict | Note |
 |---|---|---|---|---|---|
 | `minecraft:recipe` *checked* | The recipe in the recipe book and the crafting screen | Preview panel crafting picture (`preview-recipe`); the Recipe Studio grid is the editor | yes, measured 16 ms after Apply | Has one | Shaped, shapeless and cooking types; smithing, stonecutting and the machine types show only the form. |
-| `minecraft:loot_table` *checked* | What drops and what a chest holds | None | no | Needs one: Live views 2 (data) | A **Roll it** list. |
-| `minecraft:advancement` *checked* | Toasts and the advancement screen | None | no | Needs one: Live views 2 (data) | The tab as a tree. |
-| `minecraft:predicate` *checked* | Nothing by itself; decides when other things happen | None | no | Needs one: Live views 2 (data) | Tried on a sample player or block. |
-| `minecraft:item_modifier` *checked* | Changes to items (counts, names, enchantments) | None | no | Needs one: Live views 2 (data) | Tried on a sample item. |
-| `minecraft:function` *checked* | Whatever its commands do | Function editor with live Spyglass problems; Try it does not run functions (only in the game, `sim/commands/run.ts`) | problems only | Needs one: Live views 2 (data) | What Try it's command reader understands of it. |
-| `minecraft:tag/block` | Nothing by itself; which things count as members | Tag Studio (the list as typed); Try it reads `climbable` and `wooden_fences` only | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/item` *checked* | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/entity_type` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/fluid` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/game_event` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/function` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/damage_type` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/enchantment` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/painting_variant` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
+| `minecraft:loot_table` *checked* | What drops and what a chest holds | None | no | Needs one: Live views 2 (data), B609 | A **Roll it** list. |
+| `minecraft:advancement` *checked* | Toasts and the advancement screen | None | no | Needs one: Live views 2 (data), B611 | The tab as a tree. |
+| `minecraft:predicate` *checked* | Nothing by itself; decides when other things happen | None | no | Needs one: Live views 2 (data), B610 | Tried on a sample player or block. |
+| `minecraft:item_modifier` *checked* | Changes to items (counts, names, enchantments) | None | no | Needs one: Live views 2 (data), B610 | Tried on a sample item. |
+| `minecraft:function` *checked* | Whatever its commands do | Function editor with live Spyglass problems; Try it does not run functions (only in the game, `sim/commands/run.ts`) | problems only | Needs one: Live views 2 (data), B613 | What Try it's command reader understands of it. |
+| `minecraft:tag/block` | Nothing by itself; which things count as members | Tag Studio (the list as typed); Try it reads `climbable` and `wooden_fences` only | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/item` *checked* | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/entity_type` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/fluid` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/game_event` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/function` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/damage_type` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/enchantment` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/painting_variant` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
 | `minecraft:tag/villager_trade` *checked* | Which trades a job offers at each level | Tag Studio; Try it merchant mock-up reads it (`sim/traders/catalogue.ts`) | yes, Try it lowers the project again 300 ms after an edit | Has one |  |
-| `minecraft:tag/banner_pattern` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/dialog` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/instrument` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/point_of_interest_type` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/potion` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/timeline` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/worldgen/biome` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/worldgen/feature` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/worldgen/flat_level_generator_preset` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/worldgen/structure` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:tag/worldgen/world_preset` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data) | The resolved members, vanilla tags expanded. |
-| `minecraft:enchantment` | The tooltip line and what it does | None (the Creator's Card tab shows a card only inside the Creator) | no | Needs one: Live views 2 (data) | The tooltip and level table. |
-| `minecraft:damage_type` | Death messages, hurt sounds | None | no | Needs one: Live views 2 (data) | A sample death line. |
+| `minecraft:tag/banner_pattern` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/dialog` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/instrument` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/point_of_interest_type` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/potion` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/timeline` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/worldgen/biome` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/worldgen/feature` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/worldgen/flat_level_generator_preset` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/worldgen/structure` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:tag/worldgen/world_preset` | Nothing by itself; which things count as members | Tag Studio (the list as typed) | no | Needs one: Live views 2 (data), B612 | The resolved members, vanilla tags expanded. |
+| `minecraft:enchantment` | The tooltip line and what it does | None (the Creator's Card tab shows a card only inside the Creator) | no | Needs one: Live views 2 (data), B610 | The tooltip and level table. |
+| `minecraft:damage_type` | Death messages, hurt sounds | None | no | Needs one: Live views 2 (data), B611 | A sample death line. |
 | `minecraft:dimension_type` *checked* | Sky, light, height of a dimension | Dimension Type Studio sky swatch; Try it's Sky choice for a project dimension that uses it | yes, Try it lowers the project again 300 ms after an edit | Has one | This plan adds its lowest and highest lines to the side cut (B582). |
-| `minecraft:chat_type` | How chat lines are formatted | None | no | Needs one: Live views 2 (data) | A sample chat line. |
-| `minecraft:jukebox_song` | The song a disc plays | None | no | Needs one: Live views 3 (looks) | Play the song. |
-| `minecraft:banner_pattern` | A pattern on banners and shields | None | no | Needs one: Live views 3 (looks) | On a banner model. |
-| `minecraft:painting_variant` | A painting on a wall | None outside the Creator (its Card tab hangs a painting while the flow runs) | no | Needs one: Live views 3 (looks) | On a wall at its size. |
-| `minecraft:trim_material` | The colour of armour trims | None | no | Needs one: Live views 3 (looks) | On the armour figure. |
-| `minecraft:trim_pattern` | Lines drawn on armour | None | no | Needs one: Live views 3 (looks) | On the armour figure. |
-| `minecraft:dialog` | A screen with text and buttons | None | no | Needs one: Live views 2 (data) | A mock-up screen. |
+| `minecraft:chat_type` | How chat lines are formatted | None | no | Needs one: Live views 2 (data), B611 | A sample chat line. |
+| `minecraft:jukebox_song` | The song a disc plays | None | no | Needs one: Live views 3 (looks), B630 | Play the song. |
+| `minecraft:banner_pattern` | A pattern on banners and shields | None | no | Needs one: Live views 3 (looks), B628 | On a banner model. |
+| `minecraft:painting_variant` | A painting on a wall | None outside the Creator (its Card tab hangs a painting while the flow runs) | no | Needs one: Live views 3 (looks), B628 | On a wall at its size. |
+| `minecraft:trim_material` | The colour of armour trims | None | no | Needs one: Live views 3 (looks), B628 | On the armour figure. |
+| `minecraft:trim_pattern` | Lines drawn on armour | None | no | Needs one: Live views 3 (looks), B628 | On the armour figure. |
+| `minecraft:dialog` | A screen with text and buttons | None | no | Needs one: Live views 2 (data), B611 | A mock-up screen. |
 | `minecraft:villager_trade` *checked* | A trade in the merchant screen | Try it merchant mock-up (`MerchantScreen`) | yes, Try it lowers the project again 300 ms after an edit | Has one |  |
 | `minecraft:trade_set` | A trader's list of trades | Try it merchant mock-up | yes, Try it lowers the project again 300 ms after an edit | Has one |  |
-| `minecraft:wolf_variant` *checked* | A wolf skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:cat_variant` | A cat skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:pig_variant` | A pig skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:cow_variant` | A cow skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:chicken_variant` | A chicken skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:frog_variant` | A frog skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:zombie_nautilus_variant` | A zombie nautilus skin and where it spawns | None | no | Needs one: Live views 3 (looks) | The vanilla mob wearing it. |
-| `minecraft:cat_sound_variant` | The cat's voice | None | no | Needs one: Live views 3 (looks) | Play each sound. |
-| `minecraft:pig_sound_variant` | The pig's voice | None | no | Needs one: Live views 3 (looks) | Play each sound. |
-| `minecraft:cow_sound_variant` | The cow's voice | None | no | Needs one: Live views 3 (looks) | Play each sound. |
-| `minecraft:chicken_sound_variant` | The chicken's voice | None | no | Needs one: Live views 3 (looks) | Play each sound. |
-| `minecraft:instrument` *checked* | A goat horn's call | None | no | Needs one: Live views 3 (looks) | Play the call. |
-| `minecraft:enchantment_provider` | Enchantments on mobs' gear and in loot | None | no | Needs one: Live views 2 (data) | Roll it, as for loot. |
-| `minecraft:trial_spawner` | What a trial spawner spawns and drops | None | no | Needs one: Live views 2 (data) | Roll the waves and the reward. |
-| `minecraft:timeline` | Sky and light changes over the day | None | no | Needs one: Live views 3 (looks) | A day strip of the values it sets. |
-| `minecraft:world_clock` | How fast a day goes | None | no | Needs one: Live views 3 (looks) | Shown with its timelines' day strip. |
-| `minecraft:decorated_pot_pattern` | A picture on a decorated pot | None | no | Needs one: Live views 3 (looks) | On a pot model. |
-| `minecraft:block_transformer` | A block changing when used, with particles (scraping, waxing) | None | no | Needs one: Live views 2 (data) | Tried on a block in Try it. |
+| `minecraft:wolf_variant` *checked* | A wolf skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:cat_variant` | A cat skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:pig_variant` | A pig skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:cow_variant` | A cow skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:chicken_variant` | A chicken skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:frog_variant` | A frog skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:zombie_nautilus_variant` | A zombie nautilus skin and where it spawns | None | no | Needs one: Live views 3 (looks), B627 | The vanilla mob wearing it. |
+| `minecraft:cat_sound_variant` | The cat's voice | None | no | Needs one: Live views 3 (looks), B627 | Play each sound. |
+| `minecraft:pig_sound_variant` | The pig's voice | None | no | Needs one: Live views 3 (looks), B627 | Play each sound. |
+| `minecraft:cow_sound_variant` | The cow's voice | None | no | Needs one: Live views 3 (looks), B627 | Play each sound. |
+| `minecraft:chicken_sound_variant` | The chicken's voice | None | no | Needs one: Live views 3 (looks), B627 | Play each sound. |
+| `minecraft:instrument` *checked* | A goat horn's call | None | no | Needs one: Live views 3 (looks), B630 | Play the call. |
+| `minecraft:enchantment_provider` | Enchantments on mobs' gear and in loot | None | no | Needs one: Live views 2 (data), B609 | Roll it, as for loot. |
+| `minecraft:trial_spawner` | What a trial spawner spawns and drops | None | no | Needs one: Live views 2 (data), B609 | Roll the waves and the reward. |
+| `minecraft:timeline` | Sky and light changes over the day | None | no | Needs one: Live views 3 (looks), B626 | A day strip of the values it sets. |
+| `minecraft:world_clock` | How fast a day goes | None | no | Needs one: Live views 3 (looks), B626 | Shown with its timelines' day strip. |
+| `minecraft:decorated_pot_pattern` | A picture on a decorated pot | None | no | Needs one: Live views 3 (looks), B628 | On a pot model. |
+| `minecraft:block_transformer` | A block changing when used, with particles (scraping, waxing) | None | no | Needs one: Live views 2 (data), B614 | Tried on a block in Try it. |
 | `minecraft:test_environment` | Nothing in play: GameTest set-up for map makers | Schema form | — | Exempt | Only the game's test runner uses it (ADR 0106: offered for map makers). |
 | `minecraft:test_instance` | Nothing in play: a GameTest for map makers | Schema form | — | Exempt | As above. |
-| `minecraft:sulfur_cube_archetype` | A sulfur cube's look, sounds and bounce | None | no | Needs one: Live views 3 (looks) | The cube with its sounds. |
+| `minecraft:sulfur_cube_archetype` | A sulfur cube's look, sounds and bounce | None | no | Needs one: Live views 3 (looks), B627 | The cube with its sounds. |
 | `minecraft:context_int_provider` | Nothing directly: a number other data reads (compost chances) | Schema form; the Item Studio shows the compost chance it feeds | — | Exempt | A value, seen where the data that reads it is edited. |
 | `minecraft:context_float_provider` | Nothing directly: a number other data reads | Schema form | — | Exempt | As above. |
 
@@ -106,10 +106,10 @@ Written by brief B575 of [the live world generation plan](PLAN-live-worldgen.md)
 | Kind | What a player sees or hears | Live view today | Follows an edit | Verdict | Note |
 |---|---|---|---|---|---|
 | `minecraft:structure_template` *checked* | A building or piece | Preview panel 3D (`structure`); Structure Studio | yes, at once | Has one |  |
-| `minecraft:worldgen/template_pool` *checked* | Which pieces a jigsaw structure joins | Template Pool Studio (pieces, connections); no picture | no | Needs one: Live views 4 (assembled structures) | The assembly from a start pool. |
-| `minecraft:worldgen/structure` | A structure in the world | None | no | Needs one: Live views 4 (assembled structures) | Assembled; start markers on the map come with this plan (B585). |
+| `minecraft:worldgen/template_pool` *checked* | Which pieces a jigsaw structure joins | Template Pool Studio (pieces, connections); no picture | no | Needs one: Live views 4 (assembled structures), B640 | The assembly from a start pool. |
+| `minecraft:worldgen/structure` | A structure in the world | None | no | Needs one: Live views 4 (assembled structures), B640 | Assembled; start markers on the map come with this plan (B585). |
 | `minecraft:worldgen/structure_set` *checked* | Where structures start | None | no | Needs one: this plan | Markers on the map, approximate (B585, WL5). |
-| `minecraft:worldgen/processor_list` *checked* | Weathered or changed blocks in a structure | None | no | Needs one: Live views 4 (assembled structures) | Applied to the template preview. |
+| `minecraft:worldgen/processor_list` *checked* | Weathered or changed blocks in a structure | None | no | Needs one: Live views 4 (assembled structures), B641 | Applied to the template preview. |
 
 ### World generation (`@msm/plugin-worldgen`): 14 kinds
 
@@ -139,12 +139,12 @@ Written by brief B575 of [the live world generation plan](PLAN-live-worldgen.md)
 | `msm:effect` *checked* | The icon, name, particles and what it does | Effect Studio Preview (icon, name in its category colour, per level); Try it chips | yes, at once (the Studio reads the element) | Has one | The particle swirl and the HUD icon in place come with Live views 3 (looks). |
 | `msm:mod` *checked* | Nothing in play: the mod list entry | Mod settings form | — | Exempt | The mod's own settings: ADR 0119 D1 names them exempt. |
 | `msm:biome_addition` *checked* | Features and mobs added to vanilla biomes | World addition Studio (form only) | no | Needs one: this plan | Scatter and the ground with the addition on or off (B583, B585). |
-| `msm:loot_addition` *checked* | Extra drops | Extra drops Studio (form only) | no | Needs one: Live views 2 (data) | Roll it, with and without the addition. |
-| `msm:potion` *checked* | The bottle's colour, names, effects | Potion Studio Preview (the four names and the ids) | yes, measured 34 to 105 ms after Apply (names only) | Needs one: Live views 3 (looks) | The bottles in their colour; the names already follow edits. |
+| `msm:loot_addition` *checked* | Extra drops | Extra drops Studio (form only) | no | Needs one: Live views 2 (data), B609 | Roll it, with and without the addition. |
+| `msm:potion` *checked* | The bottle's colour, names, effects | Potion Studio Preview (the four names and the ids) | yes, measured 34 to 105 ms after Apply (names only) | Needs one: Live views 3 (looks), B625 | The bottles in their colour; the names already follow edits. |
 | `msm:particle` *checked* | The particle | Particle Studio Preview (Burst, Stream); Try it | yes, measured 9 ms after Apply | Has one |  |
-| `msm:creative_tab` | A tab in the creative inventory | Creative Tab Studio "Preview" (title, icon id and item count as text) | yes, at once (text only) | Needs one: Live views 3 (looks) | A mock-up of the tab with its icons. |
+| `msm:creative_tab` | A tab in the creative inventory | Creative Tab Studio "Preview" (title, icon id and item count as text) | yes, at once (text only) | Needs one: Live views 3 (looks), B625 | A mock-up of the tab with its icons. |
 | `msm:fluid` *checked* | The liquid and its bucket | Fluid Studio Preview (still, flowing, bucket, tint); Try it buckets | yes, at once; Try it 300 ms | Has one |  |
-| `msm:vanilla_block_rules` | Vanilla blocks flattened, tilled, sounding differently | Vanilla block rules Studio (form only) | no | Needs one: Live views 2 (data) | Tried on the vanilla block in Try it. |
+| `msm:vanilla_block_rules` | Vanilla blocks flattened, tilled, sounding differently | Vanilla block rules Studio (form only) | no | Needs one: Live views 2 (data), B614 | Tried on the vanilla block in Try it. |
 
 ### Models and animation (`@msm/plugin-models-anim`): 2 kinds
 
@@ -160,7 +160,7 @@ Written by brief B575 of [the live world generation plan](PLAN-live-worldgen.md)
 | `msm:entity` *checked* | The mob, how it moves and acts | Preview panel geo renderer with animations, variants and baby; Try it (spawn eggs, wandering, hits) | yes, at once; Try it 300 ms | Has one |  |
 | `msm:vehicle` *checked* | The vehicle, driven | Vehicle Studio Preview (turret, wheels, seats); Try it driving | yes, at once; Try it 300 ms | Has one |  |
 | `msm:villager_profession` *checked* | A villager job: its look, work block and trades | Profession Studio pictures; Try it merchant mock-up | yes, Try it lowers the project again 300 ms after an edit | Has one | The job's look on a villager model comes with Live views 3. |
-| `msm:villager_type` | Villagers' clothes in a biome | Villager look Studio pictures (flat) | yes, at once (flat pictures only) | Needs one: Live views 3 (looks) | On a villager model. |
+| `msm:villager_type` | Villagers' clothes in a biome | Villager look Studio pictures (flat) | yes, at once (flat pictures only) | Needs one: Live views 3 (looks), B627 | On a villager model. |
 
 ### Scripting (`@msm/plugin-scripting`): 4 kinds
 
@@ -188,8 +188,8 @@ Written by brief B575 of [the live world generation plan](PLAN-live-worldgen.md)
 
 | Surface | What it shows today | Follows an edit | Verdict | Note |
 |---|---|---|---|---|
-| The Creator's steps (57 flows) | `CreatorPreview`: tabs Items, Blocks (with the set row), Recipes, Armour, Stats, Card (paintings, enchantments) and Elements, over the bundle the flow builds in memory | yes, 150 ms after an answer (`CREATOR_DEBOUNCE_MS`) | Has one for the flows that make blocks, items, gear, food, recipes, paintings and enchantments (most of the 19 block, 9 gear and 3 food flows, Status effect, Potion) | Gaps: the 9 mob flows (Mob skin and Wandering merchant among them) and 4 vehicle flows show only their items and the element list (no body), the Particle and Fluid flows show no particle or liquid, the Music disc and Goat horn flows play nothing, the villager flows show no merchant screen or look, Creative tab shows no tab, Banner pattern, Armour trim and Pot pattern show their items but not the pattern on a banner, armour or pot. Batches: Dimension flow, **this plan** (B587, live map in the wizard); mobs, vehicles, particle, fluid, villager look, creative tab, patterns, sounds, **Live views 3** (reuse the Studio previews in the Creator's preview); villager trade and village job, extra drop, **Live views 2** (merchant mock-up, Roll it). Custom command, Game rule and Scripted behaviour: as their kinds (Command Studio's usage line; game rules exempt; scripts in Try it after Create). |
-| The AI helper's proposed changes | `AiChangesetReview`: the JSON before and after as a line diff per element, and placeholder textures as pictures | the review is fixed per proposal; after Apply, each element's own view applies | Needs one: Live views 3 | Show a proposal through the Creator's in-memory preview (`preview/bundle-source.ts`), so a proposed block, item or mob is seen before Apply. Worldgen proposals get this plan's map after Apply (B590 says so in the helper's words). |
+| The Creator's steps (57 flows) | `CreatorPreview`: tabs Items, Blocks (with the set row), Recipes, Armour, Stats, Card (paintings, enchantments) and Elements, over the bundle the flow builds in memory | yes, 150 ms after an answer (`CREATOR_DEBOUNCE_MS`) | Has one for the flows that make blocks, items, gear, food, recipes, paintings and enchantments (most of the 19 block, 9 gear and 3 food flows, Status effect, Potion); the gaps: B615 (mobs, vehicles, particle, fluid, the villager flows, extra drop), B630 (sounds, patterns, creative tab, villager look) | Gaps: the 9 mob flows (Mob skin and Wandering merchant among them) and 4 vehicle flows show only their items and the element list (no body), the Particle and Fluid flows show no particle or liquid, the Music disc and Goat horn flows play nothing, the villager flows show no merchant screen or look, Creative tab shows no tab, Banner pattern, Armour trim and Pot pattern show their items but not the pattern on a banner, armour or pot. Batches: Dimension flow, **this plan** (B587, live map in the wizard); mobs, vehicles, particle, fluid, villager look, creative tab, patterns, sounds, **Live views 3** (reuse the Studio previews in the Creator's preview); villager trade and village job, extra drop, **Live views 2** (merchant mock-up, Roll it). Custom command, Game rule and Scripted behaviour: as their kinds (Command Studio's usage line; game rules exempt; scripts in Try it after Create). |
+| The AI helper's proposed changes | `AiChangesetReview`: the JSON before and after as a line diff per element, and placeholder textures as pictures | the review is fixed per proposal; after Apply, each element's own view applies | Needs one: Live views 2 (data), B615 (moved forward from Live views 3 by ADR 0120 D7) | Show a proposal through the Creator's in-memory preview (`preview/bundle-source.ts`), so a proposed block, item or mob is seen before Apply. Worldgen proposals get this plan's map after Apply (B590 says so in the helper's words). |
 | Very easy's My things | Home's cards (`components/home/MyThings.tsx`): one card per set or thing (vehicle, village job, liquid, block, item, mob, effect, potion, rules, command, key, on-screen element, creative tab) with its picture from the project, opening the thing's Studio with its preview | yes, the card pictures are read from the project as it is | Has one | No card for worlds, dimensions, particles or sounds: worlds come with this plan's Make a world tile (B586); particles and sounds with Live views 3. |
 
 ## Biggest gaps

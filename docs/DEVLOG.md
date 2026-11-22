@@ -8005,3 +8005,24 @@ Next
 **Next**
 - The close (B591) links the audit from `docs/COVERAGE-AUDIT.md` and corrects root `CLAUDE.md`'s kind and flow counts (115 and 55; the code has 118 and 57).
 - Live views 2, 3 and 4 as ROADMAP ideas, each with the rows listed here.
+
+## 2026-11-22 — orchestrator — Plan for Live views 2 to 4
+
+**What**
+- New draft plan `docs/PLAN-live-views.md` (B600–B648; B596–B599 left free) for the 67 kinds of `docs/LIVE-VIEW-AUDIT.md` that need a live view and are not live world generation's, the Creator's flows that show nothing of what they make and the AI helper's proposals. Three batches in waves, each opened by a spike: batch 2 data (34 kinds, B600–B618), batch 3 looks and sounds (30 kinds, B619–B633), batch 4 assembled structures (3 kinds, B634–B645); reserves B646–B648. Per batch: goals, a per-kind view table (what, where, how fast), key items, a fact table, spike questions and limits (2F/2S/2L, 3F/3S/3L, 4F/4S/4L), briefs with owner files, scope and exit criteria.
+- New ADRs, all Proposed: 0120 (live views 2, data), 0121 (live views 3, looks and sounds), 0122 (live views 4, assembled structures).
+- ROADMAP: the add-on section "Live views 2 to 4" and an idea entry for what the plan leaves open; HANDOFF: the Next item after live world generation; `docs/LIVE-VIEW-AUDIT.md`: each of the 67 "needs one" rows for Live views 2 to 4 names its brief, and the two surface rows name theirs. No source file changed.
+
+**Decisions**
+- One preview kind `live_view` and a registry in the app keyed by element kind; a view is a function of files (no session store), so the same view draws in the panel, a Studio, the Creator's new Live tab and the AI review's See it, over `bundlePreviewProject`. No plugin API change.
+- Loot, predicates, tags and functions are written once in `@msm/sim` (Try it and the game modes plan need them); jigsaw assembly and processors in `@msm/terrain`, taking over live worldgen's reserve B595.
+- Fidelity is stated on every view. Loot: the odds are checked against 10,000 rolls on the real server, one roll at a seed is MSM's own. Predicates answer yes, no or unknown. Jigsaw: "a building your pools can make", not the world's. Vanilla mob bodies are MSM's stand-ins (exact bodies only by reserve B646, from the user's own game). Shaders and post effects run only where they compile under WebGL 2; elsewhere the compile check and a diagram, with the limit said.
+- Vanilla sounds are read in place from the user's Minecraft folder's asset store (they are not in the client jar; to be verified by B619), never copied.
+- The mob, vehicle, particle, fluid and villager flows and the AI helper's proposals are moved forward into batch 2 (B615), because the mechanism is batch 2's and those previews already exist.
+- Size: B602 runs the gzip reserve of ADR 0079 D4 first; the renderer budget moves to 19 MB only if the spike finds no 1 MB of savings (ADR 0120 D10).
+- Order recommended: live world generation, then batch 2 beside the game modes plan's waves 0 and 1 and before its wave 2, then the rest of the game modes plan, then batches 3 and 4.
+
+**Next**
+- The user looks at the vetoable defaults in the Status of ADRs 0120–0122.
+- After B591: B600 (spike, Opus at high effort), beside B547 if the game modes plan runs side by side.
+- The game modes plan's briefs name the live views of its six kinds and add their audit rows (ADR 0119 D1); its B553 and B558 should be re-read against batch 2's `@msm/sim` modules before they start.
