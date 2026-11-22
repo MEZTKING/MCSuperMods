@@ -118,7 +118,9 @@ describe('pictures', () => {
   });
 });
 
-describe('buildExamples', () => {
+// Heavy: reads and rebuilds the whole examples mirror (about 2,000 files); 5 s on CI's shared runner
+// (2026-11-22). An explicit timeout, never a retry.
+describe('buildExamples', { timeout: 60_000 }, () => {
   it('copies each project with a picture and README, and indexes them', () => {
     const project = encoder.encode(JSON.stringify(header));
     const { files, infos } = buildExamples([
@@ -147,7 +149,7 @@ describe('buildExamples', () => {
   });
 });
 
-describe('syncExamples', () => {
+describe('syncExamples', { timeout: 60_000 }, () => {
   it('writes, checks, finds changes and stray files, and writes again', async () => {
     const mirror = await temp();
     const repo = await temp();

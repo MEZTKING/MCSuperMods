@@ -312,7 +312,9 @@ function faceLightness(
   return sum / count;
 }
 
-describe('box skins (ADR 0092 D7, D8)', () => {
+// Heavy: every coat is drawn on every box of every skin; on CI's shared runner one coat took 5.2 to 6.5 s
+// (2026-11-22). An explicit timeout, never a retry.
+describe('box skins (ADR 0092 D7, D8)', { timeout: 60_000 }, () => {
   /** A two-box model: a body and a head with a face. */
   const TWO_BOXES: readonly SkinBox[] = [
     { u: 0, v: 0, w: 12, h: 10, d: 8 },
