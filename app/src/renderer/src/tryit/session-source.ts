@@ -16,6 +16,12 @@
  * - Scripts (B400): with {@link TryItAreaOptions.scripts} the area runs the project's scripts in
  *   the script worker (`script-worker.ts`): each time the lowered scripts change, they are
  *   transpiled by the session's scripting service in main (ADR 0031 D2) and loaded again.
+ * - My world generation (B584, ADR 0119 D8): {@link GeneratedGround} asks the terrain worker
+ *   (the world map's client and files, `terrain/WorldMap.tsx` `terrainSessionFor`) for a window
+ *   of the project's world in its stages (terrain, surface, features), each shown as it arrives,
+ *   and makes it again in place after every worldgen edit: the player keeps their place (lifted
+ *   out of land that grew over them), mobs stay, and the user's own blocks are laid over the new
+ *   land where they still fit (`@msm/sim` `applyEdits`), the rest counted in one line.
  *
  * Part of the lazy Try it chunk.
  */
@@ -23,11 +29,22 @@
 import { type Json, type Project, stableStringify } from '@msm/core';
 import type { JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import {
+  applyEdits,
+  type BlockState,
   type CompiledScript,
+  cutAtTop,
+  editKey,
+  editsLine,
+  type GeneratedWindow,
+  GROUND_AIR,
   type GroundBlocks,
+  type GroundEdit,
   type GroundKind,
   type GroundLoadResult,
+  generatedGround,
+  groundState,
   LocalWorldSource,
+  liftedFeet,
   type PlayerAction,
   type RuleBookInfo,
   ruleBooksFrom,
@@ -39,12 +56,30 @@ import {
   type SimFiles,
   type SimLogLine,
   type SimOrigin,
+  sameWindow,
   scriptSources,
+  shiftWindow,
+  stateKey,
   type TraceKind,
   type WorldEvent,
+  windowAround,
+  windowCentre,
+  worldOf,
 } from '@msm/sim';
+import type {
+  ColumnStage,
+  ColumnsData,
+  TerrainAnswer,
+  TerrainSource,
+  Unsupported,
+  WorldSpec,
+  WorldSummary,
+} from '../terrain/client';
+import { SET_UP_WORDS } from '../terrain/controls';
+import type { TerrainFilesState, WorldgenSession } from '../terrain/files';
 import { AmbientParticles } from './ambient';
 import { PortalHums, type ReadProjectAsset, type SoundOut, TryItEffects } from './effects';
+import { generatedNotes } from './grounds';
 import { MobField } from './render/mobs';
 import { ParticleField } from './render/particles';
 import { createWorkerRunner } from './script-worker';
@@ -92,6 +127,8 @@ export interface LoweringSession {
   subscribe(listener: (snapshot: { readonly project: Project | null }) => void): () => void;
   lowerExpandedProject(): Promise<{ files: OutputFile[] }>;
   readonly target: Target;
+  /** The kinds, when the session has them: the generated ground reads worldgen through them. */
+  readonly registry?: WorldgenSession['registry'];
 }
 
 /** What {@link SessionFiles} hands on. */
@@ -288,6 +325,14 @@ export class TryItArea {
   private disposed = false;
   private loadingGround = false;
   private changedSinceGround = false;
+  /** The generated ground's controller (B584), while that ground is in. */
+  private generatedNow: GeneratedGround | null = null;
+  /** The generated land last filled, without the user's changes, and its window. */
+  private generatedLand: { ground: GroundBlocks; window: GeneratedWindow } | null = null;
+  /** The user's changes to a generated ground, by world position (`editKey`). */
+  private edits = new Map<string, GroundEdit>();
+  /** While true, the source's log lines are not written to "What happened" (a quiet refill). */
+  private quiet = false;
 
   constructor(options: TryItAreaOptions) {
     this.filesNow = options.files;
@@ -496,6 +541,7 @@ export class TryItArea {
     description: string,
     lines: readonly string[] = [],
   ): GroundLoadResult {
+    if (kind !== 'generated') this.stopGenerated();
     this.loadingGround = true;
     let result: GroundLoadResult;
     try {
@@ -521,6 +567,9 @@ export class TryItArea {
     } finally {
       this.loadingGround = false;
     }
+    // A generated ground comes back as the land is now, without the user's changes.
+    this.edits.clear();
+    if (this.generatedLand !== null) this.applyCells(this.generatedLand.ground);
     this.changedSinceGround = false;
     this.particles.clear();
     this.mobField.clear();
@@ -528,9 +577,160 @@ export class TryItArea {
     this.changed();
   }
 
+  // ---- My world generation (B584) --------------------------------------------------------------
+
+  /** The generated ground's controller while that ground is in, else `null`. */
+  get generated(): GeneratedGround | null {
+    return this.generatedNow;
+  }
+
+  /** The window of the generated land now in the area, or `null`. */
+  get generatedWindow(): GeneratedWindow | null {
+    return this.generatedLand?.window ?? null;
+  }
+
+  /** The user's changes held for the generated ground (placed and broken blocks). */
+  get generatedEdits(): readonly GroundEdit[] {
+    return [...this.edits.values()];
+  }
+
+  /**
+   * Starts the generated ground (ADR 0119 D8): the land arrives in stages from the terrain
+   * worker through `link`, replacing whatever ground was in. Resolves when its first stage is in
+   * the area; rejects when the land cannot be made (the set-up banner's words without the jar).
+   */
+  useGenerated(
+    link: GroundTerrainLink,
+    spec: GeneratedSpec,
+    hooks: GeneratedHooks = {},
+  ): Promise<void> {
+    this.stopGenerated();
+    const controller = new GeneratedGround(link, spec, {
+      ...hooks,
+      fill: (land, window, description) => this.fillGenerated(land, window, description),
+      playerWorld: () => {
+        const window = this.generatedLand?.window;
+        const at = this.source.player.position;
+        return window === undefined
+          ? null
+          : { x: at.x + window.x0, y: at.y + window.y0, z: at.z + window.z0 };
+      },
+      say: (line) => this.source.log.info(line),
+      changed: () => this.changed(),
+    });
+    this.generatedNow = controller;
+    return controller.start();
+  }
+
+  private stopGenerated(): void {
+    this.generatedNow?.dispose();
+    this.generatedNow = null;
+    this.generatedLand = null;
+    this.edits.clear();
+  }
+
+  /** Keeps a change the user made to a generated ground, by world position. */
+  private recordEdit(pos: { x: number; y: number; z: number }, state: BlockState | null): void {
+    const land = this.generatedLand;
+    if (land === null) return;
+    const at = worldOf(land.window, pos);
+    this.edits.set(editKey(at.x, at.y, at.z), {
+      ...at,
+      state: state === null ? null : stateKey(state),
+    });
+  }
+
+  /**
+   * Puts newly made land in: the first time as a new ground (the player on its surface), for a
+   * moved window as a refill with the player kept where they stood in the world, and for the
+   * same window cell by cell, so mobs and everything else stay. The user's changes are laid over
+   * it where they still fit; returns how many did not and how many are outside the window.
+   */
+  private fillGenerated(
+    land: GroundBlocks,
+    window: GeneratedWindow,
+    description: string,
+  ): { lost: number; outside: number } {
+    const before = this.generatedLand;
+    const applied = applyEdits(land, window, [...this.edits.values()]);
+    this.edits = new Map(applied.kept.map((edit) => [editKey(edit.x, edit.y, edit.z), edit]));
+    if (before === null) {
+      this.loadGround('generated', applied.ground, description);
+    } else if (!sameWindow(before.window, window)) {
+      const feet = this.source.player.position;
+      const world = worldOf(before.window, feet);
+      this.quiet = true;
+      try {
+        this.loadGround('generated', applied.ground, description);
+      } finally {
+        this.quiet = false;
+      }
+      const inside = { x: world.x - window.x0, y: world.y - window.y0, z: world.z - window.z0 };
+      const area = this.source.world;
+      if (
+        inside.x >= 0 &&
+        inside.z >= 0 &&
+        inside.y >= 0 &&
+        inside.x < area.sizeX &&
+        inside.z < area.sizeZ &&
+        inside.y <= area.sizeY
+      ) {
+        this.source.player.teleport(liftedFeet(inside, this.solidAt, area.sizeY));
+      }
+    } else {
+      this.applyCells(applied.ground);
+      const feet = this.source.player.position;
+      const lifted = liftedFeet(feet, this.solidAt, this.source.world.sizeY);
+      if (lifted !== feet) this.source.player.teleport(lifted);
+    }
+    this.generatedLand = { ground: land, window };
+    this.groundText = description;
+    this.changed();
+    return { lost: applied.lost, outside: applied.outside };
+  }
+
+  /** Whether the area's cell holds something the player collides with. */
+  private readonly solidAt = (x: number, y: number, z: number): boolean => {
+    const state = this.source.world.get({ x, y, z });
+    return state !== null && this.source.catalogue.collision(state).length > 0;
+  };
+
+  /** Sets every cell that differs from `ground` (vanilla states through the catalogue). */
+  private applyCells(ground: GroundBlocks): number {
+    const world = this.source.world;
+    const catalogue = this.source.catalogue;
+    const states = ground.palette.map((text, slot): BlockState | null => {
+      if (slot === 0) return null;
+      const parsed = groundState(text);
+      return parsed.name === GROUND_AIR ? null : catalogue.normalise(parsed);
+    });
+    const keys = states.map((state) => (state === null ? '' : stateKey(state)));
+    const { size } = ground;
+    let changed = 0;
+    this.loadingGround = true;
+    try {
+      for (let y = 0; y < Math.min(size.y, world.sizeY); y += 1) {
+        for (let z = 0; z < Math.min(size.z, world.sizeZ); z += 1) {
+          for (let x = 0; x < Math.min(size.x, world.sizeX); x += 1) {
+            const slot = ground.blocks[(y * size.z + z) * size.x + x] ?? 0;
+            const pos = { x, y, z };
+            const have = world.get(pos);
+            if ((have === null ? '' : stateKey(have)) === keys[slot]) continue;
+            world.set(pos, states[slot] ?? null);
+            changed += 1;
+          }
+        }
+      }
+    } finally {
+      this.loadingGround = false;
+    }
+    return changed;
+  }
+
   /** Stops everything; the area is not used afterwards. */
   dispose(): void {
     this.disposed = true;
+    this.stopGenerated();
     this.stop();
     this.ambient.dispose();
     this.hums.dispose();
@@ -565,6 +765,7 @@ export class TryItArea {
         this.onEffect(event.effect);
         break;
       case 'log': {
+        if (this.quiet) return;
         // A trace entry is kept before its line is written, so the last one is its own.
         const last = this.source.trace.at(-1);
         const own =
@@ -573,7 +774,10 @@ export class TryItArea {
         break;
       }
       case 'blockChanged':
-        if (!this.loadingGround) this.changedSinceGround = true;
+        if (!this.loadingGround) {
+          this.changedSinceGround = true;
+          this.recordEdit(event.pos, event.state);
+        }
         // Filling a ground sends tens of thousands; the view hears once at the end.
         if (this.loadingGround) return;
         break;
@@ -636,5 +840,406 @@ export class TryItArea {
       this.notifyQueued = false;
       for (const listener of [...this.listeners]) listener();
     });
+  }
+}
+
+// ---- My world generation (B584, ADR 0119 D8) ---------------------------------------------------
+
+/**
+ * The part of the session's live world generation the ground uses (`terrain/WorldMap.tsx`
+ * `TerrainSessionHandle`): the worker client the map uses too, and the project's files.
+ */
+export interface GroundTerrainLink {
+  readonly client: {
+    setWorld(spec: WorldSpec, filesHash: string, vanillaKey: string | null): Promise<WorldSummary>;
+    sample(
+      lane: string,
+      query: {
+        type: 'heights' | 'columns';
+        region:
+          | GeneratedWindow
+          | { x0: number; z0: number; width: number; depth: number; step: number };
+        fn?: string;
+        stage?: ColumnStage;
+      },
+    ): Promise<TerrainAnswer | null>;
+    cancel(lane: string): void;
+  };
+  subscribe(listener: () => void): () => void;
+  getSnapshot(): { readonly state: TerrainFilesState | null; readonly error: string | null };
+  /** `performance.now()` of the last project change, for the edit-to-land time. */
+  changedAt?(): number | null;
+}
+
+/** What the generated ground is cut from. */
+export interface GeneratedSpec {
+  readonly source: TerrainSource;
+  /** The seed as typed (shared with the world map). */
+  readonly seed: string;
+  /** The block the window is centred on. */
+  readonly centre: { readonly x: number; readonly z: number };
+  /** The world's name, for the side panel. */
+  readonly label: string;
+  /** The element that makes the world (Show on the map opens it). */
+  readonly elementId: string;
+}
+
+/** What the view adds to a generated ground. */
+export interface GeneratedHooks {
+  /**
+   * Called with the palette before each stage goes in, so Minecraft's block states of its props
+   * are read first (`TryItView` `loadVanillaStates`).
+   */
+  readonly beforeFill?: (palette: readonly string[]) => Promise<void>;
+  /** Clock for the stage times (default `performance.now`). */
+  readonly now?: () => number;
+  /** Waits before asking again when another view's world replaced the ground's (tests: 0). */
+  readonly retryMs?: number;
+}
+
+/** The ground's stages, in the order they arrive. */
+export const GENERATED_STAGES: readonly ColumnStage[] = ['terrain', 'surface', 'features'];
+
+/** The lane the ground asks the worker in. */
+export const GROUND_LANE = 'ground';
+
+/** How often a run asks again after another view replaced the world in the shared worker. */
+export const GROUND_RETRIES = 4;
+
+/** Where a generated ground is. */
+export type GeneratedStatus = 'waiting' | 'drawing' | 'ready' | 'needsSetUp' | 'error';
+
+/** Why the land is being made. */
+export type GeneratedReason = 'new' | 'edit' | 'move' | 'seed';
+
+/** What the side panel shows of a generated ground. */
+export interface GeneratedGroundState {
+  readonly status: GeneratedStatus;
+  /** The last stage in the area. */
+  readonly stage: ColumnStage | null;
+  /** The stage being asked for, while drawing. */
+  readonly asking: ColumnStage | null;
+  readonly reason: GeneratedReason;
+  readonly window: GeneratedWindow | null;
+  readonly summary: WorldSummary | null;
+  /** What the ground draws about right and leaves out, in plain words. */
+  readonly notes: readonly string[];
+  readonly error: string | null;
+  /** Milliseconds from the start of the last full run to each stage being in the area. */
+  readonly times: Readonly<Partial<Record<ColumnStage, number>>>;
+  /** From the project change to the new land being in the area, for the last edit. */
+  readonly editMs: number | null;
+  /** Runs finished (any reason). */
+  readonly runs: number;
+}
+
+interface WindowPlan {
+  readonly kind: 'keep' | 'centre' | 'shift';
+  readonly centre?: { readonly x: number; readonly z: number };
+  readonly dy?: number;
+}
+
+/** What the area gives its generated ground (`TryItArea.useGenerated`). */
+interface GeneratedPorts extends GeneratedHooks {
+  fill(
+    land: GroundBlocks,
+    window: GeneratedWindow,
+    description: string,
+  ): { lost: number; outside: number };
+  playerWorld(): { x: number; y: number; z: number } | null;
+  say(line: string): void;
+  changed(): void;
+}
+
+/** Whether a world misses a vanilla file (the set-up banner's case, as the map decides it). */
+function needsVanillaFile(summary: WorldSummary): boolean {
+  return summary.unsupported.some(
+    (part) => part.kind === 'file' && /(^|\/)minecraft:/.test(part.type),
+  );
+}
+
+type JsonRecord = Record<string, unknown>;
+const isObject = (value: unknown): value is JsonRecord =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** The dimension JSON a source names in the project's files, or `null`. */
+function dimensionOf(state: TerrainFilesState, source: TerrainSource): JsonRecord | null {
+  if ('preset' in source) {
+    const preset = state.project['worldgen/world_preset']?.[source.preset];
+    const dimensions = isObject(preset) && isObject(preset.dimensions) ? preset.dimensions : {};
+    const json = dimensions[source.dimension];
+    return isObject(json) ? json : null;
+  }
+  const json = state.project.dimension?.[source.dimension];
+  return isObject(json) ? json : null;
+}
+
+function biomeSourceType(dimension: JsonRecord | null): string {
+  const generator = isObject(dimension?.generator) ? dimension.generator : {};
+  const biomeSource = isObject(generator.biome_source) ? generator.biome_source : {};
+  const type = typeof biomeSource.type === 'string' ? biomeSource.type : '';
+  return type.includes(':') ? type : `minecraft:${type}`;
+}
+
+/**
+ * One generated ground: asks the worker for its window stage by stage, puts each stage in the
+ * area as it arrives, and makes the land again after an edit (one pass, the features stage, so
+ * nothing flickers), a new seed or a moved window. A newer run replaces an older one; a run whose
+ * world another view replaced in the shared worker asks again a few times.
+ */
+export class GeneratedGround {
+  readonly spec: GeneratedSpec;
+  readonly #link: GroundTerrainLink;
+  readonly #ports: GeneratedPorts;
+  readonly #now: () => number;
+  readonly #unsubscribe: () => void;
+  #seed: string;
+  #state: GeneratedGroundState;
+  #generation = 0;
+  #filesHash: string | null = null;
+  #columnNotes: readonly Unsupported[] = [];
+  #cutTop = false;
+  #disposed = false;
+  #first: { resolve: () => void; reject: (error: Error) => void } | null = null;
+
+  constructor(link: GroundTerrainLink, spec: GeneratedSpec, ports: GeneratedPorts) {
+    this.#link = link;
+    this.spec = spec;
+    this.#ports = ports;
+    this.#seed = spec.seed;
+    this.#now = ports.now ?? (() => performance.now());
+    this.#state = {
+      status: 'waiting',
+      stage: null,
+      asking: null,
+      reason: 'new',
+      window: null,
+      summary: null,
+      notes: [],
+      error: null,
+      times: {},
+      editMs: null,
+      runs: 0,
+    };
+    this.#unsubscribe = link.subscribe(() => this.#filesChanged());
+  }
+
+  /** What the side panel shows. */
+  get state(): GeneratedGroundState {
+    return this.#state;
+  }
+
+  /** The seed now. */
+  get seed(): string {
+    return this.#seed;
+  }
+
+  /** Makes the land the first time; see `TryItArea.useGenerated`. */
+  start(): Promise<void> {
+    const first = new Promise<void>((resolve, reject) => {
+      this.#first = { resolve, reject };
+    });
+    void this.#run('new', { kind: 'centre', centre: this.spec.centre });
+    return first;
+  }
+
+  /** Move up (`dy > 0`) or Move down: the window shifts, the land comes again. */
+  move(dy: number): Promise<void> {
+    return this.#run('move', { kind: 'shift', dy });
+  }
+
+  /** Make the land around me: the window is centred on the player again. */
+  aroundPlayer(): Promise<void> {
+    const at = this.#ports.playerWorld();
+    if (at === null) return Promise.resolve();
+    return this.#run('move', {
+      kind: 'centre',
+      centre: { x: Math.floor(at.x), z: Math.floor(at.z) },
+    });
+  }
+
+  /** A new seed (typed in the map or the picker): the land comes again around the same place. */
+  setSeed(seed: string): Promise<void> {
+    if (seed === this.#seed) return Promise.resolve();
+    this.#seed = seed;
+    const window = this.#state.window;
+    return this.#run(
+      'seed',
+      window === null
+        ? { kind: 'centre', centre: this.spec.centre }
+        : { kind: 'centre', centre: windowCentre(window) },
+    );
+  }
+
+  /** Stops following the project; work asked is dropped. */
+  dispose(): void {
+    if (this.#disposed) return;
+    this.#disposed = true;
+    this.#generation += 1;
+    this.#unsubscribe();
+    this.#link.client.cancel(GROUND_LANE);
+    this.#first?.reject(new Error('The ground was replaced.'));
+    this.#first = null;
+  }
+
+  #set(patch: Partial<GeneratedGroundState>): void {
+    this.#state = { ...this.#state, ...patch };
+    this.#ports.changed();
+  }
+
+  #filesChanged(): void {
+    if (this.#disposed) return;
+    const state = this.#link.getSnapshot().state;
+    if (state === null || state.filesHash === this.#filesHash) return;
+    if (this.#state.window === null) {
+      // Still waiting for the first files (or the first run failed on them): start again.
+      if (this.#state.status === 'waiting' || this.#state.status === 'needsSetUp') {
+        void this.#run('new', { kind: 'centre', centre: this.spec.centre });
+      }
+      return;
+    }
+    void this.#run('edit', { kind: 'keep' });
+  }
+
+  #notes(state: TerrainFilesState, summary: WorldSummary | null): string[] {
+    const dimension = dimensionOf(state, this.spec.source);
+    const end =
+      this.spec.source.dimension.replace(/^minecraft:/, '') === 'the_end' ||
+      biomeSourceType(dimension) === 'minecraft:the_end';
+    return generatedNotes({
+      facts: state.facts,
+      summary,
+      end,
+      climate: biomeSourceType(dimension) === 'minecraft:multi_noise',
+      columnNotes: this.#columnNotes,
+      cutAtTop: this.#cutTop,
+      problems: state.problems,
+    });
+  }
+
+  #fail(status: 'needsSetUp' | 'error', error: string): void {
+    this.#set({ status, asking: null, error });
+    this.#first?.reject(new Error(error));
+    this.#first = null;
+  }
+
+  async #run(reason: GeneratedReason, plan: WindowPlan, retry = 0): Promise<void> {
+    if (this.#disposed) return;
+    const generation = ++this.#generation;
+    const live = (): boolean => !this.#disposed && generation === this.#generation;
+    const started = this.#now();
+    const changedAt = reason === 'edit' ? (this.#link.changedAt?.() ?? null) : null;
+    const { state, error } = this.#link.getSnapshot();
+    if (state === null) {
+      if (error !== null)
+        this.#fail('error', `The project's world files could not be read: ${error}`);
+      else this.#set({ status: 'waiting', reason });
+      return;
+    }
+    this.#filesHash = state.filesHash;
+    this.#set({ status: 'drawing', reason, error: null });
+    const client = this.#link.client;
+    // Asked again later when another view's world replaced this one in the shared worker.
+    const again = async (): Promise<void> => {
+      if (!live()) return;
+      if (retry >= GROUND_RETRIES) {
+        this.#fail('error', 'The land could not be made: the worker was busy with another world.');
+        return;
+      }
+      await new Promise((done) => setTimeout(done, this.#ports.retryMs ?? 250));
+      if (live()) await this.#run(reason, plan, retry + 1);
+    };
+    let summary: WorldSummary;
+    try {
+      summary = await client.setWorld(
+        {
+          files: { vanilla: state.vanilla, project: state.project },
+          source: this.spec.source,
+          seed: this.#seed,
+          facts: state.facts,
+        },
+        state.filesHash,
+        state.vanillaKey,
+      );
+    } catch (failure) {
+      if (!live()) return;
+      if (failure instanceof Error && /newer world replaced/.test(failure.message)) {
+        await again();
+        return;
+      }
+      this.#fail(
+        'error',
+        `The land could not be made: ${failure instanceof Error ? failure.message : String(failure)}`,
+      );
+      return;
+    }
+    if (!live()) return;
+    if (state.needsSetUp && needsVanillaFile(summary)) {
+      this.#set({ summary, notes: this.#notes(state, summary) });
+      this.#fail('needsSetUp', SET_UP_WORDS);
+      return;
+    }
+    // The window.
+    const heights = { minY: summary.minY, height: summary.height, seaLevel: summary.seaLevel };
+    const before = this.#state.window;
+    let window: GeneratedWindow;
+    if (plan.kind === 'shift' && before !== null) {
+      window = shiftWindow(before, plan.dy ?? 0, heights);
+    } else if (plan.kind === 'keep' && before !== null) {
+      window = shiftWindow(before, 0, heights);
+    } else {
+      const centre = plan.centre ?? this.spec.centre;
+      const asked = await client.sample(GROUND_LANE, {
+        type: 'heights',
+        region: { x0: centre.x, z0: centre.z, width: 1, depth: 1, step: 1 },
+        fn: 'surface',
+      });
+      if (!live()) return;
+      if (asked === null) {
+        await again();
+        return;
+      }
+      const found = (asked.data as Int16Array)[0];
+      // Over the sea the window is placed by the water's top, so the player stands at its edge.
+      const surface = found === undefined ? null : Math.max(found, summary.seaLevel);
+      window = windowAround(centre, surface, heights);
+    }
+    const stages: readonly ColumnStage[] =
+      reason === 'edit' && sameWindow(before, window) ? ['features'] : GENERATED_STAGES;
+    const times: Partial<Record<ColumnStage, number>> = reason === 'edit' ? this.#state.times : {};
+    let lost = 0;
+    let outside = 0;
+    for (const stage of stages) {
+      this.#set({ asking: stage, summary });
+      const answer = await client.sample(GROUND_LANE, { type: 'columns', region: window, stage });
+      if (!live()) return;
+      if (answer === null) {
+        await again();
+        return;
+      }
+      const columns = answer.data as ColumnsData;
+      const land = generatedGround(columns);
+      await this.#ports.beforeFill?.(land.palette);
+      if (!live()) return;
+      this.#columnNotes = columns.notes;
+      this.#cutTop = cutAtTop(land);
+      const result = this.#ports.fill(land, window, `${this.spec.label}, seed ${this.#seed}`);
+      lost += result.lost;
+      outside = result.outside;
+      const at = this.#now();
+      if (reason !== 'edit') times[stage] = Math.round(at - started);
+      this.#set({
+        stage,
+        window,
+        times: { ...times },
+        notes: this.#notes(state, summary),
+        ...(reason === 'edit' && changedAt !== null ? { editMs: Math.round(at - changedAt) } : {}),
+      });
+      this.#first?.resolve();
+      this.#first = null;
+    }
+    const line = editsLine(lost, reason === 'move' ? outside : 0);
+    if (line !== null) this.#ports.say(line);
+    this.#set({ status: 'ready', asking: null, runs: this.#state.runs + 1 });
   }
 }

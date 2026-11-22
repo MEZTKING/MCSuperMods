@@ -3,10 +3,16 @@
  * (through `@msm/sim`'s pure generators, or from a world area main read), the user's own Quick
  * world presets and the plain words the picker shows.
  *
+ * B584 adds "My world generation" (ADR 0119 D8): the worlds of the project a ground can be cut
+ * from ({@link generatedSources}), the side panel's words, and the notes that say what the
+ * ground draws only about right and what it leaves out (limits WL3 to WL5, WL8, WL15 to WL17).
+ * The land itself is made in the terrain worker (`session-source.ts` `GeneratedGround`).
+ *
  * The user's presets are kept in the renderer's local storage beside the app's other view
  * preferences (`store/preferences.ts`): per user of this computer, never in the project.
  */
 
+import type { Project } from '@msm/plugin-api';
 import {
   flatGround,
   type GroundBlocks,
@@ -18,6 +24,10 @@ import {
 } from '@msm/sim';
 import { create } from 'zustand';
 import type { TryItAreaCentre, TryItWorldArea, TryItWorldInfo } from '../../../shared/platform';
+import { thingWords } from '../components/thing-picker/thing-sources';
+import { useUiStore } from '../store/ui-store';
+import type { TerrainFacts, TerrainSource, Unsupported, WorldSummary } from '../terrain/client';
+import { presetDimensions, withNamespace } from '../terrain/hosts';
 
 /** What the user chose. */
 export type GroundChoice =
@@ -29,7 +39,29 @@ export type GroundChoice =
       readonly worldId: string;
       readonly worldName: string;
       readonly centre: TryItAreaCentre;
+    }
+  | {
+      readonly kind: 'generated';
+      /** The world the land comes from. */
+      readonly world: GeneratedSourceChoice;
+      /** The seed as typed (shared with the world map, `terrain/view-store.ts`). */
+      readonly seed: string;
+      /** The block the window is centred on. */
+      readonly centre: { readonly x: number; readonly z: number };
     };
+
+/** One world of the project a generated ground can be cut from. */
+export interface GeneratedSourceChoice {
+  /** Stable key (picker and storage). */
+  readonly key: string;
+  /** What the picker shows: plain words (no ids, ADR 0083 D7). */
+  readonly label: string;
+  /** The ids it comes from (the picker's tooltip). */
+  readonly ids: string;
+  /** The element that makes it (the dimension or the world preset), for Show on the map. */
+  readonly elementId: string;
+  readonly source: TerrainSource;
+}
 
 /** The grounds' names and one line each, in the picker's order. */
 export const GROUND_CHOICES: readonly { kind: GroundKind; label: string; line: string }[] = [
@@ -48,6 +80,11 @@ export const GROUND_CHOICES: readonly { kind: GroundKind; label: string; line: s
     kind: 'world',
     label: 'From my world',
     line: 'An area copied from one of your own saves. Your save is only read, never changed.',
+  },
+  {
+    kind: 'generated',
+    label: 'My world generation',
+    line: 'The land your own world makes, around where you stand.',
   },
 ];
 
@@ -86,12 +123,14 @@ export function describeGround(choice: GroundChoice): string {
           : `around X ${choice.centre.x}, Z ${choice.centre.z}`;
       return `${choice.worldName}, ${where}`;
     }
+    case 'generated':
+      return `${choice.world.label}, seed ${choice.seed}`;
   }
 }
 
 /** The blocks of a ground that needs nothing from main (`world` needs {@link worldGround}). */
 export function groundBlocksFor(
-  choice: Exclude<GroundChoice, { kind: 'world' }>,
+  choice: Exclude<GroundChoice, { kind: 'world' | 'generated' }>,
 ): GroundBlocks | undefined {
   switch (choice.kind) {
     case 'grid':
@@ -224,3 +263,183 @@ export const useGroundPresets = create<GroundPresetsState>((set, get) => ({
 export const DEFAULT_QUICK_OPTIONS: QuickWorldOptions = (
   QUICK_PRESETS[0] as (typeof QUICK_PRESETS)[number]
 ).options;
+
+// ---- My world generation (B584) ----------------------------------------------------------------
+
+/** The kinds whose elements make a world (a project dimension, a world preset). */
+export const DIMENSION_KIND = 'minecraft:dimension';
+export const WORLD_PRESET_KIND = 'minecraft:worldgen/world_preset';
+
+/** The project's worlds a generated ground can be cut from: dimensions, then each preset's. */
+export function generatedSources(project: Project | null): GeneratedSourceChoice[] {
+  const dimensions: GeneratedSourceChoice[] = [];
+  const presets: GeneratedSourceChoice[] = [];
+  for (const namespace of project?.namespaces ?? []) {
+    for (const element of namespace.elements) {
+      const id = withNamespace(element.id);
+      if (element.kind === DIMENSION_KIND) {
+        dimensions.push({
+          key: `dimension:${id}`,
+          label: thingWords(id),
+          ids: id,
+          elementId: element.id,
+          source: { dimension: id },
+        });
+      } else if (element.kind === WORLD_PRESET_KIND) {
+        for (const dimension of presetDimensions(element.data)) {
+          presets.push({
+            key: `preset:${id}:${dimension}`,
+            label: `${thingWords(withNamespace(dimension))} of ${thingWords(id)}`,
+            ids: `${withNamespace(dimension)} of ${id}`,
+            elementId: element.id,
+            source: { preset: id, dimension },
+          });
+        }
+      }
+    }
+  }
+  return [...dimensions, ...presets];
+}
+
+/**
+ * The element last open in the editor. Opening Try it clears the selection, so the last one
+ * chosen is kept here from the moment this module loads (the first time Try it opens); before
+ * that the picker starts on the project's first world.
+ */
+let lastOpenElement: string | null = useUiStore.getState().selectedId;
+useUiStore.subscribe((state) => {
+  if (state.selectedId !== null) lastOpenElement = state.selectedId;
+});
+
+/** The element last open in the editor (see {@link lastOpenElement}), or `null`. */
+export function lastOpenElementId(): string | null {
+  return lastOpenElement;
+}
+
+/**
+ * The world the picker starts on: the one the element open in the editor makes (a dimension, or
+ * a preset's first dimension), else the first; `null` when the project has none.
+ */
+export function defaultGeneratedSource(
+  sources: readonly GeneratedSourceChoice[],
+  openElementId: string | null,
+): GeneratedSourceChoice | null {
+  if (openElementId !== null) {
+    const open = sources.find((source) => source.elementId === openElementId);
+    if (open !== undefined) return open;
+  }
+  return sources[0] ?? null;
+}
+
+/** The picker's line when the project has no world to cut a ground from. */
+export const NO_GENERATED_SOURCE =
+  'Your project has no dimension or world type yet. Make one (Make a world, or the Dimension flow) and it shows here.';
+
+/** The picker's line when this window cannot make land (no project session to read it from). */
+export const NO_GENERATED_HERE = 'The land cannot be made in this window.';
+
+/** The ground's side panel words (plan, "Very easy wording"). */
+export const GENERATED_WORDS = {
+  moveUp: 'Move up',
+  moveDown: 'Move down',
+  aroundMe: 'Make the land around me',
+  showOnMap: 'Show on the map',
+  aboutRight: 'Trees, plants and ores are about right here; the game places them exactly.',
+  carved: 'Carved caves and buildings show only in the game.',
+  shaped: 'Land the game shapes around buildings is not drawn either.',
+  end: 'The End is about right here.',
+  borders: 'Biome borders are about right on this version.',
+  biomes:
+    "Vanilla's biomes show here after you have pressed Play once. Until then the land has one biome.",
+  cut: 'The land goes higher than this window: Move up to see the top.',
+  debug: 'Debug worlds are only in the game.',
+  strip: 'The land is a preview worked out from your files.',
+} as const;
+
+/** The stages' words while the land arrives. */
+export const STAGE_WORDS = {
+  terrain: 'Making the land…',
+  surface: 'Laying the surface…',
+  features: 'Placing trees, plants and ores…',
+} as const;
+
+/** Unsupported parts of one type and outcome together (the map's `groupUnsupported`). */
+function grouped(parts: readonly Unsupported[]): { part: Unsupported; more: number }[] {
+  const groups = new Map<string, { part: Unsupported; more: number }>();
+  for (const part of parts) {
+    const key = `${part.kind} ${part.type} ${part.drawnInstead}`;
+    const known = groups.get(key);
+    if (known === undefined) groups.set(key, { part, more: 0 });
+    else known.more += 1;
+  }
+  return [...groups.values()];
+}
+
+/** One part the ground could not work out, in plain words (as the map words it). */
+function partLine(part: Unsupported, more: number): string {
+  if (part.kind === 'feature' && part.where === 'features') return part.drawnInstead;
+  const type = part.type.startsWith('minecraft:')
+    ? part.type.slice('minecraft:'.length)
+    : part.type;
+  const where =
+    more === 0 ? part.where : `${part.where} and ${more} more ${more === 1 ? 'place' : 'places'}`;
+  if (part.kind === 'file') return `${type} is missing (named in ${where}). ${part.drawnInstead}`;
+  return `This world uses ${type} (in ${where}), which the preview cannot work out yet. ${part.drawnInstead}`;
+}
+
+/** What {@link generatedNotes} reads. */
+export interface GeneratedNotesInput {
+  readonly facts: TerrainFacts;
+  readonly summary: WorldSummary | null;
+  /** The world is the End (by id or biome source). */
+  readonly end: boolean;
+  /** The world places its biomes by climate (`multi_noise`). */
+  readonly climate: boolean;
+  /** The columns' own notes (the features stage's "about right" and left-out types). */
+  readonly columnNotes: readonly Unsupported[];
+  /** Land reaches the window's top layer (WL8). */
+  readonly cutAtTop: boolean;
+  /** Project files that could not be read. */
+  readonly problems: readonly { readonly elementId: string; readonly message: string }[];
+}
+
+/**
+ * The ground's notes: the "about right" line always (B583), what is left out (WL4, WL5, WL15),
+ * the target's approximate parts (WL16, WL17), a cut top (WL8) and every part the engine could
+ * not work out, grouped by type.
+ */
+export function generatedNotes(input: GeneratedNotesInput): string[] {
+  const lines: string[] = [
+    GENERATED_WORDS.aboutRight,
+    GENERATED_WORDS.carved,
+    GENERATED_WORDS.shaped,
+  ];
+  if (input.summary?.generator === 'debug') lines.push(GENERATED_WORDS.debug);
+  if (input.end && input.facts.approximate.includes('end')) lines.push(GENERATED_WORDS.end);
+  if (!input.end && input.climate && input.facts.approximate.includes('biome_layout')) {
+    lines.push(GENERATED_WORDS.borders);
+  }
+  if (input.summary !== null && !input.summary.biomesKnown) lines.push(GENERATED_WORDS.biomes);
+  if (input.cutAtTop) lines.push(GENERATED_WORDS.cut);
+  const parts = [...(input.summary?.unsupported ?? []), ...input.columnNotes].filter(
+    (part) => part.type !== 'about_right',
+  );
+  for (const group of grouped(parts)) lines.push(partLine(group.part, group.more));
+  for (const problem of input.problems) {
+    lines.push(`${problem.elementId} could not be read, so it is left out: ${problem.message}`);
+  }
+  return [...new Set(lines)];
+}
+
+/** The strip's line for a generated ground: the Preview words and the target's labels. */
+export function generatedStripLine(notes: readonly string[]): string {
+  const labels = notes.filter(
+    (line) => line === GENERATED_WORDS.end || line === GENERATED_WORDS.borders,
+  );
+  return [GENERATED_WORDS.strip, ...labels].join(' ');
+}
+
+/** The view store's key of a project (as the world map keys it). */
+export function terrainViewKey(root: string | null, project: Project | null): string {
+  return root ?? `unsaved:${project?.name ?? ''}`;
+}

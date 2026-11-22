@@ -24,6 +24,10 @@
  * (`traders/MerchantScreen.tsx`), fluid buckets in the hotbar and the fluids drawn
  * (`fluids/`), and the side panel's "Sky" (a project dimension type's sky colour, `render/sky.ts`).
  *
+ * B584 adds the ground My world generation (ADR 0119 D8; `GroundPicker.tsx`
+ * `useGeneratedGround`): the picker's choice, the side panel's Move up, Move down, Make the land
+ * around me and Show on the map, and the strip's Preview line while it is in.
+ *
  * B540 adds vanilla parity 3, batch 2 (ADR 0112 D5): fish buckets, fluid bottles, gift items and
  * the vanilla buckets, glass bottle and cauldron they need in the hotbar (`batch2/things.ts`),
  * the merchant mock-up's changed prices, and project boats drawn as boxes (`vehicles/`).
@@ -68,7 +72,7 @@ import { Chips } from './Chips';
 import { webAudioOut } from './effects';
 import { fluidLooks } from './fluids/fluid-pass';
 import { bucketThings } from './fluids/things';
-import { GroundPicker } from './GroundPicker';
+import { GroundPicker, useGeneratedGround } from './GroundPicker';
 import {
   describeGround,
   GROUND_CHOICES,
@@ -764,12 +768,29 @@ export default function TryItView(props: TryItViewProps) {
     area.setFiles(area.files, area.target, next);
   };
 
+  // My world generation (B584).
+  const generated = useGeneratedGround({
+    session,
+    root,
+    project,
+    area,
+    beforeFill: (palette) => loadVanillaStates(palette.map(blockIdOf)),
+    openElement: (elementId) => (props.onOpenElement ?? openElement)(elementId, null),
+    ...(props.onSetUpVanilla === undefined ? {} : { onSetUp: props.onSetUpVanilla }),
+  });
+
   /** Makes or reads a ground and loads it into the area (the picker's "Use this ground"). */
   const applyGround = async (
     choice: GroundChoice,
     progress: (text: string) => void = () => {},
   ): Promise<void> => {
     if (area === null) throw new Error('The test area is not ready yet.');
+    if (choice.kind === 'generated') {
+      await generated.apply(choice, progress);
+      look.current = { yaw: look.current.yaw, pitch: 0 };
+      wrapperRef.current?.focus({ preventScroll: true });
+      return;
+    }
     let ground: GroundBlocks | undefined;
     const lines: string[] = [];
     if (choice.kind === 'world') {
@@ -904,6 +925,11 @@ export default function TryItView(props: TryItViewProps) {
         <span className="text-muted">
           Looks and states are real; movement and mobs are rough. Check it in the game.
         </span>
+        {generated.stripLine !== null && (
+          <span className="text-muted" data-testid="tryit-generated-strip">
+            {generated.stripLine}
+          </span>
+        )}
         <span className="ml-auto" />
         {playButton('tryit-play')}
       </div>
@@ -1029,7 +1055,7 @@ export default function TryItView(props: TryItViewProps) {
                       }}
                     >
                       {entry.label}
-                      {entry.kind === 'quick' || entry.kind === 'world' ? '…' : ''}
+                      {entry.kind === 'grid' || entry.kind === 'flat' ? '' : '…'}
                     </Button>
                   ))}
                 </div>
@@ -1127,6 +1153,7 @@ export default function TryItView(props: TryItViewProps) {
                     : { vanilla: (path: string) => vanilla.readAsset(path).catch(() => null) }
                 }
                 texturesFolder={area.target.folders.resource.textures}
+                generated={generated.picker}
                 onApply={applyGround}
                 onClose={() => {
                   setGroundsOpen(null);
@@ -1314,6 +1341,7 @@ export default function TryItView(props: TryItViewProps) {
                 Change ground…
               </Button>
             </div>
+            {generated.panel}
             {vanilla === null && area !== null && area.ground !== 'grid' && (
               <p className="text-xs text-muted" data-testid="tryit-ground-no-vanilla">
                 {NO_VANILLA_GROUND_TEXT}{' '}

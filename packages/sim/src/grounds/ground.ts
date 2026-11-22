@@ -10,7 +10,11 @@
 
 import { AREA_SIZE_X, AREA_SIZE_Y, AREA_SIZE_Z, type BlockState } from '../types.js';
 
-/** The grounds Try it offers (ADR 0087 D1). */
+/**
+ * The grounds Try it offers (ADR 0087 D1): MSM's grid, the flat world, a Quick world, an area of
+ * one of the user's saves, and `generated`, a window of the world the project's own dimension or
+ * world preset generates (ADR 0119 D8, `generated.ts`).
+ */
 export const GROUND_KINDS = Object.freeze(['grid', 'flat', 'quick', 'world', 'generated'] as const);
 
 /** One of {@link GROUND_KINDS}. */
