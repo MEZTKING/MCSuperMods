@@ -1,6 +1,7 @@
 /**
- * Try it's worlds (ADR 0087): lists the saves Try it can copy an area from and reads that area
- * through `@msm/interop`'s pure `readWorldArea`, with Node's zlib.
+ * Try it's worlds (ADR 0087): lists the saves Try it can copy an area from, with each save's
+ * seed (`@msm/interop`'s `readWorldSeed`; ADR 0119, for "Seed of one of my worlds"), and reads
+ * that area through `@msm/interop`'s pure `readWorldArea`, with Node's zlib.
  *
  * Read-only (D2): nothing here writes. Reads are limited to the `saves/` folders of the game
  * folders the app already knows (every discovered location, which includes the selected one and
@@ -24,6 +25,7 @@ import {
   locationPathKey,
   readLevelSummary,
   readWorldArea,
+  readWorldSeed,
   type WorldArea,
   WorldReadError,
 } from '@msm/interop';
@@ -224,6 +226,9 @@ export function createTryItWorldsService(deps: TryItWorldsDeps): TryItWorldsServ
               ? await readSmallFile(iconPath, TRYIT_ICON_MAX_BYTES)
               : null;
           const dataVersion = summary?.dataVersion ?? null;
+          // The seed lives in data/minecraft/world_gen_settings.dat (B574 WS17), read through
+          // the same containment as the area.
+          const seed = await readWorldSeed(containedReader(world), world);
           worlds.push({
             id: `${folder.id}/${name}`,
             name: summary?.name ?? name,
@@ -236,6 +241,7 @@ export function createTryItWorldsService(deps: TryItWorldsDeps): TryItWorldsServ
               summary !== null &&
               (dataVersion === null || dataVersion >= FIRST_FLAT_CHUNK_DATA_VERSION),
             icon,
+            seed: seed === null ? null : seed.toString(),
           });
           if (worlds.length >= TRYIT_WORLDS_MAX) break;
         }

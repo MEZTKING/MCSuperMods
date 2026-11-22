@@ -1432,6 +1432,17 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
       void refreshMinecraftStatus();
     }
   }, [session, refreshMinecraftStatus]);
+  // ADR 0119 D4: a cache from before the worldgen files (schema 4) is extracted again by
+  // itself, once per version, when the jar it came from is still there; otherwise the set-up
+  // banner shows as before.
+  const reextracted = useRef(new Set<string>());
+  const outdatedVersion =
+    minecraft.status?.cacheOutdated === true ? (minecraft.status.jar?.versionId ?? null) : null;
+  useEffect(() => {
+    if (outdatedVersion === null || reextracted.current.has(outdatedVersion)) return;
+    reextracted.current.add(outdatedVersion);
+    void extractAssets();
+  }, [outdatedVersion, extractAssets]);
 
   // Commands and shortcuts ----------------------------------------------------------------
 

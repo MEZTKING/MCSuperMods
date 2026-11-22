@@ -48,6 +48,8 @@ import type {
   Target,
   TargetChannel,
   TargetFacts,
+  TerrainPreviewApproximatePart,
+  TerrainPreviewFacts,
   TradeSoundFacts,
   ValidationInput,
   ValidationRegistry,
@@ -759,6 +761,31 @@ describe('0.8.0 additions', () => {
     expect(older.villagerTypes).toBeUndefined();
     expect(testTarget.gameRules).toBeUndefined();
     expect(testTarget.stats).toBeUndefined();
+  });
+
+  it('carries the live world generation preview facts (1.21.0)', () => {
+    expectTypeOf<WorldgenFacts['terrainPreview']>().toEqualTypeOf<
+      TerrainPreviewFacts | undefined
+    >();
+    expectTypeOf<TerrainPreviewFacts['approximate']>().toEqualTypeOf<
+      readonly TerrainPreviewApproximatePart[]
+    >();
+    const worldgen: WorldgenFacts = {
+      featureSteps: ['raw_generation'],
+      terrainPreview: {
+        dataFolders: ['dimension_type', 'worldgen/noise_settings'],
+        approximate: ['end'],
+      },
+    };
+    expect(worldgen.terrainPreview?.dataFolders).toContain('dimension_type');
+    const wrongPart: TerrainPreviewFacts = {
+      dataFolders: [],
+      // @ts-expect-error: only the biome layout and the End can be approximate.
+      approximate: ['carvers'],
+    };
+    expect(wrongPart.approximate).toEqual(['carvers']);
+    // 1.20.0-shaped worldgen facts without it stay assignable.
+    expect(testTarget.worldgen.terrainPreview).toBeUndefined();
   });
 
   it('carries optional command facts on a target (1.17.0)', () => {

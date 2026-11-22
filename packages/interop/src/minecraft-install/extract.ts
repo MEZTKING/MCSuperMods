@@ -37,6 +37,35 @@ export interface ExtractedFile {
 export interface ExtractOptions {
   /** Entry path patterns to keep. Defaults to {@link PREVIEW_ASSET_PATTERNS}. */
   patterns?: readonly RegExp[];
+  /**
+   * Folders under `data/minecraft/` whose JSON files are kept as well, subfolders included:
+   * the target's `worldgen.terrainPreview.dataFolders` (ADR 0119 D4, D16). The list comes from
+   * the target; this package names no folder of its own. Defaults to none.
+   */
+  dataFolders?: readonly string[];
+}
+
+/** The prefix of the jar's vanilla data files. */
+export const VANILLA_DATA_PREFIX = 'data/minecraft/';
+
+/** Whether `folder` is a plain relative folder such as `worldgen/noise` (`a-z`, `0-9`, `_`, `/`). */
+export function isDataFolder(folder: string): boolean {
+  return /^[a-z0-9_]+(?:\/[a-z0-9_]+)*$/.test(folder) && isProjectRelativePath(folder);
+}
+
+/**
+ * The entry patterns of a target's data folders: every `.json` file below
+ * `data/minecraft/<folder>/`, in subfolders too.
+ *
+ * @throws Error When a folder is not a plain relative folder name (lower case, digits, `_`, `/`).
+ */
+export function dataFolderPatterns(dataFolders: readonly string[]): RegExp[] {
+  return dataFolders.map((folder) => {
+    if (!isDataFolder(folder)) {
+      throw new Error(`${JSON.stringify(folder)} is not a data folder name.`);
+    }
+    return new RegExp(`^data/minecraft/${folder}/.+\\.json$`);
+  });
 }
 
 /**
@@ -50,7 +79,10 @@ export function extractPreviewAssets(
   jar: Uint8Array,
   options: ExtractOptions = {},
 ): ExtractedFile[] {
-  const patterns = options.patterns ?? PREVIEW_ASSET_PATTERNS;
+  const patterns = [
+    ...(options.patterns ?? PREVIEW_ASSET_PATTERNS),
+    ...dataFolderPatterns(options.dataFolders ?? []),
+  ];
   const entries = unzipSync(jar, {
     filter: (file) =>
       file.originalSize <= MAX_PREVIEW_ENTRY_BYTES &&

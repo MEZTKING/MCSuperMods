@@ -4,12 +4,21 @@ import {
   assetCacheDir,
   extractPreviewAssets,
   readAssetCacheInfo,
+  readCachedDataFiles,
+  readOutdatedAssetCacheInfo,
+  sameDataFolders,
   writeAssetCache,
 } from '../src/index';
 import { MemoryInstallFileSystem } from './helpers/memory-install-fs';
 import { buildSyntheticJar, KEPT_ENTRIES } from './helpers/synthetic-jar';
 
-const INFO = { version: '9.1', jarSha1: 'abc123', extractedAt: '2000-01-01T00:00:00.000Z' };
+const INFO = {
+  version: '9.1',
+  jarSha1: 'abc123',
+  jarPath: '/games/versions/9.1/9.1.jar',
+  dataFolders: [] as string[],
+  extractedAt: '2000-01-01T00:00:00.000Z',
+};
 
 describe('assetCacheDir', () => {
   it('places the cache under cache/assets/<version>', () => {
@@ -29,7 +38,7 @@ describe('asset cache', () => {
     const dir = assetCacheDir('/msm', '9.1');
     const files = extractPreviewAssets(buildSyntheticJar());
     const info = await writeAssetCache(fs, dir, files, INFO);
-    expect(info).toEqual({ ...INFO, fileCount: 8, schemaVersion: 3 });
+    expect(info).toEqual({ ...INFO, fileCount: 8, schemaVersion: 4 });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);
     for (const [path, data] of Object.entries(KEPT_ENTRIES)) {
       expect(await fs.readFile(`${dir}/${path}`)).toEqual(data);
@@ -51,7 +60,7 @@ describe('asset cache', () => {
     const fs = new MemoryInstallFileSystem();
     fs.seed('/c/cache.json', 'not json');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
-    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 4 }));
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 5 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     // A Phase 1 cache (schema 1) has no `.png.mcmeta` sidecars, so it is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 1 }));
@@ -59,8 +68,15 @@ describe('asset cache', () => {
     // Schema 2 has no vanilla placed features (read by "Make my own copy"), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 2 }));
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    // Schema 3 has no worldgen data folders (ADR 0119 D4), so it too is extracted again.
     fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 3 }));
-    expect(await readAssetCacheInfo(fs, '/c')).toEqual({ ...INFO, fileCount: 1, schemaVersion: 3 });
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 1, schemaVersion: 4 }));
+    expect(await readAssetCacheInfo(fs, '/c')).toEqual({ ...INFO, fileCount: 1, schemaVersion: 4 });
+    // Schema 4 needs the jar path and the folder list.
+    const { jarPath: _jarPath, ...withoutJarPath } = INFO;
+    fs.seed('/c/cache.json', JSON.stringify({ ...withoutJarPath, fileCount: 1, schemaVersion: 4 }));
+    expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
     fs.seed('/c/cache.json', '[]');
     expect(await readAssetCacheInfo(fs, '/c')).toBeNull();
   });
@@ -74,5 +90,86 @@ describe('asset cache', () => {
       writeAssetCache(fs, '/c', [{ path: 'cache.json', data: strToU8('{}') }], INFO),
     ).rejects.toThrow();
     expect(fs.log).toEqual([]);
+  });
+});
+
+describe('outdated asset caches (ADR 0119 D4)', () => {
+  it('reads what a cache of an older schema recorded', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const schema3 = {
+      version: '9.1',
+      jarSha1: 'abc123',
+      extractedAt: INFO.extractedAt,
+      fileCount: 1,
+      schemaVersion: 3,
+    };
+    fs.seed('/c/cache.json', JSON.stringify(schema3));
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toEqual({
+      version: '9.1',
+      jarSha1: 'abc123',
+      jarPath: null,
+      schemaVersion: 3,
+    });
+  });
+
+  it('is null for a current, newer, malformed or missing cache.json', async () => {
+    const fs = new MemoryInstallFileSystem();
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
+    await writeAssetCache(fs, '/c', [], INFO);
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
+    fs.seed('/c/cache.json', JSON.stringify({ ...INFO, fileCount: 0, schemaVersion: 5 }));
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
+    fs.seed('/c/cache.json', JSON.stringify({ version: 1, jarSha1: 'x', schemaVersion: 2 }));
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
+    fs.seed('/c/cache.json', '{');
+    expect(await readOutdatedAssetCacheInfo(fs, '/c')).toBeNull();
+  });
+
+  it('compares folder lists without order or duplicates', () => {
+    expect(sameDataFolders(['b', 'a'], ['a', 'b', 'a'])).toBe(true);
+    expect(sameDataFolders(['a'], ['a', 'c'])).toBe(false);
+    expect(sameDataFolders([], [])).toBe(true);
+  });
+});
+
+describe('readCachedDataFiles', () => {
+  /** A made-up folder list: no real target's. */
+  const FOLDERS = ['made_up/stones', 'made_up/stones/special', 'tags/made_up/stones'];
+  const json = (value: unknown) => strToU8(JSON.stringify(value));
+
+  it('reads each folder as id to JSON, subfolders included', async () => {
+    const fs = new MemoryInstallFileSystem();
+    const dir = assetCacheDir('/msm', '9.1');
+    await writeAssetCache(
+      fs,
+      dir,
+      [
+        { path: 'data/minecraft/made_up/stones/plain.json', data: json({ hard: 1 }) },
+        { path: 'data/minecraft/made_up/stones/deep/dark.json', data: json({ hard: 2 }) },
+        { path: 'data/minecraft/made_up/stones/special/shiny.json', data: json({ hard: 3 }) },
+        { path: 'data/minecraft/made_up/stones/notes.txt', data: strToU8('skip me') },
+        { path: 'data/minecraft/made_up/stones/broken.json', data: strToU8('{') },
+        { path: 'data/minecraft/made_up/other/no.json', data: json({}) },
+      ],
+      { ...INFO, dataFolders: FOLDERS },
+    );
+    const read = await readCachedDataFiles(fs, dir, FOLDERS);
+    expect(read.folders).toEqual({
+      'made_up/stones': {
+        'minecraft:deep/dark': { hard: 2 },
+        'minecraft:plain': { hard: 1 },
+      },
+      'made_up/stones/special': { 'minecraft:shiny': { hard: 3 } },
+      'tags/made_up/stones': {},
+    });
+    expect(read.fileCount).toBe(3);
+    expect(read.unreadable).toEqual(['data/minecraft/made_up/stones/broken.json']);
+  });
+
+  it('refuses folder names that could leave the cache', async () => {
+    const fs = new MemoryInstallFileSystem();
+    await expect(readCachedDataFiles(fs, '/c', ['../escape'])).rejects.toThrow();
+    await expect(readCachedDataFiles(fs, '/c', ['Upper'])).rejects.toThrow();
+    await expect(readCachedDataFiles(fs, '/c', ['a//b'])).rejects.toThrow();
   });
 });

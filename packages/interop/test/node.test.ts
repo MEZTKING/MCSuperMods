@@ -43,6 +43,8 @@ describe('@msm/interop/node', () => {
     const info = await writeAssetCache(fs, dir, extractPreviewAssets(bytes), {
       version: '9.1',
       jarSha1: sha1Hex(bytes),
+      jarPath: picked?.jarPath ?? '',
+      dataFolders: [],
       extractedAt: '2000-01-01T00:00:00.000Z',
     });
     expect(await readAssetCacheInfo(fs, dir)).toEqual(info);

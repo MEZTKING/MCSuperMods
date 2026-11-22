@@ -13,7 +13,7 @@ import { basename, dirname, isAbsolute, join, normalize } from 'node:path';
 import type { ProjectFileSystem } from '@msm/core';
 import type { Downloader, InstallEnv, InstallFileSystem, LauncherProgramEnv } from '@msm/interop';
 import { createNodeInstallFileSystem } from '@msm/interop/node';
-import { targetById } from '@msm/targets';
+import { builtInTargets, targetById } from '@msm/targets';
 import type {
   FileFilter,
   LaunchNotice,
@@ -39,6 +39,7 @@ import { createTestInMinecraftService } from './test-in-minecraft';
 import { createThumbnailService } from './thumbnails';
 import { createTryItWorldsService, type TryItWorldsService } from './try-it-worlds';
 import { createWorldBackupService } from './world-backups';
+import { readResolvedBiomeLists } from './worldgen-biome-lists';
 
 /**
  * Writes `data` to `path` through a temporary file in the same folder, then renames it into
@@ -259,11 +260,20 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
     settings,
     ...(deps.openPath === undefined ? {} : { openPath: deps.openPath }),
   });
+  // The managed instance's game folder from the last Play status, so "Open the test
+  // instance's folder" may reveal it and the biome lists (B592) can be read from it.
+  let playGameDir: string | null = null;
   const minecraft = createMinecraftService({
     msmHome: deps.msmHome,
     fs: installFs,
     locations,
     backups,
+    // ADR 0119 D4, D16: the jar's worldgen data folders come from the version's target.
+    dataFoldersFor: (mcVersion) =>
+      builtInTargets.find((bundle) => bundle.target.mcVersion === mcVersion)?.target.worldgen
+        .terrainPreview?.dataFolders ?? null,
+    resolvedBiomeLists: (mcVersion) =>
+      readResolvedBiomeLists({ mcVersion, managedGameDir: playGameDir }),
     ...(deps.now === undefined ? {} : { now: deps.now }),
   });
 
@@ -301,9 +311,6 @@ export function createNodePlatform(deps: NodePlatformDeps): MainPlatform {
       ? {}
       : { spawnLauncher: testOptions.spawnLauncher }),
   });
-  // The managed instance's game folder from the last Play status, so "Open the test
-  // instance's folder" may reveal it.
-  let playGameDir: string | null = null;
   play.onStatus((status) => {
     if (status.gameDir !== null) playGameDir = status.gameDir;
   });

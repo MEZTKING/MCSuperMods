@@ -257,9 +257,41 @@ export interface AppSettingsView extends AppSettings {
 export interface AssetCacheInfoView {
   version: string;
   jarSha1: string;
+  /** The jar the files came from (schema 4). */
+  jarPath: string;
+  /** The `data/minecraft/` folders kept for the world generation preview (schema 4). */
+  dataFolders: string[];
   fileCount: number;
   extractedAt: string;
-  schemaVersion: 3;
+  schemaVersion: 4;
+}
+
+/**
+ * Mirrors `WorldgenFileMap` in `@msm/terrain` (ADR 0119 D4): registry folder key
+ * (`worldgen/noise_settings`, `dimension_type`, `tags/worldgen/biome`, ...) to id
+ * (`minecraft:overworld`) to the file's JSON.
+ */
+export type WorldgenFileMapView = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+
+/**
+ * The resolved biome parameter lists of vanilla's `multi_noise` presets (ADR 0119 D4, reserve
+ * B592), by preset id. Their shape is B592's; until then the answer always carries `null`.
+ */
+export type ResolvedBiomeListsView = Readonly<Record<string, unknown>>;
+
+/**
+ * Every cached vanilla worldgen file of one version in one answer (ADR 0119 D4), for the live
+ * world generation preview. The files come from the user's own client jar, stay in the local
+ * cache and are never exported, written into a project or sent to the AI helper.
+ */
+export interface VanillaWorldgenFiles {
+  /** The installed version the cache came from. */
+  version: string;
+  /** Folder key to id to JSON, over the target's `worldgen.terrainPreview.dataFolders`. */
+  files: WorldgenFileMapView;
+  fileCount: number;
+  /** From the runtime's dev mode once B592 lands; `null` until then and without a Play. */
+  resolvedBiomeLists: ResolvedBiomeListsView | null;
 }
 
 /** What main knows about the Minecraft installation for one version. */
@@ -285,6 +317,12 @@ export interface MinecraftStatus {
   jar?: { versionId: string; launcher: LauncherKind } | null;
   /** Warnings for the selected target, such as `location.version-mismatch`; never blocking. */
   warnings?: GameLocationWarningView[];
+  /**
+   * `true` when an older cache of this version exists (an older schema, or a folder list the
+   * target no longer has) and the jar it came from is still there: the app then extracts again
+   * by itself, without the set-up banner (ADR 0119 D4). Read a missing field as `false`.
+   */
+  cacheOutdated?: boolean;
 }
 
 /** Game locations main discovered, with the selected one. */
@@ -326,6 +364,11 @@ export interface TryItWorldInfo {
   readable: boolean;
   /** The world's `icon.png` (at most 256 KiB), or `null`. */
   icon: Uint8Array | null;
+  /**
+   * The world's seed as a decimal string, from `data/minecraft/world_gen_settings.dat` (B574
+   * WS17), or `null` when that file is missing, of an older layout or unreadable.
+   */
+  seed: string | null;
 }
 
 /** Where a Try it area is centred: the world spawn, or a typed block X and Z. */
@@ -897,6 +940,11 @@ export interface PlatformAdapter {
     readAsset(mcVersion: string, path: string): Promise<Uint8Array | null>;
     /** Lists cached jar paths starting with `prefix`, sorted. */
     listAssets(mcVersion: string, prefix: string): Promise<string[]>;
+    /**
+     * Every cached vanilla worldgen file of `mcVersion` in one answer (ADR 0119 D4), or `null`
+     * when the cache is not set up or the version's target has no `worldgen.terrainPreview`.
+     */
+    readWorldgenFiles(mcVersion: string): Promise<VanillaWorldgenFiles | null>;
     /** Writes a resource pack zip into `<gameDir>/resourcepacks/` of the selected location. */
     installResourcePack(fileName: string, data: Uint8Array): Promise<{ path: string }>;
     /** Lists worlds in `<gameDir>/saves/` of the selected location, most recently played first. */

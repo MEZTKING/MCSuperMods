@@ -188,6 +188,36 @@ describe('Try it worlds', () => {
     );
   });
 
+  it('lists the seed of each world from world_gen_settings.dat (B574 WS17)', async () => {
+    const settings = (seed: bigint) =>
+      new NbtFile(
+        '',
+        new NbtCompound().set('data', new NbtCompound().set('seed', new NbtLong(seed))),
+        'gzip',
+        false,
+        undefined,
+      ).write();
+    for (const [folder, seed] of [
+      ['Plus', 12345n],
+      ['Minus', -7046235981325167892n],
+    ] as const) {
+      const world = await makeWorld(minecraftDir, folder);
+      await mkdir(join(world, 'data', 'minecraft'), { recursive: true });
+      await writeFile(join(world, 'data', 'minecraft', 'world_gen_settings.dat'), settings(seed));
+    }
+    await makeWorld(minecraftDir, 'NoSettings');
+    const worlds = await (await serviceFor()).listWorlds();
+    const seeds = Object.fromEntries(worlds.map((world) => [world.folder, world.seed]));
+    expect(seeds).toEqual({
+      Plus: '12345',
+      Minus: '-7046235981325167892',
+      NoSettings: null,
+    });
+    expect(ipcContract[InvokeChannels.tryItListWorlds].response.safeParse(worlds).success).toBe(
+      true,
+    );
+  });
+
   it('reads the area around the spawn from level.dat', async () => {
     await makeWorld(minecraftDir, 'Flat', { spawn: [5, 64, -3], top: 'minecraft:sand' });
     const service = await serviceFor();

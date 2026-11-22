@@ -2,6 +2,17 @@
 
 All changes to the `@msm/plugin-api` surface. The package follows semver; every breaking change is a major bump with a migration note.
 
+## 1.21.0 — 2026-11-22
+
+The live world generation preview's target fact (ADR 0119 D16). `API_VERSION` is `1.21.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.
+
+- `WorldgenFacts.terrainPreview?: TerrainPreviewFacts { dataFolders; approximate }`: the `data/minecraft/` folders of the client jar whose JSON files the host caches locally for the preview (23 folders on both built-in targets: the worldgen registries the terrain, features, carvers and structures read, `dimension_type` and the five `tags/worldgen/` folders; no `dimension` folder, since vanilla's dimensions are inline in its world presets), and the parts the preview labels as approximate on the target.
+- `TerrainPreviewApproximatePart` (`'biome_layout' | 'end'`): the End on both built-in targets, and the biome layout on the snapshot target, whose game code places biomes in a way its data files do not describe.
+
+### Migration from 1.20.0
+
+None. A plugin that reads `terrainPreview` should declare `^1.21.0` and treat an absent value as "no live map of vanilla files". The folders name where vanilla's files are in the user's own jar; a plugin never receives the files.
+
 ## 1.20.0 — 2026-11-22
 
 Villager type, cauldron, command argument, game rule and statistic facts, and the vanilla block rules input of the Java project generator (ADR 0107 D6, ADR 0108 D6, ADR 0111 D2, D8, ADR 0112 D3). `API_VERSION` is `1.20.0`. Additive: plugins declaring `^1.0.0` load unchanged and built-in plugins keep declaring `^1.0.0`.

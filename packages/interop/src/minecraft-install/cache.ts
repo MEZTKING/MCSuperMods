@@ -5,7 +5,7 @@
  */
 
 import { isProjectRelativePath } from '@msm/plugin-api';
-import type { ExtractedFile } from './extract';
+import { type ExtractedFile, isDataFolder, VANILLA_DATA_PREFIX } from './extract';
 import { type InstallFileSystem, joinInstallPath } from './fs';
 
 /** The name of the info file that marks a complete cache. */
@@ -17,18 +17,43 @@ export interface AssetCacheInfo {
   version: string;
   /** Lower-case hex SHA-1 of the jar, so a replaced jar invalidates the cache. */
   jarSha1: string;
+  /**
+   * The absolute path of the jar the files came from (schema 4). When a cache of an older
+   * schema or folder list is found and this jar is still there, the host extracts again by
+   * itself (ADR 0119 D4).
+   */
+  jarPath: string;
+  /**
+   * The `data/minecraft/` folders kept beside the preview assets (schema 4): the target's
+   * `worldgen.terrainPreview.dataFolders` at extraction time, sorted. A target whose list
+   * differs needs the cache extracted again.
+   */
+  dataFolders: string[];
   fileCount: number;
   /** ISO 8601 timestamp supplied by the caller. */
   extractedAt: string;
   /**
-   * Cache layout version. 2 added `.png.mcmeta` sidecars (B43); a cache with any other value
+   * Cache layout version. 2 added `.png.mcmeta` sidecars (B43), 3 the placed features, 4 the
+   * worldgen data folders with `jarPath` and `dataFolders` (B577); a cache with any other value
    * is invalid, so it is extracted again.
    */
   schemaVersion: typeof ASSET_CACHE_SCHEMA_VERSION;
 }
 
 /** The current {@link AssetCacheInfo.schemaVersion}. */
-export const ASSET_CACHE_SCHEMA_VERSION = 3;
+export const ASSET_CACHE_SCHEMA_VERSION = 4;
+
+/**
+ * What an older or otherwise outdated `cache.json` still tells: the version and jar it came
+ * from (`jarPath` only from schema 4 on). Read by {@link readOutdatedAssetCacheInfo}.
+ */
+export interface OutdatedAssetCacheInfo {
+  version: string;
+  jarSha1: string;
+  /** `null` before schema 4, which did not record it. */
+  jarPath: string | null;
+  schemaVersion: number;
+}
 
 /** `<msmHome>/cache/assets/<version>`. */
 export function assetCacheDir(msmHome: string, version: string): string {
@@ -55,6 +80,121 @@ export async function readAssetCacheInfo(
     return null;
   }
   return isAssetCacheInfo(parsed) ? parsed : null;
+}
+
+/**
+ * Reads a `cache.json` that {@link readAssetCacheInfo} refuses because its schema is older
+ * than {@link ASSET_CACHE_SCHEMA_VERSION}, so the host can tell a user who extracted before
+ * (and may be extracted again silently) from one who never did. Returns `null` when the file
+ * is missing, unreadable, current or from a newer schema.
+ */
+export async function readOutdatedAssetCacheInfo(
+  fs: InstallFileSystem,
+  dir: string,
+): Promise<OutdatedAssetCacheInfo | null> {
+  const infoPath = joinInstallPath(dir, ASSET_CACHE_INFO_FILE);
+  if (!(await fs.exists(infoPath))) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(new TextDecoder().decode(await fs.readFile(infoPath)));
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+  const record = parsed as Record<string, unknown>;
+  const schema = record.schemaVersion;
+  if (
+    typeof record.version !== 'string' ||
+    typeof record.jarSha1 !== 'string' ||
+    typeof schema !== 'number' ||
+    !Number.isInteger(schema) ||
+    schema < 1 ||
+    schema >= ASSET_CACHE_SCHEMA_VERSION
+  ) {
+    return null;
+  }
+  return {
+    version: record.version,
+    jarSha1: record.jarSha1,
+    jarPath: typeof record.jarPath === 'string' ? record.jarPath : null,
+    schemaVersion: schema,
+  };
+}
+
+/** Whether two folder lists name the same folders (order and duplicates ignored). */
+export function sameDataFolders(a: readonly string[], b: readonly string[]): boolean {
+  const left = [...new Set(a)].sort();
+  const right = [...new Set(b)].sort();
+  return left.length === right.length && left.every((folder, index) => folder === right[index]);
+}
+
+/** A data folder's files: id (`minecraft:<path below the folder>`) to parsed JSON. */
+export type CachedDataFolder = Record<string, unknown>;
+
+/** What {@link readCachedDataFiles} found. */
+export interface CachedDataFiles {
+  /** Folder key (as given) to id to JSON; a folder without files is an empty object. */
+  folders: Record<string, CachedDataFolder>;
+  fileCount: number;
+  /** Jar paths that were not valid JSON, skipped. */
+  unreadable: string[];
+}
+
+/**
+ * Reads every cached `.json` file below `data/minecraft/<folder>/` for each folder, in
+ * subfolders too, as folder key to id to JSON (the shape of `@msm/terrain`'s `WorldgenFileMap`).
+ * A file below a folder that is itself in the list (a longer folder key) belongs to that
+ * folder only. Ids are `minecraft:` plus the path below the folder without `.json`.
+ *
+ * @throws Error When a folder is not a plain relative folder name.
+ */
+export async function readCachedDataFiles(
+  fs: InstallFileSystem,
+  dir: string,
+  dataFolders: readonly string[],
+): Promise<CachedDataFiles> {
+  for (const folder of dataFolders) {
+    if (!isDataFolder(folder)) {
+      throw new Error(`${JSON.stringify(folder)} is not a data folder name.`);
+    }
+  }
+  const owned = new Set(dataFolders);
+  const folders: Record<string, CachedDataFolder> = {};
+  const unreadable: string[] = [];
+  let fileCount = 0;
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  const sorted = [...owned].sort();
+  for (const folder of sorted) {
+    const files: CachedDataFolder = {};
+    folders[folder] = files;
+    const root = joinInstallPath(dir, ...`${VANILLA_DATA_PREFIX}${folder}`.split('/'));
+    if (!(await fs.exists(root))) continue;
+    const walk = async (absDir: string, relative: string): Promise<void> => {
+      const entries = [...(await fs.readDir(absDir))].sort((a, b) =>
+        a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+      );
+      for (const entry of entries) {
+        const path = relative === '' ? entry.name : `${relative}/${entry.name}`;
+        if (entry.kind === 'directory') {
+          if (owned.has(`${folder}/${path}`)) continue;
+          await walk(joinInstallPath(absDir, entry.name), path);
+          continue;
+        }
+        if (!entry.name.endsWith('.json')) continue;
+        const jarPath = `${VANILLA_DATA_PREFIX}${folder}/${path}`;
+        try {
+          files[`minecraft:${path.slice(0, -'.json'.length)}`] = JSON.parse(
+            decoder.decode(await fs.readFile(joinInstallPath(absDir, entry.name))),
+          ) as unknown;
+          fileCount += 1;
+        } catch {
+          unreadable.push(jarPath);
+        }
+      }
+    };
+    await walk(root, '');
+  }
+  return { folders, fileCount, unreadable };
 }
 
 /**
@@ -87,8 +227,10 @@ export async function writeAssetCache(
     await fs.writeFile(joinInstallPath(dir, ...file.path.split('/')), file.data);
   }
   const complete: AssetCacheInfo = {
+    dataFolders: [...new Set(info.dataFolders)].sort(),
     extractedAt: info.extractedAt,
     fileCount: files.length,
+    jarPath: info.jarPath,
     jarSha1: info.jarSha1,
     schemaVersion: ASSET_CACHE_SCHEMA_VERSION,
     version: info.version,
@@ -106,6 +248,9 @@ function isAssetCacheInfo(value: unknown): value is AssetCacheInfo {
   return (
     typeof record.version === 'string' &&
     typeof record.jarSha1 === 'string' &&
+    typeof record.jarPath === 'string' &&
+    Array.isArray(record.dataFolders) &&
+    record.dataFolders.every((folder) => typeof folder === 'string') &&
     typeof record.extractedAt === 'string' &&
     typeof record.fileCount === 'number' &&
     Number.isInteger(record.fileCount) &&

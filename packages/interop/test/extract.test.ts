@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { extractPreviewAssets, PREVIEW_ASSET_PATTERNS } from '../src/index';
+import { dataFolderPatterns, extractPreviewAssets, PREVIEW_ASSET_PATTERNS } from '../src/index';
 import { buildSyntheticJar, KEPT_ENTRIES } from './helpers/synthetic-jar';
 
 describe('extractPreviewAssets', () => {
@@ -28,6 +28,34 @@ describe('extractPreviewAssets', () => {
     expect(JSON.parse(new TextDecoder().decode(sidecar?.data))).toEqual({
       animation: { frametime: 3, frames: [1, { index: 0, time: 5 }] },
     });
+  });
+
+  it('keeps the JSON files of the given data folders, subfolders included (ADR 0119 D4)', () => {
+    // A made-up folder list over the synthetic jar: the target supplies the real one.
+    const files = extractPreviewAssets(buildSyntheticJar(), {
+      dataFolders: ['worldgen/configured_feature', 'worldgen/placed_feature'],
+    });
+    const data = files.map((file) => file.path).filter((path) => path.startsWith('data/'));
+    expect(data).toEqual([
+      'data/minecraft/worldgen/configured_feature/msm_test_flower.json',
+      'data/minecraft/worldgen/placed_feature/msm_test_flower.json',
+      'data/minecraft/worldgen/placed_feature/nested/msm_test.json',
+    ]);
+    // The preview assets stay, and nothing outside the folders or not JSON is kept.
+    expect(files).toHaveLength(10);
+    expect(files.some((file) => file.path.endsWith('.txt'))).toBe(false);
+    expect(files.some((file) => file.path.startsWith('data/minecraft/recipe/'))).toBe(false);
+  });
+
+  it('refuses data folder names that are not plain folders', () => {
+    for (const folder of ['', '../x', '/abs', 'a/../b', 'a.b', 'a\\b', 'A', 'a/']) {
+      expect(() => dataFolderPatterns([folder]), folder).toThrow();
+    }
+    expect(
+      dataFolderPatterns(['tags/worldgen/biome'])[0]?.test(
+        'data/minecraft/tags/worldgen/biome/is_ocean.json',
+      ),
+    ).toBe(true);
   });
 
   it('accepts custom patterns', () => {

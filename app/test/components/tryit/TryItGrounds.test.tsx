@@ -40,6 +40,7 @@ const world = (overrides: Partial<TryItWorldInfo>): TryItWorldInfo => ({
   dataVersion: 4440,
   readable: true,
   icon: null,
+  seed: '2',
   ...overrides,
 });
 

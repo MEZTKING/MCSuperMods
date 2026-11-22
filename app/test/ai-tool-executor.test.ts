@@ -290,6 +290,10 @@ describe('createToolExecutor: read tools', () => {
     expect(value.worldgen.dimensionHeight).toEqual(fixture.session.target.worldgen.dimensionHeight);
     expect(value.worldgen.dimensionHeight.step).toBe(16);
     expect(value.worldgen.environmentAttributes).toContain('minecraft:visual/sky_color');
+    // Plugin API 1.21.0 (B577): the world generation preview's jar folders stay out.
+    expect(fixture.session.target.worldgen.terrainPreview).toBeDefined();
+    expect(value.worldgen.terrainPreview).toBeUndefined();
+    expect(JSON.stringify(value)).not.toContain('tags/worldgen/world_preset');
     ({ value } = await fixture.call('script_api_typings'));
     expect(value.typings).toBe(fixture.session.scriptTypings);
     await fixture.call('create_texture', { namespace: 'demo', path: 'item/ruby', pattern: 'gem' });

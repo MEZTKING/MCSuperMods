@@ -230,6 +230,35 @@ export interface WorldgenFacts {
    * it skips the attribute checks. Since 1.18.0 (ADR 0100 D5).
    */
   environmentAttributes?: readonly string[];
+  /**
+   * What the host's live world generation preview needs from this target: the client jar's
+   * data folders it reads vanilla's worldgen files from, and the parts it can only draw
+   * approximately here. Optional: a target without it has no live map of vanilla files (a
+   * world made only of project files still draws). Since 1.21.0 (ADR 0119 D16).
+   */
+  terrainPreview?: TerrainPreviewFacts;
+}
+
+/**
+ * A part of the world generation preview that is approximate on a target
+ * ({@link TerrainPreviewFacts.approximate}): `biome_layout` where the target places biomes in a
+ * way the data files do not describe, `end` where the End's land and biomes are not drawn as in
+ * the game. Since 1.21.0 (ADR 0119 D6, D16).
+ */
+export type TerrainPreviewApproximatePart = 'biome_layout' | 'end';
+
+/** The live world generation preview's facts ({@link WorldgenFacts.terrainPreview}). Since 1.21.0. */
+export interface TerrainPreviewFacts {
+  /**
+   * The folders under `data/minecraft/` of the client jar whose JSON files the host extracts
+   * into its local cache for the preview (for example `worldgen/noise_settings`,
+   * `dimension_type`, `tags/worldgen/biome`), sorted. Each holds files of one registry, in
+   * subfolders too; a file's id is `minecraft:` plus its path below the folder without `.json`.
+   * The files stay in the user's local cache: never bundled, exported or sent anywhere.
+   */
+  dataFolders: readonly string[];
+  /** The parts the preview labels as approximate on this target; empty when none. */
+  approximate: readonly TerrainPreviewApproximatePart[];
 }
 
 /** The height bounds of a dimension type ({@link WorldgenFacts.dimensionHeight}). Since 1.18.0. */

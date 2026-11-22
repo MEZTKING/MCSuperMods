@@ -623,9 +623,13 @@ export function createToolExecutor(
         dataVersion: target.dataVersion,
         packFormats: target.packFormats,
         folders: target.folders,
-        worldgen: target.worldgen,
         registries,
       };
+      // The live world generation preview's jar folders (plugin API 1.21.0, ADR 0119 D16) are
+      // for the jar reader, not the model, and the vanilla worldgen files they name never reach
+      // the AI helper: leave them out.
+      const { terrainPreview: _terrainPreview, ...worldgen } = target.worldgen;
+      facts.worldgen = worldgen;
       if (target.fabric !== undefined) facts.fabric = target.fabric;
       if (target.geckolib !== undefined) facts.geckolib = target.geckolib;
       if (target.items !== undefined) facts.items = target.items;

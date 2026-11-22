@@ -360,6 +360,7 @@ async function renderApp(
       extract: unavailable,
       readAsset: unavailable,
       listAssets: unavailable,
+      readWorldgenFiles: unavailable,
       installResourcePack: async (fileName) => {
         harness.resourceInstalls.push(fileName);
         return { path: `/resourcepacks/${fileName}` };

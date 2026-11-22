@@ -98,6 +98,8 @@ export type {
   Target,
   TargetChannel,
   TargetFacts,
+  TerrainPreviewApproximatePart,
+  TerrainPreviewFacts,
   TradeSoundFacts,
   VanillaPairFacts,
   VanillaToolStats,

@@ -60,6 +60,7 @@ describe('Minecraft service', () => {
       targetMissing: false,
       jar: null,
       warnings: [],
+      cacheOutdated: false,
     });
     expect(status.target).toMatchObject({ id: 'official:default', gameDir: minecraftDir });
     expect(ipcContract[InvokeChannels.minecraftStatus].response.parse(status)).toEqual(status);
@@ -84,8 +85,10 @@ describe('Minecraft service', () => {
       version: VERSION,
       fileCount: Object.keys(KEPT_ENTRIES).length,
       extractedAt: '2026-01-01T00:00:00.000Z',
-      schemaVersion: 3,
+      schemaVersion: 4,
+      dataFolders: [],
     });
+    expect(info.jarPath).toBe(join(minecraftDir, 'versions', VERSION, `${VERSION}.jar`));
     expect(info.jarSha1).toMatch(/^[0-9a-f]{40}$/);
     expect(progress[0]).toEqual({ mcVersion: VERSION, phase: 'reading', done: 0, total: 1 });
     expect(progress.at(-1)?.phase).toBe('done');

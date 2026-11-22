@@ -44,3 +44,9 @@ export {
   regionFileName,
   type StoredChunk,
 } from './region';
+export {
+  readWorldSeed,
+  WORLD_GEN_SETTINGS_MAX_BYTES,
+  WORLD_GEN_SETTINGS_PATH,
+  worldSeedOf,
+} from './worldgen-settings';

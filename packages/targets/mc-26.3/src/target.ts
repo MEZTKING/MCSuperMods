@@ -90,6 +90,39 @@ const ENVIRONMENT_ATTRIBUTES = [
   'minecraft:visual/water_fog_start_distance',
 ] as const;
 
+/**
+ * `worldgen.terrainPreview.dataFolders` (ADR 0119 D16): the `data/minecraft/` folders whose JSON
+ * the jar extraction keeps for the live world generation preview, sorted. Terrain: noise
+ * settings, density functions, noises, surface rules and conditions, biomes, world presets,
+ * multi-noise parameter lists, flat presets and dimension types; features, carvers and
+ * structures; and their worldgen tags.
+ */
+const TERRAIN_PREVIEW_DATA_FOLDERS: readonly string[] = Object.freeze([
+  'dimension_type',
+  'tags/worldgen/biome',
+  'tags/worldgen/feature',
+  'tags/worldgen/flat_level_generator_preset',
+  'tags/worldgen/structure',
+  'tags/worldgen/world_preset',
+  'worldgen/biome',
+  'worldgen/block_state_provider',
+  'worldgen/carver',
+  'worldgen/density_function',
+  'worldgen/feature',
+  'worldgen/flat_level_generator_preset',
+  'worldgen/material_condition',
+  'worldgen/material_rule',
+  'worldgen/multi_noise_biome_source_parameter_list',
+  'worldgen/noise',
+  'worldgen/noise_settings',
+  'worldgen/placed_feature',
+  'worldgen/processor_list',
+  'worldgen/structure',
+  'worldgen/structure_set',
+  'worldgen/template_pool',
+  'worldgen/world_preset',
+]);
+
 export const target: Target = {
   id: 'mc-26.3',
   mcVersion: '26.3',
@@ -181,6 +214,15 @@ export const target: Target = {
     // y 2031 (tied to the mcdoc by `test/target.test.ts`, 2026-11-15).
     dimensionHeight: { minY: -2032, maxY: 2031, step: 16 },
     environmentAttributes: ENVIRONMENT_ATTRIBUTES,
+    // terrainPreview (ADR 0119 D16; plugin API 1.21.0): the jar's `data/minecraft/` folders the
+    // live world generation preview caches, from B574's WS11 list and checked against the Loom-
+    // cached client jar by `all/test/terrain-preview.test.ts` (1,271 files, 2.02 MB inflated; no
+    // `dimension` folder: vanilla's dimensions are inline in the world presets). Approximate here:
+    // the End's land and biomes (B574 WS5 to WS7: biomes 41 to 61 %, heights exact 51 %).
+    terrainPreview: {
+      dataFolders: TERRAIN_PREVIEW_DATA_FOLDERS,
+      approximate: ['end'],
+    },
   },
   // items.armorMaterials: the ArmorMaterials constants in lower case, verified 2026-11-05 with
   // javap over the Loom-cached 26.3 merged jar (ADR 0042 D4).

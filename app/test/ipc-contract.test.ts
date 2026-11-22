@@ -22,6 +22,7 @@ import {
   UPDATE_NOTES_MAX,
   type UpdateStatus,
   updateStatusSchema,
+  WORLDGEN_FILES_MAX,
 } from '../src/shared/ipc-contract';
 
 const bytes = new Uint8Array([1, 2, 3]);
@@ -87,6 +88,7 @@ const tryItWorld = {
   dataVersion: 4440,
   readable: true,
   icon: bytes,
+  seed: '-7046235981325167892',
 };
 const tryItArea = {
   format: 1,
@@ -345,6 +347,7 @@ const samples: Record<
         targetMissing: false,
         jar: { versionId: '1.0-test', launcher: 'prism' },
         warnings: prismLocation.warnings,
+        cacheOutdated: true,
       },
       { minecraftDir: null, installed: [], chosen: null },
     ],
@@ -359,8 +362,24 @@ const samples: Record<
   [InvokeChannels.minecraftExtract]: {
     request: [{ mcVersion: '1.0' }, { mcVersion: '..' }],
     response: [
-      { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 3 },
-      { version: '1.0', jarSha1: 'ab', fileCount: 3, extractedAt: 'now', schemaVersion: 2 },
+      {
+        version: '1.0',
+        jarSha1: 'ab',
+        jarPath: '/home/a/.minecraft/versions/1.0/1.0.jar',
+        dataFolders: ['worldgen/noise'],
+        fileCount: 3,
+        extractedAt: 'now',
+        schemaVersion: 4,
+      },
+      {
+        version: '1.0',
+        jarSha1: 'ab',
+        jarPath: '/j.jar',
+        dataFolders: [],
+        fileCount: 3,
+        extractedAt: 'now',
+        schemaVersion: 3,
+      },
     ],
   },
   [InvokeChannels.minecraftReadAsset]: {
@@ -376,6 +395,18 @@ const samples: Record<
       { mcVersion: '1.0' },
     ],
     response: [['assets/minecraft/textures/block/a.png'], [1]],
+  },
+  [InvokeChannels.minecraftWorldgenFiles]: {
+    request: [{ mcVersion: '1.0' }, { mcVersion: '1.0', path: 'data/' }],
+    response: [
+      {
+        version: '1.0',
+        files: { 'worldgen/noise': { 'minecraft:ridge': { firstOctave: -7, amplitudes: [1] } } },
+        fileCount: 1,
+        resolvedBiomeLists: null,
+      },
+      { version: '1.0', files: {}, fileCount: 0 },
+    ],
   },
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: [
@@ -914,6 +945,32 @@ describe('IPC contract', () => {
     expect(withIds({ function: ids(25_000), 'tag/item': ids(25_000) }).success).toBe(true);
     expect(withIds({ function: ids(25_000), 'tag/item': ids(25_001) }).success).toBe(false);
     expect(withIds({ 'Bad Category': [] }).success).toBe(false);
+  });
+
+  it('carries world seeds as decimal strings or null (ADR 0119)', () => {
+    const { response } = ipcContract[InvokeChannels.tryItListWorlds];
+    const seed = (value: unknown) => response.safeParse([{ ...tryItWorld, seed: value }]).success;
+    expect(seed('0')).toBe(true);
+    expect(seed('9223372036854775807')).toBe(true);
+    expect(seed(null)).toBe(true);
+    expect(seed(42)).toBe(false);
+    expect(seed('12a')).toBe(false);
+    expect(seed('99999999999999999999')).toBe(false);
+    const { seed: _seed, ...withoutSeed } = tryItWorld;
+    expect(response.safeParse([withoutSeed]).success).toBe(false);
+  });
+
+  it('bounds the vanilla worldgen answer (ADR 0119 D4)', () => {
+    const { response } = ipcContract[InvokeChannels.minecraftWorldgenFiles];
+    expect(response.safeParse(null).success).toBe(true);
+    const many = Object.fromEntries(
+      Array.from({ length: WORLDGEN_FILES_MAX + 1 }, (_, i) => [`minecraft:n${i}`, {}]),
+    );
+    const answer = (files: unknown) =>
+      response.safeParse({ version: '1.0', files, fileCount: 0, resolvedBiomeLists: null }).success;
+    expect(answer({ 'worldgen/noise': {} })).toBe(true);
+    expect(answer({ 'worldgen/noise': many })).toBe(false);
+    expect(answer({ '': {} })).toBe(false);
   });
 
   it('bounds Try it world ids, centres and areas', () => {

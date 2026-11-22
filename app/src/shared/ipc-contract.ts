@@ -107,9 +107,33 @@ const assetCacheInfo = z
   .object({
     version: z.string(),
     jarSha1: z.string(),
+    jarPath: z.string().max(4096),
+    dataFolders: z.array(z.string().max(256)).max(256),
     fileCount: z.number().int().nonnegative(),
     extractedAt: z.string(),
-    schemaVersion: z.literal(3),
+    schemaVersion: z.literal(4),
+  })
+  .strict();
+/** The most worldgen files one answer may carry (both targets have about 1,300; ADR 0119 D4). */
+export const WORLDGEN_FILES_MAX = 20_000;
+/**
+ * A cached vanilla worldgen answer (ADR 0119 D4): folder key to id to JSON. The JSON is not
+ * walked here (about 2 MB); main builds it from the cache, and the engine checks every file.
+ */
+const worldgenFileMap = z
+  .record(z.string().min(1).max(256), z.record(z.string().min(1).max(512), z.unknown()))
+  .refine(
+    (folders) =>
+      Object.values(folders).reduce((sum, files) => sum + Object.keys(files).length, 0) <=
+      WORLDGEN_FILES_MAX,
+    { message: 'Too many worldgen files' },
+  );
+const vanillaWorldgenFiles = z
+  .object({
+    version: z.string().max(64),
+    files: worldgenFileMap,
+    fileCount: z.number().int().nonnegative().max(WORLDGEN_FILES_MAX),
+    resolvedBiomeLists: z.record(z.string(), z.unknown()).nullable(),
   })
   .strict();
 /** A pack zip file name, as written by installs and combined exports. */
@@ -856,6 +880,11 @@ const tryItWorldInfo = z
     dataVersion: z.number().int().nullable(),
     readable: z.boolean(),
     icon: bytes.refine((value) => value.length <= TRYIT_ICON_MAX_BYTES).nullable(),
+    // A 64-bit seed in decimal (B574 WS17), or null.
+    seed: z
+      .string()
+      .regex(/^-?[0-9]{1,19}$/)
+      .nullable(),
   })
   .strict();
 const tryItAreaRequest = z
@@ -1008,6 +1037,7 @@ export const ipcContract = {
           .nullable()
           .optional(),
         warnings: z.array(locationWarning).optional(),
+        cacheOutdated: z.boolean().optional(),
       })
       .strict(),
   },
@@ -1031,6 +1061,10 @@ export const ipcContract = {
   [InvokeChannels.minecraftListAssets]: {
     request: z.object({ mcVersion, prefix: z.string().max(1024) }).strict(),
     response: z.array(z.string()),
+  },
+  [InvokeChannels.minecraftWorldgenFiles]: {
+    request: z.object({ mcVersion }).strict(),
+    response: vanillaWorldgenFiles.nullable(),
   },
   [InvokeChannels.minecraftInstallResourcePack]: {
     request: z
