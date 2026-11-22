@@ -7004,3 +7004,20 @@ Next
 **Next**
 - Re-add the kind, template, goldens and an example when vanilla-mcdoc gains `step_sound` (sync-mcdoc).
 - Docs still mention the kind as present (ADR 0106, CHANGES.md schema-coverage rows, CHANGELOG): the main session should correct the counts there.
+## 2026-11-22 — executor — B511 lowering: growing and climbing plants
+
+**What**
+- `@msm/plugin-blocks-items` lowers the four plant types of ADR 0103 (the B505 stubs filled in), each in vanilla's shape over vanilla templates the user's client jar supplies: `growing_plant` (crosses for the tip and the strand companion `<path>_plant`, `berries` variants and lit models for a cave-vine-like plant, a flat item), `column_plant` (cane on `cross`, cactus on `minecraft:block/cactus`, bamboo on vanilla's eight stalk models picked at random by `age`, both leaves models by `leaves`, and the shoot companion `<path>_shoot`), `multiface` (vanilla's six-face multipart over `minecraft:block/glow_lichen`) and `dripleaf` (big: `facing` and `tilt` over the three leaf templates and the stem companion `<path>_stem`; small: `facing` and `half` over the two small templates).
+- Tags: climbable strands join `climbable`; strands with berries `bee_growables` and `cave_vines`; a bamboo stalk and its shoot `supports_bamboo` (as vanilla's bamboo and sapling). Loot `self` as vanilla's tables for each family: vines to shears or Silk Touch else Fortune's chances, kelp itself, berries only while ripe, glow lichen one per face to shears, small dripleaf to shears, the rest drops itself (companions likewise).
+- `companions.ts`: a companion may depend on the data (`applies`, and `blockTags` as a function), so the shoot exists only for bamboo and the stem only for a big dripleaf; `blockGeneratedBlockIds` and the clash check follow.
+- `validators-plants-3.ts` (`msm.blocks-items.plants-3`, six codes): the runtime's refusals the mcdoc cannot express (`dripleaf-grows-into-missing`, `-grows-into-big`, `-tilt-small`, `column-min-above-max`), `dripleaf-grows-into-not-big`, and the warning `water-plant-feature-dry` for a feature that places a water plant with no water check.
+- Tests: `plants-3.golden.test.ts` (11 samples on both targets, schema-checked, tags, parents, defaults, companions) and `validators-plants-3.test.ts`.
+
+**Decisions**
+- Unknown `soil` ids and companion clashes are not repeated: the schema reports the first (`schema.unknown-id`) and the furniture validators' `generated-block-clash` the second.
+- The item of every new type is a flat picture (the mcdoc's `item` texture defaults), not the block model vanilla's cactus and dripleaf items show.
+- Eighteen of the parents are not in `BlockFacts.modelTemplates` yet; the test lists them until a plugin API brief adds them.
+
+**Next**
+- `test/plugin.test.ts` needs `'msm.blocks-items.plants-3'` in its validator id list (a shared file, left to the orchestrator).
+- B516 (Studio slots and labels), B517 (eject), B519 (Try it).

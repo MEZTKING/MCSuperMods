@@ -1,0 +1,223 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "max_height": 8,
+      "style": "bamboo",
+      "type": "column_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/bare_bamboo.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo1_age0",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo2_age0",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_stalk2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo3_age0",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_stalk3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo4_age0",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_stalk4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo1_age1",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_thick.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo2_age1",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_thick2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo3_age1",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_thick3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo4_age1",
+      "textures": {
+        "all": "example:block/bare_bamboo",
+        "particle": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_thick4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/bare_bamboo_shoot.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": [
+            {
+              "model": "example:block/bare_bamboo"
+            },
+            {
+              "model": "example:block/bare_bamboo_stalk2"
+            },
+            {
+              "model": "example:block/bare_bamboo_stalk3"
+            },
+            {
+              "model": "example:block/bare_bamboo_stalk4"
+            }
+          ],
+          "when": {
+            "age": "0"
+          }
+        },
+        {
+          "apply": [
+            {
+              "model": "example:block/bare_bamboo_thick"
+            },
+            {
+              "model": "example:block/bare_bamboo_thick2"
+            },
+            {
+              "model": "example:block/bare_bamboo_thick3"
+            },
+            {
+              "model": "example:block/bare_bamboo_thick4"
+            }
+          ],
+          "when": {
+            "age": "1"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/bare_bamboo.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/bare_bamboo_shoot"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/bare_bamboo_shoot.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/bare_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/bare_bamboo.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/bare_bamboo",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/bare_bamboo.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:bare_bamboo"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/supports_bamboo.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:bare_bamboo_shoot"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/supports_bamboo.json",
+    "schema": "tag:block"
+  }
+]

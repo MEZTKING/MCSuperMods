@@ -1,0 +1,237 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "size": "big",
+      "tilt_ticks": [
+        4,
+        12,
+        12
+      ],
+      "type": "dripleaf"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/wide_leaf.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf",
+      "textures": {
+        "particle": "example:block/wide_leaf_top",
+        "side": "example:block/wide_leaf_side",
+        "stem": "example:block/wide_leaf_stem",
+        "tip": "example:block/wide_leaf_tip",
+        "top": "example:block/wide_leaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wide_leaf.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf_partial_tilt",
+      "textures": {
+        "particle": "example:block/wide_leaf_top",
+        "side": "example:block/wide_leaf_side",
+        "stem": "example:block/wide_leaf_stem",
+        "tip": "example:block/wide_leaf_tip",
+        "top": "example:block/wide_leaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wide_leaf_partial_tilt.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf_full_tilt",
+      "textures": {
+        "particle": "example:block/wide_leaf_top",
+        "side": "example:block/wide_leaf_side",
+        "stem": "example:block/wide_leaf_stem",
+        "tip": "example:block/wide_leaf_tip",
+        "top": "example:block/wide_leaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wide_leaf_full_tilt.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/big_dripleaf_stem",
+      "textures": {
+        "particle": "example:block/wide_leaf_stem",
+        "stem": "example:block/wide_leaf_stem"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wide_leaf_stem.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,tilt=full": {
+          "model": "example:block/wide_leaf_full_tilt",
+          "y": 90
+        },
+        "facing=east,tilt=none": {
+          "model": "example:block/wide_leaf",
+          "y": 90
+        },
+        "facing=east,tilt=partial": {
+          "model": "example:block/wide_leaf_partial_tilt",
+          "y": 90
+        },
+        "facing=east,tilt=unstable": {
+          "model": "example:block/wide_leaf",
+          "y": 90
+        },
+        "facing=north,tilt=full": {
+          "model": "example:block/wide_leaf_full_tilt"
+        },
+        "facing=north,tilt=none": {
+          "model": "example:block/wide_leaf"
+        },
+        "facing=north,tilt=partial": {
+          "model": "example:block/wide_leaf_partial_tilt"
+        },
+        "facing=north,tilt=unstable": {
+          "model": "example:block/wide_leaf"
+        },
+        "facing=south,tilt=full": {
+          "model": "example:block/wide_leaf_full_tilt",
+          "y": 180
+        },
+        "facing=south,tilt=none": {
+          "model": "example:block/wide_leaf",
+          "y": 180
+        },
+        "facing=south,tilt=partial": {
+          "model": "example:block/wide_leaf_partial_tilt",
+          "y": 180
+        },
+        "facing=south,tilt=unstable": {
+          "model": "example:block/wide_leaf",
+          "y": 180
+        },
+        "facing=west,tilt=full": {
+          "model": "example:block/wide_leaf_full_tilt",
+          "y": 270
+        },
+        "facing=west,tilt=none": {
+          "model": "example:block/wide_leaf",
+          "y": 270
+        },
+        "facing=west,tilt=partial": {
+          "model": "example:block/wide_leaf_partial_tilt",
+          "y": 270
+        },
+        "facing=west,tilt=unstable": {
+          "model": "example:block/wide_leaf",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/wide_leaf.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east": {
+          "model": "example:block/wide_leaf_stem",
+          "y": 90
+        },
+        "facing=north": {
+          "model": "example:block/wide_leaf_stem"
+        },
+        "facing=south": {
+          "model": "example:block/wide_leaf_stem",
+          "y": 180
+        },
+        "facing=west": {
+          "model": "example:block/wide_leaf_stem",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/wide_leaf_stem.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/wide_leaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/wide_leaf.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/wide_leaf",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/wide_leaf.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:wide_leaf",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/wide_leaf",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/wide_leaf.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:wide_leaf",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/wide_leaf_stem",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/wide_leaf_stem.json",
+    "schema": "resource:loot_table"
+  }
+]

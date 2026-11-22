@@ -1,0 +1,87 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "max_height": 4,
+      "min_height": 2,
+      "soil": [
+        "#minecraft:sand",
+        "minecraft:mud"
+      ],
+      "style": "cane",
+      "type": "column_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/reed.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/reed"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/reed"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/reed.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/reed"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/reed.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/reed",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/reed.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:reed",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/reed",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/reed.json",
+    "schema": "resource:loot_table"
+  }
+]

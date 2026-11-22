@@ -1,0 +1,319 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "style": "bamboo",
+      "type": "column_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/reed_bamboo.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo1_age0",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo2_age0",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_stalk2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo3_age0",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_stalk3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo4_age0",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_stalk4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo1_age1",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_thick.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo2_age1",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_thick2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo3_age1",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_thick3.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo4_age1",
+      "textures": {
+        "all": "example:block/reed_bamboo_stalk",
+        "particle": "example:block/reed_bamboo_stalk"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_thick4.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo_small_leaves",
+      "textures": {
+        "particle": "example:block/reed_bamboo_small_leaves",
+        "texture": "example:block/reed_bamboo_small_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_leaves_small.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/bamboo_large_leaves",
+      "textures": {
+        "particle": "example:block/reed_bamboo_large_leaves",
+        "texture": "example:block/reed_bamboo_large_leaves"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_leaves_large.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/reed_bamboo_shoot"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/reed_bamboo_shoot.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": [
+            {
+              "model": "example:block/reed_bamboo"
+            },
+            {
+              "model": "example:block/reed_bamboo_stalk2"
+            },
+            {
+              "model": "example:block/reed_bamboo_stalk3"
+            },
+            {
+              "model": "example:block/reed_bamboo_stalk4"
+            }
+          ],
+          "when": {
+            "age": "0"
+          }
+        },
+        {
+          "apply": [
+            {
+              "model": "example:block/reed_bamboo_thick"
+            },
+            {
+              "model": "example:block/reed_bamboo_thick2"
+            },
+            {
+              "model": "example:block/reed_bamboo_thick3"
+            },
+            {
+              "model": "example:block/reed_bamboo_thick4"
+            }
+          ],
+          "when": {
+            "age": "1"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/reed_bamboo_leaves_small"
+          },
+          "when": {
+            "leaves": "small"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/reed_bamboo_leaves_large"
+          },
+          "when": {
+            "leaves": "large"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/reed_bamboo.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/reed_bamboo_shoot"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/reed_bamboo_shoot.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/reed_bamboo"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/reed_bamboo.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/reed_bamboo",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/reed_bamboo.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.reed_bamboo": "Reed Bamboo"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:reed_bamboo"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/supports_bamboo.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:reed_bamboo_shoot"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/supports_bamboo.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:reed_bamboo",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/reed_bamboo",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/reed_bamboo.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:reed_bamboo",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/reed_bamboo_shoot",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/reed_bamboo_shoot.json",
+    "schema": "resource:loot_table"
+  }
+]

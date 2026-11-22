@@ -1,0 +1,85 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "style": "cactus",
+      "touch_damage": 2,
+      "type": "column_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/spine_cactus.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cactus",
+      "textures": {
+        "bottom": "example:block/spine_cactus_bottom",
+        "particle": "example:block/spine_cactus_side",
+        "side": "example:block/spine_cactus_side",
+        "top": "example:block/spine_cactus_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/spine_cactus.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/spine_cactus"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/spine_cactus.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/spine_cactus_side"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/spine_cactus.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/spine_cactus",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/spine_cactus.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:spine_cactus",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/spine_cactus",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/spine_cactus.json",
+    "schema": "resource:loot_table"
+  }
+]

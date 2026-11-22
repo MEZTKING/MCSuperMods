@@ -1,0 +1,304 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "light": 5,
+      "type": "multiface"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/glow_moss.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/glow_lichen",
+      "textures": {
+        "glow_lichen": "example:block/glow_moss",
+        "particle": "example:block/glow_moss"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_moss.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "multipart": [
+        {
+          "apply": {
+            "model": "example:block/glow_moss"
+          },
+          "when": {
+            "north": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss"
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "east": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "y": 90
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "south": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "y": 180
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "west": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "y": 270
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "up": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "x": 270
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "x": 90
+          },
+          "when": {
+            "down": "true"
+          }
+        },
+        {
+          "apply": {
+            "model": "example:block/glow_moss",
+            "uvlock": true,
+            "x": 90
+          },
+          "when": {
+            "down": "false",
+            "east": "false",
+            "north": "false",
+            "south": "false",
+            "up": "false",
+            "west": "false"
+          }
+        }
+      ]
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_moss.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/glow_moss"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/glow_moss.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/glow_moss",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/glow_moss.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "condition": "minecraft:tool/can_shear",
+              "modifier": [
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "example:glow_moss",
+                    "state": {
+                      "down": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "example:glow_moss",
+                    "state": {
+                      "up": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "example:glow_moss",
+                    "state": {
+                      "north": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "example:glow_moss",
+                    "state": {
+                      "south": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "example:glow_moss",
+                    "state": {
+                      "west": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "condition": {
+                    "blocks": "example:glow_moss",
+                    "state": {
+                      "east": "true"
+                    },
+                    "type": "minecraft:match_block"
+                  },
+                  "count": 1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "add": true,
+                  "count": -1,
+                  "type": "minecraft:set_count"
+                },
+                {
+                  "type": "minecraft:explosion_decay"
+                }
+              ],
+              "name": "example:glow_moss",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/glow_moss",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/glow_moss.json",
+    "schema": "resource:loot_table"
+  }
+]

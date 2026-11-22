@@ -1,0 +1,121 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "grows_into": "example:wide_leaf",
+      "size": "small",
+      "type": "dripleaf"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/small_leaf.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/small_dripleaf_top",
+      "textures": {
+        "particle": "example:block/small_leaf_top",
+        "side": "example:block/small_leaf_side",
+        "stem": "example:block/small_leaf_stem_top",
+        "top": "example:block/small_leaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/small_leaf.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/small_dripleaf_bottom",
+      "textures": {
+        "particle": "example:block/small_leaf_stem_bottom",
+        "stem": "example:block/small_leaf_stem_bottom"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/small_leaf_bottom.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=lower": {
+          "model": "example:block/small_leaf_bottom",
+          "y": 90
+        },
+        "facing=east,half=upper": {
+          "model": "example:block/small_leaf",
+          "y": 90
+        },
+        "facing=north,half=lower": {
+          "model": "example:block/small_leaf_bottom"
+        },
+        "facing=north,half=upper": {
+          "model": "example:block/small_leaf"
+        },
+        "facing=south,half=lower": {
+          "model": "example:block/small_leaf_bottom",
+          "y": 180
+        },
+        "facing=south,half=upper": {
+          "model": "example:block/small_leaf",
+          "y": 180
+        },
+        "facing=west,half=lower": {
+          "model": "example:block/small_leaf_bottom",
+          "y": 270
+        },
+        "facing=west,half=upper": {
+          "model": "example:block/small_leaf",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/small_leaf.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/small_leaf_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/small_leaf.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/small_leaf",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/small_leaf.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": "minecraft:tool/can_shear",
+          "entries": [
+            {
+              "name": "example:small_leaf",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/small_leaf",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/small_leaf.json",
+    "schema": "resource:loot_table"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "contents": {
+      "climbable": false,
+      "format": 1,
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/rope_vine.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/rope_tip"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/rope_vine.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/rope"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/rope_vine_plant.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/rope_tip",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/rope_vine.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  }
+]

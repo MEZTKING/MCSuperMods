@@ -1,0 +1,136 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "growth_chance": 0.2,
+      "needs_water": true,
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/sea_ribbon.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/sea_ribbon"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/sea_ribbon.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/sea_ribbon_plant"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/sea_ribbon_plant.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/sea_ribbon"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/sea_ribbon.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/sea_ribbon_plant"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/sea_ribbon_plant.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/sea_ribbon"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/sea_ribbon.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/sea_ribbon",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/sea_ribbon.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "block.example.sea_ribbon": "Sea Ribbon"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:sea_ribbon",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/sea_ribbon",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/sea_ribbon.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:sea_ribbon",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/sea_ribbon_plant",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/sea_ribbon_plant.json",
+    "schema": "resource:loot_table"
+  }
+]

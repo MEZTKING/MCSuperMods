@@ -1,0 +1,235 @@
+[
+  {
+    "contents": {
+      "berries": {
+        "item": "example:glow_fruit",
+        "light": 12
+      },
+      "direction": "down",
+      "format": 1,
+      "item": {
+        "id": "example:glow_fruit"
+      },
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/glow_vine.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/glow_vine"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_vine.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/glow_vine_plant"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_vine_plant.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/glow_vine_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_vine_berries.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/glow_vine_plant_lit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/glow_vine_plant_berries.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "berries=false": {
+          "model": "example:block/glow_vine"
+        },
+        "berries=true": {
+          "model": "example:block/glow_vine_berries"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_vine.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "berries=false": {
+          "model": "example:block/glow_vine_plant"
+        },
+        "berries=true": {
+          "model": "example:block/glow_vine_plant_berries"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/glow_vine_plant.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/glow_fruit"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/glow_fruit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/glow_fruit",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/glow_fruit.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_vine"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_vine"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_vine"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cave_vines.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_vine_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_vine_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/bee_growables.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:glow_vine_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cave_vines.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "blocks": "example:glow_vine",
+            "state": {
+              "berries": "true"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "example:glow_fruit",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/glow_vine",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/glow_vine.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "blocks": "example:glow_vine_plant",
+            "state": {
+              "berries": "true"
+            },
+            "type": "minecraft:match_block"
+          },
+          "entries": [
+            {
+              "name": "example:glow_fruit",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/glow_vine_plant",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/glow_vine_plant.json",
+    "schema": "resource:loot_table"
+  }
+]

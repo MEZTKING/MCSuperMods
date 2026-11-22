@@ -1,0 +1,199 @@
+[
+  {
+    "contents": {
+      "direction": "down",
+      "format": 1,
+      "max_age": 20,
+      "soil": [
+        "#minecraft:base_stone_overworld",
+        "minecraft:netherrack"
+      ],
+      "type": "growing_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/dusk_vine.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/dusk_vine"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/dusk_vine.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/cross",
+      "textures": {
+        "cross": "example:block/dusk_vine"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/dusk_vine_plant.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/dusk_vine"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/dusk_vine.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/dusk_vine_plant"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/dusk_vine_plant.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/dusk_vine"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/dusk_vine.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/dusk_vine",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/dusk_vine.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:dusk_vine"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:dusk_vine_plant"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/climbable.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "terms": [
+                      "minecraft:tool/can_shear",
+                      "minecraft:tool/can_silk_touch"
+                    ],
+                    "type": "minecraft:any_of"
+                  },
+                  "name": "example:dusk_vine",
+                  "type": "minecraft:item"
+                },
+                {
+                  "condition": {
+                    "chances": [
+                      0.33,
+                      0.55,
+                      0.77,
+                      1
+                    ],
+                    "enchantment": "minecraft:fortune",
+                    "type": "minecraft:table_bonus"
+                  },
+                  "name": "example:dusk_vine",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/dusk_vine",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/dusk_vine.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "entries": [
+            {
+              "children": [
+                {
+                  "condition": {
+                    "terms": [
+                      "minecraft:tool/can_shear",
+                      "minecraft:tool/can_silk_touch"
+                    ],
+                    "type": "minecraft:any_of"
+                  },
+                  "name": "example:dusk_vine",
+                  "type": "minecraft:item"
+                },
+                {
+                  "condition": {
+                    "chances": [
+                      0.33,
+                      0.55,
+                      0.77,
+                      1
+                    ],
+                    "enchantment": "minecraft:fortune",
+                    "type": "minecraft:table_bonus"
+                  },
+                  "name": "example:dusk_vine",
+                  "type": "minecraft:item"
+                }
+              ],
+              "type": "minecraft:alternatives"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/dusk_vine_plant",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/dusk_vine_plant.json",
+    "schema": "resource:loot_table"
+  }
+]
