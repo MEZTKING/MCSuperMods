@@ -1,0 +1,83 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "item": false,
+      "plant": "example:ruby_sprout",
+      "pot": "example:clay_pot",
+      "type": "potted_plant"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/clay_pot_ruby.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/flower_pot_cross",
+      "textures": {
+        "plant": "example:block/ruby_sprout"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/clay_pot_ruby.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/clay_pot_ruby"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/clay_pot_ruby.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:clay_pot_ruby"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:clay_pot",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        },
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:ruby_sprout",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/clay_pot_ruby",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/clay_pot_ruby.json",
+    "schema": "resource:loot_table"
+  }
+]

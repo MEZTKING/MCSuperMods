@@ -179,19 +179,49 @@ describe('waterlogging (ADR 0094 D7)', () => {
 });
 
 describe('weathering and waxing (ADR 0094 D8, D9, D11)', () => {
-  it('component-not-for-type: only on the types copper comes in', async () => {
+  it('component-not-for-type: only on the types that age', async () => {
     const problems = await validate([
-      weathering('demo:tin_fence', 'unaffected', undefined, 'demo:waxed_fence', {
-        type: 'fence',
+      weathering('demo:tin_carpet', 'unaffected', undefined, 'demo:waxed_carpet', {
+        type: 'carpet',
         model: undefined,
         textures: { all: 'minecraft:block/copper_block' },
       }),
-      block('demo:waxed_fence'),
+      block('demo:waxed_carpet'),
     ]);
     expect(withCode(problems, 'component-not-for-type')).toEqual([
-      ['demo:tin_fence', '/components/msm:weathering', 'error'],
-      ['demo:tin_fence', '/components/msm:waxable', 'error'],
+      ['demo:tin_carpet', '/components/msm:weathering', 'error'],
+      ['demo:tin_carpet', '/components/msm:waxable', 'error'],
     ]);
+  });
+
+  it('component-not-for-type: rods, buttons, plates, fences, gates and walls age (ADR 0104 D1)', async () => {
+    const types = ['rod', 'button', 'pressure_plate', 'fence', 'fence_gate', 'wall'];
+    const problems = await validate(
+      types.flatMap((type) => [
+        weathering(
+          `demo:tin_${type}`,
+          'unaffected',
+          `demo:exposed_tin_${type}`,
+          `demo:waxed_tin_${type}`,
+          {
+            type,
+            model: undefined,
+            textures: { all: 'minecraft:block/copper_block' },
+          },
+        ),
+        weathering(`demo:exposed_tin_${type}`, 'exposed', undefined, undefined, {
+          type,
+          model: undefined,
+          textures: { all: 'minecraft:block/exposed_copper' },
+        }),
+        block(`demo:waxed_tin_${type}`, {
+          type,
+          model: undefined,
+          textures: { all: 'minecraft:block/copper_block' },
+        }),
+      ]),
+    );
+    expect(problems).toEqual([]);
   });
 
   it('weathering-next-unknown: next is neither a project nor a vanilla block', async () => {

@@ -7021,3 +7021,22 @@ Next
 **Next**
 - `test/plugin.test.ts` needs `'msm.blocks-items.plants-3'` in its validator id list (a shared file, left to the orchestrator).
 - B516 (Studio slots and labels), B517 (eject), B519 (Try it).
+## 2026-11-22 — executor — B512 lowering of project flower pots and weathering on more types
+
+**What**
+- `flower_pot` lowering (`lowering/types/flower-pot.ts`, ADR 0103 D2): the empty pot's model over vanilla's `minecraft:block/flower_pot` (`flowerpot`, `dirt`, `particle`; defaults vanilla's pot and dirt pictures from the user's client jar), one block state variant, a flat item picture (`textures.item`, else `pot`, else `minecraft:item/flower_pot`), block tag `flower_pots`, and per listed plant a potted model `<ns>:block/<path>_<plant path>` over `minecraft:block/flower_pot_cross` with the pot's textures and `<plant ns>:block/<plant path>` as `plant`. The potted companions `<pot>_<plant path>` (block state, `flower_pots`, loot of the pot's item and the plant's item) are data-driven, so they are `flowerPotType.companionsFromData(data)` (`flowerPotCompanions`, `flowerPotCompanionIds`, `flowerPotPlantsOf`); a plant listed twice or a second plant of the same path gives one companion.
+- `potted_plant` (`potted-plant.ts`): `pot` (`pottedPlantPotOf`) is dropped by `"loot": "self"` in place of vanilla's pot; the loot shape is the shared `pottedLootTable`.
+- Expander (`expand-potted-plant.ts`): for a `flower_pot`, each listed project plant whose item has another id gets `plant_item["<plant id>"]` (B462a's stripped editor field, here a map), which that plant's companion drops.
+- Weathering (ADR 0104 D1): `WEATHERING_BLOCK_TYPES` gains `rod`, `button`, `pressure_plate`, `fence`, `fence_gate`, `wall` (17 types); the stage chain and waxing pass through as before; `component-not-for-type` names the ageing types in words; a doc line in each of the six type modules.
+- Tests: new `test/pots-weathering-2.golden.test.ts` (38 tests, goldens `pot-*`, `potted-plant-project-pot`, `weathering2-*` on both targets; companion block states and loot validated against the schemas); `validators-weathering-inventory.test.ts` uses a carpet for the refused type and checks the six new types age clean. blocks-items 902 tests; `pnpm test` (24 tasks), `pnpm lint`, `pnpm typecheck` pass (one library art speed test was over its bound once under load and passed on the rerun).
+
+**Decisions**
+- The companions are not wired into `companions.ts` (B511's file this wave): the companion block states, tags, loot tables and generated ids appear only once `companionsOf` asks `flowerPotType.companionsFromData` (a six-line change, tested in a scratch copy: only the two `pot-*` goldens change). The main session or B511 applies it and reruns `UPDATE_GOLDENS=1`.
+- The pot's default picture is vanilla's pot, not a conventional `<ns>:block/<path>`, because `generateFromData` does not see the element id.
+- A `potted_plant` in a project pot keeps the template's own pot picture (lowering sees one element); a project pot's own look comes from listing the plant in `plants`.
+- "Generated waxed variants" stay as ADR 0094 D9 has them: the waxed copy is its own element without `msm:weathering`; nothing new is generated.
+
+**Next**
+- Wire `companionsOf(type, data)` (patch in the B512 report), then `UPDATE_GOLDENS=1` for `pot-clay` and `pot-defaults`.
+- B515: validators for pots (plant ids, companion clashes, a plant both listed and potted by a `potted_plant` naming the pot, `pot` naming a `flower_pot`).
+- B517: a pot and the six weathering types in `vanilla-parity-3.test.ts`.

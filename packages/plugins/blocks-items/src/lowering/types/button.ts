@@ -2,6 +2,10 @@
  * `button`: a short redstone pulse (ADR 0067 D2). Generated models are vanilla's `button`,
  * `button_pressed` and `button_inventory` from `texture`.
  *
+ * Weathering (ADR 0104 D1): `msm:weathering` and `msm:waxable` are allowed on this type
+ * (`WEATHERING_BLOCK_TYPES`); lowering passes them through to the definition with full ids
+ * (`lowering/weathering.ts`), and the block states and models are the same at every stage.
+ *
  * Model slots: `default`, `pressed`, `inventory` (the item).
  */
 import { HORIZONTAL_FACINGS, NORTH_BASED_Y, variant, variants } from './blockstates';

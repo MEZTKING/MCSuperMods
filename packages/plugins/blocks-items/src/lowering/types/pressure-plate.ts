@@ -3,6 +3,10 @@
  * `pressure_plate_down` from `texture`. An ordinary plate has `powered`; a weighted plate
  * (`weighted_max`) has `power` 0 to 15, as vanilla's gold and iron plates.
  *
+ * Weathering (ADR 0104 D1): `msm:weathering` and `msm:waxable` are allowed on this type
+ * (`WEATHERING_BLOCK_TYPES`); lowering passes them through to the definition with full ids
+ * (`lowering/weathering.ts`), and the block states and models are the same at every stage.
+ *
  * Model slots: `up` (also the item), `down`.
  */
 import { variant, variants } from './blockstates';

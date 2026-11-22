@@ -21,8 +21,9 @@
  *
  * - `blocks-items.component-not-for-type` (error): `msm:waterloggable` on a type other than
  *   `block`, `pillar`, `horizontal` and `directional` (types that vanilla waterlogs keep their
- *   own waterlogging), or `msm:weathering` or `msm:waxable` on a type copper does not come in
- *   (`WEATHERING_BLOCK_TYPES`).
+ *   own waterlogging), or `msm:weathering` or `msm:waxable` on a type that does not age
+ *   (`WEATHERING_BLOCK_TYPES`: copper's eleven types of ADR 0094 D8 and the rod, button,
+ *   pressure plate, fence, fence gate and wall of ADR 0104 D1).
  * - `blocks-items.component-conflict` (error): `msm:waterloggable` together with
  *   `msm:container` or `msm:machine`; such a block is not waterloggable (limit Q8).
  */
@@ -150,13 +151,13 @@ function notForType(blocks: readonly Block[]): Problem[] {
       block,
       WEATHERING_COMPONENT,
       WEATHERING_BLOCK_TYPES,
-      'only the kinds of block copper comes in can age.',
+      'only blocks, pillars, facing blocks, slabs, stairs, doors, trapdoors, panes, chains, lanterns, rods, buttons, pressure plates, fences, fence gates and walls can age.',
     );
     report(
       block,
       WAXABLE_COMPONENT,
       WEATHERING_BLOCK_TYPES,
-      'only the kinds of block copper comes in can be waxed.',
+      'only the kinds of block that age can be waxed.',
     );
   }
   return problems;

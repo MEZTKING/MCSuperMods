@@ -3,6 +3,10 @@
  * are vanilla's `fence_post`, `fence_side` and `fence_inventory` from `texture`. A wooden fence
  * (editor field `wooden`, default from `sound_type`) joins `#minecraft:wooden_fences`.
  *
+ * Weathering (ADR 0104 D1): `msm:weathering` and `msm:waxable` are allowed on this type
+ * (`WEATHERING_BLOCK_TYPES`); lowering passes them through to the definition with full ids
+ * (`lowering/weathering.ts`), and the block states and models are the same at every stage.
+ *
  * Model slots: `post`, `side`, `inventory` (the item).
  */
 import { NORTH_BASED_Y, part, variant } from './blockstates';

@@ -4,6 +4,10 @@
  * whose one texture variable `wall` takes `texture`, else `all`, else `side` (the order of
  * `TextureLookup`; the templates have no separate top and bottom).
  *
+ * Weathering (ADR 0104 D1): `msm:weathering` and `msm:waxable` are allowed on this type
+ * (`WEATHERING_BLOCK_TYPES`); lowering passes them through to the definition with full ids
+ * (`lowering/weathering.ts`), and the block states and models are the same at every stage.
+ *
  * Model slots: `post`, `side`, `side_tall`, `inventory` (the item).
  */
 import { NORTH_BASED_Y, part, variant } from './blockstates';

@@ -31,8 +31,12 @@ export const WEATHERING_STAGES = Object.freeze([
 export type WeatheringStage = (typeof WEATHERING_STAGES)[number];
 
 /**
- * The types that take `msm:weathering` and `msm:waxable` (ADR 0094 D8): the types vanilla's
- * copper comes in apart from bulbs.
+ * The types that take `msm:weathering` and `msm:waxable`: the eleven types vanilla's copper
+ * comes in apart from bulbs (ADR 0094 D8), then the six of ADR 0104 D1 (`rod`, as the lightning
+ * rod, and `button`, `pressure_plate`, `fence`, `fence_gate` and `wall`, which vanilla has no
+ * copper of but which age by the same rule). Each ages through the same stage chain (`next`
+ * and `stage`), keeps every state property when it ages, is waxed into its own waxed copy (a
+ * block of the same type without `msm:weathering`) and is scraped back by an axe.
  */
 export const WEATHERING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
   'block',
@@ -46,6 +50,12 @@ export const WEATHERING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
   'pane',
   'chain',
   'lantern',
+  'rod',
+  'button',
+  'pressure_plate',
+  'fence',
+  'fence_gate',
+  'wall',
 ]);
 
 /** What `msm:weathering` says, read leniently (the schema checks the shape). */

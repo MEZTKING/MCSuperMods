@@ -1,0 +1,86 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "plants": [
+        "minecraft:fern"
+      ],
+      "type": "flower_pot"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/plain_pot.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/flower_pot",
+      "textures": {
+        "dirt": "minecraft:block/dirt",
+        "flowerpot": "minecraft:block/flower_pot",
+        "particle": "minecraft:block/flower_pot"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/plain_pot.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/flower_pot_cross",
+      "textures": {
+        "dirt": "minecraft:block/dirt",
+        "flowerpot": "minecraft:block/flower_pot",
+        "particle": "minecraft:block/flower_pot",
+        "plant": "minecraft:block/fern"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/plain_pot_fern.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/plain_pot"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/plain_pot.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/flower_pot"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/plain_pot.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/plain_pot",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/plain_pot.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:plain_pot"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/flower_pots.json",
+    "schema": "tag:block"
+  }
+]
