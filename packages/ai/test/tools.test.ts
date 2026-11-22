@@ -199,12 +199,13 @@ function order(group: string): number {
 describe('tool catalogue is frozen (ADR 0055 D11)', () => {
   // The hash last changed with B498: create_texture draws MSM's Minecraft-like art from a recipe
   // (with the older pattern still accepted), a second colour, a finish and a seed, and its
-  // description and add_starter's no longer call the pictures placeholders (ADR 0092 D15).
+  // description and add_starter's and list_starters' no longer call the pictures placeholders
+  // (ADR 0092 D15).
   it('has 22 tools in the documented order with unchanged schemas', () => {
     expect(TOOL_CATALOGUE.map((tool) => tool.name)).toEqual([...AI_TOOL_NAMES]);
     expect(TOOL_CATALOGUE).toHaveLength(22);
     expect(createHash('sha256').update(JSON.stringify(TOOL_CATALOGUE)).digest('hex')).toBe(
-      '4aae627f5c3388c5674c3beec16149e708a6734e4ba1bd46713c2cb513c69163',
+      'a8703eac69bb1d218ba02b2db5219ea55c80dc91ff438065fe6bd0c3b975f273',
     );
   });
 });
