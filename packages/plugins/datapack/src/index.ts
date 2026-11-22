@@ -7,10 +7,12 @@
 import { definePlugin } from '@msm/plugin-api';
 import { dataPackKinds } from './kinds';
 import { dataPackTemplates } from './templates';
+import { datapackValidators } from './validators';
 
 export * from './kinds';
 export * from './lowering';
 export { dataPackTemplates } from './templates';
+export { DATAPACK_PROBLEM_CODES, datapackValidators } from './validators';
 
 export default definePlugin({
   id: 'msm.datapack',
@@ -18,5 +20,6 @@ export default definePlugin({
   contributes: {
     elementKinds: [...dataPackKinds],
     elementTemplates: [...dataPackTemplates],
+    validators: [...datapackValidators],
   },
 });

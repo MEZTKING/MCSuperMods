@@ -8506,3 +8506,9 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 
 **Next**
 - B603 (jar data and IPC), then wave 2: B604 and B605 fill `api.ts` bodies, B606 the commands, B607 the fixture and the parity class (it adds the `fabric.mod.json` line), B608 the frame's situation picker, item slots and the worker.
+
+## 2026-11-22 — executor — Validators for forms the game refuses (B600 findings)
+
+What: new `packages/plugins/datapack/src/validators.ts` (validator `msm.datapack.formats`, exported with `DATAPACK_PROBLEM_CODES`), five export-blocking errors, each with a plain-words entry in `app/src/renderer/src/session/plain-problems.ts` and tests in `packages/plugins/datapack/test/validators.test.ts` (both targets): `datapack.predicate-not-object` and `datapack.item-modifier-not-object` (the file is a list or a bare id), `datapack.time-check-no-clock` (a `time_check` condition without `clock`, found anywhere in predicates, item modifiers, loot tables, advancements and enchantments), `datapack.damage-tag-no-hash` (a `tags: [{id, expected}]` id that is not a damage type and has no `#`), `datapack.block-transformer-state` (a `state` object without `id`, such as the old `{Name}` form).
+Decisions: the vendored mcdoc is untouched. Only forms the B600 README shows the game refusing are flagged; a plain damage type id in a damage tag list is left alone (no evidence), and an empty block transformer list is not flagged (the README shows the failure for the old `{Name}` state only). The library's starters, examples and fixtures pass the new checks (`packages/exporters/test/library.test.ts`, `@msm/plugin-library` tests).
+Next: the AI helper's prompt may name these codes; the schema layer does not report these forms itself.

@@ -713,6 +713,25 @@ export const PLAIN_PROBLEMS: Readonly<Record<string, PlainProblemEntry>> = {
     (t) => `${t} becomes a liquid when it mixes, so the two may keep on mixing. Pick a block.`,
   ),
 
+  // Data pack forms the game refuses (B600 findings) -------------------------------------
+  'datapack.predicate-not-object': entry(
+    (t) =>
+      `${t} is a list or a single name, but a predicate must be one object. The game would not start with it.`,
+  ),
+  'datapack.item-modifier-not-object': entry(
+    (t) =>
+      `${t} is a list or a single name, but an item modifier must be one object. The game would not start with it.`,
+  ),
+  'datapack.time-check-no-clock': entry(
+    (t) => `A time check in ${t} does not say which clock it reads. Pick a clock.`,
+  ),
+  'datapack.damage-tag-no-hash': entry(
+    (t) => `A damage group in ${t} is missing the # in front of its name.`,
+  ),
+  'datapack.block-transformer-state': entry(
+    (t) => `A block in ${t} is written in an old form that the game refuses. Pick the block again.`,
+  ),
+
   // Play and Share my mod ------------------------------------------------------------------
   'export.no-fabric-target': entry(
     () => 'This mod is for a Minecraft without Fabric, so it cannot be played or shared as a mod.',
