@@ -80,7 +80,9 @@ function presetWorld(
   }) as EngineWorld;
 }
 
-describe.skipIf(jars.length === 0)('vanilla files from the Loom jars', () => {
+// Heavy: each test reads and parses a whole client jar's worldgen files, so under a loaded machine the
+// default 5 s is too short (2026-11-22, load 10 on 4 cores). An explicit timeout, never a retry.
+describe.skipIf(jars.length === 0)('vanilla files from the Loom jars', { timeout: 60_000 }, () => {
   for (const jar of jars) {
     describe(jar.version, () => {
       const vanilla = jars.length ? readJarWorldgen(jar.path) : {};
