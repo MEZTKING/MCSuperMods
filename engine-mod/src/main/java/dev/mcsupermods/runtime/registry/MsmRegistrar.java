@@ -545,7 +545,7 @@ public final class MsmRegistrar {
         // Weathering (ADR 0094 D8) and waterlogging (D7) classes first; each answers empty for a block without its component.
         final BlockBehaviour.Properties blockProps = props;
         Block created = Weathering.blockFor(id, def, blockProps)
-                .or(() -> StorageExtras.blockFor(id, def, blockProps)) // double and per-player chests (ADR 0104 D4, D5): a stub until B513
+                .or(() -> StorageExtras.blockFor(id, def, blockProps)) // double and per-player chests (ADR 0104 D4, D5)
                 .or(() -> Waterlogging.blockFor(id, def, blockProps))
                 .orElseGet(() -> BlockTypes.create(id, def, blockProps, stairsBase, w -> warn(warnings, raw.describe() + ": " + w)));
         Block block = Registry.register(BuiltInRegistries.BLOCK, blockKey, created);
