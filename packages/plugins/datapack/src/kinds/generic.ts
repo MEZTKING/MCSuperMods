@@ -38,8 +38,9 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
   'timeline',
   'world_clock',
   // Data kinds sweep 2 (ADR 0106 D1).
+  // `wolf_sound_variant` is out (ADR 0064 D5): a vanilla server refuses one without `step_sound`,
+  // which the vendored vanilla-mcdoc lacks in WolfSounds. It returns when vanilla-mcdoc gains `step_sound`.
   'decorated_pot_pattern',
-  'wolf_sound_variant',
   'block_transformer',
   'test_environment',
   'test_instance',
@@ -59,7 +60,6 @@ const sounds = (prefix: string, names: readonly string[]): Json =>
   Object.fromEntries(names.map((name) => [`${name}_sound`, `minecraft:entity.${prefix}.${name}`]));
 
 /** The wolf's sound event names, the same for adults and babies. */
-const WOLF_SOUNDS = ['ambient', 'death', 'growl', 'hurt', 'pant', 'whine'] as const;
 
 /**
  * Minimal valid data per kind. Only `minecraft:` ids; asset ids name vanilla assets, so a new
@@ -236,10 +236,6 @@ const DEFAULTS: Readonly<Record<GenericDataRegistry, Json>> = {
   world_clock: {},
   // The face picture names a vanilla sherd's texture under `entity/decorated_pot/`.
   decorated_pot_pattern: { asset_id: 'minecraft:angler_pottery_pattern' },
-  wolf_sound_variant: {
-    adult_sounds: sounds('wolf', WOLF_SOUNDS),
-    baby_sounds: sounds('baby_wolf', WOLF_SOUNDS),
-  },
   // One rule, as a shovel flattens grass into a path: the first provider that gives a block wins.
   block_transformer: [
     {

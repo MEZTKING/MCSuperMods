@@ -174,7 +174,6 @@ const KIND_IDS = [
   'minecraft:timeline',
   'minecraft:world_clock',
   // Data kinds sweep 2 (ADR 0106 D1, D2; examples B508).
-  // minecraft:wolf_sound_variant waits for a schema that knows its step_sound (B508).
   'minecraft:decorated_pot_pattern',
   'minecraft:block_transformer',
   'minecraft:test_environment',

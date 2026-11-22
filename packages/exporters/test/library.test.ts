@@ -1923,11 +1923,10 @@ function typeCheck(script: string): string[] {
 
 /**
  * Kinds registered before their per-kind example exists. A new kind may wait here only until
- * its library brief lands. B508 added the examples of ADR 0106's kinds but one: a vanilla
- * server refuses a wolf sound variant without `step_sound`, which the vendored schemas of both
- * targets do not know, so no example is valid in both until the schema learns it.
+ * its library brief lands. `minecraft:wolf_sound_variant` is not a kind at all while vanilla-mcdoc
+ * lacks `step_sound` (ADR 0064 D5).
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = ['minecraft:wolf_sound_variant'];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
 
 // Tests --------------------------------------------------------------------------------------
 

@@ -34,7 +34,6 @@ const NEW_KINDS = [
   'minecraft:font',
   // Data kinds sweep 2 (ADR 0106 D1, D2; B508).
   'minecraft:decorated_pot_pattern',
-  'minecraft:wolf_sound_variant',
   'minecraft:block_transformer',
   'minecraft:test_environment',
   'minecraft:test_instance',

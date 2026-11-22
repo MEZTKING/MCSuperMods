@@ -272,17 +272,6 @@ const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
   },
   world_clock: {},
   decorated_pot_pattern: { asset_id: 'minecraft:skull_pottery_pattern' },
-  wolf_sound_variant: {
-    adult_sounds: {
-      ambient_sound: 'minecraft:entity.wolf_grumpy.ambient',
-      death_sound: 'minecraft:entity.wolf_grumpy.death',
-      growl_sound: 'minecraft:entity.wolf_grumpy.growl',
-      hurt_sound: { sound_id: 'minecraft:entity.wolf_grumpy.hurt', range: 16 },
-      pant_sound: 'minecraft:entity.wolf_grumpy.pant',
-      whine_sound: 'minecraft:entity.wolf_grumpy.whine',
-    },
-    baby_sounds: (defaultOf('wolf_sound_variant') as { baby_sounds: Json }).baby_sounds,
-  },
   block_transformer: [
     {
       block_state_provider: {

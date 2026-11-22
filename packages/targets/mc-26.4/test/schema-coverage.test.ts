@@ -56,7 +56,6 @@ const COVERED_REFS: readonly string[] = [
   '::java::assets::equipment::Equipment',
   // Data kinds sweep 2 and the resource pack kinds (ADR 0106 D1, D2).
   'resource:decorated_pot_pattern',
-  'resource:wolf_sound_variant',
   'resource:block_transformer',
   'resource:test_environment',
   'resource:test_instance',

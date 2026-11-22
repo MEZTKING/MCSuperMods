@@ -23,15 +23,6 @@ function entry(
   };
 }
 
-/** The six wolf sound event ids of one vanilla wolf voice, such as `wolf_big`. */
-const wolfSounds = (voice: string): Json =>
-  Object.fromEntries(
-    ['ambient', 'death', 'growl', 'hurt', 'pant', 'whine'].map((name) => [
-      `${name}_sound`,
-      `minecraft:entity.${voice}.${name}`,
-    ]),
-  );
-
 const ENCHANTMENTS = 'Enchantments';
 const OTHER = 'Other data';
 const MOBS = 'Mobs';
@@ -314,17 +305,6 @@ export const otherDataTemplates: readonly ElementTemplate[] = [
     'Pot pattern',
     'A decorated pot face; uses the heart sherd picture until you add your own under entity/decorated_pot/. A sherd item names it through the decorated_pot_sherds tag and its pot pattern.',
     { asset_id: 'minecraft:heart_pottery_pattern' },
-  ),
-  entry(
-    'wolf_sound_variant',
-    'wolf_sound_variant',
-    MOBS,
-    'Wolf sounds',
-    'A wolf voice: the big wolf sounds for adults and the baby wolf sounds for pups. Point a wolf at it with its sound_variant.',
-    {
-      adult_sounds: wolfSounds('wolf_big'),
-      baby_sounds: wolfSounds('baby_wolf'),
-    },
   ),
   entry(
     'block_transformer',

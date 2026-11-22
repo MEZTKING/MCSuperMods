@@ -23,7 +23,7 @@ const {
   ...FIRST_TARGET
 } = (builtInTargets[0] as TargetBundle).target;
 
-/** The 74 template ids, in picker order (library plan section 2.1). */
+/** The 73 template ids, in picker order (library plan section 2.1). */
 const IDS = [
   'recipe_shaped',
   'recipe_shapeless',
@@ -88,7 +88,6 @@ const IDS = [
   'instrument',
   'trial_spawner',
   'decorated_pot_pattern',
-  'wolf_sound_variant',
   'block_transformer',
   'test_environment',
   'test_instance',
@@ -163,9 +162,9 @@ const byId = (id: string): ElementTemplate => {
 };
 
 describe('data pack templates', () => {
-  it('has the 74 ids in picker order, unique, and contributed by the plugin', () => {
+  it('has the 73 ids in picker order, unique, and contributed by the plugin', () => {
     expect(dataPackTemplates.map((template) => template.id)).toEqual(IDS);
-    expect(new Set(IDS).size).toBe(74);
+    expect(new Set(IDS).size).toBe(73);
     expect(plugin.contributes.elementTemplates?.map((template) => template.id)).toEqual(IDS);
     for (const id of KEPT) expect(IDS).toContain(id);
   });

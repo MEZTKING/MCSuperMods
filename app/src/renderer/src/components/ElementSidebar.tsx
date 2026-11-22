@@ -84,7 +84,6 @@ export const GROUP_LABELS: Readonly<Record<string, string>> = {
   'minecraft:world_clock': 'World clocks',
   // Data kinds sweep 2 (ADR 0106 D1, D2; B508).
   'minecraft:decorated_pot_pattern': 'Pot patterns',
-  'minecraft:wolf_sound_variant': 'Wolf sounds',
   'minecraft:block_transformer': 'Block transformers',
   'minecraft:test_environment': 'Test environments',
   'minecraft:test_instance': 'Test instances',

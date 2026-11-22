@@ -6989,3 +6989,18 @@ Next
 **Next**
 - Main session: add `VanillaBlockRulesParser.KIND` to `DefinitionScanner.KINDS` (and `EventOverlay.KINDS_WITHOUT_EVENTS`) or give that line to B514.
 - B509 to B516 build on the frozen shapes listed in the B506 report.
+
+## 2026-11-22 — executor — wolf sound variant out again
+
+**What**
+- Removed the generic data kind `minecraft:wolf_sound_variant` that B504 re-added: its entry in `GENERIC_DATA_REGISTRIES` and its default data (`packages/plugins/datapack/src/kinds/generic.ts`), its template and the wolf sounds helper (`templates/registries.ts`), both target golden fixtures, the golden test case, the `resource:wolf_sound_variant` assertion in both targets' `schema-coverage.test.ts`, the empty-again `KINDS_AWAITING_EXAMPLES`, the sidebar label `GROUP_LABELS` entry and its sidebar test line, and the content test note.
+- Counts: kinds 115 to 114, generic data kinds 36 to 35, data pack templates 74 to 73.
+- A comment beside the generic list says why it is out.
+
+**Decisions**
+- `wolf_sound_variant` stays a `DataFolderKey` and a target folder key: it was already a key since plugin API 1.9.0 (ADR 0064 D5), so B504 did not add it and removing it would be a breaking change.
+- Reason for the kind being out: the vendored vanilla-mcdoc lacks `step_sound` in `WolfSounds`/`OptionalWolfSounds`, a vanilla server refuses a wolf sound variant without it (B508's server run), so no file could pass both schema and game.
+
+**Next**
+- Re-add the kind, template, goldens and an example when vanilla-mcdoc gains `step_sound` (sync-mcdoc).
+- Docs still mention the kind as present (ADR 0106, CHANGES.md schema-coverage rows, CHANGELOG): the main session should correct the counts there.
