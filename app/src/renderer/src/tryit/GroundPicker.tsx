@@ -190,6 +190,8 @@ export function GroundPicker(props: GroundPickerProps) {
           worldName: selectedWorld.name,
           centre,
         };
+      case 'generated':
+        return 'Not yet: the generated ground arrives with live world generation (ADR 0119).';
     }
   };
 

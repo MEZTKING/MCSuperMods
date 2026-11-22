@@ -64,7 +64,7 @@ export type CanvasPreviewKind = DeepslatePreviewKind | GeoPreviewKind;
  * The host hints on an element kind (`ElementKind.previewKind`) that the preview understands:
  * the canvas kinds, and `climate_map`, a 2D map drawn without WebGL.
  */
-export type PreviewKind = CanvasPreviewKind | 'climate_map';
+export type PreviewKind = CanvasPreviewKind | 'climate_map' | 'worldgen_map';
 
 /** The element to preview in the canvas. */
 export interface PreviewSubject {

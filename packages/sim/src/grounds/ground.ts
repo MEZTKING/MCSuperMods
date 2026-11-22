@@ -11,7 +11,7 @@
 import { AREA_SIZE_X, AREA_SIZE_Y, AREA_SIZE_Z, type BlockState } from '../types.js';
 
 /** The grounds Try it offers (ADR 0087 D1). */
-export const GROUND_KINDS = Object.freeze(['grid', 'flat', 'quick', 'world'] as const);
+export const GROUND_KINDS = Object.freeze(['grid', 'flat', 'quick', 'world', 'generated'] as const);
 
 /** One of {@link GROUND_KINDS}. */
 export type GroundKind = (typeof GROUND_KINDS)[number];

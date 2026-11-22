@@ -8130,3 +8130,10 @@ Next
 What: `game-rules.range-on-boolean` is now an error (the runtime's parser and the Java eject refuse a boolean game rule with `min` or `max`); its plain-words entry and the test follow. The Java eject's `export.not-in-eject` now names `item.crafted`, `item.picked_up`, `player.ate` and `player.advancement` as well as `block.place` and `world.explosion` (`MIXIN_EVENTS` and its pattern in `packages/exporters/src/java-project/index.ts`; new `mixin-events.test.ts`; the sample-mobs golden test expects four warnings). The Command Studio label for `hex_colour` reads "A colour code (such as ff8800, without the #)", with the guide line and a label test.
 Decisions: kept the existing code name; exported `MIXIN_EVENTS` for the test.
 Next: the other open follow-ups in docs/HANDOFF.md.
+## 2026-11-22 — executor — B576 scaffold and stubs (live worldgen)
+
+**What:** New package `packages/terrain` (`@msm/terrain`: package.json with `deepslate: catalog:` and `@msm/plugin-api`, tsconfig, vitest config, `src/api.ts` = the spike's interface with bodies that throw "not yet", the seam stubs `extensions/index.ts`, `features/index.ts`, `presets.ts`, a stub test, a 40-line CLAUDE.md). Wiring: `tools/check-deps/layers.json`, root `tsconfig.json`, `app/package.json`, `app/tsconfig.web.json`, lockfile (deepslate stays at 0.27.2). App stubs in `app/src/renderer/src/terrain/`, the `worldgen_map` preview kind (list, `PreviewKind`, lazy route to `WorldMap`), `'generated'` in `GROUND_KINDS` with a "not yet" arm in the ground picker, `fixtures/worldgen-parity/README.md`, the stub `WorldgenParityTest.java`, the skipped `app/e2e/worldgen-live-path.spec.ts`.
+
+**Decisions:** Stub bodies call a private `notYet(...args)` so the interface's parameter names stay as written and `noUnusedParameters` is satisfied. No `turbo.json` change was needed (tasks are generic). The `generated` ground is not added to `GROUND_CHOICES`, so the picker is unchanged for users.
+
+**Next:** B577 (jar reading, IPC, target fact), B578 (engine).

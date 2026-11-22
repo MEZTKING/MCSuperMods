@@ -379,6 +379,9 @@ importers:
       '@msm/targets':
         specifier: workspace:*
         version: link:../packages/targets/all
+      '@msm/terrain':
+        specifier: workspace:*
+        version: link:../packages/terrain
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.4(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))
@@ -962,6 +965,22 @@ importers:
       '@msm/schemas':
         specifier: workspace:*
         version: link:../../schemas
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))
+
+  packages/terrain:
+    dependencies:
+      '@msm/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+      deepslate:
+        specifier: 'catalog:'
+        version: 0.27.2
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

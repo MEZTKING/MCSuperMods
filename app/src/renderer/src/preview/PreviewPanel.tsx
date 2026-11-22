@@ -36,6 +36,7 @@ import { hasWebGL } from './webgl';
 const PreviewCanvas = lazy(() => import('./PreviewCanvas'));
 const ClimateMap = lazy(() => import('./ClimateMap'));
 const GeoCanvas = lazy(() => import('./geo/GeoCanvas'));
+const WorldMap = lazy(() => import('../terrain/WorldMap'));
 
 const PREVIEW_KINDS: readonly string[] = [
   'model',
@@ -43,6 +44,7 @@ const PREVIEW_KINDS: readonly string[] = [
   'item_definition',
   'structure',
   'climate_map',
+  'worldgen_map',
   'geo_model',
   'animation',
   'entity',
@@ -119,7 +121,7 @@ export function PreviewPanel(props: PreviewPanelProps) {
         ? null
         : kind === null
           ? modelFieldSubject(element, project)
-          : kind === 'climate_map'
+          : kind === 'climate_map' || kind === 'worldgen_map'
             ? null
             : { data: element.data, id: element.id, previewKind: kind },
     [element, kind, project],
@@ -193,6 +195,16 @@ export function PreviewPanel(props: PreviewPanelProps) {
       <section aria-label="Preview" className="flex flex-col gap-3">
         <Suspense fallback={<p className="text-sm text-muted">Loading climate map…</p>}>
           <ClimateMap project={project} id={element.id} data={element.data} />
+        </Suspense>
+      </section>
+    );
+  }
+
+  if (element !== null && kind === 'worldgen_map') {
+    return (
+      <section aria-label="Preview" className="flex flex-col gap-3">
+        <Suspense fallback={<p className="text-sm text-muted">Loading world map…</p>}>
+          <WorldMap />
         </Suspense>
       </section>
     );

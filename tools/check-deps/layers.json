@@ -28,5 +28,6 @@
   "@msm/tools": ["*"],
   "@msm/site": [],
   "@msm/sample-plugin": ["@msm/plugin-api"],
-  "@msm/sim": ["@msm/plugin-api", "@msm/core"]
+  "@msm/sim": ["@msm/plugin-api", "@msm/core"],
+  "@msm/terrain": ["@msm/plugin-api"]
 }
