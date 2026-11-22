@@ -73,6 +73,7 @@ Open the **Export** menu and choose **Fabric mod (.jar)…**, then save the jar.
 
 ## Where to go next
 
+- Not sure what to make? **See what you can make** shows ten ideas with short clips, in New project and on Home in Very easy: [See what you can make](showcase.md).
 - Make things happen without code, such as a block that gives a reward: [Rules](rules.md). Prefer big tiles and plain words? [Very easy mode](very-easy.md).
 - Pick another look for a drawn picture with **Draw…** ([Drawing pictures](pictures.md)), or replace it with your own picture: [Replacing the placeholders](creator.md#replacing-the-placeholders).
 - More things to make with a few questions: weapons, food, totems, enchantments, paintings, music discs, mobs ([The Creator](creator.md)).

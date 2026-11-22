@@ -22,6 +22,10 @@ The toolbar has only what you need: **Home**, Undo, Redo, **Try it**, **Play** a
 
 On Home, **Start a new mod** asks one question: **What is your mod called?** Press **Start** and the mod is saved in a folder of that name in `Documents/MCSuperMods`. Under the question it says where: "It is saved in …". **Change folder** picks another place. You never see a namespace or an id; MCSuperMods makes them from the name. **Open a mod** opens one you made before, **Surprise me** makes a random mod for you ([Surprise me](#surprise-me)), and **Your mods** lists the recent ones.
 
+## See what you can make
+
+Under the three buttons on Home, **See what you can make** shows ten cards of things to make: a set of wood, a pet, a crop, a machine, a vehicle, a portal, sparkles, a trader, a liquid and a lucky block. Hover a card to see a short clip. **Make this** starts the card's flow, asking only **What is your mod called?** when no mod is open, and **See the example** opens or copies the finished example. With a mod open, the cards sit between the tiles and **My things**, then fold to **Show what you can make** once your mod has things; **Hide what you can make** folds them again. **Settings > Showcase > Play showcase clips** turns the moving pictures off. See [See what you can make](showcase.md).
+
 ## Make something
 
 With a mod open, Home shows **Make something** with these tiles, under headings:

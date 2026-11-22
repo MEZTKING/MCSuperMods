@@ -46,6 +46,7 @@ export default defineConfig({
           { text: 'Overview', link: '/' },
           { text: 'Your first mod', link: '/first-mod' },
           { text: 'Very easy mode', link: '/very-easy' },
+          { text: 'See what you can make', link: '/showcase' },
           { text: 'Playing and testing', link: '/playing-and-testing' },
           { text: 'Try it', link: '/try-it' },
           { text: 'Getting started', link: '/getting-started' },

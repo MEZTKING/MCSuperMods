@@ -7870,3 +7870,15 @@ Next
 **Next**
 - B541: the parity GameTests (`SampleVillagersParityTest`) against the ejected sample villagers jar, now that the pedlar and the sugar glider are ejected.
 - B543 guide: `villagers-and-traders.md` (lines 85 and 111) and `eject.md` still say traders, storage and shoulder pets are left out of the Java project export.
+## 2026-11-22 — executor — B571 Showcase guide page
+
+**What**
+- New `docs/guide/showcase.md` ("See what you can make"): the ten cards with their sentences and the flow Make this opens, where the cards are (Home with the fold links, the New project strip, the Examples detail pane's "What it looks like", the palette), Make this in each mode, See the example, the Preview tag, one clip at a time, **Pause clips**, reduced motion, **Play showcase clips**, the line without WebGL, and limits U1 to U13 in plain words.
+- A paragraph in `very-easy.md` (before "Make something") and a bullet in `first-mod.md`'s "Where to go next"; the sidebar line after Very easy mode in `docs/site/.vitepress/config.ts`; `docs/CLAUDE.md`'s guide list; a row in `docs/guide/README.md` (the sidebar follows its order).
+- Checked: labels against `ShowcaseCard.tsx`, `ShowcaseGallery.tsx`, `Home.tsx`, `SettingsDialog.tsx`, `showcases.ts` and `built-in-commands.ts`; no guide label test covers these pages (none found in `app/test` or `docs/site`); `pnpm --filter @msm/site build` passed; its output was deleted.
+
+**Decisions**
+- The vehicle card is described as opening the Car flow (B569's note); the flow names Pet, Crop, Particle and Portal are written as the Home tiles' flows, not checked against flow titles one by one.
+
+**Next**
+- B572 close: nothing left for the sidebar line; the README row is added.
