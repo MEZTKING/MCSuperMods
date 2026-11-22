@@ -139,7 +139,7 @@ public final class MsmEntityRegistrar {
                     registerEgg(raw, eggId, def.spawnEgg().get(), type);
                     items.add(eggId);
                 }
-                MobBuckets.itemFor(raw.id(), def, type).ifPresent(bucket -> items.add(BuiltInRegistries.ITEM.getKey(bucket))); // ADR 0109 D1: a stub until B532
+                MobBuckets.itemFor(raw.id(), def, type).ifPresent(bucket -> items.add(BuiltInRegistries.ITEM.getKey(bucket))); // ADR 0109 D1: the fish bucket
                 def.spawn().ifPresent(spawn -> addSpawn(raw, spawn, def, type, errors));
                 def.sounds().ifPresent(sounds -> sounds.ids().stream().distinct()
                         .forEach(sound -> LATE.add(new LateCheck(raw.describe(), "sound event in sounds", sound.toString()))));

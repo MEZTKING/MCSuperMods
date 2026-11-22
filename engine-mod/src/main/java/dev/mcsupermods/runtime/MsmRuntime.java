@@ -66,7 +66,7 @@ public final class MsmRuntime implements ModInitializer {
         LOGGER.info("[{}] registered {} creative tab(s)", MOD_ID, report.creativeTabs().size());
         LOGGER.info("[{}] registered {} fluid(s)", MOD_ID, report.fluids().size());
         LOGGER.info("[{}] registered {} villager profession(s)", MOD_ID, report.professions().size());
-        // Batch 2 of vanilla parity 3: stubs until B528, B529, B532, B533 and B536 fill them in (each returns the report unchanged).
+        // Batch 2 of vanilla parity 3: villager types, cauldrons, boats, game rules and statistics (ADRs 0107-0111).
         report = VillagerTypes.register(report); // ADR 0107 D5
         report = MsmCauldrons.register(report); // ADR 0108 D2, D3
         report = MsmBoats.register(report); // ADR 0110 D1

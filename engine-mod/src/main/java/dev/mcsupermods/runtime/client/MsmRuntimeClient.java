@@ -57,7 +57,7 @@ public final class MsmRuntimeClient implements ClientModInitializer {
         DevClient.register();
         // Project fluids (ADR 0099 D2).
         FluidClient.init();
-        // Project boats (ADR 0110 D2): a stub until B536.
+        // Project boats (ADR 0110 D2): vanilla boat renderers over their own model layers.
         BoatRenderers.init();
     }
 
