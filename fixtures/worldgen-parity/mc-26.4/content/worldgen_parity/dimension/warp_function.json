@@ -1,0 +1,20 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biome": "worldgen_parity:meadow",
+        "type": "minecraft:fixed"
+      },
+      "settings": "worldgen_parity:settings/warp_function",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:warp_function",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates domain_warp with functions as offsets."
+  }
+}

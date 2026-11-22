@@ -1,0 +1,72 @@
+{
+  "data": {
+    "default_fluid": "minecraft:water",
+    "disable_mob_generation": true,
+    "legacy_random_source": false,
+    "material_rule": {
+      "result_state": "minecraft:stone",
+      "type": "minecraft:block"
+    },
+    "noise": {
+      "height": 128,
+      "min_y": 0
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": {
+        "input": {
+          "left": {
+            "axis": "y",
+            "from_coordinate": 0,
+            "from_value": 4.0,
+            "to_coordinate": 128,
+            "to_value": -4.0,
+            "type": "minecraft:gradient"
+          },
+          "right": {
+            "left": {
+              "type": "minecraft:constant",
+              "value": 2.0
+            },
+            "right": {
+              "noise": "worldgen_parity:hills",
+              "type": "minecraft:noise",
+              "xz_scale": 1.0,
+              "y_scale": 0.5
+            },
+            "type": "minecraft:mul"
+          },
+          "type": "minecraft:add"
+        },
+        "type": "minecraft:upscale",
+        "x": {
+          "cell_size": 8,
+          "mode": "interpolate_cubic"
+        },
+        "y": {
+          "cell_size": 4,
+          "mode": "interpolate_cubic"
+        },
+        "z": {
+          "cell_size": 8,
+          "mode": "interpolate_cubic"
+        }
+      },
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": 48,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:settings/upscale_cubic",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The noise settings of the dimension worldgen_parity:upscale_cubic: upscale, every axis interpolate_cubic (cells 8, 4, 8)."
+  }
+}

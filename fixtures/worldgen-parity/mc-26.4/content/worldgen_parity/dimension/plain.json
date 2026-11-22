@@ -1,0 +1,20 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biome": "worldgen_parity:meadow",
+        "type": "minecraft:fixed"
+      },
+      "settings": "worldgen_parity:settings/plain",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:plain",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates noise terrain: gradient, noise, add, mul, constant, a named function, sea level, default block and fluid; one fixed biome."
+  }
+}

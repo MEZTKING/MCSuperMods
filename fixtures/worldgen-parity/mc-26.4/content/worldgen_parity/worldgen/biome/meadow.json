@@ -1,0 +1,19 @@
+{
+  "data": {
+    "carvers": [],
+    "downfall": 0.4,
+    "effects": {
+      "water_color": 4175588
+    },
+    "features": [],
+    "has_precipitation": true,
+    "temperature": 0.8
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:meadow",
+  "kind": "minecraft:worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A biome of the fixture: no carvers, no features."
+  }
+}

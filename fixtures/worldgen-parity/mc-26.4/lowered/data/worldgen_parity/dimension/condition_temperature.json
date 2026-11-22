@@ -1,0 +1,17 @@
+{
+  "generator": {
+    "biome_source": {
+      "biomes": [
+        "worldgen_parity:tundra",
+        "worldgen_parity:crag",
+        "worldgen_parity:chill",
+        "worldgen_parity:meadow"
+      ],
+      "scale": 2,
+      "type": "minecraft:checkerboard"
+    },
+    "settings": "worldgen_parity:settings/condition_temperature",
+    "type": "minecraft:noise"
+  },
+  "type": "worldgen_parity:low"
+}

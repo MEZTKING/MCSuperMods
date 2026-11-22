@@ -1,0 +1,26 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biomes": [
+          "worldgen_parity:meadow",
+          "worldgen_parity:dune",
+          "worldgen_parity:tundra",
+          "worldgen_parity:crag"
+        ],
+        "scale": 1,
+        "type": "minecraft:checkerboard"
+      },
+      "settings": "worldgen_parity:settings/rules_biome",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:rules_biome",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates the biome condition by list and by tag, a named rule and a named condition, over a checkerboard."
+  }
+}

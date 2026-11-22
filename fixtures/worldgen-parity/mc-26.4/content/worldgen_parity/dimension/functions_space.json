@@ -1,0 +1,20 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biome": "worldgen_parity:meadow",
+        "type": "minecraft:fixed"
+      },
+      "settings": "worldgen_parity:settings/functions_space",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:functions_space",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates shift_a, shift_b, shift, noise shift fields, distance_to_point, gradient on x and z with tiling, slice."
+  }
+}

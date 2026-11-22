@@ -1,0 +1,26 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biomes": [
+          "worldgen_parity:tundra",
+          "worldgen_parity:crag",
+          "worldgen_parity:chill",
+          "worldgen_parity:meadow"
+        ],
+        "scale": 2,
+        "type": "minecraft:checkerboard"
+      },
+      "settings": "worldgen_parity:settings/condition_temperature",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:condition_temperature",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates the temperature condition over biomes near freezing on tall land."
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "data": {
+    "default_block": "minecraft:stone",
+    "default_fluid": "minecraft:water",
+    "disable_mob_generation": true,
+    "legacy_random_source": false,
+    "material_rule": {
+      "sequence": [
+        {
+          "if_true": {
+            "max_threshold": 1.0,
+            "min_threshold": 0.2,
+            "noise": "worldgen_parity:patches",
+            "type": "minecraft:noise_threshold"
+          },
+          "then_run": {
+            "if_true": {
+              "add_surface_depth": false,
+              "offset": 0,
+              "secondary_depth_range": 0,
+              "surface_type": "floor",
+              "type": "minecraft:stone_depth"
+            },
+            "then_run": {
+              "result_state": {
+                "id": "minecraft:podzol",
+                "properties": {
+                  "snowy": "false"
+                }
+              },
+              "type": "minecraft:block"
+            },
+            "type": "minecraft:condition"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "is_3d": true,
+            "max_threshold": -0.3,
+            "min_threshold": -1.0,
+            "noise": "worldgen_parity:patches",
+            "type": "minecraft:noise_threshold"
+          },
+          "then_run": {
+            "result_state": "minecraft:granite",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "false_at_and_above": {
+              "absolute": 44
+            },
+            "random_name": "worldgen_parity:fade",
+            "true_at_and_below": {
+              "above_bottom": 20
+            },
+            "type": "minecraft:vertical_gradient"
+          },
+          "then_run": {
+            "result_state": "minecraft:tuff",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_stone_depth": false,
+            "anchor": {
+              "relative_to_sea_level": 12
+            },
+            "surface_depth_multiplier": 0,
+            "type": "minecraft:y_above"
+          },
+          "then_run": {
+            "if_true": {
+              "add_surface_depth": false,
+              "offset": 0,
+              "secondary_depth_range": 0,
+              "surface_type": "floor",
+              "type": "minecraft:stone_depth"
+            },
+            "then_run": {
+              "result_state": {
+                "id": "minecraft:grass_block",
+                "properties": {
+                  "snowy": "false"
+                }
+              },
+              "type": "minecraft:block"
+            },
+            "type": "minecraft:condition"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": false,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": "minecraft:coarse_dirt",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "result_state": "minecraft:stone",
+          "type": "minecraft:block"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "noise": {
+      "height": 128,
+      "min_y": 0
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": "worldgen_parity:terrain/base",
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": 48,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:settings/rules_noise",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The noise settings of the dimension worldgen_parity:rules_noise: noise_threshold (2D and 3D), vertical_gradient, a y_above relative to sea level."
+  }
+}

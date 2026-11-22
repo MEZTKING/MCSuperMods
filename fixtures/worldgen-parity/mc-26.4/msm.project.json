@@ -1,0 +1,16 @@
+{
+  "formatVersion": 1,
+  "name": "Worldgen Parity",
+  "namespaces": [
+    "minecraft",
+    "worldgen_parity"
+  ],
+  "plugins": [
+    "msm.datapack",
+    "msm.worldgen"
+  ],
+  "settings": {},
+  "targets": [
+    "mc-26.4"
+  ]
+}

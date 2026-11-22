@@ -1,0 +1,11 @@
+{
+  "generator": {
+    "biome_source": {
+      "biome": "worldgen_parity:meadow",
+      "type": "minecraft:fixed"
+    },
+    "settings": "worldgen_parity:settings/rule_bandlands",
+    "type": "minecraft:noise"
+  },
+  "type": "worldgen_parity:low"
+}

@@ -1,0 +1,200 @@
+{
+  "data": {
+    "default_fluid": "minecraft:water",
+    "disable_mob_generation": true,
+    "legacy_random_source": false,
+    "material_rule": {
+      "sequence": [
+        {
+          "if_true": {
+            "add_surface_depth": false,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": {
+              "id": "minecraft:grass_block",
+              "properties": {
+                "snowy": "false"
+              }
+            },
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": true,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": "minecraft:dirt",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "result_state": "minecraft:stone",
+          "type": "minecraft:block"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "noise": {
+      "height": 128,
+      "min_y": 0
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": {
+        "left": {
+          "left": {
+            "left": {
+              "left": {
+                "left": {
+                  "left": {
+                    "left": {
+                      "axis": "y",
+                      "from_coordinate": 0,
+                      "from_value": 1.0,
+                      "to_coordinate": 128,
+                      "to_value": -1.0,
+                      "type": "minecraft:gradient"
+                    },
+                    "right": {
+                      "left": {
+                        "type": "minecraft:constant",
+                        "value": 0.35
+                      },
+                      "right": {
+                        "noise": "worldgen_parity:hills",
+                        "shift_x": {
+                          "noise": "worldgen_parity:shift",
+                          "type": "minecraft:shift_a"
+                        },
+                        "shift_z": {
+                          "noise": "worldgen_parity:shift",
+                          "type": "minecraft:shift_b"
+                        },
+                        "type": "minecraft:noise",
+                        "xz_scale": 1.0,
+                        "y_scale": 0.0
+                      },
+                      "type": "minecraft:mul"
+                    },
+                    "type": "minecraft:add"
+                  },
+                  "right": {
+                    "left": {
+                      "type": "minecraft:constant",
+                      "value": 0.05
+                    },
+                    "right": {
+                      "noise": "worldgen_parity:shift",
+                      "type": "minecraft:shift"
+                    },
+                    "type": "minecraft:mul"
+                  },
+                  "type": "minecraft:add"
+                },
+                "right": {
+                  "input": {
+                    "left": {
+                      "type": "minecraft:constant",
+                      "value": 0.3
+                    },
+                    "right": {
+                      "left": {
+                        "type": "minecraft:constant",
+                        "value": -0.01
+                      },
+                      "right": {
+                        "metric": "euclidean",
+                        "point": [
+                          8,
+                          64,
+                          8
+                        ],
+                        "type": "minecraft:distance_to_point"
+                      },
+                      "type": "minecraft:mul"
+                    },
+                    "type": "minecraft:add"
+                  },
+                  "max": 0.3,
+                  "min": -0.25,
+                  "type": "minecraft:clamp"
+                },
+                "type": "minecraft:add"
+              },
+              "right": {
+                "type": "minecraft:constant",
+                "value": 0.1
+              },
+              "type": "minecraft:add"
+            },
+            "right": {
+              "axis": "x",
+              "from_coordinate": 0,
+              "from_value": -0.1,
+              "tiling": "repeat",
+              "to_coordinate": 96,
+              "to_value": 0.1,
+              "type": "minecraft:gradient"
+            },
+            "type": "minecraft:add"
+          },
+          "right": {
+            "axis": "z",
+            "from_coordinate": -40,
+            "from_value": 0.1,
+            "tiling": "mirrored_repeat",
+            "to_coordinate": 40,
+            "to_value": -0.1,
+            "type": "minecraft:gradient"
+          },
+          "type": "minecraft:add"
+        },
+        "right": {
+          "left": {
+            "type": "minecraft:constant",
+            "value": 0.2
+          },
+          "right": {
+            "axis": "y",
+            "coordinate": 64,
+            "input": {
+              "noise": "worldgen_parity:detail",
+              "type": "minecraft:noise",
+              "xz_scale": 1.0,
+              "y_scale": 1.0
+            },
+            "type": "minecraft:slice"
+          },
+          "type": "minecraft:mul"
+        },
+        "type": "minecraft:add"
+      },
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": 48,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:settings/functions_space",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The noise settings of the dimension worldgen_parity:functions_space: shift_a, shift_b, shift, noise shift fields, distance_to_point, gradient on x and z with tiling, slice."
+  }
+}

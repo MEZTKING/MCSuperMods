@@ -3,7 +3,7 @@
   "id": "msm_parity_tests",
   "version": "${version}",
   "name": "MSM parity GameTests",
-  "description": "Behaviour-parity GameTests over the sample mods' public behaviour (vanilla and Fabric API only); run by tools/run-fabric-server --gametest (with --gametest-filter msm_parity_tests:sample_mod_*, sample_mob_*, sample_creatures_*, sample_machines_*, sample_portals_*, sample_particles_*, sample_rules_*, sample_vehicles_*, sample_vanilla_blocks_*, sample_villagers_*, sample_plants_and_storage_*, sample_mobs_and_commands_* or sample_script_*) against a content jar and an ejected jar (sample_script_*, sample_particles_script_*, sample_rules_script_*, sample_vanilla_blocks_script_*, sample_mobs_and_commands_traders_* and sample_mobs_and_commands_script_* against content jars only; sample_vehicles_* too, as vehicles are not ejected).",
+  "description": "Behaviour-parity GameTests over the sample mods' public behaviour (vanilla and Fabric API only); run by tools/run-fabric-server --gametest (with --gametest-filter msm_parity_tests:sample_mod_*, sample_mob_*, sample_creatures_*, sample_machines_*, sample_portals_*, sample_particles_*, sample_rules_*, sample_vehicles_*, sample_vanilla_blocks_*, sample_villagers_*, sample_plants_and_storage_*, sample_mobs_and_commands_* or sample_script_*; worldgen_parity_* with this jar as the mod under test, as it holds the worldgen parity fixture) against a content jar and an ejected jar (sample_script_*, sample_particles_script_*, sample_rules_script_*, sample_vanilla_blocks_script_*, sample_mobs_and_commands_traders_* and sample_mobs_and_commands_script_* against content jars only; sample_vehicles_* too, as vehicles are not ejected).",
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
@@ -28,7 +28,8 @@
       "dev.mcsupermods.parity.SamplePlantsAndStorageParityTest",
       "dev.mcsupermods.parity.SampleMobsAndCommandsParityTest",
       "dev.mcsupermods.parity.SamplePlantsAndStorageRulesParityTest",
-      "dev.mcsupermods.parity.SampleMobsAndCommandsScriptParityTest"
+      "dev.mcsupermods.parity.SampleMobsAndCommandsScriptParityTest",
+      "dev.mcsupermods.parity.WorldgenParityTest"
     ]
   },
   "depends": {

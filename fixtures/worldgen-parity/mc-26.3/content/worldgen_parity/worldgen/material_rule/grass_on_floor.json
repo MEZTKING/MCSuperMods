@@ -1,0 +1,28 @@
+{
+  "data": {
+    "if_true": {
+      "add_surface_depth": false,
+      "offset": 0,
+      "secondary_depth_range": 0,
+      "surface_type": "floor",
+      "type": "minecraft:stone_depth"
+    },
+    "then_run": {
+      "result_state": {
+        "id": "minecraft:grass_block",
+        "properties": {
+          "snowy": "false"
+        }
+      },
+      "type": "minecraft:block"
+    },
+    "type": "minecraft:condition"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:grass_on_floor",
+  "kind": "minecraft:worldgen/material_rule",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A named rule the rules_biome dimension refers to by id."
+  }
+}

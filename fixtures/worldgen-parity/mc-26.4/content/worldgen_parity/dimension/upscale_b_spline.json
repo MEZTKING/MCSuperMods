@@ -1,0 +1,20 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biome": "worldgen_parity:meadow",
+        "type": "minecraft:fixed"
+      },
+      "settings": "worldgen_parity:settings/upscale_b_spline",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:upscale_b_spline",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates upscale, every axis b_spline_cubic (cells 8, 4, 8)."
+  }
+}

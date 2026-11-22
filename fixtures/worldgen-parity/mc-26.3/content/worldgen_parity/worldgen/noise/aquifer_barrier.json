@@ -1,0 +1,13 @@
+{
+  "data": {
+    "base_octave": -3,
+    "octave_count": 1
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:aquifer_barrier",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A noise of the fixture."
+  }
+}

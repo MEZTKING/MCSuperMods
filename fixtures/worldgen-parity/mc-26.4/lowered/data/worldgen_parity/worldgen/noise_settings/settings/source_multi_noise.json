@@ -1,0 +1,63 @@
+{
+  "default_fluid": "minecraft:water",
+  "disable_mob_generation": true,
+  "legacy_random_source": false,
+  "material_rule": {
+    "sequence": [
+      {
+        "if_true": {
+          "add_surface_depth": false,
+          "offset": 0,
+          "secondary_depth_range": 0,
+          "surface_type": "floor",
+          "type": "minecraft:stone_depth"
+        },
+        "then_run": {
+          "result_state": {
+            "id": "minecraft:grass_block",
+            "properties": {
+              "snowy": "false"
+            }
+          },
+          "type": "minecraft:block"
+        },
+        "type": "minecraft:condition"
+      },
+      {
+        "if_true": {
+          "add_surface_depth": true,
+          "offset": 0,
+          "secondary_depth_range": 0,
+          "surface_type": "floor",
+          "type": "minecraft:stone_depth"
+        },
+        "then_run": {
+          "result_state": "minecraft:dirt",
+          "type": "minecraft:block"
+        },
+        "type": "minecraft:condition"
+      },
+      {
+        "result_state": "minecraft:stone",
+        "type": "minecraft:block"
+      }
+    ],
+    "type": "minecraft:sequence"
+  },
+  "noise": {
+    "height": 128,
+    "min_y": 0
+  },
+  "noise_router": {
+    "chunk_surface_level": 0,
+    "continents": "worldgen_parity:climate/continents",
+    "depth": "worldgen_parity:climate/depth",
+    "erosion": "worldgen_parity:climate/erosion",
+    "final_density": "worldgen_parity:terrain/base",
+    "ridges": "worldgen_parity:climate/ridges",
+    "temperature": "worldgen_parity:climate/temperature",
+    "vegetation": "worldgen_parity:climate/humidity"
+  },
+  "sea_level": 48,
+  "spawn_target": []
+}

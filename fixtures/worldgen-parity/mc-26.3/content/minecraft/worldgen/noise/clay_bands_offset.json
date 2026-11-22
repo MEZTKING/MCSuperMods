@@ -1,0 +1,13 @@
+{
+  "data": {
+    "base_octave": -8,
+    "octave_count": 1
+  },
+  "formatVersion": 1,
+  "id": "minecraft:clay_bands_offset",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The fixture's own values for a noise id the game's surface code reads by name, so no fixture world depends on a vanilla file."
+  }
+}

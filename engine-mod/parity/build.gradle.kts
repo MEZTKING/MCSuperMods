@@ -36,13 +36,30 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:${fact("fabric_api_version")}")
 }
 
+// The worldgen parity fixture (ADR 0119 D13, B579): the lowered data pack of this version's
+// `worldgen_parity` project goes into the jar as mod data, with the committed expectations and the
+// target id, so WorldgenParityTest reads its dimensions from the server's resources.
+val worldgenFixture: Directory = layout.projectDirectory.dir("../../fixtures/worldgen-parity")
+
 tasks.processResources {
+    val worldgenTarget = "mc-$mc"
     val version = project.version
     val minecraftDependency = fact("minecraft_dependency")
     inputs.property("version", version)
     inputs.property("minecraftDependency", minecraftDependency)
+    inputs.property("worldgenTarget", worldgenTarget)
     filesMatching("fabric.mod.json") {
         expand("version" to version, "minecraft_dependency" to minecraftDependency)
+    }
+    filesMatching("worldgen_parity/target.properties") {
+        expand("target" to worldgenTarget)
+    }
+    from(worldgenFixture.dir("$worldgenTarget/lowered")) {
+        include("data/**")
+    }
+    from(worldgenFixture) {
+        include("expectations.json")
+        into("worldgen_parity")
     }
 }
 
@@ -60,4 +77,38 @@ tasks.withType<JavaCompile>().configureEach {
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
+}
+
+// WorldgenParityTest on a production GameTest server (B579, ADR 0119 D13): tools/run-fabric-server
+// runs this jar's worldgen_parity_* tests, with the jar as the mod under test (it holds the fixture).
+// `-PupdateWorldgenParity` makes the test write this version's section of
+// fixtures/worldgen-parity/expectations.json instead of checking it. Needs node and JDK 25 on PATH.
+tasks.register<Exec>("worldgenParity") {
+    group = "verification"
+    description = "Measures the worldgen parity fixture on the real game and checks (or with -PupdateWorldgenParity rewrites) its expectations."
+    dependsOn(tasks.jar)
+    val jarFile = tasks.jar.flatMap { it.archiveFile }
+    val repository = layout.projectDirectory.dir("../..").asFile
+    val expectations = worldgenFixture.file("expectations.json").asFile
+    val work = layout.buildDirectory.dir("worldgen-parity-server").get().asFile
+    val report = layout.buildDirectory.file("worldgen-parity-report.xml").get().asFile
+    val minecraft = fact("minecraft_version")
+    val loader = fact("loader_version")
+    val fabricApi = fact("fabric_api_version")
+    val update = providers.gradleProperty("updateWorldgenParity").isPresent
+    inputs.file(jarFile)
+    outputs.upToDateWhen { false }
+    workingDir = repository
+    executable = "node"
+    argumentProviders.add(CommandLineArgumentProvider {
+        val jar = jarFile.get().asFile.absolutePath
+        listOf(
+            "tools/run-fabric-server/index.ts",
+            "--jar", jar, "--no-runtime",
+            "--gametest", jar, "--gametest-filter", "msm_parity_tests:worldgen_parity_*",
+            "--minecraft", minecraft, "--loader", loader, "--fabric-api", fabricApi,
+            "--work", work.absolutePath, "--report", report.absolutePath,
+        )
+    })
+    if (update) environment("MSM_WORLDGEN_PARITY_WRITE", expectations.absolutePath)
 }

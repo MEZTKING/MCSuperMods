@@ -1,0 +1,14 @@
+{
+  "data": {
+    "base_amplitude": 1.8,
+    "base_octave": -6,
+    "octave_count": 3
+  },
+  "formatVersion": 1,
+  "id": "minecraft:surface",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The fixture's own values for a noise id the game's surface code reads by name, so no fixture world depends on a vanilla file."
+  }
+}

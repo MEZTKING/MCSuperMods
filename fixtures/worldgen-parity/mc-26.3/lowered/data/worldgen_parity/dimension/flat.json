@@ -1,0 +1,33 @@
+{
+  "generator": {
+    "settings": {
+      "biome": "worldgen_parity:meadow",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:stone",
+          "height": 30
+        },
+        {
+          "block": "minecraft:air",
+          "height": 4
+        },
+        {
+          "block": "minecraft:dirt",
+          "height": 3
+        },
+        {
+          "block": "minecraft:grass_block",
+          "height": 1
+        }
+      ]
+    },
+    "type": "minecraft:flat"
+  },
+  "type": "worldgen_parity:low"
+}

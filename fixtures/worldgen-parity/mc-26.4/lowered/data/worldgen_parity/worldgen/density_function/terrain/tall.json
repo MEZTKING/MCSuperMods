@@ -1,0 +1,40 @@
+{
+  "left": {
+    "left": {
+      "axis": "y",
+      "from_coordinate": 0,
+      "from_value": 1.2,
+      "to_coordinate": 128,
+      "to_value": -1.2,
+      "type": "minecraft:gradient"
+    },
+    "right": {
+      "left": {
+        "type": "minecraft:constant",
+        "value": 1.1
+      },
+      "right": {
+        "noise": "worldgen_parity:hills",
+        "type": "minecraft:noise",
+        "xz_scale": 2.0,
+        "y_scale": 0.0
+      },
+      "type": "minecraft:mul"
+    },
+    "type": "minecraft:add"
+  },
+  "right": {
+    "left": {
+      "type": "minecraft:constant",
+      "value": 0.2
+    },
+    "right": {
+      "noise": "worldgen_parity:detail",
+      "type": "minecraft:noise",
+      "xz_scale": 1.0,
+      "y_scale": 1.0
+    },
+    "type": "minecraft:mul"
+  },
+  "type": "minecraft:add"
+}

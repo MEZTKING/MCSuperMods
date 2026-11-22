@@ -1,0 +1,19 @@
+{
+  "data": {
+    "carvers": [],
+    "downfall": 0.5,
+    "effects": {
+      "water_color": 4179684
+    },
+    "features": [],
+    "has_precipitation": true,
+    "temperature": -0.5
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:tundra",
+  "kind": "minecraft:worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A biome of the fixture: no carvers, no features."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "data": {
+    "amplitude_modifiers": [
+      1.0,
+      0.5
+    ],
+    "base_octave": -4,
+    "octave_count": 2
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:detail",
+  "kind": "minecraft:worldgen/noise",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A noise of the fixture."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "data": {
+    "values": [
+      "worldgen_parity:dune",
+      "worldgen_parity:crag"
+    ]
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:sandy",
+  "kind": "minecraft:tag/worldgen/biome",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A biome tag the rules_biome dimension tests by name."
+  }
+}

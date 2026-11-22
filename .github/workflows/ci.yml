@@ -1114,6 +1114,18 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-script-content.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Worldgen parity (B579, ADR 0119 D13): WorldgenParityTest builds a level of its own for every
+      # dimension of fixtures/worldgen-parity (this version's lowered data pack, mod data of the
+      # parity jar) and each of three seeds, reads 200 biome cells and 100 block columns, and
+      # compares them exactly with expectations.json. `-PupdateWorldgenParity` rewrites the file.
+      - name: Worldgen parity GameTest (fixtures/worldgen-parity)
+        working-directory: engine-mod
+        run: ./gradlew -p parity worldgenParity -Pmc=${{ matrix.mc }} --no-daemon
+      # The engine over the Loom cache jar's vanilla settings against a freshly generated vanilla
+      # world (ADR 0119 D13, WS5 and WS6): wired here, turned on by B581 once @msm/terrain has its
+      # parity test; it reports rates and writes nothing to the repository.
+      - name: Live worldgen against a vanilla world (not run until B581)
+        run: echo 'Skipped until B581 turns on the vanilla worldgen comparison (ADR 0119 D13); the fixture step above runs.'
       # Artifact names carry the version: matrix jobs may not upload the same name twice.
       - if: always()
         uses: actions/upload-artifact@v7

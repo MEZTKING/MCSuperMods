@@ -1,0 +1,15 @@
+{
+  "data": {
+    "noise": "worldgen_parity:climate_noise/erosion",
+    "type": "minecraft:noise",
+    "xz_scale": 0.25,
+    "y_scale": 0.0
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:climate/erosion",
+  "kind": "minecraft:worldgen/density_function",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A named density function of the fixture."
+  }
+}

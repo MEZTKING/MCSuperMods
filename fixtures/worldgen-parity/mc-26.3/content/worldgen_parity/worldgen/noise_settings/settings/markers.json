@@ -1,0 +1,159 @@
+{
+  "data": {
+    "default_block": "minecraft:stone",
+    "default_fluid": "minecraft:water",
+    "disable_mob_generation": true,
+    "legacy_random_source": false,
+    "material_rule": {
+      "sequence": [
+        {
+          "if_true": {
+            "add_surface_depth": false,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": {
+              "id": "minecraft:grass_block",
+              "properties": {
+                "snowy": "false"
+              }
+            },
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": true,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": "minecraft:dirt",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "result_state": "minecraft:stone",
+          "type": "minecraft:block"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "noise": {
+      "height": 128,
+      "min_y": 0
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": {
+        "left": {
+          "left": {
+            "left": {
+              "left": {
+                "type": "minecraft:blend_alpha"
+              },
+              "right": {
+                "input": {
+                  "cell_size_xz": 4,
+                  "cell_size_y": 8,
+                  "input": {
+                    "left": {
+                      "left": {
+                        "axis": "y",
+                        "from_coordinate": 0,
+                        "from_value": 1.0,
+                        "to_coordinate": 128,
+                        "to_value": -1.0,
+                        "type": "minecraft:gradient"
+                      },
+                      "right": {
+                        "left": {
+                          "type": "minecraft:constant",
+                          "value": 0.5
+                        },
+                        "right": {
+                          "input": {
+                            "noise": "worldgen_parity:hills",
+                            "type": "minecraft:noise",
+                            "xz_scale": 1.0,
+                            "y_scale": 0.3
+                          },
+                          "type": "minecraft:cache"
+                        },
+                        "type": "minecraft:mul"
+                      },
+                      "type": "minecraft:add"
+                    },
+                    "right": {
+                      "left": {
+                        "type": "minecraft:constant",
+                        "value": 0.2
+                      },
+                      "right": {
+                        "noise": "worldgen_parity:detail",
+                        "type": "minecraft:noise",
+                        "xz_scale": 1.0,
+                        "y_scale": 1.0
+                      },
+                      "type": "minecraft:mul"
+                    },
+                    "type": "minecraft:add"
+                  },
+                  "type": "minecraft:interpolated"
+                },
+                "type": "minecraft:blend_density"
+              },
+              "type": "minecraft:mul"
+            },
+            "right": {
+              "type": "minecraft:blend_offset"
+            },
+            "type": "minecraft:add"
+          },
+          "right": {
+            "type": "minecraft:beardifier"
+          },
+          "type": "minecraft:add"
+        },
+        "right": {
+          "left": {
+            "type": "minecraft:constant",
+            "value": 0.3
+          },
+          "right": {
+            "smear_scale_multiplier": 8.0,
+            "type": "minecraft:old_blended_noise",
+            "xz_factor": 80.0,
+            "xz_scale": 0.25,
+            "y_factor": 160.0,
+            "y_scale": 0.125
+          },
+          "type": "minecraft:mul"
+        },
+        "type": "minecraft:add"
+      },
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": 48,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:settings/markers",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The noise settings of the dimension worldgen_parity:markers: cache, interpolated, blend_alpha, blend_offset, blend_density, beardifier, old_blended_noise."
+  }
+}

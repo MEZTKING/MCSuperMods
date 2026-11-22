@@ -1,0 +1,102 @@
+{
+  "generator": {
+    "biome_source": {
+      "biomes": [
+        {
+          "biome": "worldgen_parity:meadow",
+          "parameters": {
+            "continentalness": 0.1,
+            "depth": 0.0,
+            "erosion": 0.0,
+            "humidity": 0.0,
+            "offset": 0.0,
+            "temperature": [
+              -0.2,
+              0.3
+            ],
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "worldgen_parity:dune",
+          "parameters": {
+            "continentalness": 0.2,
+            "depth": 0.0,
+            "erosion": -0.1,
+            "humidity": [
+              -0.8,
+              -0.2
+            ],
+            "offset": 0.0,
+            "temperature": 0.6,
+            "weirdness": 0.1
+          }
+        },
+        {
+          "biome": "worldgen_parity:tundra",
+          "parameters": {
+            "continentalness": [
+              0.0,
+              0.5
+            ],
+            "depth": 0.0,
+            "erosion": 0.2,
+            "humidity": 0.1,
+            "offset": 0.0,
+            "temperature": -0.6,
+            "weirdness": -0.2
+          }
+        },
+        {
+          "biome": "worldgen_parity:marsh",
+          "parameters": {
+            "continentalness": -0.2,
+            "depth": 0.0,
+            "erosion": [
+              0.3,
+              0.8
+            ],
+            "humidity": 0.6,
+            "offset": 0.05,
+            "temperature": 0.2,
+            "weirdness": 0.0
+          }
+        },
+        {
+          "biome": "worldgen_parity:crag",
+          "parameters": {
+            "continentalness": 0.5,
+            "depth": [
+              0.2,
+              1.0
+            ],
+            "erosion": -0.5,
+            "humidity": -0.2,
+            "offset": 0.0,
+            "temperature": 0.0,
+            "weirdness": 0.3
+          }
+        },
+        {
+          "biome": "worldgen_parity:chill",
+          "parameters": {
+            "continentalness": 0.0,
+            "depth": -0.2,
+            "erosion": 0.0,
+            "humidity": 0.4,
+            "offset": 0.1,
+            "temperature": -0.3,
+            "weirdness": [
+              -0.6,
+              -0.1
+            ]
+          }
+        }
+      ],
+      "type": "minecraft:multi_noise"
+    },
+    "settings": "worldgen_parity:settings/source_multi_noise",
+    "type": "minecraft:noise"
+  },
+  "type": "worldgen_parity:low"
+}

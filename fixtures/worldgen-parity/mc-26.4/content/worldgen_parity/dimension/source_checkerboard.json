@@ -1,0 +1,26 @@
+{
+  "data": {
+    "generator": {
+      "biome_source": {
+        "biomes": [
+          "worldgen_parity:meadow",
+          "worldgen_parity:dune",
+          "worldgen_parity:tundra",
+          "worldgen_parity:marsh"
+        ],
+        "scale": 2,
+        "type": "minecraft:checkerboard"
+      },
+      "settings": "worldgen_parity:settings/source_checkerboard",
+      "type": "minecraft:noise"
+    },
+    "type": "worldgen_parity:low"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:source_checkerboard",
+  "kind": "minecraft:dimension",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Isolates a checkerboard biome source (scale 2, four biomes)."
+  }
+}

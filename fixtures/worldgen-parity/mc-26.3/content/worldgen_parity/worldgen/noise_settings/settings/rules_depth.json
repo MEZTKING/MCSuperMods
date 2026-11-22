@@ -1,0 +1,220 @@
+{
+  "data": {
+    "default_block": "minecraft:stone",
+    "default_fluid": "minecraft:water",
+    "disable_mob_generation": true,
+    "legacy_random_source": false,
+    "material_rule": {
+      "sequence": [
+        {
+          "if_true": {
+            "add_stone_depth": true,
+            "anchor": {
+              "absolute": 84
+            },
+            "surface_depth_multiplier": 1,
+            "type": "minecraft:y_above"
+          },
+          "then_run": {
+            "if_true": {
+              "add_surface_depth": false,
+              "offset": 0,
+              "secondary_depth_range": 0,
+              "surface_type": "floor",
+              "type": "minecraft:stone_depth"
+            },
+            "then_run": {
+              "result_state": "minecraft:snow_block",
+              "type": "minecraft:block"
+            },
+            "type": "minecraft:condition"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_stone_depth": false,
+            "offset": -1,
+            "surface_depth_multiplier": 0,
+            "type": "minecraft:water"
+          },
+          "then_run": {
+            "if_true": {
+              "add_surface_depth": false,
+              "offset": 0,
+              "secondary_depth_range": 0,
+              "surface_type": "floor",
+              "type": "minecraft:stone_depth"
+            },
+            "then_run": {
+              "result_state": {
+                "id": "minecraft:grass_block",
+                "properties": {
+                  "snowy": "false"
+                }
+              },
+              "type": "minecraft:block"
+            },
+            "type": "minecraft:condition"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_stone_depth": true,
+            "offset": -6,
+            "surface_depth_multiplier": -1,
+            "type": "minecraft:water"
+          },
+          "then_run": {
+            "if_true": {
+              "add_surface_depth": true,
+              "offset": 0,
+              "secondary_depth_range": 0,
+              "surface_type": "floor",
+              "type": "minecraft:stone_depth"
+            },
+            "then_run": {
+              "result_state": "minecraft:dirt",
+              "type": "minecraft:block"
+            },
+            "type": "minecraft:condition"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": true,
+            "offset": 0,
+            "secondary_depth_range": 6,
+            "surface_type": "floor",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": "minecraft:sand",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": false,
+            "offset": 0,
+            "secondary_depth_range": 0,
+            "surface_type": "ceiling",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": "minecraft:gravel",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "add_surface_depth": true,
+            "offset": 2,
+            "secondary_depth_range": 0,
+            "surface_type": "ceiling",
+            "type": "minecraft:stone_depth"
+          },
+          "then_run": {
+            "result_state": "minecraft:andesite",
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "if_true": {
+            "invert": {
+              "add_stone_depth": false,
+              "anchor": {
+                "above_bottom": 24
+              },
+              "surface_depth_multiplier": 0,
+              "type": "minecraft:y_above"
+            },
+            "type": "minecraft:not"
+          },
+          "then_run": {
+            "result_state": {
+              "id": "minecraft:deepslate",
+              "properties": {
+                "axis": "y"
+              }
+            },
+            "type": "minecraft:block"
+          },
+          "type": "minecraft:condition"
+        },
+        {
+          "result_state": "minecraft:stone",
+          "type": "minecraft:block"
+        }
+      ],
+      "type": "minecraft:sequence"
+    },
+    "noise": {
+      "height": 128,
+      "min_y": 0
+    },
+    "noise_router": {
+      "chunk_surface_level": 0,
+      "continents": 0,
+      "depth": 0,
+      "erosion": 0,
+      "final_density": {
+        "left": {
+          "left": {
+            "axis": "y",
+            "from_coordinate": 0,
+            "from_value": 1.0,
+            "to_coordinate": 128,
+            "to_value": -1.0,
+            "type": "minecraft:gradient"
+          },
+          "right": {
+            "left": {
+              "type": "minecraft:constant",
+              "value": 0.5
+            },
+            "right": {
+              "noise": "worldgen_parity:hills",
+              "type": "minecraft:noise",
+              "xz_scale": 1.0,
+              "y_scale": 0.0
+            },
+            "type": "minecraft:mul"
+          },
+          "type": "minecraft:add"
+        },
+        "right": {
+          "left": {
+            "type": "minecraft:constant",
+            "value": 0.25
+          },
+          "right": {
+            "noise": "worldgen_parity:detail",
+            "type": "minecraft:noise",
+            "xz_scale": 1.0,
+            "y_scale": 1.5
+          },
+          "type": "minecraft:mul"
+        },
+        "type": "minecraft:add"
+      },
+      "ridges": 0,
+      "temperature": 0,
+      "vegetation": 0
+    },
+    "sea_level": 48,
+    "spawn_target": []
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:settings/rules_depth",
+  "kind": "minecraft:worldgen/noise_settings",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "The noise settings of the dimension worldgen_parity:rules_depth: sequence, condition, block; stone_depth (floor, ceiling, offset, surface depth, secondary range), y_above (multiplier, add_stone_depth), water, not."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "add_surface_depth": true,
+    "offset": 0,
+    "secondary_depth_range": 0,
+    "surface_type": "floor",
+    "type": "minecraft:stone_depth"
+  },
+  "formatVersion": 1,
+  "id": "worldgen_parity:below_surface_depth",
+  "kind": "minecraft:worldgen/material_condition",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "A named condition the rules_biome dimension refers to by id."
+  }
+}
