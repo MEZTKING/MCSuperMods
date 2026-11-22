@@ -8,7 +8,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createLocationResolver } from '../src/main/platform/locations';
 import { createMinecraftService, type MinecraftService } from '../src/main/platform/minecraft';
 import { createSettingsStore, resolveMsmHome } from '../src/main/platform/settings';
-import { readResolvedBiomeLists } from '../src/main/platform/worldgen-biome-lists';
 import { InvokeChannels, ipcContract } from '../src/shared/ipc-contract';
 import type { ResolvedBiomeListsView } from '../src/shared/platform';
 
@@ -121,7 +120,7 @@ describe('vanilla worldgen files (ADR 0119 D4)', () => {
   it('passes the resolved biome lists on, and is null without the target fact', async () => {
     await installJar(worldgenJar());
     await service.extract(VERSION);
-    lists = { 'minecraft:made_up': { biomes: [] } };
+    lists = { 'minecraft:made_up': { biomes: [], points: [] } };
     expect((await service.readWorldgenFiles(VERSION))?.resolvedBiomeLists).toEqual(lists);
     expect(await service.readWorldgenFiles('9.8-other')).toBeNull();
     folders = null;
@@ -185,12 +184,5 @@ describe('vanilla worldgen files (ADR 0119 D4)', () => {
     await rm(join(minecraftDir, 'versions'), { recursive: true });
     folders = [...FOLDERS, 'made_up/caves'];
     expect((await service.status(VERSION)).cacheOutdated).toBe(false);
-  });
-
-  it('has a biome list stub that answers null until B592', async () => {
-    expect(
-      await readResolvedBiomeLists({ mcVersion: VERSION, managedGameDir: join(temp, 'x') }),
-    ).toBeNull();
-    expect(await readResolvedBiomeLists({ mcVersion: VERSION, managedGameDir: null })).toBeNull();
   });
 });

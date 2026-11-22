@@ -6,6 +6,8 @@
  * run never looks at {@code msm-dev/}. {@link dev.mcsupermods.runtime.dev.DevFiles} reads the formats B366 writes (read only),
  * {@link dev.mcsupermods.runtime.dev.EventOverlay} swaps event action lists from {@code overlay/msm/<ns>/<kind>/} on
  * {@code END_DATA_PACK_RELOAD}, and {@link dev.mcsupermods.runtime.dev.DevSetup} runs {@code setup.mcfunction} on joining
- * the test world. Nothing here writes into the dev folder; the client side (requests, status, world creation) is B374's.
+ * the test world. The one file written into the dev folder is {@link dev.mcsupermods.runtime.dev.DevBiomeLists}'s
+ * ({@code biome-lists.json}, vanilla's resolved biome lists for the app's live world generation preview, B592); the client
+ * side (requests, status, world creation) is B374's.
  */
 package dev.mcsupermods.runtime.dev;

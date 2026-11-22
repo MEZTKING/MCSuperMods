@@ -274,10 +274,23 @@ export interface AssetCacheInfoView {
 export type WorldgenFileMapView = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 
 /**
- * The resolved biome parameter lists of vanilla's `multi_noise` presets (ADR 0119 D4, reserve
- * B592), by preset id. Their shape is B592's; until then the answer always carries `null`.
+ * One resolved biome parameter list (B592; `@msm/terrain`'s `resolvePreset` reads it): `biomes`
+ * is a palette of biome ids, and each point is the index of its biome in it, then min and max of
+ * temperature, humidity, continentalness, erosion, depth and weirdness, then the offset, all as the
+ * game's quantized whole numbers (the data pack value times 10,000), in the list's own order.
  */
-export type ResolvedBiomeListsView = Readonly<Record<string, unknown>>;
+export interface ResolvedBiomeListView {
+  readonly biomes: readonly string[];
+  readonly points: readonly (readonly number[])[];
+}
+
+/**
+ * The resolved biome parameter lists of vanilla's `multi_noise` presets (ADR 0119 D4, reserve
+ * B592), by preset id (`minecraft:overworld`, `minecraft:nether`): written by the runtime's dev
+ * mode into the managed Play instance on the user's machine, read by main, never exported, written
+ * into a project or sent to the AI helper.
+ */
+export type ResolvedBiomeListsView = Readonly<Record<string, ResolvedBiomeListView>>;
 
 /**
  * Every cached vanilla worldgen file of one version in one answer (ADR 0119 D4), for the live
@@ -290,7 +303,7 @@ export interface VanillaWorldgenFiles {
   /** Folder key to id to JSON, over the target's `worldgen.terrainPreview.dataFolders`. */
   files: WorldgenFileMapView;
   fileCount: number;
-  /** From the runtime's dev mode once B592 lands; `null` until then and without a Play. */
+  /** From the runtime's dev mode after a Play of this version (B592); `null` before, or unreadable. */
   resolvedBiomeLists: ResolvedBiomeListsView | null;
 }
 

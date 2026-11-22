@@ -1,11 +1,14 @@
 import type { Element, OutputFile, Project, Target } from '@msm/plugin-api';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  BIOME_LISTS_RECHECK_MS,
   folderAndId,
   forgetVanillaWorldgen,
+  RESOLVED_BIOME_LISTS_FOLDER,
   TERRAIN_DEBOUNCE_MS,
   TerrainFiles,
   type TerrainFilesState,
+  vanillaWorldgen,
   type WorldgenKindLike,
   type WorldgenSession,
 } from '../../../src/renderer/src/terrain/files';
@@ -114,7 +117,7 @@ describe('TerrainFiles', () => {
       'tags/worldgen/biome': { 'demo:moors': { values: ['demo:moor'] } },
     });
     expect(state?.vanilla).toBe(VANILLA.files);
-    expect(state?.vanillaKey).toBe('mc-26.3:26.3');
+    expect(state?.vanillaKey).toBe('mc-26.3:26.3:no-lists');
     expect(state?.needsSetUp).toBe(false);
     expect(state?.facts).toEqual({ dataFolders: FOLDERS, approximate: ['end'] });
     expect(read).toHaveBeenCalledWith('26.3');
@@ -184,6 +187,34 @@ describe('TerrainFiles', () => {
     const c = new TerrainFiles(session, { onFiles: () => undefined, readVanilla: read });
     await c.refresh();
     expect(read).toHaveBeenCalledTimes(2);
+  });
+
+  it("lays vanilla's resolved biome lists into its files, and asks again for them after a while (B592)", async () => {
+    const lists = {
+      'minecraft:overworld': {
+        biomes: ['minecraft:plains'],
+        points: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+      },
+    };
+    let answer: VanillaWorldgenFiles = VANILLA;
+    const read = vi.fn(async () => answer);
+    let time = 1000;
+    const now = () => time;
+    expect((await vanillaWorldgen('26.3', read, now))?.resolvedBiomeLists).toBeNull();
+    answer = { ...VANILLA, resolvedBiomeLists: lists };
+    expect((await vanillaWorldgen('26.3', read, now))?.resolvedBiomeLists).toBeNull();
+    time += BIOME_LISTS_RECHECK_MS;
+    expect((await vanillaWorldgen('26.3', read, now))?.resolvedBiomeLists).toBe(lists);
+    time += 10 * BIOME_LISTS_RECHECK_MS;
+    await vanillaWorldgen('26.3', read, now);
+    expect(read).toHaveBeenCalledTimes(2);
+
+    const { session } = fakeSession(project([BIOME]));
+    const files = new TerrainFiles(session, { onFiles: () => undefined, readVanilla: read });
+    const state = await files.refresh();
+    expect(state?.vanilla).toEqual({ ...VANILLA.files, [RESOLVED_BIOME_LISTS_FOLDER]: lists });
+    expect(state?.vanillaKey).toBe('mc-26.3:26.3:lists-minecraft:overworld=1');
+    files.dispose();
   });
 
   it('a target without the fact draws project files only, without the banner', async () => {

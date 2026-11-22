@@ -76,7 +76,7 @@ Trees, plants and ores are about right here: the game places them exactly.
 
 **Compare with vanilla** (a switch under the map) draws vanilla's world beside yours, at the same seed and place: vanilla's overworld, Nether or End, or the overworld on the vanilla land setting your world names. It needs your Minecraft folder: without it the switch is off and the map says "Compare with vanilla needs Minecraft's own land files. Set up your Minecraft folder to see vanilla's world beside yours."
 
-Vanilla's overworld and Nether choose their biomes from a list that is not in Minecraft's files, so Compare draws their real land in one colour and says "Vanilla's biomes show here after you have pressed Play once. Until then its land is drawn in one colour." Reading that list from the test game is not in this version yet, so for now they stay one colour after Play too.
+Vanilla's overworld and Nether choose their biomes from a list that is not in Minecraft's files, so Compare draws their real land in one colour and says "Vanilla's biomes show here after you have pressed Play once. Until then its land is drawn in one colour." Once you have pressed Play for that Minecraft version and the test world has started, the test game writes the list into its own folder on your computer, and the map, Compare and Try it's ground then draw vanilla's real biomes (it can take up to half a minute to show, or open the map again). The list stays on your computer: it is never put into your project, an export or the AI helper. On a version whose biome borders are only about right, the map still says so.
 
 ## In the Creator and the Studios
 

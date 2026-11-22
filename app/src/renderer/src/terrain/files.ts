@@ -11,6 +11,10 @@
  *   (no cache, or a target without the fact) is not kept: the next refresh asks again, and the
  *   views show the set-up banner meanwhile (ADR 0119 D10). The files stay in memory and in the
  *   worker; nothing here writes them anywhere.
+ * - **Vanilla's biome lists** (B592): the answer's `resolvedBiomeLists` (from the runtime's dev
+ *   mode after a Play) go into vanilla's files under {@link RESOLVED_BIOME_LISTS_FOLDER}, where the
+ *   engine's `resolvePreset` reads them. An answer without them is asked again after
+ *   {@link BIOME_LISTS_RECHECK_MS}, so a Play made while the app runs shows vanilla's biomes.
  * - **Biome additions** (`msm:biome_addition`, ADR 0060 D2) lower to the runtime's own folder,
  *   `msm/<ns>/biome_addition/<path>.json`; they are passed under the folder key
  *   {@link ADDITIONS_FOLDER} with the id `<ns>:<path>`, so the features stage places them (B583).
@@ -23,7 +27,7 @@
  */
 
 import type { Element, MaybePromise, OutputFile, Project, Target } from '@msm/plugin-api';
-import type { VanillaWorldgenFiles } from '../../../shared/platform';
+import type { ResolvedBiomeListsView, VanillaWorldgenFiles } from '../../../shared/platform';
 import { bridge } from '../session/bridge-fs';
 import { hashText, stableKey, type TerrainFacts, type WorldgenFileMap } from './client';
 
@@ -35,6 +39,12 @@ const PROJECT_ONLY_FOLDERS: readonly string[] = ['dimension'];
 
 /** The folder key the engine reads biome additions under (`@msm/terrain` `ADDITIONS_FOLDER`). */
 export const ADDITIONS_FOLDER = 'msm/biome_addition';
+
+/** The folder key the engine reads vanilla's resolved biome lists under (`@msm/terrain`'s `RESOLVED_BIOME_LISTS_FOLDER`). */
+export const RESOLVED_BIOME_LISTS_FOLDER = 'msm/resolved_biome_list';
+
+/** An answer without vanilla's biome lists is asked again after this long (B592). */
+export const BIOME_LISTS_RECHECK_MS = 30_000;
 
 /** The kind folder of `msm:biome_addition` (its elements are lowered for the features). */
 const ADDITION_KIND_FOLDER = 'biome_addition';
@@ -141,32 +151,70 @@ function loweredKey(element: Element): string {
   return `${element.kind} ${element.id}`;
 }
 
-const vanillaByVersion = new Map<string, Promise<VanillaWorldgenFiles | null>>();
+interface VanillaEntry {
+  readonly answer: Promise<VanillaWorldgenFiles | null>;
+  /** When it was asked. */
+  readonly at: number;
+  /** Set once the answer came without the resolved biome lists. */
+  noLists: boolean;
+}
+
+const vanillaByVersion = new Map<string, VanillaEntry>();
 
 /** Forgets the vanilla files read so far (after a new jar set-up, and in tests). */
 export function forgetVanillaWorldgen(): void {
   vanillaByVersion.clear();
 }
 
-/** Vanilla's files for `mcVersion`, read once a version; a `null` answer is asked again. */
+/**
+ * Vanilla's files for `mcVersion`, read once a version; a `null` answer is asked again, and an
+ * answer without the resolved biome lists once it is {@link BIOME_LISTS_RECHECK_MS} old (B592).
+ */
 export function vanillaWorldgen(
   mcVersion: string,
   read: ReadVanillaWorldgen,
+  now: () => number = Date.now,
 ): Promise<VanillaWorldgenFiles | null> {
   const known = vanillaByVersion.get(mcVersion);
-  if (known !== undefined) return known;
-  const asked = read(mcVersion).then(
-    (answer) => {
-      if (answer === null) vanillaByVersion.delete(mcVersion);
-      return answer;
-    },
-    (error: unknown) => {
-      vanillaByVersion.delete(mcVersion);
-      throw error;
-    },
-  );
-  vanillaByVersion.set(mcVersion, asked);
-  return asked;
+  if (known !== undefined && !(known.noLists && now() - known.at >= BIOME_LISTS_RECHECK_MS)) {
+    return known.answer;
+  }
+  const forget = () => {
+    if (vanillaByVersion.get(mcVersion) === entry) vanillaByVersion.delete(mcVersion);
+  };
+  const entry: VanillaEntry = {
+    answer: read(mcVersion).then(
+      (answer) => {
+        if (answer === null) forget();
+        else if (answer.resolvedBiomeLists === null) entry.noLists = true;
+        return answer;
+      },
+      (error: unknown) => {
+        forget();
+        throw error;
+      },
+    ),
+    at: now(),
+    noLists: false,
+  };
+  vanillaByVersion.set(mcVersion, entry);
+  return entry.answer;
+}
+
+/** Vanilla's files with the resolved biome lists laid in under their folder key (B592). */
+function vanillaFiles(vanilla: VanillaWorldgenFiles): WorldgenFileMap {
+  const lists = vanilla.resolvedBiomeLists;
+  return lists === null
+    ? vanilla.files
+    : { ...vanilla.files, [RESOLVED_BIOME_LISTS_FOLDER]: lists };
+}
+
+/** A short key of the lists (preset ids and point counts) for the vanilla files' key. */
+function listsKey(lists: ResolvedBiomeListsView): string {
+  return Object.entries(lists)
+    .map(([id, list]) => `${id}=${list.points.length}`)
+    .sort()
+    .join(',');
 }
 
 /** Options of {@link TerrainFiles}. */
@@ -230,7 +278,11 @@ export class TerrainFiles {
       const projectFiles = await this.#projectFiles(project, target, facts);
       const vanilla = await vanillaAsk;
       if (this.#disposed || generation !== this.#generation) return this.#current;
-      const vanillaKey = vanilla === null ? null : `${target.id}:${vanilla.version}`;
+      const lists = vanilla?.resolvedBiomeLists ?? null;
+      const vanillaKey =
+        vanilla === null
+          ? null
+          : `${target.id}:${vanilla.version}:${lists === null ? 'no-lists' : `lists-${listsKey(lists)}`}`;
       const map = projectFiles.map;
       const filesHash = hashText(
         `${vanillaKey ?? 'none'}:${vanilla?.fileCount ?? 0}|${stableKey(facts)}|${stableKey(map)}`,
@@ -241,7 +293,7 @@ export class TerrainFiles {
         target,
         facts,
         project: map,
-        vanilla: vanilla?.files ?? null,
+        vanilla: vanilla === null ? null : vanillaFiles(vanilla),
         vanillaKey,
         needsSetUp: vanilla === null && facts.dataFolders.length > 0,
         filesHash,

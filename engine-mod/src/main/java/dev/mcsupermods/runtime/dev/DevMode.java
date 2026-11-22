@@ -30,8 +30,8 @@ import net.minecraft.server.MinecraftServer;
  *
  * <p>When on, it logs {@code [msm_runtime] dev mode for <namespaces> (singleplayer test world)} once, loads the event
  * overlays ({@link EventOverlay}) and reloads them on {@code END_DATA_PACK_RELOAD}; the script scanner reads the script
- * overlays; {@link DevSetup} runs the setup function when a player joins the test world. Nothing is written into the dev
- * folder by the server side.
+ * overlays; {@link DevSetup} runs the setup function when a player joins the test world. The server side writes one file
+ * into the dev folder: {@link DevBiomeLists} at {@code SERVER_STARTED} (vanilla's resolved biome lists, ADR 0119 D4).
  */
 public final class DevMode {
     /** The GameTest system property naming a folder that plays the part of {@code msm-dev/}. */
@@ -72,6 +72,7 @@ public final class DevMode {
     /** Registers the lifecycle and join listeners; call before {@code ScriptBridges.register()}. */
     public static void register() {
         DevSetup.register();
+        DevBiomeLists.register();
         ServerLifecycleEvents.SERVER_STARTING.register(DevMode::decideFor);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> dataPackReloaded(server));
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {

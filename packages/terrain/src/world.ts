@@ -23,6 +23,7 @@ import {
   type FluidPicker,
   FluidStatus,
   Identifier,
+  LegacyRandom,
   type MaterialRule,
   MultiNoiseBiomeSource,
   type Noise,
@@ -136,6 +137,17 @@ let building: NoiseSource | undefined;
 const ZERO_NOISE = new NormalNoise(1, 0, 0, 'enabled', []);
 
 /**
+ * Climate noises a world with `legacy_random_source` makes the old Nether way (a legacy random of
+ * the seed plus this number), as deepslate does for `minecraft:temperature` and
+ * `minecraft:vegetation`. Learned by observation (B592): with the game's own Nether biome list,
+ * the Nether's biome cells matched the game's in 68 of 256 cells without this and 250 of 256 with it.
+ */
+const LEGACY_BIOME_NOISES: ReadonlyMap<string, bigint> = new Map([
+  ['minecraft:nether/temperature', 0n],
+  ['minecraft:nether/vegetation', 1n],
+]);
+
+/**
  * deepslate's `RandomState`, with noise instances read from the world's own files (never from the
  * static registry, F9) and kept by id, seed and file between worlds.
  */
@@ -162,7 +174,13 @@ class EngineRandomState extends RandomState {
     }`;
     let noise = noiseCache.get(cacheKey);
     if (!noise) {
-      noise = (params ?? ZERO_NOISE).create(this.random.fromHashOf(key));
+      const legacyBiome = source?.legacy ? LEGACY_BIOME_NOISES.get(key) : undefined;
+      noise =
+        legacyBiome !== undefined
+          ? (params ?? ZERO_NOISE).createForLegacyNetherBiome(
+              new LegacyRandom((source?.seed ?? 0n) + legacyBiome),
+            )
+          : (params ?? ZERO_NOISE).create(this.random.fromHashOf(key));
       if (noiseCache.size >= NOISE_CACHE_LIMIT) noiseCache.clear();
       noiseCache.set(cacheKey, noise);
     }
