@@ -11,7 +11,8 @@
  * | `apply_effect`, `damage`, `heal` | a log line and a chip; what they do is said once |
  * | `launch` | pushes the player or the mob by its vector, with a chip |
  * | `show_hud`, `hide_hud`, `set_hud` | the player's HUD in the area (B429), drawn by the view |
- * | `light_portal`, `open_dialog`, `run_function`, `explode` | "Only in Minecraft" |
+ * | `run_function` | the project's function through the area's function engine (B613), as the event's player, else its mob, else the server, at the event's position; a function the project does not have is "Only in Minecraft" |
+ * | `light_portal`, `open_dialog`, `explode` | "Only in Minecraft" |
  * | `run_script` | the handler in the area's scripts when they run (B400), else "Only in Minecraft" |
  *
  * Whom an action affects follows the runtime's `self` and `other` (`EffectTarget`): `self` is
@@ -37,7 +38,7 @@ export type ActionHandling = 'runs' | 'effect' | 'chip' | 'onlyInMinecraft';
  * with it. A test walks the schema's `ActionType` enum and fails on a name missing here.
  */
 export const SIM_ACTIONS: Readonly<Record<string, ActionHandling>> = Object.freeze({
-  run_function: 'onlyInMinecraft',
+  run_function: 'runs',
   spawn_particle: 'effect',
   set_block_state: 'runs',
   give_item: 'runs',
@@ -197,6 +198,30 @@ export interface ActionHost {
   readonly hud?: ActionHud;
   /** The area's scripts (B400); without them `run_script` is "Only in Minecraft". */
   readonly scripts?: ActionScripts;
+  /** The area's functions (B613); without them `run_function` is "Only in Minecraft". */
+  readonly functions?: ActionFunctions;
+}
+
+/** What `run_function` asks of the area's functions (B613, `commands/functions.ts`). */
+export interface ActionFunctions {
+  /** Whether the project has the function. */
+  exists(id: string): boolean;
+  /** Whether the function has macro lines (an event gives it no arguments). */
+  macro(id: string): boolean;
+  /**
+   * Runs it now as `as` (`null`: the server) at `at`, with the commands' own answers kept quiet,
+   * as the runtime runs it.
+   */
+  run(id: string, as: Actor | null, at: Vec3, origin: SimOrigin): void;
+}
+
+/**
+ * Whom `run_function` runs as (the runtime's `EventRunner.runFunction`): the event's player when
+ * it has one, else its mob, else nobody (the server).
+ */
+export function functionActor(ctx: EventContext): Actor | null {
+  if (ctx.player) return PLAYER;
+  return ctx.entity === undefined ? null : { kind: 'mob', id: ctx.entity };
 }
 
 /** What `run_script` asks of the area's scripts (B400, `script/bridge.ts`). */
@@ -559,8 +584,30 @@ function runAction(
     case 'hide_hud':
     case 'set_hud':
       return [hudAction(host, ctx, type, action, add)];
-    case 'run_function':
-      return [add('onlyInMinecraft', `run function ${str(action.function) ?? ''}`)];
+    case 'run_function': {
+      const id = str(action.function) ?? '';
+      const functions = host.functions;
+      if (functions === undefined || !functions.exists(id)) {
+        return [add('onlyInMinecraft', `run function ${id}`)];
+      }
+      if (functions.macro(id)) {
+        return [
+          add(
+            'skipped',
+            `The function ${id} has macro lines; an event gives it no values for them, so the game does not run it.`,
+          ),
+        ];
+      }
+      const as = functionActor(ctx);
+      // The line first: what the function does follows it.
+      const made = add(
+        'action',
+        `Ran function ${id} as ${as === null ? 'the server' : actorName(as)}.`,
+      );
+      // The engine says itself when the tick's 10,000 commands stop it.
+      functions.run(id, as, ctx.origin, origin);
+      return [made];
+    }
     case 'run_script': {
       const handler = str(action.handler) ?? '';
       const scripts = host.scripts;

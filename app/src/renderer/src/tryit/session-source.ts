@@ -23,6 +23,13 @@
  *   out of land that grew over them), mobs stay, and the user's own blocks are laid over the new
  *   land where they still fit (`@msm/sim` `applyEdits`), the rest counted in one line.
  *
+ * - Functions (B613, ADR 0120 D8): the Function editor's **Run in Try it** leaves its request in
+ *   `function-editor/run-in-tryit.ts`; the area takes it with its next files and runs it at its
+ *   next tick (after the load functions, as `/function` after `/reload`; a paused clock steps
+ *   once). The chat box's `/function` runs through the source's commands. Vanilla's block and item
+ *   tags and predicates are read from the jar cache once the area is made, so `#minecraft:` tags
+ *   in functions work ({@link TryItAreaOptions.vanillaData}).
+ *
  * Part of the lazy Try it chunk.
  */
 
@@ -66,6 +73,11 @@ import {
   windowCentre,
   worldOf,
 } from '@msm/sim';
+import {
+  type FunctionRunRequest,
+  takeFunctionRuns as takeWaitingRuns,
+} from '../components/function-editor/run-in-tryit';
+import { createVanillaDataReader, type VanillaDataReader } from '../liveviews/vanilla-data';
 import type {
   ColumnStage,
   ColumnsData,
@@ -275,6 +287,26 @@ export interface TryItAreaOptions {
   readonly ruleBooks?: readonly RuleBookInfo[];
   /** Runs the project's scripts (B400); without it they are said to run only in the game. */
   readonly scripts?: TryItScripts;
+  /**
+   * Reads vanilla's data files (B613: block, item and entity type tags and predicates for the
+   * functions' `#minecraft:` tags and `execute if predicate`). Default: the jar cache through the
+   * preload bridge when there is one; `null` reads none.
+   */
+  readonly vanillaData?: VanillaDataReader | null;
+}
+
+/** The vanilla data folders Try it's functions read (B613). */
+export const TRY_IT_VANILLA_FOLDERS: readonly string[] = Object.freeze([
+  'predicate',
+  'tags/block',
+  'tags/entity_type',
+  'tags/item',
+]);
+
+/** The default reader of vanilla data: through the preload bridge, when there is one. */
+function defaultVanillaData(mcVersion: string): VanillaDataReader | null {
+  const msm = (globalThis as { msm?: unknown }).msm;
+  return msm === undefined ? null : createVanillaDataReader({ mcVersion });
 }
 
 /** What one transpile gives (the scripting service's `ScriptTranspileOutcome`). */
@@ -333,6 +365,11 @@ export class TryItArea {
   private edits = new Map<string, GroundEdit>();
   /** While true, the source's log lines are not written to "What happened" (a quiet refill). */
   private quiet = false;
+  /** Run in Try it requests taken, run at the next tick (B613). */
+  private pendingRuns: FunctionRunRequest[] = [];
+  /** How vanilla's data files are read (B613), and for which version they were last asked. */
+  private readonly vanillaReader: ((mcVersion: string) => VanillaDataReader | null) | null;
+  private vanillaVersion: string | null = null;
 
   constructor(options: TryItAreaOptions) {
     this.filesNow = options.files;
@@ -387,6 +424,55 @@ export class TryItArea {
     });
     this.stop = this.source.subscribe((event) => this.onEvent(event));
     void this.loadScripts(options.files);
+    const given = options.vanillaData;
+    this.vanillaReader =
+      given === null ? null : given === undefined ? defaultVanillaData : () => given;
+    void this.loadVanillaData(options.target);
+    this.takeFunctionRuns();
+  }
+
+  /**
+   * Reads vanilla's tags and predicates for the target's version, once per version (B613); the
+   * source reads only the project's files until they arrive, or when the folder is not set up.
+   */
+  loadVanillaData(target: Target = this.targetNow): Promise<void> {
+    const version = target.mcVersion;
+    if (this.vanillaReader === null || this.vanillaVersion === version) return Promise.resolve();
+    this.vanillaVersion = version;
+    const reader = this.vanillaReader(version);
+    if (reader === null) return Promise.resolve();
+    return reader.lookup(TRY_IT_VANILLA_FOLDERS).then(
+      (answer) => {
+        if (this.disposed || this.vanillaVersion !== version) return;
+        this.source.setVanillaData(answer.status === 'ready' ? answer.lookup : undefined);
+      },
+      () => {
+        // A failed read leaves the project's files only; the next version asks again.
+        if (this.vanillaVersion === version) this.vanillaVersion = null;
+      },
+    );
+  }
+
+  /**
+   * Takes the Function editor's Run in Try it requests (B613): they run at the next tick, after
+   * the load functions; a paused clock steps once so they run now.
+   */
+  takeFunctionRuns(): void {
+    const runs = takeWaitingRuns();
+    if (runs.length === 0) return;
+    this.pendingRuns.push(...runs);
+    if (this.clock.paused) this.clock.step();
+  }
+
+  /** Runs the requests taken (B613): what they did goes to "What happened". */
+  private runPendingFunctions(): void {
+    const runs = this.pendingRuns;
+    this.pendingRuns = [];
+    for (const run of runs) {
+      if (run.values === undefined) this.source.runFunction(run.id);
+      else this.source.functions.runChatLine(`function ${run.id} ${run.values}`);
+    }
+    this.changed();
   }
 
   /**
@@ -506,6 +592,7 @@ export class TryItArea {
     this.filesNow = files;
     this.targetNow = target;
     this.source.setFiles(files, target, vanillaBlockstates);
+    void this.loadVanillaData(target);
     this.particles.setFiles(files);
     this.ambient.setFiles(files);
     this.effects.setFiles(files);
@@ -513,6 +600,7 @@ export class TryItArea {
     void this.loadScripts(files);
     this.mobField.setCatalogue(this.source.mobs);
     this.mobField.update(this.source.entities.snapshots());
+    this.takeFunctionRuns();
     this.changed();
   }
 
@@ -740,6 +828,7 @@ export class TryItArea {
 
   private tick(tick: number): void {
     this.source.tick();
+    if (this.pendingRuns.length > 0) this.runPendingFunctions();
     this.ambient.tick({
       world: this.source.world,
       player: this.source.player.position,

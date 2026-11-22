@@ -523,7 +523,8 @@ const CHIME_ID = `${RULES_NAMESPACE}:chime_block`;
 
 /**
  * The sample rules project with its rule books taken out and one rule added: when the Chime Block
- * is used, play the chime, give a Ruby and run the function `noted` (which does nothing).
+ * is used, play the chime, give a Ruby and run the function `noted`, which Try it runs (B613) and
+ * whose one line, `/spreadplayers`, is only in Minecraft.
  */
 function makeRulesProject(projectDir: string): void {
   cpSync(join(appDir, '..', 'fixtures', 'sample-rules'), projectDir, { recursive: true });
@@ -536,7 +537,7 @@ function makeRulesProject(projectDir: string): void {
     writeFileSync(file, `${JSON.stringify(element, null, 2)}\n`);
   };
   write('function', 'noted', {
-    data: { lines: ['# Run by the chime rule; it changes nothing.'] },
+    data: { lines: ['# Run by the chime rule.', 'spreadplayers ~ ~ 0 64 false @s'] },
     formatVersion: 1,
     id: `${RULES_NAMESPACE}:noted`,
     kind: 'minecraft:function',
@@ -566,7 +567,7 @@ function makeRulesProject(projectDir: string): void {
   });
 }
 
-test('Try it: a rule gives an item and plays a sound, and run_function is only in Minecraft', async () => {
+test('Try it: a rule gives an item, plays a sound and runs a function, whose /spreadplayers is only in Minecraft', async () => {
   base = mkdtempSync(join(tmpdir(), 'msm-tryit-rules-'));
   const folders = {
     projectDir: join(base, RULES_NAMESPACE),
@@ -608,9 +609,10 @@ test('Try it: a rule gives an item and plays a sound, and run_function is only i
   );
   await expect(lines.filter({ hasText: 'Played sound' })).toHaveCount(1);
   await expect(lines.filter({ hasText: 'Gave you 1 Ruby.' })).toHaveCount(1);
-  const only = log
-    .getByTestId('tryit-log-only')
-    .filter({ hasText: `run function ${RULES_NAMESPACE}:noted` });
+  await expect(
+    lines.filter({ hasText: `Ran function ${RULES_NAMESPACE}:noted as you.` }),
+  ).toHaveCount(1);
+  const only = log.getByTestId('tryit-log-only').filter({ hasText: '/spreadplayers' });
   await expect(only).toHaveCount(1);
   await expect(only).toHaveAttribute('data-kind', 'onlyInMinecraft');
   await expect(only).toContainText('Only in Minecraft:');
@@ -1206,4 +1208,42 @@ test('Try it: a logic rule says its steps by the rule, from the script worker (B
     'data-element',
     `${RULES_NAMESPACE}:lucky_block_rules`,
   );
+});
+
+test('Try it: the Function editor marks each line and Run in Try it runs the function (B613)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-tryit-function-'));
+  const folders = {
+    projectDir: join(base, RULES_NAMESPACE),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  makeRulesProject(folders.projectDir);
+  const launched = await launchApp({ reuse: folders, args: WEBGL_ARGS });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+  await window.getByTestId(`element-row-${RULES_NAMESPACE}:noted`).click();
+
+  // The gutter's words under the editor: the one command is only in the game, and why.
+  await expect(window.getByTestId('function-run-summary')).toHaveText(
+    'Runs in Try it: 0 of 1 lines. The rest are said in What happened.',
+  );
+  await expect(window.getByTestId('function-not-run')).toContainText(
+    'Line 2: Only in the game: Try it does not run /spreadplayers.',
+  );
+
+  // Run in Try it opens Try it and runs the function at the player.
+  await window.getByTestId('function-run-in-tryit').click();
+  await expect(window.getByTestId('tryit-view')).toBeVisible();
+  const lines = window.getByTestId('tryit-log').getByTestId('tryit-log-line');
+  await expect(
+    lines.filter({ hasText: `from function ${RULES_NAMESPACE}:noted.` }).first(),
+  ).toBeVisible();
+  await expect(
+    window
+      .getByTestId('tryit-log')
+      .getByTestId('tryit-log-only')
+      .filter({ hasText: '/spreadplayers' }),
+  ).toHaveCount(1);
 });

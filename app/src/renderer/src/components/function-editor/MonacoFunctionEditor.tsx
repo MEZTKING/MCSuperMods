@@ -8,9 +8,37 @@ import {
   setModelCompleter,
   toMarkers,
 } from './monaco-mcfunction';
-import type { CompleteFunction, FunctionSourceEditorProps } from './types';
+import type { CompleteFunction, FunctionSourceEditorProps, LineMark } from './types';
 
 const MARKER_OWNER = 'msm-mcfunction';
+
+/** The glyph margin's classes of the Try it marks (B613), drawn by {@link ensureMarkStyles}. */
+const RUNS_CLASS = 'msm-fn-runs';
+const ONLY_CLASS = 'msm-fn-only';
+
+/** Adds the marks' glyph styles once (a filled dot runs in Try it, a ring is only in the game). */
+function ensureMarkStyles(): void {
+  if (document.getElementById('msm-fn-marks') !== null) return;
+  const style = document.createElement('style');
+  style.id = 'msm-fn-marks';
+  style.textContent =
+    `.${RUNS_CLASS}::before{content:'\\25CF';color:var(--color-accent);}` +
+    `.${ONLY_CLASS}::before{content:'\\25CB';color:var(--color-warning);font-weight:bold;}` +
+    `.${RUNS_CLASS},.${ONLY_CLASS}{display:flex;align-items:center;justify-content:center;font-size:11px;}`;
+  document.head.appendChild(style);
+}
+
+/** The Try it marks as glyph margin decorations, the words on hover. */
+function markDecorations(marks: readonly LineMark[]): monaco.editor.IModelDeltaDecoration[] {
+  return marks.map((mark) => ({
+    range: new monaco.Range(mark.line + 1, 1, mark.line + 1, 1),
+    options: {
+      isWholeLine: true,
+      glyphMarginClassName: mark.runs ? RUNS_CLASS : ONLY_CLASS,
+      glyphMarginHoverMessage: { value: mark.words },
+    },
+  }));
+}
 const darkQuery = '(prefers-color-scheme: dark)';
 
 function themeFor(dark: boolean): string {
@@ -34,12 +62,14 @@ export default function MonacoFunctionEditor({
   label,
   focus,
   onFocused,
+  marks = null,
 }: FunctionSourceEditorProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const onChangeRef = useRef(onChange);
   const completeRef = useRef<CompleteFunction | undefined>(complete);
   const bindingRef = useRef<ControlledModelBinding | null>(null);
+  const decorationsRef = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
   /** The latest `value`, for a model created after `id` or `label` changes. */
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -62,6 +92,7 @@ export default function MonacoFunctionEditor({
       ariaLabel: label,
       automaticLayout: true,
       minimap: { enabled: false },
+      glyphMargin: true,
       scrollBeyondLastLine: false,
       tabSize: 4,
       fontSize: 13,
@@ -69,6 +100,8 @@ export default function MonacoFunctionEditor({
       theme: themeFor(media.matches),
     });
     editorRef.current = editor;
+    ensureMarkStyles();
+    decorationsRef.current = editor.createDecorationsCollection();
     host.querySelector('.native-edit-context, textarea')?.setAttribute('id', id);
     const binding = bindControlledModel(model, (text) => onChangeRef.current(text));
     bindingRef.current = binding;
@@ -109,6 +142,8 @@ export default function MonacoFunctionEditor({
       binding.dispose();
       bindingRef.current = null;
       setModelCompleter(model, undefined);
+      decorationsRef.current?.clear();
+      decorationsRef.current = null;
       editor.dispose();
       model.dispose();
       editorRef.current = null;
@@ -139,6 +174,11 @@ export default function MonacoFunctionEditor({
       toMarkers(monaco, problems, model.getLinesContent()),
     );
   }, [problems, value]);
+
+  // The Try it marks in the glyph margin (B613); a new editor (id or label) takes them again.
+  useEffect(() => {
+    decorationsRef.current?.set(marks === null ? [] : markDecorations(marks));
+  }, [marks, id, label]);
 
   return (
     <div

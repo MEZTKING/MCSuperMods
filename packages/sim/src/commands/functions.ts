@@ -25,10 +25,10 @@
  */
 
 import type { Json, JsonObject } from '@msm/plugin-api';
-import { PLAYER } from '../events/actions.js';
+import { type Actor, PLAYER } from '../events/actions.js';
 import type { DataLookup } from '../tags/api.js';
 import { createTagResolver } from '../tags/resolve.js';
-import type { SimFiles, SimOrigin } from '../types.js';
+import type { SimFiles, SimOrigin, Vec3 } from '../types.js';
 import {
   AREA_DIMENSION,
   CommandState,
@@ -263,17 +263,22 @@ export class FunctionEngine {
 
   /**
    * Runs a function now (Run in Try it, a project command's function): as and at the player
-   * unless `asServer`, with macro arguments.
+   * unless `asServer`, with macro arguments. An event's `run_function` (B613) passes `as` (the
+   * event's player or mob, or `null` for the server), `at` (the event's position) and `quiet`
+   * (the runtime suppresses the commands' own answers: only what the game shows is logged).
    */
   runFunction(
     id: string,
     options: {
       readonly args?: JsonObject;
       readonly asServer?: boolean;
+      readonly as?: Actor | null;
+      readonly at?: Vec3;
+      readonly quiet?: boolean;
       readonly origin?: SimOrigin;
     } = {},
   ): FunctionRun {
-    const source = options.asServer === true ? this.serverSource() : this.playerSource();
+    const source = this.sourceFor(options);
     let result: number | undefined;
     const call: FunctionCall = {
       id,
@@ -287,7 +292,7 @@ export class FunctionEngine {
       this.host.log.info(`There is no function ${id} in the project.`, options.origin);
       return { id, commands: 0, stopped: false, answer: [`Unknown function ${id}`] };
     }
-    const mode = this.run([call], false);
+    const mode = this.run([call], options.quiet === true);
     this.host.log.info(
       `Ran ${mode.commands} ${mode.commands === 1 ? 'command' : 'commands'} from function ${id}.`,
       options.origin,
@@ -381,6 +386,35 @@ export class FunctionEngine {
       );
     }
     return members.length === 0 ? undefined : members;
+  }
+
+  /** The source of {@link runFunction}: the player, the server, or an actor at a position. */
+  private sourceFor(options: {
+    readonly asServer?: boolean;
+    readonly as?: Actor | null;
+    readonly at?: Vec3;
+  }): Source {
+    if (options.as === undefined) {
+      const base = options.asServer === true ? this.serverSource() : this.playerSource();
+      return options.at === undefined ? base : { ...base, pos: options.at };
+    }
+    const actor = options.as;
+    if (actor === null) {
+      const base = this.serverSource();
+      return options.at === undefined ? base : { ...base, pos: options.at };
+    }
+    if (actor.kind === 'player') {
+      const base = this.playerSource();
+      return options.at === undefined ? base : { ...base, pos: options.at };
+    }
+    const mob = this.host.entities.entity(actor.id);
+    return {
+      executor: actor,
+      pos: options.at ?? mob?.position ?? this.serverSource().pos,
+      yaw: mob?.yaw ?? 0,
+      pitch: 0,
+      dimension: AREA_DIMENSION,
+    };
   }
 
   private playerSource(): Source {

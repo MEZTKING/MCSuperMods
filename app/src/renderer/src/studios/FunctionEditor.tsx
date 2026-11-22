@@ -4,11 +4,18 @@
  * Edits are debounced and reported as one `/lines` change per pause, coalesced into one undo
  * step while typing. Presentational: props and callbacks only.
  *
+ * Beside each line, what Try it does with it (B613, ADR 0120 D8): **Runs in Try it** or **Only in
+ * the game** with the reason, in the gutter (Monaco's glyph margin, or a column beside the
+ * `<textarea>`) and under the editor, 150 ms after the last keystroke; **Run in Try it** opens Try
+ * it and runs the function at the player.
+ *
  * @packageDocumentation
  */
 
 import type { Json } from '@msm/core';
 import { lazy, Suspense, useId } from 'react';
+import { FunctionRunBar } from '../components/function-editor/FunctionGutter';
+import { runInTryIt } from '../components/function-editor/run-in-tryit';
 import { problemLine } from '../components/function-editor/source-text';
 import { TextareaFunctionEditor } from '../components/function-editor/TextareaFunctionEditor';
 import type {
@@ -18,6 +25,7 @@ import type {
   FunctionSourceEditorProps,
 } from '../components/function-editor/types';
 import { useDebouncedLines } from '../components/function-editor/use-debounced-lines';
+import { useLineMarks } from '../components/function-editor/use-line-marks';
 import { monacoDisabled } from '../components/RawJsonPanel';
 import type { ChangeOptions } from '../forms';
 
@@ -50,6 +58,10 @@ export interface FunctionEditorProps {
   focusLine?: FunctionFocus | null;
   /** Called once {@link focusLine} has been handled. */
   onFocused?: () => void;
+  /** The function's id (`ns:path`), for **Run in Try it**; without it the button is not shown. */
+  functionId?: string;
+  /** Runs the function in Try it (default: opens Try it and runs it there, `run-in-tryit.ts`). */
+  onRunInTryIt?: (id: string, values: string) => void;
 }
 
 const NO_PROBLEMS: readonly FunctionProblem[] = [];
@@ -71,6 +83,8 @@ export function FunctionEditor({
   label = 'Function source',
   focusLine = null,
   onFocused,
+  functionId,
+  onRunInTryIt = runInTryIt,
 }: FunctionEditorProps) {
   const editorId = useId();
   const { draft, edit } = useDebouncedLines(
@@ -80,6 +94,7 @@ export function FunctionEditor({
     FUNCTION_EDIT_DEBOUNCE_MS,
   );
 
+  const marks = useLineMarks(draft);
   const other = problems.filter((problem) => problemLine(problem) === undefined);
 
   return (
@@ -97,7 +112,9 @@ export function FunctionEditor({
         label={label}
         focus={focusLine}
         onFocused={onFocused}
+        marks={marks}
       />
+      <FunctionRunBar marks={marks} functionId={functionId} onRun={onRunInTryIt} />
       {other.length > 0 && (
         <ul className="flex flex-col gap-0.5 text-xs" aria-label="Other function problems">
           {other.map((problem, index) => (

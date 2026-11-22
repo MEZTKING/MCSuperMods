@@ -4,6 +4,10 @@
  * renderer must not import.
  */
 
+import type { LineMark } from './line-marks';
+
+export type { LineMark };
+
 /** A problem in a function element, addressed to one source line. */
 export interface FunctionProblem {
   /** `/lines/<n>` (0-based line) for a source problem; anything else is not line-addressed. */
@@ -49,4 +53,6 @@ export interface FunctionSourceEditorProps {
   focus?: FunctionFocus | null | undefined;
   /** Called once {@link focus} has been handled. */
   onFocused?: (() => void) | undefined;
+  /** The gutter's marks of what Try it runs (B613), or `null` while they are worked out. */
+  marks?: readonly LineMark[] | null | undefined;
 }

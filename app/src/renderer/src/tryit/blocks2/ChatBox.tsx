@@ -5,6 +5,9 @@
  * event fired), Esc closes it, Up and Down step through what was typed. Above the line it shows
  * the answers in the game's words and, while typing a command, its usage.
  *
+ * The game's own commands Try it knows (B606) and `/function` with a project function (B613) run
+ * too; the rest is said.
+ *
  * Part of the lazy Try it chunk.
  */
 
@@ -116,7 +119,8 @@ export function ChatBox({ start, history, commands, onRun, onClose }: ChatBoxPro
         onKeyUp={(event) => event.stopPropagation()}
       />
       <p className="text-xs text-white/80 [text-shadow:0_0_2px_#000]">
-        Your mod's commands run here as in the game; the game's own commands run only in Minecraft.
+        Your mod's commands, your functions (/function) and the game's own commands Try it knows run
+        here; the rest is said in What happened.
       </p>
     </div>
   );

@@ -35,6 +35,7 @@ import type { PlayerController } from '../player/controller.js';
 import type { BlockPos, BlockState, SimEffect, SimOrigin, Vec3 } from '../types.js';
 import type { SimWorld } from '../world/sim-world.js';
 import {
+  type ActionFunctions,
   type ActionHost,
   type ActionHud,
   type ActionNames,
@@ -93,6 +94,8 @@ export interface TriggerEngineOptions {
    * only in the game.
    */
   readonly scripts?: ActionScripts;
+  /** The area's functions (B613): `run_function` runs the project's function. */
+  readonly functions?: ActionFunctions;
 }
 
 /** What a use of a block or item did, so the caller knows whether the click was taken. */
@@ -182,6 +185,7 @@ export class TriggerEngine {
       },
       ...(options.hud === undefined ? {} : { hud: options.hud }),
       ...(options.scripts === undefined ? {} : { scripts: options.scripts }),
+      ...(options.functions === undefined ? {} : { functions: options.functions }),
     };
     options.world.onChange((change) => this.track(change.pos, change.state));
     this.sayScripts();

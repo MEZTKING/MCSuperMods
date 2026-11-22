@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { requestGoToDefinition } from './caret';
+import { TextareaGutter } from './FunctionGutter';
 import { lineOffset, problemLine, snippetToText, tokenStart } from './source-text';
 import type { FunctionCompletion, FunctionSourceEditorProps } from './types';
 
@@ -21,7 +22,9 @@ export function TextareaFunctionEditor({
   label,
   focus,
   onFocused,
+  marks = null,
 }: FunctionSourceEditorProps) {
+  const [scrollTop, setScrollTop] = useState(0);
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const [items, setItems] = useState<FunctionCompletion[]>([]);
   const [active, setActive] = useState(0);
@@ -84,58 +87,62 @@ export function TextareaFunctionEditor({
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col gap-1">
-      <textarea
-        ref={areaRef}
-        id={id}
-        aria-label={label}
-        aria-invalid={hasError}
-        aria-describedby={listed.length > 0 ? problemsId : undefined}
-        aria-autocomplete="list"
-        aria-controls={shown ? listId : undefined}
-        data-testid="function-editor-fallback"
-        spellCheck={false}
-        wrap="off"
-        className="min-h-[200px] w-full flex-1 resize-y rounded border border-border bg-bg p-1.5 font-mono text-sm"
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-          if (shown) close();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'F12') {
-            event.preventDefault();
-            const area = event.currentTarget;
-            const caret = area.selectionStart;
-            const lineStart = area.value.lastIndexOf('\n', caret - 1) + 1;
-            const line = area.value.slice(0, lineStart).split('\n').length - 1;
-            requestGoToDefinition(area, { line, column: caret - lineStart });
-            return;
-          }
-          if (event.key === ' ' && event.ctrlKey) {
-            event.preventDefault();
-            void open();
-            return;
-          }
-          if (!shown) return;
-          if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            setActive((active + 1) % items.length);
-          } else if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            setActive((active - 1 + items.length) % items.length);
-          } else if (event.key === 'Enter' || event.key === 'Tab') {
-            const item = items[active];
-            if (item !== undefined) {
+      <div className="flex min-h-0 flex-1 gap-0.5">
+        <TextareaGutter marks={marks} lineCount={value.split('\n').length} scrollTop={scrollTop} />
+        <textarea
+          ref={areaRef}
+          id={id}
+          aria-label={label}
+          aria-invalid={hasError}
+          aria-describedby={listed.length > 0 ? problemsId : undefined}
+          aria-autocomplete="list"
+          aria-controls={shown ? listId : undefined}
+          data-testid="function-editor-fallback"
+          spellCheck={false}
+          wrap="off"
+          className="min-h-[200px] w-full flex-1 resize-y rounded border border-border bg-bg p-1.5 font-mono text-sm"
+          value={value}
+          onChange={(event) => {
+            onChange(event.target.value);
+            if (shown) close();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'F12') {
               event.preventDefault();
-              accept(item);
+              const area = event.currentTarget;
+              const caret = area.selectionStart;
+              const lineStart = area.value.lastIndexOf('\n', caret - 1) + 1;
+              const line = area.value.slice(0, lineStart).split('\n').length - 1;
+              requestGoToDefinition(area, { line, column: caret - lineStart });
+              return;
             }
-          } else if (event.key === 'Escape') {
-            event.preventDefault();
-            close();
-          }
-        }}
-        onBlur={close}
-      />
+            if (event.key === ' ' && event.ctrlKey) {
+              event.preventDefault();
+              void open();
+              return;
+            }
+            if (!shown) return;
+            if (event.key === 'ArrowDown') {
+              event.preventDefault();
+              setActive((active + 1) % items.length);
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault();
+              setActive((active - 1 + items.length) % items.length);
+            } else if (event.key === 'Enter' || event.key === 'Tab') {
+              const item = items[active];
+              if (item !== undefined) {
+                event.preventDefault();
+                accept(item);
+              }
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              close();
+            }
+          }}
+          onBlur={close}
+          onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+        />
+      </div>
       {shown && (
         <div
           id={listId}

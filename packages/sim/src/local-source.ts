@@ -327,7 +327,7 @@ export class LocalWorldSource implements WorldSource {
   private groundBlocks: GroundBlocks = emptyGround();
   /** Vanilla ids of the loaded ground: summed up in one line, not one line each. */
   private groundIds = new Set<string>();
-  private readonly vanillaData: DataLookup | undefined;
+  private vanillaData: DataLookup | undefined;
   private evalNow: { readonly files: SimFiles; readonly ctx: EvalContext } | null = null;
 
   /** The log every part of the simulation writes to; lines go out as `log` events. */
@@ -447,6 +447,14 @@ export class LocalWorldSource implements WorldSource {
       ...(options.chance === undefined ? {} : { chance: options.chance }),
       ...(options.ruleBooks === undefined ? {} : { ruleBooks: options.ruleBooks }),
       hud: this.controls.hudActions,
+      // B613: an event's run_function runs the project's function (the engine is made below).
+      functions: {
+        exists: (id) => this.functions.all.has(id),
+        macro: (id) => this.functions.all.get(id)?.macro === true,
+        run: (id, as, at, origin) => {
+          this.functions.runFunction(id, { as, at, quiet: true, origin });
+        },
+      },
       ...(bridge === null
         ? {}
         : {
@@ -580,6 +588,15 @@ export class LocalWorldSource implements WorldSource {
    */
   runFunction(id: string, args?: Readonly<Record<string, Json>>): FunctionRun {
     return this.functions.runFunction(id, args === undefined ? {} : { args: { ...args } });
+  }
+
+  /**
+   * Vanilla's data files for the evaluators, given after the area is made (B613: Try it reads
+   * them from the jar cache once it opens), or `undefined` to read the project's files only.
+   */
+  setVanillaData(vanillaData: DataLookup | undefined): void {
+    this.vanillaData = vanillaData;
+    this.evalNow = null;
   }
 
   /** What the evaluators read: the project's files over vanilla's, the area's seed (B606). */

@@ -1,8 +1,3 @@
-/** What Try it understands of a function (B601 stub; B613 builds it). */
+/** What Try it understands of a function (B601's entry; B613 built it in `function/`). */
 
-import { NotYet } from '../frame/LiveViewFrame';
-import type { LiveViewProps } from '../registry';
-
-export default function FunctionLines(_props: LiveViewProps) {
-  return <NotYet title="Function" brief="B613" />;
-}
+export { default } from './function/FunctionLines';

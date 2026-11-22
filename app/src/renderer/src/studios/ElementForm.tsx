@@ -179,6 +179,7 @@ function FunctionStudio(props: StudioProps) {
       {...(props.complete === undefined ? {} : { complete: props.complete })}
       focusLine={functionFocus}
       onFocused={functionFocused}
+      functionId={props.element.id}
     />
   );
 }
