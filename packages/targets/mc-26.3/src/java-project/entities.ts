@@ -20,8 +20,13 @@
  * (`entity/MobStorage`), fish buckets (`Bucketable` on the mob, `<id>_bucket` as vanilla's
  * `MobBucketItem` or the shared `DryBucketItem`), hovering (`HoverMoveControl`), phasing
  * (`PhaseChargeGoal`, a tick without physics), the dash and the habit goals over the shared
- * `MobHabits` (copied from the runtime, `templates/mob-habits-java.ts`); traders and shoulder
- * riding are not ejected (the exporter drops them with `export.not-in-eject`).
+ * `MobHabits` (copied from the runtime, `templates/mob-habits-java.ts`). Traders and shoulder
+ * pets (ADR 0098 D1, D4; ADR 0107 D1 to D3; ADR 0109 D2; eject 2c): a trader is a `Merchant`
+ * whose methods go to the shared `MobTrader` (levels, restock, reputation through
+ * `TraderReputation`, demand, the work site through `RestockAtWorkSiteGoal`, `on_trade` as the
+ * entity's own event method), its right click after mounting; a shoulder pet is a
+ * `MobShoulder.Pet` with the synched perch flags and the lazily made `MobShoulder` with its
+ * `PerchOnOwnerGoal` (copied from the runtime, `templates/mob-traders-java.ts`).
  * Minecraft 26.3 and GeckoLib 5, Mojang names.
  *
  * @packageDocumentation
@@ -90,6 +95,8 @@ const ENTITY_COMPONENTS = [
   'msm:rideable',
   'msm:bucketable',
   'msm:storage',
+  'msm:trader',
+  'msm:shoulder_riding',
 ];
 export const CATEGORIES = [
   'monster',
@@ -291,6 +298,32 @@ interface EntitySpec {
         closeSound: string | undefined;
       }
     | undefined;
+  /** `msm:trader` (ADR 0098 D1, ADR 0107 D1 to D3), with the runtime's defaults. */
+  readonly trader: TraderSpec | undefined;
+  /** `msm:shoulder_riding` (ADR 0098 D4, ADR 0109 D2): the sides the pet may take. */
+  readonly shoulder: { sides: 'LEFT' | 'RIGHT' | 'EITHER' } | undefined;
+}
+
+/** `msm:trader` with the runtime's defaults (`TraderParser.Trader`). */
+interface TraderSpec {
+  readonly tradeSets: readonly { tradeSet: string; xpToNext: number | undefined }[];
+  readonly levels: boolean;
+  readonly restock: 'TWICE_A_DAY' | 'NEVER';
+  readonly tradeSound: string | undefined;
+  /** The event method of `on_trade`. */
+  readonly onTrade: string | undefined;
+  readonly reputation:
+    | {
+        hurt: number;
+        trade: number;
+        giftItem: string | undefined;
+        gift: number;
+        decayPerDay: number;
+        priceStep: number | undefined;
+      }
+    | undefined;
+  readonly demand: boolean;
+  readonly workSite: string | undefined;
 }
 
 /** The first goal of each habit, with the runtime's defaults (`components.Goal`). */
@@ -876,6 +909,99 @@ function readEntity(input: DefinitionInput, throwables: ReadonlySet<string>): En
     bucketable: readBucketable(components.object('msm:bucketable'), mode),
     habits: readHabits(goals),
     storage: readStorage(components.object('msm:storage')),
+    trader: readTrader(components.object('msm:trader'), events),
+    shoulder: readShoulder(components.object('msm:shoulder_riding')),
+  };
+}
+
+/** An id with its namespace, or a `#` tag with its namespace, as the runtime's `MsmCodecs.ID_OR_TAG`. */
+function fullIdOrTag(reader: Reader, key: string, value: string): string {
+  if (!ID_OR_TAG.test(value)) reader.fail(`${key} '${value}' is not an id or #tag`);
+  return value.startsWith('#') ? `#${fullId(value.slice(1))}` : fullId(value);
+}
+
+/** `msm:trader` (ADR 0098 D1, ADR 0107 D1 to D3; the runtime's `TraderParser.Trader`, closed throughout). */
+function readTrader(component: Reader | undefined, events: Events): TraderSpec | undefined {
+  if (component === undefined) return undefined;
+  component.onlyKeys(
+    [
+      'trade_sets',
+      'levels',
+      'restock',
+      'trade_sound',
+      'on_trade',
+      'reputation',
+      'demand',
+      'work_site',
+    ],
+    'msm:trader field',
+  );
+  if (!component.has('trade_sets')) component.fail('trade_sets is missing');
+  const levels = component.objects('trade_sets');
+  if (levels.length < 1 || levels.length > 5) {
+    component.fail(`trade_sets has ${levels.length} levels (1..5)`);
+  }
+  const id = (reader: Reader, key: string, value: string): string => {
+    if (!SOUND_ID.test(value)) reader.fail(`${key} '${value}' is not an id`);
+    return fullId(value);
+  };
+  const tradeSets = levels.map((level) => {
+    level.onlyKeys(['trade_set', 'xp_to_next'], 'trade_sets field');
+    const xpToNext = level.has('xp_to_next') ? level.integer('xp_to_next', 1) : undefined;
+    if (xpToNext !== undefined) inRange(level, 'xp_to_next', xpToNext, 1);
+    return { tradeSet: id(level, 'trade_set', level.requiredString('trade_set')), xpToNext };
+  });
+  const tradeSound = component.optionalString('trade_sound');
+  const onTrade = component.optionalString('on_trade');
+  const reputation = component.object('reputation');
+  reputation?.onlyKeys(
+    ['hurt', 'trade', 'gift_item', 'gift', 'decay_per_day', 'price_step'],
+    'reputation field',
+  );
+  const workSite = component.optionalString('work_site');
+  const giftItem = reputation?.optionalString('gift_item');
+  return {
+    tradeSets,
+    levels: component.boolean('levels', true),
+    restock: component.enumConstant('restock', ['twice_a_day', 'never'], 'twice_a_day') as
+      | 'TWICE_A_DAY'
+      | 'NEVER',
+    tradeSound: tradeSound === undefined ? undefined : id(component, 'trade_sound', tradeSound),
+    onTrade: onTrade === undefined ? undefined : eventMethod(component, events, onTrade),
+    reputation:
+      reputation === undefined
+        ? undefined
+        : {
+            hurt: inRange(reputation, 'hurt', reputation.integer('hurt', 25), 0, 100),
+            trade: inRange(reputation, 'trade', reputation.integer('trade', 2), 0, 25),
+            giftItem:
+              giftItem === undefined ? undefined : fullIdOrTag(reputation, 'gift_item', giftItem),
+            gift: inRange(reputation, 'gift', reputation.integer('gift', 25), 0, 100),
+            decayPerDay: inRange(
+              reputation,
+              'decay_per_day',
+              reputation.integer('decay_per_day', 20),
+              0,
+              100,
+            ),
+            priceStep: reputation.has('price_step')
+              ? inRange(reputation, 'price_step', reputation.integer('price_step', 1), 1, 1000)
+              : undefined,
+          },
+    demand: component.boolean('demand', true),
+    workSite: workSite === undefined ? undefined : fullIdOrTag(component, 'work_site', workSite),
+  };
+}
+
+/** `msm:shoulder_riding` (ADR 0098 D4, ADR 0109 D2; the runtime's `StorageParser.ShoulderRiding`). */
+function readShoulder(component: Reader | undefined): EntitySpec['shoulder'] {
+  if (component === undefined) return undefined;
+  component.onlyKeys(['sides'], 'msm:shoulder_riding field');
+  return {
+    sides: component.enumConstant('sides', ['left', 'right', 'either'], 'either') as
+      | 'LEFT'
+      | 'RIGHT'
+      | 'EITHER',
   };
 }
 
@@ -1231,6 +1357,7 @@ type InteractStep =
   | 'breedingInteract'
   | 'tamingInteract'
   | 'ridingInteract'
+  | 'traderInteract'
   | 'habitsInteract';
 
 const INTERACT_STEP_NAMES: Record<InteractStep, string> = {
@@ -1240,6 +1367,7 @@ const INTERACT_STEP_NAMES: Record<InteractStep, string> = {
   breedingInteract: 'the breeding food',
   tamingInteract: "the taming food and the owner's sit toggle",
   ridingInteract: 'mounting',
+  traderInteract: 'trading (a gift, or the menu)',
 };
 
 function interactSteps(spec: EntitySpec): InteractStep[] {
@@ -1249,6 +1377,7 @@ function interactSteps(spec: EntitySpec): InteractStep[] {
   if (spec.breedable !== undefined) steps.push('breedingInteract');
   if (spec.tameable !== undefined) steps.push('tamingInteract');
   if (spec.rideable !== undefined) steps.push('ridingInteract');
+  if (spec.trader !== undefined) steps.push('traderInteract');
   if (spec.habits?.collect !== undefined || spec.habits?.barter !== undefined) {
     steps.push('habitsInteract');
   }
@@ -1647,6 +1776,12 @@ function writeEntityClass(
       );
     }
   }
+  if (spec.shoulder !== undefined) {
+    // MobShoulder.addGoals, after taming and breeding: the way up at the follow speed (1 without msm:tameable).
+    goalLines.push(
+      `shoulder().addGoals(goalSelector, ${after}, ${javaFloat(spec.tameable?.follow.speed ?? 1)});`,
+    );
+  }
   if (predicates.length > 0) members.push('', ...predicates);
   if (spec.variants !== undefined) members.push(...variantFields(file, spec.variants, name));
   if (spec.bossBar !== undefined) {
@@ -1810,7 +1945,8 @@ function writeEntityClass(
       '}',
     );
   }
-  const dropsOnDeath = spec.habits !== undefined || spec.storage !== undefined;
+  const dropsOnDeath =
+    spec.habits !== undefined || spec.storage !== undefined || spec.shoulder !== undefined;
   if (spec.onDeath !== undefined || spec.bossBar !== undefined || dropsOnDeath) {
     const lines =
       spec.onDeath === undefined
@@ -1825,10 +1961,11 @@ function writeEntityClass(
             '}',
           ];
     if (dropsOnDeath) {
-      // As MobDriver.die: the store's contents, then what the habits hold or carry, drop once it dies.
+      // As MobDriver.die: the store's contents drop, a shoulder pet gets off, then what the habits hold or carry drops.
       lines.push(
         'if (!wasDead && dead) {',
         ...(spec.storage === undefined ? [] : ['    mobStorage.die();']),
+        ...(spec.shoulder === undefined ? [] : ['    shoulder().die();']),
         ...(spec.habits === undefined ? [] : ['    habits().die();']),
         '}',
       );
@@ -1844,7 +1981,7 @@ function writeEntityClass(
     members.push(
       '',
       spec.onDeath === undefined && spec.bossBar === undefined
-        ? '/** What the mob stores, holds or carries drops where it died. */'
+        ? '/** What the mob stores, holds or carries drops where it died; a shoulder pet gets off. */'
         : spec.onDeath === undefined
           ? '/** The boss bar empties and goes. */'
           : spec.bossBar === undefined
@@ -1891,7 +2028,12 @@ function writeEntityClass(
       '}',
     );
   }
-  if (spec.onTick !== undefined || spec.bossBar !== undefined || spec.habits !== undefined) {
+  if (
+    spec.onTick !== undefined ||
+    spec.bossBar !== undefined ||
+    spec.habits !== undefined ||
+    spec.trader !== undefined
+  ) {
     const lines = ['super.customServerAiStep(level);'];
     let doc = '';
     if (spec.onTick !== undefined) {
@@ -1910,6 +2052,13 @@ function writeEntityClass(
           ? 'The boss bar: name, progress and, with a range, its players (as the wither, in the AI step)'
           : `${doc}; then the boss bar`;
       lines.push('tickBossBar(level);');
+    }
+    if (spec.trader !== undefined) {
+      doc =
+        doc === ''
+          ? 'Trading: the mob stands and looks at its customer, restocks and lets standings fade'
+          : `${doc}; then trading`;
+      lines.push('mobTrader.customServerAiStep(level);');
     }
     if (spec.habits !== undefined) {
       doc =
@@ -1971,7 +2120,8 @@ function writeEntityClass(
     );
   }
   if (spec.variants !== undefined) members.push(...variantMembers(file, spec.variants));
-  if (spec.bossBar !== undefined) members.push(...bossBarMembers(file, spec.bossBar));
+  if (spec.bossBar !== undefined)
+    members.push(...bossBarMembers(file, spec.bossBar, spec.shoulder !== undefined));
   if (spec.base === 'animal')
     members.push(...animalMembers(file, spec, name, breedingFood, tamingFood));
   if (spec.tameable !== undefined) {
@@ -2104,6 +2254,10 @@ function writeEntityClass(
   if (spec.storage !== undefined) {
     interfaces.push(file.use('net.minecraft.world.entity.HasCustomInventoryScreen'));
   }
+  if (spec.trader !== undefined) {
+    interfaces.push(file.use('net.minecraft.world.item.trading.Merchant'), 'MobTrader.Trading');
+  }
+  if (spec.shoulder !== undefined) interfaces.push('MobShoulder.Pet');
   mergeSaveAndSync(file, members, spec);
   const kind = { mob: '', animal: ' (base animal)', monster: ' (base monster)' }[spec.base];
   const lines = [
@@ -2558,7 +2712,7 @@ function variantMembers(file: JavaFile, variants: Variants): string[] {
 }
 
 /** The boss event of `MobBossBar` (ADR 0071 D5), the wither's rule. */
-function bossBarMembers(file: JavaFile, bar: BossBar): string[] {
+function bossBarMembers(file: JavaFile, bar: BossBar, shoulder: boolean): string[] {
   const bossEvent = file.use('net.minecraft.server.level.ServerBossEvent');
   const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
   const serverPlayer = file.use('net.minecraft.server.level.ServerPlayer');
@@ -2663,6 +2817,7 @@ function bossBarMembers(file: JavaFile, bar: BossBar): string[] {
     '    if (bossEvent != null) {',
     '        bossEvent.removeAllPlayers();',
     '    }',
+    ...(shoulder ? ['    shoulder().remove(reason);'] : []),
     '}',
     '',
     '/** A boss never despawns. */',
@@ -3491,7 +3646,63 @@ function batch2Fields(
       'private boolean fromBucket;',
     );
   }
+  if (spec.trader !== undefined) out.push(...traderFields(context, file, spec, spec.trader));
+  if (spec.shoulder !== undefined) {
+    const accessor = file.use('net.minecraft.network.syncher.EntityDataAccessor');
+    const synched = file.use('net.minecraft.network.syncher.SynchedEntityData');
+    const serializers = file.use('net.minecraft.network.syncher.EntityDataSerializers');
+    context.mobShared.add('MobShoulder');
+    context.mobShared.add('PerchOnOwnerGoal');
+    out.push(
+      '',
+      "/** msm:shoulder_riding (ADR 0098 D4, ADR 0109 D2): the pet sits on its owner's shoulder, and on which (true for the left). */",
+      `private static final ${accessor}<Boolean> DATA_PERCHED = ${synched}.defineId(${name}.class, ${serializers}.BOOLEAN);`,
+      `private static final ${accessor}<Boolean> DATA_PERCH_LEFT = ${synched}.defineId(${name}.class, ${serializers}.BOOLEAN);`,
+      '/** Made on first use: registerGoals runs in the Mob constructor, before this class sets its fields. */',
+      'private MobShoulder shoulder;',
+    );
+  }
   return out;
+}
+
+/**
+ * The trader's fields (ADR 0098 D1, ADR 0107 D1 to D3): `msm:trader` as the shared `Trader`
+ * record and the `MobTrader` behind the `Merchant` methods, with the base, the work site goal's
+ * priority (after the fighting goals) and the `on_trade` event method.
+ */
+function traderFields(
+  context: GenerationContext,
+  file: JavaFile,
+  spec: EntitySpec,
+  trader: TraderSpec,
+): string[] {
+  context.mobShared.add('Trader');
+  context.mobShared.add('MobTrader');
+  context.mobShared.add('TraderReputation');
+  context.mobShared.add('RestockAtWorkSiteGoal');
+  const list = file.use('java.util.List');
+  const optional = file.use('java.util.Optional');
+  const opt = (value: string | undefined): string =>
+    value === undefined ? `${optional}.empty()` : `${optional}.of(${value})`;
+  const levels = trader.tradeSets.map(
+    (level, i) =>
+      `        new Trader.TradeLevel(${identifierExpression(file, level.tradeSet)}, ${opt(level.xpToNext === undefined ? undefined : javaInt(level.xpToNext))})${i === trader.tradeSets.length - 1 ? '),' : ','}`,
+  );
+  const r = trader.reputation;
+  const reputation =
+    r === undefined
+      ? `${optional}.empty()`
+      : `${optional}.of(new Trader.Reputation(${javaInt(r.hurt)}, ${javaInt(r.trade)}, ${opt(r.giftItem === undefined ? undefined : javaString(r.giftItem))}, ${javaInt(r.gift)}, ${javaInt(r.decayPerDay)}, ${opt(r.priceStep === undefined ? undefined : javaInt(r.priceStep))}))`;
+  return [
+    '',
+    '/** msm:trader (ADR 0098 D1, ADR 0107 D1 to D3): the levels, restocking, reputation, demand and work site. */',
+    `private static final Trader TRADER = new Trader(${list}.of(`,
+    ...levels,
+    `        ${trader.levels}, Trader.Restock.${trader.restock}, ${opt(trader.tradeSound === undefined ? undefined : identifierExpression(file, trader.tradeSound))},`,
+    `        ${reputation},`,
+    `        ${trader.demand}, ${opt(trader.workSite === undefined ? undefined : javaString(trader.workSite))});`,
+    `private final MobTrader mobTrader = new MobTrader(this, ${spec.base === 'monster'}, ${javaInt(afterFighting(spec))}, TRADER, ${trader.onTrade === undefined ? 'null' : 'this::tradeEvent'});`,
+  ];
 }
 
 /** The `MobHabits` record argument of one habit, or `null` without it. */
@@ -3646,7 +3857,8 @@ function batch2Members(
     spec.rideable?.dash !== undefined &&
     (spec.movement.mode === 'walk' || spec.movement.mode === 'amphibious');
   const roosts = habits?.roost !== undefined;
-  if (phase || dashes || roosts) {
+  const perches = spec.shoulder !== undefined;
+  if (phase || dashes || roosts || perches) {
     const lines: string[] = [];
     if (phase) {
       lines.push(
@@ -3665,17 +3877,20 @@ function batch2Members(
     } else {
       lines.push('super.tick();');
     }
+    if (perches) lines.push('shoulder().tick();');
     if (dashes) lines.push('if (dashCooldown > 0) {', '    dashCooldown--;', '}');
     if (roosts) lines.push('habits().tick();');
     out.push(
       '',
-      `/** Vanilla's tick${phase ? ' (without physics while phasing)' : ''}${dashes ? ', then the dash cooldown runs down' : ''}${roosts ? ', then a roosting mob stays where it hangs' : ''}; on both sides. */`,
+      `/** Vanilla's tick${phase ? ' (without physics while phasing)' : ''}${perches ? ', then a perched pet keeps to its shoulder' : ''}${dashes ? ', then the dash cooldown runs down' : ''}${roosts ? ', then a roosting mob stays where it hangs' : ''}; on both sides. */`,
       '@Override',
       'public void tick() {',
       ...indent(lines),
       '}',
     );
   }
+  if (spec.trader !== undefined) out.push(...traderMembers(file, spec));
+  if (spec.shoulder !== undefined) out.push(...shoulderMembers(file, spec));
   const bucket = spec.bucketable;
   if (bucket !== undefined) {
     const itemStack = file.use('net.minecraft.world.item.ItemStack');
@@ -3764,6 +3979,118 @@ function batch2Members(
 }
 
 /**
+ * A trader's members (ADR 0098 D1): the `Merchant` methods delegating to `MobTrader`, as the
+ * runtime's `MsmMob` defaults, its right click step and the `on_trade` event.
+ */
+function traderMembers(file: JavaFile, spec: EntitySpec): string[] {
+  const player = file.use('net.minecraft.world.entity.player.Player');
+  const offers = file.use('net.minecraft.world.item.trading.MerchantOffers');
+  const offer = file.use('net.minecraft.world.item.trading.MerchantOffer');
+  const itemStack = file.use('net.minecraft.world.item.ItemStack');
+  const soundEvent = file.use('net.minecraft.sounds.SoundEvent');
+  const interactionResult = file.use('net.minecraft.world.InteractionResult');
+  const interactionHand = file.use('net.minecraft.world.InteractionHand');
+  const delegate = (signature: string, call: string, returns: boolean): string[] => [
+    '',
+    '@Override',
+    `public ${signature} {`,
+    `    ${returns ? 'return ' : ''}mobTrader.${call};`,
+    '}',
+  ];
+  const out = [
+    '',
+    '/** The trading behind the Merchant methods (MobTrader.Trading; the hurt listener of the reputation reads it). */',
+    '@Override',
+    'public MobTrader mobTrader() {',
+    '    return mobTrader;',
+    '}',
+    '',
+    "/** The trader's step of a right click: a gift of the gift item, or the menu. Null passes on. */",
+    `private ${interactionResult} traderInteract(${player} player, ${interactionHand} hand) {`,
+    '    return mobTrader.mobInteract(player, hand);',
+    '}',
+    '',
+    "// Merchant (ADR 0098 D1): the mob is its menu's merchant, because vanilla's menu treats the merchant as an entity.",
+    ...delegate(`void setTradingPlayer(${player} player)`, 'setTradingPlayer(player)', false),
+    ...delegate(`${player} getTradingPlayer()`, 'getTradingPlayer()', true),
+    ...delegate(`${offers} getOffers()`, 'getOffers()', true),
+    ...delegate(`void overrideOffers(${offers} offers)`, 'overrideOffers(offers)', false),
+    ...delegate(`void notifyTrade(${offer} offer)`, 'notifyTrade(offer)', false),
+    ...delegate(`void notifyTradeUpdated(${itemStack} stack)`, 'notifyTradeUpdated(stack)', false),
+    ...delegate('int getVillagerXp()', 'getVillagerXp()', true),
+    ...delegate('void overrideXp(int xp)', 'overrideXp(xp)', false),
+    ...delegate('boolean showProgressBar()', 'showProgressBar()', true),
+    ...delegate(`${soundEvent} getNotifyTradeSound()`, 'getNotifyTradeSound()', true),
+    ...delegate('boolean canRestock()', 'canRestock()', true),
+    ...delegate('boolean isClientSide()', 'isClientSide()', true),
+    ...delegate(`boolean stillValid(${player} player)`, 'stillValid(player)', true),
+  ];
+  const onTrade = spec.trader?.onTrade;
+  if (onTrade !== undefined) {
+    const serverLevel = file.use('net.minecraft.server.level.ServerLevel');
+    const args = `level, blockPosition(), position(), player, this${spec.events.otherParameter ? ', player' : ''}`;
+    out.push(
+      '',
+      '/** msm:trader on_trade: after each trade, the mob as self and the player as other. */',
+      `private void tradeEvent(${serverLevel} level, ${player} player) {`,
+      `    ${fireCall(onTrade, args)}`,
+      '}',
+    );
+  }
+  return out;
+}
+
+/**
+ * A shoulder pet's members (ADR 0098 D4, ADR 0109 D2), as `MsmAnimal` and `MobDriver` call
+ * `MobShoulder`: the lazily made module, no pushing or suffocating while perched, and, without a
+ * boss bar's, the `remove` hook.
+ */
+function shoulderMembers(file: JavaFile, spec: EntitySpec): string[] {
+  const entity = file.use('net.minecraft.world.entity.Entity');
+  const sides = spec.shoulder?.sides ?? 'EITHER';
+  const out = [
+    '',
+    '/** The shoulder perch (MobShoulder.Pet), made on first use. */',
+    '@Override',
+    'public MobShoulder shoulder() {',
+    '    if (shoulder == null) {',
+    `        shoulder = new MobShoulder(this, DATA_PERCHED, DATA_PERCH_LEFT, ${spec.tameable !== undefined}, MobShoulder.Sides.${sides});`,
+    '    }',
+    '    return shoulder;',
+    '}',
+    '',
+    '/** A perched pet is not pushed, pushes nothing and does not suffocate in a low ceiling. */',
+    '@Override',
+    'public boolean isPushable() {',
+    '    return shoulder().isPushable(super.isPushable());',
+    '}',
+    '',
+    '@Override',
+    `protected void doPush(${entity} entity) {`,
+    '    shoulder().doPush(entity, () -> super.doPush(entity));',
+    '}',
+    '',
+    '@Override',
+    'public boolean isInWall() {',
+    '    return shoulder().isInWall(super::isInWall);',
+    '}',
+  ];
+  if (spec.bossBar === undefined) {
+    const removalReason = file.use('net.minecraft.world.entity.Entity', 'RemovalReason');
+    out.push(
+      '',
+      '/** Killed, discarded, unloaded or changed dimension: the pet leaves its seat. */',
+      '@Override',
+      `public void remove(${removalReason} reason) {`,
+      '    super.remove(reason);',
+      '    shoulder().remove(reason);',
+      '}',
+    );
+  }
+  return out;
+}
+
+/**
  * Adds batch 2's synched data, saved data and persistence to the entity's members (ADR 0109; the
  * runtime's `MobDriver`): into the methods the variants, boss bar or taming already wrote, else as
  * new overrides.
@@ -3772,7 +4099,9 @@ function mergeSaveAndSync(file: JavaFile, members: string[], spec: EntitySpec): 
   const habits = spec.habits !== undefined;
   const bucket = spec.bucketable !== undefined;
   const storage = spec.storage !== undefined;
-  if (!habits && !bucket && !storage) return;
+  const trader = spec.trader !== undefined;
+  const shoulder = spec.shoulder !== undefined;
+  if (!habits && !bucket && !storage && !trader && !shoulder) return;
   const extend = (header: string, doc: string, open: string, lines: string[]): void => {
     const at = members.findIndex((line) => line.includes(header));
     if (at >= 0) {
@@ -3795,25 +4124,51 @@ function mergeSaveAndSync(file: JavaFile, members: string[], spec: EntitySpec): 
       ].slice(members.some((line) => line.includes('void defineSynchedData(')) ? 1 : 0),
     );
   }
+  if (shoulder) {
+    const synched = file.use('net.minecraft.network.syncher.SynchedEntityData');
+    extend(
+      'void defineSynchedData(',
+      "/** The shoulder pet's perch flags (ADR 0098 D4, ADR 0109 D2). */",
+      `protected void defineSynchedData(${synched}.Builder builder) {`,
+      [
+        'super.defineSynchedData(builder);',
+        'builder.define(DATA_PERCHED, false);',
+        'builder.define(DATA_PERCH_LEFT, false);',
+      ].slice(members.some((line) => line.includes('void defineSynchedData(')) ? 1 : 0),
+    );
+    const accessor = file.use('net.minecraft.network.syncher.EntityDataAccessor');
+    extend(
+      'void onSyncedDataUpdated(',
+      '/** A perched pet has no physics, on both sides. */',
+      `public void onSyncedDataUpdated(${accessor}<?> accessor) {`,
+      ['super.onSyncedDataUpdated(accessor);', 'shoulder().onSyncedDataUpdated(accessor);'].slice(
+        members.some((line) => line.includes('void onSyncedDataUpdated(')) ? 1 : 0,
+      ),
+    );
+  }
   const valueOutput = file.use('net.minecraft.world.level.storage.ValueOutput');
   const valueInput = file.use('net.minecraft.world.level.storage.ValueInput');
   const saving = members.some((line) => line.includes('void addAdditionalSaveData('));
   const save = [
     ...(saving ? [] : ['super.addAdditionalSaveData(output);']),
+    ...(trader ? ['mobTrader.addAdditionalSaveData(output);'] : []),
     ...(storage ? ['mobStorage.addAdditionalSaveData(output);'] : []),
+    ...(shoulder ? ['shoulder().addAdditionalSaveData(output);'] : []),
     ...(bucket ? ['output.putBoolean("FromBucket", fromBucket);'] : []),
     ...(habits ? ['habits().addAdditionalSaveData(output);'] : []),
   ];
   extend(
     'void addAdditionalSaveData(',
-    `/** Saved with the mob: ${[storage ? 'the store' : undefined, bucket ? 'FromBucket' : undefined, habits ? "the habits' state" : undefined].filter((part) => part !== undefined).join(' and ')}. */`,
+    `/** Saved with the mob: ${[trader ? 'the offers, levels and standings' : undefined, storage ? 'the store' : undefined, shoulder ? 'the perch' : undefined, bucket ? 'FromBucket' : undefined, habits ? "the habits' state" : undefined].filter((part) => part !== undefined).join(' and ')}. */`,
     `protected void addAdditionalSaveData(${valueOutput} output) {`,
     save,
   );
   const reading = members.some((line) => line.includes('void readAdditionalSaveData('));
   const read = [
     ...(reading ? [] : ['super.readAdditionalSaveData(input);']),
+    ...(trader ? ['mobTrader.readAdditionalSaveData(input);'] : []),
     ...(storage ? ['mobStorage.readAdditionalSaveData(input);'] : []),
+    ...(shoulder ? ['shoulder().readAdditionalSaveData(input);'] : []),
     ...(bucket ? ['fromBucket = input.getBooleanOr("FromBucket", false);'] : []),
     ...(habits ? ['habits().readAdditionalSaveData(input);'] : []),
   ];

@@ -6,8 +6,9 @@
  * - a trade set naming a project item is left out of the vanilla data pack (with its trade,
  *   and the level tag entry naming it becomes optional);
  * - the acquirable job site tag entry is written as `required: false`;
- * - the eject warns `export.not-in-eject` once per mob with batch 2 components; professions and
- *   fluids are ejected since B537 (`ModProfessions`, `ModFluids`).
+ * - the eject generates every batch 2 mob component (traders and shoulder pets since eject 2c)
+ *   with no `export.not-in-eject`; professions and fluids are ejected since B537
+ *   (`ModProfessions`, `ModFluids`).
  */
 import type { Json, OutputFile } from '@msm/plugin-api';
 import { builtInTargets } from '@msm/targets';
@@ -165,6 +166,7 @@ describe.each(
       size: { width: 0.6, height: 1.8 },
       components: {
         ...(component('msm:trader') as Record<string, Json>),
+        'msm:trader': { trade_sets: [{ trade_set: 'demo:merchant/level_1' }] },
         'msm:storage': { rows: 2 },
         'msm:shoulder_riding': {},
       },
@@ -191,7 +193,7 @@ describe.each(
     json: { format: 1 },
   });
 
-  it('warns once per mob, ejects the profession and the fluid, and reports no error', async () => {
+  it('ejects the mob, the profession and the fluid with no warning or error', async () => {
     const { schemaIndex, registries } = await indexesFor(bundle);
     const sink = createMemorySink();
     const report = await runExport({
@@ -205,15 +207,13 @@ describe.each(
       readAsset: fakeAsset,
       meta,
     });
-    const warned = report.problems.filter(
-      (problem) => problem.code === ExportProblemCodes.notInEject,
-    );
-    expect(warned.map((problem) => problem.file)).toEqual(['msm/demo/entity/merchant.json']);
-    expect(warned.every((problem) => problem.severity === 'warning')).toBe(true);
-    expect(warned[0]?.message).toContain(
-      'trader (msm:trader), shoulder riding (msm:shoulder_riding),',
-    );
+    expect(
+      report.problems.filter((problem) => problem.code === ExportProblemCodes.notInEject),
+    ).toEqual([]);
     const paths = [...sink.files().keys()];
+    // A shoulder pet that is not a tameable animal never perches (the runtime warns in its log).
+    expect(paths.some((path) => path.endsWith('/entity/MerchantEntity.java'))).toBe(true);
+    expect(paths.some((path) => path.endsWith('/entity/MobShoulder.java'))).toBe(true);
     expect(paths.some((path) => path.endsWith('/ModProfessions.java'))).toBe(true);
     expect(paths.some((path) => path.endsWith('/ModFluids.java'))).toBe(true);
     expect(

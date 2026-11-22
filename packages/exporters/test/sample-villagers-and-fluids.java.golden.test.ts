@@ -2,12 +2,11 @@
  * Golden over the Java project eject of `fixtures/sample-villagers-and-fluids` (ADR 0033, ADRs 0098
  * to 0101, ADR 0112 D3, plan B537): the glassblower profession and its job site, the brine and
  * molten amber fluids with their liquid blocks, buckets, mixing and renderers, and the dimension
- * type, and the pack mule's storage (`entity/MobStorage`, B537b). The pedlar's trades and the
- * sugar glider's shoulder riding are left out with one `export.not-in-eject` warning per mob (the
- * mobs themselves are generated).
+ * type, the pack mule's storage (`entity/MobStorage`, B537b), the pedlar's trades
+ * (`entity/MobTrader`) and the sugar glider's shoulder perch (`entity/MobShoulder`, eject 2c).
  *
  * - The export succeeds without errors or warnings other than project ids the vanilla registries
- *   do not know and those; the project's files and contents hash to the value pinned in
+ *   do not know; the project's files and contents hash to the value pinned in
  *   `test/fixtures/<target id>/sample-villagers-and-fluids-java.sha256` in two time zones (with a
  *   stub Gradle wrapper, so the pin does not follow the engine-mod wrapper).
  * - The layout holds the Gradle files, the professions, the fluid classes and the client fluid
@@ -67,11 +66,8 @@ const meta = {
 };
 const NAMESPACE = 'msm_sample_villagers';
 const PKG = `src/main/java/${NAMESPACE}`;
-/** Warnings the eject may give: project ids, and the mobs' trader and shoulder riding. */
-const EXPECTED_WARNINGS: ReadonlySet<string> = new Set([
-  'schema.unknown-id',
-  'export.not-in-eject',
-]);
+/** Warnings the eject may give: project ids. */
+const EXPECTED_WARNINGS: ReadonlySet<string> = new Set(['schema.unknown-id']);
 const unexpected = (problem: Problem): boolean =>
   problem.severity === 'error' ||
   (problem.severity === 'warning' && !EXPECTED_WARNINGS.has(problem.code));
@@ -124,11 +120,7 @@ describe.each(
     const { files, problems, ok } = await run();
     expect(problems.filter(unexpected)).toEqual([]);
     expect(ok).toBe(true);
-    expect(
-      problems
-        .filter((problem) => problem.code === 'export.not-in-eject')
-        .map((problem) => problem.file),
-    ).toEqual([`msm/${NAMESPACE}/entity/pedlar.json`, `msm/${NAMESPACE}/entity/sugar_glider.json`]);
+    expect(problems.filter((problem) => problem.code === 'export.not-in-eject')).toEqual([]);
     const paths = [...files.keys()];
     for (const path of [
       'build.gradle.kts',
@@ -142,6 +134,10 @@ describe.each(
       `${PKG}/fluid/BrineFluidEvents.java`,
       `${PKG}/client/fluid/FluidRenderers.java`,
       `${PKG}/entity/MobStorage.java`,
+      `${PKG}/entity/MobTrader.java`,
+      `${PKG}/entity/Trader.java`,
+      `${PKG}/entity/MobShoulder.java`,
+      `${PKG}/entity/PerchOnOwnerGoal.java`,
     ]) {
       expect(paths, path).toContain(path);
     }
@@ -151,6 +147,10 @@ describe.each(
       '"entity.msm_sample_villagers.villager.glassblower"',
     );
     expect(java('ModFluids.java')).toContain('BrineFluidEvents::inside');
+    expect(java('entity/PedlarEntity.java')).toContain(
+      'implements GeoEntity, Merchant, MobTrader.Trading',
+    );
+    expect(java('entity/SugarGliderEntity.java')).toContain('MobShoulder.Pet');
     const modJson = JSON.parse(
       utf8.decode(files.get('src/main/resources/fabric.mod.json') as Uint8Array),
     ) as { depends: Record<string, string>; entrypoints: Record<string, string[]> };

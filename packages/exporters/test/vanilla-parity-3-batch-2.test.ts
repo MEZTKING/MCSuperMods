@@ -10,7 +10,9 @@
  *   `BoatRenderers`; B537b): its recipe and tag entry stay as they are;
  * - a hovering mob with the swoop and roost goals and a fish (swim) with a bucket and a dash are
  *   generated with them (`HoverMoveControl`, `SwoopGoal`, `MobHabits`, the bucket item; B537b);
- *   only a mob with a trader, storage or shoulder riding still gets one `export.not-in-eject`.
+ * - a trader with reputation, a work site and an `on_trade` event and a shoulder pet are generated
+ *   as the runtime's (`MobTrader`, `TraderReputation`, `RestockAtWorkSiteGoal`, `MobShoulder`,
+ *   `PerchOnOwnerGoal`; eject 2c): nothing gets `export.not-in-eject`.
  *
  * With `MSM_VANILLA_PARITY_3_BATCH_2_JAVA_OUT` set, the tree is written there with the engine-mod
  * Gradle wrapper for `./gradlew build` (JDK 25; B541 wires it into CI).
@@ -165,7 +167,28 @@ const FILES = [
     size: { width: 0.6, height: 1.9 },
     components: {
       ...animated,
-      'msm:trader': { trade_sets: [{ trade_set: 'demo:peddler/level_1' }] },
+      'msm:trader': {
+        trade_sets: [{ trade_set: 'demo:peddler/level_1' }, { trade_set: 'demo:peddler/level_2' }],
+        on_trade: 'demo:traded',
+        reputation: { gift_item: '#minecraft:small_flowers', price_step: 5 },
+        work_site: 'minecraft:cartography_table',
+      },
+    },
+    events: {
+      'demo:traded': {
+        actions: [{ type: 'play_sound', sound: 'minecraft:entity.experience_orb.pickup' }],
+      },
+    },
+  }),
+  msm('entity/perch_pet', {
+    format: 1,
+    base: 'animal',
+    category: 'creature',
+    size: { width: 0.5, height: 0.6 },
+    components: {
+      ...animated,
+      'msm:tameable': { items: ['minecraft:bone'] },
+      'msm:shoulder_riding': { sides: 'left' },
     },
   }),
 ];
@@ -196,9 +219,7 @@ describe.each(
     expect(
       report.problems.filter((p) => p.code === ExportProblemCodes.javaGenerationFailed),
     ).toEqual([]);
-    const leftOut = report.problems.filter((p) => p.code === ExportProblemCodes.notInEject);
-    expect(leftOut.map((p) => p.file)).toEqual(['msm/demo/entity/peddler.json']);
-    expect(leftOut[0]?.message).toContain('trader (msm:trader)');
+    expect(report.problems.filter((p) => p.code === ExportProblemCodes.notInEject)).toEqual([]);
     const files = sink.files();
     if (out !== undefined) {
       const { mkdir } = await import('node:fs/promises');
@@ -234,6 +255,19 @@ describe.each(
     expect(carp).toContain('Bucketable.bucketMobPickup(player, hand, this)');
     expect(text('ModEntities.java')).toContain('new MobBucketItem(CARP, Fluids.WATER');
     expect(text('entity/RunnerEntity.java')).toContain('dashCooldown = 55;');
+    const peddler = text('entity/PeddlerEntity.java');
+    expect(peddler).toContain('implements GeoEntity, Merchant, MobTrader.Trading');
+    expect(peddler).toContain('new MobTrader(this, false, 1, TRADER, this::tradeEvent)');
+    expect(peddler).toContain('Optional.of("minecraft:cartography_table")');
+    expect(text('entity/RestockAtWorkSiteGoal.java')).toContain(
+      'public class RestockAtWorkSiteGoal',
+    );
+    expect(text('entity/TraderReputation.java')).toContain('instanceof MobTrader.Trading mob');
+    const pet = text('entity/PerchPetEntity.java');
+    expect(pet).toContain(
+      'new MobShoulder(this, DATA_PERCHED, DATA_PERCH_LEFT, true, MobShoulder.Sides.LEFT)',
+    );
+    expect(pet).toContain('shoulder().addGoals(goalSelector, 1, 1.0f);');
     expect(text('ModItems.java')).toContain('ModBoats.itemFor(');
     expect(text('boat/ModBoats.java')).toContain('new BoatDispenseItemBehavior(boat.boat())');
     expect(text('client/boat/BoatRenderers.java')).toContain(

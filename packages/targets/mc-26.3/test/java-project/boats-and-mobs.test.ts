@@ -1,10 +1,10 @@
 /**
- * The 26.3 Java generator for boats, the mob parts of batch 2 and project beds as villager homes
- * (ADR 0107 D4, ADR 0109, ADR 0110, ADR 0112 D3; B537b):
+ * The 26.3 Java generator for boats, the mob parts of batch 2, traders, shoulder pets and project
+ * beds as villager homes (ADR 0098 D1, D4; ADR 0107; ADR 0109, ADR 0110, ADR 0112 D3; B537b,
+ * eject 2c):
  *
- * - every runtime GameTest boat item (`bt_*`), batch 2 mob (`mob2_*`) and storage mob (`storage_*`)
- *   generates, alone and together; a mob's trader and shoulder riding still fail generation by name (the
- *   exporter leaves them out with `export.not-in-eject`);
+ * - every runtime GameTest boat item (`bt_*`), batch 2 mob (`mob2_*`), storage mob (`storage_*`),
+ *   trader (`trader_*`) and shoulder pet (`shoulder_*`) generates, alone and together;
  * - boats register through `boat/ModBoats.itemFor` with their chest boats, the dispenser behaviour
  *   after every item and vanilla's renderers on the client; buckets, hover, phase, the dash and the
  *   habits write what the runtime does;
@@ -59,21 +59,20 @@ function input(lists: Partial<JavaProjectInput> = {}): JavaProjectInput {
   };
 }
 
-/** Batch 2 mobs the eject still leaves out (the exporter drops these components first). */
-const REFUSED: Readonly<Record<string, RegExp>> = {
-  'mob2_pet_left.json': /msm:shoulder_riding/,
-  'storage_crate.json': /msm:trader/,
-};
+/** The runtime GameTest mobs of batch 2 the eject generates (every one, since eject 2c). */
+async function mobs(): Promise<[string, DefinitionInput][]> {
+  return [
+    ...(await definitions('entity', 'mob2_')),
+    ...(await definitions('entity', 'storage_')),
+    ...(await definitions('entity', 'trader_')),
+    ...(await definitions('entity', 'shoulder_')),
+  ];
+}
 
 async function all(): Promise<Partial<JavaProjectInput>> {
   return {
     items: (await definitions('item', 'bt_')).map(([, def]) => def),
-    entities: [
-      ...(await definitions('entity', 'mob2_')),
-      ...(await definitions('entity', 'storage_')),
-    ]
-      .filter(([name]) => REFUSED[name] === undefined)
-      .map(([, def]) => def),
+    entities: (await mobs()).map(([, def]) => def),
     blocks: (await definitions('block', 'furniture_bed')).map(([, def]) => def),
   };
 }
@@ -108,6 +107,18 @@ const RENAMES: readonly [RegExp, string][] = [
   [/MsmRuntime\.LOGGER/g, 'LOGGER'],
   [/"\[\{\}\] /g, '"'],
   [/MsmRuntime\.MOD_ID, /g, ''],
+  // Traders and shoulder pets (eject 2c).
+  [/TraderParser\.Trader\b/g, 'Trader'],
+  [/TraderParser\./g, 'Trader.'],
+  [/mob\.openTradingScreen\(/g, '((Merchant) body).openTradingScreen('],
+  [/instanceof MsmMob mob/g, 'instanceof MobTrader.Trading mob'],
+  [/mob\.driver\(\)\.trader\(\)/g, 'mob.mobTrader()'],
+  [/MsmAnimal\.DATA_PERCHED/g, 'perchedData'],
+  [/MsmAnimal\.DATA_PERCH_LEFT/g, 'perchLeftData'],
+  [/\bMsmMob\b/g, 'Pet'],
+  [/\bMsmAnimal\b/g, 'TamableAnimal'],
+  [/\.driver\(\)\.shoulder\(\)/g, '.shoulder()'],
+  [/pet\.asMob\(\)/g, '(Entity) pet'],
 ];
 
 function renamed(source: string): Set<string> {
@@ -130,14 +141,18 @@ describe('the 26.3 generator, boats, mobs 2 and bed homes (B537b)', () => {
     for (const [name, def] of await definitions('item', 'bt_')) {
       expect(() => generateJavaProject(input({ items: [def] })), name).not.toThrow();
     }
-    for (const [name, def] of [
-      ...(await definitions('entity', 'mob2_')),
-      ...(await definitions('entity', 'storage_')),
-    ]) {
-      const run = () => generateJavaProject(input({ entities: [def] }));
-      const refused = REFUSED[name];
-      if (refused === undefined) expect(run, name).not.toThrow();
-      else expect(run, name).toThrow(refused);
+    const names = (await mobs()).map(([name]) => name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'mob2_pet_left.json',
+        'storage_crate.json',
+        'trader_basic.json',
+        'trader_worker.json',
+        'shoulder_pet.json',
+      ]),
+    );
+    for (const [name, def] of await mobs()) {
+      expect(() => generateJavaProject(input({ entities: [def] })), name).not.toThrow();
     }
     const files = sources(await all());
     for (const path of [
@@ -155,6 +170,12 @@ describe('the 26.3 generator, boats, mobs 2 and bed homes (B537b)', () => {
       'entity/HoverMoveControl.java',
       'entity/DryBucketItem.java',
       'entity/MobStorage.java',
+      'entity/Trader.java',
+      'entity/MobTrader.java',
+      'entity/TraderReputation.java',
+      'entity/RestockAtWorkSiteGoal.java',
+      'entity/MobShoulder.java',
+      'entity/PerchOnOwnerGoal.java',
     ]) {
       expect(files.has(path), path).toBe(true);
     }
@@ -201,6 +222,53 @@ describe('the 26.3 generator, boats, mobs 2 and bed homes (B537b)', () => {
     expect(mule).toContain('mobStorage.die();');
   });
 
+  it('writes traders and shoulder pets as the runtime does (eject 2c)', async () => {
+    const files = sources(await all());
+    const basic = files.get('entity/TraderBasicEntity.java') ?? '';
+    expect(basic).toContain('implements GeoEntity, Merchant, MobTrader.Trading');
+    expect(basic).toContain('new MobTrader(this, false, 1, TRADER, this::tradeEvent)');
+    expect(basic).toContain(
+      'Optional.of(Identifier.fromNamespaceAndPath("minecraft", "entity.wandering_trader.yes"))',
+    );
+    expect(basic).toContain(
+      'event_tr_traded(level, blockPosition(), position(), player, this, 1);',
+    );
+    expect(basic).toContain('mobTrader.customServerAiStep(level);');
+    expect(basic).toContain('mobTrader.addAdditionalSaveData(output);');
+    expect(files.get('entity/TraderBruteEntity.java')).toContain(
+      'new MobTrader(this, true, 1, TRADER, null)',
+    );
+    expect(files.get('entity/TraderScaledEntity.java')).toContain(
+      'new Trader.TradeLevel(Identifier.fromNamespaceAndPath("msm_test", "tr_stall/level_1"), Optional.of(20))',
+    );
+    expect(files.get('entity/TraderFlatEntity.java')).toContain(
+      'false, Trader.Restock.NEVER, Optional.empty(),',
+    );
+    expect(files.get('entity/TraderSteppedEntity.java')).toContain(
+      'Optional.of(new Trader.Reputation(10, 5, Optional.of("#minecraft:small_flowers"), 10, 4, Optional.of(5)))',
+    );
+    expect(files.get('entity/TraderWorkerEntity.java')).toContain(
+      'true, Optional.of("#msm_test:tr_sites"));',
+    );
+    // Storage goes first, trading after it (MobDriver.mobInteract).
+    const crate = files.get('entity/StorageCrateEntity.java') ?? '';
+    expect(crate.indexOf('storageInteract(player, hand);')).toBeLessThan(
+      crate.indexOf('result = traderInteract(player, hand);'),
+    );
+    const left = files.get('entity/Mob2PetLeftEntity.java') ?? '';
+    expect(left).toContain('implements GeoEntity, MobShoulder.Pet');
+    expect(left).toContain(
+      'new MobShoulder(this, DATA_PERCHED, DATA_PERCH_LEFT, true, MobShoulder.Sides.LEFT)',
+    );
+    expect(left).toContain('shoulder().addGoals(goalSelector, 1, 1.0f);');
+    expect(left).toContain('builder.define(DATA_PERCH_LEFT, false);');
+    expect(left).toContain('shoulder().onSyncedDataUpdated(accessor);');
+    expect(left).toContain('return shoulder().isPushable(super.isPushable());');
+    expect(left).toContain('shoulder().remove(reason);');
+    expect(left).toContain('shoulder().die();');
+    expect(files.get('entity/ShoulderPetEntity.java')).toContain('MobShoulder.Sides.EITHER');
+  });
+
   it('keeps the code of the shared classes the runtime has', async () => {
     const files = sources(await all());
     const read = (path: string) => readFile(join(runtime, path), 'utf8');
@@ -222,6 +290,11 @@ describe('the 26.3 generator, boats, mobs 2 and bed homes (B537b)', () => {
       ['entity/HoverMoveControl.java', [await read('registry/mob/MobMovement.java')]],
       ['entity/DryBucketItem.java', [await read('registry/mob/MobBuckets.java')]],
       ['entity/MobStorage.java', [await read('registry/mob/MobStorage.java')]],
+      ['entity/MobTrader.java', [await read('registry/mob/MobTrader.java')]],
+      ['entity/TraderReputation.java', [await read('registry/mob/TraderReputation.java')]],
+      ['entity/RestockAtWorkSiteGoal.java', [await read('goals/RestockAtWorkSiteGoal.java')]],
+      ['entity/MobShoulder.java', [await read('registry/mob/MobShoulder.java')]],
+      ['entity/PerchOnOwnerGoal.java', [await read('goals/PerchOnOwnerGoal.java')]],
       [
         'block/type/ModBedBlock.java',
         [await read('registry/types/MsmBedBlock.java'), await readFile(seam, 'utf8')],

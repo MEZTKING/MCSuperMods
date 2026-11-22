@@ -102,39 +102,6 @@ const LISTED_KINDS = [
 type ListedKind = (typeof LISTED_KINDS)[number];
 
 /**
- * Entity components of batch 2 (ADR 0098 D5, ADR 0107, ADR 0109 D2) the eject leaves out: the mob
- * itself is still generated, one warning per entity names the components it loses. Mount storage,
- * fish buckets, the habits, hovering, phasing and the dash are generated (B537b).
- */
-const NOT_IN_EJECT_COMPONENTS: Readonly<Record<string, string>> = {
-  'msm:trader': 'trader',
-  'msm:shoulder_riding': 'shoulder riding',
-};
-
-/** `definition` without the components of {@link NOT_IN_EJECT_COMPONENTS}; the generator rejects them. */
-function withoutBatch2Components(definition: JsonObject): JsonObject {
-  const components = definition.components;
-  if (!isObject(components) || notInEjectComponentsOf(definition).length === 0) return definition;
-  const kept: JsonObject = {};
-  for (const [key, value] of Object.entries(components)) {
-    if (!(key in NOT_IN_EJECT_COMPONENTS)) kept[key] = value;
-  }
-  return { ...definition, components: kept };
-}
-
-/**
- * What an entity definition has that the eject leaves out, in a fixed order, in plain words: the
- * trader and shoulder riding components of batch 2 of vanilla parity 2.
- */
-export function notInEjectComponentsOf(definition: JsonObject): string[] {
-  const components = definition.components;
-  if (!isObject(components)) return [];
-  return Object.keys(NOT_IN_EJECT_COMPONENTS)
-    .filter((key) => key in components)
-    .map((key) => `${NOT_IN_EJECT_COMPONENTS[key]} (${key})`);
-}
-
-/**
  * The script events that need the runtime's Mixins (ADR 0096 D3, D6): a script subscribing to one
  * also gets `export.not-in-eject`, because the eject has neither scripts nor the Mixins.
  */
@@ -380,12 +347,12 @@ async function loadWrapper(
  * warning for a malformed `assets/<ns>/sounds.json` or an invalid key (skipped; ADR 0057 D5); `export.gradle-wrapper-missing` (info);
  * `export.outside-jar-folders` (info) for pack files outside `assets/` and `data/`;
  * `export.not-in-eject` (warning) per key bind, HUD element and vehicle, which the eject leaves out
- * (ADR 0088 D10, ADR 0090 D14), per mob with a trader or shoulder riding component (one warning
- * per mob, naming them; the mob is generated without them, ADR 0098 D5, ADR 0109 D2; boats, mount
- * storage, fish buckets, the habits, hovering, phasing and the dash are generated, B537b), and per script and
+ * (ADR 0088 D10, ADR 0090 D14), and per script and
  * Mixin event it listens to (`block.place`, `world.explosion`; ADR 0096 D6); command, creative tab,
  * villager profession, fluid, villager type, game rule, statistic and vanilla block rules
- * definitions go to the generator (ADR 0096 D6, ADR 0112 D3; B537); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
+ * definitions go to the generator (ADR 0096 D6, ADR 0112 D3; B537); every mob component is
+ * generated (boats, mount storage, fish buckets, the habits, hovering, phasing and the dash since
+ * B537b, traders and shoulder pets since eject 2c); `export.eject-uses-geckolib` (info) per entity with renderer `vanilla`, which the eject draws
  * with GeckoLib (ADR 0072 D8).
  *
  * @param options - Where the Gradle wrapper comes from.
@@ -508,21 +475,10 @@ export function createJavaProjectExporter(options: JavaProjectOptions = {}): Exp
             message: `${file.path}: event ${event} runs script handler ${handler}; run_script actions are not ejected and were left out.`,
           });
         }
-        if (kind === 'entity') {
-          const lost = notInEjectComponentsOf(definition);
-          if (lost.length > 0) {
-            problems.report({
-              severity: 'warning',
-              code: ExportProblemCodes.notInEject,
-              file: file.path,
-              message: `${match[1]}:${match[3]} uses ${lost.join(', ')}, which the Java project does not include yet (${lost.length === 1 ? 'it needs' : 'they need'} the runtime's mob code). The mob is still generated without ${lost.length === 1 ? 'it' : 'them'}. Export the Fabric mod jar to use ${lost.length === 1 ? 'it' : 'them'}.`,
-            });
-          }
-        }
         const entry: DefinitionInput = {
           id: `${match[1]}:${match[3]}`,
           path: file.path,
-          definition: kind === 'entity' ? withoutBatch2Components(definition) : definition,
+          definition,
         };
         if (kind === 'block') blocks.push(entry);
         else if (kind === 'item') items.push(entry);

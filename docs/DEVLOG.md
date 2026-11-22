@@ -7853,3 +7853,20 @@ Next
 **Next**
 - B570: test ids `home-showcase`, `home-showcase-show`, `home-showcase-hide`, `new-project-showcase`, `example-detail-clip`, `settings-showcase-clips`, palette `command-showcase`, and the cards' (`showcase-card-<id>`, `showcase-make-<id>`, `showcase-example-<id>`, `showcase-picture-<id>`).
 - B571: the labels above.
+
+## 2026-11-22 — executor — eject 2c: traders and shoulder pets in the eject
+
+**What**
+- The 26.3 Java eject now generates `msm:trader` and `msm:shoulder_riding` (ADR 0098 D1, D4; ADR 0107 D1 to D3; ADR 0109 D2): a trader is a `Merchant` whose methods go to the shared `entity/MobTrader` (levels from the trade sets, restock twice a day or never, the trade sound, `on_trade` as the entity's own event method with the mob as self and the player as other), `entity/TraderReputation` (hits, trades, gifts, daily fading, special prices per player), vanilla's demand rule at restock and `entity/RestockAtWorkSiteGoal` for `work_site`; its right click comes after mounting and before the habits, as `MobDriver.mobInteract`. A shoulder pet is a `MobShoulder.Pet` with the synched `DATA_PERCHED`/`DATA_PERCH_LEFT`, the lazily made `entity/MobShoulder` (both shoulders, the sides, one pet per side, parrots kept, the leave rules and the cooldown) and `entity/PerchOnOwnerGoal`, no pushing or suffocating while perched, saved as the runtime saves it. The runtime has no client shoulder layer (both sides place the pet each tick), so the eject needs none.
+- The classes are generated from the runtime sources by the extended `docs/reference/eject/b537b-mob-templates/gen-mob-templates.py` into `templates/mob-traders-java.ts` (`Trader.java` is the hand-written record of `TraderParser`'s defaults); `mob-habits-java.ts` comes out unchanged.
+- Exporter: `NOT_IN_EJECT_COMPONENTS` and its stripping are gone; no mob component gets `export.not-in-eject` any more. A malformed trader now fails generation as every other component does (it was stripped before).
+- Tests: targets `boats-and-mobs.test.ts` accepts every runtime GameTest `trader_*` and `shoulder_*` mob, `mob2_pet_left` and `storage_crate`, checks the trader and shoulder members, and the line-share check covers the five new classes (MobTrader 0.96, TraderReputation 1.00, RestockAtWorkSiteGoal 0.99, MobShoulder 0.96, PerchOnOwnerGoal 1.00; minimum 0.75); exporters `vanilla-parity-3-batch-2.test.ts` (a trader with reputation, work site and `on_trade`, a left-shoulder pet), `batch2-exporters.test.ts` and `sample-villagers-and-fluids.java.golden.test.ts` (no warning; the pedlar and the sugar glider ejected; tree hash re-pinned).
+- Verified: three ejected trees (every GameTest trader, shoulder, batch 2 and storage mob together; batch 2; sample villagers and fluids) built with `./gradlew build --offline` (JDK 25) and started on a Fabric 26.3 server with `tools/run-fabric-server --no-runtime` and GeckoLib (pass, no error or warning lines). `pnpm lint`, `pnpm typecheck`, targets (242 and 124) and exporters (1904) tests green.
+
+**Decisions**
+- A shoulder pet that is not a tameable `animal` is still generated with `MobShoulder` and never perches; it logs the runtime's warning once per type.
+- `on_trade` reaches `MobTrader` as a `BiConsumer<ServerLevel, Player>` (the entity's `tradeEvent`), so the shared class needs no event runner.
+
+**Next**
+- B541: the parity GameTests (`SampleVillagersParityTest`) against the ejected sample villagers jar, now that the pedlar and the sugar glider are ejected.
+- B543 guide: `villagers-and-traders.md` (lines 85 and 111) and `eject.md` still say traders, storage and shoulder pets are left out of the Java project export.

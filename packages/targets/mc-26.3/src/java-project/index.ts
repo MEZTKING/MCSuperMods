@@ -85,6 +85,14 @@ import {
   roostGoalJava,
   swoopGoalJava,
 } from './templates/mob-habits-java';
+import {
+  mobShoulderJava,
+  mobTraderJava,
+  perchOnOwnerGoalJava,
+  restockAtWorkSiteGoalJava,
+  traderJava,
+  traderReputationJava,
+} from './templates/mob-traders-java';
 import { rangedAttackGoalJava } from './templates/ranged-attack-goal-java';
 import { throwableItemJava } from './templates/throwable-item-java';
 import { thrownItemEntityJava } from './templates/thrown-item-entity-java';
@@ -314,7 +322,7 @@ export function generateJavaProject(input: JavaProjectInput): {
       contents: followTypesGoalJava(`${input.javaPackage}.entity`),
     });
   }
-  // The shared mob classes of batch 2 (ADR 0109; B537b), in the entity package.
+  // The shared mob classes of batch 2 (ADR 0109; B537b; traders and shoulder pets since eject 2c), in the entity package.
   const entityPackage = `${input.javaPackage}.entity`;
   const mobShared: Record<string, () => string> = {
     MobHabits: () => mobHabitsJava(entityPackage, input.modId),
@@ -329,6 +337,13 @@ export function generateJavaProject(input: JavaProjectInput): {
     HoverMoveControl: () => hoverMoveControlJava(entityPackage),
     DryBucketItem: () => dryBucketItemJava(entityPackage),
     MobStorage: () => mobStorageJava(entityPackage),
+    // Traders and shoulder pets (ADR 0098 D1, D4; ADR 0107; ADR 0109 D2; eject 2c).
+    Trader: () => traderJava(entityPackage),
+    MobTrader: () => mobTraderJava(entityPackage, input.modId),
+    TraderReputation: () => traderReputationJava(entityPackage),
+    RestockAtWorkSiteGoal: () => restockAtWorkSiteGoalJava(entityPackage, input.modId),
+    MobShoulder: () => mobShoulderJava(entityPackage, input.modId),
+    PerchOnOwnerGoal: () => perchOnOwnerGoalJava(entityPackage),
   };
   for (const name of [...context.mobShared].sort()) {
     const make = mobShared[name];
