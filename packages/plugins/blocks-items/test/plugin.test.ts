@@ -155,6 +155,8 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.plants-3',
       'msm.blocks-items.storage-2',
       'msm.blocks-items.sounds',
+      'msm.blocks-items.boats',
+      'msm.blocks-items.cauldrons',
     ]);
     expect(blocksItemsValidators).toHaveLength(23);
   });

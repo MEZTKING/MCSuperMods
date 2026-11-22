@@ -4,6 +4,7 @@
 import type { Element, JsonObject, OutputFile, Target, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { DEFINITION_FORMAT } from './block';
+import { lowerBoat, lowerBoatInPlace } from './boat';
 import { BUNDLE_TEXTURES_FIELD, bundleItemFiles } from './bundle';
 import { lowerFuelAndCompostInPlace } from './fuel';
 import { isBundle, lowerItemInventoryInPlace } from './item-inventory';
@@ -41,7 +42,8 @@ function itemData(element: Element): JsonObject {
  * vanilla passthrough `msm:components` (ADR 0044): the runtime derives the vanilla components
  * from them. A bag (`msm:item_inventory`) or a bundle (`msm:bundle`) stacks to 1 (ADR 0095 D1,
  * D4): `max_stack_size` is written as 1, and a bag's `rows` are dropped unless its layout is the
- * chest; the bundle's element-only `bundle_textures` are left out. The element-only `fuel` and `compost` (ADR 0060 D4) become `minecraft:cooking_fuel`
+ * chest; the bundle's element-only `bundle_textures` are left out. A boat (`msm:boat`, ADR 0110
+ * D1) stacks to 1 and loses its element-only `boat_textures` and `chest_boat_display_name`. The element-only `fuel` and `compost` (ADR 0060 D4) become `minecraft:cooking_fuel`
  * and `minecraft:compostable` inside `msm:components`, the compost provider taken from `target`.
  *
  * @throws {@link BlocksItemsLoweringError} If the data is not an object, or `compost` has no
@@ -55,6 +57,7 @@ export function itemDefinition(
   for (const field of ITEM_EDITOR_FIELDS) delete definition[field];
   lowerFuelAndCompostInPlace(definition, target, element.id);
   lowerItemInventoryInPlace(definition);
+  lowerBoatInPlace(definition);
   definition.format = DEFINITION_FORMAT;
   return definition;
 }
@@ -89,7 +92,7 @@ function itemTagFile(target: Target, tag: string, id: string): OutputFile {
  * `item.<ns>.<path>` key of `en_us` (`merge: 'object'`), for a bundle the models and item model
  * definition of {@link bundleItemFiles} in place of the plain one (ADR 0095 D4), and for a spear, mace, bow, crossbow
  * or shield the vanilla enchanting item tags of {@link weaponItemTags} (layer `datapack`,
- * `merge: 'tag'`; ADR 0044 D3).
+ * `merge: 'tag'`; ADR 0044 D3), and for a boat the files of {@link lowerBoat} (ADR 0110 D1).
  *
  * @param element - The element.
  * @param target - The target supplying the vanilla folder names.
@@ -124,5 +127,6 @@ export function lowerItem(element: Element, target: Target): OutputFile[] {
     files.push(langFile(target, namespace, descriptionKey('item', namespace, path), displayName));
   }
   for (const tag of weaponItemTags(data)) files.push(itemTagFile(target, tag, element.id));
+  files.push(...lowerBoat(element, target));
   return files;
 }

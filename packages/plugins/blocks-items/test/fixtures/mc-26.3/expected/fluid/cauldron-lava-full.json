@@ -1,0 +1,180 @@
+[
+  {
+    "contents": {
+      "behaves_like": "lava",
+      "cauldron": {
+        "levels": true
+      },
+      "format": 1,
+      "mixing": [
+        {
+          "flowing": "minecraft:cobblestone",
+          "source": "minecraft:obsidian",
+          "with": "water"
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/liquids/slag.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/liquids/slag"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/liquids/slag.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/lava_flow",
+        "particle": "minecraft:block/lava_still",
+        "still": "minecraft:block/lava_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/liquids/slag.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/liquids/slag_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/liquids/slag_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/lava_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/liquids/slag_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "block.example.liquids.slag": "Slag"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "item.example.liquids.slag_bucket": "Slag Bucket"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:liquids/slag",
+        "example:liquids/flowing_slag"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/lava.json",
+    "schema": "tag:fluid"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/liquids/slag_cauldron"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/liquids/slag_cauldron.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_full",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "minecraft:block/lava_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/liquids/slag_cauldron.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:cauldron",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/liquids/slag_cauldron",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/liquids/slag_cauldron.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "block.example.liquids.slag_cauldron": "Cauldron of Slag"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:liquids/slag_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cauldrons.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:liquids/slag_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json",
+    "schema": "tag:block"
+  }
+]

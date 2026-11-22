@@ -4,8 +4,9 @@
  * facts:
  *
  * - `blocks-items.generated-item-clash` (error): a fluid's generated bucket item
- *   `<ns>:<path>_bucket` (`fluidBucketId`) is the id of a project element, of a block's item or
- *   of another fluid's bucket, so the game would register two items under one id.
+ *   `<ns>:<path>_bucket` (`fluidBucketId`) or bottle item `<ns>:<path>_bottle` (`fluidBottleId`,
+ *   with `bottle`; ADR 0108 D3) is the id of a project element, of a block's item or of another
+ *   fluid's bucket or bottle, so the game would register two items under one id.
  * - `blocks-items.fluid-flow-range` (warning): `slope_distance` is larger than the number of
  *   blocks the fluid can spread (`floor(7 / drop_off)`, `fluidSpreadDistance`), defaults of
  *   `behaves_like` filled in, so the fluid would look for a way down further than it can ever
@@ -20,14 +21,27 @@
  * - `blocks-items.fluid-unknown-event` (error, B485): `on_entity_inside`, or a `trigger_event`
  *   action in one of the fluid's events, names an event that is not in the fluid's own `events`.
  *   The runtime's `FluidParser` refuses such a definition, so the fluid would not load. The
- *   shared `blocks-items.unknown-event` covers blocks, items and effects only.
+ *   shared `blocks-items.unknown-event` covers blocks, items and effects only. `bottle.on_drink`
+ *   (ADR 0108 D3) is checked the same way.
+ * - `blocks-items.fluid-mixing-empty` (error, ADR 0108 D1): a mixing rule names neither `source`
+ *   nor `flowing`, so it changes nothing (the runtime drops it with a warning).
+ * - `blocks-items.fluid-mixing-self` (error): a mixing rule's `with` is the fluid itself (or its
+ *   flowing id), which can never be the other liquid.
+ * - `blocks-items.fluid-mixing-duplicate` (warning): two rules name the same `with`; the first
+ *   wins, so the later one is never used.
+ * - `blocks-items.fluid-mixing-liquid-result` (warning): a rule turns the fluid into a liquid
+ *   block (`minecraft:water`, `minecraft:lava` or a project fluid), so the two can go on mixing
+ *   instead of making a solid block as vanilla's lava does. Whether a named block exists at all
+ *   is the schema's `schema.unknown-id` (the fields are block ids), not repeated here.
  */
 import type { Element, JsonObject, Problem, ProjectValidator, TargetFacts } from '@msm/plugin-api';
 import { BLOCK_KIND } from './kinds';
 import { FLUID_KIND } from './kinds/fluid';
 import { blockItemIdOf } from './lowering/block-item';
+import { fluidBottleId, hasFluidBottle } from './lowering/cauldron';
 import {
   type FluidTextureSlot,
+  flowingFluidId,
   fluidBehaviourOf,
   fluidBucketId,
   fluidFlowOf,
@@ -45,6 +59,18 @@ export const FLUID_PROBLEM_CODES: readonly string[] = Object.freeze([
   'blocks-items.fluid-unknown-event',
 ]);
 
+/**
+ * The codes of the mixing checks (ADR 0108 D1; B531), kept apart from {@link FLUID_PROBLEM_CODES}
+ * (which the AI helper's prompt and the Very easy wording pin) until the guide and AI briefs
+ * word them.
+ */
+export const FLUID_MIXING_PROBLEM_CODES: readonly string[] = Object.freeze([
+  'blocks-items.fluid-mixing-empty',
+  'blocks-items.fluid-mixing-self',
+  'blocks-items.fluid-mixing-duplicate',
+  'blocks-items.fluid-mixing-liquid-result',
+]);
+
 /** The texture slots `fluid-texture-missing` asks for, in report order. */
 const REQUIRED_TEXTURES: readonly FluidTextureSlot[] = ['still', 'flowing', 'bucket'];
 
@@ -53,6 +79,7 @@ const TEXTURE_WORDS: Readonly<Record<FluidTextureSlot, string>> = {
   flowing: 'flowing surface',
   overlay: 'overlay',
   bucket: 'bucket',
+  bottle: 'bottle',
 };
 
 const dataOf = (element: Element): JsonObject => (isRecord(element.data) ? element.data : {});
@@ -75,6 +102,21 @@ function blockItemOf(element: Element): string | undefined {
   }
 }
 
+/** The items a fluid generates: its bucket and, with `bottle`, its bottle. */
+function generatedItemsOf(element: Element): { id: string; what: string }[] {
+  const items: { id: string; what: string }[] = [];
+  const bucket = bucketOf(element);
+  if (bucket !== undefined) items.push({ id: bucket, what: 'bucket' });
+  if (hasFluidBottle(dataOf(element))) {
+    try {
+      items.push({ id: fluidBottleId(element.id), what: 'bottle' });
+    } catch {
+      // An unsafe id: the schema reports it.
+    }
+  }
+  return items;
+}
+
 function generatedItemClashes(elements: readonly Element[]): Problem[] {
   const fluids = elements.filter((element) => element.kind === FLUID_KIND);
   if (fluids.length === 0) return [];
@@ -88,27 +130,28 @@ function generatedItemClashes(elements: readonly Element[]): Problem[] {
   const owners = new Map<string, string>();
   const problems: Problem[] = [];
   for (const element of fluids) {
-    const bucket = bucketOf(element);
-    if (bucket === undefined) continue;
-    const block = blockItems.get(bucket);
-    const other = owners.get(bucket);
-    let message: string | undefined;
-    if (ids.has(bucket)) {
-      message = `This fluid registers its bucket as "${bucket}", but the project already has an element with that id, so the game would load only one of them. Rename that element, or this fluid.`;
-    } else if (block !== undefined) {
-      message = `This fluid registers its bucket as "${bucket}", and the block "${block}" registers its item under the same id. Rename one of them.`;
-    } else if (other !== undefined) {
-      message = `This fluid registers its bucket as "${bucket}", and the fluid "${other}" registers one with the same id. Rename one of them.`;
-    } else {
-      owners.set(bucket, element.id);
-    }
-    if (message !== undefined) {
-      problems.push({
-        severity: 'error',
-        code: 'blocks-items.generated-item-clash',
-        elementId: element.id,
-        message,
-      });
+    for (const { id: item, what } of generatedItemsOf(element)) {
+      const block = blockItems.get(item);
+      const other = owners.get(item);
+      let message: string | undefined;
+      if (ids.has(item)) {
+        message = `This fluid registers its ${what} as "${item}", but the project already has an element with that id, so the game would load only one of them. Rename that element, or this fluid.`;
+      } else if (block !== undefined) {
+        message = `This fluid registers its ${what} as "${item}", and the block "${block}" registers its item under the same id. Rename one of them.`;
+      } else if (other !== undefined) {
+        message = `This fluid registers its ${what} as "${item}", and the fluid "${other}" registers an item with the same id. Rename one of them.`;
+      } else {
+        owners.set(item, element.id);
+      }
+      if (message !== undefined) {
+        problems.push({
+          severity: 'error',
+          code: 'blocks-items.generated-item-clash',
+          elementId: element.id,
+          ...(what === 'bottle' ? { path: '/bottle' } : {}),
+          message,
+        });
+      }
     }
   }
   return problems;
@@ -196,6 +239,9 @@ function unknownFluidEvents(fluids: readonly Element[]): Problem[] {
     if (typeof data.on_entity_inside === 'string') {
       report(data.on_entity_inside, '/on_entity_inside');
     }
+    if (isRecord(data.bottle) && typeof data.bottle.on_drink === 'string') {
+      report(data.bottle.on_drink, '/bottle/on_drink');
+    }
     for (const [name, event] of Object.entries(events)) {
       const actions = isRecord(event) ? event.actions : undefined;
       if (!Array.isArray(actions)) continue;
@@ -205,6 +251,84 @@ function unknownFluidEvents(fluids: readonly Element[]): Problem[] {
         report(action.event, `/events/${escapePointer(name)}/actions/${index}/event`);
       });
     }
+  }
+  return problems;
+}
+
+/** The liquid blocks a mixing result may not be without a warning: vanilla's and the project's. */
+const VANILLA_LIQUID_BLOCKS: readonly string[] = ['minecraft:water', 'minecraft:lava'];
+
+const namespaced = (id: string): string => (id.includes(':') ? id : `minecraft:${id}`);
+
+function mixingProblems(fluids: readonly Element[], target: TargetFacts): Problem[] {
+  const liquids = new Set([...VANILLA_LIQUID_BLOCKS, ...fluids.map((fluid) => fluid.id as string)]);
+  const problems: Problem[] = [];
+  for (const element of fluids) {
+    const rules = dataOf(element).mixing;
+    if (!Array.isArray(rules)) continue;
+    let flowing: string | undefined;
+    try {
+      flowing = flowingFluidId(target, element.id);
+    } catch {
+      flowing = undefined;
+    }
+    const own = new Set([element.id as string, ...(flowing === undefined ? [] : [flowing])]);
+    const seen = new Map<string, number>();
+    rules.forEach((rule, index) => {
+      if (!isRecord(rule)) return;
+      const path = `/mixing/${index}`;
+      const withValue = typeof rule.with === 'string' ? rule.with : undefined;
+      const source = typeof rule.source === 'string' ? rule.source : undefined;
+      const flowingResult = typeof rule.flowing === 'string' ? rule.flowing : undefined;
+      if (source === undefined && flowingResult === undefined) {
+        problems.push({
+          severity: 'error',
+          code: 'blocks-items.fluid-mixing-empty',
+          elementId: element.id,
+          path,
+          message:
+            'This mixing rule turns nothing into a block: give it a block for the source, for flowing fluid, or both.',
+        });
+      }
+      if (withValue === undefined) return;
+      const other =
+        withValue === 'water' || withValue === 'lava' ? withValue : namespaced(withValue);
+      if (own.has(other)) {
+        problems.push({
+          severity: 'error',
+          code: 'blocks-items.fluid-mixing-self',
+          elementId: element.id,
+          path: `${path}/with`,
+          message:
+            'This mixing rule mixes the fluid with itself, which never happens. Pick water, lava or another fluid.',
+        });
+      }
+      const first = seen.get(other);
+      if (first === undefined) {
+        seen.set(other, index);
+      } else {
+        problems.push({
+          severity: 'warning',
+          code: 'blocks-items.fluid-mixing-duplicate',
+          elementId: element.id,
+          path: `${path}/with`,
+          message: `Mixing rule ${first + 1} already says what happens with "${withValue}", and the first matching rule wins, so this one is never used. Remove it or merge the two.`,
+        });
+      }
+      for (const [field, block] of [
+        ['source', source],
+        ['flowing', flowingResult],
+      ] as const) {
+        if (block === undefined || !liquids.has(namespaced(block))) continue;
+        problems.push({
+          severity: 'warning',
+          code: 'blocks-items.fluid-mixing-liquid-result',
+          elementId: element.id,
+          path: `${path}/${field}`,
+          message: `This mixing rule turns the fluid into the liquid "${block}", so the two liquids can keep mixing. Pick a solid block, as lava makes obsidian and cobblestone.`,
+        });
+      }
+    });
   }
   return problems;
 }
@@ -228,6 +352,7 @@ export const fluidValidators: readonly ProjectValidator[] = Object.freeze([
         ...missingTextures(fluids),
         ...missingFog(fluids, target),
         ...unknownFluidEvents(fluids),
+        ...mixingProblems(fluids, target),
       ];
     },
   },

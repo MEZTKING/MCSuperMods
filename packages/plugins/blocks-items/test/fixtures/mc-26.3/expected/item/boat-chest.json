@@ -1,0 +1,146 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:boat": {
+          "chest": true
+        }
+      },
+      "format": 1,
+      "max_stack_size": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/item/woods/ash_boat.json",
+    "schema": "msm:item_definition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/ash_boat",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/woods/ash_boat.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "item.example.woods.ash_boat": "Ash Boat"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "entity.example.woods.ash_boat": "Ash Boat"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:woods/ash_boat"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/boats.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "category": "misc",
+      "group": "boat",
+      "key": {
+        "#": "example:woods/ash_planks"
+      },
+      "pattern": [
+        "# #",
+        "###"
+      ],
+      "result": {
+        "count": 1,
+        "id": "example:woods/ash_boat"
+      },
+      "type": "minecraft:crafting_shaped"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/woods/ash_boat.json",
+    "schema": "resource:recipe"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/woods/ash_chest_boat",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/woods/ash_chest_boat.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/ash_chest_boat"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/woods/ash_chest_boat.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "item.example.woods.ash_chest_boat": "Ash Chest Boat"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "entity.example.woods.ash_chest_boat": "Ash Chest Boat"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:woods/ash_chest_boat"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/chest_boats.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "category": "misc",
+      "group": "chest_boat",
+      "ingredients": [
+        "minecraft:chest",
+        "example:woods/ash_boat"
+      ],
+      "result": {
+        "count": 1,
+        "id": "example:woods/ash_chest_boat"
+      },
+      "type": "minecraft:crafting_shapeless"
+    },
+    "layer": "datapack",
+    "path": "data/example/recipe/woods/ash_chest_boat.json",
+    "schema": "resource:recipe"
+  }
+]

@@ -3,7 +3,8 @@
  * is a fluid, its liquid block under the element id and its bucket `<ns>:<path>_bucket`.
  *
  * - The runtime definition `msm/<ns>/fluid/<path>.json` (layer `msm`): the element data without
- *   the editor-only `display_name`, `bucket_display_name` and `textures`, with `format` set.
+ *   the editor-only `display_name`, `bucket_display_name`, `bottle_display_name`,
+ *   `cauldron_display_name` and `textures`, with `format` set.
  *   `tint` passes through as a plain RGB number (no alpha).
  * - The liquid block's block state: a single `""` variant (the game draws the liquid itself, so
  *   the block state has no `level` variants) naming `<ns>:block/<path>`, a model without
@@ -20,6 +21,10 @@
  *   fluid and, where the target registers a liquid as two fluids (`fluidModel: 'two_fluids'`),
  *   `<ns>:flowing_<path>` too.
  *
+ * - With `cauldron` or `bottle` (ADR 0108 D2, D3): the cauldron block `<ns>:<path>_cauldron` and
+ *   the bottle item `<ns>:<path>_bottle`, lowered by `lowerCauldron` (`cauldron.ts`). `mixing`
+ *   (ADR 0108 D1) is a runtime field and passes through in the definition; it writes no file.
+ *
  * Pictures left out fall back to vanilla's water pictures (lava's for `behaves_like: lava`),
  * named, never bundled; `blocks-items.fluid-texture-missing` reports the still and flowing ones.
  * Animated pictures carry their own `.png.mcmeta` beside the project's PNG, as vanilla water's
@@ -28,6 +33,7 @@
 import type { Element, Json, JsonObject, OutputFile, Target, TargetFacts } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { DEFINITION_FORMAT } from './block';
+import { lowerCauldron } from './cauldron';
 import {
   assetPath,
   BlocksItemsLoweringError,
@@ -48,6 +54,8 @@ import {
 export const FLUID_EDITOR_FIELDS = Object.freeze([
   'display_name',
   'bucket_display_name',
+  'bottle_display_name',
+  'cauldron_display_name',
   'textures',
 ] as const);
 
@@ -83,7 +91,7 @@ export const FLUID_FLOW_DEFAULTS: Readonly<Record<FluidBehaviour, Readonly<Fluid
   });
 
 /** The texture slots of a fluid element (`textures.<slot>`). */
-export type FluidTextureSlot = 'still' | 'flowing' | 'overlay' | 'bucket';
+export type FluidTextureSlot = 'still' | 'flowing' | 'overlay' | 'bucket' | 'bottle';
 
 /**
  * The vanilla pictures a fluid without its own falls back to, per `behaves_like` (named, never
@@ -227,7 +235,8 @@ export function fluidBlockModel(data: Json | undefined): JsonObject {
 /**
  * Lowers an `msm:fluid` element, in this order: the runtime definition, the liquid block's block
  * state and model, the bucket's item model definition and model, the language keys (with
- * `display_name`) and the fluid tags of `behaves_like`.
+ * `display_name`), the fluid tags of `behaves_like`, then the cauldron's and the bottle's files
+ * (`lowerCauldron`, with `cauldron` or `bottle`).
  *
  * @param element - The element.
  * @param target - The target supplying the folders, the fluid model and the fluid tags.
@@ -293,5 +302,6 @@ export function lowerFluid(element: Element, target: Target): OutputFile[] {
       merge: 'tag',
     });
   }
+  files.push(...lowerCauldron(element, target));
   return files;
 }

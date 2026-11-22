@@ -1,12 +1,14 @@
 /**
  * "New element" templates of `@msm/plugin-blocks-items`: blocks, items, effects, the mod
  * metadata, the additions to vanilla content, portals, particles, the vanilla parity block types and bags, fluids,
- * and the plants, pots, storage, sounds and vanilla block rules of vanilla parity 3.
+ * the plants, pots, storage, sounds and vanilla block rules of vanilla parity 3, and its boats,
+ * fluid cauldrons, bottles and mixing.
  */
 import type { ElementTemplate } from '@msm/plugin-api';
 import { additionTemplates } from './additions';
 import { blockTypeTemplates } from './block-types';
 import { blockTemplates } from './blocks';
+import { boatTemplates } from './boats';
 import { containerTemplates } from './containers';
 import { effectTemplates } from './effects';
 import { fluidTemplates } from './fluids';
@@ -32,6 +34,7 @@ export const blocksItemsTemplates: readonly ElementTemplate[] = Object.freeze([
   ...vanillaParity3BlockTemplates,
   ...itemTemplates,
   ...vanillaParityItemTemplates,
+  ...boatTemplates,
   ...effectTemplates,
   ...modTemplates,
   ...additionTemplates,

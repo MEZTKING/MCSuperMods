@@ -1,0 +1,262 @@
+[
+  {
+    "contents": {
+      "behaves_like": "water",
+      "bottle": {
+        "food": {
+          "nutrition": 1,
+          "saturation": 0.2
+        },
+        "on_drink": "example:warm"
+      },
+      "cauldron": {
+        "levels": true
+      },
+      "events": {
+        "example:warm": {
+          "actions": [
+            {
+              "effect": "minecraft:speed",
+              "seconds": 3,
+              "target": "self",
+              "type": "apply_effect"
+            }
+          ]
+        }
+      },
+      "format": 1,
+      "tint": 9067051
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/tea.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/tea"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/tea.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "example:block/tea_flow",
+        "particle": "example:block/tea_still",
+        "still": "example:block/tea_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tea.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/tea_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tea_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/tea_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/tea_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "block.example.tea": "Tea"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "item.example.tea_bucket": "Tea Bucket"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:tea",
+        "example:flowing_tea"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/water.json",
+    "schema": "tag:fluid"
+  },
+  {
+    "contents": {
+      "variants": {
+        "level=1": {
+          "model": "example:block/tea_cauldron_level1"
+        },
+        "level=2": {
+          "model": "example:block/tea_cauldron_level2"
+        },
+        "level=3": {
+          "model": "example:block/tea_cauldron_full"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/tea_cauldron.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_level1",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "example:block/tea_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tea_cauldron_level1.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_level2",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "example:block/tea_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tea_cauldron_level2.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_full",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "example:block/tea_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tea_cauldron_full.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:cauldron",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/tea_cauldron",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/tea_cauldron.json",
+    "schema": "resource:loot_table"
+  },
+  {
+    "contents": {
+      "block.example.tea_cauldron": "Tea Cauldron"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:tea_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cauldrons.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:tea_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/tea_bottle",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tea_bottle.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:item/tea_bottle"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/tea_bottle.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "item.example.tea_bottle": "Bottle of Tea"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/example/lang/en_us.json",
+    "schema": "::java::assets::lang::Lang"
+  }
+]

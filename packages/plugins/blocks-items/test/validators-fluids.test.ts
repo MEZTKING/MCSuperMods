@@ -1,7 +1,7 @@
 /**
  * The fluid validators (ADR 0099 D1, D4; B477): `blocks-items.generated-item-clash`,
  * `fluid-flow-range`, `fluid-texture-missing`, the one-fluid target's `fluid-no-fog` and
- * `fluid-unknown-event` (B485), run
+ * `fluid-unknown-event` (B485), and the bottle and mixing checks of ADR 0108 (B531), run
  * through every validator of the plugin as the app does, on both built-in targets.
  */
 import type { Element, Problem, TargetFacts } from '@msm/plugin-api';
@@ -11,6 +11,7 @@ import plugin, {
   BLOCK_TYPE_PROBLEM_CODES,
   BLOCKS_ITEMS_PROBLEM_CODES,
   CONTAINER_PROBLEM_CODES,
+  FLUID_MIXING_PROBLEM_CODES,
   FLUID_PROBLEM_CODES,
   FURNITURE_PROBLEM_CODES,
   fluidKind,
@@ -75,6 +76,13 @@ describe('fluid validators', () => {
       'blocks-items.fluid-no-fog',
       'blocks-items.fluid-unknown-event',
     ]);
+    expect(FLUID_MIXING_PROBLEM_CODES.filter((code) => others.has(code))).toEqual([]);
+    expect(FLUID_MIXING_PROBLEM_CODES).toEqual([
+      'blocks-items.fluid-mixing-empty',
+      'blocks-items.fluid-mixing-self',
+      'blocks-items.fluid-mixing-duplicate',
+      'blocks-items.fluid-mixing-liquid-result',
+    ]);
   });
 
   it.each([
@@ -113,6 +121,28 @@ describe('fluid validators', () => {
       const problems = await validate([fluid('demo:goo'), fluid('demo:goo_bucket')]);
       expect(withCode(problems, 'generated-item-clash')).toEqual([
         ['demo:goo', undefined, 'error'],
+      ]);
+    });
+
+    it('reports a bottle id taken by an element or another fluid, only with bottle', async () => {
+      const problems = await validate([
+        fluid('demo:tea', { bottle: {} }),
+        item('demo:tea_bottle'),
+        fluid('demo:milk', { bottle: {} }),
+        fluid('demo:x/milk', { bottle: {} }),
+        fluid('demo:juice'),
+        item('demo:juice_bottle'),
+      ]);
+      expect(withCode(problems, 'generated-item-clash')).toEqual([
+        ['demo:tea', '/bottle', 'error'],
+      ]);
+      const bottleIsBucket = await validate([
+        fluid('demo:a', { bottle: {} }),
+        fluid('demo:a_bottle'),
+      ]);
+      // `demo:a_bottle` is an element; its own bucket `demo:a_bottle_bucket` is free.
+      expect(withCode(bottleIsBucket, 'generated-item-clash')).toEqual([
+        ['demo:a', '/bottle', 'error'],
       ]);
     });
 
@@ -219,6 +249,16 @@ describe('fluid validators', () => {
       }
     });
 
+    it("reports a bottle's on_drink naming an event the fluid does not declare", async () => {
+      const problems = await validate([
+        fluid('demo:good', { bottle: { on_drink: 'glow' }, events: { glow } }),
+        fluid('demo:bad', { bottle: { on_drink: 'glow' } }),
+      ]);
+      expect(withCode(problems, 'fluid-unknown-event')).toEqual([
+        ['demo:bad', '/bottle/on_drink', 'error'],
+      ]);
+    });
+
     it('leaves blocks to the shared unknown-event check', async () => {
       const problems = await validate([
         block('demo:lamp', { components: { 'msm:on_step': { event: 'nope' } } }),
@@ -227,6 +267,56 @@ describe('fluid validators', () => {
       expect(withCode(problems, 'unknown-event')).toEqual([
         ['demo:lamp', '/components/msm:on_step/event', 'error'],
       ]);
+    });
+  });
+
+  describe('mixing', () => {
+    it('reports empty, self, repeated and liquid-making rules', async () => {
+      const elements = [
+        fluid('demo:acid', {
+          mixing: [
+            { with: 'lava', source: 'minecraft:obsidian' },
+            { with: 'water' },
+            { with: 'demo:acid', flowing: 'minecraft:stone' },
+            { with: 'lava', flowing: 'minecraft:cobblestone' },
+            { with: 'demo:slime', source: 'water', flowing: 'demo:slime' },
+          ],
+        }),
+        fluid('demo:slime'),
+        fluid('demo:magma', {
+          behaves_like: 'lava',
+          mixing: [
+            { with: 'water', source: 'minecraft:obsidian', flowing: 'minecraft:cobblestone' },
+            { with: 'demo:slime', source: 'minecraft:slime_block' },
+          ],
+        }),
+      ];
+      for (const bundle of [TWO, ONE]) {
+        const problems = await validate(elements, bundle);
+        expect(withCode(problems, 'fluid-mixing-empty')).toEqual([
+          ['demo:acid', '/mixing/1', 'error'],
+        ]);
+        expect(withCode(problems, 'fluid-mixing-self')).toEqual([
+          ['demo:acid', '/mixing/2/with', 'error'],
+        ]);
+        expect(withCode(problems, 'fluid-mixing-duplicate')).toEqual([
+          ['demo:acid', '/mixing/3/with', 'warning'],
+        ]);
+        expect(withCode(problems, 'fluid-mixing-liquid-result')).toEqual([
+          ['demo:acid', '/mixing/4/source', 'warning'],
+          ['demo:acid', '/mixing/4/flowing', 'warning'],
+        ]);
+      }
+    });
+
+    it('treats the flowing id as the fluid itself on the two-fluid target only', async () => {
+      const elements = [
+        fluid('demo:goo', { mixing: [{ with: 'demo:flowing_goo', source: 'minecraft:stone' }] }),
+      ];
+      expect(withCode(await validate(elements, TWO), 'fluid-mixing-self')).toEqual([
+        ['demo:goo', '/mixing/0/with', 'error'],
+      ]);
+      expect(withCode(await validate(elements, ONE), 'fluid-mixing-self')).toEqual([]);
     });
   });
 });

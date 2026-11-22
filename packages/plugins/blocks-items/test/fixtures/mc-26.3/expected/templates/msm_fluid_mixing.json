@@ -1,0 +1,172 @@
+[
+  {
+    "contents": {
+      "behaves_like": "lava",
+      "cauldron": {},
+      "flow": {
+        "drop_off": 2,
+        "infinite": false,
+        "slope_distance": 2,
+        "tick_delay": 30
+      },
+      "format": 1,
+      "light": 15,
+      "mixing": [
+        {
+          "flowing": "minecraft:cobbled_deepslate",
+          "source": "minecraft:raw_copper_block",
+          "with": "water"
+        }
+      ],
+      "tint": 14711356
+    },
+    "layer": "msm",
+    "path": "msm/demo/fluid/molten_copper.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/molten_copper"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/molten_copper.json"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/lava_flow",
+        "particle": "minecraft:block/lava_still",
+        "still": "minecraft:block/lava_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/molten_copper.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/molten_copper_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/molten_copper_bucket.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/lava_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/molten_copper_bucket.json"
+  },
+  {
+    "contents": {
+      "block.demo.molten_copper": "Molten Copper"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "item.demo.molten_copper_bucket": "Molten Copper Bucket"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:molten_copper",
+        "demo:flowing_molten_copper"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/lava.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/molten_copper_cauldron"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/molten_copper_cauldron.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_full",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "minecraft:block/lava_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/molten_copper_cauldron.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:cauldron",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/molten_copper_cauldron",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/molten_copper_cauldron.json"
+  },
+  {
+    "contents": {
+      "block.demo.molten_copper_cauldron": "Molten Copper Cauldron"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:molten_copper_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cauldrons.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:molten_copper_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  }
+]

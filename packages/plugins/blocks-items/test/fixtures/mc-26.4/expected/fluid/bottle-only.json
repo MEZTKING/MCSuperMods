@@ -1,0 +1,115 @@
+[
+  {
+    "contents": {
+      "bottle": {
+        "effects": [
+          {
+            "effect": "minecraft:luck",
+            "seconds": 30
+          }
+        ]
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/fluid/dew.json",
+    "schema": "msm:fluid_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/dew"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/dew.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/water_flow",
+        "particle": "minecraft:block/water_still",
+        "still": "minecraft:block/water_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/dew.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/dew_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/dew_bucket.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/water_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/dew_bucket.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:dew"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/water.json",
+    "schema": "tag:fluid"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:dew"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/swimmable.json",
+    "schema": "tag:fluid"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/dew_bottle",
+        "tints": [
+          {
+            "type": "minecraft:constant",
+            "value": 3694022
+          }
+        ],
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/dew_bottle.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/potion_overlay",
+        "layer1": "minecraft:item/potion"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/dew_bottle.json",
+    "schema": "::java::assets::model::Model"
+  }
+]

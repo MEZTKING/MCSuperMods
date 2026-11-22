@@ -310,6 +310,8 @@ export const VILLAGERS_FLUIDS_PROMPT_TEMPLATES = Object.freeze([
   'msm_villager_profession',
   'msm_fluid_water_like',
   'msm_fluid_lava_like',
+  'msm_fluid_cauldron_bottle',
+  'msm_fluid_mixing',
   'dimension_type_moon',
   'dimension_type_nether_like',
 ]);

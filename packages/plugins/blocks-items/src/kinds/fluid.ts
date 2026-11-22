@@ -2,11 +2,30 @@
  * The `msm:fluid` kind (ADR 0099 D1): a project liquid, folder `fluid`, registry `fluid`. One
  * element registers the fluid (and on targets that register a liquid as two fluids also
  * `<ns>:flowing_<path>`), its liquid block under the element id and its bucket
- * `<ns>:<path>_bucket`.
+ * `<ns>:<path>_bucket`; with `cauldron` and `bottle` (ADR 0108 D2, D3) also the block
+ * `<ns>:<path>_cauldron` and the item `<ns>:<path>_bottle`.
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
 import { lowerFluid } from '../lowering/fluid';
+
+export {
+  BOTTLE_FALLBACK_LAYERS,
+  CAULDRON_BLOCK_TAGS,
+  CAULDRON_PICTURES,
+  CAULDRON_TEMPLATES,
+  EMPTY_CAULDRON,
+  FLUID_BOTTLE_SUFFIX,
+  FLUID_CAULDRON_SUFFIX,
+  fluidBottleId,
+  fluidCauldronHasLevels,
+  fluidCauldronId,
+  fluidCompanionIds,
+  hasFluidBottle,
+  hasFluidCauldron,
+  lowerCauldron,
+  WATER_BOTTLE_COLOUR,
+} from '../lowering/cauldron';
 
 export {
   FLOWING_FLUID_PREFIX,

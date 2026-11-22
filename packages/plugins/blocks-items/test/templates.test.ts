@@ -18,15 +18,19 @@ import plugin, {
   blockItemId,
   blocksItemsKinds,
   blocksItemsTemplates,
+  boatCompanionIds,
+  boatOf,
+  boatPlanksId,
   CREATIVE_TAB_KIND,
   FLUID_KIND,
   fluidBucketId,
+  fluidCompanionIds,
   fluidRegistryIds,
   MOD_ID_PATTERN,
   machineOf,
   modIdFromNamespace,
 } from '../src/index';
-import { BLOCK_KIND } from '../src/kinds';
+import { BLOCK_KIND, ITEM_KIND } from '../src/kinds';
 import {
   blockingProblems,
   element,
@@ -133,6 +137,7 @@ const IDS = [
   'msm_item_satchel',
   'msm_item_pouch',
   'msm_item_quiver_bundle',
+  'msm_item_boat',
   'msm_effect_status',
   'msm_effect_damage_over_time',
   'msm_effect_stat_boost',
@@ -148,6 +153,8 @@ const IDS = [
   'msm_block_ambient_particles',
   'msm_fluid_water_like',
   'msm_fluid_lava_like',
+  'msm_fluid_cauldron_bottle',
+  'msm_fluid_mixing',
 ];
 const CATEGORIES = new Set([
   'Blocks',
@@ -215,10 +222,37 @@ function withOwnIds(
       .map((match) => `${match[1]}:${match[2]}`);
     const project: Record<string, readonly string[]> = {
       ...PROJECT_IDS,
-      block: [...(PROJECT_IDS.block ?? []), created.id],
-      item: [...(PROJECT_IDS.item ?? []), fluidBucketId(created.id)],
+      block: [
+        ...(PROJECT_IDS.block ?? []),
+        created.id,
+        ...(fluidCompanionIds(created.id, created.data).block ?? []),
+      ],
+      item: [
+        ...(PROJECT_IDS.item ?? []),
+        fluidBucketId(created.id),
+        ...(fluidCompanionIds(created.id, created.data).item ?? []),
+      ],
       model: [...(PROJECT_IDS.model ?? []), ...modelIds],
       fluid: fluidRegistryIds(target, created.id),
+    };
+    return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
+  }
+  if (created.kind === ITEM_KIND && boatOf(created.data) !== undefined) {
+    // A boat brings its chest boat (its own id); the Wood set it sits beside brings the planks
+    // its recipe names (`boatPlanksId`), so the test project has them as the flow's would.
+    const modelIds = files
+      .map((file) => /^assets\/([^/]+)\/models\/(.+)\.json$/.exec(file.path))
+      .filter((match) => match !== null)
+      .map((match) => `${match[1]}:${match[2]}`);
+    const project: Record<string, readonly string[]> = {
+      ...PROJECT_IDS,
+      item: [
+        ...(PROJECT_IDS.item ?? []),
+        created.id,
+        ...boatCompanionIds(created.id, created.data),
+        boatPlanksId(created.id),
+      ],
+      model: [...(PROJECT_IDS.model ?? []), ...modelIds],
     };
     return { ...indexes, registries: createRegistryIndex({ vanilla: indexes.vanilla, project }) };
   }

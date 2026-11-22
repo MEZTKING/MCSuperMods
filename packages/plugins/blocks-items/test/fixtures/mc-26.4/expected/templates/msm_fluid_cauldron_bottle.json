@@ -1,0 +1,254 @@
+[
+  {
+    "contents": {
+      "behaves_like": "water",
+      "bottle": {
+        "effects": [
+          {
+            "effect": "minecraft:regeneration",
+            "seconds": 5
+          }
+        ],
+        "food": {
+          "can_always_eat": true,
+          "nutrition": 2,
+          "saturation": 0.4
+        }
+      },
+      "cauldron": {
+        "levels": true
+      },
+      "format": 1,
+      "tint": 12860014
+    },
+    "layer": "msm",
+    "path": "msm/demo/fluid/berry_juice.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "demo:block/berry_juice"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/berry_juice.json"
+  },
+  {
+    "contents": {
+      "textures": {
+        "flowing": "minecraft:block/water_flow",
+        "overlay": "minecraft:block/water_overlay",
+        "particle": "minecraft:block/water_still",
+        "still": "minecraft:block/water_still"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/berry_juice.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/berry_juice_bucket",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/berry_juice_bucket.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/water_bucket"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/berry_juice_bucket.json"
+  },
+  {
+    "contents": {
+      "block.demo.berry_juice": "Berry Juice"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "item.demo.berry_juice_bucket": "Berry Juice Bucket"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:berry_juice"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/water.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:berry_juice"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/fluid/swimmable.json"
+  },
+  {
+    "contents": {
+      "variants": {
+        "level=1": {
+          "model": "demo:block/berry_juice_cauldron_level1"
+        },
+        "level=2": {
+          "model": "demo:block/berry_juice_cauldron_level2"
+        },
+        "level=3": {
+          "model": "demo:block/berry_juice_cauldron_full"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/blockstates/berry_juice_cauldron.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_level1",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "minecraft:block/water_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/berry_juice_cauldron_level1.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_level2",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "minecraft:block/water_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/berry_juice_cauldron_level2.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/template_cauldron_full",
+      "textures": {
+        "bottom": "minecraft:block/cauldron_bottom",
+        "content": "minecraft:block/water_still",
+        "inside": "minecraft:block/cauldron_inner",
+        "particle": "minecraft:block/cauldron_side",
+        "side": "minecraft:block/cauldron_side",
+        "top": "minecraft:block/cauldron_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/block/berry_juice_cauldron_full.json"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "minecraft:cauldron",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "demo:blocks/berry_juice_cauldron",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/demo/loot_table/blocks/berry_juice_cauldron.json"
+  },
+  {
+    "contents": {
+      "block.demo.berry_juice_cauldron": "Berry Juice Cauldron"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:berry_juice_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/cauldrons.json"
+  },
+  {
+    "contents": {
+      "values": [
+        "demo:berry_juice_cauldron"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/mineable/pickaxe.json"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "demo:item/berry_juice_bottle",
+        "tints": [
+          {
+            "type": "minecraft:constant",
+            "value": 12860014
+          }
+        ],
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/items/berry_juice_bottle.json"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "minecraft:item/potion_overlay",
+        "layer1": "minecraft:item/potion"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/demo/models/item/berry_juice_bottle.json"
+  },
+  {
+    "contents": {
+      "item.demo.berry_juice_bottle": "Bottle of Berry Juice"
+    },
+    "layer": "resourcepack",
+    "merge": "object",
+    "path": "assets/demo/lang/en_us.json"
+  }
+]

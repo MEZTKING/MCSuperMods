@@ -39,6 +39,24 @@ export * from './kinds/fluid';
 export * from './lowering';
 export { blockItemId, blockItemIdOf } from './lowering/block-item';
 export {
+  BOAT_COMPONENT,
+  BOAT_EDITOR_FIELDS,
+  BOAT_ENDINGS,
+  BOAT_ITEM_TAGS,
+  BOAT_TEXTURE_SIZES,
+  type BoatTexture,
+  boatChestId,
+  boatCompanionIds,
+  boatOf,
+  boatPlanksId,
+  boatTextureId,
+  boatTexturePaths,
+  boatWoodOf,
+  CHEST_BOAT_FALLBACK_ITEM,
+  lowerBoat,
+  lowerBoatInPlace,
+} from './lowering/boat';
+export {
   BUNDLE_HAS_SELECTED_ITEM,
   BUNDLE_OPEN_BACK_PARENT,
   BUNDLE_OPEN_FRONT_PARENT,
@@ -154,7 +172,11 @@ export {
   TRANSPARENT_TEXTURE_CODE,
   transparentTextureProblem,
 } from './validators';
-export { BOAT_PROBLEM_CODES, boatValidators } from './validators-boats';
+export {
+  BOAT_CONFLICT_COMPONENTS,
+  BOAT_PROBLEM_CODES,
+  boatValidators,
+} from './validators-boats';
 export {
   CONTAINER_PROBLEM_CODES,
   containerValidators,
@@ -165,7 +187,11 @@ export {
   creativeTabValidators,
   projectItemIds,
 } from './validators-creative-tabs';
-export { FLUID_PROBLEM_CODES, fluidValidators } from './validators-fluids';
+export {
+  FLUID_MIXING_PROBLEM_CODES,
+  FLUID_PROBLEM_CODES,
+  fluidValidators,
+} from './validators-fluids';
 export { FURNITURE_PROBLEM_CODES, furnitureValidators } from './validators-furniture';
 export {
   INVENTORY_CONFLICT_COMPONENTS,
