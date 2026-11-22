@@ -20,6 +20,17 @@
 - Containers gain three options that change their saved shape (`type` state, the player store): removing them from a used block follows ADR 0074 C7's warning.
 - One Mixin more is possible (D2), with its GameTest.
 
+## Amendment after the spike (B503, 2026-11-22)
+
+Measured on both versions (evidence in `docs/reference/spikes/b503/`).
+
+- **Lightning: go, no Mixin.** Fabric's `ServerEntityEvents.ENTITY_LOAD` fires for the bolt on its spawn tick before the strike; the runtime scrapes project weathering blocks from there. Vanilla's measured rule: the struck block goes to its first stage, and a few neighbours (4 to 19 cells on a 7 by 7 floor) go back one stage; with a rod, the block under it drops 0 to 3 stages (full reach: verify at implementation). Visual-only bolts cannot be told apart (no getter) and are treated alike.
+- **Weathering on more types: go.** Rod, button, plate, fence, gate and wall subclasses age at vanilla copper's rate and keep every state property.
+- **Waterlogged containers: go.** `MsmContainerBlock` with `SimpleWaterloggedBlock` keeps its block entity, menu, hoppers and comparator; breaking it leaves a water source.
+- **Double chests: go**, as a `ChestBlock` subclass family with its own `ChestBlockEntity` type (overriding `newBlockEntity`), not `MsmContainerBlock`; one 54-slot menu, each half drops its own items.
+- **Per-player storage: go**, as a persistent Fabric attachment copied on death, one entry per block id.
+- **Ageing containers.** `Weathering.replace` and the random tick drop the contents; the runtime copies the whole block entity data, sets the new block with `UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` and pastes it back.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: weathering on buttons, plates, fences, gates and walls although vanilla has none; lightning scraping by vanilla's observed rule; doubles only for three-row chests; one player store per block id.

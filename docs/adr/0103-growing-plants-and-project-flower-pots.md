@@ -25,6 +25,16 @@ Vanilla groups these plants into a few shapes (verify at implementation, spike q
 - Five more types to keep on both versions; each has GameTests and parity cases.
 - Project pots add one registered block per listed plant (the registry grows with the list; the Studio shows the count).
 
+## Amendment after the spike (B503, 2026-11-22)
+
+Measured on both versions (evidence in `docs/reference/spikes/b503/`). These win over D1 to D3 where they differ.
+
+- **Classes.** `growing_plant` extends vanilla's kelp, weeping vine, twisting vine and cave vine head and body classes, overriding `getBodyBlock`/`getHeadBlock` (and for berries `useWithoutItem` and `getCloneItemStack`); our own `growth_chance` and bone-meal count use `GrowingPlantHeadBlock`/`GrowingPlantBodyBlock` directly (verify at implementation). `max_age` is the starting age within vanilla's fixed 0..25 range: a plant grows at most 26 blocks from age 0. `column_plant` cane and cactus use `SugarCaneBlock` and `CactusBlock` with `randomTicks()`; `multiface` uses `GlowLichenBlock`; light comes from the block's properties.
+- **D3 changed for bamboo and dripleaf.** Vanilla's bamboo and dripleaf classes name vanilla's own blocks (a naked stalk has no height cap, a shoot and bone meal turn into vanilla blocks). We keep them in scope (vanilla parity) and the runtime writes its own height, leaf-stage, shoot and bone-meal rules for `column_plant` `bamboo` and for `dripleaf`, over the numbers measured in the spike (vanilla's bamboo stops at 12 to 16 with leaves none, small, large; dripleaf tilts after 2, 10 and 10 ticks), behind overrides of the members the spike lists (stalk `getHeightAboveUpToMax`, `getHeightBelowUpToMax`, `growBamboo`, `canSurvive`; shoot `growBamboo`, `updateShape`, `getCloneItemStack`; leaf and stem `performBonemeal`, `canSurvive`, `getCloneItemStack`). Nothing is transcribed from vanilla's code; the rules are written from the observations and checked by parity cases against vanilla.
+- **Soil.** Vanilla's survival checks read shared tags (`#minecraft:supports_sugar_cane` and the others in `TargetFacts.blocks.plantSoils`). Adding a project soil to those tags would also change vanilla's plants, so a given `soil` list is checked by the element's own `canSurvive`; without `soil` the plant uses vanilla's tags. (Vetoable: tag additions instead.)
+- **D2 pots.** A project pot is its own block class with its own plant-to-pot map, never a `FlowerPotBlock` (a `FlowerPotBlock` takes over vanilla's empty pot for that plant). The validator's `potted-plant-not-plant` warning says so plainly.
+- **Cactus damage** other than vanilla's needs our own `entityInside`; the cactus flower was not seen in 20,000 forced ticks (verify at implementation).
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: four plant types rather than one per vanilla plant; vanilla's numbers as defaults (kelp's age, sugar cane's and cactus's height of 3, bamboo's 16, glow lichen's light 7, cactus damage 1: all "verify at implementation"); the companion names `<path>_plant`, `<path>_shoot`, `<path>_stem` and `<pot>_<plant>`; a pot lists its plants rather than taking every plant.

@@ -20,6 +20,14 @@ Vanilla also pairs blocks for tools: an axe strips logs and scrapes copper, a sh
 - Vanilla blocks can be given tool pairs and burning rules; a new addition Studio.
 - 26.4's data-driven sounds make the two targets differ in what the lowering writes; the target fact keeps that in `packages/targets`.
 
+## Amendment after the spike (B503, 2026-11-22)
+
+Measured on both versions (evidence in `docs/reference/spikes/b503/`). These win over D1 and D4 where they differ.
+
+- **D1 on 26.4: possible, fixed per world load.** `block_sound_set` is a synchronised world registry, not a reloadable one: the lowering writes `data/<ns>/block_sound_set/<path>.json` (`volume`, `pitch`, `break_sound`, `step_sound`, `place_sound`, `hit_sound`, `fall_sound`) and the block names it by key. A change needs the world opened again (limit N8 reworded), and a missing entry is silent in the game, so the runtime logs a warning for it. `SoundType` does not exist on 26.4.
+- **D2.** Own set types work unregistered on both versions behind `BlockSetTypes`; the constructors differ (26.3 takes a name and a `SoundType`, 26.4 a `BlockSoundSet` key).
+- **D4 corrected.** Fabric's content registries on 26.3 have no strip, flatten or till registry (only flammability, oxidising and waxing). Strip, flatten, till and wax for vanilla blocks use one `UseBlockCallback` route on both versions, which runs before the item's own transformer; burn uses the existing `Flammability` routes; `age` uses `OxidizableBlocksRegistry` on 26.3, and on 26.4 (where vanilla's maps are immutable and oxidised copper does not random-tick) the reserve brief B546's version-only Mixin, which must also make the vanilla state random-tick. Vanilla's own strip, flatten and till pairs are data (`block_transformer/{axe,shovel,hoe}.json`), so `vanillaPairs` reads them there.
+
 ## Status
 
 Proposed (2026-11-22). Vetoable defaults: `sound_type` stays the default for missing events; own set types as an object in the same field; one addition kind for all vanilla pairs; warnings, not errors, for overriding a vanilla pair.
