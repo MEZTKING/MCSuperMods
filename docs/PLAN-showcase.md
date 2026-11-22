@@ -210,10 +210,6 @@ The rules of `docs/PLAN-vanilla-parity-3.md` "Rules for every brief" apply (clea
 
 ## Notes from implementation
 
-None yet.
-
-## Notes from implementation
-
 ### B565 (merged 2026-11-22)
 
 - All three ADR 0118 D13 budgets go on both targets (first frame 0.15–0.56 s warm, 1.06 s for the first mount; 42–55 fps; no context warnings, memory within 20 MB over 50 mounts). Reserve B573's listed seams are not needed. Evidence and the action sequence per clip in `docs/reference/spikes/b565/` (`clips.json`).
@@ -232,3 +228,11 @@ None yet.
 - All ten cards in `showcases.ts` in the plan's order, each playing to its end on mc-26.3 and mc-26.4 with every step's expectation met; no spare example needed. `showcases.test.ts` (36 tests: words without ids, availability on both targets, plays to the end, only the expected "Only in Minecraft" lines, the same lines on both targets, the subject in view at `stillAt`, plays again after a restart). The pet plays on quick flat ground; the portal has no beacon; the vehicle card says "with seats and a cannon" (the tank example; reworded by the main session).
 - **Script state survives a loop restart** (the lucky block's counter carries over; "Only in Minecraft" lines show once per area). No caption depends on it, and a test pins that no Rules caption contains a number. If live "What happened" lines are ever shown as captions, reset the script state on restart (B566's player or reserve B573).
 - **B569 (after B540 merges):** re-run `showcases.test.ts`; it pins each clip's "Only in Minecraft" lines. The missing-texture parents B565 found are fixed in Try it (fallback models merged 2026-11-22), so the clips draw without the user's jar.
+
+### B569 (merged 2026-11-22)
+
+- Home (Very easy, with and without a mod; with a mod open while it has no things, then a **Show what you can make** / **Hide what you can make** fold kept as `showcaseOpen`), the New project strip (`renderShowcase(choose)`, `startWith`), the Examples detail pane ("What it looks like"), Settings "Showcase" > **Play showcase clips** (`showcaseClips`), palette "Showcase: see what you can make". Make this opens the card's flow as its Home tile would (`tileAvailability` shared), or with no mod the name-only New prefilled from `showcaseModName` ("Elm Mod") and the flow once it is open; See the example uses the shared `copyExample`. Clips lower with `builtInPlugins`. `app.asar` 30.5 of 32 MB, renderer 17.2 of 18 MB.
+- **B570 test ids:** `home-showcase`, `home-showcase-show`, `home-showcase-hide`, `new-project-showcase`, `example-detail-clip`, `settings-showcase-clips`, `command-showcase`, `showcase-gallery`, `showcase-pause`, `showcase-card-<id>`, `showcase-picture-<id>`, `showcase-still-<id>`, `showcase-make-<id>`, `showcase-example-<id>`, `showcase-no-webgl-<id>`; after Make this in New project `wizard-step-2`; the name-only New `new-mod-name`, `new-mod-dialog-submit`. Card ids: `wood-set`, `pet`, `crop`, `machine`, `vehicle`, `portal`, `sparkles`, `trader`, `fluid`, `rules`.
+- **B571 labels:** the ones above plus "Make this", "See the example", "Preview", "Pause clips"; prefilled names Elm, Fox, Onion, Crusher, Tank, Sky, Firefly, Merchant, Oil and Lucky Mod.
+- **Left for later (reserve B573 or the close):** vanilla block states are not passed, so vanilla props in clips draw as MSM's fallback cubes even with the jar; the vehicle card's Make this in New project picks the Car flow, not the vehicle picker; a card whose flow is not offered falls back to See the example.
+
