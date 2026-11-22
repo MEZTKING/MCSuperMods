@@ -1,9 +1,10 @@
 /**
  * The engine over the vanilla worldgen files of the Loom cache's client jars (read at test time,
  * never kept; skipped without a jar). Checks that every vanilla world loads, that the walker lists
- * exactly the types the spike found missing, that our fill (cell grid, per-column cache, shared
- * names) gives the same density as deepslate's own classes, bit for bit, and that the height
- * search agrees with a block by block search.
+ * exactly the types the spike found missing and B581 did not add (or adds only about right), that
+ * our fill (cell grid, per-column cache, shared names) gives the same density as deepslate's own
+ * classes, bit for bit (with B581's corrected types in both), and that the height search agrees
+ * with a block by block search.
  */
 
 import {
@@ -20,8 +21,9 @@ import {
 } from 'deepslate/worldgen';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildColumns, createTerrainWorld, sampleBiomes } from '../src';
+import { correctedTypes } from '../src/extensions/corrections';
 import { ChunkFill, HeightSearch } from '../src/fill';
-import { prepassDensityFunction, prepassNoiseSettings } from '../src/prepass';
+import { prepassDensityFunction, prepassNoiseSettings, shortType } from '../src/prepass';
 import { forgetRegistries } from '../src/registries';
 import type { EngineWorld } from '../src/world';
 import { FACTS } from './fixture';
@@ -31,7 +33,22 @@ const jars = loomJars();
 
 afterEach(() => forgetRegistries());
 
-/** deepslate's own route, as the spike used it: its parsers, its `RandomState`, its router. */
+const corrected = new Map(correctedTypes.map((t) => [t.type, t]));
+
+/** deepslate's parser, with the types B581 corrects (`extensions/corrections.ts`) taken over. */
+function stockParse(json: unknown): DensityFunction {
+  if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
+    const node = json as Record<string, unknown>;
+    const type = corrected.get(shortType(node.type) ?? '');
+    if (type) return type.parse(node, stockParse);
+  }
+  return DensityFunction.fromJson(json, stockParse);
+}
+
+/**
+ * deepslate's own route, as the spike used it: its parsers (with B581's corrected types), its
+ * `RandomState`, its router.
+ */
 function stockState(vanilla: ReturnType<typeof readJarWorldgen>, settingsId: string, seed: bigint) {
   const noises = WorldgenRegistries.NOISE;
   noises.clear();
@@ -41,9 +58,7 @@ function stockState(vanilla: ReturnType<typeof readJarWorldgen>, settingsId: str
   const functions = WorldgenRegistries.DENSITY_FUNCTION;
   functions.clear();
   for (const [id, json] of Object.entries(vanilla['worldgen/density_function'] ?? {})) {
-    functions.register(Identifier.parse(id), () =>
-      DensityFunction.fromJson(prepassDensityFunction(json)),
-    );
+    functions.register(Identifier.parse(id), () => stockParse(prepassDensityFunction(json)));
   }
   const settingsJson = vanilla['worldgen/noise_settings']?.[settingsId];
   const settings = NoiseGeneratorSettings.fromJson(prepassNoiseSettings(settingsJson));
@@ -96,15 +111,14 @@ describe.skipIf(jars.length === 0)('vanilla files from the Loom jars', () => {
             }
           }
         }
-        // What the spike found missing (WS1), and nothing else.
+        // What the spike found missing (WS1) and B581 did not add, or drew only about right
+        // (bandlands, ore_vein), and the flat world's buildings; nothing else.
         expect([...seen].sort()).toEqual([
           'biome_source multi_noise.preset',
           'chunk_generator minecraft:debug',
-          'chunk_generator minecraft:flat',
           'debug',
+          'field flat.structure_overrides',
           'flat',
-          'material_condition minecraft:hole',
-          'material_condition minecraft:steep',
           'material_rule minecraft:bandlands',
           'material_rule minecraft:ore_vein',
           'noise',
@@ -176,7 +190,9 @@ describe.skipIf(jars.length === 0)('vanilla files from the Loom jars', () => {
           doFill(c: Chunk, n: unknown): void;
         };
         own.doFill(chunk, own.createNoiseChunk(randomState, chunk, false));
-        const fill = new ChunkFill(parts, cx, cz);
+        // deepslate's route gives the aquifer unbound functions; the engine binds them
+        // (`BIND_AQUIFER_NOISES`, B581), so the comparison hands our fill the same unbound ones.
+        const fill = new ChunkFill({ ...parts, aquifers: settings.aquifers }, cx, cz);
         let fluids = 0;
         for (let x = 0; x < 16; x += 5) {
           for (let z = 0; z < 16; z += 5) {

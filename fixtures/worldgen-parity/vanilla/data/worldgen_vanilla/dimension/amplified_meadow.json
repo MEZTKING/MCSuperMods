@@ -1,0 +1,11 @@
+{
+  "generator": {
+    "biome_source": {
+      "biome": "minecraft:meadow",
+      "type": "minecraft:fixed"
+    },
+    "settings": "minecraft:amplified",
+    "type": "minecraft:noise"
+  },
+  "type": "minecraft:overworld"
+}

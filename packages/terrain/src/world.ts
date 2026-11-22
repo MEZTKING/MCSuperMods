@@ -43,7 +43,13 @@ import type {
 import { flatGenerator } from './extensions';
 import { type FillWorld, optimiseRouter } from './fill';
 import { type DensityParser, makeDensityParser, type VerticalRange } from './parser';
-import { emptyPrepassLog, type PrepassLog, prepassNoiseSettings, shortType } from './prepass';
+import {
+  emptyPrepassLog,
+  type PrepassLog,
+  prepassDensityFunction,
+  prepassNoiseSettings,
+  shortType,
+} from './prepass';
 import { resolvePreset } from './presets';
 import {
   BUILTIN_NOISES,
@@ -386,14 +392,17 @@ function buildNoise(
         surfaceLevel: field(a.surface_level),
       }
     : undefined;
+  const legacy = json.legacy_random_source === true;
   const ruleFront = new RuleFront({
     rule: (id) => files.get(FOLDERS.materialRule, id),
     condition: (id) => files.get(FOLDERS.materialCondition, id),
     biomeTag: (id) => files.biomeTag(id),
     noise: (id) => files.get(FOLDERS.noise, id),
+    biome: (id) => files.get(FOLDERS.biome, id),
+    density: (fn) => parse(prepassDensityFunction(fn)),
+    legacyRandom: legacy,
   });
   const materialRule = ruleFront.rule(json.material_rule);
-  const legacy = json.legacy_random_source === true;
   const settings = NoiseGeneratorSettings.create({
     noise: noiseSettings,
     defaultBlock: readBlock(json.default_block, BlockState.STONE),

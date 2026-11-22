@@ -11,11 +11,11 @@
  *   y) and evaluating exactly only the cells that may hold the surface.
  *
  * The aquifer: deepslate 0.27.2 hands `NoiseAquifer` the settings' unmapped functions, whose
- * noises are all 0, and the spike measured that route against real worlds (WS7: the fluid differs
- * in 0.28 to 0.36 % of cells). Binding the aquifer's noises changes 3.3 % of the cells below y 100
- * (measured by B578) without a check against the game, so the engine keeps deepslate's values
- * (`BIND_AQUIFER_NOISES` false) and only resolves the names, so a world never reads another
- * world's registries (F9). B579's parity decides which matches the game.
+ * noises are all 0. The engine binds them to the world's noises (`BIND_AQUIFER_NOISES` true):
+ * against the real game on the parity fixture's `aquifers` dimension (57,600 cells a target,
+ * B579 and B581) binding gives 98.62 % of cells of the same class against 98.01 % unbound, and
+ * 99.06 % with the correction of deepslate's surface samples in `extensions/aquifer.ts`. Names
+ * are resolved by this world's binder, so a world never reads another world's registries (F9).
  */
 
 import {
@@ -164,8 +164,8 @@ export class NoiseBinder {
   }
 }
 
-/** Whether the aquifer's functions get the world's noises (see the module comment). */
-export const BIND_AQUIFER_NOISES = false;
+/** Whether the aquifer's functions get the world's noises (see the module comment; B581). */
+export const BIND_AQUIFER_NOISES = true;
 
 /** The router and aquifer functions of one world, bound to its noises and optimised together. */
 export function optimiseRouter(

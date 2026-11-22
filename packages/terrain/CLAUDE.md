@@ -4,7 +4,7 @@
 
 ## Status
 
-B576 scaffolded it; B578 filled the engine (registries, biomes, terrain, surface, heights, the walker). B581 fills `extensions/` (missing types, the flat generator), B583 `features/`, B592 `presets.ts`.
+B576 scaffolded it; B578 filled the engine (registries, biomes, terrain, surface, heights, the walker); B581 filled `extensions/` (the missing types, corrections to deepslate, the flat generator) and the parity tests. B583 fills `features/`, B592 `presets.ts`.
 
 ## Contents
 
@@ -15,7 +15,8 @@ B576 scaffolded it; B578 filled the engine (registries, biomes, terrain, surface
 - `src/world.ts`: `EngineWorld`; random states kept between edits, noise instances by id, seed and file (WS14). `src/fill.ts`: `NoiseBinder`, `optimise` (per-column cache), `ChunkFill` (aquifer per chunk), compiled bounds and `HeightSearch`.
 - `src/columns.ts`: the surface pass (F6) and `buildColumns`. `src/sample.ts`: maps, cuts, values (layouts in its module comment). `src/unsupported.ts`: the walker (F7). `src/seed.ts`: `seedFromText`.
 - Seams: `src/extensions/index.ts` (entries shaped as `DensityFunctionType`, `RuleType`, `ConditionType`; `flatGenerator` as `FlatGeneratorFn`), `src/features/index.ts`, `src/presets.ts`.
-- Tests: hand-written fixtures (`test/fixture.ts`); `test/vanilla.test.ts` reads the Loom jars at test time and skips without them; `TERRAIN_SPEED=1` runs `test/speed.test.ts`.
+- `src/extensions/` (B581), one file per type, each saying how it was learned (the data format's fields and the parity fixture's real worlds): `upscale.ts` (every mode but the pre-pass's linear one), `domain-warp.ts` (offsets moved by whole blocks), `corrections.ts` (`floor`/`round`/`ceil`/`truncate` with `multiple` 1 by default, `slice` on its axis), `hole.ts`, `steep.ts`, `temperature.ts`, `bandlands.ts` and `ore-vein.ts` (both about right), `flat.ts`; and three corrections to deepslate installed when the index is first imported (prototype replacements in our code, never `node_modules`): `positional-random.ts` (the x term of a position's seed wraps at 32 bits), `surface-depth.ts` (a whole-number surface depth), `aquifer.ts` (the surface samples' x). A type drawn only about right has `approximate` words; the walker still lists it. A rule's density fields are named by `densityFields` so the walker walks them.
+- Tests: hand-written fixtures (`test/fixture.ts`); `test/extensions.test.ts` (each type); `test/parity.test.ts` plays `fixtures/worldgen-parity/expectations.json` at ADR 0119 D13's floors (`TERRAIN_PARITY=1` prints every dimension's scores; `test/parity-fixture.ts` scores); `test/vanilla.test.ts` reads the Loom jars at test time and skips without them; `test/vanilla-parity.test.ts` is D13's vanilla step (with `MSM_WORLDGEN_VANILLA`, from the parity build's `worldgenVanilla` task; skipped otherwise); `TERRAIN_SPEED=1` runs `test/speed.test.ts`.
 
 ## Rules
 

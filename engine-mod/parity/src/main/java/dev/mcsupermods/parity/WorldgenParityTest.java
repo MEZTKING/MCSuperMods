@@ -45,7 +45,9 @@ import net.minecraft.world.level.storage.LevelStorageSource;
  * expectations of {@code fixtures/worldgen-parity}.
  *
  * <p>The fixture's lowered data pack of this jar's target (MSM's own noises, functions, rules, biomes, dimension
- * types and dimensions, namespace {@code worldgen_parity}) is mod data of this jar. The GameTest server makes no level
+ * types and dimensions, namespace {@code worldgen_parity}) is mod data of a jar of its own, built by the parity build's
+ * {@code worldgenFixtureJar} task and loaded only by its {@code worldgenParity} and {@code worldgenVanilla} tasks
+ * (B581), so it is never active in another parity run. The GameTest server makes no level
  * of a data pack dimension, and its world has one fixed seed, so for each fixture dimension and each of
  * {@link #SEEDS} the test builds a level of its own from the dimension's {@link LevelStem}, read from the server's
  * resources with the server's registries, whose seed is that seed ({@link WorldgenLevels}, the version seam). Vanilla's
@@ -58,10 +60,23 @@ import net.minecraft.world.level.storage.LevelStorageSource;
  * {@code expectations.json} (bundled in the jar) exactly; a version change of the game that changes a world fails
  * here. With it (the parity build's {@code worldgenParity} task with {@code -PupdateWorldgenParity}) the test writes
  * its target's section into that file instead. Run with {@code --gametest-filter msm_parity_tests:worldgen_parity_*}.
+ *
+ * <p>{@link #measuresVanillaSettings} (B581, ADR 0119 D13's vanilla step) measures the fixture jar's MSM-own test
+ * dimensions over vanilla's own noise settings (namespace {@code worldgen_vanilla}, from
+ * {@code fixtures/worldgen-parity/vanilla/}) the same way, and writes them to the file named by
+ * {@code MSM_WORLDGEN_VANILLA_OUT}; it checks nothing (the measurements hold vanilla's land, so they are never
+ * committed) and does nothing without that variable. {@code @msm/terrain}'s {@code vanilla-parity.test.ts} plays the
+ * file through the engine with the vanilla files of the Loom cache's jar.
  */
 public class WorldgenParityTest {
     static final String NAMESPACE = "worldgen_parity";
     static final String WRITE_ENV = "MSM_WORLDGEN_PARITY_WRITE";
+    /** The MSM-own test dimensions over vanilla's noise settings (B581). */
+    static final String VANILLA_NAMESPACE = "worldgen_vanilla";
+    /** Where {@link #measuresVanillaSettings} writes; without it, the test does nothing. */
+    static final String VANILLA_OUT_ENV = "MSM_WORLDGEN_VANILLA_OUT";
+    /** The Minecraft version the vanilla measurements are of (written into the file, to pick the jar). */
+    static final String MINECRAFT_ENV = "MSM_WORLDGEN_MINECRAFT";
     static final int FORMAT = 1;
 
     /** The three seeds of every dimension (the spike B574's seeds 0, 12345 and a negative one). */
@@ -80,21 +95,10 @@ public class WorldgenParityTest {
     public void measuresEveryDimension(GameTestHelper helper) throws IOException {
         MinecraftServer server = helper.getLevel().getServer();
         String target = target();
-        Map<Identifier, LevelStem> stems = stems(server);
+        Map<Identifier, LevelStem> stems = stems(server, NAMESPACE);
         helper.assertTrue(!stems.isEmpty(), "no " + NAMESPACE + " dimension in the server's resources");
 
-        JsonObject measured = new JsonObject();
-        Path dir = Files.createTempDirectory("msm-worldgen-parity");
-        try (LevelStorageSource.LevelStorageAccess storage = LevelStorageSource.createDefault(dir).createAccess("w")) {
-            for (Map.Entry<Identifier, LevelStem> entry : stems.entrySet()) {
-                long start = System.nanoTime();
-                measured.add(entry.getKey().toString(), measure(server, storage, entry.getKey(), entry.getValue()));
-                System.out.println("[msm worldgen parity] " + target + " " + entry.getKey() + " measured in "
-                        + (System.nanoTime() - start) / 1_000_000 + " ms");
-            }
-        } finally {
-            deleteTree(dir);
-        }
+        JsonObject measured = measureAll(server, stems, target);
 
         String write = System.getenv(WRITE_ENV);
         if (write != null && !write.isBlank()) {
@@ -114,17 +118,73 @@ public class WorldgenParityTest {
         helper.succeed();
     }
 
+    /**
+     * The vanilla step (B581): measures the {@code worldgen_vanilla} test dimensions (vanilla's own noise settings)
+     * into the file named by {@code MSM_WORLDGEN_VANILLA_OUT}, checking nothing; without that variable it does
+     * nothing.
+     */
+    @GameTest(maxTicks = 20)
+    public void measuresVanillaSettings(GameTestHelper helper) throws IOException {
+        String out = System.getenv(VANILLA_OUT_ENV);
+        if (out == null || out.isBlank()) {
+            helper.succeed();
+            return;
+        }
+        MinecraftServer server = helper.getLevel().getServer();
+        String target = target();
+        Map<Identifier, LevelStem> stems = stems(server, VANILLA_NAMESPACE);
+        helper.assertTrue(!stems.isEmpty(), "no " + VANILLA_NAMESPACE + " dimension in the server's resources");
+        JsonObject root = new JsonObject();
+        root.addProperty("about", "Measured by WorldgenParityTest.measuresVanillaSettings: MSM's own test dimensions"
+                + " over vanilla's noise settings, as expectations.json's dimensions are; never committed.");
+        root.addProperty("format", FORMAT);
+        root.addProperty("target", target);
+        String minecraft = System.getenv(MINECRAFT_ENV);
+        if (minecraft != null && !minecraft.isBlank()) root.addProperty("minecraft", minecraft);
+        JsonArray seeds = new JsonArray();
+        for (long seed : SEEDS) seeds.add(Long.toString(seed));
+        root.add("seeds", seeds);
+        root.add("dimensions", measureAll(server, stems, target));
+        StringBuilder text = new StringBuilder();
+        writeJson(text, root, 0);
+        text.append('\n');
+        Path file = Path.of(out);
+        if (file.getParent() != null) Files.createDirectories(file.getParent());
+        Files.writeString(file, text.toString(), StandardCharsets.UTF_8);
+        System.out.println("[msm worldgen parity] wrote " + target + " vanilla settings (" + stems.size()
+                + " dimensions) to " + out);
+        helper.succeed();
+    }
+
     // --- measuring ---------------------------------------------------------------------------------------------------
 
-    /** Every fixture dimension, by id, parsed with the server's registries. */
-    private static Map<Identifier, LevelStem> stems(MinecraftServer server) throws IOException {
+    /** Measures every dimension of {@code stems} in levels of their own (in a temporary folder). */
+    private static JsonObject measureAll(MinecraftServer server, Map<Identifier, LevelStem> stems, String target)
+            throws IOException {
+        JsonObject measured = new JsonObject();
+        Path dir = Files.createTempDirectory("msm-worldgen-parity");
+        try (LevelStorageSource.LevelStorageAccess storage = LevelStorageSource.createDefault(dir).createAccess("w")) {
+            for (Map.Entry<Identifier, LevelStem> entry : stems.entrySet()) {
+                long start = System.nanoTime();
+                measured.add(entry.getKey().toString(), measure(server, storage, entry.getKey(), entry.getValue()));
+                System.out.println("[msm worldgen parity] " + target + " " + entry.getKey() + " measured in "
+                        + (System.nanoTime() - start) / 1_000_000 + " ms");
+            }
+        } finally {
+            deleteTree(dir);
+        }
+        return measured;
+    }
+
+    /** Every dimension of {@code namespace}, by id, parsed with the server's registries. */
+    private static Map<Identifier, LevelStem> stems(MinecraftServer server, String namespace) throws IOException {
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, server.registryAccess());
         Map<Identifier, LevelStem> out = new TreeMap<>(Comparator.comparing(Identifier::toString));
         var resources = server.getResourceManager().listResources("dimension",
-                id -> id.getNamespace().equals(NAMESPACE) && id.getPath().endsWith(".json"));
+                id -> id.getNamespace().equals(namespace) && id.getPath().endsWith(".json"));
         for (var resource : resources.entrySet()) {
             String path = resource.getKey().getPath();
-            Identifier id = Identifier.fromNamespaceAndPath(NAMESPACE,
+            Identifier id = Identifier.fromNamespaceAndPath(namespace,
                     path.substring("dimension/".length(), path.length() - ".json".length()));
             JsonElement json;
             try (Reader reader = resource.getValue().openAsReader()) {
@@ -149,7 +209,7 @@ public class WorldgenParityTest {
         JsonObject seeds = new JsonObject();
         for (long seed : SEEDS) {
             ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION,
-                    Identifier.fromNamespaceAndPath(NAMESPACE, id.getPath() + "/seed_" + Long.toString(seed)));
+                    Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "/seed_" + Long.toString(seed)));
             ServerLevel level = WorldgenLevels.create(server, storage,
                     new DerivedLevelData(server.getWorldData(), server.getWorldData().overworldData()), key, stem,
                     seed);

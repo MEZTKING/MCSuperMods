@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_worldgen_parity_fixture",
+  "version": "${version}",
+  "name": "MSM worldgen parity fixture",
+  "description": "The data pack of fixtures/worldgen-parity (MSM's own worldgen files, ADR 0119 D13) as mod data, for the parity build's worldgenParity task only (B581); never loaded with the other parity GameTests.",
+  "license": "MIT",
+  "environment": "*"
+}

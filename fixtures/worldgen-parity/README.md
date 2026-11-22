@@ -1,6 +1,6 @@
 # worldgen-parity
 
-Parity fixture for the live world generation preview (ADR 0119 D13; plan brief B579). It holds the MSM project `worldgen_parity` once per target, its lowered data pack, and `expectations.json`: what the real game makes of those files, measured by a GameTest. B581 plays the same file through `@msm/terrain` at D13's tolerances. No vanilla file is ever committed here.
+Parity fixture for the live world generation preview (ADR 0119 D13; plan brief B579). It holds the MSM project `worldgen_parity` once per target, its lowered data pack, and `expectations.json`: what the real game makes of those files, measured by a GameTest. `@msm/terrain`'s `test/parity.test.ts` plays the same file through the engine at D13's tolerances (B581), and `@msm/exporters`' `test/worldgen-parity.golden.test.ts` checks that MSM's export of each project equals its `lowered/data/`. No vanilla file is ever committed here.
 
 ## What is here
 
@@ -8,6 +8,7 @@ Parity fixture for the live world generation preview (ADR 0119 D13; plan brief B
 - `make_fixture.py`: writes both projects and their lowered data (`python3 fixtures/worldgen-parity/make_fixture.py` from the repository root; `--table` prints the table below). Every file is MSM's own, written from the data format (the targets' vendored mcdoc), never copied from vanilla.
 - `expectations.json`: per target, per dimension, per seed (0, 12345, -7046235981325167892): the stored biome of 200 quart cells (`biomeCells`, quart x, y, z scattered over 2,048 blocks each way and the dimension's height) and 100 whole block columns (`columns`, block x and z: 25 in each of the chunks (0, 0), (-55, 66), (68, 27) and (45, -56)), each column from `minY` up as runs of block palette index and length. About 1.3 MB: 21 dimensions and 40,410 runs on 26.3, 29 dimensions and 44,616 runs on 26.4.
 - `check_real_world.py`: checks the GameTest's way of measuring against an ordinary world (below).
+- `vanilla/data/worldgen_vanilla/dimension/`: MSM's own test dimensions over vanilla's own noise settings (overworld with a climate list and a checkerboard of its own, plains, large biomes, amplified, caves, floating islands, the Nether, the End), for D13's vanilla step (B581, below). Only dimension files, naming vanilla ids; no vanilla file.
 
 Self-contained: own noises, named density functions, noise settings, named rules and conditions, six biomes (no carvers, no features), a biome tag, two dimension types (y 0 to 127; y -64 to 127). The game's surface code reads three noise ids by name; the project defines them with values of its own (`minecraft:surface`, `minecraft:surface_secondary`, `minecraft:clay_bands_offset`), so no world here depends on a vanilla file and the engine needs no jar to play it. Blocks are vanilla block ids (not files).
 
@@ -49,7 +50,7 @@ Each isolates one group of types (namespace `worldgen_parity`):
 
 ## How it is measured
 
-`engine-mod/parity`'s `WorldgenParityTest` (`msm_parity_tests:worldgen_parity_test_measures_every_dimension`). The parity jar carries this version's `lowered/data/` as mod data, `expectations.json` and its target id. The GameTest server makes no level of a data pack dimension and its world has one fixed seed, so for each dimension and seed the test parses the dimension with the server's registries and builds a level of its own whose `getSeed()` is that seed (the version seam `WorldgenLevels`; only vanilla constructors and methods are called). The level's own chunk pipeline makes the four column chunks to the `terrain` status (land, aquifers and surface; no carvers or features in the fixture). Biome cells come from fresh chunks after the generator's biome step alone; on every run the test checks that step against the level's own column chunks, cell by cell. Without `MSM_WORLDGEN_PARITY_WRITE` the measurements must equal the target's section exactly.
+`engine-mod/parity`'s `WorldgenParityTest` (`msm_parity_tests:worldgen_parity_test_measures_every_dimension`). The parity jar carries `expectations.json` and its target id; this version's `lowered/data/` (and `vanilla/data/`) are mod data of a jar of their own, `msm_worldgen_parity_fixture` (the parity build's `worldgenFixtureJar` task, B581), which only the `worldgenParity` and `worldgenVanilla` tasks load, so the fixture's own values for `minecraft:surface` and the other noise ids are never active in another parity run. The GameTest server makes no level of a data pack dimension and its world has one fixed seed, so for each dimension and seed the test parses the dimension with the server's registries and builds a level of its own whose `getSeed()` is that seed (the version seam `WorldgenLevels`; only vanilla constructors and methods are called). The level's own chunk pipeline makes the four column chunks to the `terrain` status (land, aquifers and surface; no carvers or features in the fixture). Biome cells come from fresh chunks after the generator's biome step alone; on every run the test checks that step against the level's own column chunks, cell by cell. Without `MSM_WORLDGEN_PARITY_WRITE` the measurements must equal the target's section exactly.
 
 ```sh
 cd engine-mod
@@ -57,7 +58,19 @@ cd engine-mod
 ./gradlew -p parity worldgenParity [-Pmc=26.4] -PupdateWorldgenParity  # rewrite this version's section
 ```
 
-The task runs `tools/run-fabric-server` on a production GameTest server with the parity jar as both the mod and the tests (it needs `node` and JDK 25). After changing `make_fixture.py`, run it, then the task with `-PupdateWorldgenParity` on both versions. CI's `engine-mod` job runs the check on every version.
+The task runs `tools/run-fabric-server` on a production GameTest server with the fixture jar as the mod and the parity jar as the tests (it needs `node` and JDK 25). After changing `make_fixture.py`, run it, then the task with `-PupdateWorldgenParity` on both versions. CI's `engine-mod` job runs the check on every version.
+
+## The vanilla step (B581)
+
+```sh
+cd engine-mod
+./gradlew -p parity worldgenVanilla [-Pmc=26.4]     # writes engine-mod/parity/build/worldgen-vanilla/measured.json
+cd ..
+MSM_WORLDGEN_VANILLA="$PWD/engine-mod/parity/build/worldgen-vanilla/measured.json" \
+  pnpm --filter @msm/terrain exec vitest run test/vanilla-parity.test.ts
+```
+
+`WorldgenParityTest.measuresVanillaSettings` measures the `vanilla/` test dimensions as above into that file (never committed: it holds vanilla's land), and the engine plays it with the vanilla files of the Loom cache's client jar of the same version. The test prints every rate and fails only below D13's floor for this step (biome cells 99.5 % where the target's biome layout is not approximate, cells of the same class 98 %, surface height exact 85 %); the End is reported while the target marks it approximate. CI's `engine-mod` job runs both on every version.
 
 ## Checked against real worlds (B579)
 

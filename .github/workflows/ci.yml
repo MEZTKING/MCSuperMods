@@ -1121,11 +1121,20 @@ jobs:
       - name: Worldgen parity GameTest (fixtures/worldgen-parity)
         working-directory: engine-mod
         run: ./gradlew -p parity worldgenParity -Pmc=${{ matrix.mc }} --no-daemon
-      # The engine over the Loom cache jar's vanilla settings against a freshly generated vanilla
-      # world (ADR 0119 D13, WS5 and WS6): wired here, turned on by B581 once @msm/terrain has its
-      # parity test; it reports rates and writes nothing to the repository.
-      - name: Live worldgen against a vanilla world (not run until B581)
-        run: echo 'Skipped until B581 turns on the vanilla worldgen comparison (ADR 0119 D13); the fixture step above runs.'
+      # The engine over the Loom cache jar's vanilla settings against the real game (ADR 0119 D13,
+      # WS5 and WS6; turned on by B581): worldgenVanilla measures MSM's own test dimensions over
+      # vanilla's noise settings (fixtures/worldgen-parity/vanilla) into a file that is never
+      # committed, and @msm/terrain's vanilla-parity test plays it through the engine with this
+      # version's Loom cache client jar. It prints every rate and fails only below D13's floor.
+      - name: Live worldgen against vanilla settings (measure)
+        working-directory: engine-mod
+        run: ./gradlew -p parity worldgenVanilla -Pmc=${{ matrix.mc }} --no-daemon
+      - name: Live worldgen against vanilla settings (compare)
+        env:
+          MSM_WORLDGEN_VANILLA: ${{ github.workspace }}/engine-mod/parity/build/worldgen-vanilla/measured.json
+        run: |
+          test -f "$MSM_WORLDGEN_VANILLA"
+          pnpm --filter @msm/terrain exec vitest run test/vanilla-parity.test.ts
       # Artifact names carry the version: matrix jobs may not upload the same name twice.
       - if: always()
         uses: actions/upload-artifact@v7

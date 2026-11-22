@@ -36,9 +36,11 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:${fact("fabric_api_version")}")
 }
 
-// The worldgen parity fixture (ADR 0119 D13, B579): the lowered data pack of this version's
-// `worldgen_parity` project goes into the jar as mod data, with the committed expectations and the
-// target id, so WorldgenParityTest reads its dimensions from the server's resources.
+// The worldgen parity fixture (ADR 0119 D13, B579): the committed expectations and the target id go
+// into this jar; the lowered data pack of this version's `worldgen_parity` project goes into a jar of
+// its own (`worldgenFixtureJar`, B581), which only the `worldgenParity` task loads, so its data
+// (among it its own values for the noise ids `minecraft:surface`, `surface_secondary` and
+// `clay_bands_offset`) is never active in any other parity run that uses this jar.
 val worldgenFixture: Directory = layout.projectDirectory.dir("../../fixtures/worldgen-parity")
 
 tasks.processResources {
@@ -53,9 +55,6 @@ tasks.processResources {
     }
     filesMatching("worldgen_parity/target.properties") {
         expand("target" to worldgenTarget)
-    }
-    from(worldgenFixture.dir("$worldgenTarget/lowered")) {
-        include("data/**")
     }
     from(worldgenFixture) {
         include("expectations.json")
@@ -79,15 +78,40 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 
+// The fixture's data pack as a mod of its own (B581): `fabric.mod.json` from src/worldgen-fixture, this
+// version's `lowered/data/` and `vanilla/data/`. Only worldgenParity and worldgenVanilla put it in mods/.
+val worldgenFixtureJar = tasks.register<Jar>("worldgenFixtureJar") {
+    group = "build"
+    description = "The worldgen parity fixture's data pack as a mod jar of its own (only worldgenParity loads it)."
+    val worldgenTarget = "mc-$mc"
+    val version = project.version
+    archiveBaseName = "msm_worldgen_parity_fixture"
+    archiveVersion = version.toString()
+    destinationDirectory = layout.buildDirectory.dir("worldgen-fixture")
+    inputs.property("version", version)
+    from(layout.projectDirectory.dir("src/worldgen-fixture")) {
+        include("fabric.mod.json")
+        expand("version" to version)
+    }
+    from(worldgenFixture.dir("$worldgenTarget/lowered")) {
+        include("data/**")
+    }
+    // MSM's own test dimensions over vanilla's noise settings, for worldgenVanilla.
+    from(worldgenFixture.dir("vanilla")) {
+        include("data/**")
+    }
+}
+
 // WorldgenParityTest on a production GameTest server (B579, ADR 0119 D13): tools/run-fabric-server
-// runs this jar's worldgen_parity_* tests, with the jar as the mod under test (it holds the fixture).
-// `-PupdateWorldgenParity` makes the test write this version's section of
+// runs this jar's worldgen_parity_* tests, with the fixture jar (`worldgenFixtureJar`) as the mod
+// under test. `-PupdateWorldgenParity` makes the test write this version's section of
 // fixtures/worldgen-parity/expectations.json instead of checking it. Needs node and JDK 25 on PATH.
 tasks.register<Exec>("worldgenParity") {
     group = "verification"
     description = "Measures the worldgen parity fixture on the real game and checks (or with -PupdateWorldgenParity rewrites) its expectations."
-    dependsOn(tasks.jar)
+    dependsOn(tasks.jar, worldgenFixtureJar)
     val jarFile = tasks.jar.flatMap { it.archiveFile }
+    val fixtureJarFile = worldgenFixtureJar.flatMap { it.archiveFile }
     val repository = layout.projectDirectory.dir("../..").asFile
     val expectations = worldgenFixture.file("expectations.json").asFile
     val work = layout.buildDirectory.dir("worldgen-parity-server").get().asFile
@@ -97,6 +121,7 @@ tasks.register<Exec>("worldgenParity") {
     val fabricApi = fact("fabric_api_version")
     val update = providers.gradleProperty("updateWorldgenParity").isPresent
     inputs.file(jarFile)
+    inputs.file(fixtureJarFile)
     outputs.upToDateWhen { false }
     workingDir = repository
     executable = "node"
@@ -104,11 +129,47 @@ tasks.register<Exec>("worldgenParity") {
         val jar = jarFile.get().asFile.absolutePath
         listOf(
             "tools/run-fabric-server/index.ts",
-            "--jar", jar, "--no-runtime",
+            "--jar", fixtureJarFile.get().asFile.absolutePath, "--no-runtime",
             "--gametest", jar, "--gametest-filter", "msm_parity_tests:worldgen_parity_*",
             "--minecraft", minecraft, "--loader", loader, "--fabric-api", fabricApi,
             "--work", work.absolutePath, "--report", report.absolutePath,
         )
     })
     if (update) environment("MSM_WORLDGEN_PARITY_WRITE", expectations.absolutePath)
+}
+
+// The vanilla step of ADR 0119 D13 (B581): WorldgenParityTest.measuresVanillaSettings measures the fixture
+// jar's MSM-own test dimensions over vanilla's own noise settings into build/worldgen-vanilla/measured.json
+// (never committed: it holds vanilla's land); `@msm/terrain`'s test/vanilla-parity.test.ts then plays it
+// through the engine with the Loom cache jar's files (MSM_WORLDGEN_VANILLA=<that file>).
+tasks.register<Exec>("worldgenVanilla") {
+    group = "verification"
+    description = "Measures the worldgen parity fixture's test dimensions over vanilla's noise settings on the real game."
+    dependsOn(tasks.jar, worldgenFixtureJar)
+    val jarFile = tasks.jar.flatMap { it.archiveFile }
+    val fixtureJarFile = worldgenFixtureJar.flatMap { it.archiveFile }
+    val repository = layout.projectDirectory.dir("../..").asFile
+    val work = layout.buildDirectory.dir("worldgen-vanilla-server").get().asFile
+    val report = layout.buildDirectory.file("worldgen-vanilla-report.xml").get().asFile
+    val measured = layout.buildDirectory.file("worldgen-vanilla/measured.json").get().asFile
+    val minecraft = fact("minecraft_version")
+    val loader = fact("loader_version")
+    val fabricApi = fact("fabric_api_version")
+    inputs.file(jarFile)
+    inputs.file(fixtureJarFile)
+    outputs.upToDateWhen { false }
+    workingDir = repository
+    executable = "node"
+    argumentProviders.add(CommandLineArgumentProvider {
+        listOf(
+            "tools/run-fabric-server/index.ts",
+            "--jar", fixtureJarFile.get().asFile.absolutePath, "--no-runtime",
+            "--gametest", jarFile.get().asFile.absolutePath,
+            "--gametest-filter", "msm_parity_tests:worldgen_parity_test_measures_vanilla_settings",
+            "--minecraft", minecraft, "--loader", loader, "--fabric-api", fabricApi,
+            "--work", work.absolutePath, "--report", report.absolutePath,
+        )
+    })
+    environment("MSM_WORLDGEN_VANILLA_OUT", measured.absolutePath)
+    environment("MSM_WORLDGEN_MINECRAFT", minecraft)
 }

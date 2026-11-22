@@ -11,6 +11,7 @@
  */
 
 import {
+  DensityFunction,
   MaterialCondition,
   MaterialRule,
   type MaterialRuleContext,
@@ -24,11 +25,27 @@ import { BUILTIN_NOISES } from './registries';
 export interface RuleParser {
   rule(json: unknown): MaterialRule;
   condition(json: unknown): MaterialCondition;
+  /** A biome's file, for extension conditions that read a biome's fields (B581). */
+  biome?(id: string): unknown;
+  /**
+   * A density function inside a rule, parsed by the world's density front and not yet bound to
+   * the world's noises (an extension binds it when it compiles, B581).
+   */
+  density?(json: unknown): DensityFunction;
+  /** Whether the world draws its noises the legacy way (`legacy_random_source`, B581). */
+  readonly legacyRandom?: boolean;
 }
 
 /** One surface rule type the engine adds (B581 fills `ruleTypes` with entries of this shape). */
 export interface RuleType {
   readonly type: string;
+  /**
+   * Plain words for the notes when the type is drawn only about right (B581): the walker then
+   * still lists it in `unsupported()`, with these words as what is drawn instead.
+   */
+  readonly approximate?: string;
+  /** Fields that hold density functions, which the walker walks as such (B581). */
+  readonly densityFields?: readonly string[];
   parse(json: Readonly<Record<string, unknown>>, front: RuleParser): MaterialRule;
 }
 
@@ -38,6 +55,10 @@ export interface RuleType {
  */
 export interface ConditionType {
   readonly type: string;
+  /** As `RuleType.approximate` (B581). */
+  readonly approximate?: string;
+  /** As `RuleType.densityFields` (B581). */
+  readonly densityFields?: readonly string[];
   readonly readsDepthBelow?: boolean;
   parse(json: Readonly<Record<string, unknown>>, front: RuleParser): MaterialCondition;
 }
@@ -50,6 +71,12 @@ export interface RuleFiles {
   biomeTag(id: string): readonly string[];
   /** A noise file, for the surface depth bound. */
   noise?(id: string): unknown;
+  /** A biome file (B581). */
+  biome?(id: string): unknown;
+  /** The world's density function front (B581). */
+  density?(json: unknown): DensityFunction;
+  /** The world's `legacy_random_source` (B581). */
+  readonly legacyRandom?: boolean;
 }
 
 function typed<T extends { readonly type: string }>(list: readonly unknown[]): Map<string, T> {
@@ -140,6 +167,18 @@ export class RuleFront implements RuleParser {
     this.files = files;
     this.ruleExtensions = typed<RuleType>(extensions.rules ?? ruleTypes);
     this.conditionExtensions = typed<ConditionType>(extensions.conditions ?? conditionTypes);
+  }
+
+  get legacyRandom(): boolean {
+    return this.files.legacyRandom === true;
+  }
+
+  biome(id: string): unknown {
+    return this.files.biome?.(withNamespace(id));
+  }
+
+  density(json: unknown): DensityFunction {
+    return this.files.density ? this.files.density(json) : DensityFunction.Constant.ZERO;
   }
 
   rule(json: unknown): MaterialRule {

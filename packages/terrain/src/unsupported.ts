@@ -164,6 +164,33 @@ function typeSet(list: readonly unknown[]): Set<string> {
   return out;
 }
 
+/** The fields of extension rules and conditions that hold density functions (B581). */
+function densityFieldsOf(list: readonly unknown[]): Map<string, readonly string[]> {
+  const out = new Map<string, readonly string[]>();
+  for (const entry of list) {
+    const e = entry as { type?: unknown; densityFields?: unknown } | null;
+    if (typeof e?.type === 'string' && Array.isArray(e.densityFields)) {
+      out.set(
+        shortType(e.type) ?? e.type,
+        e.densityFields.filter((f): f is string => typeof f === 'string'),
+      );
+    }
+  }
+  return out;
+}
+
+/** The extension types drawn only about right, with their plain words (B581). */
+function approximateOf(list: readonly unknown[]): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const entry of list) {
+    const e = entry as { type?: unknown; approximate?: unknown } | null;
+    if (typeof e?.type === 'string' && typeof e.approximate === 'string') {
+      out.set(shortType(e.type) ?? e.type, e.approximate);
+    }
+  }
+  return out;
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -175,6 +202,8 @@ export class Walker {
   private readonly densityExtensions: Set<string>;
   private readonly ruleExtensions: Set<string>;
   private readonly conditionExtensions: Set<string>;
+  private readonly approximate: Map<string, string>;
+  private readonly densityFields: Map<string, readonly string[]>;
 
   private readonly files: WorldFiles;
 
@@ -190,6 +219,22 @@ export class Walker {
     this.densityExtensions = typeSet(extensions.densityFunctions ?? densityFunctionTypes);
     this.ruleExtensions = typeSet(extensions.rules ?? ruleTypes);
     this.conditionExtensions = typeSet(extensions.conditions ?? conditionTypes);
+    this.densityFields = densityFieldsOf([
+      ...(extensions.rules ?? ruleTypes),
+      ...(extensions.conditions ?? conditionTypes),
+    ]);
+    this.approximate = approximateOf([
+      ...(extensions.densityFunctions ?? densityFunctionTypes),
+      ...(extensions.rules ?? ruleTypes),
+      ...(extensions.conditions ?? conditionTypes),
+    ]);
+  }
+
+  /** Notes an extension type that is drawn only about right (B581). */
+  private aboutRight(kind: Unsupported['kind'], type: string, where: string): void {
+    const words = this.approximate.get(type);
+    if (words !== undefined)
+      this.add({ kind, type: `minecraft:${type}`, where, drawnInstead: words });
   }
 
   /** Adds one note (the same note twice is kept once). */
@@ -281,6 +326,7 @@ export class Walker {
     if (!isObject(json)) return;
     const type = shortType(json.type) ?? '';
     if (this.densityExtensions.has(type)) {
+      this.aboutRight('density_function', type, where);
       // The extension parses its own fields; its child functions are walked where they are nodes.
       for (const value of Object.values(json)) {
         if (isObject(value) && typeof value.type === 'string') this.densityNode(value, where);
@@ -354,6 +400,7 @@ export class Walker {
     if (!isObject(json)) return;
     const type = shortType(json.type) ?? '';
     if (this.ruleExtensions.has(type)) {
+      this.aboutRight('material_rule', type, where);
       this.extensionChildren(json, where);
       return;
     }
@@ -379,9 +426,17 @@ export class Walker {
     }
   }
 
-  /** The children of an extension rule or condition: rules and conditions found by their type. */
+  /**
+   * The children of an extension rule or condition: density functions in the fields the type
+   * names (`densityFields`), rules and conditions found by their type elsewhere.
+   */
   private extensionChildren(json: Record<string, unknown>, where: string): void {
-    for (const value of Object.values(json)) {
+    const densityFields = this.densityFields.get(shortType(json.type) ?? '') ?? [];
+    for (const field of densityFields) {
+      if (json[field] !== undefined) this.densityFunction(json[field], where);
+    }
+    for (const [key, value] of Object.entries(json)) {
+      if (densityFields.includes(key)) continue;
       const items = Array.isArray(value) ? value : [value];
       for (const item of items) {
         if (!isObject(item) || typeof item.type !== 'string') continue;
@@ -406,6 +461,7 @@ export class Walker {
     if (!isObject(json)) return;
     const type = shortType(json.type) ?? '';
     if (this.conditionExtensions.has(type)) {
+      this.aboutRight('material_condition', type, where);
       this.extensionChildren(json, where);
       return;
     }

@@ -31,11 +31,20 @@ describe('terrain entry points and seams', () => {
     ).toHaveLength(1);
   });
 
-  it('has empty seams until B581 and B583', () => {
-    expect(densityFunctionTypes).toEqual([]);
-    expect(ruleTypes).toEqual([]);
-    expect(conditionTypes).toEqual([]);
-    expect(flatGenerator).toBeNull();
+  it('fills the extension seams (B581) and keeps the features and presets stubs', () => {
+    const names = (list: readonly { type: string }[]) => list.map((t) => t.type).sort();
+    expect(names(densityFunctionTypes)).toEqual([
+      'ceil',
+      'domain_warp',
+      'floor',
+      'round',
+      'slice',
+      'truncate',
+      'upscale',
+    ]);
+    expect(names(ruleTypes)).toEqual(['bandlands', 'ore_vein']);
+    expect(names(conditionTypes)).toEqual(['hole', 'steep', 'temperature']);
+    expect(typeof flatGenerator).toBe('function');
     expect(resolvePreset({ vanilla: null, project: {} }, 'x')).toBeNull();
     const out = placeFeatures({
       size: { x: 1, y: 1, z: 1 },

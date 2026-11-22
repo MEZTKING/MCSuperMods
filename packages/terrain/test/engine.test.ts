@@ -219,10 +219,10 @@ describe('files', () => {
         'msm:hills/surface': {
           type: 'minecraft:sequence',
           sequence: [
-            { type: 'minecraft:bandlands' },
+            { type: 'minecraft:stripes' },
             {
               type: 'minecraft:condition',
-              if_true: { type: 'minecraft:steep' },
+              if_true: { type: 'minecraft:windy' },
               then_run: { type: 'minecraft:block', result_state: { Name: 'minecraft:sand' } },
             },
             { type: 'minecraft:block', result_state: { Name: 'minecraft:stone' }, colour: 'red' },
@@ -234,8 +234,8 @@ describe('files', () => {
       .unsupported()
       .map((n) => `${n.kind} ${n.type}`);
     expect(kinds).toEqual([
-      'material_rule minecraft:bandlands',
-      'material_condition minecraft:steep',
+      'material_rule minecraft:stripes',
+      'material_condition minecraft:windy',
       'field material_rule.block.colour',
     ]);
   });
@@ -489,7 +489,7 @@ describe('generators and biome sources', () => {
     expect(world.unsupported()).toEqual([]);
   });
 
-  it('reports a flat world until the flat generator exists, and a debug world', () => {
+  it('draws a flat world with no layers as air (B581), and reports a debug world', () => {
     const flat = hillsFiles();
     (flat.dimension as Record<string, unknown>)['msm:test'] = {
       type: 'msm:hills',
@@ -497,9 +497,7 @@ describe('generators and biome sources', () => {
     };
     const world = createTerrainWorld(input(flat));
     expect(world.generator).toBe('flat');
-    expect(world.unsupported()).toContainEqual(
-      expect.objectContaining({ kind: 'chunk_generator', type: 'minecraft:flat' }),
-    );
+    expect(world.unsupported()).toEqual([]);
     expect(buildColumns(world, WINDOW, 'surface').blocks.every((b) => b === 0)).toBe(true);
     const debug = hillsFiles();
     (debug.dimension as Record<string, unknown>)['msm:test'] = {
