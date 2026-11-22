@@ -5,6 +5,7 @@
  */
 
 import type { Json } from '@msm/plugin-api';
+import { createTagResolver, type TagOptions } from './resolve.js';
 
 /** Reads one data file: `folder` is a registry folder key (`tags/item`, `loot_table`), `id` a resource location. */
 export type DataLookup = (folder: string, id: string) => Json | undefined;
@@ -37,9 +38,18 @@ export interface ResolvedTag {
 }
 
 /**
- * Resolves a tag (B604). Stub: answers an empty tag that is dropped, so a view that calls it says
- * "not yet" and shows nothing as a member.
+ * Resolves a tag (B604) as the game loads it (B600's 2S5). `lookup` is vanilla's files, or the
+ * project over vanilla made by `layeredLookup` (both layers kept); `options.project` gives the
+ * project's files beside a vanilla-only lookup. A tag no file defines answers `dropped` with
+ * itself (`#id`) in `missing`. To resolve many tags, keep one `createTagResolver`.
+ *
+ * `options` was added by B604 (optional, so B601's calls stay valid).
  */
-export function resolveTag(registry: string, id: string, _lookup: DataLookup): ResolvedTag {
-  return { registry, id, members: [], missing: [], cycles: [], dropped: true, replaced: false };
+export function resolveTag(
+  registry: string,
+  id: string,
+  lookup: DataLookup,
+  options?: TagOptions,
+): ResolvedTag {
+  return createTagResolver(lookup, options)(registry, id);
 }

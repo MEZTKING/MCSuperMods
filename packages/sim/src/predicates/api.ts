@@ -10,6 +10,7 @@
 import type { Json, JsonObject, TargetFacts } from '@msm/plugin-api';
 import type { SimRandom } from '../entities/wander.js';
 import type { DataLookup, ResolvedTag } from '../tags/api.js';
+import { testCondition } from './conditions.js';
 
 /** The seeded random source the evaluators draw from. */
 export type SeededRandom = SimRandom;
@@ -92,6 +93,11 @@ export interface PartResult {
   readonly type: string;
   readonly answer: Answer;
   readonly parts: readonly PartResult[];
+  /**
+   * The chance of yes in this situation, its random draws taken independently (B604; absent
+   * when it is not known, such as under an unknown part or a drawn number).
+   */
+  readonly chance?: number;
 }
 
 /** What {@link testPredicate} answers. */
@@ -105,15 +111,17 @@ export interface PredicateResult {
 export const NOT_YET = (kind: Unsupported['kind'], path: string): Unsupported =>
   unsupported(kind, 'not_yet', path, 'not_supported');
 
-/** Tries a predicate (or condition) in a situation (B604). Stub: unknown, with a "not yet" note. */
+/**
+ * Tries a predicate (or condition) in a situation (B604): an object with a `type`, a list (all
+ * must pass) or a predicate id. Random parts draw from `ctx.random`, so the answer is one sample
+ * and `parts.chance` says how likely yes is. Every part not worked out is in `unsupported`.
+ */
 export function testPredicate(
-  _predicate: Json,
-  _situation: Situation,
-  _ctx: EvalContext,
+  predicate: Json,
+  situation: Situation,
+  ctx: EvalContext,
 ): PredicateResult {
-  return {
-    answer: 'unknown',
-    parts: { path: '', type: 'not_yet', answer: 'unknown', parts: [] },
-    unsupported: [NOT_YET('condition', '')],
-  };
+  const unsupported: Unsupported[] = [];
+  const parts = testCondition(predicate, '', { situation, ctx, unsupported, refs: [] });
+  return { answer: parts.answer, parts, unsupported };
 }
