@@ -6,7 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
-Nothing yet since 1.5.4.
+### Fixed
+
+- Five data pack forms that stop a real Minecraft server from starting are now refused before export, with plain words: a predicate or item modifier file that is a list or a bare id, a time check without its clock, a damage tag named without `#`, and a block transformer state in the old `{Name}` form.
 
 ## [1.5.4] - 2026-11-22
 
