@@ -26,6 +26,7 @@
 import type { Json, Project, TargetFacts } from '@msm/plugin-api';
 import type {
   ItemSample,
+  LootPart,
   LootRoll,
   LootStack,
   OddsStep,
@@ -44,6 +45,8 @@ export type DataFileMap = Readonly<Record<string, Readonly<Record<string, Json>>
 export interface ModifyResult {
   readonly item: ItemSample;
   readonly unsupported: readonly Unsupported[];
+  /** The function types it used, with how close each is (B610 shows them). */
+  readonly parts?: readonly LootPart[];
 }
 
 /** What an enchantment provider gave an item once (B609). */

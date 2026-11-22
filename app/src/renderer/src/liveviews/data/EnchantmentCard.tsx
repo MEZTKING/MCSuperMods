@@ -1,8 +1,6 @@
-/** An enchantment's tooltip and level table (B601 stub; B610 builds it). */
+/**
+ * An enchantment's card (B610): the registry's entry (`data/index.ts`) loads this file; the view
+ * is `enchantment/EnchantmentView.tsx`.
+ */
 
-import { NotYet } from '../frame/LiveViewFrame';
-import type { LiveViewProps } from '../registry';
-
-export default function EnchantmentCard(_props: LiveViewProps) {
-  return <NotYet title="Enchantment" brief="B610" />;
-}
+export { default } from './enchantment/EnchantmentView';

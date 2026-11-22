@@ -8721,3 +8721,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B616: the e2e path can reuse the test ids (`roll-it-stacks`, `odds-row-N` with `data-item`/`data-chance`, `with-odds`, `without-odds`, `enchant-odds-row-N`, `trial-wave-N`, `trial-reward-N`).
 - Follow-ups: `recipe` among the cache's folders for `furnace_smelt`; project item enchantability for `LootContext.items`.
+
+## 2026-11-22 — executor — B610 Try it on: predicates, item modifiers, enchantments (Live views 2)
+
+**What**
+- `app/src/renderer/src/liveviews/data/predicate/` (`PredicateView.tsx`, `predicate-model.ts`): **Try it on** for `minecraft:predicate`. The situation picker and a seed box ("Try again"), the answer (Yes, No, Only the game knows) with "Yes in N% of tries", and every part of the predicate as a row: its answer, its plain name, where it is in the data, its likelihood of yes and how close it is (checked for the condition types B600 measured, about right for the rest, only in the game for an unknown answer). `unsupportedWords` is shown under the part at its path. Unknown is never shown as no. A `predicate` job in the live views worker, 150 ms after an edit.
+- `item-modifier/ItemModifierView.tsx`: **Try it on** for `minecraft:item_modifier`. You pick an item (diamond sword by default, with suggestions and the project's items), the situation and the seed. **Before** and **After** show as slots with their tooltips drawn beside them: the custom or item name, the enchantments (curses red), the lore, durability as `max - floor((1 - left) x max)` of `max`, Unbreakable, and the other components named in one line. "The item is gone" shows for a count of 0. The functions used are listed with their fidelity (`parts`).
+- `enchantment/` (`EnchantmentView.tsx`, `table-model.ts`, `words.ts`, `effects.ts`, `hooks.ts`): the enchantment card. It shows the tooltip line at each level on a chosen item (slots and an inline tooltip; level names I to X from `en_us`, the raw key from 11 up, no number for a one-level enchantment), the level table (cost windows, the table costs that give each level for the item's enchantability, weight, anvil cost; it follows a cost edit at once) and what it goes on (the tag opened up through a `tag` job). It also shows what it cannot be combined with, its effects in plain words (31 effect components; unknown ids named) and **The enchanting table**: bookshelves, the three slots' cost ranges, and at a chosen cost the chance of each level on the item from an `odds` job over `enchant_with_levels` with `#minecraft:in_enchanting_table` (2,000 tries; needs the Minecraft folder, else the banner).
+- `data/TryItOn.tsx` dispatches between the predicate and modifier views; `data/EnchantmentCard.tsx` re-exports the card (`data/index.ts` untouched). `client.ts`: `ModifyResult` gained the optional `parts` (type only, additive). `test/.../frame/fakes.ts`: the fake modifier returns `parts: []`, as B605's type now asks.
+- `docs/LIVE-VIEW-AUDIT.md`: the three rows are now *Has one* (the count line is left for the close, B618, as parallel briefs change it too).
+- Tests: `app/test/components/liveviews/data/try-it-on-models.test.ts` (words, level names, the stack's tooltip, the cost windows, a cost edit, the modified-level sums, slot costs, effects, part rows and fidelity) and `try-it-on.test.tsx` (over the real `@msm/sim` evaluators: every part's answer, unknown shown as unknown, yes to no when the situation changes, the likelihood, before and after with tooltips, a book becoming an enchanted book, the card, the level table following a cost edit, the table's chances from a made-up vanilla pool).
+
+**Decisions**
+- The level table and the table's slot costs are MSM's exact sums over B600's 2S11 model (no random numbers), labelled About right. The chances come from the sim's `enchant_with_levels` and carry its fidelity.
+- `creator-cards.ts` is untouched: the Creator's Card tab keeps its own card.
+- `@msm/sim` gives an `all_of` part the path of its terms (`/terms`); the view labels the top row "the whole predicate".
+
+**Next**
+- B618: the audit's count line. A follow-up for `@msm/sim`: export the checked condition types (the view keeps B600's list in `predicate-model.ts`) and give the `all_of` part its own path.
