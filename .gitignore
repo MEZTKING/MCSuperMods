@@ -17,3 +17,4 @@ run/
 docs/site/.vitepress/cache/
 docs/site/.vitepress/dist/
 engine-mod/logs/
+__pycache__/
