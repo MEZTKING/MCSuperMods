@@ -251,6 +251,7 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     sentence: 'open the dialog {dialog} for {who}',
     group: 'players',
     slots: [{ name: 'dialog', type: 'dialog' }, WHO],
+    action: 'open_dialog',
     defaultWho: 'player',
   }),
   step({

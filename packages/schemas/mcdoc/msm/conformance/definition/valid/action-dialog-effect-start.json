@@ -1,0 +1,30 @@
+{
+  "category": "harmful",
+  "color": 16711680,
+  "components": {
+    "msm:on_start": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "dialog": "mymod:welcome",
+          "type": "open_dialog"
+        },
+        {
+          "dialog": "minecraft:server_links",
+          "target": "other",
+          "type": "open_dialog"
+        },
+        {
+          "dialog": "mymod:welcome",
+          "target": "self",
+          "type": "open_dialog"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

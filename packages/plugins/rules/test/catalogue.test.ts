@@ -157,6 +157,7 @@ describe('the catalogue', () => {
       hide_hud: 'hide_hud',
       set_hud: 'set_hud',
       explode: 'explode',
+      open_dialog: 'open_dialog',
     });
   });
 

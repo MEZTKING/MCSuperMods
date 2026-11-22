@@ -28,7 +28,8 @@ import {
  * `key-bind-`, `hud-` and `vehicle-` files are ADR 0088's `msm:key_bind`, ADR 0089's `msm:hud`
  * and ADR 0090's `msm:vehicle`; `action-explode-` and `action-hud-` files are blocks with the
  * `explode` (ADR 0090 D6) and HUD actions (ADR 0089 D6), and `action-explode-item-`,
- * `action-hud-entity-` and the like items, entities and effects with them. `block-type-2-` files
+ * `action-hud-entity-` and the like items, entities and effects with them; `action-dialog-`
+ * files the same for ADR 0111 D4's `open_dialog`. `block-type-2-` files
  * are ADR 0094's twenty block types (blocks), `waterlog-` and `weathering-` files blocks with
  * ADR 0094's `msm:waterloggable`, `msm:weathering` and `msm:waxable`, `item-inventory-` and
  * `bundle-` files items with ADR 0095's `msm:item_inventory` and `msm:bundle`, and `command-`
@@ -73,17 +74,27 @@ const BLOCK_PREFIXES: Readonly<Record<string, readonly string[]>> = {
     'ambient-particles',
     'action-explode',
     'action-hud',
+    'action-dialog',
     'waterlog',
     'weathering',
   ],
 };
 
 /** Prefixes of files whose `<prefix>-<kind>-` form is a file of another kind (`trigger-item-`). */
-const KIND_PREFIXES: readonly string[] = ['trigger', 'portal', 'action-explode', 'action-hud'];
+const KIND_PREFIXES: readonly string[] = [
+  'trigger',
+  'portal',
+  'action-explode',
+  'action-hud',
+  'action-dialog',
+];
 
-/** The `action-explode-` and `action-hud-` prefixes per kind (ADR 0089 D6, ADR 0090 D6). */
+/**
+ * The `action-explode-`, `action-hud-` and `action-dialog-` prefixes per kind (ADR 0089 D6,
+ * ADR 0090 D6, ADR 0111 D4).
+ */
 const NEW_ACTION_PREFIXES: Record<string, string> = Object.fromEntries(
-  ['action-explode', 'action-hud'].flatMap((base) => [
+  ['action-explode', 'action-hud', 'action-dialog'].flatMap((base) => [
     [base, MSM_SCHEMA_REFS.blockDefinition],
     [`${base}-item`, MSM_SCHEMA_REFS.itemDefinition],
     [`${base}-entity`, MSM_SCHEMA_REFS.entityDefinition],
@@ -259,6 +270,7 @@ describe('MSM mcdoc symbols', () => {
       'hide_hud',
       'launch',
       'light_portal',
+      'open_dialog',
       'play_animation',
       'play_sound',
       'run_function',

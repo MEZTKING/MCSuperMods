@@ -1,0 +1,19 @@
+{
+  "components": {
+    "msm:on_interact": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "dialog": "mymod:welcome",
+          "target": "everyone",
+          "type": "open_dialog"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

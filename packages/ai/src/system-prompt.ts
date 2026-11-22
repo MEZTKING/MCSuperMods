@@ -189,6 +189,7 @@ export const RULES_PROMPT_PLAIN_STEPS = Object.freeze([
   'hide_hud',
   'set_hud',
   'give_effect',
+  'open_dialog',
   'place_block',
   'explode',
   'run_function',

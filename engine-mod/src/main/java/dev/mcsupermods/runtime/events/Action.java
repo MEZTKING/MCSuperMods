@@ -43,7 +43,8 @@ public sealed interface Action {
         EXPLODE("explode", Explode.CODEC),
         SHOW_HUD("show_hud", ShowHud.CODEC),
         HIDE_HUD("hide_hud", HideHud.CODEC),
-        SET_HUD("set_hud", SetHud.CODEC);
+        SET_HUD("set_hud", SetHud.CODEC),
+        OPEN_DIALOG("open_dialog", OpenDialog.CODEC);
 
         public final String serialName;
         final MapCodec<? extends Action> codec;
@@ -191,7 +192,10 @@ public sealed interface Action {
         }
     }
 
-    /** Who an {@code apply_effect}, {@code launch}, {@code damage} or {@code heal} action affects ({@code EffectTarget}). */
+    /**
+     * Who an {@code apply_effect}, {@code launch}, {@code damage}, {@code heal} or {@code open_dialog} action affects
+     * ({@code EffectTarget}).
+     */
     enum EffectTarget {
         /**
          * The event's player; without a player, the entity of the event ({@link EventContext#entity()}): the entity
@@ -404,6 +408,24 @@ public sealed interface Action {
         @Override
         public Type type() {
             return Type.SET_HUD;
+        }
+    }
+
+    /**
+     * Opens the dialog {@code dialog} (ADR 0111 D4), vanilla or of a data pack, for the event's player ({@code self}) or
+     * the other entity of the event ({@code other}), as {@code /dialog show} does. A target that is not a player does
+     * nothing; an id that is no dialog of the game is logged once when the action runs. Closed: an unknown key is an
+     * error.
+     */
+    record OpenDialog(Identifier dialog, EffectTarget target) implements Action {
+        static final MapCodec<OpenDialog> CODEC = MsmCodecs.closedMap(RecordCodecBuilder.mapCodec(i -> i.group(
+                required("dialog", ID).forGetter(OpenDialog::dialog),
+                optional("target", EffectTarget.CODEC, EffectTarget.SELF).forGetter(OpenDialog::target)).apply(i, OpenDialog::new)),
+                List.of("type", "dialog", "target"));
+
+        @Override
+        public Type type() {
+            return Type.OPEN_DIALOG;
         }
     }
 }

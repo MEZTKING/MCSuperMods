@@ -9,6 +9,7 @@ import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,8 +19,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -38,6 +43,8 @@ public final class EventRunner {
     public static final int MAX_DEPTH = 16;
 
     private static final Map<String, Optional<BlockState>> STATES = new ConcurrentHashMap<>();
+    /** Dialog ids {@code open_dialog} did not find, each logged once per run. */
+    private static final Set<Identifier> UNKNOWN_DIALOGS = ConcurrentHashMap.newKeySet();
     private static volatile EventListener listener;
     private static final List<EventListener> LISTENERS = new CopyOnWriteArrayList<>();
 
@@ -115,6 +122,7 @@ public final class EventRunner {
                 case Action.ShowHud a -> HudServer.action(owner, a, ctx);
                 case Action.HideHud a -> HudServer.action(owner, a, ctx);
                 case Action.SetHud a -> HudServer.action(owner, a, ctx);
+                case Action.OpenDialog a -> openDialog(owner, a, ctx);
             }
         }
     }
@@ -287,5 +295,30 @@ public final class EventRunner {
         // Block events always play as blocks (ADR 0058 D1); the others as neutral when an entity is involved.
         SoundSource source = ctx.source() != EventContext.Source.BLOCK && ctx.entity() != null ? SoundSource.NEUTRAL : SoundSource.BLOCKS;
         ctx.level().playSound(null, o.x, o.y, o.z, sound.get(), source, a.volume(), a.pitch());
+    }
+
+    /**
+     * {@code open_dialog} (ADR 0111 D4): {@code self} is the event's player, else the event's entity; {@code other} is
+     * {@link EventContext#other()}. Only a player sees a dialog: any other target, or none, does nothing. The dialog is
+     * looked up in the player's registries ({@code Registries.DIALOG}, data pack dialogs included); an unknown id is
+     * logged once and does nothing.
+     */
+    private static void openDialog(Identifier owner, Action.OpenDialog a, EventContext ctx) {
+        net.minecraft.world.entity.Entity target = switch (a.target()) {
+            case SELF -> ctx.player() != null ? ctx.player() : ctx.entity();
+            case OTHER -> ctx.other();
+        };
+        if (!(target instanceof ServerPlayer player)) {
+            return;
+        }
+        Optional<Holder.Reference<Dialog>> dialog = player.registryAccess().lookupOrThrow(Registries.DIALOG)
+                .get(ResourceKey.create(Registries.DIALOG, a.dialog()));
+        if (dialog.isEmpty()) {
+            if (UNKNOWN_DIALOGS.add(a.dialog())) {
+                MsmRuntime.LOGGER.error("[{}] {}: open_dialog: {} is no dialog of this game", MsmRuntime.MOD_ID, owner, a.dialog());
+            }
+            return;
+        }
+        player.openDialog(dialog.get());
     }
 }

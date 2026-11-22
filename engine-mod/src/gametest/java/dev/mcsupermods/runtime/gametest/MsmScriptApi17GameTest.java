@@ -1,6 +1,10 @@
 package dev.mcsupermods.runtime.gametest;
 
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 import dev.mcsupermods.runtime.events.EventContext;
+import dev.mcsupermods.runtime.events.EventRunner;
+import dev.mcsupermods.runtime.events.Events;
 import dev.mcsupermods.runtime.scripting.ScriptHost;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +19,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
@@ -35,7 +41,8 @@ import net.minecraft.world.phys.Vec3;
  * shift-click and the inventory's grid; items picked up from the ground, whole and in part; bread eaten to the end and a
  * steak left half eaten; a night in a bed, left by the leave-bed button; an advancement by its own trigger and by {@code /advancement}),
  * and the game rule, statistic and dialog members through action handlers. The players are {@link RecordingPlayers} named
- * {@code b533...}, the only players api17.js logs for, so other tests' crafting and meals never count here.
+ * {@code b533...}, the only players api17.js logs for, so other tests' crafting and meals never count here. Also the
+ * {@code open_dialog} event action (ADR 0111 D4), which shares the dialog {@code data/msm_test/dialog/b533_hello.json}.
  */
 public class MsmScriptApi17GameTest {
     private static final String SCRIPT = "msm_test:api17: ";
@@ -375,6 +382,40 @@ public class MsmScriptApi17GameTest {
                     .map(packet -> ((ClientboundShowDialogPacket) packet).dialog().unwrapKey().map(k -> k.identifier().toString()).orElse("inline"))
                     .toList();
             eq(helper, shown, List.of("msm_test:b533_hello"), "dialogs sent to the player");
+        }
+        helper.succeed();
+    }
+
+    /** The dialogs sent to {@code r}'s own player since the last take, by id ({@code inline} for an unnamed one). */
+    private static List<String> dialogsSent(RecordingPlayers.Recorded r) {
+        return r.connection().take().stream().filter(ClientboundShowDialogPacket.class::isInstance)
+                .map(packet -> ((ClientboundShowDialogPacket) packet).dialog().unwrapKey().map(k -> k.identifier().toString()).orElse("inline"))
+                .toList();
+    }
+
+    /**
+     * The {@code open_dialog} action of a block event (ADR 0111 D4) sends the dialog to the event's player: {@code self}
+     * with a project dialog, {@code other} (the player too, in a block event) with a vanilla one; an unknown dialog sends
+     * nothing (logged once), and a non-player target (a mob's own event without a player, a block event without one)
+     * does nothing.
+     */
+    @GameTest
+    public void openDialogActionSendsTheDialogToTheEventsPlayer(GameTestHelper helper) {
+        Events events = Events.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("""
+                {"msm_test:go": {"actions": [
+                  {"type": "open_dialog", "dialog": "msm_test:b533_hello"},
+                  {"type": "open_dialog", "dialog": "minecraft:server_links", "target": "other"},
+                  {"type": "open_dialog", "dialog": "msm_test:no_such_dialog"}]}}""")).getOrThrow();
+        eq(helper, events.errors(), List.of(), "events decode");
+        Identifier owner = id("dialog_action_test");
+        try (RecordingPlayers.Recorded r = RecordingPlayers.join(helper, "b533dialogaction", new Vec3(2.5, 1, 2.5), GameType.SURVIVAL)) {
+            BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
+            EventRunner.fire(owner, events, id("go"), EventContext.forBlock(helper.getLevel(), pos, r.player()));
+            eq(helper, dialogsSent(r), List.of("msm_test:b533_hello", "minecraft:server_links"), "dialogs sent to the event's player");
+            EventRunner.fire(owner, events, id("go"), EventContext.forBlock(helper.getLevel(), pos, null));
+            Pig pig = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(3, 1, 3));
+            EventRunner.fire(owner, events, id("go"), EventContext.forEntity(helper.getLevel(), pig, null, null));
+            eq(helper, dialogsSent(r), List.of(), "no dialog without a player target");
         }
         helper.succeed();
     }

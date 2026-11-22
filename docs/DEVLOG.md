@@ -7623,3 +7623,19 @@ Next
 - Main session: add the README line for `b565/` in `docs/reference/spikes/README.md`; decide on the fallback-parents seam.
 - B566: lower the bundle without `withTypedBlockModels` (it makes 53 lowering conflicts for the wood set); keep the bundle for `bundleAssetReader`; add a `look` step (placed blocks face the player's look); name vehicles and mobs by order, not id; wait for `area.source.scripts?.loaded` before the first step; the loop restart costs one 76–505 ms rebuild.
 - B567: use the action sequences in `docs/reference/spikes/b565/README.md`; the pet and trader clips need a camera that follows the first mob; the Rules card's caption cannot say "Dropped 3 Lucky Coin" (`World.dropItem` is only in Minecraft).
+## 2026-11-22 — executor — open_dialog event action (ADR 0111 D4)
+
+**What**
+- Format: action `open_dialog { dialog, target? }` in `packages/schemas/mcdoc/msm/action.mcdoc` (`dialog` a vanilla or project dialog id, `target` the `EffectTarget` `self` or `other`, default `self`); `symbols.json` rebuilt (583 types). Corpus: `action-dialog-` files (block, item, entity, effect) valid; four invalid (missing dialog, a number, target `everyone`, an unknown key), on both sides (`msm-conformance.test.ts`, `ConformanceCorpusTest`).
+- Runtime: `Action.OpenDialog` (closed codec) and its run in `EventRunner.openDialog`: `self` is the event's player, else its entity; `other` is the event's other entity; only a `ServerPlayer` gets the dialog, looked up in `registryAccess().lookupOrThrow(Registries.DIALOG)`, opened by `ServerPlayer.openDialog`; an unknown id is logged once and does nothing. GameTest `MsmScriptApi17GameTest.openDialogActionSendsTheDialogToTheEventsPlayer` (a block event: `self` with `msm_test:b533_hello`, `other` with `minecraft:server_links`, an unknown dialog, then a block event without a player and a pig's own event: only the two dialogs reach the test's own recording player). 835 GameTests per variant, green on 26.3 and 26.4.
+- Rules: "Open a dialog" is an "(A)" step (`action: 'open_dialog'`); `plainAction` maps it when `who` has an action target on the trigger (a target that is no player sees nothing, as in the script route); otherwise the script route stays. Goldens: `step-open_dialog` is now plain (`mob_used`, target `other`), the old script golden is `step-open_dialog-script` (`player_joined`). The AI prompt's `RULES_PROMPT_PLAIN_STEPS` gains `open_dialog` (the app's `ai-rules.test.ts` pins it to the catalogue).
+- Verified: `./gradlew build` on 26.3 and `-Pmc=26.4`; `pnpm lint`, `pnpm typecheck`; tests of `@msm/schemas`, `@msm/plugin-rules`, `@msm/plugin-blocks-items`, `@msm/plugin-entities`, `@msm/ai`, `@msm/target-mc-26.3` and the app's `ai-rules.test.ts`.
+
+**Decisions**
+- The blocks-items and entities validators hold no action type lists (they check events through the schema), so nothing changed there. No new problem code.
+- The GameTest lives in `MsmScriptApi17GameTest` (it shares B533's dialog fixture and `RecordingPlayers`), so `fabric.mod.json` is untouched.
+
+**Next**
+- Try it: `packages/sim/src/events/actions.ts` `SIM_ACTIONS` and `packages/sim/test/events/schema-walk.test.ts` `SAMPLES` need `open_dialog` (`'onlyInMinecraft'`, sample `{ dialog: 'ev:welcome' }`); the schema walk fails until then.
+- B537: the eject's `ACTION_TYPES` (`packages/targets/mc-26.3/src/java-project/actions.ts`) lacks `open_dialog`; a Java reader as `apply_effect`'s target rule, then `Registries.DIALOG` and `ServerPlayer.openDialog`.
+- B538: `app/src/renderer/src/studios/rules/turn-into-rules.ts` could turn an `open_dialog` action back into the step (`dialog`, `who` from `target`).

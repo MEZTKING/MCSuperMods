@@ -115,6 +115,10 @@ class ConformanceCorpusTest {
             new Kind("action-hud-item-", DefinitionParser::parseItem),
             new Kind("action-hud-entity-", DefinitionParser::parseEntity),
             new Kind("action-hud-effect-", DefinitionParser::parseEffect),
+            new Kind("action-dialog-", DefinitionParser::parseBlock), // open_dialog, ADR 0111 D4
+            new Kind("action-dialog-item-", DefinitionParser::parseItem),
+            new Kind("action-dialog-entity-", DefinitionParser::parseEntity),
+            new Kind("action-dialog-effect-", DefinitionParser::parseEffect),
             new Kind("command-", CommandParser::parse), // B454
             new Kind("creative-tab-", CreativeTabParser::parse), // B454
             new Kind("trader-", DefinitionParser::parseEntity), // B474

@@ -1,0 +1,37 @@
+{
+  "category": "monster",
+  "components": {
+    "msm:animated_model": {
+      "model": "mymod:entity/bomber",
+      "texture": "mymod:entity/bomber"
+    },
+    "msm:on_death": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "dialog": "mymod:welcome",
+          "type": "open_dialog"
+        },
+        {
+          "dialog": "minecraft:server_links",
+          "target": "other",
+          "type": "open_dialog"
+        },
+        {
+          "dialog": "mymod:welcome",
+          "target": "self",
+          "type": "open_dialog"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "size": {
+    "height": 1.6,
+    "width": 0.9
+  }
+}

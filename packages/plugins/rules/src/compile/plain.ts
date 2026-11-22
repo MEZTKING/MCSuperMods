@@ -18,6 +18,7 @@
  * | `explode` | `explode` | `where` is here; `power` a number; Rules' `break_blocks` (default true) is the action's `breaks_blocks` (default false), so it is always written (B409) |
  * | `show_hud`, `hide_hud` | `show_hud`, `hide_hud` | `who` is the player and the trigger has one (the action's viewer is the event's player) |
  * | `set_hud` | `set_hud` | as `show_hud`; `text` only plain strings, else `value` a number |
+ * | `open_dialog` | `open_dialog` | as `heal` (a target that is no player sees nothing, as in the script) |
  */
 import type { Json, JsonObject } from '@msm/plugin-api';
 import { asArray, asObject, bool, conditionList, num, stepList, str } from '../book';
@@ -182,6 +183,12 @@ export function plainAction(step: JsonObject, trigger: TriggerEntry): JsonObject
       }
       const value = step.value ?? 0;
       return typeof value === 'number' ? { type: 'set_hud', hud, value } : undefined;
+    }
+    case 'open_dialog': {
+      const target = targetOf(step, trigger, 'player');
+      const dialog = str(step, 'dialog');
+      if (target === undefined || dialog === undefined) return undefined;
+      return { type: 'open_dialog', dialog, target };
     }
     case 'play_animation': {
       const animation = str(step, 'animation');

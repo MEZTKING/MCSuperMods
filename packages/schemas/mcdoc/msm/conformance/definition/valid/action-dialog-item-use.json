@@ -1,0 +1,28 @@
+{
+  "components": {
+    "msm:on_use": {
+      "event": "mymod:go"
+    }
+  },
+  "events": {
+    "mymod:go": {
+      "actions": [
+        {
+          "dialog": "mymod:welcome",
+          "type": "open_dialog"
+        },
+        {
+          "dialog": "minecraft:server_links",
+          "target": "other",
+          "type": "open_dialog"
+        },
+        {
+          "dialog": "mymod:welcome",
+          "target": "self",
+          "type": "open_dialog"
+        }
+      ]
+    }
+  },
+  "format": 1
+}

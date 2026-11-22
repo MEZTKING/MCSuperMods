@@ -184,8 +184,9 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
       { game_rule: 'demo:max_mana', step: 'set_game_rule', value: 50 },
     ],
   },
+  // Plain (an action target on the trigger); `step-open_dialog-script` below takes the script route.
   open_dialog: {
-    trigger: 'player_joined',
+    trigger: 'mob_used',
     steps: [{ dialog: 'minecraft:server_links', step: 'open_dialog' }],
   },
   add_to_stat: {
@@ -639,4 +640,10 @@ export const SAMPLES: readonly Sample[] = Object.freeze([
     };
   }),
   ...LISTENER_SAMPLES,
+  {
+    name: 'step-open_dialog-script',
+    rules: [
+      rule(when('player_joined'), [{ dialog: 'minecraft:server_links', step: 'open_dialog' }]),
+    ],
+  },
 ]);

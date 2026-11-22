@@ -180,6 +180,11 @@
           "desc": "Sets the value of a HUD element for the event's player (ADR 0089 D6).",
           "identifier": "SetHud",
           "value": "set_hud"
+        },
+        {
+          "desc": "Opens a vanilla or project dialog for the player or the other entity of the event (ADR 0111 D4).",
+          "identifier": "OpenDialog",
+          "value": "open_dialog"
         }
       ]
     },
@@ -550,6 +555,41 @@
               }
             ],
             "kind": "string"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::action::OpenDialog": {
+      "fields": [
+        {
+          "desc": "The dialog, vanilla (`minecraft:server_links`) or of the project's data pack.",
+          "key": "dialog",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dialog"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Defaults to `self`.",
+          "key": "target",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::action::EffectTarget"
           }
         }
       ],
@@ -26743,6 +26783,10 @@
         "kind": "reference",
         "path": "::msm::action::LightPortal"
       },
+      "open_dialog": {
+        "kind": "reference",
+        "path": "::msm::action::OpenDialog"
+      },
       "play_animation": {
         "kind": "reference",
         "path": "::msm::action::PlayAnimation"
@@ -27749,5 +27793,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:9e95c58003e2f0d4370e0377f5b43cdf3d4c3003ed24e98f9521d4c7e47685b4"
+  "ref": "msm-mcdoc:sha256:482bdc434b2d5a7060fb6d6de164bee3368042157170d843f909341eff1b0a0e"
 }
