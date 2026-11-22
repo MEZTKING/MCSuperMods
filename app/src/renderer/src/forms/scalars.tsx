@@ -4,7 +4,7 @@
  */
 import type { Json } from '@msm/core';
 import type { NumericRange, SchemaNode } from '@msm/schemas';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { type CompletionSource, typingKey, useForm } from './context';
 import { isFractional, stripMinecraft } from './schema-utils';
 
@@ -56,7 +56,12 @@ export function StringControl({
   const { onChange, completions } = useForm();
   const [text, setText] = useState(value ?? '');
   const listId = useId();
-  useEffect(() => setText(value ?? ''), [value]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    setText(value ?? '');
+  }
   const suggestions = suggestionsFor(node, completions, text);
   return (
     <>
@@ -103,7 +108,12 @@ export function NumberControl({
 }: ScalarProps & { node: SchemaNode & { kind: 'number' }; value: number | undefined }) {
   const { onChange } = useForm();
   const [text, setText] = useState(value === undefined ? '' : String(value));
-  useEffect(() => setText(value === undefined ? '' : String(value)), [value]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    setText(value === undefined ? '' : String(value));
+  }
   const fractional = isFractional(node.numberKind);
   const range = node.range;
   const commit = (raw: string) => {

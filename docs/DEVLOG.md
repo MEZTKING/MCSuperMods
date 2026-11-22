@@ -7365,3 +7365,15 @@ Next
 
 **Next**
 - Inputs in six other files reset their text in a `useEffect` on their value (`forms/scalars.tsx`, `forms/StructEditor.tsx`, `studios/structures/pickers.tsx`, `studios/controls/parts.tsx`, `studios/blocks-items/parts.tsx`, `components/ai/AiLimitsPopover.tsx`); those that commit on blur can lose typing the same way and could take the same pattern.
+
+## 2026-11-22 — executor — effect-reset inputs moved to the render-time reset
+
+**What**
+- The seven inputs that reset their text in `useEffect(() => setText(value), [value])` now reset it during render when the value changes (the pattern of `IdInput`): `StringControl` and `NumberControl` (`forms/scalars.tsx`), `KeyInput` (`forms/StructEditor.tsx`, blur-commit), `NumberField` (`studios/structures/pickers.tsx`), `ColourField` (`studios/controls/parts.tsx`), `TextField` (`studios/blocks-items/parts.tsx`), `LimitField` (`components/ai/AiLimitsPopover.tsx`, blur-commit). The change-commit ones already sent each keystroke on, but a mount effect could still reset the shown text (a half-typed "-" or "1.") to the old value; the same pattern costs nothing there. `KeyInput` and `LimitField` are now exported for the test.
+- New `app/test/components/input-reset-pattern.test.tsx`: types in the microtask after a lazy reveal; 4 of 5 fail on the old code and pass now; a fifth checks a new outside value still shows.
+
+**Decisions**
+- Applied to all seven rather than only the blur-commit two, for one consistent pattern.
+
+**Next**
+- None.

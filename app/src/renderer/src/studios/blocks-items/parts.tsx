@@ -9,7 +9,7 @@
 import type { Json, Project } from '@msm/core';
 import { FULL_CUBE } from '@msm/plugin-blocks-items';
 import { ExternalLink } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { iconButtonClass } from '../../components/ui/Button';
 import { type FormProblem, inputClass, ProblemList } from '../../forms';
 import { useStructureStudioHost } from '../structures/host';
@@ -38,7 +38,12 @@ export function TextField(props: {
   const external = typeof props.value === 'string' ? props.value : '';
   const [text, setText] = useState(external);
   const id = useId();
-  useEffect(() => setText(external), [external]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [shown, setShown] = useState(external);
+  if (shown !== external) {
+    setShown(external);
+    setText(external);
+  }
   return (
     <div className="flex min-w-0 flex-col gap-0.5 text-xs">
       <label htmlFor={id} className="text-muted">

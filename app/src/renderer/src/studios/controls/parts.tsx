@@ -6,7 +6,7 @@
  */
 
 import type { Json } from '@msm/core';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { inputClass } from '../../forms';
 
 /** A select over `choices`, each shown by its words; the empty choice clears the value. */
@@ -66,7 +66,12 @@ export function ColourField(props: {
 }) {
   const external = typeof props.value === 'string' ? props.value : '';
   const [text, setText] = useState(external);
-  useEffect(() => setText(external), [external]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [seen, setSeen] = useState(external);
+  if (seen !== external) {
+    setSeen(external);
+    setText(external);
+  }
   const id = useId();
   const shown = COLOR.test(external) ? external : props.fallback;
   return (

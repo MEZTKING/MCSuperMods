@@ -6,7 +6,7 @@ import type { Json } from '@msm/core';
 import type { SchemaField, SchemaNode } from '@msm/schemas';
 import { Plus } from 'lucide-react';
 import { Popover } from 'radix-ui';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { Button, buttonClass } from '../components/ui/Button';
 import { type CompletionSource, type FormProblem, useForm } from './context';
 import { JsonFallback } from './JsonFallback';
@@ -466,7 +466,7 @@ function MapEditor({
 }
 
 /** Editable map key; renames on Enter or blur, reverts on Escape or a clash. */
-function KeyInput({
+export function KeyInput({
   current,
   label,
   isTaken,
@@ -478,7 +478,12 @@ function KeyInput({
   onRename: (key: string) => void;
 }) {
   const [text, setText] = useState(current);
-  useEffect(() => setText(current), [current]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [shown, setShown] = useState(current);
+  if (shown !== current) {
+    setShown(current);
+    setText(current);
+  }
   const commit = () => {
     if (text === current) return;
     if (text === '' || isTaken(text)) {

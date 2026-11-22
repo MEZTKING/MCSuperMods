@@ -8,7 +8,7 @@
 
 import type { Json } from '@msm/core';
 import type { SchemaNode } from '@msm/schemas';
-import { type ReactNode, useEffect, useId, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { IdInput, idSuggestions, inputClass, resolveNode, type SuggestIds } from '../../forms';
 import { literalChoices, pickableKeys, structShape } from '../../forms/schema-utils';
 import type { PoolStatus } from './connections';
@@ -75,7 +75,12 @@ export function NumberField(props: {
 }) {
   const external = typeof props.value === 'number' ? String(props.value) : '';
   const [text, setText] = useState(external);
-  useEffect(() => setText(external), [external]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [shown, setShown] = useState(external);
+  if (shown !== external) {
+    setShown(external);
+    setText(external);
+  }
   return (
     <Labelled label={props.label}>
       <input

@@ -1,7 +1,7 @@
 import { type AiRunLimits, TASK_BUDGET_MIN } from '@msm/ai';
 import { Gauge } from 'lucide-react';
 import { Popover } from 'radix-ui';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { fieldClass } from '../NewElementDialog';
 import { Button, buttonClass } from '../ui/Button';
 
@@ -19,7 +19,7 @@ function clamp(value: number, min: number, max: number): number {
  * A number field that keeps what the user types and commits values within `bounds`; on blur
  * an out-of-range value is clamped and an empty one goes back to the current value.
  */
-function LimitField(props: {
+export function LimitField(props: {
   id: string;
   testId: string;
   value: number;
@@ -29,7 +29,12 @@ function LimitField(props: {
 }) {
   const { value, bounds, onCommit } = props;
   const [text, setText] = useState(String(value));
-  useEffect(() => setText(String(value)), [value]);
+  // Reset during render, not in an effect: a mount effect can run after the first keystroke and wipe it.
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    setText(String(value));
+  }
   return (
     <input
       id={props.id}
