@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests",
+  "description": "GameTests for msm_runtime; ships msm/msm_spike/ (blocks, items) and msm/msm_test/ (blocks, items, entities with GeckoLib assets, scripts) definitions like a content jar would.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike5.X25MixingGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X26CauldronGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X27BottleGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X28BoatGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X30ArgumentGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X31GameRuleGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X32StatGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X33EventGameTest",
+      "dev.mcsupermods.runtime.gametest.spike5.X34DialogGameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike5.B525ClientGameTest"
+    ],
+    "main": [
+      "dev.mcsupermods.runtime.gametest.spike5.B525Mod"
+    ]
+  },
+  "mixins": [
+    "msm_runtime_spike5.mixins.json"
+  ],
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

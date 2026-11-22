@@ -1,0 +1,13 @@
+{
+  "criteria": {
+    "planks": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipes": "minecraft:oak_planks"
+      }
+    }
+  },
+  "rewards": {
+    "function": "msm_b525:spike/crafted_reward"
+  }
+}

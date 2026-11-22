@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "msm_test:fluid_water",
+    {
+      "id": "msm_test:flowing_fluid_water",
+      "required": false
+    },
+    "msm_test:fluid_custom",
+    {
+      "id": "msm_test:flowing_fluid_custom",
+      "required": false
+    },
+    "msm_b525:mix_goo",
+    {
+      "id": "msm_b525:flowing_mix_goo",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+B525 first client run (26.3), /b525arg with a literal "structure_resource" whose argument was
+ResourceArgument.resource(buildContext, Registries.STRUCTURE). The client (a dedicated server connection, and
+singleplayer the same) failed on the command tree and disconnected; our log lines:
+
+[Render thread/ERROR] (Minecraft) Failed to handle packet net.minecraft.network.protocol.game.ClientboundCommandsPacket, disconnecting
+java.lang.IllegalStateException: Registry minecraft:worldgen/structure not found
+  (thrown while the client builds the ResourceArgument node of the received tree; the structure registry is not sent to clients)
+
+The literal was then left out (only with -Db525.structureResource=true) and every later run is clean.

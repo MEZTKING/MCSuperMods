@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:notice",
+  "title": "B525 spike dialog",
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": "Opened from the server."
+  },
+  "action": {
+    "label": "Close"
+  }
+}

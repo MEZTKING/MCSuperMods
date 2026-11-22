@@ -1,0 +1,9 @@
+{
+  "gamerule.msm_b525.spike_count": "Spike count",
+  "gamerule.msm_b525.spike_count.description": "A whole-number rule of the B525 spike",
+  "gamerule.msm_b525.spike_flag": "Spike flag",
+  "gamerule.msm_b525.spike_vanilla": "Spike vanilla flag",
+  "stat.msm_b525.spike_distance": "Spike distance",
+  "stat.msm_b525.spike_stat": "Spike things counted",
+  "stat.msm_b525.spike_time": "Spike time"
+}

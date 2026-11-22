@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "msm_test:fluid_lava",
+    {
+      "id": "msm_test:flowing_fluid_lava",
+      "required": false
+    },
+    "msm_b525:mix_lava",
+    {
+      "id": "msm_b525:flowing_mix_lava",
+      "required": false
+    },
+    "msm_b525:mix_strict",
+    {
+      "id": "msm_b525:flowing_mix_strict",
+      "required": false
+    }
+  ]
+}

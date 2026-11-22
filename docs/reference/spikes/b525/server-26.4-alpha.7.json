@@ -1,0 +1,985 @@
+{
+  "X25.channelProjectLavaWestWaterEast": {
+    "row": [
+      "4: msm_b525:mix_lava[level\u003d0] fluid msm_b525:mix_lava source",
+      "5: msm_b525:mix_lava[level\u003d2] fluid msm_b525:mix_lava amount 6",
+      "6: minecraft:cobbled_deepslate",
+      "7: minecraft:water[level\u003d5] fluid minecraft:water amount 3",
+      "8: minecraft:water[level\u003d4] fluid minecraft:water amount 4",
+      "9: minecraft:water[level\u003d3] fluid minecraft:water amount 5",
+      "10: minecraft:water[level\u003d2] fluid minecraft:water amount 6",
+      "11: minecraft:water[level\u003d1] fluid minecraft:water amount 7",
+      "12: minecraft:water[level\u003d0] fluid minecraft:water source"
+    ]
+  },
+  "X25.controlRuntimeLavaLikePlacedBesideWater": {
+    "after2.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.b": "msm_test:fluid_lava[level\u003d0] fluid msm_test:fluid_lava source",
+    "after2.heard": [
+      "levelEvent 1501 at -12129454, 7, 6662911",
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943"
+    ],
+    "first": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.b": "msm_test:fluid_lava[level\u003d0] fluid msm_test:fluid_lava source",
+    "settled.census": {
+      "fluids": {
+        "minecraft:water flowing": 109,
+        "minecraft:water source": 1,
+        "msm_test:fluid_lava source": 1
+      },
+      "solids": []
+    },
+    "settled.fizzCount": 0
+  },
+  "X25.controlVanillaLavaPlacedBesideRuntimeWaterLike": {
+    "after2.a": "msm_test:fluid_water[level\u003d0] fluid msm_test:fluid_water source",
+    "after2.b": "minecraft:obsidian",
+    "after2.heard": [
+      "levelEvent 1501 at -12129454, 7, 6662911",
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943"
+    ],
+    "first": "msm_test:fluid_water[level\u003d0] fluid msm_test:fluid_water source",
+    "settled.a": "msm_test:fluid_water[level\u003d0] fluid msm_test:fluid_water source",
+    "settled.b": "minecraft:obsidian",
+    "settled.census": {
+      "fluids": {
+        "msm_test:fluid_water flowing": 109,
+        "msm_test:fluid_water source": 1
+      },
+      "solids": [
+        "minecraft:obsidian at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 5
+  },
+  "X25.flowingProjectLavaBesideWater": {
+    "after2.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.b": "minecraft:cobbled_deepslate",
+    "after2.heard": [
+      "levelEvent 1501 at -12129454, 7, 6662911",
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943",
+      "levelEvent 1501 at -12129371, 7, 6662943"
+    ],
+    "first": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.b": "minecraft:cobbled_deepslate",
+    "settled.census": {
+      "fluids": {
+        "minecraft:water flowing": 109,
+        "minecraft:water source": 1
+      },
+      "solids": [
+        "minecraft:cobbled_deepslate at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 5
+  },
+  "X25.gooPlacedBesideVanillaLava": {
+    "after2.a": "minecraft:lava[level\u003d0] fluid minecraft:lava source",
+    "after2.b": "minecraft:emerald_block",
+    "after2.heard": [
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129305, 7, 6662911",
+      "levelEvent 1501 at -12129274, 7, 6662911",
+      "levelEvent 1501 at -12129310, 7, 6662943"
+    ],
+    "first": "minecraft:lava[level\u003d0] fluid minecraft:lava source",
+    "settled.a": "minecraft:lava[level\u003d0] fluid minecraft:lava source",
+    "settled.b": "minecraft:emerald_block",
+    "settled.census": {
+      "fluids": {
+        "minecraft:lava flowing": 21,
+        "minecraft:lava source": 1
+      },
+      "solids": [
+        "minecraft:emerald_block at 10, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 0
+  },
+  "X25.log": [
+    "mix_lava (source) at -12129454, 7, 6662911 met minecraft:water on its west side -\u003e minecraft:crying_obsidian tick 4",
+    "mix_lava (source) at -12129424, 7, 6662911 met minecraft:water on its west side -\u003e minecraft:crying_obsidian tick 4",
+    "mix_lava (flowing 6) at -12129394, 7, 6662911 met minecraft:water on its west side -\u003e minecraft:cobbled_deepslate tick 4",
+    "mix_lava (source) at -12129364, 7, 6662911 met msm_test:fluid_water on its west side -\u003e minecraft:crying_obsidian tick 4",
+    "mix_lava (source) at -12129334, 7, 6662911 met msm_b525:mix_goo on its west side -\u003e minecraft:crying_obsidian tick 4",
+    "mix_goo (source) at -12129305, 7, 6662911 met minecraft:lava on its east side -\u003e minecraft:emerald_block tick 4",
+    "mix_lava (source) at -12129371, 7, 6662943 met minecraft:water on its up side -\u003e minecraft:crying_obsidian tick 4",
+    "mix_strict (source) at -12129310, 7, 6662943 met msm_b525:mix_goo on its west side -\u003e minecraft:gold_block tick 4",
+    "mix_lava (flowing 8) at -12129401, 7, 6662943 met minecraft:water on its north side -\u003e minecraft:cobbled_deepslate tick 14",
+    "mix_lava (flowing 4) at -12129255, 7, 6662943 met minecraft:water on its east side -\u003e minecraft:cobbled_deepslate tick 29",
+    "mix_lava (flowing 8) at -12129401, 7, 6662942 met minecraft:water on its north side -\u003e minecraft:cobbled_deepslate tick 34",
+    "mix_lava (flowing 8) at -12129401, 7, 6662944 met minecraft:water on its west side -\u003e minecraft:cobbled_deepslate tick 34",
+    "mix_lava (flowing 8) at -12129402, 7, 6662943 met minecraft:water on its north side -\u003e minecraft:cobbled_deepslate tick 34",
+    "mix_lava (flowing 8) at -12129400, 7, 6662943 met minecraft:water on its north side -\u003e minecraft:cobbled_deepslate tick 34"
+  ],
+  "X25.projectLavaBesideRuntimeWaterLike": {
+    "after2.a": "msm_test:fluid_water[level\u003d0] fluid msm_test:fluid_water source",
+    "after2.b": "minecraft:crying_obsidian",
+    "after2.heard": [
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129371, 7, 6662943"
+    ],
+    "first": "msm_test:fluid_water[level\u003d0] fluid msm_test:fluid_water source",
+    "settled.a": "msm_test:fluid_water[level\u003d0] fluid msm_test:fluid_water source",
+    "settled.b": "minecraft:crying_obsidian",
+    "settled.census": {
+      "fluids": {
+        "msm_test:fluid_water flowing": 109,
+        "msm_test:fluid_water source": 1
+      },
+      "solids": [
+        "minecraft:crying_obsidian at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 5
+  },
+  "X25.projectLavaPlacedAboveWater": {
+    "after2.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.b": "msm_b525:mix_lava[level\u003d0] fluid msm_b525:mix_lava source",
+    "after2.heard": [
+      "levelEvent 1501 at -12129454, 7, 6662911",
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943",
+      "levelEvent 1501 at -12129371, 7, 6662943"
+    ],
+    "first": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.a": "minecraft:cobbled_deepslate",
+    "settled.b": "msm_b525:mix_lava[level\u003d0] fluid msm_b525:mix_lava source",
+    "settled.census": {
+      "fluids": {
+        "msm_b525:mix_lava flowing": 68,
+        "msm_b525:mix_lava source": 1
+      },
+      "solids": [
+        "minecraft:cobbled_deepslate at 9, 1, 11",
+        "minecraft:cobbled_deepslate at 10, 1, 10",
+        "minecraft:cobbled_deepslate at 10, 1, 11",
+        "minecraft:cobbled_deepslate at 10, 1, 12",
+        "minecraft:cobbled_deepslate at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 5
+  },
+  "X25.projectLavaPlacedBesideGoo": {
+    "after2.a": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "after2.b": "minecraft:crying_obsidian",
+    "after2.heard": [
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129305, 7, 6662911",
+      "levelEvent 1501 at -12129371, 7, 6662943",
+      "levelEvent 1501 at -12129310, 7, 6662943"
+    ],
+    "first": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "settled.a": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "settled.b": "minecraft:crying_obsidian",
+    "settled.census": {
+      "fluids": {
+        "msm_b525:mix_goo flowing": 109,
+        "msm_b525:mix_goo source": 1
+      },
+      "solids": [
+        "minecraft:crying_obsidian at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 0
+  },
+  "X25.projectLavaPlacedBesideWater": {
+    "after2.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.b": "minecraft:crying_obsidian",
+    "after2.heard": [
+      "levelEvent 1501 at -12129454, 7, 6662911",
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943"
+    ],
+    "first": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.b": "minecraft:crying_obsidian",
+    "settled.census": {
+      "fluids": {
+        "minecraft:water flowing": 109,
+        "minecraft:water source": 1
+      },
+      "solids": [
+        "minecraft:crying_obsidian at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 0
+  },
+  "X25.strictLavaLikeAloneSpreads": {
+    "after2.a": "minecraft:stone",
+    "after2.b": "msm_b525:mix_strict[level\u003d0] fluid msm_b525:mix_strict source",
+    "after2.heard": [
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129305, 7, 6662911",
+      "levelEvent 1501 at -12129274, 7, 6662911",
+      "levelEvent 1501 at -12129310, 7, 6662943"
+    ],
+    "first": "minecraft:stone",
+    "settled.a": "minecraft:stone",
+    "settled.b": "msm_b525:mix_strict[level\u003d0] fluid msm_b525:mix_strict source",
+    "settled.census": {
+      "fluids": {
+        "msm_b525:mix_strict flowing": 21,
+        "msm_b525:mix_strict source": 1
+      },
+      "solids": []
+    },
+    "settled.fizzCount": 1
+  },
+  "X25.strictLavaLikeNoWaterRulePlacedBesideWater": {
+    "after2.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.b": "msm_b525:mix_strict[level\u003d0] fluid msm_b525:mix_strict source",
+    "after2.heard": [
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129305, 7, 6662911",
+      "levelEvent 1501 at -12129371, 7, 6662943",
+      "levelEvent 1501 at -12129310, 7, 6662943"
+    ],
+    "first": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.a": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.b": "msm_b525:mix_strict[level\u003d0] fluid msm_b525:mix_strict source",
+    "settled.census": {
+      "fluids": {
+        "minecraft:water flowing": 107,
+        "minecraft:water source": 1,
+        "msm_b525:mix_strict flowing": 2,
+        "msm_b525:mix_strict source": 1
+      },
+      "solids": []
+    },
+    "settled.fizzCount": 5
+  },
+  "X25.strictLavaLikePlacedBesideGoo": {
+    "after2.a": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "after2.b": "minecraft:gold_block",
+    "after2.heard": [
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129305, 7, 6662911",
+      "levelEvent 1501 at -12129274, 7, 6662911",
+      "levelEvent 1501 at -12129371, 7, 6662943",
+      "levelEvent 1501 at -12129310, 7, 6662943"
+    ],
+    "first": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "settled.a": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "settled.b": "minecraft:gold_block",
+    "settled.census": {
+      "fluids": {
+        "msm_b525:mix_goo flowing": 109,
+        "msm_b525:mix_goo source": 1
+      },
+      "solids": [
+        "minecraft:gold_block at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 0
+  },
+  "X25.vanillaLavaPlacedBesideGoo": {
+    "after2.a": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "after2.b": "minecraft:obsidian",
+    "after2.heard": [
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129305, 7, 6662911",
+      "levelEvent 1501 at -12129274, 7, 6662911",
+      "levelEvent 1501 at -12129310, 7, 6662943"
+    ],
+    "first": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "settled.a": "msm_b525:mix_goo[level\u003d0] fluid msm_b525:mix_goo source",
+    "settled.b": "minecraft:obsidian",
+    "settled.census": {
+      "fluids": {
+        "msm_b525:mix_goo flowing": 109,
+        "msm_b525:mix_goo source": 1
+      },
+      "solids": [
+        "minecraft:obsidian at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 1
+  },
+  "X25.waterPlacedAboveProjectLava": {
+    "after2.a": "minecraft:crying_obsidian",
+    "after2.b": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.heard": [
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129364, 7, 6662911",
+      "levelEvent 1501 at -12129334, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943",
+      "levelEvent 1501 at -12129371, 7, 6662943"
+    ],
+    "first": "msm_b525:mix_lava[level\u003d0] fluid msm_b525:mix_lava source",
+    "settled.a": "minecraft:crying_obsidian",
+    "settled.b": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.census": {
+      "fluids": {
+        "minecraft:water flowing": 148,
+        "minecraft:water source": 1
+      },
+      "solids": [
+        "minecraft:crying_obsidian at 10, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 5
+  },
+  "X25.waterPlacedBesideProjectLava": {
+    "after2.a": "minecraft:crying_obsidian",
+    "after2.b": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "after2.heard": [
+      "levelEvent 1501 at -12129454, 7, 6662911",
+      "levelEvent 1501 at -12129424, 7, 6662911",
+      "levelEvent 1501 at -12129394, 7, 6662911",
+      "levelEvent 1501 at -12129430, 7, 6662943"
+    ],
+    "first": "msm_b525:mix_lava[level\u003d0] fluid msm_b525:mix_lava source",
+    "settled.a": "minecraft:crying_obsidian",
+    "settled.b": "minecraft:water[level\u003d0] fluid minecraft:water source",
+    "settled.census": {
+      "fluids": {
+        "minecraft:water flowing": 109,
+        "minecraft:water source": 1
+      },
+      "solids": [
+        "minecraft:crying_obsidian at 11, 1, 11"
+      ]
+    },
+    "settled.fizzCount": 5
+  },
+  "X26": {
+    "full": [
+      "reflection route: minecraft:cauldron + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e msm_b525:mix_lava_cauldron, hand 1 minecraft:bucket, inventory has goo bottle 0",
+      "comparator: 3",
+      "msm_b525:mix_lava_cauldron + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e minecraft:cauldron, hand 1 msm_b525:mix_lava_bucket, inventory has goo bottle 0",
+      "control runtime water-like bucket, no route: minecraft:cauldron + 1 msm_test:fluid_water_bucket -\u003e Pass[] \u003d\u003e minecraft:cauldron, hand 1 msm_test:fluid_water_bucket, inventory has goo bottle 0",
+      "above the cauldron after the control: minecraft:air"
+    ],
+    "heard": [
+      "minecraft:item.bucket.fill",
+      "minecraft:item.bucket.empty",
+      "minecraft:item.bottle.fill",
+      "minecraft:item.bottle.fill",
+      "minecraft:item.bottle.fill",
+      "minecraft:item.bottle.empty",
+      "minecraft:item.bottle.empty",
+      "minecraft:item.bucket.empty_lava",
+      "minecraft:item.bucket.fill_lava"
+    ],
+    "inside.cauldronAfter30": "minecraft:cauldron",
+    "inside.onFireAfter30": false,
+    "inside.onFireAtStart": true,
+    "layered": [
+      "comparator level 3: 3",
+      "msm_b525:goo_cauldron[level\u003d3] + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e minecraft:cauldron, hand 1 msm_b525:mix_goo_bucket, inventory has goo bottle 0",
+      "route off: minecraft:cauldron + 1 msm_b525:mix_goo_bucket -\u003e Pass[] \u003d\u003e minecraft:cauldron, hand 1 msm_b525:mix_goo_bucket, inventory has goo bottle 0",
+      "route on: minecraft:cauldron + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e msm_b525:goo_cauldron[level\u003d3], hand 1 minecraft:bucket, inventory has goo bottle 0",
+      "msm_b525:goo_cauldron[level\u003d3] + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e msm_b525:goo_cauldron[level\u003d2], hand 1 msm_b525:goo_bottle, inventory has goo bottle 1",
+      "comparator level 2: 2",
+      "msm_b525:goo_cauldron[level\u003d2] + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e msm_b525:goo_cauldron[level\u003d1], hand 1 msm_b525:goo_bottle, inventory has goo bottle 1",
+      "msm_b525:goo_cauldron[level\u003d1] + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e minecraft:cauldron, hand 1 msm_b525:goo_bottle, inventory has goo bottle 1",
+      "minecraft:cauldron + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e msm_b525:goo_cauldron[level\u003d1], hand 1 minecraft:glass_bottle, inventory has goo bottle 0",
+      "msm_b525:goo_cauldron[level\u003d1] + empty -\u003e Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] \u003d\u003e msm_b525:goo_cauldron[level\u003d2], hand 1 minecraft:glass_bottle, inventory has goo bottle 0",
+      "vanilla water bucket: msm_b525:goo_cauldron[level\u003d2] + 1 minecraft:water_bucket -\u003e Pass[] \u003d\u003e msm_b525:goo_cauldron[level\u003d2], hand 1 minecraft:water_bucket, inventory has goo bottle 0",
+      "empty bucket at 2: msm_b525:goo_cauldron[level\u003d2] + 1 minecraft:bucket -\u003e Pass[] \u003d\u003e msm_b525:goo_cauldron[level\u003d2], hand 1 minecraft:bucket, inventory has goo bottle 0",
+      "dye-able leather boots: msm_b525:goo_cauldron[level\u003d2] + 1 minecraft:leather_boots -\u003e Pass[] \u003d\u003e msm_b525:goo_cauldron[level\u003d2], hand 1 minecraft:leather_boots, inventory has goo bottle 0"
+    ],
+    "log": [
+      "layered: empty bucket at level 3 tick 3",
+      "UseBlockCallback: mix_goo_bucket on vanilla cauldron tick 3",
+      "layered: glass bottle at level 3 tick 3",
+      "layered: glass bottle at level 2 tick 3",
+      "layered: glass bottle at level 1 tick 3",
+      "UseBlockCallback: goo_bottle on vanilla cauldron tick 3",
+      "layered: project bottle at level 1 tick 3",
+      "layered: other minecraft:water_bucket -\u003e super TryEmptyHandInteraction[] tick 3",
+      "layered: empty bucket at level 2 tick 3",
+      "layered: other minecraft:leather_boots -\u003e super TryEmptyHandInteraction[] tick 3",
+      "vanilla EMPTY map: mix_lava_bucket poured (reflection route) tick 3",
+      "full: empty bucket tick 3",
+      "layered: entityInside minecraft:zombie intersects true onFire true tick 4",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 5",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 6",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 7",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 8",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 9",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 10",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 11",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 12",
+      "layered: entityInside minecraft:zombie intersects true onFire false tick 13",
+      "layered: entityInside minecraft:zombie intersects true onFire true tick 14",
+      "layered: entityInside minecraft:zombie intersects true onFire true tick 15"
+    ]
+  },
+  "X27": {
+    "drink.events": [
+      "fabric game rule changed spike_count -\u003e 7",
+      "fabric game rule changed spike_count -\u003e 3",
+      "mixin ResultSlot.onTake minecraft:oak_planks count 4 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/crafted player Crafter",
+      "mixin PlayerAdvancements.award msm_b525:spike/crafted criterion planks returned true wasDone false done true player Crafter",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin ResultSlot.onTake minecraft:air count 0 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin ResultSlot.onTake minecraft:air count 0 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin ResultSlot.onTake minecraft:air count 0 by Crafter tick 21",
+      "mixin ResultSlot.onTake minecraft:oak_planks count 4 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu InventoryMenu tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:iron_ingot amount 3 stack count 3 by Crafter menu FurnaceMenu tick 21",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/picked player Granted",
+      "mixin PlayerAdvancements.award msm_b525:spike/picked criterion emerald returned true wasDone false done true player Granted",
+      "mixin AdvancementRewards.grant (completed) minecraft:story/mine_stone player Granted",
+      "mixin PlayerAdvancements.award minecraft:story/mine_stone criterion get_stone returned true wasDone false done true player Granted",
+      "mixin ServerPlayer.take minecraft:air left on ground 0 amount 5 by Picker tick 22",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/picked player Picker",
+      "mixin PlayerAdvancements.award msm_b525:spike/picked criterion emerald returned true wasDone false done true player Picker",
+      "mixin ServerPlayer.onItemPickup minecraft:emerald count 5 by Picker",
+      "mixin ItemEntity.playerTouch took 5 minecraft:emerald of 5, left 0, removed true by Picker tick 22",
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Drinker",
+      "fabric START_SLEEPING at -12129349, 7, 6662999 by Sleeper tick 23",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/slept player Sleeper",
+      "mixin PlayerAdvancements.award msm_b525:spike/slept criterion bed returned true wasDone false done true player Sleeper",
+      "mixin AdvancementRewards.grant (completed) minecraft:adventure/sleep_in_bed player Sleeper",
+      "mixin PlayerAdvancements.award minecraft:adventure/sleep_in_bed criterion slept_in_bed returned true wasDone false done true player Sleeper",
+      "mixin AdvancementRewards.grant (completed) minecraft:story/mine_diamond player Picker",
+      "mixin PlayerAdvancements.award minecraft:story/mine_diamond criterion diamond returned true wasDone false done true player Picker",
+      "mixin Consumable.onConsume msm_b525:goo_bottle count 1 food true by Drinker tick 35",
+      "mixin AdvancementRewards.grant (completed) minecraft:husbandry/root player Drinker",
+      "mixin PlayerAdvancements.award minecraft:husbandry/root criterion consumed_item returned true wasDone false done true player Drinker",
+      "goo_bottle finishUsingItem (on_drink) by Drinker stack before 1 msm_b525:goo_bottle result empty speed 1 food 11",
+      "mixin ItemEntity.playerTouch took 3 minecraft:diamond of 5, left 2, removed false by Picker tick 35",
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Picker",
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Eater",
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Sleeper"
+    ],
+    "drink.food": 11,
+    "drink.hand": "1 minecraft:glass_bottle",
+    "drink.isUsing": true,
+    "drink.speed": "effect.minecraft.speed x 2, Duration: 200",
+    "drink.ticks": [
+      "finished after 32 ticks"
+    ],
+    "drink.use": "Success[swingSource\u003dNONE, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "drink.useDuration": 32,
+    "goo.routeOff": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:potion]], hand 1 minecraft:potion potion PotionContents[potion\u003dOptional[Reference{ResourceKey[minecraft:potion / minecraft:water]\u003dnet.minecraft.world.item.alchemy.Potion@34028481}], customColor\u003dOptional.empty, customEffects\u003d[], customName\u003dOptional.empty], elsewhere empty",
+    "goo.routeOn": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]], hand 1 msm_b525:goo_bottle, elsewhere empty",
+    "goo.sourceStillThere": "msm_b525:mix_goo[level\u003d0]",
+    "heard": [
+      "minecraft:item.bottle.fill"
+    ],
+    "runtimeWaterLike.routeOff": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:potion]], hand 1 minecraft:potion potion PotionContents[potion\u003dOptional[Reference{ResourceKey[minecraft:potion / minecraft:water]\u003dnet.minecraft.world.item.alchemy.Potion@34028481}], customColor\u003dOptional.empty, customEffects\u003d[], customName\u003dOptional.empty], elsewhere empty",
+    "vanillaWater.routeOff": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:potion]], hand 1 minecraft:potion potion PotionContents[potion\u003dOptional[Reference{ResourceKey[minecraft:potion / minecraft:water]\u003dnet.minecraft.world.item.alchemy.Potion@34028481}], customColor\u003dOptional.empty, customEffects\u003d[], customName\u003dOptional.empty], elsewhere empty"
+  },
+  "X28.runtimeLavaLike": {
+    "alive": false,
+    "onFire": true,
+    "pushedEastBlocks": "0.000",
+    "speedAfterPush": [
+      "t62 vx 0.4000 IN_AIR",
+      "t63 vx 0.4000 IN_AIR",
+      "t64 vx 0.4000 IN_AIR",
+      "t65 vx 0.4000 IN_AIR",
+      "t66 vx 0.4000 IN_AIR"
+    ],
+    "track": [
+      "t5 y 9.400 (above pool floor 3.400) dy -0.200 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t10 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR",
+      "t20 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR",
+      "t40 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR",
+      "t60 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR"
+    ],
+    "yAfterPush": "2.880"
+  },
+  "X28.runtimeNoneFluid": {
+    "alive": true,
+    "onFire": false,
+    "pushedEastBlocks": "0.599",
+    "speedAfterPush": [
+      "t62 vx 0.2400 ON_LAND",
+      "t63 vx 0.1440 ON_LAND",
+      "t64 vx 0.0864 ON_LAND",
+      "t65 vx 0.0518 ON_LAND",
+      "t66 vx 0.0311 ON_LAND"
+    ],
+    "track": [
+      "t5 y 9.400 (above pool floor 3.400) dy -0.200 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t10 y 7.800 (above pool floor 1.800) dy -0.400 waterAbove 8.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t20 y 7.000 (above pool floor 1.000) dy 0.000 waterAbove 7.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status ON_LAND",
+      "t40 y 7.000 (above pool floor 1.000) dy 0.000 waterAbove 7.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status ON_LAND",
+      "t60 y 7.000 (above pool floor 1.000) dy 0.000 waterAbove 7.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status ON_LAND"
+    ],
+    "yAfterPush": "1.000"
+  },
+  "X28.runtimeWaterLike": {
+    "alive": true,
+    "onFire": false,
+    "pushedEastBlocks": "3.162",
+    "speedAfterPush": [
+      "t62 vx 0.3600 IN_WATER",
+      "t63 vx 0.3240 IN_WATER",
+      "t64 vx 0.2916 IN_WATER",
+      "t65 vx 0.2624 IN_WATER",
+      "t66 vx 0.2362 IN_WATER"
+    ],
+    "track": [
+      "t5 y 9.400 (above pool floor 3.400) dy -0.200 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t10 y 8.535 (above pool floor 2.535) dy -0.002 waterAbove 9.000 inWater true underWater false waterHeight 0.352 lavaHeight 0.000 alive true status IN_WATER",
+      "t20 y 8.520 (above pool floor 2.520) dy 0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.369 lavaHeight 0.000 alive true status IN_WATER",
+      "t40 y 8.523 (above pool floor 2.523) dy -0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.366 lavaHeight 0.000 alive true status IN_WATER",
+      "t60 y 8.523 (above pool floor 2.523) dy -0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.366 lavaHeight 0.000 alive true status IN_WATER"
+    ],
+    "yAfterPush": "2.523"
+  },
+  "X28.spikeGooWaterLike": {
+    "alive": true,
+    "onFire": false,
+    "pushedEastBlocks": "3.162",
+    "speedAfterPush": [
+      "t62 vx 0.3600 IN_WATER",
+      "t63 vx 0.3240 IN_WATER",
+      "t64 vx 0.2916 IN_WATER",
+      "t65 vx 0.2624 IN_WATER",
+      "t66 vx 0.2362 IN_WATER"
+    ],
+    "track": [
+      "t5 y 9.400 (above pool floor 3.400) dy -0.200 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t10 y 8.535 (above pool floor 2.535) dy -0.002 waterAbove 9.000 inWater true underWater false waterHeight 0.352 lavaHeight 0.000 alive true status IN_WATER",
+      "t20 y 8.520 (above pool floor 2.520) dy 0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.369 lavaHeight 0.000 alive true status IN_WATER",
+      "t40 y 8.523 (above pool floor 2.523) dy -0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.366 lavaHeight 0.000 alive true status IN_WATER",
+      "t60 y 8.523 (above pool floor 2.523) dy -0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.366 lavaHeight 0.000 alive true status IN_WATER"
+    ],
+    "yAfterPush": "2.523"
+  },
+  "X28.vanillaLava": {
+    "alive": false,
+    "onFire": true,
+    "pushedEastBlocks": "0.000",
+    "speedAfterPush": [
+      "t62 vx 0.4000 IN_AIR",
+      "t63 vx 0.4000 IN_AIR",
+      "t64 vx 0.4000 IN_AIR",
+      "t65 vx 0.4000 IN_AIR",
+      "t66 vx 0.4000 IN_AIR"
+    ],
+    "track": [
+      "t5 y 9.400 (above pool floor 3.400) dy -0.200 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t10 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR",
+      "t20 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR",
+      "t40 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR",
+      "t60 y 8.880 (above pool floor 2.880) dy -0.280 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive false status IN_AIR"
+    ],
+    "yAfterPush": "2.880"
+  },
+  "X28.vanillaWater": {
+    "alive": true,
+    "onFire": false,
+    "pushedEastBlocks": "3.955",
+    "speedAfterPush": [
+      "t62 vx 0.3600 IN_WATER",
+      "t63 vx 0.3240 IN_WATER",
+      "t64 vx 0.2916 IN_WATER",
+      "t65 vx 0.2624 IN_WATER",
+      "t66 vx 0.2362 IN_WATER"
+    ],
+    "track": [
+      "t5 y 9.400 (above pool floor 3.400) dy -0.200 waterAbove 9.000 inWater false underWater false waterHeight 0.000 lavaHeight 0.000 alive true status IN_AIR",
+      "t10 y 8.535 (above pool floor 2.535) dy -0.002 waterAbove 9.000 inWater true underWater false waterHeight 0.352 lavaHeight 0.000 alive true status IN_WATER",
+      "t20 y 8.520 (above pool floor 2.520) dy 0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.369 lavaHeight 0.000 alive true status IN_WATER",
+      "t40 y 8.523 (above pool floor 2.523) dy -0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.366 lavaHeight 0.000 alive true status IN_WATER",
+      "t60 y 8.523 (above pool floor 2.523) dy -0.000 waterAbove 9.000 inWater true underWater false waterHeight 0.366 lavaHeight 0.000 alive true status IN_WATER"
+    ],
+    "yAfterPush": "2.523"
+  },
+  "X30": {
+    "registeredTypes": [
+      "dimension",
+      "time",
+      "team_colour",
+      "hex_colour",
+      "rotation",
+      "angle",
+      "uuid",
+      "objective",
+      "score_holder",
+      "score_holders",
+      "item_predicate",
+      "block_predicate",
+      "effect",
+      "enchantment",
+      "biome",
+      "biome_or_tag",
+      "structure",
+      "structure_or_tag",
+      "entity_type",
+      "particle",
+      "game_mode",
+      "text",
+      "int_range",
+      "identifier",
+      "team",
+      "slot",
+      "nbt",
+      "message",
+      "dialog",
+      "loot_table",
+      "advancement",
+      "recipe"
+    ],
+    "commandBuilds": 1,
+    "dimension": {
+      "serverType": "net.minecraft.commands.arguments.DimensionArgument",
+      "minecraft:the_nether": "value minecraft:the_nether | chat [b525arg dimension \u003d minecraft:the_nether]",
+      "msm_b525:nowhere": "value null | chat [Unknown dimension \u0027msm_b525:nowhere\u0027]"
+    },
+    "time": {
+      "serverType": "net.minecraft.commands.arguments.TimeArgument",
+      "3d": "value 72000 | chat [b525arg time \u003d 72000]",
+      "20s": "value 400 | chat [b525arg time \u003d 400]",
+      "5": "value 5 | chat [b525arg time \u003d 5]",
+      "1.5t": "value 2 | chat [b525arg time \u003d 2]"
+    },
+    "team_colour": {
+      "serverType": "net.minecraft.commands.arguments.TeamColorArgument",
+      "red": "value red | chat [b525arg team_colour \u003d red]",
+      "light_purple": "value light_purple | chat [b525arg team_colour \u003d light_purple]"
+    },
+    "hex_colour": {
+      "serverType": "net.minecraft.commands.arguments.HexColorArgument",
+      "FF8800": "value ffff8800 | chat [b525arg hex_colour \u003d ffff8800]"
+    },
+    "rotation": {
+      "serverType": "net.minecraft.commands.arguments.coordinates.RotationArgument",
+      "~10 ~-5": "value -5.0 75.78025 | chat [b525arg rotation \u003d -5.0 75.78025]",
+      "90 0": "value 0.0 90.0 | chat [b525arg rotation \u003d 0.0 90.0]"
+    },
+    "angle": {
+      "serverType": "net.minecraft.commands.arguments.AngleArgument",
+      "~45": "value 110.78025 | chat [b525arg angle \u003d 110.78025]",
+      "-90": "value -90.0 | chat [b525arg angle \u003d -90.0]"
+    },
+    "uuid": {
+      "serverType": "net.minecraft.commands.arguments.UuidArgument",
+      "dd12be42-52a9-4a91-a8a1-11c01849e498": "value dd12be42-52a9-4a91-a8a1-11c01849e498 | chat [b525arg uuid \u003d dd12be42-52a9-4a91-a8a1-11c01849e498]"
+    },
+    "objective": {
+      "serverType": "net.minecraft.commands.arguments.ObjectiveArgument",
+      "b525obj": "value b525obj | chat [b525arg objective \u003d b525obj]",
+      "missing_objective": "value null | chat [Unknown scoreboard objective \u0027missing_objective\u0027]"
+    },
+    "score_holder": {
+      "serverType": "net.minecraft.commands.arguments.ScoreHolderArgument",
+      "@s": "value Typist | chat [b525arg score_holder \u003d Typist]",
+      "Alex": "value Alex | chat [b525arg score_holder \u003d Alex]"
+    },
+    "score_holders": {
+      "serverType": "net.minecraft.commands.arguments.ScoreHolderArgument",
+      "*": "value null | chat [No relevant score holders could be found]",
+      "@a": "value Drinker,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Typist | chat [b525arg score_holders \u003d Drinker,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Ears,Typist]"
+    },
+    "item_predicate": {
+      "serverType": "net.minecraft.commands.arguments.item.ItemPredicateArgument",
+      "#minecraft:logs": "value oak_log true, diamond false | chat [b525arg item_predicate \u003d oak_log true, diamond false]",
+      "minecraft:diamond[minecraft:damage\u003d0]": "value oak_log false, diamond false | chat [b525arg item_predicate \u003d oak_log false, diamond false]"
+    },
+    "block_predicate": {
+      "serverType": "net.minecraft.commands.arguments.blocks.BlockPredicateArgument",
+      "#minecraft:logs": "value below minecraft:oak_log true | chat [b525arg block_predicate \u003d below minecraft:oak_log true]",
+      "minecraft:stone": "value below minecraft:oak_log false | chat [b525arg block_predicate \u003d below minecraft:oak_log false]"
+    },
+    "effect": {
+      "serverType": "net.minecraft.commands.arguments.ResourceArgument",
+      "minecraft:speed": "value minecraft:speed | chat [b525arg effect \u003d minecraft:speed]",
+      "msm_b525:nope": "value null | parse {\u003cargument value:net.minecraft.commands.arguments.ResourceArgument@6c1bd63a\u003e\u003dcom.mojang.brigadier.exceptions.CommandSyntaxException: Can\u0027t find element \u0027msm_b525:nope\u0027 of type \u0027minecraft:mob_effect\u0027 at position 28: ..._b525:nope\u003c--[HERE]} | chat [Can\u0027t find element \u0027msm_b525:nope\u0027 of type \u0027minecraft:mob_effect\u0027, ..._b525:nope\u003c--[HERE]]"
+    },
+    "enchantment": {
+      "serverType": "net.minecraft.commands.arguments.ResourceArgument",
+      "minecraft:sharpness": "value minecraft:sharpness | chat [b525arg enchantment \u003d minecraft:sharpness]"
+    },
+    "biome": {
+      "serverType": "net.minecraft.commands.arguments.ResourceArgument",
+      "minecraft:plains": "value minecraft:plains | chat [b525arg biome \u003d minecraft:plains]"
+    },
+    "biome_or_tag": {
+      "serverType": "net.minecraft.commands.arguments.ResourceOrTagArgument",
+      "#minecraft:is_forest": "value #minecraft:is_forest | chat [b525arg biome_or_tag \u003d #minecraft:is_forest]",
+      "minecraft:desert": "value minecraft:desert | chat [b525arg biome_or_tag \u003d minecraft:desert]"
+    },
+    "structure": {
+      "serverType": "net.minecraft.commands.arguments.ResourceKeyArgument",
+      "minecraft:village_plains": "value minecraft:village_plains | chat [b525arg structure \u003d minecraft:village_plains]",
+      "msm_b525:nope": "value null | chat [There is no structure with type \"msm_b525:nope\"]"
+    },
+    "structure_or_tag": {
+      "serverType": "net.minecraft.commands.arguments.ResourceOrTagKeyArgument",
+      "#minecraft:village": "value #minecraft:village | chat [b525arg structure_or_tag \u003d #minecraft:village]",
+      "minecraft:stronghold": "value minecraft:stronghold | chat [b525arg structure_or_tag \u003d minecraft:stronghold]"
+    },
+    "entity_type": {
+      "serverType": "net.minecraft.commands.arguments.ResourceArgument",
+      "minecraft:pig": "value minecraft:pig | chat [b525arg entity_type \u003d minecraft:pig]"
+    },
+    "particle": {
+      "serverType": "net.minecraft.commands.arguments.ParticleArgument",
+      "minecraft:flame": "value minecraft:flame | chat [b525arg particle \u003d minecraft:flame]",
+      "minecraft:dust{color:[1.0,0.0,0.0],scale:1.0}": "value minecraft:dust | chat [b525arg particle \u003d minecraft:dust]"
+    },
+    "game_mode": {
+      "serverType": "net.minecraft.commands.arguments.GameModeArgument",
+      "creative": "value creative | chat [b525arg game_mode \u003d creative]"
+    },
+    "text": {
+      "serverType": "net.minecraft.commands.arguments.ComponentArgument",
+      "{text:\"hi\",color:\"gold\"}": "value hi | chat [b525arg text \u003d hi]",
+      "\"plain\"": "value plain | chat [b525arg text \u003d plain]"
+    },
+    "int_range": {
+      "serverType": "net.minecraft.commands.arguments.RangeArgument$Ints",
+      "1..5": "value Ints[bounds\u003dBounds[min\u003dOptional[1], max\u003dOptional[5]], boundsSqr\u003dBounds[min\u003dOptional[1], max\u003dOptional[25]]] | chat [b525arg int_range \u003d Ints[bounds\u003dBounds[min\u003dOptional[1], max\u003dOptional[5]], boundsSqr\u003dBounds[min\u003dOptional[1], max\u003dOptional[25]]]]",
+      "3": "value Ints[bounds\u003dBounds[min\u003dOptional[3], max\u003dOptional[3]], boundsSqr\u003dBounds[min\u003dOptional[9], max\u003dOptional[9]]] | chat [b525arg int_range \u003d Ints[bounds\u003dBounds[min\u003dOptional[3], max\u003dOptional[3]], boundsSqr\u003dBounds[min\u003dOptional[9], max\u003dOptional[9]]]]"
+    },
+    "identifier": {
+      "serverType": "net.minecraft.commands.arguments.IdentifierArgument",
+      "msm_b525:thing": "value msm_b525:thing | chat [b525arg identifier \u003d msm_b525:thing]"
+    },
+    "team": {
+      "serverType": "net.minecraft.commands.arguments.TeamArgument",
+      "b525team": "value b525team | chat [b525arg team \u003d b525team]"
+    },
+    "slot": {
+      "serverType": "net.minecraft.commands.arguments.SlotArgument",
+      "hotbar.3": "value 3 | chat [b525arg slot \u003d 3]",
+      "armor.head": "value 103 | chat [b525arg slot \u003d 103]"
+    },
+    "nbt": {
+      "serverType": "net.minecraft.commands.arguments.CompoundTagArgument",
+      "{a:1b,b:\"x\"}": "value {a:1b,b:\"x\"} | chat [b525arg nbt \u003d {a:1b,b:\"x\"}]"
+    },
+    "message": {
+      "serverType": "net.minecraft.commands.arguments.MessageArgument",
+      "hello there @s": "value hello there Typist | chat [b525arg message \u003d hello there Typist]"
+    },
+    "dialog": {
+      "serverType": "net.minecraft.commands.arguments.ResourceOrIdArgument$DialogArgument",
+      "msm_b525:hello": "value msm_b525:hello | chat [b525arg dialog \u003d msm_b525:hello]",
+      "{type:\"minecraft:notice\",title:\"inline\"}": "value inline | chat [b525arg dialog \u003d inline]"
+    },
+    "loot_table": {
+      "serverType": "net.minecraft.commands.arguments.ResourceOrIdArgument$LootTableArgument",
+      "minecraft:chests/simple_dungeon": "value minecraft:chests/simple_dungeon | chat [b525arg loot_table \u003d minecraft:chests/simple_dungeon]"
+    },
+    "advancement": {
+      "serverType": "net.minecraft.commands.arguments.ResourceKeyArgument",
+      "msm_b525:spike/ate": "value msm_b525:spike/ate | chat [b525arg advancement \u003d msm_b525:spike/ate]"
+    },
+    "recipe": {
+      "serverType": "net.minecraft.commands.arguments.ResourceKeyArgument",
+      "minecraft:oak_planks": "value minecraft:oak_planks | chat [b525arg recipe \u003d minecraft:oak_planks]"
+    }
+  },
+  "X31": {
+    "registry.ids": [
+      "msm_b525:spike_count",
+      "msm_b525:spike_flag",
+      "msm_b525:spike_vanilla"
+    ],
+    "registry.vanillaCount": 59,
+    "available": [
+      "msm_b525:spike_flag BOOL GameRuleCategory[id\u003dminecraft:misc] default true key gamerule.msm_b525.spike_flag",
+      "msm_b525:spike_count INT GameRuleCategory[id\u003dminecraft:player] default 3 key gamerule.msm_b525.spike_count",
+      "msm_b525:spike_vanilla BOOL GameRuleCategory[id\u003dminecraft:mobs] default false key gamerule.msm_b525.spike_vanilla"
+    ],
+    "gameruleTree": [
+      "msm_b525:spike_count",
+      "msm_b525:spike_flag",
+      "msm_b525:spike_vanilla"
+    ],
+    "gameruleTreeSample": [
+      "advance_time",
+      "advance_weather",
+      "allow_entering_nether_using_portals",
+      "block_drops",
+      "block_explosion_drop_decay"
+    ],
+    "commands": [
+      "gamerule msm_b525:spike_count -\u003e [Game rule msm_b525:spike_count is currently set to 3]",
+      "gamerule msm_b525:spike_count 7 -\u003e [Game rule msm_b525:spike_count is now set to 7]",
+      "gamerule msm_b525:spike_count -\u003e [Game rule msm_b525:spike_count is currently set to 7]",
+      "gamerule msm_b525:spike_count 11 -\u003e [Integer must not be more than 10: found 11, ...ike_count 11\u003c--[HERE]]",
+      "gamerule msm_b525:spike_flag false -\u003e [Game rule msm_b525:spike_flag is now set to false]",
+      "gamerule msm_b525:spike_vanilla true -\u003e [Game rule msm_b525:spike_vanilla is now set to true]",
+      "gamerule spike_count 5 -\u003e [Incorrect argument for command, gamerule spike_count 5\u003c--[HERE]]",
+      "gamerule minecraft:keep_inventory -\u003e [Game rule keep_inventory is currently set to false]",
+      "values: count 7, flag false, vanilla true"
+    ],
+    "events": [
+      "fabric game rule changed spike_count -\u003e 7"
+    ],
+    "savedIn": [
+      "data/minecraft/game_rules.dat: ..._anger\":0b,\"minecraft:water_source_conversion\":1b,\"msm_b525:spike_count\":7,\"msm_b525:spike_flag\":0b,\"msm_b525:spike_vanilla\":1b}}..."
+    ]
+  },
+  "X32": {
+    "registry": [
+      "msm_b525:spike_distance",
+      "msm_b525:spike_stat",
+      "msm_b525:spike_time"
+    ],
+    "criterion.byName": "minecraft.custom:msm_b525.spike_stat",
+    "criterion.colonForm": "net.minecraft.IdentifierException: Non [a-z0-9/._-] character in path of location: minecraft:msm_b525:spike_stat",
+    "criterion.inCustomNames": [],
+    "freshIdentifierInstance": "java.lang.NullPointerException: Cannot invoke \"net.minecraft.resources.Identifier.toString()\" because \"location\" is null",
+    "statValue": 4,
+    "statFormatted": "4",
+    "distanceFormatted": "2.50 m",
+    "timeFormatted": "1.03 min",
+    "score.b525s": 4,
+    "score.b525d": 250,
+    "commands": [
+      "scoreboard objectives add b525s minecraft.custom:msm_b525.spike_stat -\u003e [Created new objective [b525s]]",
+      "scoreboard objectives add b525d minecraft.custom:msm_b525.spike_distance -\u003e [Created new objective [b525d]]",
+      "scoreboard players get @s b525s -\u003e [Counter has 4 [b525s]]"
+    ],
+    "statsFile": "ts\": {\n    \"minecraft:custom\": {\n      \"msm_b525:spike_distance\": 250,\n      \"msm_b525:spike_stat\": 4\n    }\n  },\n  \"DataVersion\": 5127\n}"
+  },
+  "X33.advancementByCommand": {
+    "events": [
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/picked player Granted",
+      "mixin PlayerAdvancements.award msm_b525:spike/picked criterion emerald returned true wasDone false done true player Granted",
+      "mixin AdvancementRewards.grant (completed) minecraft:story/mine_stone player Granted",
+      "mixin PlayerAdvancements.award minecraft:story/mine_stone criterion get_stone returned true wasDone false done true player Granted"
+    ]
+  },
+  "X33.crafting": {
+    "menu": "CraftingMenu",
+    "afterPut": "result 4 minecraft:oak_planks, carried empty",
+    "afterPickup": "result empty, carried 4 minecraft:oak_planks",
+    "events.pickup": [
+      "mixin ResultSlot.onTake minecraft:oak_planks count 4 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/crafted player Crafter",
+      "mixin PlayerAdvancements.award msm_b525:spike/crafted criterion planks returned true wasDone false done true player Crafter"
+    ],
+    "afterShiftClick": "result empty, carried empty, planks in inventory 12",
+    "events.shiftClick": [
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin ResultSlot.onTake minecraft:air count 0 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin ResultSlot.onTake minecraft:air count 0 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu CraftingMenu tick 21",
+      "mixin ResultSlot.onTake minecraft:air count 0 by Crafter tick 21"
+    ],
+    "inventoryGrid": "result empty, carried 4 minecraft:oak_planks",
+    "events.inventoryGrid": [
+      "mixin ResultSlot.onTake minecraft:oak_planks count 4 by Crafter tick 21",
+      "mixin ItemStack.onCraftedBy minecraft:oak_planks amount 4 stack count 4 by Crafter menu InventoryMenu tick 21"
+    ],
+    "furnaceMenu": "FurnaceMenu",
+    "furnaceCarried": "3 minecraft:iron_ingot",
+    "events.furnace": [
+      "mixin ItemStack.onCraftedBy minecraft:iron_ingot amount 3 stack count 3 by Crafter menu FurnaceMenu tick 21"
+    ],
+    "tags": [
+      "b525_crafted_reward"
+    ],
+    "advancementDone": true
+  },
+  "X33.eating": {
+    "steps": [
+      "use Success[swingSource\u003dNONE, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] using true remaining 32",
+      "first bread finished at tick 33, hand 1 minecraft:bread, food 11, tags [b525_ate_reward]",
+      "second use Success[swingSource\u003dNONE, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+      "second bread finished at tick 78, hand empty, tags [b525_ate_reward]",
+      "interrupted: using false, beef left 1 minecraft:cooked_beef"
+    ],
+    "events": [
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Eater",
+      "mixin Consumable.onConsume minecraft:bread count 2 food true by Eater tick 54",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/ate player Eater",
+      "mixin PlayerAdvancements.award msm_b525:spike/ate criterion ate_bread returned true wasDone false done false player Eater",
+      "mixin PlayerAdvancements.award minecraft:husbandry/balanced_diet criterion bread returned true wasDone false done false player Eater",
+      "mixin AdvancementRewards.grant (completed) minecraft:husbandry/root player Eater",
+      "mixin PlayerAdvancements.award minecraft:husbandry/root criterion consumed_item returned true wasDone false done true player Eater",
+      "mixin Consumable.onConsume minecraft:bread count 1 food true by Eater tick 99",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/ate player Eater",
+      "mixin PlayerAdvancements.award msm_b525:spike/ate criterion ate_bread returned true wasDone false done false player Eater"
+    ]
+  },
+  "X33.pickup": {
+    "whole.inventory": 5,
+    "whole.entityGone": true,
+    "whole.events": [
+      "mixin ServerPlayer.take minecraft:air left on ground 0 amount 5 by Picker tick 22",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/picked player Picker",
+      "mixin PlayerAdvancements.award msm_b525:spike/picked criterion emerald returned true wasDone false done true player Picker",
+      "mixin ServerPlayer.onItemPickup minecraft:emerald count 5 by Picker",
+      "mixin ItemEntity.playerTouch took 5 minecraft:emerald of 5, left 0, removed true by Picker tick 22"
+    ],
+    "partial.inventoryDiamonds": 64,
+    "partial.leftOnGround": "2 minecraft:diamond",
+    "partial.events": [
+      "mixin ItemEntity.playerTouch took 3 minecraft:diamond of 5, left 2, removed false by Picker tick 35",
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Picker"
+    ],
+    "advancementPickedDone": true
+  },
+  "X33.sleeping": {
+    "steps": [
+      "use bed Success[swingSource\u003dSERVER_ONLY, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]], sleeping true, players in level 18",
+      "woke by itself at tick 107 sleepTimer 101"
+    ],
+    "events": [
+      "fabric START_SLEEPING at -12129349, 7, 6662999 by Sleeper tick 23",
+      "mixin AdvancementRewards.grant (completed) msm_b525:spike/slept player Sleeper",
+      "mixin PlayerAdvancements.award msm_b525:spike/slept criterion bed returned true wasDone false done true player Sleeper",
+      "mixin AdvancementRewards.grant (completed) minecraft:adventure/sleep_in_bed player Sleeper",
+      "mixin PlayerAdvancements.award minecraft:adventure/sleep_in_bed criterion slept_in_bed returned true wasDone false done true player Sleeper",
+      "mixin PlayerAdvancements.award minecraft:adventure/adventuring_time criterion minecraft:desert returned true wasDone false done false player Sleeper",
+      "fabric STOP_SLEEPING at -12129349, 7, 6662999 by Sleeper tick 127"
+    ],
+    "advancementSleptDone": true
+  },
+  "X34": {
+    "registry.ours": [
+      "msm_b525:hello"
+    ],
+    "openDialog": [
+      "show dialog msm_b525:hello NoticeDialog"
+    ],
+    "command": [
+      "show dialog msm_b525:hello NoticeDialog"
+    ],
+    "clear": [
+      "ClientboundClearDialogPacket"
+    ]
+  },
+  "startup": {
+    "cauldron.reflectionPut": "ok",
+    "fluid.mix_goo": "ok msm_b525:mix_goo / msm_b525:mix_goo",
+    "fluid.mix_lava": "ok msm_b525:mix_lava / msm_b525:mix_lava",
+    "fluid.mix_strict": "ok msm_b525:mix_strict / msm_b525:mix_strict",
+    "fluidModel": "one_fluid",
+    "gamerule.fabric": "ok msm_b525:spike_flag msm_b525:spike_count description gamerule.msm_b525.spike_count",
+    "gamerule.vanilla": "ok msm_b525:spike_vanilla description gamerule.msm_b525.spike_vanilla",
+    "stat.spike_distance": "ok minecraft.custom:msm_b525.spike_distance",
+    "stat.spike_stat": "ok minecraft.custom:msm_b525.spike_stat",
+    "stat.spike_time": "ok minecraft.custom:msm_b525.spike_time"
+  }
+}
