@@ -1,0 +1,51 @@
+{
+  "behaves_like": "water",
+  "bottle": {
+    "effects": [
+      {
+        "amplifier": 1,
+        "effect": "minecraft:speed",
+        "seconds": 10.0
+      }
+    ],
+    "food": {
+      "can_always_eat": true,
+      "nutrition": 1,
+      "saturation": 0.1
+    },
+    "on_drink": "msm_test:drunk"
+  },
+  "cauldron": {
+    "levels": true
+  },
+  "events": {
+    "msm_test:drunk": {
+      "actions": [
+        {
+          "effect": "minecraft:luck",
+          "seconds": 5.0,
+          "type": "apply_effect"
+        }
+      ]
+    },
+    "msm_test:goo_inside": {
+      "actions": [
+        {
+          "effect": "minecraft:glowing",
+          "seconds": 2.0,
+          "target": "other",
+          "type": "apply_effect"
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "mixing": [
+    {
+      "flowing": "minecraft:diamond_block",
+      "source": "minecraft:emerald_block",
+      "with": "lava"
+    }
+  ],
+  "on_entity_inside": "msm_test:goo_inside"
+}

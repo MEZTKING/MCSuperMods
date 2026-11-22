@@ -1,0 +1,7 @@
+{
+  "textures": {
+    "flowing": "minecraft:block/lava_flow",
+    "particle": "minecraft:block/lava_still",
+    "still": "minecraft:block/lava_still"
+  }
+}

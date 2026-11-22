@@ -1,0 +1,22 @@
+{
+  "behaves_like": "lava",
+  "cauldron": {
+    "levels": true
+  },
+  "flow": {
+    "tick_delay": 10
+  },
+  "format": 1,
+  "mixing": [
+    {
+      "flowing": "minecraft:cobbled_deepslate",
+      "source": "minecraft:crying_obsidian",
+      "with": "water"
+    },
+    {
+      "flowing": "minecraft:iron_block",
+      "source": "minecraft:gold_block",
+      "with": "msm_test:mix_goo"
+    }
+  ]
+}

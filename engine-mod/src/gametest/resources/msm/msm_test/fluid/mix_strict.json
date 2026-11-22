@@ -1,0 +1,18 @@
+{
+  "behaves_like": "lava",
+  "flow": {
+    "tick_delay": 10
+  },
+  "format": 1,
+  "mixing": [
+    {
+      "flowing": "msm_test:no_such_block",
+      "source": "minecraft:gold_block",
+      "with": "msm_test:mix_goo"
+    },
+    {
+      "source": "minecraft:lapis_block",
+      "with": "msm_test:no_such_fluid"
+    }
+  ]
+}

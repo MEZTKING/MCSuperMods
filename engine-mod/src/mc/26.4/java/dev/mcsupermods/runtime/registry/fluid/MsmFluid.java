@@ -93,6 +93,17 @@ public final class MsmFluid extends FlowingFluid {
         MsmFluids.beforeDestroyingBlock(level, pos, state);
     }
 
+    /**
+     * Falling into another liquid a mixing rule names (ADR 0108 D1 as amended, B525: vanilla's lava falling into water)
+     * makes the rule's {@code flowing} block there ({@link FluidMixing#fallInto}); everything else is vanilla's.
+     */
+    @Override
+    protected void spreadTo(LevelAccessor level, BlockPos pos, BlockState state, Direction direction, FluidState fluid) {
+        if (!FluidMixing.fallInto(block.get(), level, pos, direction)) {
+            super.spreadTo(level, pos, state, direction, fluid);
+        }
+    }
+
     @Override
     protected int getSlopeFindDistance(LevelReader level) {
         return definition.flow().slopeDistance();

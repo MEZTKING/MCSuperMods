@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.registry.fluid;
 import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.loader.FluidParser;
 import dev.mcsupermods.runtime.loader.RawDefinition;
+import dev.mcsupermods.runtime.registry.MsmRegistrar;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,7 +47,9 @@ import net.minecraft.world.level.material.PushReaction;
  * of {@code behaves_like} are data the lowering writes, never registered here.
  *
  * <p>The registrar calls {@link #register} after the particle types and before the blocks; a fluid, liquid block or
- * bucket id that is already taken is an error and that fluid is not registered.
+ * bucket id that is already taken is an error and that fluid is not registered. The fluid's events get the block event
+ * checks ({@code MsmRegistrar.checkEvents}: an unknown sound or particle is an error, the rest is checked after start).
+ * Mixing ({@link FluidMixing}), cauldrons and bottles ({@link MsmCauldrons}) build on the registered entries.
  */
 public final class MsmFluids {
     private MsmFluids() {}
@@ -119,6 +122,9 @@ public final class MsmFluids {
             newWarnings.add("fluids: vanilla's water bucket has no dispenser behaviour yet; project buckets are dropped by dispensers");
         }
         List<Identifier> ids = new ArrayList<>();
+        // The block event checks for the fluid's events (sounds and particles now, items, functions, states and effects
+        // after start); checkEvents logs its own errors.
+        List<String> eventErrors = new ArrayList<>();
         parsed.forEach((id, def) -> {
             RawDefinition raw = raws.get(id);
             String where = raw == null ? "fluid " + id : raw.describe();
@@ -131,6 +137,9 @@ public final class MsmFluids {
                 Entry entry = registerOne(id, raw == null ? MsmRuntime.MOD_ID : raw.modId(), def, dispense);
                 REGISTERED.put(id, entry);
                 ids.add(id);
+                if (raw != null) {
+                    MsmRegistrar.checkEvents(raw, def.events(), eventErrors);
+                }
             } catch (RuntimeException e) {
                 newErrors.add(where + ": " + e.getMessage());
                 MsmRuntime.LOGGER.error("[{}] {}: could not register the fluid", MsmRuntime.MOD_ID, where, e);
@@ -139,6 +148,7 @@ public final class MsmFluids {
         newErrors.forEach(m -> MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, m));
         newWarnings.forEach(m -> MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, m));
         errors.addAll(newErrors);
+        errors.addAll(eventErrors);
         warnings.addAll(newWarnings);
         return List.copyOf(ids);
     }

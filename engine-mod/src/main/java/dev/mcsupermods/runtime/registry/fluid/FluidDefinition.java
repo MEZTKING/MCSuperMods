@@ -22,8 +22,8 @@ import net.minecraft.resources.Identifier;
  * @param onEntityInside      an event id declared in {@code events}, fired on the server while an entity is in the fluid,
  *                            at most every {@link #INSIDE_COOLDOWN_TICKS} ticks for the same entity
  * @param events              the fluid's events
- * @param mixing              what forms where this fluid meets another (ADR 0108 D1, B527's format; B529 acts on it), in
- *                            file order; empty means vanilla's behaviour per version
+ * @param mixing              what forms where this fluid meets another (ADR 0108 D1, B527's format; {@link FluidMixing}
+ *                            acts on it), in file order; empty means vanilla's behaviour per version
  * @param cauldron            the cauldron companion {@code <ns>:<path>_cauldron} (ADR 0108 D2); empty means none
  * @param bottle              the bottle companion {@code <ns>:<path>_bottle} (ADR 0108 D3); empty means none
  */

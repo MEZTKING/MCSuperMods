@@ -10,6 +10,11 @@
     {
       "id": "msm_test:flowing_fluid_custom",
       "required": false
+    },
+    "msm_test:mix_goo",
+    {
+      "id": "msm_test:flowing_mix_goo",
+      "required": false
     }
   ]
 }

@@ -365,7 +365,7 @@ public final class MsmRegistrar {
      * (items, block states, functions) for {@link #checkAfterStart}: they may name content of mods
      * registered later, or data pack files.
      */
-    static void checkEvents(RawDefinition raw, Events events, List<String> errors) {
+    public static void checkEvents(RawDefinition raw, Events events, List<String> errors) {
         events.byId().forEach((eventId, event) -> {
             for (Action action : event.actions()) {
                 String where = raw.describe() + ": events: " + eventId + ": ";

@@ -5,6 +5,16 @@
     {
       "id": "msm_test:flowing_fluid_lava",
       "required": false
+    },
+    "msm_test:mix_lava",
+    {
+      "id": "msm_test:flowing_mix_lava",
+      "required": false
+    },
+    "msm_test:mix_strict",
+    {
+      "id": "msm_test:flowing_mix_strict",
+      "required": false
     }
   ]
 }
