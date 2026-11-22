@@ -26,6 +26,7 @@ import {
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { renderOnStack, schemaState } from './harness';
 
 const MC263 = builtInTargets.find((entry) => entry.target.blocks?.fluidModel === 'two_fluids');
@@ -34,7 +35,11 @@ const schemas = new Map<string, SchemaContextState>();
 beforeAll(async () => {
   const index = await schemaIndex();
   for (const bundle of builtInTargets) schemas.set(bundle.target.id, schemaState(bundle, index));
-});
+  // The Studio is a lazy chunk: load it here, not inside the first findBy.
+  await preloadChunks(
+    () => import('../../../../src/renderer/src/studios/blocks-items/FluidStudio'),
+  );
+}, PRELOAD_TIMEOUT_MS);
 afterEach(cleanup);
 
 const fluid = (data: Record<string, Json> = {}): Element =>
@@ -117,7 +122,11 @@ describe('Fluid Studio', () => {
     if (MC263 === undefined) throw new Error('No two-fluid target.');
     const asked: string[] = [];
     renderFluid(fluid(), MC263.target.id, asked);
-    const still = await screen.findByTestId('fluid-preview-still-picture');
+    const still = await screen.findByTestId(
+      'fluid-preview-still-picture',
+      {},
+      { timeout: LAZY_CHUNK_TIMEOUT_MS },
+    );
     expect(still.getAttribute('data-texture')).toBe('demo:block/swamp_still');
     expect(
       (screen.getByTestId('fluid-preview-still-tint') as HTMLElement).style.backgroundColor,
@@ -147,7 +156,7 @@ describe('Fluid Studio', () => {
   it('edits behaviour, colour, flow and pictures', async () => {
     if (MC264 === undefined) throw new Error('No one-fluid target.');
     const { data, stack } = renderFluid(fluid(), MC264.target.id);
-    await screen.findByTestId('fluid-studio');
+    await screen.findByTestId('fluid-studio', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
     expect(screen.queryByTestId('fluid-two-fluids')).toBeNull();
     const read = () => data() as { [key: string]: Json };
 

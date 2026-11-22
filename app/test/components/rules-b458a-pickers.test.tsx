@@ -30,6 +30,7 @@ import { getAt } from '../../src/renderer/src/studios/rules/rules-model';
 import type { SchemaContextState } from '../../src/renderer/src/studios/use-schema-context';
 import { element } from './fixtures';
 import { schemaIndex } from './forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from './lazy-chunks';
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 const rulesKind = rulesPlugin.contributes.elementKinds?.find((kind) => kind.id === RULES_KIND);
@@ -48,7 +49,9 @@ beforeAll(async () => {
       registries: () => registries,
     },
   };
-});
+  // The Studio is a lazy chunk: load it here, not inside the first findBy.
+  await preloadChunks(() => import('../../src/renderer/src/studios/rules/RuleBookStudio'));
+}, PRELOAD_TIMEOUT_MS);
 beforeEach(() => {
   usePreferences.setState({ mode: 'easy' });
 });
@@ -116,7 +119,7 @@ function Harness(props: { stack: CommandStack }) {
 async function renderBook(book: Json, options: { extra?: Element[] } = {}) {
   const stack = new CommandStack(projectOf(book, options.extra), { coalesceWindowMs: 60_000 });
   render(<Harness stack={stack} />);
-  await screen.findByTestId('rule-book-studio');
+  await screen.findByTestId('rule-book-studio', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
   const find = (id: string): Element | undefined =>
     stack.state.namespaces[0]?.elements.find((entry) => entry.id === id);
   const data = (): Json => find(BOOK_ID)?.data ?? null;

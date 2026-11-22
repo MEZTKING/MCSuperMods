@@ -37,6 +37,7 @@ import { DISCOVERED_STUDIOS } from '../../../../src/renderer/src/studios/studio-
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 let schema: SchemaContextState;
@@ -48,7 +49,9 @@ beforeAll(async () => {
     status: 'ready',
     context: { target, schemaIndex: index, vanillaRegistries: {}, registries: () => registries },
   };
-});
+  // The Studio is a lazy chunk: load it here, not inside the first findBy.
+  await preloadChunks(() => import('../../../../src/renderer/src/studios/scripting/CommandStudio'));
+}, PRELOAD_TIMEOUT_MS);
 afterEach(cleanup);
 
 const commandKind = scriptingPlugin.contributes.elementKinds?.find(
@@ -104,7 +107,11 @@ async function renderOnStack(data: Json = GIVE) {
     namespaces: [{ name: 'demo', elements: [subject], assets: [] }],
   });
   render(<Harness stack={stack} />);
-  const studio = await screen.findByTestId('command-studio');
+  const studio = await screen.findByTestId(
+    'command-studio',
+    {},
+    { timeout: LAZY_CHUNK_TIMEOUT_MS },
+  );
   const data$ = (): Json =>
     stack.state.namespaces[0]?.elements.find((entry) => entry.id === ID)?.data ?? null;
   return { stack, data: data$, studio };

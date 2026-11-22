@@ -19,6 +19,7 @@ import {
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { renderOnStack, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
@@ -26,7 +27,11 @@ let schema: SchemaContextState;
 
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex());
-});
+  // The Studio is a lazy chunk: load it here, not inside the first findBy.
+  await preloadChunks(
+    () => import('../../../../src/renderer/src/studios/blocks-items/ParticleStudio'),
+  );
+}, PRELOAD_TIMEOUT_MS);
 afterEach(cleanup);
 
 const ID = 'demo:spark' as ResourceLocation;
@@ -60,7 +65,7 @@ describe('Particle Studio', () => {
 
   it('loads lazily with its groups and Preview', async () => {
     renderOnStack(particle(), schema);
-    await screen.findByTestId('particle-studio');
+    await screen.findByTestId('particle-studio', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
     for (const testId of [
       'particle-pictures',
       'particle-life',

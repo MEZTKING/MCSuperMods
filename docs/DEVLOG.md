@@ -6846,3 +6846,16 @@ Next
 **Next**
 - A whole-monorepo `turbo run test` also timed out `packages/sim` `test/script/rule-steps.test.ts` "keeps every line, instruments every rule and still transpiles" at the sim package's default 5 s (it transpiles every compiler golden); outside this brief.
 - Other component tests that `findBy` a lazy Studio or section without preloading (`RuleBookStudio`, `rules-project-pickers`, `rules-b458a-pickers`, `command-studio`, `profession-studio`, `fluid-studio`, `creative-tab-studio`, `particle-studio`) can use `lazy-chunks.ts` the same way if they show the same failure.
+
+## 2026-11-22 — executor — lazy chunk preloads
+
+**What**
+- Component tests for `RuleBookStudio`, `rules-project-pickers`, `rules-b458a-pickers`, `command-studio`, `profession-studio`, `fluid-studio`, `creative-tab-studio` and `particle-studio` now load their lazy Studio in `beforeAll` with `preloadChunks` (timeout `PRELOAD_TIMEOUT_MS`) and give the first `findBy` that waits for it `LAZY_CHUNK_TIMEOUT_MS`, as `key-bind-studio.test.tsx` does (follow-up to c155fb7).
+- `packages/sim/test/script/rule-steps.test.ts`: the test "keeps every line, instruments every rule and still transpiles" has its own 60 s timeout, with a comment saying why.
+- The same file's test "names the rule from the script's own error line when a script was not instrumented" failed about half the runs, load or not: an uninstrumented script runs its own `Math.random() * 100 < 50`, so the thrown line was reached by chance. It now stubs `Math.random` to 0 for that test and restores it before the assertion.
+
+**Decisions**
+- Only the Studio chunk itself is preloaded; nested lazy sections (Rules section, trader section) are not waited for by these tests. The sim package-wide timeout is unchanged. No retries, skips or loosened assertions; no app source touched.
+
+**Next**
+- If another component test shows a lazy-chunk timeout under load, use `lazy-chunks.ts` the same way.

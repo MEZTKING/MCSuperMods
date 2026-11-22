@@ -11,7 +11,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Element, Json, ResourceLocation, Target } from '@msm/plugin-api';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   type CompiledScript,
   inProcessRunner,
@@ -93,6 +93,7 @@ beforeAll(async () => {
 describe('instrumentRuleScript over the compiler goldens', () => {
   const goldens = readdirSync(GOLDENS).filter((name) => name.endsWith('.ts'));
 
+  // Transpiles every compiler golden, which outgrows the 5 s default in a whole-monorepo run.
   it('keeps every line, instruments every rule and still transpiles', () => {
     expect(goldens.length).toBeGreaterThan(80);
     for (const name of goldens) {
@@ -106,7 +107,7 @@ describe('instrumentRuleScript over the compiler goldens', () => {
       expect(out, name).toContain('import { tryIt as __tryIt } from "msm:try-it";');
       expect(() => transpile(out, name), name).not.toThrow();
     }
-  });
+  }, 60_000);
 
   it('checks conditions, chances, loops and players, and leaves other lines as they are', () => {
     const read = (name: string) => instrumentRuleScript(readFileSync(join(GOLDENS, name), 'utf8'));
@@ -368,6 +369,9 @@ describe('logic rules of fixtures/sample-rules', () => {
         book: one.book as string,
       };
     });
+    // Not instrumented, the script's own `Math.random() * 100 < 50` decides the chance: 0 takes the
+    // branch that holds the thrown line, every run.
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
     const { source, texts } = area(sample, target, booksOf('fixtures/sample-rules', S), {
       compiled: plain,
     });
@@ -381,6 +385,7 @@ describe('logic rules of fixtures/sample-rules', () => {
     source.act(SNEAK);
     source.tick();
     source.act({ type: 'use', pos: { x: 12, y: 0, z: 12 }, face: 'up', hit: UP });
+    random.mockRestore();
     expect(texts().at(-1)).toBe('Rule "Try your luck" failed: Error: boom');
   });
 });

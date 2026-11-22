@@ -39,6 +39,7 @@ import { DISCOVERED_STUDIOS } from '../../../../src/renderer/src/studios/studio-
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { kindOf, schemaState } from './harness';
 
 const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
@@ -46,7 +47,11 @@ let schema: SchemaContextState;
 
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex(), { item: ['minecraft:diamond'] });
-});
+  // The Studio is a lazy chunk: load it here, not inside the first findBy.
+  await preloadChunks(
+    () => import('../../../../src/renderer/src/studios/blocks-items/CreativeTabStudio'),
+  );
+}, PRELOAD_TIMEOUT_MS);
 afterEach(cleanup);
 
 const TAB = 'demo:gems' as ResourceLocation;
@@ -145,7 +150,7 @@ async function renderOnStack(withHost = true) {
     </BlocksItemsStudioHostContext.Provider>
   );
   render(<Harness stack={stack} />, { wrapper });
-  await screen.findByTestId('creative-tab-studio');
+  await screen.findByTestId('creative-tab-studio', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
   const tabOf = (id: string): Json | undefined => {
     const found = stack.state.namespaces[0]?.elements.find((entry) => entry.id === id);
     return found === undefined ? undefined : tabCandidateOf(found)?.tab;
