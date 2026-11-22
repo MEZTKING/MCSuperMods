@@ -7443,3 +7443,15 @@ Next
 
 **Next**
 - B528 to B536 read these records; B535 extends the scripting validator's argument types from the facts; B537 adds the 32 argument types to the eject (`ARGUMENT_TYPES` covers the first twelve) and fills `JavaProjectInput.vanillaBlockRules`. Status lines (root and scoped `CLAUDE.md`: plugin API 1.20.0, 573 types) at the close.
+
+## 2026-11-22 — orchestrator — game modes plan (draft)
+
+**What**
+- Gap analysis for the ROADMAP idea "Whole game modes and maps" (user, 2026-11-22), checked in the code at 9ce013f: `docs/PLAN-game-modes.md` (status draft, starts after vanilla parity 3 closes; facts G1–G22, spike questions Y1–Y16, limits M1–M16, briefs B547–B564, flows, Very easy wording) and Proposed ADRs 0113 (the games plugin and kinds `msm:world_setup`, `msm:one_block`, `msm:team`, `msm:objective`, `msm:timer`, `msm:area`, all lowered to plain data pack files), 0114 (void, flat and sky island world types, the start structure, generators), 0115 (Rules 3 for games and the function bridge), 0116 (Play my game, export as a map, builds from the game, chests in the Structure Studio) and 0117 (flows, Studios, Very easy, Try it grounds, tests).
+- Verdicts: Skyblock possible today by hand, with a flow missing and real gaps (no schema for vanilla's `dimension_origin` placement, no chest contents in the Structure Studio, Play only makes the flat creative test world); one block by hand; sky islands as a dimension today, as the world type by hand; lucky blocks today with Rules (an example only); adventure maps by hand, with real gaps for shipping a map and for area triggers; minigames by hand with functions, with no kinds for teams, objectives, timers or areas, and Rules counters invisible to the sidebar.
+
+**Decisions**
+- Proposed only (ADRs 0113–0117), with vetoable defaults in their Status sections: a new plugin `@msm/plugin-games`; the start island placed at the first join by a function (worldgen `dimension_origin` as Advanced, if the spike confirms it); no change to what vanilla lava and water make (custom generators through a project liquid's mixing); Rules reach the games kinds through a hidden project command; maps never write `level.dat`, leave out player data and ship as a `.mrpack` when the jar is needed; plugin API 1.21.0, no Script API change.
+
+**Next**
+- The main session reviews the draft and adds it to ROADMAP and HANDOFF; work starts with the spike B547 after B544 closes vanilla parity 3.
