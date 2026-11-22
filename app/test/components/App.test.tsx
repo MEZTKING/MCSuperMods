@@ -7,7 +7,16 @@ import { definePlugin, type ElementKind, type Plugin } from '@msm/plugin-api';
 import { SCRIPT_KIND } from '@msm/plugin-scripting';
 import { structureTemplateToNbt, writeNbt } from '@msm/plugin-structures';
 import { builtInTargets, defaultTargetId, targetById } from '@msm/targets';
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  type Matcher,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App, focusedLocation } from '../../src/renderer/src/App';
@@ -497,7 +506,7 @@ async function renderApp(
  * second (`ToastAnnounce`). That copy is meant to be there, so it is left out here; without
  * this, an unanchored pattern matched both elements whenever the query ran in that second.
  */
-const toast = (text: RegExp | string) =>
+const toast = (text: Matcher) =>
   screen.findByText(text, { ignore: 'script, style, body > [role="status"]' });
 
 beforeEach(() => {
@@ -1115,7 +1124,8 @@ describe('App Fabric mod jar export', () => {
     addBlock(harness);
     await act(() => harness.session.flushValidation());
     await harness.menu('exportResourcePack');
-    await screen.findByText((content) => content.includes(MSM_CONTENT_NOTE));
+    // Through `toast`: this matcher also matches Radix's screen-reader copy of the toast.
+    await toast((content) => content.includes(MSM_CONTENT_NOTE));
   });
 });
 

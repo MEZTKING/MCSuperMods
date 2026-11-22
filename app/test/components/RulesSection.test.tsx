@@ -48,6 +48,7 @@ import { StructureStudioHostContext } from '../../src/renderer/src/studios/struc
 import type { SchemaContextState } from '../../src/renderer/src/studios/use-schema-context';
 import { element } from './fixtures';
 import { schemaIndex } from './forms/schemas';
+import { LAZY_CHUNK_TIMEOUT_MS, PRELOAD_TIMEOUT_MS, preloadChunks } from './lazy-chunks';
 
 const target = (builtInTargets[0] as (typeof builtInTargets)[number]).target;
 let schema: SchemaContextState;
@@ -68,7 +69,9 @@ beforeAll(async () => {
       registries: () => registries,
     },
   };
-});
+  // The section is a lazy chunk of each Studio.
+  await preloadChunks(() => import('../../src/renderer/src/studios/rules/RulesSection'));
+}, PRELOAD_TIMEOUT_MS);
 beforeEach(() => {
   usePreferences.setState({ mode: 'easy' });
 });
@@ -143,14 +146,17 @@ function Harness(props: { stack: CommandStack; id: ResourceLocation }) {
 }
 
 /** A host whose `applyChanges` applies the items to the stack as one step, like the session. */
-/** `applyDelayMs` makes the edit land that much later, as the session's `applyChangeset` can. */
-function hostFor(stack: CommandStack, applyDelayMs = 0): BlocksItemsStudioHost {
+/**
+ * With `applyGate`, the edit lands only once that promise settles, as the session's asynchronous
+ * `applyChangeset` can land late; the test decides when, without a wall-clock delay.
+ */
+function hostFor(stack: CommandStack, applyGate?: Promise<void>): BlocksItemsStudioHost {
   return {
     thumbnail: async () => new Uint8Array(),
     revision: 0,
     paintTexture: () => undefined,
     applyChanges: async (items: readonly ChangeItem[], label: string) => {
-      if (applyDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, applyDelayMs));
+      if (applyGate !== undefined) await applyGate;
       const plan = planChangeItems(stack.state, items);
       if (plan.skipped.length > 0) throw new Error('The project changed meanwhile.');
       const parts = plan.commands;
@@ -168,7 +174,7 @@ function hostFor(stack: CommandStack, applyDelayMs = 0): BlocksItemsStudioHost {
 async function renderThing(
   subject: Element,
   others: Element[] = [],
-  options: { host?: boolean; problems?: Problem[]; applyDelayMs?: number } = {},
+  options: { host?: boolean; problems?: Problem[]; applyGate?: Promise<void> } = {},
 ) {
   const stack = new CommandStack(projectOf(subject, RUBY, ...others));
   const openElement = vi.fn();
@@ -181,7 +187,7 @@ async function renderThing(
           options.host === false
             ? null
             : {
-                ...hostFor(stack, options.applyDelayMs),
+                ...hostFor(stack, options.applyGate),
                 ...(options.problems === undefined ? {} : { problems: options.problems }),
               }
         }
@@ -191,7 +197,7 @@ async function renderThing(
     </StructureStudioHostContext.Provider>
   );
   render(<Harness stack={stack} id={subject.id} />, { wrapper });
-  await screen.findByTestId('rules-section');
+  await screen.findByTestId('rules-section', {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
   const find = (id: string): Json | undefined =>
     stack.state.namespaces[0]?.elements.find((entry) => entry.id === id)?.data;
   return { stack, find, openElement };
@@ -278,10 +284,14 @@ describe('Rules section', () => {
 
   it('flushing held-back typing resolves once the edit is in the project (Save waits for it)', async () => {
     const book = element(BOOK, RULES_KIND, { counters: [], format: 1, rules: [ELSEWHERE, GIFT] });
-    // The edit lands a while after it is sent, as the session's asynchronous `applyChangeset`
-    // can on a slow machine (B427's controls path in CI).
+    // The edit lands only when the test lets it, as the session's asynchronous `applyChangeset`
+    // can land late on a slow machine (B427's controls path in CI).
+    let land: () => void = () => {};
+    const applyGate = new Promise<void>((resolve) => {
+      land = resolve;
+    });
     const { find } = await renderThing(element(BLOCK, 'msm:block', blockData()), [book], {
-      applyDelayMs: 30,
+      applyGate,
     });
     const nameOf = (): string | undefined => (rulesOfBook(find(BOOK))[1] as { name?: string }).name;
     const card = screen.getAllByTestId('rule-card')[0] as HTMLElement;
@@ -295,11 +305,14 @@ describe('Rules section', () => {
       settled = true;
       return nameOf();
     });
+    // Let every callback that is not waiting on the edit run: a flush that does not return the
+    // edit chain settles here.
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(settled).toBe(false);
     expect(nameOf()).toBe('Ruby gift');
+    land();
     let nameWhenSettled: string | undefined;
     await act(async () => {
       nameWhenSettled = await flushed;

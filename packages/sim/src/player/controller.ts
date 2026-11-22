@@ -123,6 +123,8 @@ export class PlayerController {
   private ground = false;
   private fly = false;
   private sneak = false;
+  /** The sneaking of a use being decided late ({@link asOfUse}); null otherwise. */
+  private sneakAsOfUse: boolean | null = null;
   private eye = EYE_HEIGHT;
   private prevEye = EYE_HEIGHT;
   private yawDeg = 0;
@@ -161,7 +163,21 @@ export class PlayerController {
   }
 
   get sneaking(): boolean {
-    return this.sneak;
+    return this.sneakAsOfUse ?? this.sneak;
+  }
+
+  /**
+   * Runs `run` with {@link sneaking} as `sneaking`: a use that waited for the scripts' answer is
+   * decided with the sneaking of the moment it was made, as the game decides it in that tick.
+   */
+  asOfUse<T>(sneaking: boolean, run: () => T): T {
+    const before = this.sneakAsOfUse;
+    this.sneakAsOfUse = sneaking;
+    try {
+      return run();
+    } finally {
+      this.sneakAsOfUse = before;
+    }
   }
 
   get yaw(): number {

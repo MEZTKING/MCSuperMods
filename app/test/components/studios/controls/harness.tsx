@@ -21,6 +21,7 @@ import { type ComponentType, type ReactNode, useEffect, useReducer } from 'react
 import { vi } from 'vitest';
 import { ElementForm } from '../../../../src/renderer/src/studios/ElementForm';
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
+import { LAZY_CHUNK_TIMEOUT_MS } from '../../lazy-chunks';
 import { projectOf } from '../blocks-items/harness';
 
 export const bundle = builtInTargets[0] as (typeof builtInTargets)[number];
@@ -92,7 +93,8 @@ export async function openStudio(
     <Harness stack={stack} id={subject.id} schema={schema} problems={options.problems ?? []} />,
     options.wrapper === undefined ? {} : { wrapper: options.wrapper },
   );
-  await screen.findByTestId(studioTestId);
+  // The Studios are lazy chunks: the test files preload them, and this waits as long as one load.
+  await screen.findByTestId(studioTestId, {}, { timeout: LAZY_CHUNK_TIMEOUT_MS });
   const data = (): Json =>
     stack.state.namespaces[0]?.elements.find((entry) => entry.id === subject.id)?.data ?? null;
   return { stack, data };

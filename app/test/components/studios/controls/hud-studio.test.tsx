@@ -26,13 +26,16 @@ import { DISCOVERED_STUDIOS } from '../../../../src/renderer/src/studios/studio-
 import type { SchemaContextState } from '../../../../src/renderer/src/studios/use-schema-context';
 import { element } from '../../fixtures';
 import { schemaIndex } from '../../forms/schemas';
+import { PRELOAD_TIMEOUT_MS, preloadChunks } from '../../lazy-chunks';
 import { projectOf, schemaState } from '../blocks-items/harness';
 import { bundle, openStudio, templateData } from './harness';
 
 let schema: SchemaContextState;
 beforeAll(async () => {
   schema = schemaState(bundle, await schemaIndex());
-});
+  // The Studio is a lazy chunk (ADR 0091 D5).
+  await preloadChunks(() => import('../../../../src/renderer/src/studios/controls/HudStudio'));
+}, PRELOAD_TIMEOUT_MS);
 afterEach(() => {
   cleanup();
   usePreferences.setState({ mode: 'easy' as never });

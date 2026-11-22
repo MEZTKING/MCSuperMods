@@ -1003,9 +1003,17 @@ test('Try it: signs with text, a bed, lanterns, a bag screen, the chat box and a
   await expect(state).toHaveAttribute('data-pointed', 'nothing');
   await press(canvas, 'KeyC');
   await expect(window.getByTestId('tryit-log')).toContainText('Satchel opens only while you sneak');
+  // The player sneaks from the first tick that hears Shift held (each frame sends the held keys,
+  // then ticks the clock), so wait for ticks rather than for a fixed time: under load a frame can
+  // take longer than any fixed wait. The readout's tick is refreshed every few ticks
+  // (`READOUT_EVERY_TICKS`, 5), so two refreshes past the one seen after the key went down are
+  // ticks that heard it.
   const sneakUse = async (): Promise<void> => {
     await window.keyboard.down('ShiftLeft');
-    await window.waitForTimeout(300);
+    const heldAt = Number(await state.getAttribute('data-tick'));
+    await expect
+      .poll(async () => Number(await state.getAttribute('data-tick')))
+      .toBeGreaterThanOrEqual(heldAt + 10);
     await press(canvas, 'KeyC');
     await window.keyboard.up('ShiftLeft');
   };

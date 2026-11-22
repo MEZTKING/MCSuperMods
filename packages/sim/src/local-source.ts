@@ -790,6 +790,16 @@ export class LocalWorldSource implements WorldSource {
   }
 
   /**
+   * `then`, to run once the scripts answer, with the player's sneaking as it is now: the game
+   * decides a use (a sneaking use of a bag, a block or a mob, a sneaking placement) in the tick
+   * it is made, so letting go of Shift before the answer must not change it.
+   */
+  private asOfNow(then: (decision: ScriptDecision) => void): (decision: ScriptDecision) => void {
+    const sneaking = this.player.sneaking;
+    return (decision) => this.player.asOfUse(sneaking, () => then(decision));
+  }
+
+  /**
    * Uses the held item with nothing pointed at (B463): a bag opens its screen. Returns false
    * when the item has no use in the air here.
    */
@@ -801,13 +811,13 @@ export class LocalWorldSource implements WorldSource {
       scripts.ask(
         'item.use',
         { item: itemValue(item), player: PLAYER_VALUE, hand: 'main' },
-        (decision) => {
+        this.asOfNow((decision) => {
           if (decision.cancelled) {
             this.log.info(`A script stopped the use of ${this.itemName(item)}.`);
             return;
           }
           if (!this.parity2.useItem(item)) this.triggers.itemUsed(item);
-        },
+        }),
       );
       return true;
     }
@@ -974,7 +984,7 @@ export class LocalWorldSource implements WorldSource {
           player: PLAYER_VALUE,
           hand: 'main',
         },
-        (decision) => {
+        this.asOfNow((decision) => {
           if (decision.cancelled) {
             this.log.info(
               `A script refused your use of ${this.nameOf(target.name)}; nothing happened.`,
@@ -982,7 +992,7 @@ export class LocalWorldSource implements WorldSource {
             return;
           }
           this.useNow(action);
-        },
+        }),
       );
       return;
     }
@@ -1088,13 +1098,13 @@ export class LocalWorldSource implements WorldSource {
       this.scripts.ask(
         'entity.interact',
         { entity: mobValue(id), player: PLAYER_VALUE, hand: 'main' },
-        (decision) => {
+        this.asOfNow((decision) => {
           if (decision.cancelled) {
             this.log.info(`A script refused your use of ${mob.kind.displayName}.`, mob.kind.origin);
             return;
           }
           this.interactNow(id);
-        },
+        }),
       );
       return;
     }
@@ -1160,13 +1170,13 @@ export class LocalWorldSource implements WorldSource {
         item: itemValue(block),
         player: PLAYER_VALUE,
       },
-      (decision: ScriptDecision) => {
+      this.asOfNow((decision: ScriptDecision) => {
         if (decision.cancelled) {
           this.log.info(`${this.nameOf(block)} was not placed: a script stopped the placing.`);
           return;
         }
         this.place(pos, face, hit, block);
-      },
+      }),
     );
   }
 

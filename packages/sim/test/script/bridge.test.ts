@@ -12,7 +12,7 @@ import {
   type ScriptResponse,
   type ScriptRunner,
 } from '../../src/index.js';
-import { builtInTargets } from '../lower-fixture.js';
+import { builtInTargets, lowerFixture } from '../lower-fixture.js';
 import { compileModule, compileScripts, readApi, scriptFiles } from './helpers.js';
 
 const UP = { x: 0.5, y: 1, z: 0.5 };
@@ -112,4 +112,40 @@ msm.events.on("player.chat", (e) => {
       'The script t:loop says to you: "heard again"',
     );
   });
+
+  it('decides a use with the sneaking of the moment it was made, not of the answer', async () => {
+    // The sample's satchel opens only on a sneaking use, and its script hears `item.use`: the
+    // player lets go of Shift before the scripts answer (the e2e bag screen, B463).
+    const files = (await lowerFixture('sample-vanilla-blocks', target)).files;
+    const { runner } = laterRunner();
+    const source = new LocalWorldSource({ files, target, scripts: { runner, api: readApi() } });
+    source.loadScripts(compileScripts(files).scripts);
+    await settle();
+    const move = (sneak: boolean): void => {
+      source.act({
+        type: 'move',
+        forward: 0,
+        strafe: 0,
+        jump: false,
+        sneak,
+        toggleFly: false,
+        yaw: 0,
+        pitch: 0,
+      });
+      source.tick();
+    };
+    move(true);
+    expect(source.useItem('msm_sample_vanilla_blocks:satchel')).toBe(true);
+    move(false);
+    expect(source.parity2.bag).toBeNull();
+    await settle();
+    expect(source.parity2.bag?.spec).toMatchObject({ screen: 'chest', rows: 2, columns: 9 });
+    // And a use made without sneaking stays one when Shift goes down before the answer.
+    source.parity2.closeBag();
+    expect(source.useItem('msm_sample_vanilla_blocks:satchel')).toBe(true);
+    move(true);
+    await settle();
+    expect(source.parity2.bag).toBeNull();
+    expect(source.lines.at(-1)?.text).toContain('opens only while you sneak');
+  }, 60_000);
 });
