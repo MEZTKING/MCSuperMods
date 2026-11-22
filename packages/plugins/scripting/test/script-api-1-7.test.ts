@@ -26,7 +26,7 @@ const PREVIOUS: ScriptApi = parseScriptApi(
   ),
 );
 
-const SINCE = 'Since runtime 1.5.3 (verify at the close).';
+const SINCE = 'Since runtime 1.5.3.';
 
 const ADDED_MEMBERS = [
   'World.gameRule',

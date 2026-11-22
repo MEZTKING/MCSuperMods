@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## [Unreleased]
 
+Nothing yet since 1.5.3.
+
+## [1.5.3] - 2026-11-22
+
+A test build: everything since 1.5.2, with the drawn pictures and vanilla parity 3 (the Showcase on Home and New project comes in a later build).
+
 ### Added
 
 - **Drawn pictures in a Minecraft-like style**: every picture the Creator, the starters, the examples and Surprise me make is now drawn by MCSuperMods in a style close to Minecraft's: a few shades of each colour that lean warm in the light and cool in the shadow, light from the top left, clumpy texture, a dark outline round items, and bricks, planks, bark, leaves, ores, tools and armour that look like what they are. The pictures are MCSuperMods' own drawings, never copied or recoloured from Minecraft's textures. They need no key and no internet. See [Drawing pictures](docs/guide/pictures.md).
@@ -27,6 +33,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - **The AI helper** knows the new plant types, pots, storage options, own sounds and set types, rules for vanilla blocks, the new data kinds and the seven new flows, and draws 14 more kinds of picture (94 in all: strands, stalks, lichens, dripleaves, pots, pattern items, sherds, gliders, banner and shield patterns, trim layers, glider wings and pot faces).
 - The Java project export includes the new plants, pots, the six new ageing types, lightning, the storage options, own sounds and set types, and flattening and tilling. Rules for vanilla blocks are not in it yet.
 - Plugin API 1.19.0: `BlockFacts.soundTypes`, `soundModel`, `vanillaPairs`, `plantSoils` and `soundSetEvents`.
+- **Traders that remember you**: a trader can keep a standing with each player (**Remembers how you treat it**): hits raise its prices for that player, trades and gifts lower them, and it forgets slowly each day. **Prices rise with demand** after heavy trading, and **Restocks at** sends it to a work site block to restock. Villagers sleep in your own beds, and a **Villager look** (a new Studio) dresses villagers born in the biomes you list.
+- **Liquids that mix, fill cauldrons and go into bottles**: a liquid can have **Mixing** rules (what its source and flowing blocks become next to water, lava or another of your liquids, so you can make your own cobblestone-like generators), a **Cauldron** that fills in levels and a **Bottle** you drink, with food and effects.
+- **Mobs 2**: fish and other swimmers can be **caught in a bucket** (it keeps the name and health); two pets per player can ride on the shoulders; mobs can **hover**, **fly through walls while charging**, **swoop** and **roost** upside down; and six habits: **Collects items** (for its owner or to a note block), **Digs up items**, **Plays dead**, **Barters**, and a **Dash** for mounts. New sections **Bucket** and **Habits** in the Mob Studio.
+- **Boats of your own**: an item can be **A boat** (or a **Raft**) with **Has a chest boat**, drawn and steered like Minecraft's boats, crafted from your planks and placed by dispensers.
+- **Commands, game rules and statistics**: commands take 44 kinds of argument (dimensions, times, colours, biomes, items, loot tables and more); a mod can have its own **game rules** (on or off, or a number) and **statistics** (a count, a distance or a time), each with its own Studio; creative tabs can list their items **In your own order**.
+- **Rules 2**: six new triggers (**A player crafts**, **picks up**, **eats**, **goes to sleep**, **wakes up**, **gets an advancement**), the steps **Open a dialog**, **Add to a statistic** and **Set a game rule**, the conditions **The game rule is** and **The statistic is at least**, and **What the player typed** for a command's arguments. Events can **open a dialog** too.
+- **Try it** draws slabs, stairs, doors, fences, gates, trapdoors, buttons, pressure plates, crops, leaves, walls, panes, cauldrons, glass and more with MCSuperMods' own shapes when your Minecraft folder is not set up, instead of the missing-picture pattern.
+- **New Creator flows and answers**: **Villager look** (new clothes for the villagers of a biome) and **Game rule** (a world setting of your own, which can greet joining players and count it); the Wandering merchant can remember how you treat it, raise prices with demand, restock at its work site and barter for gold; the Pet can sit on either shoulder, bring you items and dig things up; the Water mob can be caught in a bucket and play dead; the Flying mob can float like a ghast or fly through walls like a vex, swoop and roost; the Mount can dash; a Fluid can fill cauldrons and bottles and mix with water; the Wood set has boats; a Custom command can have its own game rule; a Creative tab can be in your own order. 9 more examples (195 in all), 57 flows, 98 kinds of drawn picture (boats and villager clothes).
+- **Try it** shows trader prices that follow your standing and demand, fish buckets, shoulder pets, hovering mobs, boats, cauldrons and bottles, and liquids mixing, and draws Minecraft's vanilla block pictures as plain colours instead of the missing-picture pattern.
+- The Java project export also includes village jobs, liquids with mixing, cauldrons and bottles, villager looks, game rules, statistics, rules for vanilla blocks, all 44 command argument types, hand-ordered tabs, opening dialogs, boats, fish buckets, mount storage, hovering, phasing, the dash, the six habits and project beds as villager homes. Traders and shoulder pets are not in it yet.
+- Script API 1.7 (`World.gameRule`, `setGameRule`, `Player.stat`, `addStat`, `openDialog`, the events `item.crafted`, `item.picked_up`, `player.ate`, `player.slept`, `player.woke`, `player.advancement`, and `args` on a command's own event) and plugin API 1.20.0.
 
 ### Changed
 
