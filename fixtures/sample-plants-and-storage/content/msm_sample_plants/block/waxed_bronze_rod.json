@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Bronze Rod",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_sample_plants:block/bronze"
+    },
+    "type": "rod"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:waxed_bronze_rod",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

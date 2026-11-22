@@ -10,15 +10,14 @@
  *
  * - `place`: `placeBlock` with the step's face, hit, yaw and pitch, then `msm:on_place`.
  * - `use`: a door, trapdoor, gate or button is used by hand (`useBlock`, then
- *   `BlockTimers.afterUse`), then `msm:on_interact`. With `item` (vanilla parity 3, B519):
+ *   `BlockTimers.afterUse`), then `msm:on_interact`. With `item` (vanilla parity 3, B519, B520):
  *   `minecraft:bone_meal` is the Grow tool; any other item, or none, first tries the uses of the
  *   five types of ADR 0103 (`useType3`: pots, berries).
  * - `wait`: each tick runs the timers with no one in the area, then the tick triggers.
  * - `break`: `msm:on_break`, then `breakBlock`.
  *
- * `scenarios-parity-3.json` (B519) holds the scenarios of vanilla parity 3, batch 1, written from
- * the runtime's measured notes (B503, B509 to B513) and played here only: B520 adds their
- * GameTests (and `use`'s `item`) and records them in the game.
+ * The scenarios of vanilla parity 3, batch 1 (B519: strands, columns, lichen, dripleaves, the pot
+ * and the double chest) were recorded in the game by B520 and are in the same file.
  *
  * - `step_on`: on a pressure plate, one timers tick with the player's box standing on it; on any
  *   other block, its `msm:on_step` fires for the player (`TriggerEngine.blockSteppedOn`) with no
@@ -122,11 +121,6 @@ interface ScenarioFile {
 
 const FILE = JSON.parse(
   readFileSync(join(REPO_ROOT, 'fixtures/sim-parity/scenarios.json'), 'utf8'),
-) as ScenarioFile;
-
-/** Vanilla parity 3, batch 1 (B519): played here; B520 records them in the game. */
-const FILE_3 = JSON.parse(
-  readFileSync(join(REPO_ROOT, 'fixtures/sim-parity/scenarios-parity-3.json'), 'utf8'),
 ) as ScenarioFile;
 
 const TARGETS = await builtInTargets();
@@ -398,10 +392,6 @@ it('reads format 1 of the sim_parity scenarios', () => {
   expect(FILE.namespace).toBe('sim_parity');
   expect(FILE.scenarios.length).toBeGreaterThanOrEqual(30);
   expect(new Set(FILE.scenarios.map((one) => one.name)).size).toBe(FILE.scenarios.length);
-  expect(FILE_3.format).toBe(1);
-  expect(FILE_3.namespace).toBe('sim_parity');
-  const names = [...FILE.scenarios, ...FILE_3.scenarios].map((one) => one.name);
-  expect(new Set(names).size).toBe(names.length);
 });
 
 describe.each(TARGETS.map((target) => [target.id, target] as const))(
@@ -419,13 +409,6 @@ describe.each(TARGETS.map((target) => [target.id, target] as const))(
 
     it.each(FILE.scenarios.map((scenario) => [scenario.name, scenario] as const))(
       '%s',
-      (_name, scenario) => {
-        expect(playScenario(scenario, files, target, catalogue)).toEqual([]);
-      },
-    );
-
-    it.each(FILE_3.scenarios.map((scenario) => [scenario.name, scenario] as const))(
-      'vanilla parity 3: %s',
       (_name, scenario) => {
         expect(playScenario(scenario, files, target, catalogue)).toEqual([]);
       },

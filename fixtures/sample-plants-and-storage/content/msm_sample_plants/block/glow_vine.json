@@ -1,0 +1,36 @@
+{
+  "data": {
+    "berries": {
+      "item": "msm_sample_plants:glow_vine_berries",
+      "light": 14
+    },
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "direction": "down",
+    "display_name": "Glow Vine",
+    "format": 1,
+    "item": {
+      "id": "msm_sample_plants:glow_vine_berries"
+    },
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "body": "msm_sample_plants:block/glow_vine_plant",
+      "body_berries": "msm_sample_plants:block/glow_vine_plant_berries",
+      "head": "msm_sample_plants:block/glow_vine",
+      "head_berries": "msm_sample_plants:block/glow_vine_berries",
+      "item": "msm_sample_plants:item/glow_vine_berries"
+    },
+    "type": "growing_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:glow_vine",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

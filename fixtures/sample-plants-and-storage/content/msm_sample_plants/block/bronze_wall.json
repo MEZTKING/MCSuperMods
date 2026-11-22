@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_sample_plants:waxed_bronze_wall"
+      },
+      "msm:weathering": {
+        "next": "msm_sample_plants:exposed_bronze_wall",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Bronze Wall",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_sample_plants:block/bronze"
+    },
+    "type": "wall"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:bronze_wall",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

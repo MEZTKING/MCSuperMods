@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "resistance": 2.5,
+        "tool": "axe"
+      },
+      "msm:container": {
+        "double": true,
+        "layout": "chest",
+        "rows": 3
+      }
+    },
+    "display_name": "Twin Crate",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "wood",
+    "textures": {
+      "front": "msm_sample_plants:block/twin_crate_front",
+      "side": "msm_sample_plants:block/twin_crate",
+      "top": "msm_sample_plants:block/twin_crate"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:twin_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

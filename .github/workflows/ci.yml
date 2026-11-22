@@ -244,6 +244,16 @@ jobs:
             pnpm --filter @msm/exporters exec vitest run test/sample-villagers-and-fluids.golden.test.ts
           test -f "$RUNNER_TEMP/sample-villagers/msm_sample_villagers.jar"
           cat "$RUNNER_TEMP/sample-villagers/fabric-facts.json"
+      # Plants and storage of vanilla parity 3, batch 1 (ADRs 0103-0105, B520): the four plant
+      # families with their companions, a project flower pot, bronze ageing on the six new
+      # weathering types, double, per-player, waterlogged and ageing chests, own block and door
+      # sounds, flatten and till, and the rules for vanilla blocks.
+      - name: Export the sample plants and storage with the real runtime
+        run: |
+          MSM_SAMPLE_PLANTS_OUT="$RUNNER_TEMP/sample-plants" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-plants-and-storage.golden.test.ts
+          test -f "$RUNNER_TEMP/sample-plants/msm_sample_plants.jar"
+          cat "$RUNNER_TEMP/sample-plants/fabric-facts.json"
       # The sample mod's potion and its long and strong versions (ADR 0063, B255) must register.
       - name: Headless Fabric server check (sample mod)
         run: >-
@@ -390,6 +400,26 @@ jobs:
           --expect-line '[msm_runtime] registered 2 fluid(s)'
           --expect-line '[msm_runtime] registered 1 villager profession(s)'
           --expect-line "Saving chunks for level 'ServerLevel[world]'/msm_sample_villagers:glow_moon"
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The sample plants and storage (B520): the 40 blocks (the companions are not counted) and 39
+      # items register, the six chests get their block entity types, the pot its three potted
+      # plants, the rules file its six rules, and on 26.4 every own sound has its block_sound_set
+      # entry (a missing one is logged at each world start); a dedicated server loads no client class.
+      - name: Headless Fabric server check (sample plants and storage)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-plants/msm_sample_plants.jar"
+          --facts "$RUNNER_TEMP/sample-plants/fabric-facts.json"
+          --expect-line '[msm_runtime] registered 40 block(s) and 39 item(s) from 41 definition file(s); 0 error(s), 0 warning(s)'
+          --expect-line '[msm_runtime] registered blocks by type: block 6, horizontal 4, wall 3, fence 3, fence_gate 3, door 1, button 3, pressure_plate 3, potted_plant 1, rod 3, growing_plant 3, column_plant 3, multiface 1, dripleaf 2, flower_pot 1'
+          --expect-line '[msm_runtime] registered 6 block entity type(s) and 0 machine recipe type(s)'
+          --expect-line '[msm_runtime] pot msm_sample_plants:clay_planter: registered 3 potted plant(s) of 3 listed; 0 wait for their plant'
+          --expect-line '[msm_runtime] registered 6 vanilla block rule(s) from 1 file(s)'
+          --forbid-line 'so the block makes no sound'
           --forbid-line NoClassDefFoundError
           --forbid-line 'Mixin apply'
           --forbid-line MixinTransformerError
@@ -560,6 +590,39 @@ jobs:
           node tools/run-fabric-server/index.ts
           --jar "$MSM_EJECTED_VANILLA_BLOCKS_JAR"
           --facts "$RUNNER_TEMP/sample-vanilla-blocks/fabric-facts.json" --no-runtime
+          --forbid-line NoClassDefFoundError
+          --work "$RUNNER_TEMP/fabric-server-mob"
+          --cache ~/.cache/msm-fabric-server
+      # The sample plants and storage as a Java project (B517, B520): the plant drivers, the pot,
+      # bronze on the six types with lightning, the chests, own sounds and set types, flatten and
+      # till, generated and built for 26.3. The rules for vanilla blocks are not ejected yet.
+      - name: Export the sample plants and storage as a Java project
+        if: matrix.mc == '26.3'
+        run: |
+          MSM_SAMPLE_PLANTS_JAVA_OUT="$RUNNER_TEMP/java/sample-plants" \
+            pnpm --filter @msm/exporters exec vitest run test/sample-plants-and-storage.java.golden.test.ts
+          test -x "$RUNNER_TEMP/java/sample-plants/gradlew"
+      - name: Build the ejected sample plants and storage
+        if: matrix.mc == '26.3'
+        working-directory: ${{ runner.temp }}/java/sample-plants
+        run: ./gradlew build --no-daemon
+      - name: Find the ejected sample plants and storage jar
+        if: matrix.mc == '26.3'
+        run: |
+          mapfile -t jars < <(ls "$RUNNER_TEMP/java/sample-plants"/build/libs/msm_sample_plants-*.jar | grep -v -e '-sources\.jar$')
+          if [ "${#jars[@]}" -ne 1 ]; then
+            echo "::error::Expected one ejected sample-plants jar, found ${#jars[@]}: ${jars[*]}"
+            exit 1
+          fi
+          echo "Ejected sample-plants jar: ${jars[0]}"
+          echo "MSM_EJECTED_PLANTS_JAR=${jars[0]}" >> "$GITHUB_ENV"
+      # The ejected jar starts without msm_runtime; no client class may load on a dedicated server.
+      - name: Headless Fabric server check (ejected sample plants and storage)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_PLANTS_JAR"
+          --facts "$RUNNER_TEMP/sample-plants/fabric-facts.json" --no-runtime
           --forbid-line NoClassDefFoundError
           --work "$RUNNER_TEMP/fabric-server-mob"
           --cache ~/.cache/msm-fabric-server
@@ -837,6 +900,37 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-villagers-content.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
+      # Plants and storage (B520, SamplePlantsAndStorageParityTest, 20 tests: registration, items
+      # and tags; the sea ribbon, glow vine and climbing ivy; the reed, cactus and bamboo; the moss
+      # and the wide leaves; the clay planter; bronze ageing, waxing, scraping and lightning on the
+      # six types; the twin, bronze, private and sea crates; the chime stone's and creaky door's own
+      # sounds; loam flattened and tilled) on the content jar of every version and on the 26.3
+      # ejected jar; SamplePlantsAndStorageRulesParityTest (2 tests: the rules for vanilla blocks)
+      # on content jars only, as the eject leaves the rules out: sample_plants_and_storage_* matches
+      # both classes, sample_plants_and_storage_parity_test_* only the first.
+      - name: Parity GameTests (sample plants and storage, content jar)
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$RUNNER_TEMP/sample-plants/msm_sample_plants.jar"
+          --facts "$RUNNER_TEMP/sample-plants/fabric-facts.json"
+          --forbid-line NoClassDefFoundError
+          --forbid-line 'Mixin apply'
+          --forbid-line MixinTransformerError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_plants_and_storage_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-plants-content.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
+      - name: Parity GameTests (sample plants and storage, ejected jar)
+        if: matrix.mc == '26.3'
+        run: >-
+          node tools/run-fabric-server/index.ts
+          --jar "$MSM_EJECTED_PLANTS_JAR"
+          --facts "$RUNNER_TEMP/sample-plants/fabric-facts.json" --no-runtime
+          --forbid-line NoClassDefFoundError
+          --gametest "$MSM_PARITY_JAR" --gametest-filter 'msm_parity_tests:sample_plants_and_storage_parity_test_*'
+          --report "$RUNNER_TEMP/parity-reports/sample-plants-ejected.xml"
+          --work "$RUNNER_TEMP/fabric-server-parity"
+          --cache ~/.cache/msm-fabric-server
       # The fifth run (ADR 0058 D4): script behaviour on the content jar only, since scripts
       # are not part of the Java project eject (ADR 0033); since B255 also every Script API 1.1
       # behaviour (ADR 0065) on every version.
@@ -913,6 +1007,12 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v7
         with:
+          name: msm-sample-plants-mc${{ matrix.mc }}
+          path: ${{ runner.temp }}/sample-plants/msm_sample_plants.jar
+          if-no-files-found: ignore
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
           name: msm-sample-script-mc${{ matrix.mc }}
           path: ${{ runner.temp }}/sample-script/msm_sample_script.jar
           if-no-files-found: ignore
@@ -929,6 +1029,7 @@ jobs:
             ${{ runner.temp }}/java/sample-particles/build/libs/*.jar
             ${{ runner.temp }}/java/sample-rules/build/libs/*.jar
             ${{ runner.temp }}/java/sample-vanilla-blocks/build/libs/*.jar
+            ${{ runner.temp }}/java/sample-plants/build/libs/*.jar
           if-no-files-found: ignore
       - if: always()
         uses: actions/upload-artifact@v7

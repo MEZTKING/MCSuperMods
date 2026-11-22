@@ -1,0 +1,26 @@
+{
+  "data": {
+    "climbable": true,
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Climbing Ivy",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "body": "msm_sample_plants:block/climbing_ivy_plant",
+      "head": "msm_sample_plants:block/climbing_ivy"
+    },
+    "type": "growing_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:climbing_ivy",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

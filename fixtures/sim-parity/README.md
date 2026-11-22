@@ -14,7 +14,7 @@
 - `mod/<target id>/`: the project lowered for each built-in target, only what a server reads (`fabric.mod.json`, `msm/`, `data/`). The engine-mod build hands `mod/mc-<mc>/` to the GameTest server as an extra mod (`fabric.addMods`). Only `fabric.mod.json` differs by target.
 - `lower.test.ts`: checks that `mod/` equals the lowering and that the project lowers with no problems; rewrites it with `UPDATE_SIM_PARITY_MOD=1`.
 - `scenarios.json`: the scenarios.
-- `scenarios-parity-3.json` (B519): the scenarios of vanilla parity 3, batch 1 (strands, columns, lichen, dripleaves, the pot and the double chest), in the same format. They were written from the runtime's measured notes (B503, B509 to B513) and so far are played only by `@msm/sim`; B520 adds a GameTest for each (and the `item` of `use`), records them with `-PupdateSimParity` and moves them into `scenarios.json`. Big dripleaves stand on `minecraft:moss_block`, which Try it places as a prop.
+- The twelve scenarios of vanilla parity 3, batch 1 (strands, columns, lichen, dripleaves, the pot and the double chest) were written by B519 from the runtime's measured notes and recorded in the game by B520 (`-PupdateSimParity`; the game agreed but for one check, which looked at the floor, so the berry strand now hangs one block higher). Big dripleaves stand on `minecraft:moss_block`, which Try it places as a prop.
 
 ## scenarios.json
 
@@ -23,7 +23,7 @@
 Positions are Try it's: the floor is `y = -1` (in the GameTest a stone floor under an 8 by 8 by 8 area), blocks stand from `y = 0`. Yaw 0 looks south, 90 west, 180 north, 270 east; negative pitch looks up. A step is one of:
 
 - `{"step": "place", "block", "pos", "face", "hit", "yaw", "pitch"}`: right-click `face` of the block at `pos` (the floor at `y = -1`) at `hit` (block units from that block's corner, 0 to 1) holding `block`.
-- `{"step": "use", "pos", "yaw"}`: right-click the block with an empty hand, looking at `yaw` (the top face unless `face` is given). In `scenarios-parity-3.json` it may carry `item`: the item held (`minecraft:bone_meal` is one bone meal).
+- `{"step": "use", "pos", "yaw"}`: right-click the block with an empty hand, looking at `yaw` (the top face unless `face` is given). It may carry `item`: the item held (`minecraft:bone_meal` is one bone meal).
 - `{"step": "step_on", "pos"}`: the player stands on the block for a moment and leaves: in a pressure plate (its press), on top of any other block (`msm:on_step`). It takes no tick in the GameTest.
 - `{"step": "wait", "ticks"}`: game ticks pass.
 - `{"step": "break", "pos"}`: the player breaks the block at once (creative: no drops).

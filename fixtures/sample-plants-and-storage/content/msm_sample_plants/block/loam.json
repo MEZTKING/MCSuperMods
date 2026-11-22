@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.5,
+        "resistance": 0.5,
+        "tool": "shovel"
+      },
+      "msm:flattenable": {
+        "into": "msm_sample_plants:loam_path"
+      },
+      "msm:tillable": {
+        "drops": "minecraft:stick",
+        "into": "msm_sample_plants:loam_farmland"
+      }
+    },
+    "display_name": "Loam",
+    "format": 1,
+    "loot": "self",
+    "model": "msm_sample_plants:block/loam",
+    "sound_type": "gravel"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:loam",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

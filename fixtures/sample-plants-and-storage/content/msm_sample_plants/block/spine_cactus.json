@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.4,
+        "resistance": 0.4
+      }
+    },
+    "display_name": "Spine Cactus",
+    "format": 1,
+    "loot": "self",
+    "max_height": 4,
+    "sound_type": "wool",
+    "style": "cactus",
+    "textures": {
+      "bottom": "msm_sample_plants:block/spine_cactus_top",
+      "side": "msm_sample_plants:block/spine_cactus_side",
+      "top": "msm_sample_plants:block/spine_cactus_top"
+    },
+    "touch_damage": 2,
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:spine_cactus",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

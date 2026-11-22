@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_sample_plants:waxed_bronze_fence_gate"
+      },
+      "msm:weathering": {
+        "next": "msm_sample_plants:exposed_bronze_fence_gate",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Bronze Fence Gate",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_sample_plants:block/bronze"
+    },
+    "type": "fence_gate",
+    "wood_type": "oak"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:bronze_fence_gate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

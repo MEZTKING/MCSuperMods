@@ -1,0 +1,22 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.6,
+        "resistance": 0.6,
+        "tool": "shovel"
+      }
+    },
+    "display_name": "Loam Farmland",
+    "format": 1,
+    "loot": "self",
+    "model": "msm_sample_plants:block/loam_farmland",
+    "sound_type": "gravel"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:loam_farmland",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

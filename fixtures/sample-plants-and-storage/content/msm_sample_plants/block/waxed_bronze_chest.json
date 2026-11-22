@@ -1,0 +1,32 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "double": true,
+        "layout": "chest",
+        "rows": 3
+      }
+    },
+    "display_name": "Waxed Bronze Chest",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "front": "msm_sample_plants:block/bronze_chest_front",
+      "side": "msm_sample_plants:block/bronze",
+      "top": "msm_sample_plants:block/bronze"
+    },
+    "type": "horizontal"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:waxed_bronze_chest",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:weathering": {
+        "stage": "exposed"
+      }
+    },
+    "display_name": "Exposed Bronze Fence",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_sample_plants:block/exposed_bronze"
+    },
+    "type": "fence"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:exposed_bronze_fence",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

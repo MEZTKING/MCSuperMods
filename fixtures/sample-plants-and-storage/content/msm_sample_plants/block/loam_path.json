@@ -1,0 +1,22 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.65,
+        "resistance": 0.65,
+        "tool": "shovel"
+      }
+    },
+    "display_name": "Loam Path",
+    "format": 1,
+    "loot": "self",
+    "model": "msm_sample_plants:block/loam_path",
+    "sound_type": "gravel"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:loam_path",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

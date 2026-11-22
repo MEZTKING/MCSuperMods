@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Dune Reed",
+    "format": 1,
+    "loot": "self",
+    "sound_type": "grass",
+    "style": "cane",
+    "textures": {
+      "all": "msm_sample_plants:block/dune_reed"
+    },
+    "type": "column_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:dune_reed",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

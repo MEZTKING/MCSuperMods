@@ -1,0 +1,28 @@
+{
+  "data": {
+    "block_sounds": {
+      "break": "minecraft:block.amethyst_block.break",
+      "place": "minecraft:block.amethyst_block.place",
+      "step": "minecraft:block.amethyst_block.step",
+      "volume": 0.8
+    },
+    "components": {
+      "msm:breakable": {
+        "hardness": 1.5,
+        "resistance": 1.5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Chime Stone",
+    "format": 1,
+    "loot": "self",
+    "model": "msm_sample_plants:block/chime_stone",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:chime_stone",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

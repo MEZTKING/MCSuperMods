@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3.5,
+        "resistance": 3.5,
+        "tool": "pickaxe"
+      },
+      "msm:container": {
+        "layout": "chest",
+        "per_player": true,
+        "rows": 3
+      }
+    },
+    "display_name": "Private Crate",
+    "format": 1,
+    "loot": "self",
+    "model": "msm_sample_plants:block/private_crate",
+    "sound_type": "stone"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:private_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Clay Planter",
+    "format": 1,
+    "loot": "self",
+    "plants": [
+      "minecraft:dandelion",
+      "minecraft:poppy",
+      "minecraft:oak_sapling"
+    ],
+    "sound_type": "stone",
+    "textures": {
+      "item": "minecraft:item/flower_pot",
+      "pot": "msm_sample_plants:block/clay_planter"
+    },
+    "type": "flower_pot"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:clay_planter",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

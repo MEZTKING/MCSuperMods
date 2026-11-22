@@ -1,0 +1,18 @@
+{
+  "data": {
+    "authors": [
+      "MCSuperMods"
+    ],
+    "description": "Sample plants and storage: growing, column, multiface and dripleaf plants, a flower pot of its own, bronze that ages like copper on six more types, double, per-player, waterlogged and ageing chests, own block and door sounds, and shovel, hoe and vanilla block rules.",
+    "licence": "MIT",
+    "mod_id": "msm_sample_plants",
+    "name": "MSM Sample Plants and Storage",
+    "version": "1.0.0"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:mod",
+  "kind": "msm:mod",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

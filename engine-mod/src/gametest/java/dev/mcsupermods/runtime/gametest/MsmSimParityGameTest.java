@@ -63,7 +63,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  *       90 west; negative pitch is up) and right-clicks {@code face} of the block at {@code pos} at {@code hit}
  *       (block units from that block's corner), through {@code ServerPlayerGameMode.useItemOn} as the network
  *       handler does.</li>
- *   <li>{@code use}: the same with an empty hand, looking at {@code yaw}, on the top face (or {@code face}).</li>
+ *   <li>{@code use}: the same with an empty hand (or holding {@code item}, one of it: {@code minecraft:bone_meal} is one
+ *       bone meal), looking at {@code yaw}, on the top face (or {@code face}).</li>
  *   <li>{@code step_on}: the player stands on the block for one moment and leaves it: a pressure plate gets the player
  *       through {@code entityInside} (standing in it), any other block {@code stepOn} (standing on top), as the
  *       player's movement would hand them over; then the player is parked again.</li>
@@ -406,6 +407,68 @@ public class MsmSimParityGameTest {
         play(helper, "leaves_place_as_a_block");
     }
 
+    // Vanilla parity 3, batch 1 (B519, B520): strands, columns, lichen, dripleaves, the pot and the double chest
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void strandLengthensOnItsTip(GameTestHelper helper) {
+        play(helper, "strand_lengthens_on_its_tip");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void strandGrowsByBoneMeal(GameTestHelper helper) {
+        play(helper, "strand_grows_by_bone_meal");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void strandBreaksAboveAGap(GameTestHelper helper) {
+        play(helper, "strand_breaks_above_a_gap");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void berriesRipenAndArePicked(GameTestHelper helper) {
+        play(helper, "berries_ripen_and_are_picked");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void cactusColumnFallsWithItsBase(GameTestHelper helper) {
+        play(helper, "cactus_column_falls_with_its_base");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void bambooItemPlantsAShoot(GameTestHelper helper) {
+        play(helper, "bamboo_item_plants_a_shoot");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void bambooShootGrowsByBoneMeal(GameTestHelper helper) {
+        play(helper, "bamboo_shoot_grows_by_bone_meal");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void lichenCoversFaces(GameTestHelper helper) {
+        play(helper, "lichen_covers_faces");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void bigLeafOnALeafTurnsIntoStem(GameTestHelper helper) {
+        play(helper, "big_leaf_on_a_leaf_turns_into_stem");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void smallLeafTakesTwoBlocks(GameTestHelper helper) {
+        play(helper, "small_leaf_takes_two_blocks");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void potTakesOnlyListedPlants(GameTestHelper helper) {
+        play(helper, "pot_takes_only_listed_plants");
+    }
+
+    @GameTest(maxTicks = MAX_TICKS)
+    public void doubleChestPairsAndSplits(GameTestHelper helper) {
+        play(helper, "double_chest_pairs_and_splits");
+    }
+
     // The file and the fixture
 
     @GameTest
@@ -623,17 +686,12 @@ public class MsmSimParityGameTest {
         private void perform(JsonObject step, String where) {
             switch (step.get("step").getAsString()) {
                 case "place" -> {
-                    Identifier id = Identifier.parse(step.get("block").getAsString());
-                    Item item = BuiltInRegistries.ITEM.getValue(id);
-                    if (item == Items.AIR) {
-                        throw new IllegalStateException(where + ": no item " + id);
-                    }
                     look(step);
-                    click(step, new ItemStack(item, 64));
+                    click(step, new ItemStack(item(step.get("block").getAsString(), where), 64));
                 }
                 case "use" -> {
                     look(step);
-                    click(step, ItemStack.EMPTY);
+                    click(step, step.has("item") ? new ItemStack(item(step.get("item").getAsString(), where)) : ItemStack.EMPTY);
                 }
                 case "step_on" -> {
                     BlockPos at = abs(step.getAsJsonArray("pos"));
@@ -650,6 +708,15 @@ public class MsmSimParityGameTest {
                 case "break" -> player.gameMode.destroyBlock(abs(step.getAsJsonArray("pos")));
                 default -> throw new IllegalStateException(where + ": unknown step");
             }
+        }
+
+        private static Item item(String name, String where) {
+            Identifier id = Identifier.parse(name);
+            Item item = BuiltInRegistries.ITEM.getValue(id);
+            if (item == Items.AIR) {
+                throw new IllegalStateException(where + ": no item " + id);
+            }
+            return item;
         }
 
         /** A right-click with {@code stack} in the main hand, as the network handler hands it over. */

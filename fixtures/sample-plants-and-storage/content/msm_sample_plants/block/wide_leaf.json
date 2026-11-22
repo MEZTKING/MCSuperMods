@@ -1,0 +1,29 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.1,
+        "resistance": 0.1,
+        "tool": "axe"
+      }
+    },
+    "display_name": "Wide Leaf",
+    "format": 1,
+    "loot": "self",
+    "size": "big",
+    "sound_type": "grass",
+    "textures": {
+      "side": "msm_sample_plants:block/wide_leaf_side",
+      "stem": "msm_sample_plants:block/wide_leaf_stem",
+      "tip": "msm_sample_plants:block/wide_leaf_side",
+      "top": "msm_sample_plants:block/wide_leaf_top"
+    },
+    "type": "dripleaf"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:wide_leaf",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

@@ -1568,6 +1568,334 @@
       ],
       "events": [],
       "actions": []
+    },
+    {
+      "name": "strand_lengthens_on_its_tip",
+      "description": "A growing plant placed on its own tip lengthens the strand: the old tip turns into the strand block.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:ribbon", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:ribbon",
+          "pos": [3, 0, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:ribbon_plant"}, {"pos": [3, 1, 3], "state": "sim_parity:ribbon"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "strand_grows_by_bone_meal",
+      "description": "Bone meal grows a strand by its bonemeal_growth (2) from the tip.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:ribbon", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:bone_meal",
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:ribbon_plant"},
+              {"pos": [3, 1, 3], "state": "sim_parity:ribbon_plant"},
+              {"pos": [3, 2, 3], "state": "sim_parity:ribbon"},
+              {"pos": [3, 3, 3], "state": "minecraft:air"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "strand_breaks_above_a_gap",
+      "description": "Breaking a strand block breaks the strand ahead of it; the block behind turns back into the tip.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:ribbon", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:ribbon", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:ribbon", "pos": [3, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "break", "pos": [3, 1, 3]},
+        {
+          "step": "wait",
+          "ticks": 4,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:ribbon"},
+              {"pos": [3, 1, 3], "state": "minecraft:air"},
+              {"pos": [3, 2, 3], "state": "minecraft:air"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "berries_ripen_and_are_picked",
+      "description": "Bone meal ripens a berry strand instead of growing it (the air below stays empty); an empty hand picks the berries.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 0, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {"step": "place", "block": "sim_parity:base", "pos": [3, 2, 3], "face": "east", "hit": [1, 0.5, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:glow_strand",
+          "pos": [4, 2, 3],
+          "face": "down",
+          "hit": [0.5, 0, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [4, 1, 3], "state": "sim_parity:glow_strand[berries=false]"}]}
+        },
+        {
+          "step": "use",
+          "pos": [4, 1, 3],
+          "yaw": 180,
+          "item": "minecraft:bone_meal",
+          "expect": {"blocks": [{"pos": [4, 1, 3], "state": "sim_parity:glow_strand[berries=true]"}, {"pos": [4, 0, 3], "state": "minecraft:air"}]}
+        },
+        {"step": "use", "pos": [4, 1, 3], "yaw": 180, "expect": {"blocks": [{"pos": [4, 1, 3], "state": "sim_parity:glow_strand[berries=false]"}]}}
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "cactus_column_falls_with_its_base",
+      "description": "A cactus-like column stands on itself; breaking the base takes the column with it.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:spike", "pos": [2, -1, 2], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:spike",
+          "pos": [2, 0, 2],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [2, 1, 2], "state": "sim_parity:spike"}]}
+        },
+        {"step": "break", "pos": [2, 0, 2]},
+        {
+          "step": "wait",
+          "ticks": 4,
+          "expect": {"blocks": [{"pos": [2, 0, 2], "state": "minecraft:air"}, {"pos": [2, 1, 2], "state": "minecraft:air"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "bamboo_item_plants_a_shoot",
+      "description": "A bamboo-like item plants the shoot; placed on the shoot it adds a stalk and the shoot turns into the stalk.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:reed_bamboo",
+          "pos": [4, -1, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [4, 0, 4], "state": "sim_parity:reed_bamboo_shoot"}]}
+        },
+        {
+          "step": "place",
+          "block": "sim_parity:reed_bamboo",
+          "pos": [4, 0, 4],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [4, 0, 4], "state": "sim_parity:reed_bamboo"}, {"pos": [4, 1, 4], "state": "sim_parity:reed_bamboo"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "bamboo_shoot_grows_by_bone_meal",
+      "description": "Bone meal on a shoot grows a stalk above it with small leaves; the shoot turns into the stalk.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:reed_bamboo", "pos": [4, -1, 4], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [4, 0, 4],
+          "yaw": 180,
+          "item": "minecraft:bone_meal",
+          "expect": {
+            "blocks": [
+              {"pos": [4, 0, 4], "state": "sim_parity:reed_bamboo[leaves=none]"},
+              {"pos": [4, 1, 4], "state": "sim_parity:reed_bamboo[leaves=small]"}
+            ]
+          }
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "lichen_covers_faces",
+      "description": "A multiface plant covers the face clicked, adds a face into its own block, and loses the face of a broken block.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:base", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:lichen",
+          "pos": [3, 0, 3],
+          "face": "east",
+          "hit": [1, 0.5, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [4, 0, 3], "state": "sim_parity:lichen[down=false,west=true]"}]}
+        },
+        {
+          "step": "place",
+          "block": "sim_parity:lichen",
+          "pos": [4, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [4, 0, 3], "state": "sim_parity:lichen[down=true,west=true]"}]}
+        },
+        {"step": "break", "pos": [3, 0, 3]},
+        {"step": "wait", "ticks": 2, "expect": {"blocks": [{"pos": [4, 0, 3], "state": "sim_parity:lichen[down=true,west=false]"}]}}
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "big_leaf_on_a_leaf_turns_into_stem",
+      "description": "A big dripleaf placed on another turns the lower one into its stem; bone meal grows it a block taller.",
+      "steps": [
+        {"step": "place", "block": "minecraft:moss_block", "pos": [5, -1, 5], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:big_leaf",
+          "pos": [5, 0, 5],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [5, 1, 5], "state": "sim_parity:big_leaf[facing=south]"}]}
+        },
+        {
+          "step": "place",
+          "block": "sim_parity:big_leaf",
+          "pos": [5, 1, 5],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [5, 1, 5], "state": "sim_parity:big_leaf_stem[facing=south]"},
+              {"pos": [5, 2, 5], "state": "sim_parity:big_leaf[facing=south,tilt=none]"}
+            ]
+          }
+        },
+        {
+          "step": "use",
+          "pos": [5, 2, 5],
+          "yaw": 180,
+          "item": "minecraft:bone_meal",
+          "expect": {"blocks": [{"pos": [5, 2, 5], "state": "sim_parity:big_leaf_stem"}, {"pos": [5, 3, 5], "state": "sim_parity:big_leaf"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "small_leaf_takes_two_blocks",
+      "description": "A small dripleaf takes two blocks, lower and upper; breaking the upper half breaks both.",
+      "steps": [
+        {"step": "place", "block": "minecraft:moss_block", "pos": [2, -1, 5], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "place",
+          "block": "sim_parity:small_leaf",
+          "pos": [2, 0, 5],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [2, 1, 5], "state": "sim_parity:small_leaf[facing=south,half=lower]"},
+              {"pos": [2, 2, 5], "state": "sim_parity:small_leaf[facing=south,half=upper]"}
+            ]
+          }
+        },
+        {
+          "step": "break",
+          "pos": [2, 2, 5],
+          "expect": {"blocks": [{"pos": [2, 1, 5], "state": "minecraft:air"}, {"pos": [2, 2, 5], "state": "minecraft:air"}]}
+        }
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "pot_takes_only_listed_plants",
+      "description": "A project pot takes a plant it lists, refuses another, and gives the plant back to an empty hand.",
+      "steps": [
+        {"step": "place", "block": "sim_parity:clay_pot", "pos": [3, -1, 3], "face": "up", "hit": [0.5, 1, 0.5], "yaw": 180, "pitch": 0},
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:poppy",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:clay_pot"}]}
+        },
+        {
+          "step": "use",
+          "pos": [3, 0, 3],
+          "yaw": 180,
+          "item": "minecraft:dandelion",
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:clay_pot_dandelion"}]}
+        },
+        {"step": "use", "pos": [3, 0, 3], "yaw": 180, "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:clay_pot"}]}}
+      ],
+      "events": [],
+      "actions": []
+    },
+    {
+      "name": "double_chest_pairs_and_splits",
+      "description": "A double chest joins a single one beside it facing the same way; breaking a half leaves the other single.",
+      "steps": [
+        {
+          "step": "place",
+          "block": "sim_parity:crate",
+          "pos": [3, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:crate[facing=south,type=single]"}]}
+        },
+        {
+          "step": "place",
+          "block": "sim_parity:crate",
+          "pos": [4, -1, 3],
+          "face": "up",
+          "hit": [0.5, 1, 0.5],
+          "yaw": 180,
+          "pitch": 0,
+          "expect": {
+            "blocks": [
+              {"pos": [3, 0, 3], "state": "sim_parity:crate[facing=south,type=right]"},
+              {"pos": [4, 0, 3], "state": "sim_parity:crate[facing=south,type=left]"}
+            ]
+          }
+        },
+        {"step": "break", "pos": [4, 0, 3], "expect": {"blocks": [{"pos": [3, 0, 3], "state": "sim_parity:crate[facing=south,type=single]"}]}}
+      ],
+      "events": [],
+      "actions": []
     }
   ]
 }

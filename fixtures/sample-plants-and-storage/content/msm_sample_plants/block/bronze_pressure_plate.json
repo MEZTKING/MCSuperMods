@@ -1,0 +1,34 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      },
+      "msm:waxable": {
+        "into": "msm_sample_plants:waxed_bronze_pressure_plate"
+      },
+      "msm:weathering": {
+        "next": "msm_sample_plants:exposed_bronze_pressure_plate",
+        "stage": "unaffected"
+      }
+    },
+    "display_name": "Bronze Pressure Plate",
+    "format": 1,
+    "loot": "self",
+    "set_type": "copper",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_sample_plants:block/bronze"
+    },
+    "type": "pressure_plate",
+    "weighted_max": 15
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:bronze_pressure_plate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

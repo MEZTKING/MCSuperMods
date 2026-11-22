@@ -1,0 +1,27 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 2.5,
+        "resistance": 2.5,
+        "tool": "axe"
+      },
+      "msm:container": {
+        "layout": "chest",
+        "rows": 2
+      },
+      "msm:waterloggable": {}
+    },
+    "display_name": "Sea Crate",
+    "format": 1,
+    "loot": "self",
+    "model": "msm_sample_plants:block/sea_crate",
+    "sound_type": "wood"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:sea_crate",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

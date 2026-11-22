@@ -1,0 +1,33 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 5,
+        "resistance": 5,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Creaky Door",
+    "format": 1,
+    "loot": "self",
+    "set_type": {
+      "base": "iron",
+      "can_open_by_hand": true,
+      "sounds": {
+        "close": "minecraft:block.chest.close",
+        "open": "minecraft:block.iron_door.open"
+      }
+    },
+    "textures": {
+      "bottom": "msm_sample_plants:block/creaky_door_bottom",
+      "top": "msm_sample_plants:block/creaky_door_top"
+    },
+    "type": "door"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:creaky_door",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

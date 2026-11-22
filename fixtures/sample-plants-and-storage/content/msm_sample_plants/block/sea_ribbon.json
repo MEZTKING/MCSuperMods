@@ -1,0 +1,26 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0,
+        "resistance": 0
+      }
+    },
+    "display_name": "Sea Ribbon",
+    "format": 1,
+    "loot": "self",
+    "needs_water": true,
+    "sound_type": "grass",
+    "textures": {
+      "body": "msm_sample_plants:block/sea_ribbon_plant",
+      "head": "msm_sample_plants:block/sea_ribbon"
+    },
+    "type": "growing_plant"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:sea_ribbon",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

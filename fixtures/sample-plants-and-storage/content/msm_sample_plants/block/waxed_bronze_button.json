@@ -1,0 +1,26 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 3,
+        "resistance": 3,
+        "tool": "pickaxe"
+      }
+    },
+    "display_name": "Waxed Bronze Button",
+    "format": 1,
+    "loot": "self",
+    "set_type": "copper",
+    "sound_type": "copper",
+    "textures": {
+      "texture": "msm_sample_plants:block/bronze"
+    },
+    "type": "button"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:waxed_bronze_button",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

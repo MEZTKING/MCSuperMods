@@ -1,0 +1,14 @@
+{
+  "data": {
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+      "all": "msm_sample_plants:block/loam"
+    }
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:block/loam",
+  "kind": "minecraft:model",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}

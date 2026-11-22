@@ -1,0 +1,25 @@
+{
+  "data": {
+    "components": {
+      "msm:breakable": {
+        "hardness": 0.2,
+        "resistance": 0.2
+      }
+    },
+    "display_name": "Glow Moss",
+    "format": 1,
+    "light": 7,
+    "loot": "self",
+    "sound_type": "grass",
+    "textures": {
+      "texture": "msm_sample_plants:block/glow_moss"
+    },
+    "type": "multiface"
+  },
+  "formatVersion": 1,
+  "id": "msm_sample_plants:glow_moss",
+  "kind": "msm:block",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z"
+  }
+}
