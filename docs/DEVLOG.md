@@ -7472,3 +7472,17 @@ Next
 **Next**
 - Four tests outside this brief's files fail until a line each is added: `@msm/app` `test/plain-problems.test.ts` (plain words for the six new villager codes), `test/ai-rules.test.ts` (the system prompt explains `gift-without-item`, `villager-type-biome-shared`, `villager-type-taken`, and whichever other new villager codes the test lists), `test/components/sidebar-potions-data-kinds.test.tsx` (a sidebar heading for `msm:villager_type`), and `@msm/exporters` `test/library.test.ts` "one per-kind example for every registered kind" fails until the library gains a `msm:villager_type` example (B539) or the kind is listed in `KINDS_AWAITING_EXAMPLES`; outside this brief's files.
 - The app's `dataRegistryIds` (`app/src/renderer/src/session/schema-context.ts`) should count a bucketable mob's `<id>_bucket` in `item`, as spawn eggs are; the Villager type Studio (B538) can use `villagerTypeTexturePaths` to copy pictures.
+
+## 2026-11-22 — orchestrator — Showcase plan (draft)
+
+**What**
+- A draft plan and a Proposed ADR for the ROADMAP idea "Showcase for new users" (user, 2026-11-22), checked in the code at c0086f8: `docs/PLAN-showcase.md` (status draft; what exists to build on, the first ten showcases with the example behind each, facts W1–W18, measuring questions Z1–Z13, limits U1–U13, briefs B565–B573) and `docs/adr/0118-showcase-with-live-clips.md` (D1–D14).
+- Found reusable as is: Home and its `MakeTileAction` (Make this opens a flow through the same handler), the New project dialog's starter wizard, the Examples gallery's Open and Copy, `preview/bundle-source.ts` (an example bundle as a project), `lowerProjectAsync` with the expanders, Try it's `TryItArea` and `TryItScene`/`TryItCanvas` (drawing only, a per-frame camera, `active`, `smaller`, `onFrameDrawn`, losing its context on unmount), the sim's player actions, grounds and `player.teleport`, the drawn terrain without the jar, the e2e WebGL flags and `readPixels` check. Missing: a clip format and player, a cached example lowering, cards with drawn and taken stills, a one-live-clip policy, reduced motion (nothing in the renderer reads it today), the setting, the wiring and an e2e spec.
+
+**Decisions**
+- Proposed only, with vetoable defaults in ADR 0118's Status: clips drawn live by Try it's renderer from each example's lowered files (no video, no Mojang pixels); the list in the app (`showcase/showcases.ts`, like `tiles.ts`), so no plugin API change; at most one live clip (hover or focus, else the first card in view); silent, with a Preview tag; stills drawn from the example's pictures until a frame is taken, kept in memory only; reduced motion and the setting Play showcase clips show stills; without WebGL drawn stills and words.
+- The ten: Elm wood set, Tameable fox-like pet, Onion crop, Ore crusher, the tank, Two-way sky portal, Firefly jar, Roadside merchant, Oil well, Rules: a lucky block.
+- Recommended order: beside vanilla parity 3 batch 2 (no shared owner file; no edits to `tryit/`, `packages/sim/` or the library), one extra executor at a time; e2e after B540, the close after B543.
+
+**Next**
+- The main session reviews the draft, adds it to ROADMAP and HANDOFF, and adds `app/src/renderer/src/showcase/showcases.ts` to the game modes plan's B557 owner list (Skyblock, One block and Lucky block clips). Work starts with B565 (measures, Opus at high effort).
