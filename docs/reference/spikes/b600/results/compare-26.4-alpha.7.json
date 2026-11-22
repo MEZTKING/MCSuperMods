@@ -1,0 +1,768 @@
+{
+ "explode.gray_wool.block.2": {
+  "keys": 1,
+  "maxCellPp": 0.77,
+  "maxAnyPp": 0.77,
+  "maxMarginalPp": 0.77,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 83
+ },
+ "explode.gray_wool.block.4": {
+  "keys": 1,
+  "maxCellPp": 1.03,
+  "maxAnyPp": 1.03,
+  "maxMarginalPp": 1.03,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 110
+ },
+ "explode.gray_wool.tnt.2": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 97
+ },
+ "explode.gray_wool.tnt.4": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 61
+ },
+ "explode.light_gray_wool.block.2": {
+  "keys": 1,
+  "maxCellPp": 0.28,
+  "maxAnyPp": 0.28,
+  "maxMarginalPp": 0.28,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 327
+ },
+ "explode.light_gray_wool.block.4": {
+  "keys": 1,
+  "maxCellPp": 0.45,
+  "maxAnyPp": 0.41,
+  "maxMarginalPp": 0.41,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 209
+ },
+ "explode.light_gray_wool.tnt.2": {
+  "keys": 1,
+  "maxCellPp": 0.3,
+  "maxAnyPp": 0.22,
+  "maxMarginalPp": 0.22,
+  "worst": "minecraft:apple x2",
+  "worstMarg": "minecraft:apple",
+  "simMs": 283
+ },
+ "explode.light_gray_wool.tnt.4": {
+  "keys": 1,
+  "maxCellPp": 1.06,
+  "maxAnyPp": 0.97,
+  "maxMarginalPp": 0.97,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 235
+ },
+ "explode.pink_wool.block.2": {
+  "keys": 1,
+  "maxCellPp": 0.88,
+  "maxAnyPp": 0.01,
+  "maxMarginalPp": 0.01,
+  "worst": "minecraft:apple x3",
+  "worstMarg": "minecraft:apple",
+  "simMs": 166
+ },
+ "explode.pink_wool.block.4": {
+  "keys": 1,
+  "maxCellPp": 1.58,
+  "maxAnyPp": 0.14,
+  "maxMarginalPp": 0.14,
+  "worst": "minecraft:apple x3",
+  "worstMarg": "minecraft:apple",
+  "simMs": 143
+ },
+ "explode.pink_wool.tnt.2": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 112
+ },
+ "explode.pink_wool.tnt.4": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 112
+ },
+ "kill.looting.console": {
+  "keys": 2,
+  "maxCellPp": 0.76,
+  "maxAnyPp": 0.76,
+  "maxMarginalPp": 0.76,
+  "worst": "minecraft:emerald x1",
+  "worstMarg": "minecraft:emerald",
+  "simMs": 207
+ },
+ "kill.looting.player.looting0": {
+  "keys": 3,
+  "maxCellPp": 0.4,
+  "maxAnyPp": 0.33,
+  "maxMarginalPp": 0.33,
+  "worst": "minecraft:rotten_flesh x1",
+  "worstMarg": "minecraft:emerald",
+  "simMs": 265
+ },
+ "kill.looting.player.looting1": {
+  "keys": 3,
+  "maxCellPp": 0.6,
+  "maxAnyPp": 0.1,
+  "maxMarginalPp": 0.1,
+  "worst": "minecraft:rotten_flesh x3",
+  "worstMarg": "minecraft:emerald",
+  "simMs": 289
+ },
+ "kill.looting.player.looting3": {
+  "keys": 3,
+  "maxCellPp": 1.43,
+  "maxAnyPp": 1.43,
+  "maxMarginalPp": 1.43,
+  "worst": "minecraft:emerald x0",
+  "worstMarg": "minecraft:emerald",
+  "simMs": 286
+ },
+ "kill.looting_limit.console": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 185
+ },
+ "kill.looting_limit.player.looting0": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 132
+ },
+ "kill.looting_limit.player.looting1": {
+  "keys": 1,
+  "maxCellPp": 0.54,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:rotten_flesh x3",
+  "worstMarg": "",
+  "simMs": 213
+ },
+ "kill.looting_limit.player.looting3": {
+  "keys": 1,
+  "maxCellPp": 0.55,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:rotten_flesh x3",
+  "worstMarg": "",
+  "simMs": 192
+ },
+ "loot.alternatives": {
+  "keys": 2,
+  "maxCellPp": 0.22,
+  "maxAnyPp": 0.22,
+  "maxMarginalPp": 0.22,
+  "worst": "minecraft:dirt x0",
+  "worstMarg": "minecraft:stone",
+  "simMs": 119
+ },
+ "loot.chest_like": {
+  "keys": 3,
+  "maxCellPp": 0.73,
+  "maxAnyPp": 0.62,
+  "maxMarginalPp": 0.62,
+  "worst": "minecraft:bread x5",
+  "worstMarg": "minecraft:bread",
+  "simMs": 385
+ },
+ "loot.count_add": {
+  "keys": 1,
+  "maxCellPp": 0.46,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x4",
+  "worstMarg": "",
+  "simMs": 129
+ },
+ "loot.count_binomial": {
+  "keys": 1,
+  "maxCellPp": 0.69,
+  "maxAnyPp": 0.19,
+  "maxMarginalPp": 0.19,
+  "worst": "minecraft:apple x3",
+  "worstMarg": "minecraft:apple",
+  "simMs": 108
+ },
+ "loot.count_dispatch": {
+  "keys": 1,
+  "maxCellPp": 0.85,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "",
+  "simMs": 112
+ },
+ "loot.count_uniform": {
+  "keys": 1,
+  "maxCellPp": 0.28,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x3",
+  "worstMarg": "",
+  "simMs": 91
+ },
+ "loot.count_weighted": {
+  "keys": 1,
+  "maxCellPp": 0.35,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "",
+  "simMs": 109
+ },
+ "loot.empty_weight": {
+  "keys": 1,
+  "maxCellPp": 0.38,
+  "maxAnyPp": 0.38,
+  "maxMarginalPp": 0.38,
+  "worst": "minecraft:stone x0",
+  "worstMarg": "minecraft:stone",
+  "simMs": 66
+ },
+ "loot.enchant_levels_book": {
+  "keys": 15176,
+  "maxCellPp": 0.2,
+  "maxAnyPp": 0.2,
+  "maxMarginalPp": 0.51,
+  "worst": "minecraft:enchanted_book|efficiency3 x1",
+  "worstMarg": "fire_protection3",
+  "simMs": 9346
+ },
+ "loot.enchant_levels_sword": {
+  "keys": 840,
+  "maxCellPp": 0.34,
+  "maxAnyPp": 0.34,
+  "maxMarginalPp": 0.6,
+  "worst": "minecraft:diamond_sword|unbreaking1 x0",
+  "worstMarg": "spike1",
+  "simMs": 16915
+ },
+ "loot.enchant_randomly_book": {
+  "keys": 146,
+  "maxCellPp": 0.26,
+  "maxAnyPp": 0.26,
+  "maxMarginalPp": 0.26,
+  "worst": "minecraft:enchanted_book|silk_touch1 x0",
+  "worstMarg": "silk_touch1",
+  "simMs": 307
+ },
+ "loot.group": {
+  "keys": 2,
+  "maxCellPp": 0.35,
+  "maxAnyPp": 0.35,
+  "maxMarginalPp": 0.35,
+  "worst": "minecraft:dirt x0",
+  "worstMarg": "minecraft:dirt",
+  "simMs": 174
+ },
+ "loot.limit": {
+  "keys": 1,
+  "maxCellPp": 0.72,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x3",
+  "worstMarg": "",
+  "simMs": 258
+ },
+ "loot.luck": {
+  "keys": 2,
+  "maxCellPp": 0.04,
+  "maxAnyPp": 0.04,
+  "maxMarginalPp": 0.04,
+  "worst": "minecraft:dirt x0",
+  "worstMarg": "minecraft:stone",
+  "simMs": 164
+ },
+ "loot.luck.console": {
+  "keys": 2,
+  "maxCellPp": 0.52,
+  "maxAnyPp": 0.52,
+  "maxMarginalPp": 0.52,
+  "worst": "minecraft:dirt x0",
+  "worstMarg": "minecraft:dirt",
+  "simMs": 152
+ },
+ "loot.luck.player2": {
+  "keys": 2,
+  "maxCellPp": 0.53,
+  "maxAnyPp": 0.53,
+  "maxMarginalPp": 0.53,
+  "worst": "minecraft:dirt x0",
+  "worstMarg": "minecraft:stone",
+  "simMs": 151
+ },
+ "loot.nested": {
+  "keys": 5,
+  "maxCellPp": 0.4,
+  "maxAnyPp": 0.4,
+  "maxMarginalPp": 0.4,
+  "worst": "minecraft:gravel x1",
+  "worstMarg": "minecraft:gravel",
+  "simMs": 208
+ },
+ "loot.random_chance": {
+  "keys": 1,
+  "maxCellPp": 0.33,
+  "maxAnyPp": 0.33,
+  "maxMarginalPp": 0.33,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 62
+ },
+ "loot.rolls_uniform": {
+  "keys": 1,
+  "maxCellPp": 0.44,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "",
+  "simMs": 170
+ },
+ "loot.sequence": {
+  "keys": 2,
+  "maxCellPp": 0.13,
+  "maxAnyPp": 0.13,
+  "maxMarginalPp": 0.13,
+  "worst": "minecraft:stone x0",
+  "worstMarg": "minecraft:stone",
+  "simMs": 136
+ },
+ "loot.set_damage": {
+  "keys": 10,
+  "maxCellPp": 0.38,
+  "maxAnyPp": 0.38,
+  "maxMarginalPp": 0.38,
+  "worst": "minecraft:diamond_sword|dmg14 x1",
+  "worstMarg": "dmg14",
+  "simMs": 170
+ },
+ "loot.table_modifier": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 148
+ },
+ "loot.tag_all": {
+  "keys": 3,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 204
+ },
+ "loot.tag_expand": {
+  "keys": 3,
+  "maxCellPp": 0.9,
+  "maxAnyPp": 0.9,
+  "maxMarginalPp": 0.9,
+  "worst": "minecraft:stone x1",
+  "worstMarg": "minecraft:stone",
+  "simMs": 170
+ },
+ "loot.two_pools": {
+  "keys": 2,
+  "maxCellPp": 0.38,
+  "maxAnyPp": 0.38,
+  "maxMarginalPp": 0.38,
+  "worst": "minecraft:dirt x1",
+  "worstMarg": "minecraft:dirt",
+  "simMs": 137
+ },
+ "loot.weights": {
+  "keys": 4,
+  "maxCellPp": 0.96,
+  "maxAnyPp": 0.96,
+  "maxMarginalPp": 0.96,
+  "worst": "minecraft:gravel x0",
+  "worstMarg": "minecraft:gravel",
+  "simMs": 120
+ },
+ "loot.weights.preparsed": {
+  "keys": 4,
+  "maxCellPp": 1.14,
+  "maxAnyPp": 1.14,
+  "maxMarginalPp": 1.14,
+  "worst": "minecraft:sand x0",
+  "worstMarg": "minecraft:sand",
+  "simMs": 116
+ },
+ "mine.gray_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 110
+ },
+ "mine.gray_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 156
+ },
+ "mine.light_blue_wool.fortune1": {
+  "keys": 1,
+  "maxCellPp": 0.33,
+  "maxAnyPp": 0.33,
+  "maxMarginalPp": 0.33,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 82
+ },
+ "mine.light_blue_wool.fortune2": {
+  "keys": 1,
+  "maxCellPp": 0.08,
+  "maxAnyPp": 0.08,
+  "maxMarginalPp": 0.08,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 118
+ },
+ "mine.light_blue_wool.fortune3": {
+  "keys": 1,
+  "maxCellPp": 0.33,
+  "maxAnyPp": 0.33,
+  "maxMarginalPp": 0.33,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 144
+ },
+ "mine.light_blue_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0.36,
+  "maxAnyPp": 0.36,
+  "maxMarginalPp": 0.36,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 73
+ },
+ "mine.light_blue_wool.pick": {
+  "keys": 1,
+  "maxCellPp": 0.42,
+  "maxAnyPp": 0.42,
+  "maxMarginalPp": 0.42,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 75
+ },
+ "mine.light_blue_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0.16,
+  "maxAnyPp": 0.16,
+  "maxMarginalPp": 0.16,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 76
+ },
+ "mine.light_gray_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0.53,
+  "maxAnyPp": 0.53,
+  "maxMarginalPp": 0.53,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 429
+ },
+ "mine.light_gray_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0.06,
+  "maxAnyPp": 0.06,
+  "maxMarginalPp": 0.07,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 418
+ },
+ "mine.lime_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 257
+ },
+ "mine.lime_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 230
+ },
+ "mine.magenta_wool.fortune1": {
+  "keys": 1,
+  "maxCellPp": 1.21,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:wheat_seeds x4",
+  "worstMarg": "",
+  "simMs": 282
+ },
+ "mine.magenta_wool.fortune2": {
+  "keys": 1,
+  "maxCellPp": 1.01,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:wheat_seeds x4",
+  "worstMarg": "",
+  "simMs": 235
+ },
+ "mine.magenta_wool.fortune3": {
+  "keys": 1,
+  "maxCellPp": 1.02,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:wheat_seeds x5",
+  "worstMarg": "",
+  "simMs": 135
+ },
+ "mine.magenta_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0.41,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:wheat_seeds x3",
+  "worstMarg": "",
+  "simMs": 141
+ },
+ "mine.magenta_wool.pick": {
+  "keys": 1,
+  "maxCellPp": 0.42,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:wheat_seeds x4",
+  "worstMarg": "",
+  "simMs": 141
+ },
+ "mine.magenta_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0.73,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:wheat_seeds x4",
+  "worstMarg": "",
+  "simMs": 142
+ },
+ "mine.orange_wool.fortune1": {
+  "keys": 1,
+  "maxCellPp": 0.36,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x2",
+  "worstMarg": "",
+  "simMs": 142
+ },
+ "mine.orange_wool.fortune2": {
+  "keys": 1,
+  "maxCellPp": 0.36,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x3",
+  "worstMarg": "",
+  "simMs": 218
+ },
+ "mine.orange_wool.fortune3": {
+  "keys": 1,
+  "maxCellPp": 0.76,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:apple x6",
+  "worstMarg": "",
+  "simMs": 215
+ },
+ "mine.orange_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 160
+ },
+ "mine.orange_wool.pick": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 134
+ },
+ "mine.orange_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 139
+ },
+ "mine.pink_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 153
+ },
+ "mine.pink_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 154
+ },
+ "mine.white_wool.fortune1": {
+  "keys": 1,
+  "maxCellPp": 0.06,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:diamond x1",
+  "worstMarg": "",
+  "simMs": 138
+ },
+ "mine.white_wool.fortune2": {
+  "keys": 1,
+  "maxCellPp": 0.59,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:diamond x1",
+  "worstMarg": "",
+  "simMs": 141
+ },
+ "mine.white_wool.fortune3": {
+  "keys": 1,
+  "maxCellPp": 0.92,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "minecraft:diamond x1",
+  "worstMarg": "",
+  "simMs": 166
+ },
+ "mine.white_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 177
+ },
+ "mine.white_wool.pick": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 248
+ },
+ "mine.white_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0,
+  "maxAnyPp": 0,
+  "maxMarginalPp": 0,
+  "worst": "",
+  "worstMarg": "",
+  "simMs": 179
+ },
+ "mine.yellow_wool.fortune1": {
+  "keys": 1,
+  "maxCellPp": 0.38,
+  "maxAnyPp": 0.38,
+  "maxMarginalPp": 0.38,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 36
+ },
+ "mine.yellow_wool.fortune2": {
+  "keys": 1,
+  "maxCellPp": 0.14,
+  "maxAnyPp": 0.14,
+  "maxMarginalPp": 0.14,
+  "worst": "minecraft:apple x1",
+  "worstMarg": "minecraft:apple",
+  "simMs": 36
+ },
+ "mine.yellow_wool.fortune3": {
+  "keys": 1,
+  "maxCellPp": 0.93,
+  "maxAnyPp": 0.93,
+  "maxMarginalPp": 0.93,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 34
+ },
+ "mine.yellow_wool.hand": {
+  "keys": 1,
+  "maxCellPp": 0.53,
+  "maxAnyPp": 0.53,
+  "maxMarginalPp": 0.53,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 33
+ },
+ "mine.yellow_wool.pick": {
+  "keys": 1,
+  "maxCellPp": 0.01,
+  "maxAnyPp": 0.01,
+  "maxMarginalPp": 0.01,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 34
+ },
+ "mine.yellow_wool.silk": {
+  "keys": 1,
+  "maxCellPp": 0.33,
+  "maxAnyPp": 0.33,
+  "maxMarginalPp": 0.33,
+  "worst": "minecraft:apple x0",
+  "worstMarg": "minecraft:apple",
+  "simMs": 33
+ },
+ "unknownTypes": {}
+}

@@ -1,0 +1,347 @@
+{
+ "advancements.screen": {
+  "screen": "AdvancementsScreen",
+  "gui": "427x240 scale 2",
+  "title": "Advancements",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "178,12 70x9",
+    "message": "(game text)"
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "113,214 200x20",
+    "message": "(game text)"
+   }
+  ]
+ },
+ "advancements.tree": {
+  "count": 6,
+  "ours": {
+   "msm_b600:tab/a": "1.0,1.0",
+   "msm_b600:tab/a2": "2.0,2.0",
+   "msm_b600:tab/a2x": "3.0,2.5",
+   "msm_b600:tab/root": "0.0,2.75"
+  },
+  "roots": [
+   "minecraft:recipes/root",
+   "msm_b600:tab/root"
+  ]
+ },
+ "advancements.treeAllGranted": {
+  "msm_b600:plain/child": "0.0,0.0",
+  "msm_b600:plain/root": "0.0,0.0",
+  "msm_b600:tab/a": "1.0,1.0",
+  "msm_b600:tab/a1": "2.0,0.0",
+  "msm_b600:tab/a2": "2.0,2.0",
+  "msm_b600:tab/a2x": "3.0,2.5",
+  "msm_b600:tab/a2y": "3.0,1.5",
+  "msm_b600:tab/a3": "2.0,1.0",
+  "msm_b600:tab/b": "1.0,3.0",
+  "msm_b600:tab/b1": "2.0,3.0",
+  "msm_b600:tab/c": "1.0,4.5",
+  "msm_b600:tab/c1": "2.0,5.0",
+  "msm_b600:tab/c1a": "3.0,5.0",
+  "msm_b600:tab/c1b": "3.0,4.0",
+  "msm_b600:tab/c1c": "3.0,6.0",
+  "msm_b600:tab/nodisplay": "0.0,0.0",
+  "msm_b600:tab/root": "0.0,2.75",
+  "msm_b600:tab/under_nodisplay": "2.0,4.0",
+  "roots": [
+   "minecraft:recipes/root",
+   "msm_b600:tab/root",
+   "msm_b600:plain/root"
+  ]
+ },
+ "dialog.confirmation": {
+  "screen": "SimpleDialogScreen",
+  "gui": "427x240 scale 2",
+  "title": "Confirm",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "180,13 37x9",
+    "message": "Confirm"
+   },
+   {
+    "class": "Container",
+    "depth": 0,
+    "rect": "103,63 220x17",
+    "message": ""
+   },
+   {
+    "class": "FocusableTextWidget",
+    "depth": 1,
+    "rect": "113,63 200x17",
+    "message": "A plain message body of a few words."
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "59,214 150x20",
+    "message": "Yes"
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "217,214 150x20",
+    "message": "No"
+   },
+   {
+    "class": "ImageButton",
+    "depth": 0,
+    "rect": "227,7 20x20",
+    "message": "(game text)"
+   }
+  ]
+ },
+ "dialog.dialog_list": {
+  "screen": "DialogListDialogScreen",
+  "gui": "427x240 scale 2",
+  "title": "List",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "189,13 18x9",
+    "message": "List"
+   },
+   {
+    "class": "Container",
+    "depth": 0,
+    "rect": "103,63 220x42",
+    "message": ""
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "113,63 200x20",
+    "message": "Notice"
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "113,85 200x20",
+    "message": "Confirm"
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "138,214 150x20",
+    "message": "Back"
+   },
+   {
+    "class": "ImageButton",
+    "depth": 0,
+    "rect": "217,7 20x20",
+    "message": "(game text)"
+   }
+  ]
+ },
+ "dialog.multi_action": {
+  "screen": "MultiButtonDialogScreen",
+  "gui": "427x240 scale 2",
+  "title": "Many",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "186,13 24x9",
+    "message": "Many"
+   },
+   {
+    "class": "Container",
+    "depth": 0,
+    "rect": "52,63 322x91",
+    "message": ""
+   },
+   {
+    "class": "FocusableTextWidget",
+    "depth": 1,
+    "rect": "113,63 200x17",
+    "message": "A plain message body of a few words."
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "62,90 150x20",
+    "message": "One"
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "214,90 150x20",
+    "message": "Two"
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "62,112 150x20",
+    "message": "Three"
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "239,112 100x20",
+    "message": "Four"
+   },
+   {
+    "class": "Plain",
+    "depth": 1,
+    "rect": "63,134 300x20",
+    "message": "Five"
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "113,214 200x20",
+    "message": "Back"
+   },
+   {
+    "class": "ImageButton",
+    "depth": 0,
+    "rect": "220,7 20x20",
+    "message": "(game text)"
+   }
+  ]
+ },
+ "dialog.notice": {
+  "screen": "SimpleDialogScreen",
+  "gui": "427x240 scale 2",
+  "title": "Notice",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "183,13 30x9",
+    "message": "Notice"
+   },
+   {
+    "class": "Container",
+    "depth": 0,
+    "rect": "94,33 238x174",
+    "message": ""
+   },
+   {
+    "class": "FocusableTextWidget",
+    "depth": 1,
+    "rect": "113,33 200x17",
+    "message": "A plain message body of a few words."
+   },
+   {
+    "class": "ItemDisplayWidget",
+    "depth": 1,
+    "rect": "104,61 16x16",
+    "message": ""
+   },
+   {
+    "class": "FocusableTextWidget",
+    "depth": 1,
+    "rect": "122,60 200x17",
+    "message": "Three diamonds"
+   },
+   {
+    "class": "StringWidget",
+    "depth": 1,
+    "rect": "113,87 24x9",
+    "message": "Name"
+   },
+   {
+    "class": "EditBox",
+    "depth": 1,
+    "rect": "113,100 200x20",
+    "message": "Name"
+   },
+   {
+    "class": "Checkbox",
+    "depth": 1,
+    "rect": "187,130 51x17",
+    "message": "Agree"
+   },
+   {
+    "class": "CycleButton",
+    "depth": 1,
+    "rect": "113,157 200x20",
+    "message": "Pick: Two"
+   },
+   {
+    "class": "SliderImpl",
+    "depth": 1,
+    "rect": "113,187 200x20",
+    "message": "How many: 5"
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "138,214 150x20",
+    "message": "OK"
+   },
+   {
+    "class": "ImageButton",
+    "depth": 0,
+    "rect": "223,7 20x20",
+    "message": "(game text)"
+   }
+  ]
+ },
+ "dialog.plain": {
+  "screen": "SimpleDialogScreen",
+  "gui": "427x240 scale 2",
+  "title": "Plain",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "187,13 23x9",
+    "message": "Plain"
+   },
+   {
+    "class": "Container",
+    "depth": 0,
+    "rect": "203,63 20x0",
+    "message": ""
+   },
+   {
+    "class": "Plain",
+    "depth": 0,
+    "rect": "138,214 150x20",
+    "message": "(game text)"
+   },
+   {
+    "class": "ImageButton",
+    "depth": 0,
+    "rect": "220,7 20x20",
+    "message": "(game text)"
+   }
+  ]
+ },
+ "dialog.server_links": {
+  "screen": "ServerLinksDialogScreen",
+  "gui": "427x240 scale 2",
+  "title": "Links",
+  "widgets": [
+   {
+    "class": "StringWidget",
+    "depth": 0,
+    "rect": "186,13 25x9",
+    "message": "Links"
+   },
+   {
+    "class": "Container",
+    "depth": 0,
+    "rect": "203,63 20x0",
+    "message": ""
+   },
+   {
+    "class": "ImageButton",
+    "depth": 0,
+    "rect": "221,7 20x20",
+    "message": "(game text)"
+   }
+  ]
+ }
+}

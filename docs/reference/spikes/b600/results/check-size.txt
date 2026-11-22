@@ -1,0 +1,19 @@
+Renderer output: 17.6 MB (budget 19.0 MB), largest files:
+     6.6 MB  assets/ts.worker-CVbFdYz4.js
+     2.8 MB  assets/index-DElyiI_I.js
+     2.6 MB  assets/editor.api-CTkkMfGz.js
+   850.9 kB  assets/src-CQAlNj2U.js
+   642.9 kB  assets/monaco-setup-CVPvDAzj.js
+   530.7 kB  assets/workers-CI3Uun5i.js
+   423.0 kB  assets/json.worker-BfeARH1Q.js
+   422.6 kB  assets/src-CLiIFkKU.js
+TypeScript worker chunk: assets/ts.worker-CVbFdYz4.js (6.6 MB)
+Main output: index.js 2.4 MB, 8.5 MB in total (reported only), largest files:
+     3.7 MB  scripting-engine-Do8EuFSw.js
+     2.4 MB  index.js
+     1.1 MB  mcfunction-CffAuI-K.js
+   515.0 kB  main-s7uJnB21.js
+   308.0 kB  ai-client-DkwzFTW8.js
+Vendored target data: 607.6 kB in app/out/main/vendor (compact JSON, gzipped; ADRs 0079, 0123)
+check-size: 1 violation(s)
+  app.asar not found: run `pnpm --filter @msm/app dist:dir` first.

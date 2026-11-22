@@ -1,0 +1,41 @@
+{
+ "files": 52,
+ "projects": 23,
+ "lines": 107,
+ "commandLines": 74,
+ "macroLines": 2,
+ "draft": {
+  "understood": 55,
+  "share": 0.743,
+  "notUnderstood": {
+   "execute (subcommand)": 12,
+   "scoreboard objectives add": 3,
+   "tag": 2,
+   "dialog": 1,
+   "scoreboard objectives setdisplay": 1
+  }
+ },
+ "withAdditions": {
+  "understood": 70,
+  "share": 0.946,
+  "notUnderstood": {
+   "spreadplayers": 4
+  }
+ },
+ "heads": {
+  "say": 28,
+  "execute": 18,
+  "particle": 5,
+  "tellraw": 5,
+  "scoreboard": 4,
+  "effect": 3,
+  "give": 3,
+  "tag": 2,
+  "dialog": 1,
+  "$effect": 1,
+  "playsound": 1,
+  "title": 1,
+  "setblock": 1,
+  "$give": 1
+ }
+}

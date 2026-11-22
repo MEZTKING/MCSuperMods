@@ -1,0 +1,97 @@
+{
+ "batch2Folders": [
+  "advancement",
+  "loot_table",
+  "tags/item",
+  "tags/entity_type",
+  "tags/fluid",
+  "tags/game_event",
+  "tags/damage_type",
+  "tags/enchantment",
+  "tags/painting_variant",
+  "tags/banner_pattern",
+  "tags/dialog",
+  "tags/instrument",
+  "tags/point_of_interest_type",
+  "tags/potion",
+  "tags/timeline",
+  "enchantment",
+  "enchantment_provider",
+  "damage_type",
+  "chat_type",
+  "dialog",
+  "predicate",
+  "trial_spawner",
+  "block_transformer",
+  "context_int_provider",
+  "context_float_provider"
+ ],
+ "mc-26.3": {
+  "today": {
+   "files": 10946,
+   "bytes": 6140792,
+   "batch2Files": 0,
+   "batch2Bytes": 0,
+   "medianMs": 179,
+   "worstMs": 266
+  },
+  "withBatch2": {
+   "files": 14821,
+   "bytes": 8737906,
+   "batch2Files": 3875,
+   "batch2Bytes": 2597114,
+   "medianMs": 237,
+   "worstMs": 329
+  },
+  "parse.advancement": {
+   "files": 1866,
+   "ms": 14.5
+  },
+  "parse.loot_table": {
+   "files": 1447,
+   "ms": 9.5
+  },
+  "parse.tags/item": {
+   "files": 236,
+   "ms": 0.6
+  },
+  "parse.enchantment": {
+   "files": 43,
+   "ms": 0.8
+  }
+ },
+ "mc-26.4": {
+  "today": {
+   "files": 11170,
+   "bytes": 6291552,
+   "batch2Files": 0,
+   "batch2Bytes": 0,
+   "medianMs": 152,
+   "worstMs": 212
+  },
+  "withBatch2": {
+   "files": 15135,
+   "bytes": 8938595,
+   "batch2Files": 3965,
+   "batch2Bytes": 2647043,
+   "medianMs": 203,
+   "worstMs": 252
+  },
+  "parse.advancement": {
+   "files": 1919,
+   "ms": 7.7
+  },
+  "parse.loot_table": {
+   "files": 1473,
+   "ms": 5
+  },
+  "parse.tags/item": {
+   "files": 241,
+   "ms": 0.3
+  },
+  "parse.enchantment": {
+   "files": 43,
+   "ms": 0.5
+  }
+ }
+}

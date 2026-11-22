@@ -1,0 +1,86 @@
+{
+ "minecraft:adventure.gameOrder": {
+  "nodes": 47,
+  "xExact": 47,
+  "yExact": 43,
+  "layoutMs": 0.7
+ },
+ "minecraft:adventure.idOrder": {
+  "nodes": 47,
+  "xExact": 47,
+  "yExact": 0,
+  "layoutMs": 0.12
+ },
+ "minecraft:end.gameOrder": {
+  "nodes": 9,
+  "xExact": 9,
+  "yExact": 9,
+  "layoutMs": 0.02
+ },
+ "minecraft:end.idOrder": {
+  "nodes": 9,
+  "xExact": 9,
+  "yExact": 3,
+  "layoutMs": 0.02
+ },
+ "minecraft:husbandry.gameOrder": {
+  "nodes": 31,
+  "xExact": 31,
+  "yExact": 31,
+  "layoutMs": 0.07
+ },
+ "minecraft:husbandry.idOrder": {
+  "nodes": 31,
+  "xExact": 31,
+  "yExact": 0,
+  "layoutMs": 0.09
+ },
+ "minecraft:nether.gameOrder": {
+  "nodes": 23,
+  "xExact": 23,
+  "yExact": 23,
+  "layoutMs": 0.1
+ },
+ "minecraft:nether.idOrder": {
+  "nodes": 23,
+  "xExact": 23,
+  "yExact": 0,
+  "layoutMs": 0.08
+ },
+ "minecraft:story.gameOrder": {
+  "nodes": 16,
+  "xExact": 16,
+  "yExact": 16,
+  "layoutMs": 0.1
+ },
+ "minecraft:story.idOrder": {
+  "nodes": 16,
+  "xExact": 16,
+  "yExact": 4,
+  "layoutMs": 0.08
+ },
+ "msm_b600:hidden_root.gameOrder": {
+  "nodes": 1,
+  "xExact": 1,
+  "yExact": 1,
+  "layoutMs": 0
+ },
+ "msm_b600:hidden_root.idOrder": {
+  "nodes": 1,
+  "xExact": 1,
+  "yExact": 1,
+  "layoutMs": 0
+ },
+ "msm_b600:tab.gameOrder": {
+  "nodes": 15,
+  "xExact": 15,
+  "yExact": 15,
+  "layoutMs": 0.05
+ },
+ "msm_b600:tab.idOrder": {
+  "nodes": 15,
+  "xExact": 15,
+  "yExact": 2,
+  "layoutMs": 0.07
+ }
+}

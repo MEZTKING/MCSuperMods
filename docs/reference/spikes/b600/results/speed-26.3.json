@@ -1,0 +1,75 @@
+{
+ "parseAllMs": 28,
+ "loot": {
+  "chests/abandoned_camp_common_chest": {
+   "bytes": 15389,
+   "medianMs": 29.8,
+   "worstMs": 86.8,
+   "unknown": {
+    "condition:location_check": 40000
+   }
+  },
+  "chests/bastion_other": {
+   "bytes": 11090,
+   "medianMs": 17.8,
+   "worstMs": 31.4,
+   "unknown": {}
+  },
+  "entities/sheep": {
+   "bytes": 10787,
+   "medianMs": 10.2,
+   "worstMs": 10.6,
+   "unknown": {
+    "condition:entity_properties": 90000
+   }
+  },
+  "chests/ancient_city": {
+   "bytes": 9125,
+   "medianMs": 83.8,
+   "worstMs": 100.4,
+   "unknown": {
+    "function:set_potion": 2294
+   }
+  },
+  "shearing/sheep": {
+   "bytes": 8961,
+   "medianMs": 4.5,
+   "worstMs": 4.6,
+   "unknown": {
+    "condition:entity_properties": 80000
+   }
+  },
+  "chests/end_city_treasure": {
+   "bytes": 8628,
+   "medianMs": 186.8,
+   "worstMs": 247.9,
+   "unknown": {}
+  },
+  "chests/jungle_temple": {
+   "bytes": 3895,
+   "medianMs": 14.2,
+   "worstMs": 31.3,
+   "unknown": {}
+  }
+ },
+ "tags.item": {
+  "count": 236,
+  "allMs": 0.9,
+  "largest": "sulfur_cube_swallowable",
+  "members": 339,
+  "largestMs": 0.053
+ },
+ "tags.block": {
+  "count": 300,
+  "allMs": 3,
+  "largest": "blocks_fluid_flow",
+  "members": 1026,
+  "largestMs": 0.121
+ },
+ "advancementTree": {
+  "tab": "adventure/root",
+  "nodes": 47,
+  "layoutMs": 0.09,
+  "filesInFolder": 1866
+ }
+}

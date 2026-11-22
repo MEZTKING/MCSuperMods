@@ -1,0 +1,37 @@
+{
+ "selectWorstPp": 1.33,
+ "selectWorstAt": "L31 5",
+ "costWorstPp": 0.77,
+ "costWorstAt": "shelves 30 slot 0 cost 7",
+ "available": {
+  "available.L01": [],
+  "available.L05": [
+   1
+  ],
+  "available.L10": [
+   1
+  ],
+  "available.L13": [
+   2
+  ],
+  "available.L21": [
+   3
+  ],
+  "available.L29": [
+   4
+  ],
+  "available.L30": [
+   4
+  ],
+  "available.L37": [
+   5
+  ],
+  "available.L45": [
+   5
+  ],
+  "available.L53": [
+   5
+  ],
+  "available.L61": []
+ }
+}

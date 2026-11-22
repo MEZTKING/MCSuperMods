@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests",
+  "description": "B600 spike (throwaway): only the spike's GameTests.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.mcsupermods.runtime.gametest.ScriptLogs"
+    ],
+    "fabric-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike600.B600LootGameTest",
+      "dev.mcsupermods.runtime.gametest.spike600.B600DataGameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike600.B600ClientGameTest"
+    ]
+  },
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

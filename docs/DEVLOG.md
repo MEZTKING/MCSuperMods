@@ -8442,3 +8442,19 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 - The main session: CI run 45057592110 on 9c6ba94, then `main` to 9c6ba94 and the 1.5.4 test build; then one full CI run on the branch tip (B589, B592 and this close have had none) and a clean-worktree run.
 - Live views 2 (`docs/PLAN-live-views.md`, spike B600) beside the game modes plan's waves 0 and 1 (B547, B548, then B549, B550 with plugin API 1.22.0).
 - Small follow-ups beside a wave: the missing notes (WL18, the border shift, "about right" when nothing grows), the Height range bounds, warming the worker, deep water on Walk in it, the first-run card under the picker, the world cards' drawn still, the Studio host context for third-party kinds, the App-level Settings link from banners, the `playGameDir` lookup, projects already upgraded with `default_block`, the `runAfterDelay` look; deepslate 0.27.3 after 2026-11-30.
+
+## 2026-11-22 — executor — B600 spike: data views against the real game
+
+**What**
+- Answered 2S1–2S15 of `docs/PLAN-live-views.md` (batch 2) on 26.3 and 26.4-snapshot-7; evidence, answers and the go or no-go per ADR 0120 decision in `docs/reference/spikes/b600/README.md`, numbers in its `results/`, the throwaway code in its `spike-src/`. A "B600" block under the plan's "Notes from implementation" carries the type lists, the jar folders, the command list, the tolerance and the interface for B601.
+- Server GameTests (a throwaway spike in the runtime's GameTest source set, its `fabric.mod.json` replaced for the run): MSM's own fixture pack `msm_b600` rolled 10,000 times a case through `loot insert` (loot, `mine` with five tools, `kill` with Looting 0, 1, 3), 2,000 explosions per case, predicates by `execute if predicate` in set-up situations, item modifiers by `item modify`, tags, advancement positions, death lines, chat decorations, enchantment names and the enchanting table. A client GameTest recorded the widgets of six fixture dialogs and the client's advancement tree. Node: a throwaway loot evaluator against the game's rolls, a tidy tree against the game's positions, speeds in a worker thread, the command share of the library's functions, extraction time.
+- Signatures by `javap` only; vanilla data read into the scratchpad at run time and deleted; kept results stripped of game strings and vanilla positions; no screenshot kept. Spike code, fixture, the replaced `fabric.mod.json` and the throwaway Vitest files removed from `engine-mod/` and `packages/sim/test/`; build outputs deleted.
+
+**Decisions**
+- Go on D2 to D9, D11 and D12 of ADR 0120; D10 already done by ADR 0123 (renderer 17.6 of 19 MB, no saving needed). Every measured loot type, including all bonus formulas and `enchant_with_levels`, matched the game within 1.43 percentage points; none goes to "only in the game" for want of a match.
+- 2L1 tolerance: 2 points per outcome at 10,000 game rolls against at least 100,000 seeded MSM rolls (3 points for 2,000-roll explosion cases).
+- The advancement layout is a tidy tree in the game's own sibling order, which differs by version and between server and client: 2L5 (about right) stands.
+- Functions: 74 % of the library's and fixtures' command lines with the draft list, 89 % with a few additions; reserve B647 is not needed before B613.
+
+**Next**
+- Main session: B601 (stubs from the interface in the plan's B600 notes), B603 (the 25 jar folders), then wave 2. Follow-ups outside this brief: the validators and schema forms should refuse a predicate or item modifier file that is a list or a bare id (the server will not start); `docs/reference/spikes/README.md` needs a `b600/` line.

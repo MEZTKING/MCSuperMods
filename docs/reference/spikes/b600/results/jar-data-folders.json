@@ -1,0 +1,806 @@
+{
+ "26.3": {
+  "advancement": {
+   "files": 1866,
+   "bytes": 1313029,
+   "zipped": 420400
+  },
+  "banner_pattern": {
+   "files": 43,
+   "bytes": 4340,
+   "zipped": 3437
+  },
+  "block_transformer": {
+   "files": 3,
+   "bytes": 62923,
+   "zipped": 2515
+  },
+  "cat_sound_variant": {
+   "files": 2,
+   "bytes": 2118,
+   "zipped": 383
+  },
+  "cat_variant": {
+   "files": 11,
+   "bytes": 2185,
+   "zipped": 1253
+  },
+  "chat_type": {
+   "files": 7,
+   "bytes": 1943,
+   "zipped": 883
+  },
+  "chicken_sound_variant": {
+   "files": 2,
+   "bytes": 1004,
+   "zipped": 259
+  },
+  "chicken_variant": {
+   "files": 3,
+   "bytes": 836,
+   "zipped": 435
+  },
+  "context_float_provider": {
+   "files": 4,
+   "bytes": 208,
+   "zipped": 122
+  },
+  "context_int_provider": {
+   "files": 26,
+   "bytes": 6974,
+   "zipped": 3338
+  },
+  "cow_sound_variant": {
+   "files": 2,
+   "bytes": 404,
+   "zipped": 169
+  },
+  "cow_variant": {
+   "files": 3,
+   "bytes": 807,
+   "zipped": 431
+  },
+  "damage_type": {
+   "files": 51,
+   "bytes": 5411,
+   "zipped": 4615
+  },
+  "datapacks": {
+   "files": 106,
+   "bytes": 108849,
+   "zipped": 30935
+  },
+  "decorated_pot_pattern": {
+   "files": 23,
+   "bytes": 1192,
+   "zipped": 1163
+  },
+  "dialog": {
+   "files": 3,
+   "bytes": 980,
+   "zipped": 495
+  },
+  "dimension_type": {
+   "files": 4,
+   "bytes": 6420,
+   "zipped": 2148
+  },
+  "enchantment": {
+   "files": 43,
+   "bytes": 51148,
+   "zipped": 15682
+  },
+  "enchantment_provider": {
+   "files": 7,
+   "bytes": 666,
+   "zipped": 520
+  },
+  "frog_variant": {
+   "files": 3,
+   "bytes": 585,
+   "zipped": 373
+  },
+  "instrument": {
+   "files": 8,
+   "bytes": 1406,
+   "zipped": 998
+  },
+  "jukebox_song": {
+   "files": 22,
+   "bytes": 3936,
+   "zipped": 2914
+  },
+  "loot_table": {
+   "files": 1447,
+   "bytes": 1056224,
+   "zipped": 286242
+  },
+  "painting_variant": {
+   "files": 51,
+   "bytes": 12344,
+   "zipped": 6481
+  },
+  "pig_sound_variant": {
+   "files": 3,
+   "bytes": 1704,
+   "zipped": 406
+  },
+  "pig_variant": {
+   "files": 3,
+   "bytes": 788,
+   "zipped": 427
+  },
+  "predicate": {
+   "files": 3,
+   "bytes": 451,
+   "zipped": 272
+  },
+  "recipe": {
+   "files": 2042,
+   "bytes": 553819,
+   "zipped": 276419
+  },
+  "structure": {
+   "files": 1511,
+   "bytes": 4236847,
+   "zipped": 2782235
+  },
+  "sulfur_cube_archetype": {
+   "files": 12,
+   "bytes": 16512,
+   "zipped": 4654
+  },
+  "tags/banner_pattern": {
+   "files": 11,
+   "bytes": 1465,
+   "zipped": 647
+  },
+  "tags/block": {
+   "files": 300,
+   "bytes": 98216,
+   "zipped": 30365
+  },
+  "tags/damage_type": {
+   "files": 36,
+   "bytes": 6051,
+   "zipped": 2983
+  },
+  "tags/dialog": {
+   "files": 2,
+   "bytes": 36,
+   "zipped": 40
+  },
+  "tags/enchantment": {
+   "files": 22,
+   "bytes": 4035,
+   "zipped": 1860
+  },
+  "tags/entity_type": {
+   "files": 49,
+   "bytes": 7899,
+   "zipped": 3799
+  },
+  "tags/fluid": {
+   "files": 10,
+   "bytes": 492,
+   "zipped": 437
+  },
+  "tags/game_event": {
+   "files": 5,
+   "bytes": 3622,
+   "zipped": 930
+  },
+  "tags/instrument": {
+   "files": 3,
+   "bytes": 398,
+   "zipped": 216
+  },
+  "tags/item": {
+   "files": 236,
+   "bytes": 57714,
+   "zipped": 20637
+  },
+  "tags/painting_variant": {
+   "files": 1,
+   "bytes": 1187,
+   "zipped": 304
+  },
+  "tags/point_of_interest_type": {
+   "files": 3,
+   "bytes": 540,
+   "zipped": 256
+  },
+  "tags/potion": {
+   "files": 5,
+   "bytes": 1456,
+   "zipped": 413
+  },
+  "tags/timeline": {
+   "files": 4,
+   "bytes": 270,
+   "zipped": 218
+  },
+  "tags/villager_trade": {
+   "files": 73,
+   "bytes": 22100,
+   "zipped": 7544
+  },
+  "tags/worldgen/biome": {
+   "files": 86,
+   "bytes": 13942,
+   "zipped": 6450
+  },
+  "tags/worldgen/feature": {
+   "files": 1,
+   "bytes": 276,
+   "zipped": 108
+  },
+  "tags/worldgen/flat_level_generator_preset": {
+   "files": 1,
+   "bytes": 284,
+   "zipped": 130
+  },
+  "tags/worldgen/structure": {
+   "files": 33,
+   "bytes": 3040,
+   "zipped": 1956
+  },
+  "tags/worldgen/world_preset": {
+   "files": 2,
+   "bytes": 246,
+   "zipped": 162
+  },
+  "test_environment": {
+   "files": 1,
+   "bytes": 53,
+   "zipped": 52
+  },
+  "test_instance": {
+   "files": 1,
+   "bytes": 204,
+   "zipped": 120
+  },
+  "timeline": {
+   "files": 4,
+   "bytes": 12152,
+   "zipped": 1841
+  },
+  "trade_set": {
+   "files": 68,
+   "bytes": 8334,
+   "zipped": 5956
+  },
+  "trial_spawner": {
+   "files": 28,
+   "bytes": 11992,
+   "zipped": 5686
+  },
+  "trim_material": {
+   "files": 11,
+   "bytes": 1557,
+   "zipped": 1173
+  },
+  "trim_pattern": {
+   "files": 18,
+   "bytes": 2242,
+   "zipped": 1680
+  },
+  "villager_trade": {
+   "files": 391,
+   "bytes": 96297,
+   "zipped": 53856
+  },
+  "wolf_sound_variant": {
+   "files": 7,
+   "bytes": 5658,
+   "zipped": 1137
+  },
+  "wolf_variant": {
+   "files": 9,
+   "bytes": 4752,
+   "zipped": 1566
+  },
+  "world_clock": {
+   "files": 2,
+   "bytes": 4,
+   "zipped": 8
+  },
+  "worldgen/biome": {
+   "files": 67,
+   "bytes": 288500,
+   "zipped": 57140
+  },
+  "worldgen/block_state_provider": {
+   "files": 8,
+   "bytes": 3306,
+   "zipped": 1510
+  },
+  "worldgen/carver": {
+   "files": 4,
+   "bytes": 3336,
+   "zipped": 1105
+  },
+  "worldgen/density_function": {
+   "files": 55,
+   "bytes": 328221,
+   "zipped": 19860
+  },
+  "worldgen/feature": {
+   "files": 240,
+   "bytes": 321555,
+   "zipped": 60311
+  },
+  "worldgen/flat_level_generator_preset": {
+   "files": 9,
+   "bytes": 4709,
+   "zipped": 1745
+  },
+  "worldgen/material_condition": {
+   "files": 8,
+   "bytes": 1051,
+   "zipped": 774
+  },
+  "worldgen/material_rule": {
+   "files": 42,
+   "bytes": 58834,
+   "zipped": 9119
+  },
+  "worldgen/multi_noise_biome_source_parameter_list": {
+   "files": 2,
+   "bytes": 71,
+   "zipped": 75
+  },
+  "worldgen/noise": {
+   "files": 64,
+   "bytes": 6392,
+   "zipped": 4586
+  },
+  "worldgen/noise_settings": {
+   "files": 7,
+   "bytes": 26207,
+   "zipped": 5014
+  },
+  "worldgen/placed_feature": {
+   "files": 273,
+   "bytes": 179255,
+   "zipped": 58327
+  },
+  "worldgen/processor_list": {
+   "files": 40,
+   "bytes": 68898,
+   "zipped": 10351
+  },
+  "worldgen/structure": {
+   "files": 52,
+   "bytes": 24104,
+   "zipped": 11546
+  },
+  "worldgen/structure_set": {
+   "files": 21,
+   "bytes": 7882,
+   "zipped": 3467
+  },
+  "worldgen/template_pool": {
+   "files": 245,
+   "bytes": 669927,
+   "zipped": 54669
+  },
+  "worldgen/world_preset": {
+   "files": 7,
+   "bytes": 6947,
+   "zipped": 1435
+  },
+  "zombie_nautilus_variant": {
+   "files": 2,
+   "bytes": 402,
+   "zipped": 258
+  }
+ },
+ "26.4-snapshot-7": {
+  "advancement": {
+   "files": 1919,
+   "bytes": 1348464,
+   "zipped": 432315
+  },
+  "banner_pattern": {
+   "files": 43,
+   "bytes": 4340,
+   "zipped": 3437
+  },
+  "block_sound_set": {
+   "files": 137,
+   "bytes": 35331,
+   "zipped": 12664
+  },
+  "block_transformer": {
+   "files": 3,
+   "bytes": 62923,
+   "zipped": 2515
+  },
+  "cat_sound_variant": {
+   "files": 2,
+   "bytes": 2118,
+   "zipped": 383
+  },
+  "cat_variant": {
+   "files": 11,
+   "bytes": 2185,
+   "zipped": 1253
+  },
+  "chat_type": {
+   "files": 7,
+   "bytes": 1943,
+   "zipped": 883
+  },
+  "chicken_sound_variant": {
+   "files": 2,
+   "bytes": 1010,
+   "zipped": 260
+  },
+  "chicken_variant": {
+   "files": 3,
+   "bytes": 836,
+   "zipped": 435
+  },
+  "context_float_provider": {
+   "files": 4,
+   "bytes": 208,
+   "zipped": 122
+  },
+  "context_int_provider": {
+   "files": 26,
+   "bytes": 6974,
+   "zipped": 3338
+  },
+  "cow_sound_variant": {
+   "files": 2,
+   "bytes": 404,
+   "zipped": 169
+  },
+  "cow_variant": {
+   "files": 3,
+   "bytes": 807,
+   "zipped": 431
+  },
+  "damage_type": {
+   "files": 51,
+   "bytes": 5411,
+   "zipped": 4615
+  },
+  "datapacks": {
+   "files": 106,
+   "bytes": 108849,
+   "zipped": 30939
+  },
+  "decorated_pot_pattern": {
+   "files": 23,
+   "bytes": 1192,
+   "zipped": 1163
+  },
+  "dialog": {
+   "files": 3,
+   "bytes": 980,
+   "zipped": 495
+  },
+  "dimension_type": {
+   "files": 4,
+   "bytes": 6514,
+   "zipped": 2172
+  },
+  "enchantment": {
+   "files": 43,
+   "bytes": 51229,
+   "zipped": 15697
+  },
+  "enchantment_provider": {
+   "files": 7,
+   "bytes": 666,
+   "zipped": 520
+  },
+  "frog_variant": {
+   "files": 3,
+   "bytes": 585,
+   "zipped": 373
+  },
+  "instrument": {
+   "files": 8,
+   "bytes": 1406,
+   "zipped": 998
+  },
+  "jukebox_song": {
+   "files": 23,
+   "bytes": 4115,
+   "zipped": 3047
+  },
+  "loot_table": {
+   "files": 1473,
+   "bytes": 1068595,
+   "zipped": 290916
+  },
+  "painting_variant": {
+   "files": 51,
+   "bytes": 12344,
+   "zipped": 6481
+  },
+  "pig_sound_variant": {
+   "files": 3,
+   "bytes": 1704,
+   "zipped": 406
+  },
+  "pig_variant": {
+   "files": 3,
+   "bytes": 788,
+   "zipped": 427
+  },
+  "predicate": {
+   "files": 3,
+   "bytes": 451,
+   "zipped": 272
+  },
+  "recipe": {
+   "files": 2107,
+   "bytes": 568145,
+   "zipped": 284143
+  },
+  "structure": {
+   "files": 1511,
+   "bytes": 4233493,
+   "zipped": 2779065
+  },
+  "sulfur_cube_archetype": {
+   "files": 13,
+   "bytes": 19539,
+   "zipped": 5401
+  },
+  "tags/banner_pattern": {
+   "files": 11,
+   "bytes": 1465,
+   "zipped": 647
+  },
+  "tags/block": {
+   "files": 315,
+   "bytes": 102305,
+   "zipped": 31589
+  },
+  "tags/block_sound_set": {
+   "files": 1,
+   "bytes": 151,
+   "zipped": 73
+  },
+  "tags/damage_type": {
+   "files": 37,
+   "bytes": 6069,
+   "zipped": 3003
+  },
+  "tags/dialog": {
+   "files": 2,
+   "bytes": 36,
+   "zipped": 40
+  },
+  "tags/enchantment": {
+   "files": 22,
+   "bytes": 4035,
+   "zipped": 1860
+  },
+  "tags/entity_type": {
+   "files": 53,
+   "bytes": 8480,
+   "zipped": 4101
+  },
+  "tags/fluid": {
+   "files": 11,
+   "bytes": 474,
+   "zipped": 452
+  },
+  "tags/game_event": {
+   "files": 5,
+   "bytes": 3622,
+   "zipped": 930
+  },
+  "tags/instrument": {
+   "files": 3,
+   "bytes": 398,
+   "zipped": 216
+  },
+  "tags/item": {
+   "files": 241,
+   "bytes": 59118,
+   "zipped": 21019
+  },
+  "tags/painting_variant": {
+   "files": 1,
+   "bytes": 1187,
+   "zipped": 304
+  },
+  "tags/point_of_interest_type": {
+   "files": 3,
+   "bytes": 540,
+   "zipped": 256
+  },
+  "tags/potion": {
+   "files": 5,
+   "bytes": 1513,
+   "zipped": 422
+  },
+  "tags/timeline": {
+   "files": 4,
+   "bytes": 270,
+   "zipped": 218
+  },
+  "tags/villager_trade": {
+   "files": 73,
+   "bytes": 22203,
+   "zipped": 7555
+  },
+  "tags/worldgen/biome": {
+   "files": 89,
+   "bytes": 14443,
+   "zipped": 6656
+  },
+  "tags/worldgen/feature": {
+   "files": 1,
+   "bytes": 276,
+   "zipped": 108
+  },
+  "tags/worldgen/flat_level_generator_preset": {
+   "files": 1,
+   "bytes": 284,
+   "zipped": 130
+  },
+  "tags/worldgen/structure": {
+   "files": 33,
+   "bytes": 3040,
+   "zipped": 1956
+  },
+  "tags/worldgen/world_preset": {
+   "files": 2,
+   "bytes": 246,
+   "zipped": 162
+  },
+  "test_environment": {
+   "files": 1,
+   "bytes": 53,
+   "zipped": 52
+  },
+  "test_instance": {
+   "files": 1,
+   "bytes": 204,
+   "zipped": 120
+  },
+  "timeline": {
+   "files": 4,
+   "bytes": 12152,
+   "zipped": 1841
+  },
+  "trade_set": {
+   "files": 68,
+   "bytes": 8334,
+   "zipped": 5956
+  },
+  "trial_spawner": {
+   "files": 28,
+   "bytes": 11992,
+   "zipped": 5686
+  },
+  "trim_material": {
+   "files": 11,
+   "bytes": 1557,
+   "zipped": 1173
+  },
+  "trim_pattern": {
+   "files": 18,
+   "bytes": 2242,
+   "zipped": 1680
+  },
+  "villager_trade": {
+   "files": 393,
+   "bytes": 96607,
+   "zipped": 54069
+  },
+  "wolf_sound_variant": {
+   "files": 7,
+   "bytes": 5658,
+   "zipped": 1137
+  },
+  "wolf_variant": {
+   "files": 9,
+   "bytes": 4752,
+   "zipped": 1566
+  },
+  "world_clock": {
+   "files": 2,
+   "bytes": 4,
+   "zipped": 8
+  },
+  "worldgen/biome": {
+   "files": 68,
+   "bytes": 294959,
+   "zipped": 58272
+  },
+  "worldgen/block_state_provider": {
+   "files": 8,
+   "bytes": 3306,
+   "zipped": 1510
+  },
+  "worldgen/carver": {
+   "files": 4,
+   "bytes": 3336,
+   "zipped": 1105
+  },
+  "worldgen/density_function": {
+   "files": 55,
+   "bytes": 330899,
+   "zipped": 20120
+  },
+  "worldgen/feature": {
+   "files": 261,
+   "bytes": 351296,
+   "zipped": 66518
+  },
+  "worldgen/flat_level_generator_preset": {
+   "files": 9,
+   "bytes": 4709,
+   "zipped": 1745
+  },
+  "worldgen/material_condition": {
+   "files": 8,
+   "bytes": 1051,
+   "zipped": 774
+  },
+  "worldgen/material_rule": {
+   "files": 44,
+   "bytes": 61942,
+   "zipped": 9616
+  },
+  "worldgen/multi_noise_biome_source_parameter_list": {
+   "files": 2,
+   "bytes": 71,
+   "zipped": 75
+  },
+  "worldgen/noise": {
+   "files": 65,
+   "bytes": 6534,
+   "zipped": 4687
+  },
+  "worldgen/noise_settings": {
+   "files": 7,
+   "bytes": 28126,
+   "zipped": 5159
+  },
+  "worldgen/placed_feature": {
+   "files": 299,
+   "bytes": 197912,
+   "zipped": 64609
+  },
+  "worldgen/processor_list": {
+   "files": 40,
+   "bytes": 68898,
+   "zipped": 10351
+  },
+  "worldgen/structure": {
+   "files": 52,
+   "bytes": 24104,
+   "zipped": 11546
+  },
+  "worldgen/structure_set": {
+   "files": 21,
+   "bytes": 7882,
+   "zipped": 3467
+  },
+  "worldgen/template_pool": {
+   "files": 245,
+   "bytes": 669927,
+   "zipped": 54669
+  },
+  "worldgen/world_preset": {
+   "files": 7,
+   "bytes": 6947,
+   "zipped": 1435
+  },
+  "zombie_nautilus_variant": {
+   "files": 2,
+   "bytes": 402,
+   "zipped": 258
+  }
+ }
+}

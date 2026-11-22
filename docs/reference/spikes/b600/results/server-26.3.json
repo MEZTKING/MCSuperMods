@@ -1,0 +1,4288 @@
+{
+ "adv.ours": {
+  "msm_b600:hidden_root/root": {
+   "parent": null,
+   "root": "msm_b600:hidden_root/root",
+   "x": 0,
+   "y": 0,
+   "before": "0.0,0.0",
+   "frame": "task",
+   "hidden": true,
+   "children": false
+  },
+  "msm_b600:plain/child": {
+   "parent": "msm_b600:plain/root",
+   "root": "msm_b600:plain/root",
+   "x": 0,
+   "y": 0,
+   "before": "0.0,0.0",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:plain/root": {
+   "parent": null,
+   "root": "msm_b600:plain/root",
+   "x": 0,
+   "y": 0,
+   "before": "0.0,0.0",
+   "display": false,
+   "children": true
+  },
+  "msm_b600:tab/a": {
+   "parent": "msm_b600:tab/root",
+   "root": "msm_b600:tab/root",
+   "x": 1,
+   "y": 1,
+   "before": "1.0,1.0",
+   "frame": "task",
+   "hidden": false,
+   "children": true
+  },
+  "msm_b600:tab/a1": {
+   "parent": "msm_b600:tab/a",
+   "root": "msm_b600:tab/root",
+   "x": 2,
+   "y": 1,
+   "before": "2.0,1.0",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/a2": {
+   "parent": "msm_b600:tab/a",
+   "root": "msm_b600:tab/root",
+   "x": 2,
+   "y": 2,
+   "before": "2.0,2.0",
+   "frame": "task",
+   "hidden": false,
+   "children": true
+  },
+  "msm_b600:tab/a2x": {
+   "parent": "msm_b600:tab/a2",
+   "root": "msm_b600:tab/root",
+   "x": 3,
+   "y": 2.5,
+   "before": "3.0,2.5",
+   "frame": "task",
+   "hidden": true,
+   "children": false
+  },
+  "msm_b600:tab/a2y": {
+   "parent": "msm_b600:tab/a2",
+   "root": "msm_b600:tab/root",
+   "x": 3,
+   "y": 1.5,
+   "before": "3.0,1.5",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/a3": {
+   "parent": "msm_b600:tab/a",
+   "root": "msm_b600:tab/root",
+   "x": 2,
+   "y": 0,
+   "before": "2.0,0.0",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/b": {
+   "parent": "msm_b600:tab/root",
+   "root": "msm_b600:tab/root",
+   "x": 1,
+   "y": 5.5,
+   "before": "1.0,5.5",
+   "frame": "goal",
+   "hidden": false,
+   "children": true
+  },
+  "msm_b600:tab/b1": {
+   "parent": "msm_b600:tab/b",
+   "root": "msm_b600:tab/root",
+   "x": 2,
+   "y": 5.5,
+   "before": "2.0,5.5",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/c": {
+   "parent": "msm_b600:tab/root",
+   "root": "msm_b600:tab/root",
+   "x": 1,
+   "y": 4,
+   "before": "1.0,4.0",
+   "frame": "challenge",
+   "hidden": false,
+   "children": true
+  },
+  "msm_b600:tab/c1": {
+   "parent": "msm_b600:tab/c",
+   "root": "msm_b600:tab/root",
+   "x": 2,
+   "y": 4.5,
+   "before": "2.0,4.5",
+   "frame": "task",
+   "hidden": false,
+   "children": true
+  },
+  "msm_b600:tab/c1a": {
+   "parent": "msm_b600:tab/c1",
+   "root": "msm_b600:tab/root",
+   "x": 3,
+   "y": 3.5,
+   "before": "3.0,3.5",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/c1b": {
+   "parent": "msm_b600:tab/c1",
+   "root": "msm_b600:tab/root",
+   "x": 3,
+   "y": 4.5,
+   "before": "3.0,4.5",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/c1c": {
+   "parent": "msm_b600:tab/c1",
+   "root": "msm_b600:tab/root",
+   "x": 3,
+   "y": 5.5,
+   "before": "3.0,5.5",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  },
+  "msm_b600:tab/nodisplay": {
+   "parent": "msm_b600:tab/c",
+   "root": "msm_b600:tab/root",
+   "x": 0,
+   "y": 0,
+   "before": "0.0,0.0",
+   "display": false,
+   "children": true
+  },
+  "msm_b600:tab/root": {
+   "parent": null,
+   "root": "msm_b600:tab/root",
+   "x": 0,
+   "y": 3.25,
+   "before": "0.0,3.25",
+   "frame": "task",
+   "hidden": false,
+   "children": true
+  },
+  "msm_b600:tab/under_nodisplay": {
+   "parent": "msm_b600:tab/nodisplay",
+   "root": "msm_b600:tab/root",
+   "x": 2,
+   "y": 3.5,
+   "before": "2.0,3.5",
+   "frame": "task",
+   "hidden": false,
+   "children": false
+  }
+ },
+ "adv.roots": [
+  "minecraft:adventure/root",
+  "msm_test:b533/granted",
+  "msm_test:b533/heart",
+  "minecraft:end/root",
+  "msm_b600:hidden_root/root",
+  "minecraft:husbandry/root",
+  "minecraft:nether/root",
+  "msm_b600:plain/root",
+  "minecraft:recipes/root",
+  "minecraft:story/root",
+  "msm_b600:tab/root"
+ ],
+ "chat": {
+  "minecraft:chat": {
+   "chat": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "chat.type.text"
+   },
+   "narration": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "chat.type.text.narrate"
+   }
+  },
+  "minecraft:emote_command": {
+   "chat": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "chat.type.emote"
+   },
+   "narration": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "chat.type.emote"
+   }
+  },
+  "minecraft:msg_command_incoming": {
+   "chat": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "commands.message.display.incoming",
+    "style": "{color=gray,italic}"
+   },
+   "narration": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "chat.type.text.narrate"
+   }
+  },
+  "msm_b600:shout": {
+   "chat": {
+    "args": [
+     {},
+     {},
+     {}
+    ],
+    "key": "msm_b600.shout",
+    "style": "{color=red,bold}"
+   },
+   "narration": {
+    "args": [
+     {},
+     {}
+    ],
+    "key": "msm_b600.shout.narrate"
+   }
+  }
+ },
+ "death": {
+  "minecraft:arrow": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.arrow"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.arrow"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.arrow.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.arrow"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.arrow.item"
+   }
+  },
+  "minecraft:bad_respawn_point": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.badRespawnPoint"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.badRespawnPoint"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.badRespawnPoint.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "args": [],
+        "key": "death.attack.badRespawnPoint.link"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{clickEvent=OpenUrl[uri=https://bugs.mojang.com/browse/MCPE-28723],hoverEvent=ShowText[value=literal{MCPE-28723}]}"
+     }
+    ],
+    "key": "death.attack.badRespawnPoint.message"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "args": [],
+        "key": "death.attack.badRespawnPoint.link"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{clickEvent=OpenUrl[uri=https://bugs.mojang.com/browse/MCPE-28723],hoverEvent=ShowText[value=literal{MCPE-28723}]}"
+     }
+    ],
+    "key": "death.attack.badRespawnPoint.message"
+   }
+  },
+  "minecraft:fall": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.fall"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.fall"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.fall.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.fall"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.fall.item"
+   }
+  },
+  "minecraft:player_attack": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.player"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.player"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.player.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.player"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.player.item"
+   }
+  },
+  "msm_b600:zap": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap.item"
+   }
+  },
+  "msm_b600:zap_design": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_design"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_design"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_design.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "args": [],
+        "key": "death.attack.msm_b600_zap_design.link"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{clickEvent=OpenUrl[uri=https://bugs.mojang.com/browse/MCPE-28723],hoverEvent=ShowText[value=literal{MCPE-28723}]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_design.message"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "args": [],
+        "key": "death.attack.msm_b600_zap_design.link"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{clickEvent=OpenUrl[uri=https://bugs.mojang.com/browse/MCPE-28723],hoverEvent=ShowText[value=literal{MCPE-28723}]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_design.message"
+   }
+  },
+  "msm_b600:zap_fall": {
+   "none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_fall"
+   },
+   "mob": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [],
+      "key": "entity.minecraft.zombie",
+      "style": "{hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=<uuid>}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_fall"
+   },
+   "playerWithNamedItem": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_fall.item"
+   },
+   "tracker.none": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_fall"
+   },
+   "tracker.player": {
+    "args": [
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "style": "{clickEvent=SuggestCommand[command=/tell test-mock-player ],hoverEvent=ShowEntity[entity=net.minecraft.network.chat.HoverEvent$EntityTooltipInfo],insertion=test-mock-player}"
+     },
+     {
+      "args": [
+       {
+        "siblings": [
+         {}
+        ],
+        "style": "{italic}"
+       }
+      ],
+      "key": "chat.square_brackets",
+      "style": "{color=white,hoverEvent=ShowItem[item=ItemStackTemplate[item=Reference{ResourceKey[minecraft:item / minecraft:diamond_sword]=minecraft:diamond_sword}, count=1, components={minecraft:custom_name=>literal{Spiky}}]]}"
+     }
+    ],
+    "key": "death.attack.msm_b600_zap_fall.item"
+   }
+  }
+ },
+ "ench.names": {
+  "minecraft:binding_curse": [
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.4"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.5"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.6"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.7"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.8"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.9"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.10"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.11"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.binding_curse",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.12"
+     }
+    ],
+    "style": "{color=red}"
+   }
+  ],
+  "minecraft:binding_curse.costs": {
+   "01": "25..50"
+  },
+  "minecraft:binding_curse.weight": 1,
+  "minecraft:mending": [
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.4"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.5"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.6"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.7"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.8"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.9"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.10"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.11"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.mending",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.12"
+     }
+    ],
+    "style": "{color=gray}"
+   }
+  ],
+  "minecraft:mending.costs": {
+   "01": "25..75"
+  },
+  "minecraft:mending.weight": 2,
+  "minecraft:sharpness": [
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.1"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.4"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.5"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.6"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.7"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.8"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.9"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.10"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.11"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.12"
+     }
+    ],
+    "style": "{color=gray}"
+   }
+  ],
+  "minecraft:sharpness.costs": {
+   "01": "1..21",
+   "02": "12..32",
+   "03": "23..43",
+   "04": "34..54",
+   "05": "45..65"
+  },
+  "minecraft:sharpness.weight": 10,
+  "msm_b600:spike": [
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.1"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.4"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.5"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.6"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.7"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.8"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.9"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.10"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.11"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.12"
+     }
+    ],
+    "style": "{color=gray}"
+   }
+  ],
+  "msm_b600:spike.costs": {
+   "01": "5..25",
+   "02": "13..33",
+   "03": "21..41",
+   "04": "29..49",
+   "05": "37..57"
+  },
+  "msm_b600:spike.weight": 10,
+  "msm_b600:spike_curse": [
+   {
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.4"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.5"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.6"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.7"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.8"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.9"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.10"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.11"
+     }
+    ],
+    "style": "{color=red}"
+   },
+   {
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.12"
+     }
+    ],
+    "style": "{color=red}"
+   }
+  ],
+  "msm_b600:spike_curse.costs": {
+   "01": "5..25"
+  },
+  "msm_b600:spike_curse.weight": 10,
+  "msm_b600:spike_ten": [
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.1"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.4"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.5"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.6"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.7"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.8"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.9"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.10"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.11"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike_ten",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.12"
+     }
+    ],
+    "style": "{color=gray}"
+   }
+  ],
+  "msm_b600:spike_ten.costs": {
+   "10": "28..33",
+   "11": "31..36",
+   "12": "34..39",
+   "01": "1..6",
+   "02": "4..9",
+   "03": "7..12",
+   "04": "10..15",
+   "05": "13..18",
+   "06": "16..21",
+   "07": "19..24",
+   "08": "22..27",
+   "09": "25..30"
+  },
+  "msm_b600:spike_ten.weight": 10,
+  "tooltip.book": [
+   {
+    "siblings": [
+     {
+      "args": [],
+      "key": "item.minecraft.enchanted_book"
+     }
+    ],
+    "style": "{color=aqua}"
+   }
+  ],
+  "tooltip.sword": [
+   {
+    "siblings": [
+     {
+      "args": [],
+      "key": "item.minecraft.diamond_sword"
+     }
+    ],
+    "style": "{color=aqua}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.minecraft.sharpness",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.2"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "args": [],
+    "key": "enchantment.msm_b600.spike",
+    "siblings": [
+     {},
+     {
+      "args": [],
+      "key": "enchantment.level.3"
+     }
+    ],
+    "style": "{color=gray}"
+   },
+   {
+    "style": "{color=red}"
+   },
+   {},
+   {
+    "args": [],
+    "key": "item.modifiers.mainhand",
+    "style": "{color=gray}"
+   },
+   {
+    "siblings": [
+     {
+      "args": [
+       "7",
+       {
+        "args": [],
+        "key": "attribute.name.attack_damage"
+       }
+      ],
+      "key": "attribute.modifier.equals.0"
+     }
+    ],
+    "style": "{color=dark_green}"
+   },
+   {
+    "siblings": [
+     {
+      "args": [
+       "1.6",
+       {
+        "args": [],
+        "key": "attribute.name.attack_speed"
+       }
+      ],
+      "key": "attribute.modifier.equals.0"
+     }
+    ],
+    "style": "{color=dark_green}"
+   }
+  ]
+ },
+ "enchanting": {
+  "available.L01": [],
+  "available.L05": [
+   1
+  ],
+  "available.L10": [
+   1
+  ],
+  "available.L13": [
+   2
+  ],
+  "available.L21": [
+   3
+  ],
+  "available.L29": [
+   4
+  ],
+  "available.L30": [
+   4
+  ],
+  "available.L37": [
+   5
+  ],
+  "available.L45": [
+   5
+  ],
+  "available.L53": [
+   5
+  ],
+  "available.L61": [],
+  "cost.shelves0.slot0": {
+   "1": 6327,
+   "2": 3673
+  },
+  "cost.shelves0.slot1": {
+   "1": 1252,
+   "2": 1206,
+   "3": 2518,
+   "4": 1268,
+   "5": 2515,
+   "6": 1241
+  },
+  "cost.shelves0.slot2": {
+   "1": 1218,
+   "2": 1239,
+   "3": 1286,
+   "4": 1322,
+   "5": 1271,
+   "6": 1255,
+   "7": 1205,
+   "8": 1204
+  },
+  "cost.shelves15.slot0": {
+   "2": 84,
+   "3": 673,
+   "4": 1383,
+   "5": 1831,
+   "6": 1912,
+   "7": 1929,
+   "8": 1411,
+   "9": 701,
+   "10": 76
+  },
+  "cost.shelves15.slot1": {
+   "6": 90,
+   "7": 406,
+   "8": 292,
+   "9": 845,
+   "10": 524,
+   "11": 1268,
+   "12": 664,
+   "13": 1289,
+   "14": 585,
+   "15": 1237,
+   "16": 654,
+   "17": 997,
+   "18": 403,
+   "19": 519,
+   "20": 145,
+   "21": 82
+  },
+  "cost.shelves15.slot2": {
+   "30": 10000
+  },
+  "cost.shelves30.slot0": {
+   "2": 80,
+   "3": 679,
+   "4": 1380,
+   "5": 1864,
+   "6": 1874,
+   "7": 1937,
+   "8": 1409,
+   "9": 701,
+   "10": 76
+  },
+  "cost.shelves30.slot1": {
+   "6": 71,
+   "7": 412,
+   "8": 298,
+   "9": 867,
+   "10": 551,
+   "11": 1249,
+   "12": 597,
+   "13": 1250,
+   "14": 585,
+   "15": 1237,
+   "16": 617,
+   "17": 1056,
+   "18": 388,
+   "19": 562,
+   "20": 173,
+   "21": 87
+  },
+  "cost.shelves30.slot2": {
+   "30": 10000
+  },
+  "cost.shelves4.slot0": {
+   "1": 1523,
+   "2": 3483,
+   "3": 3507,
+   "4": 1487
+  },
+  "cost.shelves4.slot1": {
+   "3": 722,
+   "4": 713,
+   "5": 2268,
+   "6": 1272,
+   "7": 2537,
+   "8": 1001,
+   "9": 1234,
+   "10": 253
+  },
+  "cost.shelves4.slot2": {
+   "8": 5024,
+   "9": 1188,
+   "10": 1259,
+   "11": 1028,
+   "12": 753,
+   "13": 499,
+   "14": 249
+  },
+  "cost.shelves8.slot0": {
+   "1": 129,
+   "2": 1247,
+   "3": 2506,
+   "4": 3164,
+   "5": 2100,
+   "6": 854
+  },
+  "cost.shelves8.slot1": {
+   "4": 131,
+   "5": 684,
+   "6": 559,
+   "7": 1533,
+   "8": 969,
+   "9": 2217,
+   "10": 981,
+   "11": 1549,
+   "12": 547,
+   "13": 696,
+   "14": 134
+  },
+  "cost.shelves8.slot2": {
+   "16": 8585,
+   "17": 578,
+   "18": 422,
+   "19": 258,
+   "20": 157
+  },
+  "select.L01": {
+   "1": 3284,
+   "none": 6716
+  },
+  "select.L02": {
+   "1": 6530,
+   "none": 3470
+  },
+  "select.L03": {
+   "1": 8773,
+   "none": 1227
+  },
+  "select.L04": {
+   "1": 9942,
+   "none": 58
+  },
+  "select.L05": {
+   "1": 10000
+  },
+  "select.L06": {
+   "1": 9993,
+   "2": 7
+  },
+  "select.L07": {
+   "1": 9665,
+   "2": 335
+  },
+  "select.L08": {
+   "1": 8600,
+   "2": 1400
+  },
+  "select.L09": {
+   "1": 6420,
+   "2": 3580
+  },
+  "select.L10": {
+   "1": 3742,
+   "2": 6258
+  },
+  "select.L11": {
+   "1": 1529,
+   "2": 8471
+  },
+  "select.L12": {
+   "1": 408,
+   "2": 9592
+  },
+  "select.L13": {
+   "1": 59,
+   "2": 9936,
+   "3": 5
+  },
+  "select.L14": {
+   "2": 9840,
+   "3": 160
+  },
+  "select.L15": {
+   "2": 9348,
+   "3": 652
+  },
+  "select.L16": {
+   "2": 8146,
+   "3": 1854
+  },
+  "select.L17": {
+   "2": 6118,
+   "3": 3882
+  },
+  "select.L18": {
+   "2": 3963,
+   "3": 6037
+  },
+  "select.L19": {
+   "2": 2104,
+   "3": 7896
+  },
+  "select.L20": {
+   "2": 882,
+   "3": 9116,
+   "4": 2
+  },
+  "select.L21": {
+   "2": 255,
+   "3": 9670,
+   "4": 75
+  },
+  "select.L22": {
+   "2": 47,
+   "3": 9566,
+   "4": 387
+  },
+  "select.L23": {
+   "3": 8904,
+   "4": 1096
+  },
+  "select.L24": {
+   "3": 7703,
+   "4": 2297
+  },
+  "select.L25": {
+   "3": 5990,
+   "4": 4010
+  },
+  "select.L26": {
+   "3": 4245,
+   "4": 5755
+  },
+  "select.L27": {
+   "3": 2682,
+   "4": 7314,
+   "5": 4
+  },
+  "select.L28": {
+   "3": 1371,
+   "4": 8579,
+   "5": 50
+  },
+  "select.L29": {
+   "3": 617,
+   "4": 9144,
+   "5": 239
+  },
+  "select.L30": {
+   "3": 222,
+   "4": 9076,
+   "5": 702
+  },
+  "select.L31": {
+   "3": 43,
+   "4": 8276,
+   "5": 1681
+  },
+  "select.L32": {
+   "3": 5,
+   "4": 7289,
+   "5": 2706
+  },
+  "select.L33": {
+   "4": 5823,
+   "5": 4177
+  },
+  "select.L34": {
+   "4": 4330,
+   "5": 5670
+  },
+  "select.L35": {
+   "4": 2960,
+   "5": 7040
+  },
+  "select.L36": {
+   "4": 1816,
+   "5": 8184
+  },
+  "select.L37": {
+   "4": 1076,
+   "5": 8924
+  },
+  "select.L38": {
+   "4": 506,
+   "5": 9494
+  },
+  "select.L39": {
+   "4": 231,
+   "5": 9769
+  },
+  "select.L40": {
+   "4": 65,
+   "5": 9935
+  }
+ },
+ "explode.gray_wool.block.2": {
+  "n": 2000,
+  "ms": 1240,
+  "hist": {
+   "0": 959,
+   "1": 1041
+  }
+ },
+ "explode.gray_wool.block.4": {
+  "n": 2000,
+  "ms": 2497,
+  "hist": {
+   "0": 1528,
+   "1": 472
+  }
+ },
+ "explode.gray_wool.tnt.2": {
+  "n": 2000,
+  "ms": 1478,
+  "hist": {
+   "1": 2000
+  }
+ },
+ "explode.gray_wool.tnt.4": {
+  "n": 2000,
+  "ms": 2438,
+  "hist": {
+   "1": 2000
+  }
+ },
+ "explode.light_gray_wool.block.2": {
+  "n": 2000,
+  "ms": 1257,
+  "hist": {
+   "0": 1853,
+   "1": 129,
+   "2": 18
+  }
+ },
+ "explode.light_gray_wool.block.4": {
+  "n": 2000,
+  "ms": 2620,
+  "hist": {
+   "0": 1949,
+   "1": 49,
+   "2": 2
+  }
+ },
+ "explode.light_gray_wool.tnt.2": {
+  "n": 2000,
+  "ms": 1266,
+  "hist": {
+   "0": 1536,
+   "1": 243,
+   "2": 221
+  }
+ },
+ "explode.light_gray_wool.tnt.4": {
+  "n": 2000,
+  "ms": 2502,
+  "hist": {
+   "0": 1540,
+   "1": 243,
+   "2": 217
+  }
+ },
+ "explode.pink_wool.block.2": {
+  "n": 2000,
+  "ms": 2908,
+  "hist": {
+   "0": 3,
+   "1": 19,
+   "2": 94,
+   "3": 237,
+   "4": 414,
+   "5": 481,
+   "6": 419,
+   "7": 235,
+   "8": 82,
+   "9": 16
+  }
+ },
+ "explode.pink_wool.block.4": {
+  "n": 2000,
+  "ms": 2963,
+  "hist": {
+   "0": 103,
+   "1": 398,
+   "2": 607,
+   "3": 470,
+   "4": 279,
+   "5": 104,
+   "6": 29,
+   "7": 10
+  }
+ },
+ "explode.pink_wool.tnt.2": {
+  "n": 2000,
+  "ms": 1437,
+  "hist": {
+   "10": 2000
+  }
+ },
+ "explode.pink_wool.tnt.4": {
+  "n": 2000,
+  "ms": 3481,
+  "hist": {
+   "10": 2000
+  }
+ },
+ "kill.looting.console": {
+  "n": 10000,
+  "ms": 76,
+  "total": {
+   "minecraft:emerald": 1004,
+   "minecraft:rotten_flesh": 10004
+  },
+  "hist": {
+   "minecraft:emerald": {
+    "0": 8996,
+    "1": 1004
+   },
+   "minecraft:rotten_flesh": {
+    "0": 3316,
+    "1": 3364,
+    "2": 3320
+   }
+  }
+ },
+ "kill.looting.player.looting0": {
+  "n": 10000,
+  "ms": 141,
+  "total": {
+   "minecraft:bone": 10000,
+   "minecraft:emerald": 1009,
+   "minecraft:rotten_flesh": 9934
+  },
+  "hist": {
+   "minecraft:bone": {
+    "1": 10000
+   },
+   "minecraft:emerald": {
+    "0": 8991,
+    "1": 1009
+   },
+   "minecraft:rotten_flesh": {
+    "0": 3364,
+    "1": 3338,
+    "2": 3298
+   }
+  }
+ },
+ "kill.looting.player.looting1": {
+  "n": 10000,
+  "ms": 76,
+  "total": {
+   "minecraft:bone": 10000,
+   "minecraft:emerald": 2016,
+   "minecraft:rotten_flesh": 14840
+  },
+  "hist": {
+   "minecraft:bone": {
+    "1": 10000
+   },
+   "minecraft:emerald": {
+    "0": 7984,
+    "1": 2016
+   },
+   "minecraft:rotten_flesh": {
+    "0": 1755,
+    "1": 3286,
+    "2": 3323,
+    "3": 1636
+   }
+  }
+ },
+ "kill.looting.player.looting3": {
+  "n": 10000,
+  "ms": 71,
+  "total": {
+   "minecraft:bone": 10000,
+   "minecraft:emerald": 3972,
+   "minecraft:rotten_flesh": 25142
+  },
+  "hist": {
+   "minecraft:bone": {
+    "1": 10000
+   },
+   "minecraft:emerald": {
+    "0": 6028,
+    "1": 3972
+   },
+   "minecraft:rotten_flesh": {
+    "0": 587,
+    "1": 1590,
+    "2": 2736,
+    "3": 2814,
+    "4": 1727,
+    "5": 546
+   }
+  }
+ },
+ "kill.looting_limit.console": {
+  "n": 10000,
+  "ms": 34,
+  "total": {
+   "minecraft:rotten_flesh": 10000
+  },
+  "hist": {
+   "minecraft:rotten_flesh": {
+    "1": 10000
+   }
+  }
+ },
+ "kill.looting_limit.player.looting0": {
+  "n": 10000,
+  "ms": 42,
+  "total": {
+   "minecraft:rotten_flesh": 10000
+  },
+  "hist": {
+   "minecraft:rotten_flesh": {
+    "1": 10000
+   }
+  }
+ },
+ "kill.looting_limit.player.looting1": {
+  "n": 10000,
+  "ms": 41,
+  "total": {
+   "minecraft:rotten_flesh": 23305
+  },
+  "hist": {
+   "minecraft:rotten_flesh": {
+    "1": 1627,
+    "2": 3441,
+    "3": 4932
+   }
+  }
+ },
+ "kill.looting_limit.player.looting3": {
+  "n": 10000,
+  "ms": 39,
+  "total": {
+   "minecraft:rotten_flesh": 27726
+  },
+  "hist": {
+   "minecraft:rotten_flesh": {
+    "1": 564,
+    "2": 1146,
+    "3": 8290
+   }
+  }
+ },
+ "loot.alternatives": {
+  "n": 10000,
+  "ms": 91,
+  "total": {
+   "minecraft:dirt": 4999,
+   "minecraft:stone": 5001
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 5001,
+    "1": 4999
+   },
+   "minecraft:stone": {
+    "0": 4999,
+    "1": 5001
+   }
+  }
+ },
+ "loot.chest_like": {
+  "n": 10000,
+  "ms": 51,
+  "total": {
+   "minecraft:bread": 31665,
+   "minecraft:diamond": 2378,
+   "minecraft:iron_ingot": 24068
+  },
+  "hist": {
+   "minecraft:bread": {
+    "0": 1285,
+    "1": 1206,
+    "2": 1560,
+    "3": 2042,
+    "4": 1288,
+    "5": 1078,
+    "6": 771,
+    "7": 349,
+    "8": 256,
+    "9": 116,
+    "10": 33,
+    "11": 12,
+    "12": 4
+   },
+   "minecraft:diamond": {
+    "0": 7792,
+    "1": 2042,
+    "2": 162,
+    "3": 4
+   },
+   "minecraft:iron_ingot": {
+    "0": 4020,
+    "1": 866,
+    "2": 867,
+    "3": 1000,
+    "4": 1024,
+    "5": 1072,
+    "6": 332,
+    "7": 248,
+    "8": 236,
+    "9": 159,
+    "10": 85,
+    "11": 34,
+    "12": 27,
+    "13": 14,
+    "14": 11,
+    "15": 2,
+    "16": 1,
+    "17": 1,
+    "18": 1
+   }
+  }
+ },
+ "loot.count_add": {
+  "n": 10000,
+  "ms": 55,
+  "total": {
+   "minecraft:apple": 30011
+  },
+  "hist": {
+   "minecraft:apple": {
+    "2": 3324,
+    "3": 3341,
+    "4": 3335
+   }
+  }
+ },
+ "loot.count_binomial": {
+  "n": 10000,
+  "ms": 122,
+  "total": {
+   "minecraft:apple": 14962
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 1710,
+    "1": 3577,
+    "2": 3092,
+    "3": 1315,
+    "4": 274,
+    "5": 32
+   }
+  }
+ },
+ "loot.count_dispatch": {
+  "n": 10000,
+  "ms": 79,
+  "total": {
+   "minecraft:apple": 20002
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 4999,
+    "3": 5001
+   }
+  }
+ },
+ "loot.count_uniform": {
+  "n": 10000,
+  "ms": 125,
+  "total": {
+   "minecraft:apple": 34863
+  },
+  "hist": {
+   "minecraft:apple": {
+    "2": 2571,
+    "3": 2457,
+    "4": 2510,
+    "5": 2462
+   }
+  }
+ },
+ "loot.count_weighted": {
+  "n": 10000,
+  "ms": 50,
+  "total": {
+   "minecraft:apple": 19920
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 7520,
+    "5": 2480
+   }
+  }
+ },
+ "loot.empty_weight": {
+  "n": 10000,
+  "ms": 31,
+  "total": {
+   "minecraft:stone": 7489
+  },
+  "hist": {
+   "minecraft:stone": {
+    "0": 2511,
+    "1": 7489
+   }
+  }
+ },
+ "loot.enchant_levels_book": {
+  "n": 10000,
+  "ms": 394,
+  "note": "hist left out (thousands of enchantment combinations); compare-*.json holds the comparison made on the full run",
+  "marginal": {
+   "minecraft:enchanted_book|aqua_affinity1": 234,
+   "minecraft:enchanted_book|bane_of_arthropods3": 67,
+   "minecraft:enchanted_book|bane_of_arthropods4": 517,
+   "minecraft:enchanted_book|binding_curse1": 107,
+   "minecraft:enchanted_book|blast_protection3": 27,
+   "minecraft:enchanted_book|blast_protection4": 209,
+   "minecraft:enchanted_book|breach2": 163,
+   "minecraft:enchanted_book|breach3": 63,
+   "minecraft:enchanted_book|channeling1": 107,
+   "minecraft:enchanted_book|density3": 59,
+   "minecraft:enchanted_book|density4": 482,
+   "minecraft:enchanted_book|depth_strider2": 43,
+   "minecraft:enchanted_book|depth_strider3": 174,
+   "minecraft:enchanted_book|efficiency3": 467,
+   "minecraft:enchanted_book|efficiency4": 722,
+   "minecraft:enchanted_book|feather_falling4": 123,
+   "minecraft:enchanted_book|fire_aspect1": 57,
+   "minecraft:enchanted_book|fire_aspect2": 184,
+   "minecraft:enchanted_book|fire_protection3": 512,
+   "minecraft:enchanted_book|fire_protection4": 78,
+   "minecraft:enchanted_book|flame1": 242,
+   "minecraft:enchanted_book|fortune2": 194,
+   "minecraft:enchanted_book|fortune3": 49,
+   "minecraft:enchanted_book|frost_walker2": 234,
+   "minecraft:enchanted_book|impaling4": 170,
+   "minecraft:enchanted_book|impaling5": 45,
+   "minecraft:enchanted_book|infinity1": 114,
+   "minecraft:enchanted_book|knockback2": 634,
+   "minecraft:enchanted_book|looting2": 169,
+   "minecraft:enchanted_book|looting3": 51,
+   "minecraft:enchanted_book|loyalty3": 582,
+   "minecraft:enchanted_book|luck_of_the_sea2": 188,
+   "minecraft:enchanted_book|luck_of_the_sea3": 52,
+   "minecraft:enchanted_book|lunge3": 627,
+   "minecraft:enchanted_book|lure2": 194,
+   "minecraft:enchanted_book|lure3": 56,
+   "minecraft:enchanted_book|mending1": 259,
+   "minecraft:enchanted_book|multishot1": 226,
+   "minecraft:enchanted_book|piercing3": 438,
+   "minecraft:enchanted_book|piercing4": 719,
+   "minecraft:enchanted_book|power3": 440,
+   "minecraft:enchanted_book|power4": 727,
+   "minecraft:enchanted_book|projectile_protection4": 13,
+   "minecraft:enchanted_book|protection3": 1019,
+   "minecraft:enchanted_book|protection4": 136,
+   "minecraft:enchanted_book|punch1": 150,
+   "minecraft:enchanted_book|punch2": 103,
+   "minecraft:enchanted_book|quick_charge1": 359,
+   "minecraft:enchanted_book|quick_charge2": 222,
+   "minecraft:enchanted_book|respiration2": 58,
+   "minecraft:enchanted_book|respiration3": 213,
+   "minecraft:enchanted_book|riptide2": 88,
+   "minecraft:enchanted_book|riptide3": 137,
+   "minecraft:enchanted_book|sharpness3": 905,
+   "minecraft:enchanted_book|sharpness4": 126,
+   "minecraft:enchanted_book|silk_touch1": 99,
+   "minecraft:enchanted_book|smite3": 57,
+   "minecraft:enchanted_book|smite4": 469,
+   "minecraft:enchanted_book|soul_speed2": 30,
+   "minecraft:enchanted_book|soul_speed3": 80,
+   "minecraft:enchanted_book|spike3": 131,
+   "minecraft:enchanted_book|spike4": 1094,
+   "minecraft:enchanted_book|spike_ten10": 408,
+   "minecraft:enchanted_book|spike_ten11": 627,
+   "minecraft:enchanted_book|spike_ten12": 134,
+   "minecraft:enchanted_book|spike_ten9": 22,
+   "minecraft:enchanted_book|sweeping_edge3": 269,
+   "minecraft:enchanted_book|swift_sneak1": 123,
+   "minecraft:enchanted_book|thorns1": 25,
+   "minecraft:enchanted_book|thorns2": 99,
+   "minecraft:enchanted_book|unbreaking3": 597,
+   "minecraft:enchanted_book|vanishing_curse1": 127,
+   "minecraft:enchanted_book|wind_burst2": 189,
+   "minecraft:enchanted_book|wind_burst3": 59
+  },
+  "combinations": 3220
+ },
+ "loot.enchant_levels_sword": {
+  "n": 10000,
+  "ms": 120,
+  "note": "hist left out (thousands of enchantment combinations); compare-*.json holds the comparison made on the full run",
+  "marginal": {
+   "minecraft:diamond_sword|bane_of_arthropods1": 421,
+   "minecraft:diamond_sword|bane_of_arthropods2": 511,
+   "minecraft:diamond_sword|bane_of_arthropods3": 9,
+   "minecraft:diamond_sword|fire_aspect1": 352,
+   "minecraft:diamond_sword|knockback1": 1067,
+   "minecraft:diamond_sword|looting1": 150,
+   "minecraft:diamond_sword|sharpness1": 647,
+   "minecraft:diamond_sword|sharpness2": 1269,
+   "minecraft:diamond_sword|smite1": 418,
+   "minecraft:diamond_sword|smite2": 535,
+   "minecraft:diamond_sword|smite3": 7,
+   "minecraft:diamond_sword|spike1": 875,
+   "minecraft:diamond_sword|spike2": 1162,
+   "minecraft:diamond_sword|spike3": 22,
+   "minecraft:diamond_sword|spike_curse1": 2051,
+   "minecraft:diamond_sword|spike_ten2": 35,
+   "minecraft:diamond_sword|spike_ten3": 320,
+   "minecraft:diamond_sword|spike_ten4": 571,
+   "minecraft:diamond_sword|spike_ten5": 585,
+   "minecraft:diamond_sword|spike_ten6": 471,
+   "minecraft:diamond_sword|spike_ten7": 141,
+   "minecraft:diamond_sword|spike_ten8": 3,
+   "minecraft:diamond_sword|sweeping_edge1": 243,
+   "minecraft:diamond_sword|sweeping_edge2": 214,
+   "minecraft:diamond_sword|unbreaking1": 455,
+   "minecraft:diamond_sword|unbreaking2": 674,
+   "minecraft:diamond_sword|unbreaking3": 9
+  },
+  "combinations": 387
+ },
+ "loot.enchant_randomly_book": {
+  "n": 10000,
+  "ms": 74,
+  "total": {
+   "minecraft:enchanted_book|aqua_affinity1": 217,
+   "minecraft:enchanted_book|bane_of_arthropods1": 39,
+   "minecraft:enchanted_book|bane_of_arthropods2": 41,
+   "minecraft:enchanted_book|bane_of_arthropods3": 44,
+   "minecraft:enchanted_book|bane_of_arthropods4": 48,
+   "minecraft:enchanted_book|bane_of_arthropods5": 40,
+   "minecraft:enchanted_book|binding_curse1": 187,
+   "minecraft:enchanted_book|blast_protection1": 54,
+   "minecraft:enchanted_book|blast_protection2": 44,
+   "minecraft:enchanted_book|blast_protection3": 49,
+   "minecraft:enchanted_book|blast_protection4": 47,
+   "minecraft:enchanted_book|breach1": 53,
+   "minecraft:enchanted_book|breach2": 48,
+   "minecraft:enchanted_book|breach3": 62,
+   "minecraft:enchanted_book|breach4": 63,
+   "minecraft:enchanted_book|channeling1": 225,
+   "minecraft:enchanted_book|density1": 38,
+   "minecraft:enchanted_book|density2": 46,
+   "minecraft:enchanted_book|density3": 46,
+   "minecraft:enchanted_book|density4": 43,
+   "minecraft:enchanted_book|density5": 49,
+   "minecraft:enchanted_book|depth_strider1": 84,
+   "minecraft:enchanted_book|depth_strider2": 79,
+   "minecraft:enchanted_book|depth_strider3": 79,
+   "minecraft:enchanted_book|efficiency1": 46,
+   "minecraft:enchanted_book|efficiency2": 44,
+   "minecraft:enchanted_book|efficiency3": 45,
+   "minecraft:enchanted_book|efficiency4": 56,
+   "minecraft:enchanted_book|efficiency5": 49,
+   "minecraft:enchanted_book|feather_falling1": 51,
+   "minecraft:enchanted_book|feather_falling2": 57,
+   "minecraft:enchanted_book|feather_falling3": 53,
+   "minecraft:enchanted_book|feather_falling4": 58,
+   "minecraft:enchanted_book|fire_aspect1": 112,
+   "minecraft:enchanted_book|fire_aspect2": 116,
+   "minecraft:enchanted_book|fire_protection1": 54,
+   "minecraft:enchanted_book|fire_protection2": 64,
+   "minecraft:enchanted_book|fire_protection3": 60,
+   "minecraft:enchanted_book|fire_protection4": 53,
+   "minecraft:enchanted_book|flame1": 200,
+   "minecraft:enchanted_book|fortune1": 63,
+   "minecraft:enchanted_book|fortune2": 83,
+   "minecraft:enchanted_book|fortune3": 70,
+   "minecraft:enchanted_book|frost_walker1": 114,
+   "minecraft:enchanted_book|frost_walker2": 96,
+   "minecraft:enchanted_book|impaling1": 29,
+   "minecraft:enchanted_book|impaling2": 44,
+   "minecraft:enchanted_book|impaling3": 35,
+   "minecraft:enchanted_book|impaling4": 41,
+   "minecraft:enchanted_book|impaling5": 47,
+   "minecraft:enchanted_book|infinity1": 218,
+   "minecraft:enchanted_book|knockback1": 94,
+   "minecraft:enchanted_book|knockback2": 99,
+   "minecraft:enchanted_book|looting1": 72,
+   "minecraft:enchanted_book|looting2": 76,
+   "minecraft:enchanted_book|looting3": 72,
+   "minecraft:enchanted_book|loyalty1": 79,
+   "minecraft:enchanted_book|loyalty2": 70,
+   "minecraft:enchanted_book|loyalty3": 84,
+   "minecraft:enchanted_book|luck_of_the_sea1": 73,
+   "minecraft:enchanted_book|luck_of_the_sea2": 83,
+   "minecraft:enchanted_book|luck_of_the_sea3": 73,
+   "minecraft:enchanted_book|lunge1": 67,
+   "minecraft:enchanted_book|lunge2": 72,
+   "minecraft:enchanted_book|lunge3": 79,
+   "minecraft:enchanted_book|lure1": 89,
+   "minecraft:enchanted_book|lure2": 74,
+   "minecraft:enchanted_book|lure3": 86,
+   "minecraft:enchanted_book|mending1": 231,
+   "minecraft:enchanted_book|multishot1": 216,
+   "minecraft:enchanted_book|piercing1": 47,
+   "minecraft:enchanted_book|piercing2": 48,
+   "minecraft:enchanted_book|piercing3": 38,
+   "minecraft:enchanted_book|piercing4": 53,
+   "minecraft:enchanted_book|power1": 49,
+   "minecraft:enchanted_book|power2": 35,
+   "minecraft:enchanted_book|power3": 45,
+   "minecraft:enchanted_book|power4": 37,
+   "minecraft:enchanted_book|power5": 41,
+   "minecraft:enchanted_book|projectile_protection1": 58,
+   "minecraft:enchanted_book|projectile_protection2": 51,
+   "minecraft:enchanted_book|projectile_protection3": 61,
+   "minecraft:enchanted_book|projectile_protection4": 60,
+   "minecraft:enchanted_book|protection1": 48,
+   "minecraft:enchanted_book|protection2": 59,
+   "minecraft:enchanted_book|protection3": 59,
+   "minecraft:enchanted_book|protection4": 46,
+   "minecraft:enchanted_book|punch1": 85,
+   "minecraft:enchanted_book|punch2": 121,
+   "minecraft:enchanted_book|quick_charge1": 75,
+   "minecraft:enchanted_book|quick_charge2": 72,
+   "minecraft:enchanted_book|quick_charge3": 68,
+   "minecraft:enchanted_book|respiration1": 69,
+   "minecraft:enchanted_book|respiration2": 73,
+   "minecraft:enchanted_book|respiration3": 84,
+   "minecraft:enchanted_book|riptide1": 66,
+   "minecraft:enchanted_book|riptide2": 59,
+   "minecraft:enchanted_book|riptide3": 89,
+   "minecraft:enchanted_book|sharpness1": 50,
+   "minecraft:enchanted_book|sharpness2": 37,
+   "minecraft:enchanted_book|sharpness3": 42,
+   "minecraft:enchanted_book|sharpness4": 43,
+   "minecraft:enchanted_book|sharpness5": 51,
+   "minecraft:enchanted_book|silk_touch1": 205,
+   "minecraft:enchanted_book|smite1": 46,
+   "minecraft:enchanted_book|smite2": 46,
+   "minecraft:enchanted_book|smite3": 36,
+   "minecraft:enchanted_book|smite4": 54,
+   "minecraft:enchanted_book|smite5": 40,
+   "minecraft:enchanted_book|soul_speed1": 90,
+   "minecraft:enchanted_book|soul_speed2": 59,
+   "minecraft:enchanted_book|soul_speed3": 74,
+   "minecraft:enchanted_book|spike1": 52,
+   "minecraft:enchanted_book|spike2": 45,
+   "minecraft:enchanted_book|spike3": 42,
+   "minecraft:enchanted_book|spike4": 42,
+   "minecraft:enchanted_book|spike5": 46,
+   "minecraft:enchanted_book|spike_curse1": 237,
+   "minecraft:enchanted_book|spike_ten1": 13,
+   "minecraft:enchanted_book|spike_ten10": 16,
+   "minecraft:enchanted_book|spike_ten11": 16,
+   "minecraft:enchanted_book|spike_ten12": 15,
+   "minecraft:enchanted_book|spike_ten2": 15,
+   "minecraft:enchanted_book|spike_ten3": 15,
+   "minecraft:enchanted_book|spike_ten4": 22,
+   "minecraft:enchanted_book|spike_ten5": 22,
+   "minecraft:enchanted_book|spike_ten6": 21,
+   "minecraft:enchanted_book|spike_ten7": 17,
+   "minecraft:enchanted_book|spike_ten8": 26,
+   "minecraft:enchanted_book|spike_ten9": 15,
+   "minecraft:enchanted_book|sweeping_edge1": 74,
+   "minecraft:enchanted_book|sweeping_edge2": 64,
+   "minecraft:enchanted_book|sweeping_edge3": 81,
+   "minecraft:enchanted_book|swift_sneak1": 79,
+   "minecraft:enchanted_book|swift_sneak2": 73,
+   "minecraft:enchanted_book|swift_sneak3": 74,
+   "minecraft:enchanted_book|thorns1": 69,
+   "minecraft:enchanted_book|thorns2": 64,
+   "minecraft:enchanted_book|thorns3": 78,
+   "minecraft:enchanted_book|unbreaking1": 83,
+   "minecraft:enchanted_book|unbreaking2": 61,
+   "minecraft:enchanted_book|unbreaking3": 78,
+   "minecraft:enchanted_book|vanishing_curse1": 191,
+   "minecraft:enchanted_book|wind_burst1": 79,
+   "minecraft:enchanted_book|wind_burst2": 78,
+   "minecraft:enchanted_book|wind_burst3": 56
+  },
+  "note": "hist left out (thousands of enchantment combinations); compare-*.json holds the comparison made on the full run"
+ },
+ "loot.group": {
+  "n": 10000,
+  "ms": 79,
+  "total": {
+   "minecraft:dirt": 7546,
+   "minecraft:stone": 2454
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 2454,
+    "1": 7546
+   },
+   "minecraft:stone": {
+    "0": 7546,
+    "1": 2454
+   }
+  }
+ },
+ "loot.limit": {
+  "n": 10000,
+  "ms": 54,
+  "total": {
+   "minecraft:apple": 47931
+  },
+  "hist": {
+   "minecraft:apple": {
+    "3": 3010,
+    "4": 1050,
+    "5": 939,
+    "6": 5001
+   }
+  }
+ },
+ "loot.luck": {
+  "n": 10000,
+  "ms": 35,
+  "total": {
+   "minecraft:dirt": 4962,
+   "minecraft:stone": 5038
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 5038,
+    "1": 4962
+   },
+   "minecraft:stone": {
+    "0": 4962,
+    "1": 5038
+   }
+  }
+ },
+ "loot.luck.console": {
+  "n": 10000,
+  "ms": 43,
+  "total": {
+   "minecraft:dirt": 4984,
+   "minecraft:stone": 5016
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 5016,
+    "1": 4984
+   },
+   "minecraft:stone": {
+    "0": 4984,
+    "1": 5016
+   }
+  }
+ },
+ "loot.luck.player2": {
+  "n": 10000,
+  "ms": 38,
+  "total": {
+   "minecraft:dirt": 5045,
+   "minecraft:stone": 4955
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 4955,
+    "1": 5045
+   },
+   "minecraft:stone": {
+    "0": 5045,
+    "1": 4955
+   }
+  }
+ },
+ "loot.nested": {
+  "n": 10000,
+  "ms": 65,
+  "total": {
+   "minecraft:apple": 5077,
+   "minecraft:dirt": 950,
+   "minecraft:gravel": 1976,
+   "minecraft:sand": 1475,
+   "minecraft:stone": 522
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 4923,
+    "1": 5077
+   },
+   "minecraft:dirt": {
+    "0": 9050,
+    "1": 950
+   },
+   "minecraft:gravel": {
+    "0": 8024,
+    "1": 1976
+   },
+   "minecraft:sand": {
+    "0": 8525,
+    "1": 1475
+   },
+   "minecraft:stone": {
+    "0": 9478,
+    "1": 522
+   }
+  }
+ },
+ "loot.random_chance": {
+  "n": 10000,
+  "ms": 58,
+  "total": {
+   "minecraft:apple": 2535
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 7465,
+    "1": 2535
+   }
+  }
+ },
+ "loot.rolls_uniform": {
+  "n": 10000,
+  "ms": 180,
+  "total": {
+   "minecraft:apple": 19989
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 3348,
+    "2": 3315,
+    "3": 3337
+   }
+  }
+ },
+ "loot.sequence": {
+  "n": 10000,
+  "ms": 39,
+  "total": {
+   "minecraft:dirt": 2478,
+   "minecraft:stone": 2519
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 7522,
+    "1": 2478
+   },
+   "minecraft:stone": {
+    "0": 7481,
+    "1": 2519
+   }
+  }
+ },
+ "loot.set_damage": {
+  "n": 10000,
+  "ms": 71,
+  "total": {
+   "minecraft:diamond_sword|dmg10": 1237,
+   "minecraft:diamond_sword|dmg11": 1316,
+   "minecraft:diamond_sword|dmg12": 1225,
+   "minecraft:diamond_sword|dmg13": 1227,
+   "minecraft:diamond_sword|dmg14": 1268,
+   "minecraft:diamond_sword|dmg15": 1218,
+   "minecraft:diamond_sword|dmg7": 10,
+   "minecraft:diamond_sword|dmg8": 1251,
+   "minecraft:diamond_sword|dmg9": 1248
+  },
+  "hist": {
+   "minecraft:diamond_sword|dmg10": {
+    "0": 8763,
+    "1": 1237
+   },
+   "minecraft:diamond_sword|dmg11": {
+    "0": 8684,
+    "1": 1316
+   },
+   "minecraft:diamond_sword|dmg12": {
+    "0": 8775,
+    "1": 1225
+   },
+   "minecraft:diamond_sword|dmg13": {
+    "0": 8773,
+    "1": 1227
+   },
+   "minecraft:diamond_sword|dmg14": {
+    "0": 8732,
+    "1": 1268
+   },
+   "minecraft:diamond_sword|dmg15": {
+    "0": 8782,
+    "1": 1218
+   },
+   "minecraft:diamond_sword|dmg7": {
+    "0": 9990,
+    "1": 10
+   },
+   "minecraft:diamond_sword|dmg8": {
+    "0": 8749,
+    "1": 1251
+   },
+   "minecraft:diamond_sword|dmg9": {
+    "0": 8752,
+    "1": 1248
+   }
+  }
+ },
+ "loot.table_modifier": {
+  "n": 10000,
+  "ms": 32,
+  "total": {
+   "minecraft:apple": 40000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "4": 10000
+   }
+  }
+ },
+ "loot.tag_all": {
+  "n": 10000,
+  "ms": 90,
+  "total": {
+   "minecraft:dirt": 10000,
+   "minecraft:sand": 10000,
+   "minecraft:stone": 10000
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "1": 10000
+   },
+   "minecraft:sand": {
+    "1": 10000
+   },
+   "minecraft:stone": {
+    "1": 10000
+   }
+  }
+ },
+ "loot.tag_expand": {
+  "n": 10000,
+  "ms": 51,
+  "total": {
+   "minecraft:dirt": 3357,
+   "minecraft:sand": 3283,
+   "minecraft:stone": 3360
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 6643,
+    "1": 3357
+   },
+   "minecraft:sand": {
+    "0": 6717,
+    "1": 3283
+   },
+   "minecraft:stone": {
+    "0": 6640,
+    "1": 3360
+   }
+  }
+ },
+ "loot.two_pools": {
+  "n": 10000,
+  "ms": 40,
+  "total": {
+   "minecraft:dirt": 3027,
+   "minecraft:stone": 10000
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 6973,
+    "1": 3027
+   },
+   "minecraft:stone": {
+    "1": 10000
+   }
+  }
+ },
+ "loot.weights": {
+  "n": 10000,
+  "ms": 308,
+  "total": {
+   "minecraft:dirt": 1975,
+   "minecraft:gravel": 3948,
+   "minecraft:sand": 3049,
+   "minecraft:stone": 1028
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 8025,
+    "1": 1975
+   },
+   "minecraft:gravel": {
+    "0": 6052,
+    "1": 3948
+   },
+   "minecraft:sand": {
+    "0": 6951,
+    "1": 3049
+   },
+   "minecraft:stone": {
+    "0": 8972,
+    "1": 1028
+   }
+  }
+ },
+ "loot.weights.preparsed": {
+  "n": 10000,
+  "ms": 24,
+  "total": {
+   "minecraft:dirt": 2037,
+   "minecraft:gravel": 4011,
+   "minecraft:sand": 3007,
+   "minecraft:stone": 945
+  },
+  "hist": {
+   "minecraft:dirt": {
+    "0": 7963,
+    "1": 2037
+   },
+   "minecraft:gravel": {
+    "0": 5989,
+    "1": 4011
+   },
+   "minecraft:sand": {
+    "0": 6993,
+    "1": 3007
+   },
+   "minecraft:stone": {
+    "0": 9055,
+    "1": 945
+   }
+  }
+ },
+ "mine.gray_wool.hand": {
+  "n": 10000,
+  "ms": 35,
+  "total": {
+   "minecraft:apple": 10000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.gray_wool.silk": {
+  "n": 10000,
+  "ms": 33,
+  "total": {
+   "minecraft:apple": 10000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.light_blue_wool.fortune1": {
+  "n": 10000,
+  "ms": 27,
+  "total": {
+   "minecraft:apple": 3026
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 6974,
+    "1": 3026
+   }
+  }
+ },
+ "mine.light_blue_wool.fortune2": {
+  "n": 10000,
+  "ms": 45,
+  "total": {
+   "minecraft:apple": 6025
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 3975,
+    "1": 6025
+   }
+  }
+ },
+ "mine.light_blue_wool.fortune3": {
+  "n": 10000,
+  "ms": 32,
+  "total": {
+   "minecraft:apple": 8998
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 1002,
+    "1": 8998
+   }
+  }
+ },
+ "mine.light_blue_wool.hand": {
+  "n": 10000,
+  "ms": 34,
+  "total": {
+   "minecraft:apple": 1047
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 8953,
+    "1": 1047
+   }
+  }
+ },
+ "mine.light_blue_wool.pick": {
+  "n": 10000,
+  "ms": 31,
+  "total": {
+   "minecraft:apple": 1016
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 8984,
+    "1": 1016
+   }
+  }
+ },
+ "mine.light_blue_wool.silk": {
+  "n": 10000,
+  "ms": 29,
+  "total": {
+   "minecraft:apple": 1021
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 8979,
+    "1": 1021
+   }
+  }
+ },
+ "mine.light_gray_wool.hand": {
+  "n": 10000,
+  "ms": 42,
+  "total": {
+   "minecraft:apple": 3346
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 7777,
+    "1": 1100,
+    "2": 1123
+   }
+  }
+ },
+ "mine.light_gray_wool.silk": {
+  "n": 10000,
+  "ms": 32,
+  "total": {
+   "minecraft:apple": 3347
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 7790,
+    "1": 1073,
+    "2": 1137
+   }
+  }
+ },
+ "mine.lime_wool.hand": {
+  "n": 10000,
+  "ms": 41,
+  "total": {
+   "minecraft:stick": 10000
+  },
+  "hist": {
+   "minecraft:stick": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.lime_wool.silk": {
+  "n": 10000,
+  "ms": 38,
+  "total": {
+   "minecraft:lime_wool": 10000
+  },
+  "hist": {
+   "minecraft:lime_wool": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.magenta_wool.fortune1": {
+  "n": 10000,
+  "ms": 33,
+  "total": {
+   "minecraft:wheat_seeds": 32900
+  },
+  "hist": {
+   "minecraft:wheat_seeds": {
+    "1": 320,
+    "2": 1823,
+    "3": 3606,
+    "4": 3139,
+    "5": 1112
+   }
+  }
+ },
+ "mine.magenta_wool.fortune2": {
+  "n": 10000,
+  "ms": 33,
+  "total": {
+   "minecraft:wheat_seeds": 38593
+  },
+  "hist": {
+   "minecraft:wheat_seeds": {
+    "1": 123,
+    "2": 968,
+    "3": 2592,
+    "4": 3455,
+    "5": 2234,
+    "6": 628
+   }
+  }
+ },
+ "mine.magenta_wool.fortune3": {
+  "n": 10000,
+  "ms": 35,
+  "total": {
+   "minecraft:wheat_seeds": 44319
+  },
+  "hist": {
+   "minecraft:wheat_seeds": {
+    "1": 65,
+    "2": 486,
+    "3": 1646,
+    "4": 2899,
+    "5": 3015,
+    "6": 1550,
+    "7": 339
+   }
+  }
+ },
+ "mine.magenta_wool.hand": {
+  "n": 10000,
+  "ms": 36,
+  "total": {
+   "minecraft:wheat_seeds": 27214
+  },
+  "hist": {
+   "minecraft:wheat_seeds": {
+    "1": 759,
+    "2": 3122,
+    "3": 4265,
+    "4": 1854
+   }
+  }
+ },
+ "mine.magenta_wool.pick": {
+  "n": 10000,
+  "ms": 47,
+  "total": {
+   "minecraft:wheat_seeds": 27104
+  },
+  "hist": {
+   "minecraft:wheat_seeds": {
+    "1": 794,
+    "2": 3161,
+    "3": 4192,
+    "4": 1853
+   }
+  }
+ },
+ "mine.magenta_wool.silk": {
+  "n": 10000,
+  "ms": 32,
+  "total": {
+   "minecraft:wheat_seeds": 27111
+  },
+  "hist": {
+   "minecraft:wheat_seeds": {
+    "1": 811,
+    "2": 3091,
+    "3": 4274,
+    "4": 1824
+   }
+  }
+ },
+ "mine.orange_wool.fortune1": {
+  "n": 10000,
+  "ms": 39,
+  "total": {
+   "minecraft:apple": 20003
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 3275,
+    "2": 3447,
+    "3": 3278
+   }
+  }
+ },
+ "mine.orange_wool.fortune2": {
+  "n": 10000,
+  "ms": 35,
+  "total": {
+   "minecraft:apple": 29712
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 2075,
+    "2": 2022,
+    "3": 1981,
+    "4": 1960,
+    "5": 1962
+   }
+  }
+ },
+ "mine.orange_wool.fortune3": {
+  "n": 10000,
+  "ms": 35,
+  "total": {
+   "minecraft:apple": 40259
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 1401,
+    "2": 1412,
+    "3": 1433,
+    "4": 1406,
+    "5": 1395,
+    "6": 1535,
+    "7": 1418
+   }
+  }
+ },
+ "mine.orange_wool.hand": {
+  "n": 10000,
+  "ms": 63,
+  "total": {
+   "minecraft:apple": 10000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.orange_wool.pick": {
+  "n": 10000,
+  "ms": 38,
+  "total": {
+   "minecraft:apple": 10000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.orange_wool.silk": {
+  "n": 10000,
+  "ms": 33,
+  "total": {
+   "minecraft:apple": 10000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.pink_wool.hand": {
+  "n": 10000,
+  "ms": 34,
+  "total": {
+   "minecraft:apple": 100000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "10": 10000
+   }
+  }
+ },
+ "mine.pink_wool.silk": {
+  "n": 10000,
+  "ms": 35,
+  "total": {
+   "minecraft:apple": 100000
+  },
+  "hist": {
+   "minecraft:apple": {
+    "10": 10000
+   }
+  }
+ },
+ "mine.white_wool.fortune1": {
+  "n": 10000,
+  "ms": 69,
+  "total": {
+   "minecraft:diamond": 13316
+  },
+  "hist": {
+   "minecraft:diamond": {
+    "1": 6684,
+    "2": 3316
+   }
+  }
+ },
+ "mine.white_wool.fortune2": {
+  "n": 10000,
+  "ms": 40,
+  "total": {
+   "minecraft:diamond": 17455
+  },
+  "hist": {
+   "minecraft:diamond": {
+    "1": 5011,
+    "2": 2523,
+    "3": 2466
+   }
+  }
+ },
+ "mine.white_wool.fortune3": {
+  "n": 10000,
+  "ms": 38,
+  "total": {
+   "minecraft:diamond": 21959
+  },
+  "hist": {
+   "minecraft:diamond": {
+    "1": 3998,
+    "2": 2011,
+    "3": 2025,
+    "4": 1966
+   }
+  }
+ },
+ "mine.white_wool.hand": {
+  "n": 10000,
+  "ms": 75,
+  "total": {
+   "minecraft:diamond": 10000
+  },
+  "hist": {
+   "minecraft:diamond": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.white_wool.pick": {
+  "n": 10000,
+  "ms": 69,
+  "total": {
+   "minecraft:diamond": 10000
+  },
+  "hist": {
+   "minecraft:diamond": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.white_wool.silk": {
+  "n": 10000,
+  "ms": 37,
+  "total": {
+   "minecraft:diamond": 10000
+  },
+  "hist": {
+   "minecraft:diamond": {
+    "1": 10000
+   }
+  }
+ },
+ "mine.yellow_wool.fortune1": {
+  "n": 10000,
+  "ms": 29,
+  "total": {
+   "minecraft:apple": 979
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 9021,
+    "1": 979
+   }
+  }
+ },
+ "mine.yellow_wool.fortune2": {
+  "n": 10000,
+  "ms": 28,
+  "total": {
+   "minecraft:apple": 968
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 9032,
+    "1": 968
+   }
+  }
+ },
+ "mine.yellow_wool.fortune3": {
+  "n": 10000,
+  "ms": 27,
+  "total": {
+   "minecraft:apple": 964
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 9036,
+    "1": 964
+   }
+  }
+ },
+ "mine.yellow_wool.hand": {
+  "n": 10000,
+  "ms": 26,
+  "total": {
+   "minecraft:apple": 997
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 9003,
+    "1": 997
+   }
+  }
+ },
+ "mine.yellow_wool.pick": {
+  "n": 10000,
+  "ms": 27,
+  "total": {
+   "minecraft:apple": 980
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 9020,
+    "1": 980
+   }
+  }
+ },
+ "mine.yellow_wool.silk": {
+  "n": 10000,
+  "ms": 41,
+  "total": {
+   "minecraft:apple": 988
+  },
+  "hist": {
+   "minecraft:apple": {
+    "0": 9012,
+    "1": 988
+   }
+  }
+ },
+ "mod": {
+  "conditional": {
+   "before": "{\"id\":\"minecraft:diamond\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond\",\"count\":1}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond"
+      }
+     ],
+     "style": "{color=white}"
+    }
+   ]
+  },
+  "list": {
+   "before": "{\"id\":\"minecraft:diamond\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond\",\"count\":3,\"components\":{\"minecraft:item_name\":\"Three\"}}",
+   "tooltip": [
+    {
+     "siblings": [
+      {}
+     ],
+     "style": "{color=white}"
+    }
+   ]
+  },
+  "rarity": {
+   "before": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond_sword\",\"count\":1,\"components\":{\"minecraft:rarity\":\"epic\"}}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond_sword"
+      }
+     ],
+     "style": "{color=light_purple}"
+    },
+    {},
+    {
+     "args": [],
+     "key": "item.modifiers.mainhand",
+     "style": "{color=gray}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "7",
+        {
+         "args": [],
+         "key": "attribute.name.attack_damage"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "1.6",
+        {
+         "args": [],
+         "key": "attribute.name.attack_speed"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    }
+   ]
+  },
+  "ref": {
+   "before": "{\"id\":\"minecraft:diamond\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond\",\"count\":5}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond"
+      }
+     ],
+     "style": "{color=white}"
+    }
+   ]
+  },
+  "set_count": {
+   "before": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond_sword"
+      }
+     ],
+     "style": "{color=white}"
+    },
+    {},
+    {
+     "args": [],
+     "key": "item.modifiers.mainhand",
+     "style": "{color=gray}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "7",
+        {
+         "args": [],
+         "key": "attribute.name.attack_damage"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "1.6",
+        {
+         "args": [],
+         "key": "attribute.name.attack_speed"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    }
+   ]
+  },
+  "set_damage": {
+   "before": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond_sword\",\"count\":1,\"components\":{\"minecraft:damage\":780}}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond_sword"
+      }
+     ],
+     "style": "{color=white}"
+    },
+    {},
+    {
+     "args": [],
+     "key": "item.modifiers.mainhand",
+     "style": "{color=gray}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "7",
+        {
+         "args": [],
+         "key": "attribute.name.attack_damage"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "1.6",
+        {
+         "args": [],
+         "key": "attribute.name.attack_speed"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    }
+   ]
+  },
+  "set_enchantments": {
+   "before": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond_sword\",\"count\":1,\"components\":{\"minecraft:enchantments\":{\"minecraft:sharpness\":3,\"msm_b600:spike\":2}}}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond_sword"
+      }
+     ],
+     "style": "{color=aqua}"
+    },
+    {
+     "args": [],
+     "key": "enchantment.minecraft.sharpness",
+     "siblings": [
+      {},
+      {
+       "args": [],
+       "key": "enchantment.level.3"
+      }
+     ],
+     "style": "{color=gray}"
+    },
+    {
+     "args": [],
+     "key": "enchantment.msm_b600.spike",
+     "siblings": [
+      {},
+      {
+       "args": [],
+       "key": "enchantment.level.2"
+      }
+     ],
+     "style": "{color=gray}"
+    },
+    {},
+    {
+     "args": [],
+     "key": "item.modifiers.mainhand",
+     "style": "{color=gray}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "7",
+        {
+         "args": [],
+         "key": "attribute.name.attack_damage"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "1.6",
+        {
+         "args": [],
+         "key": "attribute.name.attack_speed"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    }
+   ]
+  },
+  "set_lore": {
+   "before": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond_sword\",\"count\":1,\"components\":{\"minecraft:lore\":[\"Line one\",\"Line two\"]}}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.diamond_sword"
+      }
+     ],
+     "style": "{color=white}"
+    },
+    {
+     "style": "{color=dark_purple,italic}"
+    },
+    {
+     "style": "{color=dark_purple,italic}"
+    },
+    {},
+    {
+     "args": [],
+     "key": "item.modifiers.mainhand",
+     "style": "{color=gray}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "7",
+        {
+         "args": [],
+         "key": "attribute.name.attack_damage"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "1.6",
+        {
+         "args": [],
+         "key": "attribute.name.attack_speed"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    }
+   ]
+  },
+  "set_name": {
+   "before": "{\"id\":\"minecraft:diamond_sword\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:diamond_sword\",\"count\":1,\"components\":{\"minecraft:custom_name\":{\"text\":\"Spike Sword\",\"color\":\"gold\"}}}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "style": "{color=gold}"
+      }
+     ],
+     "style": "{color=white,italic}"
+    },
+    {},
+    {
+     "args": [],
+     "key": "item.modifiers.mainhand",
+     "style": "{color=gray}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "7",
+        {
+         "args": [],
+         "key": "attribute.name.attack_damage"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    },
+    {
+     "siblings": [
+      {
+       "args": [
+        "1.6",
+        {
+         "args": [],
+         "key": "attribute.name.attack_speed"
+        }
+       ],
+       "key": "attribute.modifier.equals.0"
+      }
+     ],
+     "style": "{color=dark_green}"
+    }
+   ]
+  },
+  "smelt": {
+   "before": "{\"id\":\"minecraft:raw_iron\",\"count\":1}",
+   "after": "{\"id\":\"minecraft:iron_ingot\",\"count\":1}",
+   "tooltip": [
+    {
+     "siblings": [
+      {
+       "args": [],
+       "key": "item.minecraft.iron_ingot"
+      }
+     ],
+     "style": "{color=white}"
+    }
+   ]
+  }
+ },
+ "pred": {
+  "all_any.rate": 0.5026,
+  "biomeHere": "minecraft:desert",
+  "chance30.ms": 354,
+  "chance30.rate": 0.3056,
+  "damage_fire.console": 0,
+  "damage_fire.player": 0,
+  "day.at1000": 1,
+  "day.at13000": 0,
+  "day.at25000": 1,
+  "enchant_active.console": 0,
+  "enchant_active.player": 0,
+  "high.y150": 1,
+  "high.y7": 0,
+  "int_check": 1,
+  "inverted_zero": 1,
+  "isRaining.after150ticks": true,
+  "is_player.console": 0,
+  "is_player.player": 1,
+  "killed_by_player.console": 0,
+  "killed_by_player.player": 0,
+  "list_form.rate": 0.4966,
+  "missing": -1,
+  "plains.console": 0,
+  "plains.player": 0,
+  "raining.after150ticks": 1,
+  "raining.clearAfter150ticks": 0,
+  "raining.rightAfterCommand": 0,
+  "ref.rate": 0.2979,
+  "score5.at3": 0,
+  "score5.at6": 1,
+  "score5.console": 0,
+  "sneaking.console": 0,
+  "sneaking.playerCrouching": 1,
+  "sneaking.playerStanding": 0,
+  "sneaking.shiftKeyOnly": 0,
+  "survives_explosion.console": 1,
+  "survives_explosion.player": 1,
+  "table_bonus.console": 1,
+  "table_bonus.player": 1,
+  "tool_any.console": 0,
+  "tool_any.player": 0
+ },
+ "registries": {
+  "block_transformer": [
+   "minecraft:axe",
+   "msm_b600:brush",
+   "minecraft:hoe",
+   "minecraft:shovel"
+  ],
+  "chat_type": [
+   "msm_b600:shout"
+  ],
+  "damage_type": [
+   "msm_b600:zap",
+   "msm_b600:zap_design",
+   "msm_b600:zap_fall"
+  ],
+  "dialog": [
+   "msm_b600:confirmation",
+   "msm_b600:dialog_list",
+   "msm_b600:multi_action",
+   "msm_b600:notice",
+   "msm_b600:plain",
+   "msm_b600:server_links"
+  ],
+  "enchantment": [
+   "msm_b600:spike",
+   "msm_b600:spike_curse",
+   "msm_b600:spike_ten"
+  ],
+  "functions": [
+   "msm_b600:hello"
+  ],
+  "item_modifiers": [
+   "msm_b600:conditional",
+   "msm_b600:list",
+   "msm_b600:rarity",
+   "msm_b600:ref",
+   "msm_b600:set_count",
+   "msm_b600:set_damage",
+   "msm_b600:set_enchantments",
+   "msm_b600:set_lore",
+   "msm_b600:set_name",
+   "msm_b600:smelt"
+  ],
+  "loot_tables": [
+   "msm_b600:alternatives",
+   "msm_b600:chest_like",
+   "msm_b600:count_add",
+   "msm_b600:count_binomial",
+   "msm_b600:count_dispatch",
+   "msm_b600:count_uniform",
+   "msm_b600:count_weighted",
+   "msm_b600:empty_weight",
+   "msm_b600:enchant_levels_book",
+   "msm_b600:enchant_levels_sword",
+   "msm_b600:enchant_randomly_book",
+   "msm_b600:group",
+   "msm_b600:limit",
+   "msm_b600:looting",
+   "msm_b600:looting_limit",
+   "msm_b600:luck",
+   "msm_b600:nested",
+   "msm_b600:random_chance",
+   "msm_b600:rolls_uniform",
+   "msm_b600:sequence",
+   "msm_b600:set_damage",
+   "msm_b600:table_modifier",
+   "msm_b600:tag_all",
+   "msm_b600:tag_expand",
+   "msm_b600:two_pools",
+   "msm_b600:weights"
+  ],
+  "predicates": [
+   "msm_b600:all_any",
+   "msm_b600:chance30",
+   "msm_b600:damage_fire",
+   "msm_b600:day",
+   "msm_b600:enchant_active",
+   "msm_b600:high",
+   "msm_b600:int_check",
+   "msm_b600:inverted_zero",
+   "msm_b600:is_player",
+   "msm_b600:killed_by_player",
+   "msm_b600:list_form",
+   "msm_b600:plains",
+   "msm_b600:raining",
+   "msm_b600:ref",
+   "msm_b600:score5",
+   "msm_b600:sneaking",
+   "msm_b600:survives_explosion",
+   "msm_b600:table_bonus",
+   "msm_b600:tool_any"
+  ],
+  "trial_spawner": [
+   "msm_b600:waves"
+  ]
+ },
+ "tags": {
+  "enchantment.minecraft:curse": [
+   "minecraft:binding_curse",
+   "minecraft:vanishing_curse",
+   "msm_b600:spike_curse"
+  ],
+  "item.minecraft:logs.hasOakLog": true,
+  "item.minecraft:logs.hasStone": true,
+  "item.minecraft:logs.size": 49,
+  "item.minecraft:wool": [
+   "minecraft:stone"
+  ],
+  "item.msm_b600:cycle_a": "absent",
+  "item.msm_b600:cycle_b": "absent",
+  "item.msm_b600:dupes": [
+   "minecraft:stone",
+   "minecraft:dirt"
+  ],
+  "item.msm_b600:missing_tag": "absent",
+  "item.msm_b600:names_missing": "absent",
+  "item.msm_b600:nested": [
+   "minecraft:stone",
+   "minecraft:dirt",
+   "minecraft:sand",
+   "minecraft:dark_oak_log",
+   "minecraft:dark_oak_wood",
+   "minecraft:stripped_dark_oak_log",
+   "minecraft:stripped_dark_oak_wood",
+   "minecraft:pale_oak_log",
+   "minecraft:pale_oak_wood",
+   "minecraft:stripped_pale_oak_log",
+   "minecraft:stripped_pale_oak_wood",
+   "minecraft:oak_log",
+   "minecraft:oak_wood",
+   "minecraft:stripped_oak_log",
+   "minecraft:stripped_oak_wood",
+   "minecraft:acacia_log",
+   "minecraft:acacia_wood",
+   "minecraft:stripped_acacia_log",
+   "minecraft:stripped_acacia_wood",
+   "minecraft:birch_log",
+   "minecraft:birch_wood",
+   "minecraft:stripped_birch_log",
+   "minecraft:stripped_birch_wood",
+   "minecraft:jungle_log",
+   "minecraft:jungle_wood",
+   "minecraft:stripped_jungle_log",
+   "minecraft:stripped_jungle_wood",
+   "minecraft:spruce_log",
+   "minecraft:spruce_wood",
+   "minecraft:stripped_spruce_log",
+   "minecraft:stripped_spruce_wood",
+   "minecraft:mangrove_log",
+   "minecraft:mangrove_wood",
+   "minecraft:stripped_mangrove_log",
+   "minecraft:stripped_mangrove_wood",
+   "minecraft:cherry_log",
+   "minecraft:cherry_wood",
+   "minecraft:stripped_cherry_log",
+   "minecraft:stripped_cherry_wood",
+   "minecraft:poplar_log",
+   "minecraft:poplar_wood",
+   "minecraft:stripped_poplar_log",
+   "minecraft:stripped_poplar_wood",
+   "minecraft:crimson_stem",
+   "minecraft:stripped_crimson_stem",
+   "minecraft:crimson_hyphae",
+   "minecraft:stripped_crimson_hyphae",
+   "minecraft:warped_stem",
+   "minecraft:stripped_warped_stem",
+   "minecraft:warped_hyphae",
+   "minecraft:stripped_warped_hyphae"
+  ],
+  "item.msm_b600:plain": [
+   "minecraft:stone",
+   "minecraft:dirt"
+  ],
+  "item.msm_b600:spiky": [
+   "minecraft:diamond_sword"
+  ],
+  "item.msm_b600:three": [
+   "minecraft:stone",
+   "minecraft:dirt",
+   "minecraft:sand"
+  ],
+  "item.msm_b600:with_missing": "absent",
+  "item.msm_b600:with_optional": [
+   "minecraft:stone"
+  ]
+ }
+}
