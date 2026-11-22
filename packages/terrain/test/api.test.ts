@@ -7,16 +7,31 @@ import {
   placeFeatures,
   resolvePreset,
   ruleTypes,
-  seedFromText,
+  sampleBiomes,
 } from '../src';
 
-describe('terrain stubs', () => {
-  it('throws not yet from the engine entry points', () => {
-    expect(() => seedFromText('x')).toThrow('not yet');
-    expect(() => createTerrainWorld({} as never)).toThrow('not yet');
+describe('terrain entry points and seams', () => {
+  it('refuses a world it did not make', () => {
+    const fake = {
+      generator: 'noise',
+      minY: 0,
+      height: 1,
+      seaLevel: 0,
+      biomesKnown: true,
+      unsupported: () => [],
+    } as const;
+    expect(() => sampleBiomes(fake, { x0: 0, z0: 0, width: 4, depth: 4, step: 4 })).toThrow();
+    expect(
+      createTerrainWorld({
+        files: { vanilla: null, project: {} },
+        source: { dimension: 'msm:x' },
+        seed: 0n,
+        facts: { dataFolders: [], approximate: [] },
+      }).unsupported(),
+    ).toHaveLength(1);
   });
 
-  it('has empty seams', () => {
+  it('has empty seams until B581 and B583', () => {
     expect(densityFunctionTypes).toEqual([]);
     expect(ruleTypes).toEqual([]);
     expect(conditionTypes).toEqual([]);

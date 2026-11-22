@@ -1,11 +1,18 @@
 /**
- * The engine's public interface (ADR 0119 D3; spike B574 "Interface for B576"). Every function
- * body is a stub until B578. A change to these types is reported to the orchestrator, not made.
+ * The engine's public interface (ADR 0119 D3; spike B574 "Interface for B576"). A change to these
+ * types is reported to the orchestrator, not made. The bodies are B578's: `world.ts`,
+ * `sample.ts` (layouts in its module comment), `columns.ts` and `seed.ts`.
  */
 
-/** Stub body until B578; reads its arguments so the signatures stay as given. */
-function notYet(..._args: readonly unknown[]): never {
-  throw new Error('not yet');
+import { buildWindow } from './columns';
+import { biomeMap, heightMap, sliceGrid, valueGrid } from './sample';
+import { seedFromText as seedOf } from './seed';
+import { EngineWorld } from './world';
+
+/** The engine's own world behind a `TerrainWorld` (only `createTerrainWorld` makes them). */
+function engine(world: TerrainWorld): EngineWorld {
+  if (world instanceof EngineWorld) return world;
+  throw new Error('This world was not made by createTerrainWorld.');
 }
 
 /** Registry folder key ('worldgen/noise_settings', 'dimension_type', 'tags/worldgen/biome', ...) to id to JSON. */
@@ -54,7 +61,7 @@ export interface TerrainWorld {
   unsupported(): readonly Unsupported[];
 }
 export function createTerrainWorld(input: TerrainWorldInput): TerrainWorld {
-  return notYet(input);
+  return new EngineWorld(input);
 }
 /** x0, z0 in blocks; step in blocks (multiple of 4 for biomes); y for biomes and value maps. */
 export interface MapRegion {
@@ -70,14 +77,14 @@ export interface PaletteGrid {
   readonly cells: Uint16Array;
 }
 export function sampleBiomes(world: TerrainWorld, region: MapRegion): PaletteGrid {
-  return notYet(world, region);
+  return biomeMap(engine(world), region);
 }
 export function sampleHeights(
   world: TerrainWorld,
   region: MapRegion,
   kind: 'surface' | 'ocean_floor',
 ): Int16Array {
-  return notYet(world, region, kind);
+  return heightMap(engine(world), region, kind);
 }
 export interface SliceRegion {
   readonly axis: 'x' | 'z';
@@ -88,14 +95,14 @@ export interface SliceRegion {
   readonly yStep: number;
 }
 export function sampleSlice(world: TerrainWorld, region: SliceRegion): PaletteGrid {
-  return notYet(world, region);
+  return sliceGrid(engine(world), region);
 }
 export function sampleValues(
   world: TerrainWorld,
   fn: string | unknown,
   region: MapRegion | SliceRegion,
 ): Float32Array {
-  return notYet(world, fn, region);
+  return valueGrid(engine(world), fn, region);
 }
 /** A window as Try it's GroundBlocks: size, palette and a Uint16Array in x, z, y order (as `@msm/sim`'s ground). */
 export interface ColumnWindow {
@@ -117,7 +124,7 @@ export function buildColumns(
   readonly blocks: Uint16Array;
   readonly notes: readonly Unsupported[];
 } {
-  return notYet(world, window, stage);
+  return buildWindow(engine(world), window, stage);
 }
 /** The worker protocol: a newer token cancels older work; answers come coarse first. */
 export type TerrainRequest =
@@ -147,5 +154,5 @@ export interface TerrainAnswer {
 }
 /** How a typed seed becomes a number (WS17). */
 export function seedFromText(text: string): bigint {
-  return notYet(text);
+  return seedOf(text);
 }
