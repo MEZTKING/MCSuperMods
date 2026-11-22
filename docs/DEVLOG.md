@@ -7353,3 +7353,15 @@ Next
 - Push the branch, confirm all four CI jobs green, fast-forward `main`.
 - Ask the user: the 1.5.2 Windows test and go, the WebGL fallback, a look at the drawn art, batch 1's vetoable defaults (ADRs 0103–0106 Status), the Far Worlds scheduled task and clone.
 - Batch 2, Wave 7: the spikes B524 (villagers, mobs, boats) and B525 (fluids, commands, game rules, statistics, events).
+## 2026-11-22 — executor — two CI flakes: the Profession Studio picture and leaf decay
+
+**What**
+- `app/test/components/studios/entities/profession-studio.test.tsx` "copies a picked picture…" (CI run 44992358215): the cause was in `IdInput`, not the test. A field shown by a lazy chunk is committed in one Scheduler task and has its passive effects flushed in a later one; RTL's `findBy` drains with `setTimeout(0)`, which under load can run before that `setImmediate`. The typed text then met the mount effect `setText(value)` at the change event and was reset to `''`, so blur committed nothing (the CI dump showed the villager picture field empty and no error). `app/src/renderer/src/forms/IdInput.tsx` now resets its text when `value` changes during render (the stored-previous-value pattern) instead of in an effect. New `app/test/components/id-input.test.tsx` types in the microtask right after the reveal commit: it fails on the old `IdInput` with the CI's symptom and passes now.
+- Parity `sample_mod_block_types_parity_test_leaves_decay_away_from_logs` (CI run 44994558212): the far leaves were placed non-persistent, so once their scheduled tick set `distance=7` (tick 1) any of the level's own random ticks could decay them before the tick-3 check. They now start `persistent=true` (distance is still worked out, as vanilla's leaves do), are checked at `distance=7`, and are set to `persistent=false,distance=7` only just before the test's own `randomTick`. With `random_tick_speed 4096` added for a trial, the old test failed with the CI message and the new one passed (trial line removed).
+- Checked: the profession and IdInput tests 30 runs green under 8 busy loops (3 at a time); parity `sample_mod_*` on the content jars, 26.3 five runs and 26.4 three runs, 83 of 83 each; `pnpm lint`, `pnpm typecheck`, `@msm/app` tests (2562), `./gradlew -p parity build`. Build outputs deleted.
+
+**Decisions**
+- Fixed the component rather than the test: no condition in the DOM tells a test the effects have run, and the reset could also drop a fast user's first typing.
+
+**Next**
+- Inputs in six other files reset their text in a `useEffect` on their value (`forms/scalars.tsx`, `forms/StructEditor.tsx`, `studios/structures/pickers.tsx`, `studios/controls/parts.tsx`, `studios/blocks-items/parts.tsx`, `components/ai/AiLimitsPopover.tsx`); those that commit on blur can lose typing the same way and could take the same pattern.

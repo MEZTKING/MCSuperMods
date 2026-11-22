@@ -2,7 +2,7 @@
  * A standalone id combobox for Studio views (outside a `SchemaForm`): a text input with
  * suggestions in a `<datalist>`, committed on Enter or blur and reverted on Escape.
  */
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { inputClass } from './scalars';
 
 /** At most this many suggestions are listed. */
@@ -54,8 +54,15 @@ export function IdInput({
   className,
 }: IdInputProps) {
   const [text, setText] = useState(value);
+  // A new `value` resets the text during render, not in an effect: a mount effect resetting it
+  // could run after the first keystroke (when the field appears in a commit whose passive
+  // effects are still pending) and throw that typing away.
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    setText(value);
+  }
   const listId = useId();
-  useEffect(() => setText(value), [value]);
   const options = suggestions?.(text) ?? [];
   const commit = () => {
     if (text !== value) onCommit(text);

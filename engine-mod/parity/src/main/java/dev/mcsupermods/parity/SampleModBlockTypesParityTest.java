@@ -470,13 +470,18 @@ public class SampleModBlockTypesParityTest {
 
     // Leaves (ADR 0068 D6)
 
-    /** Leaves away from logs decay on a random tick; next to a maple log (block tag #logs) they stay; shears get them. */
+    /**
+     * Leaves away from logs decay on a random tick; next to a maple log (block tag #logs) they stay; shears get them.
+     * The far leaves start persistent, so the level's own random ticks cannot take them before the distance check (non-persistent
+     * leaves at distance 7 decay on any random tick); they become decayable, at the distance worked out, only just before the
+     * test's own random tick.
+     */
     @GameTest(maxTicks = 20)
     public void leavesDecayAwayFromLogs(GameTestHelper helper) {
         floor(helper, Blocks.STONE);
         Block leaves = block(helper, "maple_leaves");
         BlockPos kept = new BlockPos(2, 1, 4);
-        setblock(helper, AT, NAMESPACE + ":maple_leaves[persistent=false,distance=1]");
+        setblock(helper, AT, NAMESPACE + ":maple_leaves[persistent=true,distance=1]");
         setblock(helper, kept.west(), NAMESPACE + ":maple_log");
         setblock(helper, kept, NAMESPACE + ":maple_leaves[persistent=false,distance=1]");
         helper.assertValueEqual(countDrops(drops(helper, leaves.defaultBlockState(), new ItemStack(Items.SHEARS)), leaves.asItem()), 1,
@@ -484,6 +489,8 @@ public class SampleModBlockTypesParityTest {
         helper.runAfterDelay(3, () -> {
             assertIfBlock(helper, AT, NAMESPACE + ":maple_leaves[distance=7]");
             assertIfBlock(helper, kept, NAMESPACE + ":maple_leaves[distance=1]");
+            setblock(helper, AT, NAMESPACE + ":maple_leaves[persistent=false,distance=7]");
+            assertIfBlock(helper, AT, NAMESPACE + ":maple_leaves[persistent=false,distance=7]");
             helper.randomTick(AT);
             helper.randomTick(kept);
         });
