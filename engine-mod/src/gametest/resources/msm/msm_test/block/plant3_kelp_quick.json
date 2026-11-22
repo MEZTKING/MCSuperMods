@@ -1,0 +1,17 @@
+{
+  "bonemeal_growth": {
+    "max": 2,
+    "min": 2
+  },
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "growth_chance": 1.0,
+  "needs_water": true,
+  "sound_type": "grass",
+  "type": "growing_plant"
+}

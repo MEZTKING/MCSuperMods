@@ -7057,3 +7057,24 @@ Next
 **Next**
 - B512: the companions `<pot>_<plant>` as `potted_plant` with `pot` set, and the pot's and potted blocks' loot.
 - Guide (B522): taking a plant out of a pot does not count as potting; lightning ignores waxed blocks.
+## 2026-11-22 — executor — B509 runtime: growing and climbing plants
+
+**What**
+- `registry/types/GrowingPlantTypes` fills the four types of ADR 0103 D1 (with its amendment after B503) on both versions, with shared rules (soil match by id or `#tag`, water beside a base, a column's own stop height, cactus damage). New block classes, each delegating events and triggers to the driver after vanilla's own behaviour:
+  - `MsmGrowingPlantHeadBlock` (vanilla `GrowingPlantHeadBlock` in the given direction and `growth_chance`; nested `Water` over `KelpBlock` for `needs_water`) and `MsmGrowingPlantBodyBlock` (the `<path>_plant` strand; nested `Water` over `KelpPlantBlock`). `max_age` below 25 starts a placed tip at age `25 - max_age`; `bonemeal_growth` replaces vanilla's count; `berries` add vanilla's `CaveVines.BERRIES` property with our own ripening by bone meal, picking (the project item), pick block and light; a `soil` list is our own survival check.
+  - `MsmColumnPlantBlock.Cane` (`SugarCaneBlock`) and `.Cactus` (`CactusBlock`): vanilla's rules at vanilla's numbers, our own random tick for other heights (16 ticks a block, a stop height per column from `min_height` to `max_height`), own survival for a `soil` list or a cane without `needs_water_nearby`, own `touch_damage`.
+  - `MsmBambooBlock` (`BambooStalkBlock`) and `MsmBambooShootBlock` (`BambooSaplingBlock`, the `<path>_shoot`): our own placement, growth (one in three random ticks at light 9 or more, to the column's stop height), leaves (large, large, small, none from the top), thickness from the fourth block passing down, bone meal (one or two blocks up to `max_height`) and survival.
+  - `MsmMultifaceBlock` (`GlowLichenBlock`): `light`, `spreads`, `waterloggable`.
+  - `MsmBigDripleafBlock` (`BigDripleafBlock`), `MsmDripleafStemBlock` (`BigDripleafStemBlock`, the `<path>_stem`) and `MsmSmallDripleafBlock` (`SmallDripleafBlock`, a double-high item): own survival, stacking, bone meal and growing into `grows_into`; vanilla's tilt at `[2, 10, 10]`, our own tilt timing otherwise.
+- `Companions`: `companionId(Identifier, BlockDefinition)` (shoot and stem depend on the fields), `kind(BlockDefinition)`, the three companion classes and the small dripleaf's item. `BlockTypes.properties`: the four types' family properties.
+- `MsmGrowingPlantGameTest` (12 tests, replacing the placeholder) on 16 `plant3_*.json` definitions and a new `plant3_tower` structure (5x32x5). 722 GameTests per variant.
+- Checks: `./gradlew build` on 26.3, `-Pmc=26.4` and `-PwithoutGeckolib` (722 GameTests each, 1216 JUnit); `biome ci .` and `node tools/check-deps/index.ts`.
+
+**Decisions**
+- Growth chance: dry plants pass `growth_chance` to `GrowingPlantHeadBlock`'s constructor; a water plant keeps vanilla's random tick at 0.14 and uses our own one-block growth otherwise (kelp's `canPlaceLiquid` differs between versions, so the water plant stays on `KelpBlock` rather than a seam). A water plant always grows up (a load warning for `direction: down`); a plant with berries ignores `bonemeal_growth` (a load warning).
+- Defaults keep vanilla's own code paths wherever the numbers are vanilla's (kelp chance, cane and cactus height 3, cactus damage 1, dripleaf tilt `[2, 10, 10]`); own rules only take over for other numbers or a `soil` list.
+- A column's stop height is fixed by its place (seeded from x and z), not rolled per growth.
+- Climbing stays the lowering's `#minecraft:climbable`; no runtime code.
+
+**Next**
+- B511 lowers the types (models, loot tables for the `_plant`, `_shoot` and `_stem` companions dropping the element's item, `#minecraft:climbable` for climbable strands); B520 the client GameTest screenshots (`MsmPlants3ClientGameTest`), not done here.

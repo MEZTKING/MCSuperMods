@@ -6,6 +6,7 @@ import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
 import dev.mcsupermods.runtime.loader.RawDefinition;
 import dev.mcsupermods.runtime.loader.types.FurnitureFields;
+import dev.mcsupermods.runtime.loader.types.GrowingPlantFields;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.StandingAndWallBlockItem;
@@ -28,14 +30,17 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
  * Companion blocks registered right after their element (ADR 0094 D3): the wall torch of a torch, the wall sign and wall
- * hanging sign of a sign and hanging sign ({@code <path>_wall}), the attached stem of a stem ({@code <path>_attached}).
+ * hanging sign of a sign and hanging sign ({@code <path>_wall}), the attached stem of a stem ({@code <path>_attached}), and
+ * (ADR 0103 D1, D4) the strand of a growing plant ({@code <path>_plant}), the shoot of a bamboo-like column plant
+ * ({@code <path>_shoot}) and the stem of a big dripleaf ({@code <path>_stem}).
  * A companion has a full copy of the element's block properties (strength, sound, light, loot table override), its own id
  * (so its default loot table is {@code <ns>:blocks/<path>_wall}, which the lowering writes to drop the element's item), the
  * element's events and no item of its own. Signs and their wall forms join vanilla's {@code SIGN} and {@code HANGING_SIGN}
  * block entity types (ADR 0094 D6). The element's item is made here too ({@link #blockItem}): vanilla's
  * {@link StandingAndWallBlockItem} for torches and signs (stacking to 16 for signs unless {@code item.max_stack_size} says
  * otherwise), {@link HangingSignItem} for hanging signs (16), scaffolding's own {@link MsmScaffoldingBlock.PlacingItem},
- * and a plain block item stacking to 1 for beds; both forms then give the item on pick block.
+ * a plain block item stacking to 1 for beds, and a double-high item for small dripleaves; both forms then give the item on
+ * pick block.
  */
 public final class Companions {
     private Companions() {}
@@ -43,18 +48,43 @@ public final class Companions {
     /** Element block to its companion, in registration order. */
     private static final Map<Block, Block> COMPANIONS = new IdentityHashMap<>();
 
-    /** The generated id of the companion of an element of {@code type}: {@code <path>_wall} or {@code <path>_attached}. */
+    /**
+     * The generated id of the companion of an element of {@code type}: {@code <path>_wall}, {@code <path>_attached} or
+     * {@code <path>_plant}. The companions that depend on the definition's fields (the bamboo shoot, the dripleaf stem)
+     * are only in {@link #companionId(Identifier, BlockDefinition)}.
+     */
     public static Optional<Identifier> companionId(Identifier id, BlockType type) {
         return switch (type) {
             case TORCH, SIGN, HANGING_SIGN -> Optional.of(id.withSuffix("_wall"));
             case STEM -> Optional.of(id.withSuffix("_attached"));
+            case GROWING_PLANT -> Optional.of(id.withSuffix("_plant"));
             default -> Optional.empty();
+        };
+    }
+
+    /** The generated id of the companion of {@code definition}'s element, if it has one (ADR 0094 D3, ADR 0103 D4). */
+    public static Optional<Identifier> companionId(Identifier id, BlockDefinition definition) {
+        return switch (definition.typeFields()) {
+            case GrowingPlantFields.ColumnPlant column when column.style() == GrowingPlantFields.ColumnPlantStyle.BAMBOO ->
+                    Optional.of(id.withSuffix("_shoot"));
+            case GrowingPlantFields.Dripleaf leaf when leaf.size() == GrowingPlantFields.DripleafSize.BIG -> Optional.of(id.withSuffix("_stem"));
+            default -> companionId(id, definition.type());
         };
     }
 
     /** {@code wall} or {@code attached}, for messages. */
     static String kind(BlockType type) {
         return type == BlockType.STEM ? "attached" : "wall";
+    }
+
+    /** What the companion of {@code definition} is, for messages: "wall form", "attached form", "strand", "shoot" or "stem". */
+    static String kind(BlockDefinition definition) {
+        return switch (definition.type()) {
+            case GROWING_PLANT -> "strand";
+            case COLUMN_PLANT -> "shoot";
+            case DRIPLEAF -> "stem";
+            default -> kind(definition.type()) + " form";
+        };
     }
 
     /** The companion registered for {@code element}, if it has one. */
@@ -69,7 +99,7 @@ public final class Companions {
      * companion; {@link FurnitureTypes#create} has already refused a generated id that was taken).
      */
     public static void registerAfter(RawDefinition raw, BlockDefinition definition, Block block, List<String> errors) {
-        Optional<Identifier> companionId = companionId(raw.id(), definition.type());
+        Optional<Identifier> companionId = companionId(raw.id(), definition);
         if (companionId.isEmpty()) {
             return;
         }
@@ -88,6 +118,10 @@ public final class Companions {
                             ResourceKey.create(Registries.BLOCK, fields.fruit()), ResourceKey.create(Registries.ITEM, seed),
                             TagKey.create(Registries.BLOCK, fields.soil()), props);
                 }
+                case MsmGrowingPlantHeadBlock head -> MsmGrowingPlantBodyBlock.create(id, definition, head, props);
+                case MsmGrowingPlantHeadBlock.Water head -> MsmGrowingPlantBodyBlock.create(id, definition, head, props);
+                case MsmBambooBlock stalk -> new MsmBambooShootBlock(id, definition, stalk, props.noCollision());
+                case MsmBigDripleafBlock leaf -> new MsmDripleafStemBlock(id, definition, leaf, props.noCollision());
                 default -> throw new IllegalStateException("no companion class for " + block.getClass().getSimpleName());
             };
             Registry.register(BuiltInRegistries.BLOCK, key, companion);
@@ -100,7 +134,7 @@ public final class Companions {
                 BlockEntityTypes.HANGING_SIGN.addValidBlock(companion);
             }
         } catch (RuntimeException e) {
-            String message = raw.describe() + ": the " + kind(definition.type()) + " form " + companionId.get() + " could not be registered: "
+            String message = raw.describe() + ": the " + kind(definition) + " " + companionId.get() + " could not be registered: "
                     + e.getMessage();
             errors.add(message);
             MsmRuntime.LOGGER.error("[{}] {}", MsmRuntime.MOD_ID, message);
@@ -121,6 +155,7 @@ public final class Companions {
             case MsmCeilingHangingSignBlock sign when companion != null -> new HangingSignItem(sign, companion, defaultStack(raw, props, 16));
             case MsmScaffoldingBlock scaffolding -> new MsmScaffoldingBlock.PlacingItem(scaffolding, props);
             case MsmBedBlock bed -> new BlockItem(bed, defaultStack(raw, props, 1));
+            case MsmSmallDripleafBlock leaf -> new DoubleHighBlockItem(leaf, props);
             default -> null;
         });
     }

@@ -1,0 +1,30 @@
+{
+  "berries": {
+    "item": "minecraft:apple",
+    "light": 12
+  },
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    },
+    "msm:on_interact": {
+      "event": "msm_test:plant3_picked"
+    }
+  },
+  "direction": "down",
+  "events": {
+    "msm_test:plant3_picked": {
+      "actions": [
+        {
+          "sound": "minecraft:entity.experience_orb.pickup",
+          "type": "play_sound",
+          "volume": 0.1
+        }
+      ]
+    }
+  },
+  "format": 1,
+  "sound_type": "grass",
+  "type": "growing_plant"
+}

@@ -1,0 +1,16 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "max_height": 4,
+  "soil": [
+    "minecraft:stone"
+  ],
+  "sound_type": "grass",
+  "style": "bamboo",
+  "type": "column_plant"
+}

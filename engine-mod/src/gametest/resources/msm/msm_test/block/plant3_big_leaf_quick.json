@@ -1,0 +1,17 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "size": "big",
+  "sound_type": "grass",
+  "tilt_ticks": [
+    1,
+    2,
+    3
+  ],
+  "type": "dripleaf"
+}

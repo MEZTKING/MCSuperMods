@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "direction": "up",
+  "format": 1,
+  "growth_chance": 1.0,
+  "max_age": 5,
+  "sound_type": "grass",
+  "type": "growing_plant"
+}

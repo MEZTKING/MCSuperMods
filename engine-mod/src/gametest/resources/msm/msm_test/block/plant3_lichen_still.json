@@ -1,0 +1,14 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "light": 3,
+  "sound_type": "grass",
+  "spreads": false,
+  "type": "multiface",
+  "waterloggable": false
+}

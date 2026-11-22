@@ -1,0 +1,15 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "max_height": 4,
+  "min_height": 2,
+  "sound_type": "wool",
+  "style": "cactus",
+  "touch_damage": 3,
+  "type": "column_plant"
+}

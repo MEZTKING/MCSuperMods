@@ -48,6 +48,13 @@ import net.minecraft.world.phys.AABB;
  *   <li>{@code portal}: {@code noCollision}, {@code pushReaction(IMMOVEABLE)} (the Nether portal; its unbreakable strength,
  *       light 11, glass sounds and no loot table are the registrar's per-type defaults, ADR 0077 D1; its zombified
  *       piglin {@code randomTicks} are not copied)</li>
+ *   <li>{@code growing_plant}: {@code noCollision}, {@code pushReaction(POPPED)} (kelp, weeping, twisting and cave vines;
+ *       the tip's random ticks follow its age, ADR 0103)</li>
+ *   <li>{@code column_plant}: {@code randomTicks}, {@code pushReaction(POPPED)} (sugar cane, cactus, bamboo; B503: cane
+ *       and cactus need {@code randomTicks}); the style's own in {@link GrowingPlantTypes}</li>
+ *   <li>{@code multiface}: {@code replaceable}, {@code noCollision}, {@code pushReaction(POPPED)} (glow lichen)</li>
+ *   <li>{@code dripleaf}: {@code pushReaction(POPPED)} (big and small dripleaf); the size's own in
+ *       {@link GrowingPlantTypes}</li>
  * </ul>
  * Vanilla's wooden doors, trapdoors and plates also set {@code ignitedByLava}; here {@code msm:flammable} sets it for every
  * type (the registrar), and leaves always.
@@ -73,6 +80,10 @@ public final class BlockTypes {
                     .isSuffocating((state, level, pos) -> false).ignitedByLava().pushReaction(PushReaction.POPPED)
                     .isRedstoneConductor((state, level, pos) -> false);
             case PORTAL -> props.noCollision().pushReaction(PushReaction.IMMOVEABLE);
+            case GROWING_PLANT -> props.noCollision().pushReaction(PushReaction.POPPED);
+            case COLUMN_PLANT -> props.randomTicks().pushReaction(PushReaction.POPPED);
+            case MULTIFACE -> props.replaceable().noCollision().pushReaction(PushReaction.POPPED);
+            case DRIPLEAF -> props.pushReaction(PushReaction.POPPED);
             default -> props;
         };
     }

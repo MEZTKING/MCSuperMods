@@ -1,0 +1,13 @@
+{
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "format": 1,
+  "grows_into": "msm_test:plant3_big_leaf",
+  "size": "small",
+  "sound_type": "grass",
+  "type": "dripleaf"
+}

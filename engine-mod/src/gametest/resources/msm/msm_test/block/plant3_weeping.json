@@ -1,0 +1,20 @@
+{
+  "bonemeal_growth": {
+    "max": 3,
+    "min": 3
+  },
+  "components": {
+    "msm:breakable": {
+      "hardness": 0.0,
+      "resistance": 0.0
+    }
+  },
+  "direction": "down",
+  "format": 1,
+  "soil": [
+    "minecraft:netherrack",
+    "#minecraft:wart_blocks"
+  ],
+  "sound_type": "grass",
+  "type": "growing_plant"
+}
