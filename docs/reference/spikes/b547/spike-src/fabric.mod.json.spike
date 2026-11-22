@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests (B547 spike)",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.mcsupermods.runtime.gametest.ScriptLogs"
+    ],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike6.B547ClientGameTest"
+    ]
+  },
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

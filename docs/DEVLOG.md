@@ -8533,3 +8533,19 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - Wave 2: B604 and B605 build their `EvalContext.lookup` from `vanilla.lookup([...folders])`; B608 shows the banner when a view's read answers `not_set_up` and draws item pictures from `vanillaAssets`; B615 passes `mcVersion` and `vanillaAssets` (or its own reader) to `BundleLiveView`.
 - Main session: `packages/interop/CLAUDE.md` still says schema 4 (not this brief's file).
+## 2026-11-22 — executor — B547 spike: void worlds, start structures, first join, one block, teams, areas and maps
+
+**What**
+- Answered Y1–Y16 of the game modes plan on 26.3 and 26.4-snapshot-7, by observation only (`javap` signatures, no Mojang method body): the vanilla dedicated servers driven over stdin with a spike data pack (17 dimensions in one world, restarts, `/reload`, chunk read-back), a throwaway client GameTest (a world made through the Create World screen's settings, `createFreshLevel` with a mod-data preset and with a folder pack placed before creation, the End and Nether, a world copied as a map), and the offline mcfunction checker over every generated line.
+- Evidence, the exact command and JSON forms for B550–B552 and the go/no-go table in `docs/reference/spikes/b547/README.md` (results JSON per version, spike sources); notes in the plan's "Notes from implementation → B547". The spike code, its resources and the temporary `fabric.mod.json` were removed from `engine-mod/` before the commit.
+
+**Decisions**
+- Go: ADR 0114 D2's Advanced `dimension_origin` route (with conditions: listed in `structure_overrides`, bottom at `start_height - 1`, random rotation, off with structures off), ADR 0115 D5 (the function bridge; B563 not needed), ADR 0116 D1 for data-only projects (the dev pack placed before `createFreshLevel` is enabled; B564 not needed), ADR 0116 D3 (`generated/<ns>/structure/<path>.nbt`).
+- No-go: ADR 0114 D6's `fixed_placement` start platform in void worlds (a flat world without a solid layer runs no biome features); 26.4 also refuses an empty `positions` list.
+- Not settled, in-game checks: `resources.zip` in a map (no effect through `WorldOpenFlows.openWorld`), the `.mrpack` `overrides/saves/` route, wandering traders over a void, the End's pillars in a void End.
+- Game screenshots were taken but not committed (they show the game's textures), as B574 did.
+
+**Next**
+- Two fixes before B551/B552 (outside this brief, reported as follow-ups): MSM's structure template writer writes `Name`/`Properties` palettes at the target's DataVersion, which 26.x places as air (needs `id`/`properties`); `@msm/schemas/mcfunction` throws on `#holder` scores in most positions and on named random sequences.
+- ADR 0116 D2's left-out list needs the 26.x names `players/data`, `players/advancements`, `players/stats`; every map with its own world type shows the "experimental settings" backup screen when opened (B554 and B556 should expect it).
+- B548 scaffold can start.

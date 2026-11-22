@@ -1,0 +1,112 @@
+{
+  "26.3": {
+    "checkedFiles": 114,
+    "errors": {
+      "area/report": [
+        "checker threw: Error: Cannot enter “score_holder.#entered” with Block visibility as no node with locals is supplied"
+      ],
+      "area/tick": [
+        "checker threw: Error: Cannot enter “score_holder.#areas” with Block visibility as no node with locals is supplied"
+      ],
+      "bridge.mcfunction": [
+        "0: Expected “advancement”, “attribute”, “ban”, “ban-ip”, “banlist”, “bossbar”, “clear”, “clone”, “compute”, “damage”, “data”, “datapack”, “debug”, “defaultgamemode”, “deop”, “dialog”, “difficulty”, “effect”, “enchant”, “execute”, “experience”, “fetchprofile”, “fill”, “fillbiome”, “forceload”, “function”, “gamemode”, “gamerule”, “give”, “help”, “item”, “jfr”, “kick”, “kill”, “list”, “locate”, “loot”, “me”, “msg”, “op”, “pardon”, “pardon-ip”, “particle”, “perf”, “place”, “playsound”, “posteffect”, “publish”, “random”, “recipe”, “reload”, “return”, “ride”, “rotate”, “save-all”, “save-off”, “save-on”, “say”, “schedule”, “scoreboard”, “seed”, “setblock”, “setidletimeout”, “setworldspawn”, “spawnpoint”, “spectate”, “spreadplayers”, “stop”, “stopsound”, “stopwatch”, “summon”, “swing”, “tag”, “team”, “teammsg”, “teleport”, “tell”, “tellraw”, “test”, “tick”, “time”, “title”, “tm”, “tp”, “transfer”, “trigger”, “unpublish”, “version”, “w”, “waypoint”, “weather”, “whitelist”, “worldborder”, or “xp”",
+        "0: Trailing data encountered: “ hello”"
+      ],
+      "bridge_server.mcfunction": [
+        "0: Expected “advancement”, “attribute”, “ban”, “ban-ip”, “banlist”, “bossbar”, “clear”, “clone”, “compute”, “damage”, “data”, “datapack”, “debug”, “defaultgamemode”, “deop”, “dialog”, “difficulty”, “effect”, “enchant”, “execute”, “experience”, “fetchprofile”, “fill”, “fillbiome”, “forceload”, “function”, “gamemode”, “gamerule”, “give”, “help”, “item”, “jfr”, “kick”, “kill”, “list”, “locate”, “loot”, “me”, “msg”, “op”, “pardon”, “pardon-ip”, “particle”, “perf”, “place”, “playsound”, “posteffect”, “publish”, “random”, “recipe”, “reload”, “return”, “ride”, “rotate”, “save-all”, “save-off”, “save-on”, “say”, “schedule”, “scoreboard”, “seed”, “setblock”, “setidletimeout”, “setworldspawn”, “spawnpoint”, “spectate”, “spreadplayers”, “stop”, “stopsound”, “stopwatch”, “summon”, “swing”, “tag”, “team”, “teammsg”, “teleport”, “tell”, “tellraw”, “test”, “tick”, “time”, “title”, “tm”, “tp”, “transfer”, “trigger”, “unpublish”, “version”, “w”, “waypoint”, “weather”, “whitelist”, “worldborder”, or “xp”",
+        "0: Trailing data encountered: “ from_server”"
+      ],
+      "forms/give_can_break_old.mcfunction": [
+        "0: Expected a map-like"
+      ],
+      "forms/place_jigsaw": [
+        "checker threw: Error: Cannot enter “jigsaw_block_name.b547:empty” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/random_seq": [
+        "checker threw: Error: Cannot enter “random_sequence.b547:ob” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/score_player_fmt": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/score_player_name": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/store_bossbar": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/team_join": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/team_leave": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/tellraw_score": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "ob/report": [
+        "checker threw: Error: Cannot enter “score_holder.#breaks” with Block visibility as no node with locals is supplied"
+      ],
+      "ob/tick": [
+        "checker threw: Error: Cannot enter “score_holder.#break” with Block visibility as no node with locals is supplied"
+      ],
+      "report": [
+        "checker threw: Error: Cannot enter “score_holder.#loads” with Block visibility as no node with locals is supplied"
+      ]
+    }
+  },
+  "26.4": {
+    "checkedFiles": 114,
+    "errors": {
+      "area/report": [
+        "checker threw: Error: Cannot enter “score_holder.#entered” with Block visibility as no node with locals is supplied"
+      ],
+      "area/tick": [
+        "checker threw: Error: Cannot enter “score_holder.#areas” with Block visibility as no node with locals is supplied"
+      ],
+      "bridge.mcfunction": [
+        "0: Expected “advancement”, “attribute”, “ban”, “ban-ip”, “banlist”, “bossbar”, “clear”, “clone”, “compute”, “damage”, “data”, “datapack”, “debug”, “defaultgamemode”, “deop”, “dialog”, “difficulty”, “effect”, “enchant”, “execute”, “experience”, “fetchprofile”, “fill”, “fillbiome”, “forceload”, “function”, “gamemode”, “gamerule”, “give”, “help”, “item”, “jfr”, “kick”, “kill”, “list”, “locate”, “loot”, “me”, “msg”, “op”, “pardon”, “pardon-ip”, “particle”, “perf”, “place”, “playsound”, “posteffect”, “publish”, “random”, “recipe”, “reload”, “return”, “ride”, “rotate”, “save-all”, “save-off”, “save-on”, “say”, “schedule”, “scoreboard”, “seed”, “setblock”, “setidletimeout”, “setworldspawn”, “spawnpoint”, “spectate”, “spreadplayers”, “stop”, “stopsound”, “stopwatch”, “summon”, “swing”, “tag”, “team”, “teammsg”, “teleport”, “tell”, “tellraw”, “test”, “tick”, “time”, “title”, “tm”, “tp”, “transfer”, “trigger”, “unpublish”, “version”, “w”, “waypoint”, “weather”, “whitelist”, “worldborder”, or “xp”",
+        "0: Trailing data encountered: “ hello”"
+      ],
+      "bridge_server.mcfunction": [
+        "0: Expected “advancement”, “attribute”, “ban”, “ban-ip”, “banlist”, “bossbar”, “clear”, “clone”, “compute”, “damage”, “data”, “datapack”, “debug”, “defaultgamemode”, “deop”, “dialog”, “difficulty”, “effect”, “enchant”, “execute”, “experience”, “fetchprofile”, “fill”, “fillbiome”, “forceload”, “function”, “gamemode”, “gamerule”, “give”, “help”, “item”, “jfr”, “kick”, “kill”, “list”, “locate”, “loot”, “me”, “msg”, “op”, “pardon”, “pardon-ip”, “particle”, “perf”, “place”, “playsound”, “posteffect”, “publish”, “random”, “recipe”, “reload”, “return”, “ride”, “rotate”, “save-all”, “save-off”, “save-on”, “say”, “schedule”, “scoreboard”, “seed”, “setblock”, “setidletimeout”, “setworldspawn”, “spawnpoint”, “spectate”, “spreadplayers”, “stop”, “stopsound”, “stopwatch”, “summon”, “swing”, “tag”, “team”, “teammsg”, “teleport”, “tell”, “tellraw”, “test”, “tick”, “time”, “title”, “tm”, “tp”, “transfer”, “trigger”, “unpublish”, “version”, “w”, “waypoint”, “weather”, “whitelist”, “worldborder”, or “xp”",
+        "0: Trailing data encountered: “ from_server”"
+      ],
+      "forms/give_can_break_old.mcfunction": [
+        "0: Expected a map-like"
+      ],
+      "forms/place_jigsaw": [
+        "checker threw: Error: Cannot enter “jigsaw_block_name.b547:empty” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/random_seq": [
+        "checker threw: Error: Cannot enter “random_sequence.b547:ob” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/score_player_fmt": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/score_player_name": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/store_bossbar": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/team_join": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/team_leave": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "forms/tellraw_score": [
+        "checker threw: Error: Cannot enter “score_holder.#b547_holder” with Block visibility as no node with locals is supplied"
+      ],
+      "ob/report": [
+        "checker threw: Error: Cannot enter “score_holder.#breaks” with Block visibility as no node with locals is supplied"
+      ],
+      "ob/tick": [
+        "checker threw: Error: Cannot enter “score_holder.#break” with Block visibility as no node with locals is supplied"
+      ],
+      "report": [
+        "checker threw: Error: Cannot enter “score_holder.#loads” with Block visibility as no node with locals is supplied"
+      ]
+    }
+  }
+}

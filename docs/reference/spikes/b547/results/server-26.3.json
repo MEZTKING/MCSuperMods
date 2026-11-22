@@ -1,0 +1,2402 @@
+{
+  "26.3": {},
+  "main": {
+    "areas": {
+      "baseline_2000": "System chat: Sprint completed with 2979 ticks per second, or 0.34 ms per tick",
+      "baseline_20_markers": "System chat: Sprint completed with 2364 ticks per second, or 0.42 ms per tick",
+      "bounds": {
+        "cmd": "function b547:area/bounds",
+        "out": [
+          "System chat: Running function b547:area/bounds",
+          "[Not Secure] [x300.0] [b547] bounds pred at-s IN",
+          "[Not Secure] [x307.5] [b547] bounds pred at-s IN",
+          "[Not Secure] [x307.99] [b547] bounds pred at-s IN",
+          "[Not Secure] [x308.0] [b547] bounds pred at-s IN",
+          "[Not Secure] [x307.5] [b547] bounds dx IN",
+          "[Not Secure] [x307.99] [b547] bounds dx IN",
+          "[Not Secure] [x308.0] [b547] bounds dx IN",
+          "[Not Secure] [x308.01] [b547] bounds dx IN",
+          "[Not Secure] [x308.5] [b547] bounds dx IN",
+          "[Not Secure] [x308.99] [b547] bounds dx IN",
+          "[Not Secure] [Server] [b547] bounds done"
+        ],
+        "seconds": 0.052
+      },
+      "predicate_64_areas_20_markers": "System chat: Sprint completed with 358 ticks per second, or 2.79 ms per tick",
+      "predicate_64_areas_20_markers_2000": "System chat: Sprint completed with 386 ticks per second, or 2.59 ms per tick",
+      "predicate_after_move": {
+        "#entered": "System chat: #entered has 40 [b547.c]",
+        "#left": "System chat: #left has 20 [b547.c]",
+        "#markers": "System chat: #markers has 20 [b547.c]"
+      },
+      "predicate_report": {
+        "#entered": "System chat: #entered has 20 [b547.c]",
+        "#left": "System chat: #left has 0 [b547.c]",
+        "#markers": "System chat: #markers has 20 [b547.c]"
+      },
+      "selector_64_areas_20_markers": "System chat: Sprint completed with 778 ticks per second, or 1.28 ms per tick",
+      "selector_64_areas_20_markers_2000": "System chat: Sprint completed with 981 ticks per second, or 1.02 ms per tick",
+      "selector_after_move": {
+        "#entered": "System chat: #entered has 40 [b547.c]",
+        "#left": "System chat: #left has 20 [b547.c]",
+        "#markers": "System chat: #markers has 20 [b547.c]"
+      },
+      "selector_report": {
+        "#entered": "System chat: #entered has 20 [b547.c]",
+        "#left": "System chat: #left has 0 [b547.c]",
+        "#markers": "System chat: #markers has 20 [b547.c]"
+      },
+      "setup": {
+        "cmd": "function b547:area/setup",
+        "out": [
+          "System chat: Running function b547:area/setup",
+          "[Not Secure] [Server] [b547] area setup"
+        ],
+        "seconds": 0.4
+      }
+    },
+    "biome_at_origin": {
+      "cmd": "execute if biome 0 64 0 b547:sky",
+      "out": [
+        "System chat: That position is not loaded"
+      ],
+      "seconds": 0.012
+    },
+    "checks_after_forms": {
+      "island_gold": {
+        "cmd": "execute if block 602 66 602 minecraft:gold_block",
+        "out": [
+          "System chat: Test passed"
+        ],
+        "seconds": 0.049
+      },
+      "island_rot_gold": {
+        "cmd": "execute if block 618 66 602 minecraft:gold_block",
+        "out": [
+          "System chat: Test failed"
+        ],
+        "seconds": 0.05
+      },
+      "name_form_gold": {
+        "cmd": "execute if block 682 66 602 minecraft:gold_block",
+        "out": [
+          "System chat: Test failed"
+        ],
+        "seconds": 0.05
+      },
+      "structure_gold_any": {
+        "cmd": "execute if blocks 655 60 655 665 70 665 655 60 655 masked",
+        "out": [
+          "System chat: Test passed. Count: 0"
+        ],
+        "seconds": 0.05
+      }
+    },
+    "chest_items_form": {
+      "cmd": "data get block 602 70 600 Items",
+      "out": [
+        "System chat: 602, 70, 600 has the following block data: [{count: 1, Slot: 0b, id: \"minecraft:lava_bucket\"}]"
+      ],
+      "seconds": 0.05
+    },
+    "chest_loot_form": {
+      "cmd": "data get block 600 70 600",
+      "out": [
+        "System chat: 600, 70, 600 has the following block data: {LootTable: \"minecraft:chests/simple_dungeon\", components: {}, x: 600, y: 70, z: 600, id: \"minecraft:chest\", LootTableSeed: 7L}"
+      ],
+      "seconds": 0.049
+    },
+    "datapacks": {
+      "cmd": "datapack list",
+      "out": [
+        "System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/b547 (world)]",
+        "System chat: There are no more data packs available"
+      ],
+      "seconds": 0.037
+    },
+    "dump": {
+      "b547:absent": {
+        "blocks": {
+          "minecraft:chest": [
+            [
+              -3,
+              64,
+              -3
+            ],
+            [
+              -1,
+              64,
+              -1
+            ]
+          ],
+          "minecraft:dirt": [
+            [
+              -2,
+              64,
+              -2
+            ]
+          ],
+          "minecraft:gold_block": [
+            [
+              -2,
+              65,
+              -2
+            ]
+          ],
+          "minecraft:grass_block": {
+            "count": 22,
+            "first": [
+              [
+                -4,
+                64,
+                -4
+              ],
+              [
+                -3,
+                64,
+                -4
+              ],
+              [
+                -2,
+                64,
+                -4
+              ],
+              [
+                -1,
+                64,
+                -4
+              ],
+              [
+                -4,
+                64,
+                -3
+              ],
+              [
+                -2,
+                64,
+                -3
+              ]
+            ],
+            "max_y": 64,
+            "min_y": 64
+          },
+          "minecraft:stone": {
+            "count": 25,
+            "first": [
+              [
+                -4,
+                63,
+                -4
+              ],
+              [
+                -3,
+                63,
+                -4
+              ],
+              [
+                -2,
+                63,
+                -4
+              ],
+              [
+                -1,
+                63,
+                -4
+              ],
+              [
+                -4,
+                63,
+                -3
+              ],
+              [
+                -3,
+                63,
+                -3
+              ]
+            ],
+            "max_y": 63,
+            "min_y": 63
+          }
+        },
+        "starts": [
+          {
+            "children": [
+              {
+                "BB": [
+                  -4,
+                  63,
+                  -4,
+                  0,
+                  65,
+                  0
+                ],
+                "id": "minecraft:jigsaw",
+                "pool_element": {
+                  "element_type": "minecraft:single_pool_element",
+                  "location": "b547:island",
+                  "processors": "minecraft:empty",
+                  "projection": "rigid"
+                }
+              }
+            ],
+            "chunk": [
+              0,
+              0
+            ],
+            "id": "b547:island"
+          }
+        ],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:fixed": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:fixed0": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:fixed10": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:fixed_air": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:fixed_layers": {
+        "blocks": {
+          "minecraft:emerald_block": [
+            [
+              40,
+              70,
+              -20
+            ],
+            [
+              3,
+              70,
+              3
+            ],
+            [
+              3,
+              71,
+              3
+            ]
+          ],
+          "minecraft:glass": {
+            "count": 5120,
+            "first": [
+              [
+                -32,
+                -64,
+                -32
+              ],
+              [
+                -31,
+                -64,
+                -32
+              ],
+              [
+                -30,
+                -64,
+                -32
+              ],
+              [
+                -29,
+                -64,
+                -32
+              ],
+              [
+                -28,
+                -64,
+                -32
+              ],
+              [
+                -27,
+                -64,
+                -32
+              ]
+            ],
+            "max_y": -64,
+            "min_y": -64
+          }
+        },
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:fixed_noise": {
+        "blocks": {
+          "minecraft:copper_ore": [
+            [
+              -32,
+              34,
+              -22
+            ],
+            [
+              -32,
+              35,
+              -23
+            ],
+            [
+              -31,
+              35,
+              -22
+            ]
+          ],
+          "minecraft:dirt": {
+            "count": 22810,
+            "first": [
+              [
+                -30,
+                30,
+                -32
+              ],
+              [
+                -30,
+                30,
+                -31
+              ],
+              [
+                -30,
+                30,
+                -30
+              ],
+              [
+                -30,
+                30,
+                -29
+              ],
+              [
+                -30,
+                30,
+                -28
+              ],
+              [
+                -30,
+                31,
+                -32
+              ]
+            ],
+            "max_y": 184,
+            "min_y": 26
+          },
+          "minecraft:emerald_block": [
+            [
+              40,
+              70,
+              -20
+            ],
+            [
+              3,
+              70,
+              3
+            ],
+            [
+              3,
+              71,
+              3
+            ]
+          ],
+          "minecraft:granite": {
+            "count": 25,
+            "first": [
+              [
+                -32,
+                32,
+                -24
+              ],
+              [
+                -31,
+                32,
+                -24
+              ],
+              [
+                -32,
+                32,
+                -23
+              ],
+              [
+                -31,
+                32,
+                -23
+              ],
+              [
+                -32,
+                33,
+                -25
+              ],
+              [
+                -32,
+                33,
+                -24
+              ]
+            ],
+            "max_y": 39,
+            "min_y": 32
+          },
+          "minecraft:grass_block": {
+            "count": 12392,
+            "first": [
+              [
+                -30,
+                32,
+                -32
+              ],
+              [
+                -30,
+                32,
+                -31
+              ],
+              [
+                -30,
+                32,
+                -30
+              ],
+              [
+                -30,
+                32,
+                -29
+              ],
+              [
+                -30,
+                32,
+                -28
+              ],
+              [
+                -30,
+                32,
+                -27
+              ]
+            ],
+            "max_y": 185,
+            "min_y": 28
+          },
+          "minecraft:stone": {
+            "count": 196103,
+            "first": [
+              [
+                -32,
+                26,
+                -32
+              ],
+              [
+                -32,
+                26,
+                -31
+              ],
+              [
+                -32,
+                26,
+                -30
+              ],
+              [
+                -32,
+                27,
+                -32
+              ],
+              [
+                -31,
+                27,
+                -32
+              ],
+              [
+                -32,
+                27,
+                -31
+              ]
+            ],
+            "max_y": 183,
+            "min_y": 23
+          }
+        },
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:listed": {
+        "blocks": {
+          "minecraft:chest": [
+            [
+              -3,
+              64,
+              -3
+            ],
+            [
+              -1,
+              64,
+              -1
+            ]
+          ],
+          "minecraft:dirt": [
+            [
+              -2,
+              64,
+              -2
+            ]
+          ],
+          "minecraft:gold_block": [
+            [
+              -2,
+              65,
+              -2
+            ]
+          ],
+          "minecraft:grass_block": {
+            "count": 22,
+            "first": [
+              [
+                -4,
+                64,
+                -4
+              ],
+              [
+                -3,
+                64,
+                -4
+              ],
+              [
+                -2,
+                64,
+                -4
+              ],
+              [
+                -1,
+                64,
+                -4
+              ],
+              [
+                -4,
+                64,
+                -3
+              ],
+              [
+                -2,
+                64,
+                -3
+              ]
+            ],
+            "max_y": 64,
+            "min_y": 64
+          },
+          "minecraft:stone": {
+            "count": 25,
+            "first": [
+              [
+                -4,
+                63,
+                -4
+              ],
+              [
+                -3,
+                63,
+                -4
+              ],
+              [
+                -2,
+                63,
+                -4
+              ],
+              [
+                -1,
+                63,
+                -4
+              ],
+              [
+                -4,
+                63,
+                -3
+              ],
+              [
+                -3,
+                63,
+                -3
+              ]
+            ],
+            "max_y": 63,
+            "min_y": 63
+          }
+        },
+        "starts": [
+          {
+            "children": [
+              {
+                "BB": [
+                  -4,
+                  63,
+                  -4,
+                  0,
+                  65,
+                  0
+                ],
+                "id": "minecraft:jigsaw",
+                "pool_element": {
+                  "element_type": "minecraft:single_pool_element",
+                  "location": "b547:island",
+                  "processors": "minecraft:empty",
+                  "projection": "rigid"
+                }
+              }
+            ],
+            "chunk": [
+              0,
+              0
+            ],
+            "id": "b547:island"
+          }
+        ],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:listed_feat": {
+        "blocks": {
+          "minecraft:chest": [
+            [
+              -3,
+              64,
+              -3
+            ],
+            [
+              -1,
+              64,
+              -1
+            ]
+          ],
+          "minecraft:dirt": [
+            [
+              -2,
+              64,
+              -2
+            ]
+          ],
+          "minecraft:gold_block": [
+            [
+              -2,
+              65,
+              -2
+            ]
+          ],
+          "minecraft:grass_block": {
+            "count": 22,
+            "first": [
+              [
+                -4,
+                64,
+                -4
+              ],
+              [
+                -3,
+                64,
+                -4
+              ],
+              [
+                -2,
+                64,
+                -4
+              ],
+              [
+                -1,
+                64,
+                -4
+              ],
+              [
+                -4,
+                64,
+                -3
+              ],
+              [
+                -2,
+                64,
+                -3
+              ]
+            ],
+            "max_y": 64,
+            "min_y": 64
+          },
+          "minecraft:stone": {
+            "count": 25,
+            "first": [
+              [
+                -4,
+                63,
+                -4
+              ],
+              [
+                -3,
+                63,
+                -4
+              ],
+              [
+                -2,
+                63,
+                -4
+              ],
+              [
+                -1,
+                63,
+                -4
+              ],
+              [
+                -4,
+                63,
+                -3
+              ],
+              [
+                -3,
+                63,
+                -3
+              ]
+            ],
+            "max_y": 63,
+            "min_y": 63
+          }
+        },
+        "starts": [
+          {
+            "children": [
+              {
+                "BB": [
+                  -4,
+                  63,
+                  -4,
+                  0,
+                  65,
+                  0
+                ],
+                "id": "minecraft:jigsaw",
+                "pool_element": {
+                  "element_type": "minecraft:single_pool_element",
+                  "location": "b547:island",
+                  "processors": "minecraft:empty",
+                  "projection": "rigid"
+                }
+              }
+            ],
+            "chunk": [
+              0,
+              0
+            ],
+            "id": "b547:island"
+          }
+        ],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:noise_origin": {
+        "blocks": {
+          "minecraft:chest": [
+            [
+              -3,
+              64,
+              -3
+            ],
+            [
+              -1,
+              64,
+              -1
+            ]
+          ],
+          "minecraft:copper_ore": [
+            [
+              -32,
+              34,
+              -22
+            ],
+            [
+              -32,
+              35,
+              -23
+            ],
+            [
+              -31,
+              35,
+              -22
+            ]
+          ],
+          "minecraft:dirt": {
+            "count": 22811,
+            "first": [
+              [
+                -30,
+                30,
+                -32
+              ],
+              [
+                -30,
+                30,
+                -31
+              ],
+              [
+                -30,
+                30,
+                -30
+              ],
+              [
+                -30,
+                30,
+                -29
+              ],
+              [
+                -30,
+                30,
+                -28
+              ],
+              [
+                -30,
+                31,
+                -32
+              ]
+            ],
+            "max_y": 184,
+            "min_y": 26
+          },
+          "minecraft:gold_block": [
+            [
+              -2,
+              65,
+              -2
+            ]
+          ],
+          "minecraft:granite": {
+            "count": 25,
+            "first": [
+              [
+                -32,
+                32,
+                -24
+              ],
+              [
+                -31,
+                32,
+                -24
+              ],
+              [
+                -32,
+                32,
+                -23
+              ],
+              [
+                -31,
+                32,
+                -23
+              ],
+              [
+                -32,
+                33,
+                -25
+              ],
+              [
+                -32,
+                33,
+                -24
+              ]
+            ],
+            "max_y": 39,
+            "min_y": 32
+          },
+          "minecraft:grass_block": {
+            "count": 12414,
+            "first": [
+              [
+                -30,
+                32,
+                -32
+              ],
+              [
+                -30,
+                32,
+                -31
+              ],
+              [
+                -30,
+                32,
+                -30
+              ],
+              [
+                -30,
+                32,
+                -29
+              ],
+              [
+                -30,
+                32,
+                -28
+              ],
+              [
+                -30,
+                32,
+                -27
+              ]
+            ],
+            "max_y": 185,
+            "min_y": 28
+          },
+          "minecraft:stone": {
+            "count": 196128,
+            "first": [
+              [
+                -32,
+                26,
+                -32
+              ],
+              [
+                -32,
+                26,
+                -31
+              ],
+              [
+                -32,
+                26,
+                -30
+              ],
+              [
+                -32,
+                27,
+                -32
+              ],
+              [
+                -31,
+                27,
+                -32
+              ],
+              [
+                -32,
+                27,
+                -31
+              ]
+            ],
+            "max_y": 183,
+            "min_y": 23
+          }
+        },
+        "starts": [
+          {
+            "children": [
+              {
+                "BB": [
+                  -4,
+                  63,
+                  -4,
+                  0,
+                  65,
+                  0
+                ],
+                "id": "minecraft:jigsaw",
+                "pool_element": {
+                  "element_type": "minecraft:single_pool_element",
+                  "location": "b547:island",
+                  "processors": "minecraft:empty",
+                  "projection": "rigid"
+                }
+              }
+            ],
+            "chunk": [
+              0,
+              0
+            ],
+            "id": "b547:island"
+          }
+        ],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:skyfeat": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:tv": {
+        "blocks": {
+          "minecraft:cobblestone": [
+            [
+              8,
+              -61,
+              8
+            ]
+          ],
+          "minecraft:stone": {
+            "count": 1088,
+            "first": [
+              [
+                -8,
+                -61,
+                -8
+              ],
+              [
+                -7,
+                -61,
+                -8
+              ],
+              [
+                -6,
+                -61,
+                -8
+              ],
+              [
+                -5,
+                -61,
+                -8
+              ],
+              [
+                -4,
+                -61,
+                -8
+              ],
+              [
+                -3,
+                -61,
+                -8
+              ]
+            ],
+            "max_y": -61,
+            "min_y": -61
+          }
+        },
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:tv_off": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "b547:unlisted": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "minecraft:overworld": {
+        "blocks": {
+          "minecraft:chest": [
+            [
+              -3,
+              64,
+              -3
+            ],
+            [
+              -1,
+              64,
+              -1
+            ]
+          ],
+          "minecraft:dirt": [
+            [
+              -2,
+              64,
+              -2
+            ]
+          ],
+          "minecraft:gold_block": [
+            [
+              -2,
+              65,
+              -2
+            ]
+          ],
+          "minecraft:grass_block": {
+            "count": 22,
+            "first": [
+              [
+                -4,
+                64,
+                -4
+              ],
+              [
+                -3,
+                64,
+                -4
+              ],
+              [
+                -2,
+                64,
+                -4
+              ],
+              [
+                -1,
+                64,
+                -4
+              ],
+              [
+                -4,
+                64,
+                -3
+              ],
+              [
+                -2,
+                64,
+                -3
+              ]
+            ],
+            "max_y": 64,
+            "min_y": 64
+          },
+          "minecraft:stone": {
+            "count": 25,
+            "first": [
+              [
+                -4,
+                63,
+                -4
+              ],
+              [
+                -3,
+                63,
+                -4
+              ],
+              [
+                -2,
+                63,
+                -4
+              ],
+              [
+                -1,
+                63,
+                -4
+              ],
+              [
+                -4,
+                63,
+                -3
+              ],
+              [
+                -3,
+                63,
+                -3
+              ]
+            ],
+            "max_y": 63,
+            "min_y": 63
+          }
+        },
+        "starts": [
+          {
+            "children": [
+              {
+                "BB": [
+                  -4,
+                  63,
+                  -4,
+                  0,
+                  65,
+                  0
+                ],
+                "id": "minecraft:jigsaw",
+                "pool_element": {
+                  "element_type": "minecraft:single_pool_element",
+                  "location": "b547:island",
+                  "processors": "minecraft:empty",
+                  "projection": "rigid"
+                }
+              }
+            ],
+            "chunk": [
+              0,
+              0
+            ],
+            "id": "b547:island"
+          }
+        ],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "minecraft:the_end": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "minecraft:the_nether": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      }
+    },
+    "end_dragon": {
+      "cmd": "execute in minecraft:the_end if entity @e[type=minecraft:ender_dragon]",
+      "out": [
+        "System chat: Test failed"
+      ],
+      "seconds": 0.05
+    },
+    "errors": [
+      "[19:44:34] [ServerMain/ERROR]: Failed to load function b547:forms/give_can_break_old",
+      "[19:45:20] [Server thread/ERROR]: No starting jigsaw b547:empty found in start pool b547:island"
+    ],
+    "forms": {
+      "actionbar": {
+        "cmd": "title @a actionbar {text:\"10 s\"}",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.049
+      },
+      "bossbar_add": {
+        "cmd": "bossbar add b547:timer {text:\"Time left\"}",
+        "out": [
+          "System chat: Created custom bossbar [Time left]"
+        ],
+        "seconds": 0.051
+      },
+      "bossbar_color": {
+        "cmd": "bossbar set b547:timer color red",
+        "out": [
+          "System chat: Custom bossbar [Time left] has changed color"
+        ],
+        "seconds": 0.05
+      },
+      "bossbar_max": {
+        "cmd": "bossbar set b547:timer max 60",
+        "out": [
+          "System chat: Custom bossbar [Time left] has changed maximum to 60"
+        ],
+        "seconds": 0.05
+      },
+      "bossbar_name": {
+        "cmd": "bossbar set b547:timer name {text:\"Round\",color:\"gold\"}",
+        "out": [
+          "System chat: Custom bossbar [Round] has been renamed"
+        ],
+        "seconds": 0.05
+      },
+      "bossbar_players": {
+        "cmd": "bossbar set b547:timer players @a",
+        "out": [
+          "System chat: Nothing changed. Those players are already on the bossbar with nobody to add or remove"
+        ],
+        "seconds": 0.049
+      },
+      "bossbar_remove": {
+        "cmd": "bossbar remove b547:timer",
+        "out": [
+          "System chat: Removed custom bossbar [Round]"
+        ],
+        "seconds": 0.05
+      },
+      "bossbar_style": {
+        "cmd": "bossbar set b547:timer style notched_10",
+        "out": [
+          "System chat: Custom bossbar [Round] has changed style"
+        ],
+        "seconds": 0.05
+      },
+      "bossbar_value": {
+        "cmd": "bossbar set b547:timer value 42",
+        "out": [
+          "System chat: Custom bossbar [Round] has changed value to 42"
+        ],
+        "seconds": 0.05
+      },
+      "bossbar_visible": {
+        "cmd": "bossbar set b547:timer visible true",
+        "out": [
+          "System chat: Nothing changed. The bossbar is already visible"
+        ],
+        "seconds": 0.049
+      },
+      "clone_big": {
+        "cmd": "clone 400 64 400 447 111 447 400 200 400",
+        "out": [
+          "System chat: Too many blocks in the specified area (maximum 32768, but specified 110592)"
+        ],
+        "seconds": 0.05
+      },
+      "defaultgamemode": {
+        "cmd": "defaultgamemode survival",
+        "out": [
+          "System chat: The default game mode is now Survival Mode"
+        ],
+        "seconds": 0.05
+      },
+      "dialog_show": {
+        "cmd": "dialog show @a minecraft:server_links",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.05
+      },
+      "difficulty": {
+        "cmd": "difficulty normal",
+        "out": [
+          "System chat: The difficulty has been set to Normal"
+        ],
+        "seconds": 0.05
+      },
+      "forceload_add": {
+        "cmd": "forceload add 0 0 31 31",
+        "out": [
+          "System chat: No chunks were marked for force loading"
+        ],
+        "seconds": 0.05
+      },
+      "forceload_query": {
+        "cmd": "forceload query 0 0",
+        "out": [
+          "System chat: Chunk at [0, 0] in minecraft:overworld is marked for force loading"
+        ],
+        "seconds": 0.05
+      },
+      "forceload_remove": {
+        "cmd": "forceload remove 0 0 31 31",
+        "out": [
+          "System chat: Unmarked 4 chunks in minecraft:overworld from [0, 0] to [1, 1] for force loading"
+        ],
+        "seconds": 0.049
+      },
+      "gamemode": {
+        "cmd": "gamemode adventure @a",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.05
+      },
+      "gamerule_keep": {
+        "cmd": "gamerule keep_inventory true",
+        "out": [
+          "System chat: Game rule keep_inventory is now set to true"
+        ],
+        "seconds": 0.051
+      },
+      "gamerule_limit": {
+        "cmd": "gamerule max_block_modifications 32768",
+        "out": [
+          "System chat: Game rule max_block_modifications is already set to 32768"
+        ],
+        "seconds": 0.049
+      },
+      "gamerule_radius": {
+        "cmd": "gamerule respawn_radius 0",
+        "out": [
+          "System chat: Game rule respawn_radius is now set to 0"
+        ],
+        "seconds": 0.049
+      },
+      "gamerule_traders": {
+        "cmd": "gamerule spawn_wandering_traders true",
+        "out": [
+          "System chat: Game rule spawn_wandering_traders is already set to true"
+        ],
+        "seconds": 0.05
+      },
+      "give_can_break": {
+        "cmd": "give @a minecraft:diamond_pickaxe[minecraft:can_break={blocks:\"minecraft:stone\"}]",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.051
+      },
+      "give_can_break_list": {
+        "cmd": "give @a minecraft:diamond_pickaxe[can_break=[{blocks:\"#minecraft:logs\"},{blocks:\"minecraft:stone\"}]]",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.05
+      },
+      "give_can_break_old": {
+        "cmd": "give @a minecraft:diamond_pickaxe[can_break={predicates:[{blocks:\"minecraft:stone\"}]}]",
+        "out": [
+          "System chat: Malformed 'minecraft:can_break' component: 'Not a map: [{blocks:\"minecraft:stone\"}]'",
+          "System chat: ...can_break={predicates:[{blocks:\"minecraft:stone\"}]}]<--[HERE]"
+        ],
+        "seconds": 0.051
+      },
+      "give_can_place": {
+        "cmd": "give @a minecraft:oak_planks[can_place_on={blocks:\"minecraft:grass_block\"}]",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.049
+      },
+      "loot_give": {
+        "cmd": "loot give @a loot minecraft:chests/simple_dungeon",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.049
+      },
+      "loot_insert": {
+        "cmd": "loot insert 601 64 601 loot minecraft:chests/simple_dungeon",
+        "out": [
+          "System chat: Target position 601, 64, 601 is not a container"
+        ],
+        "seconds": 0.05
+      },
+      "loot_spawn": {
+        "cmd": "loot spawn 600 80 600 loot b547:can_break_pick",
+        "out": [
+          "System chat: Dropped 1 [Diamond Pickaxe]"
+        ],
+        "seconds": 0.051
+      },
+      "obj_add_dummy": {
+        "cmd": "scoreboard objectives add b547.score dummy {text:\"Score\",color:\"gold\"}",
+        "out": [
+          "System chat: Created new objective [Score]"
+        ],
+        "seconds": 0.05
+      },
+      "obj_add_health": {
+        "cmd": "scoreboard objectives add b547.hp health",
+        "out": [
+          "System chat: Created new objective [b547.hp]"
+        ],
+        "seconds": 0.05
+      },
+      "obj_add_kills": {
+        "cmd": "scoreboard objectives add b547.kills playerKillCount \"Kills\"",
+        "out": [
+          "System chat: Created new objective [Kills]"
+        ],
+        "seconds": 0.05
+      },
+      "obj_add_stat": {
+        "cmd": "scoreboard objectives add b547.mined minecraft.mined:minecraft.stone",
+        "out": [
+          "System chat: Created new objective [b547.mined]"
+        ],
+        "seconds": 0.05
+      },
+      "obj_autoupdate": {
+        "cmd": "scoreboard objectives modify b547.score displayautoupdate true",
+        "out": [
+          "System chat: Enabled display auto-update for objective b547.score"
+        ],
+        "seconds": 0.049
+      },
+      "obj_display": {
+        "cmd": "scoreboard objectives setdisplay sidebar b547.score",
+        "out": [
+          "System chat: Set display slot sidebar to show objective Score"
+        ],
+        "seconds": 0.05
+      },
+      "obj_display_below": {
+        "cmd": "scoreboard objectives setdisplay below_name b547.hp",
+        "out": [
+          "System chat: Set display slot below_name to show objective b547.hp"
+        ],
+        "seconds": 0.048
+      },
+      "obj_display_list": {
+        "cmd": "scoreboard objectives setdisplay list b547.kills",
+        "out": [
+          "System chat: Set display slot list to show objective Kills"
+        ],
+        "seconds": 0.051
+      },
+      "obj_display_team": {
+        "cmd": "scoreboard objectives setdisplay sidebar.team.red b547.score",
+        "out": [
+          "System chat: Set display slot sidebar.team.red to show objective Score"
+        ],
+        "seconds": 0.05
+      },
+      "obj_displayname": {
+        "cmd": "scoreboard objectives modify b547.score displayname {text:\"Points\"}",
+        "out": [
+          "System chat: Changed the display name of b547.score to [Points]"
+        ],
+        "seconds": 0.05
+      },
+      "obj_numfmt_blank": {
+        "cmd": "scoreboard objectives modify b547.mined numberformat blank",
+        "out": [
+          "System chat: Changed default number format of objective b547.mined"
+        ],
+        "seconds": 0.05
+      },
+      "obj_numfmt_fixed": {
+        "cmd": "scoreboard objectives modify b547.kills numberformat fixed {text:\"-\"}",
+        "out": [
+          "System chat: Changed default number format of objective b547.kills"
+        ],
+        "seconds": 0.051
+      },
+      "obj_numfmt_styled": {
+        "cmd": "scoreboard objectives modify b547.score numberformat styled {color:\"yellow\",bold:true}",
+        "out": [
+          "System chat: Changed default number format of objective b547.score"
+        ],
+        "seconds": 0.049
+      },
+      "obj_render": {
+        "cmd": "scoreboard objectives modify b547.hp rendertype hearts",
+        "out": [],
+        "seconds": 0.049
+      },
+      "place_jigsaw": {
+        "cmd": "place jigsaw b547:island b547:empty 1 640 64 600",
+        "out": [
+          "No starting jigsaw b547:empty found in start pool b547:island",
+          "System chat: Failed to generate jigsaw"
+        ],
+        "seconds": 0.051
+      },
+      "place_structure": {
+        "cmd": "place structure b547:island 660 64 600",
+        "out": [
+          "System chat: Generated structure \"b547:island\" at 660, 64, 600"
+        ],
+        "seconds": 0.053
+      },
+      "place_template": {
+        "cmd": "place template b547:island 600 64 600",
+        "out": [
+          "System chat: Loaded template \"b547:island\" at 600, 64, 600"
+        ],
+        "seconds": 0.047
+      },
+      "place_template_far": {
+        "cmd": "place template b547:island 5000 64 5000",
+        "out": [
+          "System chat: That position is not loaded"
+        ],
+        "seconds": 0.049
+      },
+      "place_template_name_form": {
+        "cmd": "place template b547:island_name 680 64 600",
+        "out": [
+          "System chat: Loaded template \"b547:island_name\" at 680, 64, 600"
+        ],
+        "seconds": 0.051
+      },
+      "place_template_rot": {
+        "cmd": "place template b547:island 620 64 600 clockwise_90 front_back 1.0 7",
+        "out": [
+          "System chat: Loaded template \"b547:island\" at 620, 64, 600"
+        ],
+        "seconds": 0.049
+      },
+      "random_roll": {
+        "cmd": "random roll 1..20",
+        "out": [
+          "System chat: Server rolled 16 (from 1 to 20)"
+        ],
+        "seconds": 0.049
+      },
+      "random_seq": {
+        "cmd": "random value 1..100 b547:ob",
+        "out": [
+          "System chat: Randomized value: 14"
+        ],
+        "seconds": 0.05
+      },
+      "random_value": {
+        "cmd": "random value 1..6",
+        "out": [
+          "System chat: Randomized value: 1"
+        ],
+        "seconds": 0.05
+      },
+      "schedule": {
+        "cmd": "schedule function b547:report 20t",
+        "out": [
+          "System chat: Scheduled function 'b547:report' in 20 tick(s) at gametime 21500"
+        ],
+        "seconds": 0.051
+      },
+      "score_add": {
+        "cmd": "scoreboard players add #b547_holder b547.score 2",
+        "out": [
+          "System chat: Added 2 to [Points] for #b547_holder (now 2)"
+        ],
+        "seconds": 0.051
+      },
+      "score_player_fmt": {
+        "cmd": "scoreboard players display numberformat #b547_holder b547.score fixed {text:\"seven\"}",
+        "out": [
+          "System chat: Changed number format for #b547_holder in [Points]"
+        ],
+        "seconds": 0.047
+      },
+      "score_player_name": {
+        "cmd": "scoreboard players display name #b547_holder b547.score {text:\"Holder\"}",
+        "out": [
+          "System chat: Changed display name to Holder for #b547_holder in [Points]"
+        ],
+        "seconds": 0.05
+      },
+      "score_set": {
+        "cmd": "scoreboard players set #b547_holder b547.score 5",
+        "out": [
+          "System chat: Set [Points] for #b547_holder to 5"
+        ],
+        "seconds": 0.049
+      },
+      "setblock_chest_items": {
+        "cmd": "setblock 602 70 600 minecraft:chest{Items:[{Slot:0b,id:\"minecraft:lava_bucket\",count:1}]}",
+        "out": [
+          "System chat: Changed the block at 602, 70, 600"
+        ],
+        "seconds": 0.051
+      },
+      "setblock_chest_loot": {
+        "cmd": "setblock 600 70 600 minecraft:chest{LootTable:\"minecraft:chests/simple_dungeon\",LootTableSeed:7L}",
+        "out": [
+          "System chat: Changed the block at 600, 70, 600"
+        ],
+        "seconds": 0.049
+      },
+      "setworldspawn": {
+        "cmd": "setworldspawn 0 66 0",
+        "out": [
+          "System chat: Set the world spawn point to 0, 66, 0 [0.0, 0.0] in minecraft:overworld"
+        ],
+        "seconds": 0.051
+      },
+      "setworldspawn_angle": {
+        "cmd": "setworldspawn 0 66 0 90 0",
+        "out": [
+          "System chat: Set the world spawn point to 0, 66, 0 [90.0, 0.0] in minecraft:overworld"
+        ],
+        "seconds": 0.049
+      },
+      "spawnpoint": {
+        "cmd": "spawnpoint @a 0 66 0",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.05
+      },
+      "storage_flag": {
+        "cmd": "data modify storage b547:games flag set value 1b",
+        "out": [
+          "System chat: Modified storage b547:games"
+        ],
+        "seconds": 0.049
+      },
+      "storage_test": {
+        "cmd": "execute if data storage b547:games {flag:1b} run say [b547] form storage flag set",
+        "out": [
+          "[Not Secure] [Server] [b547] form storage flag set"
+        ],
+        "seconds": 0.05
+      },
+      "store_bossbar": {
+        "cmd": "execute store result bossbar b547:timer value run scoreboard players get #b547_holder b547.score",
+        "out": [
+          "System chat: #b547_holder has 5 [Points]"
+        ],
+        "seconds": 0.053
+      },
+      "team_add": {
+        "cmd": "team add b547_red \"Red\"",
+        "out": [
+          "System chat: Created team [Red]"
+        ],
+        "seconds": 0.048
+      },
+      "team_add_component": {
+        "cmd": "team add b547_blue {text:\"Blue\",color:\"blue\"}",
+        "out": [
+          "System chat: Created team [Blue]"
+        ],
+        "seconds": 0.046
+      },
+      "team_add_dotted": {
+        "cmd": "team add b547.dotted",
+        "out": [
+          "System chat: Created team [b547.dotted]"
+        ],
+        "seconds": 0.05
+      },
+      "team_collision": {
+        "cmd": "team modify b547_red collisionRule pushOwnTeam",
+        "out": [
+          "System chat: Collision rule for team [Red] is now \"Push own team\""
+        ],
+        "seconds": 0.048
+      },
+      "team_color": {
+        "cmd": "team modify b547_red color red",
+        "out": [
+          "System chat: Updated the color for team [Red] to red"
+        ],
+        "seconds": 0.05
+      },
+      "team_death_msg": {
+        "cmd": "team modify b547_red deathMessageVisibility never",
+        "out": [
+          "System chat: Death message visibility for team [Red] is now \"Never\""
+        ],
+        "seconds": 0.05
+      },
+      "team_display": {
+        "cmd": "team modify b547_red displayName {text:\"Red team\"}",
+        "out": [
+          "System chat: Updated the name of team [Red team]"
+        ],
+        "seconds": 0.05
+      },
+      "team_friendly": {
+        "cmd": "team modify b547_red friendlyFire false",
+        "out": [
+          "System chat: Disabled friendly fire for team [Red team]"
+        ],
+        "seconds": 0.05
+      },
+      "team_join": {
+        "cmd": "team join b547_red #b547_holder",
+        "out": [
+          "System chat: Added #b547_holder to team [Red team]"
+        ],
+        "seconds": 0.051
+      },
+      "team_leave": {
+        "cmd": "team leave #b547_holder",
+        "out": [
+          "System chat: Removed #b547_holder from any team"
+        ],
+        "seconds": 0.048
+      },
+      "team_nametag": {
+        "cmd": "team modify b547_red nametagVisibility hideForOtherTeams",
+        "out": [
+          "[Not Secure] [Server] [b547] report done",
+          "System chat: Nametag visibility for team [Red team] is now \"Hide for other teams\""
+        ],
+        "seconds": 0.051
+      },
+      "team_prefix": {
+        "cmd": "team modify b547_red prefix {text:\"[R] \",color:\"red\"}",
+        "out": [
+          "System chat: Team prefix set to [R] "
+        ],
+        "seconds": 0.049
+      },
+      "team_see_inv": {
+        "cmd": "team modify b547_red seeFriendlyInvisibles true",
+        "out": [
+          "System chat: Nothing changed. That team can already see invisible teammates"
+        ],
+        "seconds": 0.05
+      },
+      "team_suffix": {
+        "cmd": "team modify b547_red suffix \" *\"",
+        "out": [
+          "System chat: Team suffix set to  *"
+        ],
+        "seconds": 0.05
+      },
+      "tellraw_score": {
+        "cmd": "tellraw @a [\"Score \",{score:{name:\"#b547_holder\",objective:\"b547.score\"}}]",
+        "out": [
+          "System chat: No player was found"
+        ],
+        "seconds": 0.049
+      },
+      "trigger_like": {
+        "cmd": "scoreboard players enable @a b547.score",
+        "out": [
+          "System chat: No entity was found"
+        ],
+        "seconds": 0.049
+      },
+      "worldborder_center": {
+        "cmd": "worldborder center 0 0",
+        "out": [
+          "System chat: Set the center of the world border to 0.50, 0.50"
+        ],
+        "seconds": 0.051
+      },
+      "worldborder_set": {
+        "cmd": "worldborder set 2000",
+        "out": [
+          "System chat: Set the world border to 2000.0 block(s) wide"
+        ],
+        "seconds": 0.05
+      },
+      "worldborder_set_seconds": {
+        "cmd": "worldborder set 2200 5s",
+        "out": [
+          "System chat: Growing the world border to 2200.0 block(s) wide over 5.00 second(s)"
+        ],
+        "seconds": 0.054
+      },
+      "worldborder_set_time": {
+        "cmd": "worldborder set 2100 5",
+        "out": [
+          "System chat: Growing the world border to 2100.0 block(s) wide over 0.25 second(s)"
+        ],
+        "seconds": 0.046
+      },
+      "worldborder_warn": {
+        "cmd": "worldborder warning distance 5",
+        "out": [
+          "System chat: Nothing changed. The world border warning is already that distance"
+        ],
+        "seconds": 0.05
+      }
+    },
+    "generated_files": [],
+    "give_items": {
+      "cmd": "execute positioned 600 80 600 run data get entity @e[type=minecraft:item,limit=1,sort=nearest] Item",
+      "out": [
+        "System chat: Diamond Pickaxe has the following entity data: {components: {\"minecraft:can_break\": {blocks: \"minecraft:stone\"}}, count: 1, id: \"minecraft:diamond_pickaxe\"}"
+      ],
+      "seconds": 0.056
+    },
+    "level_dat": {
+      "DataPacks": {
+        "Disabled": [
+          "minecart_improvements",
+          "redstone_experiments",
+          "trade_rebalance"
+        ],
+        "Enabled": [
+          "vanilla",
+          "file/b547"
+        ]
+      },
+      "GameType": 0,
+      "spawn": {
+        "dimension": "minecraft:overworld",
+        "pitch": 0.0,
+        "pos": [
+          0,
+          66,
+          0
+        ],
+        "yaw": 90.0
+      }
+    },
+    "locate": {
+      "b547:absent": {
+        "cmd": "execute in b547:absent run locate structure b547:island",
+        "out": [
+          "System chat: Could not find a structure of type \"b547:island\" nearby"
+        ],
+        "seconds": 0.05
+      },
+      "b547:listed": {
+        "cmd": "execute in b547:listed run locate structure b547:island",
+        "out": [
+          "System chat: Could not find a structure of type \"b547:island\" nearby"
+        ],
+        "seconds": 0.048
+      },
+      "b547:listed_feat": {
+        "cmd": "execute in b547:listed_feat run locate structure b547:island",
+        "out": [
+          "System chat: Could not find a structure of type \"b547:island\" nearby"
+        ],
+        "seconds": 0.051
+      },
+      "b547:noise_origin": {
+        "cmd": "execute in b547:noise_origin run locate structure b547:island",
+        "out": [
+          "System chat: Could not find a structure of type \"b547:island\" nearby"
+        ],
+        "seconds": 0.05
+      },
+      "b547:unlisted": {
+        "cmd": "execute in b547:unlisted run locate structure b547:island",
+        "out": [
+          "System chat: Could not find a structure of type \"b547:island\" nearby"
+        ],
+        "seconds": 0.05
+      },
+      "minecraft:overworld": {
+        "cmd": "execute in minecraft:overworld run locate structure b547:island",
+        "out": [
+          "System chat: Sprint completed with 568 ticks per second, or 1.76 ms per tick",
+          "System chat: Could not find a structure of type \"b547:island\" nearby"
+        ],
+        "seconds": 0.025
+      }
+    },
+    "loot_place_list": {
+      "cmd": "loot spawn 600 90 600 loot b547:can_place_list",
+      "out": [
+        "System chat: Dropped 1 [Oak Planks]"
+      ],
+      "seconds": 0.044
+    },
+    "loot_place_list_item": {
+      "cmd": "execute positioned 600 90 600 run data get entity @e[type=minecraft:item,limit=1,sort=nearest] Item",
+      "out": [
+        "System chat: Oak Planks has the following entity data: {components: {\"minecraft:can_place_on\": [{blocks: \"minecraft:grass_block\"}, {blocks: \"#minecraft:logs\"}]}, count: 1, id: \"minecraft:oak_planks\"}"
+      ],
+      "seconds": 0.051
+    },
+    "one_block": {
+      "baseline_2000_a": "System chat: Sprint completed with 3038 ticks per second, or 0.33 ms per tick",
+      "baseline_2000_b": "System chat: Sprint completed with 3949 ticks per second, or 0.25 ms per tick",
+      "baseline_again": "System chat: Sprint completed with 3731 ticks per second, or 0.27 ms per tick",
+      "baseline_sprint_1000": "System chat: Sprint completed with 1740 ticks per second, or 0.57 ms per tick",
+      "chest_break": {
+        "cmd": "setblock 200 64 200 minecraft:air destroy",
+        "out": [
+          "System chat: Changed the block at 200, 64, 200"
+        ],
+        "seconds": 0.063
+      },
+      "chest_data": {
+        "cmd": "data get block 200 64 200",
+        "out": [
+          "System chat: 200, 64, 200 has the following block data: {LootTable: \"minecraft:chests/simple_dungeon\", components: {}, x: 200, y: 64, z: 200, id: \"minecraft:chest\"}"
+        ],
+        "seconds": 0.051
+      },
+      "chest_drop_list": {
+        "cmd": "execute as @e[type=minecraft:item,x=196,y=60,z=196,dx=8,dy=10,dz=8] run data get entity @s Item.id",
+        "out": [
+          "System chat: Chest has the following entity data: \"minecraft:chest\"",
+          "System chat: Bone has the following entity data: \"minecraft:bone\"",
+          "System chat: Wheat has the following entity data: \"minecraft:wheat\"",
+          "System chat: Beetroot Seeds has the following entity data: \"minecraft:beetroot_seeds\"",
+          "System chat: Bone has the following entity data: \"minecraft:bone\"",
+          "System chat: Rotten Flesh has the following entity data: \"minecraft:rotten_flesh\"",
+          "System chat: Bone has the following entity data: \"minecraft:bone\"",
+          "System chat: Bread has the following entity data: \"minecraft:bread\"",
+          "System chat: Wheat has the following entity data: \"minecraft:wheat\"",
+          "System chat: Bone has the following entity data: \"minecraft:bone\"",
+          "System chat: Rotten Flesh has the following entity data: \"minecraft:rotten_flesh\"",
+          "System chat: Beetroot Seeds has the following entity data: \"minecraft:beetroot_seeds\"",
+          "System chat: Beetroot Seeds has the following entity data: \"minecraft:beetroot_seeds\"",
+          "System chat: Rotten Flesh has the following entity data: \"minecraft:rotten_flesh\"",
+          "System chat: Enchanted Book has the following entity data: \"minecraft:enchanted_book\""
+        ],
+        "seconds": 0.056
+      },
+      "chest_drops": {
+        "cmd": "execute store result score #items b547.ob if entity @e[type=minecraft:item,x=196,y=60,z=196,dx=8,dy=10,dz=8]",
+        "out": [
+          "System chat: Sprint completed with 254 ticks per second, or 3.93 ms per tick",
+          "System chat: Test passed. Count: 15"
+        ],
+        "seconds": 0.016
+      },
+      "chest_place": {
+        "cmd": "setblock 200 64 200 minecraft:chest{LootTable:\"minecraft:chests/simple_dungeon\"}",
+        "out": [
+          "System chat: Changed the block at 200, 64, 200"
+        ],
+        "seconds": 0.002
+      },
+      "loop_2000_cleared_a": "System chat: Sprint completed with 1833 ticks per second, or 0.55 ms per tick",
+      "loop_2000_cleared_b": "System chat: Sprint completed with 1631 ticks per second, or 0.61 ms per tick",
+      "loop_report_cleared": {
+        "#breaks": "System chat: #breaks has 2015 [b547.ob]",
+        "#chests": "System chat: #chests has 115 [b547.ob]",
+        "#chick": "System chat: #chick has 0 [b547.ob]",
+        "#items": "System chat: #items has 0 [b547.ob]",
+        "#mobs": "System chat: #mobs has 41 [b547.ob]"
+      },
+      "loop_report_drops_kept": {
+        "#breaks": "System chat: #breaks has 1004 [b547.ob]",
+        "#chests": "System chat: #chests has 56 [b547.ob]",
+        "#chick": "System chat: #chick has 1 [b547.ob]",
+        "#items": "System chat: #items has 357 [b547.ob]",
+        "#mobs": "System chat: #mobs has 27 [b547.ob]"
+      },
+      "loop_sprint_1000_drops_cleared": "System chat: Sprint completed with 1361 ticks per second, or 0.73 ms per tick",
+      "loop_sprint_1000_drops_kept": "System chat: Sprint completed with 299 ticks per second, or 3.33 ms per tick",
+      "setup": {
+        "cmd": "function b547:ob/setup",
+        "out": [
+          "System chat: Running function b547:ob/setup",
+          "[Not Secure] [Server] [b547] ob setup"
+        ],
+        "seconds": 0.068
+      }
+    },
+    "report": {
+      "cmd": "function b547:report",
+      "out": [
+        "[Not Secure] [Server] [b547] load",
+        "[Not Secure] [Server] [b547] start: placing (flag not set)",
+        "[Not Secure] [Server] [b547] start: same tick PLACED",
+        "[Not Secure] [Server] [b547] start: one tick later PLACED",
+        "[Not Secure] [Server] [b547] start: same tick block present a tick later",
+        "System chat: Running function b547:report",
+        "[Not Secure] [Server] [b547] report done"
+      ],
+      "seconds": 0.273
+    },
+    "reset": {
+      "big64_corner": {
+        "cmd": "execute if block 543 65 463 minecraft:glowstone",
+        "out": [
+          "System chat: Test passed"
+        ],
+        "seconds": 0.001
+      },
+      "check": {
+        "cmd": "function b547:reset/check",
+        "out": [
+          "System chat: Running function b547:reset/check",
+          "[Not Secure] [Server] [b547] reset inside block cleared",
+          "[Not Secure] [Server] [b547] reset shell present"
+        ],
+        "seconds": 0.005
+      },
+      "clear": {
+        "cmd": "function b547:reset/clear",
+        "out": [
+          "System chat: Running function b547:reset/clear"
+        ],
+        "seconds": 0.012
+      },
+      "clone_big": {
+        "cmd": "function b547:forms/clone_big",
+        "out": [
+          "System chat: Running function b547:forms/clone_big"
+        ],
+        "seconds": 0.002
+      },
+      "clone_direct": {
+        "cmd": "clone 400 64 400 447 111 447 400 200 400",
+        "out": [
+          "System chat: Too many blocks in the specified area (maximum 32768, but specified 110592)"
+        ],
+        "seconds": 0.02
+      },
+      "clone_slice": {
+        "cmd": "clone 400 64 400 447 77 447 400 200 400",
+        "out": [
+          "System chat: Successfully cloned 32256 block(s)"
+        ],
+        "seconds": 0.181
+      },
+      "place_1": {
+        "cmd": "function b547:reset/place",
+        "out": [
+          "System chat: Running function b547:reset/place"
+        ],
+        "seconds": 0.039
+      },
+      "place_2": {
+        "cmd": "function b547:reset/place",
+        "out": [
+          "System chat: Running function b547:reset/place"
+        ],
+        "seconds": 0.049
+      },
+      "place_big64": {
+        "cmd": "place template b547:big64 480 64 400",
+        "out": [
+          "System chat: Loaded template \"b547:big64\" at 480, 64, 400"
+        ],
+        "seconds": 0.03
+      },
+      "setup": {
+        "cmd": "function b547:reset/setup",
+        "out": [
+          "System chat: Running function b547:reset/setup",
+          "[Not Secure] [Server] [b547] reset setup"
+        ],
+        "seconds": 0.45
+      }
+    },
+    "sb": {
+      "cmd": "function b547:sb/save",
+      "out": [
+        "System chat: Running function b547:sb/save",
+        "[Not Secure] [Server] [b547] sb powered"
+      ],
+      "seconds": 0.072
+    },
+    "sb_data": {
+      "cmd": "data get block 700 64 700",
+      "out": [
+        "System chat: Sprint completed with 1099 ticks per second, or 0.91 ms per tick",
+        "System chat: 700, 64, 700 has the following block data: {metadata: \"\", mirror: \"NONE\", components: {}, ignoreEntities: 1b, powered: 1b, seed: 0L, author: \"spike\", rotation: \"NONE\", posX: 1, mode: \"SAVE\", posY: 0, sizeX: 3, posZ: 0, integrity: 1.0f, showair: 0b, name: \"b547:saved\", x: 700, y: 64, z: 700, id: \"minecraft:structure_block\", strict: 0b, sizeY: 3, sizeZ: 3, showboundingbox: 1b}"
+      ],
+      "seconds": 0.004
+    },
+    "sidebar_list": {
+      "cmd": "scoreboard objectives list",
+      "out": [
+        "System chat: There are 6 objective(s): [b547.hp], [b547.mined], [Kills], [Points], [b547.ob], [b547.c]"
+      ],
+      "seconds": 0.053
+    },
+    "start_seconds": 8.9,
+    "startup_b547": [
+      "WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:<scratchpad>/b547/srv/26.3/libraries/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.3/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)",
+      "[19:44:32] [ServerMain/INFO]: Found new data pack file/b547, loading it automatically",
+      "[19:44:34] [ServerMain/ERROR]: Failed to load function b547:forms/give_can_break_old"
+    ],
+    "team_list": {
+      "cmd": "team list b547_red",
+      "out": [
+        "System chat: There are no members on team [Red team]"
+      ],
+      "seconds": 0.047
+    },
+    "worldborder_get": {
+      "cmd": "worldborder get",
+      "out": [
+        "System chat: The world border is currently 2100 block(s) wide"
+      ],
+      "seconds": 0.05
+    }
+  },
+  "nostruct": {
+    "dump": {
+      "b547:listed": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      },
+      "minecraft:overworld": {
+        "blocks": {},
+        "starts": [],
+        "statuses": [
+          "minecraft:full"
+        ]
+      }
+    },
+    "level_dat": {
+      "DataPacks": {
+        "Disabled": [
+          "minecart_improvements",
+          "redstone_experiments",
+          "trade_rebalance"
+        ],
+        "Enabled": [
+          "vanilla",
+          "file/b547"
+        ]
+      },
+      "GameType": 0,
+      "spawn": {
+        "dimension": "minecraft:overworld",
+        "pitch": 0.0,
+        "pos": [
+          8,
+          -64,
+          8
+        ],
+        "yaw": 0.0
+      }
+    },
+    "locate": {
+      "cmd": "locate structure b547:island",
+      "out": [
+        "System chat: Could not find a structure of type \"b547:island\" nearby"
+      ],
+      "seconds": 0.081
+    }
+  },
+  "restart": {
+    "lines_after_reload": [
+      "[Not Secure] [Server] [b547] load",
+      "[Not Secure] [Server] [b547] report done",
+      "[Not Secure] [Server] [b547] load",
+      "[Not Secure] [Server] [b547] report done"
+    ],
+    "reload": {
+      "cmd": "reload",
+      "out": [
+        "System chat: Reloading!",
+        "Loaded 1867 advancements",
+        "Failed to load function b547:forms/give_can_break_old",
+        "java.util.concurrent.CompletionException: java.lang.IllegalArgumentException: Whilst parsing command on line 1: Malformed 'minecraft:can_break' component: 'Not a map: [{blocks:\"minecraft:stone\"}]' at position 44: ...can_break=<--[HERE]",
+        "\tat java.base/java.util.concurrent.CompletableFuture.wrapInCompletionException(CompletableFuture.java:323)",
+        "\tat java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:359)",
+        "\tat java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:364)",
+        "\tat java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1791)",
+        "\tat net.minecraft.server.packs.resources.SimpleReloadInstance.lambda$prepareTasks$1(SimpleReloadInstance.java:51)",
+        "\tat java.base/java.util.concurrent.ForkJoinTask$RunnableExecuteAction.compute(ForkJoinTask.java:1753)",
+        "\tat java.base/java.util.concurrent.ForkJoinTask$RunnableExecuteAction.compute(ForkJoinTask.java:1745)",
+        "\tat java.base/java.util.concurrent.ForkJoinTask$InterruptibleTask.exec(ForkJoinTask.java:1662)",
+        "\tat java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)",
+        "\tat java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)",
+        "\tat java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)",
+        "\tat java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)",
+        "Caused by: java.lang.IllegalArgumentException: Whilst parsing command on line 1: Malformed 'minecraft:can_break' component: 'Not a map: [{blocks:\"minecraft:stone\"}]' at position 44: ...can_break=<--[HERE]",
+        "\tat net.minecraft.commands.functions.CommandFunction.fromLines(CommandFunction.java:81)",
+        "\tat net.minecraft.server.ServerFunctionLibrary.lambda$reload$3(ServerFunctionLibrary.java:85)",
+        "\tat java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)",
+        "\t... 8 more"
+      ],
+      "seconds": 0.367
+    },
+    "report_after_reload": {
+      "cmd": "function b547:report",
+      "out": [
+        "[Not Secure] [Server] [b547] load",
+        "System chat: Running function b547:report",
+        "[Not Secure] [Server] [b547] report done"
+      ],
+      "seconds": 0.036
+    },
+    "report_after_restart": {
+      "cmd": "function b547:report",
+      "out": [
+        "[Not Secure] [Server] [b547] load",
+        "System chat: Running function b547:report",
+        "[Not Secure] [Server] [b547] report done"
+      ],
+      "seconds": 1.958
+    },
+    "startup_b547": []
+  },
+  "spawn": {
+    "b547:void": {
+      "level_dat": {
+        "DataPacks": {
+          "Disabled": [
+            "minecart_improvements",
+            "redstone_experiments",
+            "trade_rebalance"
+          ],
+          "Enabled": [
+            "vanilla",
+            "file/b547"
+          ]
+        },
+        "GameType": 0,
+        "spawn": {
+          "dimension": "minecraft:overworld",
+          "pitch": 0.0,
+          "pos": [
+            0,
+            65,
+            0
+          ],
+          "yaw": 0.0
+        }
+      },
+      "log": [
+        "Preparing level \"w_spawn_void\"",
+        "Selecting global world spawn...",
+        "Preparing spawn area: 100%",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/minecraft:overworld",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed_noise",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed_air",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:listed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:skyfeat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed0",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed_layers",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:noise_origin",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:unlisted",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/minecraft:the_end",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/minecraft:the_nether",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:absent",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:listed_feat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:tv",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:tv_off",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed10",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/minecraft:overworld",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed_noise",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed_air",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:listed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:skyfeat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed0",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed_layers",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:noise_origin",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:unlisted",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/minecraft:the_end",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/minecraft:the_nether",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:absent",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:listed_feat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:tv",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:tv_off",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void]'/b547:fixed10"
+      ]
+    },
+    "b547:void_plain": {
+      "level_dat": {
+        "DataPacks": {
+          "Disabled": [
+            "minecart_improvements",
+            "redstone_experiments",
+            "trade_rebalance"
+          ],
+          "Enabled": [
+            "vanilla",
+            "file/b547"
+          ]
+        },
+        "GameType": 0,
+        "spawn": {
+          "dimension": "minecraft:overworld",
+          "pitch": 0.0,
+          "pos": [
+            8,
+            -64,
+            8
+          ],
+          "yaw": 0.0
+        }
+      },
+      "log": [
+        "Preparing level \"w_spawn_void_plain\"",
+        "Selecting global world spawn...",
+        "Preparing spawn area: 100%",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/minecraft:overworld",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/minecraft:the_end",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:noise_origin",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:absent",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed10",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:tv",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:skyfeat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:listed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:listed_feat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed_layers",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:tv_off",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/minecraft:the_nether",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed0",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed_noise",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed_air",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:unlisted",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/minecraft:overworld",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/minecraft:the_end",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:noise_origin",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:absent",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed10",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:tv",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:skyfeat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:listed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:listed_feat",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed_layers",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:tv_off",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/minecraft:the_nether",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed0",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed_noise",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:fixed_air",
+        "Saving chunks for level 'ServerLevel[w_spawn_void_plain]'/b547:unlisted"
+      ]
+    }
+  }
+}

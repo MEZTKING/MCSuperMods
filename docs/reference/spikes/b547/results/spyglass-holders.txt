@@ -1,0 +1,18 @@
+mc-26.3 execute if score #a b547.c matches 1.. run say hi -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.3 execute if score @s b547.c matches 1.. run say hi -> []
+mc-26.3 execute if score a b547.c matches 1.. run say hi -> THREW Error: Cannot enter “score_holder.a” with Block visibility as no node with locals is supplied
+mc-26.3 scoreboard players get #a b547.c -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.3 team join t #a -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.3 tellraw @a {score:{name:"#a",objective:"b547.c"}} -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.3 scoreboard players operation #a b547.c += #b b547.c -> THREW Error: Cannot enter “score_holder.#b” with Block visibility as no node with locals is supplied
+mc-26.3 execute store result score #a b547.c run random value 1..6 -> []
+mc-26.3 random value 1..100 b547:ob -> THREW Error: Cannot enter “random_sequence.b547:ob” with Block visibility as no node with locals is supplied
+mc-26.4 execute if score #a b547.c matches 1.. run say hi -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.4 execute if score @s b547.c matches 1.. run say hi -> []
+mc-26.4 execute if score a b547.c matches 1.. run say hi -> THREW Error: Cannot enter “score_holder.a” with Block visibility as no node with locals is supplied
+mc-26.4 scoreboard players get #a b547.c -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.4 team join t #a -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.4 tellraw @a {score:{name:"#a",objective:"b547.c"}} -> THREW Error: Cannot enter “score_holder.#a” with Block visibility as no node with locals is supplied
+mc-26.4 scoreboard players operation #a b547.c += #b b547.c -> THREW Error: Cannot enter “score_holder.#b” with Block visibility as no node with locals is supplied
+mc-26.4 execute store result score #a b547.c run random value 1..6 -> []
+mc-26.4 random value 1..100 b547:ob -> THREW Error: Cannot enter “random_sequence.b547:ob” with Block visibility as no node with locals is supplied

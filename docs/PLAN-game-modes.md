@@ -282,4 +282,25 @@ Order: the spike first (every route depends on it), then the frozen shapes, then
 
 ## Notes from implementation
 
-None yet.
+### B547 (spike, 2026-11-22)
+
+Evidence, forms and the go/no-go table: [`docs/reference/spikes/b547/README.md`](reference/spikes/b547/README.md). Both versions behaved the same except where marked.
+
+- **Y1** `{"type": "minecraft:dimension_origin"}` has no fields (extra keys ignored). One start at chunk 0 0 in every dimension whose generator uses the set: a flat generator must list it in `structure_overrides` (or leave the key out); `[]` skips it. Placed with flat `features: false`. A rigid one-piece jigsaw with `start_height` absolute 64 puts the piece's bottom at y 63; the piece is **rotated at random** about (0, y, 0). Off with "Generate structures" off.
+- **Y2** World spawn in a void with nothing: (8, -64, 8); with the origin island covering (0, 0): on its top. A first join in an empty void is placed at (8.5, -64, 8.5) and the tick advancement runs before any fall. With `setworldspawn` and `respawn_radius 0`, a respawn lands at the spawn's x z on the column's highest block, not at its y.
+- **Y3** `forceload add` then `place template` in the same tick works (forceload loads synchronously); without a loaded chunk `place template` fails. The storage flag holds across restarts and `/reload` and travels in `data/<ns>/command_storage.dat`.
+- **Y4** `minecraft:tick` advancement with a reward function: runs on the player's first tick, after placing, as the player; once across death, respawn and rejoin; a map without `players/` gives it again.
+- **Y5** A flat, layer-less `the_end` keeps the dragon fight, the exit portal, the egg and a gateway; pillars need the End biome's features (check in game). Frames set with all 12 eyes do not light; 11 set plus one eye used by the player do. A void Nether gets a portal and platform from the game.
+- **Y6** `layers: []` decodes. `the_void` adds its stone platform at (8, minY + 3, 8); a project biome without features is clean. A flat world with only empty or air layers runs none of its biome's features.
+- **Y7** `the_void`: nothing spawns. Plains-like monster lists: 61 to 70 monsters in 1,200 night ticks on a 33 x 33 platform; no animals after generation; phantoms rare; wandering traders not measured.
+- **Y8** `fixed_placement` positions are absolute `[x, y, z]`; 26.4 refuses `[]` (the pack fails); places nothing in a void world (Y6). ADR 0114 D6's platform needs `setblock` in void worlds.
+- **Y9** One block: about +0.3 ms a tick per position with drops cleared; chests with `LootTable` drop their loot when broken.
+- **Y10** All forms in the README accepted on both versions; `worldborder set <w> <n>` is ticks, `<n>s` seconds. **`@msm/schemas/mcfunction` throws on `#holder` scores in most positions and on named random sequences**: B551 to B553 need that fixed first (follow-up).
+- **Y11** `location_check` (26.x `type` key) needs `execute as ... at @s if predicate`; bounds inclusive on exact coordinates. 64 areas, 20 markers: predicates +2.0 to 2.4 ms a tick, the `dx` selector +0.7 to 0.9.
+- **Y12** `place template` places 48³ and larger templates and is not bound by `max_block_modifications` (clone is, 32,768); kill the box's entities first.
+- **Y13** A data pack function running a project command works at load, after `/reload`, as the player and from the server. **ADR 0115 D5 go; B563 not needed.**
+- **Y14** A copied world's `datapacks/` pack is enabled on open; every map with its own world type shows the "experimental settings" backup screen; `resources.zip` had no effect through `WorldOpenFlows.openWorld` and the `.mrpack` route was not reachable: both are in-game checks. 26.x world folders keep players under `players/data`, `players/advancements`, `players/stats` (ADR 0116 D2's list needs these names).
+- **Y15** `createFreshLevel` with a preset from mod data works; a folder pack placed in `saves/<world>/datapacks/` first is enabled automatically and its preset is in the registry. **ADR 0116 D1 for data-only projects go; B564 not needed.** Lang key for a world type: `generator.<ns>.<path>`.
+- **Y16** `can_break` / `can_place_on` as one predicate or a list, by `/give`, `item replace` and loot `set_components`; works in adventure; the old `{predicates: [...]}` form is refused. 26.x loot tables use `modifier` and `condition` with `type`.
+- **ADR 0116 D3** Structure-block saves: `<world>/generated/<ns>/structure/<path>.nbt` (a redstone pulse does not save).
+- **Bug found (outside the plan, blocks B551 and B552):** MSM's structure template writer writes palette `Name`/`Properties` with the target's DataVersion; 26.x reads `id`/`properties` at that version, so exported templates place as air.

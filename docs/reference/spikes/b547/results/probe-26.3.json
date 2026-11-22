@@ -1,0 +1,52 @@
+{
+  "origin_bare": {
+    "started": true,
+    "start_seconds": 12.0,
+    "errors": [
+      "WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:<scratchpad>/b547/srv/26.3/libraries/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.3/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)"
+    ],
+    "datapack_list": [
+      "Saving chunks for level 'ServerLevel[probe_origin_bare]'/minecraft:overworld",
+      "Saving chunks for level 'ServerLevel[probe_origin_bare]'/minecraft:the_end",
+      "Saving chunks for level 'ServerLevel[probe_origin_bare]'/minecraft:the_nether",
+      "System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/b547 (world)]"
+    ],
+    "locate": [
+      "System chat: The nearest minecraft:igloo is at [2304, ~, 1392] (2685 blocks away)",
+      "Locating element minecraft:igloo took 30 ms"
+    ]
+  },
+  "origin_extra": {
+    "started": true,
+    "start_seconds": 11.4,
+    "errors": [
+      "WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:<scratchpad>/b547/srv/26.3/libraries/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.3/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)"
+    ],
+    "datapack_list": [
+      "Saving chunks for level 'ServerLevel[probe_origin_extra]'/minecraft:overworld",
+      "Saving chunks for level 'ServerLevel[probe_origin_extra]'/minecraft:the_nether",
+      "Saving chunks for level 'ServerLevel[probe_origin_extra]'/minecraft:the_end",
+      "System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/b547 (world)]"
+    ],
+    "locate": [
+      "System chat: The nearest minecraft:igloo is at [2304, ~, 1392] (2685 blocks away)",
+      "Locating element minecraft:igloo took 39 ms"
+    ]
+  },
+  "fixed_empty": {
+    "started": true,
+    "start_seconds": 11.3,
+    "errors": [
+      "WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:<scratchpad>/b547/srv/26.3/libraries/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.3/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)"
+    ],
+    "datapack_list": [
+      "Saving chunks for level 'ServerLevel[probe_fixed_empty]'/minecraft:overworld",
+      "Saving chunks for level 'ServerLevel[probe_fixed_empty]'/minecraft:the_end",
+      "Saving chunks for level 'ServerLevel[probe_fixed_empty]'/minecraft:the_nether",
+      "System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/b547 (world)]"
+    ]
+  }
+}

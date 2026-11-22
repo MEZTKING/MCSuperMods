@@ -1,0 +1,50 @@
+{
+  "origin_bare": {
+    "started": true,
+    "start_seconds": 12.4,
+    "errors": [
+      "WARNING: java.lang.foreign.SymbolLookup::libraryLookup has been called by oshi.ffm.ForeignFunctions in an unnamed module (file:<scratchpad>/b547/srv/26.4/libraries/com/github/oshi/oshi-core-ffm/7.7.2/oshi-core-ffm-7.7.2.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.4/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)"
+    ],
+    "datapack_list": [
+      "Saving chunks for level 'ServerLevel[probe_origin_bare]'/minecraft:overworld",
+      "Saving chunks for level 'ServerLevel[probe_origin_bare]'/minecraft:the_end",
+      "Saving chunks for level 'ServerLevel[probe_origin_bare]'/minecraft:the_nether",
+      "System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/b547 (world)]"
+    ],
+    "locate": [
+      "System chat: The nearest minecraft:igloo is at [2304, ~, 1392] (2685 blocks away)",
+      "Locating element minecraft:igloo took 157 ms"
+    ]
+  },
+  "origin_extra": {
+    "started": true,
+    "start_seconds": 11.3,
+    "errors": [
+      "WARNING: java.lang.foreign.SymbolLookup::libraryLookup has been called by oshi.ffm.ForeignFunctions in an unnamed module (file:<scratchpad>/b547/srv/26.4/libraries/com/github/oshi/oshi-core-ffm/7.7.2/oshi-core-ffm-7.7.2.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.4/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)"
+    ],
+    "datapack_list": [
+      "Saving chunks for level 'ServerLevel[probe_origin_extra]'/minecraft:overworld",
+      "Saving chunks for level 'ServerLevel[probe_origin_extra]'/minecraft:the_nether",
+      "Saving chunks for level 'ServerLevel[probe_origin_extra]'/minecraft:the_end",
+      "System chat: There are 2 data pack(s) enabled: [vanilla (built-in)], [file/b547 (world)]"
+    ],
+    "locate": [
+      "System chat: The nearest minecraft:igloo is at [2304, ~, 1392] (2685 blocks away)",
+      "Locating element minecraft:igloo took 169 ms"
+    ]
+  },
+  "fixed_empty": {
+    "started": false,
+    "start_seconds": 7.4,
+    "errors": [
+      "WARNING: java.lang.foreign.SymbolLookup::libraryLookup has been called by oshi.ffm.ForeignFunctions in an unnamed module (file:<scratchpad>/b547/srv/26.4/libraries/com/github/oshi/oshi-core-ffm/7.7.2/oshi-core-ffm-7.7.2.jar)",
+      "WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:<scratchpad>/b547/srv/26.4/libraries/org/joml/joml/1.10.9/joml-1.10.9.jar)",
+      "[19:28:56] [Worker-Main-3/ERROR]: Registry loading errors:",
+      "java.lang.IllegalStateException: Failed to parse b547:fixed_empty from pack file/b547",
+      "[19:28:56] [ServerMain/WARN]: Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode",
+      "Caused by: java.lang.IllegalStateException: Failed to load registries due to errors"
+    ]
+  }
+}
