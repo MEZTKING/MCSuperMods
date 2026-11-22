@@ -11,7 +11,10 @@
  * - Shape (ADR 0059; simple, pillar and facing types only): `msm:shape` preset, custom boxes, "From model" (one undo step),
  *   walk-through and see-through toggles, the layer the model's textures give, and a live
  *   outline of the boxes.
- * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool.
+ * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool; what tools
+ *   turn the block into: "Axe strips into" (`msm:strippable`; not on the ADR 0094 types, which
+ *   axes never strip), "Shovel flattens into" (`msm:flattenable`) and "Hoe tills into" with
+ *   "Drops once" (`msm:tillable`, ADR 0105 D3).
  * - Light level (`msm:light_emitter`) and sound type; How it sounds (B516, ADR 0105 D1, D2): the
  *   block's own sounds and a door's or button's own set type, lazily loaded from `SoundsSection`.
  * - Inventory (B318, ADR 0076 D1; simple, pillar and facing types only): storage or a machine,
@@ -34,7 +37,7 @@
  */
 
 import type { Json } from '@msm/core';
-import { isSeeThroughBlock } from '@msm/plugin-blocks-items';
+import { isSeeThroughBlock, VANILLA_PARITY_TYPES } from '@msm/plugin-blocks-items';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { ModelPicturesAi } from '../../components/ai-pictures/StudioAiPictures';
 import { buttonClass } from '../../components/ui/Button';
@@ -82,6 +85,11 @@ import { projectPortals } from './portal-model';
 import { TexturesSection } from './TexturesSection';
 import { FuelCompostFields, TriggersSection } from './triggers';
 import { WeatheringSection } from './WeatheringSection';
+
+/** The tool components the Mining section edits (ADR 0067, ADR 0105 D3). */
+const STRIPPABLE = 'msm:strippable';
+const FLATTENABLE = 'msm:flattenable';
+const TILLABLE = 'msm:tillable';
 
 /** The Rules section (ADR 0082 D7 (b)), a chunk of its own. */
 const RulesSection = lazy(() => import('../rules/RulesSection'));
@@ -436,6 +444,18 @@ export function BlockStudio(props: StudioProps) {
   );
 
   const breakablePath = ['components', 'msm:breakable'];
+  const intoOf = (component: string, field = 'into'): string => {
+    const value = asObject(components[component])[field];
+    return typeof value === 'string' ? value : '';
+  };
+  const stripInto = intoOf(STRIPPABLE);
+  const flattenInto = intoOf(FLATTENABLE);
+  const tillable = asObject(components[TILLABLE]);
+  const tillInto = intoOf(TILLABLE);
+  const tillDrops = intoOf(TILLABLE, 'drops');
+  const showsStrip = blockType === undefined || !VANILLA_PARITY_TYPES.includes(blockType);
+  // A portal takes only its own components (ADR 0078 D1).
+  const showsToolTurns = !portal || stripInto !== '' || flattenInto !== '' || tillInto !== '';
   const mining = (
     <Section title="Mining" testId="block-mining">
       <div className="flex flex-wrap gap-2">
@@ -496,6 +516,73 @@ export function BlockStudio(props: StudioProps) {
       </p>
       {['hardness', 'resistance', 'tool', 'min_tier', 'requires_tool'].map((key) => (
         <ProblemsAt key={key} problems={problems} pointer={pointerOf([...breakablePath, key])} />
+      ))}
+      {showsToolTurns && (
+        <div className="flex flex-wrap gap-2" data-testid="block-tool-turns">
+          {(showsStrip || stripInto !== '') && (
+            <IdField
+              label="Axe strips into"
+              value={stripInto}
+              registry="block"
+              suggest={suggest}
+              testId="block-strip-into"
+              onCommit={(value) =>
+                set(['components', STRIPPABLE], value === '' ? undefined : { into: value })
+              }
+            />
+          )}
+          <IdField
+            label="Shovel flattens into"
+            value={flattenInto}
+            registry="block"
+            suggest={suggest}
+            testId="block-flatten-into"
+            onCommit={(value) =>
+              set(['components', FLATTENABLE], value === '' ? undefined : { into: value })
+            }
+          />
+          <IdField
+            label="Hoe tills into"
+            value={tillInto}
+            registry="block"
+            suggest={suggest}
+            testId="block-till-into"
+            onCommit={(value) =>
+              set(['components', TILLABLE], value === '' ? undefined : { ...tillable, into: value })
+            }
+          />
+          {tillInto !== '' && (
+            <IdField
+              label="Drops once"
+              value={tillDrops}
+              registry="item"
+              suggest={suggest}
+              testId="block-till-drops"
+              onCommit={(value) => set(['components', TILLABLE, 'drops'], value || undefined)}
+            />
+          )}
+        </div>
+      )}
+      {showsToolTurns && (
+        <p className="text-muted text-xs">
+          Empty fields leave the tool as it is. A shovel and a hoe work only with air above the
+          block, as in vanilla; "Drops once" is an item the hoe drops when it tills.
+        </p>
+      )}
+      {[
+        [STRIPPABLE],
+        [STRIPPABLE, 'into'],
+        [FLATTENABLE],
+        [FLATTENABLE, 'into'],
+        [TILLABLE],
+        [TILLABLE, 'into'],
+        [TILLABLE, 'drops'],
+      ].map((path) => (
+        <ProblemsAt
+          key={path.join('/')}
+          problems={problems}
+          pointer={pointerOf(['components', ...path])}
+        />
       ))}
     </Section>
   );

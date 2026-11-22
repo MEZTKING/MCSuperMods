@@ -19,6 +19,9 @@
  *   same shape (layout,
  *   rows or size, `keep_contents`, `double`, `per_player`): ageing and waxing copy the contents
  *   into the new block (D6), so a block without the slots loses them.
+ * - `blocks-items.machine-cannot-age` (warning): a machine with `msm:weathering` or `msm:waxable`:
+ *   a machine keeps its working block entity, so the runtime loads it without them and says so
+ *   only in the game log (`BlockComponents.checkAgeing`).
  */
 import type { Element, Json, JsonObject, Problem, ProjectValidator } from '@msm/plugin-api';
 import { BLOCK_KIND } from './kinds';
@@ -39,6 +42,7 @@ export const STORAGE2_PROBLEM_CODES: readonly string[] = Object.freeze([
   'blocks-items.per-player-conflict',
   'blocks-items.per-player-hoppers',
   'blocks-items.ageing-container-mismatch',
+  'blocks-items.machine-cannot-age',
 ]);
 
 const DEFAULT_CHEST_ROWS = 3;
@@ -185,13 +189,39 @@ function ageingContainers(elements: readonly Element[], blocks: readonly Storage
   return problems;
 }
 
+function ageingMachines(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const element of elements) {
+    if (element.kind !== BLOCK_KIND) continue;
+    const data = dataOf(element);
+    if (machineOf(data) === undefined) continue;
+    const components = isRecord(data.components) ? data.components : {};
+    for (const component of [WEATHERING_COMPONENT, WAXABLE_COMPONENT]) {
+      if (components[component] === undefined) continue;
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.machine-cannot-age',
+        elementId: element.id,
+        path: pointer('components', component),
+        message: `A machine keeps its working parts, so it cannot ${component === WEATHERING_COMPONENT ? 'age like copper' : 'be waxed'}: the game loads it without "${component}". Remove it, or make the block a container instead.`,
+      });
+    }
+  }
+  return problems;
+}
+
 export const storage2Validators: readonly ProjectValidator[] = Object.freeze([
   {
     id: 'msm.blocks-items.storage-2',
     kinds: [BLOCK_KIND],
     validate: ({ elements }) => {
       const blocks = storages(elements);
-      return [...doubleChests(blocks), ...perPlayer(blocks), ...ageingContainers(elements, blocks)];
+      return [
+        ...doubleChests(blocks),
+        ...perPlayer(blocks),
+        ...ageingContainers(elements, blocks),
+        ...ageingMachines(elements),
+      ];
     },
   },
 ] satisfies ProjectValidator[]);

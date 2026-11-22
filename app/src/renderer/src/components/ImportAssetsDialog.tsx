@@ -41,6 +41,13 @@ export interface ImportFileFilter {
   extensions: string[];
 }
 
+/** The file picker's title for importing into `subfolder`: sounds, shaders or textures. */
+export function importPickerTitle(subfolder: string): string {
+  if (subfolder === 'sounds' || subfolder.startsWith('sounds/')) return 'Import sounds';
+  if (subfolder === 'shaders' || subfolder.startsWith('shaders/')) return 'Import shaders';
+  return 'Import textures';
+}
+
 /**
  * The file picker filters for importing into `subfolder`. Textures accept PNG images and
  * their `.png.mcmeta` animation sidecars, which are imported into the same folder as the

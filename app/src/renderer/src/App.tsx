@@ -77,7 +77,11 @@ import { type MakeChoice, MakeChooser } from './components/home/MakeChooser';
 import { RenameThingDialog } from './components/home/MyThings';
 import { copyData, copyId, type ThingCard, thingCards } from './components/home/things';
 import { type ShownTile, shownTiles } from './components/home/tiles';
-import { ImportAssetsDialog, importFileFilters } from './components/ImportAssetsDialog';
+import {
+  ImportAssetsDialog,
+  importFileFilters,
+  importPickerTitle,
+} from './components/ImportAssetsDialog';
 import { BLOCKBENCH_IMPORT_NOTE, ImportFilesDialog } from './components/ImportFilesDialog';
 import {
   describeJarSource,
@@ -1103,11 +1107,10 @@ export function App({ session, bridge }: { session: ProjectSession; bridge: MsmB
   };
 
   const importAssets = async (namespace: string, subfolder: string): Promise<string | null> => {
-    const sounds = subfolder === 'sounds';
     let files: Awaited<ReturnType<MsmBridge['dialogs']['pickFiles']>>;
     try {
       files = await bridge.dialogs.pickFiles({
-        title: sounds ? 'Import sounds' : 'Import textures',
+        title: importPickerTitle(subfolder),
         filters: importFileFilters(subfolder),
       });
     } catch (error) {

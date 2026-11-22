@@ -276,8 +276,9 @@ const noteKind: ElementKind = {
 };
 
 /**
- * A fake library plugin: one kind of its own with a template, a template for a kind it does
- * not own (which the host drops), {@link fakeStarter}, {@link fakeExample}, and a starter and
+ * A fake library plugin: one kind of its own with a template, a template for a kind another
+ * plugin registers (which the host keeps), a template for an unregistered kind (which the host
+ * drops), {@link fakeStarter}, {@link fakeExample}, and a starter and
  * an example needing an unregistered kind (which the host hides).
  */
 export const fakeLibraryPlugin: Plugin = definePlugin({
@@ -298,8 +299,16 @@ export const fakeLibraryPlugin: Plugin = definePlugin({
         id: 'foreign_recipe',
         kind: 'minecraft:recipe',
         title: 'Foreign recipe',
-        description: 'Dropped: the kind belongs to another plugin.',
+        description: 'Kept: the kind belongs to another loaded plugin.',
         category: 'Recipes',
+        data: () => ({}),
+      },
+      {
+        id: 'unregistered_thing',
+        kind: 'test:missing',
+        title: 'Unregistered thing',
+        description: 'Dropped: no loaded plugin registers the kind.',
+        category: 'Notes',
         data: () => ({}),
       },
     ],

@@ -142,7 +142,7 @@ A machine recipe names a type that only the mod knows. A vanilla game cannot loa
 - **Double chests are 3-row chests only**, as two vanilla chests make six rows. Other layouts stay single.
 - **A chest for every player is one store per block id**, as vanilla's ender chest has one store for all ender chests: two blocks of the same id share a player's store, and its contents follow the player, not the block.
 - **A double chest always lets water in**, as vanilla's chests do; there is no switch to keep it dry.
-- **Machines cannot age**; the game loads a machine with **Ages like copper (over time)** without it and says so in the log.
+- **Machines cannot age**; the game loads a machine with **Ages like copper (over time)** without it and says so in the log, and **Problems** warns (`blocks-items.machine-cannot-age`).
 - **Only four block types.** Containers and machines are for `block`, `pillar`, `horizontal` and `directional`. Slabs, stairs, doors, fences and the other [family types](block-types-and-plants.md), crops and plants cannot be containers or machines.
 - **Client and server must match.** The game reads each side's own copy of the definitions and compares only ids. In a modpack or on a server, update the client and the server with the same mod jar, or the two can disagree about a window or a recipe.
 - **Fixed at start-up.** Adding a container or machine, or changing its layout or recipe types, needs a game restart. Recipes reload with `/reload`.

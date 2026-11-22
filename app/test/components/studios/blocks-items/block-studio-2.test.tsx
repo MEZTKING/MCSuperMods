@@ -375,6 +375,43 @@ describe('the Sounds section', () => {
     });
   });
 
+  it('sets what an axe, a shovel and a hoe turn the block into (ADR 0105 D3)', () => {
+    const { stack, data } = renderOnStack(block(), schema);
+    commit('block-strip-into', 'minecraft:oak_log');
+    commit('block-flatten-into', 'demo:loam_path');
+    expect(read(data).components).toEqual({
+      'msm:strippable': { into: 'minecraft:oak_log' },
+      'msm:flattenable': { into: 'demo:loam_path' },
+    });
+    expect(screen.queryByTestId('block-till-drops')).toBeNull();
+    commit('block-till-into', 'demo:loam_farmland');
+    commit('block-till-drops', 'minecraft:stick');
+    expect(read(data).components?.['msm:tillable']).toEqual({
+      into: 'demo:loam_farmland',
+      drops: 'minecraft:stick',
+    });
+    commit('block-till-into', 'minecraft:farmland');
+    expect(read(data).components?.['msm:tillable']).toEqual({
+      into: 'minecraft:farmland',
+      drops: 'minecraft:stick',
+    });
+    commit('block-till-drops', '');
+    expect(read(data).components?.['msm:tillable']).toEqual({ into: 'minecraft:farmland' });
+    commit('block-till-into', '');
+    commit('block-flatten-into', '');
+    expect(read(data).components).toEqual({ 'msm:strippable': { into: 'minecraft:oak_log' } });
+    act(() => {
+      stack.undo();
+    });
+    expect(read(data).components?.['msm:flattenable']).toEqual({ into: 'demo:loam_path' });
+  });
+
+  it('offers no axe field on the types axes never strip, unless one is set', () => {
+    renderOnStack(block({ type: 'torch' }), schema);
+    expect(screen.queryByTestId('block-strip-into')).toBeNull();
+    expect(screen.getByTestId('block-flatten-into')).toBeTruthy();
+  });
+
   it("sets a block's own sounds and a door's own set type in undo steps", async () => {
     const { stack, data } = renderOnStack(block({ type: 'door', set_type: 'iron' }), schema);
     await screen.findByTestId('block-sounds');

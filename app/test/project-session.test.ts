@@ -578,7 +578,8 @@ describe('ProjectSession: library (ADR 0020)', () => {
     // The built-in plugins contribute library content too; assert only the fakes.
     const templateIds = session.library.templates.map((template) => template.id);
     expect(templateIds).toContain('note');
-    expect(templateIds).not.toContain('foreign_recipe');
+    expect(templateIds).toContain('foreign_recipe');
+    expect(templateIds).not.toContain('unregistered_thing');
     const starterIds = session.library.starters.map((starter) => starter.id);
     expect(starterIds).toContain('test_starter');
     expect(starterIds).not.toContain('needs_missing');
@@ -589,6 +590,22 @@ describe('ProjectSession: library (ADR 0020)', () => {
     expect(builtIn.templates.map((template) => template.id)).not.toContain('note');
     expect(builtIn.starters.map((starter) => starter.id)).not.toContain('test_starter');
     expect(builtIn.examples.map((example) => example.id)).not.toContain('test_example');
+  });
+
+  it('keeps every built-in template, also one for a kind another plugin owns', () => {
+    const { session } = newSession(createMemoryFileSystem());
+    const ids = session.library.templates.map((template) => template.id);
+    // Worldgen's dimension types (a datapack kind) and scripting's creative tab (a blocks-items
+    // kind) were dropped before.
+    expect(ids).toContain('dimension_type_moon');
+    expect(ids).toContain('dimension_type_nether_like');
+    expect(ids).toContain('msm_creative_tab');
+    const contributed = new Set(
+      builtInPlugins.flatMap((plugin) =>
+        (plugin.contributes.elementTemplates ?? []).map((template) => template.id),
+      ),
+    );
+    expect(ids.length).toBe(contributed.size);
   });
 
   it('keeps the blank project when no starter is given, without the library in plugins', async () => {

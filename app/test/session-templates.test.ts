@@ -182,7 +182,8 @@ describe('plugin templates (ADR 0020)', () => {
     );
     const ids = templates.map((template) => template.id);
     expect(ids).toContain('note');
-    expect(ids).not.toContain('foreign_recipe');
+    expect(ids).toContain('foreign_recipe');
+    expect(ids).not.toContain('unregistered_thing');
     expect(ids).toContain('recipe_shaped');
     expect(ids).toContain('block_model');
     expect(ids).not.toContain('kind:test:note');

@@ -7316,3 +7316,21 @@ Next
 **Next**
 - B523: the close of batch 1 (ADRs 0103–0106 and 0112 findings, the fixture in the root `CLAUDE.md` directory map).
 - Follow-ups: the sidebar has no group label for `msm:vanilla_block_rules` (`ElementSidebar.tsx` `GROUP_LABELS`); App.tsx titles the file picker "Import textures" for the shaders folder; the three templates `#collectLibrary` drops (`dimension_type_moon`, `dimension_type_nether_like`, `msm_creative_tab`) are still named by the AI prompt's lists.
+
+## 2026-11-22 — executor — Vanilla parity 3 batch 1 merge findings
+
+**What**
+- `#collectLibrary` (`app/src/renderer/src/session/project-session.ts`) keeps a template whose kind any loaded plugin registers and refuses only one whose kind is not registered, so `dimension_type_moon`, `dimension_type_nether_like` (worldgen, a datapack kind) and `msm_creative_tab` (scripting, a blocks-items kind) are in Add element again; the Add element dialog shows all 274 templates (root `CLAUDE.md`). The fake library plugin's `foreign_recipe` is now kept and a new `unregistered_thing` is dropped (`session-fixture.ts`, `project-session.test.ts`, `session-templates.test.ts`); `project-session.test.ts` pins the three ids and that the library equals the contributed count; `ai-rules.test.ts` checks every template the six prompt lists name is in the session library.
+- `ElementSidebar.tsx` `GROUP_LABELS`: `msm:vanilla_block_rules` is headed "Vanilla block rules", the Studio's title (test in `sidebar-potions-data-kinds.test.tsx`).
+- `ImportAssetsDialog.tsx` `importPickerTitle(subfolder)`: the file picker says "Import sounds", "Import shaders" or "Import textures" by folder (also for subfolders); `App.tsx` uses it.
+- `validators-storage-2.ts`: `blocks-items.machine-cannot-age` (warning) on a machine with `msm:weathering` or `msm:waxable`, which the runtime drops with a log line only; the AI prompt's `PLANTS_STORAGE_PROMPT_CODES` and its plain-words line name it; guide `containers-and-machines.md`.
+- Block Studio, Mining section: **Axe strips into** (`msm:strippable`; not offered on the types axes never strip unless one is set), **Shovel flattens into** (`msm:flattenable`), **Hoe tills into** and, once set, **Drops once** (`msm:tillable`), id fields with block and item suggestions; hidden on portals unless set. Guide `block-types-and-plants.md` names them.
+- Checked: `pnpm lint`, `pnpm typecheck`, tests of `@msm/app` (2559), `@msm/ai` (103), `@msm/plugin-blocks-items` (1081), `@msm/exporters` (1801); `pnpm build`, `dist:dir` and `node tools/check-size/index.ts` (renderer 16.7 MB of 18, `app.asar` 29.8 of 32); `app/out` and `app/dist` deleted.
+
+**Decisions**
+- There was no stripping field in the Block Studio to sit beside (strippable was Advanced only), so the Mining section got all three tool fields; an empty field removes its component, and clearing "Hoe tills into" removes "Drops once" with it.
+- The new code has no line in `plain-problems.ts`: the storage 2 codes are not among the Very easy codes its test requires.
+- Sixteen other built-in kinds still have no sidebar label (among them `msm:fluid`, `msm:vehicle`, `msm:rules`, `msm:key_bind`, `msm:hud`, `msm:villager_profession`, `minecraft:dimension_type`, `minecraft:banner_pattern`); left for a follow-up as outside this brief.
+
+**Next**
+- B523: the close of batch 1.

@@ -25,13 +25,14 @@ const chest = (id: Id, fields: Record<string, unknown> = {}, data: Record<string
   block(id, { ...data, components: { 'msm:container': fields, ...(data.components ?? {}) } });
 
 describe('storage 2 validator codes', () => {
-  it('lists five codes, none shared with the other validators', () => {
+  it('lists six codes, none shared with the other validators', () => {
     expect(STORAGE2_PROBLEM_CODES).toEqual([
       'blocks-items.double-chest-layout',
       'blocks-items.double-chest-type',
       'blocks-items.per-player-conflict',
       'blocks-items.per-player-hoppers',
       'blocks-items.ageing-container-mismatch',
+      'blocks-items.machine-cannot-age',
     ]);
     const all = [
       ...STORAGE2_PROBLEM_CODES,
@@ -173,6 +174,33 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
       expect(withCode(problems, 'ageing-container-mismatch')).toEqual([
         ['demo:tin_chest', '/components/msm:waxable/into', 'warning'],
         ['demo:big_chest', '/components/msm:weathering/next', 'warning'],
+      ]);
+    });
+
+    it('machine-cannot-age: a machine neither ages nor is waxed', async () => {
+      const machine = { 'msm:machine': { recipe_types: ['minecraft:smelting'] } };
+      const problems = await validate([
+        block('demo:old_mill', {
+          components: {
+            ...machine,
+            'msm:weathering': { stage: 'unaffected', next: 'minecraft:exposed_copper' },
+            'msm:waxable': { into: 'minecraft:waxed_copper_block' },
+          },
+        }),
+        block('demo:mill', { components: machine }),
+        chest(
+          'demo:ageing_chest',
+          {},
+          {
+            components: {
+              'msm:weathering': { stage: 'unaffected', next: 'minecraft:copper_block' },
+            },
+          },
+        ),
+      ]);
+      expect(withCode(problems, 'machine-cannot-age')).toEqual([
+        ['demo:old_mill', '/components/msm:weathering', 'warning'],
+        ['demo:old_mill', '/components/msm:waxable', 'warning'],
       ]);
     });
   },

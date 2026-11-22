@@ -8,7 +8,13 @@ import datapackPlugin from '@msm/plugin-datapack';
 import resourcepackPlugin from '@msm/plugin-resourcepack';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ElementSidebar, GROUP_LABELS } from '../../src/renderer/src/components/ElementSidebar';
+import {
+  ElementSidebar,
+  GROUP_LABELS,
+  groupLabel,
+  groupOf,
+} from '../../src/renderer/src/components/ElementSidebar';
+import { builtInPlugins } from '../../src/renderer/src/plugins/built-in';
 import { element, sampleProject } from './fixtures';
 
 afterEach(cleanup);
@@ -56,6 +62,14 @@ describe('ElementSidebar labels for potions and the data kinds sweep', () => {
       expect(registered.has(kind), kind).toBe(true);
       expect(GROUP_LABELS[kind], kind).toBeTruthy();
     }
+  });
+
+  it('heads the rules for vanilla blocks with the Studio title (ADR 0105 D4)', () => {
+    const kinds = builtInPlugins.flatMap((plugin) =>
+      (plugin.contributes.elementKinds ?? []).map((kind) => kind.id),
+    );
+    expect(kinds).toContain('msm:vanilla_block_rules');
+    expect(groupLabel(groupOf('msm:vanilla_block_rules'))).toBe('Vanilla block rules');
   });
 
   it('groups msm:potion elements under Potions', () => {

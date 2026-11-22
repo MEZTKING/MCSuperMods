@@ -4,12 +4,23 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ImportAssetsDialog,
   importFileFilters,
+  importPickerTitle,
   importSubfolder,
 } from '../../src/renderer/src/components/ImportAssetsDialog';
 import { assetImportError } from '../../src/renderer/src/session/asset-files';
 import { makePngHeader as makePng } from './preview/png';
 
 afterEach(cleanup);
+
+describe('importPickerTitle', () => {
+  it('names the folder the picker imports into', () => {
+    expect(importPickerTitle('shaders')).toBe('Import shaders');
+    expect(importPickerTitle('shaders/post')).toBe('Import shaders');
+    expect(importPickerTitle('sounds')).toBe('Import sounds');
+    expect(importPickerTitle('sounds/mob')).toBe('Import sounds');
+    expect(importPickerTitle('textures/block')).toBe('Import textures');
+  });
+});
 
 describe('importFileFilters', () => {
   it('offers PNG images together with their .png.mcmeta sidecars for textures', () => {

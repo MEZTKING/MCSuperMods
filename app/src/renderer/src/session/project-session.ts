@@ -1056,12 +1056,12 @@ export class ProjectSession {
 
   #collectLibrary(): SessionLibrary {
     const registered = (kind: string): boolean => this.registry.get(kind) !== undefined;
-    const templates = this.#plugins.flatMap((plugin) => {
-      const own = new Set((plugin.contributes.elementKinds ?? []).map((kind) => kind.id));
-      return (plugin.contributes.elementTemplates ?? []).filter(
-        (template) => own.has(template.kind) && registered(template.kind),
-      );
-    });
+    // A plugin may contribute a template for a kind another loaded plugin registers (worldgen's
+    // dimension types, scripting's creative tab); only a template whose kind no plugin
+    // registers is refused.
+    const templates = this.#plugins.flatMap((plugin) =>
+      (plugin.contributes.elementTemplates ?? []).filter((template) => registered(template.kind)),
+    );
     const supported = (entry: { requiresKinds: readonly string[] }): boolean =>
       entry.requiresKinds.every(registered);
     return Object.freeze({

@@ -269,6 +269,23 @@ describe('the system prompt names the vehicle, controls and vanilla parity conte
   });
 });
 
+describe('every template the system prompt names is in the Add element library', () => {
+  it('finds each listed template in the session library', () => {
+    const { session } = newSession(createMemoryFileSystem());
+    const library = new Set(session.library.templates.map((template) => template.id));
+    for (const id of [
+      ...RULES_PROMPT_TEMPLATES,
+      ...VEHICLE_PROMPT_TEMPLATES,
+      ...CONTROLS_PROMPT_TEMPLATES,
+      ...VANILLA_PARITY_PROMPT_TEMPLATES,
+      ...VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
+      ...PLANTS_STORAGE_PROMPT_TEMPLATES,
+    ]) {
+      expect(library.has(id), id).toBe(true);
+    }
+  });
+});
+
 describe('the system prompt names the villager, fluid and dimension type content exactly (ADR 0101 D7, batch 2)', () => {
   it('lists every villager, fluid and dimension type template', () => {
     expect([...VILLAGERS_FLUIDS_PROMPT_TEMPLATES].sort()).toEqual(
