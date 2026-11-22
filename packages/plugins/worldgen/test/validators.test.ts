@@ -329,8 +329,9 @@ describe('worldgen validators', () => {
       await walk(new URL('examples/', root));
       await walk(new URL('fixtures/', root));
       await walk(new URL('packages/plugins/worldgen/test/fixtures/', root));
-      // Five project biomes (starters, examples, the sample) and two goldens per target.
-      expect(files.length).toBe(9);
+      // Five project biomes (starters, examples, the sample) and two goldens per target, plus the
+      // worldgen parity fixture's 24 (six biomes, content and lowered, per target; B579).
+      expect(files.length).toBe(33);
       const elements: Element[] = [];
       for (const [index, file] of files.entries()) {
         const raw = JSON.parse(await readFile(file, 'utf8')) as { data?: Json } & Json;
