@@ -8562,3 +8562,15 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 
 **Next**
 - Main session: review the interface corrections and the gap list (set on fire in Rules and the Script API, an enchantment on a made item from the start, a Frost Walker-like effect, "unbreakable" as a flow answer) for `docs/COVERAGE-AUDIT.md`; add a `b650/` line to `docs/reference/spikes/README.md`; then B651 and B652. The guide needs recipe and data pack sections (B672).
+## 2026-11-22 — executor — offline checker: score holders and names declared in the function
+
+**What**
+- Cause: MSM's wrapper parsed a function with the bare `mcfunction` entry parser, whose root node has no local symbol table (Spyglass's own `core.file` wrapper adds one). Spyglass's `VanillaConfig` `undeclaredSymbol` rule declares every name it cannot otherwise place (score holders like `#a`, named random sequences, `place jigsaw` target names, and ids in a non-`minecraft` namespace such as a project's block or particle) with `block` visibility, which needs a node with `locals`, so the linter threw "Cannot enter ... with Block visibility as no node with locals is supplied". Not a Spyglass bug: MSM's own entry code. `scoreboard players set #a` passed only because it is a declaration usage.
+- Fix in `packages/schemas/src/mcfunction/service.ts`: the parse step gives the root node `locals` as `core.file` does. The check never throws now: binding and checking, each linter rule, and the parse are guarded; a Spyglass exception becomes one `info` problem ("The function checker stopped early ...") and the stages that ran keep their problems. Completion returns nothing instead of throwing.
+- Tests: `packages/targets/mc-26.{3,4}/test/mcfunction-holders.test.ts` (every case of `docs/reference/spikes/b547/results/spyglass-holders.txt`, random `roll` and `reset`, `place jigsaw`, a project block and particle, all at once, a wrong line still an error, an undeclared objective still a warning, completion after a holder; 14 of 20 fail without the fix); `packages/schemas/test/mcfunction/never-throws.test.ts` (a holder on a hand-written tree; a forced Spyglass throw becomes one info problem and keeps the other errors). All 47 functions in `fixtures/` and `examples/` checked on both targets: before, `sample-machines` `place_loot_crate` and `sample-particles` `burst` threw; after, nothing throws and no new error appears. The library's sources have no other such lines. `pnpm lint`, `pnpm typecheck`, schemas, both target and app mcfunction tests pass; e2e `datapack-path` passes.
+
+**Decisions**
+- A checker exception is an `info`, not a warning or error, so it never blocks an export or fills Things to fix for a line the game accepts.
+
+**Next**
+- `projectIds.team` is namespaced like a resource location (`t` becomes `minecraft:t`), so a project-wide team never matches `team join t`; teams (like objectives) are plain names. Small follow-up in `service.ts` `projectIdsKey`/`applyProjectIds` if the app ever passes teams.

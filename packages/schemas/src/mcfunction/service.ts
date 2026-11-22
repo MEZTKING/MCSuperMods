@@ -213,7 +213,19 @@ export async function createMcfunctionService(
 
   const parser = meta.getParserForLanguageId<core.AstNode>(LANGUAGE_ID);
   if (!parser) throw new Error('The mcfunction parser was not registered.');
-  const parse: core.Parser<core.AstNode> = parser;
+  const entry: core.Parser<core.AstNode> = parser;
+  /**
+   * Parses a function and gives its root node a local symbol table, as Spyglass's own
+   * `core.file` wrapper does for its projects. Without one, the `undeclaredSymbol` linter's
+   * default `declare: 'block'` action (score holders such as `#a`, named random sequences,
+   * jigsaw target names) throws "Cannot enter ... with Block visibility as no node with locals
+   * is supplied" instead of declaring the name in the file's scope (B547).
+   */
+  const parse: core.Parser<core.AstNode> = (src, ctx) => {
+    const node = entry(src, ctx);
+    if (node !== core.Failure && node.locals === undefined) node.locals = Object.create(null);
+    return node;
+  };
   const completer = meta.getCompleterForLanguageID(LANGUAGE_ID);
   const rootLiterals = rootCommandLiterals(data.commands);
 
@@ -277,31 +289,50 @@ export async function createMcfunctionService(
     };
   }
 
-  function lint(node: core.AstNode, doc: TextDocument): Array<[core.LanguageError, string]> {
+  /** Runs every configured linter; a rule that throws is skipped and its error returned. */
+  function lint(
+    node: core.AstNode,
+    doc: TextDocument,
+  ): { problems: Array<[core.LanguageError, string]>; stopped: unknown } {
     const out: Array<[core.LanguageError, string]> = [];
+    let stopped: unknown;
     for (const [ruleName, rawValue] of Object.entries(config.lint)) {
-      const result = core.LinterConfigValue.destruct(rawValue);
-      if (!result) continue;
-      const { ruleSeverity, ruleValue } = result;
-      const { configValidator, linter, nodePredicate } = meta.getLinter(ruleName);
-      if (!configValidator(ruleName, ruleValue, logger)) continue;
-      const ctx = core.LinterContext.create(project, {
-        doc,
-        err: new core.LinterErrorReporter(ruleName, ruleSeverity, undefined),
-        ruleName,
-        ruleValue,
-      });
-      core.traversePreOrder(
-        node,
-        () => true,
-        () => true,
-        (n) => {
-          if (nodePredicate(n)) linter(core.StateProxy.create(n), ctx);
-        },
-      );
-      for (const error of ctx.err.dump()) out.push([error, ruleName]);
+      try {
+        lintRule(node, doc, ruleName, rawValue, out);
+      } catch (error) {
+        stopped ??= error;
+      }
     }
-    return out;
+    return { problems: out, stopped };
+  }
+
+  function lintRule(
+    node: core.AstNode,
+    doc: TextDocument,
+    ruleName: string,
+    rawValue: Parameters<typeof core.LinterConfigValue.destruct>[0],
+    out: Array<[core.LanguageError, string]>,
+  ): void {
+    const result = core.LinterConfigValue.destruct(rawValue);
+    if (!result) return;
+    const { ruleSeverity, ruleValue } = result;
+    const { configValidator, linter, nodePredicate } = meta.getLinter(ruleName);
+    if (!configValidator(ruleName, ruleValue, logger)) return;
+    const ctx = core.LinterContext.create(project, {
+      doc,
+      err: new core.LinterErrorReporter(ruleName, ruleSeverity, undefined),
+      ruleName,
+      ruleValue,
+    });
+    core.traversePreOrder(
+      node,
+      () => true,
+      () => true,
+      (n) => {
+        if (nodePredicate(n)) linter(core.StateProxy.create(n), ctx);
+      },
+    );
+    for (const error of ctx.err.dump()) out.push([error, ruleName]);
   }
 
   /**
@@ -347,27 +378,41 @@ export async function createMcfunctionService(
     const doc = TextDocument.create(uri, LANGUAGE_ID, 0, source);
     const problems: McfunctionProblem[] = [];
 
-    const pctx = core.ParserContext.create(project, { doc });
-    const node = parse(new core.Source(source), pctx);
-    if (node === core.Failure) {
-      return [failedParse()];
-    }
-    // `core.file` does this for Spyglass's own projects; checkers and completers walk up.
-    core.AstNode.setParents(node);
-    for (const e of pctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.parse'));
+    // The checker never throws: a Spyglass failure in any stage becomes one `info` problem
+    // and the stages that did run keep their problems.
+    let stopped: unknown;
+    try {
+      const pctx = core.ParserContext.create(project, { doc });
+      const node = parse(new core.Source(source), pctx);
+      if (node === core.Failure) {
+        return [failedParse()];
+      }
+      // `core.file` does this for Spyglass's own projects; checkers and completers walk up.
+      core.AstNode.setParents(node);
+      for (const e of pctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.parse'));
 
-    const { bctx, cctx } = await bindAndCheck(node, doc, uri);
-    for (const e of bctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
-    for (const e of cctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
-    for (const { message, range } of checkBlockStates(node, cctx)) {
-      problems.push(toProblem(doc, { message, range, severity: 3 }, 'mcfunction.check'));
-    }
+      try {
+        const { bctx, cctx } = await bindAndCheck(node, doc, uri);
+        for (const e of bctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
+        for (const e of cctx.err.dump()) problems.push(toProblem(doc, e, 'mcfunction.check'));
+        for (const { message, range } of checkBlockStates(node, cctx)) {
+          problems.push(toProblem(doc, { message, range, severity: 3 }, 'mcfunction.check'));
+        }
+      } catch (error) {
+        stopped ??= error;
+      }
 
-    for (const [e, rule] of lint(node, doc)) {
-      problems.push(toProblem(doc, e, `mcfunction.lint.${rule}`));
+      const linted = lint(node, doc);
+      for (const [e, rule] of linted.problems) {
+        problems.push(toProblem(doc, e, `mcfunction.lint.${rule}`));
+      }
+      stopped ??= linted.stopped;
+    } catch (error) {
+      stopped ??= error;
+    } finally {
+      symbols.clear({ uri });
     }
-
-    symbols.clear({ uri });
+    if (stopped !== undefined) problems.push(stoppedEarly(stopped));
     return problems.sort((a, b) => a.offset.start - b.offset.start || a.offset.end - b.offset.end);
   }
 
@@ -382,20 +427,26 @@ export async function createMcfunctionService(
     applyProjectIds(options);
     const uri = options.uri ?? DEFAULT_URI;
     const doc = TextDocument.create(uri, LANGUAGE_ID, 0, source);
-    const node = parse(new core.Source(source), core.ParserContext.create(project, { doc }));
-    if (node === core.Failure) return [];
-    core.AstNode.setParents(node);
     let items: readonly core.CompletionItem[];
-    if (typed) {
-      // JSON and SNBT completers need the `typeDef`s the checker attaches.
-      await bindAndCheck(node, doc, uri);
-      try {
-        items = completer(node, core.CompleterContext.create(project, { doc, offset: at }));
-      } finally {
-        symbols.clear({ uri });
+    // Like the checker, completion never throws: a Spyglass failure proposes nothing.
+    try {
+      const node = parse(new core.Source(source), core.ParserContext.create(project, { doc }));
+      if (node === core.Failure) return [];
+      core.AstNode.setParents(node);
+      if (typed) {
+        // JSON and SNBT completers need the `typeDef`s the checker attaches; a check that
+        // stops early still leaves the command completers working.
+        try {
+          await bindAndCheck(node, doc, uri);
+        } catch {
+          // Nothing to add: completion goes on with what was bound.
+        }
       }
-    } else {
       items = completer(node, core.CompleterContext.create(project, { doc, offset: at }));
+    } catch {
+      items = [];
+    } finally {
+      symbols.clear({ uri });
     }
     if (items.length === 0 && /^[ \t]*$/.test(linePrefix(source, at))) {
       // Spyglass offers nothing on a blank line; propose the root command literals there.
@@ -450,6 +501,20 @@ function failedParse(): McfunctionProblem {
     severity: 'error',
     code: 'mcfunction.parse',
     message: 'This function could not be parsed.',
+    line: 0,
+    start: 0,
+    end: 0,
+    offset: { start: 0, end: 0 },
+  };
+}
+
+/** The `info` problem for a check that Spyglass stopped with an exception. */
+function stoppedEarly(error: unknown): McfunctionProblem {
+  const reason = error instanceof Error ? error.message : String(error);
+  return {
+    severity: 'info',
+    code: 'mcfunction.check',
+    message: `The function checker stopped early, so parts of this function were not checked (${reason}).`,
     line: 0,
     start: 0,
     end: 0,
