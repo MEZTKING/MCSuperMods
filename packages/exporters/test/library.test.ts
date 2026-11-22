@@ -1898,9 +1898,22 @@ function typeCheck(script: string): string[] {
 
 /**
  * Kinds registered before their per-kind example exists. A new kind may wait here only until
- * its library brief lands.
+ * its library brief lands: the data kinds sweep 2 and resource pack kinds of ADR 0106 (B504)
+ * wait for B508's examples in `packages/plugins/library/src/examples/data-kinds.ts`.
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [
+  'minecraft:decorated_pot_pattern',
+  'minecraft:wolf_sound_variant',
+  'minecraft:block_transformer',
+  'minecraft:test_environment',
+  'minecraft:test_instance',
+  'minecraft:sulfur_cube_archetype',
+  'minecraft:context_int_provider',
+  'minecraft:context_float_provider',
+  'minecraft:post_effect',
+  'minecraft:waypoint_style',
+  'minecraft:shader',
+];
 
 // Tests --------------------------------------------------------------------------------------
 

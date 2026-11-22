@@ -1,0 +1,31 @@
+{
+  "contents": {
+    "attribute_modifiers": [
+      {
+        "amount": 0.5,
+        "attribute": "minecraft:scale",
+        "id": "example:bigger",
+        "operation": "add_value"
+      }
+    ],
+    "explosion": {
+      "causes_fire": false,
+      "fuse": 30,
+      "power": 2
+    },
+    "items": "#minecraft:sulfur_cube_archetype/hot",
+    "knockback_modifiers": {
+      "horizontal_power": 0.5,
+      "vertical_power": 2
+    },
+    "sound_settings": {
+      "hit_sound": "minecraft:entity.sulfur_cube.hot.hit",
+      "push_sound": "minecraft:entity.sulfur_cube.hot.push",
+      "push_sound_cooldown": 1,
+      "push_sound_impulse_threshold": 0.2
+    }
+  },
+  "layer": "datapack",
+  "path": "data/example/sulfur_cube_archetype/ruby.json",
+  "schema": "resource:sulfur_cube_archetype"
+}

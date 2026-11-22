@@ -271,6 +271,82 @@ const GENERIC_SAMPLES: Record<GenericDataRegistry, Json> = {
     },
   },
   world_clock: {},
+  decorated_pot_pattern: { asset_id: 'minecraft:skull_pottery_pattern' },
+  wolf_sound_variant: {
+    adult_sounds: {
+      ambient_sound: 'minecraft:entity.wolf_grumpy.ambient',
+      death_sound: 'minecraft:entity.wolf_grumpy.death',
+      growl_sound: 'minecraft:entity.wolf_grumpy.growl',
+      hurt_sound: { sound_id: 'minecraft:entity.wolf_grumpy.hurt', range: 16 },
+      pant_sound: 'minecraft:entity.wolf_grumpy.pant',
+      whine_sound: 'minecraft:entity.wolf_grumpy.whine',
+    },
+    baby_sounds: (defaultOf('wolf_sound_variant') as { baby_sounds: Json }).baby_sounds,
+  },
+  block_transformer: [
+    {
+      block_state_provider: {
+        type: 'minecraft:rule_based',
+        rules: [
+          {
+            if_true: { type: 'minecraft:matching_blocks', blocks: 'minecraft:stone' },
+            // biome-ignore lint/suspicious/noThenProperty: the game's own key for what a rule gives
+            then: { type: 'minecraft:simple', state: { id: 'minecraft:cobblestone' } },
+          },
+        ],
+      },
+      sound: 'minecraft:item.axe.scrape',
+      particle: 'scrape',
+      disallowed_faces: ['down', 'up'],
+      loot: 'example:blocks/ruby_ore',
+      drop_strategy: 'clicked_face',
+      update_from_neighbors: false,
+    },
+    ...(defaultOf('block_transformer') as Json[]),
+  ],
+  test_environment: {
+    type: 'minecraft:all_of',
+    definitions: [
+      { type: 'minecraft:weather', weather: 'thunder' },
+      { type: 'minecraft:function', setup: 'example:greet', teardown: 'example:tick' },
+    ],
+  },
+  test_instance: {
+    type: 'minecraft:function',
+    function: 'minecraft:always_pass',
+    environment: { type: 'minecraft:weather', weather: 'rain' },
+    structure: 'minecraft:igloo/top',
+    max_ticks: 40,
+    setup_ticks: 5,
+    required: false,
+    rotation: 'clockwise_90',
+    manual_only: true,
+    max_attempts: 3,
+    required_successes: 2,
+    sky_access: true,
+  },
+  sulfur_cube_archetype: {
+    items: '#minecraft:sulfur_cube_archetype/hot',
+    explosion: { fuse: 30, power: 2, causes_fire: false },
+    knockback_modifiers: { horizontal_power: 0.5, vertical_power: 2 },
+    attribute_modifiers: [
+      { attribute: 'minecraft:scale', id: 'example:bigger', amount: 0.5, operation: 'add_value' },
+    ],
+    sound_settings: {
+      hit_sound: 'minecraft:entity.sulfur_cube.hot.hit',
+      push_sound: 'minecraft:entity.sulfur_cube.hot.push',
+      push_sound_impulse_threshold: 0.2,
+      push_sound_cooldown: 1,
+    },
+  },
+  context_int_provider: {
+    type: 'minecraft:add',
+    inputs: [{ type: 'minecraft:uniform', min: 0, max: 2 }, 'minecraft:compostable/low'],
+  },
+  context_float_provider: {
+    type: 'minecraft:mul',
+    inputs: [{ type: 'minecraft:constant', value: 1.5 }, 'minecraft:cooking/speed_default'],
+  },
 };
 
 const genericSamples: Sample[] = genericKinds.map((kind, index) => {

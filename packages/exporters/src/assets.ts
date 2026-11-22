@@ -1,5 +1,5 @@
 /**
- * Passes project assets (textures, sounds, fonts, texts) through to the export.
+ * Passes project assets (textures, sounds, fonts, texts, shaders) through to the export.
  *
  * @packageDocumentation
  */
@@ -22,6 +22,7 @@ export const EXPORTED_ASSET_FOLDERS: readonly string[] = Object.freeze([
   'sounds',
   'font',
   'texts',
+  'shaders',
 ]);
 
 /**
@@ -29,6 +30,31 @@ export const EXPORTED_ASSET_FOLDERS: readonly string[] = Object.freeze([
  * gate validates them like lowered JSON.
  */
 export const TEXTURE_META_SCHEMA = 'resource:texture_meta';
+
+/**
+ * The schema reference given to shader program JSON assets (`shaders/<path>.json`), so the
+ * export gate validates them like a lowered `minecraft:shader` element (ADR 0106 D2).
+ */
+export const SHADER_PROGRAM_SCHEMA = 'resource:shader';
+
+/**
+ * The text language given to GLSL shader sources (`.vsh`, `.fsh`, `.glsl` under `shaders/`).
+ * No checker exists for it, so an export without one reports `export.language-unchecked`
+ * (ADR 0106 D2); the bytes pass through unchanged.
+ */
+export const SHADER_SOURCE_LANGUAGE = 'glsl';
+
+const SHADER_SOURCE_EXTENSIONS: readonly string[] = ['.vsh', '.fsh', '.glsl'];
+
+/** True for a shader program definition such as `shaders/post/tint.json`. */
+export function isShaderProgramPath(path: string): boolean {
+  return path.startsWith('shaders/') && path.endsWith('.json');
+}
+
+/** True for a GLSL shader source such as `shaders/post/tint.fsh` or `shaders/include/fog.glsl`. */
+export function isShaderSourcePath(path: string): boolean {
+  return path.startsWith('shaders/') && SHADER_SOURCE_EXTENSIONS.some((ext) => path.endsWith(ext));
+}
 
 /** True for a texture animation sidecar such as `textures/block/lava.png.mcmeta`. */
 export function isTextureMetaPath(path: string): boolean {
@@ -39,7 +65,9 @@ export function isTextureMetaPath(path: string): boolean {
  * Reads every exportable project asset and returns it as a `resourcepack` output file at
  * `assets/<namespace>/<asset path>`, in namespace and then path order. Texture animation
  * sidecars (`.png.mcmeta` files under `textures/`) carry `schema: 'resource:texture_meta'`,
- * so the validation gate checks them; only project-authored sidecars are exported.
+ * so the validation gate checks them; only project-authored sidecars are exported. Shader
+ * program JSON under `shaders/` carries {@link SHADER_PROGRAM_SCHEMA}, and GLSL sources carry
+ * the language {@link SHADER_SOURCE_LANGUAGE}, so they are counted as unchecked text.
  *
  * Assets outside {@link EXPORTED_ASSET_FOLDERS} yield an `export.asset-skipped` info; an
  * unsafe asset path yields an `export.unsafe-path` error and a failed read an
@@ -93,6 +121,8 @@ export async function assetOutputFiles(
       }
       const file: OutputFile = { path: outputPath, contents, layer: 'resourcepack' };
       if (isTextureMetaPath(asset.path)) file.schema = TEXTURE_META_SCHEMA;
+      else if (isShaderProgramPath(asset.path)) file.schema = SHADER_PROGRAM_SCHEMA;
+      else if (isShaderSourcePath(asset.path)) file.language = SHADER_SOURCE_LANGUAGE;
       files.push(file);
     }
   }

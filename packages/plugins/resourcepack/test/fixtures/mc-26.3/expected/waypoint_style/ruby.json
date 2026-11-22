@@ -1,0 +1,14 @@
+{
+  "contents": {
+    "far_distance": 512,
+    "near_distance": 32,
+    "sprites": [
+      "minecraft:default_0",
+      "minecraft:default_1",
+      "minecraft:default_2"
+    ]
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/waypoint_style/ruby.json",
+  "schema": "::java::assets::waypoint_style::WaypointStyle"
+}

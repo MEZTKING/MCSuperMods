@@ -1,0 +1,55 @@
+{
+  "contents": [
+    {
+      "block_state_provider": {
+        "rules": [
+          {
+            "if_true": {
+              "blocks": "minecraft:stone",
+              "type": "minecraft:matching_blocks"
+            },
+            "then": {
+              "state": {
+                "id": "minecraft:cobblestone"
+              },
+              "type": "minecraft:simple"
+            }
+          }
+        ],
+        "type": "minecraft:rule_based"
+      },
+      "disallowed_faces": [
+        "down",
+        "up"
+      ],
+      "drop_strategy": "clicked_face",
+      "loot": "example:blocks/ruby_ore",
+      "particle": "scrape",
+      "sound": "minecraft:item.axe.scrape",
+      "update_from_neighbors": false
+    },
+    {
+      "block_state_provider": {
+        "rules": [
+          {
+            "if_true": {
+              "blocks": "minecraft:grass_block",
+              "type": "minecraft:matching_blocks"
+            },
+            "then": {
+              "state": {
+                "id": "minecraft:dirt_path"
+              },
+              "type": "minecraft:simple"
+            }
+          }
+        ],
+        "type": "minecraft:rule_based"
+      },
+      "sound": "minecraft:item.shovel.flatten"
+    }
+  ],
+  "layer": "datapack",
+  "path": "data/example/block_transformer/ruby.json",
+  "schema": "resource:block_transformer"
+}

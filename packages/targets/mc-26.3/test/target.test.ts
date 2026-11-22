@@ -135,6 +135,13 @@ describe('target mc-26.3', () => {
       trial_spawner: 'trial_spawner',
       timeline: 'timeline',
       world_clock: 'world_clock',
+      decorated_pot_pattern: 'decorated_pot_pattern',
+      block_transformer: 'block_transformer',
+      test_environment: 'test_environment',
+      test_instance: 'test_instance',
+      sulfur_cube_archetype: 'sulfur_cube_archetype',
+      context_int_provider: 'context_int_provider',
+      context_float_provider: 'context_float_provider',
     });
     for (const name of Object.values(target.folders.data)) {
       expect(name).not.toBe('');
@@ -247,6 +254,31 @@ describe('target mc-26.3', () => {
     >;
     expect(registries.villager_trade?.length).toBeGreaterThan(0);
     expect(registries.trade_set?.length).toBeGreaterThan(0);
+  });
+
+  it('maps the data kinds sweep 2 keys to registry folders world data loads (ADR 0106 D1)', async () => {
+    const keys = [
+      'decorated_pot_pattern',
+      'block_transformer',
+      'test_environment',
+      'test_instance',
+      'sulfur_cube_archetype',
+      'context_int_provider',
+      'context_float_provider',
+    ] as const;
+    const registries = (await readJson('../vendor/mcmeta/registries.json')) as Record<
+      string,
+      string[]
+    >;
+    for (const key of keys) {
+      expect(target.folders.data[key]).toBe(key);
+      expect(registries[key]?.length, key).toBeGreaterThan(0);
+    }
+    // `dev.worldDataFolders` does not list the two context providers (verify at implementation
+    // whether the world or `/reload` reads them); the other five are world data.
+    for (const key of keys.slice(0, 5)) {
+      expect(target.dev?.worldDataFolders, key).toContain(target.folders.data[key]);
+    }
   });
 
   it('maps the seventeen data kinds sweep keys to registry folders (ADR 0064 D5)', async () => {

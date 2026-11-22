@@ -243,6 +243,13 @@ describe('0.3.0 additions', () => {
       | 'trial_spawner'
       | 'timeline'
       | 'world_clock'
+      | 'decorated_pot_pattern'
+      | 'block_transformer'
+      | 'test_environment'
+      | 'test_instance'
+      | 'sulfur_cube_archetype'
+      | 'context_int_provider'
+      | 'context_float_provider'
     >();
     expectTypeOf<Target['folders']['data']>().toEqualTypeOf<
       Readonly<Record<DataFolderKey, string>>

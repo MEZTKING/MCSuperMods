@@ -23,6 +23,15 @@ function entry(
   };
 }
 
+/** The six wolf sound event ids of one vanilla wolf voice, such as `wolf_big`. */
+const wolfSounds = (voice: string): Json =>
+  Object.fromEntries(
+    ['ambient', 'death', 'growl', 'hurt', 'pant', 'whine'].map((name) => [
+      `${name}_sound`,
+      `minecraft:entity.${voice}.${name}`,
+    ]),
+  );
+
 const ENCHANTMENTS = 'Enchantments';
 const OTHER = 'Other data';
 const MOBS = 'Mobs';
@@ -296,5 +305,113 @@ export const otherDataTemplates: readonly ElementTemplate[] = [
       ],
       items_to_drop_when_ominous: 'minecraft:spawners/trial_chamber/items_to_drop_when_ominous',
     },
+  ),
+  // Data kinds sweep 2 (ADR 0106 D1).
+  entry(
+    'decorated_pot_pattern',
+    'decorated_pot_pattern',
+    OTHER,
+    'Pot pattern',
+    'A decorated pot face; uses the heart sherd picture until you add your own under entity/decorated_pot/. A sherd item names it through the decorated_pot_sherds tag and its pot pattern.',
+    { asset_id: 'minecraft:heart_pottery_pattern' },
+  ),
+  entry(
+    'wolf_sound_variant',
+    'wolf_sound_variant',
+    MOBS,
+    'Wolf sounds',
+    'A wolf voice: the big wolf sounds for adults and the baby wolf sounds for pups. Point a wolf at it with its sound_variant.',
+    {
+      adult_sounds: wolfSounds('wolf_big'),
+      baby_sounds: wolfSounds('baby_wolf'),
+    },
+  ),
+  entry(
+    'block_transformer',
+    'block_transformer',
+    OTHER,
+    'Block transformer',
+    'What a tool does when used on a block, tried in order: here a moss block turns into dirt with the shovel sound. Name it minecraft:shovel to change what shovels do, or point your own item at it.',
+    [
+      {
+        block_state_provider: {
+          type: 'minecraft:rule_based',
+          rules: [
+            {
+              if_true: { type: 'minecraft:matching_blocks', blocks: 'minecraft:moss_block' },
+              // biome-ignore lint/suspicious/noThenProperty: the game's own key for what a rule gives
+              then: { type: 'minecraft:simple', state: { id: 'minecraft:dirt' } },
+            },
+          ],
+        },
+        sound: 'minecraft:item.shovel.flatten',
+        particle: 'scrape',
+        disallowed_faces: ['down'],
+      },
+    ],
+  ),
+  entry(
+    'test_environment',
+    'test_environment',
+    OTHER,
+    'Test environment',
+    'Where map makers run game tests: clear weather and normal difficulty, for test instances that name it.',
+    {
+      type: 'minecraft:all_of',
+      definitions: [
+        { type: 'minecraft:weather', weather: 'clear' },
+        { type: 'minecraft:difficulty', difficulty: 'normal' },
+      ],
+    },
+  ),
+  entry(
+    'test_instance',
+    'test_instance',
+    OTHER,
+    'Test instance',
+    'A game test for map makers: places a structure and waits for a test block to pass. Run it with /test run.',
+    {
+      type: 'minecraft:block_based',
+      environment: 'minecraft:default',
+      structure: 'minecraft:empty',
+      max_ticks: 200,
+      setup_ticks: 0,
+      required: true,
+    },
+  ),
+  entry(
+    'sulfur_cube_archetype',
+    'sulfur_cube_archetype',
+    MOBS,
+    'Sulfur cube kind',
+    'A sulfur cube that turns bouncy and light when fed slime balls, with the bouncy sounds.',
+    {
+      items: ['minecraft:slime_ball'],
+      buoyant: true,
+      knockback_modifiers: { horizontal_power: 1.2, vertical_power: 1.5 },
+      attribute_modifiers: [],
+      sound_settings: {
+        hit_sound: 'minecraft:entity.sulfur_cube.bouncy.hit',
+        push_sound: 'minecraft:entity.sulfur_cube.bouncy.push',
+        push_sound_impulse_threshold: 0.1,
+        push_sound_cooldown: 0.5,
+      },
+    },
+  ),
+  entry(
+    'context_int_provider',
+    'context_int_provider',
+    OTHER,
+    'Whole-number provider',
+    'A named whole number the game reads, such as a compost chance: a random number from 1 to 3. Name it after a vanilla one, such as minecraft:compostable/low, to change that value.',
+    { type: 'minecraft:uniform', min: 1, max: 3 },
+  ),
+  entry(
+    'context_float_provider',
+    'context_float_provider',
+    OTHER,
+    'Decimal-number provider',
+    'A named decimal number the game reads, such as a cooking speed: here twice as fast. Name it after a vanilla one, such as minecraft:cooking/speed_default, to change that value.',
+    { type: 'minecraft:constant', value: 2 },
   ),
 ];

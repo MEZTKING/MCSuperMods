@@ -6889,3 +6889,21 @@ Next
 **Next**
 - Wave 0: B503 (spike, Opus high), B504 (data kinds sweep 2), then B505 (scaffold) once B503 reports.
 - Tell the user at the next handover: Q27 dropped and why; weathering on non-vanilla copper types; boats gated by a spike; the vetoable defaults of ADRs 0103–0112.
+
+## 2026-11-22 — executor — B504 data kinds sweep 2 and resource pack kinds
+
+**What**
+- Eight generic data kinds (ADR 0106 D1) in `@msm/plugin-datapack` `kinds/generic.ts`: `minecraft:decorated_pot_pattern`, `wolf_sound_variant`, `block_transformer` (a top-level list), `test_environment`, `test_instance`, `sulfur_cube_archetype`, `context_int_provider`, `context_float_provider`, each with default data valid on both targets and one template in `templates/registries.ts` (data pack templates 66 to 74). All eight registries exist on both targets (26.4 adds the `cold` sulfur cube archetype), so every kind is offered on both.
+- Three resource pack kinds (ADR 0106 D2) in `@msm/plugin-resourcepack`: `minecraft:post_effect` (`post_effect/`), `minecraft:waypoint_style` (`waypoint_style/`), `minecraft:shader` (shader program JSON in `shaders/`), with templates "Spectator view effect", "Shader program" and "Waypoint style" (resource pack templates 17 to 20).
+- `@msm/exporters` `assets.ts`: `shaders` joins `EXPORTED_ASSET_FOLDERS`; JSON under `shaders/` carries `schema: 'resource:shader'` (validated like the kind), `.vsh`, `.fsh` and `.glsl` carry `language: 'glsl'`, so an export without a checker reports one `export.language-unchecked` info. New `test/shader-assets.test.ts`.
+- `DataFolderKey` gains the seven new folder keys (`wolf_sound_variant` already had one); both targets map them to the folder of the same name, checked against the vendored registries and the Spyglass URI binder; targets' `CHANGES.md` rows; the schema coverage tests of both targets now assert zero unsupported nodes for all eleven new refs. The adapter already reads the `concrete` node of `wolf_sound_variant`, so `@msm/schemas` is unchanged.
+- Kinds: 104 before, 115 after. The eleven kinds wait in `KINDS_AWAITING_EXAMPLES` of `packages/exporters/test/library.test.ts` until B508 adds their examples.
+
+**Decisions**
+- Resource pack folders are constants in the kinds (`POST_EFFECT_FOLDER`, `WAYPOINT_STYLE_FOLDER`, `SHADERS_FOLDER`), as `EQUIPMENT_FOLDER` is, not `ResourceFolderKey` entries: adding resource keys would break every `TargetFacts` fixture in the app tests and the equipment kind documents why it is not additive in 1.x.
+- The `DataFolderKey` entries (JSDoc "Since 1.19.0") were needed for `folders.data` and touch `packages/plugin-api/src/target.ts` and five `TargetFacts` fixtures; `API_VERSION` and the CHANGELOG stay for B507, which declares 1.19.0.
+- Shader sources get the language `glsl` rather than a hand-made info, so the existing language-unchecked path reports them.
+
+**Next**
+- B507: list the seven `DataFolderKey` entries in the 1.19.0 CHANGELOG. B508: examples for the eleven kinds, empty `KINDS_AWAITING_EXAMPLES`, vanilla data pack load in the library test.
+- Whether the new registry folders belong in `FATAL_DATA_FOLDERS` (vanilla pack safety, ADR 0066) needs a vanilla server probe; the app's sidebar labels and the asset import for `shaders/` are app follow-ups.

@@ -54,6 +54,18 @@ const COVERED_REFS: readonly string[] = [
   'msm:item',
   'msm:item_definition',
   '::java::assets::equipment::Equipment',
+  // Data kinds sweep 2 and the resource pack kinds (ADR 0106 D1, D2).
+  'resource:decorated_pot_pattern',
+  'resource:wolf_sound_variant',
+  'resource:block_transformer',
+  'resource:test_environment',
+  'resource:test_instance',
+  'resource:sulfur_cube_archetype',
+  'resource:context_int_provider',
+  'resource:context_float_provider',
+  'resource:post_effect',
+  'resource:waypoint_style',
+  'resource:shader',
 ];
 
 /** Tier-B kinds: reported (not asserted), since unmodelled nodes may remain there. */

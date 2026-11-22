@@ -1,0 +1,22 @@
+{
+  "contents": {
+    "environment": {
+      "type": "minecraft:weather",
+      "weather": "rain"
+    },
+    "function": "minecraft:always_pass",
+    "manual_only": true,
+    "max_attempts": 3,
+    "max_ticks": 40,
+    "required": false,
+    "required_successes": 2,
+    "rotation": "clockwise_90",
+    "setup_ticks": 5,
+    "sky_access": true,
+    "structure": "minecraft:igloo/top",
+    "type": "minecraft:function"
+  },
+  "layer": "datapack",
+  "path": "data/example/test_instance/ruby.json",
+  "schema": "resource:test_instance"
+}

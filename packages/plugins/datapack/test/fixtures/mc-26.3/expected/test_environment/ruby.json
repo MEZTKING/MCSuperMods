@@ -1,0 +1,19 @@
+{
+  "contents": {
+    "definitions": [
+      {
+        "type": "minecraft:weather",
+        "weather": "thunder"
+      },
+      {
+        "setup": "example:greet",
+        "teardown": "example:tick",
+        "type": "minecraft:function"
+      }
+    ],
+    "type": "minecraft:all_of"
+  },
+  "layer": "datapack",
+  "path": "data/example/test_environment/ruby.json",
+  "schema": "resource:test_environment"
+}

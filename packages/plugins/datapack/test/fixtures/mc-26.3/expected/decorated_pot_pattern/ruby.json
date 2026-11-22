@@ -1,0 +1,8 @@
+{
+  "contents": {
+    "asset_id": "minecraft:skull_pottery_pattern"
+  },
+  "layer": "datapack",
+  "path": "data/example/decorated_pot_pattern/ruby.json",
+  "schema": "resource:decorated_pot_pattern"
+}

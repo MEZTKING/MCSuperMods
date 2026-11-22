@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "inputs": [
+      {
+        "max": 2,
+        "min": 0,
+        "type": "minecraft:uniform"
+      },
+      "minecraft:compostable/low"
+    ],
+    "type": "minecraft:add"
+  },
+  "layer": "datapack",
+  "path": "data/example/context_int_provider/ruby.json",
+  "schema": "resource:context_int_provider"
+}

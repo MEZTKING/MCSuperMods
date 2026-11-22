@@ -14,7 +14,10 @@ import {
   modelKind,
   packMcmetaKind,
   particleKind,
+  postEffectKind,
+  shaderKind,
   soundsKind,
+  waypointStyleKind,
 } from '../src/index';
 import { indexesFor, schemaErrors, sortedJson } from './support';
 
@@ -119,6 +122,54 @@ const SAMPLES: Sample[] = [
         },
         { type: 'space', advances: { ' ': 4 } },
       ],
+    },
+  },
+  {
+    kind: postEffectKind,
+    name: 'spider',
+    id: 'minecraft:spider',
+    data: {
+      targets: { 'example:swap': { persistent: true, clear_color: [0, 0, 0, 1] } },
+      passes: [
+        {
+          vertex_shader: 'example:post/tint',
+          fragment_shader: 'example:post/tint',
+          inputs: [
+            { sampler_name: 'In', target: 'minecraft:main', bilinear: true },
+            { sampler_name: 'Depth', target: 'minecraft:main', use_depth_buffer: true },
+          ],
+          output: 'example:swap',
+          uniforms: { TintConfig: [{ type: 'vec4', value: [1, 0.5, 0.5, 1] }] },
+        },
+        {
+          vertex_shader: 'example:post/tint',
+          fragment_shader: 'example:post/copy',
+          inputs: [{ sampler_name: 'In', target: 'example:swap' }],
+          output: 'minecraft:main',
+        },
+      ],
+    },
+  },
+  {
+    kind: waypointStyleKind,
+    name: 'ruby',
+    id: 'example:ruby',
+    data: {
+      near_distance: 32,
+      far_distance: 512,
+      sprites: ['minecraft:default_0', 'minecraft:default_1', 'minecraft:default_2'],
+    },
+  },
+  {
+    kind: shaderKind,
+    name: 'glow',
+    id: 'example:program/glow',
+    data: {
+      vertex: 'example:program/glow',
+      fragment: 'example:program/glow',
+      samplers: [{ name: 'Sampler0' }, { name: 'Sampler1' }],
+      uniforms: [{ name: 'GlowStrength', type: 'float', count: 1, values: [0.5] }],
+      defines: { values: { STEPS: '4' }, flags: ['SOFT'] },
     },
   },
 ];

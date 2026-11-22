@@ -36,6 +36,15 @@ export const GENERIC_DATA_REGISTRIES = Object.freeze([
   'trial_spawner',
   'timeline',
   'world_clock',
+  // Data kinds sweep 2 (ADR 0106 D1).
+  'decorated_pot_pattern',
+  'wolf_sound_variant',
+  'block_transformer',
+  'test_environment',
+  'test_instance',
+  'sulfur_cube_archetype',
+  'context_int_provider',
+  'context_float_provider',
 ] as const satisfies readonly DataFolderKey[]);
 
 /** A registry with a generic kind. */
@@ -47,6 +56,9 @@ const EVERYWHERE = [{ priority: 0 }];
 /** The vanilla animal sound ids (adult and baby) for one animal, named by suffix. */
 const sounds = (prefix: string, names: readonly string[]): Json =>
   Object.fromEntries(names.map((name) => [`${name}_sound`, `minecraft:entity.${prefix}.${name}`]));
+
+/** The wolf's sound event names, the same for adults and babies. */
+const WOLF_SOUNDS = ['ambient', 'death', 'growl', 'hurt', 'pant', 'whine'] as const;
 
 /**
  * Minimal valid data per kind. Only `minecraft:` ids; asset ids name vanilla assets, so a new
@@ -221,6 +233,49 @@ const DEFAULTS: Readonly<Record<GenericDataRegistry, Json>> = {
     period_ticks: 24000,
   },
   world_clock: {},
+  // The face picture names a vanilla sherd's texture under `entity/decorated_pot/`.
+  decorated_pot_pattern: { asset_id: 'minecraft:angler_pottery_pattern' },
+  wolf_sound_variant: {
+    adult_sounds: sounds('wolf', WOLF_SOUNDS),
+    baby_sounds: sounds('baby_wolf', WOLF_SOUNDS),
+  },
+  // One rule, as a shovel flattens grass into a path: the first provider that gives a block wins.
+  block_transformer: [
+    {
+      block_state_provider: {
+        type: 'minecraft:rule_based',
+        rules: [
+          {
+            if_true: { type: 'minecraft:matching_blocks', blocks: 'minecraft:grass_block' },
+            // biome-ignore lint/suspicious/noThenProperty: the game's own key for what a rule gives
+            then: { type: 'minecraft:simple', state: { id: 'minecraft:dirt_path' } },
+          },
+        ],
+      },
+      sound: 'minecraft:item.shovel.flatten',
+    },
+  ],
+  test_environment: { type: 'minecraft:weather', weather: 'clear' },
+  test_instance: {
+    type: 'minecraft:block_based',
+    environment: 'minecraft:default',
+    structure: 'minecraft:empty',
+    max_ticks: 100,
+  },
+  // Both sounds are given: one supported target requires them, the other makes them optional.
+  sulfur_cube_archetype: {
+    items: ['minecraft:slime_ball'],
+    knockback_modifiers: { horizontal_power: 1, vertical_power: 1 },
+    attribute_modifiers: [],
+    sound_settings: {
+      hit_sound: 'minecraft:entity.sulfur_cube.regular.hit',
+      push_sound: 'minecraft:entity.sulfur_cube.regular.push',
+      push_sound_impulse_threshold: 0.1,
+      push_sound_cooldown: 0.5,
+    },
+  },
+  context_int_provider: { type: 'minecraft:constant', value: 1 },
+  context_float_provider: { type: 'minecraft:constant', value: 1 },
 };
 
 /**

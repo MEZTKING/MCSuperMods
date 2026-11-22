@@ -23,7 +23,10 @@ const KIND_IDS = [
   'minecraft:model',
   'minecraft:pack_mcmeta',
   'minecraft:particle',
+  'minecraft:post_effect',
+  'minecraft:shader',
   'minecraft:sounds',
+  'minecraft:waypoint_style',
 ];
 
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
@@ -45,7 +48,7 @@ describe('@msm/plugin-resourcepack', () => {
     expect(Object.isFrozen(plugin)).toBe(true);
   });
 
-  it('contributes the ten vanilla resource pack kinds with unique ids and folders', () => {
+  it('contributes the thirteen vanilla resource pack kinds with unique ids and folders', () => {
     const ids = kinds().map((kind) => kind.id);
     expect([...ids].sort()).toEqual(KIND_IDS);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(KIND_IDS.length);

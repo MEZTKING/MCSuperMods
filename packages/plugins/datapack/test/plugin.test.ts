@@ -64,7 +64,7 @@ describe('@msm/plugin-datapack', () => {
     expect(actual).toEqual(expected);
     expect(dataPackKinds.map((kind) => kind.id)).toEqual(expected.map((kind) => kind.id));
     expect(tagKinds).toHaveLength(21);
-    expect(genericKinds).toHaveLength(28);
+    expect(genericKinds).toHaveLength(36);
     expect(new Set(kinds().map((kind) => kind.id)).size).toBe(kinds().length);
     expect(new Set(kinds().map((kind) => kind.folder)).size).toBe(kinds().length);
     for (const kind of kinds()) {

@@ -1,0 +1,35 @@
+{
+  "contents": {
+    "defines": {
+      "flags": [
+        "SOFT"
+      ],
+      "values": {
+        "STEPS": "4"
+      }
+    },
+    "fragment": "example:program/glow",
+    "samplers": [
+      {
+        "name": "Sampler0"
+      },
+      {
+        "name": "Sampler1"
+      }
+    ],
+    "uniforms": [
+      {
+        "count": 1,
+        "name": "GlowStrength",
+        "type": "float",
+        "values": [
+          0.5
+        ]
+      }
+    ],
+    "vertex": "example:program/glow"
+  },
+  "layer": "resourcepack",
+  "path": "assets/example/shaders/program/glow.json",
+  "schema": "::java::assets::shader::program::ShaderProgram"
+}

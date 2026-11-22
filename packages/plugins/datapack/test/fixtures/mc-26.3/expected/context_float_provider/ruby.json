@@ -1,0 +1,15 @@
+{
+  "contents": {
+    "inputs": [
+      {
+        "type": "minecraft:constant",
+        "value": 1.5
+      },
+      "minecraft:cooking/speed_default"
+    ],
+    "type": "minecraft:mul"
+  },
+  "layer": "datapack",
+  "path": "data/example/context_float_provider/ruby.json",
+  "schema": "resource:context_float_provider"
+}

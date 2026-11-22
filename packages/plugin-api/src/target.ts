@@ -124,6 +124,16 @@ export type ResourceFolderKey =
  * - `trial_spawner`: trial spawner configurations. Since 1.9.0 (ADR 0064 D5).
  * - `timeline`: timelines. Since 1.9.0 (ADR 0064 D5).
  * - `world_clock`: world clocks. Since 1.9.0 (ADR 0064 D5).
+ * - `decorated_pot_pattern`: decorated pot patterns. Since 1.19.0 (ADR 0106 D1).
+ * - `block_transformer`: block transformers (what axes, shovels and hoes do to blocks). Since
+ *   1.19.0 (ADR 0106 D1).
+ * - `test_environment`: GameTest environments. Since 1.19.0 (ADR 0106 D1).
+ * - `test_instance`: GameTest instances. Since 1.19.0 (ADR 0106 D1).
+ * - `sulfur_cube_archetype`: sulfur cube archetypes. Since 1.19.0 (ADR 0106 D1).
+ * - `context_int_provider`: named whole-number providers, such as compost chances. Since
+ *   1.19.0 (ADR 0106 D1).
+ * - `context_float_provider`: named decimal-number providers, such as cooking speeds. Since
+ *   1.19.0 (ADR 0106 D1).
  */
 export type DataFolderKey =
   | 'recipe'
@@ -164,7 +174,14 @@ export type DataFolderKey =
   | 'enchantment_provider'
   | 'trial_spawner'
   | 'timeline'
-  | 'world_clock';
+  | 'world_clock'
+  | 'decorated_pot_pattern'
+  | 'block_transformer'
+  | 'test_environment'
+  | 'test_instance'
+  | 'sulfur_cube_archetype'
+  | 'context_int_provider'
+  | 'context_float_provider';
 
 /**
  * World generation facts of a target. Since 0.5.0.

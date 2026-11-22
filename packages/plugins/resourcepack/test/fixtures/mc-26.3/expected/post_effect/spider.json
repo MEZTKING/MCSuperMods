@@ -1,0 +1,61 @@
+{
+  "contents": {
+    "passes": [
+      {
+        "fragment_shader": "example:post/tint",
+        "inputs": [
+          {
+            "bilinear": true,
+            "sampler_name": "In",
+            "target": "minecraft:main"
+          },
+          {
+            "sampler_name": "Depth",
+            "target": "minecraft:main",
+            "use_depth_buffer": true
+          }
+        ],
+        "output": "example:swap",
+        "uniforms": {
+          "TintConfig": [
+            {
+              "type": "vec4",
+              "value": [
+                1,
+                0.5,
+                0.5,
+                1
+              ]
+            }
+          ]
+        },
+        "vertex_shader": "example:post/tint"
+      },
+      {
+        "fragment_shader": "example:post/copy",
+        "inputs": [
+          {
+            "sampler_name": "In",
+            "target": "example:swap"
+          }
+        ],
+        "output": "minecraft:main",
+        "vertex_shader": "example:post/tint"
+      }
+    ],
+    "targets": {
+      "example:swap": {
+        "clear_color": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "persistent": true
+      }
+    }
+  },
+  "layer": "resourcepack",
+  "path": "assets/minecraft/post_effect/spider.json",
+  "schema": "::java::assets::shader::post::PostEffect"
+}

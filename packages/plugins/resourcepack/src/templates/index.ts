@@ -11,8 +11,10 @@ import { itemDefinitionTemplates } from './item-definitions';
 import { modelTemplates } from './models';
 import { packTemplates } from './pack';
 import { particleTemplates } from './particles';
+import { shaderTemplates } from './shaders';
 import { soundsTemplates } from './sounds';
 import { textTemplates } from './text';
+import { waypointStyleTemplates } from './waypoint-styles';
 
 export { blockstateTemplates } from './blockstates';
 export { equipmentTemplates } from './equipment';
@@ -21,8 +23,10 @@ export { itemDefinitionTemplates } from './item-definitions';
 export { modelTemplates } from './models';
 export { packTemplates } from './pack';
 export { particleTemplates } from './particles';
+export { shaderTemplates } from './shaders';
 export { soundsTemplates } from './sounds';
 export { textTemplates } from './text';
+export { waypointStyleTemplates } from './waypoint-styles';
 
 /** Every resource pack template, in picker order. */
 export const resourcePackTemplates: readonly ElementTemplate[] = Object.freeze([
@@ -34,5 +38,7 @@ export const resourcePackTemplates: readonly ElementTemplate[] = Object.freeze([
   ...soundsTemplates,
   ...fontTemplates,
   ...particleTemplates,
+  ...shaderTemplates,
+  ...waypointStyleTemplates,
   ...packTemplates,
 ]);
