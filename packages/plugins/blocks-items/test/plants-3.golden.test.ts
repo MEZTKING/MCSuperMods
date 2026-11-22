@@ -39,25 +39,6 @@ const UPDATE = process.env.UPDATE_GOLDENS === '1';
 /** The types of this brief. */
 const TYPES = ['growing_plant', 'column_plant', 'multiface', 'dripleaf'] as const;
 
-/**
- * Vanilla block models the new types name as parents that `BlockFacts.modelTemplates` does not
- * list yet (the facts belong to the plugin API briefs). Each is in both built-in targets'
- * client jar listings (checked by name only at B511, 2026-11-22).
- */
-const TEMPLATES_NOT_IN_FACTS: readonly string[] = [
-  'minecraft:block/cactus',
-  ...[1, 2, 3, 4].flatMap((n) => [0, 1].map((age) => `minecraft:block/bamboo${n}_age${age}`)),
-  'minecraft:block/bamboo_small_leaves',
-  'minecraft:block/bamboo_large_leaves',
-  'minecraft:block/glow_lichen',
-  'minecraft:block/big_dripleaf',
-  'minecraft:block/big_dripleaf_partial_tilt',
-  'minecraft:block/big_dripleaf_full_tilt',
-  'minecraft:block/big_dripleaf_stem',
-  'minecraft:block/small_dripleaf_top',
-  'minecraft:block/small_dripleaf_bottom',
-];
-
 interface Sample {
   name: string;
   id: ResourceLocation;
@@ -333,10 +314,7 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
     });
 
     it('parents every generated block model on a vanilla template', async () => {
-      const templates = new Set([
-        ...(bundle.target.blocks?.modelTemplates ?? []),
-        ...TEMPLATES_NOT_IN_FACTS,
-      ]);
+      const templates = new Set(bundle.target.blocks?.modelTemplates ?? []);
       for (const plant of SAMPLES) {
         for (const file of await lower(plant, bundle)) {
           if (!file.path.includes('/models/block/')) continue;

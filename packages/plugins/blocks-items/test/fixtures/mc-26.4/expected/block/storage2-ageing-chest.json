@@ -1,0 +1,121 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {},
+        "msm:waxable": {
+          "into": "example:waxed_tin_chest"
+        },
+        "msm:weathering": {
+          "next": "example:exposed_tin_chest",
+          "stage": "unaffected"
+        }
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/tin_chest.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/crate_front",
+        "side": "example:block/crate_side",
+        "top": "example:block/crate_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tin_chest.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/crate_front_open",
+        "side": "example:block/crate_side",
+        "top": "example:block/crate_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/tin_chest_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,open=false": {
+          "model": "example:block/tin_chest",
+          "y": 90
+        },
+        "facing=east,open=true": {
+          "model": "example:block/tin_chest_open",
+          "y": 90
+        },
+        "facing=north,open=false": {
+          "model": "example:block/tin_chest"
+        },
+        "facing=north,open=true": {
+          "model": "example:block/tin_chest_open"
+        },
+        "facing=south,open=false": {
+          "model": "example:block/tin_chest",
+          "y": 180
+        },
+        "facing=south,open=true": {
+          "model": "example:block/tin_chest_open",
+          "y": 180
+        },
+        "facing=west,open=false": {
+          "model": "example:block/tin_chest",
+          "y": 270
+        },
+        "facing=west,open=true": {
+          "model": "example:block/tin_chest_open",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/tin_chest.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/tin_chest",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/tin_chest.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:tin_chest",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/tin_chest",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/tin_chest.json",
+    "schema": "resource:loot_table"
+  }
+]

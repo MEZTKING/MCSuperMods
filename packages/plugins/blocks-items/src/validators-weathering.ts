@@ -17,25 +17,22 @@
  *   `msm:weathering` (a waxed copy must not age; B440), or the waxed copy of two blocks (the
  *   axe could not tell which one to give back: the runtime's reverse map needs one).
  *
- * They also report two codes of the other block validators:
+ * They also report a code of the other block validators:
  *
  * - `blocks-items.component-not-for-type` (error): `msm:waterloggable` on a type other than
  *   `block`, `pillar`, `horizontal` and `directional` (types that vanilla waterlogs keep their
  *   own waterlogging), or `msm:weathering` or `msm:waxable` on a type that does not age
  *   (`WEATHERING_BLOCK_TYPES`: copper's eleven types of ADR 0094 D8 and the rod, button,
  *   pressure plate, fence, fence gate and wall of ADR 0104 D1).
- * - `blocks-items.component-conflict` (error): `msm:waterloggable` together with
- *   `msm:container` or `msm:machine`; such a block is not waterloggable (limit Q8).
+ *
+ * Containers and machines hold water since ADR 0104 D3 (limit Q8 lifted), so `msm:waterloggable`
+ * with `msm:container` or `msm:machine` is no longer `blocks-items.component-conflict`.
  */
 import type { Element, Json, JsonObject, Problem, ProjectValidator } from '@msm/plugin-api';
 import { BLOCK_KIND } from './kinds';
 import { isRecord } from './lowering/paths';
-import { BLOCK_TYPES, type BlockTypeName, containerOf, machineOf } from './lowering/types';
-import {
-  hasWaterloggable,
-  WATERLOGGABLE_BLOCK_TYPES,
-  WATERLOGGABLE_COMPONENT,
-} from './lowering/waterlog';
+import { BLOCK_TYPES, type BlockTypeName } from './lowering/types';
+import { WATERLOGGABLE_BLOCK_TYPES, WATERLOGGABLE_COMPONENT } from './lowering/waterlog';
 import {
   fullBlockId,
   nextWeatheringStage,
@@ -120,7 +117,7 @@ function contextOf(
 }
 
 // ---------------------------------------------------------------------------------------------
-// Types and pairs (ADR 0094 D7, D8; limit Q8)
+// Types (ADR 0094 D7, D8)
 
 const component = (data: JsonObject, key: string): Json | undefined => {
   const components = isRecord(data.components) ? data.components : undefined;
@@ -161,28 +158,6 @@ function notForType(blocks: readonly Block[]): Problem[] {
     );
   }
   return problems;
-}
-
-function waterloggedContainers(blocks: readonly Block[]): Problem[] {
-  return blocks.flatMap((block) => {
-    if (!hasWaterloggable(block.data)) return [];
-    const other =
-      machineOf(block.data) !== undefined
-        ? 'msm:machine'
-        : containerOf(block.data) !== undefined
-          ? 'msm:container'
-          : undefined;
-    if (other === undefined) return [];
-    return [
-      {
-        severity: 'error',
-        code: 'blocks-items.component-conflict',
-        elementId: block.element.id,
-        path: pointer('components', WATERLOGGABLE_COMPONENT),
-        message: `A block with "${other}" cannot hold water, so "${WATERLOGGABLE_COMPONENT}" does nothing here. Remove one of them.`,
-      } satisfies Problem,
-    ];
-  });
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -324,7 +299,7 @@ export const weatheringValidators: readonly ProjectValidator[] = Object.freeze([
     kinds: [BLOCK_KIND],
     validate: ({ elements }) => {
       const blocks = blocksOf(elements);
-      return [...notForType(blocks), ...waterloggedContainers(blocks)];
+      return notForType(blocks);
     },
   },
   {

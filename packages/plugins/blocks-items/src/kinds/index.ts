@@ -3,7 +3,8 @@
  * folder `block`), `msm:item` (`item`), `msm:effect` (`effect`, ADR 0055 D1), the singleton
  * `msm:mod` (`mod`, conventional id `<ns>:mod`), and the additions to vanilla content
  * `msm:biome_addition` (`biome_addition`) and `msm:loot_addition` (`loot_addition`, ADR 0060
- * D2, D3), which belong to no registry, and `msm:potion` (`potion`, ADR 0063 D1, registry
+ * D2, D3) and `msm:vanilla_block_rules` (`vanilla_block_rules`, ADR 0105 D4), which belong to no
+ * registry, and `msm:potion` (`potion`, ADR 0063 D1, registry
  * `potion`), and `msm:particle` (`particle`, ADR 0080 D1, registry `particle_type`). Element ids
  * are the registry ids: `msm:block`
  * elements belong to the `block` registry, `msm:item` elements to `item` and `msm:effect`
@@ -12,7 +13,11 @@
  */
 import type { ElementKind } from '@msm/plugin-api';
 import { MSM_SCHEMA_REFS } from '@msm/schemas';
-import { lowerBiomeAddition, lowerLootAddition } from '../lowering/additions';
+import {
+  lowerBiomeAddition,
+  lowerLootAddition,
+  lowerVanillaBlockRules,
+} from '../lowering/additions';
 import { lowerBlock } from '../lowering/block';
 import { lowerEffect } from '../lowering/effect';
 import { lowerItem } from '../lowering/item';
@@ -38,6 +43,8 @@ export const MOD_KIND = 'msm:mod';
 export const BIOME_ADDITION_KIND = 'msm:biome_addition';
 /** Kind id of pools added to loot tables (ADR 0060 D3). */
 export const LOOT_ADDITION_KIND = 'msm:loot_addition';
+/** Kind id of tool and burning rules for vanilla blocks (ADR 0105 D4). */
+export const VANILLA_BLOCK_RULES_KIND = 'msm:vanilla_block_rules';
 
 /** `format` is written by lowering, so the form hides it. */
 const HIDDEN = ['/format'];
@@ -185,6 +192,24 @@ export const lootAdditionKind: ElementKind = {
   lower: lowerLootAddition,
 };
 
+/**
+ * Tool and burning rules for vanilla blocks, applied when a server starts (ADR 0105 D4): an axe
+ * strips, a shovel flattens, a hoe tills, honeycomb waxes, blocks age and burn. A rule on a block
+ * vanilla already pairs replaces vanilla's (the validators warn). The default lets an axe scrape
+ * the moss off mossy cobblestone, a pair vanilla does not have.
+ */
+export const vanillaBlockRulesKind: ElementKind = {
+  id: VANILLA_BLOCK_RULES_KIND,
+  schema: MSM_SCHEMA_REFS.vanillaBlockRules,
+  folder: 'vanilla_block_rules',
+  defaultData: {
+    format: 1,
+    strip: [{ block: 'minecraft:mossy_cobblestone', into: 'minecraft:cobblestone' }],
+  },
+  hiddenPaths: HIDDEN,
+  lower: lowerVanillaBlockRules,
+};
+
 /** Every kind this plugin contributes, in order. */
 export const blocksItemsKinds: readonly ElementKind[] = Object.freeze([
   blockKind,
@@ -197,4 +222,5 @@ export const blocksItemsKinds: readonly ElementKind[] = Object.freeze([
   particleKind,
   creativeTabKind,
   fluidKind,
+  vanillaBlockRulesKind,
 ]);

@@ -1,0 +1,118 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {
+          "comparator": false,
+          "hoppers": false,
+          "per_player": true
+        }
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/void_chest.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/crate_front",
+        "side": "example:block/crate_side",
+        "top": "example:block/crate_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/void_chest.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/crate_front_open",
+        "side": "example:block/crate_side",
+        "top": "example:block/crate_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/void_chest_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,open=false": {
+          "model": "example:block/void_chest",
+          "y": 90
+        },
+        "facing=east,open=true": {
+          "model": "example:block/void_chest_open",
+          "y": 90
+        },
+        "facing=north,open=false": {
+          "model": "example:block/void_chest"
+        },
+        "facing=north,open=true": {
+          "model": "example:block/void_chest_open"
+        },
+        "facing=south,open=false": {
+          "model": "example:block/void_chest",
+          "y": 180
+        },
+        "facing=south,open=true": {
+          "model": "example:block/void_chest_open",
+          "y": 180
+        },
+        "facing=west,open=false": {
+          "model": "example:block/void_chest",
+          "y": 270
+        },
+        "facing=west,open=true": {
+          "model": "example:block/void_chest_open",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/void_chest.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/void_chest",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/void_chest.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:void_chest",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/void_chest",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/void_chest.json",
+    "schema": "resource:loot_table"
+  }
+]

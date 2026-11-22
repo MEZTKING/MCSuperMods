@@ -177,11 +177,103 @@ describe.each(builtInTargets.map((bundle) => [bundle.target.id, bundle] as const
         withCode(problems, 'generated-block-clash').map(([elementId]) => elementId),
       ).not.toContain('demo:cane');
     });
+
+    it('water-plant-grows-down and berries-ignore-bonemeal: what the runtime warns about', async () => {
+      const strand = (id: Id, data: Record<string, unknown>) =>
+        typed(id, 'growing_plant', { textures: { all: 'demo:block/strand' }, ...data });
+      const problems = await validate([
+        strand('demo:kelp_down', { needs_water: true, direction: 'down' }),
+        strand('demo:vine_down', { direction: 'down' }),
+        strand('demo:kelp_up', { needs_water: true, direction: 'up' }),
+        strand('demo:berry_vine', {
+          berries: { item: 'minecraft:glow_berries' },
+          bonemeal_growth: { min: 1, max: 2 },
+        }),
+        strand('demo:fast_vine', { bonemeal_growth: { min: 1, max: 2 } }),
+      ]);
+      expect(withCode(problems, 'water-plant-grows-down')).toEqual([
+        ['demo:kelp_down', '/direction', 'warning'],
+      ]);
+      expect(withCode(problems, 'berries-ignore-bonemeal')).toEqual([
+        ['demo:berry_vine', '/bonemeal_growth', 'warning'],
+      ]);
+    });
+
+    const pot = (id: Id, plants: string[]) => typed(id, 'flower_pot', { model: undefined, plants });
+    const potted = (id: Id, plant: string, pot?: string) =>
+      typed(id, 'potted_plant', { plant, ...(pot === undefined ? {} : { pot }) });
+
+    it('pot-plant-repeated: a plant listed twice or two plants of one name', async () => {
+      const problems = await validate([
+        pot('demo:clay_pot', [
+          'minecraft:poppy',
+          'minecraft:dandelion',
+          'poppy',
+          'demo:dandelion',
+          'demo:fern',
+        ]),
+        typed('demo:dandelion', 'plant', { textures: { all: 'demo:block/dandelion' } }),
+        typed('demo:fern', 'plant', { textures: { all: 'demo:block/fern' } }),
+      ]);
+      expect(withCode(problems, 'pot-plant-repeated')).toEqual([
+        ['demo:clay_pot', '/plants/2', 'warning'],
+        ['demo:clay_pot', '/plants/3', 'warning'],
+      ]);
+    });
+
+    it('pot-plant-unfit: no item, or two blocks high', async () => {
+      const problems = await validate([
+        pot('demo:clay_pot', [
+          'demo:tall',
+          'demo:no_item',
+          'demo:sprout',
+          'minecraft:potted_poppy',
+          'minecraft:poppy',
+        ]),
+        typed('demo:tall', 'tall_plant', {
+          textures: { top: 'demo:block/t', bottom: 'demo:block/b' },
+        }),
+        typed('demo:no_item', 'plant', { item: false, textures: { all: 'demo:block/n' } }),
+        typed('demo:sprout', 'plant', { textures: { all: 'demo:block/s' } }),
+      ]);
+      expect(withCode(problems, 'pot-plant-unfit')).toEqual([
+        ['demo:clay_pot', '/plants/0', 'error'],
+        ['demo:clay_pot', '/plants/1', 'error'],
+        ['demo:clay_pot', '/plants/3', 'error'],
+      ]);
+    });
+
+    it('pot-plant-also-potted: a potted_plant for a plant its pot lists', async () => {
+      const problems = await validate([
+        pot('demo:clay_pot', ['minecraft:poppy']),
+        potted('demo:clay_pot_poppy_too', 'minecraft:poppy', 'demo:clay_pot'),
+        potted('demo:clay_pot_allium', 'minecraft:allium', 'demo:clay_pot'),
+        potted('demo:vanilla_pot_poppy', 'minecraft:poppy'),
+      ]);
+      expect(withCode(problems, 'pot-plant-also-potted')).toEqual([
+        ['demo:clay_pot_poppy_too', '/plant', 'error'],
+      ]);
+    });
+
+    it('potted-plant-pot-not-pot: pot names a block that is not a flower pot', async () => {
+      const problems = await validate([
+        pot('demo:clay_pot', ['minecraft:poppy']),
+        typed('demo:crate', 'block', { model: 'minecraft:block/barrel' }),
+        potted('demo:a', 'minecraft:allium', 'demo:crate'),
+        potted('demo:b', 'minecraft:allium', 'minecraft:stone'),
+        potted('demo:c', 'minecraft:allium', 'demo:clay_pot'),
+        potted('demo:d', 'minecraft:allium', 'minecraft:flower_pot'),
+      ]);
+      expect(withCode(problems, 'potted-plant-pot-not-pot')).toEqual([
+        ['demo:a', '/pot', 'error'],
+        ['demo:b', '/pot', 'error'],
+      ]);
+    });
   },
 );
 
 describe('growing plant validator codes', () => {
-  it('lists six codes, none shared with the other validators', () => {
+  it('lists twelve codes, none shared with the other validators', () => {
     expect(PLANT3_PROBLEM_CODES).toEqual([
       'blocks-items.dripleaf-grows-into-missing',
       'blocks-items.dripleaf-grows-into-big',
@@ -189,6 +281,12 @@ describe('growing plant validator codes', () => {
       'blocks-items.dripleaf-grows-into-not-big',
       'blocks-items.column-min-above-max',
       'blocks-items.water-plant-feature-dry',
+      'blocks-items.water-plant-grows-down',
+      'blocks-items.berries-ignore-bonemeal',
+      'blocks-items.pot-plant-repeated',
+      'blocks-items.pot-plant-unfit',
+      'blocks-items.pot-plant-also-potted',
+      'blocks-items.potted-plant-pot-not-pot',
     ]);
     const all = [
       ...PLANT3_PROBLEM_CODES,

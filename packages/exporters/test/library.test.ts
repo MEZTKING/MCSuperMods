@@ -1926,7 +1926,10 @@ function typeCheck(script: string): string[] {
  * its library brief lands. `minecraft:wolf_sound_variant` is not a kind at all while vanilla-mcdoc
  * lacks `step_sound` (ADR 0064 D5).
  */
-const KINDS_AWAITING_EXAMPLES: readonly string[] = [];
+const KINDS_AWAITING_EXAMPLES: readonly string[] = [
+  // B515 registers the kind; B518 (vanilla parity 3, wave 4) adds its template and example.
+  'msm:vanilla_block_rules',
+];
 
 // Tests --------------------------------------------------------------------------------------
 

@@ -14,10 +14,16 @@
   {
     "contents": {
       "variants": {
-        "open=false": {
+        "open=false,waterlogged=false": {
           "model": "example:block/wet_crate"
         },
-        "open=true": {
+        "open=false,waterlogged=true": {
+          "model": "example:block/wet_crate"
+        },
+        "open=true,waterlogged=false": {
+          "model": "example:block/wet_crate"
+        },
+        "open=true,waterlogged=true": {
           "model": "example:block/wet_crate"
         }
       }

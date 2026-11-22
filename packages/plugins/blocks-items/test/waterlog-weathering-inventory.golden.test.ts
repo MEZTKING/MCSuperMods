@@ -97,7 +97,7 @@ const SAMPLES: Sample[] = [
     },
     components: { 'msm:waterloggable': {} },
   }),
-  one(blockKind, 'waterlog-container-dry', 'example:wet_crate', {
+  one(blockKind, 'waterlog-container', 'example:wet_crate', {
     model: 'example:block/wet_crate',
     components: { 'msm:waterloggable': {}, 'msm:container': {} },
   }),
@@ -253,10 +253,15 @@ describe('waterlogging', () => {
     );
   });
 
-  it('keeps a container without the property (limit Q8)', async () => {
-    const files = await lowerSample(byName('waterlog-container-dry'));
+  it('gives a container the property on top of open (ADR 0104 D3)', async () => {
+    const files = await lowerSample(byName('waterlog-container'));
     const variants = contentsOf(files, '/blockstates/wet_crate.json').variants as JsonObject;
-    expect(Object.keys(variants)).toEqual(['open=false', 'open=true']);
+    expect(Object.keys(variants)).toEqual([
+      'open=false,waterlogged=false',
+      'open=false,waterlogged=true',
+      'open=true,waterlogged=false',
+      'open=true,waterlogged=true',
+    ]);
   });
 
   it('leaves a multipart definition as it is', () => {

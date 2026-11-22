@@ -7139,3 +7139,23 @@ Next
 
 **Next**
 - The Import assets dialog offers only `textures/...` and `sounds`, so `shaders/` files cannot be imported from it (the session's `importAssets` accepts the folder); a follow-up for B522 or later.
+## 2026-11-22 — executor — B515 plugin: storage, sounds and pairs
+
+**What**
+- Storage 2 (ADR 0104 D3 to D6): containers and machines may hold water (limit Q8 lifted in `lowering/waterlog.ts`; the old `component-conflict` of `msm:waterloggable` with them is gone from `validators-weathering.ts`); their block states get `waterlogged` on top of `open` or `lit`. A double chest (`isDoubleChest`, `withDoubleChestVariants` in `lowering/block.ts`) writes its closed variants once per half (`type=single|left|right`, same model) and leaves `open` out, since vanilla's chest family has no such state. Per-player and ageing containers need no new files.
+- Own block sounds (ADR 0105 D1 as amended): new `lowering/sounds.ts`. Where block sounds are data (`soundModel` `block_sound_set`), a block with `block_sounds` gets `data/<ns>/block_sound_set/<path>.json` (layer `datapack`, schema `resource:block_sound_set`) under its own id, each sound as `{ "sound_id" }` so it needs no registered sound event and stays loadable in a vanilla pack; pitch is capped at 2 and volume raised to 0.00001 there. Nothing extra where the runtime builds the sounds. Own set types need no files (the runtime builds them).
+- New kind `msm:vanilla_block_rules` (folder `vanilla_block_rules`, lowered by `lowerVanillaBlockRules` in `lowering/additions.ts` to `msm/<ns>/vanilla_block_rules/<path>.json`, layer `msm`); default: an axe scrapes mossy cobblestone into cobblestone. 11 kinds in blocks-items, 115 in all; it waits in the exporters' `KINDS_AWAITING_EXAMPLES` and has no template until B518.
+- Validators: `msm.blocks-items.storage-2` (`double-chest-layout`, `double-chest-type`, `per-player-conflict`, `per-player-hoppers`, `ageing-container-mismatch`), `msm.blocks-items.sounds` (`block-sound-unknown`, `block-sounds-partial`, `block-sounds-range`, `sound-type-unknown`, `set-type-field-unused`, `vanilla-pair-override`, `vanilla-rule-duplicate`, `vanilla-rule-same-block`, `vanilla-rule-project-block`), six more codes in `msm.blocks-items.plants-3` (`water-plant-grows-down`, `berries-ignore-bonemeal`, `pot-plant-repeated`, `pot-plant-unfit`, `pot-plant-also-potted`, `potted-plant-pot-not-pot`), and `container-layout-fields` now covers `double` and `per_player`.
+- Targets: 19 vanilla model templates added to `BlockFacts.modelTemplates` on both targets (87 in all; cactus, the eight bamboo stalks, both bamboo leaves, glow lichen, the big dripleaf with both tilts and the stem, the small dripleaf's halves, the empty flower pot), checked by name only in both cached client jars; `TEMPLATES_NOT_IN_FACTS` removed from `plants-3.golden.test.ts`. `dataPackComponents` gains `provides_pottery_pattern` (25), derived once `decorated_pot_pattern` counts as a data pack registry in the targets' tests.
+- Tests: new `storage-sounds.golden.test.ts` (goldens `storage2-*`, `sounds-*`, `rules-every-kind`), `validators-storage-2.test.ts`, `validators-sounds.test.ts`, pot and plant cases in `validators-plants-3.test.ts`, the exporters' `storage-sounds-vanilla-pack.test.ts` (loot tables left out with `export.mod-only-reference`, the sound set entry kept, the rules never in a vanilla pack). Golden `waterlog-container-dry` is now `waterlog-container`. `pnpm lint`, `pnpm typecheck` and `pnpm test` (24 tasks) pass.
+
+**Decisions**
+- A double chest on a `pillar` or `directional` block is an error: vanilla's chest family faces four ways and has no axis.
+- On data-sound targets the events `block_sounds` leaves out are silent (warning `block-sounds-partial`): the lowering has no facts for a vanilla set's own events, so it cannot fill them from `sound_type`.
+- Vanilla pair overrides are checked rule by rule (a strip rule against vanilla's strip pairs, and so on), not against every map.
+- Unknown listed pot plants and unknown rule blocks are left to `schema.unknown-id`.
+
+**Next**
+- B513: double chests' block states carry `type` and no `open`; a double chest of type `block` has no `facing` key (any facing matches).
+- B514: the 26.4 entry is named by the block's id; events not given are absent from it.
+- B518: a template and an example for `msm:vanilla_block_rules`, then empty `KINDS_AWAITING_EXAMPLES` again.

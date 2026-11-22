@@ -1,0 +1,319 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "set_type": {
+        "base": "iron",
+        "can_open_by_hand": true,
+        "sounds": {
+          "close": "example:door.chime.close",
+          "open": "example:door.chime.open"
+        }
+      },
+      "type": "door"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/chime_door.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_left",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_bottom_left.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_left_open",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_bottom_left_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_right",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_bottom_right.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_bottom_right_open",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_bottom_right_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_left",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_top_left.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_left_open",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_top_left_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_right",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_top_right.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/door_top_right_open",
+      "textures": {
+        "bottom": "example:block/chime_door_bottom",
+        "top": "example:block/chime_door_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/chime_door_top_right_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,half=lower,hinge=left,open=false": {
+          "model": "example:block/chime_door_bottom_left"
+        },
+        "facing=east,half=lower,hinge=left,open=true": {
+          "model": "example:block/chime_door_bottom_left_open",
+          "y": 90
+        },
+        "facing=east,half=lower,hinge=right,open=false": {
+          "model": "example:block/chime_door_bottom_right"
+        },
+        "facing=east,half=lower,hinge=right,open=true": {
+          "model": "example:block/chime_door_bottom_right_open",
+          "y": 270
+        },
+        "facing=east,half=upper,hinge=left,open=false": {
+          "model": "example:block/chime_door_top_left"
+        },
+        "facing=east,half=upper,hinge=left,open=true": {
+          "model": "example:block/chime_door_top_left_open",
+          "y": 90
+        },
+        "facing=east,half=upper,hinge=right,open=false": {
+          "model": "example:block/chime_door_top_right"
+        },
+        "facing=east,half=upper,hinge=right,open=true": {
+          "model": "example:block/chime_door_top_right_open",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=left,open=false": {
+          "model": "example:block/chime_door_bottom_left",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=left,open=true": {
+          "model": "example:block/chime_door_bottom_left_open"
+        },
+        "facing=north,half=lower,hinge=right,open=false": {
+          "model": "example:block/chime_door_bottom_right",
+          "y": 270
+        },
+        "facing=north,half=lower,hinge=right,open=true": {
+          "model": "example:block/chime_door_bottom_right_open",
+          "y": 180
+        },
+        "facing=north,half=upper,hinge=left,open=false": {
+          "model": "example:block/chime_door_top_left",
+          "y": 270
+        },
+        "facing=north,half=upper,hinge=left,open=true": {
+          "model": "example:block/chime_door_top_left_open"
+        },
+        "facing=north,half=upper,hinge=right,open=false": {
+          "model": "example:block/chime_door_top_right",
+          "y": 270
+        },
+        "facing=north,half=upper,hinge=right,open=true": {
+          "model": "example:block/chime_door_top_right_open",
+          "y": 180
+        },
+        "facing=south,half=lower,hinge=left,open=false": {
+          "model": "example:block/chime_door_bottom_left",
+          "y": 90
+        },
+        "facing=south,half=lower,hinge=left,open=true": {
+          "model": "example:block/chime_door_bottom_left_open",
+          "y": 180
+        },
+        "facing=south,half=lower,hinge=right,open=false": {
+          "model": "example:block/chime_door_bottom_right",
+          "y": 90
+        },
+        "facing=south,half=lower,hinge=right,open=true": {
+          "model": "example:block/chime_door_bottom_right_open"
+        },
+        "facing=south,half=upper,hinge=left,open=false": {
+          "model": "example:block/chime_door_top_left",
+          "y": 90
+        },
+        "facing=south,half=upper,hinge=left,open=true": {
+          "model": "example:block/chime_door_top_left_open",
+          "y": 180
+        },
+        "facing=south,half=upper,hinge=right,open=false": {
+          "model": "example:block/chime_door_top_right",
+          "y": 90
+        },
+        "facing=south,half=upper,hinge=right,open=true": {
+          "model": "example:block/chime_door_top_right_open"
+        },
+        "facing=west,half=lower,hinge=left,open=false": {
+          "model": "example:block/chime_door_bottom_left",
+          "y": 180
+        },
+        "facing=west,half=lower,hinge=left,open=true": {
+          "model": "example:block/chime_door_bottom_left_open",
+          "y": 270
+        },
+        "facing=west,half=lower,hinge=right,open=false": {
+          "model": "example:block/chime_door_bottom_right",
+          "y": 180
+        },
+        "facing=west,half=lower,hinge=right,open=true": {
+          "model": "example:block/chime_door_bottom_right_open",
+          "y": 90
+        },
+        "facing=west,half=upper,hinge=left,open=false": {
+          "model": "example:block/chime_door_top_left",
+          "y": 180
+        },
+        "facing=west,half=upper,hinge=left,open=true": {
+          "model": "example:block/chime_door_top_left_open",
+          "y": 270
+        },
+        "facing=west,half=upper,hinge=right,open=false": {
+          "model": "example:block/chime_door_top_right",
+          "y": 180
+        },
+        "facing=west,half=upper,hinge=right,open=true": {
+          "model": "example:block/chime_door_top_right_open",
+          "y": 90
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/chime_door.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:item/generated",
+      "textures": {
+        "layer0": "example:block/chime_door_bottom"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/item/chime_door.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:item/chime_door",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/chime_door.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:chime_door"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/block/doors.json",
+    "schema": "tag:block"
+  },
+  {
+    "contents": {
+      "values": [
+        "example:chime_door"
+      ]
+    },
+    "layer": "datapack",
+    "merge": "tag",
+    "path": "data/minecraft/tags/item/doors.json",
+    "schema": "tag:item"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "condition": {
+                "blocks": "example:chime_door",
+                "state": {
+                  "half": "lower"
+                },
+                "type": "minecraft:match_block"
+              },
+              "name": "example:chime_door",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/chime_door",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/chime_door.json",
+    "schema": "resource:loot_table"
+  }
+]

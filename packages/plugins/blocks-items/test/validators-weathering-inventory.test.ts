@@ -166,15 +166,13 @@ describe('waterlogging (ADR 0094 D7)', () => {
     ]);
   });
 
-  it('component-conflict: not on a container or a machine (limit Q8)', async () => {
+  it('allows a container or a machine to hold water (ADR 0104 D3, limit Q8 lifted)', async () => {
     const problems = await validate([
       block('demo:wet_crate', { components: { 'msm:waterloggable': {}, 'msm:container': {} } }),
       block('demo:wet_mill', { components: { 'msm:waterloggable': {}, 'msm:machine': {} } }),
     ]);
-    expect(withCode(problems, 'component-conflict')).toEqual([
-      ['demo:wet_crate', '/components/msm:waterloggable', 'error'],
-      ['demo:wet_mill', '/components/msm:waterloggable', 'error'],
-    ]);
+    expect(withCode(problems, 'component-conflict')).toEqual([]);
+    expect(withCode(problems, 'component-not-for-type')).toEqual([]);
   });
 });
 

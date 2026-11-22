@@ -1,0 +1,48 @@
+[
+  {
+    "contents": {
+      "age": [
+        {
+          "block": "minecraft:stone_bricks",
+          "next": "minecraft:cracked_stone_bricks"
+        }
+      ],
+      "burn": [
+        {
+          "block": "minecraft:mushroom_stem",
+          "burn_odds": 5,
+          "ignite_odds": 20
+        }
+      ],
+      "flatten": [
+        {
+          "block": "minecraft:moss_block",
+          "into": "minecraft:dirt_path"
+        }
+      ],
+      "format": 1,
+      "strip": [
+        {
+          "block": "minecraft:mossy_cobblestone",
+          "into": "minecraft:cobblestone"
+        }
+      ],
+      "till": [
+        {
+          "block": "minecraft:mud",
+          "drops": "minecraft:clay_ball",
+          "into": "minecraft:farmland"
+        }
+      ],
+      "wax": [
+        {
+          "block": "minecraft:tuff",
+          "into": "minecraft:polished_tuff"
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/example/vanilla_block_rules/farm_rules.json",
+    "schema": "msm:vanilla_block_rules_definition"
+  }
+]

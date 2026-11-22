@@ -543,6 +543,7 @@ describe('target mc-26.3', () => {
       'cow_sound_variant',
       'cow_variant',
       'damage_type',
+      'decorated_pot_pattern',
       'enchantment',
       'frog_variant',
       'instrument',

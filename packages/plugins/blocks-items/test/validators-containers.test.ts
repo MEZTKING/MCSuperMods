@@ -90,6 +90,19 @@ describe('container and machine validators', () => {
     ]);
   });
 
+  it('container-layout-fields: double and per_player only on chest (ADR 0104 D4, D5)', async () => {
+    const problems = await validate([
+      container('demo:a', { layout: 'hopper', double: true }),
+      container('demo:b', { layout: 'none', per_player: true }),
+      container('demo:c', { double: true }),
+      container('demo:d', { layout: 'chest', per_player: true }),
+    ]);
+    expect(withCode(problems, 'container-layout-fields')).toEqual([
+      ['demo:a', '/components/msm:container/double', 'error'],
+      ['demo:b', '/components/msm:container/per_player', 'error'],
+    ]);
+  });
+
   it('keep-contents-layout: keep_contents needs a 3-row chest', async () => {
     const problems = await validate([
       container('demo:a', { keep_contents: true, rows: 6 }),

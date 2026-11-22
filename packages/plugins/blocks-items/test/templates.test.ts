@@ -25,6 +25,7 @@ import plugin, {
   MOD_ID_PATTERN,
   machineOf,
   modIdFromNamespace,
+  VANILLA_BLOCK_RULES_KIND,
 } from '../src/index';
 import { BLOCK_KIND } from '../src/kinds';
 import {
@@ -235,9 +236,11 @@ describe('blocks-items templates', () => {
   });
 
   it('covers every kind with a title, description and category', () => {
-    // Creative tab templates come with the command templates (plan B461), not from this plugin.
+    // Creative tab templates come with the command templates (plan B461), not from this plugin;
+    // the vanilla block rules templates come with B518 (plan vanilla parity 3, wave 4).
+    const without: string[] = [CREATIVE_TAB_KIND, VANILLA_BLOCK_RULES_KIND];
     expect(new Set(blocksItemsTemplates.map((t) => t.kind))).toEqual(
-      new Set(blocksItemsKinds.map((kind) => kind.id).filter((id) => id !== CREATIVE_TAB_KIND)),
+      new Set(blocksItemsKinds.map((kind) => kind.id).filter((id) => !without.includes(id))),
     );
     for (const template of blocksItemsTemplates) {
       expect(template.title, template.id).not.toBe('');

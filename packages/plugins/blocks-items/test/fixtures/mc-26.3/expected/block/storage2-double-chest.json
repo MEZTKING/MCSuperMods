@@ -1,0 +1,131 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {
+          "double": true
+        }
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/oak_crate.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/crate_front",
+        "side": "example:block/crate_side",
+        "top": "example:block/crate_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/oak_crate.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/crate_front_open",
+        "side": "example:block/crate_side",
+        "top": "example:block/crate_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/oak_crate_open.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,type=left": {
+          "model": "example:block/oak_crate",
+          "y": 90
+        },
+        "facing=east,type=right": {
+          "model": "example:block/oak_crate",
+          "y": 90
+        },
+        "facing=east,type=single": {
+          "model": "example:block/oak_crate",
+          "y": 90
+        },
+        "facing=north,type=left": {
+          "model": "example:block/oak_crate"
+        },
+        "facing=north,type=right": {
+          "model": "example:block/oak_crate"
+        },
+        "facing=north,type=single": {
+          "model": "example:block/oak_crate"
+        },
+        "facing=south,type=left": {
+          "model": "example:block/oak_crate",
+          "y": 180
+        },
+        "facing=south,type=right": {
+          "model": "example:block/oak_crate",
+          "y": 180
+        },
+        "facing=south,type=single": {
+          "model": "example:block/oak_crate",
+          "y": 180
+        },
+        "facing=west,type=left": {
+          "model": "example:block/oak_crate",
+          "y": 270
+        },
+        "facing=west,type=right": {
+          "model": "example:block/oak_crate",
+          "y": 270
+        },
+        "facing=west,type=single": {
+          "model": "example:block/oak_crate",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/oak_crate.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/oak_crate",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/oak_crate.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:oak_crate",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/oak_crate",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/oak_crate.json",
+    "schema": "resource:loot_table"
+  }
+]

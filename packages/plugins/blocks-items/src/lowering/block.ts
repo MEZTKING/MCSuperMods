@@ -8,6 +8,7 @@ import { blockItemIdOf } from './block-item';
 import { lowerFuelAndCompostInPlace } from './fuel';
 import { lowerMachineRecipes } from './machine-recipes';
 import {
+  assetPath,
   BlocksItemsLoweringError,
   dataPath,
   definitionPath,
@@ -17,14 +18,20 @@ import {
 } from './paths';
 import { lowerShapeInPlace, SHAPE_COMPONENT } from './shape';
 import { LOOT_TABLE_SCHEMA, langFile, nonEmptyString, vanillaTagFile } from './shared';
+import { blockSoundFiles } from './sounds';
 import { needsTierTag } from './tools';
 import {
+  type BlockTypeName,
   blockTypeOf,
   blockTypeSelfLoot,
   blockTypeTagFiles,
+  CONTAINER_BLOCK_TYPES,
+  containerOf,
   lowerBlockAppearance,
+  machineOf,
   type TypeContext,
 } from './types';
+import { parseVariantKey, variantKey } from './types/blockstates';
 import { companionLootFiles } from './types/companions';
 import {
   isPlantLootPreset,
@@ -139,6 +146,68 @@ export function blockDefinition(
   return definition;
 }
 
+/** The block state property of a double chest's halves (ADR 0104 D4), with its values. */
+export const CHEST_TYPE_PROPERTY = 'type';
+export const CHEST_TYPE_VALUES = Object.freeze(['single', 'left', 'right'] as const);
+/** The container state a double chest does not have: vanilla's chest family has no `open`. */
+const OPEN_PROPERTY = 'open';
+const DEFAULT_CHEST_ROWS = 3;
+
+/**
+ * Whether a block of `type` with `data` is a double chest at runtime (ADR 0104 D4): an
+ * `msm:container` (and no `msm:machine`, which wins) on one of the {@link CONTAINER_BLOCK_TYPES},
+ * in the `chest` layout with 3 rows, `double: true` and no `keep_contents`, as the runtime takes
+ * it (it turns `double` off otherwise, and `per_player` off when both are set).
+ */
+export function isDoubleChest(type: BlockTypeName, data: Json | undefined): boolean {
+  if (!CONTAINER_BLOCK_TYPES.includes(type) || machineOf(data) !== undefined) return false;
+  const container = containerOf(data);
+  if (container === undefined || container.double !== true) return false;
+  const layout = container.layout ?? 'chest';
+  const rows = container.rows ?? DEFAULT_CHEST_ROWS;
+  return layout === 'chest' && rows === DEFAULT_CHEST_ROWS && container.keep_contents !== true;
+}
+
+/**
+ * A container's `variants` block state as a double chest's (ADR 0104 D4): the closed variants
+ * only, without `open` (vanilla's chest family has no such state, and a key naming a property the
+ * block lacks matches nothing), each written for `type=single`, `type=left` and `type=right` with
+ * the same model (no block entity renderer draws the lid, ADR 0074 C9; each half is its own
+ * block model). A multipart definition is returned as it is.
+ */
+export function withDoubleChestVariants(blockstate: JsonObject): JsonObject {
+  const entries = blockstate.variants;
+  if (!isRecord(entries)) return blockstate;
+  const out: JsonObject = {};
+  for (const [key, value] of Object.entries(entries)) {
+    if (value === undefined) continue;
+    const properties = parseVariantKey(key);
+    if (properties[OPEN_PROPERTY] === 'true') continue;
+    delete properties[OPEN_PROPERTY];
+    for (const half of CHEST_TYPE_VALUES) {
+      out[variantKey({ ...properties, [CHEST_TYPE_PROPERTY]: half })] = structuredClone(value);
+    }
+  }
+  return { variants: out };
+}
+
+/** Rewrites the block state among `files` as a double chest's when the block is one. */
+function lowerDoubleChestInPlace(
+  files: OutputFile[],
+  type: BlockTypeName,
+  data: Json | undefined,
+  target: Target,
+  namespace: string,
+  path: string,
+): void {
+  if (!isDoubleChest(type, data)) return;
+  const statePath = assetPath(target, 'block_definition', namespace, path);
+  const file = files.find((candidate) => candidate.path === statePath);
+  const contents = file?.contents;
+  if (file === undefined || contents instanceof Uint8Array || !isRecord(contents)) return;
+  file.contents = withDoubleChestVariants(contents);
+}
+
 /**
  * The "drops itself" loot table: one roll of the block's item that survives explosions, as the
  * game's own block loot tables are written (pools use the singular `condition`, as the
@@ -167,7 +236,10 @@ export function dropsItselfLootTable(id: string, namespace: string, path: string
  *    `textures`, the block state definition (a single variant of `model` for a plain block)
  *    and, with a block item, its item model definition at the block item id (ADR 0068 D2;
  *    layer `resourcepack`); a waterloggable block (ADR 0094 D7) has every variant twice,
- *    `waterlogged=false` and `waterlogged=true` with the same model;
+ *    `waterlogged=false` and `waterlogged=true` with the same model; a double chest (ADR 0104
+ *    D4) has its closed variants once per half, `type=single`, `type=left` and `type=right`;
+ *    On a target whose block sounds are data, a block with `block_sounds` (ADR 0105 D1)
+ *    gets its `block_sound_set` entry `data/<ns>/block_sound_set/<path>.json` (layer `datapack`);
  * 3. with `display_name`: the `block.<ns>.<path>` key of `en_us` (`merge: 'object'`), and the
  *    `item.<ns>.<path>` key of a block item with its own id;
  * 4. with `tool`: `minecraft:mineable/<tool>`, and with `min_tier`: the needs-tier tag
@@ -206,7 +278,9 @@ export function lowerBlock(element: Element, target: Target): OutputFile[] {
     },
     ...lowerBlockAppearance(type, target, context),
   ];
+  lowerDoubleChestInPlace(files, type, data, target, namespace, path);
   lowerWaterloggingInPlace(files, type, data, target, namespace, path);
+  files.push(...blockSoundFiles(target, namespace, path, data));
   if (fields.displayName !== undefined) {
     files.push(
       langFile(target, namespace, descriptionKey('block', namespace, path), fields.displayName),

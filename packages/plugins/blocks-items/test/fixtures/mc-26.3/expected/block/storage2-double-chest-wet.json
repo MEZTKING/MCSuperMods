@@ -1,0 +1,79 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:container": {
+          "double": true,
+          "rows": 3
+        },
+        "msm:waterloggable": {}
+      },
+      "format": 1
+    },
+    "layer": "msm",
+    "path": "msm/example/block/sea_crate.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "type=left,waterlogged=false": {
+          "model": "example:block/sea_crate"
+        },
+        "type=left,waterlogged=true": {
+          "model": "example:block/sea_crate"
+        },
+        "type=right,waterlogged=false": {
+          "model": "example:block/sea_crate"
+        },
+        "type=right,waterlogged=true": {
+          "model": "example:block/sea_crate"
+        },
+        "type=single,waterlogged=false": {
+          "model": "example:block/sea_crate"
+        },
+        "type=single,waterlogged=true": {
+          "model": "example:block/sea_crate"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/sea_crate.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/sea_crate",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/sea_crate.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:sea_crate",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/sea_crate",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/sea_crate.json",
+    "schema": "resource:loot_table"
+  }
+]

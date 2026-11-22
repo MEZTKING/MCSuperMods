@@ -5,16 +5,18 @@
  * `waterlogged=false` and `waterlogged=true`, with the same models (water is drawn by the game
  * around the block, so the model does not change).
  *
- * Containers and machines are not waterloggable (limit Q8): a block with `msm:container` or
- * `msm:machine` keeps its block state without the property, as the runtime builds its own class
- * for it (the validators report the pair as `blocks-items.component-conflict`). The new types
+ * Containers and machines hold water too (ADR 0104 D3, lifting limit Q8): their block state
+ * gains the property on top of `open` or `lit`, and the block keeps its contents, screen and
+ * hopper faces. A double chest (ADR 0104 D4) is vanilla's chest family, which always has the
+ * property; its variants leave it out unless the component is given (a variant key that leaves
+ * a property out matches every value of it). The new types
  * that vanilla waterlogs (ladder, lantern, chain, signs, candle, sea pickle, scaffolding) keep
  * vanilla's own waterlogging and need no component; their block states leave the property out,
  * as vanilla's do.
  */
 import type { Json, JsonObject, OutputFile, Target } from '@msm/plugin-api';
 import { assetPath, isRecord } from './paths';
-import { type BlockTypeName, containerOf, machineOf } from './types';
+import type { BlockTypeName } from './types';
 import { withStateProperty } from './types/blockstates';
 
 /** The waterlogging component. */
@@ -38,11 +40,11 @@ export function hasWaterloggable(data: Json | undefined): boolean {
 
 /**
  * Whether a block of `type` with `data` is waterlogged at runtime: the component on one of the
- * {@link WATERLOGGABLE_BLOCK_TYPES}, without `msm:container` or `msm:machine` (limit Q8).
+ * {@link WATERLOGGABLE_BLOCK_TYPES}, with or without `msm:container` or `msm:machine` (ADR 0104
+ * D3).
  */
 export function isWaterloggable(type: BlockTypeName, data: Json | undefined): boolean {
-  if (!WATERLOGGABLE_BLOCK_TYPES.includes(type) || !hasWaterloggable(data)) return false;
-  return containerOf(data) === undefined && machineOf(data) === undefined;
+  return WATERLOGGABLE_BLOCK_TYPES.includes(type) && hasWaterloggable(data);
 }
 
 /**

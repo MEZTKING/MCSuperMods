@@ -1,0 +1,145 @@
+[
+  {
+    "contents": {
+      "components": {
+        "msm:machine": {},
+        "msm:waterloggable": {}
+      },
+      "format": 1,
+      "type": "horizontal"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/wet_mill.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/mill_front",
+        "side": "example:block/mill_side",
+        "top": "example:block/mill_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wet_mill.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "parent": "minecraft:block/orientable",
+      "textures": {
+        "front": "example:block/mill_front_lit",
+        "side": "example:block/mill_side",
+        "top": "example:block/mill_top"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/models/block/wet_mill_lit.json",
+    "schema": "::java::assets::model::Model"
+  },
+  {
+    "contents": {
+      "variants": {
+        "facing=east,lit=false,waterlogged=false": {
+          "model": "example:block/wet_mill",
+          "y": 90
+        },
+        "facing=east,lit=false,waterlogged=true": {
+          "model": "example:block/wet_mill",
+          "y": 90
+        },
+        "facing=east,lit=true,waterlogged=false": {
+          "model": "example:block/wet_mill_lit",
+          "y": 90
+        },
+        "facing=east,lit=true,waterlogged=true": {
+          "model": "example:block/wet_mill_lit",
+          "y": 90
+        },
+        "facing=north,lit=false,waterlogged=false": {
+          "model": "example:block/wet_mill"
+        },
+        "facing=north,lit=false,waterlogged=true": {
+          "model": "example:block/wet_mill"
+        },
+        "facing=north,lit=true,waterlogged=false": {
+          "model": "example:block/wet_mill_lit"
+        },
+        "facing=north,lit=true,waterlogged=true": {
+          "model": "example:block/wet_mill_lit"
+        },
+        "facing=south,lit=false,waterlogged=false": {
+          "model": "example:block/wet_mill",
+          "y": 180
+        },
+        "facing=south,lit=false,waterlogged=true": {
+          "model": "example:block/wet_mill",
+          "y": 180
+        },
+        "facing=south,lit=true,waterlogged=false": {
+          "model": "example:block/wet_mill_lit",
+          "y": 180
+        },
+        "facing=south,lit=true,waterlogged=true": {
+          "model": "example:block/wet_mill_lit",
+          "y": 180
+        },
+        "facing=west,lit=false,waterlogged=false": {
+          "model": "example:block/wet_mill",
+          "y": 270
+        },
+        "facing=west,lit=false,waterlogged=true": {
+          "model": "example:block/wet_mill",
+          "y": 270
+        },
+        "facing=west,lit=true,waterlogged=false": {
+          "model": "example:block/wet_mill_lit",
+          "y": 270
+        },
+        "facing=west,lit=true,waterlogged=true": {
+          "model": "example:block/wet_mill_lit",
+          "y": 270
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/wet_mill.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/wet_mill",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/wet_mill.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:wet_mill",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/wet_mill",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/wet_mill.json",
+    "schema": "resource:loot_table"
+  }
+]

@@ -17,18 +17,48 @@
  *   plant (a `growing_plant` with `needs_water`, or a `column_plant` that needs water beside it)
  *   with no water check in the feature or its placed features (no `minecraft:water` and no
  *   `minecraft:would_survive`), so most of its blocks would break or never be placed.
+ * - `blocks-items.water-plant-grows-down` (warning): a `growing_plant` with `needs_water` and
+ *   `direction: down`; the runtime grows water plants up only (and logs the same warning).
+ * - `blocks-items.berries-ignore-bonemeal` (warning): a `growing_plant` with `berries` and
+ *   `bonemeal_growth`; bone meal ripens berries instead (the runtime logs the same warning).
+ *
+ * Project flower pots (ADR 0103 D2, B512 and B510b; B515):
+ *
+ * - `blocks-items.pot-plant-repeated` (warning): a pot's plant listed twice, or two plants with
+ *   the same path (`minecraft:poppy` and `example:poppy`): the potted block is `<pot>_<path>`,
+ *   so only the first is taken.
+ * - `blocks-items.pot-plant-unfit` (error): a listed plant that cannot be potted: a project block
+ *   without an item or a `tall_plant` (two blocks high), or a vanilla block without an item. The
+ *   runtime skips it with a load error.
+ * - `blocks-items.pot-plant-also-potted` (error): a `potted_plant` naming a project pot in `pot`
+ *   for a plant that pot already lists; the runtime refuses the `potted_plant`.
+ * - `blocks-items.potted-plant-pot-not-pot` (error): a `potted_plant` whose `pot` is neither
+ *   vanilla's flower pot nor a project `flower_pot`; the runtime refuses it.
+ *
+ * Unknown listed plants and pots are the schema's `schema.unknown-id` (the runtime would take
+ * them silently never), so they are not repeated.
  *
  * Companion id clashes (`<id>_plant`, `<id>_shoot`, `<id>_stem`) are the furniture validators'
  * `blocks-items.generated-block-clash`, and unknown `soil` ids the schema's `schema.unknown-id`,
  * so neither is repeated here.
  */
-import type { Element, Json, JsonObject, Problem, ProjectValidator } from '@msm/plugin-api';
+import type {
+  Element,
+  Json,
+  JsonObject,
+  Problem,
+  ProjectValidator,
+  ValidationRegistry,
+} from '@msm/plugin-api';
 import { BLOCK_KIND } from './kinds';
+import { blockItemIdOf } from './lowering/block-item';
 import { isRecord } from './lowering/paths';
 import { columnMaxHeight, columnStyleOf } from './lowering/types/column-plant';
 import { blockGeneratedBlockIds } from './lowering/types/companions';
 import { dripleafSizeOf } from './lowering/types/dripleaf';
-import { needsWater } from './lowering/types/growing-plant';
+import { pottedCompanionSuffix } from './lowering/types/flower-pot';
+import { needsWater, plantBerriesOf } from './lowering/types/growing-plant';
+import { FLOWER_POT, pottedPlantOf, pottedPlantPotOf } from './lowering/types/potted-plant';
 
 /** Every code these validators report. */
 export const PLANT3_PROBLEM_CODES: readonly string[] = Object.freeze([
@@ -38,6 +68,12 @@ export const PLANT3_PROBLEM_CODES: readonly string[] = Object.freeze([
   'blocks-items.dripleaf-grows-into-not-big',
   'blocks-items.column-min-above-max',
   'blocks-items.water-plant-feature-dry',
+  'blocks-items.water-plant-grows-down',
+  'blocks-items.berries-ignore-bonemeal',
+  'blocks-items.pot-plant-repeated',
+  'blocks-items.pot-plant-unfit',
+  'blocks-items.pot-plant-also-potted',
+  'blocks-items.potted-plant-pot-not-pot',
 ]);
 
 /** Kind ids of other plugins' elements these checks read. */
@@ -192,14 +228,135 @@ function dryFeatures(elements: readonly Element[]): Problem[] {
   return problems;
 }
 
+function growingPlantWarnings(elements: readonly Element[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const { element, data } of blocksOfType(elements, 'growing_plant')) {
+    if (needsWater(data) && data.direction === 'down') {
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.water-plant-grows-down',
+        elementId: element.id,
+        path: '/direction',
+        message:
+          'A plant that lives in water grows up, as kelp does, so the game grows it up anyway. Make it grow up, or turn "Lives in water" off.',
+      });
+    }
+    if (plantBerriesOf(data) !== undefined && data.bonemeal_growth !== undefined) {
+      problems.push({
+        severity: 'warning',
+        code: 'blocks-items.berries-ignore-bonemeal',
+        elementId: element.id,
+        path: '/bonemeal_growth',
+        message:
+          'Bone meal ripens the berries of a plant with berries instead of growing it, as with cave vines, so this setting does nothing. Remove it, or remove the berries.',
+      });
+    }
+  }
+  return problems;
+}
+
+/** The path of a namespaced id. */
+const pathOf = (id: string): string => id.slice(id.indexOf(':') + 1);
+
+function potProblems(elements: readonly Element[], registry: ValidationRegistry): Problem[] {
+  const blocks = new Map<string, JsonObject>();
+  for (const element of elements) {
+    if (element.kind === BLOCK_KIND) blocks.set(element.id, dataOf(element));
+  }
+  const vanillaItems = registry.ids('item').length > 0;
+  const problems: Problem[] = [];
+  const listed = new Map<string, Set<string>>();
+  for (const { element, data } of blocksOfType(elements, 'flower_pot')) {
+    const plants = Array.isArray(data.plants) ? data.plants : [];
+    const ids = new Set<string>();
+    const paths = new Map<string, string>();
+    plants.forEach((entry, index) => {
+      const given = text(entry);
+      if (given === undefined) return;
+      const plant = namespaced(given);
+      const path = `/plants/${String(index)}`;
+      const first = paths.get(pottedCompanionSuffix(plant));
+      if (first !== undefined) {
+        problems.push({
+          severity: 'warning',
+          code: 'blocks-items.pot-plant-repeated',
+          elementId: element.id,
+          path,
+          message:
+            first === plant
+              ? `"${plant}" is listed twice; the second does nothing. Remove it.`
+              : `"${plant}" has the same name as "${first}", listed before it, and the pot keeps one plant per name, so "${plant}" cannot go in this pot. Remove one of them.`,
+        });
+        return;
+      }
+      paths.set(pottedCompanionSuffix(plant), plant);
+      ids.add(plant);
+      const project = blocks.get(plant);
+      const unfit =
+        project !== undefined
+          ? typeOf(project) === 'tall_plant'
+            ? 'is two blocks high'
+            : blockItemIdOf(plant, project) === undefined
+              ? 'has no item to put in the pot'
+              : undefined
+          : vanillaItems && registry.has('block', plant) && !registry.has('item', plant)
+            ? 'has no item to put in the pot'
+            : undefined;
+      if (unfit !== undefined) {
+        problems.push({
+          severity: 'error',
+          code: 'blocks-items.pot-plant-unfit',
+          elementId: element.id,
+          path,
+          message: `"${plant}" ${unfit}, so it cannot be potted and the game skips it. Remove it from the pot.`,
+        });
+      }
+    });
+    listed.set(element.id, ids);
+  }
+  for (const { element, data } of blocksOfType(elements, 'potted_plant')) {
+    const pot = pottedPlantPotOf(data);
+    const potData = blocks.get(pot);
+    if (pot !== FLOWER_POT) {
+      const notPot =
+        potData !== undefined
+          ? typeOf(potData) !== 'flower_pot'
+          : registry.ids('block').length > 0 && registry.has('block', pot);
+      if (notPot) {
+        problems.push({
+          severity: 'error',
+          code: 'blocks-items.potted-plant-pot-not-pot',
+          elementId: element.id,
+          path: '/pot',
+          message: `"${pot}" is not a flower pot, so nothing can be potted in it and the game refuses this block. Pick vanilla's flower pot or a flower pot of this project.`,
+        });
+        continue;
+      }
+    }
+    const plant = pottedPlantOf(data);
+    if (plant !== undefined && listed.get(pot)?.has(plant) === true) {
+      problems.push({
+        severity: 'error',
+        code: 'blocks-items.pot-plant-also-potted',
+        elementId: element.id,
+        path: '/plant',
+        message: `The pot "${pot}" already lists "${plant}" in the plants it takes, which makes its own potted block, so the game refuses this one. Remove this block, or remove "${pathOf(plant)}" from the pot's plants.`,
+      });
+    }
+  }
+  return problems;
+}
+
 export const plants3Validators: readonly ProjectValidator[] = Object.freeze([
   {
     id: 'msm.blocks-items.plants-3',
     kinds: [BLOCK_KIND, FEATURE_KIND, PLACED_FEATURE_KIND],
-    validate: ({ elements }) => [
+    validate: ({ elements, registry }) => [
       ...dripleafProblems(elements),
       ...columnHeightProblems(elements),
       ...dryFeatures(elements),
+      ...growingPlantWarnings(elements),
+      ...potProblems(elements, registry),
     ],
   },
 ] satisfies ProjectValidator[]);

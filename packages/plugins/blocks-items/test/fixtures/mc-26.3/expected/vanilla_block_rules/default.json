@@ -1,0 +1,16 @@
+[
+  {
+    "contents": {
+      "format": 1,
+      "strip": [
+        {
+          "block": "minecraft:mossy_cobblestone",
+          "into": "minecraft:cobblestone"
+        }
+      ]
+    },
+    "layer": "msm",
+    "path": "msm/demo/vanilla_block_rules/sample.json",
+    "schema": "msm:vanilla_block_rules_definition"
+  }
+]

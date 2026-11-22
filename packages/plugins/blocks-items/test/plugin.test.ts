@@ -56,6 +56,7 @@ const KIND_IDS = [
   'msm:particle',
   'msm:creative_tab',
   'msm:fluid',
+  'msm:vanilla_block_rules',
 ];
 const kinds = (): ElementKind[] => plugin.contributes.elementKinds ?? [];
 const firstTarget = (builtInTargets[0] as TargetBundle).target;
@@ -84,7 +85,7 @@ describe('@msm/plugin-blocks-items', () => {
     expect(registrationProblems()).toEqual([]);
   });
 
-  it('contributes the ten kinds with their schemas, folders and registries', () => {
+  it('contributes the eleven kinds with their schemas, folders and registries', () => {
     expect(kinds().map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(blocksItemsKinds.map((kind) => kind.id)).toEqual(KIND_IDS);
     expect(kinds().map((kind) => [kind.schema, kind.folder, kind.registry])).toEqual([
@@ -98,6 +99,7 @@ describe('@msm/plugin-blocks-items', () => {
       [MSM_SCHEMA_REFS.particle, 'particle', 'particle_type'],
       [MSM_SCHEMA_REFS.creativeTab, 'creative_tab', 'creative_mode_tab'],
       [MSM_SCHEMA_REFS.fluid, 'fluid', 'fluid'],
+      [MSM_SCHEMA_REFS.vanillaBlockRules, 'vanilla_block_rules', undefined],
     ]);
   });
 
@@ -151,6 +153,8 @@ describe('@msm/plugin-blocks-items', () => {
       'msm.blocks-items.creative-tab-icon',
       'msm.blocks-items.fluids',
       'msm.blocks-items.plants-3',
+      'msm.blocks-items.storage-2',
+      'msm.blocks-items.sounds',
     ]);
     expect(blocksItemsValidators).toHaveLength(23);
   });

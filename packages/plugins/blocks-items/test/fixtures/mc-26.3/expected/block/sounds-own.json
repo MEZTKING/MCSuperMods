@@ -1,0 +1,67 @@
+[
+  {
+    "contents": {
+      "block_sounds": {
+        "break": "example:block.chime.break",
+        "fall": "minecraft:block.amethyst_block.fall",
+        "hit": "minecraft:block.amethyst_block.hit",
+        "pitch": 1.2,
+        "place": "example:block.chime.place",
+        "step": "example:block.chime.step",
+        "volume": 0.8
+      },
+      "format": 1,
+      "sound_type": "amethyst"
+    },
+    "layer": "msm",
+    "path": "msm/example/block/chime_block.json",
+    "schema": "msm:block_definition"
+  },
+  {
+    "contents": {
+      "variants": {
+        "": {
+          "model": "example:block/chime_block"
+        }
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/blockstates/chime_block.json",
+    "schema": "::java::assets::block_state_definition::BlockStateDefinition"
+  },
+  {
+    "contents": {
+      "model": {
+        "model": "example:block/chime_block",
+        "type": "minecraft:model"
+      }
+    },
+    "layer": "resourcepack",
+    "path": "assets/example/items/chime_block.json",
+    "schema": "::java::assets::item_definition::ItemDefinition"
+  },
+  {
+    "contents": {
+      "pools": [
+        {
+          "bonus_rolls": 0,
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "name": "example:chime_block",
+              "type": "minecraft:item"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "example:blocks/chime_block",
+      "type": "minecraft:block"
+    },
+    "layer": "datapack",
+    "path": "data/example/loot_table/blocks/chime_block.json",
+    "schema": "resource:loot_table"
+  }
+]

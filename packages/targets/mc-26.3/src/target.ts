@@ -458,6 +458,7 @@ export const target: Target = {
       'pig/sound_variant',
       'pig/variant',
       'provides_banner_patterns',
+      'provides_pottery_pattern',
       'provides_trim_material',
       'stored_enchantments',
       'trim',
@@ -547,7 +548,8 @@ export const target: Target = {
     // pumpkin stem's `supports_pumpkin_stem` and `supports_pumpkin_stem_fruit` are there too);
     // `flame` is in `particle_type` (all asserted by `test/target.test.ts`). The model ids are
     // the parents the twenty block type lowerings name (ADR 0094 D10; the sign templates from
-    // B440), each a `assets/minecraft/models/block/<name>.json` of the 26.3 client jar
+    // B440; the plant and pot types of ADR 0103 added 19 by name only at B515), each a
+    // `assets/minecraft/models/block/<name>.json` of the 26.3 client jar
     // (`test/model-templates.test.ts` reads the Loom-cached jar when present).
     bedRules: {
       bed: 'minecraft:gameplay/bed_rule',
@@ -664,6 +666,29 @@ export const target: Target = {
       // scaffolding
       'minecraft:block/scaffolding_stable',
       'minecraft:block/scaffolding_unstable',
+      // flower_pot (ADR 0103 D2; B512)
+      'minecraft:block/flower_pot',
+      // column_plant: cactus, bamboo stalks by thickness and age, bamboo leaves (ADR 0103 D1; B511)
+      'minecraft:block/cactus',
+      'minecraft:block/bamboo1_age0',
+      'minecraft:block/bamboo1_age1',
+      'minecraft:block/bamboo2_age0',
+      'minecraft:block/bamboo2_age1',
+      'minecraft:block/bamboo3_age0',
+      'minecraft:block/bamboo3_age1',
+      'minecraft:block/bamboo4_age0',
+      'minecraft:block/bamboo4_age1',
+      'minecraft:block/bamboo_small_leaves',
+      'minecraft:block/bamboo_large_leaves',
+      // multiface
+      'minecraft:block/glow_lichen',
+      // dripleaf
+      'minecraft:block/big_dripleaf',
+      'minecraft:block/big_dripleaf_partial_tilt',
+      'minecraft:block/big_dripleaf_full_tilt',
+      'minecraft:block/big_dripleaf_stem',
+      'minecraft:block/small_dripleaf_top',
+      'minecraft:block/small_dripleaf_bottom',
     ],
     defaultTorchParticle: 'minecraft:flame',
     // fluidModel, fluidTags (ADR 0099 D4; plugin API 1.18.0): 26.3 registers a liquid as two fluids

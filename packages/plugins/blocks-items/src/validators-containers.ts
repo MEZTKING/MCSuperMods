@@ -5,8 +5,9 @@
  * the registry index. `msm:container` or `msm:machine` on a type that takes neither is
  * `blocks-items.component-not-for-type` (`validators-types.ts`).
  *
- * - `blocks-items.container-layout-fields` (error): `rows` outside the `chest` layout or `size`
- *   outside `none` (the schema reports them too; this names the layout that takes them).
+ * - `blocks-items.container-layout-fields` (error): `rows`, `double` or `per_player` outside the
+ *   `chest` layout, or `size` outside `none` (the schema reports them too; this names the layout
+ *   that takes them; the runtime turns `double` and `per_player` off there, ADR 0104 D4, D5).
  * - `blocks-items.keep-contents-layout` (error): `keep_contents` without a 3-row `chest`
  *   layout; the runtime turns the option off and drops the contents.
  * - `blocks-items.container-sound-unknown` (warning): an `open_sound` or `close_sound` that is
@@ -167,7 +168,9 @@ function containerLayoutFields(blocks: readonly ComponentBlock[]): Problem[] {
   for (const { element, component } of blocks) {
     const layout = layoutOf(component);
     const wrong: [string, string][] = [];
-    if (component.rows !== undefined && layout !== 'chest') wrong.push(['rows', 'chest']);
+    for (const field of ['rows', 'double', 'per_player']) {
+      if (component[field] !== undefined && layout !== 'chest') wrong.push([field, 'chest']);
+    }
     if (component.size !== undefined && layout !== 'none') wrong.push(['size', 'none']);
     for (const [field, owner] of wrong) {
       problems.push({
