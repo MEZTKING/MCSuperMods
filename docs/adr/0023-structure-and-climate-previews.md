@@ -36,3 +36,5 @@ Accepted and implemented (2026-11-04, B78 and B80; released in v0.3.0). Implemen
 - Renderer cost: about 11 kB of lazy preview chunks; deepslate sits in a chunk shared by `PreviewCanvas` and `ClimateMap`.
 
 The noise-sampled map stays deferred to reserve brief B84 and DESIGN Open Question 15; the deferral stands unless the user vetoes it.
+
+**Amended 2026-11-22.** The user asked for it ("Can we make custom world generations if not make it an option. Everything should be visible live"), so the deferral ends: the noise-sampled biome and terrain preview, the jar extraction of vanilla worldgen JSON and the answer to Open Question 15 are decided in [ADR 0119](0119-live-worldgen-preview.md) (Proposed), with the working plan [`docs/PLAN-live-worldgen.md`](../PLAN-live-worldgen.md) in place of reserve brief B84. Two details of the "Noise-sampled maps are deferred" paragraph change there: the asset cache is already at schema 3, so the extension is schema 4, and the engine sits in a new package `@msm/terrain` behind a Web Worker. The structure preview and the climate map of this ADR stay as they are; the climate map becomes a tab beside the new map.

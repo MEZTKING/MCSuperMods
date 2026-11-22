@@ -7899,3 +7899,23 @@ Next
 
 **Next**
 - The eject worker (or B544): the eject-path check for a trader and a fluid once traders are ejected.
+
+## 2026-11-22 — orchestrator — Live world generation plan and the rule "Everything visible live"
+
+**What**
+- The user asked: "Can we make custom world generations if not make it an option. Everything should be visible live". Custom worldgen exists as data (14 kinds, four Studios, the Dimension flow); nothing shows it live. The message is the agreement DESIGN Open Question 15 and reserve brief B84 waited for.
+- New draft plan `docs/PLAN-live-worldgen.md` (B574–B595; fact table WF1–WF22 checked at 30b3fed, spike questions WS1–WS18, limits WL1–WL14): a live Map, Side cut and value maps in the preview panel for the worldgen kinds; a Try it ground "My world generation"; seed, position and Compare with vanilla; a tile Make a world with five flows and their Showcase clip candidates; a grouped audit of kinds without a live view; seven waves with the spike first.
+- New ADR 0119 (Proposed); ADR 0023 amended to point to it; DESIGN section 8 and Open Question 15 (answered); ROADMAP (the B84 lines replaced, a Principles bullet for the rule, the add-on section, the idea entry); HANDOFF (the rule, the clean-room rule for worldgen, the plan as the work after B544 and B572).
+- Read in deepslate 0.27.2's build against the targets' vendored registries: every density function type of the 26.3 target is parsed; `domain_warp` and `upscale` of the 26.4 target are not; rule types `bandlands` and `ore_vein` and conditions `hole`, `steep` and `temperature` are not, on both; no features, placement modifiers, carvers or flat generator. Nothing was run: speed and parity are the spike's.
+
+**Decisions**
+- "Everything visible live" is a standing rule (ADR 0119 D1): a live view per kind a player can see or hear, exemptions listed, the state kept in `docs/LIVE-VIEW-AUDIT.md` (B575), and every later brief names its live view.
+- The engine is deepslate's worldgen module wrapped in a new pure package `@msm/terrain`, in a Web Worker; missing types are added by type id, clean room; version facts stay in the targets.
+- Vanilla worldgen JSON comes only from the user's own client jar at runtime (asset cache schema 4); it is never committed, bundled, exported or sent to the AI helper. Vendoring it from a mirror is rejected.
+- Biomes and land shape are checked against the game through a self-contained fixture measured by a GameTest; features are "about right" and labelled; carvers and structure pieces are not drawn in the first version.
+- The ground is a window of Try it's area unless the spike finds a larger one affordable. No plugin API change is planned.
+- Recommended order: after B544 and B572, before the game modes plan; the two plans' shared files take turns.
+
+**Next**
+- The main session reviews the draft and shows the user ADR 0119's vetoable defaults; then B574 (spike) beside B575 (audit).
+- Not done here, by instruction: root `CLAUDE.md` (the golden rule line and status), `docs/CLAUDE.md`, `CHANGELOG.md` and the guide; the close B591 lists them. `docs/COVERAGE-AUDIT.md` gets its link to the live view audit at B575 or the close.
