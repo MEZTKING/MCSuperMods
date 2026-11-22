@@ -8620,3 +8620,21 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B551 (start island by `place template`) and B552 (area resets) can rely on exported templates now.
 - In game by hand: `fixtures/sample-worldgen/README.md` (a) and (b) on the user's machine, since the hamlet never generated with blocks before this fix.
+
+## 2026-11-22 — executor — B608 the live views frame, situation picker, item slots and worker
+
+**What**
+- `app/src/renderer/src/liveviews/frame/`: `LiveViewFrame` gains `controls` (picker, seed box) and `unsupported` (each reported part listed once, by type and path, under "Only in the game", in `@msm/sim`'s `unsupportedWords`); `needsSetUpBanner(readStatus, namesVanillaFile)` (B603's rule: the banner only when a read answered `not_set_up` and the view names a vanilla file). `fidelity.ts`: `unsupportedLine`, `distinctParts`.
+- New `situations.ts` (the picker's fields, `PICKER_PRESETS` made from B604's ten `SITUATION_PRESETS`, `fieldsOfSituation`, `situationOf` with the view's block or mob in place of a preset's sample) and `SituationPicker.tsx` ("What happens to it?" as a radio group with arrows, Home and End; **Advanced** with every field labelled; `useSituationChoice` keeps the choice locally and in the view preferences).
+- New `ItemSlot.tsx` (the recipe picture's slot look, count in the corner, focusable, tooltip on hover or focus, Escape hides), `Tooltip.tsx` (the game's tooltip lines and colours), `item-picture.ts` (the hotbar's picture lookup over `vanillaAssets`, `en_us` names, enchantment lines), `SeedBox.tsx` (Seed and "Roll again"), `live-data.ts` (`useLiveViewData`: the view's files to the worker 150 ms after an edit, vanilla's folders asked by name; `useLiveViewJob`: one job in the view's own lane, the odds step by step).
+- `client.ts` and `worker.ts` built on live worldgen's pattern: files once per hash (the last 8 kept, mirrored by the client), vanilla's folders once per version and folder, lanes with cancel tokens, an LRU cache of 32 answers, jobs `roll`, `odds` (steps of 100 then 300 up to 1,000), `tag`, `predicate`, `modify`; the worker builds each context with `@msm/sim`'s `layeredLookup` and one `createTagResolver` per file set (`tagsFolder` from the target, `exists` from a registry list the view may send) and a `SimRandom` seeded from the seed text (`seedNumber`). `view-prefs.ts` keeps `situationFields`.
+- Tests under `app/test/components/liveviews/frame/` (52 with the earlier liveviews tests): the frame lists reported types; the banner without the jar (and not for project-only files, nor once set up); the presets fill the Advanced fields; keyboard use; the item slot and seed box; the worker and client with fake evaluators and once with the real ones; only `liveviews/worker.ts` takes the evaluators (`imports.test.ts`).
+- Verified: `pnpm lint`, `pnpm typecheck`, app tests (319 files, 2,984 tests), `pnpm build`, `dist:dir`, check-size from an empty `app/out` (app.asar 26.2 of 32 MB, renderer 17.6 of 19 MB: no view uses the new parts yet, so they are not in the output), smoke and e2e `smoke.spec.ts` under xvfb; `app/out` and `app/dist` deleted. Rebased onto B604 (98cbe79) before finishing.
+
+**Decisions**
+- The project's files go to the worker straight from the element data of `minecraft:` kinds (`projectDataFiles`), not lowered; `msm:loot_addition` lowers to other files, so B609 lays its own over them.
+- Presets come from `@msm/sim` (B604) rather than the plan's draft words, so Try it and the views share one list.
+- `ping` still answers `not_yet` so B601's stub test stands unchanged.
+
+**Next**
+- B609–B612: wrap a view in `LiveViewFrame` with `controls`, read files with `useLiveViewData(project, vanilla, folders)`, run with `useLiveViewJob(data, job)`, pass `unsupported`; B612 sends `registries` for `exists`. `BundleLiveView` drops preference writes without a project folder; `useSituationChoice` holds the choice anyway, but the seed does not (B615 may keep bundle choices under a fixed key).

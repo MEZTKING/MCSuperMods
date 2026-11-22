@@ -1,18 +1,24 @@
 /**
- * What a live view remembers per project (ADR 0120 D2): the seed, the situation, the sample item
- * and the sample text. Kept with the app's view preferences in the renderer's local storage,
+ * What a live view remembers per project (ADR 0120 D2): the seed, the situation (its preset and
+ * its Advanced fields), the sample item and the sample text. Kept with the app's view preferences in the renderer's local storage,
  * never in the project file; projects are keyed by their root folder and the last
  * {@link MAX_PROJECTS} are kept. Storage failures are ignored (the choice then lasts for this run).
  */
 
 import { create } from 'zustand';
+import { readFields, type SituationFields } from './frame/situations';
 
 /** One project's choices. */
 export interface LiveViewPrefs {
   /** The seed of a roll, as typed. A fixed default: views are pure and seeded. */
   readonly seed: string;
-  /** The situation preset's id (B608); empty until the user picks one. */
+  /**
+   * The situation preset's id (`frame/situations.ts`), `custom` once an Advanced field was
+   * changed, or empty until the user picks one (the view then uses its first fitting preset).
+   */
   readonly situation: string;
+  /** The situation's fields as last edited, or `null` to use the preset's. */
+  readonly situationFields: SituationFields | null;
   /** The sample item's id for item modifiers and enchantments (B610). */
   readonly sampleItem: string;
   /** The sample text for lines, chat and dialogs (B611). */
@@ -23,6 +29,7 @@ export interface LiveViewPrefs {
 export const DEFAULT_PREFS: LiveViewPrefs = Object.freeze({
   seed: '1',
   situation: '',
+  situationFields: null,
   sampleItem: '',
   sampleText: '',
 });
@@ -36,11 +43,12 @@ const STORAGE_KEY = 'msm.live-view-prefs.v1';
 export function readPrefs(value: unknown): LiveViewPrefs {
   if (typeof value !== 'object' || value === null) return DEFAULT_PREFS;
   const v = value as Record<string, unknown>;
-  const text = (key: keyof LiveViewPrefs): string =>
+  const text = (key: 'seed' | 'situation' | 'sampleItem' | 'sampleText'): string =>
     typeof v[key] === 'string' ? (v[key] as string) : DEFAULT_PREFS[key];
   return {
     seed: text('seed'),
     situation: text('situation'),
+    situationFields: readFields(v.situationFields),
     sampleItem: text('sampleItem'),
     sampleText: text('sampleText'),
   };
