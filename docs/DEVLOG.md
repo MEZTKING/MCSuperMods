@@ -7988,3 +7988,20 @@ Next
 
 **Next**
 - At the close: widen the ejected villagers run (and move the trader and shoulder cases) once the eject of 2c is on the branch; fix the eject's dimension argument and add the unknown-dimension case back.
+
+## 2026-11-22 — executor — B575 the live view audit
+
+**What**
+- New `docs/LIVE-VIEW-AUDIT.md`: one row per kind for all 118 kinds the built-in plugins contribute (counted by loading the plugins' `contributes.elementKinds`), with what a player sees or hears, the live view today (preview panel `previewKind`, Studio preview, Try it), whether it follows an edit and how fast, and a verdict; rows for the Creator's steps, the AI helper's proposed changes and Very easy's My things; the biggest gaps and the differences from the plan's grouped reading.
+- Count: has one 28; needs one 81 (this plan 14, Live views 2 34, Live views 3 30, Live views 4 3); exempt 9.
+- Checked in the built app under `xvfb-run -a` with SwiftShader (a throwaway Playwright script outside the repository, `app/out` deleted afterwards): 42 kinds across ten plugins, among them a dimension, a biome, noise settings, a density function, a noise, `minecraft:sounds`, two loot tables and recipes. Measured from Apply to a changed preview: climate map 0.20–0.25 s, recipe 16 ms, particle 9 ms, potion 34–105 ms, block model 68–146 ms; Try it opened in 0.76 s.
+- No source file changed.
+
+**Decisions**
+- A row keeps *Has one* when its view shows the main thing a player sees (the Effect Studio's Preview, the Dimension Type Studio's sky swatch), with the rest named in its note; text-only previews of a look (potion names, the creative tab summary) stay *needs one*.
+- Exempt: pack settings, atlases, the mod's own settings (ADR 0119 D1), game rules and statistics (one text line the Studio already shows), the two GameTest kinds and the two context providers (numbers other data reads).
+- Tags (20 kinds) go to Live views 2 as resolved member lists; `tag/villager_trade` has one through Try it's merchant.
+
+**Next**
+- The close (B591) links the audit from `docs/COVERAGE-AUDIT.md` and corrects root `CLAUDE.md`'s kind and flow counts (115 and 55; the code has 118 and 57).
+- Live views 2, 3 and 4 as ROADMAP ideas, each with the rows listed here.
