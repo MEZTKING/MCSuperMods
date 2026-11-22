@@ -28,7 +28,6 @@
       "dev.mcsupermods.parity.SamplePlantsAndStorageParityTest",
       "dev.mcsupermods.parity.SampleMobsAndCommandsParityTest",
       "dev.mcsupermods.parity.SamplePlantsAndStorageRulesParityTest",
-      "dev.mcsupermods.parity.SampleMobsAndCommandsTradersParityTest",
       "dev.mcsupermods.parity.SampleMobsAndCommandsScriptParityTest"
     ]
   },

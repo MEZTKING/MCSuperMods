@@ -39,20 +39,25 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PlayerRideableJumping;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerType;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.entity.vehicle.boat.ChestBoat;
+import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
@@ -66,10 +71,10 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Behaviour parity over {@code fixtures/sample-mobs-and-commands} (namespace {@code msm_sample_mobs}, ADRs 0107 to 0111,
  * ADR 0112 D4; B541), written against vanilla and Fabric API only, so the same tests run against the content jar (the
- * runtime's classes) and the 26.3 ejected jar (the generated ones, B537 and B537b). Run with {@code --gametest-filter
- * msm_parity_tests:sample_mobs_and_commands_parity_test_*} on the ejected jar, or {@code sample_mobs_and_commands_*} on a
- * content jar, which also runs {@link SampleMobsAndCommandsTradersParityTest} (the trader and the shoulder pet are not
- * ejected yet) and {@link SampleMobsAndCommandsScriptParityTest} (scripts and the events of ADR 0111 D3 never are).
+ * runtime's classes) and the 26.3 ejected jar (the generated ones, B537, B537b and eject 2c). Run with {@code
+ * --gametest-filter msm_parity_tests:sample_mobs_and_commands_parity_test_*} on the ejected jar, or {@code
+ * sample_mobs_and_commands_*} on a content jar, which also runs {@link SampleMobsAndCommandsScriptParityTest} (scripts
+ * and the events of ADR 0111 D3 are never ejected).
  *
  * <p>Black box, as {@code SampleVillagersParityTest}: the registries, mobs used through {@code interactOn}, blocks
  * through {@code ServerPlayerGameMode.useItemOn} and items through {@code useItem} (the network handler's paths),
@@ -84,8 +89,12 @@ import net.minecraft.world.phys.Vec3;
  * (regeneration, not a target); the haggler bartering gold from a hand and the ground; the runner's dash cooldown on
  * the jump bar; the straw mat as a home; the fen villager type for swamps; mixing of both fluids by their rules; both
  * cauldrons by bucket and bottle; the bottle filled at a source and drunk; the boats placed on water; the game rules
- * set and bounded by {@code /gamerule}; the statistics as scoreboard criteria; {@code /signal}'s argument types and its
- * dialog; the tab's own order.
+ * set and bounded by {@code /gamerule}; the statistics as scoreboard criteria; {@code /signal}'s argument types (an
+ * unknown dimension refused when the command runs, as vanilla's {@code execute in} does) and its dialog; the merchant's
+ * prices from its own trades (10 emeralds for bread, 20 for cooked beef), a hit raising them for the player who hit (by
+ * vanilla's reputation discounts, 0.05 and 0.2: 12 and 25) and for nobody else, a poppy given as a gift bringing them
+ * back; the perch owl sitting on its owner's right shoulder only (saved {@code PerchSide}) and staying down while a
+ * parrot has that shoulder; the tab's own order.
  *
  * <p>Not covered here: the looks (the client GameTest {@code MsmMobs2ClientGameTest} and the fixture's README checks).
  */
@@ -370,11 +379,17 @@ public class SampleMobsAndCommandsParityTest {
         });
     }
 
-    @GameTest(maxTicks = 300)
+    // 600 ticks: an idle roost starts by a one in 40 chance at each goal check, which 300 ticks missed now and then.
+    @GameTest(maxTicks = 600)
     public void theCaveFlitterHangsUnderABlockAndWakesWhenHurt(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         floor(helper);
-        helper.setBlock(new BlockPos(4, 6, 4), Blocks.STONE);
+        // A ceiling over the whole area: the roost looks straight up from where the flitter is, and it wanders.
+        for (int x = 0; x < 8; x++) {
+            for (int z = 0; z < 8; z++) {
+                helper.setBlock(new BlockPos(x, 6, z), Blocks.STONE);
+            }
+        }
         Mob flitter = spawn(helper, "cave_flitter", new BlockPos(4, 2, 4));
         double ceiling = helper.absoluteVec(new Vec3(0, 6, 0)).y;
         boolean[] hurt = {false};
@@ -769,9 +784,9 @@ public class SampleMobsAndCommandsParityTest {
             helper.assertValueEqual(dialogs(ears.packets()), List.of(id("welcome").toString()), "dialogs sent to the player");
             helper.assertValueEqual(p.getInventory().countItem(Items.COMPASS), 1, "compasses given");
             helper.assertTrue(command(op, "signal" + args) > 0, "/signal without its optional note failed");
-            // Not checked: an unknown dimension id, which the content jar refuses when the command runs (as vanilla's
-            // execute in does) but the 26.3 eject accepts (B541 follow-up for the eject).
-            for (String bad : List.of(" minecraft:the_nether 2q ff8800 90 0 " + uuid + " #minecraft:planks minecraft:stone",
+            // An unknown dimension parses and is refused when the command runs, as vanilla's execute in does.
+            for (String bad : List.of(" msm_sample_mobs:no_such_place 2d ff8800 90 0 " + uuid + " #minecraft:planks minecraft:stone",
+                    " minecraft:the_nether 2q ff8800 90 0 " + uuid + " #minecraft:planks minecraft:stone",
                     " minecraft:the_nether 2d orange 90 0 " + uuid + " #minecraft:planks minecraft:stone",
                     " minecraft:the_nether 2d ff8800 90 0 not-a-uuid #minecraft:planks minecraft:stone")) {
                 helper.assertValueEqual(command(op, "signal" + bad), 0, "/signal" + bad + " was accepted");
@@ -779,6 +794,74 @@ public class SampleMobsAndCommandsParityTest {
             helper.assertValueEqual(dialogs(ears.packets()), List.of(id("welcome").toString()), "dialogs after the second run");
         }
         helper.succeed();
+    }
+
+    // The trader and the shoulder pet (ADR 0107 D1 to D3, ADR 0109 D2; ejected since eject 2c)
+
+    private static final BlockPos MERCHANT_AT = new BlockPos(4, 1, 4);
+
+    private static MerchantOffer offer(GameTestHelper helper, MerchantOffers offers, Item result) {
+        for (MerchantOffer o : offers) {
+            if (o.getResult().is(result)) {
+                return o;
+            }
+        }
+        throw helper.assertionException("no offer of " + result + " in " + SampleVillagersParityTest.describe(offers));
+    }
+
+    /** The emeralds the bread and the cooked beef cost {@code player}, read from the menu it opens. */
+    private static List<Integer> costs(GameTestHelper helper, ServerPlayer player, Mob merchant) {
+        MerchantMenu menu = SampleVillagersParityTest.open(helper, player, merchant);
+        List<Integer> out = List.of(offer(helper, menu.getOffers(), Items.BREAD).getCostA().getCount(),
+                offer(helper, menu.getOffers(), Items.COOKED_BEEF).getCostA().getCount());
+        player.closeContainer();
+        return out;
+    }
+
+    @GameTest(maxTicks = 20)
+    public void aHitRaisesTheMerchantsPricesForThatPlayerAndAGiftBringsThemBack(GameTestHelper helper) {
+        floor(helper);
+        Mob merchant = helper.spawnWithNoFreeWill(SampleMobsAndCommandsParityTest.<Mob>type(helper, "kind_merchant"), MERCHANT_AT);
+        try (ParityEars ann = SampleVillagersParityTest.player(helper, MERCHANT_AT.east(2), "msm-mc-ann");
+                ParityEars bob = SampleVillagersParityTest.player(helper, MERCHANT_AT.west(2), "msm-mc-bob")) {
+            helper.assertValueEqual(costs(helper, ann.player, merchant), List.of(10, 20), "prices before the hit");
+            ann.player.attack(merchant);
+            helper.assertTrue(merchant.isAlive(), "the merchant died of one hit");
+            helper.assertValueEqual(costs(helper, ann.player, merchant), List.of(12, 25), "prices for the player who hit");
+            helper.assertValueEqual(costs(helper, bob.player, merchant), List.of(10, 20), "prices for another player");
+            SampleVillagersParityTest.use(ann.player, merchant, new ItemStack(Items.POPPY, 2), false);
+            helper.assertFalse(ann.player.containerMenu instanceof MerchantMenu, "the gift opened the menu");
+            helper.assertValueEqual(ann.player.getMainHandItem().getCount(), 1, "poppies left after the gift");
+            ann.player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            helper.assertValueEqual(costs(helper, ann.player, merchant), List.of(10, 20), "prices after the gift");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 300)
+    public void thePerchOwlSitsOnItsOwnersRightShoulderOnly(GameTestHelper helper) {
+        floor(helper);
+        Mob owl = helper.spawn(SampleMobsAndCommandsParityTest.<Mob>type(helper, "perch_owl"), new BlockPos(1, 1, 4));
+        Mob blocked = helper.spawn(SampleMobsAndCommandsParityTest.<Mob>type(helper, "perch_owl"), new BlockPos(1, 1, 1));
+        ParityEars ears = SampleVillagersParityTest.player(helper, new BlockPos(5, 1, 4), "msm-mc-owl");
+        ParityEars other = SampleVillagersParityTest.player(helper, new BlockPos(5, 1, 1), "msm-mc-parrot");
+        ((TamableAnimal) owl).tame(ears.player);
+        ((TamableAnimal) blocked).tame(other.player);
+        other.player.setShoulderParrotRight(Optional.of(Parrot.Variant.BLUE));
+        helper.onEachTick(() -> {
+            ears.player.setOnGround(true);
+            other.player.setOnGround(true);
+            helper.assertFalse(SampleVillagersParityTest.saved(helper, blocked).getBooleanOr("Perched", false),
+                    "the owl sat on a shoulder a parrot has");
+            if (SampleVillagersParityTest.saved(helper, owl).getBooleanOr("Perched", false)) {
+                helper.assertValueEqual(SampleVillagersParityTest.saved(helper, owl).getStringOr("PerchSide", ""), "right", "the owl's side");
+                helper.assertTrue(owl.position().distanceTo(ears.player.position()) < 1.6, "the owl is not at the owner: " + owl.position());
+                other.player.setShoulderParrotRight(Optional.empty());
+                ears.close();
+                other.close();
+                helper.succeed();
+            }
+        });
     }
 
     // The creative tab (ADR 0111 D7)

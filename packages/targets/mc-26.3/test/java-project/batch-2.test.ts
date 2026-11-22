@@ -242,6 +242,30 @@ describe('the 26.3 generator, batch 2 (B537)', () => {
       'Actions.openDialog(OWNER, player != null ? player : entity, "demo:welcome");',
     );
     expect(dialog.get('Actions.java')).toContain('player.openDialog(dialog.get());');
+    // An event command reads its arguments before the event, as the runtime's MsmCommands.run:
+    // an unknown dimension is refused when the command runs (B541 fix).
+    const where =
+      sources({
+        commands: [
+          {
+            id: 'demo:beam',
+            path: 'msm/demo/command/beam.json',
+            definition: {
+              format: 1,
+              name: 'beam',
+              event: 'demo:beam',
+              arguments: [{ name: 'where', type: 'dimension' }],
+              events: { 'demo:beam': { actions: [] } },
+            },
+          },
+        ],
+      }).get('ModCommands.java') ?? '';
+    const read = where.indexOf(
+      'args.putString("where", DimensionArgument.getDimension(context, "where").dimension().identifier().toString());',
+    );
+    expect(read).toBeGreaterThan(0);
+    expect(read).toBeLessThan(where.indexOf('INSTANCE.event_beam('));
+    expect(where).not.toContain('with storage');
   });
 
   it('keeps the code of the shared classes the runtime has', async () => {

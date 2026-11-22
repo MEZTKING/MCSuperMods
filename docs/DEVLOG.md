@@ -8026,3 +8026,18 @@ Next
 - The user looks at the vetoable defaults in the Status of ADRs 0120–0122.
 - After B591: B600 (spike, Opus at high effort), beside B547 if the game modes plan runs side by side.
 - The game modes plan's briefs name the live views of its six kinds and add their audit rows (ADR 0119 D1); its B553 and B558 should be re-read against batch 2's `@msm/sim` modules before they start.
+## 2026-11-22 — executor — B541 fix-up: traders and shoulders on the ejected jar, the eject's command arguments
+
+**What**
+- `sample-mobs-and-commands.java.golden.test.ts`: no `export.not-in-eject` since eject 2c (the kind merchant and the perch owl are ejected), the six trader and shoulder classes in the layout check; tree hash re-pinned twice. Before the first re-pin the old pin was reproduced with the exporter of 927d805 (before eject 2c) and the trees compared: the only differences were the trader and shoulder code (six new classes, `KindMerchantEntity`, `PerchOwlEntity`), the death comment "a shoulder pet gets off" in five mobs and `fileCount` 209 to 215.
+- Parity: the two tests of `SampleMobsAndCommandsTradersParityTest` (the merchant's reputation prices, the right-shoulder owl) moved into `SampleMobsAndCommandsParityTest` (26 tests), so they run on the ejected jar too; the traders class and its `fabric.mod.json` entry deleted; the CI comment and the fixture README updated (the CI filters did not name the class).
+- Eject fix (`packages/targets/mc-26.3/src/java-project/commands.ts`): every command now reads its given arguments before it runs, as the runtime's `MsmCommands.run` does, not only a function command. An event or script command with a dimension argument used to skip `DimensionArgument.getDimension`, so `/signal msm_sample_mobs:no_such_place ...` ran; it is now refused when the command runs, as vanilla's `execute in` refuses it. The same holds for every other argument checked only at run time. Targets test `batch-2.test.ts` checks that an event command reads its dimension before the event. `/signal`'s parity test has the unknown-dimension case back.
+- `theCaveFlitterHangsUnderABlockAndWakesWhenHurt`: 600 ticks (was 300) and a stone ceiling over the whole area. It failed now and then on both jar kinds (2 of 4 full runs with the old test, 1 of 10 with the wider ceiling alone), with the flitter never leaving its spawn point: an idle roost starts by a 1 in 40 chance at each goal check. Alone it passed 4 of 4.
+- Verified (26.3 unless said): the ejected sample villagers jar 15 of 15 (`sample_villagers_*`); the ejected sample mobs jar 26 of 26 twice (`sample_mobs_and_commands_parity_test_*`); the content jar 31 of 31 twice on 26.3 and twice on 26.4 (`sample_mobs_and_commands_*`: 26 plus the 5 script tests). Each run used `tools/run-fabric-server`, the ejected ones with `--no-runtime --extra geckolib.jar`, as CI does. Also `pnpm lint`, `pnpm typecheck`, exporters (1921) and mc-26.3 targets (242) tests.
+
+**Decisions**
+- The eject reads every argument for every command rather than only resolving dimensions: that is what the runtime does, and other run-time checks (an unknown structure) get the same behaviour.
+- The content jar total is 31 (26 + 5), not 33: the brief's 33 does not match the classes (B541 counted 24 + 2 + 5).
+
+**Next**
+- B544: CI's three parity steps now expect 26 on the ejected mobs jar; watch the cave flitter test, and if it still misses, look at `RoostGoal`'s idle chance or let the test start the roost itself.

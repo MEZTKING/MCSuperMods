@@ -3,12 +3,11 @@
  * 0111, ADR 0112 D3 and D4, plan B541), exported through `sample-java.ts` as the other samples
  * are: the bed as a villager home, the villager type, the two fluids with their mixing, cauldrons
  * and bottle, the fish bucket, the hovering, phasing, swooping and roosting mobs, the habits, the
- * dash, the larch boat and its chest boat, the two commands with their argument types and the
- * dialog action, the game rules, the statistics and the hand-ordered tab.
+ * dash, the kind merchant's trader (levels, reputation, demand and work site) and the perch owl's
+ * shoulder riding (eject 2c), the larch boat and its chest boat, the two commands with their
+ * argument types and the dialog action, the game rules, the statistics and the hand-ordered tab.
  *
- * Left out, each with one `export.not-in-eject` warning: the kind merchant's trader (levels,
- * reputation, demand and work site) and the perch owl's shoulder riding (B537b: the mobs
- * themselves are generated); the script and `/tally`'s `run_script` action are not ejected
+ * No `export.not-in-eject` warning; the script and `/tally`'s `run_script` action are not ejected
  * (scripts never are, ADR 0033), with their own warnings.
  *
  * - The export succeeds without errors or warnings other than those and project ids the vanilla
@@ -66,10 +65,9 @@ const meta = {
 const NAMESPACE = 'msm_sample_mobs';
 const PKG = `src/main/java/${NAMESPACE}`;
 
-/** Warnings the eject may give: project ids, the trader and shoulder pet, and the script. */
+/** Warnings the eject may give: project ids and the script. */
 const EXPECTED_WARNINGS: ReadonlySet<string> = new Set([
   'schema.unknown-id',
-  'export.not-in-eject',
   'export.scripts-not-ejected',
 ]);
 const unexpected = (problem: Problem): boolean =>
@@ -101,10 +99,7 @@ describe.each(
     expect(ok).toBe(true);
     const fileOf = (code: string): (string | undefined)[] =>
       problems.filter((problem) => problem.code === code).map((problem) => problem.file);
-    expect(fileOf('export.not-in-eject')).toEqual([
-      `msm/${NAMESPACE}/entity/kind_merchant.json`,
-      `msm/${NAMESPACE}/entity/perch_owl.json`,
-    ]);
+    expect(fileOf('export.not-in-eject')).toEqual([]);
     expect(fileOf('export.scripts-not-ejected').sort()).toEqual([
       `msm/${NAMESPACE}/command/tally.json`,
       `msm/${NAMESPACE}/script/mob_notes.ts`,
@@ -139,6 +134,12 @@ describe.each(
       `${PKG}/entity/PlayDeadGoal.java`,
       `${PKG}/entity/BarterGoal.java`,
       `${PKG}/entity/MobHabits.java`,
+      `${PKG}/entity/Trader.java`,
+      `${PKG}/entity/MobTrader.java`,
+      `${PKG}/entity/TraderReputation.java`,
+      `${PKG}/entity/RestockAtWorkSiteGoal.java`,
+      `${PKG}/entity/MobShoulder.java`,
+      `${PKG}/entity/PerchOnOwnerGoal.java`,
     ]) {
       expect(paths, path).toContain(path);
     }

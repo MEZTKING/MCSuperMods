@@ -18,7 +18,9 @@
  * then `function <id> with storage <mod id>:args`
  * runs as and at the source with permission level 2 (`LevelBasedPermissionSet.GAMEMASTER`); the
  * `event` fires with the source entity as self and other (the player when it is one); `feedback`
- * is sent to the source on success. Macro text is raw, as in vanilla (B440 S8).
+ * is sent to the source on success. Macro text is raw, as in vanilla (B440 S8). Every command, an
+ * event or script one too, reads its given arguments first, as the runtime's `MsmCommands.run`
+ * does, so a value checked only at run time (an unknown dimension) refuses the command.
  *
  * Minecraft 26.3, Mojang names.
  *
@@ -618,7 +620,10 @@ export function generateCommands(context: GenerationContext): string | undefined
       '}',
     );
     const body: string[] = [`${source} source = context.getSource();`];
-    if (spec.func !== undefined) {
+    // Every given argument is read first, whatever the command runs, as the runtime's
+    // `MsmCommands.run` does: a getter that checks at run time (an unknown dimension, as vanilla's
+    // `execute in`; an unknown structure) refuses the command before anything happens (B541 fix).
+    if (args.length > 0) {
       body.push(`${compound} args = new ${compound}();`);
       args.forEach((arg, i) => {
         const helper = HELPERS[arg.type];
@@ -627,6 +632,9 @@ export function generateCommands(context: GenerationContext): string | undefined
         if (arg.optional) body.push(`if (present > ${i}) {`, ...indent(put), '}');
         else body.push(...put);
       });
+    }
+    if (spec.func !== undefined) {
+      if (args.length === 0) body.push(`${compound} args = new ${compound}();`);
       body.push(
         `source.getServer().getCommandStorage().set(${storage}, args);`,
         `source.getServer().getCommands().performPrefixedCommand(source.withPermission(${permissionSet}.GAMEMASTER),`,

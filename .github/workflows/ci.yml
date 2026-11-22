@@ -1068,15 +1068,16 @@ jobs:
           --report "$RUNNER_TEMP/parity-reports/sample-plants-ejected.xml"
           --work "$RUNNER_TEMP/fabric-server-parity"
           --cache ~/.cache/msm-fabric-server
-      # Mobs and commands (B541): SampleMobsAndCommandsParityTest (24 tests: registration; the fish
+      # Mobs and commands (B541): SampleMobsAndCommandsParityTest (26 tests: registration; the fish
       # bucket beside vanilla's cod bucket; hovering, phasing, swooping, roosting; the collector,
       # digger, playing dead, bartering, the dash cooldown; the bed as a home and the villager type;
       # mixing of both fluids; both cauldrons; the bottle; the boats; the game rules; the
-      # statistics; /signal's argument types and dialog; the tab's order) on the content jar of
-      # every version and on the 26.3 ejected jar; SampleMobsAndCommandsTradersParityTest (2: the
-      # trader's reputation, the right-shoulder pet) and SampleMobsAndCommandsScriptParityTest (5:
-      # the Script API 1.7 events and /tally) on content jars only: sample_mobs_and_commands_*
-      # matches the three classes, sample_mobs_and_commands_parity_test_* only the first.
+      # statistics; /signal's argument types and dialog; the trader's reputation; the
+      # right-shoulder pet; the tab's order) on the content jar of every version and on the 26.3
+      # ejected jar (traders and shoulder pets are ejected since eject 2c);
+      # SampleMobsAndCommandsScriptParityTest (5: the Script API 1.7 events and /tally) on content
+      # jars only: sample_mobs_and_commands_* matches both classes,
+      # sample_mobs_and_commands_parity_test_* only the first.
       - name: Parity GameTests (sample mobs and commands, content jar)
         run: >-
           node tools/run-fabric-server/index.ts
