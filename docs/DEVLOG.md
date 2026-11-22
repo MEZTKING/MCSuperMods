@@ -6795,3 +6795,17 @@ Next
 
 **Next**
 - B502 close: those leftover "placeholder" lines; ADR 0092 findings.
+## 2026-11-21 — executor — B500 e2e art-path
+
+**What**
+- New `app/e2e/art-path.spec.ts` (ADR 0092, plan brief B500), three tests in blank projects, all driven through the toolbar, sidebar and Studios: (1) the Gear set with its untouched defaults writes `textures/item/ruby_sword.png`, which passes `checkArtRules` for `sword` and differs from `placeholderPng('sword')` plain and in ruby; a Simple block's picture row gets **Draw…** (`block-model-ai-<texture>-draw`): Bricks, **New looks** (seeds 6 to 11, the first chosen), the third variation (seed 8), **Use this picture**; the texture on disk is `artLookPng` of that look byte for byte, and one toolbar Undo puts the old picture back; **New texture…** with **Start from: Drawn picture** draws a gem, the painter opens on it, Save is enabled at once and the saved file's pixels are the drawn gem's (the painter re-encodes, so pixels, not bytes). (2) The Particle flow's `golden_spark` gets **Draw frames…** (Orb, the second variation): the four `golden_spark_<n>.png` files are `artFramePngs` of that look and pass `checkArtRules` together; the Pet flow's `ember_fox` gets **Draw a skin** (Scales, the fourth variation): its texture is `boxSkinArtPng` over `boxesOfGeoModel` of the saved model, and one Undo restores it. (3) Very easy (toolbar mode row): Home, **Make a block**, the Stone set, **Draw it for me** on "The stone": the dialog shows no recipe tiles, finish, second colour or detail, six variations; Moss and the second variation; the field's thumbnail is `artLookPng` of `stone` for that look and passes the rules, and after Create a file in `textures/block/` equals it byte for byte.
+- `app/CLAUDE.md`: the e2e list counts 37 spec files and names `art-path`.
+
+**Checks**
+- `pnpm build`; `xvfb-run -a npx playwright test -c e2e/playwright.config.ts e2e/art-path.spec.ts` passed four times (about 49 to 73 s; 19.5 s, 9.5 s and 16.7 s per test on a warm run); the full e2e run with every spec: 68 passed in 11.8 min. `pnpm lint`, `pnpm typecheck`; `pnpm --filter @msm/app dist:dir`, `node tools/check-size/index.ts`: `app.asar` 29.2 MB of 32, renderer 16.3 MB of 18.
+
+**Decisions**
+- Expected bytes come from `@msm/plugin-library` on the Node side, with the colour read from `draw-colour` and the seed from `data-seed`, so the test pins what the dialog drew rather than just "the file changed". No app bug found.
+
+**Next**
+- B501 guide and status lines; B502 close.
