@@ -8458,3 +8458,32 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 
 **Next**
 - Main session: B601 (stubs from the interface in the plan's B600 notes), B603 (the 25 jar folders), then wave 2. Follow-ups outside this brief: the validators and schema forms should refuse a predicate or item modifier file that is a list or a bare id (the server will not start); `docs/reference/spikes/README.md` needs a `b600/` line.
+
+## 2026-11-22 — orchestrator — Search everything: draft plan and ADR 0124
+
+**What**
+- Read the root and docs guides, the handoff, the last DEVLOG entries, DESIGN section 8, `app/CLAUDE.md`, ADRs 0041, 0083, 0086 and 0118 and both open plans, then the code of every place a user types to find something, at de72850: the command palette (`fuzzyScore`), the Add element filter (`templateMatches`), the Examples search (`exampleMatches`), the sidebar (`matchesSearch`), the ThingPicker (`filterThings`), Home's tiles and chooser, the Creator dialog and preview, Surprise me, the Showcase, the Rules catalogue, `plain-problems.ts`, the Settings dialog, the AI helper's tools, the jar extraction, the vendored registries, the guide.
+- Wrote the draft plan [`docs/PLAN-search.md`](PLAN-search.md) (B650–B673, reserves B674–B676; fact table SF1–SF26, spike questions SQ1–SQ16, limits SL1–SL17; eight waves of at most five briefs with owner files, scope and exit criteria) and [ADR 0124](adr/0124-search-everything.md) (Proposed, decisions D1–D17, vetoable defaults in Status), for the user's request of today: "Make an elite search bar so that whatever a user types it brings up the closest context or accurate search for what the user wants and can make it."
+- ROADMAP: the add-on section "Search everything (planned; after Live views 2)" with its waves, and the idea entry quoting the user. HANDOFF: one new "Next" item (5) with the recommended order; the old item 5 is now 6. No code, no build and no test was run: docs only.
+
+**Decisions** (all Proposed in ADR 0124, taken under "take the recommended options" and open to the user's veto)
+- Our own engine in a new package `@msm/search` (pure TypeScript, no dependency), offline and deterministic, no AI by default; the AI helper is an optional last row that is prefilled and never sent by itself, plus a read-only `search_library` tool for the helper.
+- An index of entries in three layers (static from the plugins and the app, vanilla ids named from the user's own jar, the mod by deltas), built in a Web Worker after first paint and never stored on disk; draft budgets to be measured by the spike B650.
+- Matching: British and American spellings folded, a light stemmer that protects Minecraft words, synonyms, slang and phrases, joined and split words, one or two wrong letters by word length, intent words that change the order and never what is found.
+- The Minecraft vocabulary, the behaviour phrases and extra entries are data owned by the plugins: plugin API 1.23.0, after the game modes plan's 1.22.0; third-party plugins contribute data only, through the sandbox, and only for their own things.
+- A flow's questions are answered only from words the user typed; one "that…" clause makes at most one rule or one companion flow, applied with the flow as one undo step (Surprise me's route, moved into a shared module).
+- One action per result (Make this, Add to my mod, Open, Show me how, Fix it, Add this rule, Make something with it) and, under the live rule, the selected result drawn by the Creator's own preview before anything is written; settings and commands are listed as exempt.
+- The bar on the start surface of every mode and in the toolbar, Ctrl/Cmd+K, and the palette kept as a second door to the same engine with its key and test ids; the four small filter boxes take the same matcher.
+- The guide is packaged beside the app and read inside it (the renderer budget is too tight for 0.79 MB of Markdown); `Markdown.tsx` learns tables and links between pages.
+- No telemetry; an optional local history. Ranking is tested against a hand-written set of at least 200 queries on both targets (draft bars 85 % first, 95 % top three).
+- A rule to keep at the close: every later brief that adds something findable gives it search words and one query (ADR 0124 D15).
+- Order: after Live views 2 closes (B618); the app waves beside the game modes plan's waves 2 and 3 and before its flows wave (B557); then the rest of that plan, Live views 3 and 4. The spike may run beside Live views 2.
+
+**Found on the way**
+- The Rules catalogue and the Script API have no step that sets a mob or player on fire (the Enchantment flow has the effect for swords, so the user's example is reachable as a companion flow). A candidate line for `docs/COVERAGE-AUDIT.md`, left for the spike's gap list.
+- The jar extraction keeps `en_us.json` and nothing in the app reads it; the ThingPicker names vanilla things from their ids.
+- The app shows none of the guide; the Help menu has no guide entry.
+- `AGENTS.md` item 4 lists the open plans and does not yet name this one; left for the main session.
+
+**Next**
+- Main session: show the user ADR 0124's vetoable defaults with the other plans'; start B650 beside Live views 2 when an executor is free (Opus at high effort, no engine-mod slot); B651 after B550, B656 after B603; add a `b650/` line to `docs/reference/spikes/README.md` when the spike reports.
