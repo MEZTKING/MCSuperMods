@@ -362,8 +362,8 @@ public class MsmCommandGameTest {
     public void reportListsTheCommands(GameTestHelper helper) {
         List<Identifier> commands = MsmRuntime.report().commands();
         List<Identifier> expected = List.of(id("cmd_args_a"), id("cmd_args_b"), id("cmd_clash"), id("cmd_event"), id("cmd_op"), id("cmd_optional"),
-                id("cmd_race"), id("cmd_script"));
-        helper.assertValueEqual(commands, expected, "registered commands (logged as 'registered 8 command(s)')");
+                id("cmd_race"), id("cmd_script"), id("cmd_types"));
+        helper.assertValueEqual(commands, expected, "registered commands (logged as 'registered 9 command(s)')");
         List<String> errors = MsmRuntime.report().errors();
         helper.assertTrue(errors.stream().anyMatch(e -> e.contains("command/cmd_broken.json") && e.contains("lower case")
                 && e.contains("msm_runtime_gametest")), "no error for the bad name: " + errors);

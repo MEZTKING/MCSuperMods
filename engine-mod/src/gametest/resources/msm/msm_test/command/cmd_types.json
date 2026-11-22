@@ -1,0 +1,40 @@
+{
+  "arguments": [
+    {
+      "name": "dim",
+      "type": "dimension"
+    },
+    {
+      "name": "time",
+      "type": "time"
+    },
+    {
+      "name": "colour",
+      "type": "team_colour"
+    },
+    {
+      "name": "hex",
+      "type": "hex_colour"
+    },
+    {
+      "name": "rot",
+      "type": "rotation"
+    },
+    {
+      "name": "biome",
+      "type": "biome_or_tag"
+    },
+    {
+      "name": "mode",
+      "type": "game_mode"
+    },
+    {
+      "name": "range",
+      "optional": true,
+      "type": "int_range"
+    }
+  ],
+  "format": 1,
+  "function": "msm_test:cmd/types",
+  "name": "msm_types"
+}

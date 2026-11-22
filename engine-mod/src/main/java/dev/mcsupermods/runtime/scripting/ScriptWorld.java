@@ -3,6 +3,7 @@ package dev.mcsupermods.runtime.scripting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import dev.mcsupermods.runtime.events.EventRunner;
@@ -28,6 +29,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.mozilla.javascript.Function;
@@ -39,7 +41,8 @@ import org.mozilla.javascript.Scriptable;
  * {@link ScriptContainer}; {@code spawnParticle} takes particle options objects, {@code motion} and {@code force} (script
  * API 1.3, ADR 0080 D5); script API 1.4 (ADR 0082 D5) adds {@code dayTime}, {@code isRaining}, {@code isThundering},
  * {@code breakBlock}, {@code dropItem}, {@code explode} and {@code setWeather}; script API 1.6 (ADR 0096 D4) adds
- * {@code itemsNear} ({@link DroppedItemHandle}). Weather is the server's
+ * {@code itemsNear} ({@link DroppedItemHandle}); script API 1.7 (ADR 0111 D5) adds {@code gameRule} and {@code setGameRule}
+ * (the server's rules, any rule of the {@code game_rule} registry: vanilla's, a project's, another mod's). Weather is the server's
  * ({@code MinecraftServer.getWeatherData()}), shown only in dimensions with an open sky. Commands and functions run as the server with permission
  * level 2 (as {@code run_function} actions do) and suppressed output, at the world spawn point with no {@code @s}, or
  * at the optional {@code at} position (ADR 0058 D2). {@code Entity.runCommand} and {@code Entity.runFunction} share
@@ -187,7 +190,59 @@ final class ScriptWorld {
                 boolean clear = kind.equals("clear");
                 l.getServer().setWeatherParameters(clear ? ticks : 0, clear ? 0 : ticks, !clear, kind.equals("thunder"));
                 return null;
+            })
+            // Script API 1.7 (ADR 0111 D5): game rules, the server's (every world shares them).
+            .method("gameRule", 1, 1, ServerLevel.class, (api, l, args) -> {
+                String text = ScriptValues.string(args, 0, "game rule id");
+                GameRule<?> rule = BuiltInRegistries.GAME_RULE.getValue(ScriptValues.id(text, "game rule id"));
+                return rule == null ? null : l.getServer().getGameRules().get(rule);
+            })
+            .method("setGameRule", 2, 2, ServerLevel.class, (api, l, args) -> {
+                setGameRule(l.getServer(), gameRule(args), args[1]);
+                return null;
             });
+
+    /** The game rule a {@code gameRule} or {@code setGameRule} call names; an invalid or unknown id is a TypeError. */
+    static GameRule<?> gameRule(Object[] args) {
+        String text = ScriptValues.string(args, 0, "game rule id");
+        GameRule<?> rule = BuiltInRegistries.GAME_RULE.getValue(ScriptValues.id(text, "game rule id"));
+        if (rule == null) {
+            throw ScriptRuntime.typeError("unknown game rule '" + text + "'");
+        }
+        return rule;
+    }
+
+    /**
+     * Sets {@code rule} as {@code /gamerule} does (saved with the world, Fabric's change callbacks run): a boolean rule
+     * takes {@code true} or {@code false}, a whole-number rule a finite number, rounded down and kept within the rule's
+     * range; any other value is a TypeError.
+     */
+    @SuppressWarnings("unchecked")
+    static void setGameRule(MinecraftServer server, GameRule<?> rule, Object value) {
+        if (rule.valueClass() == Boolean.class) {
+            if (!(value instanceof Boolean b)) {
+                throw ScriptRuntime.typeError("game rule " + rule.id() + " takes true or false");
+            }
+            server.getGameRules().set((GameRule<Boolean>) rule, b, server);
+            return;
+        }
+        if (rule.valueClass() == Integer.class) {
+            if (!(value instanceof Number n) || !Double.isFinite(n.doubleValue())) {
+                throw ScriptRuntime.typeError("game rule " + rule.id() + " takes a whole number");
+            }
+            int min = Integer.MIN_VALUE;
+            int max = Integer.MAX_VALUE;
+            if (rule.argument() instanceof IntegerArgumentType range) {
+                min = range.getMinimum();
+                max = range.getMaximum();
+            }
+            double floored = Math.floor(n.doubleValue());
+            int v = (int) Math.max(min, Math.min(max, floored));
+            server.getGameRules().set((GameRule<Integer>) rule, v, server);
+            return;
+        }
+        throw ScriptRuntime.typeError("game rule " + rule.id() + " holds neither true or false nor a whole number");
+    }
 
     /**
      * {@code dayTime} (script API 1.4): the dimension's own clock, or the Overworld's when its type names no clock,

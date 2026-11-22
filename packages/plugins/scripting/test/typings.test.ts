@@ -49,6 +49,12 @@ describe('script API v1', () => {
       'block.place',
       'world.explosion',
       'command',
+      'item.crafted',
+      'item.picked_up',
+      'player.ate',
+      'player.slept',
+      'player.woke',
+      'player.advancement',
     ]);
   });
 

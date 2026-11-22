@@ -1,0 +1,8 @@
+{
+  "category": "player",
+  "default": 3,
+  "format": 1,
+  "kind": "integer",
+  "max": 10,
+  "min": 0
+}

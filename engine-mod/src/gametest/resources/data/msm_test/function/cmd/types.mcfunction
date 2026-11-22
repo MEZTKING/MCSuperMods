@@ -1,0 +1,7 @@
+$data modify storage msm_test:b533_out dim set value "$(dim)"
+$data modify storage msm_test:b533_out time set value "$(time)"
+$data modify storage msm_test:b533_out colour set value "$(colour)"
+$data modify storage msm_test:b533_out hex set value "$(hex)"
+$data modify storage msm_test:b533_out rot set value "$(rot)"
+$data modify storage msm_test:b533_out biome set value "$(biome)"
+$data modify storage msm_test:b533_out mode set value "$(mode)"

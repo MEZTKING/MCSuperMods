@@ -4,7 +4,9 @@
  * `world.explosion` and `command`. The description changes only by additions to the one of the
  * previous Script API version (`test/fixtures/previous/script-api-v1-1.9.0.json`): exactly the
  * members, types and events below, with the parameter counts the runtime's `ScriptApi` installs,
- * each documented with the Since line; scripts that use them type-check.
+ * each documented with the Since line; scripts that use them type-check. The 1.6 description as its Script API
+ * version had it is `test/fixtures/previous/script-api-v1-1.10.0.json`; later additions (1.7, ADR 0111 D3 to D6) are
+ * pinned in `script-api-1-7.test.ts`.
  *
  * ADR 0096 D4 also names `Entity.vehicle` and `passengers`; Script API 1.5 (B421) already has them.
  * `CommandEvent.id` is added beside the ADR's `name`, so a handler can tell two projects' commands
@@ -16,7 +18,6 @@ import {
   generateTypings,
   MSM_RUNTIME_TYPINGS,
   parseScriptApi,
-  SCRIPT_API,
   type ScriptApi,
   type ScriptApiMember,
 } from '../src/index';
@@ -25,6 +26,13 @@ import { typeCheck } from './support';
 const PREVIOUS: ScriptApi = parseScriptApi(
   JSON.parse(
     readFileSync(new URL('./fixtures/previous/script-api-v1-1.9.0.json', import.meta.url), 'utf8'),
+  ),
+);
+
+/** The 1.6 description as its Script API version had it, before the 1.7 additions. */
+const API_1_6: ScriptApi = parseScriptApi(
+  JSON.parse(
+    readFileSync(new URL('./fixtures/previous/script-api-v1-1.10.0.json', import.meta.url), 'utf8'),
   ),
 );
 
@@ -51,14 +59,14 @@ function signatureCounts(member: ScriptApiMember | undefined): string[] {
 
 function member(path: string): ScriptApiMember | undefined {
   const [type, name] = path.split('.');
-  return SCRIPT_API.types[type ?? '']?.members[name ?? ''];
+  return API_1_6.types[type ?? '']?.members[name ?? ''];
 }
 
 describe('script API 1.6 is additive', () => {
   it('keeps every type, member, global, event, function and alias of the previous Script API version', () => {
-    expect(SCRIPT_API.version).toBe(1);
+    expect(API_1_6.version).toBe(1);
     for (const [name, type] of Object.entries(PREVIOUS.types)) {
-      const now = SCRIPT_API.types[name];
+      const now = API_1_6.types[name];
       expect(now?.extends, name).toBe(type.extends);
       expect(now?.doc, name).toBe(type.doc);
       for (const [key, old] of Object.entries(type.members)) {
@@ -66,16 +74,16 @@ describe('script API 1.6 is additive', () => {
       }
     }
     for (const [name, event] of Object.entries(PREVIOUS.events)) {
-      expect(SCRIPT_API.events[name], name).toEqual(event);
+      expect(API_1_6.events[name], name).toEqual(event);
     }
-    expect(SCRIPT_API.functions).toEqual(PREVIOUS.functions);
-    expect(SCRIPT_API.aliases).toEqual(PREVIOUS.aliases);
+    expect(API_1_6.functions).toEqual(PREVIOUS.functions);
+    expect(API_1_6.aliases).toEqual(PREVIOUS.aliases);
     const on = (api: ScriptApi) => {
       const events = api.globals.msm?.members.events;
       const member = events?.kind === 'namespace' ? events.members.on : undefined;
       return member?.kind === 'method' ? (member.overloads ?? []) : [];
     };
-    expect(on(SCRIPT_API).slice(0, on(PREVIOUS).length)).toEqual(on(PREVIOUS));
+    expect(on(API_1_6).slice(0, on(PREVIOUS).length)).toEqual(on(PREVIOUS));
   });
 
   it('keeps every previous line of the typings', () => {
@@ -87,10 +95,8 @@ describe('script API 1.6 is additive', () => {
 
 describe('script API 1.6 members (the list B455 installs)', () => {
   it('adds exactly these types, members and events', () => {
-    expect(Object.keys(SCRIPT_API.types).filter((name) => !PREVIOUS.types[name])).toEqual(
-      ADDED_TYPES,
-    );
-    const added = Object.entries(SCRIPT_API.types).flatMap(([name, type]) =>
+    expect(Object.keys(API_1_6.types).filter((name) => !PREVIOUS.types[name])).toEqual(ADDED_TYPES);
+    const added = Object.entries(API_1_6.types).flatMap(([name, type]) =>
       PREVIOUS.types[name]
         ? Object.keys(type.members)
             .filter((key) => PREVIOUS.types[name]?.members[key] === undefined)
@@ -98,10 +104,10 @@ describe('script API 1.6 members (the list B455 installs)', () => {
         : [],
     );
     expect([...added].sort()).toEqual([...ADDED_MEMBERS].sort());
-    expect(Object.keys(SCRIPT_API.events).filter((name) => !PREVIOUS.events[name])).toEqual(
+    expect(Object.keys(API_1_6.events).filter((name) => !PREVIOUS.events[name])).toEqual(
       Object.keys(ADDED_EVENTS),
     );
-    expect(Object.keys(SCRIPT_API.types.DroppedItem?.members ?? {}).sort()).toEqual([
+    expect(Object.keys(API_1_6.types.DroppedItem?.members ?? {}).sort()).toEqual([
       'age',
       'item',
       'owner',
@@ -116,7 +122,7 @@ describe('script API 1.6 members (the list B455 installs)', () => {
     expect(signatureCounts(member('Entity.dismount'))).toEqual(['0..0']);
     expect(signatureCounts(member('World.itemsNear'))).toEqual(['2..2']);
     expect(member('ItemRef.contents')).toMatchObject({ kind: 'property', type: 'ItemRef[]' });
-    expect(SCRIPT_API.types.DroppedItem?.extends).toBeUndefined();
+    expect(API_1_6.types.DroppedItem?.extends).toBeUndefined();
     expect(member('DroppedItem.item')).toMatchObject({ kind: 'property', type: 'ItemRef' });
     expect(member('DroppedItem.pos')).toMatchObject({ kind: 'property', type: 'Pos' });
     expect(member('DroppedItem.age')).toMatchObject({ kind: 'property', type: 'number' });
@@ -131,8 +137,8 @@ describe('script API 1.6 members (the list B455 installs)', () => {
     expect(signatureCounts(member('BlockPlaceEvent.cancel'))).toEqual(['0..0']);
     expect(member('CommandEvent.cancel')).toBeUndefined();
     for (const [name, { type, cancellable, source }] of Object.entries(ADDED_EVENTS)) {
-      expect(SCRIPT_API.events[name], name).toMatchObject({ type, cancellable, source });
-      expect(SCRIPT_API.types[type]?.extends, type).toBe('GameEvent');
+      expect(API_1_6.events[name], name).toMatchObject({ type, cancellable, source });
+      expect(API_1_6.types[type]?.extends, type).toBe('GameEvent');
     }
   });
 
@@ -140,14 +146,15 @@ describe('script API 1.6 members (the list B455 installs)', () => {
     const docs: [string, string | undefined][] = [
       ...ADDED_MEMBERS.map((path): [string, string | undefined] => [path, member(path)?.doc]),
       ...ADDED_TYPES.flatMap((name): [string, string | undefined][] => [
-        [name, SCRIPT_API.types[name]?.doc],
-        ...Object.entries(SCRIPT_API.types[name]?.members ?? {}).map(
-          ([key, m]): [string, string] => [`${name}.${key}`, m.doc],
-        ),
+        [name, API_1_6.types[name]?.doc],
+        ...Object.entries(API_1_6.types[name]?.members ?? {}).map(([key, m]): [string, string] => [
+          `${name}.${key}`,
+          m.doc,
+        ]),
       ]),
       ...Object.keys(ADDED_EVENTS).map((name): [string, string | undefined] => [
         name,
-        SCRIPT_API.events[name]?.doc,
+        API_1_6.events[name]?.doc,
       ]),
     ];
     for (const [what, doc] of docs) {

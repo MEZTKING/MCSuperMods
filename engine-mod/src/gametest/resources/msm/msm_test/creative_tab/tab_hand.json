@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "icon": "minecraft:emerald",
+  "items": [
+    "msm_test:tab_n3",
+    "minecraft:emerald",
+    "msm_test:tab_n1",
+    "msm_test:no_such_item",
+    "minecraft:emerald"
+  ],
+  "order": "by_hand"
+}

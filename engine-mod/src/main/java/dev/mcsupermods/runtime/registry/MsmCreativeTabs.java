@@ -39,6 +39,11 @@ import net.minecraft.world.item.ItemStack;
  *       order (block items, then items, then spawn eggs; within each, mods by id and files by path).</li>
  *   <li>{@code by_name} sorts the tab's stacks by display name in a listener of a later phase ({@link #SORT_PHASE}), after
  *       every member was added; the sort is stable, so equal names keep the registration order.</li>
+ *   <li>{@code by_hand} (ADR 0111 D7) shows the items of {@code items} first, in that order, in the same later phase
+ *       ({@link #handOrder}): a listed member keeps its own stack, a listed item that is no member (a vanilla item, another
+ *       tab's) is added as a plain stack, an id listed twice shows once, and the members not listed follow in registration
+ *       order. Only the tab's own page changes; the search tab keeps the members as they were added. A listed id that is
+ *       no item once the server has started is a warning and is left out.</li>
  * </ul>
  */
 public final class MsmCreativeTabs {
@@ -77,6 +82,11 @@ public final class MsmCreativeTabs {
                     Event<CreativeModeTabEvents.ModifyOutput> event = CreativeModeTabEvents.modifyOutputEvent(key);
                     event.addPhaseOrdering(Event.DEFAULT_PHASE, SORT_PHASE);
                     event.register(SORT_PHASE, MsmCreativeTabs::sortByName);
+                } else if (def.order() == CreativeTabParser.Order.BY_HAND) {
+                    Event<CreativeModeTabEvents.ModifyOutput> event = CreativeModeTabEvents.modifyOutputEvent(key);
+                    event.addPhaseOrdering(Event.DEFAULT_PHASE, SORT_PHASE);
+                    List<Identifier> items = def.items();
+                    event.register(SORT_PHASE, output -> orderByHand(output, items));
                 }
                 registered.put(id, def);
             } catch (RuntimeException e) {
@@ -122,11 +132,59 @@ public final class MsmCreativeTabs {
         output.getSearchTabStacks().sort(byName);
     }
 
+    /** {@code by_hand}: the tab's own page in the order of {@code items}, then the other members ({@link #handOrder}). */
+    static void orderByHand(FabricCreativeModeTabOutput output, List<Identifier> items) {
+        List<ItemStack> display = output.getDisplayStacks();
+        List<ItemStack> ordered = handOrder(display, items);
+        display.clear();
+        display.addAll(ordered);
+    }
+
+    /**
+     * The stacks of a {@code by_hand} tab: for each id of {@code items} in order, the first member stack of that item, or a
+     * new stack of it when it is no member (left out when it is no item, and when it was listed before); then the members
+     * not taken, in their order. {@code members} is not changed.
+     */
+    public static List<ItemStack> handOrder(List<ItemStack> members, List<Identifier> items) {
+        List<ItemStack> rest = new ArrayList<>(members);
+        List<ItemStack> out = new ArrayList<>();
+        java.util.Set<Identifier> seen = new java.util.HashSet<>();
+        for (Identifier id : items) {
+            if (!seen.add(id)) {
+                continue;
+            }
+            Optional<net.minecraft.world.item.Item> item = BuiltInRegistries.ITEM.getOptional(id);
+            if (item.isEmpty()) {
+                continue;
+            }
+            ItemStack found = null;
+            for (ItemStack stack : rest) {
+                if (stack.is(item.get())) {
+                    found = stack;
+                    break;
+                }
+            }
+            if (found != null) {
+                rest.remove(found);
+                out.add(found);
+            } else {
+                out.add(new ItemStack(item.get()));
+            }
+        }
+        out.addAll(rest);
+        return out;
+    }
+
     private static void checkIcons() {
         List<String> warnings = new ArrayList<>();
         tabs.forEach((id, def) -> {
             if (!BuiltInRegistries.ITEM.containsKey(def.icon())) {
                 warnings.add("creative tab " + id + ": unknown icon item " + def.icon() + "; the tab shows no picture");
+            }
+            for (Identifier item : def.items()) {
+                if (!BuiltInRegistries.ITEM.containsKey(item)) {
+                    warnings.add("creative tab " + id + ": unknown item " + item + " in items; left out");
+                }
             }
         });
         warnings.forEach(message -> MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, message));

@@ -46,8 +46,8 @@ public class MsmCreativeTabGameTest {
     public void tabsRegisterWithTheirTitles(GameTestHelper helper) {
         helper.assertValueEqual(titleKey(tab(helper, "tab_listed")), "itemGroup.msm_test.tab_listed", "default title key");
         helper.assertValueEqual(titleKey(tab(helper, "tab_named")), "itemGroup.msm_test.custom_named", "title");
-        helper.assertValueEqual(MsmRuntime.report().creativeTabs(), List.of(id("tab_bad_icon"), id("tab_listed"), id("tab_named")),
-                "registered tabs (logged as 'registered 3 creative tab(s)')");
+        helper.assertValueEqual(MsmRuntime.report().creativeTabs(), List.of(id("tab_bad_icon"), id("tab_hand"), id("tab_listed"), id("tab_named")),
+                "registered tabs (logged as 'registered 4 creative tab(s)')");
         helper.assertFalse(BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id("tab_broken")), "a refused tab");
         List<String> errors = MsmRuntime.report().errors();
         helper.assertTrue(errors.stream().anyMatch(e -> e.contains("creative_tab/tab_broken.json") && e.contains("items")

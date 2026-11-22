@@ -4,6 +4,12 @@
 
 /** A definition event ran a `run_script` action that names this handler. */
 interface ActionEvent extends GameEvent {
+  /**
+   * When the action runs in a project command's own event (its `event`, and the events it triggers): the values typed, by argument name, as the `command` event's `args` gives them (the types of Script API 1.7 as their ids or text, see the guide). `undefined` for every other action. A new object for each event.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly args: Record<string, unknown> | undefined;
   /** The block involved, when there is one. */
   readonly block?: BlockRef;
   /** The entity involved, when there is one: the entity that stepped on a block (a mob, an item or a minecart as well as a player), for example. */
@@ -748,6 +754,58 @@ interface Inventory {
  */
 type InventorySlot = number | EquipmentSlot;
 
+/**
+ * A player crafted something.
+ *
+ * Since runtime 1.5.3 (verify at the close).
+ */
+interface ItemCraftedEvent extends GameEvent {
+  /**
+   * How many were made by this one craft (a shift-click that crafts three times is three events).
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly count: number;
+  /**
+   * What was made, with `count` the number made by this one craft.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly item: ItemRef;
+  /**
+   * The player who crafted it.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly player: Player;
+}
+
+/**
+ * A player picked up an item from the ground.
+ *
+ * Since runtime 1.5.3 (verify at the close).
+ */
+interface ItemPickedUpEvent extends GameEvent {
+  /**
+   * How many went into the inventory; less than were on the ground when the inventory was nearly full.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly count: number;
+  /**
+   * The item, with `count` the number taken.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly item: ItemRef;
+  /**
+   * The player who picked it up.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly player: Player;
+}
+
 /** An item stack, copied at the time it was read: changing the game later does not change it. */
 interface ItemRef {
   /**
@@ -1048,6 +1106,42 @@ interface MsmEvents {
    * Since runtime 1.5.2.
    */
   on(name: "command", handler: (e: CommandEvent) => void): void;
+  /**
+   * Runs each time a player crafts something: in the inventory's grid, at a crafting table (once per craft of a shift-click) or by taking the result of a furnace and the other result slots of the game's menus. Crafters and other machines do not fire it. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  on(name: "item.crafted", handler: (e: ItemCraftedEvent) => void): void;
+  /**
+   * Runs when a player picks up an item from the ground, also when only part of it fits. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  on(name: "item.picked_up", handler: (e: ItemPickedUpEvent) => void): void;
+  /**
+   * Runs when a player finishes eating or drinking something (food, a potion, milk, a project bottle); a meal that was stopped before the end does not fire it. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  on(name: "player.ate", handler: (e: PlayerAteEvent) => void): void;
+  /**
+   * Runs when a player lies down in a bed. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  on(name: "player.slept", handler: (e: PlayerSleptEvent) => void): void;
+  /**
+   * Runs when a player gets out of a bed: in the morning, by leaving the bed, or woken. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  on(name: "player.woke", handler: (e: PlayerWokeEvent) => void): void;
+  /**
+   * Runs when a player completes an advancement, by playing or by `/advancement`; the recipe advancements that unlock recipe book entries (`<namespace>:recipes/...`) do not fire it. Several handlers run in registration order.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  on(name: "player.advancement", handler: (e: PlayerAdvancementEvent) => void): void;
 }
 
 /** Writes to the server log as `[msm_runtime] <script id>: <message>`. */
@@ -1069,6 +1163,15 @@ type ParticleOptions = { type: string; [field: string]: unknown };
 
 /** A player, wrapped for scripts. */
 interface Player extends Entity {
+  /**
+   * Adds to this player's value of a custom statistic and returns the new value. It is saved with the player, shown in the statistics screen and moves the scores of scoreboard objectives that count it (criterion `minecraft.custom:<namespace>.<path>`). An unknown id or an amount that is not a finite number is a `TypeError`; for example `player.addStat("mypack:coins_found", 1)`.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   *
+   * @param id - A custom statistic's id, as for `stat`.
+   * @param amount - How much to add, rounded down; a negative amount takes away, never below 0.
+   */
+  addStat(id: string, amount: number): number;
   /**
    * Gives the player experience points, for example `player.addXp(10)`; levels go up as the points fill them.
    *
@@ -1136,6 +1239,14 @@ interface Player extends Entity {
   readonly isCreative: boolean;
   /** Whether the player is sneaking. */
   readonly isSneaking: boolean;
+  /**
+   * Opens a dialog on this player's screen, as `/dialog show` does. Returns `false` when the id is no dialog of this game (logged once), else `true`; for example `player.openDialog("mypack:welcome")`.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   *
+   * @param id - The dialog's id, for example `mypack:welcome` (a dialog in the project's data pack) or one of vanilla's.
+   */
+  openDialog(id: string): boolean;
   /**
    * The saturation level, 0 up to the food level.
    *
@@ -1208,6 +1319,14 @@ interface Player extends Entity {
    */
   showTitle(title: string, options?: { subtitle?: string; fadeIn?: number; stay?: number; fadeOut?: number }): void;
   /**
+   * Returns this player's value of a custom statistic, 0 when it was never counted (a distance in centimetres, a time in ticks). An unknown id is a `TypeError`; for example `player.stat("mypack:coins_found")`.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   *
+   * @param id - A custom statistic's id, for example `mypack:jumps_over_lava` (an `msm:stat` of the project) or vanilla's `minecraft:jump`.
+   */
+  stat(id: string): number;
+  /**
    * The player's experience level.
    *
    * Since runtime 1.5.1.
@@ -1219,6 +1338,46 @@ interface Player extends Entity {
    * Since runtime 1.5.1.
    */
   readonly xpPoints: number;
+}
+
+/**
+ * A player completed an advancement.
+ *
+ * Since runtime 1.5.3 (verify at the close).
+ */
+interface PlayerAdvancementEvent extends GameEvent {
+  /**
+   * The advancement's id, for example `minecraft:story/mine_stone` or `mypack:first_coin`.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly advancement: string;
+  /**
+   * The player who completed it.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly player: Player;
+}
+
+/**
+ * A player finished eating or drinking something.
+ *
+ * Since runtime 1.5.3 (verify at the close).
+ */
+interface PlayerAteEvent extends GameEvent {
+  /**
+   * One of what was eaten or drunk, as it was before.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly item: ItemRef;
+  /**
+   * The player who ate or drank.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly player: Player;
 }
 
 /**
@@ -1308,6 +1467,26 @@ interface PlayerRespawnEvent extends GameEvent {
 }
 
 /**
+ * A player lay down in a bed.
+ *
+ * Since runtime 1.5.3 (verify at the close).
+ */
+interface PlayerSleptEvent extends GameEvent {
+  /**
+   * The player who lay down.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly player: Player;
+  /**
+   * Where the bed is (the block the player sleeps on).
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly pos: Pos;
+}
+
+/**
  * A player's turn of the `player.tick` interval came round.
  *
  * Since runtime 1.5.1.
@@ -1319,6 +1498,26 @@ interface PlayerTickEvent extends GameEvent {
    * Since runtime 1.5.1.
    */
   readonly player: Player;
+}
+
+/**
+ * A player got out of a bed.
+ *
+ * Since runtime 1.5.3 (verify at the close).
+ */
+interface PlayerWokeEvent extends GameEvent {
+  /**
+   * The player who got up.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly player: Player;
+  /**
+   * Where the bed is.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   */
+  readonly pos: Pos;
 }
 
 /** An immutable position; block positions have integer coordinates. */
@@ -1591,6 +1790,14 @@ interface World {
    * @param options - `fire` (`false` by default) sets fires around it; `breaksBlocks` (`true` by default) breaks blocks, which then drop as from a bed exploding (the `block_explosion_drop_decay` game rule applies). Entities are always hurt and pushed.
    */
   explode(pos: Pos, power: number, options?: { fire?: boolean; breaksBlocks?: boolean }): void;
+  /**
+   * Returns a game rule's value: `true` or `false` for a rule that is on or off, a whole number for a number rule, or `undefined` when the id is no game rule of this game (a project rule that was not loaded, another mod's that is missing). Game rules belong to the whole server (every dimension shares them) and are saved with the world. An id that is not a valid id is a `TypeError`; for example `if (world.gameRule("mypack:mana_regen")) ...`.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   *
+   * @param id - The game rule's id with its namespace, for example `mypack:mana_regen` (an `msm:game_rule` of the project) or `minecraft:keep_inventory`; a vanilla rule may leave out `minecraft:`.
+   */
+  gameRule(id: string): boolean | number | undefined;
   /** Returns the block state at a position as `namespace:id[property=value,...]`. */
   getBlock(pos: Pos): string;
   /**
@@ -1660,6 +1867,15 @@ interface World {
    */
   setBlock(pos: Pos, state: string): boolean;
   /**
+   * Sets a game rule for the whole server as `/gamerule` does: it is saved with the world and a mod's change listeners run. An unknown id, or a value of the other kind (a number for an on-or-off rule, `true` for a number rule, a number that is not finite), is a `TypeError`; for example `world.setGameRule("mypack:max_mana", 20)`.
+   *
+   * Since runtime 1.5.3 (verify at the close).
+   *
+   * @param id - The game rule's id, as for `gameRule`.
+   * @param value - `true` or `false` for a rule that is on or off; a number for a number rule, rounded down and kept within the rule's lowest and highest values.
+   */
+  setGameRule(id: string, value: boolean | number): void;
+  /**
    * Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather("thunder", 60)`. Another kind is a `TypeError`.
    *
    * Since runtime 1.5.1.
@@ -1725,6 +1941,8 @@ declare module "msm:runtime" {
   export type GameMode = globalThis.GameMode;
   export type Inventory = globalThis.Inventory;
   export type InventorySlot = globalThis.InventorySlot;
+  export type ItemCraftedEvent = globalThis.ItemCraftedEvent;
+  export type ItemPickedUpEvent = globalThis.ItemPickedUpEvent;
   export type ItemRef = globalThis.ItemRef;
   export type ItemSpec = globalThis.ItemSpec;
   export type ItemUseEvent = globalThis.ItemUseEvent;
@@ -1737,12 +1955,16 @@ declare module "msm:runtime" {
   export type MsmLog = globalThis.MsmLog;
   export type ParticleOptions = globalThis.ParticleOptions;
   export type Player = globalThis.Player;
+  export type PlayerAdvancementEvent = globalThis.PlayerAdvancementEvent;
+  export type PlayerAteEvent = globalThis.PlayerAteEvent;
   export type PlayerChangeDimensionEvent = globalThis.PlayerChangeDimensionEvent;
   export type PlayerChatEvent = globalThis.PlayerChatEvent;
   export type PlayerJoinEvent = globalThis.PlayerJoinEvent;
   export type PlayerLeaveEvent = globalThis.PlayerLeaveEvent;
   export type PlayerRespawnEvent = globalThis.PlayerRespawnEvent;
+  export type PlayerSleptEvent = globalThis.PlayerSleptEvent;
   export type PlayerTickEvent = globalThis.PlayerTickEvent;
+  export type PlayerWokeEvent = globalThis.PlayerWokeEvent;
   export type Pos = globalThis.Pos;
   export type RayHit = globalThis.RayHit;
   export type RaycastOptions = globalThis.RaycastOptions;

@@ -44,6 +44,8 @@ public class MsmSpikeGameTest {
                         || e.contains("creative_tab/tab_broken.json") // MsmCreativeTabGameTest (B454)
                         || e.contains("villager_profession/pf_taken.json") || e.contains("villager_profession/pf_unknown.json")
                         || e.contains("villager_profession/pf_zcopy.json") // MsmProfessionGameTest (B474)
+                        || e.contains("game_rule/b533_broken.json") || e.contains("game rule minecraft:keep_inventory:")
+                        || e.contains("statistic minecraft:jump:") // MsmGameRuleStatGameTest (B533)
                         || e.contains("block/unknown_sound_type.json")), // MsmOwnSoundsGameTest
                 "load errors: " + MsmRuntime.report().errors());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(ORE), "block " + ORE + " not registered");

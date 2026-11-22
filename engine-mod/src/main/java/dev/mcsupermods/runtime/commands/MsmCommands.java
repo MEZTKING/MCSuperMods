@@ -190,7 +190,8 @@ public final class MsmCommands {
         def.event().ifPresent(event -> {
             Identifier eventId = Identifier.tryParse(event);
             if (eventId != null) {
-                EventRunner.fire(cmd.id(), def.events(), eventId, context(source));
+                // ADR 0111 D1: run_script actions of the command's own event see the arguments as ActionEvent.args.
+                CommandEvents.withArgs(args, () -> EventRunner.fire(cmd.id(), def.events(), eventId, context(source)));
             }
         });
         CommandEvents.fire(cmd.id(), def.name(), source, args);

@@ -1,0 +1,8 @@
+{
+  "category": "misc",
+  "default": 2,
+  "format": 1,
+  "kind": "integer",
+  "max": 5,
+  "min": 1
+}

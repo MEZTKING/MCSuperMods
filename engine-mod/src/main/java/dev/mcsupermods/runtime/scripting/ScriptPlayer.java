@@ -1,6 +1,12 @@
 package dev.mcsupermods.runtime.scripting;
 
+import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.hud.HudServer;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
@@ -9,7 +15,11 @@ import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stat;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +34,10 @@ import org.mozilla.javascript.Scriptable;
  * with the last values sent); the game mode is sent at once by {@code ServerPlayer.setGameMode}; titles and the action
  * bar are packets sent at once. Script API 1.5 (ADR 0089 D8): {@code showHud}, {@code hideHud} and {@code setHud}
  * go through {@link HudServer} as the {@code show_hud}, {@code hide_hud} and {@code set_hud} actions do; they return
- * {@code false} for an id that is not a HUD element of this game (logged once) or a number that is not finite.
+ * {@code false} for an id that is not a HUD element of this game (logged once) or a number that is not finite. Script API
+ * 1.7 (ADR 0111 D4, D6): {@code stat} and {@code addStat} read and add to a custom statistic (saved with the player;
+ * {@code awardStat} also moves the scoreboard objectives that count it), and {@code openDialog} opens a dialog of the
+ * {@code dialog} registry ({@code ServerPlayer.openDialog}, B525), {@code false} for an unknown id (logged once).
  */
 final class ScriptPlayer {
     private ScriptPlayer() {}
@@ -134,7 +147,58 @@ final class ScriptPlayer {
                     return HudServer.set(p, id, text.toString());
                 }
                 throw ScriptRuntime.typeError("value is not a number or a string");
-            });
+            })
+            // Script API 1.7 (ADR 0111 D4, D6): custom statistics and dialogs.
+            .method("stat", 1, 1, ServerPlayer.class, (api, p, args) -> p.getStats().getValue(stat(args)))
+            .method("addStat", 2, 2, ServerPlayer.class, (api, p, args) -> {
+                Stat<Identifier> stat = stat(args);
+                double amount = ScriptValues.number(args, 1, "amount");
+                if (!Double.isFinite(amount)) {
+                    throw ScriptRuntime.typeError("amount is not a finite number");
+                }
+                long current = p.getStats().getValue(stat);
+                long wanted = Math.max(0, Math.min(Integer.MAX_VALUE, current + (long) Math.max(-Integer.MAX_VALUE, Math.min(Integer.MAX_VALUE,
+                        Math.floor(amount)))));
+                int change = (int) (wanted - current);
+                if (change != 0) {
+                    // awardStat also moves the scores of objectives counting this statistic.
+                    p.awardStat(stat, change);
+                }
+                return p.getStats().getValue(stat);
+            })
+            .method("openDialog", 1, 1, ServerPlayer.class, (api, p, args) -> openDialog(p, args));
+
+    /** Dialog ids {@code openDialog} did not find, each logged once per run. */
+    private static final Set<Identifier> UNKNOWN_DIALOGS = ConcurrentHashMap.newKeySet();
+
+    /** {@code openDialog(id)}: opens the dialog for the player; {@code false} (logged once) for an id that is no dialog. */
+    private static boolean openDialog(ServerPlayer p, Object[] args) {
+        Identifier id = ScriptValues.id(ScriptValues.string(args, 0, "dialog id"), "dialog id");
+        Optional<Holder.Reference<Dialog>> dialog = p.level().getServer().registryAccess().lookupOrThrow(Registries.DIALOG)
+                .get(ResourceKey.create(Registries.DIALOG, id));
+        if (dialog.isEmpty()) {
+            if (UNKNOWN_DIALOGS.add(id)) {
+                MsmRuntime.LOGGER.warn("[{}] openDialog: {} is no dialog of this game", MsmRuntime.MOD_ID, id);
+            }
+            return false;
+        }
+        p.openDialog(dialog.get());
+        return true;
+    }
+
+    /**
+     * The custom statistic a {@code stat} or {@code addStat} call names (a project's {@code msm:stat} or any entry of the
+     * {@code custom_stat} registry, vanilla's {@code minecraft:jump} too); an invalid or unknown id is a TypeError. The
+     * registry's own {@code Identifier} instance is used: {@code Stats.CUSTOM} finds a statistic by identity (B525).
+     */
+    static Stat<Identifier> stat(Object[] args) {
+        String text = ScriptValues.string(args, 0, "statistic id");
+        Identifier registered = BuiltInRegistries.CUSTOM_STAT.getValue(ScriptValues.id(text, "statistic id"));
+        if (registered == null) {
+            throw ScriptRuntime.typeError("unknown statistic '" + text + "'");
+        }
+        return Stats.CUSTOM.get(registered);
+    }
 
     /** The HUD element id of a {@code showHud}, {@code hideHud} or {@code setHud} call; an invalid id is a TypeError. */
     private static Identifier hudId(Object[] args) {

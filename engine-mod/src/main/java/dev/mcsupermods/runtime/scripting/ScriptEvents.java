@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The event objects of ADR 0032 D2, ADR 0065 D8, ADR 0089 D8 and ADR 0096 D3/D4: one data class per event, a {@link ScriptType} per event type over
+ * The event objects of ADR 0032 D2, ADR 0065 D8, ADR 0089 D8, ADR 0096 D3/D4 and ADR 0111 D3: one data class per event, a {@link ScriptType} per event type over
  * {@code GameEvent} ({@code world}), and the event table ({@link #EVENTS}: name, type, cancellable, Fabric API source).
  */
 public final class ScriptEvents {
@@ -202,10 +202,14 @@ public final class ScriptEvents {
         final Entity entity;
         final ServerPlayer player;
         final Entity other;
+        /** A project command's arguments when the action runs in that command's own event (Script API 1.7), else null. */
+        final JsonObject args;
 
         Action(ServerLevel level, Identifier owner, Identifier event, ScriptPos pos, BlockRef block, Entity entity,
                 ServerPlayer player, Entity other) {
             super(level);
+            JsonObject current = CommandEvents.currentArgs();
+            this.args = current == null ? null : current.deepCopy();
             this.other = other;
             this.owner = owner;
             this.event = event;
@@ -307,6 +311,59 @@ public final class ScriptEvents {
         }
     }
 
+    /**
+     * {@code item.crafted} and {@code item.picked_up} (Script API 1.7, ADR 0111 D3): the player, a copy of the stack with
+     * the number crafted or taken as its count, and that number.
+     */
+    public static final class ItemTaken extends Data {
+        final ServerPlayer player;
+        final ItemRef item;
+        final int count;
+
+        ItemTaken(ServerLevel level, ServerPlayer player, ItemRef item, int count) {
+            super(level);
+            this.player = player;
+            this.item = item;
+            this.count = count;
+        }
+    }
+
+    /** {@code player.ate} (Script API 1.7, ADR 0111 D3): the player and a copy of one of what was eaten or drunk. */
+    public static final class PlayerAte extends Data {
+        final ServerPlayer player;
+        final ItemRef item;
+
+        PlayerAte(ServerLevel level, ServerPlayer player, ItemRef item) {
+            super(level);
+            this.player = player;
+            this.item = item;
+        }
+    }
+
+    /** {@code player.slept} and {@code player.woke} (Script API 1.7, ADR 0111 D3): the player and the bed's position. */
+    public static final class PlayerBed extends Data {
+        final ServerPlayer player;
+        final ScriptPos pos;
+
+        PlayerBed(ServerLevel level, ServerPlayer player, ScriptPos pos) {
+            super(level);
+            this.player = player;
+            this.pos = pos;
+        }
+    }
+
+    /** {@code player.advancement} (Script API 1.7, ADR 0111 D3): the player and the completed advancement's id. */
+    public static final class PlayerAdvancement extends Data {
+        final ServerPlayer player;
+        final String advancement;
+
+        PlayerAdvancement(ServerLevel level, ServerPlayer player, String advancement) {
+            super(level);
+            this.player = player;
+            this.advancement = advancement;
+        }
+    }
+
     static String hand(InteractionHand hand) {
         return hand == InteractionHand.OFF_HAND ? "off" : "main";
     }
@@ -370,7 +427,8 @@ public final class ScriptEvents {
             .constant("block", Action.class, (api, e) -> e.block == null ? null : api.block(e.block))
             .constant("entity", Action.class, (api, e) -> e.entity == null ? null : api.entity(e.entity))
             .constant("player", Action.class, (api, e) -> e.player == null ? null : api.player(e.player))
-            .constant("other", Action.class, (api, e) -> e.other == null ? null : api.entity(e.other));
+            .constant("other", Action.class, (api, e) -> e.other == null ? null : api.entity(e.other))
+            .constant("args", Action.class, (api, e) -> e.args == null ? null : api.json(e.args));
 
     static final ScriptType PLAYER_TICK = event("PlayerTickEvent")
             .constant("player", PlayerOnly.class, (api, e) -> api.player(e.player));
@@ -448,6 +506,34 @@ public final class ScriptEvents {
             .constant("source", Command.class, (api, e) -> e.source == null ? null : api.entity(e.source))
             .constant("args", Command.class, (api, e) -> api.json(e.args));
 
+    // Script API 1.7 (ADR 0111 D3)
+
+    static final ScriptType ITEM_CRAFTED = event("ItemCraftedEvent")
+            .constant("player", ItemTaken.class, (api, e) -> api.player(e.player))
+            .constant("item", ItemTaken.class, (api, e) -> api.item(e.item))
+            .constant("count", ItemTaken.class, (api, e) -> e.count);
+
+    static final ScriptType ITEM_PICKED_UP = event("ItemPickedUpEvent")
+            .constant("player", ItemTaken.class, (api, e) -> api.player(e.player))
+            .constant("item", ItemTaken.class, (api, e) -> api.item(e.item))
+            .constant("count", ItemTaken.class, (api, e) -> e.count);
+
+    static final ScriptType PLAYER_ATE = event("PlayerAteEvent")
+            .constant("player", PlayerAte.class, (api, e) -> api.player(e.player))
+            .constant("item", PlayerAte.class, (api, e) -> api.item(e.item));
+
+    static final ScriptType PLAYER_SLEPT = event("PlayerSleptEvent")
+            .constant("player", PlayerBed.class, (api, e) -> api.player(e.player))
+            .constant("pos", PlayerBed.class, (api, e) -> api.pos(e.pos));
+
+    static final ScriptType PLAYER_WOKE = event("PlayerWokeEvent")
+            .constant("player", PlayerBed.class, (api, e) -> api.player(e.player))
+            .constant("pos", PlayerBed.class, (api, e) -> api.pos(e.pos));
+
+    static final ScriptType PLAYER_ADVANCEMENT = event("PlayerAdvancementEvent")
+            .constant("player", PlayerAdvancement.class, (api, e) -> api.player(e.player))
+            .constant("advancement", PlayerAdvancement.class, (api, e) -> e.advancement);
+
     /** One row of the event table of ADR 0032 D2. */
     public record Spec(String name, ScriptType type, boolean cancellable, String source) {}
 
@@ -475,14 +561,23 @@ public final class ScriptEvents {
     public static final String BLOCK_PLACE_EVENT = "block.place";
     public static final String EXPLOSION_EVENT = "world.explosion";
     public static final String COMMAND_EVENT = "command";
+    public static final String ITEM_CRAFTED_EVENT = "item.crafted";
+    public static final String ITEM_PICKED_UP_EVENT = "item.picked_up";
+    public static final String PLAYER_ATE_EVENT = "player.ate";
+    public static final String PLAYER_SLEPT_EVENT = "player.slept";
+    public static final String PLAYER_WOKE_EVENT = "player.woke";
+    public static final String PLAYER_ADVANCEMENT_EVENT = "player.advancement";
 
     /**
      * The events scripts can handle, by name, in the order of ADR 0032 D2, then ADR 0065 D8, then ADR 0089 D8 (Script
-     * API 1.5), then ADR 0096 D4 (Script API 1.6). The 1.5 and 1.6 events come from the runtime's own listeners, not
-     * from Fabric callbacks: {@code source} names the listener method
+     * API 1.5), then ADR 0096 D4 (Script API 1.6), then ADR 0111 D3 (Script API 1.7). The 1.5 and 1.6 events and four
+     * of the 1.7 events come from the runtime's own listeners, not from Fabric callbacks: {@code source} names the
+     * listener method
      * ({@link dev.mcsupermods.runtime.controls.KeyBinds.KeyListener},
      * {@link dev.mcsupermods.runtime.registry.vehicle.VehicleEvents.Listener}, {@code MsmCommands.run}) or the Mixin
-     * ({@code BlockItemPlaceMixin}, {@code ServerExplosionMixin}; no Fabric API event exists for either).
+     * ({@code BlockItemPlaceMixin}, {@code ServerExplosionMixin}, {@code CraftedMixin}, {@code ItemPickupMixin},
+     * {@code ConsumeMixin}, {@code AdvancementRewardsMixin}; no Fabric API event exists for any of them). Sleeping and
+     * waking are Fabric's {@code EntitySleepEvents} ({@link MoreEvents}).
      */
     public static final Map<String, Spec> EVENTS = table(List.of(
             new Spec(BLOCK_INTERACT_EVENT, BLOCK_INTERACT, true, "UseBlockCallback"),
@@ -509,7 +604,13 @@ public final class ScriptEvents {
             new Spec(VEHICLE_DESTROYED_EVENT, VEHICLE_DESTROYED, false, "VehicleEvents.Listener.destroyed"),
             new Spec(BLOCK_PLACE_EVENT, BLOCK_PLACE, true, "BlockItemPlaceMixin"),
             new Spec(EXPLOSION_EVENT, EXPLOSION, true, "ServerExplosionMixin"),
-            new Spec(COMMAND_EVENT, COMMAND, false, "MsmCommands.run")));
+            new Spec(COMMAND_EVENT, COMMAND, false, "MsmCommands.run"),
+            new Spec(ITEM_CRAFTED_EVENT, ITEM_CRAFTED, false, "CraftedMixin"),
+            new Spec(ITEM_PICKED_UP_EVENT, ITEM_PICKED_UP, false, "ItemPickupMixin"),
+            new Spec(PLAYER_ATE_EVENT, PLAYER_ATE, false, "ConsumeMixin"),
+            new Spec(PLAYER_SLEPT_EVENT, PLAYER_SLEPT, false, "EntitySleepEvents.START_SLEEPING"),
+            new Spec(PLAYER_WOKE_EVENT, PLAYER_WOKE, false, "EntitySleepEvents.STOP_SLEEPING"),
+            new Spec(PLAYER_ADVANCEMENT_EVENT, PLAYER_ADVANCEMENT, false, "AdvancementRewardsMixin")));
 
     private static Map<String, Spec> table(List<Spec> specs) {
         Map<String, Spec> map = new LinkedHashMap<>();

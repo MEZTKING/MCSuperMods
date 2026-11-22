@@ -1,0 +1,2711 @@
+{
+  "version": 1,
+  "types": {
+    "Pos": {
+      "doc": "An immutable position; block positions have integer coordinates.",
+      "members": {
+        "x": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The x (east) coordinate."
+        },
+        "y": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The y (height) coordinate."
+        },
+        "z": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The z (south) coordinate."
+        },
+        "offset": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "dx",
+              "type": "number",
+              "doc": "Blocks to move along x."
+            },
+            {
+              "name": "dy",
+              "type": "number",
+              "doc": "Blocks to move along y."
+            },
+            {
+              "name": "dz",
+              "type": "number",
+              "doc": "Blocks to move along z."
+            }
+          ],
+          "doc": "Returns a new position moved by the given amounts.",
+          "returns": "Pos"
+        },
+        "toString": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns the position as text, for example `1, 64, -3`.",
+          "returns": "string"
+        }
+      }
+    },
+    "World": {
+      "doc": "One loaded dimension of the server.",
+      "members": {
+        "dimension": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The dimension id, for example `minecraft:overworld`."
+        },
+        "time": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The dimension's game time in ticks."
+        },
+        "dayTime": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The time of day in ticks, 0 to 23999: 0 is sunrise, 6000 noon, 13000 nightfall and 18000 midnight. It follows this dimension's own clock, or the Overworld's in a dimension without one (such as the Nether).\n\nSince runtime 1.5.1."
+        },
+        "isRaining": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether it is raining (or thundering) in this dimension. Always `false` in a dimension without an open sky, such as the Nether and the End. It changes as soon as the weather changes, while the rain on screen fades in over a few seconds.\n\nSince runtime 1.5.1."
+        },
+        "isThundering": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether there is a thunderstorm in this dimension. Always `false` in a dimension without an open sky.\n\nSince runtime 1.5.1."
+        },
+        "getBlock": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos"
+            }
+          ],
+          "doc": "Returns the block state at a position as `namespace:id[property=value,...]`.",
+          "returns": "string"
+        },
+        "setBlock": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos"
+            },
+            {
+              "name": "state",
+              "type": "string",
+              "doc": "The block state, for example `minecraft:glowstone`."
+            }
+          ],
+          "doc": "Places a block state written as `namespace:id[property=value,...]`; returns `false` when the state does not parse or the block was not placed.",
+          "returns": "boolean"
+        },
+        "breakBlock": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "The block to break (the block that contains the position)."
+            },
+            {
+              "name": "options",
+              "type": "{ drops?: boolean }",
+              "optional": true,
+              "doc": "`drops` (`true` by default): whether the block drops what it would drop when broken without a tool, as an explosion or `/setblock ... destroy` does."
+            }
+          ],
+          "doc": "Breaks a block as if it were mined, with the breaking sound and particles, leaving air (or the fluid it held); for example `world.breakBlock(e.pos, { drops: false })`. Returns `false` when there was nothing to break (air).\n\nSince runtime 1.5.1.",
+          "returns": "boolean"
+        },
+        "spawnParticle": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "particle",
+              "type": "string | ParticleOptions",
+              "doc": "A particle type without options, for example `minecraft:flame` or a project particle such as `mymod:spark`, or a vanilla particle options object such as `{ type: \"minecraft:dust\", color: [1, 0.5, 0], scale: 1.5 }`."
+            },
+            {
+              "name": "pos",
+              "type": "Pos"
+            },
+            {
+              "name": "options",
+              "type": "{ count?: number; spread?: number; speed?: number; motion?: [number, number, number]; force?: boolean }",
+              "optional": true,
+              "doc": "`count` particles (1 by default; at most 1000 with `motion`), placed at a random offset of about `spread` blocks on each axis (a Gaussian with that standard deviation, 0 by default) and moving at a random speed of about `speed` (0 by default). `motion` (`[x, y, z]` in blocks per tick) gives each particle exactly that velocity instead of the random one, sending one packet per particle; `speed` is then not used. `force` sends to players up to 512 blocks away and draws whatever their Particles setting, as `/particle ... force`."
+            }
+          ],
+          "doc": "Spawns particles at a position for nearby players. A particle that does not decode (an unknown id, a type that needs options given as an id, an options object with a wrong field) is a `TypeError`.\n\nOptions objects, `motion` and `force`: since runtime 1.5.1."
+        },
+        "playSound": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The sound event id, for example `minecraft:block.note_block.bell`."
+            },
+            {
+              "name": "pos",
+              "type": "Pos"
+            },
+            {
+              "name": "options",
+              "type": "{ volume?: number; pitch?: number }",
+              "optional": true,
+              "doc": "The volume and pitch, 1 by default."
+            }
+          ],
+          "doc": "Plays a sound event at a position for nearby players. The id can be a vanilla sound event or a project sound key (for example `mymod:block.chime`) once the project declares it in `sounds.json`."
+        },
+        "runCommand": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "command",
+              "type": "string",
+              "doc": "The command without a leading slash."
+            },
+            {
+              "name": "at",
+              "type": "Pos",
+              "optional": true,
+              "doc": "Where the command runs: `~ ~ ~` is this position. Without it, the command runs at the world spawn point."
+            }
+          ],
+          "doc": "Runs a command as the server with permission level 2 and no output; returns the command's result count. Without `at` it runs at the world spawn point with no `@s`; pass `at` for position-relative commands, or use `Entity.runCommand` to run as an entity.",
+          "returns": "number"
+        },
+        "runFunction": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The function id, for example `mymod:reward`."
+            },
+            {
+              "name": "at",
+              "type": "Pos",
+              "optional": true,
+              "doc": "Where the function runs: `~ ~ ~` is this position. Without it, the function runs at the world spawn point."
+            }
+          ],
+          "doc": "Runs a data pack function as the server; returns `false` when the function does not exist. Without `at` it runs at the world spawn point with no `@s`; pass `at` for position-relative functions, or use `Entity.runFunction` to run as an entity.",
+          "returns": "boolean"
+        },
+        "spawnEntity": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The entity type id, for example `minecraft:zombie`."
+            },
+            {
+              "name": "pos",
+              "type": "Pos"
+            }
+          ],
+          "doc": "Spawns an entity of a type at a position; returns `undefined` when it could not be spawned.",
+          "returns": "Entity | undefined"
+        },
+        "dropItem": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "Where the item appears, exactly (use `pos.offset(0.5, 0.5, 0.5)` for the middle of a block)."
+            },
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The item; a count over the item's stack size is dropped as several stacks, at most 64 stacks (more is a `RangeError`)."
+            }
+          ],
+          "doc": "Drops an item on the ground as a block drops its loot, with a small random push; for example `world.dropItem(e.pos.offset(0.5, 1, 0.5), { id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.5.1."
+        },
+        "entitiesNear": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos"
+            },
+            {
+              "name": "radius",
+              "type": "number",
+              "doc": "The radius in blocks."
+            }
+          ],
+          "doc": "Returns the living entities within a radius of a position.",
+          "returns": "Entity[]"
+        },
+        "raycast": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "from",
+              "type": "Pos",
+              "doc": "Where the ray starts."
+            },
+            {
+              "name": "direction",
+              "type": "Pos",
+              "doc": "The direction as a vector, for example an entity's `look`; its length does not matter."
+            },
+            {
+              "name": "maxDistance",
+              "type": "number",
+              "doc": "How far the ray goes in blocks, at most 128 (more is a `RangeError`)."
+            },
+            {
+              "name": "options",
+              "type": "RaycastOptions",
+              "optional": true,
+              "doc": "What the ray stops at."
+            }
+          ],
+          "doc": "Casts a ray and returns the first block or entity it hits, or `undefined` when it hits nothing in range; for example `world.raycast(player.pos.offset(0, 1.6, 0), player.look, 20)`.\n\nSince runtime 1.5.1.",
+          "returns": "RayHit | undefined"
+        },
+        "getContainer": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "The block position."
+            }
+          ],
+          "doc": "Returns the container of the block at a position, or `undefined` when the block has no slots: chests, barrels, hoppers, furnaces, dispensers and the mod's own containers and machines have one, stone does not; for example `e.world.getContainer(e.pos)`. A double chest gives the half at the position.\n\nSince runtime 1.5.1.",
+          "returns": "Container | undefined"
+        },
+        "explode": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos",
+              "doc": "The centre of the explosion, exactly."
+            },
+            {
+              "name": "power",
+              "type": "number",
+              "doc": "The strength from 0 to 10 (anything else is a `RangeError`): 1 is about a fireball, 4 TNT, 6 a charged creeper."
+            },
+            {
+              "name": "options",
+              "type": "{ fire?: boolean; breaksBlocks?: boolean }",
+              "optional": true,
+              "doc": "`fire` (`false` by default) sets fires around it; `breaksBlocks` (`true` by default) breaks blocks, which then drop as from a bed exploding (the `block_explosion_drop_decay` game rule applies). Entities are always hurt and pushed."
+            }
+          ],
+          "doc": "Makes an explosion that no entity caused; for example `world.explode(e.pos, 2, { breaksBlocks: false })`.\n\nSince runtime 1.5.1."
+        },
+        "setWeather": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "kind",
+              "type": "\"clear\" | \"rain\" | \"thunder\"",
+              "doc": "The new weather."
+            },
+            {
+              "name": "seconds",
+              "type": "number",
+              "optional": true,
+              "doc": "How long it lasts, more than 0 and at most 1000000 (anything else is a `RangeError`); when left out, the game picks a length as `/weather` does."
+            }
+          ],
+          "doc": "Sets the weather of the whole server (every dimension shares it), as `/weather` does; for example `world.setWeather(\"thunder\", 60)`. Another kind is a `TypeError`.\n\nSince runtime 1.5.1."
+        },
+        "itemsNear": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "pos",
+              "type": "Pos"
+            },
+            {
+              "name": "radius",
+              "type": "number",
+              "doc": "The radius in blocks."
+            }
+          ],
+          "doc": "Returns the items lying on the ground (dropped, thrown or spilled) within a radius of a position; `entitiesNear` keeps returning living entities only. For example `for (const d of world.itemsNear(e.pos, 4)) if (d.item.id === \"minecraft:rotten_flesh\") d.remove();`.\n\nSince runtime 1.5.2.",
+          "returns": "DroppedItem[]"
+        }
+      }
+    },
+    "Entity": {
+      "doc": "A living entity, wrapped for scripts; check `isAlive` before using one held across ticks.",
+      "members": {
+        "type": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The entity type id, for example `minecraft:zombie`."
+        },
+        "uuid": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The entity's UUID as text."
+        },
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The entity's exact position."
+        },
+        "world": {
+          "kind": "property",
+          "type": "World",
+          "doc": "The world the entity is in."
+        },
+        "health": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The current health in half hearts."
+        },
+        "maxHealth": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The maximum health in half hearts."
+        },
+        "isAlive": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether the entity is still alive and loaded."
+        },
+        "isPlayer": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether the entity is a player."
+        },
+        "name": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The entity's display name as plain text."
+        },
+        "velocity": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The entity's motion in blocks per tick (x, y, z)."
+        },
+        "look": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The direction the entity looks, as a vector of length 1."
+        },
+        "data": {
+          "kind": "property",
+          "type": "DataStore",
+          "doc": "Data saved on this entity for the script's namespace, at most 16 KiB per namespace; a player keeps it on respawn."
+        },
+        "setVelocity": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "x",
+              "type": "number",
+              "doc": "Blocks per tick along x."
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "doc": "Blocks per tick along y (up)."
+            },
+            {
+              "name": "z",
+              "type": "number",
+              "doc": "Blocks per tick along z."
+            }
+          ],
+          "doc": "Replaces the motion, so the game moves the entity smoothly, as a slime block or a wind charge does; each part is limited to 10. Players are pushed too."
+        },
+        "addVelocity": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "x",
+              "type": "number",
+              "doc": "Blocks per tick along x."
+            },
+            {
+              "name": "y",
+              "type": "number",
+              "doc": "Blocks per tick along y (up)."
+            },
+            {
+              "name": "z",
+              "type": "number",
+              "doc": "Blocks per tick along z."
+            }
+          ],
+          "doc": "Adds to the motion, for example `entity.addVelocity(0, 1, 0)` for a jump; each part is limited to 10."
+        },
+        "damage": {
+          "kind": "method",
+          "overloads": [
+            {
+              "params": [
+                {
+                  "name": "amount",
+                  "type": "number",
+                  "doc": "The damage in half hearts."
+                }
+              ],
+              "doc": "Deals generic damage to the entity."
+            },
+            {
+              "params": [
+                {
+                  "name": "amount",
+                  "type": "number",
+                  "doc": "The damage in half hearts."
+                },
+                {
+                  "name": "options",
+                  "type": "{ type?: string; attacker?: Entity; direct?: Entity }",
+                  "doc": "The damage type id (for example `minecraft:magic`; `minecraft:generic` by default), the entity responsible and the entity that hit (a projectile, for example)."
+                }
+              ],
+              "doc": "Deals damage of a type, from an attacker, to the entity, for example `target.damage(4, { type: \"minecraft:player_attack\", attacker: player })`; an unknown damage type is a script error.\n\nSince runtime 1.5.1."
+            }
+          ],
+          "doc": "Deals generic damage to the entity."
+        },
+        "heal": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "amount",
+              "type": "number",
+              "doc": "The health to add in half hearts."
+            }
+          ],
+          "doc": "Heals the entity, up to its maximum health."
+        },
+        "kill": {
+          "kind": "method",
+          "params": [],
+          "doc": "Kills the entity."
+        },
+        "teleport": {
+          "kind": "method",
+          "overloads": [
+            {
+              "params": [
+                {
+                  "name": "pos",
+                  "type": "Pos"
+                }
+              ],
+              "doc": "Moves the entity to a position in its current world."
+            },
+            {
+              "params": [
+                {
+                  "name": "pos",
+                  "type": "Pos",
+                  "doc": "The position to move to."
+                },
+                {
+                  "name": "options",
+                  "type": "{ dimension?: string; yaw?: number; pitch?: number }",
+                  "doc": "The dimension id to move to (the current one by default) and the facing in degrees (unchanged by default)."
+                }
+              ],
+              "doc": "Moves the entity to a position, in another dimension or facing another way, for example `player.teleport(pos, { dimension: \"minecraft:the_nether\" })`; the wrapper stays valid after the move.\n\nSince runtime 1.5.1."
+            }
+          ],
+          "doc": "Moves the entity to a position in its current world."
+        },
+        "addEffect": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed`."
+            },
+            {
+              "name": "ticks",
+              "type": "number",
+              "doc": "The duration in ticks."
+            },
+            {
+              "name": "amplifier",
+              "type": "number",
+              "optional": true,
+              "doc": "The amplifier, 0 (level I) by default."
+            }
+          ],
+          "doc": "Gives the entity a mob effect."
+        },
+        "hasEffect": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed` or one of your own."
+            }
+          ],
+          "doc": "Returns whether the entity currently has the mob effect.",
+          "returns": "boolean"
+        },
+        "effectLevel": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed` or one of your own."
+            }
+          ],
+          "doc": "Returns the level of the mob effect (the amplifier plus 1), or 0 when the entity does not have it.",
+          "returns": "number"
+        },
+        "removeEffect": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The effect id, for example `minecraft:speed` or one of your own."
+            }
+          ],
+          "doc": "Removes the mob effect; returns `true` when the entity had it.",
+          "returns": "boolean"
+        },
+        "playAnimation": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "name",
+              "type": "string",
+              "doc": "The animation name, for example `animation.my_mob.attack`."
+            },
+            {
+              "name": "controller",
+              "type": "string",
+              "optional": true,
+              "doc": "The animation controller, the entity's main one by default."
+            }
+          ],
+          "doc": "Triggers a GeckoLib animation on an MSM entity; does nothing on other entities."
+        },
+        "runCommand": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "command",
+              "type": "string",
+              "doc": "The command without a leading slash."
+            }
+          ],
+          "doc": "Runs a command as and at this entity (`@s` is the entity, `~ ~ ~` is its position, in its facing) with permission level 2 and no output; returns the command's result count, or 0 when the entity is not in a server level.",
+          "returns": "number"
+        },
+        "runFunction": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The function id, for example `mymod:reward`."
+            }
+          ],
+          "doc": "Runs a data pack function as and at this entity (`@s` is the entity); returns `false` when the function does not exist or the entity is not in a server level.",
+          "returns": "boolean"
+        },
+        "asPlayer": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns this entity as a player, or `undefined` when it is not one.",
+          "returns": "Player | undefined"
+        },
+        "equipment": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "EquipmentSlot",
+              "doc": "The equipment slot."
+            }
+          ],
+          "doc": "Returns a copy of the stack in an equipment slot, or `undefined` when it is empty; for example `entity.equipment(\"head\")`.\n\nSince runtime 1.5.1.",
+          "returns": "ItemRef | undefined"
+        },
+        "setEquipment": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "EquipmentSlot",
+              "doc": "The equipment slot."
+            },
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "optional": true,
+              "doc": "The new stack; `undefined` empties the slot."
+            }
+          ],
+          "doc": "Replaces the stack in an equipment slot, for example `zombie.setEquipment(\"mainhand\", \"minecraft:iron_sword\")`.\n\nSince runtime 1.5.1."
+        },
+        "raycast": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "maxDistance",
+              "type": "number",
+              "doc": "How far the ray goes in blocks, at most 128 (more is a `RangeError`)."
+            },
+            {
+              "name": "options",
+              "type": "RaycastOptions",
+              "optional": true,
+              "doc": "What the ray stops at; it always passes through this entity."
+            }
+          ],
+          "doc": "Casts a ray from the entity's eyes along its look and returns the first block or entity it hits, or `undefined`; for example `player.raycast(5)?.block?.id`.\n\nSince runtime 1.5.1.",
+          "returns": "RayHit | undefined"
+        },
+        "remove": {
+          "kind": "method",
+          "params": [],
+          "doc": "Removes the entity from the world at once, without dropping loot or experience and without death events or a death animation (unlike `kill()`). A player cannot be removed: calling it on a player is a `TypeError`.\n\nSince runtime 1.5.1."
+        },
+        "vehicle": {
+          "kind": "property",
+          "type": "Entity | undefined",
+          "doc": "What this entity rides, or `undefined` when it rides nothing: a project vehicle (then also a `Vehicle`, see `asVehicle()`), a boat, a minecart or a mount; for example `if (player.vehicle?.isVehicle) ...`.\n\nSince runtime 1.5.2."
+        },
+        "passengers": {
+          "kind": "property",
+          "type": "Entity[]",
+          "doc": "The entities riding this one, in seat order (the first drives a vehicle); an empty array when none. A new array on every read.\n\nSince runtime 1.5.2."
+        },
+        "isVehicle": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether this entity is a project vehicle (an `msm:vehicle`); `false` for players, mobs, boats and minecarts, even with riders.\n\nSince runtime 1.5.2."
+        },
+        "asVehicle": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns this entity as a project vehicle with the `Vehicle` members, or `undefined` when it is not one; for example `const car = player.vehicle?.asVehicle()`.\n\nSince runtime 1.5.2.",
+          "returns": "Vehicle | undefined"
+        },
+        "ride": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "vehicle",
+              "type": "Entity",
+              "doc": "What to get on: a mob, a boat, a minecart, a project vehicle or any other entity."
+            }
+          ],
+          "doc": "Makes this entity get on another, as it would by itself: returns `true` when it now rides `vehicle`, `false` when it cannot (a full vehicle, a mob that takes no riders, sneaking, or for a short while after getting off something, vanilla's boarding cooldown). Riding itself, riding something that rides it, riding into another world and riding a player are refused (`false`), as with vanilla's `/ride`. An entity that rides something else gets off it first; for example `zombie.ride(chicken)`.\n\nSince runtime 1.5.2.",
+          "returns": "boolean"
+        },
+        "dismount": {
+          "kind": "method",
+          "params": [],
+          "doc": "Makes this entity get off what it rides; returns `false` when it rides nothing. For example `if (player.vehicle) player.dismount()`.\n\nSince runtime 1.5.2.",
+          "returns": "boolean"
+        }
+      }
+    },
+    "Player": {
+      "doc": "A player, wrapped for scripts.",
+      "members": {
+        "isSneaking": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether the player is sneaking."
+        },
+        "isCreative": {
+          "kind": "property",
+          "type": "boolean",
+          "doc": "Whether the player is in creative mode."
+        },
+        "heldItem": {
+          "kind": "property",
+          "type": "string | undefined",
+          "doc": "The item id in the player's main hand, or `undefined` when it is empty."
+        },
+        "give": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The item id, for example `minecraft:diamond`, or since runtime 1.5.1 an item with components, `{ id, count?, components? }`."
+            },
+            {
+              "name": "count",
+              "type": "number",
+              "optional": true,
+              "doc": "How many; the item's own `count`, or 1, by default."
+            }
+          ],
+          "doc": "Gives the player items; what does not fit in the inventory is dropped at their feet."
+        },
+        "hasItem": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "string",
+              "doc": "The item id."
+            }
+          ],
+          "doc": "Returns whether the player's inventory holds at least one of an item.",
+          "returns": "boolean"
+        },
+        "sendMessage": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "text",
+              "type": "string",
+              "doc": "The message as plain text."
+            }
+          ],
+          "doc": "Sends a chat message to the player only."
+        },
+        "inventory": {
+          "kind": "property",
+          "type": "Inventory",
+          "doc": "The player's inventory, for example `player.inventory.count(\"minecraft:diamond\")`.\n\nSince runtime 1.5.1."
+        },
+        "xpLevel": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The player's experience level.\n\nSince runtime 1.5.1."
+        },
+        "xpPoints": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The total experience points the player has collected.\n\nSince runtime 1.5.1."
+        },
+        "food": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The food level, 0 to 20.\n\nSince runtime 1.5.1."
+        },
+        "saturation": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The saturation level, 0 up to the food level.\n\nSince runtime 1.5.1."
+        },
+        "gameMode": {
+          "kind": "property",
+          "type": "GameMode",
+          "doc": "The player's game mode, for example `\"survival\"`.\n\nSince runtime 1.5.1."
+        },
+        "addXp": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "points",
+              "type": "number",
+              "doc": "The points to add; a negative number takes points away."
+            }
+          ],
+          "doc": "Gives the player experience points, for example `player.addXp(10)`; levels go up as the points fill them.\n\nSince runtime 1.5.1."
+        },
+        "addXpLevels": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "levels",
+              "type": "number",
+              "doc": "The levels to add; a negative number takes levels away."
+            }
+          ],
+          "doc": "Gives the player experience levels, for example `player.addXpLevels(1)`.\n\nSince runtime 1.5.1."
+        },
+        "setXpLevels": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "levels",
+              "type": "number",
+              "doc": "The new level, 0 or more."
+            }
+          ],
+          "doc": "Sets the player's experience level, for example `player.setXpLevels(30)`.\n\nSince runtime 1.5.1."
+        },
+        "setFood": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "level",
+              "type": "number",
+              "doc": "The food level, 0 to 20."
+            },
+            {
+              "name": "saturation",
+              "type": "number",
+              "optional": true,
+              "doc": "The saturation, unchanged by default; it is never more than the food level."
+            }
+          ],
+          "doc": "Sets the player's food level and saturation, for example `player.setFood(20, 5)`.\n\nSince runtime 1.5.1."
+        },
+        "setGameMode": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "mode",
+              "type": "GameMode",
+              "doc": "The game mode."
+            }
+          ],
+          "doc": "Changes the player's game mode, for example `player.setGameMode(\"adventure\")`; returns `false` when the player was already in it.\n\nSince runtime 1.5.1.",
+          "returns": "boolean"
+        },
+        "showTitle": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "title",
+              "type": "string",
+              "doc": "The title as plain text."
+            },
+            {
+              "name": "options",
+              "type": "{ subtitle?: string; fadeIn?: number; stay?: number; fadeOut?: number }",
+              "optional": true,
+              "doc": "A subtitle and the fade in, stay and fade out times in ticks (10, 70 and 20 by default)."
+            }
+          ],
+          "doc": "Shows a title in the middle of the player's screen, for example `player.showTitle(\"Wave 3\", { subtitle: \"Get ready\" })`.\n\nSince runtime 1.5.1."
+        },
+        "showActionBar": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "text",
+              "type": "string",
+              "doc": "The text as plain text."
+            }
+          ],
+          "doc": "Shows text above the player's hotbar for a few seconds, for example `player.showActionBar(\"Mana: 7\")`.\n\nSince runtime 1.5.1."
+        },
+        "clearTitle": {
+          "kind": "method",
+          "params": [],
+          "doc": "Removes the title and subtitle from the player's screen.\n\nSince runtime 1.5.1."
+        },
+        "showHud": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
+            }
+          ],
+          "doc": "Shows a HUD element to this player, also one that starts hidden, until `hideHud`; an element with a `show` rule (such as only in a vehicle) still follows it. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.showHud(\"mypack:mana\")`.\n\nSince runtime 1.5.2.",
+          "returns": "boolean"
+        },
+        "hideHud": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
+            }
+          ],
+          "doc": "Hides a HUD element from this player until `showHud`. Returns `false` when the id is no HUD element of this game (logged once), else `true`; for example `player.hideHud(\"mypack:mana\")`.\n\nSince runtime 1.5.2.",
+          "returns": "boolean"
+        },
+        "setHud": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The HUD element's id (an `msm:hud` of the project), for example `mypack:mana`."
+            },
+            {
+              "name": "value",
+              "type": "number | string",
+              "doc": "A number (for a bar, icons or a number) or a text (cut to 256 characters)."
+            }
+          ],
+          "doc": "Sets the value a HUD element shows this player, as the `set_hud` action does; the player's screen updates within a quarter of a second. For an element that reads its value from the game (a score, the player or the vehicle) the next value that differs replaces it. Returns `false` when the id is no HUD element of this game (logged once) or the number is not finite, else `true`; for example `player.setHud(\"mypack:mana\", 7)`. Any other value is a `TypeError`.\n\nSince runtime 1.5.2.",
+          "returns": "boolean"
+        }
+      },
+      "extends": "Entity"
+    },
+    "BlockRef": {
+      "doc": "A block in the world at the time of the event.",
+      "members": {
+        "id": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The block id, for example `minecraft:stone`."
+        },
+        "state": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The block state as `namespace:id[property=value,...]`."
+        },
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The block's position."
+        }
+      }
+    },
+    "ItemRef": {
+      "doc": "An item stack, copied at the time it was read: changing the game later does not change it.",
+      "members": {
+        "id": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The item id, for example `minecraft:stick`."
+        },
+        "count": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The number of items in the stack."
+        },
+        "name": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The item's display name as plain text, its custom name when it has one, for example `Diamond Sword`.\n\nSince runtime 1.5.1."
+        },
+        "maxCount": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The most items one stack of this item can hold, for example 64 or 1.\n\nSince runtime 1.5.1."
+        },
+        "damage": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The damage the item has taken, 0 when it is new or cannot be damaged.\n\nSince runtime 1.5.1."
+        },
+        "maxDamage": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The damage the item can take before it breaks, 0 when it cannot be damaged.\n\nSince runtime 1.5.1."
+        },
+        "hasComponent": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The data component id, for example `minecraft:enchantments`."
+            }
+          ],
+          "doc": "Returns whether the item has a data component, for example `item.hasComponent(\"minecraft:custom_name\")`.\n\nSince runtime 1.5.1.",
+          "returns": "boolean"
+        },
+        "getComponent": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The data component id, for example `minecraft:damage`."
+            }
+          ],
+          "doc": "Returns a copy of a data component's value as JSON (the form `/give` and data packs use), or `undefined` when the item does not have it; for example `item.getComponent(\"minecraft:damage\")` is a number. At most 64 KiB of JSON is returned.\n\nSince runtime 1.5.1.",
+          "returns": "unknown"
+        },
+        "contents": {
+          "kind": "property",
+          "type": "ItemRef[]",
+          "doc": "The items this item holds, as copies: a bag's or other container item's contents (shulker boxes too) in slot order, then a bundle's in the bundle's order; empty slots are left out, and an item that holds nothing gives an empty array. Read-only: change a bag by giving the player a new stack.\n\nSince runtime 1.5.2."
+        }
+      }
+    },
+    "DataStore": {
+      "doc": "Saved data of one script namespace, on an entity or with the world: values are JSON values, copied in and out, and survive `/reload`, restarts, death and dimension changes.",
+      "members": {
+        "get": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            }
+          ],
+          "doc": "Returns a copy of the value stored under a key, or `undefined` when there is none.",
+          "returns": "unknown"
+        },
+        "set": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            },
+            {
+              "name": "value",
+              "type": "unknown",
+              "doc": "A JSON value: a string, a finite number, a boolean, `null`, an array or a plain object of these."
+            }
+          ],
+          "doc": "Stores a copy of a JSON value under a key; any other value is a `TypeError`, and a key longer than 64 characters or a store over its size limit is a script error that leaves the old value."
+        },
+        "remove": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            }
+          ],
+          "doc": "Removes the value stored under a key; returns `true` when there was one.",
+          "returns": "boolean"
+        },
+        "has": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "key",
+              "type": "string",
+              "doc": "The key, at most 64 characters."
+            }
+          ],
+          "doc": "Returns `true` when a value is stored under a key.",
+          "returns": "boolean"
+        },
+        "keys": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns the keys stored for this script's namespace.",
+          "returns": "string[]"
+        }
+      }
+    },
+    "GameEvent": {
+      "doc": "What every event object has.",
+      "members": {
+        "world": {
+          "kind": "property",
+          "type": "World",
+          "doc": "The world (dimension) the event happened in."
+        }
+      }
+    },
+    "BlockInteractEvent": {
+      "doc": "A player used (right-clicked) a block.",
+      "members": {
+        "block": {
+          "kind": "property",
+          "type": "BlockRef",
+          "doc": "The block that was used."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who used it."
+        },
+        "hand": {
+          "kind": "property",
+          "type": "\"main\" | \"off\"",
+          "doc": "The hand the player used."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the block and the held item are not used."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "BlockBreakEvent": {
+      "doc": "A player is about to break a block.",
+      "members": {
+        "block": {
+          "kind": "property",
+          "type": "BlockRef",
+          "doc": "The block being broken."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player breaking it."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the block stays in place."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "ItemUseEvent": {
+      "doc": "A player used (right-clicked) the held item in the air.",
+      "members": {
+        "item": {
+          "kind": "property",
+          "type": "ItemRef",
+          "doc": "The item being used."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player using it."
+        },
+        "hand": {
+          "kind": "property",
+          "type": "\"main\" | \"off\"",
+          "doc": "The hand holding the item."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the item is not used."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "EntityInteractEvent": {
+      "doc": "A player used (right-clicked) an entity.",
+      "members": {
+        "entity": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that was used."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who used it."
+        },
+        "hand": {
+          "kind": "property",
+          "type": "\"main\" | \"off\"",
+          "doc": "The hand the player used."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the interaction does not happen."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "EntityHurtEvent": {
+      "doc": "A living entity is about to take damage.",
+      "members": {
+        "entity": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity being hurt."
+        },
+        "amount": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The damage in half hearts."
+        },
+        "attacker": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that caused the damage, when there is one.",
+          "optional": true
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the entity takes no damage."
+        },
+        "source": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The damage type id, for example `minecraft:fall` or `minecraft:player_attack`.\n\nSince runtime 1.5.1."
+        },
+        "direct": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that hit, when there is one: an arrow rather than its shooter, for example.\n\nSince runtime 1.5.1.",
+          "optional": true
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "EntityDeathEvent": {
+      "doc": "A living entity died.",
+      "members": {
+        "entity": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that died."
+        },
+        "attacker": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that killed it, when there is one.",
+          "optional": true
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "PlayerJoinEvent": {
+      "doc": "A player joined the server.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who joined."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "ServerStartedEvent": {
+      "doc": "The server finished starting; `world` is the overworld.",
+      "members": {},
+      "extends": "GameEvent"
+    },
+    "ServerTickEvent": {
+      "doc": "The server finished a tick; `world` is the overworld.",
+      "members": {
+        "tick": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The number of ticks since the server started."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "ActionEvent": {
+      "doc": "A definition event ran a `run_script` action that names this handler.",
+      "members": {
+        "owner": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The id of the block, item or entity definition whose event ran."
+        },
+        "event": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The definition event id, for example `msm:on_interact`."
+        },
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The position the event happened at."
+        },
+        "block": {
+          "kind": "property",
+          "type": "BlockRef",
+          "doc": "The block involved, when there is one.",
+          "optional": true
+        },
+        "entity": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity involved, when there is one: the entity that stepped on a block (a mob, an item or a minecart as well as a player), for example.",
+          "optional": true
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player involved, when there is one.",
+          "optional": true
+        },
+        "other": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The other entity involved, when there is one: the entity that stepped on a block, the entity a thrown item hit, or the holder of a status effect.",
+          "optional": true
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "Inventory": {
+      "doc": "A player's inventory; slots are read and written straight away, for example `player.inventory.set(0, \"minecraft:torch\")`.\n\nSince runtime 1.5.1.",
+      "members": {
+        "size": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The number of numbered slots, 36: 0 to 8 are the hotbar and 9 to 35 the main inventory.\n\nSince runtime 1.5.1."
+        },
+        "selectedSlot": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The selected hotbar slot, 0 to 8.\n\nSince runtime 1.5.1."
+        },
+        "get": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "InventorySlot",
+              "doc": "The slot, 0 to 35 or an equipment slot name."
+            }
+          ],
+          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `player.inventory.get(\"offhand\")`.\n\nSince runtime 1.5.1.",
+          "returns": "ItemRef | undefined"
+        },
+        "set": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "InventorySlot",
+              "doc": "The slot, 0 to 35 or an equipment slot name."
+            },
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "optional": true,
+              "doc": "The new stack; `undefined` empties the slot."
+            }
+          ],
+          "doc": "Replaces the stack in a slot, for example `player.inventory.set(\"head\", \"minecraft:carved_pumpkin\")`.\n\nSince runtime 1.5.1."
+        },
+        "count": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "string",
+              "doc": "The item id, for example `minecraft:diamond`."
+            }
+          ],
+          "doc": "Returns how many of an item the inventory holds over all slots, for example `player.inventory.count(\"minecraft:diamond\")`.\n\nSince runtime 1.5.1.",
+          "returns": "number"
+        },
+        "remove": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "string",
+              "doc": "The item id."
+            },
+            {
+              "name": "count",
+              "type": "number",
+              "optional": true,
+              "doc": "How many to remove; all of them when omitted."
+            }
+          ],
+          "doc": "Removes up to a number of an item from the inventory and returns how many were removed, for example `player.inventory.remove(\"minecraft:emerald\", 5)`.\n\nSince runtime 1.5.1.",
+          "returns": "number"
+        },
+        "find": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "string",
+              "doc": "The item id."
+            }
+          ],
+          "doc": "Returns the first numbered slot that holds an item, or -1 when none does; for example `player.inventory.find(\"minecraft:compass\")`.\n\nSince runtime 1.5.1.",
+          "returns": "number"
+        },
+        "setComponent": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "InventorySlot",
+              "doc": "The slot, 0 to 35 or an equipment slot name."
+            },
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "The data component id, for example `minecraft:custom_name`."
+            },
+            {
+              "name": "value",
+              "type": "unknown",
+              "optional": true,
+              "doc": "The component's JSON value; `undefined` removes the component."
+            }
+          ],
+          "doc": "Sets or removes a data component of the stack in a slot, for example `player.inventory.setComponent(0, \"minecraft:custom_name\", \"Lucky\")`; does nothing on an empty slot, and a value that does not decode or validate is a script error (at most 64 KiB of JSON).\n\nSince runtime 1.5.1."
+        }
+      }
+    },
+    "BossBar": {
+      "doc": "A boss bar shown at the top of the screen of the players added to it; it belongs to the script's namespace, is not saved, and is removed on `/reload` and when the server stops, for example `msm.bossBars.create(\"countdown\", { title: \"Time left\" })`.\n\nSince runtime 1.5.1.",
+      "members": {
+        "setTitle": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "title",
+              "type": "string",
+              "doc": "The title as plain text."
+            }
+          ],
+          "doc": "Changes the bar's title.\n\nSince runtime 1.5.1."
+        },
+        "setProgress": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "progress",
+              "type": "number",
+              "doc": "How full the bar is, 0 to 1; values outside are clamped."
+            }
+          ],
+          "doc": "Changes how full the bar is, for example `bar.setProgress(0.5)`.\n\nSince runtime 1.5.1."
+        },
+        "setColor": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "color",
+              "type": "BossBarColor",
+              "doc": "The colour."
+            }
+          ],
+          "doc": "Changes the bar's colour, for example `bar.setColor(\"red\")`.\n\nSince runtime 1.5.1."
+        },
+        "setStyle": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "style",
+              "type": "BossBarStyle",
+              "doc": "The style."
+            }
+          ],
+          "doc": "Changes the bar's style, for example `bar.setStyle(\"notched_10\")`.\n\nSince runtime 1.5.1."
+        },
+        "addPlayer": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "player",
+              "type": "Player",
+              "doc": "The player."
+            }
+          ],
+          "doc": "Shows the bar to a player; adding a player twice does nothing.\n\nSince runtime 1.5.1."
+        },
+        "removePlayer": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "player",
+              "type": "Player",
+              "doc": "The player."
+            }
+          ],
+          "doc": "Hides the bar from a player.\n\nSince runtime 1.5.1."
+        },
+        "players": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns the players the bar is shown to.\n\nSince runtime 1.5.1.",
+          "returns": "Player[]"
+        },
+        "remove": {
+          "kind": "method",
+          "params": [],
+          "doc": "Hides the bar from everyone and removes it, so `msm.bossBars.get` no longer finds it.\n\nSince runtime 1.5.1."
+        }
+      }
+    },
+    "RayHit": {
+      "doc": "What a ray hit, from `World.raycast` or `Entity.raycast`.\n\nSince runtime 1.5.1.",
+      "members": {
+        "kind": {
+          "kind": "property",
+          "type": "\"block\" | \"entity\"",
+          "doc": "Whether the ray hit a block or an entity.\n\nSince runtime 1.5.1."
+        },
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The exact point the ray hit.\n\nSince runtime 1.5.1."
+        },
+        "distance": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The distance from the ray's start to the hit in blocks.\n\nSince runtime 1.5.1."
+        },
+        "block": {
+          "kind": "property",
+          "type": "BlockRef",
+          "doc": "The block hit, when `kind` is `\"block\"`.\n\nSince runtime 1.5.1.",
+          "optional": true
+        },
+        "face": {
+          "kind": "property",
+          "type": "\"down\" | \"up\" | \"north\" | \"south\" | \"west\" | \"east\"",
+          "doc": "The face of the block the ray hit, when `kind` is `\"block\"`.\n\nSince runtime 1.5.1.",
+          "optional": true
+        },
+        "entity": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity hit, when `kind` is `\"entity\"`.\n\nSince runtime 1.5.1.",
+          "optional": true
+        }
+      }
+    },
+    "PlayerTickEvent": {
+      "doc": "A player's turn of the `player.tick` interval came round.\n\nSince runtime 1.5.1.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "PlayerRespawnEvent": {
+      "doc": "A player respawned after dying or returned from the End; `world` is the world they respawned in.\n\nSince runtime 1.5.1.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player, already in the new world.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "PlayerLeaveEvent": {
+      "doc": "A player is leaving the server.\n\nSince runtime 1.5.1.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player leaving.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "PlayerChangeDimensionEvent": {
+      "doc": "A player moved to another dimension; `world` is the new one.\n\nSince runtime 1.5.1.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who moved.\n\nSince runtime 1.5.1."
+        },
+        "from": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The dimension id the player left, for example `minecraft:overworld`.\n\nSince runtime 1.5.1."
+        },
+        "to": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The dimension id the player arrived in, for example `minecraft:the_nether`.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "PlayerChatEvent": {
+      "doc": "A player sent a chat message.\n\nSince runtime 1.5.1.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who sent it.\n\nSince runtime 1.5.1."
+        },
+        "message": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The message as plain text.\n\nSince runtime 1.5.1."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: nobody sees the message.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "EntityDamagedEvent": {
+      "doc": "A living entity took damage.\n\nSince runtime 1.5.1.",
+      "members": {
+        "entity": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that was damaged.\n\nSince runtime 1.5.1."
+        },
+        "amount": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The damage it took in half hearts, after armour and effects.\n\nSince runtime 1.5.1."
+        },
+        "attacker": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that caused the damage, when there is one.\n\nSince runtime 1.5.1.",
+          "optional": true
+        },
+        "direct": {
+          "kind": "property",
+          "type": "Entity",
+          "doc": "The entity that hit, when there is one: an arrow rather than its shooter, for example.\n\nSince runtime 1.5.1.",
+          "optional": true
+        },
+        "source": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The damage type id, for example `minecraft:fall`.\n\nSince runtime 1.5.1."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "Container": {
+      "doc": "The slots of a block with a container, from `World.getContainer`; read and written straight away, and writes update comparators next to the block, for example `world.getContainer(pos)?.add(\"minecraft:coal\")`. Using it after the block is removed or replaced is a script error.\n\nSince runtime 1.5.1.",
+      "members": {
+        "size": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The number of slots, numbered 0 to `size - 1`; for example 27 for a chest.\n\nSince runtime 1.5.1."
+        },
+        "get": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "number",
+              "doc": "The slot, 0 to `size - 1`."
+            }
+          ],
+          "doc": "Returns a copy of the stack in a slot, or `undefined` when the slot is empty; for example `container.get(0)`. A slot outside 0 to `size - 1` is a `RangeError`.\n\nSince runtime 1.5.1.",
+          "returns": "ItemRef | undefined"
+        },
+        "set": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "slot",
+              "type": "number",
+              "doc": "The slot, 0 to `size - 1`."
+            },
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "optional": true,
+              "doc": "The new stack, at most the slot's stack size; `undefined` empties the slot."
+            }
+          ],
+          "doc": "Replaces the stack in a slot and returns `true`, or returns `false` and changes nothing when the container does not take that item in that slot (a furnace's result slot, a container item in a crate that keeps its contents); for example `container.set(0, { id: \"minecraft:torch\", count: 16 })`.\n\nSince runtime 1.5.1.",
+          "returns": "boolean"
+        },
+        "count": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "string",
+              "doc": "The item id, for example `minecraft:coal`."
+            }
+          ],
+          "doc": "Returns how many of an item the container holds over all slots, for example `container.count(\"minecraft:coal\")`.\n\nSince runtime 1.5.1.",
+          "returns": "number"
+        },
+        "add": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The stack to put in; its count may be more than one stack."
+            }
+          ],
+          "doc": "Puts a stack in as a hopper would, filling matching stacks and then empty slots in slot order and skipping slots that do not take the item, whatever side hoppers may use; returns what did not fit, or `undefined` when everything fit. For example `const left = container.add({ id: \"minecraft:coal\", count: 64 })`.\n\nSince runtime 1.5.1.",
+          "returns": "ItemRef | undefined"
+        }
+      }
+    },
+    "Vehicle": {
+      "doc": "A project vehicle (an `msm:vehicle`): an `Entity` with fuel, damage, ammunition and a driver, read and written straight away on the server. Every vehicle object a script gets (`asVehicle()`, `vehicle.*` events, `entitiesNear`) has these members; for example `msm.events.on(\"vehicle.mounted\", (e) => e.vehicle.setFuel(1200))`.\n\nSince runtime 1.5.2.",
+      "members": {
+        "fuel": {
+          "kind": "property",
+          "type": "number",
+          "doc": "Ticks of driving left in the tank; always 0 for a vehicle that needs no fuel.\n\nSince runtime 1.5.2."
+        },
+        "setFuel": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "ticks",
+              "type": "number",
+              "doc": "Ticks of driving."
+            }
+          ],
+          "doc": "Sets the fuel, rounded down and kept between 0 and the tank's capacity (0 for a vehicle that needs no fuel); for example `vehicle.setFuel(vehicle.fuel + 200)`.\n\nSince runtime 1.5.2."
+        },
+        "damageTaken": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The damage the vehicle has taken, from 0 (as new) up to its `health.max`; it never heals by itself. (`damage(amount)`, inherited from `Entity`, deals more.)\n\nSince runtime 1.5.2."
+        },
+        "setDamageTaken": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "amount",
+              "type": "number",
+              "doc": "The damage; below 0 counts as 0."
+            }
+          ],
+          "doc": "Sets the damage taken; 0 repairs it fully. At or above the vehicle's `health.max` it is destroyed as by damage: its `on_destroy` and `vehicle.destroyed` (without a player) run, the riders get out, it explodes when it is set to and drops its item and storage.\n\nSince runtime 1.5.2."
+        },
+        "ammo": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "weapon",
+              "type": "string | number",
+              "doc": "The weapon's `id` in the vehicle's definition, or its index from 0."
+            }
+          ],
+          "doc": "Returns the rounds loaded in a weapon; 0 for a weapon without ammunition. An unknown id or index is a `RangeError`; for example `vehicle.ammo(\"cannon\")`.\n\nSince runtime 1.5.2.",
+          "returns": "number"
+        },
+        "setAmmo": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "weapon",
+              "type": "string | number",
+              "doc": "The weapon's `id` in the vehicle's definition, or its index from 0."
+            },
+            {
+              "name": "rounds",
+              "type": "number",
+              "doc": "The rounds, rounded down."
+            }
+          ],
+          "doc": "Sets the rounds loaded in a weapon, kept between 0 and its capacity (0 for a weapon without ammunition). An unknown id or index is a `RangeError`; for example `vehicle.setAmmo(0, 10)`.\n\nSince runtime 1.5.2."
+        },
+        "driver": {
+          "kind": "property",
+          "type": "Player | undefined",
+          "doc": "The player in the first seat, who drives, or `undefined`.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "Entity"
+    },
+    "KeyPressedEvent": {
+      "doc": "A player pressed a project key bind.\n\nSince runtime 1.5.2.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who pressed the key.\n\nSince runtime 1.5.2."
+        },
+        "key": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "KeyReleasedEvent": {
+      "doc": "A player let go of a project key bind.\n\nSince runtime 1.5.2.",
+      "members": {
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who let go of the key.\n\nSince runtime 1.5.2."
+        },
+        "key": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The key bind's id, for example `mypack:dash`.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "VehicleMountedEvent": {
+      "doc": "A player got into a project vehicle.\n\nSince runtime 1.5.2.",
+      "members": {
+        "vehicle": {
+          "kind": "property",
+          "type": "Vehicle",
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who got in; `e.vehicle.driver` tells whether they drive.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "VehicleDismountedEvent": {
+      "doc": "A player got out of a project vehicle.\n\nSince runtime 1.5.2.",
+      "members": {
+        "vehicle": {
+          "kind": "property",
+          "type": "Vehicle",
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who got out.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "VehicleFiredEvent": {
+      "doc": "A project vehicle's weapon fired one shot.\n\nSince runtime 1.5.2.",
+      "members": {
+        "vehicle": {
+          "kind": "property",
+          "type": "Vehicle",
+          "doc": "The vehicle.\n\nSince runtime 1.5.2."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player who fired.\n\nSince runtime 1.5.2."
+        },
+        "weapon": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The weapon's `id` in the vehicle's definition.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "VehicleDestroyedEvent": {
+      "doc": "A project vehicle is being destroyed.\n\nSince runtime 1.5.2.",
+      "members": {
+        "vehicle": {
+          "kind": "property",
+          "type": "Vehicle",
+          "doc": "The vehicle, still in the world with its riders.\n\nSince runtime 1.5.2."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player | undefined",
+          "doc": "The player who destroyed it, or `undefined` (a mob, an explosion, `setDamage`).\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "DroppedItem": {
+      "doc": "An item lying in the world, as `World.itemsNear` finds it. Once it is gone (picked up, merged into another stack, despawned or removed) `remove()` and `setItem()` do nothing.\n\nSince runtime 1.5.2.",
+      "members": {
+        "item": {
+          "kind": "property",
+          "type": "ItemRef",
+          "doc": "A copy of the stack it holds now.\n\nSince runtime 1.5.2."
+        },
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "Where it is now, exactly.\n\nSince runtime 1.5.2."
+        },
+        "age": {
+          "kind": "property",
+          "type": "number",
+          "doc": "How long it has been lying there in ticks (20 a second); vanilla removes an item at 6000 (five minutes).\n\nSince runtime 1.5.2."
+        },
+        "owner": {
+          "kind": "property",
+          "type": "string | undefined",
+          "doc": "The UUID of the entity that dropped or threw it, or `undefined` when nothing did or that entity is not in the world (a player who has left).\n\nSince runtime 1.5.2."
+        },
+        "remove": {
+          "kind": "method",
+          "params": [],
+          "doc": "Removes the item from the world at once; it drops nothing else.\n\nSince runtime 1.5.2."
+        },
+        "setItem": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "item",
+              "type": "ItemSpec",
+              "doc": "The new stack; a count over the item's stack size holds the stack size."
+            }
+          ],
+          "doc": "Replaces the stack it holds; for example `d.setItem({ id: \"minecraft:diamond\", count: 3 })`.\n\nSince runtime 1.5.2."
+        }
+      }
+    },
+    "BlockPlaceEvent": {
+      "doc": "A player is about to place a block from a block item.\n\nSince runtime 1.5.2.",
+      "members": {
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "Where the block would go (the clicked block itself when it can be replaced, such as grass, else the block next to the clicked face).\n\nSince runtime 1.5.2."
+        },
+        "block": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The id of the block the item places, for example `minecraft:oak_planks`.\n\nSince runtime 1.5.2."
+        },
+        "item": {
+          "kind": "property",
+          "type": "ItemRef",
+          "doc": "The item being placed, as held before the placement.\n\nSince runtime 1.5.2."
+        },
+        "player": {
+          "kind": "property",
+          "type": "Player",
+          "doc": "The player placing it.\n\nSince runtime 1.5.2."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: the block is not placed, the item is not used up and the player's screen is corrected.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "ExplosionEvent": {
+      "doc": "Something is about to explode.\n\nSince runtime 1.5.2.",
+      "members": {
+        "pos": {
+          "kind": "property",
+          "type": "Pos",
+          "doc": "The centre of the explosion, exactly.\n\nSince runtime 1.5.2."
+        },
+        "radius": {
+          "kind": "property",
+          "type": "number",
+          "doc": "The explosion's power: 4 for TNT, 3 for a creeper, 6 for a charged creeper, 5 for a bed or respawn anchor.\n\nSince runtime 1.5.2."
+        },
+        "source": {
+          "kind": "property",
+          "type": "Entity | undefined",
+          "doc": "The entity that exploded (the primed TNT, the creeper, the fireball, the wind charge), or `undefined` for a block such as a bed or respawn anchor, or `World.explode`.\n\nSince runtime 1.5.2."
+        },
+        "cause": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The type id of `source`, for example `minecraft:tnt` or `minecraft:creeper`, or `\"block\"` when there is no source.\n\nSince runtime 1.5.2."
+        },
+        "cancel": {
+          "kind": "method",
+          "params": [],
+          "doc": "Cancels the event: nothing breaks and nothing is hurt or pushed. The bang and the smoke may still be seen and heard.\n\nSince runtime 1.5.2."
+        },
+        "keepBlocks": {
+          "kind": "method",
+          "params": [],
+          "doc": "Keeps every block safe: entities are still hurt and pushed, but no block breaks, drops or catches fire. `cancel()` wins when both are called.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    },
+    "CommandEvent": {
+      "doc": "A project command ran.\n\nSince runtime 1.5.2.",
+      "members": {
+        "id": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The command's id in the project, for example `mypack:greet`.\n\nSince runtime 1.5.2."
+        },
+        "name": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The command's name, as typed without the slash, for example `greet`; also when one of its other names was typed.\n\nSince runtime 1.5.2."
+        },
+        "source": {
+          "kind": "property",
+          "type": "Entity | undefined",
+          "doc": "Who ran it: the player (see `asPlayer()`) or the entity of an `execute as`, or `undefined` for the server console or a command block.\n\nSince runtime 1.5.2."
+        },
+        "args": {
+          "kind": "property",
+          "type": "Record<string, unknown>",
+          "doc": "The values typed, by argument name: numbers as numbers, words and text as strings, `true` or `false`, a player or entity as its UUID, players as an array of names, a position or block position as `[x, y, z]`, an item or block as its id; an optional argument that was not typed is missing. A new object for each event.\n\nSince runtime 1.5.2."
+        }
+      },
+      "extends": "GameEvent"
+    }
+  },
+  "globals": {
+    "msm": {
+      "doc": "The MSM runtime API, available to every script.",
+      "members": {
+        "version": {
+          "kind": "property",
+          "type": "string",
+          "doc": "The version of the running `msm_runtime` mod."
+        },
+        "log": {
+          "kind": "namespace",
+          "members": {
+            "info": {
+              "kind": "method",
+              "params": [
+                {
+                  "name": "message",
+                  "type": "string"
+                }
+              ],
+              "doc": "Logs a message at information level."
+            },
+            "warn": {
+              "kind": "method",
+              "params": [
+                {
+                  "name": "message",
+                  "type": "string"
+                }
+              ],
+              "doc": "Logs a message at warning level."
+            },
+            "error": {
+              "kind": "method",
+              "params": [
+                {
+                  "name": "message",
+                  "type": "string"
+                }
+              ],
+              "doc": "Logs a message at error level."
+            }
+          },
+          "doc": "Writes to the server log as `[msm_runtime] <script id>: <message>`."
+        },
+        "events": {
+          "kind": "namespace",
+          "members": {
+            "on": {
+              "kind": "method",
+              "overloads": [
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"block.interact\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: BlockInteractEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player uses (right-clicks) a block. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"block.break\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: BlockBreakEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before a player breaks a block. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"item.use\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: ItemUseEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player uses (right-clicks) a held item. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"entity.interact\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: EntityInteractEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player uses (right-clicks) an entity. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"entity.hurt\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: EntityHurtEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before a living entity takes damage. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"entity.death\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: EntityDeathEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs after a living entity dies. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"player.join\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: PlayerJoinEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player joins the server. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"server.started\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: ServerStartedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs once the server has started. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"server.tick\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: ServerTickEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs at the end of every server tick (20 times a second); keep the handler cheap. Several handlers run in registration order."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"player.tick\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: PlayerTickEvent) => void"
+                    },
+                    {
+                      "name": "options",
+                      "type": "{ interval?: number }",
+                      "optional": true,
+                      "doc": "How often the handler runs for each player in ticks: 20 by default; a value under 5 counts as 5."
+                    }
+                  ],
+                  "doc": "Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on(\"player.tick\", (e) => { ... }, { interval: 40 })`. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"player.respawn\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: PlayerRespawnEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs after a player respawns, for example to give a starting kit back. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"player.leave\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: PlayerLeaveEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player leaves the server. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"player.changeDimension\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: PlayerChangeDimensionEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs after a player moves to another dimension, for example through a Nether portal. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"player.chat\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: PlayerChatEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before a player's chat message is sent to the other players. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"entity.damaged\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: EntityDamagedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death. Several handlers run in registration order.\n\nSince runtime 1.5.1."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"key.pressed\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: KeyPressedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"key.released\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: KeyReleasedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"vehicle.mounted\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: VehicleMountedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player gets into a project vehicle, after its `on_mount`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"vehicle.dismounted\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: VehicleDismountedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"vehicle.fired\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: VehicleFiredEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"vehicle.destroyed\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: VehicleDestroyedEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each). Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"block.place\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: BlockPlaceEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"world.explosion\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: ExplosionEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                },
+                {
+                  "params": [
+                    {
+                      "name": "name",
+                      "type": "\"command\""
+                    },
+                    {
+                      "name": "handler",
+                      "type": "(e: CommandEvent) => void"
+                    }
+                  ],
+                  "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back. Several handlers run in registration order.\n\nSince runtime 1.5.2."
+                }
+              ],
+              "doc": "Registers a handler for a game event."
+            }
+          },
+          "doc": "Game events scripts can handle."
+        },
+        "actions": {
+          "kind": "namespace",
+          "members": {
+            "define": {
+              "kind": "method",
+              "params": [
+                {
+                  "name": "id",
+                  "type": "string",
+                  "doc": "The handler id, a resource location such as `mymod:ore_glow`."
+                },
+                {
+                  "name": "handler",
+                  "type": "(e: ActionEvent) => void"
+                }
+              ],
+              "doc": "Defines a named handler for `run_script` actions; a later definition with the same id replaces it."
+            }
+          },
+          "doc": "Named handlers that definition events call through the `run_script` action."
+        },
+        "schedule": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "ticks",
+              "type": "number",
+              "doc": "The delay in ticks, 1 or more."
+            },
+            {
+              "name": "fn",
+              "type": "() => void"
+            }
+          ],
+          "doc": "Runs a function after a number of server ticks; pending calls are cleared when scripts reload."
+        },
+        "storage": {
+          "kind": "property",
+          "type": "DataStore",
+          "doc": "Data saved with the world for the script's namespace, at most 1 MiB per namespace; unlike `msm.schedule`, it survives `/reload` and restarts."
+        },
+        "bossBars": {
+          "kind": "namespace",
+          "doc": "Boss bars of the script's namespace, at most 32; they are not saved and are removed on `/reload` and when the server stops.\n\nSince runtime 1.5.1.",
+          "members": {
+            "create": {
+              "kind": "method",
+              "params": [
+                {
+                  "name": "id",
+                  "type": "string",
+                  "doc": "The bar's name within the script's namespace, for example `countdown`."
+                },
+                {
+                  "name": "options",
+                  "type": "{ title: string; color?: BossBarColor; style?: BossBarStyle; progress?: number }",
+                  "doc": "The title, the colour (`\"white\"` by default), the style (`\"progress\"` by default) and how full it is (1 by default)."
+                }
+              ],
+              "doc": "Creates a boss bar shown to nobody yet, replacing a bar of the same name; for example `msm.bossBars.create(\"countdown\", { title: \"Time left\", color: \"red\" })`. A 33rd bar is a script error.\n\nSince runtime 1.5.1.",
+              "returns": "BossBar"
+            },
+            "get": {
+              "kind": "method",
+              "params": [
+                {
+                  "name": "id",
+                  "type": "string",
+                  "doc": "The bar's name."
+                }
+              ],
+              "doc": "Returns the boss bar of a name, or `undefined` when there is none.\n\nSince runtime 1.5.1.",
+              "returns": "BossBar | undefined"
+            }
+          }
+        },
+        "getWorld": {
+          "kind": "method",
+          "params": [
+            {
+              "name": "dimension",
+              "type": "string",
+              "doc": "The dimension id, for example `minecraft:the_nether`."
+            }
+          ],
+          "doc": "Returns a loaded dimension, or `undefined` when the server has none of that id; for example `msm.getWorld(\"minecraft:the_end\")`.\n\nSince runtime 1.5.1.",
+          "returns": "World | undefined"
+        },
+        "players": {
+          "kind": "method",
+          "params": [],
+          "doc": "Returns the players online, for example `msm.players().length`.\n\nSince runtime 1.5.1.",
+          "returns": "Player[]"
+        }
+      }
+    }
+  },
+  "events": {
+    "block.interact": {
+      "type": "BlockInteractEvent",
+      "cancellable": true,
+      "source": "UseBlockCallback",
+      "doc": "Runs when a player uses (right-clicks) a block."
+    },
+    "block.break": {
+      "type": "BlockBreakEvent",
+      "cancellable": true,
+      "source": "PlayerBlockBreakEvents.BEFORE",
+      "doc": "Runs before a player breaks a block."
+    },
+    "item.use": {
+      "type": "ItemUseEvent",
+      "cancellable": true,
+      "source": "UseItemCallback",
+      "doc": "Runs when a player uses (right-clicks) a held item."
+    },
+    "entity.interact": {
+      "type": "EntityInteractEvent",
+      "cancellable": true,
+      "source": "UseEntityCallback",
+      "doc": "Runs when a player uses (right-clicks) an entity."
+    },
+    "entity.hurt": {
+      "type": "EntityHurtEvent",
+      "cancellable": true,
+      "source": "ServerLivingEntityEvents.ALLOW_DAMAGE",
+      "doc": "Runs before a living entity takes damage."
+    },
+    "entity.death": {
+      "type": "EntityDeathEvent",
+      "cancellable": false,
+      "source": "ServerLivingEntityEvents.AFTER_DEATH",
+      "doc": "Runs after a living entity dies."
+    },
+    "player.join": {
+      "type": "PlayerJoinEvent",
+      "cancellable": false,
+      "source": "ServerPlayConnectionEvents.JOIN",
+      "doc": "Runs when a player joins the server."
+    },
+    "server.started": {
+      "type": "ServerStartedEvent",
+      "cancellable": false,
+      "source": "ServerLifecycleEvents.SERVER_STARTED",
+      "doc": "Runs once the server has started."
+    },
+    "server.tick": {
+      "type": "ServerTickEvent",
+      "cancellable": false,
+      "source": "ServerTickEvents.END_SERVER_TICK",
+      "doc": "Runs at the end of every server tick (20 times a second); keep the handler cheap."
+    },
+    "player.tick": {
+      "type": "PlayerTickEvent",
+      "cancellable": false,
+      "source": "ServerTickEvents.END_SERVER_TICK",
+      "doc": "Runs for each online player every `interval` ticks (20 by default; a value under 5 runs every 5 ticks), spread over the interval by player; for example `msm.events.on(\"player.tick\", (e) => { ... }, { interval: 40 })`.\n\nSince runtime 1.5.1."
+    },
+    "player.respawn": {
+      "type": "PlayerRespawnEvent",
+      "cancellable": false,
+      "source": "ServerPlayerEvents.AFTER_RESPAWN",
+      "doc": "Runs after a player respawns, for example to give a starting kit back.\n\nSince runtime 1.5.1."
+    },
+    "player.leave": {
+      "type": "PlayerLeaveEvent",
+      "cancellable": false,
+      "source": "ServerPlayerEvents.LEAVE",
+      "doc": "Runs when a player leaves the server.\n\nSince runtime 1.5.1."
+    },
+    "player.changeDimension": {
+      "type": "PlayerChangeDimensionEvent",
+      "cancellable": false,
+      "source": "ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL",
+      "doc": "Runs after a player moves to another dimension, for example through a Nether portal.\n\nSince runtime 1.5.1."
+    },
+    "player.chat": {
+      "type": "PlayerChatEvent",
+      "cancellable": true,
+      "source": "ServerMessageEvents.ALLOW_CHAT_MESSAGE",
+      "doc": "Runs before a player's chat message is sent to the other players.\n\nSince runtime 1.5.1."
+    },
+    "entity.damaged": {
+      "type": "EntityDamagedEvent",
+      "cancellable": false,
+      "source": "ServerLivingEntityEvents.AFTER_DAMAGE",
+      "doc": "Runs after a living entity took damage, with the final amount; also for the killing blow, before entity.death.\n\nSince runtime 1.5.1."
+    },
+    "key.pressed": {
+      "type": "KeyPressedEvent",
+      "cancellable": false,
+      "source": "KeyBinds.KeyListener.pressed",
+      "doc": "Runs when a player presses a project key bind (an `msm:key_bind`) and the press counts (its `when` and cooldown allow it), after the key bind's own `msm:on_press`; the runtime's own vehicle keys are not reported.\n\nSince runtime 1.5.2."
+    },
+    "key.released": {
+      "type": "KeyReleasedEvent",
+      "cancellable": false,
+      "source": "KeyBinds.KeyListener.released",
+      "doc": "Runs when a player lets go of a project key bind whose press counted, after the key bind's own `msm:on_release`.\n\nSince runtime 1.5.2."
+    },
+    "vehicle.mounted": {
+      "type": "VehicleMountedEvent",
+      "cancellable": false,
+      "source": "VehicleEvents.Listener.mounted",
+      "doc": "Runs when a player gets into a project vehicle, after its `on_mount`.\n\nSince runtime 1.5.2."
+    },
+    "vehicle.dismounted": {
+      "type": "VehicleDismountedEvent",
+      "cancellable": false,
+      "source": "VehicleEvents.Listener.dismounted",
+      "doc": "Runs when a player gets out of a project vehicle (also when it is destroyed or they leave the game), after its `on_dismount`.\n\nSince runtime 1.5.2."
+    },
+    "vehicle.fired": {
+      "type": "VehicleFiredEvent",
+      "cancellable": false,
+      "source": "VehicleEvents.Listener.fired",
+      "doc": "Runs after each shot of a project vehicle's weapon, after the weapon's `on_fire`.\n\nSince runtime 1.5.2."
+    },
+    "vehicle.destroyed": {
+      "type": "VehicleDestroyedEvent",
+      "cancellable": false,
+      "source": "VehicleEvents.Listener.destroyed",
+      "doc": "Runs when a project vehicle is destroyed, after its `on_destroy` and before its riders get out (`vehicle.dismounted` follows for each).\n\nSince runtime 1.5.2."
+    },
+    "block.place": {
+      "type": "BlockPlaceEvent",
+      "cancellable": true,
+      "source": "BlockItemPlaceMixin",
+      "doc": "Runs before a player places a block from a block item, wherever the block would go. Placing by dispensers, endermen and commands does not fire it.\n\nSince runtime 1.5.2."
+    },
+    "world.explosion": {
+      "type": "ExplosionEvent",
+      "cancellable": true,
+      "source": "ServerExplosionMixin",
+      "doc": "Runs before anything explodes: TNT, creepers, fireballs, wind charges, beds, respawn anchors and `World.explode`.\n\nSince runtime 1.5.2."
+    },
+    "command": {
+      "type": "CommandEvent",
+      "cancellable": false,
+      "source": "MsmCommands.run",
+      "doc": "Runs when a player or the server runs one of the project's commands, after the command's function and event and before its message back.\n\nSince runtime 1.5.2."
+    }
+  },
+  "functions": {
+    "require": {
+      "kind": "method",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "doc": "A relative id such as \"./util\" or \"../lib/shapes\" (a script of the same mod and namespace), or \"msm:runtime\"."
+        }
+      ],
+      "returns": "any",
+      "doc": "Loads another script of the same mod and namespace by a relative id and returns its module.exports (each script runs once; cycles see partial exports); require(\"msm:runtime\") returns the msm module."
+    }
+  },
+  "aliases": {
+    "ItemSpec": {
+      "type": "string | { id: string; count?: number; components?: Record<string, unknown> }",
+      "doc": "An item to give or put in a slot: an item id such as `\"minecraft:diamond\"`, or `{ id, count?, components? }` where `components` maps component ids to their JSON values, for example `{ id: \"minecraft:diamond_sword\", components: { \"minecraft:custom_name\": \"Edge\" } }`; components that do not decode or validate are a script error, and at most 64 KiB of component JSON is accepted per call.\n\nSince runtime 1.5.1."
+    },
+    "EquipmentSlot": {
+      "type": "\"mainhand\" | \"offhand\" | \"head\" | \"chest\" | \"legs\" | \"feet\"",
+      "doc": "An equipment slot of a living entity.\n\nSince runtime 1.5.1."
+    },
+    "InventorySlot": {
+      "type": "number | EquipmentSlot",
+      "doc": "A player inventory slot: 0 to 8 are the hotbar, 9 to 35 the main inventory, or an equipment slot name; any other value is a `RangeError`.\n\nSince runtime 1.5.1."
+    },
+    "GameMode": {
+      "type": "\"survival\" | \"creative\" | \"adventure\" | \"spectator\"",
+      "doc": "A game mode.\n\nSince runtime 1.5.1."
+    },
+    "BossBarColor": {
+      "type": "\"pink\" | \"blue\" | \"red\" | \"green\" | \"yellow\" | \"purple\" | \"white\"",
+      "doc": "The colour of a boss bar.\n\nSince runtime 1.5.1."
+    },
+    "BossBarStyle": {
+      "type": "\"progress\" | \"notched_6\" | \"notched_10\" | \"notched_12\" | \"notched_20\"",
+      "doc": "The style of a boss bar: one continuous bar or one divided into 6, 10, 12 or 20 notches.\n\nSince runtime 1.5.1."
+    },
+    "RaycastOptions": {
+      "type": "{ fluids?: boolean; entities?: boolean; ignore?: Entity }",
+      "doc": "What a ray stops at: `fluids` (false by default) makes fluid surfaces count as blocks, `entities` (true by default) lets the ray hit living entities, and `ignore` is an entity the ray passes through.\n\nSince runtime 1.5.1."
+    },
+    "ParticleOptions": {
+      "type": "{ type: string; [field: string]: unknown }",
+      "doc": "A vanilla particle options object: `type` names a particle type and the other fields are that type's options, as in vanilla's particle JSON, for example `{ type: \"minecraft:dust\", color: [1, 0.5, 0], scale: 1.5 }`, `{ type: \"minecraft:block\", block_state: \"minecraft:stone\" }` or `{ type: \"minecraft:item\", item: { id: \"minecraft:diamond\" } }`; fields that do not decode are a script error.\n\nSince runtime 1.5.1."
+    }
+  }
+}

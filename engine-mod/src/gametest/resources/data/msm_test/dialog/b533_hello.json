@@ -1,0 +1,11 @@
+{
+  "action": {
+    "label": "Close"
+  },
+  "body": {
+    "contents": "Opened by a script.",
+    "type": "minecraft:plain_message"
+  },
+  "title": "B533 dialog",
+  "type": "minecraft:notice"
+}
