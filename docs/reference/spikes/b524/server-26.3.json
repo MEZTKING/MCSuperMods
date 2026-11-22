@@ -1,0 +1,356 @@
+{
+  "X15.project": {
+    "menu": true,
+    "sameOffers": true,
+    "base": [
+      "1 dirt (base 1, special 0, demand 0, x0.05, uses 0/2)",
+      "1 emerald (base 1, special 0, demand 0, x0.05, uses 0/4)"
+    ],
+    "diff -5": [
+      "1 dirt (base 1, special -5, demand 0, x0.05, uses 0/2)",
+      "1 emerald (base 1, special -5, demand 0, x0.05, uses 0/4)"
+    ],
+    "diff -1": [
+      "1 dirt (base 1, special -1, demand 0, x0.05, uses 0/2)",
+      "1 emerald (base 1, special -1, demand 0, x0.05, uses 0/4)"
+    ],
+    "diff 2": [
+      "3 dirt (base 1, special 2, demand 0, x0.05, uses 0/2)",
+      "3 emerald (base 1, special 2, demand 0, x0.05, uses 0/4)"
+    ],
+    "diff 3": [
+      "4 dirt (base 1, special 3, demand 0, x0.05, uses 0/2)",
+      "4 emerald (base 1, special 3, demand 0, x0.05, uses 0/4)"
+    ],
+    "packet": [
+      "container 1 [4 dirt (base 1, special 3, demand 0, x0.05, uses 0/2), 4 emerald (base 1, special 3, demand 0, x0.05, uses 0/4)]"
+    ],
+    "streamCodecRoundTrip": [
+      "4 dirt (base 1, special 3, demand 0, x0.05, uses 0/2)",
+      "4 emerald (base 1, special 3, demand 0, x0.05, uses 0/4)"
+    ],
+    "codecSaved": "{Recipes:[{buy:{count:1,id:\"minecraft:dirt\"},maxUses:2,priceMultiplier:0.05f,sell:{count:1,id:\"minecraft:emerald\"},specialPrice:3,xp:10},{buy:{count:1,id:\"minecraft:emerald\"},priceMultiplier:0.05f,sell:{count:3,id:\"minecraft:apple\"},specialPrice:3}]}",
+    "afterClose": [
+      "4 dirt (base 1, special 3, demand 0, x0.05, uses 0/2)",
+      "4 emerald (base 1, special 3, demand 0, x0.05, uses 0/4)"
+    ],
+    "savedAttachments": "{\"msm_b524:reputation\":{\"82e335f7-ac0e-3e41-ab2a-e15abe662110\":-25}}",
+    "loadedReputation": "{82e335f7-ac0e-3e41-ab2a-e15abe662110\u003d-25}"
+  },
+  "X15.vanilla": {
+    "gossipTypes": {
+      "major_negative": "weight -5 max 100 decayPerDay 10 decayPerTransfer 10",
+      "minor_negative": "weight -1 max 200 decayPerDay 20 decayPerTransfer 20",
+      "minor_positive": "weight 1 max 25 decayPerDay 1 decayPerTransfer 5",
+      "major_positive": "weight 5 max 20 decayPerDay 0 decayPerTransfer 20",
+      "trading": "weight 1 max 25 decayPerDay 2 decayPerTransfer 20"
+    },
+    "constants": "per event 25, everlasting 20, per trade 2",
+    "savedGossips": "[{Target:[I;-915677446,-996850843,-1369631925,2054465868],Type:\"trading\",Value:6},{Target:[I;-915677446,-996850843,-1369631925,2054465868],Type:\"major_positive\",Value:20},{Target:[I;-915677446,-996850843,-1369631925,2054465868],Type:\"minor_positive\",Value:25},{Target:[I;-915677446,-996850843,-1369631925,2054465868],Type:\"minor_negative\",Value:125}]",
+    "steps": [
+      "start",
+      "rep 0 menu true [10 emerald (base 10, special 0, demand 0, x0.05, uses 0/12), 20 emerald (base 20, special 0, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand 0, x0.05, uses 0/16)]",
+      "  after close [10 emerald (base 10, special 0, demand 0, x0.05, uses 0/12), 20 emerald (base 20, special 0, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand 0, x0.05, uses 0/16)]",
+      "hit 1 hurt true",
+      "rep -25 menu true [12 emerald (base 10, special 2, demand 0, x0.05, uses 0/12), 25 emerald (base 20, special 5, demand 0, x0.2, uses 0/12), 22 wheat (base 20, special 2, demand 0, x0.05, uses 0/16)]",
+      "  after close [12 emerald (base 10, special 2, demand 0, x0.05, uses 0/12), 25 emerald (base 20, special 5, demand 0, x0.2, uses 0/12), 22 wheat (base 20, special 2, demand 0, x0.05, uses 0/16)]",
+      "hit 2 hurt true",
+      "rep -50 menu true [13 emerald (base 10, special 3, demand 0, x0.05, uses 0/12), 30 emerald (base 20, special 10, demand 0, x0.2, uses 0/12), 23 wheat (base 20, special 3, demand 0, x0.05, uses 0/16)]",
+      "  after close [13 emerald (base 10, special 3, demand 0, x0.05, uses 0/12), 30 emerald (base 20, special 10, demand 0, x0.2, uses 0/12), 23 wheat (base 20, special 3, demand 0, x0.05, uses 0/16)]",
+      "hit 3 hurt true",
+      "rep -75 menu true [14 emerald (base 10, special 4, demand 0, x0.05, uses 0/12), 35 emerald (base 20, special 15, demand 0, x0.2, uses 0/12), 24 wheat (base 20, special 4, demand 0, x0.05, uses 0/16)]",
+      "  after close [14 emerald (base 10, special 4, demand 0, x0.05, uses 0/12), 35 emerald (base 20, special 15, demand 0, x0.2, uses 0/12), 24 wheat (base 20, special 4, demand 0, x0.05, uses 0/16)]",
+      "hit 4 hurt true",
+      "rep -100 menu true [15 emerald (base 10, special 5, demand 0, x0.05, uses 0/12), 40 emerald (base 20, special 20, demand 0, x0.2, uses 0/12), 25 wheat (base 20, special 5, demand 0, x0.05, uses 0/16)]",
+      "  after close [15 emerald (base 10, special 5, demand 0, x0.05, uses 0/12), 40 emerald (base 20, special 20, demand 0, x0.2, uses 0/12), 25 wheat (base 20, special 5, demand 0, x0.05, uses 0/16)]",
+      "hit 5 hurt true",
+      "rep -125 menu true [17 emerald (base 10, special 7, demand 0, x0.05, uses 0/12), 45 emerald (base 20, special 25, demand 0, x0.2, uses 0/12), 27 wheat (base 20, special 7, demand 0, x0.05, uses 0/16)]",
+      "  after close [17 emerald (base 10, special 7, demand 0, x0.05, uses 0/12), 45 emerald (base 20, special 25, demand 0, x0.2, uses 0/12), 27 wheat (base 20, special 7, demand 0, x0.05, uses 0/16)]",
+      "menu trade 1 rep -125 carried 0 minecraft:air uses 1",
+      "menu trade 2 rep -125 carried 0 minecraft:air uses 2",
+      "menu trade 3 rep -125 carried 0 minecraft:air uses 3",
+      "menu trade 4 rep -125 carried 0 minecraft:air uses 4",
+      "menu trade 5 rep -125 carried 0 minecraft:air uses 5",
+      "menu trade 6 rep -125 carried 0 minecraft:air uses 6",
+      "TRADE event 1 rep -123",
+      "TRADE event 2 rep -121",
+      "TRADE event 3 rep -119",
+      "CURED event rep 6",
+      "after 6 trades",
+      "rep 6 menu true [10 emerald (base 10, special 0, demand 0, x0.05, uses 6/12), 19 emerald (base 20, special -1, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand 0, x0.05, uses 0/16), 1 emerald (base 1, special 0, demand 0, x0.05, uses 0/16), 1 emerald (base 1, special 0, demand 0, x0.05, uses 0/12)]",
+      "  after close [10 emerald (base 10, special 0, demand 0, x0.05, uses 6/12), 19 emerald (base 20, special -1, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand 0, x0.05, uses 0/16), 1 emerald (base 1, special 0, demand 0, x0.05, uses 0/16), 1 emerald (base 1, special 0, demand 0, x0.05, uses 0/12)]",
+      "another player: rep 0 [10 emerald (base 10, special 0, demand 0, x0.05, uses 6/12), 20 emerald (base 20, special 0, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand 0, x0.05, uses 0/16), 1 emerald (base 1, special 0, demand 0, x0.05, uses 0/16), 1 emerald (base 1, special 0, demand 0, x0.05, uses 0/12)]"
+    ]
+  },
+  "X16": {
+    "vanillaRestock": [
+      "cycle 1 used 12 shouldRestock true -\u003e [16 emerald (base 10, special 0, demand 12, x0.05, uses 0/12), 64 emerald (base 20, special 0, demand 12, x0.2, uses 0/12), 28 wheat (base 20, special 0, demand 8, x0.05, uses 0/16)]",
+      "cycle 2 used 12 shouldRestock false -\u003e [22 emerald (base 10, special 0, demand 24, x0.05, uses 0/12), 64 emerald (base 20, special 0, demand 24, x0.2, uses 0/12), 36 wheat (base 20, special 0, demand 16, x0.05, uses 0/16)]",
+      "cycle 3 used 0 shouldRestock false -\u003e [16 emerald (base 10, special 0, demand 12, x0.05, uses 0/12), 64 emerald (base 20, special 0, demand 12, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand 0, x0.05, uses 0/16)]",
+      "cycle 4 used 0 shouldRestock false -\u003e [10 emerald (base 10, special 0, demand 0, x0.05, uses 0/12), 20 emerald (base 20, special 0, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand -16, x0.05, uses 0/16)]",
+      "cycle 5 used 6 shouldRestock false -\u003e [10 emerald (base 10, special 0, demand 0, x0.05, uses 0/12), 20 emerald (base 20, special 0, demand 0, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand -20, x0.05, uses 0/16)]",
+      "cycle 6 used 12 shouldRestock false -\u003e [16 emerald (base 10, special 0, demand 12, x0.05, uses 0/12), 64 emerald (base 20, special 0, demand 12, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand -12, x0.05, uses 0/16)]",
+      "cycle 7 used 12 shouldRestock false -\u003e [22 emerald (base 10, special 0, demand 24, x0.05, uses 0/12), 64 emerald (base 20, special 0, demand 24, x0.2, uses 0/12), 20 wheat (base 20, special 0, demand -4, x0.05, uses 0/16)]",
+      "cycle 8 used 12 shouldRestock false -\u003e [28 emerald (base 10, special 0, demand 36, x0.05, uses 0/12), 64 emerald (base 20, special 0, demand 36, x0.2, uses 0/12), 24 wheat (base 20, special 0, demand 4, x0.05, uses 0/16)]"
+    ],
+    "projectRestock": [
+      "drawn [1 emerald (base 1, special 0, demand 0, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 0, x0.05, uses 0/2)]",
+      "heavy cycle 1 -\u003e [1 emerald (base 1, special 0, demand 4, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 2, x0.05, uses 0/2)]",
+      "heavy cycle 2 -\u003e [1 emerald (base 1, special 0, demand 8, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 4, x0.05, uses 0/2)]",
+      "heavy cycle 3 -\u003e [1 emerald (base 1, special 0, demand 12, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 6, x0.05, uses 0/2)]",
+      "heavy cycle 4 -\u003e [1 emerald (base 1, special 0, demand 16, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 8, x0.05, uses 0/2)]",
+      "idle cycle 1 -\u003e [1 emerald (base 1, special 0, demand 12, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 6, x0.05, uses 0/2)]",
+      "idle cycle 2 -\u003e [1 emerald (base 1, special 0, demand 8, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 4, x0.05, uses 0/2)]",
+      "idle cycle 3 -\u003e [1 emerald (base 1, special 0, demand 4, x0.05, uses 0/4), 1 dirt (base 1, special 0, demand 2, x0.05, uses 0/2)]"
+    ],
+    "beforeRoundTrip": [
+      "1 emerald (base 1, special 0, demand 8, x0.05, uses 0/4)",
+      "1 dirt (base 1, special 0, demand 4, x0.05, uses 0/2)"
+    ],
+    "streamCodecRoundTrip": [
+      "1 emerald (base 1, special 0, demand 8, x0.05, uses 0/4)",
+      "1 dirt (base 1, special 0, demand 4, x0.05, uses 0/2)"
+    ],
+    "codecSaved": "{Recipes:[{buy:{count:1,id:\"minecraft:emerald\"},demand:8,priceMultiplier:0.05f,sell:{count:3,id:\"minecraft:apple\"}},{buy:{count:1,id:\"minecraft:dirt\"},demand:4,maxUses:2,priceMultiplier:0.05f,sell:{count:1,id:\"minecraft:emerald\"},xp:10}]}",
+    "codecRoundTrip": [
+      "1 emerald (base 1, special 0, demand 8, x0.05, uses 0/4)",
+      "1 dirt (base 1, special 0, demand 4, x0.05, uses 0/2)"
+    ]
+  },
+  "X17": {
+    "usedUp": [
+      "1 emerald (base 1, special 0, demand 0, x0.05, uses 4/4)",
+      "1 dirt (base 1, special 0, demand 0, x0.05, uses 2/2)"
+    ],
+    "path": [
+      "20: -5, 1, -8",
+      "40: -9, 1, -8",
+      "60: -12, 1, -8",
+      "80: -12, 1, -8",
+      "100: -12, 1, -8",
+      "120: -12, 1, -8",
+      "140: -12, 1, -8",
+      "160: -12, 1, -8",
+      "180: -12, 1, -8",
+      "200: -12, 1, -8",
+      "220: -12, 1, -8",
+      "240: -12, 1, -8",
+      "260: -12, 1, -8",
+      "280: -12, 1, -8",
+      "300: -12, 1, -8",
+      "320: -12, 1, -8",
+      "340: -12, 1, -8",
+      "360: -12, 1, -8"
+    ],
+    "events": [
+      "work site BlockPos{x\u003d-3939277, y\u003d7, z\u003d3625503} at tick 1",
+      "restocked at BlockPos{x\u003d-3939279, y\u003d7, z\u003d3625503} tick 55"
+    ],
+    "restockedAtTick": 55,
+    "restockedAt": "-12, 1, -8",
+    "after": [
+      "1 emerald (base 1, special 0, demand -4, x0.05, uses 0/4)",
+      "1 dirt (base 1, special 0, demand -2, x0.05, uses 0/2)"
+    ]
+  },
+  "X18": {
+    "projectBed": "msm_test:furniture_bed class MsmBedBlock states 16 inBedsTag true",
+    "before.forState": "head Optional.empty foot Optional.empty",
+    "vanilla.forState": "head Optional[ResourceKey[minecraft:point_of_interest_type / minecraft:home]] foot Optional.empty",
+    "before.poiRecord": "Optional.empty",
+    "map.class": "java.util.HashMap",
+    "map.added": 8,
+    "home.is(projectHead)": false,
+    "after.forState": "head Optional[ResourceKey[minecraft:point_of_interest_type / minecraft:home]] hasPoi true",
+    "after.poiRecord": "Optional[ResourceKey[minecraft:point_of_interest_type / minecraft:home]]",
+    "home.memory": "the project bed\u0027s head",
+    "home.freeTickets": "record Optional[ResourceKey[minecraft:point_of_interest_type / minecraft:home]]",
+    "night.at": 42,
+    "sleeping.pos": "-13, 1, -8",
+    "sleeping.bedOccupied": "true",
+    "home.tick": 21,
+    "slept.tick": 92,
+    "stillSleeping": true,
+    "villager.at": "-13, 1, -8"
+  },
+  "X19": {
+    "init": [
+      "vanilla oak boat: size 1.375x0.5625 eye 0.5625 tracking 10 update 3 category MISC; chest boat 1.375x0.5625",
+      "villager type registered: msm_b524:spike",
+      "villager BY_BIOME: java.util.HashMap size 29 cherry_grove before null",
+      "villager BY_BIOME put ok: cherry_grove now ResourceKey[minecraft:villager_type / msm_b524:spike]",
+      "registered: msm_b524:hover, msm_b524:fish_bucket, msm_b524:spike_boat, msm_b524:spike_chest_boat"
+    ],
+    "registry": "[minecraft:snow, minecraft:desert, minecraft:plains, minecraft:jungle, minecraft:taiga, minecraft:savanna, msm_b524:spike, minecraft:swamp]",
+    "byBiome": "cherry_grove msm_b524:spike, plains minecraft:plains",
+    "biomeHere": "minecraft:cherry_grove",
+    "villager.natural": "msm_b524:spike",
+    "villager.breeding": "msm_b524:spike",
+    "zombieVillager.natural": "msm_b524:spike",
+    "saved.VillagerData": "{level:1,profession:\"minecraft:none\",type:\"msm_b524:spike\"}",
+    "loaded.type": "msm_b524:spike",
+    "zombie.setType": "msm_b524:spike"
+  },
+  "X20": {
+    "pickup.result": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "pickup.held": "msm_b524:fish_bucket x1",
+    "pickup.bucketData": "{Health:3.0f,PersistenceRequired:1b,Variant:0}",
+    "pickup.fishRemoved": "true DISCARDED",
+    "release.result": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:bucket]]",
+    "release.held": "minecraft:air",
+    "release.water": "Block{minecraft:water}[level\u003d0]",
+    "release.fish": [
+      "msm_b524:fish name Finn health 3.0 fromBucket true persistent true at 13.50 1.00 13.50"
+    ]
+  },
+  "X21": {
+    "owner.onGround.mock": false,
+    "a.perch": true,
+    "b.refusal": "another pet is on that shoulder",
+    "b.perch": false,
+    "offset": "-0.400 1.350 0.000 yaw 0.0",
+    "parrots": [
+      "parrot 1 canSit true on true left Optional[RED_BLUE] right Optional.empty parrot removed true",
+      "parrot 2 canSit true on true left Optional[RED_BLUE] right Optional[RED_BLUE] parrot removed true",
+      "parrot 3 canSit true on false left Optional[RED_BLUE] right Optional[RED_BLUE] parrot removed false"
+    ],
+    "setLeftEmpty": "left Optional.empty right Optional[RED_BLUE]",
+    "parrot.withRightTaken": "false left Optional.empty right Optional[RED_BLUE]",
+    "tick60.a": "8.10 2.35 8.50 perched true",
+    "tick60.b": "8.90 2.35 8.50",
+    "tick60.owner": "8.50 1.00 8.50"
+  },
+  "X22": {
+    "roost.found": true,
+    "hover.overGround": [
+      "10: over 1.34 at 5.62 2.34 4.28",
+      "20: over 2.35 at 5.84 3.35 3.68",
+      "30: over 3.91 at 6.08 4.91 2.92",
+      "40: over 5.23 at 6.33 6.23 2.11",
+      "50: over 5.58 at 6.54 6.58 1.30",
+      "60: over 5.13 at 6.55 6.13 1.24",
+      "70: over 4.03 at 6.72 5.03 1.16",
+      "80: over 3.09 at 7.00 4.09 0.63",
+      "90: over 3.05 at 7.31 4.05 0.30",
+      "100: over 3.74 at 7.54 4.74 0.30",
+      "110: over 4.61 at 7.63 5.61 0.30",
+      "120: over 4.63 at 7.63 5.63 0.30",
+      "130: over 3.94 at 7.48 4.94 0.30",
+      "140: over 3.47 at 7.22 4.47 0.30",
+      "150: over 3.82 at 6.96 4.82 0.30",
+      "160: over 4.40 at 6.78 5.40 0.30",
+      "170: over 4.20 at 6.67 5.20 0.30",
+      "180: over 3.74 at 6.61 4.74 0.30",
+      "190: over 4.06 at 6.89 5.06 0.46",
+      "200: over 4.10 at 7.44 5.10 0.82",
+      "210: over 3.84 at 8.11 4.84 1.27",
+      "220: over 4.17 at 8.81 5.17 1.75",
+      "230: over 1.34 at 9.54 5.34 2.25",
+      "240: over 2.16 at 9.89 6.16 2.53",
+      "250: over 3.57 at 9.57 7.57 2.56",
+      "260: over 8.02 at 8.93 9.02 2.59",
+      "270: over 7.76 at 8.20 8.76 2.74",
+      "280: over 6.75 at 7.45 7.75 3.09",
+      "290: over 5.19 at 6.78 6.19 3.58",
+      "300: over 3.28 at 6.77 4.28 3.70",
+      "310: over 2.16 at 6.60 3.16 3.48",
+      "320: over 1.97 at 6.02 2.97 3.25"
+    ],
+    "phase.path": [
+      "10: 4.79 1.99 11.50 | blocked 4.79 1.99 14.50",
+      "20: 5.44 2.00 11.50 | blocked 5.44 2.00 14.50",
+      "30: 6.24 1.99 11.50 | blocked 6.24 1.99 14.50",
+      "40: 7.09 2.00 11.50 | blocked 7.09 2.00 14.50",
+      "50: 7.97 1.99 11.50 | blocked 7.70 1.99 14.50",
+      "60: 8.85 2.00 11.50 | blocked 7.70 2.00 14.50",
+      "70: 9.74 1.99 11.50 | blocked 7.70 1.99 14.50",
+      "80: 10.62 2.00 11.50 | blocked 7.70 2.00 14.50",
+      "90: 11.51 1.99 11.50 | blocked 7.70 1.99 14.50",
+      "100: 12.26 1.95 11.50 | blocked 7.70 2.00 14.50",
+      "110: 12.57 1.88 11.50 | blocked 7.70 1.99 14.50",
+      "120: 12.69 1.83 11.50 | blocked 7.70 2.00 14.50",
+      "130: 12.73 1.79 11.50 | blocked 7.70 1.99 14.50",
+      "140: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "150: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "160: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "170: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "180: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "190: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "200: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "210: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "220: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "230: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "240: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "250: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "260: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "270: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "280: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "290: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "300: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50",
+      "310: 12.73 1.75 11.50 | blocked 7.70 1.99 14.50",
+      "320: 12.73 1.75 11.50 | blocked 7.70 2.00 14.50"
+    ],
+    "phase.events": [
+      "charge ended at tick 93 (-3939333.2212081174, 8.0, 3625532.500555041)"
+    ],
+    "phase.health": "20.0 -\u003e 20.0, in wall at some tick true",
+    "blocked.end": "7.70 2.00 14.50 health 20.0",
+    "roost": "y 11.100 -\u003e 11.100 flag true ceiling block bottom 12 box top 12.000"
+  },
+  "X23": {
+    "collect.give": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "dead.seenAsEnemy.before": true,
+    "dead.afterHit": "health 8.0 flag true seenAsEnemy false",
+    "barter.give": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] left in hand 1 offhand 1 minecraft:gold_ingot",
+    "dead.tick100": "moved 0.000 health 10.0 flag true",
+    "collect.events": [
+      "given minecraft:emerald",
+      "picked up 1 minecraft:emerald at tick 43",
+      "picked up 1 minecraft:emerald at tick 43",
+      "delivered [1 minecraft:emerald, 1 minecraft:emerald] at tick 80",
+      "picked up 1 minecraft:emerald at tick 121",
+      "delivered [1 minecraft:emerald] at tick 162"
+    ],
+    "collect.delivered": "3, pickUpItem calls 3",
+    "collect.itemsNearOwner": [
+      "3 minecraft:emerald"
+    ],
+    "collect.leftOnGround": [
+      "1 minecraft:dirt"
+    ],
+    "dig": "2 [dug at tick 42: [1 minecraft:pitcher_pod], dug at tick 282: [1 minecraft:pitcher_pod]]",
+    "dead.events": "[playing dead at tick 0 health 8.0, stopped playing dead at tick 200 health 10.0] health now 10.0 flag false",
+    "barter": "2 [took gold from a player at tick 0, bartered at tick 120: [8 minecraft:nether_brick], picked up gold at tick 140, bartered at tick 260: [28 minecraft:iron_nugget]]"
+  },
+  "X24": {
+    "init": [
+      "vanilla oak boat: size 1.375x0.5625 eye 0.5625 tracking 10 update 3 category MISC; chest boat 1.375x0.5625",
+      "villager type registered: msm_b524:spike",
+      "villager BY_BIOME: java.util.HashMap size 29 cherry_grove before null",
+      "villager BY_BIOME put ok: cherry_grove now ResourceKey[minecraft:villager_type / msm_b524:spike]",
+      "registered: msm_b524:hover, msm_b524:fish_bucket, msm_b524:spike_boat, msm_b524:spike_chest_boat"
+    ],
+    "place.boat": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]] left 0 minecraft:air",
+    "place.chestBoat": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]] left 0 minecraft:air",
+    "place.oakBoat": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+    "placed": [
+      "msm_b524:spike_boat at 5.50 1.89 5.50 pick msm_b524:spike_boat",
+      "msm_b524:spike_chest_boat at 11.50 1.89 11.50 pick msm_b524:spike_chest_boat",
+      "minecraft:oak_boat at 5.50 1.89 11.50 pick minecraft:oak_boat"
+    ],
+    "ride.interact": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] passenger true vehicle msm_b524:spike_boat",
+    "chest.interact": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] menu ChestMenu slots 63 container 27",
+    "float.tick60": [
+      "msm_b524:spike_boat 5.50 1.89 5.50 riders 1",
+      "msm_b524:spike_chest_boat 11.50 1.52 11.50 riders 0",
+      "minecraft:oak_boat 5.50 1.52 11.50 riders 0"
+    ],
+    "break.boat": "hits 1 removed true",
+    "break.chest": "hits 1 removed true",
+    "drops": [
+      "1 msm_b524:spike_boat",
+      "3 minecraft:diamond",
+      "1 msm_b524:spike_chest_boat"
+    ]
+  }
+}

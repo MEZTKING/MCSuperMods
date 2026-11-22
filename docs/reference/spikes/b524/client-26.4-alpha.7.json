@@ -1,0 +1,89 @@
+{
+  "client.init": [
+    "vanilla oak layers: minecraft:boat/oak#main / minecraft:chest_boat/oak#main",
+    "boat renderers registered through EntityRendererRegistration with layers msm_b524:boat/spike#main and msm_b524:chest_boat/spike#main",
+    "renderer built, texture msm_b524:textures/entity/boat/spike.png",
+    "renderer built, texture msm_b524:textures/entity/chest_boat/spike.png"
+  ],
+  "client.log": [
+    "ERROR [Download-1] com.mojang.realmsclient.client.RealmsClient: Failed to fetch Realms feature flags :: com.mojang.realmsclient.exception.RealmsServiceException: Realms authentication error with message \u0027java.lang.RuntimeException: Failed to parse into SignedJWT: FabricMC\u0027",
+    "ERROR [Download-1] com.mojang.realmsclient.RealmsAvailability: Couldn\u0027t connect to realms :: com.mojang.realmsclient.exception.RealmsServiceException: Realms authentication error with message \u0027java.lang.RuntimeException: Failed to parse into SignedJWT: FabricMC\u0027",
+    "INFO [Test thread] net.minecraft.server.LoggedPrintStream: [STDOUT]: [b524] client.init \u003d [vanilla oak layers: minecraft:boat/oak#main / minecraft:chest_boat/oak#main, boat renderers registered through EntityRendererRegistration with layers msm_b524:boat/spike#main and msm_b524:chest_boat/spike#main, renderer built, texture msm_b524:textures/entity/boat/spike.png, renderer built, texture msm_b524:textures/entity/chest_boat/spike.png]",
+    "INFO [Test thread] net.minecraft.server.LoggedPrintStream: [STDOUT]: [b524] client.x19 \u003d {screenshot\u003d0001_b524_x19_villagers_26.4-alpha.7.png, client.types\u003d[villager minecraft:plains, villager msm_b524:spike, zombie villager msm_b524:spike], client.textureResources\u003d[villager true, zombie true], log\u003d[]}",
+    "INFO [Test thread] net.minecraft.server.LoggedPrintStream: [STDOUT]: [b524] client.x24 \u003d {server.boats\u003d[12 msm_b524:spike_boat removed false at (-2.5, -0.4767495053964623, 4.5), 13 msm_b524:spike_chest_boat removed false at (2.5, -0.4767495053964623, 4.5), 14 minecraft:oak_boat removed false at (0.0, -0.4767495053964623, 7.5)], client.renderers\u003d[msm_b524:spike_boat BoatRenderer y -59.476, msm_b524:spike_chest_boat BoatRenderer y -59.476, minecraft:oak_boat BoatRenderer y -59.476], screenshot.boats\u003d0007_b524_x24_riding_26.4-alpha.7.png, log\u003d[INFO [Test thread] net.minecraft.server.LoggedPrintStream: [STDOUT]: [b524] client.init \u003d [vanilla oak layers: minecraft:boat/oak#main / minecraft:chest_boat/oak#main, boat renderers registered through EntityRendererRegistration with layers msm_b524:boat/spike#main and msm_b524:chest_boat/spike#main, renderer built, texture msm_b524:textures/entity/boat/spike.png, renderer built, texture msm_b524:textures/entity/chest_boat/spike.png]]}"
+  ],
+  "client.x15": {
+    "open": "MerchantMenu",
+    "client.before": [
+      "1 dirt (base 1, special 0)",
+      "1 emerald (base 1, special 0)"
+    ],
+    "server.set": 2,
+    "client.after": [
+      "4 dirt (base 1, special 3)",
+      "4 emerald (base 1, special 3)"
+    ],
+    "screen": "MerchantScreen",
+    "screenshot": "0000_b524_x15_trade_26.4-alpha.7.png"
+  },
+  "client.x19": {
+    "screenshot": "0001_b524_x19_villagers_26.4-alpha.7.png",
+    "client.types": [
+      "villager minecraft:plains",
+      "villager msm_b524:spike",
+      "zombie villager msm_b524:spike"
+    ],
+    "client.textureResources": [
+      "villager true",
+      "zombie true"
+    ],
+    "log": []
+  },
+  "client.x21": {
+    "a.perch": true,
+    "parrot.onShoulder": "true left Optional[RED_BLUE] right Optional.empty",
+    "screenshot.parrotInVanillaLeftSlotAndRuntimePet.back": "0002_b524_x21_parrot_left_slot_and_pet_back_26.4-alpha.7.png",
+    "client.positions.first": "body yaw 0.0 pet along (cos yaw, 0, sin yaw) -0.400",
+    "screenshot.parrotInVanillaRightSlotAndRuntimePet.back": "0003_b524_x21_parrot_right_slot_and_pet_back_26.4-alpha.7.png",
+    "screenshot.twoPets.back": "0004_b524_x21_two_pets_back_26.4-alpha.7.png",
+    "client.positions": [
+      "body yaw 50.0",
+      "a along (cos yaw, 0, sin yaw) -0.400",
+      "b along it 0.377"
+    ]
+  },
+  "client.x22": {
+    "roost": "true true",
+    "client.flags": [
+      "9 flag true renderer MsmVanillaRenderer upsideDown true y -56.900001525878906",
+      "10 flag true renderer MsmVanillaRenderer upsideDown false y -56.900001525878906"
+    ],
+    "screenshot": "0005_b524_x22_roost_26.4-alpha.7.png"
+  },
+  "client.x23": {
+    "client.jumpable": "SpikeMob canJump true",
+    "client.jumpScale.held": 0.90000004,
+    "client.moved": "(0.0, 0.0, 6.882548505405193)",
+    "client.dashes": 1,
+    "server": "dashes 0 startJumps [90] flag true at (0.0, 0.0, 7.882548505405193)"
+  },
+  "client.x24": {
+    "server.boats": [
+      "12 msm_b524:spike_boat removed false at (-2.5, -0.4767495053964623, 4.5)",
+      "13 msm_b524:spike_chest_boat removed false at (2.5, -0.4767495053964623, 4.5)",
+      "14 minecraft:oak_boat removed false at (0.0, -0.4767495053964623, 7.5)"
+    ],
+    "client.renderers": [
+      "msm_b524:spike_boat BoatRenderer y -59.476",
+      "msm_b524:spike_chest_boat BoatRenderer y -59.476",
+      "minecraft:oak_boat BoatRenderer y -59.476"
+    ],
+    "screenshot.boats": "0006_b524_x24_boats_26.4-alpha.7.png",
+    "client.riding": "msm_b524:spike_boat",
+    "client.paddledDistance": "3.31",
+    "screenshot.riding": "0007_b524_x24_riding_26.4-alpha.7.png",
+    "log": [
+      "INFO [Test thread] net.minecraft.server.LoggedPrintStream: [STDOUT]: [b524] client.init \u003d [vanilla oak layers: minecraft:boat/oak#main / minecraft:chest_boat/oak#main, boat renderers registered through EntityRendererRegistration with layers msm_b524:boat/spike#main and msm_b524:chest_boat/spike#main, renderer built, texture msm_b524:textures/entity/boat/spike.png, renderer built, texture msm_b524:textures/entity/chest_boat/spike.png]"
+    ]
+  }
+}

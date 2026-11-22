@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests",
+  "description": "GameTests for msm_runtime; ships msm/msm_spike/ (blocks, items) and msm/msm_test/ (blocks, items, entities with GeckoLib assets, scripts) definitions like a content jar would.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike4.X15X16TradeGameTest",
+      "dev.mcsupermods.runtime.gametest.spike4.X17X19VillageGameTest",
+      "dev.mcsupermods.runtime.gametest.spike4.X20X24MobGameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike4.B524ClientGameTest"
+    ],
+    "main": [
+      "dev.mcsupermods.runtime.gametest.spike4.B524Mod"
+    ],
+    "client": [
+      "dev.mcsupermods.runtime.gametest.spike4.B524Client"
+    ]
+  },
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}
