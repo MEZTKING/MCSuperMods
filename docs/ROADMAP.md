@@ -4,6 +4,7 @@ This is the phased delivery plan for MCSuperMods (MSM). The orchestrator updates
 
 ## Principles
 
+- **The end goal (user, 2026-11-22: "my end goal is to be able to make any mod as quickly and efficiently as possible while also maintaining a quality that is higher than usual"):** every plan is judged by three questions. *Any mod:* can it be made in MSM at all (vanilla parity, the coverage audit's gaps closed)? *Quickly:* how few steps from an idea to a mod that plays (search with answers from words, Make this, flows, the AI helper, one-click Play)? *Higher quality than usual:* is the result correct and good-looking by default (checks against the real game, exact art with its shape and colour checked, live views before anything is made, the project checker, no silent wrong output)? Briefs say which of the three they move; closes measure it (steps and time from an idea to playing, and what the checks caught).
 - **Ship small.** Every phase ends in a tagged, installable release that a real user can do something useful with.
 - **MVP is resource packs.** Phase 1 (v0.1) is a Resource Pack Studio only. Data packs, worldgen and the engine mod follow once the core, schema and export pipeline are proven on the simplest content layer.
 - **Each phase is usable on its own.** No phase depends on a later one to deliver value; unfinished features stay behind a flag rather than shipping half-built.
