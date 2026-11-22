@@ -7951,3 +7951,21 @@ Next
 
 **Next**
 - B572: the `app/CLAUDE.md` e2e line (43 spec files) and the root `CLAUDE.md` e2e count.
+
+## 2026-11-22 — orchestrator — B572 Showcase close
+
+**What**
+- Reviewed ADR 0118 against the merged code of B565–B571 (`app/src/renderer/src/showcase/`, Home, New project, Examples, `App.tsx`, `showcase-path.spec.ts`, the guide page). ADR 0118 is **accepted with findings**: D2, D4, D5, D6, D10, D12 and D14 amended in place to what was built; new sections "The first ten as built", "Findings at the close" (the answers Z1–Z13, sizes and speed, what moved, follow-ups), and the plan's fact table W1–W18 and limits U1–U13 moved in. `docs/PLAN-showcase.md` is deleted; the two spike READMEs that linked it now point to the ADR.
+- DESIGN section 8: a new subsection "Showcase", a sentence on Home, New project and the Examples gallery, and a bullet in "Try it". ROADMAP: the idea "Showcase for new users" becomes the add-on "Showcase with live clips" (waves ticked, the user's look open, follow-ups) with a Milestone Log row; the live world generation heading now waits on B544 only. HANDOFF: the Showcase in the done list, its follow-ups, Next item 5 and the sizes. `app/CLAUDE.md`: the `showcase/` folder and the e2e line (43 spec files). `CHANGELOG.md` `[Unreleased]`: four lines for users. Root `CLAUDE.md` (e2e 43, sizes, the Showcase sentence; 70 lines) and `docs/CLAUDE.md` status. `docs/guide/showcase.md`: the limit on vanilla blocks now says they look plain even with the game's pictures set up.
+- Verified: `pnpm lint`; `WhatsNew.test.tsx` (7 tests); DESIGN has 19 H2 headings. No code changed, so no other test was re-run; the numbers are the briefs' (B565 speed, B569 sizes, B570 e2e).
+
+**Decisions**
+- ADR 0118 is accepted with findings, not amended into a new ADR: every decision held, and what moved is small and recorded.
+- We accept that vanilla blocks in clips draw as MSM's own pictures even with the user's jar (`vanillaBlockstates` is not passed): clips look the same on every computer. It is a vetoable default in the ADR's Status and a follow-up, not a reason for reserve B573, which did not run.
+- The vehicle card's Make this in New project keeps picking the Car flow, and a card whose flow is not offered keeps falling back to See the example; both are in D10 and the guide.
+- Sizes are near the stop lines (`app.asar` 30.5 of 32 MB, stop 31; renderer 17.2 of 18 MB, stop 17.5): the next app batch plans for the gzip reserve of ADR 0079 D4 before adding code.
+
+**Next**
+- The user's look at the cards on Windows (a hardware GPU, a PC with a blocked GPU) and at ADR 0118's vetoable defaults; the cards go into the next build after the 1.5.3 test build.
+- B544 (vanilla parity 3 batch 2 close), then live world generation (`docs/PLAN-live-worldgen.md`; its B588 adds clips) and the game modes plan (its B557 and B558 add cards).
+- Follow-ups in ROADMAP "Showcase with live clips": vanilla block states for clips, the vehicle picker in New project, script state on a loop restart.

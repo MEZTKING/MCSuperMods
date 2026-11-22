@@ -59,7 +59,7 @@ Every card shows a **Preview** tag. A picture is a short clip, about 8 to 12 sec
 
 - A clip is the preview, not the game. A caption names what happens only in Minecraft, such as taming a pet or a machine crushing ore, and **Play** is one step after **Make this**.
 - Mobs only wander or stand in a clip. No merchant or machine screen is shown, and clips are silent. Try it plays sounds.
-- Vanilla blocks look plain unless you have extracted the game's pictures ([Getting started](getting-started.md)). Terrain and wood are drawn by MCSuperMods; MCSuperMods never ships Minecraft's pictures. The clips prefer your kind of blocks and terrain.
+- Minecraft's own blocks look plain in clips, for now even when your Minecraft folder is set up ([Getting started](getting-started.md)): terrain and wood are drawn by MCSuperMods and the rest are plain cubes. MCSuperMods never ships Minecraft's pictures. The clips prefer your kind of blocks and terrain.
 - Each clip follows its example: if the example changes, so does the clip.
 - Only the built-in examples have cards; a plugin cannot add one.
 - A card shows only where its example works on your Minecraft version: the open mod's version, or the default one when no mod is open.

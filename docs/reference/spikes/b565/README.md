@@ -1,6 +1,6 @@
 # B565: Showcase measurements (Z1–Z13)
 
-Measured 2026-11-22 for `docs/PLAN-showcase.md` and ADR 0118, from main 9ca98af, on both targets (mc-26.3 and mc-26.4). Nothing here is built, linted or shipped. Every picture is MSM's own drawing: drawn terrain and wood and the examples' own textures (no client jar in this container, so no Mojang picture appears).
+Measured 2026-11-22 for the Showcase plan (deleted at its close B572; the questions and their answers are in ADR 0118's findings) and ADR 0118, from main 9ca98af, on both targets (mc-26.3 and mc-26.4). Nothing here is built, linted or shipped. Every picture is MSM's own drawing: drawn terrain and wood and the examples' own textures (no client jar in this container, so no Mojang picture appears).
 
 ## How it was run
 
