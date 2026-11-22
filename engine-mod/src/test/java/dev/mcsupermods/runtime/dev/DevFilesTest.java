@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.mcsupermods.runtime.loader.DefinitionScanner;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,5 +123,28 @@ class DevFilesTest {
                 + "\"msm:on_place\":{\"event\":\"a:b\"}}}").getAsJsonObject();
         assertEquals(List.of("msm:light_emitter removed", "msm:on_interact changed", "msm:on_place added", "name added", "type changed"),
                 EventOverlay.changedOutsideEvents(jar, changed));
+    }
+
+    /**
+     * Every kind the scanner reads is either one an overlay can change or one that needs a restart, never "unknown kind".
+     * Fluids have events but no overlay route yet, so an overlay for one is still refused as an unknown kind.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void overlayKindsCoverTheScannersKinds() throws ReflectiveOperationException {
+        Field field = DefinitionScanner.class.getDeclaredField("KINDS");
+        field.setAccessible(true);
+        List<String> scanned = (List<String>) field.get(null);
+        List<String> unknown = new ArrayList<>();
+        for (String kind : scanned) {
+            boolean with = EventOverlay.KINDS_WITH_EVENTS.contains(kind);
+            boolean without = EventOverlay.KINDS_WITHOUT_EVENTS.contains(kind);
+            assertFalse(with && without, kind + " is in both overlay lists");
+            if (!with && !without) {
+                unknown.add(kind);
+            }
+        }
+        assertEquals(List.of("fluid"), unknown);
+        assertTrue(EventOverlay.KINDS_WITHOUT_EVENTS.contains("villager_profession"));
     }
 }

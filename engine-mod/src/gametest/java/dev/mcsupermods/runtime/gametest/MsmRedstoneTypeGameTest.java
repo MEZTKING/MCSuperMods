@@ -159,14 +159,14 @@ public class MsmRedstoneTypeGameTest {
 
     @GameTest
     public void setTypeSeamMapsWood(GameTestHelper helper) {
-        BlockSetType wood = BlockSetTypes.of(BlockType.SetType.WOOD);
+        BlockSetType wood = BlockSetTypes.vanilla(BlockType.SetType.WOOD);
         helper.assertTrue(wood == BlockSetTypeCheck.wood(), "set type wood is not BlockSetType." + BlockSetTypeCheck.WOOD_NAME);
         helper.assertTrue(((DoorBlock) block("type_door")).type() == BlockSetTypeCheck.wood(),
                 "type_door is not BlockSetType." + BlockSetTypeCheck.WOOD_NAME);
         helper.assertTrue(((DoorBlock) block("type_iron_door")).type() == BlockSetType.IRON, "type_iron_door is not IRON");
         // Vanilla: iron and gold are not opened by hand (ADR 0067 D2 names only iron); arrows press the wooden ones.
         for (BlockType.SetType setType : BlockType.SetType.values()) {
-            BlockSetType vanilla = BlockSetTypes.of(setType);
+            BlockSetType vanilla = BlockSetTypes.vanilla(setType);
             boolean byHand = setType != BlockType.SetType.IRON && setType != BlockType.SetType.GOLD;
             helper.assertValueEqual(vanilla.canOpenByHand(), byHand, setType.id() + " opens by hand");
             helper.assertValueEqual(vanilla.canButtonBeActivatedByArrows(), setType.wooden(), setType.id() + " arrows");

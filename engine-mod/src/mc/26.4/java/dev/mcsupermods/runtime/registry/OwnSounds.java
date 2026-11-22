@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
  * Version seam (ADR 0105 D1, D2 and its amendment after B503): a block's own sound events ({@code block_sounds}) and,
- * through {@link BlockSetTypes#begin}, its own set type. 26.4: block sounds are the synchronised world registry
+ * through {@link BlockSetTypes#of(Identifier, BlockDefinition)}, its own set type. 26.4: block sounds are the synchronised world registry
  * {@code block_sound_set}; a block with {@code block_sounds} names the entry under its own id, which the lowering writes as
  * {@code data/<ns>/block_sound_set/<path>.json} (X10: a block built at start-up can name an entry that loads with the
  * world). The entry is fixed per world load, so a change needs the world opened again. A missing entry makes the block
@@ -34,13 +34,13 @@ public final class OwnSounds {
 
     private OwnSounds() {}
 
-    /** The properties naming the block's own sound set; the block's set type is prepared for {@link BlockSetTypes#of}. */
+    /** The properties naming the block's own sound set. */
     static BlockBehaviour.Properties soundTypeFor(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props) {
-        if (definition.blockSounds().isEmpty()) {
-            BlockSetTypes.begin(id, definition, Optional.empty(), OwnSounds::warn);
+        Optional<ResourceKey<BlockSoundSet>> own = soundSetKey(id, definition);
+        if (own.isEmpty()) {
             return props;
         }
-        ResourceKey<BlockSoundSet> key = ResourceKey.create(Registries.BLOCK_SOUND_SET, id);
+        ResourceKey<BlockSoundSet> key = own.get();
         OWN.add(id);
         var s = definition.blockSounds().get();
         // The entry carries the events; an unknown one is silent in the game, so it warns here as on 26.3.
@@ -53,8 +53,15 @@ public final class OwnSounds {
             listening = true;
             ServerLifecycleEvents.SERVER_STARTED.register(OwnSounds::check);
         }
-        BlockSetTypes.begin(id, definition, Optional.of(key), OwnSounds::warn);
         return props.sound(key);
+    }
+
+    /**
+     * The block's own {@code block_sound_set} key (its own id) when it has {@code block_sounds}, else empty; the properties
+     * and the set type ({@link BlockSetTypes#of(Identifier, BlockDefinition)}) both name it.
+     */
+    static Optional<ResourceKey<BlockSoundSet>> soundSetKey(Identifier id, BlockDefinition definition) {
+        return definition.blockSounds().map(s -> ResourceKey.create(Registries.BLOCK_SOUND_SET, id));
     }
 
     /** Logs a warning for each block whose {@code block_sound_set} entry this world's data lacks. */
@@ -84,7 +91,7 @@ public final class OwnSounds {
         return found.orElse(fallback);
     }
 
-    private static void warn(String message) {
+    static void warn(String message) {
         WARNINGS.add(message);
         MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, message);
     }

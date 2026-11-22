@@ -63,7 +63,7 @@ public final class MsmRuntime implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> report = report.withWarnings(MsmRegistrar.checkAfterStart(server)));
         // msm:strippable (ADR 0067 D4): one UseBlockCallback for every strippable block.
         BlockExtras.register();
-        // Vanilla block pairs (ADR 0105 D4) and lightning on weathering blocks (ADR 0104 D2): stubs until B514 and B510.
+        // Vanilla block pairs (ADR 0105 D4) and lightning on weathering blocks (ADR 0104 D2).
         report = VanillaPairs.register(report);
         Lightning.init();
         // Dev mode (ADR 0084 D4): decided at SERVER_STARTING before the scripts load; never on a dedicated server.

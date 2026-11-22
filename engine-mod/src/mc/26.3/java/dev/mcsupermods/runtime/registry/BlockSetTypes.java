@@ -3,7 +3,6 @@ package dev.mcsupermods.runtime.registry;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.BlockType;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
@@ -20,26 +19,13 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
  * works unregistered). It is also built for a vanilla {@code set_type} when the block has {@code block_sounds}, because
  * the vanilla door, trapdoor, button and plate classes take their block sounds from the set type. 26.3's constructor takes
  * a name and a {@link SoundType}; the name is the block id. The block classes take the set type in their constructor,
- * which the shared family code builds with {@link #of(BlockType.SetType)}; the registrar calls {@code OwnSounds} (which
- * calls {@link #begin}) just before it builds a block and {@code BlockExtras.apply} (which calls {@link #end}) right after,
- * so {@link #of} answers the block's own set type while that one block is built (one thread, at start-up).
+ * which the shared family code builds with {@link #of(Identifier, BlockDefinition)} from the block's id and definition.
  */
 public final class BlockSetTypes {
-    /** The own set type of the block being built, and the base it stands in for. */
-    private static BlockSetType building;
-    private static BlockType.SetType buildingBase;
-
     private BlockSetTypes() {}
 
-    /** The set type for {@code setType}: the own one of the block being built when it has one, else vanilla's constant. */
-    public static BlockSetType of(BlockType.SetType setType) {
-        if (building != null && buildingBase == setType) {
-            return building;
-        }
-        return vanilla(setType);
-    }
-
-    static BlockSetType vanilla(BlockType.SetType setType) {
+    /** Vanilla's constant for {@code setType}. */
+    public static BlockSetType vanilla(BlockType.SetType setType) {
         return switch (setType) {
             case WOOD -> BlockSetType.OAK;
             case CHERRY -> BlockSetType.CHERRY;
@@ -55,21 +41,21 @@ public final class BlockSetTypes {
     }
 
     /**
-     * Prepares the set type of the block {@code id} about to be built: an own one when {@code set_type} is an object or
-     * {@code ownSounds} is given (the block's own {@code block_sounds}); nothing for other blocks.
+     * The set type of the door, trapdoor, button or pressure plate {@code id}: an own one, built for this block, when its
+     * {@code set_type} is an object or it has {@code block_sounds}; else vanilla's constant for its {@code set_type}.
+     * Called once per block, as the block is built.
+     *
+     * @throws IllegalArgumentException when the definition's type has no {@code set_type}
      */
-    static void begin(Identifier id, BlockDefinition definition, Optional<SoundType> ownSounds, Consumer<String> warn) {
-        end();
-        Optional<BlockType.SetTypeSetting> setting = setting(definition);
-        if (setting.isEmpty()) {
-            return;
-        }
-        Optional<BlockType.OwnSetType> own = setting.get().own();
+    public static BlockSetType of(Identifier id, BlockDefinition definition) {
+        BlockType.SetTypeSetting setting = setting(definition).orElseThrow(
+                () -> new IllegalArgumentException("type '" + definition.type().id() + "' has no set_type"));
+        Optional<SoundType> ownSounds = OwnSounds.ownSoundType(id, definition);
+        Optional<BlockType.OwnSetType> own = setting.own();
+        BlockSetType v = vanilla(setting.base());
         if (own.isEmpty() && ownSounds.isEmpty()) {
-            return;
+            return v;
         }
-        BlockType.SetType base = setting.get().base();
-        BlockSetType v = vanilla(base);
         BlockType.SetTypeSounds s = own.map(BlockType.OwnSetType::sounds).orElse(BlockType.SetTypeSounds.NONE);
         boolean byHand = own.flatMap(BlockType.OwnSetType::canOpenByHandSetting).orElse(v.canOpenByHand());
         // can_open_by_wind_charge defaults to can_open_by_hand (the format), which vanilla's own sets also keep equal.
@@ -79,21 +65,14 @@ public final class BlockSetTypes {
                 .map(p -> p == BlockType.PlateSensitivity.MOBS ? BlockSetType.PressurePlateSensitivity.MOBS
                         : BlockSetType.PressurePlateSensitivity.EVERYTHING)
                 .orElse(v.pressurePlateSensitivity());
-        SoundEvent open = OwnSounds.event(id, "set_type: sounds: open", s.open(), null, warn);
-        SoundEvent close = OwnSounds.event(id, "set_type: sounds: close", s.close(), null, warn);
-        SoundEvent press = OwnSounds.event(id, "set_type: sounds: press", s.press(), null, warn);
-        SoundEvent release = OwnSounds.event(id, "set_type: sounds: release", s.release(), null, warn);
-        building = new BlockSetType(id.toString(), byHand, byWind, arrows, plate, ownSounds.orElse(v.soundType()),
+        SoundEvent open = OwnSounds.event(id, "set_type: sounds: open", s.open(), null, OwnSounds::warn);
+        SoundEvent close = OwnSounds.event(id, "set_type: sounds: close", s.close(), null, OwnSounds::warn);
+        SoundEvent press = OwnSounds.event(id, "set_type: sounds: press", s.press(), null, OwnSounds::warn);
+        SoundEvent release = OwnSounds.event(id, "set_type: sounds: release", s.release(), null, OwnSounds::warn);
+        return new BlockSetType(id.toString(), byHand, byWind, arrows, plate, ownSounds.orElse(v.soundType()),
                 or(close, v.doorClose()), or(open, v.doorOpen()), or(close, v.trapdoorClose()), or(open, v.trapdoorOpen()),
                 or(release, v.pressurePlateClickOff()), or(press, v.pressurePlateClickOn()), or(release, v.buttonClickOff()),
                 or(press, v.buttonClickOn()));
-        buildingBase = base;
-    }
-
-    /** Ends the block being built: {@link #of} answers vanilla's constants again. */
-    static void end() {
-        building = null;
-        buildingBase = null;
     }
 
     private static SoundEvent or(SoundEvent own, SoundEvent vanilla) {

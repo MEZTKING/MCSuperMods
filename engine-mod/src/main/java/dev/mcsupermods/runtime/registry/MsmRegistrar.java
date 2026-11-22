@@ -525,7 +525,7 @@ public final class MsmRegistrar {
                 .strength(breakable.hardness(), breakable.resistance())
                 .lightLevel(state -> light);
         props = BlockSounds.apply(props, def.soundType()); // version seam (ADR 0038 D2)
-        props = OwnSounds.soundTypeFor(id, def, props); // own block sounds (ADR 0105 D1): a stub until B514
+        props = OwnSounds.soundTypeFor(id, def, props); // own block sounds (ADR 0105 D1)
         if (breakable.requiresTool()) {
             props = props.requiresCorrectToolForDrops();
         }

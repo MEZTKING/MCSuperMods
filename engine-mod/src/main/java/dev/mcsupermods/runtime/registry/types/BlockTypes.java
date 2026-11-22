@@ -17,7 +17,6 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
@@ -121,15 +120,15 @@ public final class BlockTypes {
             case FENCE_GATE -> new MsmFenceGateBlock(id, definition,
                     woodType(((BlockType.FenceGate) definition.typeFields()).woodType()), props);
             case PANE -> new MsmPaneBlock(id, definition, props);
-            case DOOR -> new MsmDoorBlock(id, definition, setType(definition), props);
-            case TRAPDOOR -> new MsmTrapDoorBlock(id, definition, setType(definition), props);
-            case BUTTON -> new MsmButtonBlock(id, definition, setType(definition),
+            case DOOR -> new MsmDoorBlock(id, definition, BlockSetTypes.of(id, definition), props);
+            case TRAPDOOR -> new MsmTrapDoorBlock(id, definition, BlockSetTypes.of(id, definition), props);
+            case BUTTON -> new MsmButtonBlock(id, definition, BlockSetTypes.of(id, definition),
                     ((BlockType.Button) definition.typeFields()).pressTicks(), props);
             case PRESSURE_PLATE -> {
                 Optional<Integer> weightedMax = ((BlockType.PressurePlate) definition.typeFields()).weightedMax();
                 yield weightedMax.isPresent()
-                        ? new MsmWeightedPressurePlateBlock(id, definition, weightedMax.get(), setType(definition), props)
-                        : new MsmPressurePlateBlock(id, definition, setType(definition), props);
+                        ? new MsmWeightedPressurePlateBlock(id, definition, weightedMax.get(), BlockSetTypes.of(id, definition), props)
+                        : new MsmPressurePlateBlock(id, definition, BlockSetTypes.of(id, definition), props);
             }
             case CROP -> crop(id, definition, props, warn);
             case SAPLING -> new MsmSaplingBlock(id, definition, props);
@@ -185,16 +184,6 @@ public final class BlockTypes {
     /** Every tinted leaves block registered so far, with its tint (ADR 0068 D6); read by the client entrypoint. */
     public static Map<Block, BlockType.Tint> tintedLeaves() {
         return Collections.unmodifiableMap(TINTED_LEAVES);
-    }
-
-    /** The vanilla {@link BlockSetType} of a door, trapdoor, button or pressure plate (version seam {@link BlockSetTypes}). */
-    private static BlockSetType setType(BlockDefinition definition) {
-        return BlockSetTypes.of(switch (definition.typeFields()) {
-            case BlockType.Opening o -> o.setType();
-            case BlockType.Button b -> b.setType();
-            case BlockType.PressurePlate p -> p.setType();
-            default -> throw new IllegalArgumentException("type '" + definition.type().id() + "' has no set_type");
-        });
     }
 
     /** The vanilla {@link WoodType} of an MSM wood type name; the constants are named alike on both targets. */

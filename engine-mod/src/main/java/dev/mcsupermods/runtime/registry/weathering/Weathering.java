@@ -150,8 +150,8 @@ public final class Weathering {
                     : new MsmWeatheringBlock(id, definition, stage, props);
             case SLAB -> new MsmWeatheringSlabBlock(id, definition, stage, props);
             case STAIRS -> new MsmWeatheringStairBlock(id, definition, stage, stairsBase(definition), props);
-            case DOOR -> new MsmWeatheringDoorBlock(id, definition, stage, setType(definition), props);
-            case TRAPDOOR -> new MsmWeatheringTrapDoorBlock(id, definition, stage, setType(definition), props);
+            case DOOR -> new MsmWeatheringDoorBlock(id, definition, stage, BlockSetTypes.of(id, definition), props);
+            case TRAPDOOR -> new MsmWeatheringTrapDoorBlock(id, definition, stage, BlockSetTypes.of(id, definition), props);
             case PANE -> new MsmWeatheringPaneBlock(id, definition, stage, props);
             // The properties FurnitureTypes adds for its chains and lanterns (B446), here because these are made instead.
             case CHAIN -> new MsmWeatheringChainBlock(id, definition, stage, props.forceSolidOn().noOcclusion());
@@ -164,13 +164,13 @@ public final class Weathering {
             // apart from the rod's (FurnitureTypes adds them when it makes the rod), so they are added here.
             case ROD -> new MsmWeatheringRodBlock(id, definition, stage, definition.components().lightEmitter().isPresent()
                     ? props.forceSolidOff().noOcclusion() : props.forceSolidOff().noOcclusion().lightLevel(state -> FurnitureTypes.ROD_LIGHT));
-            case BUTTON -> new MsmWeatheringButtonBlock(id, definition, stage, setType(definition),
+            case BUTTON -> new MsmWeatheringButtonBlock(id, definition, stage, BlockSetTypes.of(id, definition),
                     ((BlockType.Button) definition.typeFields()).pressTicks(), props);
             case PRESSURE_PLATE -> {
                 Optional<Integer> weightedMax = ((BlockType.PressurePlate) definition.typeFields()).weightedMax();
                 yield weightedMax.isPresent()
-                        ? new MsmWeatheringPressurePlateBlock.Weighted(id, definition, stage, weightedMax.get(), setType(definition), props)
-                        : new MsmWeatheringPressurePlateBlock(id, definition, stage, setType(definition), props);
+                        ? new MsmWeatheringPressurePlateBlock.Weighted(id, definition, stage, weightedMax.get(), BlockSetTypes.of(id, definition), props)
+                        : new MsmWeatheringPressurePlateBlock(id, definition, stage, BlockSetTypes.of(id, definition), props);
             }
             case FENCE -> new MsmWeatheringFenceBlock(id, definition, stage, props);
             case FENCE_GATE -> new MsmWeatheringFenceGateBlock(id, definition, stage,
@@ -198,15 +198,6 @@ public final class Weathering {
     /** The registered base block of weathering stairs; stairs register after their base (ADR 0067 D4). */
     private static BlockState stairsBase(BlockDefinition definition) {
         return BuiltInRegistries.BLOCK.getValue(((BlockType.Stairs) definition.typeFields()).baseBlock()).defaultBlockState();
-    }
-
-    private static net.minecraft.world.level.block.state.properties.BlockSetType setType(BlockDefinition definition) {
-        return BlockSetTypes.of(switch (definition.typeFields()) {
-            case BlockType.Opening o -> o.setType();
-            case BlockType.Button b -> b.setType();
-            case BlockType.PressurePlate p -> p.setType();
-            default -> throw new IllegalArgumentException("type '" + definition.type().id() + "' has no set_type");
-        });
     }
 
     /** The block {@code id} ages into, when it ages and its {@code next} is registered. */

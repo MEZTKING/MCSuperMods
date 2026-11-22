@@ -7159,3 +7159,17 @@ Next
 - B513: double chests' block states carry `type` and no `open`; a double chest of type `block` has no `facing` key (any facing matches).
 - B514: the 26.4 entry is named by the block's id; events not given are absent from it.
 - B518: a template and an example for `msm:vanilla_block_rules`, then empty `KINDS_AWAITING_EXAMPLES` again.
+
+## 2026-11-22 — executor — own set types through an explicit route (B514 follow-up)
+
+**What**
+- `registry/BlockSetTypes` (26.3 and 26.4): `of(Identifier, BlockDefinition)` builds the block's own set type (object `set_type`, or a vanilla one with `block_sounds`) or returns vanilla's constant; `vanilla(SetType)` is public for the GameTests. The `begin`/`end` hook and its static state are gone, with the calls in `OwnSounds.soundTypeFor` and `BlockExtras.apply`. `BlockTypes` and `Weathering` pass the block's id and definition and lose their private `setType` helpers.
+- `OwnSounds`: 26.3 `ownSoundType(id, definition)` builds the own `SoundType` once per block id (the properties and the set type share it, warnings once); 26.4 `soundSetKey(id, definition)`.
+- `EventOverlay.KINDS_WITHOUT_EVENTS` takes `villager_profession` (no events). `fluid` is left out: fluids carry `events`, but the overlay has no route for them, so an overlay for one still says "unknown kind". New JUnit `DevFilesTest.overlayKindsCoverTheScannersKinds` (every scanner kind is in one overlay list, `fluid` the one known exception).
+- Stale "stub until B514/B510" comments in `MsmRegistrar` and `MsmRuntime` removed. GameTests use `BlockSetTypes.vanilla`; the "own set type leaked" assert is gone (no state to leak). 757 GameTests on 26.3, 26.4 and without GeckoLib; 1226 JUnit.
+
+**Decisions**
+- Behaviour unchanged: the same set type is built per block, once, as it is constructed.
+
+**Next**
+- Main session: decide whether fluid events join the overlay (`KINDS_WITH_EVENTS` plus a resolve call) or `fluid` goes to `KINDS_WITHOUT_EVENTS` with a restart message. The `StorageExtras` comment "a stub until B513" in `MsmRegistrar` is also stale.

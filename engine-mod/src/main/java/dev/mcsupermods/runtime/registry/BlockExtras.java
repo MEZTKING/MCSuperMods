@@ -114,7 +114,6 @@ public final class BlockExtras {
         components.strippable().ifPresent(s -> TARGETS.get(Change.STRIP).put(block, new Target(s.into(), Optional.empty(), null)));
         components.flattenable().ifPresent(f -> TARGETS.get(Change.FLATTEN).put(block, new Target(f.into(), Optional.empty(), null)));
         components.tillable().ifPresent(t -> TARGETS.get(Change.TILL).put(block, new Target(t.into(), t.drops(), null)));
-        BlockSetTypes.end();
     }
 
     /**

@@ -2,8 +2,6 @@ package dev.mcsupermods.runtime.gametest;
 
 import com.mojang.authlib.GameProfile;
 import dev.mcsupermods.runtime.MsmRuntime;
-import dev.mcsupermods.runtime.loader.BlockType;
-import dev.mcsupermods.runtime.registry.BlockSetTypes;
 import dev.mcsupermods.runtime.registry.MsmEntity;
 import dev.mcsupermods.runtime.registry.OwnSounds;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -188,7 +186,6 @@ public class MsmOwnSoundsGameTest {
             assertHeard(helper, ears.heard(), ANVIL_PLACE, "place (the door's set type carries the block's own sounds)");
             helper.assertTrue(((DoorBlock) block("sound_door")).type() != BlockSetTypeCheck.wood(), "sound_door kept vanilla's wood set");
             helper.assertTrue(((DoorBlock) block("type_door")).type() == BlockSetTypeCheck.wood(), "type_door lost vanilla's wood set");
-            helper.assertTrue(BlockSetTypes.of(BlockType.SetType.WOOD) == BlockSetTypeCheck.wood(), "an own set type leaked after start-up");
         } finally {
             ears.close();
         }

@@ -4,7 +4,9 @@ import dev.mcsupermods.runtime.MsmRuntime;
 import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.MsmSoundType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,21 +17,29 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
  * Version seam (ADR 0105 D1, D2 and its amendment after B503): a block's own sound events ({@code block_sounds}) and,
- * through {@link BlockSetTypes#begin}, its own set type. 26.3: a {@link SoundType} built from the events, each event not
+ * through {@link BlockSetTypes#of(Identifier, BlockDefinition)}, its own set type. 26.3: a {@link SoundType} built from the events, each event not
  * given (and the volume and pitch) taken from the block's {@code sound_type}. The events are sound events registered
  * before the blocks (vanilla's, or a project's from {@code sounds.json}); an unknown one warns and the sound type's is
  * used. Every block passes here once, just before it is built.
  */
 public final class OwnSounds {
     private static final List<String> WARNINGS = new ArrayList<>();
+    private static final Map<Identifier, Optional<SoundType>> BUILT = new HashMap<>();
 
     private OwnSounds() {}
 
-    /** The properties with the block's own sounds applied; the block's set type is prepared for {@link BlockSetTypes#of}. */
+    /** The properties with the block's own sounds applied. */
     static BlockBehaviour.Properties soundTypeFor(Identifier id, BlockDefinition definition, BlockBehaviour.Properties props) {
-        Optional<SoundType> own = definition.blockSounds().map(s -> build(id, BlockSounds.soundType(definition.soundType()), s));
-        BlockSetTypes.begin(id, definition, own, OwnSounds::warn);
-        return own.map(props::sound).orElse(props);
+        return ownSoundType(id, definition).map(props::sound).orElse(props);
+    }
+
+    /**
+     * The block's own {@link SoundType} ({@code block_sounds}), empty without it. Built once per block id, so its warnings
+     * are logged once and the properties and the set type ({@link BlockSetTypes#of(Identifier, BlockDefinition)}) share it.
+     */
+    static Optional<SoundType> ownSoundType(Identifier id, BlockDefinition definition) {
+        return BUILT.computeIfAbsent(id,
+                k -> definition.blockSounds().map(s -> build(id, BlockSounds.soundType(definition.soundType()), s)));
     }
 
     private static SoundType build(Identifier id, SoundType base, MsmSoundType.Sounds s) {
@@ -54,7 +64,7 @@ public final class OwnSounds {
         return found.orElse(fallback);
     }
 
-    private static void warn(String message) {
+    static void warn(String message) {
         WARNINGS.add(message);
         MsmRuntime.LOGGER.warn("[{}] {}", MsmRuntime.MOD_ID, message);
     }
