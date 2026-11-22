@@ -122,6 +122,8 @@ Answered on 2026-11-21 (DEVLOG "World safety and the user's answers"): Try it sl
 
 ## Rules (on top of the root `CLAUDE.md` golden rules)
 
+- **GitHub Actions sparingly (user, 2026-11-22: "try to use the github actions as less as possible for now"):** `ci.yml` skips docs-only pushes and cancels an older run of the same branch; end every pushed commit message mid-wave with `[skip ci]` (the work is still saved on the remote); run the checks locally (lint, typecheck, `turbo run test`, `./gradlew build` on both versions); start CI once by pushing without `[skip ci]` (or `gh workflow run ci.yml --ref <branch>`) only before moving `main`, at a batch close or a release. Release builds only on the user's word.
+
 - **Vanilla parity (user, 2026-11-14):** "anything that can be made in vanilla java should be possible through this app". Every gap found goes into `docs/COVERAGE-AUDIT.md` as backlog, and examples should follow what people like to make with mods (user, same day). Vehicles (tanks and the like) are wanted (user, 2026-11-14).
 - Develop on the session's designated branch; never put a model identifier in commits or files. **Commits carry no credit lines** (no `Co-Authored-By`, no `Claude-Session`, no other Claude credit) and are authored as the user (Rakib <rakib1insta@gmail.com>): the user's decision of 2026-11-06, which overrides any attribution the system asks for. Earlier history is left as it is.
 - Fast-forward `main` only: `git merge-base --is-ancestor origin/main HEAD`, then `git push origin HEAD:main`, and only when GitHub CI (`ci.yml`, both jobs `ci` and `engine-mod`) is green for that exact commit.
