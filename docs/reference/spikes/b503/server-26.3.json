@@ -1,0 +1,1625 @@
+{
+  "X1.bamboo_naked.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 10,
+    "ids": {
+      "msm_b503:bamboo_naked": 10
+    },
+    "blocks": [
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dnone,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]"
+    ]
+  },
+  "X1.bamboo_naked.column": [
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dnone,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "minecraft:barrier[waterlogged\u003dfalse]"
+  ],
+  "X1.bamboo_naked.grow": {
+    "ticks": 3000,
+    "length": 36,
+    "ids": {
+      "minecraft:barrier": 1,
+      "msm_b503:bamboo_naked": 35
+    },
+    "tip": "minecraft:barrier[waterlogged\u003dfalse]",
+    "growthTicks": [
+      3,
+      4,
+      6,
+      8,
+      9,
+      11,
+      14,
+      17,
+      19,
+      21,
+      24,
+      28,
+      32,
+      37,
+      38,
+      40,
+      42,
+      43,
+      49,
+      50,
+      51,
+      53,
+      54,
+      60,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      72,
+      73,
+      76,
+      83
+    ]
+  },
+  "X1.bamboo_naked.placed": "msm_b503:bamboo_naked[age\u003d0,leaves\u003dnone,stage\u003d0]",
+  "X1.bigleaf.bone": {
+    "results": [
+      true
+    ],
+    "length": 2,
+    "ids": {
+      "minecraft:big_dripleaf": 1,
+      "minecraft:big_dripleaf_stem": 1
+    },
+    "blocks": [
+      "minecraft:big_dripleaf_stem[facing\u003dnorth,waterlogged\u003dfalse]",
+      "minecraft:big_dripleaf[facing\u003dnorth,tilt\u003dnone,waterlogged\u003dfalse]"
+    ]
+  },
+  "X1.bigleaf.bone2": {
+    "results": [
+      false,
+      false,
+      false
+    ],
+    "length": 2,
+    "ids": {
+      "minecraft:big_dripleaf": 1,
+      "minecraft:big_dripleaf_stem": 1
+    },
+    "blocks": [
+      "minecraft:big_dripleaf_stem[facing\u003dnorth,waterlogged\u003dfalse]",
+      "minecraft:big_dripleaf[facing\u003dnorth,tilt\u003dnone,waterlogged\u003dfalse]"
+    ]
+  },
+  "X1.bigleaf.placed": "msm_b503:big_leaf_naked[facing\u003dnorth,tilt\u003dnone,waterlogged\u003dfalse]",
+  "X1.cactus.bone": {
+    "results": [
+      false,
+      false,
+      false
+    ],
+    "length": 1,
+    "ids": {
+      "msm_b503:cactus_naked": 1
+    },
+    "blocks": [
+      "msm_b503:cactus_naked[age\u003d0]"
+    ]
+  },
+  "X1.cactus.grow": {
+    "ticks": 6000,
+    "length": 3,
+    "ids": {
+      "msm_b503:cactus_naked": 3
+    },
+    "tip": "msm_b503:cactus_naked[age\u003d15]",
+    "growthTicks": [
+      15,
+      31
+    ]
+  },
+  "X1.cane.bone": {
+    "results": [
+      false,
+      false,
+      false
+    ],
+    "length": 1,
+    "ids": {
+      "msm_b503:cane_naked": 1
+    },
+    "blocks": [
+      "msm_b503:cane_naked[age\u003d0]"
+    ]
+  },
+  "X1.cane.grow": {
+    "ticks": 3000,
+    "length": 3,
+    "ids": {
+      "msm_b503:cane_naked": 3
+    },
+    "tip": "msm_b503:cane_naked[age\u003d0]",
+    "growthTicks": [
+      15,
+      31
+    ]
+  },
+  "X1.cane.placed": "msm_b503:cane_naked[age\u003d0]",
+  "X1.control.bamboo.column": [
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d1]"
+  ],
+  "X1.control.bamboo.grow": {
+    "ticks": 6000,
+    "length": 12,
+    "ids": {
+      "minecraft:bamboo": 12
+    },
+    "tip": "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d1]",
+    "growthTicks": [
+      3,
+      4,
+      6,
+      8,
+      9,
+      11,
+      14,
+      17,
+      19,
+      21,
+      24
+    ]
+  },
+  "X1.control.cactus.grow": {
+    "ticks": 6000,
+    "length": 3,
+    "ids": {
+      "minecraft:cactus": 3
+    },
+    "tip": "minecraft:cactus[age\u003d15]",
+    "growthTicks": [
+      15,
+      31
+    ]
+  },
+  "X1.control.cactusOwn.grow": {
+    "ticks": 20000,
+    "length": 3,
+    "ids": {
+      "msm_b503:cactus_naked": 3
+    },
+    "tip": "msm_b503:cactus_naked[age\u003d15]",
+    "growthTicks": [
+      15,
+      31
+    ]
+  },
+  "X1.control.cane.grow": {
+    "ticks": 3000,
+    "length": 3,
+    "ids": {
+      "minecraft:sugar_cane": 3
+    },
+    "tip": "minecraft:sugar_cane[age\u003d0]",
+    "growthTicks": [
+      15,
+      31
+    ]
+  },
+  "X1.kelp.kelp.ageValues": "AGE_25 0..25",
+  "X1.kelp.kelp.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 6,
+    "ids": {
+      "msm_b503:kelp": 1,
+      "msm_b503:kelp_plant": 5
+    },
+    "blocks": [
+      "msm_b503:kelp_plant",
+      "msm_b503:kelp_plant",
+      "msm_b503:kelp_plant",
+      "msm_b503:kelp_plant",
+      "msm_b503:kelp_plant",
+      "msm_b503:kelp[age\u003d5]"
+    ]
+  },
+  "X1.kelp.kelp.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "msm_b503:kelp": 1,
+      "msm_b503:kelp_plant": 25
+    },
+    "tip": "msm_b503:kelp[age\u003d25]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      42,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      82,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      120,
+      126,
+      132,
+      137,
+      139
+    ]
+  },
+  "X1.kelp.kelp.placed": "msm_b503:kelp[age\u003d0]",
+  "X1.kelp.kelp_naked.ageValues": "AGE_25 0..25",
+  "X1.kelp.kelp_naked.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 6,
+    "ids": {
+      "minecraft:kelp_plant": 5,
+      "msm_b503:kelp_naked": 1
+    },
+    "blocks": [
+      "minecraft:kelp_plant",
+      "minecraft:kelp_plant",
+      "minecraft:kelp_plant",
+      "minecraft:kelp_plant",
+      "minecraft:kelp_plant",
+      "msm_b503:kelp_naked[age\u003d5]"
+    ]
+  },
+  "X1.kelp.kelp_naked.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "minecraft:kelp_plant": 25,
+      "msm_b503:kelp_naked": 1
+    },
+    "tip": "msm_b503:kelp_naked[age\u003d25]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      42,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      82,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      120,
+      126,
+      132,
+      137,
+      139
+    ]
+  },
+  "X1.kelp.kelp_naked.placed": "msm_b503:kelp_naked[age\u003d0]",
+  "X1.lichen.bone": {
+    "multifaceBlocks": {
+      "msm_b503:lichen_naked": 5
+    },
+    "results": [
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "X1.lichen.light": 15,
+  "X1.lichen.placed": "msm_b503:lichen_naked[down\u003dfalse,east\u003dfalse,north\u003dfalse,south\u003dtrue,up\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]",
+  "X1.shoot.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 9,
+    "ids": {
+      "minecraft:bamboo": 1,
+      "msm_b503:bamboo_naked": 8
+    },
+    "blocks": [
+      "minecraft:bamboo[age\u003d0,leaves\u003dnone,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+      "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]"
+    ]
+  },
+  "X1.shoot.column": [
+    "minecraft:bamboo[age\u003d0,leaves\u003dnone,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d0,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "msm_b503:bamboo_naked[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "minecraft:barrier[waterlogged\u003dfalse]"
+  ],
+  "X1.shoot.grow": {
+    "ticks": 3000,
+    "length": 36,
+    "ids": {
+      "minecraft:bamboo": 1,
+      "minecraft:barrier": 1,
+      "msm_b503:bamboo_naked": 34
+    },
+    "tip": "minecraft:barrier[waterlogged\u003dfalse]",
+    "growthTicks": [
+      3,
+      4,
+      6,
+      8,
+      9,
+      11,
+      14,
+      17,
+      19,
+      21,
+      24,
+      28,
+      32,
+      37,
+      38,
+      40,
+      42,
+      43,
+      49,
+      50,
+      51,
+      53,
+      54,
+      60,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      72,
+      73,
+      76,
+      83
+    ]
+  },
+  "X1.shoot.placed": "msm_b503:shoot",
+  "X1.shoot_naked.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 11,
+    "ids": {
+      "minecraft:bamboo": 11
+    },
+    "blocks": [
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d0]",
+      "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d0]"
+    ]
+  },
+  "X1.shoot_naked.column": [
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dnone,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dsmall,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d0]",
+    "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d1]"
+  ],
+  "X1.shoot_naked.grow": {
+    "ticks": 3000,
+    "length": 12,
+    "ids": {
+      "minecraft:bamboo": 12
+    },
+    "tip": "minecraft:bamboo[age\u003d1,leaves\u003dlarge,stage\u003d1]",
+    "growthTicks": [
+      3,
+      4,
+      6,
+      8,
+      9,
+      11,
+      14,
+      17,
+      19,
+      21,
+      24
+    ]
+  },
+  "X1.shoot_naked.placed": "msm_b503:shoot_naked",
+  "X1.smallleaf.bone": {
+    "results": [
+      true
+    ],
+    "length": 1,
+    "ids": {
+      "minecraft:big_dripleaf": 1
+    },
+    "blocks": [
+      "minecraft:big_dripleaf[facing\u003dnorth,tilt\u003dnone,waterlogged\u003dfalse]"
+    ]
+  },
+  "X1.smallleaf.placed": [
+    "msm_b503:small_leaf_naked[facing\u003dnorth,half\u003dlower,waterlogged\u003dfalse]",
+    "msm_b503:small_leaf_naked[facing\u003dnorth,half\u003dupper,waterlogged\u003dfalse]"
+  ],
+  "X1.stem.canSurviveUnderOwnLeaf": false,
+  "X1.stem.ownLeafOnVanillaStem": true,
+  "X1.stem.vanillaStemUnderOwnLeaf": false,
+  "X1.swaps": [
+    "swapped minecraft:bamboo for msm_b503:bamboo_naked at 4714571, 8, -1739678",
+    "swapped minecraft:bamboo for msm_b503:bamboo_naked at 4714571, 8, -1739674"
+  ],
+  "X1.vines.cave.bone": {
+    "results": [
+      true,
+      false,
+      false,
+      false
+    ],
+    "length": 1,
+    "ids": {
+      "msm_b503:cave": 1
+    },
+    "blocks": [
+      "msm_b503:cave[age\u003d0,berries\u003dtrue]"
+    ]
+  },
+  "X1.vines.cave.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "msm_b503:cave": 1,
+      "msm_b503:cave_plant": 25
+    },
+    "tip": "msm_b503:cave[age\u003d25,berries\u003dtrue]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      126,
+      132,
+      137,
+      139,
+      140,
+      159,
+      176
+    ]
+  },
+  "X1.vines.cave.placed": "msm_b503:cave[age\u003d0,berries\u003dfalse]",
+  "X1.vines.cave_naked.bone": {
+    "results": [
+      true,
+      false,
+      false,
+      false
+    ],
+    "length": 1,
+    "ids": {
+      "msm_b503:cave_naked": 1
+    },
+    "blocks": [
+      "msm_b503:cave_naked[age\u003d0,berries\u003dtrue]"
+    ]
+  },
+  "X1.vines.cave_naked.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "minecraft:cave_vines_plant": 25,
+      "msm_b503:cave_naked": 1
+    },
+    "tip": "msm_b503:cave_naked[age\u003d25,berries\u003dfalse]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      126,
+      132,
+      137,
+      139,
+      140,
+      159,
+      176
+    ]
+  },
+  "X1.vines.cave_naked.placed": "msm_b503:cave_naked[age\u003d0,berries\u003dfalse]",
+  "X1.vines.twisting.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 17,
+    "ids": {
+      "msm_b503:twisting": 1,
+      "msm_b503:twisting_plant": 16
+    },
+    "blocks": [
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting_plant",
+      "msm_b503:twisting[age\u003d16]"
+    ]
+  },
+  "X1.vines.twisting.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "msm_b503:twisting": 1,
+      "msm_b503:twisting_plant": 25
+    },
+    "tip": "msm_b503:twisting[age\u003d25]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      126,
+      132,
+      137,
+      139,
+      140,
+      159,
+      176
+    ]
+  },
+  "X1.vines.twisting.placed": "msm_b503:twisting[age\u003d0]",
+  "X1.vines.twisting_naked.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 13,
+    "ids": {
+      "minecraft:twisting_vines_plant": 12,
+      "msm_b503:twisting_naked": 1
+    },
+    "blocks": [
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "minecraft:twisting_vines_plant",
+      "msm_b503:twisting_naked[age\u003d12]"
+    ]
+  },
+  "X1.vines.twisting_naked.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "minecraft:twisting_vines_plant": 25,
+      "msm_b503:twisting_naked": 1
+    },
+    "tip": "msm_b503:twisting_naked[age\u003d25]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      126,
+      132,
+      137,
+      139,
+      140,
+      159,
+      176
+    ]
+  },
+  "X1.vines.twisting_naked.placed": "msm_b503:twisting_naked[age\u003d0]",
+  "X1.vines.weeping.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 13,
+    "ids": {
+      "msm_b503:weeping": 1,
+      "msm_b503:weeping_plant": 12
+    },
+    "blocks": [
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping_plant",
+      "msm_b503:weeping[age\u003d12]"
+    ]
+  },
+  "X1.vines.weeping.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "msm_b503:weeping": 1,
+      "msm_b503:weeping_plant": 25
+    },
+    "tip": "msm_b503:weeping[age\u003d25]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      126,
+      132,
+      137,
+      139,
+      140,
+      159,
+      176
+    ]
+  },
+  "X1.vines.weeping.placed": "msm_b503:weeping[age\u003d0]",
+  "X1.vines.weeping_naked.bone": {
+    "results": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "length": 17,
+    "ids": {
+      "minecraft:weeping_vines_plant": 16,
+      "msm_b503:weeping_naked": 1
+    },
+    "blocks": [
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "minecraft:weeping_vines_plant",
+      "msm_b503:weeping_naked[age\u003d16]"
+    ]
+  },
+  "X1.vines.weeping_naked.grow": {
+    "ticks": 3000,
+    "length": 26,
+    "ids": {
+      "minecraft:weeping_vines_plant": 25,
+      "msm_b503:weeping_naked": 1
+    },
+    "tip": "msm_b503:weeping_naked[age\u003d25]",
+    "growthTicks": [
+      3,
+      20,
+      26,
+      39,
+      49,
+      50,
+      51,
+      52,
+      61,
+      77,
+      83,
+      84,
+      97,
+      98,
+      104,
+      109,
+      113,
+      115,
+      126,
+      132,
+      137,
+      139,
+      140,
+      159,
+      176
+    ]
+  },
+  "X1.vines.weeping_naked.placed": "msm_b503:weeping_naked[age\u003d0]",
+  "X10": {
+    "registry": {
+      "model": "SoundType objects (no block_sound_set registry on 26.3)"
+    },
+    "own_sounds": {
+      "resolved": {
+        "break": "msm_b503:own.break",
+        "step": "msm_b503:own.step",
+        "place": "msm_b503:own.place",
+        "hit": "msm_b503:own.hit",
+        "fall": "msm_b503:own.fall"
+      },
+      "placeResult": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+      "place": [
+        "msm_b503:own.place"
+      ],
+      "break": [
+        "levelEvent 2001 data 40569"
+      ],
+      "walkAndFall": [
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.generic.big_fall",
+        "msm_b503:own.fall",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step"
+      ],
+      "fallerOnGround": true
+    },
+    "missing_sounds": {
+      "resolved": {
+        "break": "minecraft:block.stone.break",
+        "step": "minecraft:block.stone.step",
+        "place": "minecraft:block.stone.place",
+        "hit": "minecraft:block.stone.hit",
+        "fall": "minecraft:block.stone.fall"
+      },
+      "placeResult": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+      "place": [
+        "minecraft:block.stone.place"
+      ],
+      "break": [
+        "levelEvent 2001 data 40570"
+      ],
+      "walkAndFall": [
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.generic.big_fall",
+        "minecraft:block.stone.fall",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step",
+        "minecraft:entity.pig.step"
+      ],
+      "fallerOnGround": true
+    }
+  },
+  "X11": {
+    "facts": {
+      "name": "msm_b503_own",
+      "inValuesBefore": false,
+      "encodeBefore": "DataResult.Success[\"msm_b503_own\"]",
+      "registerByReflection": "ok",
+      "inValuesAfter": true,
+      "encodeAfter": "DataResult.Success[\"msm_b503_own\"]"
+    },
+    "door.open": "[msm_b503:set.door_open] open\u003dtrue",
+    "door.close": "[msm_b503:set.door_close] open\u003dfalse",
+    "handlessDoor.use": "Pass[] [] open\u003dfalse",
+    "trapdoor.open": "[msm_b503:set.trapdoor_open]",
+    "trapdoor.close": "[msm_b503:set.trapdoor_close]",
+    "button.press": "[msm_b503:set.button_on]",
+    "button.release+plate.on": "[levelEvent 2001 data 39455, levelEvent 2001 data 39486, msm_b503:set.plate_on, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, minecraft:entity.pig.ambient, msm_b503:set.button_off, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 2004 data 0, levelEvent 2004 data 0, levelEvent 2004 data 0, levelEvent 2004 data 0]",
+    "plate.off": "[levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 2001 data 40570, msm_b503:set.plate_off, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1, levelEvent 3002 data -1]"
+  },
+  "X12.ageAndBurn": {
+    "oxidized.isRandomlyTicking": true,
+    "oxidized.randomTicks": 3,
+    "oxidized.into": "msm_b503:ancient_copper",
+    "burn.minecraft:stone": "fire ticks 9 -\u003e minecraft:air",
+    "burn.minecraft:cobblestone": "fire ticks 3000 -\u003e minecraft:cobblestone"
+  },
+  "X12.tools": {
+    "init": [
+      "route: 26.3: SoundType object, BlockSetType(name, ...), Fabric FlammableBlockRegistry and OxidizableBlocksRegistry",
+      "pairs flammable stone: FlammableBlockRegistry.add",
+      "pairs oxidise oxidized copper -\u003e ancient copper: OxidizableBlocksRegistry.registerNextStage",
+      "pairs waxable tuff -\u003e waxed tuff: OxidizableBlocksRegistry.registerWaxable"
+    ],
+    "stone+axe": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:stripped_stone damage 1 count 1",
+    "stone+shovel": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:flat_stone damage 1 count 1",
+    "stone+hoe": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:tilled_stone damage 1 count 1",
+    "oakLog+axe(override vanilla)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:stripped_stone damage 1 count 1",
+    "dirt+shovel(override vanilla)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:flat_stone damage 1 count 1",
+    "dirt+hoe(override vanilla)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:tilled_stone damage 1 count 1",
+    "grass+shovel(control, vanilla)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:iron_shovel]] -\u003e minecraft:dirt_path damage 1 count 1",
+    "birchLog+axe(control, vanilla)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:iron_axe]] -\u003e minecraft:stripped_birch_log damage 1 count 1",
+    "stone+honeycomb(callback)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:waxed_stone damage 0 count 1",
+    "tuff+honeycomb(registry)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:honeycomb]] -\u003e msm_b503:waxed_tuff damage 0 count 1",
+    "copper+honeycomb(control)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 minecraft:honeycomb]] -\u003e minecraft:waxed_copper_block damage 0 count 1"
+  },
+  "X13": {
+    "replace.block": "msm_b503:age_chest_exposed",
+    "replace.entity": "MsmStorageBlockEntity []",
+    "replace.drops": [
+      "7 minecraft:diamond",
+      "3 minecraft:apple"
+    ],
+    "randomTick.change": "ticks 4 -\u003e msm_b503:age_chest_exposed",
+    "randomTick.entity": "MsmStorageBlockEntity []",
+    "randomTick.drops": [
+      "7 minecraft:diamond",
+      "3 minecraft:apple"
+    ],
+    "copy.dropsBeforePaste": [],
+    "copy.newEntityBeforePaste": "MsmStorageBlockEntity []",
+    "copy.entity": "MsmStorageBlockEntity [0\u003d7 minecraft:diamond 13\u003d3 minecraft:apple ]",
+    "vanilla.isRandomlyTicking": true,
+    "vanilla.change": "ticks 4 -\u003e minecraft:exposed_copper_chest",
+    "vanilla.entity": "ChestBlockEntity [0\u003d7 minecraft:diamond 13\u003d3 minecraft:apple ]",
+    "vanilla.drops": []
+  },
+  "X14": {
+    "type": "msm_test:minimal",
+    "setEntityId": "{entity:{id:\"msm_test:minimal\"}}",
+    "egg": "msm_test:minimal_spawn_egg",
+    "egg.survival": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]] -\u003e {entity:{id:\"msm_test:minimal\"}} left 0 minecraft:air",
+    "egg.creative": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d1 msm_test:minimal_spawn_egg]] -\u003e {entity:{id:\"msm_test:minimal\"}} left 1 msm_test:minimal_spawn_egg",
+    "spawned.after800ticks": 6,
+    "spawned.firstSeenTick": 22,
+    "nearPlayer": true
+  },
+  "X2.bamboo": {
+    "stalk.dirt": true,
+    "stalk.soilTagged": true,
+    "stalk.soilPlain": false,
+    "stalk.onOwnShoot": false,
+    "stalk.onOwnStalk": false,
+    "stalk.onVanillaBamboo": true,
+    "shoot.dirt": true,
+    "shoot.soilTagged": true,
+    "shoot.soilPlain": false,
+    "vanillaBamboo.onOwnStalk": false
+  },
+  "X2.cactus": {
+    "sand": true,
+    "soilTagged": true,
+    "soilPlain": false,
+    "ownCactus(below)": true,
+    "vanillaCactus(below)": false,
+    "sand+stoneBeside": false
+  },
+  "X2.cane": {
+    "sand+water": true,
+    "sand+nothing": false,
+    "soilTagged+water": true,
+    "soilPlain+water": false,
+    "dirt+water": true,
+    "sand+waterloggedSlab": true,
+    "sand+projectWaterFluid(msm_test:fluid_water)": true,
+    "sand+frostedIce": true,
+    "sand+wetTagged(supports_sugar_cane_adjacently)": true,
+    "ownCane(below)": true,
+    "vanillaSugarCane(below)": false,
+    "vanillaCane.onSoilTagged+water": true,
+    "vanillaCane.onOwnCane": false
+  },
+  "X2.dripleaf": {
+    "big.clay": true,
+    "big.soilTagged": true,
+    "big.soilPlain": false,
+    "big.onOwnStem": false,
+    "small.clay": true,
+    "small.soilTagged": true,
+    "small.soilPlain": false,
+    "small.dirt": false
+  },
+  "X2.heads": {
+    "kelp.onSoilPlainInWater": true,
+    "kelp.onSoilPlainInAir": true,
+    "weeping.underSoilPlain": true,
+    "cave.underSoilPlain": true,
+    "twisting.onSoilPlain": true,
+    "twisting.onAir": false,
+    "lichen.onSoilPlainFace": true
+  },
+  "X3.berries.cave": {
+    "emissionWithBerries": 10,
+    "use": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "after": "msm_b503:cave[age\u003d0,berries\u003dfalse]",
+    "emissionAfter": 0,
+    "drops": [
+      "1 msm_b503:berry"
+    ],
+    "pickItem": "1 msm_b503:berry"
+  },
+  "X3.berries.cave_naked": {
+    "emissionWithBerries": 14,
+    "use": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "after": "msm_b503:cave_naked[age\u003d0,berries\u003dfalse]",
+    "emissionAfter": 0,
+    "drops": [
+      "1 minecraft:glow_berries"
+    ],
+    "pickItem": "1 minecraft:glow_berries"
+  },
+  "X3.thorns": "own cactus: pig health 10.0 -\u003e 0.0; vanilla cactus: 10.0 -\u003e 0.0",
+  "X3.tilt.own": [
+    "NONE x2",
+    "UNSTABLE x10",
+    "PARTIAL x10",
+    "FULL x98"
+  ],
+  "X3.tilt.pigs": "msm_b503:big_leaf_naked[facing\u003dnorth,tilt\u003dnone,waterlogged\u003dfalse] pig y 7.0 / vanilla pig y 7.0",
+  "X3.tilt.vanilla": [
+    "NONE x2",
+    "UNSTABLE x10",
+    "PARTIAL x10",
+    "FULL x98"
+  ],
+  "X4.pots": {
+    "vanillaPot+poppy": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:pot_poppy hand 0 minecraft:air inv []",
+    "vanillaPottedPoppy.emptyHand": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e minecraft:flower_pot hand 1 minecraft:poppy inv [1 minecraft:poppy ]",
+    "vanillaPot+projectFlower": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:vpot_flower hand 0 minecraft:air inv []",
+    "vanillaPotProjectFlower.emptyHand": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e minecraft:flower_pot hand 1 msm_b503:flower inv [1 msm_b503:flower ]",
+    "vanillaPottedPoppy(set).emptyHand": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e minecraft:flower_pot hand 1 minecraft:poppy inv [1 minecraft:poppy ]",
+    "potAir+poppy": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:pot_poppy hand 0 minecraft:air inv []",
+    "potAir+projectFlower": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:vpot_flower hand 0 minecraft:air inv []",
+    "potPoppy.emptyHand": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e minecraft:flower_pot hand 1 minecraft:poppy inv [1 minecraft:poppy ]",
+    "vanillaPottedPoppy.getPotted": "minecraft:poppy",
+    "potPoppy.getPotted": "minecraft:poppy",
+    "potAir.getPotted": "minecraft:air",
+    "vanillaPot.getPotted": "minecraft:air",
+    "potAir.cloneItem": "1 msm_b503:pot_air",
+    "ownPot+poppy": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:own_pot_poppy hand 0 minecraft:air inv []",
+    "ownPotPoppy.emptyHand": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:own_pot hand 1 minecraft:poppy inv [1 minecraft:poppy ]",
+    "ownPot+projectFlower": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:own_pot_flower hand 0 minecraft:air inv []",
+    "ownPot+dandelion(not listed)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:own_pot hand 1 minecraft:dandelion inv [1 minecraft:dandelion 1 msm_b503:flower ]",
+    "ownPotFlower.emptyHand": "Success[swingSource\u003dNONE, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e msm_b503:own_pot hand 0 minecraft:air inv []",
+    "vanillaPot+dandelion(after own pot)": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]] -\u003e minecraft:potted_dandelion hand 0 minecraft:air inv []"
+  },
+  "X5.oxidizedCopperFloor": [
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:exposed_copper",
+        "0,0,0": "minecraft:copper_block",
+        "0,0,1": "minecraft:weathered_copper",
+        "0,0,2": "minecraft:weathered_copper",
+        "1,0,-1": "minecraft:weathered_copper",
+        "1,0,-2": "minecraft:weathered_copper",
+        "1,0,-3": "minecraft:weathered_copper",
+        "1,0,0": "minecraft:weathered_copper",
+        "1,0,1": "minecraft:weathered_copper",
+        "1,0,2": "minecraft:weathered_copper",
+        "1,0,3": "minecraft:weathered_copper",
+        "2,0,-1": "minecraft:weathered_copper",
+        "2,0,-2": "minecraft:weathered_copper"
+      },
+      "spawnTick": 3,
+      "listener": [
+        "load tick 3 at 4714553, 8, -1739647 below minecraft:oxidized_copper"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:copper_block",
+        "-1,0,-2": "minecraft:weathered_copper",
+        "-1,0,-3": "minecraft:weathered_copper",
+        "-1,0,0": "minecraft:weathered_copper",
+        "-1,0,1": "minecraft:weathered_copper",
+        "-2,0,2": "minecraft:weathered_copper",
+        "0,0,-1": "minecraft:exposed_copper",
+        "0,0,-2": "minecraft:exposed_copper",
+        "0,0,-3": "minecraft:exposed_copper",
+        "0,0,0": "minecraft:copper_block",
+        "1,0,-1": "minecraft:weathered_copper",
+        "1,0,1": "minecraft:weathered_copper"
+      },
+      "spawnTick": 15,
+      "listener": [
+        "load tick 15 at 4714553, 8, -1739647 below minecraft:oxidized_copper"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:exposed_copper",
+        "-1,0,0": "minecraft:copper_block",
+        "-1,0,1": "minecraft:weathered_copper",
+        "0,0,-1": "minecraft:weathered_copper",
+        "0,0,-2": "minecraft:copper_block",
+        "0,0,-3": "minecraft:weathered_copper",
+        "0,0,0": "minecraft:copper_block",
+        "0,0,1": "minecraft:weathered_copper",
+        "1,0,-1": "minecraft:weathered_copper"
+      },
+      "spawnTick": 27,
+      "listener": [
+        "load tick 27 at 4714553, 8, -1739647 below minecraft:oxidized_copper"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:copper_block",
+        "-1,0,0": "minecraft:weathered_copper",
+        "-1,0,1": "minecraft:weathered_copper",
+        "-2,0,-1": "minecraft:copper_block",
+        "-2,0,-2": "minecraft:weathered_copper",
+        "-3,0,-1": "minecraft:weathered_copper",
+        "0,0,-1": "minecraft:exposed_copper",
+        "0,0,0": "minecraft:copper_block",
+        "0,0,1": "minecraft:weathered_copper",
+        "1,0,-1": "minecraft:weathered_copper",
+        "1,0,-2": "minecraft:weathered_copper",
+        "1,0,0": "minecraft:exposed_copper"
+      },
+      "spawnTick": 39,
+      "listener": [
+        "load tick 39 at 4714553, 8, -1739647 below minecraft:oxidized_copper"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:weathered_copper",
+        "-1,0,0": "minecraft:weathered_copper",
+        "-2,0,-1": "minecraft:weathered_copper",
+        "-3,0,-2": "minecraft:weathered_copper",
+        "0,0,-1": "minecraft:weathered_copper",
+        "0,0,0": "minecraft:copper_block",
+        "1,0,-2": "minecraft:weathered_copper",
+        "1,0,-3": "minecraft:weathered_copper",
+        "1,0,0": "minecraft:exposed_copper",
+        "1,0,1": "minecraft:weathered_copper",
+        "1,0,2": "minecraft:weathered_copper",
+        "2,0,-2": "minecraft:copper_block",
+        "2,0,1": "minecraft:exposed_copper",
+        "2,0,2": "minecraft:weathered_copper",
+        "3,0,1": "minecraft:copper_block"
+      },
+      "spawnTick": 51,
+      "listener": [
+        "load tick 51 at 4714553, 8, -1739647 below minecraft:oxidized_copper"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,1": "minecraft:weathered_copper",
+        "-2,0,2": "minecraft:weathered_copper",
+        "0,0,0": "minecraft:copper_block",
+        "0,0,1": "minecraft:weathered_copper",
+        "1,0,-1": "minecraft:weathered_copper",
+        "1,0,0": "minecraft:exposed_copper",
+        "1,0,2": "minecraft:weathered_copper",
+        "2,0,1": "minecraft:exposed_copper",
+        "2,0,2": "minecraft:weathered_copper",
+        "2,0,3": "minecraft:weathered_copper",
+        "3,0,2": "minecraft:weathered_copper"
+      },
+      "spawnTick": 63,
+      "listener": [
+        "load tick 63 at 4714553, 8, -1739647 below minecraft:oxidized_copper"
+      ]
+    }
+  ],
+  "X5.oxidizedCopperFloorWithRod": [
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:weathered_copper",
+        "-1,0,0": "minecraft:weathered_copper",
+        "-2,0,0": "minecraft:weathered_copper",
+        "0,0,-1": "minecraft:weathered_copper",
+        "0,0,-2": "minecraft:weathered_copper",
+        "0,0,0": "minecraft:weathered_copper",
+        "0,0,1": "minecraft:weathered_copper",
+        "0,1,0": "minecraft:lightning_rod",
+        "1,0,-1": "minecraft:exposed_copper",
+        "1,0,-2": "minecraft:weathered_copper"
+      },
+      "spawnTick": 75,
+      "listener": [
+        "load tick 75 at 4714553, 9, -1739647 below minecraft:lightning_rod"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-2": "minecraft:exposed_copper",
+        "-1,0,0": "minecraft:weathered_copper",
+        "-1,0,1": "minecraft:weathered_copper",
+        "-2,0,-1": "minecraft:weathered_copper",
+        "-2,0,0": "minecraft:weathered_copper",
+        "0,0,-1": "minecraft:copper_block",
+        "0,0,1": "minecraft:weathered_copper",
+        "0,0,3": "minecraft:weathered_copper",
+        "0,1,0": "minecraft:lightning_rod",
+        "1,0,-2": "minecraft:weathered_copper",
+        "1,0,0": "minecraft:weathered_copper",
+        "1,0,1": "minecraft:weathered_copper",
+        "1,0,2": "minecraft:weathered_copper",
+        "1,0,3": "minecraft:weathered_copper",
+        "2,0,0": "minecraft:weathered_copper",
+        "2,0,1": "minecraft:weathered_copper",
+        "2,0,2": "minecraft:weathered_copper",
+        "2,0,3": "minecraft:weathered_copper",
+        "3,0,2": "minecraft:weathered_copper"
+      },
+      "spawnTick": 87,
+      "listener": [
+        "load tick 87 at 4714553, 9, -1739647 below minecraft:lightning_rod"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,0": "minecraft:copper_block",
+        "-1,0,1": "minecraft:weathered_copper",
+        "-2,0,0": "minecraft:weathered_copper",
+        "-2,0,1": "minecraft:copper_block",
+        "-2,0,2": "minecraft:weathered_copper",
+        "-3,0,1": "minecraft:weathered_copper",
+        "-3,0,2": "minecraft:weathered_copper",
+        "0,0,1": "minecraft:weathered_copper",
+        "0,1,0": "minecraft:lightning_rod"
+      },
+      "spawnTick": 99,
+      "listener": [
+        "load tick 99 at 4714553, 9, -1739647 below minecraft:lightning_rod"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:weathered_copper",
+        "0,0,0": "minecraft:weathered_copper",
+        "0,0,1": "minecraft:weathered_copper",
+        "0,1,0": "minecraft:lightning_rod",
+        "1,0,0": "minecraft:exposed_copper"
+      },
+      "spawnTick": 111,
+      "listener": [
+        "load tick 111 at 4714553, 9, -1739647 below minecraft:lightning_rod"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,0": "minecraft:copper_block",
+        "0,0,-1": "minecraft:exposed_copper",
+        "0,0,0": "minecraft:copper_block",
+        "0,1,0": "minecraft:lightning_rod",
+        "1,0,-1": "minecraft:exposed_copper"
+      },
+      "spawnTick": 123,
+      "listener": [
+        "load tick 123 at 4714553, 9, -1739647 below minecraft:lightning_rod"
+      ]
+    },
+    {
+      "changes": {
+        "-1,0,-1": "minecraft:weathered_copper",
+        "-1,0,0": "minecraft:exposed_copper",
+        "-1,0,1": "minecraft:copper_block",
+        "0,0,-1": "minecraft:copper_block",
+        "0,0,-2": "minecraft:weathered_copper",
+        "0,0,0": "minecraft:weathered_copper",
+        "0,0,1": "minecraft:weathered_copper",
+        "0,1,0": "minecraft:lightning_rod",
+        "1,0,-1": "minecraft:exposed_copper",
+        "1,0,0": "minecraft:weathered_copper",
+        "1,0,1": "minecraft:weathered_copper",
+        "1,0,2": "minecraft:weathered_copper",
+        "2,0,-2": "minecraft:weathered_copper",
+        "2,0,0": "minecraft:weathered_copper",
+        "2,0,1": "minecraft:exposed_copper",
+        "3,0,-1": "minecraft:weathered_copper",
+        "3,0,0": "minecraft:weathered_copper",
+        "3,0,1": "minecraft:weathered_copper"
+      },
+      "spawnTick": 135,
+      "listener": [
+        "load tick 135 at 4714553, 9, -1739647 below minecraft:lightning_rod"
+      ]
+    }
+  ],
+  "X5.projectExposedTinFloor.routeOn": [
+    {
+      "changes": {
+        "0,0,0": "msm_test:weathering_tin"
+      },
+      "spawnTick": 183,
+      "listener": [
+        "load tick 183 at 4714553, 8, -1739647 below msm_test:weathering_exposed_tin",
+        "scraped project tin at 4714553, 7, -1739647"
+      ]
+    },
+    {
+      "changes": {
+        "0,0,0": "msm_test:weathering_tin"
+      },
+      "spawnTick": 195,
+      "listener": [
+        "load tick 195 at 4714553, 8, -1739647 below msm_test:weathering_exposed_tin",
+        "scraped project tin at 4714553, 7, -1739647"
+      ]
+    },
+    {
+      "changes": {
+        "0,0,0": "msm_test:weathering_tin"
+      },
+      "spawnTick": 207,
+      "listener": [
+        "load tick 207 at 4714553, 8, -1739647 below msm_test:weathering_exposed_tin",
+        "scraped project tin at 4714553, 7, -1739647"
+      ]
+    }
+  ],
+  "X5.projectOxidizedTinFloor": [
+    {
+      "changes": {},
+      "spawnTick": 147,
+      "listener": [
+        "load tick 147 at 4714553, 8, -1739647 below msm_test:weathering_oxidized_tin"
+      ]
+    },
+    {
+      "changes": {},
+      "spawnTick": 159,
+      "listener": [
+        "load tick 159 at 4714553, 8, -1739647 below msm_test:weathering_oxidized_tin"
+      ]
+    },
+    {
+      "changes": {},
+      "spawnTick": 171,
+      "listener": [
+        "load tick 171 at 4714553, 8, -1739647 below msm_test:weathering_oxidized_tin"
+      ]
+    }
+  ],
+  "X6.inPlace": {
+    "fenceBefore": "msm_b503:w_fence[east\u003dfalse,north\u003dfalse,south\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]",
+    "fenceTicks": 10,
+    "fenceAfter": "msm_b503:w_fence_exposed[east\u003dfalse,north\u003dfalse,south\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]",
+    "neighbourAfter": "msm_b503:w_fence[east\u003dfalse,north\u003dfalse,south\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]"
+  },
+  "X6.types": {
+    "vanillaCopper": {
+      "start": "minecraft:copper_block",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "minecraft:exposed_copper"
+    },
+    "rod": {
+      "start": "msm_b503:w_rod[facing\u003deast]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_rod_exposed[facing\u003deast]"
+    },
+    "button": {
+      "start": "msm_b503:w_button[face\u003dfloor,facing\u003dwest,powered\u003dfalse]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_button_exposed[face\u003dfloor,facing\u003dwest,powered\u003dfalse]"
+    },
+    "buttonPowered": {
+      "start": "msm_b503:w_button[face\u003dfloor,facing\u003dnorth,powered\u003dtrue]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_button_exposed[face\u003dfloor,facing\u003dnorth,powered\u003dtrue]"
+    },
+    "plate": {
+      "start": "msm_b503:w_plate[powered\u003dfalse]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_plate_exposed[powered\u003dfalse]"
+    },
+    "fence": {
+      "start": "msm_b503:w_fence[east\u003dfalse,north\u003dtrue,south\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_fence_exposed[east\u003dfalse,north\u003dtrue,south\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]"
+    },
+    "gate": {
+      "start": "msm_b503:w_gate[facing\u003dsouth,in_wall\u003dfalse,open\u003dtrue,powered\u003dfalse]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_gate_exposed[facing\u003dsouth,in_wall\u003dfalse,open\u003dtrue,powered\u003dfalse]"
+    },
+    "wall": {
+      "start": "msm_b503:w_wall[east\u003dnone,north\u003dnone,south\u003dnone,up\u003dfalse,waterlogged\u003dfalse,west\u003dnone]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_wall_exposed[east\u003dnone,north\u003dnone,south\u003dnone,up\u003dfalse,waterlogged\u003dfalse,west\u003dnone]"
+    },
+    "wallWaterlogged": {
+      "start": "msm_b503:w_wall[east\u003dnone,north\u003dnone,south\u003dnone,up\u003dtrue,waterlogged\u003dtrue,west\u003dnone]",
+      "isRandomlyTicking": true,
+      "rate": 0.0436,
+      "into": "msm_b503:w_wall_exposed[east\u003dnone,north\u003dnone,south\u003dnone,up\u003dtrue,waterlogged\u003dtrue,west\u003dnone]"
+    }
+  },
+  "X7": {
+    "placeIntoWater": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+    "placedState": "msm_b503:wet_chest[open\u003dfalse,waterlogged\u003dtrue]",
+    "fluid": "net.minecraft.world.level.material.WaterFluid$Source@727956bb[falling\u003dtrue]",
+    "blockEntity": "MsmStorageBlockEntity []",
+    "menu": "ChestMenu slots 63",
+    "bucketPickup": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "afterBucket": "msm_b503:wet_chest[open\u003dtrue,waterlogged\u003dtrue] hand 1 minecraft:bucket",
+    "waterBucketBack": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003dnull]]",
+    "afterWaterBucket": "msm_b503:wet_chest[open\u003dtrue,waterlogged\u003dtrue]",
+    "wetChestEntity": "MsmStorageBlockEntity []",
+    "upperHopper": "HopperBlockEntity []",
+    "chest": "MsmStorageBlockEntity []",
+    "lowerHopper": "HopperBlockEntity [0\u003d3 minecraft:diamond ]",
+    "comparator": 1,
+    "afterBreak": "minecraft:water[level\u003d0]"
+  },
+  "X8": {
+    "placeA": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+    "placeB": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+    "stateA": "msm_b503:double_chest[facing\u003dsouth,type\u003dright,waterlogged\u003dfalse]",
+    "stateB": "msm_b503:double_chest[facing\u003dsouth,type\u003dleft,waterlogged\u003dfalse]",
+    "entityA": "DChestEntity []",
+    "menu": "ChestMenu rows 6 container size 54 class CompoundContainer",
+    "halfA": "DChestEntity [1\u003d2 minecraft:gold_ingot ]",
+    "halfB": "DChestEntity [13\u003d5 minecraft:emerald ]",
+    "comparatorA": 1,
+    "comparatorB": 1,
+    "halfAAfterHoppers": "DChestEntity [0\u003d1 minecraft:diamond 1\u003d2 minecraft:gold_ingot 2\u003d1 minecraft:coal ]",
+    "halfBAfterHoppers": "DChestEntity [13\u003d5 minecraft:emerald ]",
+    "aAfterBreakingB": "msm_b503:double_chest[facing\u003dsouth,type\u003dsingle,waterlogged\u003dfalse]",
+    "dropsOfB": [
+      "5 minecraft:emerald"
+    ],
+    "halfAAfterBreak": "DChestEntity [0\u003d1 minecraft:diamond 1\u003d2 minecraft:gold_ingot 2\u003d1 minecraft:coal ]",
+    "sneakPlace": "Success[swingSource\u003dPREDICTED, itemContext\u003dItemContext[wasItemInteraction\u003dtrue, heldItemTransformedTo\u003d0 minecraft:air]]",
+    "aAfterSneak": "msm_b503:double_chest[facing\u003dsouth,type\u003dsingle,waterlogged\u003dfalse]",
+    "bAfterSneak": "msm_b503:double_chest[facing\u003dsouth,type\u003dsingle,waterlogged\u003dfalse]",
+    "renderShape": "MODEL"
+  },
+  "X9": {
+    "ann.first": "[]",
+    "ben.first": "[]",
+    "ann.second": "[0\u003d4 minecraft:diamond ]",
+    "ann.otherBlockId": "[]",
+    "ben.second": "[3\u003d2 minecraft:emerald ]",
+    "ann.deadBeforeRespawn": false,
+    "ann.respawnedNewObject": true,
+    "ann.attachmentAfterRespawn": "{msm_b503:store\u003d[4 minecraft:diamond, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air]}",
+    "ann.afterRespawn": "[0\u003d4 minecraft:diamond ]",
+    "ann.netherSameObject": true,
+    "ann.netherLevel": "minecraft:the_nether",
+    "ann.attachmentInNether": "{msm_b503:store\u003d[4 minecraft:diamond, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air, 0 minecraft:air]}",
+    "ann.backFromNether": "[0\u003d4 minecraft:diamond ]",
+    "ann.savedKeys": [
+      "fabric:attachments"
+    ],
+    "ann.savedAttachment": "{\"msm_b503:store\":{\"msm_b503:store\":[{count:4,id:\"minecraft:diamond\"},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}]}}"
+  }
+}

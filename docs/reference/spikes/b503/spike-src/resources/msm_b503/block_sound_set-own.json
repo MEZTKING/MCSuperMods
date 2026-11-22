@@ -1,0 +1,9 @@
+{
+  "break_sound": "msm_b503:own.break",
+  "fall_sound": "msm_b503:own.fall",
+  "hit_sound": "msm_b503:own.hit",
+  "pitch": 1.0,
+  "place_sound": "msm_b503:own.place",
+  "step_sound": "msm_b503:own.step",
+  "volume": 1.0
+}

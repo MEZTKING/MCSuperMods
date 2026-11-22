@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=left": {
+      "model": "msm_b503:block/double_chest_left"
+    },
+    "type=right": {
+      "model": "msm_b503:block/double_chest_right"
+    },
+    "type=single": {
+      "model": "msm_b503:block/double_chest_single"
+    }
+  }
+}

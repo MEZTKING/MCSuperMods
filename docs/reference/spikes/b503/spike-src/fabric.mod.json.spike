@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "msm_runtime_gametest",
+  "version": "0.0.0",
+  "name": "MSM Runtime GameTests",
+  "description": "GameTests for msm_runtime; ships msm/msm_spike/ (blocks, items) and msm/msm_test/ (blocks, items, entities with GeckoLib assets, scripts) definitions like a content jar would.",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike3.X01PlantClassesGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X02PlantSoilGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X04PotGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X05LightningGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X06WeatheringTypesGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X07WaterloggedContainerGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X08DoubleChestGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X09PlayerStoreGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X10SoundsGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X11SetTypeGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X12PairsGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X13WeatheringContainerGameTest",
+      "dev.mcsupermods.runtime.gametest.spike3.X14SpawnerGameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.mcsupermods.runtime.gametest.spike3.B503ClientGameTest"
+    ],
+    "main": [
+      "dev.mcsupermods.runtime.gametest.spike3.B503Mod"
+    ]
+  },
+  "depends": {
+    "msm_runtime": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

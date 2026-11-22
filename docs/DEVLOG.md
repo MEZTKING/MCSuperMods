@@ -6907,3 +6907,18 @@ Next
 **Next**
 - B507: list the seven `DataFolderKey` entries in the 1.19.0 CHANGELOG. B508: examples for the eleven kinds, empty `KINDS_AWAITING_EXAMPLES`, vanilla data pack load in the library test.
 - Whether the new registry folders belong in `FATAL_DATA_FOLDERS` (vanilla pack safety, ADR 0066) needs a vanilla server probe; the app's sidebar labels and the asset import for `shaders/` are app follow-ups.
+## 2026-11-22 — executor — B503 spike: plants, pots, weathering, storage, sounds and pairs
+
+**What**
+- Answered X1–X14 of `docs/PLAN-vanilla-parity-3.md` by observation on 26.3 and 26.4-snapshot-7: a throwaway spike mod in the GameTest source set (`spike3/`, namespace `msm_b503`, its own main entrypoint; 22 GameTests in 13 classes on the GameTest server, one per question, and one client GameTest on a dedicated server made by `createServer()`, headless Mesa EGL). Plants were grown with forced random ticks and bone meal on vanilla's plant classes with `Properties` only and with the partner block linked; pots, a lightning series on vanilla and project copper, six weathering subclasses of the runtime's types, a waterlogged runtime container, a double chest on vanilla's `ChestBlock`, a per-player store in a Fabric attachment, own block sounds (26.3 `SoundType`, 26.4 a `block_sound_set` entry), own `BlockSetType`s, strip, flatten, till, wax, age and burn pairs for vanilla blocks, an ageing container and spawners. Signatures read with `javap` only.
+- Kept in `docs/reference/spikes/b503/`: the spike source, the two seams, the temporary resources and the observations (`server-*.json`, `client-*.json`); no screenshots or vanilla files. README line added. Spike code deleted from `engine-mod/`; `./gradlew build` green on 26.3 and with `-Pmc=26.4` (705 GameTests each).
+
+**Decisions**
+- X1: the head and body pairs (kelp, weeping, twisting, cave vines) work as project blocks when the head overrides `getBodyBlock` and the body `getHeadBlock`; cave vines also `useWithoutItem` and `getCloneItemStack` (else glow berries). Sugar cane, cactus and glow lichen need no override. Bamboo and dripleaf name vanilla blocks in growth, bone meal and survival (stalk height and leaves, the shoot turning into vanilla bamboo, dripleaf bone meal placing vanilla stems and leaves).
+- X2: survival reads the `#minecraft:supports_*` tags; sugar cane's water check accepts water, waterlogged blocks, a project fluid in `#minecraft:water`, frosted ice and `#minecraft:supports_sugar_cane_adjacently`.
+- X4: a pot on vanilla's `FlowerPotBlock` holding a vanilla plant takes over vanilla's empty pot for that plant; a project pot needs its own class and map (works, vanilla's pot untouched).
+- Go: X5 (lightning through `ServerEntityEvents.ENTITY_LOAD`, no Mixin), X6, X7, X8 (vanilla `ChestBlock` subclass, own block entity type, block models), X9, X13 (copy route; `Weathering.replace` drops the contents), X14. ADR 0105 D1 on 26.4: own sounds are a `block_sound_set` world registry entry (synchronised, fixed per world load, not reloadable). D3: strip, flatten, till and wax by callback on both versions, burn by the `Flammability` routes; only `age` on 26.4 needs reserve B546.
+- The client GameTest needs `ALSOFT_DRIVERS=null` so OpenAL opens a null device and sounds reach a `SoundEventListener`.
+
+**Next**
+- Main session: copy the report's "Notes for the plan" into the plan and ADRs 0103–0105 (amendments), then B505.

@@ -1,0 +1,106 @@
+{
+  "own.break": {
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.break",
+        "type": "event"
+      }
+    ]
+  },
+  "own.fall": {
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.fall",
+        "type": "event"
+      }
+    ]
+  },
+  "own.hit": {
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.hit",
+        "type": "event"
+      }
+    ]
+  },
+  "own.place": {
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.place",
+        "type": "event"
+      }
+    ]
+  },
+  "own.step": {
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.step",
+        "type": "event"
+      }
+    ]
+  },
+  "set.button_off": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.button_on": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.door_close": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.door_open": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.plate_off": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.plate_on": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.trapdoor_close": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  },
+  "set.trapdoor_open": {
+    "sounds": [
+      {
+        "name": "minecraft:block.wooden_door.open",
+        "type": "event"
+      }
+    ]
+  }
+}

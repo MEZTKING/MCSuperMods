@@ -1,0 +1,60 @@
+{
+  "client.chests": {
+    "screenshot": "screenshots/0002_b503_chests_26.4-alpha.7.png",
+    "clientStates": [
+      "msm_b503:wet_chest[open\u003dfalse,waterlogged\u003dtrue]",
+      "net.minecraft.world.level.material.WaterFluid@339cde4b[level\u003d8,source\u003dtrue]",
+      "msm_b503:double_chest[facing\u003dnorth,type\u003dleft,waterlogged\u003dfalse]",
+      "msm_b503:double_chest[facing\u003dnorth,type\u003dright,waterlogged\u003dfalse]"
+    ]
+  },
+  "client.plants": {
+    "screenshot": "screenshots/0000_b503_plants_26.4-alpha.7.png",
+    "clientBlockLight.caveVinesWithBerries": 10,
+    "clientBlockLight.lichen": 7,
+    "clientStates": [
+      "msm_b503:kelp_plant",
+      "msm_b503:kelp[age\u003d0]",
+      "msm_b503:weeping[age\u003d0]",
+      "msm_b503:twisting[age\u003d0]",
+      "msm_b503:cave[age\u003d0,berries\u003dtrue]",
+      "msm_b503:cane_naked[age\u003d0]",
+      "msm_b503:cactus_naked[age\u003d0]",
+      "msm_b503:shoot",
+      "msm_b503:bamboo_naked[age\u003d0,leaves\u003dnone,stage\u003d0]",
+      "msm_b503:big_leaf_naked[facing\u003dnorth,tilt\u003dnone,waterlogged\u003dfalse]",
+      "msm_b503:small_leaf_naked[facing\u003dnorth,half\u003dlower,waterlogged\u003dfalse]",
+      "msm_b503:lichen_naked[down\u003dfalse,east\u003dfalse,north\u003dfalse,south\u003dtrue,up\u003dfalse,waterlogged\u003dfalse,west\u003dfalse]"
+    ]
+  },
+  "client.pots": {
+    "screenshot": "screenshots/0001_b503_pots_26.4-alpha.7.png",
+    "order": "vanilla pot + project flower, vanilla potted poppy, own pot, own pot + poppy, own pot + project flower, FlowerPotBlock(poppy) project"
+  },
+  "client.sounds": {
+    "clientResolved": {
+      "key": "Optional[ResourceKey[minecraft:block_sound_set / msm_b503:own]]",
+      "holder": "Optional[ResourceKey[minecraft:block_sound_set / msm_b503:own]]",
+      "isEmpty": false,
+      "break": "msm_b503:own.break",
+      "step": "msm_b503:own.step",
+      "place": "msm_b503:own.place",
+      "hit": "msm_b503:own.hit",
+      "fall": "msm_b503:own.fall",
+      "volume": 1.0,
+      "pitch": 1.0
+    },
+    "place": [
+      "msm_b503:own.place"
+    ],
+    "placedAt": "BlockPos{x\u003d244, y\u003d-60, z\u003d-5}",
+    "break": [
+      "msm_b503:own.break"
+    ],
+    "step": [
+      "msm_b503:own.step",
+      "msm_b503:own.step",
+      "msm_b503:own.step"
+    ]
+  }
+}
