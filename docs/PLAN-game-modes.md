@@ -137,7 +137,7 @@ The rules of `docs/HANDOFF.md` "Rules for every brief" (moved there from the van
 
 - Vanilla parity 3 must be closed (B544); this plan reads its kinds (`msm:game_rule`, `msm:stat`, dialogs, fluid mixing).
 - The next client batch (custom screens, renderers) is independent; no shared files.
-- **ADR numbers:** 0113–0117. **Brief ids:** B547–B564. **Versions:** plugin API 1.21.0; no Script API change (Rules compile to `runCommand`, G13).
+- **ADR numbers:** 0113–0117. **Brief ids:** B547–B564. **Versions:** plugin API **1.22.0** (decided 2026-11-22 after B574: live world generation runs first and its B577 takes 1.21.0 for `Target.worldgen.terrainPreview`, so every "1.21.0" in this plan and in ADR 0113 D8 reads 1.22.0, which B550 writes in when it starts); no Script API change (Rules compile to `runCommand`, G13).
 
 ## Waves
 

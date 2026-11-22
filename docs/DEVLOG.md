@@ -8098,3 +8098,29 @@ Next
 
 **Next**
 - `engine-mod/CLAUDE.md` (orchestrator): the idle roost's bound (80 goal checks) and the GameTest count 843.
+
+## 2026-11-22 — orchestrator — live world generation: ADR 0119 and the plan amended after the spike B574
+
+**What**
+- `docs/adr/0119-live-worldgen-preview.md`: a new section "Amendment after the spike (B574, 2026-11-22)" and the decisions that moved changed in place: D3 (the seams: pre-pass, parser front, rule front, own surface pass, own cell-grid fill, walker, one world a worker; the deepslate pin), D4 (the jar's path list, no `dimension` folder, the biome lists not in the jar), D6 (levels per target), D8 (the window fixed and chunk-aligned), D13 (tolerances), D14 (budgets with their verdicts), D16 (one target fact), the size line in Consequences and the Status.
+- `docs/PLAN-live-worldgen.md`: status line, a section "Amendment after B574" (the decision table and the owner-file check per wave), limits WL15–WL17 and reworded WL6–WL8, WF6 (18 placement modifier types), the rules (seam stubs, no fork, 0.45 MB), the waves (B592 in wave 4, B593–B595 on hold) and the briefs B576–B585 and the reserves rewritten to the spike's answers.
+- `docs/PLAN-game-modes.md`: one line (its plugin API number). `docs/ROADMAP.md`: the add-on's heading and wave lines, and a housekeeping line for deepslate 0.27.3.
+- No source file changed; nothing was built or run.
+
+**Decisions**
+- **D3 go** with fixes F1–F10 in `@msm/terrain`, without forking deepslate. B576 stubs three seam files (`extensions/index.ts`, `features/index.ts`, `presets.ts`) so wave 3 and 4 briefs never edit a wave 2 file.
+- **D6 per target:** 26.3's biome layout, and on both targets the land shape, aquifers, noise caves and supported surface rules, are "as in the game, checked"; the End (both targets) and 26.4-snapshot-7's biome layout are approximate and labelled, from a target fact rather than a version check. They are shown, not held back (vetoable).
+- **D8 no-go** for a bigger area: 48 by 32 by 48, aligned to 3 by 3 chunks; the engine fills only the window's height.
+- **D13 tolerances:** fixture biomes 99.5 %, cell class 99 %, height exact 95 % and within one block 98 %, top four blocks 95 %; the vanilla CI step fails only below biomes 99.5 % (26.3), cells 98 %, heights exact 85 %. `multi_noise` cells on a target with an approximate layout, and the End, are reported, not gated.
+- **D14:** coarse map go; full map go for Biomes, Height waits for B578's per-column cache and shades from a coarser grid until then; side cut go with a coarse pass first; ground go if F10 and the window-height fill bring it under 1.5 s (else recorded as missed at the close, not a stop); size **0.45 MB**, with `ClimateMap` moving into the worker (B582) as the first step if a stop line nears, before the gzip reserve.
+- **D16 and the API numbers:** one fact, `Target.worldgen.terrainPreview` (`dataFolders`, `approximate`). The game modes plan had not taken 1.21.0 in code (`API_VERSION` is 1.20.0) and live world generation runs first, so **B577 takes plugin API 1.21.0 and the game modes plan's B550 takes 1.22.0** (the draft had them the other way round). Said in both plans; ADR 0113 D8 and the live views plan's "Versions" line still carry the old numbers (outside this session's files).
+- **Reserves:** B592 go, scheduled in wave 4 as the second engine-mod brief of the plan (owner files: engine-mod `dev/`, the main stub B577 leaves, `presets.ts`); B593, B594 and B595 hold.
+- **Where the spike's lists went:** the jar path list into B577 as the fact's `dataFolders`; the feature subset and the 18 modifier types into B583; the interface into B576 by pointing at the README section; the seed reader (`world_gen_settings.dat`) into B577, because it needs `@msm/interop` and IPC, which only B577 owns (B582 shows it).
+- **B577 re-extraction:** on the schema bump the app extracts again by itself when the recorded jar is still there, else the existing banner.
+- **B581's scope** is what is missing: `bandlands`, `ore_vein`, `hole`, `steep`, `temperature`, `upscale` beyond linear, `domain_warp`, and the flat generator (moved from B578, which gained F1–F10 and the height cache); debug stays reported; `multi_noise` presets only through B592. B579's fixture gains a case for each.
+- deepslate 0.27.3 is a ROADMAP housekeeping line for after 2026-11-30, not a brief.
+
+**Next**
+- Launch B576 (Sonnet), then B577 (Opus), each from the commit of this entry.
+- At B550's start, or in the next docs pass: ADR 0113 D8 and `docs/PLAN-live-views.md` "Versions" to the swapped numbers; HANDOFF's live world generation paragraph ("ADR 0119 not yet amended") at the next handover.
+- The user's veto points added by the amendment are listed in ADR 0119's Status.
