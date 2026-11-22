@@ -31,6 +31,8 @@ A boat item cannot also be a tool, a weapon, armour, a shield, a throwable, food
 
 A boat of yours is Minecraft's boat under your name: paddling, speed, ice, two seats, mobs that get in, breaking it with a few hits, and the chest boat's chest screen are all vanilla's. A dispenser places it on water, as it does vanilla's boats. It floats on Minecraft's water and on a water-like [fluid](fluids.md) of yours.
 
+A boat is placed only where its whole box touches no block, which is Minecraft's own rule: aim at open water (or open ground), not at a spot against a wall or a bank. If nothing happens when you use the item, move a block away and try again.
+
 ## Problems
 
 **Problems** says, in plain words: a chest boat whose name another thing in your mod already has (rename one), a boat whose planks are missing (the recipe cannot be made: make `<wood>_planks`, as the Wood set does), a boat or chest boat with no picture (it is drawn with the missing-picture pattern: draw it, or name a Minecraft wood), boat pictures or a chest boat name on an item that is not a boat or has no chest boat (they are left out), a boat with another use of its own, and a boat that stacks to more than one. In Very easy mode they appear in **Things to fix**.

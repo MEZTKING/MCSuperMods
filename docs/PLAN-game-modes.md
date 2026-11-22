@@ -76,7 +76,7 @@ Read in this repository at 9ce013f on 2026-11-22. No game jar was opened in this
 | G17 | No world or map export (exporters: vanilla packs, content jar, Java project, structure `.nbt`/`.schem`, modpacks of ADR 0046); world backups zip a whole world (ADR 0102); interop reads `level.dat` names and chunks only | `app/src/main/platform/world-backups.ts`, `packages/interop/src/nbt/level-dat.ts`, `world/` |
 | G18 | Try it grounds `grid`, `flat`, `quick`, `world` in a 48 x 32 x 48 area; no empty or structure ground; functions are not run (commands logged); fluids do not flow (limit Q29) | `packages/sim/src/grounds/ground.ts`, `sim/src/types.ts`, `sim/src/commands/run.ts`, `sim/src/fluids/area.ts` |
 | G19 | Trades: generic `villager_trade`, `trade_set`; flows Villager trade, Wandering merchant; loot additions to vanilla tables only in the jar (Extra drop flow); an element with a vanilla id replaces the vanilla file | `datapack/src/kinds/generic.ts`, `library/src/starters/extra-drop.ts`, `docs/COVERAGE-AUDIT.md` 1.1 |
-| G20 | Vanilla parity 3 batch 2 adds `msm:game_rule`, `msm:stat`, the "Open a dialog" step, "A player gets an advancement", fluid mixing for project fluids (vanilla lava and water unchanged), argument types incl. `objective` and score holders | ADRs 0108, 0111; PLAN-vanilla-parity-3 B527 notes |
+| G20 | Vanilla parity 3 batch 2 adds `msm:game_rule`, `msm:stat`, the "Open a dialog" step, "A player gets an advancement", fluid mixing for project fluids (vanilla lava and water unchanged), argument types incl. `objective` and score holders | ADRs 0108 and 0111 with their findings at B544 (the vanilla parity 3 plan is deleted) |
 | G21 | Scoreboard, teams, boss bars: commands in functions; boss bars and titles also from scripts (ADR 0065) and the Rules step `show_boss_bar` | `docs/COVERAGE-AUDIT.md` 1.3 |
 | G22 | The Jigsaw structure flow places a village of huts in forests by `random_spread`; nothing places a structure once | `library/src/starters/jigsaw-structure.ts` |
 
@@ -124,7 +124,7 @@ Answered by B547 on both versions (26.3 and 26.4-snapshot-7) by observation: Gam
 
 ## Rules for every brief
 
-The rules of `docs/PLAN-vanilla-parity-3.md` "Rules for every brief" apply unchanged (clean room, no new dependency, git worktrees in the scratchpad with the given identity and no `git config`, disk and Gradle limits, stubs first, one owner per shared file per wave, notes for the plan, exit criteria, Try it line, plain words, models), with these names changed:
+The rules of `docs/HANDOFF.md` "Rules for every brief" (moved there from the vanilla parity 3 plan at its close, B544) apply unchanged (clean room, no new dependency, git worktrees in the scratchpad with the given identity and no `git config`, disk and Gradle limits, stubs first, one owner per shared file per wave, notes for the plan, exit criteria, Try it line, plain words, models), with these names changed:
 
 - **Stubs first.** B548 makes every shared registration point: the new plugin `packages/plugins/games` (`@msm/plugin-games`, made with `tools/new-plugin`), its stub kinds, its entry in the app's built-in plugin list, the empty Studio entries, `packages/sim/src/games/` stubs, the parity class, the fixture README and the skipped e2e specs.
 - **Format.** Only B549 edits `packages/schemas/mcdoc/msm/games.mcdoc` (new) and the vanilla overlay; `rules.mcdoc` belongs to B553. Run `node tools/build-msm-mcdoc/index.ts --check`.

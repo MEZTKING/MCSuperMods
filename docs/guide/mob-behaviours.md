@@ -54,7 +54,7 @@ The **Movement** section's **Moves by** chooses:
 **Habits** gives a mob one of six things vanilla mobs do, each with a few numbers:
 
 - **Swoops**: circles high above what it attacks, then dives at it, as a phantom does (**Circles this high above (blocks)**, **Dive speed**, **Swoops at**, **Fights back when hurt**). It must fly, hover or fly through walls, and it needs an attack to hit with.
-- **Roosts**: hangs upside down under a block by day, as a bat does, and lets go when a player comes within 4 blocks or it is hurt (**Roosts by day**, **Also roosts when it has nothing to do**, **Looks this far up for a roost (blocks)**).
+- **Roosts**: hangs upside down under a block by day, as a bat does, and lets go when a player comes within 4 blocks or it is hurt (**Roosts by day**, **Also roosts when it has nothing to do**, **Looks this far up for a roost (blocks)**). A mob that hangs when the world is saved still hangs when it loads; its saved data holds `Roosting` only while it hangs, so a `/data get` check finds nothing once it has let go.
 - **Collects items**: give it an item and it fetches more of the same for its owner, or for a note block it heard, as an allay does; an empty hand takes the item back (**Looks this far for items (blocks)**, **Brings items to a note block it heard**). Items its owner threw are left alone.
 - **Digs up items**: now and then digs on certain blocks and drops what it finds, as a sniffer does (**Digs on**, **What it digs up (a loot table)**, **Time between digs (ticks)**).
 - **Plays dead**: when badly hurt it lies still on its side, is left alone and gets better, as an axolotl does (**Plays dead for (ticks)**, **Gets better while playing dead**).

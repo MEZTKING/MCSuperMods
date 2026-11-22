@@ -176,7 +176,7 @@ For B574, on both targets unless said. Times are the median and worst of five on
 
 ## Rules for every brief
 
-The rules of `docs/PLAN-vanilla-parity-3.md` "Rules for every brief" apply (clean room, no new dependency, git worktrees in the scratchpad with the given identity and no `git config`, disk and Gradle limits, one owner per shared file per wave, notes for the plan, exit criteria, plain words, models), with these additions:
+The rules of `docs/HANDOFF.md` "Rules for every brief" (moved there from the vanilla parity 3 plan at its close, B544) apply (clean room, no new dependency, git worktrees in the scratchpad with the given identity and no `git config`, disk and Gradle limits, one owner per shared file per wave, notes for the plan, exit criteria, plain words, models), with these additions:
 
 - **Clean room for worldgen (user, 2026-11-22).** Only `javap` signatures of Mojang classes; never a method body. deepslate's source (MIT) may be read and used. A type deepslate lacks is written from the file format's field names and from what a real world generated from a small fixture shows; if that is not enough, it becomes limit WL6, not a guess.
 - **Vanilla worldgen JSON comes only from the user's own client jar at runtime**, cached under `<msmHome>/cache/`, as textures are. It is never committed, bundled, exported, written into a project or sent to the AI helper. Tests that need it run only where a jar is present (the `engine-mod` CI job) and skip elsewhere; every other test uses the self-contained fixture.

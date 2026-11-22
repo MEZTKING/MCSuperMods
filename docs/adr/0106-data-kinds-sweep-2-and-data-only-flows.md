@@ -2,7 +2,7 @@
 
 ## Context
 
-[ADR 0064](0064-data-kinds-sweep.md) D4 left out, as "not worth it now", `sulfur_cube_archetype`, `test_environment`, `test_instance`, `block_transformer`, the two context providers, `slot_source`, `block_sound_set`, shaders, post effects and waypoint styles; `wolf_sound_variant` waited for a vendored mcdoc that described it. The user's rule of 2026-11-14 makes each of these a gap if vanilla data or resource packs can carry it. At f6a8adc (fact H9 of [the plan](../PLAN-vanilla-parity-3.md#fact-table-h1-to-h16)):
+[ADR 0064](0064-data-kinds-sweep.md) D4 left out, as "not worth it now", `sulfur_cube_archetype`, `test_environment`, `test_instance`, `block_transformer`, the two context providers, `slot_source`, `block_sound_set`, shaders, post effects and waypoint styles; `wolf_sound_variant` waited for a vendored mcdoc that described it. The user's rule of 2026-11-14 makes each of these a gap if vanilla data or resource packs can carry it. At f6a8adc (fact H9 of [ADR 0112's fact table](0112-vanilla-parity-3-flows-studios-eject-try-it-and-tests.md#fact-table-h1-to-h16-moved-from-the-plan-at-b544)):
 
 - the 26.3 world data folders (`dev.worldDataFolders`) include `decorated_pot_pattern`, `block_transformer`, `test_environment`, `test_instance`, `sulfur_cube_archetype` and `wolf_sound_variant`, none with a kind; `decorated_pot_pattern` became data in 26.3 (the mcdoc says `since 26.3`);
 - the vendored mcdoc now describes `wolf_sound_variant` for 26.1 to 26.4 (a `concrete` node over `SoundVariant`);
