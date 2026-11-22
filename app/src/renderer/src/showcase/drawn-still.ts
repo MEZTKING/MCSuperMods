@@ -1,0 +1,201 @@
+/**
+ * The showcase's drawn still (ADR 0118 D7, D9; B568): what a card shows before its clip has
+ * played once, and always without WebGL. Up to three of the example's own pictures (its block
+ * pictures first, then its items', then the rest), each scaled by a whole number without
+ * smoothing, side by side on a tint taken from the first picture.
+ *
+ * - {@link stillPictures} and {@link composeStill} are pure: the same pictures give the same
+ *   bytes (B565: only the drawn still is byte-stable; taken stills are not).
+ * - {@link drawnStill} builds the example's bundle (no lowering), decodes its pictures with the
+ *   2D canvas, composes and encodes the still; cached as a promise by example and target.
+ *
+ * @packageDocumentation
+ */
+
+import type { ContentBundle, ContentBundleAsset, ExampleProject, Target } from '@msm/plugin-api';
+import type { RgbaImage } from '../components/texture-editor/pixels';
+import {
+  decodePicture,
+  encodePicture,
+  imageDataUrl,
+} from '../components/texture-editor/png-canvas';
+import { SHOWCASE_NAMESPACE } from './clip';
+
+/** The size of a still: the clips' picture, 320 by 180 (ADR 0118 D6). */
+export const STILL_WIDTH = 320;
+export const STILL_HEIGHT = 180;
+/** At most this many pictures in a drawn still. */
+export const STILL_PICTURES = 3;
+/** The space round and between the pictures. */
+const GAP = 16;
+/** The tint when the example has no pictures. */
+const PLAIN_TINT: readonly [number, number, number] = [58, 66, 74];
+
+const ORDER = ['textures/block/', 'textures/item/'];
+
+/**
+ * The pictures a drawn still shows: the bundle's PNGs under `textures/`, block pictures first,
+ * then items', then the rest, each group in bundle order; at most {@link STILL_PICTURES}.
+ */
+export function stillPictures(bundle: ContentBundle): ContentBundleAsset[] {
+  const pngs = bundle.assets.filter(
+    (asset) => asset.path.startsWith('textures/') && asset.path.endsWith('.png'),
+  );
+  const rank = (asset: ContentBundleAsset): number => {
+    const at = ORDER.findIndex((prefix) => asset.path.startsWith(prefix));
+    return at === -1 ? ORDER.length : at;
+  };
+  return pngs
+    .map((asset, index) => ({ asset, index }))
+    .sort((a, b) => rank(a.asset) - rank(b.asset) || a.index - b.index)
+    .slice(0, STILL_PICTURES)
+    .map((entry) => entry.asset);
+}
+
+/** The first frame of an animated strip (a picture taller than wide, by whole squares). */
+export function firstFrame(image: RgbaImage): RgbaImage {
+  const { width, height } = image;
+  if (height <= width || height % width !== 0) return image;
+  return { width, height: width, data: image.data.slice(0, width * width * 4) };
+}
+
+/** The mean colour of a picture's opaque pixels, or `null` when it has none. */
+export function meanColour(image: RgbaImage): [number, number, number] | null {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let n = 0;
+  for (let at = 0; at < image.data.length; at += 4) {
+    if ((image.data[at + 3] ?? 0) < 128) continue;
+    r += image.data[at] ?? 0;
+    g += image.data[at + 1] ?? 0;
+    b += image.data[at + 2] ?? 0;
+    n += 1;
+  }
+  return n === 0 ? null : [Math.round(r / n), Math.round(g / n), Math.round(b / n)];
+}
+
+/** The ground tint of a still: the first picture's mean colour, darkened so pictures stand out. */
+export function stillTint(first: RgbaImage | undefined): [number, number, number] {
+  const mean = first === undefined ? null : meanColour(first);
+  if (mean === null) return [...PLAIN_TINT];
+  return [
+    Math.round(mean[0] * 0.45 + 18),
+    Math.round(mean[1] * 0.45 + 18),
+    Math.round(mean[2] * 0.45 + 18),
+  ];
+}
+
+/**
+ * Composes a still: the pictures (first frames) side by side, each scaled by the largest whole
+ * number that fits its share of the width (at least 1), centred, on {@link stillTint}. Pure.
+ */
+export function composeStill(
+  pictures: readonly RgbaImage[],
+  width = STILL_WIDTH,
+  height = STILL_HEIGHT,
+): RgbaImage {
+  const shown = pictures.slice(0, STILL_PICTURES).map(firstFrame);
+  const data = new Uint8ClampedArray(width * height * 4);
+  const [tr, tg, tb] = stillTint(shown[0]);
+  for (let at = 0; at < data.length; at += 4) {
+    data[at] = tr;
+    data[at + 1] = tg;
+    data[at + 2] = tb;
+    data[at + 3] = 255;
+  }
+  if (shown.length === 0) return { width, height, data };
+  const cellWidth = Math.floor((width - GAP * (shown.length + 1)) / shown.length);
+  const cellHeight = height - GAP * 2;
+  const scales = shown.map((image) =>
+    Math.max(1, Math.floor(Math.min(cellWidth / image.width, cellHeight / image.height))),
+  );
+  const drawnWidths = shown.map((image, index) => image.width * (scales[index] ?? 1));
+  const total = drawnWidths.reduce((sum, one) => sum + one, 0) + GAP * (shown.length - 1);
+  let left = Math.floor((width - total) / 2);
+  shown.forEach((image, index) => {
+    const scale = scales[index] ?? 1;
+    const top = Math.floor((height - image.height * scale) / 2);
+    blit(image, scale, left, top, { width, height, data });
+    left += (drawnWidths[index] ?? 0) + GAP;
+  });
+  return { width, height, data };
+}
+
+/** Draws `image` scaled by `scale` (nearest neighbour) at (left, top), blending by alpha. */
+function blit(image: RgbaImage, scale: number, left: number, top: number, out: RgbaImage): void {
+  for (let y = 0; y < image.height * scale; y += 1) {
+    const oy = top + y;
+    if (oy < 0 || oy >= out.height) continue;
+    const sy = Math.floor(y / scale);
+    for (let x = 0; x < image.width * scale; x += 1) {
+      const ox = left + x;
+      if (ox < 0 || ox >= out.width) continue;
+      const from = (sy * image.width + Math.floor(x / scale)) * 4;
+      const alpha = image.data[from + 3] ?? 0;
+      if (alpha === 0) continue;
+      const to = (oy * out.width + ox) * 4;
+      for (let c = 0; c < 3; c += 1) {
+        const src = image.data[from + c] ?? 0;
+        const dst = out.data[to + c] ?? 0;
+        out.data[to + c] = Math.round((src * alpha + dst * (255 - alpha)) / 255);
+      }
+      out.data[to + 3] = 255;
+    }
+  }
+}
+
+/** How a drawn still decodes and encodes pictures (the 2D canvas; a stand-in in tests). */
+export interface StillCodec {
+  decode(bytes: Uint8Array): Promise<RgbaImage>;
+  encode(image: RgbaImage): Uint8Array;
+}
+
+/** The 2D canvas codec of the texture editor (`png-canvas.ts`). */
+export const CANVAS_CODEC: StillCodec = {
+  decode: (bytes) => decodePicture(bytes),
+  encode: encodePicture,
+};
+
+const cache = new Map<string, Promise<string>>();
+
+/** Forgets every drawn still (tests). */
+export function clearDrawnStills(): void {
+  cache.clear();
+}
+
+/**
+ * The drawn still of `example` on `target`, as a PNG `data:` URL: built once per session (a
+ * failed build is not kept). A picture that cannot be decoded is left out.
+ */
+export function drawnStill(
+  example: ExampleProject,
+  target: Target,
+  codec: StillCodec = CANVAS_CODEC,
+): Promise<string> {
+  const key = `${example.id}\u0000${target.id}`;
+  const hit = cache.get(key);
+  if (hit !== undefined) return hit;
+  const made = (async () => {
+    const bundle = await example.build({
+      namespace: SHOWCASE_NAMESPACE,
+      projectName: SHOWCASE_NAMESPACE,
+      target,
+      values: {},
+    });
+    const decoded: RgbaImage[] = [];
+    for (const asset of stillPictures(bundle)) {
+      try {
+        decoded.push(await codec.decode(asset.bytes));
+      } catch {
+        // A picture that cannot be read is left out.
+      }
+    }
+    return imageDataUrl(codec.encode(composeStill(decoded)));
+  })();
+  cache.set(key, made);
+  made.catch(() => {
+    if (cache.get(key) === made) cache.delete(key);
+  });
+  return made;
+}

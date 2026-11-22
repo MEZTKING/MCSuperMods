@@ -7758,3 +7758,17 @@ Next
 
 **Next**
 - B568 and B569 use `SHOWCASES` as it is; re-run `showcases.test.ts` after B540 merges.
+## 2026-11-22 — executor — B568 Showcase cards, gallery, stills and one live clip
+
+**What**
+- New in `app/src/renderer/src/showcase/` (ADR 0118 D6–D9, D11): `ShowcaseGallery.tsx` (a section labelled by the heading passed in, **Pause clips**, the cards in a wrapping row; at most one live card, which mounts the lazy `ClipView`; props `clips`, `examples`, `target`, `deps`, `vanilla`, `playClips` (the setting), `visible` (another view covers it), `onMake`, `onSeeExample`; test hooks `environment`, `webgl`, `clipView`, `codec`), `ShowcaseCard.tsx` (the picture as a button named "Clip: <title>" with the **Preview** tag and a Play or Pause chip; title, sentence, **Make this** (left out for `make: { type: 'example' }`) and **See the example**; without WebGL a plain picture and "This computer cannot show moving pictures here."), `ClipView.tsx` (the lazy chunk: `TryItScene` with `smaller`, `player.camera()`, `player.alpha`, `player.advance(elapsed)` in `onFrame` from the first drawn frame, the area's grid, particles, mobs and vehicles, `fluidLooks`, the example's `readAsset`, scripts from `window.msm.scripting` with `SCRIPT_API`; captions over the picture; the still taken in `onFrameDrawn` at `stillAt`, once per clip per session; the still covering the picture until the first frame and for two frames after a restart; `once` ends at the first restart; disposed on unmount), `live-clip.ts` (`chooseLiveClip`: hover, then focus, then the card played by hand, then the first card fully in view; nothing by itself with reduced motion, the setting off or Pause clips; nothing without WebGL, with the window hidden or out of focus, or covered; `browserLiveEnvironment` with the media query, visibility and focus, and `IntersectionObserver`), `drawn-still.ts` (up to three of the example's pictures, blocks first, whole-number scaled on a tint from the first; decoded and encoded with the 2D canvas, composed in pure code, cached by example and target), `still-cache.ts` (taken stills by clip, target and jar, in memory only).
+- Tests in `app/test/components/showcase/`: `gallery`, `clip-view` (over a stand-in `TryItScene`), `live-clip`, `drawn-still`, `still-cache`.
+
+**Decisions**
+- The picture itself is the play or pause button (Space or Enter, click), so no button sits inside another.
+- After the user pauses a card, no other card starts just by being in view (hover and focus still play).
+- `ClipView` rebuilds only when the clip, example, target, registry, plugins or vanilla block states change, not for a fresh `deps` object.
+- Not wired into Home or New project (B569).
+
+**Next**
+- B569: pass `showcasesFor(target, examples)` as `clips`, the preference as `playClips`, `visible={false}` while a dialog covers Home, stable `examples` and `vanillaBlockstates`.
