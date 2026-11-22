@@ -13,10 +13,16 @@
  * templates to the sample mod and checks that the tree holds `ModEffects.java` naming the
  * effect and one `ThrownItemEntity.java`.
  *
+ * A third test (eject 2c, B544) adds a trader who remembers you and a water-like fluid from their
+ * templates (the trader's model, animations and pictures are the sample villagers' pedlar's,
+ * copied under its id first) and checks that the tree holds the trader and fluid classes and
+ * that the export lists no `export.not-in-eject` warning: traders are ejected since eject 2c.
+ *
  * Gradle never runs here: CI builds the ejected sample projects (`engine-mod` job).
  */
 
 import {
+  copyFileSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -25,12 +31,13 @@ import {
   readFileSync,
   rmSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { defaultTargetId, targetById } from '@msm/targets';
 import { expect, type Locator, type Page, test } from 'playwright/test';
-import { appDir, type LaunchedApp, launchApp, outputDir } from './fixtures';
+import { appDir, type LaunchedApp, launchApp, openDockTab, outputDir } from './fixtures';
 
 const MOD_ID = 'msm_sample_mod';
 const SCRIPT_ID = `${MOD_ID}:glow`;
@@ -275,4 +282,95 @@ test('eject: a status effect and a throwable give ModEffects and ThrownItemEntit
   };
   expect(named('ModEffects.java')).toContain('frost_step');
   expect(named('ThrownItemEntity.java')).toContain('class ThrownItemEntity');
+});
+
+/** The sample villagers' pedlar, whose model, animations and pictures the trader borrows. */
+const VILLAGERS = join(appDir, '..', 'fixtures', 'sample-villagers-and-fluids');
+
+/** Copies the pedlar's model, animations, picture and spawn egg picture under `path`'s ids. */
+function seedMobFiles(projectDir: string, path: string): void {
+  const from = (rel: string) => join(VILLAGERS, rel);
+  const content = join(projectDir, 'content', MOD_ID);
+  const definition = (rel: string, fromId: string, toId: string) => {
+    const text = readFileSync(from(`content/msm_sample_villagers/${rel}`), 'utf8');
+    expect(text).toContain(`"${fromId}"`);
+    const target = join(content, rel.replace('pedlar', path));
+    mkdirSync(join(target, '..'), { recursive: true });
+    writeFileSync(target, text.replace(`"${fromId}"`, `"${toId}"`));
+  };
+  definition(
+    'geo_model/entity/pedlar.json',
+    'msm_sample_villagers:entity/pedlar',
+    `${MOD_ID}:entity/${path}`,
+  );
+  definition(
+    'animation/entity/pedlar_animations.json',
+    'msm_sample_villagers:entity/pedlar_animations',
+    `${MOD_ID}:entity/${path}_animations`,
+  );
+  const textures = join(projectDir, 'assets', MOD_ID, 'textures');
+  mkdirSync(join(textures, 'entity'), { recursive: true });
+  mkdirSync(join(textures, 'item'), { recursive: true });
+  copyFileSync(
+    from('assets/msm_sample_villagers/textures/entity/pedlar.png'),
+    join(textures, 'entity', `${path}.png`),
+  );
+  copyFileSync(
+    from('assets/msm_sample_villagers/textures/item/pedlar_spawn_egg.png'),
+    join(textures, 'item', `${path}_spawn_egg.png`),
+  );
+}
+
+test('eject: a trader and a fluid are ejected with no not-in-eject warning (eject 2c)', async () => {
+  base = mkdtempSync(join(tmpdir(), 'msm-eject-traders-'));
+  const folders = {
+    projectDir: join(base, MOD_ID),
+    outDir: join(base, 'out'),
+    msmHome: join(base, 'msm-home'),
+  };
+  cpSync(join(appDir, '..', 'fixtures', 'sample-mod'), folders.projectDir, { recursive: true });
+  seedMobFiles(folders.projectDir, 'fair_trader');
+  mkdirSync(outputDir, { recursive: true });
+  const launched = await launchApp({ reuse: folders });
+  launches.push(launched);
+  const { window } = launched;
+  await window.waitForLoadState('domcontentloaded');
+  await window.getByTestId('toolbar-open-project').click();
+  await expect(window.getByTestId(`element-row-${MOD_ID}:ruby_ore`)).toBeVisible();
+
+  await addFromTemplate(window, 'remembers', 'msm_entity_fair_trader', 'fair_trader');
+  await expect(window.getByTestId(`element-row-${MOD_ID}:fair_trader`)).toBeVisible();
+  await addFromTemplate(window, 'water-like', 'msm_fluid_water_like', 'swamp_water');
+  await expect(window.getByTestId(`element-row-${MOD_ID}:swamp_water`)).toBeVisible();
+
+  const dialog = await openJavaProjectDialog(window);
+  await dialog.getByTestId('java-project-dialog-submit').click();
+  await expect(dialog).toBeHidden();
+  const root = join(folders.outDir, MOD_ID);
+  await expect(toast(window)).toContainText(`Java project written to ${root}`, {
+    timeout: 30_000,
+  });
+
+  const javaFiles = (readdirSync(join(root, 'src/main/java'), { recursive: true }) as string[])
+    .map((path) => path.replaceAll('\\', '/'))
+    .filter((path) => path.endsWith('.java'));
+  const named = (name: string): string => {
+    const found = javaFiles.filter((path) => path.split('/').pop() === name);
+    expect(found, name).toHaveLength(1);
+    return readFileSync(join(root, 'src/main/java', found[0] as string), 'utf8');
+  };
+  // The trader's levels, reputation, demand and work site, and the fluid.
+  expect(named('MobTrader.java')).toContain('class MobTrader');
+  expect(named('TraderReputation.java')).toContain('class TraderReputation');
+  expect(named('ModFluids.java')).toContain('swamp_water');
+  expect(javaFiles.join('\n')).toMatch(/FairTrader\w*\.java/);
+
+  // The export names nothing as left out of the eject: no warning in the toast, and no
+  // `export.not-in-eject` (nor any other export problem) under Problems.
+  await expect(toast(window)).not.toContainText('warning');
+  await openDockTab(window, 'problems');
+  await expect(window.getByTestId('problems-panel')).toBeVisible();
+  await expect(window.locator('[data-code="export.not-in-eject"]')).toHaveCount(0);
+  await expect(window.getByTestId('export-problems')).toHaveCount(0);
+  await window.screenshot({ path: join(outputDir, 'eject-path-trader-fluid.png') });
 });

@@ -379,8 +379,8 @@ public class SampleMobsAndCommandsParityTest {
         });
     }
 
-    // 600 ticks: an idle roost starts by a one in 40 chance at each goal check, which 300 ticks missed now and then.
-    @GameTest(maxTicks = 600)
+    // An idle roost starts at the latest at RoostGoal's 80th goal check (about 160 ticks; B544), then the way up.
+    @GameTest(maxTicks = 300)
     public void theCaveFlitterHangsUnderABlockAndWakesWhenHurt(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         floor(helper);

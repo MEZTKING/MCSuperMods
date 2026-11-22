@@ -1,6 +1,8 @@
 package dev.mcsupermods.runtime.gametest;
 
 import dev.mcsupermods.runtime.components.EntityComponents;
+import dev.mcsupermods.runtime.components.Goal;
+import dev.mcsupermods.runtime.goals.RoostGoal;
 import dev.mcsupermods.runtime.registry.MsmAnimal;
 import dev.mcsupermods.runtime.registry.MsmMob;
 import dev.mcsupermods.runtime.registry.mob.MobBuckets;
@@ -363,6 +365,28 @@ public class MsmMob2GameTest {
             }
             helper.assertFalse(habits.roosting(), "a hurt mob kept hanging");
         });
+    }
+
+    /**
+     * B544: an idle roost (one chance in 40 at each goal check) starts at the latest at the
+     * {@link RoostGoal#IDLE_MAX_CHECKS}th check, whatever the mob's random says; counted in {@code canUse} calls, not ticks.
+     * Without the bound a round runs past 80 checks about one time in eight, so twenty rounds catch it.
+     */
+    @GameTest(structure = YARD)
+    public void anIdleRoostStartsWithinTheLastAllowedCheck(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(8, 6, 8), Blocks.STONE);
+        PathfinderMob mob = helper.spawnWithNoFreeWill(type("mob2_roost"), new BlockPos(8, 2, 8));
+        RoostGoal goal = new RoostGoal(mob, msm(mob).driver().habits(), new Goal.Roost(Optional.empty(), false, true, 8), true);
+        for (int round = 0; round < 20; round++) {
+            int checks = 0;
+            boolean started = false;
+            while (!started && checks < RoostGoal.IDLE_MAX_CHECKS) {
+                checks++;
+                started = goal.canUse();
+            }
+            helper.assertTrue(started, "round " + round + ": no roost after " + checks + " checks");
+        }
+        helper.succeed();
     }
 
     // D4 Habits

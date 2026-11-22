@@ -24,6 +24,9 @@ import {
   createConversation,
   DEFAULT_AI_SETTINGS,
   DEFAULT_LIMITS,
+  MOBS_COMMANDS_FLOW_ANSWERS,
+  MOBS_COMMANDS_PROMPT_CODES,
+  MOBS_COMMANDS_PROMPT_TEMPLATES,
   NEW_FLOW_PROMPT_IDS,
   PLANTS_STORAGE_FLOW_ANSWERS,
   PLANTS_STORAGE_PROMPT_CODES,
@@ -46,8 +49,11 @@ import { createMemoryFileSystem, type JsonObject } from '@msm/core';
 import { SEPARATE_RUNTIME_OPTION } from '@msm/exporters';
 import type { ElementTemplate, Json, TargetFacts } from '@msm/plugin-api';
 import {
+  BOAT_PROBLEM_CODES,
   blocksItemsTemplates,
+  CREATIVE_TAB_PROBLEM_CODES,
   FLUID_KIND,
+  FLUID_MIXING_PROBLEM_CODES,
   FLUID_PROBLEM_CODES,
   PLANT3_PROBLEM_CODES,
   SOUND_PROBLEM_CODES,
@@ -55,7 +61,9 @@ import {
 } from '@msm/plugin-blocks-items';
 import { controlsTemplates } from '@msm/plugin-controls';
 import {
+  ENTITIES_MOB2_PROBLEM_CODES,
   ENTITIES_VILLAGER_PROBLEM_CODES,
+  mob2Templates,
   vehicleTemplates,
   villagerTemplates,
 } from '@msm/plugin-entities';
@@ -72,7 +80,11 @@ import {
   STEPS,
   TRIGGERS,
 } from '@msm/plugin-rules';
-import { commandTemplates } from '@msm/plugin-scripting';
+import {
+  commandTemplates,
+  GAME_RULE_PROBLEM_CODES,
+  gameRuleTemplates,
+} from '@msm/plugin-scripting';
 import { WORLDGEN_PROBLEM_CODES, worldgenTemplates } from '@msm/plugin-worldgen';
 import { builtInTargets } from '@msm/targets';
 import { unzipSync } from 'fflate';
@@ -280,6 +292,7 @@ describe('every template the system prompt names is in the Add element library',
       ...VANILLA_PARITY_PROMPT_TEMPLATES,
       ...VILLAGERS_FLUIDS_PROMPT_TEMPLATES,
       ...PLANTS_STORAGE_PROMPT_TEMPLATES,
+      ...MOBS_COMMANDS_PROMPT_TEMPLATES,
     ]) {
       expect(library.has(id), id).toBe(true);
     }
@@ -370,6 +383,41 @@ describe('the system prompt names the villager, fluid and dimension type content
     );
     expect(has.map((bundle) => bundle.target.mcVersion)).toEqual(['26.4-snapshot-7']);
     expect(text).toContain('newer targets also list "minecraft:visual/has_sky_occluder"');
+  });
+});
+
+describe('the system prompt names the mobs, boats and commands content exactly (vanilla parity 3 batch 2, B543)', () => {
+  it('lists the mobs 2 templates, the boat template and the game rule and statistic templates', () => {
+    const boat = blocksItemsTemplates.find((template) => template.id === 'msm_item_boat');
+    expect(boat).toBeDefined();
+    expect([...MOBS_COMMANDS_PROMPT_TEMPLATES]).toEqual(
+      [...mob2Templates, boat as ElementTemplate, ...gameRuleTemplates].map(
+        (template) => template.id,
+      ),
+    );
+  });
+
+  it('explains every problem code of mobs 2, boats, cauldrons, mixing, hand-ordered tabs and game rules', () => {
+    expect([...MOBS_COMMANDS_PROMPT_CODES]).toEqual([
+      ...ENTITIES_MOB2_PROBLEM_CODES,
+      ...BOAT_PROBLEM_CODES,
+      ...FLUID_MIXING_PROBLEM_CODES,
+      ...CREATIVE_TAB_PROBLEM_CODES.filter(
+        (code) => code !== 'blocks-items.creative-tab-icon-unknown',
+      ),
+      ...GAME_RULE_PROBLEM_CODES,
+    ]);
+    const text = systemPrompt('build');
+    for (const code of MOBS_COMMANDS_PROMPT_CODES) expect(text, code).toContain(`"${code}"`);
+  });
+
+  it('names flow answers that are parameters of their flows', () => {
+    for (const [starterId, answers] of Object.entries(MOBS_COMMANDS_FLOW_ANSWERS)) {
+      const starter = libraryStarters.find((entry) => entry.id === starterId);
+      expect(starter?.creator, starterId).toBeDefined();
+      const parameters = starter?.parameters?.map((entry) => entry.id) ?? [];
+      for (const answer of answers) expect(parameters, `${starterId}: ${answer}`).toContain(answer);
+    }
   });
 });
 

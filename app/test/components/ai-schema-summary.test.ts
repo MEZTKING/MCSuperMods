@@ -8,6 +8,8 @@
  * environment attribute of `minecraft:dimension_type` show through their allowances; the
  * profession and the trade data kinds show every field within the defaults, and a type that
  * contains itself no longer overflows the stack.
+ * Vanilla parity 3 batch 2 (B543, B544): `msm:entity` shows the swoop and roost goals and the
+ * open_dialog action with their fields, and `msm:rules` stays under its 27,000 characters.
  */
 import { CONDITIONS, STEPS, TRIGGERS } from '@msm/plugin-rules';
 import { builtInTargets } from '@msm/targets';
@@ -257,6 +259,38 @@ describe('kind_schema for batch 2 (ADRs 0098 to 0100, B484)', () => {
       const tag = kindSchemaSummary(index.resolveSchemaRef('tag:villager_trade'));
       complete(tag);
       expect(tag).toContain('id(villager_trade)');
+    });
+  }
+});
+
+describe('kind_schema for vanilla parity 3 batch 2 (B543)', () => {
+  for (const bundle of builtInTargets) {
+    const targetId = bundle.target.id;
+
+    it(`renders the swoop and roost goals and the open_dialog action of msm:entity whole on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      const options = kindSchemaSummaryOptions('msm:entity');
+      const text = kindSchemaSummary(index.resolveSchemaRef('msm:entity'), options);
+      expect(text).not.toContain('(truncated');
+      expect(text).not.toContain('(other cases not shown)');
+      expect(text.length).toBeLessThanOrEqual(options.maxChars);
+      for (const name of ['swoop', 'roost', 'open_dialog']) {
+        expect(text, name).toContain(`case ${name}: {`);
+        // Shown with its fields, not cut to `{...}`.
+        expect(text, name).not.toContain(`case ${name}: {...}`);
+      }
+      for (const field of ['when_idle?: boolean', 'must_see?: boolean', 'dialog: id(dialog)']) {
+        expect(text, field).toContain(field);
+      }
+    });
+
+    it(`keeps msm:rules under 27,000 characters on ${targetId}`, async () => {
+      const index = await schemaIndexFor(bundle);
+      const options = kindSchemaSummaryOptions('msm:rules');
+      expect(options.maxChars).toBe(27_000);
+      const text = kindSchemaSummary(index.resolveSchemaRef('msm:rules'), options);
+      expect(text).not.toContain('(truncated');
+      expect(text.length).toBeLessThan(27_000);
     });
   }
 });
