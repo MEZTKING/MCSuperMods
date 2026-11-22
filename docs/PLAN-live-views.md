@@ -161,6 +161,8 @@ Recorded in ADR 0120 and used by all three batches.
 
 #### B602 Size reserve: vendored data gzipped (wave 1; Opus; skipped if already done)
 
+- **Done ahead (2026-11-22, [ADR 0123](adr/0123-gzipped-vendored-target-data.md)):** vendored data gzipped and deepslate tree-shaken; `app.asar` 26.0 of 32 MB, renderer 17.4 MB with its budget at 19 MB; stop lines now 31 MB and 18.5 MB. Skip this brief.
+
 - **Owner files:** the main-process reader of vendored data (`readVendored` in `targets.ts`; find with `grep -rn readVendored app/src/main`), the build step that compacts vendored JSON (ADR 0079), `tools/check-size/index.ts` and its README (the gzip check; the renderer budget only if B600 said so), their tests.
 - **Scope:** ADR 0079 D4 as written there; ADR 0120 D10.
 - **Exit criteria:** app tests and `smoke:packaged` green; `app.asar` reported before and after (expected about 4.9 MB less); cold start time before and after.

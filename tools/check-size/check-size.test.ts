@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   BUDGETS,
@@ -12,6 +13,7 @@ import {
   type Measurements,
   measure,
   missingLicences,
+  plainJsonFiles,
   report,
   summarise,
   typescriptWorkerChunks,
@@ -28,10 +30,11 @@ const passing: Measurements = {
   ],
   mainFiles: [{ path: 'index.js', bytes: 4 * MB }],
   vendorFiles: [
-    { path: 'mc-26.3/mcmeta/registries.json', bytes: 900_000 },
+    { path: 'mc-26.3/mcmeta/registries.json.gz', bytes: 145_000 },
     { path: 'mc-26.3/vanilla-mcdoc/LICENSE', bytes: 1_000 },
-    { path: 'mc-26.3/vanilla-mcdoc/symbols.json', bytes: 1_600_000 },
+    { path: 'mc-26.3/vanilla-mcdoc/symbols.json.gz', bytes: 211_000 },
   ],
+  plainVendorJson: [],
   looseVendorJson: [],
   missingVendorLicences: [],
   unpackedBytes: 280 * MB,
@@ -80,6 +83,7 @@ describe('checkBudgets', () => {
         ],
         mainFiles: null,
         vendorFiles: null,
+        plainVendorJson: [],
         looseVendorJson: [],
         missingVendorLicences: [],
         unpackedBytes: null,
@@ -97,7 +101,7 @@ describe('checkBudgets', () => {
     const violations = checkBudgets({
       ...passing,
       rendererFiles: [
-        { path: 'assets/big.js', bytes: 18 * MB },
+        { path: 'assets/big.js', bytes: 19 * MB },
         { path: 'assets/ts.worker-x.js', bytes: 1024 },
         { path: 'assets/registries.json', bytes: 200 * 1024 },
         { path: 'assets/small.json', bytes: 1024 },
@@ -105,13 +109,13 @@ describe('checkBudgets', () => {
       ],
     });
     expect(violations).toEqual([
-      expect.stringMatching(/^Renderer output is 18.4 MB/),
+      expect.stringMatching(/^Renderer output is 19.4 MB/),
       expect.stringMatching(/^Renderer JSON assets\/registries\.json is 200\.0 kB/),
     ]);
   });
 
-  it('has an 18 MB renderer budget (ADR 0031 D6, ADR 0091 D5)', () => {
-    expect(BUDGETS.rendererBytes).toBe(18 * MB);
+  it('has a 19 MB renderer budget (ADR 0031 D6, ADR 0091 D5, ADR 0123 D4)', () => {
+    expect(BUDGETS.rendererBytes).toBe(19 * MB);
   });
 
   it('requires the Monaco TypeScript worker as a separate chunk', () => {
@@ -133,6 +137,7 @@ describe('checkBudgets', () => {
         rendererFiles: null,
         mainFiles: null,
         vendorFiles: null,
+        plainVendorJson: [],
         looseVendorJson: [],
         missingVendorLicences: [],
         unpackedBytes: null,
@@ -143,10 +148,23 @@ describe('checkBudgets', () => {
   it('fails each vendored JSON file that is not compact, naming it (ADR 0079)', () => {
     const violations = checkBudgets({
       ...passing,
-      looseVendorJson: ['mc-26.4/vanilla-mcdoc/symbols.json'],
+      looseVendorJson: ['mc-26.4/vanilla-mcdoc/symbols.json.gz'],
     });
     expect(violations).toEqual([
-      'Vendored JSON out/main/vendor/mc-26.4/vanilla-mcdoc/symbols.json is not compact (has line breaks): bundleVendoredData must compact it (ADR 0079).',
+      'Vendored JSON out/main/vendor/mc-26.4/vanilla-mcdoc/symbols.json.gz is not compact gzipped JSON (does not gunzip, or has line breaks): bundleVendoredData must compact and gzip it (ADRs 0079, 0123).',
+    ]);
+  });
+
+  it('fails each plain vendored JSON file, naming it (ADR 0123)', () => {
+    expect(
+      plainJsonFiles([
+        { path: 'mc-26.3/mcmeta/blocks.json', bytes: 1 },
+        { path: 'mc-26.3/mcmeta/registries.json.gz', bytes: 1 },
+        { path: 'mc-26.3/vanilla-mcdoc/LICENSE', bytes: 1 },
+      ]),
+    ).toEqual(['mc-26.3/mcmeta/blocks.json']);
+    expect(checkBudgets({ ...passing, plainVendorJson: ['mc-26.3/mcmeta/blocks.json'] })).toEqual([
+      'Vendored JSON out/main/vendor/mc-26.3/mcmeta/blocks.json is not gzipped: bundleVendoredData must store it as mc-26.3/mcmeta/blocks.json.gz (ADR 0123).',
     ]);
   });
 
@@ -201,10 +219,11 @@ describe('measure and report', () => {
     writeFileSync(join(main, 'chunks', 'lazy.js'), 'x'.repeat(1024));
     const vendor = join(main, 'vendor', 'mc-26.3', 'vanilla-mcdoc');
     mkdirSync(vendor, { recursive: true });
-    writeFileSync(join(vendor, 'symbols.json'), '{"a":[1,2]}');
+    writeFileSync(join(vendor, 'symbols.json.gz'), gzipSync('{"a":[1,2]}'));
     writeFileSync(join(vendor, 'LICENSE'), 'MIT\nLicence text\n');
     writeFileSync(join(root, 'app', 'dist', 'linux-unpacked', 'mcsupermods'), 'x'.repeat(5000));
 
+    const GZ_BYTES = gzipSync('{"a":[1,2]}').byteLength;
     const measured = measure(root);
     expect(measured).toEqual({
       asarBytes: 1000,
@@ -217,12 +236,13 @@ describe('measure and report', () => {
         { path: 'chunks/lazy.js', bytes: 1024 },
         { path: 'index.js', bytes: 2048 },
         { path: 'vendor/mc-26.3/vanilla-mcdoc/LICENSE', bytes: 17 },
-        { path: 'vendor/mc-26.3/vanilla-mcdoc/symbols.json', bytes: 11 },
+        { path: 'vendor/mc-26.3/vanilla-mcdoc/symbols.json.gz', bytes: GZ_BYTES },
       ],
       vendorFiles: [
         { path: 'mc-26.3/vanilla-mcdoc/LICENSE', bytes: 17 },
-        { path: 'mc-26.3/vanilla-mcdoc/symbols.json', bytes: 11 },
+        { path: 'mc-26.3/vanilla-mcdoc/symbols.json.gz', bytes: GZ_BYTES },
       ],
+      plainVendorJson: [],
       looseVendorJson: [],
       missingVendorLicences: [],
       unpackedBytes: 6000,
@@ -231,7 +251,7 @@ describe('measure and report', () => {
     expect(checkBudgets(measured)).toEqual([]);
 
     const lines = report(measured);
-    expect(lines[0]).toBe('Renderer output: 420 B (budget 18.0 MB), largest files:');
+    expect(lines[0]).toBe('Renderer output: 420 B (budget 19.0 MB), largest files:');
     expect(lines).toContain('TypeScript worker chunk: assets/ts.worker-1.js (100 B)');
     expect(lines).toContain('app.asar: 1000 B (budget 32.0 MB)');
     expect(lines).toContain(
@@ -239,7 +259,7 @@ describe('measure and report', () => {
     );
     expect(lines).toContain('     1.0 kB  chunks/lazy.js');
     expect(lines).toContain(
-      'Vendored target data: 28 B in app/out/main/vendor (compact JSON, ADR 0079)',
+      `Vendored target data: ${17 + GZ_BYTES} B in app/out/main/vendor (compact JSON, gzipped; ADRs 0079, 0123)`,
     );
     expect(lines.at(-1)).toMatch(/^Unpacked app: 5\.9 kB/);
   });
@@ -251,28 +271,44 @@ describe('measure and report', () => {
       rendererFiles: null,
       mainFiles: null,
       vendorFiles: null,
+      plainVendorJson: [],
       looseVendorJson: [],
       missingVendorLicences: [],
       unpackedBytes: null,
     });
   });
 
-  it('finds indented vendored JSON and a missing licence in a built tree', () => {
+  it('finds plain, indented and broken vendored JSON and a missing licence in a built tree', () => {
     root = mkdtempSync(join(tmpdir(), 'msm-check-size-'));
     const vendor = join(root, 'app', 'out', 'main', 'vendor', 'mc-26.4');
     mkdirSync(join(vendor, 'mcmeta'), { recursive: true });
     mkdirSync(join(vendor, 'vanilla-mcdoc'), { recursive: true });
-    writeFileSync(join(vendor, 'mcmeta', 'compact.json'), JSON.stringify({ a: 'line\nbreak' }));
-    writeFileSync(join(vendor, 'mcmeta', 'indented.json'), JSON.stringify({ a: [1] }, null, 2));
-    writeFileSync(join(vendor, 'vanilla-mcdoc', 'symbols.json'), '{}');
+    const gz = (text: string) => gzipSync(text, { level: 9 });
+    writeFileSync(
+      join(vendor, 'mcmeta', 'compact.json.gz'),
+      gz(JSON.stringify({ a: 'line\nbreak' })),
+    );
+    writeFileSync(
+      join(vendor, 'mcmeta', 'indented.json.gz'),
+      gz(JSON.stringify({ a: [1] }, null, 2)),
+    );
+    writeFileSync(join(vendor, 'mcmeta', 'broken.json.gz'), '{"not":"gzip"}');
+    writeFileSync(join(vendor, 'mcmeta', 'plain.json'), '{}');
+    writeFileSync(join(vendor, 'vanilla-mcdoc', 'symbols.json.gz'), gz('{}'));
     writeFileSync(join(vendor, 'mcmeta', 'notes.txt'), 'a\nb\n');
 
     const measured = measure(root);
-    expect(measured.looseVendorJson).toEqual(['mc-26.4/mcmeta/indented.json']);
+    expect(measured.plainVendorJson).toEqual(['mc-26.4/mcmeta/plain.json']);
+    expect(measured.looseVendorJson).toEqual([
+      'mc-26.4/mcmeta/broken.json.gz',
+      'mc-26.4/mcmeta/indented.json.gz',
+    ]);
     expect(measured.missingVendorLicences).toEqual(['mc-26.4/vanilla-mcdoc']);
     expect(checkBudgets(measured)).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('out/main/vendor/mc-26.4/mcmeta/indented.json is not compact'),
+        expect.stringContaining('out/main/vendor/mc-26.4/mcmeta/plain.json is not gzipped'),
+        expect.stringContaining('out/main/vendor/mc-26.4/mcmeta/broken.json.gz is not compact'),
+        expect.stringContaining('out/main/vendor/mc-26.4/mcmeta/indented.json.gz is not compact'),
         expect.stringContaining('out/main/vendor/mc-26.4/vanilla-mcdoc has no LICENSE'),
       ]),
     );

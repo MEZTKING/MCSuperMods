@@ -8220,3 +8220,20 @@ Next: the other open follow-ups in docs/HANDOFF.md.
 - A plain host's files (`msm_preview:host`) live in memory only; for a surface condition it puts glowstone where the condition is true over the overworld's own rule.
 
 **Next:** the orchestrator decides on the size lines; B584 (Walk in it, the ground), B585 (value maps, Compare, Scatter, markers; it adds kinds to `WORLDGEN_MAP_REGISTRIES`' neighbours in the same file), B589 (e2e over the `terrain-*` test ids).
+
+## 2026-11-22 — executor — size headroom: gzipped vendored data, deepslate tree-shaking, renderer budget 19 MB (ADR 0123)
+
+**What:**
+- `app/electron.vite.config.ts`: `bundleVendoredData` stores every vendored JSON file compacted and gzipped (level 9) as `vendor/<target>/<file>.json.gz` and points the target's URL there (ADR 0079 D4, done as ADR 0123 D1); the renderer and worker builds tree-shake deepslate (`DEEPSLATE_SIDE_EFFECTS`: side-effect free but for `lib/nbt/tags/`, ADR 0123 D3).
+- `app/src/main/platform/targets.ts`: `decodeVendored` gunzips a `.gz` URL (asynchronously) and leaves the sources as they are; `readVendored` uses it. New `app/test/main-targets.test.ts`.
+- `tools/check-size`: fails a plain vendored `*.json` and a `*.json.gz` that does not gunzip or holds line feeds; the renderer budget is 19 MB; README and tests updated.
+- New ADR 0123 (Accepted; D4, the renderer budget, a vetoable default). DESIGN §14, `app/CLAUDE.md`, `packages/targets/CLAUDE.md`, HANDOFF's size lines, the size lines of `PLAN-live-views.md` (B602 done ahead) and `PLAN-live-worldgen.md`.
+- Sizes (Linux `pnpm build` and `dist:dir`, measured before and after on this tree): `app.asar` 32,585,540 -> 27,296,177 bytes (31.08 -> 26.03 MB of 32); vendored data 5,733,611 -> 622,144 bytes; renderer 18,463,969 -> 18,284,869 bytes (17.61 -> 17.44 MB, budget now 19); the terrain worker 339,344 -> 193,693 bytes.
+- Checks: `pnpm lint`, `pnpm typecheck`, targets (440), tools (190) and app (2818) tests, `check-size` within budget, e2e `smoke`, `worldgen-path`, `tryit-path`, `datapack-path`, `targets-path` (11 passed, the worldgen-live placeholder skipped), `smoke:packaged`. All ten gzipped files gunzip to JSON deep-equal to their sources. A one-off test (deleted) ran the built terrain worker chunk in Node over the terrain package's hills fixture (two `multi_noise` biomes, glowstone and oak features) and matched the source engine on biomes, heights, side cut, values and feature columns.
+
+**Decisions:**
+- Asynchronous `gunzip` rather than ADR 0079 D4's `gunzipSync`, so the main process is not blocked (4.3 ms for the 26.3 symbols).
+- The renderer search found 0.17 MB (deepslate's missing `sideEffects` and its root imports pulled its renderers into the terrain worker and its world generation into the preview chunks). The next 1 MB is the 26.3 Java project generator in the first-paint bundle, reached through the synchronous `JavaProjectGenerator.generate`: a plugin API change, so not taken here. With the renderer at 17.44 MB the budget moved to 19 MB (stop line 18.5 MB), amending ADR 0091 D5, as the user's "take the recommended option" default; vetoable.
+- A turbo cache restore over an existing `app/out` leaves stale files beside the new ones; measure from an empty `app/out` (recorded in ADR 0123's findings).
+
+**Next:** the orchestrator reviews ADR 0123 and lifts the app stop; follow-up ADR for loading the Java project generator lazily; the root `CLAUDE.md` size numbers are stale (outside this brief).

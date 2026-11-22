@@ -8,16 +8,18 @@
  * Enforced (thresholds in {@link BUDGETS}, rationale in README.md):
  *
  * 1. `app.asar` in the unpacked build is at most 32 MB (ADR 0037: room for two targets'
- *    vendored data; ADR 0079: that data is compacted at build, so the budget is kept).
- * 2. The renderer output (`app/out/renderer`) is at most 18 MB in total (ADR 0031 D6: the
- *    lazy Monaco TypeScript worker is about 7 MB on its own).
+ *    vendored data; ADR 0079: that data is compacted at build, and ADR 0123: gzipped, so the
+ *    budget is kept).
+ * 2. The renderer output (`app/out/renderer`) is at most 19 MB in total (ADR 0031 D6: the
+ *    lazy Monaco TypeScript worker is about 7 MB on its own; ADR 0091 D5 and ADR 0123 D4).
  * 3. No `*.json` file in the renderer output is larger than 100 kB (vendored data belongs in
  *    main, not in the renderer bundle).
  * 4. The Monaco TypeScript worker is a chunk of its own (a file whose name contains
  *    `ts.worker`), so it loads only with the script editor.
- * 5. `app/out/main/vendor` exists whenever `app/out/main` does, and every `*.json` file under it
- *    is compact: no line feed byte (0x0A). Compact `JSON.stringify` output never has one, since
- *    line breaks inside strings are escaped (ADR 0079 D1, D3).
+ * 5. `app/out/main/vendor` exists whenever `app/out/main` does; it holds no plain `*.json` file
+ *    (ADR 0123: the vendored JSON is stored as `*.json.gz`), and every `*.json.gz` file under it
+ *    gunzips to compact JSON: no line feed byte (0x0A). Compact `JSON.stringify` output never
+ *    has one, since line breaks inside strings are escaped (ADR 0079 D1, D3).
  * 6. Every vendored folder whose upstream licence must travel with it (`vanilla-mcdoc`, MIT)
  *    has its `LICENSE` beside the data in `app/out/main/vendor`.
  *
@@ -30,6 +32,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 
 const MB = 1024 * 1024;
 const KB = 1024;
@@ -37,7 +40,7 @@ const KB = 1024;
 /** Size thresholds in bytes. */
 export const BUDGETS = {
   asarBytes: 32 * MB,
-  rendererBytes: 18 * MB,
+  rendererBytes: 19 * MB,
   rendererJsonBytes: 100 * KB,
 } as const;
 
@@ -57,7 +60,12 @@ export interface Measurements {
   mainFiles: FileSize[] | null;
   /** Files under `app/out/main/vendor` (the vendored target data, ADR 0079). */
   vendorFiles: FileSize[] | null;
-  /** `*.json` files under `app/out/main/vendor` that contain a line feed (not compacted). */
+  /** Plain `*.json` files under `app/out/main/vendor` (not gzipped, ADR 0123). */
+  plainVendorJson: string[];
+  /**
+   * `*.json.gz` files under `app/out/main/vendor` that do not gunzip, or whose JSON contains a
+   * line feed (not compacted, ADR 0079).
+   */
   looseVendorJson: string[];
   /** Licensed vendored folders under `app/out/main/vendor` that lack their `LICENSE`. */
   missingVendorLicences: string[];
@@ -116,11 +124,29 @@ export function typescriptWorkerChunks(files: readonly FileSize[]): FileSize[] {
 /** Vendored folder names whose upstream `LICENSE` must ship beside the data. */
 export const LICENSED_VENDOR_FOLDERS = ['vanilla-mcdoc'] as const;
 
-/** Paths of the `*.json` files in `files` (relative to `vendorDir`) that contain a line feed. */
+/** The file name suffix of gzipped vendored JSON (ADR 0123). */
+export const GZIPPED_JSON_SUFFIX = '.json.gz';
+
+/** Paths of the plain `*.json` files in `files`: vendored JSON must be gzipped (ADR 0123). */
+export function plainJsonFiles(files: readonly FileSize[]): string[] {
+  return files.filter((file) => file.path.endsWith('.json')).map((file) => file.path);
+}
+
+/**
+ * Paths of the `*.json.gz` files in `files` (relative to `vendorDir`) that do not gunzip or
+ * whose contents contain a line feed.
+ */
 export function looseJsonFiles(vendorDir: string, files: readonly FileSize[]): string[] {
+  const loose = (path: string): boolean => {
+    try {
+      return gunzipSync(readFileSync(join(vendorDir, ...path.split('/')))).includes(0x0a);
+    } catch {
+      return true;
+    }
+  };
   return files
-    .filter((file) => file.path.endsWith('.json'))
-    .filter((file) => readFileSync(join(vendorDir, ...file.path.split('/'))).includes(0x0a))
+    .filter((file) => file.path.endsWith(GZIPPED_JSON_SUFFIX))
+    .filter((file) => loose(file.path))
     .map((file) => file.path);
 }
 
@@ -175,9 +201,14 @@ export function checkBudgets(measured: Measurements, budgets: Budgets = BUDGETS)
       'app/out/main/vendor not found: the main build lost the vendored target data (ADR 0079).',
     );
   }
+  for (const path of measured.plainVendorJson) {
+    violations.push(
+      `Vendored JSON out/main/vendor/${path} is not gzipped: bundleVendoredData must store it as ${path}.gz (ADR 0123).`,
+    );
+  }
   for (const path of measured.looseVendorJson) {
     violations.push(
-      `Vendored JSON out/main/vendor/${path} is not compact (has line breaks): bundleVendoredData must compact it (ADR 0079).`,
+      `Vendored JSON out/main/vendor/${path} is not compact gzipped JSON (does not gunzip, or has line breaks): bundleVendoredData must compact and gzip it (ADRs 0079, 0123).`,
     );
   }
   for (const folder of measured.missingVendorLicences) {
@@ -220,6 +251,7 @@ export function measure(root: string): Measurements {
     rendererFiles: existsSync(rendererDir) ? listFiles(rendererDir) : null,
     mainFiles: existsSync(mainDir) ? listFiles(mainDir) : null,
     vendorFiles,
+    plainVendorJson: vendorFiles === null ? [] : plainJsonFiles(vendorFiles),
     looseVendorJson: vendorFiles === null ? [] : looseJsonFiles(vendorDir, vendorFiles),
     missingVendorLicences: vendorFiles === null ? [] : missingLicences(vendorFiles),
     unpackedBytes,
@@ -256,7 +288,7 @@ export function report(measured: Measurements, budgets: Budgets = BUDGETS): stri
   }
   if (measured.vendorFiles !== null) {
     lines.push(
-      `Vendored target data: ${formatBytes(summarise(measured.vendorFiles, 0).totalBytes)} in app/out/main/vendor (compact JSON, ADR 0079)`,
+      `Vendored target data: ${formatBytes(summarise(measured.vendorFiles, 0).totalBytes)} in app/out/main/vendor (compact JSON, gzipped; ADRs 0079, 0123)`,
     );
   }
   if (measured.asarBytes !== null) {

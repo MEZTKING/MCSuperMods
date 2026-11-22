@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
@@ -8,10 +9,14 @@ import { minify, type Plugin } from 'vite';
 // The renderer CSP keeps style-src 'unsafe-inline' in production: Monaco and Radix inject
 // runtime <style> elements without nonce support. Scripts stay 'self' only (DEVLOG 2026-11-04).
 
-/** A vendored file's emitted bytes: `.json` compacted (ADR 0079 D1), anything else as is. */
-function vendoredSource(path: string): Uint8Array | string {
+/**
+ * A vendored file as emitted: `.json` compacted (ADR 0079 D1) and gzipped at level 9 under the
+ * name `<file>.gz` (ADR 0123), anything else as is under its own name. The gzip header carries
+ * no modification time, so rebuilding the same source on one platform gives the same bytes.
+ */
+function vendoredAsset(path: string, file: string): { file: string; source: Uint8Array } {
   const bytes = readFileSync(path);
-  if (!path.endsWith('.json')) return bytes;
+  if (!path.endsWith('.json')) return { file, source: bytes };
   let parsed: unknown;
   try {
     parsed = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
@@ -19,7 +24,8 @@ function vendoredSource(path: string): Uint8Array | string {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Vendored file ${path} is not valid JSON: ${message}`);
   }
-  return JSON.stringify(parsed);
+  const compact = new TextEncoder().encode(JSON.stringify(parsed));
+  return { file: `${file}.gz`, source: new Uint8Array(gzipSync(compact, { level: 9 })) };
 }
 
 /**
@@ -29,9 +35,10 @@ function vendoredSource(path: string): Uint8Array | string {
  * for the files next to `out/`.
  *
  * Every `.json` file is compacted (`JSON.stringify(JSON.parse(text))`, key order kept; ADR 0079
- * D1): the sources under `packages/targets/<target>/vendor/` stay pretty-printed for reviewable sync
- * diffs, and about half their bytes are indentation. A file that does not parse fails the build.
- * Other files are copied byte for byte. A `LICENSE` beside a vendored file (vanilla-mcdoc's) is
+ * D1) and stored gzipped as `<file>.json.gz` (ADR 0123), and the URL names the `.gz` file;
+ * `platform/targets.ts` decodes it. The sources under `packages/targets/<target>/vendor/` stay
+ * pretty-printed for reviewable sync diffs. A file that does not parse fails the build. Other
+ * files are copied byte for byte. A `LICENSE` beside a vendored file (vanilla-mcdoc's) is
  * copied with it, so the packaged app carries the upstream licence next to the data.
  */
 function bundleVendoredData(): Plugin {
@@ -47,9 +54,10 @@ function bundleVendoredData(): Plugin {
       return code.replace(
         /new URL\((['"])\.\.\/vendor\/([^'"]+)\1, import\.meta\.url\)/g,
         (_whole, _quote, file: string) => {
-          const fileName = `vendor/${folder}/${file}`;
           const path = join(packageDir, 'vendor', ...file.split('/'));
-          this.emitFile({ type: 'asset', fileName, source: vendoredSource(path) });
+          const asset = vendoredAsset(path, file);
+          const fileName = `vendor/${folder}/${asset.file}`;
+          this.emitFile({ type: 'asset', fileName, source: asset.source });
           const licence = join(dirname(path), 'LICENSE');
           const licenceName = `${fileName.slice(0, fileName.lastIndexOf('/'))}/LICENSE`;
           if (!licences.has(licenceName) && existsSync(licence)) {
@@ -142,6 +150,25 @@ function mainChunkFileName(chunk: {
   return '[name]-[hash].js';
 }
 
+/**
+ * Tree-shaking rules for deepslate in the renderer and its workers (ADR 0123 D3). deepslate's
+ * package declares no `sideEffects`, so the bundler kept every deepslate module reachable from
+ * an import, and three of its modules import the package root (`RandomState`, `Mesh` and
+ * `SpecialModel` import `../index.js`): deepslate's renderers ended up in the terrain worker and
+ * its world generation in the preview chunks. Its modules only declare classes and namespaces,
+ * except the NBT tag classes, which register themselves with `NbtTag` when loaded; those stay
+ * side-effectful, and every other deepslate module is kept only when something uses it. The
+ * registries deepslate makes in static fields (`WorldgenRegistries`, `Structure`) come along
+ * with the code that reads them, since that code imports them.
+ */
+const DEEPSLATE_SIDE_EFFECTS = [
+  { test: /[\\/]deepslate[\\/]lib[\\/]nbt[\\/]tags[\\/]/, sideEffects: true },
+  {
+    test: /[\\/]node_modules[\\/](?:\.pnpm[\\/][^\\/]+[\\/]node_modules[\\/])?deepslate[\\/]lib[\\/]/,
+    sideEffects: false,
+  },
+];
+
 export default defineConfig({
   // Main is ESM and bundles every dependency (ADR 0013: the packaged app collects no
   // node_modules). electron-vite still externalises `electron` and Node built-ins when
@@ -173,9 +200,16 @@ export default defineConfig({
     },
   },
   renderer: {
-    build: { minify: true },
+    build: {
+      minify: true,
+      rolldownOptions: { treeshake: { moduleSideEffects: DEEPSLATE_SIDE_EFFECTS } },
+    },
     plugins: [dropVendoredDataFromRenderer(), react(), tailwindcss()],
-    // Monaco's language workers are loaded with Vite `?worker` imports as ES module workers.
-    worker: { format: 'es' },
+    // Monaco's language workers and the terrain worker are loaded with Vite `?worker` imports
+    // as ES module workers.
+    worker: {
+      format: 'es',
+      rolldownOptions: { treeshake: { moduleSideEffects: DEEPSLATE_SIDE_EFFECTS } },
+    },
   },
 });
