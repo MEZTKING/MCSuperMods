@@ -211,3 +211,12 @@ The rules of `docs/PLAN-vanilla-parity-3.md` "Rules for every brief" apply (clea
 ## Notes from implementation
 
 None yet.
+
+## Notes from implementation
+
+### B565 (merged 2026-11-22)
+
+- All three ADR 0118 D13 budgets go on both targets (first frame 0.15–0.56 s warm, 1.06 s for the first mount; 42–55 fps; no context warnings, memory within 20 MB over 50 mounts). Reserve B573's listed seams are not needed. Evidence and the action sequence per clip in `docs/reference/spikes/b565/` (`clips.json`).
+- **Found, decided by the main session:** 19 vanilla parent models have no MSM fallback in Try it (`block/slab`, `slab_top`, `stairs`, `inner_stairs`, `outer_stairs`, `door_*`, `fence_*`, `template_fence_gate*`, `template_orientable_trapdoor_*`, `button*`, `pressure_plate_*`, `leaves`, `cube_column_horizontal`, `crop`, `orientable`, and the whole models `block/glass`, `block/lodestone`), so without the user's client jar they draw as the missing texture, in Try it as in the clips. Fixed in Try it itself by a separate worker (MSM's own box models), not by the choice of clips.
+- **B566:** lower without `withTypedBlockModels`; cache the bundle and the `SimFiles`; add a `look` step (placed blocks face the player's look, from the last `move`); refer to vehicles and mobs by order, not id; `move` as a held input; wait for `area.source.scripts?.loaded`; step by `clock.pause()` then `clock.step()`; show the still during a loop restart (one rebuild of 76–505 ms); do not assert alive particle counts.
+- **B567:** a camera that follows the first mob for the pet and trader clips; Rules captions from the rule's own lines; drop the beacon from the portal clip (or keep it only for its "Only in Minecraft" line); the crop's subject is `./onion_crop`. **B568:** take the still inside `onFrameDrawn`, once per clip per session; only the drawn still is byte-stable.
