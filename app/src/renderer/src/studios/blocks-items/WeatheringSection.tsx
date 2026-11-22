@@ -12,11 +12,17 @@
  * Shown on the types that take the components (`WEATHERING_BLOCK_TYPES`) and on any block that
  * has them (so they can be removed); a waxed copy says which block it belongs to.
  *
+ * B516 (ADR 0104 D1, D2, D6, ADR 0112 D1): the six more types of ADR 0104 (rods, buttons,
+ * pressure plates, fences, gates and walls) come with `WEATHERING_BLOCK_TYPES`; storage ages
+ * keeping its contents, and lightning scrapes project copper as it does vanilla's (both said in
+ * the note).
+ *
  * @packageDocumentation
  */
 
 import type { Element, Json, Project, ResourceLocation } from '@msm/core';
 import {
+  containerOf,
   WAXABLE_COMPONENT,
   WEATHERING_BLOCK_TYPES,
   WEATHERING_COMPONENT,
@@ -392,7 +398,7 @@ export function WeatheringSection(props: WeatheringSectionProps) {
         </p>
       )}
       <CheckField
-        label="Ages over time, like copper"
+        label="Ages like copper (over time)"
         checked={on}
         testId="block-weathering-on"
         onChange={(checked) =>
@@ -494,7 +500,10 @@ export function WeatheringSection(props: WeatheringSectionProps) {
               ? 'The buttons are not available here.'
               : 'The whole set makes every later stage and a waxed copy of each, in one step; Undo takes it all back. The copies start with the same pictures: give each stage its own.'}{' '}
             Blocks next to an earlier stage stop ageing, as copper does; an axe scrapes it back a
-            stage.
+            stage, and lightning scrapes it and the blocks around it, as Minecraft's copper.
+            {containerOf(element.data) === undefined
+              ? ''
+              : ' Storage keeps its contents when it ages.'}
           </p>
         </>
       )}

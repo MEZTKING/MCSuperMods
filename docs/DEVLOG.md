@@ -7122,3 +7122,20 @@ Next
 
 **Next**
 - B515: the plugin's `checkAgeing` mirror (water on containers and machines, weathering and wax on containers, a warning on machines); a warning for `msm:shape`/`msm:redstone` on a double chest. B519: the Try it line below. B517: eject.
+## 2026-11-22 — executor — B516 app: Block Studio 2
+
+**What**
+- Type picker: the five types of ADR 0103 join the "Plants" group (`GROWING_PLANT_BLOCK_TYPES` replaces `PLANTS_3_BLOCK_TYPES`; every type is in exactly one group again), each with its own drawn picture and plain words: "Grows in long strands", "Grows tall like sugar cane", "Spreads over any side", "Tips when you stand on it", "A flower pot". Becoming one sets its required field (a cane, a big leaf, a pot that takes a poppy); an own set type object survives a door to trapdoor change.
+- Plant sections for the five types (`PlantSection.tsx`, helpers in `plant-model.ts`): strand direction, starting age, chance to grow, bone meal, lives in water, berries and their light, climbable, soils; column shape (one undo step that moves the picture to the new shape's slot), tallest and shortest stop, soils (defaults from `blocks.plantSoils`), water beside it, touch damage; multiface light, spreading, holding water; dripleaf size, what a small one grows into (the project's big dripleaves), tilt timing. The pot's "Plants it takes" opens the ThingPicker over "Your plants" and "Plants Minecraft pots" (read from the target's `potted_*` blocks) and counts the potted blocks it makes; a potted plant names its pot. Texture slots follow the shape (cactus, bamboo, small dripleaf, berries); model slots and companions ("the strand behind the tip", "the shoot it starts from", "the stem under the leaf", "the pot with poppy in it") are in words; the preview says what shows in game only.
+- Storage: **Double chest** and **Different for every player** on a chest (each turns off the options it cannot go with, rows other than 3 drop the double); **Holds water** on storage and machines (the Waterlogging switch no longer blocks them); the Weathering section says lightning scrapes and storage keeps its contents.
+- New **How it sounds** section (`SoundsSection.tsx`, lazy, with `sounds-model.ts`): break, step, place, mine and land sounds, volume and pitch (`block_sounds`), the reopen note on targets with `soundModel` `block_sound_set`; for doors, trapdoors, buttons and plates "Own door sounds" (and the like) turns `set_type` into an object with its sounds and rules; the Type section's set type picker edits its `base`.
+- New **Vanilla block rules** Studio (`msm:vanilla_block_rules`, in `AdditionStudios.tsx`): "When you use an axe on it", "... a shovel ...", "... a hoe ..." (with a one-time drop), "When you use honeycomb on it", "Ages like copper", "Burns", with a warning when a row replaces one of `blocks.vanillaPairs`.
+- Very easy: the six new section ids are on the Block Studio's list; pot plants, sounds and rule blocks are picked and shown by name, and companion ids are hidden.
+- Tests: new `block-studio-2.test.tsx` (21 tests); `block-types-b452.test.tsx` checks every type in exactly one group again and storage holding water.
+
+**Decisions**
+- The Sounds section mount and the Studio registration needed one edit each in `BlockStudio.tsx` and `blocks-items/studios.tsx`, outside the brief's owner list (no parallel brief touches them).
+- The rules Studio uses the kind id `msm:vanilla_block_rules` from `additions-model.ts`; the kind itself is B515's registration.
+
+**Next**
+- The Import assets dialog offers only `textures/...` and `sounds`, so `shaders/` files cannot be imported from it (the session's `importAssets` accepts the folder); a follow-up for B522 or later.

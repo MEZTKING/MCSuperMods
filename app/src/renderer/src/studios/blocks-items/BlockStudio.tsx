@@ -12,7 +12,8 @@
  *   walk-through and see-through toggles, the layer the model's textures give, and a live
  *   outline of the boxes.
  * - Mining: `msm:breakable` hardness, resistance, tool, minimum tier, requires tool.
- * - Light level (`msm:light_emitter`) and sound type.
+ * - Light level (`msm:light_emitter`) and sound type; How it sounds (B516, ADR 0105 D1, D2): the
+ *   block's own sounds and a door's or button's own set type, lazily loaded from `SoundsSection`.
  * - Inventory (B318, ADR 0076 D1; simple, pillar and facing types only): storage or a machine,
  *   lazily loaded from `InventorySection`.
  * - Portal (B337, ADR 0078 D1; `portal` type only): frame, travel and looks, lazily loaded
@@ -91,6 +92,8 @@ const InventorySection = lazy(() => import('./InventorySection'));
 const PortalSection = lazy(() => import('./PortalSection'));
 /** The Ambient particles section (ADR 0081 D2), a chunk of its own. */
 const AmbientParticlesSection = lazy(() => import('./AmbientParticlesSection'));
+/** The Sounds section (B516, ADR 0105 D1, D2), a chunk of its own. */
+const SoundsSection = lazy(() => import('./SoundsSection'));
 
 type TextureLayer = 'solid' | 'cutout' | 'translucent';
 
@@ -836,6 +839,23 @@ export function BlockStudio(props: StudioProps) {
       )}
       {mining}
       {looks}
+      <Suspense
+        fallback={
+          <p className="text-muted text-xs" data-testid="block-sounds-loading">
+            Loading the Sounds section…
+          </p>
+        }
+      >
+        <SoundsSection
+          project={project}
+          element={element}
+          target={props.target}
+          problems={problems}
+          suggest={suggest}
+          set={set}
+          registries={props.context.registries(project, element.kind)}
+        />
+      </Suspense>
       {takesInventory(blockType) && (
         <Suspense
           fallback={

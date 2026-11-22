@@ -14,6 +14,11 @@
  * companion block shown as part of the element ("Also makes: ..."); and the Waterlogging switch
  * (`WaterloggingSwitch`).
  *
+ * B516 (ADR 0103, ADR 0105 D2, ADR 0112 D1): the growing plants and the flower pot join the
+ * "Plants" group; the set type picker also edits an own set type's `base` (its own sounds and
+ * rules are in the Sounds section); the companions of the new types are said in words, and in
+ * Very easy without their ids.
+ *
  * @packageDocumentation
  */
 
@@ -25,6 +30,7 @@ import { useId } from 'react';
 import { type FormProblem, inputClass } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField } from '../structures/pickers';
+import { useVeryEasy } from '../very-easy';
 import { Section } from '../worldgen/parts';
 import {
   appearanceTexture,
@@ -44,6 +50,7 @@ import {
 import { BlockTypePicture } from './block-type-pictures';
 import { asObject, choicesAt, pointerOf } from './blocks-items-model';
 import { CheckField, ProblemsAt } from './parts';
+import { isOwnSetType, setTypeBase, withSetTypeBase } from './sounds-model';
 import { WaterloggingSwitch } from './WaterloggingSwitch';
 
 /** A select whose options show words for their values. */
@@ -195,7 +202,10 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
     label: group.label,
     choices: group.types,
   }));
-  const setType = typeof object.set_type === 'string' ? object.set_type : undefined;
+  const veryEasy = useVeryEasy();
+  // An own set type (ADR 0105 D2) stands on its `base`, which this picker shows and changes.
+  const setType = setTypeBase(object.set_type);
+  const ownSetType = isOwnSetType(object.set_type);
   const wooden = setType !== undefined && WOODEN_SET_TYPES.includes(setType);
   const soundType = typeof object.sound_type === 'string' ? object.sound_type : 'stone';
 
@@ -217,12 +227,17 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
   const setTypeField = (
     <>
       <LabelledSelect
-        label="Set type"
+        label={ownSetType ? 'Set type (its own sounds stand on this one)' : 'Set type'}
         value={setType}
         choices={setTypeChoices(props)}
         labels={SET_TYPE_LABELS}
         testId="block-set-type"
-        onChange={(value) => set(['set_type'], value)}
+        onChange={(value) =>
+          set(
+            ['set_type'],
+            value === undefined ? undefined : withSetTypeBase(object.set_type, value),
+          )
+        }
       />
       {at(['set_type'])}
     </>
@@ -399,12 +414,20 @@ export function BlockTypeSection(props: BlockTypeSectionProps) {
           {companions.map((companion) => (
             <p key={companion.id} data-testid="block-companion-row">
               <span className="text-muted">Also makes:</span>{' '}
-              <span className="font-mono">{companion.id}</span>{' '}
-              <span className="text-muted">({companion.words})</span>
+              {veryEasy ? (
+                <span>{companion.words}</span>
+              ) : (
+                <>
+                  <span className="font-mono">{companion.id}</span>{' '}
+                  <span className="text-muted">({companion.words})</span>
+                </>
+              )}
             </p>
           ))}
           <p className="text-muted">
-            It is part of this block: it has no item of its own and drops this block's item.
+            {type === 'flower_pot'
+              ? 'They are part of this pot: none has an item of its own, and breaking one drops the pot and the plant.'
+              : "It is part of this block: it has no item of its own and drops this block's item."}
           </p>
         </div>
       )}

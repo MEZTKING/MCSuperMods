@@ -162,28 +162,76 @@ export function withContainerLayout(
   if (layout !== 'chest') {
     delete out.rows;
     delete out.keep_contents;
+    delete out.double;
+    delete out.per_player;
   }
   if (layout !== 'none') delete out.size;
   return out;
 }
 
-/** Whether "Keep contents when broken" is offered: a chest of 3 rows. */
-export function offersKeepContents(container: Json | undefined): boolean {
+/** Whether the chest has 3 rows (the shulker box screen, and two chests making six rows). */
+function threeRowChest(container: Json | undefined): boolean {
   const rows = asObject(container).rows;
   return (
     containerLayoutOf(container) === 'chest' && (rows === undefined || rows === KEEP_CONTENTS_ROWS)
   );
 }
 
+/** Whether "Keep contents when broken" is offered: a chest of 3 rows. */
+export function offersKeepContents(container: Json | undefined): boolean {
+  return threeRowChest(container);
+}
+
+/** Whether "Double chest" is offered (ADR 0104 D4): a chest of 3 rows. */
+export function offersDoubleChest(container: Json | undefined): boolean {
+  return threeRowChest(container);
+}
+
+/** Whether "Different for every player" is offered (ADR 0104 D5): any chest layout. */
+export function offersPerPlayer(container: Json | undefined): boolean {
+  return containerLayoutOf(container) === 'chest';
+}
+
+/** The chest options that exclude each other (ADR 0104 D4, D5, ADR 0074 D6). */
+export type ChestOption = 'keep_contents' | 'double' | 'per_player';
+
+/** The options each chest option cannot go with. */
+const EXCLUDES: Readonly<Record<ChestOption, readonly ChestOption[]>> = Object.freeze({
+  keep_contents: ['double', 'per_player'],
+  double: ['keep_contents', 'per_player'],
+  per_player: ['keep_contents', 'double'],
+});
+
 /**
- * The container after setting `rows` (`undefined` clears it): `keep_contents` goes when the
- * chest no longer has 3 rows, since only the shulker box screen keeps contents.
+ * The container after turning one chest option on or off, as one edit: turning one on turns off
+ * the options it cannot go with (a double chest cannot keep its contents or differ per player).
+ */
+export function withChestOption(
+  container: Json | undefined,
+  option: ChestOption,
+  on: boolean,
+): JsonObject {
+  const out: JsonObject = { ...asObject(container) };
+  if (!on) {
+    delete out[option];
+    return out;
+  }
+  out[option] = true;
+  for (const other of EXCLUDES[option]) delete out[other];
+  return out;
+}
+
+/**
+ * The container after setting `rows` (`undefined` clears it): `keep_contents` and `double` go
+ * when the chest no longer has 3 rows, since only the shulker box screen keeps contents and two
+ * three-row chests make six rows.
  */
 export function withRows(container: Json | undefined, rows: number | undefined): JsonObject {
   const out: JsonObject = { ...asObject(container) };
   if (rows === undefined) delete out.rows;
   else out.rows = rows;
   if (!offersKeepContents(out)) delete out.keep_contents;
+  if (!offersDoubleChest(out)) delete out.double;
   return out;
 }
 

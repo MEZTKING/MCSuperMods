@@ -9,6 +9,12 @@
  * The model is `inventory-model.ts`; the vanilla recipe types a machine may take come from the
  * target's block facts.
  *
+ * B516 (ADR 0104 D4, D5, ADR 0112 D1): a three-row chest's **Double chest** (two side by side
+ * join into one six-row chest) and **Different for every player** (each player's own contents,
+ * as an ender chest); each turns off the options it cannot go with in the same edit. "Holds
+ * water" is the Waterlogging switch of the Type section, and "Ages like copper" the Weathering
+ * section.
+ *
  * @packageDocumentation
  */
 
@@ -46,7 +52,9 @@ import {
   MAX_RECIPE_TYPES,
   type MachineMenuName,
   machineRecipeTypes,
+  offersDoubleChest,
   offersKeepContents,
+  offersPerPlayer,
   RECIPES_PATH,
   recipeEntries,
   recipeTypeLabel,
@@ -54,6 +62,7 @@ import {
   resultIdOf,
   secondsToTicks,
   ticksToSeconds,
+  withChestOption,
   withChoice,
   withContainerLayout,
   withDefaultOn,
@@ -233,9 +242,37 @@ export function InventorySection(props: InventorySectionProps) {
             checked={fields.keep_contents === true}
             testId="block-container-keep-contents"
             onChange={(checked) =>
-              set([...CONTAINER_PATH, 'keep_contents'], checked ? true : undefined)
+              setContainer(withChestOption(container, 'keep_contents', checked))
             }
           />
+        )}
+        {offersDoubleChest(container) && (
+          <CheckField
+            label="Double chest (two side by side join into one chest of six rows)"
+            checked={fields.double === true}
+            testId="block-container-double"
+            onChange={(checked) => setContainer(withChestOption(container, 'double', checked))}
+          />
+        )}
+        {fields.double === true && (
+          <p className="text-muted text-xs" data-testid="block-container-double-note">
+            Place one while sneaking to keep it apart. Each half keeps its own items for hoppers,
+            comparators and when it breaks.
+          </p>
+        )}
+        {offersPerPlayer(container) && (
+          <CheckField
+            label="Different for every player (each player has their own contents, like an ender chest)"
+            checked={fields.per_player === true}
+            testId="block-container-per-player"
+            onChange={(checked) => setContainer(withChestOption(container, 'per_player', checked))}
+          />
+        )}
+        {fields.per_player === true && (
+          <p className="text-muted text-xs" data-testid="block-container-per-player-note">
+            Every block of this kind shares one store per player, kept when they die. Hoppers and
+            comparators cannot reach it, and nothing drops when it breaks.
+          </p>
         )}
         <CheckField
           label="Hoppers can use it"

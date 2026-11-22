@@ -1,7 +1,8 @@
 /**
  * Pure helpers of the "World addition" and "Extra drops" Studios (B239, ADR 0060 D2, D3): the
  * simple drop row that reads and writes one loot pool, loot table groups, and the new rows the
- * forms add. No React, no session.
+ * forms add; and of the "Vanilla block rules" Studio (B516, ADR 0105 D4): its six lists in words,
+ * the rows "Add" writes, and the vanilla pair a rule replaces. No React, no session.
  *
  * The pool shape the simple row writes is the one the target's `LootPool` schema describes
  * (a single `condition` and an entry `modifier`); {@link simpleDropsSupported} asks the schema,
@@ -11,6 +12,7 @@
  */
 
 import type { Json } from '@msm/core';
+import type { VanillaPairFacts } from '@msm/plugin-api';
 import type { SchemaNode } from '@msm/schemas';
 import { isJsonObject } from '../../forms/pointer';
 import { resolveNode } from '../../forms/schema-utils';
@@ -22,6 +24,8 @@ type JsonObject = { [key: string]: Json };
 /** The kind ids the addition Studios edit (ADR 0060 D2, D3). */
 export const BIOME_ADDITION_KIND = 'msm:biome_addition';
 export const LOOT_ADDITION_KIND = 'msm:loot_addition';
+/** The kind id of the vanilla block rules (ADR 0105 D4; registered by `@msm/plugin-blocks-items`). */
+export const VANILLA_BLOCK_RULES_KIND = 'msm:vanilla_block_rules';
 
 /** One extra drop as the simple row shows it. */
 export interface SimpleDrop {
@@ -222,4 +226,92 @@ export function listAt(data: Json | undefined, key: string): Json[] {
 /** The strings at `key` of an addition (biomes, tables), or `[]`. */
 export function idsAt(data: Json | undefined, key: string): string[] {
   return listAt(data, key).filter((value): value is string => typeof value === 'string');
+}
+
+// Vanilla block rules (B516, ADR 0105 D4) -------------------------------------------------------
+
+/** The lists of `msm:vanilla_block_rules`, in the order the Studio shows them. */
+export const VANILLA_RULE_LISTS = Object.freeze([
+  'strip',
+  'flatten',
+  'till',
+  'wax',
+  'age',
+  'burn',
+] as const);
+/** One list of {@link VANILLA_RULE_LISTS}. */
+export type VanillaRuleList = (typeof VANILLA_RULE_LISTS)[number];
+
+/** Each list in words: its section title (the plan's Very easy wording) and what a row does. */
+export const VANILLA_RULE_WORDS: Readonly<
+  Record<VanillaRuleList, { title: string; into: string; note: string }>
+> = Object.freeze({
+  strip: {
+    title: 'When you use an axe on it',
+    into: 'Becomes',
+    note: 'An axe strips it, as logs into stripped logs. Shared block states, such as which way a log lies, are kept.',
+  },
+  flatten: {
+    title: 'When you use a shovel on it',
+    into: 'Becomes',
+    note: 'A shovel flattens it, as dirt into a path; only when there is air above it.',
+  },
+  till: {
+    title: 'When you use a hoe on it',
+    into: 'Becomes',
+    note: 'A hoe tills it, as dirt into farmland; only when there is air above it. It can drop an item once, as rooted dirt drops hanging roots.',
+  },
+  wax: {
+    title: 'When you use honeycomb on it',
+    into: 'Becomes',
+    note: 'Honeycomb waxes it; an axe scrapes the wax off again.',
+  },
+  age: {
+    title: 'Ages like copper',
+    into: 'Ages into',
+    note: 'It slowly ages into the next block, as copper; an axe scrapes it back.',
+  },
+  burn: {
+    title: 'Burns',
+    into: '',
+    note: "Fire spreads to it and burns it away at these rates, 0 to 300 each; Minecraft's planks are 5 and 20.",
+  },
+});
+
+/** The field naming what a row's block becomes (`into`, or `next` for ageing; none for burning). */
+export function ruleTargetField(list: VanillaRuleList): 'into' | 'next' | undefined {
+  if (list === 'burn') return undefined;
+  return list === 'age' ? 'next' : 'into';
+}
+
+/** The burn rates a new burning row starts with: Minecraft's planks. */
+export const NEW_BURN_ODDS = Object.freeze({ burn_odds: 5, ignite_odds: 20 });
+
+/** The row "Add" writes to `list`. */
+export function newVanillaRule(list: VanillaRuleList): JsonObject {
+  if (list === 'burn') return { block: '', ...NEW_BURN_ODDS };
+  return { block: '', [ruleTargetField(list) ?? 'into']: '' };
+}
+
+/** The vanilla pair map a list may replace (`TargetFacts.blocks.vanillaPairs`). */
+function vanillaPairMap(
+  facts: VanillaPairFacts | undefined,
+  list: VanillaRuleList,
+): Readonly<Record<string, string>> | undefined {
+  if (facts === undefined || list === 'burn') return undefined;
+  return facts[list];
+}
+
+/**
+ * The block vanilla already turns `block` into with the list's tool, or `undefined`: a rule for
+ * it replaces vanilla's pair (the validators warn; ADR 0105 D4).
+ */
+export function vanillaPairOf(
+  facts: VanillaPairFacts | undefined,
+  list: VanillaRuleList,
+  block: Json | undefined,
+): string | undefined {
+  if (typeof block !== 'string' || block === '') return undefined;
+  const id = block.includes(':') ? block : `minecraft:${block}`;
+  return vanillaPairMap(facts, list)?.[id];
 }

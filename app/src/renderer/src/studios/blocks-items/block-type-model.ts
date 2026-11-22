@@ -92,10 +92,10 @@ export const NEW_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
 ]);
 
 /**
- * The plant and pot types of ADR 0103 (vanilla parity 3, B505 scaffold). Not offered in the Type
- * picker until B516 gives them their section and group.
+ * The growing and climbing plants and the flower pot of ADR 0103 (ADR 0112 D1's batch 1, B516),
+ * in the Type picker's group "Plants"; their own fields are in `PlantSection`.
  */
-export const PLANTS_3_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
+export const GROWING_PLANT_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
   'growing_plant',
   'column_plant',
   'multiface',
@@ -112,7 +112,7 @@ export const BUILDING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze(
     (type) =>
       !(PLANT_BLOCK_TYPES as readonly string[]).includes(type) &&
       !(NEW_BLOCK_TYPES as readonly string[]).includes(type) &&
-      !(PLANTS_3_BLOCK_TYPES as readonly string[]).includes(type),
+      !(GROWING_PLANT_BLOCK_TYPES as readonly string[]).includes(type),
   ),
 );
 
@@ -125,11 +125,16 @@ export interface BlockTypeGroup {
 
 /**
  * The Type picker's groups (ADR 0101 D1): the building types, then the plants (crop, sapling
- * and leaves first) and the furniture and lights. Every type is in exactly one group.
+ * and leaves first, the growing plants and the flower pot of ADR 0103 last) and the furniture
+ * and lights. Every type is in exactly one group.
  */
 export const BLOCK_TYPE_GROUPS: readonly BlockTypeGroup[] = Object.freeze([
   { id: 'building', label: 'Building blocks', types: BUILDING_BLOCK_TYPES },
-  { id: 'plants', label: 'Plants', types: [...PLANT_BLOCK_TYPES, ...NEW_PLANT_BLOCK_TYPES] },
+  {
+    id: 'plants',
+    label: 'Plants',
+    types: [...PLANT_BLOCK_TYPES, ...NEW_PLANT_BLOCK_TYPES, ...GROWING_PLANT_BLOCK_TYPES],
+  },
   { id: 'furniture', label: 'Furniture and lights', types: FURNITURE_BLOCK_TYPES },
 ]);
 
@@ -173,12 +178,25 @@ export const BLOCK_TYPE_LABELS: Readonly<Record<BlockTypeName, string>> = Object
   hanging_sign: 'Hanging sign',
   stem: 'Stem (grows a fruit, like melons)',
   scaffolding: 'Scaffolding',
-  // Placeholders from B505; B516 words them and adds them to the groups.
-  growing_plant: 'Growing plant',
-  column_plant: 'Column plant',
-  multiface: 'Multiface plant',
-  dripleaf: 'Dripleaf',
-  flower_pot: 'Flower pot',
+  // ADR 0103 (B516): the words before the bracket are the plan's Very easy wording.
+  growing_plant: 'Grows in long strands (like kelp, weeping vines and cave vines)',
+  column_plant: 'Grows tall like sugar cane (cane, cactus or bamboo)',
+  multiface: 'Spreads over any side (like glow lichen)',
+  dripleaf: 'Tips when you stand on it (like dripleaf)',
+  flower_pot: 'A flower pot (takes the plants you list)',
+});
+
+/** A column plant's shapes in words (ADR 0103 D1, `style`). */
+export const COLUMN_PLANT_STYLE_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  cane: 'Cane (like sugar cane, next to water)',
+  cactus: 'Cactus (spiny, hurts when touched)',
+  bamboo: 'Bamboo (leafy, grows from a shoot)',
+});
+
+/** A dripleaf's sizes in words (ADR 0103 D1, `size`). */
+export const DRIPLEAF_SIZE_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  big: 'Big leaf (tips when you stand on it)',
+  small: 'Small leaf (grows into a big one with bone meal)',
 });
 
 /** The bed rules in words (ADR 0094 D2; the names are the target's `blocks.bedRules` keys). */
@@ -259,10 +277,24 @@ const TYPE_FIELDS: Readonly<Partial<Record<BlockTypeName, readonly string[]>>> =
   torch: ['particle'],
   sign: ['wood_type'],
   hanging_sign: ['wood_type'],
-  potted_plant: ['plant'],
+  potted_plant: ['plant', 'pot'],
   stem: ['fruit', 'soil', 'fruit_soil'],
   vine: ['spreads'],
   cocoa: ['support'],
+  growing_plant: [
+    'direction',
+    'max_age',
+    'growth_chance',
+    'bonemeal_growth',
+    'needs_water',
+    'berries',
+    'climbable',
+    'soil',
+  ],
+  column_plant: ['style', 'max_height', 'min_height', 'soil', 'needs_water_nearby', 'touch_damage'],
+  multiface: ['light', 'spreads', 'waterloggable'],
+  dripleaf: ['size', 'grows_into', 'tilt_ticks'],
+  flower_pot: ['plants'],
 });
 
 /**
@@ -276,6 +308,16 @@ export const NEW_TYPE_DEFAULTS: Readonly<{ fruit: string; plant: string; berry: 
     plant: 'minecraft:short_grass',
     berry: 'minecraft:sweet_berries',
   });
+
+/**
+ * The required fields of the ADR 0103 types when a block becomes one (B516): a cane-like column,
+ * a big dripleaf (a small one needs a big one to grow into) and a pot that takes a poppy.
+ */
+export const GROWING_TYPE_DEFAULTS: Readonly<{
+  style: string;
+  size: string;
+  plants: readonly string[];
+}> = Object.freeze({ style: 'cane', size: 'big', plants: Object.freeze(['minecraft:poppy']) });
 
 /**
  * The required fields a block gets when it becomes a portal (ADR 0069 D5's rule): a frame no
@@ -464,14 +506,71 @@ export const TEXTURE_SLOTS: Readonly<Record<BlockTypeName, readonly TextureSlot[
       { key: 'side', label: 'Sides' },
       { key: 'bottom', label: 'Bottom (also the sides when not standing)' },
     ],
-    // Placeholders from B505; B516 fills in the slots.
-    growing_plant: [],
-    column_plant: [],
-    multiface: [],
-    dripleaf: [],
-    flower_pot: [],
+    // ADR 0103 (B516); a column plant's and a dripleaf's slots follow the shape
+    // (`textureSlotsOf`), these are a cane's and a big leaf's.
+    growing_plant: [
+      { key: 'head', label: 'Tip (also the item)' },
+      { key: 'body', label: 'Strand behind the tip (empty: the tip)' },
+    ],
+    column_plant: [{ key: 'all', label: 'Stalk (also the item)' }],
+    multiface: [PICTURE_SLOT],
+    dripleaf: [
+      { key: 'top', label: 'Leaf from above (also the item)' },
+      { key: 'side', label: 'Edge of the leaf' },
+      { key: 'tip', label: 'Tip of the leaf when tilted' },
+      { key: 'stem', label: 'Stem' },
+    ],
+    flower_pot: [
+      { key: 'pot', label: "Pot picture (empty: vanilla's pot)" },
+      { key: 'dirt', label: 'Earth in the pot (empty: dirt)' },
+      ITEM_SLOT('the pot picture'),
+    ],
   },
 );
+
+/** The texture slots of each column plant shape (`style`, ADR 0103 D1). */
+const COLUMN_PLANT_TEXTURE_SLOTS: Readonly<Record<string, readonly TextureSlot[]>> = Object.freeze({
+  cane: [{ key: 'all', label: 'Stalk (also the item)' }],
+  cactus: [
+    { key: 'side', label: 'Sides (also the item)' },
+    { key: 'top', label: 'Top' },
+    { key: 'bottom', label: 'Bottom (empty: the top)' },
+  ],
+  bamboo: [
+    { key: 'stalk', label: 'Stalk (also the item)' },
+    { key: 'leaves_small', label: 'Small leaves' },
+    { key: 'leaves_large', label: 'Large leaves' },
+    { key: 'shoot', label: 'Shoot (empty: the stalk)' },
+  ],
+});
+
+/** The texture slots of a small dripleaf (`size: "small"`). */
+const SMALL_DRIPLEAF_TEXTURE_SLOTS: readonly TextureSlot[] = Object.freeze([
+  { key: 'top', label: 'Leaf from above (also the item)' },
+  { key: 'side', label: 'Edge of the leaf' },
+  { key: 'stem_top', label: 'Upper stem' },
+  { key: 'stem_bottom', label: 'Lower stem (empty: the upper stem)' },
+]);
+
+/** The texture slots a growing plant with berries adds. */
+const BERRY_TEXTURE_SLOTS: readonly TextureSlot[] = Object.freeze([
+  { key: 'head_berries', label: 'Tip with berries (empty: the tip)' },
+  { key: 'body_berries', label: 'Strand with berries (empty: the tip with berries)' },
+]);
+
+/** The type's own texture slots for its data: a column plant's by shape, and so on. */
+function ownTextureSlots(type: BlockTypeName, data: Json | undefined): readonly TextureSlot[] {
+  const object = asObject(data);
+  if (type === 'column_plant') {
+    const style = typeof object.style === 'string' ? object.style : 'cane';
+    return COLUMN_PLANT_TEXTURE_SLOTS[style] ?? TEXTURE_SLOTS.column_plant;
+  }
+  if (type === 'dripleaf' && object.size === 'small') return SMALL_DRIPLEAF_TEXTURE_SLOTS;
+  if (type === 'growing_plant' && isJsonObject(object.berries)) {
+    return [...TEXTURE_SLOTS.growing_plant, ...BERRY_TEXTURE_SLOTS];
+  }
+  return TEXTURE_SLOTS[type];
+}
 
 /** Model slots in words (the keys of `BLOCK_TYPE_MODEL_SLOTS`). */
 const MODEL_SLOT_LABELS: Readonly<Record<string, string>> = Object.freeze({
@@ -525,6 +624,25 @@ const MODEL_SLOT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   rod: 'Rod',
   vine: 'Vine',
   carpet: 'Carpet',
+  // ADR 0103 (B516).
+  head_berries: 'Tip with berries',
+  body_berries: 'Strand with berries',
+  stalk2: 'Thin stalk, second look',
+  stalk3: 'Thin stalk, third look',
+  stalk4: 'Thin stalk, fourth look',
+  thick: 'Thick stalk',
+  thick2: 'Thick stalk, second look',
+  thick3: 'Thick stalk, third look',
+  thick4: 'Thick stalk, fourth look',
+  leaves_small: 'Small leaves',
+  leaves_large: 'Large leaves',
+  shoot: 'Shoot',
+  face: 'On one face',
+  leaf: 'Leaf',
+  partial_tilt: 'Tipping a little',
+  full_tilt: 'Tipped right over',
+  stem: 'Stem',
+  pot: 'Empty pot',
 });
 
 /** Slot words that depend on the type (`wall` of a torch or sign is not a fence gate's). */
@@ -535,6 +653,9 @@ const TYPE_MODEL_SLOT_LABELS: Readonly<Partial<Record<BlockTypeName, Record<stri
     sign: { wall: 'On a wall' },
     hanging_sign: { wall: 'On a wall' },
     tall_plant: { bottom: 'Lower half', top: 'Upper half' },
+    growing_plant: { head: 'Tip', body: 'Strand behind the tip' },
+    column_plant: { default: 'Stalk' },
+    dripleaf: { bottom: 'Lower half (small leaf)' },
   });
 
 const COUNT_WORDS: Readonly<Record<string, string>> = {
@@ -575,7 +696,7 @@ function stateSlotShown(
  * that texture already set).
  */
 export function textureSlotsOf(type: BlockTypeName, data: Json | undefined): TextureSlot[] {
-  const slots = [...TEXTURE_SLOTS[type]];
+  const slots = [...ownTextureSlots(type, data)];
   // A key the element sets that the type's list leaves out (a single-picture type's `texture`)
   // shows by its name, so it can be seen and cleared.
   if (slots.length > 0 && !STAGE_TEXTURE_TYPES.includes(type)) {
@@ -774,7 +895,12 @@ export function withBlockType(
   if (presetType !== undefined && presetType !== next) out.loot = 'self';
   // The new type's required fields.
   const fields = TYPE_FIELDS[next] ?? [];
-  if (fields.includes('set_type') && typeof out.set_type !== 'string') {
+  // An own set type (ADR 0105 D2, an object) stays when a door becomes a trapdoor.
+  if (
+    fields.includes('set_type') &&
+    typeof out.set_type !== 'string' &&
+    !isJsonObject(out.set_type)
+  ) {
     out.set_type = options.setTypes?.[0] ?? 'wood';
   }
   if (fields.includes('wood_type') && typeof out.wood_type !== 'string') {
@@ -788,6 +914,13 @@ export function withBlockType(
     if (out.item === false || (isJsonObject(out.item) && Object.keys(out.item).length === 0)) {
       delete out.item;
     }
+  }
+  if (next === 'column_plant' && typeof out.style !== 'string') {
+    out.style = GROWING_TYPE_DEFAULTS.style;
+  }
+  if (next === 'dripleaf' && typeof out.size !== 'string') out.size = GROWING_TYPE_DEFAULTS.size;
+  if (next === 'flower_pot' && !Array.isArray(out.plants)) {
+    out.plants = [...GROWING_TYPE_DEFAULTS.plants];
   }
   if (next === 'berry_bush' && typeof out.berry !== 'string') {
     const own = options.blockId === undefined ? undefined : blockItemIdOf(options.blockId, out);
@@ -815,7 +948,7 @@ export function withBlockType(
   const keepsModel = acceptsSingleModel(next) && typeof out.model === 'string' && out.model !== '';
   if (next !== 'block' && texture !== undefined && !keepsModel) {
     if (STAGE_TEXTURE_TYPES.includes(next)) out.textures = { stages: [texture] };
-    else out.textures = { [TEXTURE_SLOTS[next][0]?.key ?? 'all']: texture };
+    else out.textures = { [ownTextureSlots(next, out)[0]?.key ?? 'all']: texture };
   }
   return out;
 }
@@ -934,25 +1067,64 @@ export function textureAssetPath(textureId: string): string | undefined {
 
 /** A companion block an element makes (ADR 0094 D3), with its words. */
 export interface CompanionRow {
-  /** The generated id, `<id>_wall` or `<id>_attached`. */
+  /** The generated id: `<id>_wall`, `<id>_attached`, `<id>_plant`, `<id>_shoot`, `<id>_stem`, or a pot's `<id>_<plant path>`. */
   id: string;
   /** What the companion is, in words ("the torch on a wall"). */
   words: string;
+  /** For a pot's companion (ADR 0103 D2): the plant it holds. */
+  plant?: string;
+}
+
+/** Words for an id's last path part ("Red tulip" for `minecraft:red_tulip`). */
+export function idWords(id: string): string {
+  const path = id.slice(id.indexOf(':') + 1);
+  const last = path.slice(path.lastIndexOf('/') + 1).replaceAll('_', ' ');
+  return last.charAt(0).toUpperCase() + last.slice(1);
+}
+
+/** The plants a flower pot's data lists (`plants`), strings only. */
+export function potPlantsOf(data: Json | undefined): string[] {
+  const plants = asObject(data).plants;
+  return Array.isArray(plants)
+    ? plants.filter((plant): plant is string => typeof plant === 'string' && plant !== '')
+    : [];
 }
 
 /**
  * The companion blocks of an `msm:block` element (`blockGeneratedBlockIds`, B448), shown as part
- * of the element ("Also makes: ..."): the wall block of a torch, sign or hanging sign and the
- * attached stem. Empty for the other types.
+ * of the element ("Also makes: ..."): the wall block of a torch, sign or hanging sign, the attached
+ * stem, and (ADR 0103, B516) the strand behind a growing plant's tip, a bamboo's shoot, a big
+ * dripleaf's stem and one potted plant per plant a flower pot takes. Empty for the other types.
  */
 export function companionRows(element: { id: string; data: Json | undefined }): CompanionRow[] {
   const type = blockTypeOfData(element.data);
   const thing =
     type === undefined ? 'block' : BLOCK_TYPE_LABELS[type].split(' (')[0]?.toLowerCase();
-  return blockGeneratedBlockIds(element.id, element.data).map((id) => ({
-    id,
-    words: id.endsWith('_attached') ? 'the stem bent onto a grown fruit' : `the ${thing} on a wall`,
-  }));
+  const plants = type === 'flower_pot' ? potPlantsOf(element.data) : [];
+  return blockGeneratedBlockIds(element.id, element.data).map((id): CompanionRow => {
+    if (type === 'flower_pot') {
+      const plant = plants.find(
+        (entry) => id === `${element.id}_${entry.slice(entry.indexOf(':') + 1)}`,
+      );
+      return plant === undefined
+        ? { id, words: 'the pot with a plant in it' }
+        : { id, words: `the pot with ${idWords(plant).toLowerCase()} in it`, plant };
+    }
+    const suffix = id.slice(element.id.length);
+    if (type === 'growing_plant' && suffix === '_plant') {
+      return { id, words: 'the strand behind the tip' };
+    }
+    if (type === 'column_plant' && suffix === '_shoot') {
+      return { id, words: 'the shoot it starts from' };
+    }
+    if (type === 'dripleaf' && suffix === '_stem') return { id, words: 'the stem under the leaf' };
+    return {
+      id,
+      words: id.endsWith('_attached')
+        ? 'the stem bent onto a grown fruit'
+        : `the ${thing} on a wall`,
+    };
+  });
 }
 
 /** The sign types (ADR 0094 D6), whose writing screen needs a picture of its own. */

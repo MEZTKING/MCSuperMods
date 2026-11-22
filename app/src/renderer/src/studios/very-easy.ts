@@ -62,6 +62,13 @@ export const BLOCK_VERY_EASY_SECTIONS: readonly string[] = [
   'block-stem',
   'block-cocoa',
   'block-weathering',
+  // B516 (ADR 0112 D1): the growing plants, the flower pot and How it sounds.
+  'block-growing-plant',
+  'block-column-plant',
+  'block-multiface',
+  'block-dripleaf',
+  'block-flower-pot',
+  'block-sounds',
 ];
 
 /** The Item Studio's sections in Very easy. */

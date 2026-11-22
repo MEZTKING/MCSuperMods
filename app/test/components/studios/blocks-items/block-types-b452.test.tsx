@@ -27,7 +27,6 @@ import {
   companionRows,
   modelSlotLabel,
   NEW_BLOCK_TYPES,
-  PLANTS_3_BLOCK_TYPES,
   signPictureCopy,
   TEXTURE_SLOTS,
   textureSlotsOf,
@@ -131,10 +130,7 @@ function renderWithHost(
 describe('Type picker groups and pictures', () => {
   it('puts every type in exactly one group', () => {
     const grouped = BLOCK_TYPE_GROUPS.flatMap((group) => group.types);
-    // The plant and pot types of ADR 0103 are not offered until B516 gives them a group.
-    const offered = BLOCK_TYPES.filter((type) => !PLANTS_3_BLOCK_TYPES.includes(type));
-    expect([...grouped].sort()).toEqual([...offered].sort());
-    for (const type of PLANTS_3_BLOCK_TYPES) expect(grouped).not.toContain(type);
+    expect([...grouped].sort()).toEqual([...BLOCK_TYPES].sort());
     expect(new Set(grouped).size).toBe(grouped.length);
     expect(BLOCK_TYPE_GROUPS.map((group) => group.label)).toEqual([
       'Building blocks',
@@ -391,8 +387,10 @@ describe('Waterlogging switch', () => {
     expect(read(data).components).toBeUndefined();
   });
 
-  it('is off for storage, says so for types that hold water themselves, absent elsewhere', () => {
-    expect(waterloggingState('block', { components: { 'msm:container': {} } })).toBe('blocked');
+  it('holds water on storage, says so for types that hold water themselves, absent elsewhere', () => {
+    expect(waterloggingState('block', { components: { 'msm:container': {} } })).toBe('storage');
+    expect(waterloggingState('block', { components: { 'msm:machine': {} } })).toBe('storage');
+    expect(waterloggingState('dripleaf', {})).toBe('own');
     expect(waterloggingState('horizontal', {})).toBe('switch');
     expect(waterloggingState('ladder', {})).toBe('own');
     expect(waterloggingState('bed', {})).toBe('none');
@@ -405,8 +403,10 @@ describe('Waterlogging switch', () => {
       block({ model: 'minecraft:block/stone', components: { 'msm:container': {} } }),
       schema,
     );
-    expect((screen.getByTestId('block-waterlogged') as HTMLInputElement).disabled).toBe(true);
-    expect(screen.getByTestId('block-waterlogged-blocked')).toBeTruthy();
+    const box = screen.getByTestId('block-waterlogged') as HTMLInputElement;
+    expect(box.disabled).toBe(false);
+    expect(box.parentElement?.textContent).toContain('Holds water');
+    expect(screen.getByTestId('block-waterlogged-storage')).toBeTruthy();
   });
 });
 

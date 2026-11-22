@@ -1,9 +1,11 @@
 /**
  * The Block Studio's Waterlogging switch (B452, ADR 0094 D7, ADR 0101 D1): `msm:waterloggable`
- * on the types that take it (`WATERLOGGABLE_BLOCK_TYPES`: simple, pillar and facing blocks), never
- * with storage or a machine (limit Q8: the switch is off and says why, and a component already
- * there can still be removed). The new types vanilla waterlogs by itself (ladder, lantern, chain,
- * signs, candle, sea pickle, scaffolding) say so instead; the other types show nothing.
+ * on the types that take it (`WATERLOGGABLE_BLOCK_TYPES`: simple, pillar and facing blocks). The
+ * new types vanilla waterlogs by itself (ladder, lantern, chain, signs, candle, sea pickle,
+ * scaffolding, and B516's dripleaf) say so instead; the other types show nothing.
+ *
+ * B516 (ADR 0104 D3, ADR 0112 D1): storage and machines hold water too, as vanilla's chests do,
+ * keeping their contents, screen and hoppers; their switch reads **Holds water**.
  *
  * @packageDocumentation
  */
@@ -31,14 +33,15 @@ export const SELF_WATERLOGGED_TYPES: readonly BlockTypeName[] = Object.freeze([
   'candle',
   'sea_pickle',
   'scaffolding',
+  'dripleaf',
 ]);
 
 /** What the switch shows for block data of `type`. */
 export type WaterloggingState =
   /** The switch, on or off. */
   | 'switch'
-  /** The switch is off and disabled: storage or a machine cannot hold water. */
-  | 'blocked'
+  /** The switch of storage or a machine, "Holds water" (ADR 0104 D3). */
+  | 'storage'
   /** A note: the type holds water by itself. */
   | 'own'
   /** Nothing (the type never holds water and has no component to remove). */
@@ -49,7 +52,7 @@ export function waterloggingState(type: BlockTypeName, data: Json | undefined): 
   if (SELF_WATERLOGGED_TYPES.includes(type)) return 'own';
   const allowed = WATERLOGGABLE_BLOCK_TYPES.includes(type);
   if (!allowed) return hasWaterloggable(data) ? 'switch' : 'none';
-  if (containerOf(data) !== undefined || machineOf(data) !== undefined) return 'blocked';
+  if (containerOf(data) !== undefined || machineOf(data) !== undefined) return 'storage';
   return 'switch';
 }
 
@@ -89,22 +92,17 @@ export function WaterloggingSwitch(props: WaterloggingSwitchProps) {
     );
   }
   const on = hasWaterloggable(data);
-  if (state === 'blocked') {
+  if (state === 'storage') {
     return (
       <>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            data-testid="block-waterlogged"
-            checked={on}
-            disabled={!on}
-            onChange={(event) => props.replace(withWaterloggable(data, event.target.checked))}
-          />
-          Can stand in water
-        </label>
-        <p className="text-muted text-xs" data-testid="block-waterlogged-blocked">
-          Storage and machines cannot stand in water.
-          {on ? ' Untick it: the game leaves it dry.' : ''}
+        <CheckField
+          label="Holds water (placed underwater, it fills with water and keeps its contents)"
+          checked={on}
+          testId="block-waterlogged"
+          onChange={(checked) => props.replace(withWaterloggable(data, checked))}
+        />
+        <p className="text-muted text-xs" data-testid="block-waterlogged-storage">
+          Its screen, hoppers and comparators work as before; breaking it leaves the water.
         </p>
         {problemsAt}
       </>

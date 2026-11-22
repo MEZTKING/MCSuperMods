@@ -16,31 +16,52 @@
  * placement (read from the game's own file through the vanilla cache when it can be) and points
  * the row at it, since added vanilla features can close a "Feature order cycle".
  *
+ * - "Vanilla block rules" (`msm:vanilla_block_rules`, B516, ADR 0105 D4): Minecraft's own blocks
+ *   an axe strips, a shovel flattens, a hoe tills, honeycomb waxes, that age like copper and that
+ *   burn, one row per block; a row for a block Minecraft already pairs says which pair it
+ *   replaces (`TargetFacts.blocks.vanillaPairs`). Blocks are picked by id in Easy and by name in
+ *   the ThingPicker in Very easy.
+ *
  * @packageDocumentation
  */
 
 import type { Json, Project, ResourceLocation } from '@msm/core';
 import { ArrowDown, ArrowUp, Copy, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChangeItem } from '../../changeset/changeset';
+import {
+  ThingPicker,
+  type ThingPictures,
+  type ThingRegistries,
+  thingName,
+  thingSections,
+} from '../../components/thing-picker/ThingPicker';
 import { Button, iconButtonClass } from '../../components/ui/Button';
 import { isWithin, ProblemList } from '../../forms';
 import { typingKey } from '../../forms/context';
 import { IdField, NumberField, SelectField } from '../structures/pickers';
 import type { StudioProps } from '../types';
+import { useVeryEasy } from '../very-easy';
 import { AdvancedToggle, IdList, Section } from '../worldgen/parts';
 import {
   idsAt,
   listAt,
+  NEW_BURN_ODDS,
   NEW_DROP,
   newBiomeFeature,
   newBiomeSpawn,
+  newVanillaRule,
   readSimpleDrop,
+  ruleTargetField,
   type SimpleDrop,
   simpleDropsSupported,
   suggestTablesIn,
   TABLE_GROUPS,
   tableGroupLabel,
+  VANILLA_RULE_LISTS,
+  VANILLA_RULE_WORDS,
+  type VanillaRuleList,
+  vanillaPairOf,
   writeSimpleDrop,
 } from './additions-model';
 import { asObject, choicesThrough, moved, pathSetter, pointerOf } from './blocks-items-model';
@@ -683,6 +704,274 @@ export function ExtraDropsStudio(props: StudioProps) {
       <ProblemsAt problems={problems} pointer="" />
       {tablesSection}
       {dropsSection}
+    </section>
+  );
+}
+
+/** A block or item: an id field in Easy, a named chip opening the ThingPicker in Very easy. */
+function ThingIdField(props: {
+  label: string;
+  value: string;
+  sort: 'block' | 'item';
+  testId: string;
+  project: StudioProps['project'];
+  suggest: StudioProps['suggest'];
+  registries: ThingRegistries;
+  pictures: ThingPictures | null;
+  texturesFolder: string;
+  /** The words of the empty value; the picker offers it as its first tile when given. */
+  emptyLabel?: string;
+  onCommit(value: string): void;
+}) {
+  const veryEasy = useVeryEasy();
+  const [open, setOpen] = useState(false);
+  const sections = useMemo(
+    () =>
+      open
+        ? thingSections({
+            project: props.project,
+            registries: props.registries,
+            sort: props.sort,
+            texturesFolder: props.texturesFolder,
+          })
+        : [],
+    [open, props.project, props.registries, props.sort, props.texturesFolder],
+  );
+  if (!veryEasy) {
+    return (
+      <IdField
+        label={props.label}
+        value={props.value}
+        registry={props.sort}
+        suggest={props.suggest}
+        className="min-w-56"
+        testId={props.testId}
+        onCommit={(text) => props.onCommit(text.trim())}
+      />
+    );
+  }
+  const words =
+    props.value === ''
+      ? (props.emptyLabel ?? `Pick ${props.sort === 'item' ? 'an item' : 'a block'}`)
+      : thingName(props.project, props.value, props.sort);
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+      <span className="text-muted">{props.label}</span>
+      <Button
+        className="self-start text-xs"
+        data-testid={props.testId}
+        onClick={() => setOpen(true)}
+      >
+        {words}
+      </Button>
+      {open && (
+        <ThingPicker
+          title={`Pick ${props.sort === 'item' ? 'an item' : 'a block'}: ${props.label.toLowerCase()}`}
+          sort={props.sort}
+          sections={sections}
+          value={props.value === '' ? undefined : props.value}
+          pictures={props.pictures}
+          noneLabel={props.emptyLabel}
+          onCancel={() => setOpen(false)}
+          onPick={(id) => {
+            setOpen(false);
+            props.onCommit(id ?? '');
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * "Vanilla block rules" (ADR 0105 D4): rules for Minecraft's own blocks, one list per tool and
+ * one for burning.
+ */
+export function VanillaBlockRulesStudio(props: StudioProps) {
+  const { project, element, problems, suggest, onChange, target } = props;
+  const [advanced, setAdvanced] = useState(false);
+  const host = useBlocksItemsStudioHost();
+  const registries = useMemo(
+    () => props.context.registries(project, element.kind),
+    [props.context, project, element.kind],
+  );
+  const pictures = useMemo<ThingPictures | null>(() => {
+    if (host === null) return null;
+    const vanilla = host.modelPreview?.vanilla;
+    return {
+      project: host.thumbnail,
+      vanilla:
+        vanilla === null || vanilla === undefined ? undefined : (path) => vanilla.readAsset(path),
+      revision: host.revision,
+    };
+  }, [host]);
+  if (advanced) {
+    return (
+      <section
+        aria-label="Vanilla block rules"
+        data-testid="vanilla-block-rules-studio"
+        className="flex flex-col gap-3"
+      >
+        <AdvancedToggle
+          checked={advanced}
+          onChange={setAdvanced}
+          testId="vanilla-block-rules-advanced"
+        />
+        {props.form}
+      </section>
+    );
+  }
+  const data = element.data;
+  const set = pathSetter(data, onChange);
+  const facts = target.blocks?.vanillaPairs;
+  const texturesFolder = target.folders.resource.textures;
+  /** Sets a list; an emptied list is removed (each list holds at least one entry). */
+  const setList = (key: VanillaRuleList, next: Json[]) =>
+    set([key], next.length === 0 ? undefined : next);
+  const thing = (
+    label: string,
+    value: Json | undefined,
+    sort: 'block' | 'item',
+    testId: string,
+    onCommit: (value: string) => void,
+    emptyLabel?: string,
+  ) => (
+    <ThingIdField
+      label={label}
+      value={typeof value === 'string' ? value : ''}
+      sort={sort}
+      testId={testId}
+      project={project}
+      suggest={suggest}
+      registries={registries}
+      pictures={pictures}
+      texturesFolder={texturesFolder}
+      {...(emptyLabel === undefined ? {} : { emptyLabel })}
+      onCommit={onCommit}
+    />
+  );
+
+  const section = (list: VanillaRuleList) => {
+    const words = VANILLA_RULE_WORDS[list];
+    const rows = listAt(data, list);
+    const targetField = ruleTargetField(list);
+    return (
+      <Section key={list} title={words.title} testId={`vanilla-rules-${list}`}>
+        <p className="text-muted text-xs">{words.note}</p>
+        {rows.length === 0 && <p className="text-muted text-xs">None.</p>}
+        <ol className="flex flex-col gap-2">
+          {rows.map((raw, index) => {
+            const row = asObject(raw);
+            const name = `${words.title}, rule ${index + 1}`;
+            const replaced = vanillaPairOf(facts, list, row.block);
+            const base = `vanilla-rules-${list}-${index}`;
+            return (
+              <li key={index} className="flex flex-col gap-1" data-testid={base}>
+                <div className="flex flex-wrap items-end gap-2">
+                  {thing('Block', row.block, 'block', `${base}-block`, (text) =>
+                    set([list, index, 'block'], text),
+                  )}
+                  {targetField !== undefined &&
+                    thing(words.into, row[targetField], 'block', `${base}-${targetField}`, (text) =>
+                      set([list, index, targetField], text),
+                    )}
+                  {list === 'till' &&
+                    thing(
+                      'Drops once',
+                      row.drops,
+                      'item',
+                      `${base}-drops`,
+                      (text) => set([list, index, 'drops'], text === '' ? undefined : text),
+                      'Nothing',
+                    )}
+                  {list === 'burn' && (
+                    <>
+                      <NumberField
+                        label="Catches fire (0 to 300)"
+                        value={row.burn_odds}
+                        integer
+                        testId={`${base}-burn-odds`}
+                        onCommit={(value) =>
+                          set(
+                            [list, index, 'burn_odds'],
+                            value ?? NEW_BURN_ODDS.burn_odds,
+                            typingKey(`/${list}/${index}/burn_odds`),
+                          )
+                        }
+                      />
+                      <NumberField
+                        label="Burns away (0 to 300)"
+                        value={row.ignite_odds}
+                        integer
+                        testId={`${base}-ignite-odds`}
+                        onCommit={(value) =>
+                          set(
+                            [list, index, 'ignite_odds'],
+                            value ?? NEW_BURN_ODDS.ignite_odds,
+                            typingKey(`/${list}/${index}/ignite_odds`),
+                          )
+                        }
+                      />
+                    </>
+                  )}
+                  <RowButtons
+                    name={name}
+                    index={index}
+                    count={rows.length}
+                    onMove={(to) => set([list], moved(rows, index, to))}
+                    onRemove={() =>
+                      setList(
+                        list,
+                        rows.filter((_, at) => at !== index),
+                      )
+                    }
+                  />
+                </div>
+                {replaced !== undefined && (
+                  <p className="text-warning text-xs" data-testid={`${base}-replaces`}>
+                    Minecraft already turns it into {thingName(project, replaced, 'block')}; this
+                    rule replaces that.
+                  </p>
+                )}
+                <RowProblems problems={problems} pointer={pointerOf([list, index])} />
+              </li>
+            );
+          })}
+        </ol>
+        <Button
+          className="self-start text-xs"
+          data-testid={`vanilla-rules-${list}-add`}
+          onClick={() =>
+            rows.length === 0
+              ? set([list], [newVanillaRule(list)])
+              : set([list, rows.length], newVanillaRule(list))
+          }
+        >
+          <Plus size={12} aria-hidden />
+          Add a block
+        </Button>
+        <ProblemsAt problems={problems} pointer={`/${list}`} />
+      </Section>
+    );
+  };
+
+  return (
+    <section
+      aria-label="Vanilla block rules"
+      data-testid="vanilla-block-rules-studio"
+      className="flex flex-col gap-4"
+    >
+      <AdvancedToggle
+        checked={advanced}
+        onChange={setAdvanced}
+        testId="vanilla-block-rules-advanced"
+      />
+      <p className="text-muted text-xs">
+        Rules for Minecraft's own blocks: what a tool turns them into, how they age and how they
+        burn. They need the Fabric mod export; vanilla packs do not carry them.
+      </p>
+      <ProblemsAt problems={problems} pointer="" />
+      {VANILLA_RULE_LISTS.map(section)}
     </section>
   );
 }

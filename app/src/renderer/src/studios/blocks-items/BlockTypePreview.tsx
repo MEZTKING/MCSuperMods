@@ -13,6 +13,9 @@
  * no WebGL, the block's main picture is shown flat instead; a sign or hanging sign also shows
  * its writing screen picture (the asset at `signGuiTextureId`).
  *
+ * B516 (ADR 0112 D1): the growing plants and flower pot of ADR 0103 draw their made models the
+ * same way (tip and strand, stalks, leaves, the empty pot), with a line on what shows in game only.
+ *
  * @packageDocumentation
  */
 
@@ -43,6 +46,12 @@ const IN_GAME_ONLY: Readonly<Partial<Record<BlockTypeName, string>>> = {
   torch: 'The flame particle shows in game only.',
   bed: 'In game the head and foot are two blocks side by side.',
   tall_plant: 'In game the upper half stands on the lower half.',
+  // ADR 0103 (B516).
+  growing_plant: 'In game the strand grows behind its tip, one block at a time.',
+  column_plant: 'In game the stalk stacks up block by block.',
+  multiface: 'In game it covers each side of a block it is placed on.',
+  dripleaf: 'In game the leaf stands on its stem and tips under whoever stands on it.',
+  flower_pot: 'In game each plant it takes shows in the pot.',
 };
 
 /** The block's main picture, flat, with words (no model to draw, or no WebGL). */
