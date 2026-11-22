@@ -501,7 +501,11 @@ export function BlockStudio(props: StudioProps) {
   );
 
   const light = asObject(components['msm:light_emitter']);
-  const soundChoices = choices(['sound_type']);
+  // The format's suggested names and every other vanilla sound type of the target (any name the
+  // version has is valid, ADR 0105).
+  const soundChoices = [
+    ...new Set([...choices(['sound_type']), ...(props.target?.blocks?.soundTypes ?? [])]),
+  ].sort();
   const looks = (
     <Section title="Light and sound" testId="block-light-sound">
       <div className="flex flex-wrap gap-2">
