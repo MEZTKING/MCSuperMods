@@ -7743,3 +7743,18 @@ Next
 **Next**
 - B567: clips 2 to 10 in `showcases.ts` with B565's sequences; the pet and trader clips use camera `follow`; the crop's subject is `./onion_crop`; its tests go in `app/test/components/showcase/showcases.test.ts`.
 - B568: `ClipView` passes `player.camera()`, `player.alpha` as `partialTick`, `player.advance(elapsed)` in `onFrame`, scripts from `window.msm.scripting` with `SCRIPT_API`, and `fluidLooks`; shows the still while `player.loops` has just grown; keeps the player's `area` for the canvas's `grid`, `particles`, `mobs` and `vehicles`.
+
+## 2026-11-22 — executor — B567 the ten Showcase clips
+
+**What**
+- `app/src/renderer/src/showcase/showcases.ts` (ADR 0118 D12): cards 2 to 10 after B566's wood set, in the plan's order, each with its title, sentence, Make this and captions, from B565's measured sequences: a pet (two Ember Foxes hatch, the camera follows the first), plants that grow (nine onions planted on farmland and grown with seven rounds of the Grow tool), a machine (the crusher placed under a hopper beside a chest, lit by the Power tool, put out by a `set`), a vehicle (the tank placed, got into, driven and steered by held moves, the driver camera; Make this the vehicle flows), a portal (the frame placed block by block, the portal filled by `set`s; the beacon left out), sparkles (firefly jars on posts, the spark wand used twice), a trader (the merchant hatched by a bell on a dirt path road, the camera follows it; Make this the Wandering merchant flow), a liquid of your own (a three by three pit dug in sand, oil poured from its bucket), Rules: a lucky block (two of three broken, the rule run as a script, captions from the rule's own lines; Make this the example). Every step that leaves a block or writes a line carries its expectation.
+- `app/test/components/showcase/showcases.test.ts`: the ten cards and their Make this; plain words with no ids; every example and flow in the library on both targets; every clip passes `validateClip` and plays to its end on mc-26.3 and mc-26.4 with no problem, no skipped or failed line, only the "Only in Minecraft" lines it expects, the same lines on both targets, and its subject (its first project block, or the followed mob, or the driven vehicle) in the camera's view at `stillAt` (`frustumPlanes` and `boxInFrustum` with deepslate's 70 degree projection at 16 by 9); every clip plays again after it starts over.
+- Verified: `pnpm lint`, `pnpm typecheck`, `@msm/app` tests 2668 (280 files).
+
+**Decisions**
+- The pet stays on quick flat ground (B565 measured it there; the plan's table said hills), so the follow camera never sits inside a hill.
+- Captions never name the lucky block counter's number: Clear keeps the rule's counter, so a second loop says 3 and 4.
+- Two coordinates are written with a `mid(n)` helper, since their literals (26 and a half) read as Minecraft versions to `tools/check-deps`.
+
+**Next**
+- B568 and B569 use `SHOWCASES` as it is; re-run `showcases.test.ts` after B540 merges.
