@@ -7078,3 +7078,13 @@ Next
 
 **Next**
 - B511 lowers the types (models, loot tables for the `_plant`, `_shoot` and `_stem` companions dropping the element's item, `#minecraft:climbable` for climbable strands); B520 the client GameTest screenshots (`MsmPlants3ClientGameTest`), not done here.
+
+## 2026-11-22 — executor — B510b potted companions from a pot's plants
+
+**What**
+- B512's lowering writes a project pot with `plants` and, per plant, only the block state, model and loot of `<pot>_<plant path>`, with no `potted_plant` definition. The runtime now registers those companions itself (`PotTypes.afterBlockRegistered`, one call from `Companions.registerAfter`). The id is reserved: `<pot id>_<plant path>`; for two plants with the same path, the first wins, as in the lowering. Each companion copies the pot's properties and events, has no item, and drops through its own loot table. It is registered right after the pot when the plant already exists, else right after the plant. One log line per pot gives how many companions were registered and how many wait for their plant.
+- `potted_plant` elements with `pot` still work. One for a plant the pot already lists is refused ("... (the pot lists it in plants)"). A listed plant that is missing, two blocks high or whose id is taken is a load error for the pot's file, and only that companion is skipped.
+- `MsmFlowerPotGameTest` gains `aPotWithOnlyPlantsGetsItsCompanionsAndMatchesVanillasPot` on the new fixture `pot_listed` (a poppy, and the project sapling registered after the pot). `pot_clay` now lists an allium. 721 GameTests on 26.3, 26.4 and without GeckoLib, 1222 JUnit.
+
+**Next**
+- A listed plant that never registers is not reported (the runtime has no hook after the last block); the validators cover unknown ids.

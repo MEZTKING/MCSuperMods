@@ -35,8 +35,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * A project flower pot (ADR 0103 D2 and its amendment after B503, X4): its own block class with its own plant-to-pot map,
  * never a vanilla {@code FlowerPotBlock} (whose constructor would hand vanilla's empty pot the plant). The empty pot
- * ({@code type: "flower_pot"}, {@link #plant()} air) keeps the map; each potted block ({@code type: "potted_plant"} with
- * {@code pot} naming the project pot) holds one plant and adds itself to its pot's map when it is made
+ * ({@code type: "flower_pot"}, {@link #plant()} air) keeps the map; each potted block holds one plant and is added to its
+ * pot's map when it is made: the companion {@code <pot id>_<plant path>} of each entry of the pot's {@code plants}
+ * ({@link PotTypes#afterBlockRegistered}), or a {@code potted_plant} element whose {@code pot} names the project pot
  * ({@link PotTypes#potted}). Vanilla's pot and its map are untouched.
  *
  * <p>Use is vanilla's pot's, as observed beside it ({@code MsmFlowerPotGameTest}): a plant in the map goes in from the

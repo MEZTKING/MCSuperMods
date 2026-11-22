@@ -7,6 +7,7 @@ import dev.mcsupermods.runtime.loader.BlockDefinition;
 import dev.mcsupermods.runtime.loader.DefinitionParser;
 import dev.mcsupermods.runtime.registry.types.MsmFlowerPotBlock;
 import dev.mcsupermods.runtime.registry.types.PlantTypes;
+import dev.mcsupermods.runtime.registry.types.PotTypes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,8 @@ public class MsmFlowerPotGameTest {
         helper.assertTrue(pot instanceof MsmFlowerPotBlock p && p.isEmptyPot(), "pot_clay is " + pot);
         helper.assertFalse(pot instanceof FlowerPotBlock, "the project pot is a vanilla FlowerPotBlock");
         MsmFlowerPotBlock clay = (MsmFlowerPotBlock) pot;
-        helper.assertValueEqual(clay.pottedPlants().size(), 2, "plants in the pot's map " + clay.pottedPlants());
+        helper.assertValueEqual(clay.pottedPlants().size(), 3, "plants in the pot's map " + clay.pottedPlants());
+        helper.assertTrue(clay.pottedFor(Blocks.ALLIUM).orElseThrow() == block("pot_clay_allium"), "the listed allium's potted block");
         helper.assertTrue(clay.pottedFor(Blocks.POPPY).orElseThrow() == block("pot_clay_poppy"), "the poppy's potted block");
         helper.assertTrue(clay.pottedFor(block("type_sapling")).orElseThrow() == block("pot_clay_type_sapling"), "the sapling's potted block");
         helper.assertTrue(block("pot_clay_poppy") instanceof MsmFlowerPotBlock p && p.plant() == Blocks.POPPY && p.emptyPot() == clay,
@@ -119,13 +121,21 @@ public class MsmFlowerPotGameTest {
 
     @GameTest
     public void aVanillaAndAProjectPlantGoInAndComeOut(GameTestHelper helper) {
+        for (String pot : List.of("pot_clay", "pot_listed")) {
+            goInAndComeOut(helper, pot);
+        }
+        helper.succeed();
+    }
+
+    /** A poppy and the project sapling into {@code pot} and out; their potted blocks are {@code <pot>_<plant path>}. */
+    private static void goInAndComeOut(GameTestHelper helper, String pot) {
         ServerPlayer player = player(helper, GameType.SURVIVAL);
         BlockPos at = new BlockPos(2, 2, 2);
         helper.setBlock(at.below(), Blocks.STONE);
-        for (String[] pair : List.of(new String[] {"pot_clay_poppy", "minecraft:poppy"}, new String[] {"pot_clay_type_sapling",
+        for (String[] pair : List.of(new String[] {pot + "_poppy", "minecraft:poppy"}, new String[] {pot + "_type_sapling",
                 "msm_test:type_sapling"})) {
             Item plant = BuiltInRegistries.ITEM.getValue(Identifier.parse(pair[1]));
-            helper.setBlock(at, block("pot_clay"));
+            helper.setBlock(at, block(pot));
             int before = potted(player);
             InteractionResult put = use(helper, player, at, new ItemStack(plant, 2));
             helper.assertTrue(put.consumesAction(), "putting " + pair[1] + ": " + put);
@@ -135,13 +145,12 @@ public class MsmFlowerPotGameTest {
             helper.assertTrue(picked.is(plant), "pick block on the potted " + pair[1] + " gave " + picked);
             InteractionResult take = use(helper, player, at, ItemStack.EMPTY);
             helper.assertTrue(take.consumesAction(), "taking " + pair[1] + ": " + take);
-            helper.assertBlockPresent(block("pot_clay"), at);
+            helper.assertBlockPresent(block(pot), at);
             helper.assertTrue(player.getMainHandItem().is(plant), "the plant did not come back: " + player.getMainHandItem());
             helper.assertValueEqual(potted(player) - before, 1, "flowers potted for " + pair[1] + " (only putting in counts)");
         }
         ItemStack picked = helper.getBlockState(at).getCloneItemStack(helper.getLevel(), helper.absolutePos(at), false);
-        helper.assertTrue(picked.is(block("pot_clay").asItem()), "pick block on the empty pot gave " + picked);
-        helper.succeed();
+        helper.assertTrue(picked.is(block(pot).asItem()), "pick block on the empty " + pot + " gave " + picked);
     }
 
     /** What one use leaves: the result, the block (as empty, potted or other), the hand and the statistic. */
@@ -156,12 +165,51 @@ public class MsmFlowerPotGameTest {
 
     @GameTest
     public void everyUseMatchesVanillasPot(GameTestHelper helper) {
+        List<String> differences = new ArrayList<>();
+        usesMatchVanillasPot(helper, "pot_clay", differences);
+        MsmRuntime.LOGGER.info("[{}] B510 pot uses compared with vanilla's pot: {} difference(s)", MsmRuntime.MOD_ID, differences.size());
+        helper.assertTrue(differences.isEmpty(), "the project pot differs from vanilla's: " + differences);
+        helper.succeed();
+    }
+
+    /**
+     * A pot with only {@code plants} (no {@code potted_plant} elements; B510b): its companions {@code pot_listed_poppy} and
+     * {@code pot_listed_type_sapling} are registered by the runtime (the sapling's after the pot, when the sapling
+     * registers), carry no item, drop the pot's loot, and every use matches vanilla's pot.
+     */
+    @GameTest
+    public void aPotWithOnlyPlantsGetsItsCompanionsAndMatchesVanillasPot(GameTestHelper helper) {
+        MsmFlowerPotBlock listed = (MsmFlowerPotBlock) block("pot_listed");
+        helper.assertValueEqual(listed.pottedPlants().size(), 2, "plants in the listed pot's map " + listed.pottedPlants());
+        for (String[] pair : List.of(new String[] {"pot_listed_poppy", "minecraft:poppy"},
+                new String[] {"pot_listed_type_sapling", "msm_test:type_sapling"})) {
+            Block companion = block(pair[0]);
+            Block plant = BuiltInRegistries.BLOCK.getValue(Identifier.parse(pair[1]));
+            helper.assertTrue(companion instanceof MsmFlowerPotBlock p && p.plant() == plant && p.emptyPot() == listed
+                    && PotTypes.isListedCompanion(p), pair[0] + " is " + companion);
+            helper.assertTrue(listed.pottedFor(plant).orElseThrow() == companion, "the map's block for " + pair[1]);
+            helper.assertFalse(BuiltInRegistries.ITEM.containsKey(id(pair[0])), pair[0] + " has an item");
+        }
+        helper.assertTrue(((FlowerPotBlock) Blocks.POTTED_POPPY).getPotted() == Blocks.POPPY, "vanilla's potted poppy changed");
+        goInAndComeOut(helper, "pot_listed");
+        List<String> differences = new ArrayList<>();
+        usesMatchVanillasPot(helper, "pot_listed", differences);
+        helper.assertTrue(differences.isEmpty(), "the listed pot differs from vanilla's: " + differences);
+        ServerPlayer player = player(helper, GameType.SURVIVAL);
+        BlockPos at = new BlockPos(2, 2, 2);
+        helper.setBlock(at, block("pot_listed_poppy"));
+        helper.assertTrue(player.gameMode.destroyBlock(helper.absolutePos(at)), "the listed potted poppy was not broken");
+        helper.assertValueEqual(collectDrops(helper, at), Map.of("msm_test:pot_listed", 1, "minecraft:poppy", 1), "listed potted poppy drops");
+        helper.succeed();
+    }
+
+    /** Every use of {@code pot} (empty, and with its poppy) beside the same use of vanilla's pot, in survival and creative. */
+    private static void usesMatchVanillasPot(GameTestHelper helper, String pot, List<String> differences) {
         BlockPos at = new BlockPos(2, 2, 2);
         helper.setBlock(at.below(), Blocks.STONE);
-        Block clay = block("pot_clay");
-        Block clayPoppy = block("pot_clay_poppy");
+        Block clay = block(pot);
+        Block clayPoppy = block(pot + "_poppy");
         Item sapling = block("type_sapling").asItem();
-        List<String> differences = new ArrayList<>();
         for (GameType mode : List.of(GameType.SURVIVAL, GameType.CREATIVE)) {
             ServerPlayer player = player(helper, mode);
             // Each case: the start (empty or potted), what the hand holds in vanilla's and in the project's pot. A plant the
@@ -183,13 +231,10 @@ public class MsmFlowerPotGameTest {
                 // The other plant differs by name only: compare its count.
                 String projectAsVanilla = project.replace("msm_test:type_sapling", "minecraft:dandelion");
                 if (!projectAsVanilla.equals(vanilla)) {
-                    differences.add(mode + " " + c.name() + ": vanilla " + vanilla + "; project " + project);
+                    differences.add(pot + " " + mode + " " + c.name() + ": vanilla " + vanilla + "; project " + project);
                 }
             }
         }
-        MsmRuntime.LOGGER.info("[{}] B510 pot uses compared with vanilla's pot: {} difference(s)", MsmRuntime.MOD_ID, differences.size());
-        helper.assertTrue(differences.isEmpty(), "the project pot differs from vanilla's: " + differences);
-        helper.succeed();
     }
 
     @GameTest
@@ -220,7 +265,9 @@ public class MsmFlowerPotGameTest {
                 new String[] {"minecraft:dandelion", "minecraft:potted_poppy", noPot},
                 new String[] {"minecraft:dandelion", "msm_test:no_such_pot", noPot},
                 new String[] {"msm_test:no_such_plant", "msm_test:pot_clay", "is not a registered block"},
-                new String[] {"minecraft:rose_bush", "msm_test:pot_clay", "is two blocks high"});
+                new String[] {"minecraft:rose_bush", "msm_test:pot_clay", "is two blocks high"},
+                new String[] {"minecraft:poppy", "msm_test:pot_listed", "by msm_test:pot_listed_poppy (the pot lists it in plants)"},
+                new String[] {"minecraft:allium", "msm_test:pot_clay", "by msm_test:pot_clay_allium (the pot lists it in plants)"});
         MsmFlowerPotBlock clay = (MsmFlowerPotBlock) block("pot_clay");
         for (String[] r : refusals) {
             JsonObject json = JsonParser.parseString("{\"format\": 1, \"type\": \"potted_plant\", \"plant\": \"" + r[0]
@@ -233,7 +280,8 @@ public class MsmFlowerPotGameTest {
                 helper.assertTrue(refused.getMessage().contains(r[2]), r[0] + " in " + r[1] + ": " + refused.getMessage());
             }
         }
-        helper.assertValueEqual(clay.pottedPlants().size(), 2, "the pot's map after the refusals " + clay.pottedPlants());
+        helper.assertValueEqual(clay.pottedPlants().size(), 3, "the pot's map after the refusals " + clay.pottedPlants());
+        helper.assertValueEqual(((MsmFlowerPotBlock) block("pot_listed")).pottedPlants().size(), 2, "the listed pot's map after the refusals");
         helper.assertTrue(clay.pottedFor(Blocks.POPPY).orElseThrow() == block("pot_clay_poppy"), "the poppy's potted block changed");
         helper.succeed();
     }

@@ -99,6 +99,7 @@ public final class Companions {
      * companion; {@link FurnitureTypes#create} has already refused a generated id that was taken).
      */
     public static void registerAfter(RawDefinition raw, BlockDefinition definition, Block block, List<String> errors) {
+        PotTypes.afterBlockRegistered(raw, definition, block, errors); // the potted plants of project pots (ADR 0103 D2, B510b)
         Optional<Identifier> companionId = companionId(raw.id(), definition);
         if (companionId.isEmpty()) {
             return;
