@@ -65,6 +65,8 @@ export interface McfunctionCheckOptions {
    * `loot_table`, `predicate`, `advancement`, `tag/function` or `tag/item`. Ids are
    * `namespace:path` (a bare path is taken as `minecraft:`); tag ids are given without `#`.
    *
+   * The `team` and `tag` categories are plain names too (team names, entity tags), declared as written.
+   *
    * The `objective` category is project-wide scoreboard objectives, plain names declared as
    * written: Spyglass checks each function on its own, so an objective created in one function
    * (for example `load`) is declared here for the others. Collect them with

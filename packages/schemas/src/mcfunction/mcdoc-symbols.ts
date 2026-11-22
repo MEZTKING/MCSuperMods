@@ -49,8 +49,49 @@ export function readMcdocSymbolExport(value: unknown): McdocSymbolExport {
   return { mcdoc, dispatchers: dispatchers as Record<string, TypeDefs> };
 }
 
+const CONTAINER_BASE = '::java::world::block::container::ContainerBase';
+
+/**
+ * MSM's own leniency for a block of the project: vanilla's `minecraft:block` dispatcher gives an
+ * id it does not know (`%unknown`) an empty closed struct, so `setblock ... mod:crate{LootTable:"..."}`
+ * warned "Unknown key". The game takes the key (spike B547, Y9). A project block's block entity
+ * has no vanilla schema and may be a container, so its `%unknown` entry becomes the vanilla
+ * container base (`LootTable`, `LootTableSeed`, `CustomName`, `lock`, the block entity base)
+ * plus an `Items` list of any slots; any other key still warns. Done on a copy, so the vendored
+ * export is never edited; skipped when the export has no such base type.
+ */
+function withProjectBlockEntity(
+  dispatchers: McdocSymbolExport['dispatchers'],
+): McdocSymbolExport['dispatchers'] {
+  const block = dispatchers['minecraft:block'];
+  return block === undefined
+    ? dispatchers
+    : {
+        ...dispatchers,
+        'minecraft:block': {
+          ...block,
+          '%unknown': {
+            kind: 'struct',
+            fields: [
+              { kind: 'spread', type: { kind: 'reference', path: CONTAINER_BASE } },
+              {
+                key: 'Items',
+                kind: 'pair',
+                optional: true,
+                type: { kind: 'list', item: { kind: 'any' } },
+              },
+            ],
+          },
+        },
+      };
+}
+
 /** Declares every type and dispatcher member of the export in `symbols`. */
 export function loadMcdocSymbols(symbols: core.SymbolUtil, exported: McdocSymbolExport): void {
+  const dispatchers =
+    CONTAINER_BASE in exported.mcdoc
+      ? withProjectBlockEntity(exported.dispatchers)
+      : exported.dispatchers;
   symbols.contributeAs(MCDOC_CONTRIBUTOR, () => {
     for (const [path, typeDef] of Object.entries(exported.mcdoc)) {
       symbols.query(MCDOC_URI, 'mcdoc', path).enter({
@@ -58,7 +99,7 @@ export function loadMcdocSymbols(symbols: core.SymbolUtil, exported: McdocSymbol
         usage: { type: 'declaration' },
       });
     }
-    for (const [id, members] of Object.entries(exported.dispatchers)) {
+    for (const [id, members] of Object.entries(dispatchers)) {
       symbols.query(MCDOC_URI, 'mcdoc/dispatcher', id).enter({ usage: { type: 'declaration' } });
       for (const [key, typeDef] of Object.entries(members)) {
         symbols.query(MCDOC_URI, 'mcdoc/dispatcher', id, key).enter({

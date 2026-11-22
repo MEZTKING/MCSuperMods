@@ -33,6 +33,8 @@ const LANGUAGE_ID = 'mcfunction';
 const PROJECT_CONTRIBUTOR = 'msm-project';
 /** Spyglass's symbol category for scoreboard objectives. */
 const OBJECTIVE_CATEGORY = 'objective';
+/** Categories whose names are plain strings, not resource locations (vanilla's `team`, `tag`). */
+const PLAIN_CATEGORIES: ReadonlySet<string> = new Set([OBJECTIVE_CATEGORY, 'team', 'tag']);
 const PROJECT_URI = 'spyglass://msm';
 const DEFAULT_URI = 'file:///msm/untitled.mcfunction';
 
@@ -120,7 +122,7 @@ function projectIdsKey(ids: Readonly<Record<string, readonly string[]>> | undefi
     .sort()
     .map((category) => {
       const list = ids[category] ?? [];
-      const normalised = category === OBJECTIVE_CATEGORY ? list : list.map(normaliseId);
+      const normalised = PLAIN_CATEGORIES.has(category) ? list : list.map(normaliseId);
       return [category, [...new Set(normalised)].sort()];
     });
   return JSON.stringify(entries);
@@ -238,8 +240,8 @@ export async function createMcfunctionService(
     if (ids) {
       symbols.contributeAs(PROJECT_CONTRIBUTOR, () => {
         for (const [category, list] of Object.entries(ids)) {
-          // Objective names are plain strings, not resource locations.
-          const plain = category === OBJECTIVE_CATEGORY;
+          // Objective, team and entity tag names are plain strings, not resource locations.
+          const plain = PLAIN_CATEGORIES.has(category);
           for (const id of list) {
             symbols
               .query(PROJECT_URI, category, plain ? id : normaliseId(id))

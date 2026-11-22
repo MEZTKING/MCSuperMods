@@ -25,6 +25,7 @@ const VALID = [
   'execute if score a b547.c matches 1.. run say hi',
   'scoreboard players get #a b547.c',
   // Team names are plain names; a team made in the same function is declared there.
+  'team join t #a',
   'team add t\nteam join t #a',
   'tellraw @a {score:{name:"#a",objective:"b547.c"}}',
   'scoreboard players operation #a b547.c += #b b547.c',
@@ -36,6 +37,8 @@ const VALID = [
   'scoreboard players set #a b547.c 1',
   'team add t\nteam leave #a',
   'setblock ~ ~ ~ b547:crate replace',
+  'setblock ~ ~ ~ b547:crate{LootTable:"b547:chests/crate"} replace',
+  'setblock ~ ~ ~ b547:crate{LootTable:"b547:chests/crate",Items:[{Slot:0b,id:"minecraft:stone",count:1}]} replace',
   'particle b547:spark ~ ~1 ~ 0.5 0.5 0.5 0 30',
 ];
 
@@ -44,6 +47,8 @@ describe(`score holders, random sequences and jigsaw targets (${target.id})`, ()
   const uri = defaultFunctionUri('b547', 'holders', target.folders.data.function);
   const projectIds = {
     objective: ['b547.c'],
+    team: ['t'],
+    loot_table: ['b547:chests/crate'],
     'worldgen/template_pool': ['b547:island'],
   };
 
@@ -87,6 +92,18 @@ describe(`score holders, random sequences and jigsaw targets (${target.id})`, ()
     expect(problems[0]).toMatchObject({
       severity: 'warning',
       code: 'mcfunction.lint.undeclaredSymbol',
+    });
+  });
+
+  it('still warns on an unknown key of a project block entity', async () => {
+    const problems = await service.check('setblock ~ ~ ~ b547:crate{Foo:1} replace', {
+      uri,
+      projectIds,
+    });
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toMatchObject({
+      severity: 'warning',
+      message: expect.stringContaining('Foo'),
     });
   });
 

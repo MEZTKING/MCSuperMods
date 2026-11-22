@@ -8590,3 +8590,15 @@ Next: the AI helper's prompt may name these codes; the schema layer does not rep
 **Next**
 - B605 can call `testPredicate` for every `condition` field and `intValue`/`floatValue`/`levelValue` (with `env.level` inside enchantments) for numbers. B608 builds the context from `layeredLookup(filesLookup(files), vanilla lookup)` and `createTagResolver`, and offers `SITUATION_PRESETS`. B610 shows `parts` with `chance` and `unsupportedWords`. B612 shows `members` with `origin` and `chain`, and passes `exists`.
 - `packages/sim/CLAUDE.md` "Contents" needs lines for `tags/` and `predicates/` (not this brief's file).
+## 2026-11-22 — executor — Offline checker: plain team and tag names, LootTable on project blocks
+
+**What**
+- `projectIds` categories `team` and `tag` are plain names like `objective` (`PLAIN_CATEGORIES` in `packages/schemas/src/mcfunction/service.ts`): they were namespaced (`t` became `minecraft:t`) and never matched `team join t`. `bossbar` and `storage` stay namespaced, as in vanilla.
+- `setblock … mod:crate{LootTable:"…"}` warned "Unknown key": vanilla mcdoc's `minecraft:block` dispatcher gives an id it does not know (`%unknown`) an empty closed struct, and a project block has no vanilla schema. In `mcdoc-symbols.ts` (on a copy, the vendored export is untouched) that entry becomes `ContainerBase` (block entity base, name, lock, `LootTable`, `LootTableSeed`) plus an `Items` list; any other key still warns. Furnace and other vanilla blocks keep their own schemas, so `LootTable` on a furnace still warns.
+- Tests: both targets' `mcfunction-holders.test.ts` (team in `projectIds`, `LootTable` and `Items` on a project block, a loot table declared in `projectIds`, `Foo` still warns).
+
+**Decisions**
+- Every unknown block id gets the container shape, since the checker cannot tell which project blocks are containers; a non-container project block therefore does not warn on `LootTable`, which is the lenient side.
+
+**Next**
+- None.
