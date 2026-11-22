@@ -18,9 +18,10 @@ export interface TryItThing {
   readonly name: string;
   /**
    * A project block, a spawn egg, a vehicle's item (B428), a bag or bundle (B463), a fluid's
-   * bucket (B483), or a vanilla block for looks only.
+   * bucket (B483), an item used on things (B540: fish buckets, bottles, gifts, vanilla's
+   * buckets and glass bottle), or a vanilla block for looks only.
    */
-  readonly kind: 'block' | 'egg' | 'vehicle' | 'bag' | 'bucket' | 'prop';
+  readonly kind: 'block' | 'egg' | 'vehicle' | 'bag' | 'bucket' | 'item' | 'prop';
   /** The texture id the slot shows (`<ns>:block/ruby`), when one was found. */
   readonly texture?: string;
 }

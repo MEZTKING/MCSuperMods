@@ -24,6 +24,10 @@
  * (`traders/MerchantScreen.tsx`), fluid buckets in the hotbar and the fluids drawn
  * (`fluids/`), and the side panel's "Sky" (a project dimension type's sky colour, `render/sky.ts`).
  *
+ * B540 adds vanilla parity 3, batch 2 (ADR 0112 D5): fish buckets, fluid bottles, gift items and
+ * the vanilla buckets, glass bottle and cauldron they need in the hotbar (`batch2/things.ts`),
+ * the merchant mock-up's changed prices, and project boats drawn as boxes (`vehicles/`).
+ *
  * This module is a lazy chunk: the shell imports it with `lazy()`.
  */
 
@@ -40,7 +44,7 @@ import {
   SIM_TOOLS,
   type SimLogLine,
 } from '@msm/sim';
-import { Box, Car, Egg, Hand, Pause, Play, StepForward, X } from 'lucide-react';
+import { Box, Car, Egg, FlaskConical, Hand, Pause, Play, StepForward, X } from 'lucide-react';
 import {
   type KeyboardEvent,
   type MouseEvent,
@@ -57,6 +61,7 @@ import type { TryItWorldArea, TryItWorldsPlatform } from '../../../shared/platfo
 import { Button } from '../components/ui/Button';
 import type { ResourceFolders, VanillaAssetReader } from '../preview/model-chain';
 import { useUiStore } from '../store/ui-store';
+import { batch2Things } from './batch2/things';
 import { Blocks2Overlay, Blocks2Panel, type ChatState } from './blocks2/Blocks2Overlay';
 import { bagThings } from './blocks2/things';
 import { Chips } from './Chips';
@@ -313,6 +318,7 @@ function ThingIcon(props: {
     );
   }
   if (props.thing.kind === 'vehicle') return <Car size={20} aria-hidden />;
+  if (props.thing.kind === 'item') return <FlaskConical size={20} aria-hidden />;
   return props.thing.kind === 'egg' ? (
     <Egg size={20} aria-hidden data-testid="tryit-egg-icon" />
   ) : (
@@ -478,6 +484,18 @@ export default function TryItView(props: TryItViewProps) {
               area.files,
               folders,
             ),
+            // Fish buckets, bottles, gifts and the vanilla tools they need (B540).
+            ...batch2Things(
+              {
+                fluids: area.source.fluids.catalogue.all(),
+                mobs: area.source.mobs,
+                traders: area.source.traders.specs,
+                vehicles: area.source.vehicles.types,
+                nameOf: (id) => area.source.itemName(id),
+              },
+              area.files,
+              folders,
+            ),
           ],
     // The catalogues change with the files.
     [area, folders, area?.files],
@@ -558,8 +576,9 @@ export default function TryItView(props: TryItViewProps) {
       }
       case 'use': {
         const at = pointed();
-        if (at === null && held1?.kind === 'bag') {
-          // A bag opens from the hand, pointed at nothing too (B463).
+        if (at === null && (held1?.kind === 'bag' || held1?.kind === 'item')) {
+          // A bag opens from the hand, pointed at nothing too (B463); a bottle is drunk and a
+          // glass bottle fills from a liquid in sight (B540).
           area.source.useItem(held1.id);
           rerender();
           return;

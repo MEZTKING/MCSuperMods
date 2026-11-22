@@ -10,6 +10,10 @@
  * - The project's villager trades (`data/<ns>/villager_trade/<path>.json`): `wants`,
  *   `additional_wants`, `gives`, `max_uses` (default 4) and `xp` (default 1).
  *
+ * Batch 2 (B540, ADR 0107 D1 to D3 as amended after B524): a trader's `reputation` (the
+ * runtime's defaults filled in), `demand` (default on) and `work_site`, and each villager
+ * trade's `reputation_discount` (the offer's price multiplier, `0` by default as vanilla's).
+ *
  * Minecraft's own trade sets and trades are not among the lowered files: a level drawing from
  * one has no offers here, and the area says so (ADR 0085 D5). Villager professions
  * (`msm/<ns>/villager_profession/<path>.json`) are read only for their names and job sites, to
@@ -38,7 +42,42 @@ export interface TradeSpec {
   readonly gives: TradeStack;
   readonly maxUses: NumberSpec;
   readonly xp: number;
+  /**
+   * `reputation_discount`: how much demand and reputation change the price, per point (the
+   * offer's price multiplier; vanilla's default `0`).
+   */
+  readonly priceMultiplier: number;
 }
+
+/**
+ * A trader's `reputation` (ADR 0107 D1 as amended after B524), the runtime's defaults filled
+ * in (`TraderParser.Reputation`): a hit costs `hurt`, a trade gains `trade` (at most
+ * {@link TRADE_CAP}), a gift of `giftItem` gains `gift` (at most {@link GIFT_CAP}); each day hits
+ * recover `decayPerDay` and trades fade by {@link TRADE_DECAY_PER_DAY}; gifts never fade.
+ */
+export interface ReputationSpec {
+  readonly hurt: number;
+  readonly trade: number;
+  readonly giftItem?: string;
+  readonly gift: number;
+  readonly decayPerDay: number;
+  /** With it, a price falls one item per `priceStep` points instead of by the multiplier. */
+  readonly priceStep?: number;
+}
+
+/** The runtime's caps and fading (B528, `TraderParser.Reputation`, `TraderReputation`). */
+export const HIT_CAP = 200;
+export const TRADE_CAP = 25;
+export const GIFT_CAP = 25;
+export const TRADE_DECAY_PER_DAY = 2;
+
+/** The defaults of `reputation` (vanilla's measured numbers, B524). */
+export const REPUTATION_DEFAULTS = Object.freeze({
+  hurt: 25,
+  trade: 2,
+  gift: 25,
+  decayPerDay: 20,
+});
 
 /** One trade set the preview can read. */
 export interface TradeSetSpec {
@@ -72,6 +111,12 @@ export interface TraderSpec {
   readonly tradeSound?: string;
   /** The event `on_trade` names. */
   readonly onTrade?: string;
+  /** `reputation`, when the trader remembers how the player treats it (B540). */
+  readonly reputation?: ReputationSpec;
+  /** `demand` (default true): prices rise after heavy trading and settle at each restock. */
+  readonly demand: boolean;
+  /** `work_site`: a block id or `#` block tag the trader restocks at (B540). */
+  readonly workSite?: string;
   /** Whether the mob's `base` is `monster` (no trading at night). */
   readonly monster: boolean;
   /** Whether it also has `msm:storage` or `msm:shoulder_riding` (said, not simulated). */
@@ -157,6 +202,13 @@ export function readTrade(files: SimFiles, target: TradersTarget, id: string): T
   if (wants === null || gives === null) return null;
   const additional = stackOf(json.additional_wants);
   const xp = typeof json.xp === 'number' && Number.isFinite(json.xp) ? Math.round(json.xp) : 1;
+  const discount = json.reputation_discount;
+  const multiplier =
+    typeof discount === 'number' && Number.isFinite(discount)
+      ? discount
+      : isRecord(discount) && typeof discount.value === 'number'
+        ? discount.value
+        : 0;
   return Object.freeze({
     id,
     wants,
@@ -164,6 +216,7 @@ export function readTrade(files: SimFiles, target: TradersTarget, id: string): T
     gives,
     maxUses: numberSpec(json.max_uses) ?? { min: 4, max: 4 },
     xp: Math.max(0, xp),
+    priceMultiplier: multiplier,
   });
 }
 
@@ -236,6 +289,24 @@ export function readTradeSet(
   });
 }
 
+const wholeAtLeast = (value: Json | undefined, min: number): number | undefined =>
+  typeof value === 'number' && Number.isInteger(value) && value >= min ? value : undefined;
+
+/** `reputation` with the runtime's defaults; `undefined` without it. */
+function reputationOf(value: Json | undefined): ReputationSpec | undefined {
+  if (!isRecord(value)) return undefined;
+  const giftItem = nonEmpty(value.gift_item);
+  const priceStep = wholeAtLeast(value.price_step, 1);
+  return Object.freeze({
+    hurt: wholeAtLeast(value.hurt, 0) ?? REPUTATION_DEFAULTS.hurt,
+    trade: wholeAtLeast(value.trade, 0) ?? REPUTATION_DEFAULTS.trade,
+    ...(giftItem === undefined ? {} : { giftItem }),
+    gift: wholeAtLeast(value.gift, 0) ?? REPUTATION_DEFAULTS.gift,
+    decayPerDay: wholeAtLeast(value.decay_per_day, 0) ?? REPUTATION_DEFAULTS.decayPerDay,
+    ...(priceStep === undefined ? {} : { priceStep }),
+  });
+}
+
 /** Every project mob with `msm:trader`, by entity type id. */
 export function readTraders(files: SimFiles, target: TradersTarget): Map<string, TraderSpec> {
   const out = new Map<string, TraderSpec>();
@@ -279,6 +350,8 @@ export function readTraders(files: SimFiles, target: TradersTarget): Map<string,
     if (levels.length === 0) continue;
     const sound = nonEmpty(trader.trade_sound) ?? defaultSound;
     const onTrade = nonEmpty(trader.on_trade);
+    const reputation = reputationOf(trader.reputation);
+    const workSite = nonEmpty(trader.work_site);
     const lang = langOf(namespace);
     out.set(
       id,
@@ -292,6 +365,9 @@ export function readTraders(files: SimFiles, target: TradersTarget): Map<string,
         restock: trader.restock === 'never' ? 'never' : 'twice_a_day',
         ...(sound === undefined ? {} : { tradeSound: sound }),
         ...(onTrade === undefined ? {} : { onTrade }),
+        ...(reputation === undefined ? {} : { reputation }),
+        demand: trader.demand !== false,
+        ...(workSite === undefined ? {} : { workSite }),
         monster: definition.base === 'monster',
         storage: isRecord(components['msm:storage']),
         shoulder: isRecord(components['msm:shoulder_riding']),

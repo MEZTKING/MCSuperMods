@@ -1,0 +1,19 @@
+{
+  "data": {
+    "behaves_like": "lava",
+    "cauldron": {},
+    "display_name": "Magma",
+    "format": 1,
+    "textures": {
+      "flowing": "minecraft:block/lava_flow",
+      "still": "minecraft:block/lava_still"
+    }
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:magma",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Vanilla parity 3, batch 2 (B540): a lava-like liquid whose cauldron is full only."
+  }
+}

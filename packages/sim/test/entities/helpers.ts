@@ -80,7 +80,7 @@ export const MOBS: Readonly<Record<string, Json>> = {
     size: { width: 0.6, height: 1.8 },
     components: {
       'msm:animated_model': model('ghost'),
-      'msm:movement': { mode: 'phase' },
+      'msm:movement': { mode: 'burrow' },
     },
   },
 };

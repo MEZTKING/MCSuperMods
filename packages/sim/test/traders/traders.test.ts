@@ -211,7 +211,7 @@ describe('the merchant mock-up', () => {
     );
   });
 
-  it('says storage on a sneaking use, and storage and shoulder pets on the first spawn', () => {
+  it("says storage on a sneaking use and on the first spawn (shoulder pets are mobs2.ts's)", () => {
     const files = traderFiles(LEVELS);
     const definition = JSON.parse(files.get('msm/tr/entity/seller.json') as string);
     definition.base = 'animal';
@@ -222,7 +222,7 @@ describe('the merchant mock-up', () => {
     const { source, mob } = withMob(files, target, 'tr:seller');
     const spawnLine = only(source).find((text) => text.startsWith("Seller's"));
     expect(spawnLine).toContain('storage');
-    expect(spawnLine).toContain("riding on its owner's shoulder");
+    expect(spawnLine).not.toContain("riding on its owner's shoulder");
     expect(spawnLine).not.toContain('msm:trader');
     source.act({
       type: 'move',

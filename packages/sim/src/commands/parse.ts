@@ -10,6 +10,12 @@
  * booleans as they are, `players` as names, positions as three numbers (whole x and z of a
  * position centred on the block, as the game does), items and blocks as ids. The preview's world
  * has one player, named {@link PREVIEW_PLAYER_NAME}; every selector and that name find them.
+ *
+ * The 32 argument types of ADR 0111 D2 (B540) are read by their shape: `message` takes the rest
+ * of the line, `rotation` two coordinates, `time` a number with `d`, `s` or `t` (its value in
+ * ticks, as the runtime's), `angle` a number, `int_range` `a..b`, and the others one token
+ * (brackets, braces and quotes kept together), passed on as typed. Whether the value names
+ * something that exists (a team, a biome, a dialog) is only the game's to check, and is said.
  */
 import type { Vec3 } from '../types.js';
 import type { CommandArgument, SimCommand } from './catalogue.js';
@@ -102,6 +108,25 @@ class Reader {
     while (!this.done) {
       const c = this.peek();
       if (c === '[' || c === '{') depth += 1;
+      else if (c === ']' || c === '}') depth = Math.max(0, depth - 1);
+      else if (c === ' ' && depth === 0) break;
+      this.at += 1;
+    }
+    return this.text.slice(start, this.at);
+  }
+
+  /** Reads one token, keeping quoted text, brackets and braces together. */
+  readValue(): string {
+    const start = this.at;
+    let depth = 0;
+    let quote = '';
+    while (!this.done) {
+      const c = this.peek();
+      if (quote !== '') {
+        if (c === '\\') this.at += 1;
+        else if (c === quote) quote = '';
+      } else if (c === '"' || c === "'") quote = c;
+      else if (c === '[' || c === '{') depth += 1;
       else if (c === ']' || c === '}') depth = Math.max(0, depth - 1);
       else if (c === ' ' && depth === 0) break;
       this.at += 1;
@@ -206,6 +231,91 @@ function coordinates(
     );
   }
   return Object.freeze([values[0], values[1], values[2]]) as readonly [number, number, number];
+}
+
+/** Plain words for the 32 newer argument types, for the "could not check" line. */
+const TYPE_WORDS: Readonly<Record<string, string>> = {
+  dimension: 'dimension',
+  team_colour: 'team colour',
+  hex_colour: 'colour',
+  uuid: 'UUID',
+  objective: 'scoreboard objective',
+  score_holder: 'score holder',
+  score_holders: 'list of score holders',
+  item_predicate: 'item test',
+  block_predicate: 'block test',
+  effect: 'effect',
+  enchantment: 'enchantment',
+  biome: 'biome',
+  biome_or_tag: 'biome or biome tag',
+  structure: 'structure',
+  structure_or_tag: 'structure or structure tag',
+  entity_type: 'kind of entity',
+  particle: 'particle',
+  game_mode: 'game mode',
+  text_component: 'text component',
+  identifier: 'id',
+  team: 'team',
+  slot: 'inventory slot',
+  nbt: 'NBT compound',
+  dialog: 'dialog',
+  loot_table: 'loot table',
+  advancement: 'advancement',
+  recipe: 'recipe',
+};
+
+/** Ticks of a `time` unit, as the game reads them. */
+const TIME_UNITS: Readonly<Record<string, number>> = { d: 24000, s: 20, t: 1, '': 1 };
+
+/** Reads one of the 32 newer argument types by its shape (see the module comment). */
+function readMore(reader: Reader, type: string, unchecked: string[], start: number): CommandValue {
+  switch (type) {
+    case 'message': {
+      const value = reader.rest();
+      if (value.includes('@'))
+        unchecked.push('the selectors in the message (the game puts names in)');
+      return value;
+    }
+    case 'rotation': {
+      const yaw = reader.readValue();
+      if (yaw === '' || reader.peek() !== ' ') {
+        throw new ArgumentError('Incomplete (expected 2 coordinates)', start);
+      }
+      reader.at += 1;
+      const pitch = reader.readValue();
+      if (pitch === '') throw new ArgumentError('Incomplete (expected 2 coordinates)', start);
+      return `${yaw} ${pitch}`;
+    }
+    case 'time': {
+      const raw = reader.readValue();
+      const match = /^(\d+(?:\.\d+)?)([dst]?)$/.exec(raw);
+      if (match === null) throw new ArgumentError(`Invalid unit or time '${raw}'`, start);
+      return Math.round(Number(match[1]) * (TIME_UNITS[match[2] as string] ?? 1));
+    }
+    case 'angle': {
+      const raw = reader.readValue();
+      const value = Number(raw.startsWith('~') ? raw.slice(1) || '0' : raw);
+      if (raw === '' || !Number.isFinite(value)) throw new ArgumentError('Expected float', start);
+      if (raw.startsWith('~'))
+        unchecked.push('a ~ angle (the preview counts it from 0, not from your facing)');
+      return value;
+    }
+    case 'int_range': {
+      const raw = reader.readValue();
+      if (!/^(-?\d+)?(\.\.)?(-?\d+)?$/.test(raw) || raw === '' || raw === '..') {
+        throw new ArgumentError('Expected value or range of values', start);
+      }
+      return raw;
+    }
+    default: {
+      const raw = reader.readValue();
+      if (raw === '') throw new ArgumentError('Expected a value', start);
+      unchecked.push(
+        `whether ${raw} is a ${TYPE_WORDS[type] ?? type.replaceAll('_', ' ')} the game knows`,
+      );
+      return raw;
+    }
+  }
 }
 
 /** Reads one argument at the reader; throws an {@link ArgumentError} with the game's words. */
@@ -319,6 +429,8 @@ function readArgument(
       }
       return id;
     }
+    default:
+      return readMore(reader, argument.type, unchecked, start);
   }
 }
 

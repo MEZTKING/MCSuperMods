@@ -73,6 +73,14 @@ const NOT_FIRED: Readonly<Record<string, string>> = Object.freeze({
   'player.respawn': 'you never die in the preview',
   'player.leave': 'you never leave the preview',
   'player.changeDimension': 'the preview has one dimension',
+  // Script API 1.7's events (B533, ADR 0111 D3; said by B540).
+  'item.crafted': 'the preview has no crafting',
+  'item.picked_up': 'the preview has no items on the ground to pick up',
+  'player.ate':
+    "the preview has no eating; a fluid's bottle drunk in the preview runs only its own on_drink",
+  'player.slept': 'the preview has no sleeping in beds',
+  'player.woke': 'the preview has no sleeping in beds',
+  'player.advancement': 'the preview has no advancements',
 });
 
 /** What the bridge works on: the local source's parts. */

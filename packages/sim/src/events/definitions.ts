@@ -139,8 +139,8 @@ export const TRIGGER_SPECS: readonly TriggerSpec[] = Object.freeze([
   spec('fluid', ['on_entity_inside'], true, 'someone is in the fluid', {
     cooldown: { field: 'cooldown_ticks', default: 10 },
   }),
-  // Fluid bottles (ADR 0108 D3, in the format since B527): not played by Try it yet (B540).
-  spec('fluid', ['bottle', 'on_drink'], false, 'someone drinks a bottle of the fluid'),
+  // Fluid bottles (ADR 0108 D3): fired by `fluids/` when the player drinks one (B540).
+  spec('fluid', ['bottle', 'on_drink'], true, 'someone drinks a bottle of the fluid'),
 ]);
 
 /** A trigger as one definition sets it: the spec, the event it fires and its options. */

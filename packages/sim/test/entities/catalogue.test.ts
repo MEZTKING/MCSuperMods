@@ -63,7 +63,7 @@ describe('entity catalogue', () => {
   it('says out loud what it cannot read', () => {
     expect(log.only).toEqual([
       'Broken has a definition the preview cannot read; it is left out of the preview',
-      'Ghost moves in a way the preview does not know (phase); here it walks',
+      'Ghost moves in a way the preview does not know (burrow); here it walks',
     ]);
     expect(catalogue.get(mob('ghost'))?.mode).toBe('walk');
   });

@@ -1,0 +1,16 @@
+{
+  "behaves_like": "none",
+  "bottle": {},
+  "cauldron": {
+    "levels": true
+  },
+  "format": 1,
+  "mixing": [
+    {
+      "flowing": "sim_parity:lamp",
+      "source": "sim_parity:base",
+      "with": "lava"
+    }
+  ],
+  "tint": 8040532
+}

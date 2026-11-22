@@ -21,7 +21,7 @@ import {
   VERTICAL_DRAG,
 } from '../player/constants.js';
 import { AREA_SIZE_Y, type BlockShapes, type EntitySnapshot, type Vec3 } from '../types.js';
-import type { CatalogueEntity } from './catalogue.js';
+import { type CatalogueEntity, DEFAULT_HOVER_HEIGHT } from './catalogue.js';
 import {
   FLY_CLIMB_SPEED,
   FLY_FRICTION,
@@ -31,16 +31,19 @@ import {
 } from './constants.js';
 import { SimRandom, Wander, type WanderStyle } from './wander.js';
 
-/** The wander style of a movement mode: flyers fly, swimmers stand, the rest walk. */
+/**
+ * The wander style of a movement mode: flyers fly (with `hover` and `phase`, B540), swimmers
+ * stand, the rest walk.
+ */
 export function wanderStyleFor(entity: CatalogueEntity): WanderStyle {
-  if (entity.mode === 'fly') return 'fly';
+  if (entity.mode === 'fly' || entity.mode === 'hover' || entity.mode === 'phase') return 'fly';
   if (entity.mode === 'swim') return 'still';
   return 'walk';
 }
 
 /** The speed a mob strolls at, in blocks per tick (approximation, see `constants.ts`). */
 export function wanderSpeedFor(entity: CatalogueEntity): number {
-  const attribute = entity.mode === 'fly' ? entity.flyingSpeed : entity.speed;
+  const attribute = wanderStyleFor(entity) === 'fly' ? entity.flyingSpeed : entity.speed;
   return Math.min(MAX_WANDER_SPEED, attribute * WANDER_SPEED_PER_POINT);
 }
 
@@ -100,6 +103,8 @@ export class SimEntity {
   private ground = false;
   private walkingNow = false;
   private blocked = false;
+  /** Where a perched pet sits now (B540), or `null` while it moves by itself. */
+  private perch: (() => { position: Vec3; yaw: number } | null) | null = null;
 
   constructor(id: number, kind: CatalogueEntity, position: Vec3, seed: number) {
     this.id = id;
@@ -186,9 +191,37 @@ export class SimEntity {
     if (this.vel.y > 0) this.ground = false;
   }
 
+  /** Whether the mob sits on a shoulder (B540). */
+  get perched(): boolean {
+    return this.perch !== null;
+  }
+
+  /**
+   * Puts the mob on a shoulder (B540): each step it takes the place `seat` gives, with no
+   * physics, until `seat` gives `null` or {@link getOff} is called.
+   */
+  perchOn(seat: () => { position: Vec3; yaw: number } | null): void {
+    this.perch = seat;
+    this.vel = { x: 0, y: 0, z: 0 };
+  }
+
+  /** Takes the mob off its shoulder; it falls or flies from there. */
+  getOff(): void {
+    this.perch = null;
+  }
+
   /** Steps one tick (a twentieth of a second). */
   step(lookup: BlockLookup, shapes: BlockShapes): void {
     this.prevPos = this.pos;
+    const seat = this.perch?.() ?? null;
+    if (seat !== null) {
+      this.pos = { ...seat.position };
+      this.yawDeg = seat.yaw;
+      this.walkingNow = false;
+      this.ground = false;
+      return;
+    }
+    if (this.perch !== null) this.perch = null;
     this.unstick(lookup, shapes);
     const kind = this.kindNow;
     const intent = this.wander.next(this.blocked, groundBelow(lookup, shapes, this.pos));
@@ -203,7 +236,16 @@ export class SimEntity {
       const accel = accelerationFor(speed, FLY_FRICTION);
       vx += intent.dirX * accel;
       vz += intent.dirZ * accel;
-      if (intent.walking || kind.hovers) {
+      if (kind.mode === 'hover') {
+        // `hover` keeps `hover_height` over the first block below, damped, without bobbing (the
+        // runtime's `HoverMoveControl` sets the height as a share of the error each tick).
+        const ground = groundBelow(lookup, shapes, this.pos);
+        const wanted = Math.min(
+          ground + (kind.hoverHeight ?? DEFAULT_HOVER_HEIGHT),
+          AREA_SIZE_Y - kind.height,
+        );
+        vy = Math.max(-FLY_CLIMB_SPEED, Math.min(FLY_CLIMB_SPEED, (wanted - this.pos.y) * 0.2));
+      } else if (intent.walking || kind.hovers) {
         const wanted = Math.min(intent.height ?? this.pos.y, AREA_SIZE_Y - kind.height);
         const diff = wanted - this.pos.y;
         vy = Math.max(-FLY_CLIMB_SPEED, Math.min(FLY_CLIMB_SPEED, diff * 0.2));

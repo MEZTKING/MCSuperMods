@@ -11,10 +11,29 @@
  *   offers. Shift-click repeats a trade until its offer runs out.
  * - `twice_a_day` refills used offers once in each half of the day (clock ticks 0 to 11999 and
  *   12000 to 23999, as the runtime's); `never` keeps a used offer used.
+ *
+ * Batch 2 (B540, ADR 0107 as amended after B524; the runtime's `TraderReputation` and
+ * `MobTrader`, B528): with `reputation` the merchant keeps the one player's standing (hits,
+ * trades and gifts, each capped; hits recover `decay_per_day` and trades fade by 2 each clock
+ * day), and each offer's first price is `clamp(base + demand part + special, 1, 64)`, where the
+ * special part is `-floor(standing x multiplier)` (or `-floor(standing / price_step)`) and the
+ * demand part `max(0, floor(base x demand x multiplier))`. With `demand` each restock first
+ * moves an offer's demand by `uses - (max_uses - uses)`, then refills it. With `work_site` a due
+ * restock waits until the trader is at its site (the area says whether one is near).
  */
 
 import { SimRandom } from '../entities/wander.js';
-import type { NumberSpec, TraderSpec, TradeSetSpec, TradeSpec, TradeStack } from './catalogue.js';
+import {
+  GIFT_CAP,
+  HIT_CAP,
+  type NumberSpec,
+  TRADE_CAP,
+  TRADE_DECAY_PER_DAY,
+  type TraderSpec,
+  type TradeSetSpec,
+  type TradeSpec,
+  type TradeStack,
+} from './catalogue.js';
 
 /**
  * Trading XP a villager needs to leave levels 1 to 4 (counted from the start), as the game shows
@@ -34,6 +53,20 @@ export const TRADE_LEVEL_NAMES: readonly string[] = Object.freeze([
 
 /** Ticks in half a day: one restock chance each (the runtime's `HALF_DAY`). */
 export const HALF_DAY_TICKS = 12000;
+/** Ticks in a clock day: standings fade once a day (the runtime's `DAY`). */
+export const REPUTATION_DAY_TICKS = 24000;
+/**
+ * The most a price can be: the stack size of the price's item. The preview takes 64, the size
+ * of most items' stacks (an approximation for items that stack to 16 or 1).
+ */
+export const PRICE_STACK_LIMIT = 64;
+
+/** One player's standing with a trader: the three parts the runtime keeps (B528). */
+export interface Standing {
+  readonly hurt: number;
+  readonly trading: number;
+  readonly gift: number;
+}
 
 /** An item and a drawn count, as an offer shows it. */
 export interface OfferStack {
@@ -52,8 +85,12 @@ export interface SimOffer {
   readonly result: OfferStack;
   readonly maxUses: number;
   readonly xp: number;
+  /** The trade's `reputation_discount` (the price multiplier). */
+  readonly priceMultiplier: number;
   /** Times used since the last restock. */
   uses: number;
+  /** Vanilla's demand: up after heavy trading, down after little, moved at each restock. */
+  demand: number;
 }
 
 /** What one trade click did. */
@@ -71,6 +108,18 @@ export const outOfStock = (offer: SimOffer): boolean => offer.uses >= offer.maxU
 
 const draw = (spec: NumberSpec, random: SimRandom): number =>
   spec.min === spec.max ? spec.min : random.int(spec.min, spec.max);
+
+/** The special part of a price for a standing (`TraderReputation.specialPrice`). */
+export function specialPrice(standing: number, multiplier: number, priceStep?: number): number {
+  if (priceStep !== undefined) return -Math.floor(standing / priceStep);
+  // `Mth.floor` of a float product, as the runtime's; a tiny bias keeps 0.05 x 20 at 1.
+  return -Math.floor(standing * multiplier + 1e-9);
+}
+
+/** The demand part of a price (vanilla's `MerchantOffer`, as B524 measured it). */
+export function demandPrice(base: number, demand: number, multiplier: number): number {
+  return Math.max(0, Math.floor(base * demand * multiplier + 1e-9));
+}
 
 const stack = (spec: TradeStack, random: SimRandom): OfferStack => ({
   item: spec.item,
@@ -99,6 +148,9 @@ export class Merchant {
   private readonly offersNow: SimOffer[] = [];
   private restockHalfDay: number | null = null;
   private restocksNow = 0;
+  private standingNow: Standing = { hurt: 0, trading: 0, gift: 0 };
+  private decayDay: number | null = null;
+  private pending = false;
 
   constructor(
     mobId: number,
@@ -130,6 +182,80 @@ export class Merchant {
   /** The offers, level 1's first. */
   get offers(): readonly SimOffer[] {
     return this.offersNow;
+  }
+
+  /** The player's standing parts. */
+  get standingParts(): Standing {
+    return this.standingNow;
+  }
+
+  /** The player's standing: trades and gifts minus hits (0 without `reputation`). */
+  get standing(): number {
+    const s = this.standingNow;
+    return s.trading + s.gift - s.hurt;
+  }
+
+  /** Whether a due restock waits for the trader to reach its work site. */
+  get waitingToRestock(): boolean {
+    return this.pending;
+  }
+
+  /**
+   * The first price an offer shows for the player now: the base, the demand part and the
+   * standing's special part, between 1 and {@link PRICE_STACK_LIMIT}.
+   */
+  price(offer: SimOffer): number {
+    const base = offer.cost.count;
+    const demand = this.traderNow.demand
+      ? demandPrice(base, offer.demand, offer.priceMultiplier)
+      : 0;
+    const reputation = this.traderNow.reputation;
+    const special =
+      reputation === undefined
+        ? 0
+        : specialPrice(this.standing, offer.priceMultiplier, reputation.priceStep);
+    return Math.min(PRICE_STACK_LIMIT, Math.max(1, base + demand + special));
+  }
+
+  /** A hit by the player (with `reputation`): the standing falls by `hurt`, at most 200 in all. */
+  hurt(): void {
+    const reputation = this.traderNow.reputation;
+    if (reputation === undefined) return;
+    const s = this.standingNow;
+    this.standingNow = { ...s, hurt: Math.min(HIT_CAP, s.hurt + reputation.hurt) };
+  }
+
+  /** A gift of the gift item: false at the cap (the click opens the screen instead). */
+  gift(): boolean {
+    const reputation = this.traderNow.reputation;
+    if (reputation === undefined) return false;
+    const s = this.standingNow;
+    if (s.gift >= GIFT_CAP) return false;
+    this.standingNow = { ...s, gift: Math.min(GIFT_CAP, s.gift + reputation.gift) };
+    return true;
+  }
+
+  /**
+   * Fades the standing when the clock is in a later day than the last check (the first check
+   * only notes the day, as the runtime's): hits recover `decay_per_day` and trades fade by 2 for
+   * each day passed. Returns whether anything faded.
+   */
+  decayIfDue(clockTicks: number): boolean {
+    const reputation = this.traderNow.reputation;
+    const day = Math.floor(clockTicks / REPUTATION_DAY_TICKS);
+    const last = this.decayDay;
+    this.decayDay = day;
+    if (reputation === undefined || last === null || day <= last) return false;
+    const days = Math.min(day - last, 1000);
+    const s = this.standingNow;
+    const next = {
+      hurt: Math.max(0, s.hurt - days * reputation.decayPerDay),
+      trading: Math.max(0, s.trading - days * TRADE_DECAY_PER_DAY),
+      gift: s.gift,
+    };
+    if (next.hurt === s.hurt && next.trading === s.trading) return false;
+    this.standingNow = next;
+    return true;
   }
 
   /** How many restocks refilled something. */
@@ -178,7 +304,9 @@ export class Merchant {
         result: stack(trade.gives, this.random),
         maxUses: Math.max(1, draw(trade.maxUses, this.random)),
         xp: trade.xp,
+        priceMultiplier: trade.priceMultiplier,
         uses: 0,
+        demand: 0,
       });
       added += 1;
     }
@@ -219,8 +347,13 @@ export class Merchant {
     }
     const times = all ? offer.maxUses - offer.uses : 1;
     const levelsReached: number[] = [];
+    const reputation = this.traderNow.reputation;
     for (let i = 0; i < times; i += 1) {
       offer.uses += 1;
+      if (reputation !== undefined) {
+        const s = this.standingNow;
+        this.standingNow = { ...s, trading: Math.min(TRADE_CAP, s.trading + reputation.trade) };
+      }
       if (!this.traderNow.usesLevels) continue;
       this.xpNow += offer.xp;
       const top = maxLevelOf(this.traderNow);
@@ -235,21 +368,26 @@ export class Merchant {
 
   /**
    * Restocks when the clock has entered a new half day since the last check (the first check
-   * only notes the half day, as the runtime's). Returns whether a used offer was refilled.
+   * only notes the half day, as the runtime's), once the trader is `atSite` (always true without
+   * a `work_site`; a due restock otherwise waits). With `demand` each offer's demand moves first.
+   * Returns whether a used offer was refilled.
    */
-  restockIfDue(clockTicks: number): boolean {
+  restockIfDue(clockTicks: number, atSite = true): boolean {
     if (this.traderNow.restock === 'never') return false;
     const halfDay = Math.floor(clockTicks / HALF_DAY_TICKS);
-    if (this.restockHalfDay === halfDay) return false;
-    const first = this.restockHalfDay === null;
-    this.restockHalfDay = halfDay;
-    if (first) return false;
-    let refilled = false;
+    if (this.restockHalfDay !== halfDay) {
+      const first = this.restockHalfDay === null;
+      this.restockHalfDay = halfDay;
+      // As the runtime's: only a half day with a used offer makes a restock due.
+      if (!first && this.offersNow.some((offer) => offer.uses > 0)) this.pending = true;
+    }
+    if (!this.pending || !atSite) return false;
+    this.pending = false;
     for (const offer of this.offersNow) {
-      if (offer.uses > 0) refilled = true;
+      if (this.traderNow.demand) offer.demand += offer.uses - (offer.maxUses - offer.uses);
       offer.uses = 0;
     }
-    if (refilled) this.restocksNow += 1;
-    return refilled;
+    this.restocksNow += 1;
+    return true;
   }
 }

@@ -7,6 +7,11 @@
  * until the offer runs out; no item moves (the line under the offers says so). Close, Esc or E
  * closes it.
  *
+ * B540: the first price is the merchant's price for the player now (`Merchant.price`: demand
+ * and, with `reputation`, the player's standing); a changed price shows the base crossed out
+ * beside it, as the game's screen does, and a trader that remembers the player shows the
+ * standing above the offers.
+ *
  * Part of the lazy Try it chunk.
  */
 
@@ -34,10 +39,30 @@ export interface MerchantScreenProps {
   onClose(): void;
 }
 
-function Stack({ stack, nameOf }: { stack: OfferStack; nameOf: (id: string) => string }) {
+function Stack({
+  stack,
+  nameOf,
+  price,
+}: {
+  stack: OfferStack;
+  nameOf: (id: string) => string;
+  /** The count the player pays now, when it differs from the stack's. */
+  price?: number;
+}) {
+  const changed = price !== undefined && price !== stack.count;
   return (
     <span className="inline-flex items-center gap-1" data-testid="tryit-merchant-stack">
-      <span className="font-medium tabular-nums">{stack.count}</span>
+      {changed && (
+        <span className="text-muted tabular-nums line-through" data-testid="tryit-merchant-base">
+          {stack.count}
+        </span>
+      )}
+      <span
+        className={`font-medium tabular-nums ${changed ? (price > stack.count ? 'text-error' : 'text-accent') : ''}`}
+        data-testid="tryit-merchant-price"
+      >
+        {changed ? price : stack.count}
+      </span>
       <span>{nameOf(stack.item)}</span>
     </span>
   );
@@ -113,6 +138,11 @@ export function MerchantScreen({ open, nameOf, onTrade, onClose }: MerchantScree
           </p>
         </div>
       )}
+      {trader.reputation !== undefined && (
+        <p className="text-xs text-muted" data-testid="tryit-merchant-standing">
+          {`Your standing with ${trader.displayName}: ${merchant.standing}. Trades${trader.reputation.giftItem === undefined ? '' : ' and gifts'} raise it, hits lower it.`}
+        </p>
+      )}
       <ol className="flex flex-col gap-1" data-testid="tryit-merchant-offers">
         {merchant.offers.map((offer, index) => {
           const used = outOfStock(offer);
@@ -132,7 +162,7 @@ export function MerchantScreen({ open, nameOf, onTrade, onClose }: MerchantScree
                 className={`relative flex w-full cursor-pointer flex-wrap items-center gap-2 rounded border border-border bg-bg px-2 py-1 text-left hover:border-accent ${used ? 'opacity-60' : ''}`}
                 onClick={(event: MouseEvent<HTMLButtonElement>) => onTrade(index, event.shiftKey)}
               >
-                <Stack stack={offer.cost} nameOf={nameOf} />
+                <Stack stack={offer.cost} nameOf={nameOf} price={merchant.price(offer)} />
                 {offer.secondCost !== undefined && (
                   <>
                     <span className="text-muted">and</span>

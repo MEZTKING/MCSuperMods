@@ -115,6 +115,11 @@ export interface TryItCanvasProps {
   vanillaJson?: ((path: string) => Promise<JsonObject | null>) | null;
   /** Reads a project asset the lowered files do not hold (relative to `assets/<namespace>/`). */
   readProjectAsset?: (namespace: string, path: string) => Promise<Uint8Array | null>;
+  /**
+   * MSM's own models for vanilla parents by id (default `TRYIT_FALLBACK_MODELS`: the vanilla
+   * templates the lowering names). Any other `minecraft:block/<x>` model missing from the files
+   * and the jar draws as that block's fallback cube (`render/resources.ts`, B540).
+   */
   fallbackModels?: Readonly<Record<string, JsonObject>>;
   /**
    * The live particles to draw (B394): a `ParticleField` from `particles.ts`, ticked by the

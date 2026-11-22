@@ -40,6 +40,14 @@
  * mock-up) before its `msm:on_interact`, and {@link LocalWorldSource.fluids} pours a project
  * fluid from its bucket (drawn, not flowing) and fires its `on_entity_inside`.
  *
+ * Vanilla parity 3, batch 2 (B540): traders remember the player (gifts, trades and hits move
+ * the prices; a hit on such a trader counts and keeps it, a sneaking hit removes it), restock
+ * with demand and at their work site; {@link LocalWorldSource.mobs2} catches fish in buckets and
+ * lets them out, and seats shoulder pets on both shoulders; `hover` mobs keep their height;
+ * project boats are vehicles of the preview (`entities/boats.ts`); vanilla water and lava
+ * buckets pour props; cauldrons fill and empty, glass bottles fill from a source, a fluid's
+ * bottle is drunk with its `on_drink`, and mixing runs after every action and tick.
+ *
  * Scripts (B400, `script/`): with {@link LocalSourceOptions.scripts} the project's scripts run
  * through a {@link ScriptBridge} ({@link LocalWorldSource.scripts}; the app loads them with
  * {@link LocalWorldSource.loadScripts} once they are transpiled). Their Script API events fire
@@ -64,8 +72,10 @@ import { TIME_LAPSE_TICKS } from './blocks/weathering.js';
 import type { CommandsTarget } from './commands/catalogue.js';
 import type { ChatLine } from './commands/run.js';
 import { type ControlsTarget, SimControls } from './controls/controls.js';
+import { readBoats, withBoats } from './entities/boats.js';
 import { buildEntityCatalogue, type EntityCatalogue } from './entities/catalogue.js';
 import { EntityWorld } from './entities/entity-world.js';
+import { Mobs2Area } from './entities/mobs2.js';
 import type { EntityHit } from './entities/spawn.js';
 import { SimRandom } from './entities/wander.js';
 import { type Firing, PLAYER, type SimInventory } from './events/actions.js';
@@ -74,6 +84,14 @@ import { SimTrace, type TraceEntry } from './events/trace.js';
 import { type ChanceMode, TriggerEngine } from './events/triggers.js';
 import { FluidArea } from './fluids/area.js';
 import { addFluidBlocks, readFluids } from './fluids/catalogue.js';
+import {
+  BUCKET,
+  GLASS_BOTTLE,
+  LAVA_BLOCK,
+  LAVA_BUCKET,
+  WATER_BLOCK,
+  WATER_BUCKET,
+} from './fluids/cauldrons.js';
 import {
   emptyGround,
   GROUND_AIR,
@@ -118,7 +136,7 @@ import type {
   WorldListener,
   WorldSource,
 } from './types.js';
-import { buildVehicleCatalogue } from './vehicles/catalogue.js';
+import { buildVehicleCatalogue, type VehicleCatalogue } from './vehicles/catalogue.js';
 import { type VehicleHit, VehicleWorld } from './vehicles/vehicle-world.js';
 import { SimWorld, sameState, stateKey, type WorldChange } from './world/sim-world.js';
 
@@ -258,6 +276,8 @@ export class LocalWorldSource implements WorldSource {
   readonly fluids: FluidArea;
   /** Trader mobs and the merchant screen (B483). */
   readonly traders: TraderArea;
+  /** Fish buckets and shoulder pets (B540). */
+  readonly mobs2: Mobs2Area;
   /** The area's scripts (B400), or `null` when they run only in the game. */
   readonly scripts: ScriptBridge | null;
 
@@ -334,13 +354,16 @@ export class LocalWorldSource implements WorldSource {
         shapes: this.shapes,
         player: this.player,
         log: this.log,
+        // Boats float on water-like project fluids too (ADR 0108 D4, B540).
         isWater: (state) =>
-          state.name === 'minecraft:water' || state.properties.waterlogged === 'true',
+          state.name === 'minecraft:water' ||
+          state.properties.waterlogged === 'true' ||
+          this.fluids?.catalogue.get(state.name)?.behavesLike === 'water',
         fire: (owner, eventId, ctx, sentence) =>
           this.triggers.fireOwned(owner, eventId, ctx, sentence),
         effect: (effect) => this.emit({ type: 'effect', effect }),
       },
-      buildVehicleCatalogue(this.files, this.target, (text, origin) => this.log.info(text, origin)),
+      this.vehicleTypes(),
     );
     this.unsubscribeWorld = this.world.onChange((change: WorldChange) =>
       this.emit({ type: 'blockChanged', pos: change.pos, state: change.state }),
@@ -464,6 +487,12 @@ export class LocalWorldSource implements WorldSource {
       triggers: () => this.triggers,
       log: this.log,
       now: () => this.ticks,
+      give: (id, count) => {
+        this.triggers.inventory.give(id, count);
+      },
+      nameOf: (id) => this.nameOf(id),
+      stateOf: (id) =>
+        this.blockCatalogue.blockFor(id)?.defaultState ?? { name: id, properties: {} },
     });
     this.traders = new TraderArea(this.files, this.target, {
       entities: this.entities,
@@ -471,7 +500,33 @@ export class LocalWorldSource implements WorldSource {
       log: this.log,
       effect: (effect) => this.emit({ type: 'effect', effect }),
       seed: options.seed ?? 1,
+      world: this.world,
     });
+    this.mobs2 = new Mobs2Area({
+      entities: this.entities,
+      catalogue: () => this.entityCatalogue,
+      player: this.player,
+      log: this.log,
+      give: (id, count) => {
+        this.triggers.inventory.give(id, count);
+      },
+      pourWater: (pos) => {
+        if (!this.world.inBounds(pos) || this.world.get(pos) !== null) return false;
+        const water = this.blockCatalogue.blockFor(WATER_BLOCK);
+        if (water === undefined) return false;
+        this.world.set(pos, water.defaultState);
+        return true;
+      },
+      now: () => this.ticks,
+    });
+  }
+
+  /** The project's vehicles and boats (B540). */
+  private vehicleTypes(): VehicleCatalogue {
+    return withBoats(
+      buildVehicleCatalogue(this.files, this.target, (text, origin) => this.log.info(text, origin)),
+      readBoats(this.files, this.target),
+    );
   }
 
   private ruleBooksNow: readonly RuleBookInfo[] = [];
@@ -550,6 +605,7 @@ export class LocalWorldSource implements WorldSource {
     this.parity3.clear();
     this.fluids.clear();
     this.traders.clear();
+    this.mobs2.clear();
     this.emit({ type: 'entities', entities: [] });
     const ground = this.groundBlocks;
     const { size } = ground;
@@ -699,6 +755,12 @@ export class LocalWorldSource implements WorldSource {
   }
 
   act(action: PlayerAction): void {
+    this.actNow(action);
+    // Mixing the action started (B540).
+    this.fluids.settle();
+  }
+
+  private actNow(action: PlayerAction): void {
     switch (action.type) {
       case 'move':
         this.input = {
@@ -792,6 +854,8 @@ export class LocalWorldSource implements WorldSource {
     if (!wasRiding) this.player.step(this.input);
     else if (gotOut) this.input = { ...this.input, sneak: false };
     if (this.input.toggleFly) this.input = { ...this.input, toggleFly: false };
+    // Shoulder pets get off before the mobs step (B540).
+    this.mobs2.tick();
     const snapshots = this.entities.step();
     this.emit({ type: 'entities', entities: snapshots });
     this.timers.tick([this.player.box, ...this.entities.boxes(), ...this.vehicles.boxes()]);
@@ -802,6 +866,7 @@ export class LocalWorldSource implements WorldSource {
     this.fluids.tick();
     this.traders.tick();
     this.scripts?.tick();
+    this.fluids.settle();
   }
 
   /** A time-lapse step of weathering: one in-game day of random ticks at once (B463). */
@@ -848,7 +913,39 @@ export class LocalWorldSource implements WorldSource {
       return true;
     }
     if (this.parity2.useItem(item)) return true;
+    if (this.useBatch2Item(item)) return true;
     return this.triggers.itemUsed(item).fired;
+  }
+
+  /**
+   * Batch 2 items used in the air or past a block that did not take the click (B540): a fluid's
+   * bottle is drunk, a glass bottle fills from a source in sight. True when one did something.
+   */
+  private useBatch2Item(item: string): boolean {
+    if (this.fluids.drink(item, this.player.position)) return true;
+    if (item === GLASS_BOTTLE) {
+      const pos = this.liquidInSight();
+      if (pos !== null && this.fluids.fillBottle(item, pos)) return true;
+    }
+    return false;
+  }
+
+  /** The first liquid cell along the look within reach, before any solid block (B540). */
+  private liquidInSight(): BlockPos | null {
+    const eye = this.player.eyePosition();
+    const d = lookDirection(this.player.yaw, this.player.pitch);
+    for (let t = 0; t <= REACH; t += 0.1) {
+      const pos = {
+        x: Math.floor(eye.x + d.x * t),
+        y: Math.floor(eye.y + d.y * t),
+        z: Math.floor(eye.z + d.z * t),
+      };
+      const state = this.world.get(pos);
+      if (state === null) continue;
+      if (this.blockCatalogue.isLiquid(state)) return pos;
+      if (this.blockCatalogue.collision(state).length > 0) return null;
+    }
+    return null;
   }
 
   /**
@@ -942,9 +1039,7 @@ export class LocalWorldSource implements WorldSource {
       });
     }
     this.entities.setCatalogue(this.entityCatalogue, this.shapes);
-    this.vehicles.setCatalogue(
-      buildVehicleCatalogue(files, target, (text, origin) => this.log.info(text, origin)),
-    );
+    this.vehicles.setCatalogue(this.vehicleTypes());
     this.timers.setCatalogue(this.blockCatalogue);
     this.triggers.setDefinitions(readEventDefinitions(files, target));
     this.controls.setFiles(files, target);
@@ -983,6 +1078,7 @@ export class LocalWorldSource implements WorldSource {
     this.parity3.clear();
     this.fluids.clear();
     this.traders.clear();
+    this.mobs2.clear();
     this.traceNow.clear();
     this.emit({ type: 'entities', entities: [] });
     this.log.info('You cleared the area.');
@@ -1034,6 +1130,8 @@ export class LocalWorldSource implements WorldSource {
     const block = target === null ? undefined : this.blockCatalogue.blockFor(target.name);
     const secondaryUse = this.player.sneaking && item !== undefined;
     if (target !== null && !secondaryUse) {
+      // Cauldrons and buckets or bottles (B540).
+      if (this.fluids.useCauldron(action.pos, item)) return;
       let taken = this.openScreen(action.pos, target);
       // Pots, potted plants in project pots and berries first (B519), then vanilla parity 2.
       if (block !== undefined && this.parity3.use(action.pos, target, block, item).taken) {
@@ -1066,6 +1164,35 @@ export class LocalWorldSource implements WorldSource {
     };
     if (this.triggers.itemUsedOn(item, action.pos, point).fired) return;
     if (this.parity2.useItem(item)) return;
+    if (this.useBatch2Item(item)) return;
+    // A fish bucket lets its mob out against the face (B540).
+    const released = this.mobs2.release(item, action.pos, action.face);
+    if (released !== null) {
+      if (released.spawned) this.triggers.mobSpawned(released.entity.id);
+      return;
+    }
+    // Vanilla's water and lava buckets pour props (B540: water for boats, fish and mixing).
+    if (item === WATER_BUCKET || item === LAVA_BUCKET) {
+      const liquid = item === WATER_BUCKET ? WATER_BLOCK : LAVA_BLOCK;
+      const placed = this.place(action.pos, action.face, action.hit, liquid);
+      if (placed !== null) {
+        this.log.info(
+          `You poured ${this.nameOf(liquid)} at ${placed.x}, ${placed.y}, ${placed.z}.`,
+        );
+        this.log.onlyInMinecraft(
+          'Water and lava poured from a bucket flow; in the preview they stay where you pour them',
+        );
+      }
+      return;
+    }
+    if (item === BUCKET || item === GLASS_BOTTLE) {
+      this.log.info(
+        item === BUCKET
+          ? 'Use the empty bucket on a full cauldron to fill it (in the preview a bucket does not take a source back).'
+          : 'Use the glass bottle on a cauldron with levels, or towards a fluid that has a bottle.',
+      );
+      return;
+    }
     // A project fluid's bucket pours a source of it where a block would go (B483).
     const fluid = this.fluids.bucketOf(item);
     if (fluid !== undefined) {
@@ -1153,7 +1280,10 @@ export class LocalWorldSource implements WorldSource {
   private interactNow(id: number): void {
     const mob = this.entities.entity(id);
     if (mob === undefined) return;
-    const traded = this.traders.use(id, this.player.sneaking);
+    const item = this.heldNow;
+    // A bucket comes first (B540, the runtime's `mobInteract` order).
+    if (item !== undefined && this.mobs2.interact(id, item)) return;
+    const traded = this.traders.use(id, this.player.sneaking, item);
     if (traded === 'opened') {
       if (this.screenNow !== null) this.closeScreen();
       this.parity2.closeBag();
@@ -1161,6 +1291,8 @@ export class LocalWorldSource implements WorldSource {
       this.controls.keys.releaseAll();
     }
     if (traded !== 'passed') return;
+    // A shoulder pet with an empty hand (B540).
+    if (item === undefined && this.mobs2.interact(id, undefined)) return;
     if (!this.triggers.mobInteracted(id).fired) {
       this.log.info(
         `You used ${mob.kind.displayName}; nothing happens in the preview.`,
@@ -1176,6 +1308,8 @@ export class LocalWorldSource implements WorldSource {
     const type = mob.kind.id;
     const position = mob.position;
     const name = mob.kind.displayName;
+    // A trader that remembers the player counts the hit and stays (B540).
+    if (this.traders.hit(id, this.player.sneaking) === 'counted') return;
     if (!this.entities.hit(id)) return;
     this.triggers.mobDied(type, id, position);
     this.scripts?.fire('entity.death', {

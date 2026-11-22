@@ -212,7 +212,9 @@ export function animationNameFor(
   const model = entity?.model;
   if (model === undefined) return undefined;
   if (walking) {
-    const moving = entity?.mode === 'fly' ? (model.fly ?? model.walk) : model.walk;
+    // `hover` and `phase` mobs fly too (B540).
+    const flying = entity?.mode === 'fly' || entity?.mode === 'hover' || entity?.mode === 'phase';
+    const moving = flying ? (model.fly ?? model.walk) : model.walk;
     if (moving !== undefined) return moving;
   }
   return model.idle;

@@ -149,6 +149,21 @@ export class EntityWorld {
         '/components/msm:movement/mode',
       );
     }
+    if (kind.mode === 'hover') {
+      this.sayOnce(
+        `hover:${kind.id}`,
+        `${kind.displayName} also hovers over the surface of water and lava; in the preview only over blocks`,
+        kind,
+        '/components/msm:movement/mode',
+      );
+    } else if (kind.mode === 'phase') {
+      this.sayOnce(
+        `phase:${kind.id}`,
+        `${kind.displayName} passes through blocks while it charges at a target; in the preview it only flies about`,
+        kind,
+        '/components/msm:movement/mode',
+      );
+    }
     if (kind.onlyInMinecraft.length > 0) {
       this.sayOnce(
         `features:${kind.id}`,

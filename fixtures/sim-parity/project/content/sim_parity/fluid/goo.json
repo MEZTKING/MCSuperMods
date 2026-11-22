@@ -1,0 +1,30 @@
+{
+  "data": {
+    "behaves_like": "none",
+    "bottle": {},
+    "cauldron": {
+      "levels": true
+    },
+    "display_name": "Goo",
+    "format": 1,
+    "mixing": [
+      {
+        "flowing": "sim_parity:lamp",
+        "source": "sim_parity:base",
+        "with": "lava"
+      }
+    ],
+    "textures": {
+      "flowing": "minecraft:block/water_flow",
+      "still": "minecraft:block/water_still"
+    },
+    "tint": 8040532
+  },
+  "formatVersion": 1,
+  "id": "sim_parity:goo",
+  "kind": "msm:fluid",
+  "meta": {
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "notes": "Vanilla parity 3, batch 2 (B540): a liquid with a three-level cauldron, a bottle and one mixing rule (a source that meets lava becomes the base block). It behaves like no vanilla liquid, so vanilla's own lava does not react to it."
+  }
+}

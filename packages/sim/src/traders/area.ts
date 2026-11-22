@@ -10,15 +10,25 @@
  *   too; the preview has none of them, and says so once.
  * - The area keeps a time of day for restocking and the night: it starts at 1000 (morning, as a
  *   new world), runs with the clock, and the "Time-lapse a day" step moves it on a whole day.
- * - Said out loud: Minecraft's own trade sets (not among the lowered files), price changes by
- *   demand, reputation and discounts (limit Q21), payment and products (no items move), mount
- *   storage and shoulder pets, and villager professions (villagers taking a job at a job site).
+ * - Said out loud: Minecraft's own trade sets (not among the lowered files), payment and
+ *   products (no items move), vanilla's own discounts (Hero of the Village, cured villagers),
+ *   mount storage, and villager professions (villagers taking a job at a job site).
+ *
+ * Batch 2 (B540, ADR 0107 as amended after B524): with `reputation` a trader remembers the one
+ * player: a use with the gift item gives a gift (below the cap; at the cap the screen opens), a
+ * trade raises the standing and a hit lowers it (the trader then stays in the preview, so its
+ * prices can be seen; a sneaking hit removes it as any mob), and each clock day the standing
+ * fades. The merchant screen shows each offer's changed price. With `demand` (the default) a
+ * restock moves each offer's demand first. With `work_site` a due restock waits until a block
+ * of the site is within 16 blocks of the trader (the game's search range; the walk there is the
+ * game's): the area looks for one each tick while a restock is due.
  */
 
 import type { EntityWorld } from '../entities/entity-world.js';
 import { type EventContext, PLAYER } from '../events/actions.js';
 import type { TriggerEngine } from '../events/triggers.js';
 import type { BlockPos, SimEffect, SimFiles, SimLog, SimOrigin } from '../types.js';
+import type { SimWorld } from '../world/sim-world.js';
 import {
   type ProfessionSpec,
   readProfessions,
@@ -31,6 +41,9 @@ import {
   type TradeSpec,
 } from './catalogue.js';
 import { Merchant, type OfferStack, outOfStock, TRADE_LEVEL_NAMES } from './merchant.js';
+
+/** What a hit on a trader did (B540). */
+export type TraderHit = 'counted' | 'passed';
 
 /** The time of day a new area starts at (morning, as a new world's first day). */
 export const TRADER_START_TIME = 1000;
@@ -50,7 +63,12 @@ export interface TraderHost {
   readonly log: SimLog;
   readonly effect: (effect: SimEffect) => void;
   readonly seed: number;
+  /** The blocks, for work sites (B540); without it a due restock never waits. */
+  readonly world?: SimWorld;
 }
+
+/** How far a trader looks for its work site, in blocks (the runtime's `WORK_SITE_RANGE`). */
+export const WORK_SITE_RANGE = 16;
 
 /** The merchant screen open now (the view's mock-up). */
 export interface OpenMerchant {
@@ -160,6 +178,7 @@ export class TraderArea {
         this.merchants.delete(mobId);
         continue;
       }
+      this.decay(merchant);
       this.restock(merchant);
     }
   }
@@ -169,7 +188,10 @@ export class TraderArea {
     const halves = Math.floor(ticks / (DAY_TICKS / 2));
     for (let i = 0; i < halves; i += 1) {
       this.time += DAY_TICKS / 2;
-      for (const merchant of this.merchants.values()) this.restock(merchant);
+      for (const merchant of this.merchants.values()) {
+        this.decay(merchant);
+        this.restock(merchant);
+      }
     }
     this.time += ticks - halves * (DAY_TICKS / 2);
   }
@@ -189,7 +211,7 @@ export class TraderArea {
    * The player used mob `mobId` (sneaking or not): its store (said), its merchant screen, or
    * `passed` for a mob that is no trader or has no offer to show.
    */
-  use(mobId: number, sneaking: boolean): MobUse {
+  use(mobId: number, sneaking: boolean, item?: string): MobUse {
     const mob = this.host.entities.entity(mobId);
     if (mob === undefined) return 'passed';
     const spec = this.traders.get(mob.kind.id);
@@ -214,13 +236,31 @@ export class TraderArea {
       );
       return 'refused';
     }
-    let merchant = this.merchants.get(mobId);
-    if (merchant === undefined) {
-      merchant = new Merchant(mobId, spec, this.setOf, this.tradeOf, this.host.seed + mobId * 7919);
-      this.merchants.set(mobId, merchant);
-      this.sayUnreadable(spec, 1);
-    }
+    const merchant = this.merchantFor(mobId, spec);
+    this.decay(merchant);
     this.restock(merchant);
+    const giftItem = spec.reputation?.giftItem;
+    if (giftItem !== undefined && item === giftItem && !sneaking && merchant.gift()) {
+      log.info(
+        `You gave ${spec.displayName} a gift: your standing with it is now ${merchant.standing}, so its prices fall.`,
+        spec.origin,
+      );
+      const mob2 = this.host.entities.entity(mobId);
+      if (spec.tradeSound !== undefined && mob2 !== undefined) {
+        this.host.effect({
+          kind: 'sound',
+          id: spec.tradeSound,
+          position: mob2.position,
+          origin: spec.origin,
+        });
+      }
+      this.sayOnce(
+        'gift-item',
+        'A gift takes one of the item from your hand; in the preview nothing is taken',
+        spec.origin,
+      );
+      return 'taken';
+    }
     if (merchant.offers.length === 0) {
       log.info(`${spec.displayName} has no offers the preview can show.`, spec.origin);
       return 'passed';
@@ -228,9 +268,16 @@ export class TraderArea {
     this.openNow = { mobId, displayName: spec.displayName, merchant, origin: spec.origin };
     this.sayOnce(
       'prices',
-      'Prices that change with demand, reputation and discounts, and paying with the items in your inventory; in the preview a trade costs nothing and gives nothing',
+      "Paying with the items in your inventory, and vanilla's own discounts (Hero of the Village, a cured villager); in the preview a trade costs nothing and gives nothing",
       spec.origin,
     );
+    if (spec.reputation !== undefined) {
+      this.sayOnce(
+        `reputation:${spec.id}`,
+        `${spec.displayName} remembers each player apart and tells no one else; the preview has one player`,
+        spec.origin,
+      );
+    }
     log.info(
       `You opened ${spec.displayName}'s trading screen (${TRADE_LEVEL_NAMES[merchant.level - 1]}).`,
       spec.origin,
@@ -306,6 +353,119 @@ export class TraderArea {
     return result.trades;
   }
 
+  /**
+   * The player hit mob `mobId` (B540): a trader with `reputation` counts the hit against the
+   * player and stays (`counted`); a sneaking hit, or any other mob, is `passed` on (it is
+   * removed as any mob).
+   */
+  hit(mobId: number, sneaking: boolean): TraderHit {
+    const mob = this.host.entities.entity(mobId);
+    const spec = mob === undefined ? undefined : this.traders.get(mob.kind.id);
+    if (spec?.reputation === undefined || sneaking) return 'passed';
+    const merchant = this.merchantFor(mobId, spec);
+    merchant.hurt();
+    this.host.log.info(
+      `You hit ${spec.displayName}: your standing with it falls to ${merchant.standing}, so its prices rise. In the preview it stays; sneak and hit to remove it.`,
+      spec.origin,
+    );
+    this.sayOnce(
+      `hurt:${spec.id}`,
+      `${spec.displayName} is hurt by a hit and can die; in the preview a hit only counts against you`,
+      spec.origin,
+    );
+    return 'counted';
+  }
+
+  private merchantFor(mobId: number, spec: TraderSpec): Merchant {
+    let merchant = this.merchants.get(mobId);
+    if (merchant === undefined) {
+      merchant = new Merchant(mobId, spec, this.setOf, this.tradeOf, this.host.seed + mobId * 7919);
+      // The first check notes the day and the half day, as the runtime's.
+      merchant.decayIfDue(this.time);
+      this.merchants.set(mobId, merchant);
+      this.sayUnreadable(spec, 1);
+    }
+    return merchant;
+  }
+
+  private decay(merchant: Merchant): void {
+    if (merchant.decayIfDue(this.time)) {
+      this.host.log.info(
+        `A day went by: your standing with ${merchant.trader.displayName} faded to ${merchant.standing}.`,
+        merchant.trader.origin,
+      );
+    }
+  }
+
+  /** Whether a block of the trader's work site is within {@link WORK_SITE_RANGE} blocks. */
+  private atSite(merchant: Merchant): boolean {
+    const site = merchant.trader.workSite;
+    const world = this.host.world;
+    if (site === undefined || world === undefined) return true;
+    const mob = this.host.entities.entity(merchant.mobId);
+    if (mob === undefined) return false;
+    const members = this.siteBlocks(site);
+    if (members === null) {
+      this.sayOnce(
+        `site-tag:${site}`,
+        `${merchant.trader.displayName} restocks at a block of ${site}, a tag the preview cannot read; here it restocks where it stands`,
+        merchant.trader.origin,
+      );
+      return true;
+    }
+    const at = mob.position;
+    for (const { pos, state } of world.blocks()) {
+      if (!members.has(state.name)) continue;
+      const dx = pos.x + 0.5 - at.x;
+      const dy = pos.y + 0.5 - at.y;
+      const dz = pos.z + 0.5 - at.z;
+      if (Math.hypot(dx, dy, dz) <= WORK_SITE_RANGE) return true;
+    }
+    return false;
+  }
+
+  /** The block ids of a work site (an id, or a project block tag); `null` for a tag not read. */
+  private siteBlocks(site: string): Set<string> | null {
+    if (!site.startsWith('#')) return new Set([site]);
+    const out = new Set<string>();
+    const seen = new Set<string>();
+    const read = (tag: string): boolean => {
+      if (seen.has(tag)) return true;
+      seen.add(tag);
+      const colon = tag.indexOf(':');
+      const namespace = colon < 0 ? 'minecraft' : tag.slice(0, colon);
+      const path = colon < 0 ? tag : tag.slice(colon + 1);
+      const raw = this.files.get(
+        `data/${namespace}/${this.target.folders.data.tags}/block/${path}.json`,
+      );
+      if (raw === undefined) return false;
+      let json: unknown;
+      try {
+        json = JSON.parse(typeof raw === 'string' ? raw : new TextDecoder().decode(raw));
+      } catch {
+        return false;
+      }
+      const values = (json as { values?: unknown }).values;
+      if (!Array.isArray(values)) return false;
+      for (const value of values) {
+        const id =
+          typeof value === 'string'
+            ? value
+            : typeof value === 'object' &&
+                value !== null &&
+                typeof (value as { id?: unknown }).id === 'string'
+              ? (value as { id: string }).id
+              : undefined;
+        if (id === undefined) continue;
+        if (id.startsWith('#')) {
+          if (!read(id.slice(1))) return false;
+        } else out.add(id);
+      }
+      return true;
+    };
+    return read(site.slice(1)) ? out : null;
+  }
+
   /** A project block was placed: a profession's job site is said out loud (B483). */
   placed(block: string, _pos: BlockPos, nameOf: (id: string) => string): void {
     for (const profession of this.professions.values()) {
@@ -339,12 +499,38 @@ export class TraderArea {
   }
 
   private restock(merchant: Merchant): void {
-    if (merchant.restockIfDue(this.time)) {
+    const wasWaiting = merchant.waitingToRestock;
+    const site = merchant.trader.workSite;
+    // A due restock is noted first; a trader with a work site then looks for it.
+    const restocked =
+      site === undefined
+        ? merchant.restockIfDue(this.time)
+        : merchant.restockIfDue(this.time, false) || this.restockAtSite(merchant);
+    if (restocked) {
       this.host.log.info(
-        `${merchant.trader.displayName} restocked its offers (half a day went by).`,
+        site === undefined
+          ? `${merchant.trader.displayName} restocked its offers (half a day went by).`
+          : `${merchant.trader.displayName} restocked its offers at its work site.`,
+        merchant.trader.origin,
+      );
+      return;
+    }
+    if (!wasWaiting && merchant.waitingToRestock && site !== undefined) {
+      this.host.log.info(
+        `${merchant.trader.displayName} has a restock due and waits for its work site (${site}) within ${WORK_SITE_RANGE} blocks.`,
+        merchant.trader.origin,
+      );
+      this.sayOnce(
+        `walk:${merchant.trader.id}`,
+        `${merchant.trader.displayName} walks to its work site to restock; in the preview it restocks once one is near`,
         merchant.trader.origin,
       );
     }
+  }
+
+  private restockAtSite(merchant: Merchant): boolean {
+    if (!merchant.waitingToRestock || !this.atSite(merchant)) return false;
+    return merchant.restockIfDue(this.time, true);
   }
 
   /** Says once when a level's trade set (or some of its trades) cannot be read here. */

@@ -6,6 +6,12 @@
  * draws with. Everything else a definition holds (goals, attacks, taming, breeding, riding,
  * variants, boss bars, natural spawning) is listed in plain words so the first spawn of
  * the mob can say it works only in Minecraft (ADR 0085 D5, limit L3).
+ *
+ * Batch 2 (B540, ADR 0109): the movement modes `hover` (with `hover_height`, default 4) and
+ * `phase`, `msm:bucketable` on a swimming mob (its bucket `<ns>:<path>_bucket`) and
+ * `msm:shoulder_riding`'s `sides` (default `either`) are read for `mobs2.ts`; the new goals
+ * (`swoop`, `roost`, `collect_items`, `dig_items`, `play_dead`, `barter`) and the ride's `dash`
+ * stay in the list of what only the game does.
  */
 import type { Json, JsonObject, TargetFacts } from '@msm/plugin-api';
 import { readJsonFile } from '../blocks/catalogue.js';
@@ -13,9 +19,32 @@ import type { SimFiles, SimLog, SimOrigin } from '../types.js';
 import { DEFAULT_FLYING_SPEED, DEFAULT_MOVEMENT_SPEED, DEFAULT_STEP_HEIGHT } from './constants.js';
 
 /** How a mob moves (ADR 0070 D3), the format's names. */
-export type EntityMovementMode = 'walk' | 'fly' | 'swim' | 'amphibious';
+export type EntityMovementMode = 'walk' | 'fly' | 'swim' | 'amphibious' | 'hover' | 'phase';
 
-const MOVEMENT_MODES: readonly EntityMovementMode[] = ['walk', 'fly', 'swim', 'amphibious'];
+const MOVEMENT_MODES: readonly EntityMovementMode[] = [
+  'walk',
+  'fly',
+  'swim',
+  'amphibious',
+  'hover',
+  'phase',
+];
+
+/** The height a `hover` mob keeps above the ground without `hover_height` (the format's). */
+export const DEFAULT_HOVER_HEIGHT = 4;
+
+/** A shoulder a pet takes, named by the player's view (ADR 0109 D2). */
+export type ShoulderSides = 'left' | 'right' | 'either';
+
+/** A mob's fish bucket (`msm:bucketable`, ADR 0109 D1). */
+export interface EntityBucket {
+  /** The bucket item, `<ns>:<path>_bucket`. */
+  readonly item: string;
+  /** Its name in plain words. */
+  readonly name: string;
+  /** Whether it holds water (a water bucket takes the mob) or not (an empty bucket does). */
+  readonly water: boolean;
+}
 
 /** The model, texture and animation names the view draws a mob with (`msm:animated_model`). */
 export interface EntityModel {
@@ -61,6 +90,12 @@ export interface CatalogueEntity {
   readonly hovers: boolean;
   /** The highest ledge it walks up. */
   readonly stepHeight: number;
+  /** `hover` mobs: the height kept above the ground below (B540; absent: {@link DEFAULT_HOVER_HEIGHT}). */
+  readonly hoverHeight?: number;
+  /** A swimming mob with `msm:bucketable` (B540). */
+  readonly bucket?: EntityBucket;
+  /** A mob with `msm:shoulder_riding`: the shoulders it takes (B540). */
+  readonly shoulder?: ShoulderSides;
   /** What the view draws it with; absent when the definition has no `msm:animated_model`. */
   readonly model?: EntityModel;
   /** The things the definition asks for that only the game does, in plain words. */
@@ -133,6 +168,9 @@ const HANDLED_COMPONENTS = new Set([
   'msm:on_spawn',
   // Trading is the merchant mock-up's (B483, `traders/`).
   'msm:trader',
+  // Fish buckets and shoulders are `mobs2.ts`'s (B540).
+  'msm:bucketable',
+  'msm:shoulder_riding',
 ]);
 
 /** `ranged_attack` as `ranged attack`. */
@@ -168,6 +206,7 @@ function movementOf(definition: JsonObject): {
   flyingSpeed: number;
   hovers: boolean;
   stepHeight: number;
+  hoverHeight: number;
 } {
   const components = isRecord(definition.components) ? definition.components : {};
   const movement = isRecord(components['msm:movement']) ? components['msm:movement'] : {};
@@ -180,6 +219,7 @@ function movementOf(definition: JsonObject): {
     flyingSpeed: atLeastZero(movement.flying_speed) ?? DEFAULT_FLYING_SPEED,
     hovers: movement.hovers !== false,
     stepHeight: atLeastZero(movement.step_height) ?? DEFAULT_STEP_HEIGHT,
+    hoverHeight: positive(movement.hover_height) ?? DEFAULT_HOVER_HEIGHT,
   };
 }
 
@@ -231,6 +271,12 @@ export class EntityCatalogue {
   /** A mob by its entity type id. */
   get(id: string): CatalogueEntity | undefined {
     return this.entities.get(id);
+  }
+
+  /** The mob a fish bucket holds, by the bucket's item id (B540). */
+  entityForBucket(itemId: string): CatalogueEntity | undefined {
+    for (const entity of this.entities.values()) if (entity.bucket?.item === itemId) return entity;
+    return undefined;
   }
 
   /** The mob a spawn egg item hatches, by the egg's item id. */
@@ -307,6 +353,34 @@ export function buildEntityCatalogue(
     const hasEgg = egg === undefined || isRecord(egg);
     const eggPath = `${entityPath}_spawn_egg`;
     const model = modelOf(definition);
+    const components = isRecord(definition.components) ? definition.components : {};
+    const bucketable = components['msm:bucketable'];
+    const bucketPath = `${entityPath}_bucket`;
+    const bucketNameKey = isRecord(bucketable) ? nonEmpty(bucketable.item_name) : undefined;
+    const bucket: EntityBucket | undefined =
+      isRecord(bucketable) && movement.mode === 'swim'
+        ? Object.freeze({
+            item: `${namespace}:${bucketPath}`,
+            name:
+              nonEmpty(
+                lang[bucketNameKey ?? `item.${namespace}.${bucketPath.replaceAll('/', '.')}`],
+              ) ?? `Bucket of ${displayName}`,
+            water: bucketable.water !== false,
+          })
+        : undefined;
+    if (isRecord(bucketable) && bucket === undefined) {
+      catalogue.sayOnce(
+        `bucket-mode:${id}`,
+        `${displayName} can be caught in a bucket only if it swims; the game leaves its bucket out`,
+        { ...origin, pointer: '/components/msm:bucketable' },
+      );
+    }
+    const shoulder = components['msm:shoulder_riding'];
+    const sides: ShoulderSides | undefined = isRecord(shoulder)
+      ? shoulder.sides === 'left' || shoulder.sides === 'right'
+        ? shoulder.sides
+        : 'either'
+      : undefined;
     catalogue.add(
       Object.freeze({
         id,
@@ -326,6 +400,9 @@ export function buildEntityCatalogue(
         flyingSpeed: movement.flyingSpeed,
         hovers: movement.hovers,
         stepHeight: movement.stepHeight,
+        hoverHeight: movement.hoverHeight,
+        ...(bucket === undefined ? {} : { bucket }),
+        ...(sides === undefined ? {} : { shoulder: sides }),
         ...(model === undefined ? {} : { model }),
         onlyInMinecraft: Object.freeze(unhandledFeatures(definition)),
         origin,

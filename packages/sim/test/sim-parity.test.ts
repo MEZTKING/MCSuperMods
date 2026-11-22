@@ -19,6 +19,12 @@
  * The scenarios of vanilla parity 3, batch 1 (B519: strands, columns, lichen, dripleaves, the pot
  * and the double chest) were recorded in the game by B520 and are in the same file.
  *
+ * `scenarios-parity-3-batch-2.json` (B540) holds batch 2's: fluid cauldrons by bucket and
+ * bottle and a fluid source mixing with lava, written from the runtime's measured notes (B525,
+ * B529) and played here only; B541 adds their GameTests and records them in the game. In them a
+ * `place` holding a bucket pours its liquid (`bucketPours`), then the mixing it starts runs, and
+ * a `use` with an item first tries the cauldrons (`useCauldron`).
+ *
  * - `step_on`: on a pressure plate, one timers tick with the player's box standing on it; on any
  *   other block, its `msm:on_step` fires for the player (`TriggerEngine.blockSteppedOn`) with no
  *   tick, as in the GameTest.
@@ -28,19 +34,25 @@ import { join } from 'node:path';
 import type { Target } from '@msm/plugin-api';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  addFluidBlocks,
   type BlockCatalogue,
   type BlockPos,
   BlockTimers,
   type Box,
   breakBlock,
+  bucketPours,
   buildCatalogue,
   buildEntityCatalogue,
   EntityWorld,
   type Face,
+  type FluidCatalogue,
   growBlock,
+  mixingAt,
+  mixingCandidates,
   PlayerController,
   placeBlock,
   readEventDefinitions,
+  readFluids,
   type SimFiles,
   type SimLog,
   SimTrace,
@@ -49,6 +61,7 @@ import {
   TriggerEngine,
   updateNeighbours,
   useBlock,
+  useCauldron,
   useType3,
 } from '../src/index.js';
 import { builtInTargets, lowerFixture, REPO_ROOT } from './lower-fixture.js';
@@ -123,6 +136,11 @@ const FILE = JSON.parse(
   readFileSync(join(REPO_ROOT, 'fixtures/sim-parity/scenarios.json'), 'utf8'),
 ) as ScenarioFile;
 
+/** Vanilla parity 3, batch 2 (B540): played here; B541 records them in the game. */
+const FILE_3B = JSON.parse(
+  readFileSync(join(REPO_ROOT, 'fixtures/sim-parity/scenarios-parity-3-batch-2.json'), 'utf8'),
+) as ScenarioFile;
+
 const TARGETS = await builtInTargets();
 
 /** The item the `use` step treats as the Grow tool (B519). */
@@ -185,9 +203,11 @@ class ParityArea {
   private ticks = 0;
 
   readonly catalogue: BlockCatalogue;
+  private readonly fluids: FluidCatalogue;
 
   constructor(files: SimFiles, target: Target, catalogue: BlockCatalogue) {
     this.catalogue = catalogue;
+    this.fluids = readFluids(files, target);
     const shapes = catalogue;
     this.player = new PlayerController((x, y, z) => this.world.get({ x, y, z }), shapes, AWAY);
     const entities = new EntityWorld(
@@ -214,15 +234,23 @@ class ParityArea {
   play(step: Step): string {
     switch (step.step) {
       case 'place': {
+        // A bucket pours its liquid where a block would go (B540).
+        const poured = bucketPours(this.fluids, step.block);
         const result = placeBlock(this.world, this.catalogue, {
           pos: toPos(step.pos),
           face: step.face,
           hit: toVec(step.hit),
-          block: step.block,
+          block: poured ?? step.block,
           yaw: step.yaw,
           pitch: step.pitch,
         });
         if (!result.placed) return `not placed: ${result.reason}`;
+        if (poured !== undefined) {
+          for (const cell of mixingCandidates(result.pos)) {
+            mixingAt(this.world, this.fluids, cell, (id) => ({ name: id, properties: {} }));
+          }
+          return `poured at ${result.pos.x}, ${result.pos.y}, ${result.pos.z}`;
+        }
         this.triggers.blockPlaced(result.pos);
         return `placed at ${result.pos.x}, ${result.pos.y}, ${result.pos.z}`;
       }
@@ -230,6 +258,7 @@ class ParityArea {
         const pos = toPos(step.pos);
         const state = this.world.get(pos);
         const block = state === null ? undefined : this.catalogue.blockFor(state.name);
+        if (useCauldron(this.world, this.fluids, pos, step.item).handled) return 'used (cauldron)';
         if (step.item === BONE_MEAL) {
           growBlock(this.world, this.catalogue, QUIET, pos, () => 0);
           return 'bone meal';
@@ -392,6 +421,10 @@ it('reads format 1 of the sim_parity scenarios', () => {
   expect(FILE.namespace).toBe('sim_parity');
   expect(FILE.scenarios.length).toBeGreaterThanOrEqual(30);
   expect(new Set(FILE.scenarios.map((one) => one.name)).size).toBe(FILE.scenarios.length);
+  expect(FILE_3B.format).toBe(1);
+  expect(FILE_3B.namespace).toBe('sim_parity');
+  const names = [...FILE.scenarios, ...FILE_3B.scenarios].map((one) => one.name);
+  expect(new Set(names).size).toBe(names.length);
 });
 
 describe.each(TARGETS.map((target) => [target.id, target] as const))(
@@ -405,10 +438,19 @@ describe.each(TARGETS.map((target) => [target.id, target] as const))(
       expect(lowered.problems.filter((problem) => problem.severity === 'error')).toEqual([]);
       files = lowered.files;
       catalogue = buildCatalogue(files, target, QUIET);
+      // Project fluids' liquid blocks and cauldrons, as `LocalWorldSource` adds them (B540).
+      addFluidBlocks(catalogue, readFluids(files, target));
     }, 60_000);
 
     it.each(FILE.scenarios.map((scenario) => [scenario.name, scenario] as const))(
       '%s',
+      (_name, scenario) => {
+        expect(playScenario(scenario, files, target, catalogue)).toEqual([]);
+      },
+    );
+
+    it.each(FILE_3B.scenarios.map((scenario) => [scenario.name, scenario] as const))(
+      'vanilla parity 3, batch 2: %s',
       (_name, scenario) => {
         expect(playScenario(scenario, files, target, catalogue)).toEqual([]);
       },

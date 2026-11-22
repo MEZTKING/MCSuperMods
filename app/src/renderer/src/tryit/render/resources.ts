@@ -15,6 +15,13 @@
  * liquids (always: the game draws them in code) draw as MSM's own plain coloured cubes from
  * `fallback-colours.ts` (B405), so a ground's blocks stay visible without the jar.
  *
+ * Without the jar (or for an id the jar lacks), two more of MSM's own stand-ins (B540): any
+ * `minecraft:block/<x>` model none of the sources and none of MSM's fallback parents has is that
+ * block's fallback cube (`fallbackModel`), so a project block naming a whole vanilla model draws;
+ * and any `minecraft:block/<x>` texture a model names directly (a fluid cauldron's
+ * `minecraft:block/cauldron_side`, a vanilla plant in a project pot) is a plain picture in the
+ * colour MSM picks for `minecraft:<x>`.
+ *
  * Part of the lazy Try it chunk: it imports deepslate.
  */
 
@@ -48,9 +55,22 @@ import {
 import {
   alwaysFallback,
   fallbackDefinition,
+  fallbackLook,
   fallbackModel,
+  fallbackPicture,
   fallbackTexturePng,
 } from './fallback-colours';
+
+/** The namespace and folder of the vanilla ids the general stand-ins cover. */
+const VANILLA_BLOCK_PREFIX = 'minecraft:block/';
+
+/** The block a `minecraft:block/<x>` model or texture id stands for, `minecraft:<x>`; else `null`. */
+export function vanillaBlockOfAsset(id: string): string | null {
+  const normal = normaliseId(id);
+  if (!normal.startsWith(VANILLA_BLOCK_PREFIX)) return null;
+  const path = normal.slice(VANILLA_BLOCK_PREFIX.length);
+  return path === '' || path.includes('/') ? null : `minecraft:${path}`;
+}
 
 /** Where Try it's pictures come from. */
 export interface TryItResourceOptions {
@@ -332,7 +352,10 @@ export async function prepareTryItResources(
       if (vanilla !== null) return { id, json: vanilla, source: 'vanilla' };
     }
     const fallback = fallbackModelFor(id, options.fallbackModels);
-    return fallback === null ? null : { id, json: fallback, source: 'fallback' };
+    if (fallback !== null) return { id, json: fallback, source: 'fallback' };
+    // Any other whole vanilla model: that block's fallback cube (B540).
+    const block = vanillaBlockOfAsset(id);
+    return block === null ? null : { id, json: fallbackModel(block), source: 'fallback' };
   };
   const resolved = new Map<string, ResolvedModel>();
   const missingModels = new Set<string>();
@@ -385,6 +408,11 @@ export async function prepareTryItResources(
     }
     if (bytes === null && options.vanilla !== null) {
       bytes = await options.vanilla.readAsset(vanillaPath).catch(() => null);
+    }
+    if (bytes === null) {
+      // A vanilla block picture a model names directly: MSM's plain colour for it (B540).
+      const block = vanillaBlockOfAsset(id);
+      if (block !== null) bytes = fallbackPicture(fallbackLook(block).side);
     }
     if (bytes === null) {
       missingTextures.push(id);

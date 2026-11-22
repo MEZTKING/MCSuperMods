@@ -8,7 +8,11 @@ import type { Json, JsonObject, TargetFacts } from '@msm/plugin-api';
 import { readJsonFile } from '../blocks/catalogue.js';
 import type { SimFiles, SimOrigin } from '../types.js';
 
-/** MSM's twelve argument types (ADR 0096 D1). */
+/**
+ * MSM's argument types: the twelve of ADR 0096 D1, then the 32 of ADR 0111 D2 (B540), in
+ * `CommandFacts.argumentTypes`' order. The preview reads the twelve as the game does and the 32
+ * by their shape only (`parse.ts`).
+ */
 export const COMMAND_ARGUMENT_TYPES = Object.freeze([
   'integer',
   'number',
@@ -22,6 +26,38 @@ export const COMMAND_ARGUMENT_TYPES = Object.freeze([
   'block_position',
   'item',
   'block',
+  'dimension',
+  'time',
+  'team_colour',
+  'hex_colour',
+  'rotation',
+  'angle',
+  'uuid',
+  'objective',
+  'score_holder',
+  'score_holders',
+  'item_predicate',
+  'block_predicate',
+  'effect',
+  'enchantment',
+  'biome',
+  'biome_or_tag',
+  'structure',
+  'structure_or_tag',
+  'entity_type',
+  'particle',
+  'game_mode',
+  'text_component',
+  'int_range',
+  'identifier',
+  'team',
+  'slot',
+  'nbt',
+  'message',
+  'dialog',
+  'loot_table',
+  'advancement',
+  'recipe',
 ] as const);
 
 /** One argument type. */

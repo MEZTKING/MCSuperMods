@@ -9,7 +9,9 @@
  * Models come from where the runtime reads them (`model.geometry`, the GeckoLib layout
  * `assets/<ns>/geckolib/models/<path>.geo.json`, ADR 0090 D10); the texture is the model's own
  * (paints are the game's, said by the simulation). A vehicle whose model is not in the project
- * is drawn as a plain box of its hitbox, with one line.
+ * is drawn as a plain box of its hitbox, with one line. A project boat (B540, `@msm/sim`'s
+ * `entities/boats.ts`) is drawn as a box of the oak boat's size in a wood colour: the game draws
+ * it with vanilla's boat model and the wood's pictures (said by the simulation).
  *
  * Drawn after the mobs with the depth buffer kept; the geo renderer leaves face culling off, so
  * the canvas restores deepslate's state afterwards. Part of the lazy `TryItCanvas` chunk.
@@ -23,7 +25,7 @@ import type {
   Vec3,
   VehicleSnapshot,
 } from '@msm/sim';
-import { readJsonFile } from '@msm/sim';
+import { boatLookOf, readJsonFile } from '@msm/sim';
 import { mat4 } from 'gl-matrix';
 import {
   type BakedModel,
@@ -56,6 +58,8 @@ import { type PortalPictureSource, readTexture } from '../render/portal';
 export const UNITS_PER_BLOCK = 16;
 /** The colour of a vehicle drawn as a box (MSM's own). */
 export const VEHICLE_BOX_RGBA: readonly [number, number, number, number] = [0.42, 0.5, 0.62, 1];
+/** The colour of a project boat's box (MSM's own wood brown, B540). */
+export const BOAT_BOX_RGBA: readonly [number, number, number, number] = [0.6, 0.44, 0.27, 1];
 /** Above this speed (blocks a tick) the `moving` animation plays instead of `idle`. */
 export const MOVING_SPEED = 0.01;
 
@@ -280,6 +284,7 @@ export class VehiclePass {
 
   /** The baked look of a vehicle type, baked again when its files changed; `null` draws a box. */
   private bakedFor(kind: CatalogueVehicle, log: SimLog | undefined): Baked | null {
+    if (boatLookOf(kind) !== null) return null;
     const look = vehicleLook(kind);
     if (look === null) {
       this.sayOnce(
@@ -391,7 +396,12 @@ export class VehiclePass {
   draw(source: VehicleDrawSource, frame: VehicleFrame): VehicleFrameStats {
     const stats: VehicleFrameStats = { models: 0, boxes: 0 };
     this.frameNumber += 1;
-    const boxes: { feet: Vec3; width: number; height: number }[] = [];
+    const boxes: {
+      feet: Vec3;
+      width: number;
+      height: number;
+      rgba: readonly [number, number, number, number];
+    }[] = [];
     for (const snapshot of source.snapshots()) {
       const kind = source.kind(snapshot.type);
       if (kind === undefined) continue;
@@ -421,7 +431,12 @@ export class VehiclePass {
       }
       const baked = this.bakedFor(kind, source.log);
       if (baked === null) {
-        boxes.push({ feet: at.position, width: kind.width, height: kind.height });
+        boxes.push({
+          feet: at.position,
+          width: kind.width,
+          height: kind.height,
+          rgba: boatLookOf(kind) === null ? VEHICLE_BOX_RGBA : BOAT_BOX_RGBA,
+        });
         stats.boxes += 1;
         continue;
       }
@@ -449,14 +464,7 @@ export class VehiclePass {
       if (this.vertices.length < needed) this.vertices = new Float32Array(needed);
       let offset = 0;
       for (const box of boxes) {
-        offset = writeMobBox(
-          this.vertices,
-          offset,
-          box.feet,
-          box.width,
-          box.height,
-          VEHICLE_BOX_RGBA,
-        );
+        offset = writeMobBox(this.vertices, offset, box.feet, box.width, box.height, box.rgba);
       }
       this.batch.draw(frame.clip, this.vertices.subarray(0, offset), [
         {
