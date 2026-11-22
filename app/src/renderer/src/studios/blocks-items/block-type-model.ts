@@ -92,6 +92,18 @@ export const NEW_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
 ]);
 
 /**
+ * The plant and pot types of ADR 0103 (vanilla parity 3, B505 scaffold). Not offered in the Type
+ * picker until B516 gives them their section and group.
+ */
+export const PLANTS_3_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze([
+  'growing_plant',
+  'column_plant',
+  'multiface',
+  'dripleaf',
+  'flower_pot',
+]);
+
+/**
  * The building types the Type picker offers (ADR 0067 D1), in the format's order, with
  * `portal` (ADR 0077 D1; its fields in the Portal section, ADR 0078 D1) last.
  */
@@ -99,7 +111,8 @@ export const BUILDING_BLOCK_TYPES: readonly BlockTypeName[] = Object.freeze(
   BLOCK_TYPES.filter(
     (type) =>
       !(PLANT_BLOCK_TYPES as readonly string[]).includes(type) &&
-      !(NEW_BLOCK_TYPES as readonly string[]).includes(type),
+      !(NEW_BLOCK_TYPES as readonly string[]).includes(type) &&
+      !(PLANTS_3_BLOCK_TYPES as readonly string[]).includes(type),
   ),
 );
 

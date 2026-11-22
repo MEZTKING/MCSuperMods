@@ -27,6 +27,7 @@ import {
   companionRows,
   modelSlotLabel,
   NEW_BLOCK_TYPES,
+  PLANTS_3_BLOCK_TYPES,
   signPictureCopy,
   TEXTURE_SLOTS,
   textureSlotsOf,
@@ -130,7 +131,10 @@ function renderWithHost(
 describe('Type picker groups and pictures', () => {
   it('puts every type in exactly one group', () => {
     const grouped = BLOCK_TYPE_GROUPS.flatMap((group) => group.types);
-    expect([...grouped].sort()).toEqual([...BLOCK_TYPES].sort());
+    // The plant and pot types of ADR 0103 are not offered until B516 gives them a group.
+    const offered = BLOCK_TYPES.filter((type) => !PLANTS_3_BLOCK_TYPES.includes(type));
+    expect([...grouped].sort()).toEqual([...offered].sort());
+    for (const type of PLANTS_3_BLOCK_TYPES) expect(grouped).not.toContain(type);
     expect(new Set(grouped).size).toBe(grouped.length);
     expect(BLOCK_TYPE_GROUPS.map((group) => group.label)).toEqual([
       'Building blocks',
