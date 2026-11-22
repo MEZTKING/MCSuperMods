@@ -96,6 +96,11 @@ export function valueSentence(value: Json | undefined, context: SentenceContext)
     }
     case 'facing':
       return `the way ${FACING_WORDS[str(object, 'of') ?? 'here'] ?? 'the block here'} faces`;
+    case 'command_argument': {
+      const typed = `what the player typed for "${(str(object, 'name') ?? 'an argument').replace(/_/g, ' ')}"`;
+      const axis = str(object, 'axis');
+      return axis === undefined ? typed : `the ${axis} of ${typed}`;
+    }
     case 'math': {
       const op = { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' }[
         str(object, 'op') ?? '+'
@@ -206,7 +211,15 @@ function valueWords(
     case 'vehicle':
     case 'hud':
     case 'command':
+    case 'dialog':
+    case 'game_rule':
+    case 'stat':
+    case 'advancement':
       return typeof raw === 'string' ? nameOf(context, raw) : '';
+    case 'argument':
+      return typeof raw === 'string' ? `"${raw.replace(/_/g, ' ')}"` : '';
+    case 'game_rule_value':
+      return typeof raw === 'boolean' ? String(raw) : valueSentence(raw, context);
     case 'weapon':
       return typeof raw === 'string' ? `the weapon "${raw}"` : '';
     case 'particle': {

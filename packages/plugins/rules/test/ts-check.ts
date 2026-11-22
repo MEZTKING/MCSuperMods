@@ -38,6 +38,41 @@ const TYPINGS = readFileSync(
   'utf8',
 );
 
+/**
+ * The Script API 1.7 members the B534 triggers, steps and conditions use (ADR 0111 D3–D6), as
+ * the plan names them, until B533's typings are merged: added only while the real typings lack
+ * `item.crafted`, so once they have it the real ones are checked. B533 must keep these names
+ * and shapes (or this file and the generator change with it); delete this block after the merge.
+ */
+const SCRIPT_API_1_7 = `
+interface ItemCraftedEvent extends GameEvent { readonly player: Player; readonly item: ItemRef; readonly count: number; }
+interface ItemPickedUpEvent extends GameEvent { readonly player: Player; readonly item: ItemRef; readonly count: number; }
+interface PlayerAteEvent extends GameEvent { readonly player: Player; readonly item: ItemRef; }
+interface PlayerSleptEvent extends GameEvent { readonly player: Player; readonly pos: Pos; }
+interface PlayerWokeEvent extends GameEvent { readonly player: Player; readonly pos: Pos; }
+interface PlayerAdvancementEvent extends GameEvent { readonly player: Player; readonly advancement: string; }
+interface MsmEvents {
+  on(name: "item.crafted", handler: (e: ItemCraftedEvent) => void): void;
+  on(name: "item.picked_up", handler: (e: ItemPickedUpEvent) => void): void;
+  on(name: "player.ate", handler: (e: PlayerAteEvent) => void): void;
+  on(name: "player.slept", handler: (e: PlayerSleptEvent) => void): void;
+  on(name: "player.woke", handler: (e: PlayerWokeEvent) => void): void;
+  on(name: "player.advancement", handler: (e: PlayerAdvancementEvent) => void): void;
+}
+interface World {
+  gameRule(id: string): boolean | number | undefined;
+  setGameRule(id: string, value: boolean | number): void;
+}
+interface Player {
+  stat(id: string): number;
+  addStat(id: string, amount: number): void;
+  openDialog(id: string): void;
+}
+`;
+
+/** Whether the real typings already have Script API 1.7 (B533). */
+export const HAS_SCRIPT_API_1_7 = TYPINGS.includes('"item.crafted"');
+
 const CHECK_OPTIONS: ts.CompilerOptions = {
   target: ts.ScriptTarget.ES2018,
   module: ts.ModuleKind.CommonJS,
@@ -77,6 +112,12 @@ export function check(source: string): string[] {
     '/types/msm-runtime.d.ts',
     ts.createSourceFile('/types/msm-runtime.d.ts', TYPINGS, ts.ScriptTarget.ES2018),
   );
+  if (!HAS_SCRIPT_API_1_7) {
+    files.set(
+      '/types/script-api-1.7.d.ts',
+      ts.createSourceFile('/types/script-api-1.7.d.ts', SCRIPT_API_1_7, ts.ScriptTarget.ES2018),
+    );
+  }
   const script = ts.createSourceFile('/scripts/rules.ts', source, ts.ScriptTarget.ES2018, true);
   files.set('/scripts/rules.ts', script);
   const host: ts.CompilerHost = {

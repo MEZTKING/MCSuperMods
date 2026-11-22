@@ -3,7 +3,10 @@
  * against the Script API (`msm-runtime.d.ts`; 1.4 members from B370; 1.5's key and vehicle
  * events, HUD and `Vehicle` members from B421 for the B424 triggers, steps and values; 1.6's
  * `block.place`, `world.explosion` and `command` events and `Entity.vehicle`, `ride` and
- * `dismount` from B455 for the B458 triggers, steps and conditions) so the
+ * `dismount` from B455 for the B458 triggers, steps and conditions; 1.7's `item.crafted`,
+ * `item.picked_up`, `player.ate`, `player.slept`, `player.woke` and `player.advancement` events,
+ * `World.gameRule` and `setGameRule`, `Player.stat`, `addStat` and `openDialog` from B533 for the
+ * B534 triggers, steps, conditions and the command's arguments, ADR 0111) so the
  * content jar exporter transpiles it to ES5 like any script (ADR 0031 D2).
  *
  * The code is meant to be read: a header, small named helpers (only those used), one handler per
@@ -366,6 +369,54 @@ const HELPERS: readonly { name: string; uses?: readonly string[]; lines: readonl
     ],
   },
   {
+    name: 'commandArgs',
+    lines: [
+      "/** The values typed for the command's arguments, by name (ADR 0111 D1). */",
+      'const commandArgs = (e: object): { [name: string]: unknown } => {',
+      '  const args = (e as { args?: unknown }).args;',
+      '  return typeof args === "object" && args !== null ? (args as { [name: string]: unknown }) : {};',
+      '};',
+    ],
+  },
+  {
+    name: 'argNumber',
+    lines: [
+      '/** A number typed for an argument, or one part of a position; 0 when it was left out. */',
+      'const argNumber = (args: { [name: string]: unknown }, name: string, axis: number): number => {',
+      '  const value = args[name];',
+      '  if (typeof value === "number") return value;',
+      '  if (Array.isArray(value) && typeof value[axis] === "number") return value[axis];',
+      '  return 0;',
+      '};',
+    ],
+  },
+  {
+    name: 'argWords',
+    lines: [
+      '/** What was typed for an argument in words: a player by name, a position as "x y z". */',
+      'const argWords = (args: { [name: string]: unknown }, name: string, player: boolean): string => {',
+      '  const value = args[name];',
+      '  if (value === undefined || value === null) return "";',
+      '  if (Array.isArray(value)) return value.join(" ");',
+      '  if (player && typeof value === "string") {',
+      '    const found = msm.players().filter((someone) => someone.uuid === value)[0];',
+      '    if (found !== undefined) return found.name;',
+      '  }',
+      '  return String(value);',
+      '};',
+    ],
+  },
+  {
+    name: 'gameRuleNumber',
+    lines: [
+      "/** A game rule's value as a number: true is 1, false and a rule the world lacks 0. */",
+      'const gameRuleNumber = (world: World, id: string): number => {',
+      '  const value: unknown = world.gameRule(id);',
+      '  return typeof value === "number" ? value : value === true ? 1 : 0;',
+      '};',
+    ],
+  },
+  {
     name: 'launch',
     lines: [
       '/** Pushes an entity as the `launch` action does. */',
@@ -431,7 +482,13 @@ const NEEDS_PLAYER = new Set([
   'show_hud',
   'hide_hud',
   'set_hud',
+  'open_dialog',
+  'add_to_stat',
 ]);
+
+/** The argument types read as one part of a position (ADR 0111 D1). */
+const POSITION_ARGUMENTS = new Set(['position', 'block_position']);
+const AXES: Record<string, number> = { x: 0, y: 1, z: 2 };
 
 /** Where a step list is: which actor variables exist and whether `player` is a loop's player. */
 interface Env {
@@ -452,6 +509,7 @@ export class ScriptBuilder {
   private readonly used = new Set<string>();
   private readonly handlers: string[][] = [];
   private names = 0;
+  private argReads = 0;
   private readonly bookId: string;
   private readonly counters: ReadonlyMap<string, number>;
 
@@ -473,7 +531,9 @@ export class ScriptBuilder {
     trigger: TriggerEntry,
     title: string,
     rules: readonly ScriptRule[],
+    commandArguments?: ReadonlyMap<string, string>,
   ): void {
+    const body = this.handlerRules(trigger, rules, commandArguments);
     const head = [
       'const world = e.world;',
       'const here = e.block !== undefined ? e.block.pos.offset(0.5, 0.5, 0.5) : e.pos;',
@@ -491,13 +551,30 @@ export class ScriptBuilder {
         'const vehicle: Vehicle | undefined = e.entity !== undefined ? e.entity.asVehicle() : undefined;',
       );
     }
+    if (body.args) head.push(`const args = ${this.use('commandArgs')}(e);`);
     this.handlers.push([
       `// ${commentText(title)}`,
       `msm.actions.define(${literal(handler)}, (e) => {`,
       ...indent(head),
-      ...indent(this.rules(trigger, rules)),
+      ...indent(body.lines),
       '});',
     ]);
+  }
+
+  /** The rules of one handler, and whether they read the command's arguments. */
+  private handlerRules(
+    trigger: TriggerEntry,
+    rules: readonly ScriptRule[],
+    commandArguments: ReadonlyMap<string, string> | undefined,
+  ): { lines: string[]; args: boolean } {
+    const before = this.argReads;
+    const lines = this.rules(trigger, rules, commandArguments ?? new Map());
+    return { lines, args: this.argReads > before };
+  }
+
+  /** Counts reads of the command's arguments, so a handler declares `args` only when used. */
+  noteArgRead(): void {
+    this.argReads += 1;
   }
 
   /** The handler of a script-only trigger (`msm.events.on`). */
@@ -507,7 +584,9 @@ export class ScriptBuilder {
     options: JsonObject,
     title: string,
     rules: readonly ScriptRule[],
+    commandArguments?: ReadonlyMap<string, string>,
   ): void {
+    const body = this.handlerRules(trigger, rules, commandArguments);
     const head: string[] = [];
     let extra = '';
     const interval = Math.max(1, Math.round((num(options, 'interval_seconds') ?? 1) * 20));
@@ -587,6 +666,27 @@ export class ScriptBuilder {
           'const player: Player | undefined = e.player;',
         );
         break;
+      case 'item.crafted':
+      case 'item.picked_up':
+      case 'player.ate':
+        // Script API 1.7 (ADR 0111 D3): the player and the item crafted, picked up or eaten.
+        if (subject !== undefined) head.push(`if (e.item.id !== ${literal(subject)}) return;`);
+        head.push(
+          'const world = e.world;',
+          'const here = e.player.pos;',
+          'const player: Player | undefined = e.player;',
+        );
+        break;
+      case 'player.advancement':
+        if (subject !== undefined) {
+          head.push(`if (e.advancement !== ${literal(subject)}) return;`);
+        }
+        head.push(
+          'const world = e.world;',
+          'const here = e.player.pos;',
+          'const player: Player | undefined = e.player;',
+        );
+        break;
       case 'block.place':
         if (subject !== undefined) head.push(`if (e.block !== ${literal(subject)}) return;`);
         head.push(
@@ -612,6 +712,7 @@ export class ScriptBuilder {
           'const here = source.pos;',
           'const player: Player | undefined = source.asPlayer();',
         );
+        if (body.args) head.push(`const args = ${this.use('commandArgs')}(e);`);
         break;
       case 'player.tick':
         extra = `, { interval: ${Math.max(5, interval)} }`;
@@ -664,7 +765,7 @@ export class ScriptBuilder {
       `// ${commentText(title)}`,
       `msm.events.on(${literal(trigger.scriptEvent ?? '')}, (e) => {`,
       ...indent(head),
-      ...indent(this.rules(trigger, rules)),
+      ...indent(body.lines),
       `}${extra});`,
     ]);
   }
@@ -707,7 +808,11 @@ export class ScriptBuilder {
     return `${base}${this.names}`;
   }
 
-  private rules(trigger: TriggerEntry, rules: readonly ScriptRule[]): string[] {
+  private rules(
+    trigger: TriggerEntry,
+    rules: readonly ScriptRule[],
+    commandArguments: ReadonlyMap<string, string>,
+  ): string[] {
     const env: Env = {
       actors: new Set(trigger.actors),
       here: trigger.hasPlace,
@@ -716,7 +821,7 @@ export class ScriptBuilder {
     const out: string[] = [];
     for (const { rule, key, sentence } of rules) {
       this.names = 0;
-      const writer = new RuleWriter(this, trigger, (name) => this.use(name));
+      const writer = new RuleWriter(this, trigger, (name) => this.use(name), commandArguments);
       const body: string[] = [];
       const onlyIf = asObject(rule.only_if);
       if (onlyIf !== undefined && conditionList(onlyIf).conditions.length > 0) {
@@ -748,11 +853,31 @@ class RuleWriter {
   private readonly builder: ScriptBuilder;
   private readonly trigger: TriggerEntry;
   private readonly use: (helper: string) => string;
+  private readonly commandArguments: ReadonlyMap<string, string>;
 
-  constructor(builder: ScriptBuilder, trigger: TriggerEntry, use: (helper: string) => string) {
+  constructor(
+    builder: ScriptBuilder,
+    trigger: TriggerEntry,
+    use: (helper: string) => string,
+    commandArguments: ReadonlyMap<string, string>,
+  ) {
     this.builder = builder;
     this.trigger = trigger;
     this.use = use;
+    this.commandArguments = commandArguments;
+  }
+
+  /** "What the player typed" for an argument, as a number or, in text, as words (ADR 0111 D1). */
+  private commandArgument(object: JsonObject | undefined, inText: boolean): string {
+    const name = str(object, 'name') ?? '';
+    const type = this.commandArguments.get(name) ?? '';
+    this.builder.noteArgRead();
+    const axis = str(object, 'axis');
+    if (inText && (axis === undefined || !POSITION_ARGUMENTS.has(type))) {
+      return `${this.use('argWords')}(args, ${literal(name)}, ${type === 'player'})`;
+    }
+    const number = `${this.use('argNumber')}(args, ${literal(name)}, ${AXES[axis ?? 'x'] ?? 0})`;
+    return inText ? `${this.use('text')}(${number})` : number;
   }
 
   // Values
@@ -789,6 +914,8 @@ class RuleWriter {
       case 'facing':
         // A reading in words: the checker keeps it out of numbers (B458).
         return '0';
+      case 'command_argument':
+        return this.commandArgument(object, false);
       case 'math': {
         const a = this.number(object?.a, env);
         const b = this.number(object?.b, env);
@@ -838,6 +965,7 @@ class RuleWriter {
       if (typeof piece === 'string') return literal(piece);
       const object = asObject(piece);
       if (str(object, 'value') === 'facing') return this.facing(object?.of);
+      if (str(object, 'value') === 'command_argument') return this.commandArgument(object, true);
       return `${this.use('text')}(${this.number(piece, env)})`;
     });
     return pieces.length === 0 ? '""' : pieces.join(' + ');
@@ -970,6 +1098,17 @@ class RuleWriter {
         return `world.dimension === ${literal(str(condition, 'dimension') ?? '')}`;
       case 'counter':
         return `${this.counterRead(condition)} ${compare} ${this.number(condition.number, env)}`;
+      case 'game_rule': {
+        const id = literal(str(condition, 'game_rule') ?? '');
+        const value = condition.value;
+        if (typeof value === 'boolean') return `world.gameRule(${id}) === ${value}`;
+        return `${this.use('gameRuleNumber')}(world, ${id}) ${compare} ${this.number(value, env)}`;
+      }
+      case 'stat_at_least':
+        return this.hasPlayer(
+          `stat(${literal(str(condition, 'stat') ?? '')}) >= ${this.number(condition.number, env)}`,
+          env,
+        );
       default:
         return 'false';
     }
@@ -1218,6 +1357,24 @@ class RuleWriter {
         }
         return [`world.setWeather(${literal(str(step, 'weather') ?? 'clear')}${seconds});`];
       }
+      case 'set_game_rule': {
+        const value = step.value;
+        const code =
+          typeof value === 'boolean'
+            ? String(value)
+            : typeof value === 'number'
+              ? numberLiteral(Math.round(value))
+              : `Math.round(${this.number(value, env)})`;
+        return [`world.setGameRule(${literal(str(step, 'game_rule') ?? '')}, ${code});`];
+      }
+      case 'open_dialog':
+        return [
+          `${who('player')}.forEach((target) => target.openDialog(${literal(str(step, 'dialog') ?? '')}));`,
+        ];
+      case 'add_to_stat':
+        return [
+          `${who('player')}.forEach((target) => target.addStat(${literal(str(step, 'stat') ?? '')}, ${this.whole(step.amount, env, 0)}));`,
+        ];
       case 'run_function':
         return this.asPlayerOrWorld('runFunction', literal(str(step, 'function') ?? ''), env);
       case 'run_command':

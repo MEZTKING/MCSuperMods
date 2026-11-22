@@ -120,6 +120,40 @@ export const PROJECT: readonly Element[] = Object.freeze([
     permission: 2,
     function: 'demo:reward',
   }),
+  // A command with arguments Rules reads (ADR 0111 D1, B534) and one it cannot read.
+  element('msm:command', 'demo:gift', {
+    name: 'gift',
+    permission: 2,
+    arguments: [
+      { name: 'friend', type: 'player' },
+      { name: 'amount', type: 'integer', min: 1, max: 64 },
+      { name: 'spot', type: 'block_position' },
+      { name: 'data', type: 'nbt', optional: true },
+      { name: 'note', type: 'text', optional: true },
+    ],
+  }),
+  element('msm:command', 'demo:roll', {
+    name: 'roll',
+    permission: 0,
+    function: 'demo:reward',
+    arguments: [{ name: 'sides', type: 'integer', min: 2 }],
+  }),
+  // Game rules and a statistic of the project (ADR 0111 D5, D6).
+  element('msm:game_rule', 'demo:mana_regen', {
+    category: 'player',
+    default: true,
+    format: 1,
+    kind: 'boolean',
+  }),
+  element('msm:game_rule', 'demo:max_mana', {
+    category: 'player',
+    default: 20,
+    format: 1,
+    kind: 'integer',
+    max: 100,
+    min: 0,
+  }),
+  element('msm:stat', 'demo:spells_cast', { format: 1, formatter: 'default' }),
 ]);
 
 /** Ids the registry index treats as project ids. */
@@ -209,6 +243,8 @@ const SCHEMA_OF_KIND: Record<string, string> = {
   'msm:vehicle': MSM_SCHEMA_REFS.vehicle,
   'msm:hud': MSM_SCHEMA_REFS.hud,
   'msm:command': MSM_SCHEMA_REFS.command,
+  'msm:game_rule': MSM_SCHEMA_REFS.gameRule,
+  'msm:stat': MSM_SCHEMA_REFS.stat,
   'msm:rules': MSM_SCHEMA_REFS.rules,
 };
 

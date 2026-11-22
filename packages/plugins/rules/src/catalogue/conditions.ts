@@ -199,6 +199,26 @@ export const CONDITIONS: readonly ConditionEntry[] = Object.freeze([
     notSentence: 'this is not in {dimension}',
     slots: [{ name: 'dimension', type: 'dimension' }],
   }),
+  // Game rules and statistics (ADR 0111 D5, D6; Script API 1.7 `World.gameRule`, `Player.stat`).
+  condition({
+    id: 'game_rule',
+    label: 'The game rule is',
+    sentence: 'the game rule {game_rule} is {compare} {value}',
+    notSentence: 'the game rule {game_rule} is not {compare} {value}',
+    slots: [
+      { name: 'game_rule', type: 'game_rule' },
+      { ...COMPARE, optional: true },
+      { name: 'value', type: 'game_rule_value' },
+    ],
+  }),
+  condition({
+    id: 'stat_at_least',
+    label: 'The statistic is at least',
+    sentence: "the player's {stat} is at least {number}",
+    notSentence: "the player's {stat} is less than {number}",
+    slots: [{ name: 'stat', type: 'stat' }, NUMBER],
+    needsActor: 'player',
+  }),
   condition({
     id: 'counter',
     label: 'A counter',

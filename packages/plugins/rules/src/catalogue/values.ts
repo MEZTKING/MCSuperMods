@@ -15,6 +15,7 @@ const value = (
     slots: Object.freeze([...(entry.slots ?? [])]),
     veryEasy: true,
     plain: entry.plain ?? true,
+    ...(entry.triggers === undefined ? {} : { triggers: Object.freeze([...entry.triggers]) }),
   });
 
 export const VALUES: readonly ValueEntry[] = Object.freeze([
@@ -115,6 +116,29 @@ export const VALUES: readonly ValueEntry[] = Object.freeze([
     slots: [FACING_OF],
     plain: false,
     words: true,
+  }),
+  // What was typed for one of the command's arguments (ADR 0111 D1): a number for `integer`
+  // and `number`, one part of a `position` or `block_position` by `axis`, and words for the
+  // others Rules can read (`word`, `text`, `player` by name, `entity` by UUID, `item`, `block`,
+  // `dimension`, `effect`; limit N20). The compiler checks the type against the command.
+  value({
+    id: 'command_argument',
+    label: 'What the player typed',
+    sentence: 'what the player typed for {name}',
+    slots: [
+      { name: 'name', type: 'argument' },
+      {
+        name: 'axis',
+        type: 'choice',
+        optional: true,
+        choices: [
+          { value: 'x', label: 'x' },
+          { value: 'y', label: 'y' },
+          { value: 'z', label: 'z' },
+        ],
+      },
+    ],
+    triggers: ['command_used'],
   }),
   value({
     id: 'math',

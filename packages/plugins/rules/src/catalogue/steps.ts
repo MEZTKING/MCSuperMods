@@ -244,6 +244,27 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
     slots: [{ name: 'effect', type: 'effect' }, WHO],
     defaultWho: 'player',
   }),
+  // Dialogs and statistics (ADR 0111 D4, D6; Script API 1.7 `Player.openDialog`, `addStat`).
+  step({
+    id: 'open_dialog',
+    label: 'Open a dialog',
+    sentence: 'open the dialog {dialog} for {who}',
+    group: 'players',
+    slots: [{ name: 'dialog', type: 'dialog' }, WHO],
+    defaultWho: 'player',
+  }),
+  step({
+    id: 'add_to_stat',
+    label: 'Add to a statistic',
+    sentence: 'add {amount} to {stat} for {who}',
+    group: 'players',
+    slots: [
+      { name: 'amount', type: 'number', min: 0, whole: true },
+      { name: 'stat', type: 'stat' },
+      WHO,
+    ],
+    defaultWho: 'player',
+  }),
   // World
   step({
     id: 'place_block',
@@ -330,6 +351,17 @@ export const STEPS: readonly StepEntry[] = Object.freeze([
         ],
       },
       { name: 'seconds', type: 'seconds', optional: true, min: 0, max: 1000000, prefix: 'for' },
+    ],
+  }),
+  // A game rule of the world (ADR 0111 D5; Script API 1.7 `World.setGameRule`).
+  step({
+    id: 'set_game_rule',
+    label: 'Set a game rule',
+    sentence: 'set the game rule {game_rule} to {value}',
+    group: 'world',
+    slots: [
+      { name: 'game_rule', type: 'game_rule' },
+      { name: 'value', type: 'game_rule_value' },
     ],
   }),
   step({

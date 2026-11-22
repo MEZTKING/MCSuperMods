@@ -142,6 +142,18 @@ enum(string) Trigger {
 	PlayerMounted = "player_mounted",
 	/// A player gets off what they rode.
 	PlayerDismounted = "player_dismounted",
+	/// A player crafts an item, or an item of one kind (ADR 0111 D3; Script API 1.7).
+	PlayerCrafted = "player_crafted",
+	/// A player picks up an item from the ground, or an item of one kind.
+	PlayerPickedUp = "player_picked_up",
+	/// A player finishes eating or drinking an item, or an item of one kind.
+	PlayerAte = "player_ate",
+	/// A player lies down in a bed and falls asleep.
+	PlayerSlept = "player_slept",
+	/// A player wakes up and leaves a bed.
+	PlayerWoke = "player_woke",
+	/// A player completes an advancement, or one advancement.
+	PlayerAdvancement = "player_advancement",
 	/// A player (or the source of an `execute as`) types a project command (ADR 0096 D5).
 	CommandUsed = "command_used",
 	/// A player presses a project key bind (ADR 0088 D6).
@@ -327,6 +339,18 @@ dispatch msm:rule_trigger[command_used] to struct CommandUsedTrigger {
 	subject: string @ 1..,
 }
 
+/// A crafted, picked up or eaten item: any item, or one of one kind (ADR 0111 D3).
+dispatch msm:rule_trigger[player_crafted, player_picked_up, player_ate] to struct PlayerItemTrigger {
+	/// The item, vanilla or project; absent means every item.
+	subject?: #[id="item"] string,
+}
+
+/// An advancement completed: any one, or one by id.
+dispatch msm:rule_trigger[player_advancement] to struct PlayerAdvancementTrigger {
+	/// The advancement id, vanilla or of the project's data pack; absent means every one.
+	subject?: string @ 1..,
+}
+
 /// Any block, or any block of one kind.
 dispatch msm:rule_trigger[any_block_used, any_block_broken, any_block_placed] to struct AnyBlockTrigger {
 	/// The block, vanilla or project; absent means every block.
@@ -436,6 +460,11 @@ enum(string) ValueKind {
 	VehicleDamage = "vehicle_damage",
 	/// The rounds loaded in one of the vehicle's weapons (as `VehicleFuel` says which vehicle).
 	VehicleAmmo = "vehicle_ammo",
+	/// What the player typed for one of the command's arguments (only on `command_used`; ADR
+	/// 0111 D1): a number for `integer` and `number`, one part of a position by `axis`, words
+	/// for `word`, `text`, `player` (its name), `entity` (its UUID), `item`, `block`,
+	/// `dimension` and `effect`. The plugin checks the name and type against the command.
+	CommandArgument = "command_argument",
 	/// The way the block here, the player, the mob or the other one faces, in words (north,
 	/// east, south, west, up or down; ADR 0096 D5). Text slots only: the plugin refuses it in a
 	/// number.
@@ -458,6 +487,7 @@ enum(string) PlainValueKind {
 	VehicleFuel = "vehicle_fuel",
 	VehicleDamage = "vehicle_damage",
 	VehicleAmmo = "vehicle_ammo",
+	CommandArgument = "command_argument",
 }
 
 /// A value object, selected by `value`.
@@ -537,6 +567,14 @@ dispatch msm:rule_value[facing] to struct FacingValue {
 dispatch msm:rule_value[vehicle_ammo] to struct VehicleAmmoValue {
 	/// The weapon's `id` in the vehicle's `weapons`; defaults to the first weapon.
 	weapon?: string @ 1..,
+}
+
+/// What was typed for one of the command's arguments.
+dispatch msm:rule_value[command_argument] to struct CommandArgumentValue {
+	/// The argument's name in the command.
+	name: string @ 1..32,
+	/// For a `position` or `block_position`: which part; needed where a number is.
+	axis?: Axis,
 }
 
 /// An arithmetic operator.
@@ -680,6 +718,10 @@ enum(string) ConditionKind {
 	DimensionIs = "dimension_is",
 	/// A counter compared with a number or another counter.
 	Counter = "counter",
+	/// A game rule is true or false, or compared with a number (ADR 0111 D5).
+	GameRule = "game_rule",
+	/// One of the player's statistics is at least a number (ADR 0111 D6).
+	StatAtLeast = "stat_at_least",
 }
 
 /// One condition, selected by `condition`.
@@ -796,6 +838,27 @@ dispatch msm:rule_condition[counter] to struct CounterCondition {
 	number: NumberSlot,
 }
 
+/// What a game rule holds: true or false, or a whole number or a reading.
+type GameRuleValue = (boolean | NumberSlot)
+
+/// A game rule of the world.
+dispatch msm:rule_condition[game_rule] to struct GameRuleCondition {
+	/// The game rule id, vanilla (`minecraft:keep_inventory`) or a project `msm:game_rule`.
+	game_rule: string @ 1..,
+	/// How it compares; defaults to `equal_to`, the only one for true or false.
+	compare?: Compare,
+	/// True or false for a boolean rule, a number for a whole-number one.
+	value: GameRuleValue,
+}
+
+/// One of the player's statistics.
+dispatch msm:rule_condition[stat_at_least] to struct StatAtLeastCondition {
+	/// The statistic id, a vanilla custom statistic (`minecraft:jump`) or a project `msm:stat`.
+	stat: string @ 1..,
+	/// The least the statistic must be.
+	number: NumberSlot,
+}
+
 // ---------------------------------------------------------------------------------------------
 // Steps (ADR 0082 D5)
 // ---------------------------------------------------------------------------------------------
@@ -837,6 +900,10 @@ enum(string) PlainStepKind {
 	GiveEffect = "give_effect",
 	/// Removes an effect.
 	RemoveEffect = "remove_effect",
+	/// Opens a dialog for a player (ADR 0111 D4).
+	OpenDialog = "open_dialog",
+	/// Adds to one of a player's statistics (ADR 0111 D6).
+	AddToStat = "add_to_stat",
 	/// Places a block.
 	PlaceBlock = "place_block",
 	/// Removes a block.
@@ -849,6 +916,8 @@ enum(string) PlainStepKind {
 	Explode = "explode",
 	/// Sets the weather.
 	SetWeather = "set_weather",
+	/// Sets a game rule (ADR 0111 D5).
+	SetGameRule = "set_game_rule",
 	/// Runs a data pack function.
 	RunFunction = "run_function",
 	/// Runs a command (hidden in Very easy).
@@ -933,6 +1002,10 @@ enum(string) StepKind {
 	GiveEffect = "give_effect",
 	/// Removes an effect.
 	RemoveEffect = "remove_effect",
+	/// Opens a dialog for a player (ADR 0111 D4).
+	OpenDialog = "open_dialog",
+	/// Adds to one of a player's statistics (ADR 0111 D6).
+	AddToStat = "add_to_stat",
 	/// Places a block.
 	PlaceBlock = "place_block",
 	/// Removes a block.
@@ -945,6 +1018,8 @@ enum(string) StepKind {
 	Explode = "explode",
 	/// Sets the weather.
 	SetWeather = "set_weather",
+	/// Sets a game rule (ADR 0111 D5).
+	SetGameRule = "set_game_rule",
 	/// Runs a data pack function.
 	RunFunction = "run_function",
 	/// Runs a command (hidden in Very easy).
@@ -1210,6 +1285,24 @@ dispatch msm:rule_step[remove_effect] to struct RemoveEffectStep {
 	who?: Who,
 }
 
+/// Opens a dialog.
+dispatch msm:rule_step[open_dialog] to struct OpenDialogStep {
+	/// The dialog, vanilla or of the project's data pack.
+	dialog: #[id="dialog"] string,
+	/// Who sees it; defaults to the player.
+	who?: Who,
+}
+
+/// Adds to one of a player's statistics.
+dispatch msm:rule_step[add_to_stat] to struct AddToStatStep {
+	/// How much to add, a whole number from 0.
+	amount: NumberSlot,
+	/// The statistic id, a vanilla custom statistic or a project `msm:stat`.
+	stat: string @ 1..,
+	/// Whose statistic; defaults to the player.
+	who?: Who,
+}
+
 /// Places a block.
 dispatch msm:rule_step[place_block] to struct PlaceBlockStep {
 	/// The block.
@@ -1271,6 +1364,14 @@ dispatch msm:rule_step[set_weather] to struct SetWeatherStep {
 	weather: Weather,
 	/// How long; absent leaves it to the game.
 	seconds?: NumberSlot,
+}
+
+/// Sets a game rule of the world.
+dispatch msm:rule_step[set_game_rule] to struct SetGameRuleStep {
+	/// The game rule id, vanilla (`minecraft:keep_inventory`) or a project `msm:game_rule`.
+	game_rule: string @ 1..,
+	/// True or false for a boolean rule, a whole number for the others (rounded).
+	value: GameRuleValue,
 }
 
 /// Runs a data pack function.

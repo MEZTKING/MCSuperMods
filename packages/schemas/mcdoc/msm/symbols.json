@@ -20205,6 +20205,42 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::AddToStatStep": {
+      "fields": [
+        {
+          "desc": "How much to add, a whole number from 0.",
+          "key": "amount",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        },
+        {
+          "desc": "The statistic id, a vanilla custom statistic or a project `msm:stat`.",
+          "key": "stat",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "Whose statistic; defaults to the player.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::AnyBlockTrigger": {
       "fields": [
         {
@@ -20563,6 +20599,34 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::CommandArgumentValue": {
+      "fields": [
+        {
+          "desc": "The argument's name in the command.",
+          "key": "name",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "max": 32,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "For a `position` or `block_position`: which part; needed where a number is.",
+          "key": "axis",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Axis"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::CommandUsedTrigger": {
       "fields": [
         {
@@ -20740,6 +20804,16 @@
           "desc": "A counter compared with a number or another counter.",
           "identifier": "Counter",
           "value": "counter"
+        },
+        {
+          "desc": "A game rule is true or false, or compared with a number (ADR 0111 D5).",
+          "identifier": "GameRule",
+          "value": "game_rule"
+        },
+        {
+          "desc": "One of the player's statistics is at least a number (ADR 0111 D6).",
+          "identifier": "StatAtLeast",
+          "value": "stat_at_least"
         }
       ]
     },
@@ -21348,6 +21422,54 @@
         {
           "identifier": "Spectator",
           "value": "spectator"
+        }
+      ]
+    },
+    "::msm::rules::GameRuleCondition": {
+      "fields": [
+        {
+          "desc": "The game rule id, vanilla (`minecraft:keep_inventory`) or a project `msm:game_rule`.",
+          "key": "game_rule",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "How it compares; defaults to `equal_to`, the only one for true or false.",
+          "key": "compare",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Compare"
+          }
+        },
+        {
+          "desc": "True or false for a boolean rule, a number for a whole-number one.",
+          "key": "value",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::GameRuleValue"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::GameRuleValue": {
+      "kind": "union",
+      "members": [
+        {
+          "kind": "boolean"
+        },
+        {
+          "kind": "reference",
+          "path": "::msm::rules::NumberSlot"
         }
       ]
     },
@@ -22567,6 +22689,41 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::OpenDialogStep": {
+      "fields": [
+        {
+          "desc": "The dialog, vanilla or of the project's data pack.",
+          "key": "dialog",
+          "kind": "pair",
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "dialog"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
+          }
+        },
+        {
+          "desc": "Who sees it; defaults to the player.",
+          "key": "who",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::Who"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::Place": {
       "kind": "union",
       "members": [
@@ -22752,6 +22909,16 @@
           "value": "remove_effect"
         },
         {
+          "desc": "Opens a dialog for a player (ADR 0111 D4).",
+          "identifier": "OpenDialog",
+          "value": "open_dialog"
+        },
+        {
+          "desc": "Adds to one of a player's statistics (ADR 0111 D6).",
+          "identifier": "AddToStat",
+          "value": "add_to_stat"
+        },
+        {
           "desc": "Places a block.",
           "identifier": "PlaceBlock",
           "value": "place_block"
@@ -22780,6 +22947,11 @@
           "desc": "Sets the weather.",
           "identifier": "SetWeather",
           "value": "set_weather"
+        },
+        {
+          "desc": "Sets a game rule (ADR 0111 D5).",
+          "identifier": "SetGameRule",
+          "value": "set_game_rule"
         },
         {
           "desc": "Runs a data pack function.",
@@ -22947,6 +23119,10 @@
         {
           "identifier": "VehicleAmmo",
           "value": "vehicle_ammo"
+        },
+        {
+          "identifier": "CommandArgument",
+          "value": "command_argument"
         }
       ]
     },
@@ -23031,6 +23207,24 @@
             "valueRange": {
               "kind": 0,
               "min": 0
+            }
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerAdvancementTrigger": {
+      "fields": [
+        {
+          "desc": "The advancement id, vanilla or of the project's data pack; absent means every one.",
+          "key": "subject",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
             }
           }
         }
@@ -23139,6 +23333,32 @@
           "type": {
             "kind": "reference",
             "path": "::msm::rules::Hand"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
+    "::msm::rules::PlayerItemTrigger": {
+      "fields": [
+        {
+          "desc": "The item, vanilla or project; absent means every item.",
+          "key": "subject",
+          "kind": "pair",
+          "optional": true,
+          "type": {
+            "attributes": [
+              {
+                "name": "id",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "item"
+                  }
+                }
+              }
+            ],
+            "kind": "string"
           }
         }
       ],
@@ -23496,6 +23716,32 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::SetGameRuleStep": {
+      "fields": [
+        {
+          "desc": "The game rule id, vanilla (`minecraft:keep_inventory`) or a project `msm:game_rule`.",
+          "key": "game_rule",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "True or false for a boolean rule, a whole number for the others (rounded).",
+          "key": "value",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::GameRuleValue"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::SetHudStep": {
       "fields": [
         {
@@ -23824,6 +24070,32 @@
       ],
       "kind": "struct"
     },
+    "::msm::rules::StatAtLeastCondition": {
+      "fields": [
+        {
+          "desc": "The statistic id, a vanilla custom statistic (`minecraft:jump`) or a project `msm:stat`.",
+          "key": "stat",
+          "kind": "pair",
+          "type": {
+            "kind": "string",
+            "lengthRange": {
+              "kind": 0,
+              "min": 1
+            }
+          }
+        },
+        {
+          "desc": "The least the statistic must be.",
+          "key": "number",
+          "kind": "pair",
+          "type": {
+            "kind": "reference",
+            "path": "::msm::rules::NumberSlot"
+          }
+        }
+      ],
+      "kind": "struct"
+    },
     "::msm::rules::Step": {
       "fields": [
         {
@@ -23954,6 +24226,16 @@
           "value": "remove_effect"
         },
         {
+          "desc": "Opens a dialog for a player (ADR 0111 D4).",
+          "identifier": "OpenDialog",
+          "value": "open_dialog"
+        },
+        {
+          "desc": "Adds to one of a player's statistics (ADR 0111 D6).",
+          "identifier": "AddToStat",
+          "value": "add_to_stat"
+        },
+        {
           "desc": "Places a block.",
           "identifier": "PlaceBlock",
           "value": "place_block"
@@ -23982,6 +24264,11 @@
           "desc": "Sets the weather.",
           "identifier": "SetWeather",
           "value": "set_weather"
+        },
+        {
+          "desc": "Sets a game rule (ADR 0111 D5).",
+          "identifier": "SetGameRule",
+          "value": "set_game_rule"
         },
         {
           "desc": "Runs a data pack function.",
@@ -24364,6 +24651,36 @@
           "value": "player_dismounted"
         },
         {
+          "desc": "A player crafts an item, or an item of one kind (ADR 0111 D3; Script API 1.7).",
+          "identifier": "PlayerCrafted",
+          "value": "player_crafted"
+        },
+        {
+          "desc": "A player picks up an item from the ground, or an item of one kind.",
+          "identifier": "PlayerPickedUp",
+          "value": "player_picked_up"
+        },
+        {
+          "desc": "A player finishes eating or drinking an item, or an item of one kind.",
+          "identifier": "PlayerAte",
+          "value": "player_ate"
+        },
+        {
+          "desc": "A player lies down in a bed and falls asleep.",
+          "identifier": "PlayerSlept",
+          "value": "player_slept"
+        },
+        {
+          "desc": "A player wakes up and leaves a bed.",
+          "identifier": "PlayerWoke",
+          "value": "player_woke"
+        },
+        {
+          "desc": "A player completes an advancement, or one advancement.",
+          "identifier": "PlayerAdvancement",
+          "value": "player_advancement"
+        },
+        {
           "desc": "A player (or the source of an `execute as`) types a project command (ADR 0096 D5).",
           "identifier": "CommandUsed",
           "value": "command_used"
@@ -24545,6 +24862,11 @@
           "desc": "The rounds loaded in one of the vehicle's weapons (as `VehicleFuel` says which vehicle).",
           "identifier": "VehicleAmmo",
           "value": "vehicle_ammo"
+        },
+        {
+          "desc": "What the player typed for one of the command's arguments (only on `command_used`; ADR\n0111 D1): a number for `integer` and `number`, one part of a position by `axis`, words\nfor `word`, `text`, `player` (its name), `entity` (its UUID), `item`, `block`,\n`dimension` and `effect`. The plugin checks the name and type against the command.",
+          "identifier": "CommandArgument",
+          "value": "command_argument"
         },
         {
           "desc": "The way the block here, the player, the mob or the other one faces, in words (north,\neast, south, west, up or down; ADR 0096 D5). Text slots only: the plugin refuses it in a\nnumber.",
@@ -26955,6 +27277,10 @@
         "kind": "reference",
         "path": "::msm::rules::DimensionIsCondition"
       },
+      "game_rule": {
+        "kind": "reference",
+        "path": "::msm::rules::GameRuleCondition"
+      },
       "is_facing": {
         "kind": "reference",
         "path": "::msm::rules::IsFacingCondition"
@@ -26986,6 +27312,10 @@
       "player_level": {
         "kind": "reference",
         "path": "::msm::rules::PlayerCompareCondition"
+      },
+      "stat_at_least": {
+        "kind": "reference",
+        "path": "::msm::rules::StatAtLeastCondition"
       }
     },
     "msm:rule_logic_step": {
@@ -27020,6 +27350,10 @@
       "add_to_counter": {
         "kind": "reference",
         "path": "::msm::rules::CounterStep"
+      },
+      "add_to_stat": {
+        "kind": "reference",
+        "path": "::msm::rules::AddToStatStep"
       },
       "dismount": {
         "kind": "reference",
@@ -27069,6 +27403,10 @@
         "kind": "reference",
         "path": "::msm::rules::LightPortalStep"
       },
+      "open_dialog": {
+        "kind": "reference",
+        "path": "::msm::rules::OpenDialogStep"
+      },
       "place_block": {
         "kind": "reference",
         "path": "::msm::rules::PlaceBlockStep"
@@ -27112,6 +27450,10 @@
       "set_game_mode": {
         "kind": "reference",
         "path": "::msm::rules::SetGameModeStep"
+      },
+      "set_game_rule": {
+        "kind": "reference",
+        "path": "::msm::rules::SetGameRuleStep"
       },
       "set_hud": {
         "kind": "reference",
@@ -27315,13 +27657,29 @@
         "kind": "reference",
         "path": "::msm::rules::MobTrigger"
       },
+      "player_advancement": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerAdvancementTrigger"
+      },
+      "player_ate": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerItemTrigger"
+      },
       "player_chatted": {
         "kind": "reference",
         "path": "::msm::rules::PlayerChattedTrigger"
       },
+      "player_crafted": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerItemTrigger"
+      },
       "player_every": {
         "kind": "reference",
         "path": "::msm::rules::EveryTrigger"
+      },
+      "player_picked_up": {
+        "kind": "reference",
+        "path": "::msm::rules::PlayerItemTrigger"
       },
       "portal_travelled": {
         "kind": "reference",
@@ -27361,6 +27719,10 @@
       }
     },
     "msm:rule_value": {
+      "command_argument": {
+        "kind": "reference",
+        "path": "::msm::rules::CommandArgumentValue"
+      },
       "counter": {
         "kind": "reference",
         "path": "::msm::rules::CounterValue"
@@ -27387,5 +27749,5 @@
       }
     }
   },
-  "ref": "msm-mcdoc:sha256:bd3c5d7109316a648b045e26f1af6a039689619302e5e02744548d3f52ffe25a"
+  "ref": "msm-mcdoc:sha256:9e95c58003e2f0d4370e0377f5b43cdf3d4c3003ed24e98f9521d4c7e47685b4"
 }

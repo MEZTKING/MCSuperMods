@@ -111,7 +111,21 @@ const TRIGGERS = [
   'command_used',
   'explosion',
   'any_block_placed',
+  'player_crafted',
+  'player_picked_up',
+  'player_ate',
+  'player_slept',
+  'player_woke',
+  'player_advancement',
 ];
+
+/** Script triggers whose subject may be left out (ADR 0111 D3), as the `any_` triggers. */
+const OPTIONAL_SUBJECT = new Set([
+  'player_crafted',
+  'player_picked_up',
+  'player_ate',
+  'player_advancement',
+]);
 
 /** Triggers with no subject at all (script-only player and world triggers). */
 const NO_SUBJECT = new Set([
@@ -126,6 +140,8 @@ const NO_SUBJECT = new Set([
   'player_mounted',
   'player_dismounted',
   'explosion',
+  'player_slept',
+  'player_woke',
 ]);
 
 /** One valid case of every step of ADR 0082 D5 (logic steps included). */
@@ -197,6 +213,13 @@ const STEPS: Record<string, Json> = {
     visible: true,
   },
   wait: { seconds: 0.5, step: 'wait' },
+  open_dialog: { dialog: 'minecraft:server_links', step: 'open_dialog', who: 'every_player' },
+  add_to_stat: {
+    amount: { value: 'player_level' },
+    stat: 'mymod:spells_cast',
+    step: 'add_to_stat',
+  },
+  set_game_rule: { game_rule: 'minecraft:keep_inventory', step: 'set_game_rule', value: true },
   stop_normal_action: { step: 'stop_normal_action' },
   set_counter: { amount: 0, counter: 'clicks', scope: 'player', step: 'set_counter' },
   add_to_counter: {
@@ -246,6 +269,13 @@ const CONDITIONS: Record<string, Json> = {
   is_facing: { condition: 'is_facing', direction: 'up', of: 'here' },
   caused_by: { cause: 'block', condition: 'caused_by' },
   dimension_is: { condition: 'dimension_is', dimension: 'minecraft:the_nether' },
+  game_rule: {
+    compare: 'at_least',
+    condition: 'game_rule',
+    game_rule: 'mymod:max_mana',
+    value: { value: 'player_level' },
+  },
+  stat_at_least: { condition: 'stat_at_least', number: 10, stat: 'minecraft:jump' },
   counter: {
     compare: 'more_than',
     condition: 'counter',
@@ -269,6 +299,7 @@ const VALUES: Record<string, Json> = {
   vehicle_damage: { value: 'vehicle_damage' },
   vehicle_ammo: { value: 'vehicle_ammo', weapon: 'cannon' },
   facing: { of: 'player', value: 'facing' },
+  command_argument: { axis: 'x', name: 'spot', value: 'command_argument' },
   math: { a: { max: 3, min: 1, value: 'random' }, b: 2, op: '+', value: 'math' },
 };
 
@@ -361,7 +392,7 @@ describe('rule book triggers (ADR 0082 D4)', () => {
     if (NO_SUBJECT.has(trigger)) {
       expect(errors(book(false))).toEqual([]);
       expect(errors(book(true))).toContain('/rules/0/when/subject schema.unknown-field');
-    } else if (trigger.startsWith('any_')) {
+    } else if (trigger.startsWith('any_') || OPTIONAL_SUBJECT.has(trigger)) {
       expect(errors(book(false))).toEqual([]);
       expect(errors(book(true))).toEqual([]);
     } else {
@@ -408,6 +439,29 @@ describe('rule book triggers (ADR 0082 D4)', () => {
     });
     expect(errors(stepBook({ step: 'ride' }))).not.toEqual([]);
     expect(errors(stepBook({ mount: 'every_player', step: 'ride' }))).not.toEqual([]);
+  });
+
+  it('checks the ADR 0111 steps, conditions and the command argument (B534)', () => {
+    const stepBook = (step: Json): Json => ({
+      format: 1,
+      rules: [{ do: [step], key: 'r', when: { subject: 'mymod:gift', trigger: 'command_used' } }],
+    });
+    const rule = (game_rule: Json, value: Json): Json => ({
+      game_rule,
+      step: 'set_game_rule',
+      value,
+    });
+    expect(errors(stepBook(rule('mymod:max_mana', 4)))).toEqual([]);
+    expect(errors(stepBook(rule('mymod:max_mana', 'four')))).not.toEqual([]);
+    expect(errors(stepBook({ step: 'set_game_rule', value: true }))).not.toEqual([]);
+    expect(errors(stepBook({ step: 'open_dialog' }))).not.toEqual([]);
+    expect(errors(stepBook({ amount: 1, step: 'add_to_stat' }))).not.toEqual([]);
+    const typed = (value: Json): Json => ({ amount: value, step: 'heal' });
+    expect(errors(stepBook(typed({ name: 'amount', value: 'command_argument' })))).toEqual([]);
+    expect(errors(stepBook(typed({ value: 'command_argument' })))).not.toEqual([]);
+    expect(
+      errors(stepBook(typed({ axis: 'w', name: 'spot', value: 'command_argument' }))),
+    ).not.toEqual([]);
   });
 
   it('rejects an unknown trigger', () => {

@@ -717,6 +717,137 @@ describe('compileRuleBook', () => {
     });
   });
 
+  // B534 (ADR 0111 D1, D3–D6): the command's arguments, the new events, game rules and stats.
+  describe('vanilla parity 3, batch 2', () => {
+    const GIFT = { subject: 'demo:gift', trigger: 'command_used' };
+    const typed = (name: string, extra: JsonObject = {}): JsonObject => ({
+      name,
+      value: 'command_argument',
+      ...extra,
+    });
+    const problems = (rules: Json[]) =>
+      compile(rules).problems.map((problem) => [problem.code, problem.path]);
+
+    it("reads only the command's own arguments, of the types Rules reads", () => {
+      expect(
+        problems([
+          rule('a', GIFT, [{ step: 'show_message', text: [typed('nobody')] }]),
+          rule('b', GIFT, [{ step: 'show_message', text: [typed('data')] }]),
+          rule('c', { subject: 'demo:plain_block', trigger: 'block_used' }, [
+            { step: 'show_message', text: [typed('friend')] },
+          ]),
+        ]),
+      ).toEqual([
+        [RULES_COMPILE_CODES.unknownValue, '/rules/0/do/0/text/0/name'],
+        [RULES_COMPILE_CODES.unknownValue, '/rules/1/do/0/text/0/name'],
+        [RULES_COMPILE_CODES.notForTrigger, '/rules/2/do/0/text/0'],
+      ]);
+    });
+
+    it('keeps words and whole positions out of numbers', () => {
+      expect(
+        problems([
+          rule('a', GIFT, [{ amount: typed('friend'), step: 'heal' }]),
+          rule('b', GIFT, [{ amount: typed('spot'), step: 'heal' }]),
+          rule('c', GIFT, [{ amount: typed('spot', { axis: 'x' }), step: 'heal' }]),
+          rule('d', GIFT, [{ amount: typed('amount'), step: 'heal' }]),
+        ]),
+      ).toEqual([
+        [RULES_COMPILE_CODES.notANumber, '/rules/0/do/0/amount'],
+        [RULES_COMPILE_CODES.notANumber, '/rules/1/do/0/amount'],
+      ]);
+    });
+
+    it('reads the arguments from the event context of either route', () => {
+      const script = (
+        compile([
+          rule('a', GIFT, [{ amount: typed('amount'), step: 'heal' }]),
+          rule('b', { subject: 'demo:roll', trigger: 'command_used' }, [
+            { amount: typed('sides'), step: 'heal' },
+          ]),
+        ]).script ?? []
+      ).join('\n');
+      expect(script).toContain('msm.actions.define("demo:rules/rules/gift/command_used"');
+      expect(script).toContain('msm.events.on("command"');
+      expect(script.match(/const args = commandArgs\(e\);/g)).toHaveLength(2);
+      expect(script).toContain('argNumber(args, "sides", 0)');
+    });
+
+    it('declares the arguments only where a rule reads them', () => {
+      const script = (compile([rule('a', GIFT, [{ amount: 1, step: 'heal' }])]).script ?? []).join(
+        '\n',
+      );
+      expect(script).not.toContain('commandArgs');
+    });
+
+    it('matches true or false and numbers to the kind of a project game rule', () => {
+      const set = (game_rule: string, value: Json) =>
+        rule('r', { trigger: 'player_joined' }, [{ game_rule, step: 'set_game_rule', value }]);
+      expect(problems([set('demo:mana_regen', 3)])).toEqual([
+        [RULES_COMPILE_CODES.notANumber, '/rules/0/do/0/value'],
+      ]);
+      expect(problems([set('demo:max_mana', false)])).toEqual([
+        [RULES_COMPILE_CODES.notANumber, '/rules/0/do/0/value'],
+      ]);
+      expect(problems([set('demo:mana_regen', false), set('minecraft:mob_griefing', 2)])).toEqual(
+        [],
+      );
+      expect(
+        problems([
+          rule('r', { trigger: 'player_joined' }, [CHIME], {
+            only_if: {
+              conditions: [
+                {
+                  compare: 'at_least',
+                  condition: 'game_rule',
+                  game_rule: 'minecraft:keep_inventory',
+                  value: true,
+                },
+              ],
+              match: 'all',
+            },
+          }),
+        ]),
+      ).toEqual([[RULES_COMPILE_CODES.notANumber, '/rules/0/only_if/conditions/0/compare']]);
+    });
+
+    it('compares a true or false game rule exactly', () => {
+      const script = (
+        compile([
+          rule('r', { trigger: 'player_woke' }, [GIVE], {
+            only_if: {
+              conditions: [{ condition: 'game_rule', game_rule: 'demo:mana_regen', value: true }],
+              match: 'all',
+            },
+          }),
+        ]).script ?? []
+      ).join('\n');
+      expect(script).toContain('msm.events.on("player.woke"');
+      expect(script).toContain('world.gameRule("demo:mana_regen") === true');
+    });
+
+    it('listens to the Script API 1.7 events, filtered by the subject when there is one', () => {
+      const script = (
+        compile([
+          rule('a', { subject: 'minecraft:bread', trigger: 'player_ate' }, [GIVE]),
+          rule('b', { trigger: 'player_picked_up' }, [GIVE]),
+          rule('c', { subject: 'minecraft:story/root', trigger: 'player_advancement' }, [
+            { dialog: 'minecraft:server_links', step: 'open_dialog', who: 'every_player' },
+          ]),
+          rule('d', { trigger: 'player_slept' }, [
+            { amount: 2, stat: 'minecraft:jump', step: 'add_to_stat' },
+          ]),
+        ]).script ?? []
+      ).join('\n');
+      expect(script).toContain('if (e.item.id !== "minecraft:bread") return;');
+      expect(script).toContain('msm.events.on("item.picked_up"');
+      expect(script).toContain('if (e.advancement !== "minecraft:story/root") return;');
+      expect(script).toContain('target.openDialog("minecraft:server_links")');
+      expect(script).toContain('target.addStat("minecraft:jump", 2)');
+      expect(script).toContain('msm.events.on("player.slept"');
+    });
+  });
+
   describe('script safety', () => {
     it('writes book text only inside string literals', () => {
       const script = (

@@ -111,6 +111,55 @@ describe('ruleSentence', () => {
     ).toBe('When something unknown happens (moon_rises), an unknown step (dance).');
   });
 
+  it('reads the triggers, steps, conditions and readings of ADR 0111 (B534)', () => {
+    expect(
+      ruleSentence(
+        {
+          do: [
+            { game_rule: 'demo:mana_regen', step: 'set_game_rule', value: false },
+            { dialog: 'minecraft:server_links', step: 'open_dialog' },
+          ],
+          key: 'a',
+          only_if: {
+            conditions: [{ condition: 'stat_at_least', number: 10, stat: 'demo:spells_cast' }],
+            match: 'all',
+          },
+          when: { trigger: 'player_ate' },
+        },
+        names,
+      ),
+    ).toBe(
+      "When a player eats or drinks any item, if the player's Spells cast is at least 10, set the game rule Mana regen to false and open the dialog Server links for the player who ate it.",
+    );
+    expect(
+      ruleSentence(
+        {
+          do: [
+            {
+              amount: { axis: 'y', name: 'spot', value: 'command_argument' },
+              stat: 'minecraft:jump',
+              step: 'add_to_stat',
+            },
+          ],
+          key: 'b',
+          only_if: {
+            conditions: [
+              { compare: 'at_least', condition: 'game_rule', game_rule: 'demo:max_mana', value: 5 },
+            ],
+            match: 'all',
+          },
+          when: { subject: 'demo:gift', trigger: 'command_used' },
+        },
+        names,
+      ),
+    ).toBe(
+      'When a player types the command /gift, if the game rule Max mana is at least 5, add the y of what the player typed for "spot" to Jump for the player who typed it.',
+    );
+    expect(ruleSentence({ do: [], key: 'c', when: { trigger: 'player_advancement' } })).toBe(
+      'When a player gets any advancement, nothing.',
+    );
+  });
+
   it('makes a sentence for every sample', () => {
     for (const sample of SAMPLES) {
       const sentence = ruleSentence(sample.rules[0] as JsonObject, names);

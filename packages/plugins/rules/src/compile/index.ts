@@ -17,6 +17,9 @@
  *   not plain, so the command always has its `event`; a command with a `function` cannot have
  *   one, and all its rules listen to the Script API 1.6 `command` event instead.
  * - Script-only triggers: `msm.events.on` handlers in the script, one per trigger and subject.
+ * - "What the player typed" (ADR 0111 D1) is checked against the subject command's `arguments`
+ *   and read in either route from the event's `args` (`commandArgs(e)`); the kinds of project
+ *   game rules (`msm:game_rule`) check what "Set a game rule" and "The game rule is" take.
  */
 import type {
   Element,
@@ -39,7 +42,7 @@ import {
 } from '../book';
 import { COMMAND_KIND, type TriggerEntry, triggerById } from '../catalogue';
 import { ruleSentence, whenSentence } from '../sentence';
-import { checkRule, Reporter } from './check';
+import { type CheckContext, checkRule, Reporter } from './check';
 import { plainActions } from './plain';
 import { ScriptBuilder, type ScriptRule } from './script';
 import {
@@ -48,6 +51,7 @@ import {
   type CompiledRuleBooks,
 } from './types';
 
+export { READABLE_ARGUMENT_TYPES } from './check';
 export { plainAction, plainActions } from './plain';
 export { literal } from './script';
 export * from './types';
@@ -88,6 +92,20 @@ export function namesFromElements(
     if (literal !== undefined && literal.length > 0) names.set(element.id, `/${literal}`);
   }
   return (id) => names.get(id);
+}
+
+/** The element kind of project game rules (ADR 0111 D5). */
+const GAME_RULE_KIND = 'msm:game_rule';
+
+/** The arguments of a command element, name to type (ADR 0096 D1). */
+function commandArguments(command: Element): ReadonlyMap<string, string> {
+  const args = new Map<string, string>();
+  for (const entry of asArray(asObject(command.data)?.arguments)) {
+    const name = str(asObject(entry), 'name');
+    const type = str(asObject(entry), 'type');
+    if (name !== undefined && type !== undefined && !args.has(name)) args.set(name, type);
+  }
+  return args;
 }
 
 const pathOf = (id: string): string => id.slice(id.indexOf(':') + 1);
@@ -220,6 +238,12 @@ export function compileRuleBooks(
 ): CompiledRuleBooks {
   const names = namesFromElements(elements);
   const byId = new Map(elements.map((element) => [element.id as string, element]));
+  const argumentsOf = (subject: Element | undefined): ReadonlyMap<string, string> | undefined =>
+    subject?.kind === COMMAND_KIND ? commandArguments(subject) : undefined;
+  const gameRuleKind = (id: string): string | undefined => {
+    const element = byId.get(id);
+    return element?.kind === GAME_RULE_KIND ? str(asObject(element.data), 'kind') : undefined;
+  };
   const shared = new Map<string, SharedGroup>();
   const passes: BookPass[] = [];
 
@@ -232,7 +256,7 @@ export function compileRuleBooks(
       scriptGroups: new Map(),
     };
     passes.push(pass);
-    collectRules(pass, data, byId, shared);
+    collectRules(pass, data, byId, shared, gameRuleKind);
   }
 
   const scriptRule = (compiled: Compiled): ScriptRule => ({
@@ -328,6 +352,7 @@ export function compileRuleBooks(
         trigger,
         `${names(subject.id) ?? subject.id}: ${trigger.label.toLowerCase()}.`,
         part.rules.map(scriptRule),
+        argumentsOf(subject),
       );
     }
     let patches = subjects.get(subject.id);
@@ -356,6 +381,7 @@ export function compileRuleBooks(
         options,
         `${whenSentence(asObject(first?.rule.when), names)}.`,
         group.rules.map(scriptRule),
+        argumentsOf(byId.get(group.subject ?? '')),
       );
     }
     const script = pass.builder.lines();
@@ -384,6 +410,7 @@ function collectRules(
   data: JsonObject,
   byId: ReadonlyMap<string, Element>,
   shared: Map<string, SharedGroup>,
+  gameRuleKind: (id: string) => string | undefined,
 ): void {
   const { reporter } = pass;
   for (const { rule, index } of bookRules(data)) {
@@ -400,9 +427,14 @@ function collectRules(
       );
       continue;
     }
-    if (!checkRule(rule, base, trigger, reporter)) continue;
-    const compiled: Compiled = { rule, index, key: str(rule, 'key') ?? '' };
     const subjectId = str(when, 'subject');
+    const command = trigger.subject === 'command' ? byId.get(subjectId ?? '') : undefined;
+    const context: CheckContext = {
+      gameRuleKind,
+      ...(command?.kind === COMMAND_KIND ? { commandArguments: commandArguments(command) } : {}),
+    };
+    if (!checkRule(rule, base, trigger, reporter, context)) continue;
+    const compiled: Compiled = { rule, index, key: str(rule, 'key') ?? '' };
     if (trigger.definition === undefined) {
       const groupKey = `${trigger.id}|${subjectId ?? ''}`;
       let group = pass.scriptGroups.get(groupKey);

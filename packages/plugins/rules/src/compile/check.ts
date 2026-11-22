@@ -46,6 +46,40 @@ export class Reporter {
   }
 }
 
+/**
+ * What the checks know of the project around a rule: the arguments of the trigger's command
+ * (ADR 0111 D1) and the kinds of the project's own game rules (ADR 0111 D5).
+ */
+export interface CheckContext {
+  /** The trigger's command's arguments, name to type; absent off a command or without one. */
+  readonly commandArguments?: ReadonlyMap<string, string>;
+  /** The kind (`boolean` or `integer`) of a project game rule, or undefined for any other id. */
+  readonly gameRuleKind?: (id: string) => string | undefined;
+}
+
+/** Argument types Rules reads as numbers (ADR 0111 D1, limit N20). */
+const NUMBER_ARGUMENTS = new Set(['integer', 'number']);
+/** Argument types Rules reads one part of, by `axis`. */
+const POSITION_ARGUMENTS = new Set(['position', 'block_position']);
+/** Argument types Rules reads as words. */
+const WORD_ARGUMENTS = new Set([
+  'word',
+  'text',
+  'player',
+  'entity',
+  'item',
+  'block',
+  'dimension',
+  'effect',
+]);
+
+/** Every argument type Rules can read (ADR 0111 D1, limit N20). */
+export const READABLE_ARGUMENT_TYPES: readonly string[] = Object.freeze([
+  ...NUMBER_ARGUMENTS,
+  ...POSITION_ARGUMENTS,
+  ...WORD_ARGUMENTS,
+]);
+
 /** What a step list may use where it is. */
 interface Scope {
   readonly actors: ReadonlySet<Actor>;
@@ -74,9 +108,10 @@ export function checkRule(
   base: string,
   trigger: TriggerEntry,
   reporter: Reporter,
+  context: CheckContext = {},
 ): boolean {
   const before = reporter.errorCount;
-  const checker = new RuleChecker(trigger, reporter);
+  const checker = new RuleChecker(trigger, reporter, context);
   const key = str(rule, 'key');
   if (key === undefined || !KEY.test(key)) {
     reporter.error(
@@ -103,10 +138,12 @@ class RuleChecker {
   stepCount = 0;
   private readonly trigger: TriggerEntry;
   private readonly reporter: Reporter;
+  private readonly context: CheckContext;
 
-  constructor(trigger: TriggerEntry, reporter: Reporter) {
+  constructor(trigger: TriggerEntry, reporter: Reporter, context: CheckContext) {
     this.trigger = trigger;
     this.reporter = reporter;
+    this.context = context;
   }
 
   private actor(actor: Actor, scope: Scope, path: string): void {
@@ -271,6 +308,9 @@ class RuleChecker {
         case 'who':
           this.who(value ?? defaultWho ?? 'player', at, scope);
           break;
+        case 'game_rule_value':
+          if (value !== undefined) this.gameRuleValue(object, value, path, at, scope);
+          break;
         default:
           break;
       }
@@ -291,6 +331,11 @@ class RuleChecker {
       return;
     }
     if (entry.needsActor !== undefined) this.actor(entry.needsActor, scope, path);
+    if (entry.triggers !== undefined) this.onlyFor(entry.triggers, entry.label, path);
+    if (kind === 'command_argument') {
+      this.commandArgument(object, path, inText);
+      return;
+    }
     if (entry.words === true && !inText) {
       this.reporter.error(
         CODES.notANumber,
@@ -310,6 +355,88 @@ class RuleChecker {
         if (part !== undefined) this.value(part, pointer(path, side), scope, false);
       }
     }
+  }
+
+  /**
+   * "What the player typed" (ADR 0111 D1): an argument of the trigger's command, of a type
+   * Rules reads, and a number where a number is needed.
+   */
+  private commandArgument(object: JsonObject, path: string, inText: boolean): void {
+    const args = this.context.commandArguments;
+    if (args === undefined || this.trigger.id !== 'command_used') return;
+    const name = str(object, 'name') ?? '';
+    const type = args.get(name);
+    if (type === undefined) {
+      this.reporter.error(
+        CODES.unknownValue,
+        pointer(path, 'name'),
+        `The command has no argument "${name}"; pick one of ${args.size === 0 ? 'its arguments (it has none yet)' : [...args.keys()].map((key) => `"${key}"`).join(', ')}.`,
+      );
+      return;
+    }
+    if (!READABLE_ARGUMENT_TYPES.includes(type)) {
+      this.reporter.error(
+        CODES.unknownValue,
+        pointer(path, 'name'),
+        `Rules cannot read a ${type.replace(/_/g, ' ')} argument ("${name}"); pass it to a function instead.`,
+      );
+      return;
+    }
+    if (inText) return;
+    if (WORD_ARGUMENTS.has(type)) {
+      this.reporter.error(
+        CODES.notANumber,
+        path,
+        `"${name}" is a ${type.replace(/_/g, ' ')}, not a number; use it in a message or pick a number.`,
+      );
+    } else if (POSITION_ARGUMENTS.has(type) && str(object, 'axis') === undefined) {
+      this.reporter.error(
+        CODES.notANumber,
+        path,
+        `"${name}" is a position; pick its x, y or z to use it as a number.`,
+      );
+    }
+  }
+
+  /**
+   * What a game rule is set to or compared with (ADR 0111 D5): true or false for a boolean
+   * rule, a number or a reading for a whole-number one; the kind is known for project rules.
+   */
+  private gameRuleValue(
+    owner: JsonObject,
+    value: Json,
+    ownerPath: string,
+    path: string,
+    scope: Scope,
+  ): void {
+    const id = str(owner, 'game_rule');
+    const kind = id === undefined ? undefined : this.context.gameRuleKind?.(id);
+    const compare = str(owner, 'compare');
+    if (typeof value === 'boolean') {
+      if (kind === 'integer') {
+        this.reporter.error(
+          CODES.notANumber,
+          path,
+          `The game rule "${id}" holds a whole number, not true or false.`,
+        );
+      } else if (compare !== undefined && compare !== 'equal_to') {
+        this.reporter.error(
+          CODES.notANumber,
+          pointer(ownerPath, 'compare'),
+          'True or false can only be equal to; pick "equal to" or a number.',
+        );
+      }
+      return;
+    }
+    if (kind === 'boolean') {
+      this.reporter.error(
+        CODES.notANumber,
+        path,
+        `The game rule "${id}" is true or false, not a number.`,
+      );
+      return;
+    }
+    this.value(value, path, scope, false);
   }
 
   private place(value: Json, path: string, scope: Scope): void {

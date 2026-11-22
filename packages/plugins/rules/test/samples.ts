@@ -66,6 +66,12 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
   player_every: { options: { interval_seconds: 2 } },
   player_mounted: {},
   player_dismounted: {},
+  player_crafted: { subject: 'minecraft:crafting_table' },
+  player_picked_up: { subject: 'demo:ruby' },
+  player_ate: {},
+  player_slept: {},
+  player_woke: {},
+  player_advancement: { subject: 'minecraft:story/mine_stone' },
   command_used: { subject: 'demo:hello' },
   key_pressed: { options: { cooldown_seconds: 1.5 }, subject: 'demo:dash' },
   key_released: { subject: 'demo:dash' },
@@ -88,6 +94,9 @@ const TRIGGER_WHEN: Record<string, JsonObject> = {
 };
 
 const when = (trigger: string): JsonObject => ({ ...TRIGGER_WHEN[trigger], trigger });
+
+/** A command with arguments (ADR 0111 D1), for the readings of what was typed. */
+const GIFT_WHEN: JsonObject = { subject: 'demo:gift', trigger: 'command_used' };
 
 const triggerSample = (trigger: string): Json[] => {
   if (trigger === 'world_started' || trigger === 'world_every') {
@@ -168,6 +177,21 @@ const STEP_SAMPLES: Record<string, { trigger: string; steps: Json[] }> = {
     steps: [{ count: 3, item: 'minecraft:emerald', step: 'drop_item' }],
   },
   explode: { trigger: 'block_used', steps: [{ fire: true, power: 2, step: 'explode' }] },
+  set_game_rule: {
+    trigger: 'command_used',
+    steps: [
+      { game_rule: 'minecraft:keep_inventory', step: 'set_game_rule', value: true },
+      { game_rule: 'demo:max_mana', step: 'set_game_rule', value: 50 },
+    ],
+  },
+  open_dialog: {
+    trigger: 'player_joined',
+    steps: [{ dialog: 'minecraft:server_links', step: 'open_dialog' }],
+  },
+  add_to_stat: {
+    trigger: 'item_used',
+    steps: [{ amount: 1, stat: 'demo:spells_cast', step: 'add_to_stat' }],
+  },
   set_weather: {
     trigger: 'item_used',
     steps: [{ seconds: 60, step: 'set_weather', weather: 'rain' }],
@@ -305,6 +329,14 @@ const CONDITION_SAMPLES: Record<
     steps: [{ step: 'keep_blocks_safe' }],
   },
   dimension_is: { trigger: 'block_used', condition: { dimension: 'minecraft:the_nether' } },
+  game_rule: {
+    trigger: 'player_every',
+    condition: { game_rule: 'demo:max_mana', compare: 'more_than', value: 10 },
+  },
+  stat_at_least: {
+    trigger: 'item_used',
+    condition: { number: 100, stat: 'minecraft:jump' },
+  },
   counter: {
     trigger: 'block_used',
     condition: {
@@ -329,6 +361,7 @@ const VALUE_SAMPLES: Record<string, JsonObject> = {
   vehicle_damage: { value: 'vehicle_damage' },
   vehicle_ammo: { value: 'vehicle_ammo' },
   facing: { of: 'here', value: 'facing' },
+  command_argument: { name: 'friend', value: 'command_argument' },
   math: {
     a: { counter: 'clicks', scope: 'player', value: 'counter' },
     b: 2,
@@ -459,6 +492,58 @@ const LISTENER_SAMPLES: readonly Sample[] = [
       },
     ],
   },
+  // B534: what was typed for a command's arguments (ADR 0111 D1), through the command's own
+  // event (`run_script`) and, for a command that runs a function, the `command` event.
+  {
+    name: 'listener-command_arguments',
+    rules: [
+      {
+        do: [
+          {
+            count: { name: 'amount', value: 'command_argument' },
+            item: 'minecraft:diamond',
+            step: 'give_item',
+            who: 'every_player',
+          },
+          {
+            step: 'show_message',
+            text: [
+              'A gift for ',
+              { name: 'friend', value: 'command_argument' },
+              ' at ',
+              { name: 'spot', value: 'command_argument' },
+              ': ',
+              { name: 'note', value: 'command_argument' },
+            ],
+          },
+          {
+            amount: {
+              a: { axis: 'y', name: 'spot', value: 'command_argument' },
+              b: 1,
+              op: '+',
+              value: 'math',
+            },
+            counter: 'goal',
+            scope: 'world',
+            step: 'set_counter',
+          },
+        ],
+        key: 'sample',
+        when: GIFT_WHEN,
+      },
+      {
+        do: [
+          {
+            step: 'show_message',
+            text: ['You rolled a ', { name: 'sides', value: 'command_argument' }],
+          },
+        ],
+        key: 'roll',
+        when: { subject: 'demo:roll', trigger: 'command_used' },
+      },
+    ],
+    counters: COUNTERS,
+  },
   {
     name: 'listener-explosion',
     rules: [
@@ -529,7 +614,7 @@ export const SAMPLES: readonly Sample[] = Object.freeze([
   ...VALUES.map((value) => ({
     name: `value-${value.id}`,
     rules: [
-      rule(when('block_used'), [
+      rule(value.triggers === undefined ? when('block_used') : GIFT_WHEN, [
         { step: 'show_message', text: ['Value: ', need(VALUE_SAMPLES, value.id)] },
       ]),
     ],

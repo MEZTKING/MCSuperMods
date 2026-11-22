@@ -48,14 +48,14 @@ describe('the catalogue', () => {
     expect(sorted(CATALOGUE_IDS.who)).toEqual(sorted([...enumValues('WhoName'), 'players_nearby']));
   });
 
-  it('counts 56 triggers, 44 steps, 19 conditions, 13 values and 7 places', () => {
+  it('counts 62 triggers, 47 steps, 21 conditions, 14 values and 7 places', () => {
     expect([
       TRIGGERS.length,
       STEPS.length,
       CONDITIONS.length,
       VALUES.length,
       PLACES.length,
-    ]).toEqual([56, 44, 19, 13, 7]);
+    ]).toEqual([62, 47, 21, 14, 7]);
   });
 
   const all: [string, readonly CatalogueEntry[]][] = [
@@ -107,7 +107,13 @@ describe('the catalogue', () => {
       const definition = trigger.definition !== undefined;
       expect(definition || trigger.scriptEvent !== undefined, trigger.id).toBe(true);
       expect(trigger.subjectKinds.length > 0, trigger.id).toBe(definition);
-      expect(trigger.subjectOptional, trigger.id).toBe(trigger.id.startsWith('any_'));
+      // The `any_` triggers and the items and advancements of ADR 0111 D3 may name a subject.
+      expect(trigger.subjectOptional, trigger.id).toBe(
+        trigger.id.startsWith('any_') ||
+          ['player_crafted', 'player_picked_up', 'player_ate', 'player_advancement'].includes(
+            trigger.id,
+          ),
+      );
       for (const target of Object.keys(trigger.actionTargets)) {
         expect(trigger.actors, `${trigger.id} ${target}`).toContain(target);
       }
@@ -166,6 +172,14 @@ describe('the catalogue', () => {
     });
     const ids = new Set(TRIGGERS.map((trigger) => trigger.id));
     for (const [, triggers] of limited) for (const id of triggers ?? []) expect(ids).toContain(id);
+    // What was typed for a command's argument reads only on the command's own rules (ADR 0111 D1).
+    expect(
+      Object.fromEntries(
+        VALUES.flatMap((value) =>
+          value.triggers === undefined ? [] : [[value.id, value.triggers]],
+        ),
+      ),
+    ).toEqual({ command_argument: ['command_used'] });
     expect(VALUES.filter((value) => value.words === true).map((value) => value.id)).toEqual([
       'facing',
     ]);

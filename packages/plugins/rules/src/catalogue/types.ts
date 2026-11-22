@@ -32,7 +32,19 @@ export type SlotType =
   /** A weapon of the vehicle, by its `id` in the vehicle's `weapons`. */
   | 'weapon'
   /** A project command (`msm:command`, ADR 0096 D1). */
-  | 'command';
+  | 'command'
+  /** One of the arguments of the trigger's command, by name (ADR 0111 D1). */
+  | 'argument'
+  /** A dialog, vanilla or of the project's data pack (ADR 0111 D4). */
+  | 'dialog'
+  /** A game rule, vanilla or a project `msm:game_rule` (ADR 0111 D5). */
+  | 'game_rule'
+  /** What a game rule is set to or compared with: true or false, or a number (ADR 0111 D5). */
+  | 'game_rule_value'
+  /** A statistic, vanilla or a project `msm:stat` (ADR 0111 D6). */
+  | 'stat'
+  /** An advancement, vanilla or of the project's data pack (ADR 0111 D3). */
+  | 'advancement';
 
 /** One blank of a sentence: the field it edits and how. */
 export interface SlotSpec {
@@ -87,6 +99,8 @@ export type SubjectSort =
   | 'vehicle'
   /** A project command (ADR 0096 D5). */
   | 'command'
+  /** An advancement, vanilla or the project's (ADR 0111 D3; script triggers only). */
+  | 'advancement'
   /** No subject: player and world triggers. */
   | 'none';
 
@@ -254,6 +268,11 @@ export interface ValueEntry extends CatalogueEntry {
    * number slot the compiler reports `rules.not-a-number`.
    */
   readonly words?: boolean;
+  /**
+   * The only triggers the reading works on ("What the player typed" on a command, ADR 0111 D1);
+   * absent means every trigger. Elsewhere the compiler reports `rules.not-for-trigger`.
+   */
+  readonly triggers?: readonly string[];
 }
 
 /** A named place or a place object (ADR 0082 D5). */
