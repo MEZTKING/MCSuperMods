@@ -380,8 +380,15 @@ describe('looks', () => {
 describe('speed (ADR 0092 D17)', () => {
   const median = (values: number[]): number =>
     values.sort((a, b) => a - b)[Math.floor(values.length / 2)] ?? 0;
+  // The process's own CPU time in milliseconds. Vitest runs each test file in its own process,
+  // so this is the drawing's cost alone: time spent waiting for a core on a busy machine (CI runs
+  // every package's tests at once) does not count, while a recipe that got slower still fails.
+  const cpuMs = (): number => {
+    const usage = process.cpuUsage();
+    return (usage.user + usage.system) / 1000;
+  };
   it.each(drawn)(
-    '$id draws in under 2 ms (fastest batch of ten) and six variations in under 20 ms',
+    '$id draws in under 2 ms (CPU time, fastest batch of ten) and six variations in under 20 ms',
     (info) => {
       for (let i = 0; i < 20; i += 1) {
         artLookPng({ recipe: info.id, colour: DEFAULT_COLOUR, seed: i });
@@ -389,19 +396,19 @@ describe('speed (ADR 0092 D17)', () => {
       // Ten batches of ten draws; a batch's time is its mean draw.
       const one: number[] = [];
       for (let batch = 0; batch < 10; batch += 1) {
-        const start = performance.now();
+        const start = cpuMs();
         for (let i = 0; i < 10; i += 1) {
           artLookPng({ recipe: info.id, colour: DEFAULT_COLOUR, seed: batch * 10 + i });
         }
-        one.push((performance.now() - start) / 10);
+        one.push((cpuMs() - start) / 10);
       }
       const six: number[] = [];
       for (let i = 0; i < 15; i += 1) {
-        const start = performance.now();
+        const start = cpuMs();
         for (let seed = 0; seed < 6; seed += 1) {
           artLookPng({ recipe: info.id, colour: [40, 150, 150], seed: i * 6 + seed });
         }
-        six.push(performance.now() - start);
+        six.push(cpuMs() - start);
       }
       if (process.env.ART_TIMINGS === '1') {
         console.log(
@@ -411,9 +418,8 @@ describe('speed (ADR 0092 D17)', () => {
       // D17 sets 2 ms for a 16 by 16 recipe; the worn layers have 8 to 16 times its pixels
       // and encoding a 64 by 64 PNG alone takes about 1.2 ms, so they get twice the time.
       const factor = info.width * info.height > 18 * 18 ? 2 : 1;
-      // The budget holds for the fastest batch of single draws and of six: a busy test
-      // machine (CI runs every package's tests at once) only adds time, so the fastest batch is
-      // the drawing's own cost, while a recipe that got slower still fails.
+      // The budget holds for the fastest batch of single draws and of six, in CPU time: the
+      // fastest batch leaves out one-off costs such as a garbage collection.
       expect(Math.min(...one)).toBeLessThan(2 * factor);
       expect(Math.min(...six)).toBeLessThan(20 * factor);
     },
